@@ -257,6 +257,42 @@ namespace ShareX.Avalonia.ImageEffects.Helpers
             return bmpResult;
         }
 
+        public static Bitmap ResizeImage(Bitmap bmp, int width, int height, bool allowEnlarge, bool centerImage, Color backColor)
+        {
+            if (!allowEnlarge && bmp.Width <= width && bmp.Height <= height)
+            {
+                return bmp;
+            }
+
+            double ratioX = (double)width / bmp.Width;
+            double ratioY = (double)height / bmp.Height;
+            double ratio = Math.Min(ratioX, ratioY);
+            int newWidth = (int)(bmp.Width * ratio);
+            int newHeight = (int)(bmp.Height * ratio);
+
+            int offsetX = centerImage ? (width - newWidth) / 2 : 0;
+            int offsetY = centerImage ? (height - newHeight) / 2 : 0;
+
+            Bitmap bmpResult = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+            bmpResult.SetResolution(bmp.HorizontalResolution, bmp.VerticalResolution);
+
+            using (Graphics g = Graphics.FromImage(bmpResult))
+            {
+                if (backColor.A > 0)
+                {
+                    g.Clear(backColor);
+                }
+
+                g.CompositingQuality = CompositingQuality.HighQuality;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.SmoothingMode = SmoothingMode.HighQuality;
+
+                g.DrawImage(bmp, offsetX, offsetY, newWidth, newHeight);
+            }
+
+            return bmpResult;
+        }
+
         public static Size ApplyAspectRatio(int width, int height, Bitmap bmp)
         {
             int newWidth;

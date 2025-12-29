@@ -23,44 +23,58 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Avalonia.Common;
 using ShareX.Avalonia.ImageEffects.Helpers;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 
 namespace ShareX.Avalonia.ImageEffects
 {
-    internal class Rotate : ImageEffect
+    internal class Scale : ImageEffect
     {
-        [DefaultValue(0f), Description("Choose a value between -360 and 360.")]
-        public float Angle { get; set; }
+        [DefaultValue(100f), Description("Use width percentage as 0 to maintain aspect ratio by automatically adjusting width.")]
+        public float WidthPercentage { get; set; }
 
-        [DefaultValue(true), Description("If true, output image will be larger than the input and no clipping will occur.")]
-        public bool Upsize { get; set; }
+        [DefaultValue(0f), Description("Use height percentage as 0 to maintain aspect ratio by automatically adjusting height.")]
+        public float HeightPercentage { get; set; }
 
-        [DefaultValue(false), Description("Upsize must be false for this setting to work. If true, clipping will occur or else image size will be reduced.")]
-        public bool Clip { get; set; }
-
-        public Rotate()
+        public Scale()
         {
             this.ApplyDefaultPropertyValues();
         }
 
         public override Bitmap Apply(Bitmap bmp)
         {
-            if (Angle == 0)
+            if (WidthPercentage <= 0 && HeightPercentage <= 0)
             {
                 return bmp;
             }
 
-            using (bmp)
-            {
-                return ImageEffectsProcessing.RotateImage(bmp, Angle, Upsize, Clip);
-            }
+            int width = (int)Math.Round(WidthPercentage / 100 * bmp.Width);
+            int height = (int)Math.Round(HeightPercentage / 100 * bmp.Height);
+            Size size = ImageEffectsProcessing.ApplyAspectRatio(width, height, bmp);
+
+            return ImageEffectsProcessing.ResizeImage(bmp, size);
         }
 
         protected override string GetSummary()
         {
-            return Angle + "°";
+            string summary = WidthPercentage.ToString();
+
+            if (WidthPercentage > 0)
+            {
+                summary += "%";
+            }
+
+            summary += ", " + HeightPercentage.ToString();
+
+            if (HeightPercentage > 0)
+            {
+                summary += "%";
+            }
+
+            return summary;
         }
     }
 }
