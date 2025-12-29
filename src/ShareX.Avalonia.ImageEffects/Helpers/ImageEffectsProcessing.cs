@@ -78,6 +78,17 @@ namespace ShareX.Avalonia.ImageEffects.Helpers
             return result;
         }
 
+        public static Bitmap CropBitmap(Bitmap bmp, Rectangle rect)
+        {
+            Rectangle bounds = new Rectangle(0, 0, bmp.Width, bmp.Height);
+            if (rect.Width <= 0 || rect.Height <= 0 || !bounds.Contains(rect))
+            {
+                return bmp;
+            }
+
+            return bmp.Clone(rect, PixelFormat.Format32bppArgb);
+        }
+
         public static Bitmap GaussianBlur(Bitmap bmp, int radius)
         {
             radius = Math.Max(1, radius);
@@ -168,6 +179,110 @@ namespace ShareX.Avalonia.ImageEffects.Helpers
             }
 
             return result;
+        }
+
+        public static Bitmap RotateImage(Bitmap bmp, float angle, bool upsize, bool clip)
+        {
+            if (angle == 0)
+            {
+                return bmp;
+            }
+
+            float rad = angle * (float)(Math.PI / 180.0);
+            float cos = Math.Abs((float)Math.Cos(rad));
+            float sin = Math.Abs((float)Math.Sin(rad));
+
+            int newWidth = bmp.Width;
+            int newHeight = bmp.Height;
+
+            if (upsize)
+            {
+                newWidth = (int)Math.Ceiling((bmp.Width * cos) + (bmp.Height * sin));
+                newHeight = (int)Math.Ceiling((bmp.Width * sin) + (bmp.Height * cos));
+            }
+
+            Bitmap rotated = new Bitmap(newWidth, newHeight, PixelFormat.Format32bppArgb);
+            rotated.SetResolution(bmp.HorizontalResolution, bmp.VerticalResolution);
+
+            using (Graphics g = Graphics.FromImage(rotated))
+            {
+                g.CompositingQuality = CompositingQuality.HighQuality;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.SmoothingMode = SmoothingMode.HighQuality;
+
+                g.TranslateTransform(newWidth / 2f, newHeight / 2f);
+                g.RotateTransform(angle);
+                g.TranslateTransform(-bmp.Width / 2f, -bmp.Height / 2f);
+
+                Rectangle destRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                g.DrawImage(bmp, destRect, new Rectangle(0, 0, bmp.Width, bmp.Height), GraphicsUnit.Pixel);
+            }
+
+            if (!upsize && clip)
+            {
+                int x = (rotated.Width - bmp.Width) / 2;
+                int y = (rotated.Height - bmp.Height) / 2;
+                Rectangle crop = new Rectangle(Math.Max(0, x), Math.Max(0, y), Math.Min(bmp.Width, rotated.Width), Math.Min(bmp.Height, rotated.Height));
+                Bitmap clipped = rotated.Clone(crop, PixelFormat.Format32bppArgb);
+                rotated.Dispose();
+                return clipped;
+            }
+
+            return rotated;
+        }
+
+        public static Bitmap ResizeImage(Bitmap bmp, Size size)
+        {
+            if (size.Width < 1 || size.Height < 1 || (bmp.Width == size.Width && bmp.Height == size.Height))
+            {
+                return bmp;
+            }
+
+            Bitmap bmpResult = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb);
+            bmpResult.SetResolution(bmp.HorizontalResolution, bmp.VerticalResolution);
+
+            using (Graphics g = Graphics.FromImage(bmpResult))
+            {
+                g.CompositingQuality = CompositingQuality.HighQuality;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.SmoothingMode = SmoothingMode.HighQuality;
+
+                using (ImageAttributes ia = new ImageAttributes())
+                {
+                    ia.SetWrapMode(WrapMode.TileFlipXY);
+                    g.DrawImage(bmp, new Rectangle(0, 0, size.Width, size.Height), 0, 0, bmp.Width, bmp.Height, GraphicsUnit.Pixel, ia);
+                }
+            }
+
+            return bmpResult;
+        }
+
+        public static Size ApplyAspectRatio(int width, int height, Bitmap bmp)
+        {
+            int newWidth;
+            int newHeight;
+
+            if (width == 0 && height == 0)
+            {
+                return new Size(bmp.Width, bmp.Height);
+            }
+            else if (width == 0)
+            {
+                newWidth = (int)Math.Round((float)height / bmp.Height * bmp.Width);
+                newHeight = height;
+            }
+            else if (height == 0)
+            {
+                newWidth = width;
+                newHeight = (int)Math.Round((float)width / bmp.Width * bmp.Height);
+            }
+            else
+            {
+                newWidth = width;
+                newHeight = height;
+            }
+
+            return new Size(newWidth, newHeight);
         }
     }
 }
