@@ -28,6 +28,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using ShareX.Avalonia.Common.GIF;
 
 namespace ShareX.Avalonia.Common
 {
@@ -74,6 +75,45 @@ namespace ShareX.Avalonia.Common
                 "tiff" => ImageFormat.Tiff,
                 _ => ImageFormat.Png
             };
+        }
+
+
+        public static MemoryStream SaveGIF(Image img, GIFQuality quality)
+        {
+            MemoryStream ms = new MemoryStream();
+            SaveGIF(img, ms, quality);
+            return ms;
+        }
+
+        public static void SaveGIF(Image img, Stream stream, GIFQuality quality)
+        {
+            if (quality == GIFQuality.Default)
+            {
+                img.Save(stream, ImageFormat.Gif);
+            }
+            else
+            {
+                Quantizer quantizer;
+
+                switch (quality)
+                {
+                    case GIFQuality.Grayscale:
+                        quantizer = new GrayscaleQuantizer();
+                        break;
+                    case GIFQuality.Bit4:
+                        quantizer = new OctreeQuantizer(15, 4);
+                        break;
+                    default:
+                    case GIFQuality.Bit8:
+                        quantizer = new OctreeQuantizer(255, 4);
+                        break;
+                }
+
+                using (Bitmap quantized = quantizer.Quantize(img))
+                {
+                    quantized.Save(stream, ImageFormat.Gif);
+                }
+            }
         }
     }
 }
