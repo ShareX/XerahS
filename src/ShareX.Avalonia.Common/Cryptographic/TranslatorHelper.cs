@@ -196,3 +196,4 @@ namespace ShareX.Avalonia.Common
         #endregion ASCII to ...
     }
 }
+

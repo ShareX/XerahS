@@ -150,3 +150,4 @@ namespace ShareX.Avalonia.Common
         }
     }
 }
+

@@ -58,3 +58,4 @@ namespace ShareX.Avalonia.Common
         }
     }
 }
+

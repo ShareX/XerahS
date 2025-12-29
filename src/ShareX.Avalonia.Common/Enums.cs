@@ -215,3 +215,4 @@ namespace ShareX.Avalonia.Common
         Wave
     }
 }
+
