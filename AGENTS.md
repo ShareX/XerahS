@@ -191,7 +191,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] InputManager.cs
 - [x] JsonHelpers.cs
 - [ ] KeyboardHook.cs
-- [ ] KnownTypesSerializationBinder.cs
+- [x] KnownTypesSerializationBinder.cs
 - [ ] ListExtensions.cs
 - [ ] MyColor.cs
 - [ ] MyColorConverter.cs
