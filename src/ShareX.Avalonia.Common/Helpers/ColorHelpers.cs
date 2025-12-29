@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
+using ShareX.Avalonia.Common;
 
 namespace ShareX.Avalonia.Common.Helpers
 {
@@ -474,6 +475,21 @@ namespace ShareX.Avalonia.Common.Helpers
             }
 
             return hue * 60;
+        }
+
+        public static double ValidColor(double number)
+        {
+            return MathHelpers.Clamp(number, 0d, 1d);
+        }
+
+        public static int ValidColor(int number)
+        {
+            return MathHelpers.Clamp(number, 0, 255);
+        }
+
+        public static byte ValidColor(byte number)
+        {
+            return MathHelpers.Clamp(number, (byte)0, (byte)255);
         }
     }
 

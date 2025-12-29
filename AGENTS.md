@@ -212,7 +212,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] PropertyExtensions.cs
 - [ ] Quantizer.cs
 - [x] RegistryHelpers.cs
-- [ ] RGBA.cs
+- [x] RGBA.cs
 - [x] SafeStringEnumConverter.cs
 - [ ] SevenZipManager.cs
 - [ ] ShareX.HelpersLib.AssemblyInfo.cs
