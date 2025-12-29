@@ -295,7 +295,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] RegistryHelpers.cs
 - [x] RGBA.cs
 - [x] SafeStringEnumConverter.cs
-- [ ] SevenZipManager.cs
+- [x] SevenZipManager.cs
 - [ ] ShareX.HelpersLib.AssemblyInfo.cs
 - [ ] ShareX.HelpersLib.resources.cs
 - [ ] ShareXTheme.cs
