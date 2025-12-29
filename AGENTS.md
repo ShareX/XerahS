@@ -172,7 +172,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] Extensions.cs
 - [ ] ExternalProgram.cs
 - [ ] FFmpegUpdateChecker.cs
-- [ ] FileDownloader.cs
+- [x] FileDownloader.cs
 - [ ] FileHelpersLite.cs
 - [ ] FontSafe.cs
 - [ ] GifClass.cs
@@ -185,7 +185,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] GrayscaleQuantizer.cs
 - [ ] HotkeyInfo.cs
 - [ ] HSB.cs
-- [ ] HttpClientFactory.cs
+- [x] HttpClientFactory.cs
 - [ ] ImageFilesCache.cs
 - [ ] InputHelpers.cs
 - [ ] InputManager.cs
