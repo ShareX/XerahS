@@ -226,8 +226,8 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] UnsafeBitmap.cs
 - [ ] UpdateChecker.cs
 - [ ] WshShell.cs
-- [ ] XmlColor.cs
-- [ ] XmlFont.cs
+- [x] XmlColor.cs
+- [x] XmlFont.cs
 - [ ] XMLUpdateChecker.cs
 
 ### ShareX.HistoryLib
