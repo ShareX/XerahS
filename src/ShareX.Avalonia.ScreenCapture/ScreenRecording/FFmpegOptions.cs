@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using ShareX.Avalonia.Common;
+using ShareX.Avalonia.Common.Helpers;
 using System;
 
 namespace ShareX.Avalonia.ScreenCapture

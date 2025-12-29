@@ -95,6 +95,23 @@ namespace ShareX.Avalonia.Common.Helpers
             return includeDot ? extension : extension.TrimStart('.');
         }
 
+        public static string GetAbsolutePath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return string.Empty;
+            }
+
+            string expanded = Environment.ExpandEnvironmentVariables(path);
+
+            if (!Path.IsPathRooted(expanded))
+            {
+                expanded = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, expanded);
+            }
+
+            return Path.GetFullPath(expanded);
+        }
+
         private static int WeekOfYear(DateTime dateTime)
         {
             return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTime, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
