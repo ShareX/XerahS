@@ -24,22 +24,26 @@
 #endregion License Information (GPL v3)
 
 using System;
-using System.Drawing;
+using System.Net;
+using System.Net.Sockets;
 
-namespace ShareX.Avalonia.Uploaders
+namespace ShareX.Avalonia.Common
 {
-    public abstract class UploaderService<T> : IUploaderService
+    public static class WebHelpers
     {
-        public abstract T EnumValue { get; }
+        public static bool IsSuccessStatusCode(HttpStatusCode statusCode)
+        {
+            int code = (int)statusCode;
+            return code >= 200 && code <= 299;
+        }
 
-        public string ServiceIdentifier => EnumValue.ToString();
-
-        public string ServiceName => EnumValue.ToString();
-
-        public virtual Icon? ServiceIcon => null;
-
-        public virtual Image? ServiceImage => null;
-
-        public abstract bool CheckConfig(UploadersConfig config);
+        public static int GetRandomUnusedPort()
+        {
+            TcpListener listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+            listener.Stop();
+            return port;
+        }
     }
 }

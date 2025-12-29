@@ -23,23 +23,36 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Drawing;
-
-namespace ShareX.Avalonia.Uploaders
+namespace ShareX.Avalonia.Uploaders.FileUploaders
 {
-    public abstract class UploaderService<T> : IUploaderService
+    public class FTPAccount
     {
-        public abstract T EnumValue { get; }
+        public string? Host { get; set; }
+        public int Port { get; set; }
+        public string? Username { get; set; }
+        public string? Password { get; set; }
+        public bool UseSFTP { get; set; }
+        public string? Keypath { get; set; }
+        public string? Passphrase { get; set; }
 
-        public string ServiceIdentifier => EnumValue.ToString();
+        public string GetSubFolderPath()
+        {
+            return string.Empty;
+        }
 
-        public string ServiceName => EnumValue.ToString();
+        public string GetUriPath(string path)
+        {
+            return path;
+        }
 
-        public virtual Icon? ServiceIcon => null;
+        public string GetUriPath(string fileName, string? subFolderPath)
+        {
+            if (string.IsNullOrEmpty(subFolderPath))
+            {
+                return fileName;
+            }
 
-        public virtual Image? ServiceImage => null;
-
-        public abstract bool CheckConfig(UploadersConfig config);
+            return subFolderPath.TrimEnd('/') + "/" + fileName;
+        }
     }
 }

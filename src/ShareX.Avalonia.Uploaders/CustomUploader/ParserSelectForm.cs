@@ -24,22 +24,25 @@
 #endregion License Information (GPL v3)
 
 using System;
-using System.Drawing;
+using System.Linq;
 
 namespace ShareX.Avalonia.Uploaders
 {
-    public abstract class UploaderService<T> : IUploaderService
+    internal sealed class ParserSelectForm : IDisposable
     {
-        public abstract T EnumValue { get; }
+        public string SelectedText { get; private set; }
 
-        public string ServiceIdentifier => EnumValue.ToString();
+        public ParserSelectForm(string[] values)
+        {
+            SelectedText = values?.FirstOrDefault(value => !string.IsNullOrEmpty(value)) ?? string.Empty;
+        }
 
-        public string ServiceName => EnumValue.ToString();
+        public void ShowDialog()
+        {
+        }
 
-        public virtual Icon? ServiceIcon => null;
-
-        public virtual Image? ServiceImage => null;
-
-        public abstract bool CheckConfig(UploadersConfig config);
+        public void Dispose()
+        {
+        }
     }
 }

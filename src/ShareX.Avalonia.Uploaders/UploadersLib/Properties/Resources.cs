@@ -23,23 +23,20 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Drawing;
-
-namespace ShareX.Avalonia.Uploaders
+namespace ShareX.UploadersLib.Properties
 {
-    public abstract class UploaderService<T> : IUploaderService
+    public static class Resources
     {
-        public abstract T EnumValue { get; }
+        public static string Error => "Error";
+        public static string CustomUploaderItem_GetRequestURL_RequestURLMustBeConfigured => "Request URL must be configured.";
+        public static string CustomUploaderItem_GetFileFormName_FileFormNameMustBeConfigured => "File form name must be configured.";
+        public static string OAuthCallbackPage => "<html><body>{0}</body></html>";
+        public static string OAuthInfo_OAuthInfo_New_account => "New account";
+        public static string UploadersConfigForm_ConnectSFTPAccount_Key_file_not_found => "Key file not found.";
+    }
 
-        public string ServiceIdentifier => EnumValue.ToString();
-
-        public string ServiceName => EnumValue.ToString();
-
-        public virtual Icon? ServiceIcon => null;
-
-        public virtual Image? ServiceImage => null;
-
-        public abstract bool CheckConfig(UploadersConfig config);
+    public static class ShareXResources
+    {
+        public static string UserAgent => "ShareX.Avalonia";
     }
 }

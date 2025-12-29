@@ -23,23 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Drawing;
-
-namespace ShareX.Avalonia.Uploaders
+namespace ShareX.Avalonia.Common
 {
-    public abstract class UploaderService<T> : IUploaderService
+    public abstract class SettingsBase<T> where T : SettingsBase<T>, new()
     {
-        public abstract T EnumValue { get; }
-
-        public string ServiceIdentifier => EnumValue.ToString();
-
-        public string ServiceName => EnumValue.ToString();
-
-        public virtual Icon? ServiceIcon => null;
-
-        public virtual Image? ServiceImage => null;
-
-        public abstract bool CheckConfig(UploadersConfig config);
+        public string? FilePath { get; protected set; }
+        public string? ApplicationVersion { get; set; }
     }
 }
