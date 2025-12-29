@@ -252,7 +252,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] EnumInfo.cs
 - [x] EnumProperNameConverter.cs
 - [x] EnumProperNameKeepCaseConverter.cs
-- [ ] Extensions.cs
+- [x] Extensions.cs
 - [x] ExternalProgram.cs
 - [ ] FFmpegUpdateChecker.cs
 - [x] FileDownloader.cs
