@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace ShareX.Avalonia.Common
 {
@@ -178,6 +179,166 @@ namespace ShareX.Avalonia.Common
         public static bool IsVideoFile(string filePath)
         {
             return CheckExtension(filePath, VideoFileExtensions);
+        }
+
+        public static string GetFileNameSafe(string filePath)
+        {
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                int pos = filePath.LastIndexOf('\\');
+
+                if (pos < 0)
+                {
+                    pos = filePath.LastIndexOf('/');
+                }
+
+                if (pos >= 0)
+                {
+                    return filePath.Substring(pos + 1);
+                }
+            }
+
+            return filePath;
+        }
+
+        public static string ChangeFileNameExtension(string fileName, string extension)
+        {
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                int pos = fileName.LastIndexOf('.');
+
+                if (pos >= 0)
+                {
+                    fileName = fileName.Remove(pos);
+                }
+
+                if (!string.IsNullOrEmpty(extension))
+                {
+                    pos = extension.LastIndexOf('.');
+
+                    if (pos >= 0)
+                    {
+                        extension = extension.Substring(pos + 1);
+                    }
+
+                    return fileName + "." + extension;
+                }
+            }
+
+            return fileName;
+        }
+
+        public static string AppendTextToFileName(string filePath, string text)
+        {
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                int pos = filePath.LastIndexOf('.');
+
+                if (pos >= 0)
+                {
+                    return filePath.Substring(0, pos) + text + filePath.Substring(pos);
+                }
+            }
+
+            return filePath + text;
+        }
+
+        public static string AppendExtension(string filePath, string extension)
+        {
+            return filePath.TrimEnd('.') + '.' + extension.TrimStart('.');
+        }
+
+        public static string SanitizeFileName(string fileName, string replaceWith = "")
+        {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                return string.Empty;
+            }
+
+            char[] invalidChars = Path.GetInvalidFileNameChars();
+            fileName = fileName.Trim();
+
+            foreach (char c in invalidChars)
+            {
+                fileName = fileName.Replace(c.ToString(), replaceWith);
+            }
+
+            return fileName;
+        }
+
+        public static string SanitizePath(string path, string replaceWith = "")
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return string.Empty;
+            }
+
+            string root = Path.GetPathRoot(path);
+
+            if (!string.IsNullOrEmpty(root))
+            {
+                path = path.Substring(root.Length);
+            }
+
+            char[] invalidChars = Path.GetInvalidFileNameChars()
+                .Except(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar })
+                .ToArray();
+
+            foreach (char c in invalidChars)
+            {
+                path = path.Replace(c.ToString(), replaceWith);
+            }
+
+            return root + path;
+        }
+
+        public static string GetAbsolutePath(string path, bool supportCustomSpecialFolders = false)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return string.Empty;
+            }
+
+            path = ExpandFolderVariables(path, supportCustomSpecialFolders);
+
+            if (!Path.IsPathRooted(path))
+            {
+                path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
+            }
+
+            return Path.GetFullPath(path);
+        }
+
+        public static string GetUniqueFilePath(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                return filePath;
+            }
+
+            string folderPath = Path.GetDirectoryName(filePath) ?? string.Empty;
+            string fileName = Path.GetFileNameWithoutExtension(filePath);
+            string fileExtension = Path.GetExtension(filePath);
+            int number = 1;
+
+            Match regex = Regex.Match(fileName, @"^(.+) \((\d+)\)$");
+
+            if (regex.Success)
+            {
+                fileName = regex.Groups[1].Value;
+                number = int.Parse(regex.Groups[2].Value);
+            }
+
+            string newFilePath;
+            do
+            {
+                number++;
+                string newFileName = $"{fileName} ({number}){fileExtension}";
+                newFilePath = Path.Combine(folderPath, newFileName);
+            }
+            while (File.Exists(newFilePath));
+
+            return newFilePath;
         }
 
         public static void CreateDirectory(string directoryPath)
