@@ -31,7 +31,7 @@ namespace ShareX.Avalonia.Common
 {
     public static class FileHelpers
     {
-        public static string ExpandFolderVariables(string path)
+        public static string ExpandFolderVariables(string path, bool supportCustomSpecialFolders = false)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -40,6 +40,18 @@ namespace ShareX.Avalonia.Common
 
             try
             {
+                if (supportCustomSpecialFolders)
+                {
+                    foreach (var specialFolder in HelpersOptions.ShareXSpecialFolders)
+                    {
+                        string token = $"%{specialFolder.Key}%";
+                        if (!string.IsNullOrEmpty(specialFolder.Value))
+                        {
+                            path = path.Replace(token, specialFolder.Value, StringComparison.OrdinalIgnoreCase);
+                        }
+                    }
+                }
+
                 foreach (Environment.SpecialFolder specialFolder in Enum.GetValues(typeof(Environment.SpecialFolder)))
                 {
                     string token = $"%{specialFolder}%";
@@ -57,7 +69,7 @@ namespace ShareX.Avalonia.Common
             return Environment.ExpandEnvironmentVariables(path);
         }
 
-        public static string GetVariableFolderPath(string path)
+        public static string GetVariableFolderPath(string path, bool supportCustomSpecialFolders = false)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -66,6 +78,17 @@ namespace ShareX.Avalonia.Common
 
             try
             {
+                if (supportCustomSpecialFolders)
+                {
+                    foreach (var specialFolder in HelpersOptions.ShareXSpecialFolders)
+                    {
+                        if (!string.IsNullOrEmpty(specialFolder.Value))
+                        {
+                            path = path.Replace(specialFolder.Value, $"%{specialFolder.Key}%", StringComparison.OrdinalIgnoreCase);
+                        }
+                    }
+                }
+
                 foreach (Environment.SpecialFolder specialFolder in Enum.GetValues(typeof(Environment.SpecialFolder)))
                 {
                     string folderPath = Environment.GetFolderPath(specialFolder);

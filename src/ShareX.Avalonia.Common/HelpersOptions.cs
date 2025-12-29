@@ -23,10 +23,14 @@
 
 #endregion License Information (GPL v3)
 
+using System;
+using System.Collections.Generic;
+
 namespace ShareX.Avalonia.Common
 {
     public static class HelpersOptions
     {
         public static ProxyInfo CurrentProxy { get; } = new ProxyInfo();
+        public static Dictionary<string, string> ShareXSpecialFolders { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
 }

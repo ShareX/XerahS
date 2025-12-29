@@ -124,6 +124,15 @@ When creating or editing C# files (`.cs`) in this repository, include the follow
 - Remove hard-coded uploader enums and update configuration UI to list plug-ins discovered at runtime.
 - Update build/deployment scripts to package plug-in DLLs separately and load them on demand.
 
+## Backend Porting Checklist
+
+- [x] Expand UploadersLib settings/data stubs to match ShareX models.
+- [x] Align URL helpers with ShareX prefix behavior.
+- [x] Expand folder variable handling in Common helpers.
+- [ ] Port remaining ShareX.HelpersLib non-UI utilities needed by backend workflows.
+- [ ] Verify uploader settings models cover all fields referenced by config/task flows.
+- [ ] Audit OAuth manager signature support and match ShareX behavior.
+
 ## TODO ARM64 optimisations and compatibility
 
 Goal
