@@ -174,7 +174,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] FFmpegUpdateChecker.cs
 - [x] FileDownloader.cs
 - [ ] FileHelpersLite.cs
-- [ ] FontSafe.cs
+- [x] FontSafe.cs
 - [ ] GifClass.cs
 - [ ] GitHubUpdateChecker.cs
 - [ ] GitHubUpdateManager.cs
