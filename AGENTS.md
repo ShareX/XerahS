@@ -93,3 +93,11 @@ When creating or editing C# files (`.cs`) in this repository, include the follow
 
 - For changes, summarize what changed and where.
 - Provide next steps only when they are natural and actionable.
+
+## Future TODO - Uploaders Plug-in Architecture
+
+- Extract common abstractions (e.g., `GenericUploader`, `UploaderService<T>`) into a core library referenced by the app and plug-ins.
+- Split each uploader into its own class library (one per `FileDestination` entry) so `ShareX.UploadersLib.<Uploader>.dll` can be built individually.
+- Replace in-assembly reflection with a dynamic plug-in loader that scans `C:\Users\<your-username>\AppData\Local\ShareX.Avalonia\Plugins` for uploader assemblies.
+- Remove hard-coded uploader enums and update configuration UI to list plug-ins discovered at runtime.
+- Update build/deployment scripts to package plug-in DLLs separately and load them on demand.
