@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using System.Text;
 
 namespace ShareX.Avalonia.Common
@@ -41,7 +42,7 @@ namespace ShareX.Avalonia.Common
             {
                 if (Binary != null && Binary.Length > 0)
                 {
-                    return Binary.Join();
+                    return string.Join(" ", Binary);
                 }
 
                 return null;
@@ -57,7 +58,7 @@ namespace ShareX.Avalonia.Common
             {
                 if (Hexadecimal != null && Hexadecimal.Length > 0)
                 {
-                    return Hexadecimal.Join().ToUpperInvariant();
+                    return string.Join(" ", Hexadecimal).ToUpperInvariant();
                 }
 
                 return null;
@@ -73,7 +74,7 @@ namespace ShareX.Avalonia.Common
             {
                 if (ASCII != null && ASCII.Length > 0)
                 {
-                    return ASCII.Join();
+                    return string.Join(" ", ASCII);
                 }
 
                 return null;

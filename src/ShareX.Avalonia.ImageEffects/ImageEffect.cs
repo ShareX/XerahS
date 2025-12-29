@@ -70,3 +70,4 @@ namespace ShareX.Avalonia.ImageEffects
         }
     }
 }
+

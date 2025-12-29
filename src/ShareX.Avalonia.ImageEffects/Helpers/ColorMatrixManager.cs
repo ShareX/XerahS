@@ -24,7 +24,6 @@
 #endregion License Information (GPL v3)
 
 using ShareX.Avalonia.Common;
-using ShareX.Avalonia.Common.Extensions;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -224,8 +223,9 @@ namespace ShareX.Avalonia.ImageEffects
                 new float[] { 0, 0, 0, 0, 0 },
                 new float[] { 0, 0, 0, 0, 0 },
                 new float[] { 0, 0, 0, color.A / 255f * opacity, 0 },
-                new float[] { color.R.Remap(0, 255, 0, 1), color.G.Remap(0, 255, 0, 1), color.B.Remap(0, 255, 0, 1), 0, 1 }
+                new float[] { ((float)color.R).Remap(0, 255, 0, 1), ((float)color.G).Remap(0, 255, 0, 1), ((float)color.B).Remap(0, 255, 0, 1), 0, 1 }
             });
         }
     }
 }
+

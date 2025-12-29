@@ -24,17 +24,15 @@
 #endregion License Information (GPL v3)
 
 using ShareX.Avalonia.Common;
-using ShareX.Avalonia.Common.Extensions;
 using ShareX.Avalonia.ImageEffects.Helpers;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Design;
 
 namespace ShareX.Avalonia.ImageEffects
 {
     internal class Colorize : ImageEffect
     {
-        [DefaultValue(typeof(Color), "Red"), Editor(typeof(MyColorEditor), typeof(UITypeEditor)), TypeConverter(typeof(MyColorConverter))]
+        [DefaultValue(typeof(Color), "Red")]
         public Color Color { get; set; }
 
         [DefaultValue(0f)]
@@ -59,4 +57,7 @@ namespace ShareX.Avalonia.ImageEffects
         }
     }
 }
+
+
+
 

@@ -24,7 +24,6 @@
 #endregion License Information (GPL v3)
 
 using ShareX.Avalonia.Common;
-using ShareX.Avalonia.Common.Extensions;
 using ShareX.Avalonia.ImageEffects.Helpers;
 using System.ComponentModel;
 using System.Drawing;
@@ -43,4 +42,6 @@ namespace ShareX.Avalonia.ImageEffects
         }
     }
 }
+
+
 

@@ -63,3 +63,4 @@ namespace ShareX.Avalonia.ImageEffects
         Rotate90FlipY = 7
     }
 }
+
