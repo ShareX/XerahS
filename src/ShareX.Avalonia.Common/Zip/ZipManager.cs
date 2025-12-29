@@ -127,7 +127,12 @@ namespace ShareX.Avalonia.Common
 
         public static void Compress(string archivePath, List<ZipEntryInfo> entries, CompressionLevel compression = CompressionLevel.Optimal)
         {
-            FileHelpers.CreateDirectoryFromFilePath(archivePath);
+            string directory = Path.GetDirectoryName(archivePath);
+
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
 
             if (File.Exists(archivePath))
             {
