@@ -189,7 +189,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] ImageFilesCache.cs
 - [ ] InputHelpers.cs
 - [ ] InputManager.cs
-- [ ] JsonHelpers.cs
+- [x] JsonHelpers.cs
 - [ ] KeyboardHook.cs
 - [ ] KnownTypesSerializationBinder.cs
 - [ ] ListExtensions.cs
