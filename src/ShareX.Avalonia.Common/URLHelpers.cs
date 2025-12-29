@@ -36,22 +36,29 @@ namespace ShareX.Avalonia.Common
     {
         private static readonly string[] URLPrefixes = new[] { "http://", "https://", "ftp://", "ftps://", "file://", "//" };
 
-        public static string ForcePrefix(string? url)
+        public static string ForcePrefix(string? url, string prefix = "https://")
         {
             if (string.IsNullOrWhiteSpace(url))
             {
                 return string.Empty;
             }
 
-            return url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
-                ? url
-                : "http://" + url;
+            return prefix + RemovePrefixes(url);
         }
 
         public static string FixPrefix(string? url)
         {
-            return ForcePrefix(url);
+            return FixPrefix(url, "https://");
+        }
+
+        public static string FixPrefix(string? url, string prefix = "https://")
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return string.Empty;
+            }
+
+            return HasPrefix(url) ? url : prefix + url;
         }
 
         public static string URLEncode(string? value, bool replaceSpace = false)
@@ -117,6 +124,24 @@ namespace ShareX.Avalonia.Common
             }
 
             return combined;
+        }
+
+        public static bool HasPrefix(string? url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return false;
+            }
+
+            foreach (string prefix in URLPrefixes)
+            {
+                if (url.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static string RemovePrefixes(string? url)
