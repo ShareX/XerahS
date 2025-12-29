@@ -23,20 +23,48 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Avalonia.Common;
 using ShareX.Avalonia.ImageEffects.Helpers;
+using System;
+using System.ComponentModel;
 using System.Drawing;
 
 namespace ShareX.Avalonia.ImageEffects
 {
-    internal class Smooth : ImageEffect
+    [Description("Gaussian blur")]
+    internal class GaussianBlur : ImageEffect
     {
+        private int radius;
+
+        [DefaultValue(15)]
+        public int Radius
+        {
+            get
+            {
+                return radius;
+            }
+            set
+            {
+                radius = Math.Max(value, 1);
+            }
+        }
+
+        public GaussianBlur()
+        {
+            this.ApplyDefaultPropertyValues();
+        }
+
         public override Bitmap Apply(Bitmap bmp)
         {
             using (bmp)
             {
-                return ConvolutionMatrixManager.Smooth().Apply(bmp);
+                return ImageEffectsProcessing.GaussianBlur(bmp, Radius);
             }
+        }
+
+        protected override string GetSummary()
+        {
+            return Radius.ToString();
         }
     }
 }
-

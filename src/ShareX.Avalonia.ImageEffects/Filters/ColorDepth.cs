@@ -23,20 +23,52 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Avalonia.Common;
 using ShareX.Avalonia.ImageEffects.Helpers;
+using System.ComponentModel;
 using System.Drawing;
 
 namespace ShareX.Avalonia.ImageEffects
 {
-    internal class Smooth : ImageEffect
+    [Description("Color depth")]
+    internal class ColorDepth : ImageEffect
     {
+        private int bitsPerChannel;
+
+        [DefaultValue(4)]
+        public int BitsPerChannel
+        {
+            get
+            {
+                return bitsPerChannel;
+            }
+            set
+            {
+                bitsPerChannel = MathHelpers.Clamp(value, 1, 8);
+            }
+        }
+
+        public ColorDepth()
+        {
+            this.ApplyDefaultPropertyValues();
+        }
+
         public override Bitmap Apply(Bitmap bmp)
         {
-            using (bmp)
+            ImageEffectsProcessing.ColorDepth(bmp, BitsPerChannel);
+            return bmp;
+        }
+
+        protected override string GetSummary()
+        {
+            string summary = BitsPerChannel + " bit";
+
+            if (BitsPerChannel > 1)
             {
-                return ConvolutionMatrixManager.Smooth().Apply(bmp);
+                summary += "s";
             }
+
+            return summary;
         }
     }
 }
-

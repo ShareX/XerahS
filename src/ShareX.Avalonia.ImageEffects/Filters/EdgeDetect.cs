@@ -41,3 +41,4 @@ namespace ShareX.Avalonia.ImageEffects
         }
     }
 }
+
