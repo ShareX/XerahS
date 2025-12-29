@@ -205,7 +205,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] PaletteQuantizer.cs
 - [ ] Point.cs
 - [ ] PointF.cs
-- [ ] PointInfo.cs
+- [x] PointInfo.cs
 - [ ] PrintHelper.cs
 - [ ] PrintSettings.cs
 - [ ] PrintTextHelper.cs
