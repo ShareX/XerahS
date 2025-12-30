@@ -240,6 +240,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] ConvolutionMatrixManager.cs
 - [ ] CursorData.cs
 - [ ] CustomVScrollBar.cs
+- [x] DebugTimer.cs
 - [ ] DesktopIconManager.cs
 - [x] DPAPI.cs
 - [x] DPAPIEncryptedStringPropertyResolver.cs
@@ -254,10 +255,13 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] EnumProperNameKeepCaseConverter.cs
 - [x] Extensions.cs
 - [x] ExternalProgram.cs
+- [x] FastDateTime.cs
 - [ ] FFmpegUpdateChecker.cs
 - [x] FileDownloader.cs
+- [x] FixedSizedQueue.cs
 - [x] FileHelpersLite.cs
 - [x] FontSafe.cs
+- [x] FPSManager.cs
 - [x] GifClass.cs
 - [ ] GitHubUpdateChecker.cs
 - [ ] GitHubUpdateManager.cs
@@ -271,12 +275,16 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] HSB.cs
 - [x] HttpClientFactory.cs
 - [ ] ImageFilesCache.cs
+- [x] Logger.cs
 - [ ] InputHelpers.cs
 - [ ] InputManager.cs
 - [x] JsonHelpers.cs
 - [ ] KeyboardHook.cs
 - [x] KnownTypesSerializationBinder.cs
 - [ ] ListExtensions.cs
+- [x] MaxLengthStream.cs
+- [x] MimeTypes.cs
+- [x] MutexManager.cs
 - [x] MyColor.cs
 - [x] MyColorConverter.cs
 - [ ] NativeConstants.cs
@@ -287,13 +295,16 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] NativeStructs.cs
 - [x] OctreeQuantizer.cs
 - [x] PaletteQuantizer.cs
-- [ ] Point.cs
-- [ ] PointF.cs
+- [x] PingHelper.cs
+- [x] PingResult.cs
+- [x] Point.cs
+- [x] PointF.cs
 - [x] PointInfo.cs
 - [ ] PrintHelper.cs
 - [ ] PrintSettings.cs
 - [ ] PrintTextHelper.cs
-- [ ] PropertyExtensions.cs
+- [x] PropertyExtensions.cs
+- [x] ProxyInfo.cs
 - [x] Quantizer.cs
 - [x] RandomCrypto.cs
 - [x] RegistryHelpers.cs
@@ -306,11 +317,16 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] ShortcutHelpers.cs
 - [ ] SingleInstanceManager.cs
 - [x] StringCollectionToStringTypeConverter.cs
+- [x] StringLineReader.cs
 - [ ] TaskbarManager.cs
+- [x] TaskEx.cs
+- [x] ThreadWorker.cs
 - [ ] TimerResolutionManager.cs
 - [ ] UnsafeBitmap.cs
 - [ ] UpdateChecker.cs
 - [x] URLHelpers.cs
+- [x] Vector2.cs
+- [x] WindowState.cs
 - [ ] WshShell.cs
 - [x] XmlColor.cs
 - [x] XmlFont.cs
