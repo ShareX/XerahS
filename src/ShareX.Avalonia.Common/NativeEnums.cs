@@ -326,4 +326,141 @@ namespace ShareX.Avalonia.Common
         GETTEXT = 0x000D,
         GETTEXTLENGTH = 0x000E
     }
+
+    public enum WindowShowStyle : uint
+    {
+        Hide = 0,
+        ShowNormal = 1,
+        ShowMinimized = 2,
+        ShowMaximized = 3,
+        Maximize = 3,
+        ShowNormalNoActivate = 4,
+        Show = 5,
+        Minimize = 6,
+        ShowMinNoActivate = 7,
+        ShowNoActivate = 8,
+        Restore = 9,
+        ShowDefault = 10,
+        ForceMinimize = 11
+    }
+
+    public enum DWM_EC : uint
+    {
+        DWM_EC_DISABLECOMPOSITION = 0,
+        DWM_EC_ENABLECOMPOSITION = 1
+    }
+
+    public enum DWMWINDOWATTRIBUTE : uint
+    {
+        DWMWA_NCRENDERING_ENABLED = 1,
+        DWMWA_NCRENDERING_POLICY,
+        DWMWA_TRANSITIONS_FORCEDISABLED,
+        DWMWA_ALLOW_NCPAINT,
+        DWMWA_CAPTION_BUTTON_BOUNDS,
+        DWMWA_NONCLIENT_RTL_LAYOUT,
+        DWMWA_FORCE_ICONIC_REPRESENTATION,
+        DWMWA_FLIP3D_POLICY,
+        DWMWA_EXTENDED_FRAME_BOUNDS,
+        DWMWA_HAS_ICONIC_BITMAP,
+        DWMWA_DISALLOW_PEEK,
+        DWMWA_EXCLUDED_FROM_PEEK,
+        DWMWA_CLOAK,
+        DWMWA_CLOAKED,
+        DWMWA_FREEZE_REPRESENTATION,
+        DWMWA_PASSIVE_UPDATE_MODE,
+        DWMWA_USE_HOSTBACKDROPBRUSH,
+        DWMWA_USE_IMMERSIVE_DARK_MODE = 20,
+        DWMWA_WINDOW_CORNER_PREFERENCE = 33,
+        DWMWA_BORDER_COLOR,
+        DWMWA_CAPTION_COLOR,
+        DWMWA_TEXT_COLOR,
+        DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
+        DWMWA_SYSTEMBACKDROP_TYPE,
+        DWMWA_LAST
+    }
+
+    [Flags]
+    public enum WindowStyles : uint
+    {
+        WS_OVERLAPPED = 0x00000000,
+        WS_POPUP = 0x80000000,
+        WS_CHILD = 0x40000000,
+        WS_MINIMIZE = 0x20000000,
+        WS_VISIBLE = 0x10000000,
+        WS_DISABLED = 0x08000000,
+        WS_CLIPSIBLINGS = 0x04000000,
+        WS_CLIPCHILDREN = 0x02000000,
+        WS_MAXIMIZE = 0x01000000,
+        WS_CAPTION = 0x00C00000,
+        WS_BORDER = 0x00800000,
+        WS_DLGFRAME = 0x00400000,
+        WS_SYSMENU = 0x00080000,
+        WS_THICKFRAME = 0x00040000,
+        WS_GROUP = 0x00020000,
+        WS_TABSTOP = 0x00010000,
+        WS_MINIMIZEBOX = 0x00020000,
+        WS_MAXIMIZEBOX = 0x00010000,
+        WS_TILED = WS_OVERLAPPED,
+        WS_ICONIC = WS_MINIMIZE,
+        WS_SIZEBOX = WS_THICKFRAME,
+        WS_OVERLAPPEDWINDOW = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+        WS_POPUPWINDOW = WS_POPUP | WS_BORDER | WS_SYSMENU,
+        WS_CHILDWINDOW = WS_CHILD,
+        WS_EX_DLGMODALFRAME = 0x00000001,
+        WS_EX_NOPARENTNOTIFY = 0x00000004,
+        WS_EX_TOPMOST = 0x00000008,
+        WS_EX_ACCEPTFILES = 0x00000010,
+        WS_EX_TRANSPARENT = 0x00000020,
+        WS_EX_MDICHILD = 0x00000040,
+        WS_EX_TOOLWINDOW = 0x00000080,
+        WS_EX_WINDOWEDGE = 0x00000100,
+        WS_EX_CLIENTEDGE = 0x00000200,
+        WS_EX_CONTEXTHELP = 0x00000400,
+        WS_EX_RIGHT = 0x00001000,
+        WS_EX_LEFT = 0x00000000,
+        WS_EX_RTLREADING = 0x00002000,
+        WS_EX_LTRREADING = 0x00000000,
+        WS_EX_LEFTSCROLLBAR = 0x00004000,
+        WS_EX_RIGHTSCROLLBAR = 0x00000000,
+        WS_EX_CONTROLPARENT = 0x00010000,
+        WS_EX_STATICEDGE = 0x00020000,
+        WS_EX_APPWINDOW = 0x00040000,
+        WS_EX_OVERLAPPEDWINDOW = WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE,
+        WS_EX_PALETTEWINDOW = WS_EX_WINDOWEDGE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
+        WS_EX_LAYERED = 0x00080000,
+        WS_EX_NOINHERITLAYOUT = 0x00100000,
+        WS_EX_LAYOUTRTL = 0x00400000,
+        WS_EX_COMPOSITED = 0x02000000,
+        WS_EX_NOACTIVATE = 0x08000000
+    }
+
+    [Flags]
+    public enum SetWindowPosFlags : uint
+    {
+        SWP_ASYNCWINDOWPOS = 0x4000,
+        SWP_DEFERERASE = 0x2000,
+        SWP_DRAWFRAME = 0x0020,
+        SWP_FRAMECHANGED = 0x0020,
+        SWP_HIDEWINDOW = 0x0080,
+        SWP_NOACTIVATE = 0x0010,
+        SWP_NOCOPYBITS = 0x0100,
+        SWP_NOMOVE = 0x0002,
+        SWP_NOOWNERZORDER = 0x0200,
+        SWP_NOREDRAW = 0x0008,
+        SWP_NOREPOSITION = 0x0200,
+        SWP_NOSENDCHANGING = 0x0400,
+        SWP_NOSIZE = 0x0001,
+        SWP_NOZORDER = 0x0004,
+        SWP_SHOWWINDOW = 0x0040
+    }
+
+    public enum BitmapCompressionMode : uint
+    {
+        BI_RGB = 0,
+        BI_RLE8 = 1,
+        BI_RLE4 = 2,
+        BI_BITFIELDS = 3,
+        BI_JPEG = 4,
+        BI_PNG = 5
+    }
 }

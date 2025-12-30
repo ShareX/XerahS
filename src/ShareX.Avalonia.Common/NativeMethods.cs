@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -92,19 +93,6 @@ namespace ShareX.Avalonia.Common
         [DllImport("user32.dll", EntryPoint = "GetClassLongPtr")]
         public static extern IntPtr GetClassLongPtr64(IntPtr hWnd, int nIndex);
 
-        public static IntPtr GetClassLongPtr(IntPtr hWnd, int nIndex)
-        {
-            if (IntPtr.Size > 4)
-                return GetClassLongPtr64(hWnd, nIndex);
-            else
-                return new IntPtr(GetClassLong32(hWnd, nIndex));
-        }
-
-        public static uint GetClassLong(IntPtr hWnd, int nIndex)
-        {
-             return (uint)GetClassLongPtr(hWnd, nIndex).ToInt64();
-        }
-
         [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
         public static extern IntPtr GetWindowLong32(IntPtr hWnd, int nIndex);
 
@@ -114,21 +102,9 @@ namespace ShareX.Avalonia.Common
         public static IntPtr GetWindowLong(IntPtr hWnd, int nIndex)
         {
             if (IntPtr.Size == 4)
-            {
                 return GetWindowLong32(hWnd, nIndex);
-            }
 
             return GetWindowLongPtr64(hWnd, nIndex);
-        }
-
-        public static IntPtr SetWindowLong(IntPtr hWnd, int nIndex, IntPtr dwNewLong)
-        {
-            if (IntPtr.Size == 4)
-            {
-                return SetWindowLongPtr32(hWnd, nIndex, dwNewLong);
-            }
-
-            return SetWindowLongPtr64(hWnd, nIndex, dwNewLong);
         }
 
         [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
@@ -136,12 +112,41 @@ namespace ShareX.Avalonia.Common
 
         [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
         public static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+        public static IntPtr SetWindowLong(IntPtr hWnd, int nIndex, IntPtr dwNewLong)
+        {
+            if (IntPtr.Size == 4)
+                return SetWindowLongPtr32(hWnd, nIndex, dwNewLong);
+
+            return SetWindowLongPtr64(hWnd, nIndex, dwNewLong);
+        }
         
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam, SendMessageTimeoutFlags fuFlags, uint uTimeout, out IntPtr lpdwResult);
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, int wParam, int lParam, SendMessageTimeoutFlags fuFlags, uint uTimeout, out IntPtr lpdwResult);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowPosFlags uFlags);
+
+        [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr GetParent(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsIconic(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern bool GetLayeredWindowAttributes(IntPtr hwnd, out uint crKey, out byte bAlpha, out uint dwFlags);
+
+        [DllImport("user32.dll")]
+        public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hMod, uint dwThreadId);
@@ -157,6 +162,151 @@ namespace ShareX.Avalonia.Common
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
         public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetDC(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+        [DllImport("gdi32.dll")]
+        public static extern uint GetPixel(IntPtr hdc, int nXPos, int nYPos);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        public static System.Drawing.Rectangle GetWindowRect(IntPtr hWnd)
+        {
+            if (GetWindowRect(hWnd, out RECT rect))
+                return rect.ToRectangle();
+
+            return System.Drawing.Rectangle.Empty;
+        }
+
+        [DllImport("user32.dll")]
+        public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+        public static System.Drawing.Rectangle GetClientRect(IntPtr hWnd)
+        {
+            if (GetClientRect(hWnd, out RECT rect))
+                return rect.ToRectangle();
+
+            return System.Drawing.Rectangle.Empty;
+        }
+
+        [DllImport("user32.dll")]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
+
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmIsCompositionEnabled(out bool pfEnabled);
+
+        public static bool IsDWMEnabled()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version.Major >= 6)
+            {
+                DwmIsCompositionEnabled(out bool enabled);
+                return enabled;
+            }
+
+            return false;
+        }
+
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmGetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE dwAttribute, out RECT pvAttribute, int cbAttribute);
+
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmGetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE dwAttribute, out int pvAttribute, int cbAttribute);
+
+        public static bool GetExtendedFrameBounds(IntPtr handle, out System.Drawing.Rectangle rect)
+        {
+            int result = DwmGetWindowAttribute(handle, DWMWINDOWATTRIBUTE.DWMWA_EXTENDED_FRAME_BOUNDS, out RECT nativeRect, Marshal.SizeOf(typeof(RECT)));
+            rect = nativeRect.ToRectangle();
+            return result == 0;
+        }
+
+        public static bool IsWindowCloaked(IntPtr handle)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version.Major >= 6)
+            {
+                DwmGetWindowAttribute(handle, DWMWINDOWATTRIBUTE.DWMWA_CLOAKED, out int cloaked, sizeof(int));
+                return cloaked != 0;
+            }
+
+            return false;
+        }
+
+        public static bool IsActive(IntPtr handle)
+        {
+            return GetForegroundWindow() == handle;
+        }
+
+        [DllImport("user32.dll")]
+        public static extern bool IsZoomed(IntPtr hWnd);
+
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmEnableComposition(DWM_EC uCompositionAction);
+
+        public static System.Drawing.Rectangle MaximizedWindowFix(IntPtr handle, System.Drawing.Rectangle rect)
+        {
+            if (IsZoomed(handle))
+            {
+                int border = GetSystemMetrics(SystemMetric.SM_CXFRAME);
+                rect.X += border;
+                rect.Y += border;
+                rect.Width -= border * 2;
+                rect.Height -= border * 2;
+            }
+
+            return rect;
+        }
+
+        [DllImport("user32.dll")]
+        public static extern bool GetCursorPos(out POINT lpPoint);
+
+        public static System.Drawing.Point GetCursorPos()
+        {
+            GetCursorPos(out POINT lpPoint);
+            return new System.Drawing.Point(lpPoint.X, lpPoint.Y);
+        }
+
+        [DllImport("user32.dll")]
+        public static extern bool SetCursorPos(int x, int y);
+
+        public static System.Drawing.Icon? GetFileIcon(string filePath, bool isSmallIcon)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                 return null;
+
+            try {
+                SHFILEINFO shfi = new SHFILEINFO();
+                uint flags = (uint)(SHGFI.Icon | (isSmallIcon ? SHGFI.SmallIcon : SHGFI.LargeIcon));
+
+                SHGetFileInfo(filePath, 0, ref shfi, (uint)Marshal.SizeOf(shfi), flags);
+
+                if (shfi.hIcon == IntPtr.Zero) return null;
+
+                using (var tempIcon = System.Drawing.Icon.FromHandle(shfi.hIcon))
+                {
+                     var icon = (System.Drawing.Icon)tempIcon.Clone();
+                     DestroyIcon(shfi.hIcon);
+                     return icon;
+                }
+            } 
+            catch { return null; }
+        }
+
+        public const int CURSOR_SHOWING = 0x00000001;
+        public const int DI_NORMAL = 0x0003;
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct BITMAPV5HEADER
@@ -187,35 +337,6 @@ namespace ShareX.Avalonia.Common
         public uint bV5Reserved;
     }
 
-        public const int CURSOR_SHOWING = 0x00000001;
-        public const int DI_NORMAL = 0x0003;
-
-        public static System.Drawing.Icon? GetFileIcon(string filePath, bool isSmallIcon)
-        {
-            if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                 return null;
-            }
-
-            try {
-                SHFILEINFO shfi = new SHFILEINFO();
-                uint flags = (uint)(SHGFI.Icon | (isSmallIcon ? SHGFI.SmallIcon : SHGFI.LargeIcon));
-
-                SHGetFileInfo(filePath, 0, ref shfi, (uint)Marshal.SizeOf(shfi), flags);
-
-                if (shfi.hIcon == IntPtr.Zero) return null;
-
-                using (var tempIcon = System.Drawing.Icon.FromHandle(shfi.hIcon))
-                {
-                     var icon = (System.Drawing.Icon)tempIcon.Clone();
-                     DestroyIcon(shfi.hIcon);
-                     return icon;
-                }
-            } 
-            catch { return null; }
-        }
-    }
-
     [StructLayout(LayoutKind.Sequential)]
     public struct TimeCaps
     {
@@ -233,27 +354,6 @@ namespace ShareX.Avalonia.Common
         public string szDisplayName;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
         public string szTypeName;
-    }
-
-    [Flags]
-    public enum SHGFI : uint
-    {
-        Icon = 0x000000100,
-        DisplayName = 0x000000200,
-        TypeName = 0x000000400,
-        Attributes = 0x000000800,
-        IconLocation = 0x000001000,
-        ExeType = 0x000002000,
-        SysIconIndex = 0x000004000,
-        LinkOverlay = 0x000008000,
-        Selected = 0x000010000,
-        Attr_Specified = 0x000020000,
-        LargeIcon = 0x000000000,
-        SmallIcon = 0x000000001,
-        OpenIcon = 0x000000002,
-        ShellIconSize = 0x000000004,
-        PIDL = 0x000000008,
-        UseFileAttributes = 0x000000010
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -330,5 +430,47 @@ namespace ShareX.Avalonia.Common
         public int flags;
         public int time;
         public IntPtr dwExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+
+        public System.Drawing.Rectangle ToRectangle()
+        {
+            return new System.Drawing.Rectangle(Left, Top, Right - Left, Bottom - Top);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct POINT
+    {
+        public int X;
+        public int Y;
+    }
+
+    [Flags]
+    public enum SHGFI : uint
+    {
+        Icon = 0x000000100,
+        DisplayName = 0x000000200,
+        TypeName = 0x000000400,
+        Attributes = 0x000000800,
+        IconLocation = 0x000001000,
+        ExeType = 0x000002000,
+        SysIconIndex = 0x000004000,
+        LinkOverlay = 0x000008000,
+        Selected = 0x000010000,
+        Attr_Specified = 0x000020000,
+        LargeIcon = 0x000000000,
+        SmallIcon = 0x000000001,
+        OpenIcon = 0x000000002,
+        ShellIconSize = 0x000000004,
+        PIDL = 0x000000008,
+        UseFileAttributes = 0x000000010
     }
 }

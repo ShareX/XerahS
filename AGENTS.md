@@ -222,34 +222,34 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] CodeMenuEntry.cs
 - [x] CodeMenuEntryActions.cs
 - [x] AnimatedGifCreator.cs
-- [ ] AppVeyor.cs
-- [ ] AppVeyorUpdateChecker.cs
-- [ ] BlackStyleCheckBox.cs
-- [ ] BlackStyleProgressBar.cs
-- [ ] Canvas.cs
-- [ ] CaptureHelpers.cs
-- [ ] ClipboardHelpers.cs
-- [ ] ClipboardHelpersEx.cs
+- [x] AppVeyor.cs
+- [x] AppVeyorUpdateChecker.cs
+- [ ] BlackStyleCheckBox.cs (TODO: Avalonia UI)
+- [ ] BlackStyleProgressBar.cs (TODO: Avalonia UI)
+- [ ] Canvas.cs (TODO: Avalonia UI)
+- [ ] CaptureHelpers.cs (TODO: Platform abstraction for Screen APIs)
+- [ ] ClipboardHelpers.cs (TODO: Platform abstraction)
+- [ ] ClipboardHelpersEx.cs (TODO: Platform abstraction)
 - [x] ClipboardFormat.cs
 - [x] CMYK.cs
 - [x] ColorBgra.cs
-- [ ] ColorBox.cs
-- [ ] ColorEventHandler.cs
+- [ ] ColorBox.cs (TODO: Avalonia UI)
+- [x] ColorEventHandler.cs
 - [x] ColorMatrixManager.cs
-- [ ] ColorPicker.cs
+- [ ] ColorPicker.cs (TODO: Avalonia UI)
 - [x] ColorPickerOptions.cs
-- [ ] ColorSlider.cs
+- [ ] ColorSlider.cs (TODO: Avalonia UI)
 - [x] ConvolutionMatrixManager.cs
 - [x] ConvolutionMatrix.cs
 - [x] CursorData.cs
-- [ ] CustomVScrollBar.cs
+- [ ] CustomVScrollBar.cs (TODO: Avalonia UI)
 - [x] DebugTimer.cs
-- [ ] DesktopIconManager.cs
+- [x] DesktopIconManager.cs
 - [x] DPAPI.cs
 - [x] DPAPIEncryptedStringPropertyResolver.cs
 - [x] DPAPIEncryptedStringValueProvider.cs
 - [x] WritablePropertiesOnlyResolver.cs
-- [ ] DWMManager.cs
+- [x] DWMManager.cs
 - [x] Emoji.cs
 - [x] EnumDescriptionConverter.cs
 - [x] EnumExtensions.cs
@@ -259,7 +259,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] Extensions.cs
 - [x] ExternalProgram.cs
 - [x] FastDateTime.cs
-- [ ] FFmpegUpdateChecker.cs
+- [x] FFmpegUpdateChecker.cs
 - [x] FileDownloader.cs
 - [x] FixedSizedQueue.cs
 - [x] FileHelpersLite.cs
@@ -305,9 +305,9 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] Point.cs
 - [x] PointF.cs
 - [x] PointInfo.cs
-- [ ] PrintHelper.cs
-- [ ] PrintSettings.cs
-- [ ] PrintTextHelper.cs
+- [ ] PrintHelper.cs (TODO: Avalonia UI - printing)
+- [x] PrintSettings.cs
+- [ ] PrintTextHelper.cs (TODO: Avalonia UI - printing)
 - [x] PropertyExtensions.cs
 - [x] ProxyInfo.cs
 - [x] Quantizer.cs

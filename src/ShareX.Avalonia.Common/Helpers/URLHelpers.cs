@@ -29,7 +29,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Web;
 
 namespace ShareX.Avalonia.Common
 {
@@ -340,18 +339,24 @@ namespace ShareX.Avalonia.Common
 
         public static NameValueCollection ParseQueryString(string url)
         {
-            if (!string.IsNullOrEmpty(url))
-            {
-                int index = url.IndexOf("?");
+            if (string.IsNullOrEmpty(url)) return null;
 
-                if (index > -1 && index + 1 < url.Length)
-                {
-                    string query = url.Substring(index + 1);
-                    return HttpUtility.ParseQueryString(query);
-                }
+            NameValueCollection collection = new NameValueCollection();
+            int index = url.IndexOf("?");
+            string query = index > -1 ? url.Substring(index + 1) : url;
+
+            if (string.IsNullOrEmpty(query)) return collection;
+
+            string[] pairs = query.Split('&');
+            foreach (string pair in pairs)
+            {
+                string[] parts = pair.Split(new[] { '=' }, 2);
+                string key = WebUtility.UrlDecode(parts[0]);
+                string value = parts.Length > 1 ? WebUtility.UrlDecode(parts[1]) : "";
+                collection.Add(key, value);
             }
 
-            return null;
+            return collection;
         }
 
         public static string BuildUri(string root, string path, string query = null)

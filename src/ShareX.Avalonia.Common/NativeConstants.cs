@@ -15,5 +15,16 @@ namespace ShareX.Avalonia.Common
         public const int ICON_SMALL2 = 2;
 
         public const int BI_BITFIELDS = 3;
+
+        public const int GWL_STYLE = -16;
+        public const int GWL_EXSTYLE = -20;
+
+        public const int HWND_TOP = 0;
+        public const int HWND_BOTTOM = 1;
+        public const int HWND_TOPMOST = -1;
+        public const int HWND_NOTOPMOST = -2;
+
+        public const int LWA_ALPHA = 0x00000002;
+        public const int LWA_COLORKEY = 0x00000001;
     }
 }

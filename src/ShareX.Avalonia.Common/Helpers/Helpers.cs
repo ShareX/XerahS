@@ -47,6 +47,11 @@ namespace ShareX.Avalonia.Common.Helpers
         public const string Base56 = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz"; // A variant, Base56, excludes 1 (one) and o (lowercase o) compared to Base 58.
         public static readonly Version OSVersion = Environment.OSVersion.Version;
 
+        public static bool IsWindows10OrGreater()
+        {
+            return System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows) && OSVersion.Major >= 10;
+        }
+
         public static string AddZeroes(string input, int digits = 2)
         {
             return input.PadLeft(digits, '0');

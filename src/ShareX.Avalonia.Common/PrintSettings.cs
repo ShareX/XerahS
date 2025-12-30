@@ -1,7 +1,7 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
+    ShareX - A program that allows you to take screenshots and share any file type
     Copyright (c) 2007-2025 ShareX Team
 
     This program is free software; you can redistribute it and/or
@@ -23,27 +23,31 @@
 
 #endregion License Information (GPL v3)
 
+using System;
+
 namespace ShareX.Avalonia.Common
 {
-    public struct Point
+    [Serializable]
+    public class PrintSettings
     {
-        public static readonly Point Empty = new Point(0, 0);
+        public int Margin { get; set; }
+        public bool AutoRotateImage { get; set; }
+        public bool AutoScaleImage { get; set; }
+        public bool AllowEnlargeImage { get; set; }
+        public bool CenterImage { get; set; }
+        public XmlFont TextFont { get; set; }
+        public bool ShowPrintDialog { get; set; }
+        public string DefaultPrinterOverride { get; set; } = string.Empty;
 
-        public int X { get; set; }
-        public int Y { get; set; }
-
-        public Point(int x, int y)
+        public PrintSettings()
         {
-            X = x;
-            Y = y;
+            Margin = 5;
+            AutoRotateImage = true;
+            AutoScaleImage = true;
+            AllowEnlargeImage = false;
+            CenterImage = false;
+            TextFont = new XmlFont("Arial", 10);
+            ShowPrintDialog = true;
         }
-
-        public override string ToString()
-        {
-            return $"X={X}, Y={Y}";
-        }
-
-        public static implicit operator System.Drawing.Point(Point p) => new System.Drawing.Point(p.X, p.Y);
-        public static implicit operator Point(System.Drawing.Point p) => new Point(p.X, p.Y);
     }
 }

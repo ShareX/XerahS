@@ -27,6 +27,8 @@ namespace ShareX.Avalonia.Common
 {
     public readonly struct PointF
     {
+        public static readonly PointF Empty = new PointF(0, 0);
+
         public float X { get; }
         public float Y { get; }
 
@@ -36,9 +38,17 @@ namespace ShareX.Avalonia.Common
             Y = y;
         }
 
+        public PointF Add(PointF other)
+        {
+            return new PointF(X + other.X, Y + other.Y);
+        }
+
         public override string ToString()
         {
             return $"X={X}, Y={Y}";
         }
+
+        public static implicit operator System.Drawing.PointF(PointF p) => new System.Drawing.PointF(p.X, p.Y);
+        public static implicit operator PointF(System.Drawing.PointF p) => new PointF(p.X, p.Y);
     }
 }

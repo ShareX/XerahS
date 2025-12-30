@@ -271,7 +271,7 @@ namespace ShareX.Avalonia.Common.Helpers
             GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
             try
             {
-                NativeMethods.BITMAPV5HEADER bmi = (NativeMethods.BITMAPV5HEADER)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(NativeMethods.BITMAPV5HEADER));
+                BITMAPV5HEADER bmi = (BITMAPV5HEADER)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(BITMAPV5HEADER));
                 int stride = -(int)(bmi.bV5SizeImage / bmi.bV5Height);
                 long offset = bmi.bV5Size + ((bmi.bV5Height - 1) * (int)(bmi.bV5SizeImage / bmi.bV5Height));
                 if (bmi.bV5Compression == (uint)NativeConstants.BI_BITFIELDS)
