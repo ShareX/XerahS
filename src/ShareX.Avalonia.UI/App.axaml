@@ -1,9 +1,16 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:ShareX.Avalonia.UI"
+             xmlns:converters="using:ShareX.Avalonia.UI.Converters"
              x:Class="ShareX.Avalonia.UI.App"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.Resources>
+        <converters:ActiveToolToBackgroundConverter x:Key="ActiveToolToBackground"/>
+        <converters:SelectedColorToBorderConverter x:Key="SelectedColorToBorder"/>
+        <converters:SelectedWidthToBackgroundConverter x:Key="SelectedWidthToBackground"/>
+    </Application.Resources>
 
     <Application.DataTemplates>
         <local:ViewLocator/>

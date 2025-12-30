@@ -107,15 +107,42 @@
                 <!-- Section 1: Tools -->
                 <Border BorderThickness="0,0,1,0" BorderBrush="#FFFFFF1A" Padding="0,0,12,0">
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <Button Content="Select" Width="40" Height="40" Background="#374151" Foreground="White" CornerRadius="8" ToolTip.Tip="Select (V)"/>
-                        <Button Content="▭" Width="40" Height="40" Background="#374151" Foreground="White" CornerRadius="8" ToolTip.Tip="Rectangle (R)"/>
-                        <Button Content="○" Width="40" Height="40" Background="#374151" Foreground="White" CornerRadius="8" ToolTip.Tip="Ellipse (E)"/>
-                        <Button Content="→" Width="40" Height="40" Background="#374151" Foreground="White" CornerRadius="8" ToolTip.Tip="Arrow (A)"/>
-                        <Button Content="—" Width="40" Height="40" Background="#374151" Foreground="White" CornerRadius="8" ToolTip.Tip="Line (L)"/>
-                        <Button Content="T" Width="40" Height="40" Background="#374151" Foreground="White" CornerRadius="8" ToolTip.Tip="Text (T)"/>
-                        <Button Content="#" Width="40" Height="40" Background="#374151" Foreground="White" CornerRadius="8" ToolTip.Tip="Number (N)"/>
-                        <Button Content="💡" Width="40" Height="40" Background="#374151" Foreground="White" CornerRadius="8" ToolTip.Tip="Spotlight (S)"/>
-                        <Button Content="✂" Width="40" Height="40" Background="#374151" Foreground="White" CornerRadius="8" ToolTip.Tip="Crop (C)"/>
+                        <Button Content="V" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Select}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Select}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Select (V)"/>
+                        <Button Content="▭" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Rectangle}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Rectangle}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Rectangle (R)"/>
+                        <Button Content="○" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Ellipse}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Ellipse}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Ellipse (E)"/>
+                        <Button Content="→" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Arrow}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Arrow}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Arrow (A)"/>
+                        <Button Content="—" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Line}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Line}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Line (L)"/>
+                        <Button Content="T" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Text}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Text}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Text (T)"/>
+                        <Button Content="#" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Number}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Number}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Number (N)"/>
+                        <Button Content="🔦" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Spotlight}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Spotlight}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Spotlight (S)"/>
+                        <Button Content="✂" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Crop}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Crop}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Crop (C)"/>
                     </StackPanel>
                 </Border>
                 
@@ -167,13 +194,16 @@
                 <!-- Section 4: Undo/Redo -->
                 <Border BorderThickness="0,0,1,0" BorderBrush="#FFFFFF1A" Padding="0,0,12,0">
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <Button Content="↶" Width="32" Height="32" Background="#FFFFFF0D" Foreground="#94A3B8" CornerRadius="8" ToolTip.Tip="Undo (Ctrl+Z)"/>
-                        <Button Content="↷" Width="32" Height="32" Background="#FFFFFF0D" Foreground="#94A3B8" CornerRadius="8" ToolTip.Tip="Redo (Ctrl+Shift+Z)"/>
+                        <Button Content="↶" Width="32" Height="32" Background="#FFFFFF0D" Foreground="#94A3B8" CornerRadius="8" 
+                                Command="{Binding UndoCommand}" ToolTip.Tip="Undo (Ctrl+Z)"/>
+                        <Button Content="↷" Width="32" Height="32" Background="#FFFFFF0D" Foreground="#94A3B8" CornerRadius="8" 
+                                Command="{Binding RedoCommand}" ToolTip.Tip="Redo (Ctrl+Shift+Z)"/>
                     </StackPanel>
                 </Border>
                 
                 <!-- Section 5: Delete -->
-                <Button Content="🗑" Width="32" Height="32" Background="#FFFFFF0D" Foreground="#F43F5E" CornerRadius="8" ToolTip.Tip="Delete Selected (Del)"/>
+                <Button Content="🗑" Width="32" Height="32" Background="#FFFFFF0D" Foreground="#F43F5E" CornerRadius="8" 
+                        Command="{Binding DeleteSelectedCommand}" ToolTip.Tip="Delete Selected (Del)"/>
             </StackPanel>
         </Border>
 
