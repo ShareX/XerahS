@@ -40,6 +40,9 @@ namespace ShareX.Avalonia.UI.ViewModels
         private bool _isPngFormat = true;
 
         [ObservableProperty]
+        private string _appVersion;
+
+        [ObservableProperty]
         private string _statusText = "Ready";
 
         [ObservableProperty]
@@ -76,6 +79,11 @@ namespace ShareX.Avalonia.UI.ViewModels
                     new GradientStop(Color.Parse("#764BA2"), 1)
                 }
             };
+
+            // Get version from assembly
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            _appVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.0.0";
+
             UpdateCanvasProperties();
         }
 

@@ -101,15 +101,27 @@ namespace ShareX.Avalonia.UI.Views.RegionCapture
                 _isSelecting = false;
                 var currentPoint = e.GetCurrentPoint(this).Position;
                 
-                // Calculate final rect
+                // Calculate final rect in logical pixels
                 var x = Math.Min(_startPoint.X, currentPoint.X);
                 var y = Math.Min(_startPoint.Y, currentPoint.Y);
                 var width = Math.Abs(_startPoint.X - currentPoint.X);
                 var height = Math.Abs(_startPoint.Y - currentPoint.Y);
 
-                // Convert to System.Drawing.Rectangle for result
-                // Needs strict integer casting
-                var resultRect = new System.Drawing.Rectangle((int)x, (int)y, (int)width, (int)height);
+                // Get render scaling (DPI)
+                var scaling = this.RenderScaling;
+
+                // Convert to physical pixels for screen capture
+                var physX = (int)(x * scaling);
+                var physY = (int)(y * scaling);
+                var physWidth = (int)(width * scaling);
+                var physHeight = (int)(height * scaling);
+
+                // Ensure non-zero size
+                if (physWidth <= 0) physWidth = 1;
+                if (physHeight <= 0) physHeight = 1;
+
+                // Create result rectangle
+                var resultRect = new System.Drawing.Rectangle(physX, physY, physWidth, physHeight);
                 
                 _tcs.TrySetResult(resultRect);
                 Close();
