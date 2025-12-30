@@ -8,7 +8,6 @@
         TransparencyLevelHint="Transparent"
         Background="{x:Null}"
         SystemDecorations="None"
-        WindowState="FullScreen"
         Topmost="True"
         ShowInTaskbar="False"
         PointerPressed="OnPointerPressed"
