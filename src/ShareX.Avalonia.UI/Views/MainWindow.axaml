@@ -221,10 +221,23 @@
                             CornerRadius="{Binding PreviewCornerRadius}"
                             ClipToBounds="True">
                         <Grid>
-                            <Image Source="{Binding PreviewImage}"
+                            <!-- Image Layer -->
+                            <Image Name="PreviewImageControl"
+                                   Source="{Binding PreviewImage}"
                                    Stretch="Uniform"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
+
+                            <!-- Annotation Layer -->
+                            <Canvas Name="AnnotationCanvas"
+                                    Background="Transparent"
+                                    IsVisible="{Binding HasPreviewImage}"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    Cursor="Cross"
+                                    PointerPressed="OnCanvasPointerPressed"
+                                    PointerMoved="OnCanvasPointerMoved"
+                                    PointerReleased="OnCanvasPointerReleased"/>
                             
                             <!-- Placeholder when no image -->
                             <TextBlock Text="No image captured"
