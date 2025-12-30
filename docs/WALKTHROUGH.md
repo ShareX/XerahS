@@ -1,48 +1,44 @@
 # ShareX.Avalonia Porting Walkthrough
 
-**Last Updated**: 2025-12-30 20:05  
+**Last Updated**: 2025-12-30 20:30  
 **Overall Progress**: ~58%  
-**Build Status**: 9/15 projects at 0 errors
+**Build Status**: 10/15 projects at 0 errors
 
-## Session Summary
+## Session Progress
 
 ### Priorities Completed
 
-| Priority | Library | Before | After | Status |
-|----------|---------|--------|-------|--------|
-| 1 | Uploaders | 7 | 0 | ✅ |
-| 2 | Common | 100+ | 0 | ✅ |
-| 3 | Core | - | 0 | ✅ (Phases 1-4) |
-| 4 | HistoryLib | 7 | 0 | ✅ |
-| 5 | ImageEffects | 2 | 32* | ⚠️ |
-| 6 | MediaLib | 6 | 0 | ✅ |
+| Priority | Library | Status | Notes |
+|----------|---------|--------|-------|
+| 3 | Core | ✅ | Phases 1-4, ~2,200 lines |
+| 4 | HistoryLib | ✅ | 7 → 0 errors |
+| 5 | ImageEffects | ⏸️ | Needs refactoring |
+| 6 | MediaLib | ✅ | 6 → 0 errors |
 
-*ImageEffects has NuGet version conflicts (System.Drawing.Common 9.0.0 vs 10.0.1)
+### Build Status
 
-### Core Library Complete
+| Project | Errors |
+|---------|--------|
+| Common, Core, Uploaders | 0 |
+| History, Media, Indexer | 0 |
+| Platform.*, ViewModels | 0 |
+| ImageEffects | 32 (deferred) |
 
-```
-ShareX.Avalonia.Core/ (~2,200 lines)
-├── Enums.cs (24 enumerations)
-├── Helpers/TaskHelpers.cs
-├── Managers/SettingManager.cs, RecentTaskManager.cs
-└── Models/ApplicationConfig.cs, TaskSettings.cs, TaskInfo.cs, etc.
-```
+### Key Fixes
 
-### Key Fixes Applied
+**HistoryLib**: `FileHelpersLite` → `FileHelpers`
 
-- **HistoryLib**: FileHelpersLite→FileHelpers, Helpers→GeneralHelpers
-- **MediaLib**: Resources ambiguity, GetDescription, MeasureText, DrawRectangle
-- **Core**: Complete MVVM-compliant implementation
+**MediaLib**: Resources ambiguity, GetDescription, MeasureText
 
-### Remaining Work
+### ImageEffects Issue
 
-- **ImageEffects**: Investigate System.Drawing.Common version compatibility
-- **ScreenCaptureLib**: Complex, requires platform abstraction
-- **App/UI Projects**: Depend on above libraries
+Duplicate types with Common:
+- `ApplyDefaultPropertyValues`, `UnsafeBitmap`, `ColorBgra`, `ConvolutionMatrixManager`
 
-## Files Updated
+Requires removing duplicates from ImageEffects.Helpers.
 
-- `docs/WALKTHROUGH.md`: This file
-- `NEXT_STEPS.md`: Updated priorities
-- Multiple source files across History, Media, Core
+## Next Steps
+
+1. ImageEffects duplicate removal
+2. ScreenCaptureLib (complex)
+3. App integration
