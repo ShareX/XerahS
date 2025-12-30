@@ -231,7 +231,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] ClipboardHelpers.cs
 - [ ] ClipboardHelpersEx.cs
 - [x] CMYK.cs
-- [ ] ColorBgra.cs
+- [x] ColorBgra.cs
 - [ ] ColorBox.cs
 - [ ] ColorEventHandler.cs
 - [ ] ColorMatrixManager.cs
@@ -277,8 +277,8 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] KeyboardHook.cs
 - [x] KnownTypesSerializationBinder.cs
 - [ ] ListExtensions.cs
-- [ ] MyColor.cs
-- [ ] MyColorConverter.cs
+- [x] MyColor.cs
+- [x] MyColorConverter.cs
 - [ ] NativeConstants.cs
 - [ ] NativeEnums.cs
 - [ ] NativeMessagingHost.cs
