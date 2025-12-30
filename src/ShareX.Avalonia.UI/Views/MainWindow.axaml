@@ -124,7 +124,7 @@
                     <Button Content="🗑" ToolTip.Tip="Delete" Width="40" Height="40" Background="#374151" Foreground="White" CornerRadius="8"/>
                 </StackPanel>
             </StackPanel>
-        </Grid>
+        </Border>
 
         <!-- Main Content Area with Preview and Sidebar -->
         <Grid Grid.Row="2" ColumnDefinitions="*,300">
