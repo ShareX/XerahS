@@ -1,0 +1,37 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ShareX.Avalonia.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="ShareX.Avalonia.UI.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="ShareX.Avalonia">
+
+    <Design.DataContext>
+        <vm:MainViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="20">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10">
+            <Button Command="{Binding CaptureRegionCommand}" Content="Capture Region" />
+            <Button Command="{Binding CaptureAndUploadCommand}" Content="Capture &amp; Upload" />
+        </StackPanel>
+
+        <ListBox Grid.Row="1" ItemsSource="{Binding Tasks}" Margin="0,10">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="{Binding Info.FileName}" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Status}"/>
+                        <TextBlock Text="{Binding Info.Result.URL}" Foreground="Blue"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        
+        <TextBlock Grid.Row="2" Text="Ready" />
+    </Grid>
+
+</Window>

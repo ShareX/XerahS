@@ -62,11 +62,18 @@ namespace ShareX.Avalonia.Platform.Abstractions
             set => _windowService = value;
         }
 
+        private static IScreenCaptureService? _screenCaptureService;
+        public static IScreenCaptureService ScreenCapture
+        {
+            get => _screenCaptureService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
+            set => _screenCaptureService = value;
+        }
+
         /// <summary>
         /// Checks if platform services have been initialized
         /// </summary>
         public static bool IsInitialized =>
-            _platformInfo != null && _screenService != null && _clipboardService != null && _windowService != null;
+            _platformInfo != null && _screenService != null && _clipboardService != null && _windowService != null && _screenCaptureService != null;
 
         /// <summary>
         /// Initializes platform services with provided implementations
@@ -75,12 +82,14 @@ namespace ShareX.Avalonia.Platform.Abstractions
             IPlatformInfo platformInfo,
             IScreenService screenService,
             IClipboardService clipboardService,
-            IWindowService windowService)
+            IWindowService windowService,
+            IScreenCaptureService screenCaptureService)
         {
             _platformInfo = platformInfo ?? throw new ArgumentNullException(nameof(platformInfo));
             _screenService = screenService ?? throw new ArgumentNullException(nameof(screenService));
             _clipboardService = clipboardService ?? throw new ArgumentNullException(nameof(clipboardService));
             _windowService = windowService ?? throw new ArgumentNullException(nameof(windowService));
+            _screenCaptureService = screenCaptureService ?? throw new ArgumentNullException(nameof(screenCaptureService));
         }
 
         /// <summary>
@@ -92,6 +101,7 @@ namespace ShareX.Avalonia.Platform.Abstractions
             _screenService = null;
             _clipboardService = null;
             _windowService = null;
+            _screenCaptureService = null;
         }
     }
 }

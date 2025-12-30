@@ -7,6 +7,8 @@
   <ItemGroup>
     <ProjectReference Include="..\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Platform.Abstractions\ShareX.Avalonia.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.History\ShareX.Avalonia.History.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.History\ShareX.Avalonia.History.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Uploaders\ShareX.Avalonia.Uploaders.csproj" />
   </ItemGroup>
 </Project>
