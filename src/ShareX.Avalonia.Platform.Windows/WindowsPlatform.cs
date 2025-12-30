@@ -37,12 +37,12 @@ namespace ShareX.Avalonia.Platform.Windows
         /// </summary>
         public static void Initialize()
         {
-            // TODO: Implement Windows-specific screen capture service
-            IScreenCaptureService screenCaptureService = null!;
+            var screenService = new WindowsScreenService();
+            var screenCaptureService = new WindowsScreenCaptureService(screenService);
             
             PlatformServices.Initialize(
                 platformInfo: new WindowsPlatformInfo(),
-                screenService: new WindowsScreenService(),
+                screenService: screenService,
                 clipboardService: new WindowsClipboardService(),
                 windowService: new WindowsWindowService(),
                 screenCaptureService: screenCaptureService
