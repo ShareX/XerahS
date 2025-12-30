@@ -1,4 +1,4 @@
-﻿#region License Information (GPL v3)
+#region License Information (GPL v3)
 
 /*
     ShareX.Avalonia - The Avalonia UI implementation of ShareX
@@ -74,7 +74,7 @@ namespace ShareX.Avalonia.Uploaders
 
         public OAuthInfo()
         {
-            Description = Resources.OAuthInfo_OAuthInfo_New_account;
+            Description = ShareX.UploadersLib.Properties.Resources.OAuthInfo_OAuthInfo_New_account;
             OAuthVersion = "1.0";
         }
 
@@ -119,3 +119,4 @@ namespace ShareX.Avalonia.Uploaders
         }
     }
 }
+

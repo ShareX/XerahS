@@ -285,4 +285,40 @@ public static class GeneralHelpers
 
         return result.ToString();
     }
+
+    /// <summary>
+    /// Gets the application version
+    /// </summary>
+    public static string GetApplicationVersion(bool includeRevision = false)
+    {
+        var assembly = System.Reflection.Assembly.GetEntryAssembly() ?? System.Reflection.Assembly.GetExecutingAssembly();
+        var version = assembly.GetName().Version;
+        
+        if (version == null)
+        {
+            return "1.0.0.0";
+        }
+
+        if (includeRevision)
+        {
+            return version.ToString();
+        }
+        else
+        {
+            return $"{version.Major}.{version.Minor}.{version.Build}";
+        }
+    }
+
+    /// <summary>
+    /// Compares two version strings
+    /// </summary>
+    public static int CompareVersion(string version1, string version2, bool ignoreRevision = false)
+    {
+        if (Version.TryParse(version1, out Version? v1) && Version.TryParse(version2, out Version? v2))
+        {
+            return CompareVersion(v1, v2, ignoreRevision);
+        }
+
+        return string.Compare(version1, version2, StringComparison.Ordinal);
+    }
 }

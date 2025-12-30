@@ -104,7 +104,7 @@ namespace ShareX.Avalonia.Uploaders.FileUploaders
                         break;
                 }
 
-                return $"{serverProtocol}{Host}:{Port}";
+                return $"{Name} - {EnumExtensions.GetDescription(Protocol)}";
             }
         }
 

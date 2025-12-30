@@ -1,4 +1,4 @@
-﻿#region License Information (GPL v3)
+#region License Information (GPL v3)
 
 /*
     ShareX.Avalonia - The Avalonia UI implementation of ShareX
@@ -48,7 +48,7 @@ namespace ShareX.Avalonia.Uploaders
 
         public bool IsValidFilter(string fileName)
         {
-            string extension = FileHelpersLite.GetFileNameExtension(fileName);
+            string extension = FileHelpers.GetFileNameExtension(fileName);
 
             return !string.IsNullOrEmpty(extension) && Extensions.Any(x => x.TrimStart('.').Equals(extension, StringComparison.OrdinalIgnoreCase));
         }
@@ -81,4 +81,5 @@ namespace ShareX.Avalonia.Uploaders
         }
     }
 }
+
 

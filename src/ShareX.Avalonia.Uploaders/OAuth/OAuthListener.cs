@@ -107,7 +107,7 @@ namespace ShareX.Avalonia.Uploaders
                         status = "Authorization did not succeed.";
                     }
 
-                    string responseText = Resources.OAuthCallbackPage.Replace("{0}", status);
+                    string responseText = ShareX.UploadersLib.Properties.Resources.OAuthCallbackPage.Replace("{0}", status);
                     byte[] buffer = Encoding.UTF8.GetBytes(responseText);
                     response.ContentLength64 = buffer.Length;
                     response.KeepAlive = false;
@@ -136,4 +136,5 @@ namespace ShareX.Avalonia.Uploaders
         }
     }
 }
+
 
