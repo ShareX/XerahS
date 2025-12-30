@@ -241,7 +241,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] ColorSlider.cs
 - [x] ConvolutionMatrixManager.cs
 - [x] ConvolutionMatrix.cs
-- [ ] CursorData.cs
+- [x] CursorData.cs
 - [ ] CustomVScrollBar.cs
 - [x] DebugTimer.cs
 - [ ] DesktopIconManager.cs
@@ -274,10 +274,10 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] GraphicsQualityManager.cs
 - [x] GrayscaleQuantizer.cs
 - [x] Helpers.cs
-- [ ] HotkeyInfo.cs
+- [x] HotkeyInfo.cs
 - [x] HSB.cs
 - [x] HttpClientFactory.cs
-- [ ] ImageFilesCache.cs
+- [x] ImageFilesCache.cs
 - [x] Logger.cs
 - [ ] InputHelpers.cs
 - [ ] InputManager.cs
@@ -318,13 +318,13 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [ ] ShareX.HelpersLib.resources.cs
 - [ ] ShareXTheme.cs
 - [ ] ShortcutHelpers.cs
-- [ ] SingleInstanceManager.cs
+- [x] SingleInstanceManager.cs
 - [x] StringCollectionToStringTypeConverter.cs
 - [x] StringLineReader.cs
 - [ ] TaskbarManager.cs
 - [x] TaskEx.cs
 - [x] ThreadWorker.cs
-- [ ] TimerResolutionManager.cs
+- [x] TimerResolutionManager.cs
 - [x] UnsafeBitmap.cs
 - [x] UpdateChecker.cs
 - [x] URLHelpers.cs
@@ -547,3 +547,54 @@ Test coverage
 - Add automated smoke tests for `win-arm64` on CI if runners are available
 - Add manual test checklist for Windows on ARM64 devices
 - Track known limitations and workarounds in docs
+
+## TODO  Avalonia annotation subsystem
+
+### Scope
+Implement the annotation subsystem for ShareX.Avalonia, replacing WinForms and System.Drawing with Avalonia and Skia. All features listed in the ShapeType enum must be available.
+
+### Tasks
+
+- **Design core abstractions**
+  - Define a BaseShape in ShareX.Avalonia with properties for position, size, colour, border thickness and hit-testing.
+  - Create Avalonia equivalents for all ShapeType values (RegionRectangle, RegionEllipse, RegionFreehand, DrawingRectangle, DrawingEllipse, DrawingFreehand, DrawingFreehandArrow, DrawingLine, DrawingArrow, DrawingTextOutline, DrawingTextBackground, DrawingSpeechBalloon, DrawingStep, DrawingMagnify, DrawingImage, DrawingImageScreen, DrawingSticker, DrawingCursor, DrawingSmartEraser, EffectBlur, EffectPixelate, EffectHighlight, ToolSpotlight, ToolCrop, ToolCutOut). Each must subclass BaseShape and implement custom rendering logic.
+  - Expose shape-specific properties such as arrow-head direction, blur radius, pixel size and highlight colour with appropriate defaults.
+
+- **Rendering and effects**
+  - Replace GDI+ drawing with Avalonias DrawingContext and Skia. Implement vector drawing for shapes and text. For effects (blur, pixelate, highlight), use Skia image filters or custom pixel shaders to apply the effect only within the shape bounds.
+  - Implement the spotlight tool by darkening the canvas outside the selected rectangle and optionally applying blur/ellipse.
+  - Implement magnify drawing by rendering a zoomed portion of the underlying bitmap inside a circle/rectangle shape.
+
+- **Interaction**
+  - Create a RegionCaptureView control that captures mouse/touch events, draws handles for resizing/moving shapes and supports multi-shape editing.
+  - Implement keyboard shortcuts to switch between tools (e.g., arrow key, text tool, effect tool) and to cancel or confirm actions.
+  - Provide a shape toolbar (in XAML) to select drawing, effect and tool types; include controls for changing colours, thicknesses, font and effect parameters.
+
+- **Shape management**
+  - Port ShapeManager to manage a collection of shapes, ordering, selection and removal. Provide undo/redo functionality and support copy/paste of shapes.
+  - Persist user preferences (colours, sizes, arrow head direction, blur radius, pixel size etc.) in AnnotationOptions analogues and load/save them on application start.
+
+- **Image insertion and sticker support**
+  - Implement file picker integration for inserting external images (DrawingImage and DrawingImageScreen).
+  - Provide a sticker palette and cursor stamp support; allow users to import custom stickers.
+
+- **Smart eraser**
+  - Analyse SmartEraserDrawingShape and implement a mask-based eraser that restores the original screenshot pixels under the eraser path.
+
+- **Crop and cut-out tools**
+  - Implement crop and cut-out tools that modify the canvas bitmap and adjust existing shapes accordingly.
+  - Ensure non-destructive editing by allowing the user to revert or adjust crop boundaries.
+
+- **Region capture integration**
+  - Replace RegionCaptureForm with a new RegionCaptureWindow built in Avalonia. Handle monitor selection, last region recall, screen colour picker, ruler and other capture modes defined in RegionCaptureMode and RegionCaptureAction.
+  - Provide a seamless workflow from capture ? annotate ? upload, integrating with existing task runners.
+
+- **Cross-platform considerations**
+  - Avoid any reference to System.Drawing or WinForms; rely solely on Avalonia and Skia for drawing.
+  - Use platform abstraction services (e.g., clipboard, file dialogs) via the core platform layer defined in AGENTS.md.
+  - Ensure equal behaviour on Windows, macOS and Linux; implement stubs or fallbacks where OS-specific features cannot be supported.
+
+- **Testing**
+  - Develop unit and UI tests for each shape type and effect to verify correct rendering, hit-testing, configuration persistence and behaviour in undo/redo operations.
+  - Provide manual test scripts to validate annotation workflows across supported platforms.
+

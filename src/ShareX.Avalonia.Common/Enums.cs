@@ -214,5 +214,15 @@ namespace ShareX.Avalonia.Common
         TornEdge,
         Wave
     }
-}
 
+    [System.Flags]
+    public enum Modifiers : uint
+    {
+        None = 0,
+        Alt = 1,
+        Control = 2,
+        Shift = 4,
+        Win = 8,
+        NoRepeat = 0x4000
+    }
+}
