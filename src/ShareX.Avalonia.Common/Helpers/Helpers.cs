@@ -211,5 +211,16 @@ namespace ShareX.Avalonia.Common
 
              return sb.ToString();
         }
+
+        public static int CompareVersion(Version version1, Version version2, bool ignoreRevision = false)
+        {
+            if (ignoreRevision)
+            {
+                version1 = new Version(Math.Max(version1.Major, 0), Math.Max(version1.Minor, 0), Math.Max(version1.Build, 0));
+                version2 = new Version(Math.Max(version2.Major, 0), Math.Max(version2.Minor, 0), Math.Max(version2.Build, 0));
+            }
+
+            return version1.CompareTo(version2);
+        }
     }
 }

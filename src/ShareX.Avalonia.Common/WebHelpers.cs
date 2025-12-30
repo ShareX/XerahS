@@ -45,5 +45,13 @@ namespace ShareX.Avalonia.Common
             listener.Stop();
             return port;
         }
+
+        public static async System.Threading.Tasks.Task<string> DownloadStringAsync(string url)
+        {
+            using (var client = HttpClientFactory.Create())
+            {
+                return await client.GetStringAsync(url);
+            }
+        }
     }
 }

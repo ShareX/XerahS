@@ -266,7 +266,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] FontSafe.cs
 - [x] FPSManager.cs
 - [x] GifClass.cs
-- [ ] GitHubUpdateChecker.cs
+- [x] GitHubUpdateChecker.cs
 - [ ] GitHubUpdateManager.cs
 - [x] GradientInfo.cs
 - [x] GradientStop.cs
@@ -326,7 +326,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] ThreadWorker.cs
 - [ ] TimerResolutionManager.cs
 - [x] UnsafeBitmap.cs
-- [ ] UpdateChecker.cs
+- [x] UpdateChecker.cs
 - [x] URLHelpers.cs
 - [x] Vector2.cs
 - [x] WindowState.cs
