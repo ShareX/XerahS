@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Avalonia.Common;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
@@ -51,7 +52,7 @@ namespace ShareX.Avalonia.ImageEffects.Helpers
             return Size.Ceiling(sizeF);
         }
 
-        public static Point GetPosition(ContentAlignment placement, Point offset, Size canvasSize, Size elementSize)
+        public static System.Drawing.Point GetPosition(ContentAlignment placement, System.Drawing.Point offset, Size canvasSize, Size elementSize)
         {
             int x = placement switch
             {
@@ -67,7 +68,7 @@ namespace ShareX.Avalonia.ImageEffects.Helpers
                 _ => canvasSize.Height - elementSize.Height
             };
 
-            return new Point(x + offset.X, y + offset.Y);
+            return new System.Drawing.Point(x + offset.X, y + offset.Y);
         }
 
         public static GraphicsPath CreateRoundedRectangle(Rectangle rect, int radius)
