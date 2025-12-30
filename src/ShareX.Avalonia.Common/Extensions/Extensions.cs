@@ -236,5 +236,11 @@ namespace ShareX.Avalonia.Common
         {
             return color.A < 255;
         }
+
+        public static void ShowError(this Exception e)
+        {
+            DebugHelper.WriteException(e);
+            // TODO: [Avalonia] Implement MessageBox or notification for error display
+        }
     }
 }

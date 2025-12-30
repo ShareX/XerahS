@@ -521,6 +521,11 @@ namespace ShareX.Avalonia.Common
         {
             return MathHelpers.Clamp(number, (byte)0, (byte)255);
         }
+
+        public static bool IsDarkColor(Color color)
+        {
+            return PerceivedBrightness(color) < 130;
+        }
     }
 
 }

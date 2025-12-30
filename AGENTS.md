@@ -318,12 +318,12 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] SevenZipManager.cs
 - [ ] ShareX.HelpersLib.AssemblyInfo.cs
 - [ ] ShareX.HelpersLib.resources.cs
-- [ ] ShareXTheme.cs
-- [ ] ShortcutHelpers.cs
+- [x] ShareXTheme.cs
+- [x] ShortcutHelpers.cs
 - [x] SingleInstanceManager.cs
 - [x] StringCollectionToStringTypeConverter.cs
 - [x] StringLineReader.cs
-- [ ] TaskbarManager.cs
+- [x] TaskbarManager.cs
 - [x] TaskEx.cs
 - [x] ThreadWorker.cs
 - [x] TimerResolutionManager.cs
@@ -332,7 +332,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] URLHelpers.cs
 - [x] Vector2.cs
 - [x] WindowState.cs
-- [ ] WshShell.cs
+- [x] WshShell.cs
 - [x] XmlColor.cs
 - [x] XmlFont.cs
 - [ ] XMLUpdateChecker.cs
