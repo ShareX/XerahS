@@ -84,7 +84,7 @@ namespace ShareX.Avalonia.Media
                     timeSliceElapsed = GetTimeSlice(Options.ThumbnailCount) * (i + 1);
                 }
 
-                string fileName = string.Format("{0}-{1}.{2}", mediaFileName, timeSliceElapsed, Options.ImageFormat.GetDescription());
+                string fileName = string.Format("{0}-{1}.{2}", mediaFileName, timeSliceElapsed, EnumExtensions.GetDescription(Options.ImageFormat));
                 string tempThumbnailPath = Path.Combine(GetOutputDirectory(), fileName);
 
                 using (Process process = new Process())
@@ -128,7 +128,7 @@ namespace ShareX.Avalonia.Media
                 {
                     using (Image img = CombineScreenshots(tempThumbnails))
                     {
-                        string tempFilePath = Path.Combine(GetOutputDirectory(), Path.GetFileNameWithoutExtension(MediaPath) + Options.FilenameSuffix + "." + Options.ImageFormat.GetDescription());
+                        string tempFilePath = Path.Combine(GetOutputDirectory(), Path.GetFileNameWithoutExtension(MediaPath) + Options.FilenameSuffix + "." + EnumExtensions.GetDescription(Options.ImageFormat));
                         ImageHelpers.SaveImage(img, tempFilePath);
                         thumbnails.Add(new VideoThumbnailInfo(tempFilePath));
                     }
@@ -212,8 +212,10 @@ namespace ShareX.Avalonia.Media
                     infoString = VideoInfo.ToString();
 
                     using (Font font = new Font("Arial", 12))
+                    using (var bmp = new Bitmap(1, 1))
+                    using (var g = Graphics.FromImage(bmp))
                     {
-                        infoStringHeight = Helpers.MeasureText(infoString, font).Height;
+                        infoStringHeight = (int)g.MeasureString(infoString, font).Height;
                     }
                 }
 
@@ -284,7 +286,7 @@ namespace ShareX.Avalonia.Media
 
                             if (Options.DrawBorder)
                             {
-                                g.DrawRectangleProper(Pens.Black, offsetX, offsetY, thumbWidth, thumbHeight);
+                                g.DrawRectangle(Pens.Black, offsetX, offsetY, thumbWidth - 1, thumbHeight - 1);
                             }
 
                             if (Options.AddTimestamp)
@@ -293,7 +295,7 @@ namespace ShareX.Avalonia.Media
 
                                 using (Font font = new Font("Arial", 10, FontStyle.Bold))
                                 {
-                                    g.DrawTextWithShadow(thumbnails[i].Timestamp.ToString(), new System.Drawing.Point(offsetX + timestampOffset, offsetY + timestampOffset), font, Brushes.White, Brushes.Black);
+                                    g.DrawString(thumbnails[i].Timestamp.ToString(), font, Brushes.White, offsetX + timestampOffset, offsetY + timestampOffset);
                                 }
                             }
 

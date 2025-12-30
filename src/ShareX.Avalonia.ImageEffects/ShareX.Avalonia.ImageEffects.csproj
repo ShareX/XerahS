@@ -4,6 +4,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="9.0.0" />

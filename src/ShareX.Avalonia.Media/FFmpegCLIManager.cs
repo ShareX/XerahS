@@ -92,7 +92,7 @@ namespace ShareX.Avalonia.Media
             bool result = errorCode == 0;
             if (!result && ShowError)
             {
-                OutputBox.Show(Output.ToString(), Resources.FFmpegError, true);
+                OutputBox.Show(Output.ToString(), ShareX.MediaLib.Properties.Resources.FFmpegError, true);
             }
             return result;
         }
