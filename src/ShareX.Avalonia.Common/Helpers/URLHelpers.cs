@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ShareX.Avalonia.Common
@@ -394,11 +395,88 @@ namespace ShareX.Avalonia.Common
             }
         }
 
-        private static string URLEncode(string value)
+        public static string URLEncode(string text, bool isPath = false, bool ignoreEmoji = false)
         {
-            // Fallback for custom encoding if needed, though WebUtility.UrlEncode is usually fine.
-            // Original code called local URLEncode which wasn't shown in snippets but presumably similar to Uri.EscapeDataString
-            return Uri.EscapeDataString(value);
+            if (string.IsNullOrEmpty(text))
+            {
+                return string.Empty;
+            }
+
+            if (ignoreEmoji)
+            {
+                return URLEncodeIgnoreEmoji(text, isPath);
+            }
+
+            StringBuilder sb = new StringBuilder();
+            string unreservedCharacters = isPath ? URLPathCharacters : URLCharacters;
+
+            foreach (char c in System.Text.Encoding.UTF8.GetBytes(text))
+            {
+                if (unreservedCharacters.IndexOf(c) != -1)
+                {
+                    sb.Append(c);
+                }
+                else
+                {
+                    sb.AppendFormat(System.Globalization.CultureInfo.InvariantCulture, "%{0:X2}", (int)c);
+                }
+            }
+
+            return sb.ToString();
         }
+
+        private static string URLEncodeIgnoreEmoji(string text, bool isPath = false)
+        {
+            // Simplified version without emoji support for now
+            // TODO: Implement full emoji support when needed
+            return URLEncode(text, isPath, false);
+        }
+
+        public static string CombineURL(string url1, string url2)
+        {
+            bool url1Empty = string.IsNullOrEmpty(url1);
+            bool url2Empty = string.IsNullOrEmpty(url2);
+
+            if (url1Empty && url2Empty)
+            {
+                return string.Empty;
+            }
+
+            if (url1Empty)
+            {
+                return url2;
+            }
+
+            if (url2Empty)
+            {
+                return url1;
+            }
+
+            if (url1.EndsWith("/"))
+            {
+                url1 = url1.Substring(0, url1.Length - 1);
+            }
+
+            if (url2.StartsWith("/"))
+            {
+                url2 = url2.Remove(0, 1);
+            }
+
+            return url1 + "/" + url2;
+        }
+
+        public static string CombineURL(params string[] urls)
+        {
+            if (urls == null || urls.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            return urls.Aggregate(CombineURL);
+        }
+
+        // URL character sets for encoding
+        private const string URLCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~";
+        private const string URLPathCharacters = URLCharacters + "!$&'()*+,;=:@/";
     }
 }
