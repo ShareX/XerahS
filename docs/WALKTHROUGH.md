@@ -1,44 +1,50 @@
 # ShareX.Avalonia Porting Walkthrough
 
-**Last Updated**: 2025-12-30 20:30  
-**Overall Progress**: ~58%  
-**Build Status**: 10/15 projects at 0 errors
+**Last Updated**: 2025-12-30 20:45  
+**Overall Progress**: ~62%  
+**Build Status**: 11/15 projects at 0 errors
 
-## Session Progress
+## Session Accomplishments
 
 ### Priorities Completed
 
-| Priority | Library | Status | Notes |
-|----------|---------|--------|-------|
-| 3 | Core | ✅ | Phases 1-4, ~2,200 lines |
-| 4 | HistoryLib | ✅ | 7 → 0 errors |
-| 5 | ImageEffects | ⏸️ | Needs refactoring |
-| 6 | MediaLib | ✅ | 6 → 0 errors |
+| Priority | Library | Errors Fixed | Status |
+|----------|---------|--------------|--------|
+| 3 | Core | Phase 4 TaskHelpers | ✅ 0 errors |
+| 4 | HistoryLib | 7 → 0 | ✅ Fixed |
+| 5 | ImageEffects | 32 → 0 | ✅ Refactored |
+| 6 | MediaLib | 6 → 0 | ✅ Fixed |
 
-### Build Status
+### ImageEffects Refactoring (Priority 5)
 
-| Project | Errors |
+**Deleted 7 duplicate files** from `ShareX.Avalonia.ImageEffects/Helpers/`:
+- `ColorBgra.cs` → now uses `Common.ColorBgra`
+- `UnsafeBitmap.cs` → now uses `Common.UnsafeBitmap`
+- `ConvolutionMatrixManager.cs` → now uses Common version
+- `ColorMatrixManager.cs` → now uses Common version
+- `GradientInfo.cs` → now uses `Common.Colors.GradientInfo`
+- `GradientStop.cs` → now uses `Common.Colors.GradientStop`
+- `ImageEffectPropertyExtensions.cs` → now uses `Common.Extensions`
+
+**Package Upgrades**:
+- System.Drawing.Common: 9.0.0 → 10.0.1
+- Newtonsoft.Json: 13.0.3 → 13.0.4
+
+### Build Status Summary
+
+| Project | Status |
 |---------|--------|
-| Common, Core, Uploaders | 0 |
-| History, Media, Indexer | 0 |
-| Platform.*, ViewModels | 0 |
-| ImageEffects | 32 (deferred) |
-
-### Key Fixes
-
-**HistoryLib**: `FileHelpersLite` → `FileHelpers`
-
-**MediaLib**: Resources ambiguity, GetDescription, MeasureText
-
-### ImageEffects Issue
-
-Duplicate types with Common:
-- `ApplyDefaultPropertyValues`, `UnsafeBitmap`, `ColorBgra`, `ConvolutionMatrixManager`
-
-Requires removing duplicates from ImageEffects.Helpers.
+| ShareX.Avalonia.Common | ✅ 0 |
+| ShareX.Avalonia.Core | ✅ 0 |
+| ShareX.Avalonia.Uploaders | ✅ 0 |
+| ShareX.Avalonia.History | ✅ 0 |
+| ShareX.Avalonia.Media | ✅ 0 |
+| ShareX.Avalonia.ImageEffects | ✅ 0 |
+| ShareX.Avalonia.Indexer | ✅ 0 |
+| ShareX.Avalonia.Platform.* | ✅ 0 |
+| ShareX.Avalonia.ViewModels | ✅ 0 |
 
 ## Next Steps
 
-1. ImageEffects duplicate removal
-2. ScreenCaptureLib (complex)
-3. App integration
+1. **ScreenCaptureLib**: Complex, requires platform abstraction
+2. **App Integration**: Connect UI after more backend completion
