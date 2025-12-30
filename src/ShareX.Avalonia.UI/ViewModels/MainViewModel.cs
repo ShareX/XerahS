@@ -40,6 +40,18 @@ namespace ShareX.Avalonia.UI.ViewModels
         private bool _isPngFormat = true;
 
         [ObservableProperty]
+        private string _statusText = "Ready";
+
+        [ObservableProperty]
+        private string _selectedColor = "#EF4444";
+
+        [ObservableProperty]
+        private int _strokeWidth = 4;
+
+        [ObservableProperty]
+        private EditorTool _activeTool = EditorTool.Select;
+
+        [ObservableProperty]
         private IBrush _canvasBackground;
 
         [ObservableProperty]
@@ -173,6 +185,7 @@ namespace ShareX.Avalonia.UI.ViewModels
             PreviewImage = new Bitmap(ms);
             HasPreviewImage = true;
             ImageDimensions = $"{image.Width} x {image.Height}";
+            StatusText = $"Image: {image.Width} × {image.Height}";
         }
     }
 }

@@ -387,7 +387,7 @@
                 <!-- Left: Status Message / Image Dimensions -->
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="8">
                     <Ellipse Width="8" Height="8" 
-                             Fill="{Binding HasPreviewImage, Converter={StaticResource StatusColorConverter}}"
+                             Fill="#64748B"
                              VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding StatusText, FallbackValue='Ready'}" 
                                Foreground="#94A3B8"
