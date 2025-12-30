@@ -61,6 +61,12 @@ namespace ShareX.Avalonia.Common
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool DrawIconEx(IntPtr hdc, int xLeft, int yTop, IntPtr hIcon, int cxWidth, int cyWidth, int istepIfAniCur, IntPtr hbrFlickerFreeDraw, int diFlags);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
+
+        [DllImport("user32.dll")]
+        public static extern int GetSystemMetrics(SystemMetric smIndex);
+
         public const int CURSOR_SHOWING = 0x00000001;
         public const int DI_NORMAL = 0x0003;
 
@@ -147,5 +153,52 @@ namespace ShareX.Avalonia.Common
         public int yHotspot;
         public IntPtr hbmMask;
         public IntPtr hbmColor;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct INPUT
+    {
+        public InputType Type;
+        public InputUnion Data;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    public struct InputUnion
+    {
+        [FieldOffset(0)]
+        public MOUSEINPUT Mouse;
+        [FieldOffset(0)]
+        public KEYBDINPUT Keyboard;
+        [FieldOffset(0)]
+        public HARDWAREINPUT Hardware;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MOUSEINPUT
+    {
+        public int dx;
+        public int dy;
+        public uint mouseData;
+        public MouseEventFlags dwFlags;
+        public uint time;
+        public IntPtr dwExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct KEYBDINPUT
+    {
+        public VirtualKeyCode wVk;
+        public ushort wScan;
+        public KeyboardEventFlags dwFlags;
+        public uint time;
+        public IntPtr dwExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct HARDWAREINPUT
+    {
+        public int uMsg;
+        public short wParamL;
+        public short wParamH;
     }
 }
