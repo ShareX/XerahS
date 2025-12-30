@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 
 /*
     ShareX.Avalonia - The Avalonia UI implementation of ShareX
@@ -99,6 +99,19 @@ namespace ShareX.Avalonia.Uploaders.FileUploaders
 
         public bool Connect()
         {
+            if (client == null)
+            {
+                if (!string.IsNullOrEmpty(Account.Keypath))
+                {
+                    if (!File.Exists(Account.Keypath))
+                    {
+                        throw new FileNotFoundException(Resources.UploadersConfigForm_ConnectSFTPAccount_Key_file_not_found, Account.Keypath);
+                    }
+
+                    PrivateKeyFile keyFile;
+
+                    if (string.IsNullOrEmpty(Account.Passphrase))
+                    {
                         keyFile = new PrivateKeyFile(Account.Keypath);
                     }
                     else
@@ -242,4 +255,3 @@ namespace ShareX.Avalonia.Uploaders.FileUploaders
         }
     }
 }
-
