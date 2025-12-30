@@ -267,7 +267,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] FPSManager.cs
 - [x] GifClass.cs
 - [x] GitHubUpdateChecker.cs
-- [ ] GitHubUpdateManager.cs
+- [x] GitHubUpdateManager.cs
 - [x] GradientInfo.cs
 - [x] GradientStop.cs
 - [x] GraphicsPathExtensions.cs
