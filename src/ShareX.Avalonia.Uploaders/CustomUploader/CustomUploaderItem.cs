@@ -1,4 +1,4 @@
-﻿#region License Information (GPL v3)
+#region License Information (GPL v3)
 
 /*
     ShareX.Avalonia - The Avalonia UI implementation of ShareX
@@ -103,7 +103,7 @@ namespace ShareX.Avalonia.Uploaders
         {
             return new CustomUploaderItem()
             {
-                Version = Helpers.GetApplicationVersion(),
+                Version = GeneralHelpers.GetApplicationVersion(),
                 RequestMethod = HttpMethod.POST,
                 Body = CustomUploaderBody.MultipartFormData
             };
@@ -135,7 +135,7 @@ namespace ShareX.Avalonia.Uploaders
         {
             if (string.IsNullOrEmpty(RequestURL))
             {
-                throw new Exception(Resources.CustomUploaderItem_GetRequestURL_RequestURLMustBeConfigured);
+                throw new Exception(ShareX.UploadersLib.Properties.Resources.CustomUploaderItem_GetRequestURL_RequestURLMustBeConfigured);
             }
 
             ShareXCustomUploaderSyntaxParser parser = new ShareXCustomUploaderSyntaxParser(input);
@@ -219,7 +219,7 @@ namespace ShareX.Avalonia.Uploaders
         {
             if (string.IsNullOrEmpty(FileFormName))
             {
-                throw new Exception(Resources.CustomUploaderItem_GetFileFormName_FileFormNameMustBeConfigured);
+                throw new Exception(ShareX.UploadersLib.Properties.Resources.CustomUploaderItem_GetFileFormName_FileFormNameMustBeConfigured);
             }
 
             return FileFormName;
@@ -348,14 +348,14 @@ namespace ShareX.Avalonia.Uploaders
 
         public void CheckBackwardCompatibility()
         {
-            if (string.IsNullOrEmpty(Version) || Helpers.CompareVersion(Version, "12.3.1") <= 0)
+            if (string.IsNullOrEmpty(Version) || GeneralHelpers.CompareVersion(Version, "12.3.1") <= 0)
             {
                 throw new Exception("Unsupported custom uploader" + ": " + ToString());
             }
 
             CheckRequestURL();
 
-            if (Helpers.CompareVersion(Version, "13.7.1") <= 0)
+            if (GeneralHelpers.CompareVersion(Version, "13.7.1") <= 0)
             {
                 RequestURL = MigrateOldSyntax(RequestURL);
 
@@ -394,7 +394,7 @@ namespace ShareX.Avalonia.Uploaders
                 DeletionURL = MigrateOldSyntax(DeletionURL);
                 ErrorMessage = MigrateOldSyntax(ErrorMessage);
 
-                Version = Helpers.GetApplicationVersion();
+                Version = GeneralHelpers.GetApplicationVersion();
             }
         }
 
@@ -471,3 +471,5 @@ namespace ShareX.Avalonia.Uploaders
         }
     }
 }
+
+

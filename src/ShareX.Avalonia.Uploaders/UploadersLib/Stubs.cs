@@ -214,7 +214,7 @@ namespace ShareX.UploadersLib.FileUploaders
 
         public override string ToString()
         {
-            return $"{Name} - {FileHelpers.GetVariableFolderPath(LocalhostRoot)}:{Port}";
+            return $"{Name} - {EnumExtensions.GetDescription(RemoteProtocol)}:{Port}";
         }
 
         public LocalhostAccount Clone()

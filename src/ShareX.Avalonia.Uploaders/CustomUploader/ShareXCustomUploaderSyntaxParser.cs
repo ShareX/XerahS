@@ -1,4 +1,4 @@
-﻿#region License Information (GPL v3)
+#region License Information (GPL v3)
 
 /*
     ShareX.Avalonia - The Avalonia UI implementation of ShareX
@@ -32,7 +32,7 @@ namespace ShareX.Avalonia.Uploaders
 {
     public class ShareXCustomUploaderSyntaxParser : ShareXSyntaxParser
     {
-        private static IEnumerable<CustomUploaderFunction> Functions = Helpers.GetInstances<CustomUploaderFunction>();
+        private static IEnumerable<CustomUploaderFunction> Functions = GeneralHelpers.GetInstances<CustomUploaderFunction>();
 
         public string FileName { get; set; }
         public string Input { get; set; }
@@ -89,3 +89,4 @@ namespace ShareX.Avalonia.Uploaders
         }
     }
 }
+
