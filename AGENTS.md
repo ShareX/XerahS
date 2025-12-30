@@ -282,7 +282,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] InputHelpers.cs
 - [x] InputManager.cs
 - [x] JsonHelpers.cs
-- [ ] KeyboardHook.cs
+- [x] KeyboardHook.cs
 - [x] KnownTypesSerializationBinder.cs
 - [ ] ListExtensions.cs
 - [x] MaxLengthStream.cs
@@ -290,12 +290,12 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] MutexManager.cs
 - [x] MyColor.cs
 - [x] MyColorConverter.cs
-- [ ] NativeConstants.cs
+- [x] NativeConstants.cs
 - [x] NativeEnums.cs
-- [ ] NativeMessagingHost.cs
+- [x] NativeMessagingHost.cs
 - [x] NativeMethods.cs
-- [ ] NativeMethods_Helpers.cs
-- [ ] NativeStructs.cs
+- [x] NativeMethods_Helpers.cs
+- [x] NativeStructs.cs (Partial)
 - [x] OctreeQuantizer.cs
 - [x] PaletteQuantizer.cs
 - [x] PingHelper.cs

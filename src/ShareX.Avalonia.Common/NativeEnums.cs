@@ -308,4 +308,22 @@ namespace ShareX.Avalonia.Common
         PA1 = 0xFD,
         OEM_CLEAR = 0xFE
     }
+
+    [Flags]
+    public enum SendMessageTimeoutFlags : uint
+    {
+        SMTO_NORMAL = 0x0,
+        SMTO_BLOCK = 0x1,
+        SMTO_ABORTIFHUNG = 0x2,
+        SMTO_NOTIMEOUTIFNOTHUNG = 0x8,
+        SMTO_ERRORONEXIT = 0x20
+    }
+
+    public enum WindowsMessages : uint
+    {
+        GETICON = 0x007F,
+        QUERYDRAGICON = 0x0037,
+        GETTEXT = 0x000D,
+        GETTEXTLENGTH = 0x000E
+    }
 }
