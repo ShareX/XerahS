@@ -13,5 +13,7 @@ namespace ShareX.Avalonia.Common
         public const int ICON_SMALL = 0;
         public const int ICON_BIG = 1;
         public const int ICON_SMALL2 = 2;
+
+        public const int BI_BITFIELDS = 3;
     }
 }

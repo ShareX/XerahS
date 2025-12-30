@@ -73,7 +73,7 @@ namespace ShareX.Avalonia.Common
             }
 
             if (Status != UpdateStatus.UpdateCheckFailed && CurrentVersion != null && LatestVersion != null && !string.IsNullOrEmpty(DownloadURL) &&
-                (ForceUpdate || Helpers.CompareVersion(CurrentVersion, LatestVersion, IgnoreRevision) < 0))
+                (ForceUpdate || Helpers.GeneralHelpers.CompareVersion(CurrentVersion, LatestVersion, IgnoreRevision) < 0))
             {
                 Status = UpdateStatus.UpdateAvailable;
             }

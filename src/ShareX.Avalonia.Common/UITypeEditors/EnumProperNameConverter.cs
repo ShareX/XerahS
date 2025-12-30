@@ -47,7 +47,15 @@ namespace ShareX.Avalonia.Common
 
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destType)
         {
-            return CommonHelpers.GetProperName(value.ToString());
+            if (destType == typeof(string))
+            {
+                if (value is Enum enumValue)
+                {
+                    return CommonHelpers.GeneralHelpers.GetProperName(enumValue.ToString());
+                }
+            }
+
+            return base.ConvertTo(context, culture, value, destType);
         }
 
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type srcType)
@@ -59,7 +67,7 @@ namespace ShareX.Avalonia.Common
         {
             foreach (Enum e in Enum.GetValues(enumType).OfType<Enum>())
             {
-                if (CommonHelpers.GetProperName(e.ToString()) == (string)value)
+                if (CommonHelpers.GeneralHelpers.GetProperName(e.ToString()) == (string)value)
                 {
                     return e;
                 }

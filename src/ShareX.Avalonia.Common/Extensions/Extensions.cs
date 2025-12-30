@@ -71,49 +71,15 @@ namespace ShareX.Avalonia.Common
             return ms;
         }
 
-        public static ImageCodecInfo? GetCodecInfo(this ImageFormat format)
+        public static ImageCodecInfo GetCodecInfo(this ImageFormat format)
         {
             return ImageCodecInfo.GetImageEncoders().FirstOrDefault(info => info.FormatID.Equals(format.Guid));
         }
 
         public static string GetMimeType(this ImageFormat format)
         {
-            ImageCodecInfo? codec = format.GetCodecInfo();
+            ImageCodecInfo codec = format.GetCodecInfo();
             return codec != null ? codec.MimeType : "image/unknown";
-        }
-
-        public static bool IsValidIndex<T>(this T[]? array, int index)
-        {
-            return array != null && index >= 0 && index < array.Length;
-        }
-
-        public static bool IsValidIndex<T>(this List<T>? list, int index)
-        {
-            return list != null && index >= 0 && index < list.Count;
-        }
-
-        public static T? ReturnIfValidIndex<T>(this T[]? array, int index)
-        {
-            if (array.IsValidIndex(index)) return array[index];
-            return default;
-        }
-
-        public static T? ReturnIfValidIndex<T>(this List<T>? list, int index)
-        {
-            if (list.IsValidIndex(index)) return list[index];
-            return default;
-        }
-
-        public static T? Last<T>(this T[] array, int index = 0)
-        {
-            if (array.Length > index) return array[array.Length - index - 1];
-            return default;
-        }
-
-        public static T? Last<T>(this List<T> list, int index = 0)
-        {
-            if (list.Count > index) return list[list.Count - index - 1];
-            return default;
         }
 
         public static double ToDouble(this Version value)
@@ -122,16 +88,6 @@ namespace ShareX.Avalonia.Common
                 (Math.Max(value.Minor, 0) * Math.Pow(10, 9)) +
                 (Math.Max(value.Build, 0) * Math.Pow(10, 6)) +
                 Math.Max(value.Revision, 0);
-        }
-
-        public static bool IsValid(this DrawingRectangle rect)
-        {
-            return rect.Width > 0 && rect.Height > 0;
-        }
-
-        public static bool IsValid(this DrawingRectangleF rect)
-        {
-            return rect.Width > 0 && rect.Height > 0;
         }
 
         public static DrawingPoint Add(this DrawingPoint point, int offsetX, int offsetY)
@@ -190,72 +146,7 @@ namespace ShareX.Avalonia.Common
             return new DrawingSize(size.Width + width, size.Height + height);
         }
 
-        public static DrawingRectangle Offset(this DrawingRectangle rect, int offset)
-        {
-            return new DrawingRectangle(rect.X - offset, rect.Y - offset, rect.Width + (offset * 2), rect.Height + (offset * 2));
-        }
-
-        public static DrawingRectangleF Offset(this DrawingRectangleF rect, float offset)
-        {
-            return new DrawingRectangleF(rect.X - offset, rect.Y - offset, rect.Width + (offset * 2), rect.Height + (offset * 2));
-        }
-
-        public static DrawingRectangleF Scale(this DrawingRectangleF rect, float scaleFactor)
-        {
-            return new DrawingRectangleF(rect.X * scaleFactor, rect.Y * scaleFactor, rect.Width * scaleFactor, rect.Height * scaleFactor);
-        }
-
-        public static DrawingRectangle Round(this DrawingRectangleF rect)
-        {
-            return DrawingRectangle.Round(rect);
-        }
-
-        public static DrawingRectangle LocationOffset(this DrawingRectangle rect, int x, int y)
-        {
-            return new DrawingRectangle(rect.X + x, rect.Y + y, rect.Width, rect.Height);
-        }
-
-        public static DrawingRectangleF LocationOffset(this DrawingRectangleF rect, float x, float y)
-        {
-            return new DrawingRectangleF(rect.X + x, rect.Y + y, rect.Width, rect.Height);
-        }
-
-        public static DrawingRectangleF LocationOffset(this DrawingRectangleF rect, DrawingPointF offset)
-        {
-            return rect.LocationOffset(offset.X, offset.Y);
-        }
-
-        public static DrawingRectangle LocationOffset(this DrawingRectangle rect, DrawingPoint offset)
-        {
-            return rect.LocationOffset(offset.X, offset.Y);
-        }
-
-        public static DrawingRectangle LocationOffset(this DrawingRectangle rect, int offset)
-        {
-            return rect.LocationOffset(offset, offset);
-        }
-
-        public static DrawingRectangle SizeOffset(this DrawingRectangle rect, int width, int height)
-        {
-            return new DrawingRectangle(rect.X, rect.Y, rect.Width + width, rect.Height + height);
-        }
-
-        public static DrawingRectangleF SizeOffset(this DrawingRectangleF rect, float width, float height)
-        {
-            return new DrawingRectangleF(rect.X, rect.Y, rect.Width + width, rect.Height + height);
-        }
-
-        public static DrawingRectangle SizeOffset(this DrawingRectangle rect, int offset)
-        {
-            return rect.SizeOffset(offset, offset);
-        }
-
-        public static DrawingRectangleF SizeOffset(this DrawingRectangleF rect, float offset)
-        {
-            return rect.SizeOffset(offset, offset);
-        }
-
-        public static string Join<T>(this T[]? array, string separator = " ")
+        public static string Join<T>(this T[] array, string separator = " ")
         {
             StringBuilder sb = new StringBuilder();
 
@@ -318,144 +209,13 @@ namespace ShareX.Avalonia.Common
                 ignoreRevision ? 0 : Math.Max(version.Revision, 0));
         }
 
-        public static void Move<T>(this List<T> list, int oldIndex, int newIndex)
-        {
-            T obj = list[oldIndex];
-            list.RemoveAt(oldIndex);
-            list.Insert(newIndex, obj);
-        }
-
-        public static DrawingRectangle Combine(this IEnumerable<DrawingRectangle> rects)
-        {
-            DrawingRectangle result = DrawingRectangle.Empty;
-
-            foreach (DrawingRectangle rect in rects)
-            {
-                if (result.IsEmpty)
-                {
-                    result = rect;
-                }
-                else
-                {
-                    result = DrawingRectangle.Union(result, rect);
-                }
-            }
-
-            return result;
-        }
-
-        public static DrawingRectangleF Combine(this IEnumerable<DrawingRectangleF> rects)
-        {
-            DrawingRectangleF result = DrawingRectangleF.Empty;
-
-            foreach (DrawingRectangleF rect in rects)
-            {
-                if (result.IsEmpty)
-                {
-                    result = rect;
-                }
-                else
-                {
-                    result = DrawingRectangleF.Union(result, rect);
-                }
-            }
-
-            return result;
-        }
-
-        public static DrawingRectangleF AddPoint(this DrawingRectangleF rect, DrawingPointF point)
-        {
-            return DrawingRectangleF.Union(rect, new DrawingRectangleF(point, new DrawingSizeF(1, 1)));
-        }
-
-        public static DrawingRectangleF CreateRectangle(this IEnumerable<DrawingPointF> points)
-        {
-            DrawingRectangleF result = DrawingRectangle.Empty;
-
-            foreach (DrawingPointF point in points)
-            {
-                if (result.IsEmpty)
-                {
-                    result = new DrawingRectangleF(point, new DrawingSize(1, 1));
-                }
-                else
-                {
-                    result = result.AddPoint(point);
-                }
-            }
-
-            return result;
-        }
-
-        public static DrawingPoint Center(this DrawingRectangle rect)
-        {
-            return new DrawingPoint(rect.X + (rect.Width / 2), rect.Y + (rect.Height / 2));
-        }
-
-        public static DrawingPointF Center(this DrawingRectangleF rect)
-        {
-            return new DrawingPointF(rect.X + (rect.Width / 2), rect.Y + (rect.Height / 2));
-        }
-
-        public static float Area(this DrawingRectangleF rect)
-        {
-            return rect.Width * rect.Height;
-        }
-
-        public static float Perimeter(this DrawingRectangleF rect)
-        {
-            return 2 * (rect.Width + rect.Height);
-        }
-
-        public static DrawingPointF Restrict(this DrawingPointF point, DrawingRectangleF rect)
-        {
-            point.X = Math.Max(point.X, rect.X);
-            point.Y = Math.Max(point.Y, rect.Y);
-            point.X = Math.Min(point.X, rect.X + rect.Width - 1);
-            point.Y = Math.Min(point.Y, rect.Y + rect.Height - 1);
-            return point;
-        }
-
         public static Task ContinueInCurrentContext(this Task task, Action action)
         {
             TaskScheduler scheduler = TaskScheduler.FromCurrentSynchronizationContext();
             return task.ContinueWith(_ => action(), scheduler);
         }
 
-        public static List<T> Range<T>(this List<T> source, int start, int end)
-        {
-            List<T> list = new List<T>();
-
-            if (start > end)
-            {
-                for (int i = start; i >= end; i--)
-                {
-                    list.Add(source[i]);
-                }
-            }
-            else
-            {
-                for (int i = start; i <= end; i++)
-                {
-                    list.Add(source[i]);
-                }
-            }
-
-            return list;
-        }
-
-        public static List<T> Range<T>(this List<T> source, T start, T end)
-        {
-            int startIndex = source.IndexOf(start);
-            if (startIndex == -1) return new List<T>();
-
-            int endIndex = source.IndexOf(end);
-            if (endIndex == -1) return new List<T>();
-
-            return Range(source, startIndex, endIndex);
-        }
-
-        public static T? CloneSafe<T>(this T obj) where T : class, ICloneable
+        public static T CloneSafe<T>(this T obj) where T : class, ICloneable
         {
             try
             {
@@ -475,11 +235,6 @@ namespace ShareX.Avalonia.Common
         public static bool IsTransparent(this Color color)
         {
             return color.A < 255;
-        }
-
-        public static string ToStringProper(this DrawingRectangle rect)
-        {
-            return $"X: {rect.X}, Y: {rect.Y}, Width: {rect.Width}, Height: {rect.Height}";
         }
     }
 }

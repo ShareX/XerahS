@@ -33,9 +33,9 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ShareX.Avalonia.Common
+namespace ShareX.Avalonia.Common.Helpers
 {
-    public static class Helpers
+    public static class GeneralHelpers
     {
         public const string Numbers = "0123456789"; // 48 ... 57
         public const string AlphabetCapital = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // 65 ... 90

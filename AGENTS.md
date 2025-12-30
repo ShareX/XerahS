@@ -286,7 +286,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 - [x] JsonHelpers.cs
 - [x] KeyboardHook.cs
 - [x] KnownTypesSerializationBinder.cs
-- [ ] ListExtensions.cs
+- [x] ListExtensions.cs
 - [x] MaxLengthStream.cs
 - [x] MimeTypes.cs
 - [x] MutexManager.cs
