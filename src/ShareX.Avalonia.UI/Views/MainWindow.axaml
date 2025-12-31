@@ -12,7 +12,8 @@
         Width="1200" Height="800"
         Background="#1E1E2E"
         ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome">
+        ExtendClientAreaChromeHints="NoChrome"
+        Opened="OnWindowOpened">
 
     <Window.DataTemplates>
         <DataTemplate DataType="{x:Type vm:ProviderCatalogViewModel}">

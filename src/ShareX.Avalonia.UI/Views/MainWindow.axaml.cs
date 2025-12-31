@@ -35,6 +35,12 @@ namespace ShareX.Avalonia.UI.Views
             }
         }
 
+        private void OnWindowOpened(object? sender, EventArgs e)
+        {
+            // Maximize window and center it on screen
+            this.WindowState = WindowState.Maximized;
+        }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
