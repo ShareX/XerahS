@@ -26,6 +26,7 @@
 using Avalonia.Input;
 using ShareX.Avalonia.Platform.Abstractions;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -42,14 +43,18 @@ namespace ShareX.Avalonia.Platform.Windows;
 public class WindowsHotkeyService : IHotkeyService
 {
     private const int WM_HOTKEY = 0x0312;
+    private const int WM_USER = 0x0400;
+    private const int WM_INVOKE = WM_USER + 1;
 
     private readonly Dictionary<ushort, HotkeyInfo> _registeredHotkeys = new();
-    private readonly object _lock = new();
+    private readonly ConcurrentQueue<Action> _actionQueue = new();
+    private readonly object _lock = new(); // Only for accessing _registeredHotkeys if needed from other threads
     private ushort _nextId = 1;
     private bool _disposed;
     private IntPtr _hwnd;
     private Thread? _messageThread;
     private bool _running;
+    private int _messageThreadId;
 
     public event EventHandler<HotkeyTriggeredEventArgs>? HotkeyTriggered;
     public bool IsSuspended { get; set; }
@@ -62,13 +67,13 @@ public class WindowsHotkeyService : IHotkeyService
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern IntPtr CreateWindowEx(
         uint dwExStyle, string lpClassName, string lpWindowName,
         uint dwStyle, int x, int y, int nWidth, int nHeight,
         IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance, IntPtr lpParam);
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", SetLastError = true)]
     private static extern bool DestroyWindow(IntPtr hWnd);
 
     [DllImport("user32.dll")]
@@ -80,17 +85,17 @@ public class WindowsHotkeyService : IHotkeyService
     [DllImport("user32.dll")]
     private static extern IntPtr DispatchMessage(ref MSG lpMsg);
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", SetLastError = true)]
     private static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-
-    [DllImport("kernel32.dll")]
-    private static extern ushort GlobalAddAtom(string lpString);
-
-    [DllImport("kernel32.dll")]
-    private static extern ushort GlobalDeleteAtom(ushort nAtom);
+    
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool PostThreadMessage(int idThread, uint Msg, IntPtr wParam, IntPtr lParam);
 
     [DllImport("kernel32.dll")]
     private static extern IntPtr GetModuleHandle(string? lpModuleName);
+    
+    [DllImport("kernel32.dll")]
+    private static extern int GetCurrentThreadId();
 
     [StructLayout(LayoutKind.Sequential)]
     private struct MSG
@@ -143,6 +148,8 @@ public class WindowsHotkeyService : IHotkeyService
 
     private void MessageLoop()
     {
+        _messageThreadId = GetCurrentThreadId();
+
         // Create a message-only window
         _hwnd = CreateWindowEx(0, "STATIC", "ShareX.Avalonia.HotkeyWindow",
             0, 0, 0, 0, 0, new IntPtr(-3) /* HWND_MESSAGE */, IntPtr.Zero,
@@ -150,11 +157,11 @@ public class WindowsHotkeyService : IHotkeyService
 
         if (_hwnd == IntPtr.Zero)
         {
-            Debug.WriteLine("Failed to create hotkey window");
+            DebugHelper.WriteLine($"Failed to create hotkey window. Error: {Marshal.GetLastWin32Error()}");
             return;
         }
 
-        Debug.WriteLine($"Hotkey window created: 0x{_hwnd:X}");
+        DebugHelper.WriteLine($"Hotkey window created: 0x{_hwnd:X} on thread {_messageThreadId}");
 
         while (_running && GetMessage(out MSG msg, IntPtr.Zero, 0, 0))
         {
@@ -163,6 +170,21 @@ public class WindowsHotkeyService : IHotkeyService
                 ushort id = (ushort)msg.wParam.ToInt32();
                 ProcessHotkey(id);
             }
+            else if (msg.message == WM_INVOKE)
+            {
+                // Process queued actions on this thread
+                while (_actionQueue.TryDequeue(out var action))
+                {
+                    try
+                    {
+                        action();
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugHelper.WriteLine($"Error executing queued hotkey action: {ex}");
+                    }
+                }
+            }
             else
             {
                 TranslateMessage(ref msg);
@@ -170,26 +192,62 @@ public class WindowsHotkeyService : IHotkeyService
             }
         }
 
-        DestroyWindow(_hwnd);
-        _hwnd = IntPtr.Zero;
+        if (_hwnd != IntPtr.Zero)
+        {
+            DestroyWindow(_hwnd);
+            _hwnd = IntPtr.Zero;
+        }
     }
 
     private void ProcessHotkey(ushort id)
     {
         if (IsSuspended) return;
 
+        // Thread-safe read
+        HotkeyInfo? hotkeyInfo = null;
         lock (_lock)
         {
-            if (_registeredHotkeys.TryGetValue(id, out var hotkeyInfo))
+            if (_registeredHotkeys.TryGetValue(id, out var info))
             {
-                Debug.WriteLine($"Hotkey triggered: {hotkeyInfo}");
-
-                // Marshal to UI thread if needed
-                global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                {
-                    HotkeyTriggered?.Invoke(this, new HotkeyTriggeredEventArgs(hotkeyInfo));
-                });
+                hotkeyInfo = info;
             }
+        }
+
+        if (hotkeyInfo != null)
+        {
+            DebugHelper.WriteLine($"Hotkey triggered: {hotkeyInfo}");
+
+            // Marshal to UI thread if needed
+            global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                HotkeyTriggered?.Invoke(this, new HotkeyTriggeredEventArgs(hotkeyInfo));
+            });
+        }
+    }
+
+    private void InvokeOnMessageThread(Action action)
+    {
+        if (_hwnd == IntPtr.Zero)
+        {
+            DebugHelper.WriteLine("Cannot invoke: HWND is null");
+            return;
+        }
+        
+        // If we're already on the message thread, just execute
+        if (GetCurrentThreadId() == _messageThreadId)
+        {
+            action();
+            return;
+        }
+
+        _actionQueue.Enqueue(action);
+        
+        // Wake up the message loop
+        // We can post to the window or the thread. Posting to window is usually safer if we have it.
+        bool posted = PostMessage(_hwnd, WM_INVOKE, IntPtr.Zero, IntPtr.Zero);
+        if (!posted)
+        {
+            DebugHelper.WriteLine($"Failed to post WM_INVOKE. Error: {Marshal.GetLastWin32Error()}");
         }
     }
 
@@ -204,42 +262,52 @@ public class WindowsHotkeyService : IHotkeyService
         if (_hwnd == IntPtr.Zero)
         {
             hotkeyInfo.Status = HotkeyStatus.Failed;
+            DebugHelper.WriteLine("RegisterHotkey failed: HWND not ready");
             return false;
         }
 
-        lock (_lock)
+        bool result = false;
+        using var mre = new ManualResetEventSlim(false);
+
+        InvokeOnMessageThread(() =>
         {
-            // Generate unique ID
-            if (hotkeyInfo.Id == 0)
+            lock (_lock)
             {
-                hotkeyInfo.Id = _nextId++;
+                // Generate unique ID
+                if (hotkeyInfo.Id == 0)
+                {
+                    hotkeyInfo.Id = _nextId++;
+                }
+
+                uint modifiers = GetModifiers(hotkeyInfo.Modifiers);
+                uint vk = KeyToVirtualKey(hotkeyInfo.Key);
+                
+                // Debug log before registration attempt
+                DebugHelper.WriteLine($"RegisterHotKey attempt: hwnd=0x{_hwnd:X}, id={hotkeyInfo.Id}, key={hotkeyInfo.Key} (VK=0x{vk:X2}), mods=0x{modifiers:X}");
+
+                result = RegisterHotKey(_hwnd, hotkeyInfo.Id, modifiers, vk);
+
+                if (result)
+                {
+                    hotkeyInfo.Status = HotkeyStatus.Registered;
+                    _registeredHotkeys[hotkeyInfo.Id] = hotkeyInfo;
+                    DebugHelper.WriteLine($"Hotkey registered: {hotkeyInfo} (ID: {hotkeyInfo.Id}, VK: 0x{vk:X2}, Mods: 0x{modifiers:X})");
+                }
+                else
+                {
+                    hotkeyInfo.Status = HotkeyStatus.Failed;
+                    int error = Marshal.GetLastWin32Error();
+                    // 1409 = ERROR_HOTKEY_ALREADY_REGISTERED
+                    string errorMsg = error == 1409 ? "Hotkey already registered by another application" : $"Win32 error {error}";
+                    DebugHelper.WriteLine($"Failed to register hotkey: {hotkeyInfo} (VK: 0x{vk:X2}, Mods: 0x{modifiers:X}) - {errorMsg}");
+                }
             }
+            mre.Set();
+        });
 
-            uint modifiers = GetModifiers(hotkeyInfo.Modifiers);
-            uint vk = KeyToVirtualKey(hotkeyInfo.Key);
-            
-            // Debug log before registration attempt
-            DebugHelper.WriteLine($"RegisterHotKey attempt: hwnd=0x{_hwnd:X}, id={hotkeyInfo.Id}, key={hotkeyInfo.Key} (VK=0x{vk:X2}), mods=0x{modifiers:X}");
-
-            bool result = RegisterHotKey(_hwnd, hotkeyInfo.Id, modifiers, vk);
-
-            if (result)
-            {
-                hotkeyInfo.Status = HotkeyStatus.Registered;
-                _registeredHotkeys[hotkeyInfo.Id] = hotkeyInfo;
-                DebugHelper.WriteLine($"Hotkey registered: {hotkeyInfo} (ID: {hotkeyInfo.Id}, VK: 0x{vk:X2}, Mods: 0x{modifiers:X})");
-            }
-            else
-            {
-                hotkeyInfo.Status = HotkeyStatus.Failed;
-                int error = Marshal.GetLastWin32Error();
-                // 1409 = ERROR_HOTKEY_ALREADY_REGISTERED
-                string errorMsg = error == 1409 ? "Hotkey already registered by another application" : $"Win32 error {error}";
-                DebugHelper.WriteLine($"Failed to register hotkey: {hotkeyInfo} (VK: 0x{vk:X2}, Mods: 0x{modifiers:X}) - {errorMsg}");
-            }
-
-            return result;
-        }
+        // Wait for the operation to complete
+        mre.Wait(TimeSpan.FromSeconds(2));
+        return result;
     }
 
     public bool UnregisterHotkey(HotkeyInfo hotkeyInfo)
@@ -250,39 +318,75 @@ public class WindowsHotkeyService : IHotkeyService
             return false;
         }
 
-        lock (_lock)
+        bool result = false;
+        using var mre = new ManualResetEventSlim(false);
+
+        InvokeOnMessageThread(() =>
         {
-            DebugHelper.WriteLine($"UnregisterHotkey attempt: hwnd=0x{_hwnd:X}, id={hotkeyInfo.Id}, hotkey={hotkeyInfo}");
-            bool result = UnregisterHotKey(_hwnd, hotkeyInfo.Id);
-
-            if (result)
+            lock (_lock)
             {
-                _registeredHotkeys.Remove(hotkeyInfo.Id);
-                hotkeyInfo.Status = HotkeyStatus.NotConfigured;
-                DebugHelper.WriteLine($"Hotkey unregistered successfully: {hotkeyInfo}");
-            }
-            else
-            {
-                int error = Marshal.GetLastWin32Error();
-                hotkeyInfo.Status = HotkeyStatus.Failed;
-                DebugHelper.WriteLine($"Failed to unregister hotkey: {hotkeyInfo} - Win32 error {error}");
-            }
+                // Safety check: is it actually registered?
+                if (!_registeredHotkeys.ContainsKey(hotkeyInfo.Id))
+                {
+                     DebugHelper.WriteLine($"UnregisterHotkey: Ignored - ID {hotkeyInfo.Id} not found in local registry (prevents error 1419)");
+                     hotkeyInfo.Status = HotkeyStatus.NotConfigured;
+                     result = true; // Treat as success since it's not registered
+                     mre.Set();
+                     return;
+                }
 
-            return result;
-        }
+                DebugHelper.WriteLine($"UnregisterHotkey attempt: hwnd=0x{_hwnd:X}, id={hotkeyInfo.Id}, hotkey={hotkeyInfo}");
+                result = UnregisterHotKey(_hwnd, hotkeyInfo.Id);
+
+                if (result)
+                {
+                    _registeredHotkeys.Remove(hotkeyInfo.Id);
+                    hotkeyInfo.Status = HotkeyStatus.NotConfigured;
+                    DebugHelper.WriteLine($"Hotkey unregistered successfully: {hotkeyInfo}");
+                }
+                else
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    
+                    // If error is 1419 (Hot key is not registered), we should still clear it from our map to stay in sync
+                    if (error == 1419) 
+                    {
+                        DebugHelper.WriteLine($"Warning: Win32 error 1419 (Not Registered) for {hotkeyInfo}. Cleaning up local map.");
+                        _registeredHotkeys.Remove(hotkeyInfo.Id);
+                        hotkeyInfo.Status = HotkeyStatus.NotConfigured;
+                        result = true; // Treat as success
+                    }
+                    else
+                    {
+                        hotkeyInfo.Status = HotkeyStatus.Failed;
+                        DebugHelper.WriteLine($"Failed to unregister hotkey: {hotkeyInfo} - Win32 error {error}");
+                    }
+                }
+            }
+            mre.Set();
+        });
+
+        mre.Wait(TimeSpan.FromSeconds(2));
+        return result;
     }
 
     public void UnregisterAll()
     {
-        lock (_lock)
+        if (_hwnd == IntPtr.Zero) return;
+
+        // Async fire and forget for UnregisterAll during shutdown
+        InvokeOnMessageThread(() =>
         {
-            foreach (var kvp in _registeredHotkeys)
+            lock (_lock)
             {
-                UnregisterHotKey(_hwnd, kvp.Key);
-                kvp.Value.Status = HotkeyStatus.NotConfigured;
+                foreach (var kvp in _registeredHotkeys)
+                {
+                    UnregisterHotKey(_hwnd, kvp.Key);
+                    kvp.Value.Status = HotkeyStatus.NotConfigured;
+                }
+                _registeredHotkeys.Clear();
             }
-            _registeredHotkeys.Clear();
-        }
+        });
     }
 
     public bool IsRegistered(HotkeyInfo hotkeyInfo)
