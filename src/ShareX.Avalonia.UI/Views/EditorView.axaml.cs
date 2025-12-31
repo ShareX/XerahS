@@ -270,32 +270,26 @@ namespace ShareX.Avalonia.UI.Views
 
         public async System.Threading.Tasks.Task CopyToClipboard(global::Avalonia.Media.Imaging.Bitmap image)
         {
-            var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel?.Clipboard == null) 
-                throw new InvalidOperationException("Clipboard not available");
-            
             try
             {
-                // Convert Avalonia Bitmap to PNG bytes in memory
+                // Convert Avalonia Bitmap to System.Drawing.Image for native clipboard
                 using var memoryStream = new System.IO.MemoryStream();
                 image.Save(memoryStream);
                 memoryStream.Position = 0;
                 
-                var imageBytes = memoryStream.ToArray();
+                // Load into System.Drawing.Image (what Windows clipboard expects)
+                using var drawingImage = System.Drawing.Image.FromStream(memoryStream);
                 
-                // Use DataObject with PNG MIME type
-                var dataObject = new global::Avalonia.Input.DataObject();
-                
-                // Set as PNG image data using MIME type
-                dataObject.Set("image/png", imageBytes);
-                
-                await topLevel.Clipboard.SetDataObjectAsync(dataObject);
+                // Use platform-specific clipboard service for native OS compatibility
+                ShareX.Avalonia.Platform.Abstractions.PlatformServices.Clipboard.SetImage(drawingImage);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Clipboard copy failed: {ex.Message}");
                 throw;
             }
+            
+            await System.Threading.Tasks.Task.CompletedTask;
         }
         
         // --- LOGIC MIGRATED FROM MAINWINDOW.AXAML.CS ---
