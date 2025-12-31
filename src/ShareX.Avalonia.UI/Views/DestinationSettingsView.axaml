@@ -2,12 +2,56 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ShareX.Avalonia.UI.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ShareX.Avalonia.UI.Views.DestinationSettingsView">
-    <Grid>
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
-            <TextBlock Text="Destination Settings" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
-            <TextBlock Text="Configure upload destinations and accounts." Foreground="Gray" HorizontalAlignment="Center"/>
-        </StackPanel>
+             x:Class="ShareX.Avalonia.UI.Views.DestinationSettingsView"
+             x:DataType="vm:DestinationSettingsViewModel">
+
+    <Design.DataContext>
+        <vm:DestinationSettingsViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*" Margin="20">
+        <TextBlock Grid.Row="0" Text="Destination Settings" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,20"/>
+
+        <Grid Grid.Row="1" ColumnDefinitions="200,*">
+            <!-- Category Sidebar -->
+            <Border Grid.Column="0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                <ListBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Background="Transparent">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <!-- Uploader List and Configuration -->
+            <Grid Grid.Column="1" Margin="20,0,0,0" RowDefinitions="*,Auto">
+                <Border Grid.Row="0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4">
+                    <Grid ColumnDefinitions="250,*">
+                        <!-- Uploader List -->
+                        <Border Grid.Column="0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,0,1,0">
+                            <ListBox ItemsSource="{Binding SelectedCategory.Uploaders}" SelectedItem="{Binding SelectedUploader}" Background="Transparent">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Border>
+
+                        <!-- Configuration Panel (Placeholder) -->
+                        <ScrollViewer Grid.Column="1">
+                            <StackPanel Margin="20" Spacing="10">
+                                <TextBlock Text="{Binding SelectedUploader.Name, StringFormat='Configuration: {0}'}" FontSize="18" FontWeight="SemiBold"/>
+                                <TextBlock Text="Configuration options will appear here." Foreground="Gray" FontStyle="Italic"/>
+                                <TextBlock Text="Future enhancement: Property grid or custom config panels." Foreground="Gray" FontSize="11"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>

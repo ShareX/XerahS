@@ -8,6 +8,7 @@ namespace ShareX.Avalonia.UI.Views
         public DestinationSettingsView()
         {
             InitializeComponent();
+            DataContext = new ViewModels.DestinationSettingsViewModel();
         }
 
         private void InitializeComponent()
