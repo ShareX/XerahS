@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:views="using:ShareX.Avalonia.UI.Views"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="ShareX.Avalonia.UI.Views.MainWindow"
         x:DataType="vm:MainViewModel"
@@ -12,6 +13,12 @@
         Background="#1E1E2E"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome">
+
+    <Window.DataTemplates>
+        <DataTemplate DataType="{x:Type vm:ProviderCatalogViewModel}">
+            <views:ProviderCatalogDialog/>
+        </DataTemplate>
+    </Window.DataTemplates>
 
     <Design.DataContext>
         <vm:MainViewModel/>
@@ -53,6 +60,7 @@
                            IsPaneOpen="True"
                            IsSettingsVisible="False"
                            SelectionChanged="OnNavSelectionChanged">
+            <!-- ... existing content ... -->
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem Content="Editor" Tag="Editor" IsSelected="True">
                     <ui:NavigationViewItem.IconSource>
@@ -86,6 +94,31 @@
                  <ContentControl Name="ContentFrame" />
             </ui:NavigationView.Content>
         </ui:NavigationView>
+
+        <!-- Modal Overlay Layer (Bootstrap Style) -->
+        <Grid Grid.Row="0" Grid.RowSpan="2" 
+              IsVisible="{Binding IsModalOpen}"
+              ZIndex="1000">
+            <!-- Backdrop -->
+            <Border Background="#80000000" PointerPressed="OnBackdropPointerPressed"/>
+            
+            <!-- Modal Content Wrapper (Scrollable if needed) -->
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <Grid>
+                    <!-- Modal Dialog -->
+                    <Border Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                            BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            MinWidth="400" MaxWidth="800"
+                            VerticalAlignment="Center" HorizontalAlignment="Center"
+                            Margin="20"
+                            BoxShadow="0 4 20 0 #40000000">
+                        <ContentControl Content="{Binding ModalContent}"/>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
 
     </Grid>
 

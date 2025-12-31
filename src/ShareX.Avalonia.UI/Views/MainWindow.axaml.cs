@@ -182,6 +182,15 @@ namespace ShareX.Avalonia.UI.Views
             }
         }
 
+
+        private void OnBackdropPointerPressed(object sender, PointerPressedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.CloseModalCommand.Execute(null);
+            }
+        }
+
         private void OnTitleBarPointerPressed(object sender, PointerPressedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)

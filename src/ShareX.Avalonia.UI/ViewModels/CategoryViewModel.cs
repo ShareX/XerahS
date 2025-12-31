@@ -32,33 +32,33 @@ public partial class CategoryViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async void AddFromCatalog()
+    private void AddFromCatalog()
     {
         try
         {
-            // Create and show the provider catalog dialog
             var viewModel = new ProviderCatalogViewModel(Category);
-            var dialog = new Views.ProviderCatalogDialog(viewModel);
-            
-            viewModel.OnInstancesAdded += instances =>
+            var mainVm = MainViewModel.Current;
+
+            if (mainVm != null)
             {
-                // Reload instances to show the newly added one
-                LoadInstances();
-                dialog.Close();
-            };
-            
-            viewModel.OnCancelled += () =>
-            {
-                dialog.Close();
-            };
-            
-            // Show dialog - find parent window
-            var topLevel = global::Avalonia.Application.Current?.ApplicationLifetime as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime;
-            var mainWindow = topLevel?.MainWindow;
-            
-            if (mainWindow != null)
-            {
-                await dialog.ShowDialog(mainWindow);
+                // Unsubscribing helper
+                void Cleanup()
+                {
+                    if (mainVm.ModalContent == viewModel)
+                        mainVm.CloseModalCommand.Execute(null);
+                }
+
+                viewModel.OnInstancesAdded += instances =>
+                {
+                    LoadInstances();
+                    Cleanup();
+                };
+
+                viewModel.OnCancelled += Cleanup;
+
+                // Show Modal (set ViewModel, DataTemplate handles View)
+                mainVm.ModalContent = viewModel;
+                mainVm.IsModalOpen = true;
             }
         }
         catch (Exception ex)

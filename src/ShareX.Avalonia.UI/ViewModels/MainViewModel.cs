@@ -63,6 +63,20 @@ namespace ShareX.Avalonia.UI.ViewModels
         [ObservableProperty]
         private EditorTool _activeTool = EditorTool.Select;
 
+        // Modal Overlay Properties
+        [ObservableProperty]
+        private bool _isModalOpen;
+
+        [ObservableProperty]
+        private object? _modalContent;
+
+        [RelayCommand]
+        private void CloseModal()
+        {
+            IsModalOpen = false;
+            ModalContent = null;
+        }
+
         [ObservableProperty]
         private IBrush _canvasBackground;
 
@@ -75,8 +89,13 @@ namespace ShareX.Avalonia.UI.ViewModels
         [ObservableProperty]
         private BoxShadows _canvasShadow;
 
+
+
+        public static MainViewModel Current { get; private set; }
+
         public MainViewModel()
         {
+            Current = this;
             _tasks = new ObservableCollection<WorkerTask>();
             _canvasBackground = new LinearGradientBrush
             {

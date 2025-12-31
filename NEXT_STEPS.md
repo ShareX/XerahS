@@ -19,7 +19,14 @@ We have successfully implemented the Reimagined UI (WinShot-inspired), Multi-mon
     - Absolute coordinate mapping.
 - **Annotation System**:
     - Tools: Rectangle, Ellipse, Line, Arrow, Text.
+    - Tools: Rectangle, Ellipse, Line, Arrow, Text.
     - Undo/Redo stack.
+- **Plugin Architecture (Phase 3)**:
+    - ✅ Implemented dynamic DLL plugin loading infrastructure.
+    - ✅ Manifest system (`plugin.json`).
+    - ✅ Provider Catalog integration (Imgur, Amazon S3 registered).
+    - ✅ Fix: Imgur category filtering (Image only).
+
 
 ### 🚧 In Progress (Phase 6.6)
 - **Destination Settings**: Porting the Destination configuration UI.
