@@ -292,6 +292,9 @@ namespace ShareX.Avalonia.UI.ViewModels
 
         // Event for View to handle clipboard copy (requires TopLevel access)
         public event Func<Bitmap, Task>? CopyRequested;
+        
+        // Event for View to show error dialog
+        public event Func<string, string, Task>? ShowErrorDialog;
 
         [RelayCommand]
         private async Task Copy()
@@ -323,7 +326,14 @@ namespace ShareX.Avalonia.UI.ViewModels
                 }
                 catch (Exception ex)
                 {
+                    var errorMessage = $"Failed to copy image to clipboard.\n\nError: {ex.Message}";
                     StatusText = $"Copy failed: {ex.Message}";
+                    
+                    // Show error dialog
+                    if (ShowErrorDialog != null)
+                    {
+                        await ShowErrorDialog.Invoke("Copy Failed", errorMessage);
+                    }
                 }
             }
             else

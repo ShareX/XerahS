@@ -214,6 +214,7 @@ namespace ShareX.Avalonia.UI.Views
                 vm.SnapshotRequested += GetSnapshot;
                 vm.SaveAsRequested += ShowSaveAsDialog;
                 vm.CopyRequested += CopyToClipboard;
+                vm.ShowErrorDialog += ShowErrorDialog;
             }
         }
 
@@ -290,6 +291,52 @@ namespace ShareX.Avalonia.UI.Views
             }
             
             await System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        public async System.Threading.Tasks.Task ShowErrorDialog(string title, string message)
+        {
+            var messageBox = new Window
+            {
+                Title = title,
+                Width = 500,
+                Height = 200,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                CanResize = false
+            };
+
+            var panel = new StackPanel
+            {
+                Margin = new Thickness(20),
+                Spacing = 15
+            };
+
+            var messageText = new TextBlock
+            {
+                Text = message,
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth =460
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 10, 0, 0)
+            };
+
+            var okButton = new Button
+            {
+                Content = "OK",
+                Padding = new Thickness(30, 8)
+            };
+
+            okButton.Click += (s, e) => messageBox.Close();
+
+            buttonPanel.Children.Add(okButton);
+            panel.Children.Add(messageText);
+            panel.Children.Add(buttonPanel);
+            messageBox.Content = panel;
+
+            await messageBox.ShowDialog(TopLevel.GetTopLevel(this) as Window);
         }
         
         // --- LOGIC MIGRATED FROM MAINWINDOW.AXAML.CS ---
