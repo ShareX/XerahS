@@ -6,6 +6,8 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using ShareX.Avalonia.UI.ViewModels;
+using ShareX.Avalonia.Annotations.Models;
+using Avalonia.Platform.Storage;
 using System;
 using System.Collections.Generic;
 
@@ -209,7 +211,7 @@ namespace ShareX.Avalonia.UI.Views
             }
         }
 
-        private void OnCanvasPointerPressed(object sender, PointerPressedEventArgs e)
+        private async void OnCanvasPointerPressed(object sender, PointerPressedEventArgs e)
         {
             if (DataContext is not MainViewModel vm) return;
             var canvas = sender as Canvas;
@@ -296,6 +298,57 @@ namespace ShareX.Avalonia.UI.Views
                 return;
             }
             
+            if (vm.ActiveTool == EditorTool.Image)
+            {
+                 _isDrawing = false;
+                 // File Picker logic
+                 var topLevel = TopLevel.GetTopLevel(this);
+                 if (topLevel?.StorageProvider != null)
+                 {
+                     var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                     {
+                         Title = "Select Image",
+                         AllowMultiple = false,
+                         FileTypeFilter = new[] { FilePickerFileTypes.ImageAll }
+                     });
+
+                     if (files.Count > 0)
+                     {
+                         try {
+                             using var stream = await files[0].OpenReadAsync();
+                             var bitmap = new global::Avalonia.Media.Imaging.Bitmap(stream);
+                             
+                             var imageControl = new Image
+                             {
+                                 Source = bitmap,
+                                 Width = bitmap.Size.Width,
+                                 Height = bitmap.Size.Height
+                             };
+                             
+                             var annotation = new ImageAnnotation();
+                             annotation.SetImage(bitmap);
+                             imageControl.Tag = annotation;
+                             
+                             // Center on click point
+                             Canvas.SetLeft(imageControl, _startPoint.X - bitmap.Size.Width / 2);
+                             Canvas.SetTop(imageControl, _startPoint.Y - bitmap.Size.Height / 2);
+                             
+                             canvas.Children.Add(imageControl);
+                             _undoStack.Push(imageControl);
+                             
+                             _currentShape = imageControl;
+                             _selectedShape = imageControl;
+                             UpdateSelectionHandles();
+                         }
+                         catch (Exception ex)
+                         {
+                             System.Diagnostics.Debug.WriteLine(ex.Message);
+                         }
+                     }
+                 }
+                 return;
+            }
+            
             switch (vm.ActiveTool)
             {
                 case EditorTool.Rectangle:
@@ -376,15 +429,88 @@ namespace ShareX.Avalonia.UI.Views
                 case EditorTool.Spotlight:
                     _currentShape = new global::Avalonia.Controls.Shapes.Ellipse
                     {
-                        Stroke = new SolidColorBrush(Color.Parse("#B0000000")), // Dark overlay
-                        StrokeThickness = 4000, // Massive stroke to cover the canvas
-                        Fill = Brushes.Transparent, // The 'hole'
-                        IsHitTestVisible = true // Allow selecting to move/delete
+                        Stroke = new SolidColorBrush(Color.Parse("#B0000000")), 
+                        StrokeThickness = 4000, 
+                        Fill = Brushes.Transparent, 
+                        IsHitTestVisible = true 
                     };
                     break;
+
+                // --- NEW TOOLS ---
+
+                case EditorTool.Blur:
+                case EditorTool.Pixelate:
+                case EditorTool.Magnify:
+                case EditorTool.Highlighter:
+                    // For these region-based effects, we primarily draw a rectangle as a visual container
+                    // The "Actual" rendering would ideally be done by a custom control or custom drawing visual.
+                    // For MVP, since we implemented BaseEffectAnnotation as logical models, 
+                    // we can't directly add them to a Canvas unless they are Avalonia Controls or we wrap them.
                     
+                    // QUICK FIX STRATEGY: 
+                    // Use a standardized Avalonia Border/Rectangle for the UI representation 
+                    // and attaching the logic via attached properties or Tag or ViewModel synchronization.
+                    
+                    // Better approach for Avalonia: 
+                    // Create an 'AnnotationControl' wrapper that takes the 'Annotation' model and renders it.
+                    // But we don't have that yet.
+                    
+                     // Fallback to simple shapes representing the logical annotation:
+                    
+                    var effectRect = new global::Avalonia.Controls.Shapes.Rectangle
+                    {
+                         Stroke = (vm.ActiveTool == EditorTool.Magnify) ? Brushes.Black : Brushes.Transparent,
+                         StrokeThickness = 2,
+                         Fill = (vm.ActiveTool == EditorTool.Highlighter) ? new SolidColorBrush(Color.Parse("#55FFFF00")) : Brushes.Transparent, // Yellow for highlighter
+                         Tag = CreateEffectAnnotation(vm.ActiveTool) // Create and attach logic model
+                    };
+                    
+                    // For Blur/Pixelate, we might want a translucent overlay to show where it is
+                    if (vm.ActiveTool == EditorTool.Blur)
+                         effectRect.Fill = new SolidColorBrush(Color.Parse("#200000FF")); // Faint blue
+                    else if (vm.ActiveTool == EditorTool.Pixelate)
+                         effectRect.Fill = new SolidColorBrush(Color.Parse("#2000FF00")); // Faint green
+                    
+                    _currentShape = effectRect;
+                    break;
+                    
+                 case EditorTool.SpeechBalloon:
+                    // Placeholder: Draw a generic path or just a rect for now
+                    // A real speech balloon needs a custom shape control
+                    _currentShape = new global::Avalonia.Controls.Shapes.Rectangle
+                    {
+                        Stroke = brush,
+                        StrokeThickness = vm.StrokeWidth,
+                        Fill = Brushes.White,
+                        RadiusX = 10,
+                        RadiusY = 10
+                    };
+                    break;
+ 
+                 case EditorTool.Pen:
+                 case EditorTool.SmartEraser:
+                    // Freehand drawing requires a Polyline
+                         var polyline = new Polyline
+                         {
+                             Stroke = (vm.ActiveTool == EditorTool.SmartEraser) ? new SolidColorBrush(Color.Parse("#80FF0000")) : brush,
+                             StrokeThickness = (vm.ActiveTool == EditorTool.SmartEraser) ? 10 : vm.StrokeWidth,
+                             Points = new Points { _startPoint }
+                         };
+                         
+                         FreehandAnnotation freehand;
+                         if (vm.ActiveTool == EditorTool.SmartEraser) 
+                             freehand = new SmartEraserAnnotation();
+                         else 
+                             freehand = new FreehandAnnotation();
+                             
+                         freehand.Points.Add(_startPoint);
+                         polyline.Tag = freehand;
+                         
+                         _currentShape = polyline;
+                     break;
+
                 case EditorTool.Number:
-                    // Create Number badge
+                    // Use existing number logic (it was here before)
                     var numberGrid = new Grid
                     {
                         Width = 30,
@@ -410,14 +536,12 @@ namespace ShareX.Avalonia.UI.Views
                     numberGrid.Children.Add(bg);
                     numberGrid.Children.Add(numText);
                     
-                    // Position centered on click
                     Canvas.SetLeft(numberGrid, _startPoint.X - 15);
                     Canvas.SetTop(numberGrid, _startPoint.Y - 15);
                     
                     _currentShape = numberGrid;
-                    vm.NumberCounter++; // Increment for next click
+                    vm.NumberCounter++;
                     
-                    // Add immediately (single click tool)
                     canvas.Children.Add(numberGrid);
                     _undoStack.Push(numberGrid);
                     _redoStack.Clear();
@@ -428,7 +552,7 @@ namespace ShareX.Avalonia.UI.Views
 
             if (_currentShape != null)
             {
-                if (vm.ActiveTool != EditorTool.Line && vm.ActiveTool != EditorTool.Arrow)
+                if (vm.ActiveTool != EditorTool.Line && vm.ActiveTool != EditorTool.Arrow && vm.ActiveTool != EditorTool.Pen && vm.ActiveTool != EditorTool.SmartEraser)
                 {
                     Canvas.SetLeft(_currentShape, _startPoint.X);
                     Canvas.SetTop(_currentShape, _startPoint.Y);
@@ -529,6 +653,19 @@ namespace ShareX.Avalonia.UI.Views
             {
                 line.EndPoint = currentPoint;
             }
+            else if (_currentShape is Polyline polyline)
+            {
+                // Freehand drawing: Add point to existing points
+                // We must create a new collection or modify existing?
+                // Observable collection updates might trigger redraw
+                // Polyline.Points is a Points collection.
+                polyline.Points.Add(currentPoint);
+                
+                if (polyline.Tag is FreehandAnnotation freehand)
+                {
+                    freehand.Points.Add(currentPoint);
+                }
+            }
             else if (_currentShape is global::Avalonia.Controls.Shapes.Path arrowPath && DataContext is MainViewModel vm)
             {
                 // Update Arrow Geometry
@@ -543,10 +680,17 @@ namespace ShareX.Avalonia.UI.Views
 
                 if (_currentShape is global::Avalonia.Controls.Shapes.Rectangle rect)
                 {
+                    // Existing logic
                     rect.Width = width;
                     rect.Height = height;
                     Canvas.SetLeft(rect, x);
                     Canvas.SetTop(rect, y);
+                    
+                    // Trigger update for effects
+                    if (rect.Tag is BaseEffectAnnotation)
+                    {
+                        UpdateEffectVisual(rect);
+                    }
                 }
                 else if (_currentShape is global::Avalonia.Controls.Shapes.Ellipse ellipse)
                 {
@@ -554,6 +698,55 @@ namespace ShareX.Avalonia.UI.Views
                     ellipse.Height = height;
                     Canvas.SetLeft(ellipse, x);
                     Canvas.SetTop(ellipse, y);
+                }
+            }
+        }
+
+        private BaseEffectAnnotation? CreateEffectAnnotation(EditorTool tool)
+        {
+            return tool switch
+            {
+                EditorTool.Blur => new BlurAnnotation(),
+                EditorTool.Pixelate => new PixelateAnnotation(),
+                EditorTool.Magnify => new MagnifyAnnotation(),
+                EditorTool.Highlighter => new HighlightAnnotation(),
+                _ => null
+            };
+        }
+
+        private void UpdateEffectVisual(Control shape)
+        {
+            if (shape.Tag is BaseEffectAnnotation annotation && DataContext is MainViewModel vm && vm.PreviewImage != null)
+            {
+                try
+                {
+                    double left = Canvas.GetLeft(shape);
+                    double top = Canvas.GetTop(shape);
+                    double width = shape.Bounds.Width;
+                    double height = shape.Bounds.Height;
+                    
+                    if (width <= 0 || height <= 0) return;
+
+                    annotation.StartPoint = new Point(left, top);
+                    annotation.EndPoint = new Point(left + width, top + height);
+                    
+                    // Convert to SKBitmap 
+                    using var skBitmap = Helpers.BitmapConversionHelpers.ToSKBitmap(vm.PreviewImage);
+                    
+                    annotation.UpdateEffect(skBitmap);
+                    
+                    if (annotation.EffectBitmap != null && shape is Shape visibleShape)
+                    {
+                        visibleShape.Fill = new ImageBrush(annotation.EffectBitmap) 
+                        { 
+                            Stretch = Stretch.None,
+                            SourceRect = new RelativeRect(0, 0, width, height, RelativeUnit.Absolute) 
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Effect update failed: {ex.Message}");
                 }
             }
         }
@@ -644,6 +837,13 @@ namespace ShareX.Avalonia.UI.Views
             
             cropOverlay.IsVisible = false;
             vm.StatusText = "Image cropped";
+        }
+        private void OnEffectsPanelApplyRequested(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.ApplyEffectCommand.Execute(null);
+            }
         }
     }
 }

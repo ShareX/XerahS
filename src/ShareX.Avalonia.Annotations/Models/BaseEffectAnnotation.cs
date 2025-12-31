@@ -1,5 +1,6 @@
-using Avalonia;
-using Avalonia.Media;
+using global::Avalonia;
+using global::Avalonia.Media;
+using SkiaSharp;
 
 namespace ShareX.Avalonia.Annotations.Models;
 
@@ -17,6 +18,11 @@ public abstract class BaseEffectAnnotation : Annotation
     /// Whether the effect is applied as a region (rectangle) or freehand
     /// </summary>
     public bool IsFreehand { get; set; }
+    
+    /// <summary>
+    /// The generated bitmap for the effect (optional)
+    /// </summary>
+    public global::Avalonia.Media.Imaging.Bitmap? EffectBitmap { get; protected set; }
 
     public override Rect GetBounds()
     {
@@ -27,4 +33,9 @@ public abstract class BaseEffectAnnotation : Annotation
     {
         return GetBounds().Inflate(tolerance).Contains(point);
     }
+    
+    /// <summary>
+    /// Updates the effect bitmap based on the source image
+    /// </summary>
+    public virtual void UpdateEffect(SKBitmap source) { }
 }

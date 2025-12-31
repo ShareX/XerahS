@@ -12,8 +12,8 @@ namespace ShareX.Avalonia.Annotations.Models;
 /// </summary>
 public class BlurAnnotation : BaseEffectAnnotation
 {
-    private Bitmap? _effectBitmap;
-
+    // EffectBitmap inherited from Base
+    
     public BlurAnnotation()
     {
         ToolType = EditorTool.Blur;
@@ -26,10 +26,10 @@ public class BlurAnnotation : BaseEffectAnnotation
     {
         var rect = GetBounds();
 
-        if (_effectBitmap != null)
+        if (EffectBitmap != null)
         {
             // Draw the pre-calculated blurred image
-            context.DrawImage(_effectBitmap, rect);
+            context.DrawImage(EffectBitmap, rect);
         }
         else
         {
@@ -49,7 +49,7 @@ public class BlurAnnotation : BaseEffectAnnotation
     /// Update the internal blurred bitmap based on the source image
     /// </summary>
     /// <param name="source">The full source image (SKBitmap)</param>
-    public void UpdateEffect(SKBitmap source)
+    public override void UpdateEffect(SKBitmap source)
     {
         if (source == null) return;
         
@@ -85,8 +85,8 @@ public class BlurAnnotation : BaseEffectAnnotation
         using var resultBitmap = SKBitmap.FromImage(blurredImage);
 
         // Convert to Avalonia Bitmap
-        _effectBitmap?.Dispose();
-        _effectBitmap = ToAvaloniaBitmap(resultBitmap);
+        EffectBitmap?.Dispose();
+        EffectBitmap = ToAvaloniaBitmap(resultBitmap);
     }
 
     private Bitmap ToAvaloniaBitmap(SKBitmap skBitmap)

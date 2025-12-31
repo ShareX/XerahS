@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:ShareX.Avalonia.UI.ViewModels"
              xmlns:views="using:ShareX.Avalonia.UI.Views"
+             xmlns:models="using:ShareX.Avalonia.Annotations.Models"
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
              x:Class="ShareX.Avalonia.UI.Views.EditorView"
              x:DataType="vm:MainViewModel"
@@ -72,48 +73,89 @@
             <StackPanel Orientation="Horizontal" Spacing="12">
                 <!-- Section 1: Tools -->
                 <Border BorderThickness="0,0,1,0" BorderBrush="#FFFFFF1A" Padding="0,0,12,0">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <Button Content="V" Width="40" Height="40" 
-                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Select}"
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Select}"
                                 Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Select}" 
                                 Foreground="White" CornerRadius="8" ToolTip.Tip="Select (V)"/>
+                        
+                        <!-- Shapes -->
                         <Button Content="▭" Width="40" Height="40" 
-                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Rectangle}"
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Rectangle}"
                                 Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Rectangle}" 
                                 Foreground="White" CornerRadius="8" ToolTip.Tip="Rectangle (R)"/>
                         <Button Content="○" Width="40" Height="40" 
-                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Ellipse}"
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Ellipse}"
                                 Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Ellipse}" 
                                 Foreground="White" CornerRadius="8" ToolTip.Tip="Ellipse (E)"/>
                         <Button Content="→" Width="40" Height="40" 
-                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Arrow}"
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Arrow}"
                                 Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Arrow}" 
                                 Foreground="White" CornerRadius="8" ToolTip.Tip="Arrow (A)"/>
                         <Button Content="—" Width="40" Height="40" 
-                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Line}"
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Line}"
                                 Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Line}" 
                                 Foreground="White" CornerRadius="8" ToolTip.Tip="Line (L)"/>
+                        
+                        <!-- Drawing -->
+                        <Button Content="✏️" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Pen}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Pen}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Freehand (P)"/>
+                        <Button Content="🖍️" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Highlighter}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Highlighter}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Highlighter (H)"/>
+
+                        <!-- Text & Annotations -->
                         <Button Content="T" Width="40" Height="40" 
-                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Text}"
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Text}"
                                 Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Text}" 
                                 Foreground="White" CornerRadius="8" ToolTip.Tip="Text (T)"/>
-                        <Button Content="#" Width="40" Height="40" 
-                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Number}"
+                        <Button Content="💬" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.SpeechBalloon}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=SpeechBalloon}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Speech Balloon (B)"/>
+                        <Button Content="①" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Number}"
                                 Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Number}" 
-                                Foreground="White" CornerRadius="8" ToolTip.Tip="Number (N)"/>
-                        <Button Content="🔦" Width="40" Height="40" 
-                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Spotlight}"
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Step/Number (N)"/>
+
+                        <!-- Effects & Utils -->
+                        <Button Content="💧" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Blur}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Blur}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Blur Region"/>
+                        <Button Content="▒" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Pixelate}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Pixelate}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Pixelate Region"/>
+                        <Button Content="🔍" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Magnify}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Magnify}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Magnifier (M)"/>
+                         <Button Content="🔦" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Spotlight}"
                                 Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Spotlight}" 
                                 Foreground="White" CornerRadius="8" ToolTip.Tip="Spotlight (S)"/>
+                         <Button Content="🪄" Width="40" Height="40" 
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.SmartEraser}"
+                                Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=SmartEraser}" 
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Smart Eraser"/>
+
                         <Button Content="✂" Width="40" Height="40" 
-                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static vm:EditorTool.Crop}"
+                                Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Crop}"
                                 Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Crop}" 
                                 Foreground="White" CornerRadius="8" ToolTip.Tip="Crop (C)"/>
+                        
+                        <!-- Panel Toggle -->
                         <Button Content="FX" Width="40" Height="40" 
                                 Command="{Binding ToggleEffectsPanelCommand}"
                                 Background="{Binding IsEffectsPanelOpen, Converter={StaticResource BoolToActiveBackgroundConverter}}" 
-                                Foreground="White" CornerRadius="8" ToolTip.Tip="Image Effects (F)"/>
+                                Foreground="White" CornerRadius="8" ToolTip.Tip="Image Effects Panel (F)"/>
                     </StackPanel>
+                    </ScrollViewer>
                 </Border>
                 
                 <!-- Section 2: Color Picker-->
@@ -625,7 +667,8 @@
                 VerticalAlignment="Stretch"
                 Width="400"
                 Padding="16">
-            <views:EffectsPanelView DataContext="{Binding EffectsPanel}"/>
+            <views:EffectsPanelView DataContext="{Binding EffectsPanel}"
+                                    ApplyRequested="OnEffectsPanelApplyRequested"/>
         </Border>
     </Grid>
 </UserControl>

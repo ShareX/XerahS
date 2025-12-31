@@ -11,6 +11,7 @@ using ShareX.Avalonia.Core.Managers;
 using ShareX.Avalonia.Core.Tasks;
 using ShareX.Avalonia.Platform.Abstractions;
 using ShareX.Avalonia.Uploaders;
+using ShareX.Avalonia.Annotations.Models;
 
 namespace ShareX.Avalonia.UI.ViewModels
 {

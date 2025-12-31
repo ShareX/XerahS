@@ -11,7 +11,7 @@ namespace ShareX.Avalonia.Annotations.Models;
 /// </summary>
 public class PixelateAnnotation : BaseEffectAnnotation
 {
-    private Bitmap? _effectBitmap;
+    // EffectBitmap inherited from Base
 
     public PixelateAnnotation()
     {
@@ -25,9 +25,9 @@ public class PixelateAnnotation : BaseEffectAnnotation
     {
         var rect = GetBounds();
 
-        if (_effectBitmap != null)
+        if (EffectBitmap != null)
         {
-            context.DrawImage(_effectBitmap, rect);
+            context.DrawImage(EffectBitmap, rect);
         }
         else
         {
@@ -41,7 +41,7 @@ public class PixelateAnnotation : BaseEffectAnnotation
         }
     }
 
-    public void UpdateEffect(SKBitmap source)
+    public override void UpdateEffect(SKBitmap source)
     {
         if (source == null) return;
         
@@ -65,8 +65,8 @@ public class PixelateAnnotation : BaseEffectAnnotation
         info = new SKImageInfo(crop.Width, crop.Height);
         using var result = small.Resize(info, SKFilterQuality.None); // Nearest neighbor upscale
 
-        _effectBitmap?.Dispose();
-        _effectBitmap = ToAvaloniaBitmap(result);
+        EffectBitmap?.Dispose();
+        EffectBitmap = ToAvaloniaBitmap(result);
     }
 
     private Bitmap ToAvaloniaBitmap(SKBitmap skBitmap)

@@ -11,7 +11,7 @@ namespace ShareX.Avalonia.Annotations.Models;
 /// </summary>
 public class MagnifyAnnotation : BaseEffectAnnotation
 {
-    private Bitmap? _effectBitmap;
+    // EffectBitmap inherited from Base
 
     public MagnifyAnnotation()
     {
@@ -25,10 +25,10 @@ public class MagnifyAnnotation : BaseEffectAnnotation
     {
         var rect = GetBounds();
 
-        if (_effectBitmap != null)
+        if (EffectBitmap != null)
         {
             // Draw magnified content
-            context.DrawImage(_effectBitmap, rect);
+            context.DrawImage(EffectBitmap, rect);
         }
         else
         {
@@ -47,7 +47,7 @@ public class MagnifyAnnotation : BaseEffectAnnotation
         }
     }
 
-    public void UpdateEffect(SKBitmap source)
+    public override void UpdateEffect(SKBitmap source)
     {
         if (source == null) return;
         
@@ -86,8 +86,8 @@ public class MagnifyAnnotation : BaseEffectAnnotation
         var info = new SKImageInfo((int)rect.Width, (int)rect.Height);
         using var scaled = crop.Resize(info, SKFilterQuality.High);
 
-        _effectBitmap?.Dispose();
-        _effectBitmap = ToAvaloniaBitmap(scaled);
+        EffectBitmap?.Dispose();
+        EffectBitmap = ToAvaloniaBitmap(scaled);
     }
 
     private Bitmap ToAvaloniaBitmap(SKBitmap skBitmap)

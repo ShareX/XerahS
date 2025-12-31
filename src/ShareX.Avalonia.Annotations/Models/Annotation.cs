@@ -25,12 +25,29 @@
 
 using Avalonia;
 using Avalonia.Media;
+using System.Text.Json.Serialization;
 
 namespace ShareX.Avalonia.Annotations.Models;
 
 /// <summary>
 /// Base class for all annotation types
 /// </summary>
+[JsonDerivedType(typeof(ArrowAnnotation), typeDiscriminator: "Arrow")]
+[JsonDerivedType(typeof(BlurAnnotation), typeDiscriminator: "Blur")]
+[JsonDerivedType(typeof(CropAnnotation), typeDiscriminator: "Crop")]
+[JsonDerivedType(typeof(EllipseAnnotation), typeDiscriminator: "Ellipse")]
+[JsonDerivedType(typeof(FreehandAnnotation), typeDiscriminator: "Freehand")]
+[JsonDerivedType(typeof(HighlightAnnotation), typeDiscriminator: "Highlight")]
+[JsonDerivedType(typeof(ImageAnnotation), typeDiscriminator: "Image")]
+[JsonDerivedType(typeof(LineAnnotation), typeDiscriminator: "Line")]
+[JsonDerivedType(typeof(MagnifyAnnotation), typeDiscriminator: "Magnify")]
+[JsonDerivedType(typeof(NumberAnnotation), typeDiscriminator: "Number")]
+[JsonDerivedType(typeof(PixelateAnnotation), typeDiscriminator: "Pixelate")]
+[JsonDerivedType(typeof(RectangleAnnotation), typeDiscriminator: "Rectangle")]
+[JsonDerivedType(typeof(SmartEraserAnnotation), typeDiscriminator: "SmartEraser")]
+[JsonDerivedType(typeof(SpeechBalloonAnnotation), typeDiscriminator: "SpeechBalloon")]
+[JsonDerivedType(typeof(SpotlightAnnotation), typeDiscriminator: "Spotlight")]
+[JsonDerivedType(typeof(TextAnnotation), typeDiscriminator: "Text")]
 public abstract class Annotation
 {
     /// <summary>

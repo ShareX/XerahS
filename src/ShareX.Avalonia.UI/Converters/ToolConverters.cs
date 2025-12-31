@@ -3,6 +3,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using ShareX.Avalonia.UI.ViewModels;
+using ShareX.Avalonia.Annotations.Models;
 
 namespace ShareX.Avalonia.UI.Converters
 {

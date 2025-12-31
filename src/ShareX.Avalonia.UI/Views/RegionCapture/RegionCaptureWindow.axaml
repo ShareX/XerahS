@@ -10,6 +10,7 @@
         SystemDecorations="None"
         Topmost="True"
         ShowInTaskbar="False"
+        Cursor="Cross"
         PointerPressed="OnPointerPressed"
         PointerMoved="OnPointerMoved"
         PointerReleased="OnPointerReleased">

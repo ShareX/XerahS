@@ -27,14 +27,20 @@ namespace ShareX.Avalonia.UI.Views
             }
         }
 
+        public static readonly RoutedEvent<RoutedEventArgs> ApplyRequestedEvent =
+            RoutedEvent.Register<EffectsPanelView, RoutedEventArgs>(nameof(ApplyRequested), RoutingStrategies.Bubble);
+
+        public event EventHandler<RoutedEventArgs> ApplyRequested
+        {
+            add => AddHandler(ApplyRequestedEvent, value);
+            remove => RemoveHandler(ApplyRequestedEvent, value);
+        }
+
         private void OnApplyClicked(object? sender, RoutedEventArgs e)
         {
-            // Notify parent that an effect should be applied
-            // This will be handled by the parent view (EditorView or MainWindow)
             if (DataContext is EffectsPanelViewModel vm && vm.SelectedEffect != null)
             {
-                // TODO: Implement effect application logic
-                // For now, this is a placeholder for parent view integration
+                RaiseEvent(new RoutedEventArgs(ApplyRequestedEvent));
             }
         }
     }
