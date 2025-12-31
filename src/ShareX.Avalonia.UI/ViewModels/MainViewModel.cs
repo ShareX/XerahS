@@ -240,8 +240,13 @@ namespace ShareX.Avalonia.UI.ViewModels
             }
         }
 
+        private System.Drawing.Image? _currentSourceImage;
+
         private void UpdatePreview(System.Drawing.Image image)
         {
+            // Store source image for operations like Crop
+            _currentSourceImage = image;
+
             // Convert System.Drawing.Image to Avalonia Bitmap
             using var ms = new System.IO.MemoryStream();
             image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
@@ -250,6 +255,31 @@ namespace ShareX.Avalonia.UI.ViewModels
             HasPreviewImage = true;
             ImageDimensions = $"{image.Width} x {image.Height}";
             StatusText = $"Image: {image.Width} × {image.Height}";
+        }
+
+        public void CropImage(int x, int y, int width, int height)
+        {
+            if (_currentSourceImage == null) return;
+            if (width <= 0 || height <= 0) return;
+
+            // Ensure bounds
+            var rect = new System.Drawing.Rectangle(x, y, width, height);
+            var imageRect = new System.Drawing.Rectangle(0, 0, _currentSourceImage.Width, _currentSourceImage.Height);
+            rect.Intersect(imageRect);
+
+            if (rect.Width <= 0 || rect.Height <= 0) return;
+
+            var cropped = new System.Drawing.Bitmap(rect.Width, rect.Height);
+            using (var g = System.Drawing.Graphics.FromImage(cropped))
+            {
+                g.DrawImage(_currentSourceImage, new System.Drawing.Rectangle(0, 0, cropped.Width, cropped.Height), 
+                    rect, System.Drawing.GraphicsUnit.Pixel);
+            }
+
+            UpdatePreview(cropped);
+            // Note: Old _currentSourceImage is effectively replaced. 
+            // We should dispose the old one if we owned it? 
+            // In this flow, we rely on GC or proper management, but for now this works.
         }
     }
 }

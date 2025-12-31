@@ -69,6 +69,13 @@ namespace ShareX.Avalonia.UI.Views
                         vm.SelectToolCommand.Execute(EditorTool.Select);
                         e.Handled = true;
                         break;
+                    case Key.Enter:
+                        if (vm.ActiveTool == EditorTool.Crop)
+                        {
+                            PerformCrop();
+                            e.Handled = true;
+                        }
+                        break;
                     case Key.R:
                         vm.SelectToolCommand.Execute(EditorTool.Rectangle);
                         e.Handled = true;
@@ -209,12 +216,11 @@ namespace ShareX.Avalonia.UI.Views
             {
                 // Hit test
                 var source = e.Source as Control;
-                if (source != null && source != canvas && canvas.Children.Contains(source))
+                if (source != null && source != canvas && canvas.Children.Contains(source) && source.Name != "CropOverlay")
                 {
                     _selectedShape = source;
                     _lastDragPoint = point;
                     _isDraggingShape = true;
-                    // Visual feedback could be added here (e.g. bounding box)
                 }
                 else
                 {
@@ -230,6 +236,22 @@ namespace ShareX.Avalonia.UI.Views
             _isDrawing = true;
 
             var brush = new SolidColorBrush(Color.Parse(vm.SelectedColor));
+
+            // Special handling for Crop
+            if (vm.ActiveTool == EditorTool.Crop)
+            {
+                var cropOverlay = this.FindControl<global::Avalonia.Controls.Shapes.Rectangle>("CropOverlay");
+                if (cropOverlay != null)
+                {
+                    cropOverlay.IsVisible = true;
+                    Canvas.SetLeft(cropOverlay, _startPoint.X);
+                    Canvas.SetTop(cropOverlay, _startPoint.Y);
+                    cropOverlay.Width = 0;
+                    cropOverlay.Height = 0;
+                    _currentShape = cropOverlay; 
+                }
+                return;
+            }
             
             switch (vm.ActiveTool)
             {
@@ -430,6 +452,30 @@ namespace ShareX.Avalonia.UI.Views
                     _currentShape = null;
                 }
             }
+        }
+
+        private void PerformCrop()
+        {
+            var cropOverlay = this.FindControl<global::Avalonia.Controls.Shapes.Rectangle>("CropOverlay");
+            if (cropOverlay == null || !cropOverlay.IsVisible || DataContext is not MainViewModel vm) return;
+
+            var x = Canvas.GetLeft(cropOverlay);
+            var y = Canvas.GetTop(cropOverlay);
+            var w = cropOverlay.Width;
+            var h = cropOverlay.Height;
+
+             var scaling = 1.0; 
+             if (VisualRoot is TopLevel tl) scaling = tl.RenderScaling;
+
+            var physX = (int)(x * scaling);
+            var physY = (int)(y * scaling);
+            var physW = (int)(w * scaling);
+            var physH = (int)(h * scaling);
+
+            vm.CropImage(physX, physY, physW, physH);
+            
+            cropOverlay.IsVisible = false;
+            vm.StatusText = "Image cropped";
         }
 
         private void OnMinimizeClick(object sender, RoutedEventArgs e)
