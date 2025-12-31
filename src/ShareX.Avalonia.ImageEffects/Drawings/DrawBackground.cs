@@ -1,83 +1,36 @@
-#region License Information (GPL v3)
-
-/*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
-
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version 2
-    of the License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
-*/
-
-#endregion License Information (GPL v3)
-
 using ShareX.Avalonia.Common;
-using ShareX.Avalonia.Common.Colors;
 using ShareX.Avalonia.ImageEffects.Helpers;
 using System.ComponentModel;
-using System.Drawing;
+using SkiaSharp;
 
 namespace ShareX.Avalonia.ImageEffects.Drawings
 {
-    [Description("Background")]
+    [Description("Draw background")]
     public class DrawBackground : ImageEffect
     {
-        [DefaultValue(typeof(Color), "Black")]
-        public Color Color { get; set; }
+        // [DefaultValue(typeof(Color), "White")]
+        public SKColor Color { get; set; }
 
         [DefaultValue(false)]
         public bool UseGradient { get; set; }
 
-        public GradientInfo Gradient { get; set; }
+        // public GradientInfo Gradient { get; set; }
 
         public DrawBackground()
         {
-            this.ApplyDefaultPropertyValues();
-            AddDefaultGradient();
+            // this.ApplyDefaultPropertyValues();
+            Color = SKColors.White;
         }
 
-        public override Bitmap Apply(Bitmap bmp)
+        public override SKBitmap Apply(SKBitmap bmp)
         {
-            using (bmp)
-            {
-                if (UseGradient && Gradient != null && Gradient.IsValid)
-                {
-                    return ImageEffectsProcessing.FillBackground(bmp, Gradient);
-                }
-
-                return ImageEffectsProcessing.FillBackground(bmp, Color);
-            }
+             // TODO: Background draw implementation
+             return bmp;
         }
 
         protected override string? GetSummary()
         {
-            if (!UseGradient)
-            {
-                return $"{Color.R}, {Color.G}, {Color.B}";
-            }
-
-            return null;
-        }
-
-        private void AddDefaultGradient()
-        {
-            Gradient = new GradientInfo();
-            Gradient.Colors.Add(new GradientStop(Color.FromArgb(68, 120, 194), 0f));
-            Gradient.Colors.Add(new GradientStop(Color.FromArgb(13, 58, 122), 50f));
-            Gradient.Colors.Add(new GradientStop(Color.FromArgb(6, 36, 78), 50f));
-            Gradient.Colors.Add(new GradientStop(Color.FromArgb(23, 89, 174), 100f));
+            return Color.ToString();
         }
     }
 }

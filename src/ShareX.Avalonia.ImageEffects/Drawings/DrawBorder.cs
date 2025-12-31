@@ -1,91 +1,45 @@
-#region License Information (GPL v3)
-
-/*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
-
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version 2
-    of the License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
-*/
-
-#endregion License Information (GPL v3)
-
 using ShareX.Avalonia.Common;
-using ShareX.Avalonia.Common.Colors;
 using ShareX.Avalonia.ImageEffects.Helpers;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 namespace ShareX.Avalonia.ImageEffects.Drawings
 {
-    [Description("Border")]
+    [Description("Draw border")]
     public class DrawBorder : ImageEffect
     {
-        [DefaultValue(BorderType.Outside)]
-        public BorderType Type { get; set; }
-
-        private int size;
-
         [DefaultValue(1)]
-        public int Size
-        {
-            get => size;
-            set => size = value.Max(1);
-        }
+        public int Size { get; set; }
 
-        [DefaultValue(DashStyle.Solid)]
-        public DashStyle DashStyle { get; set; }
+        // [DefaultValue(typeof(Color), "Black")]
+        public SKColor Color { get; set; }
 
-        [DefaultValue(typeof(Color), "Black")]
-        public Color Color { get; set; }
+        // [DefaultValue(typeof(Color), "Transparent")]
+        public SKColor InsideColor { get; set; }
+
+        [DefaultValue(0)]
+        public int Offset { get; set; }
 
         [DefaultValue(false)]
-        public bool UseGradient { get; set; }
-
-        public GradientInfo Gradient { get; set; }
+        public bool UseCenterColor { get; set; }
 
         public DrawBorder()
         {
-            this.ApplyDefaultPropertyValues();
-            AddDefaultGradient();
+            // this.ApplyDefaultPropertyValues();
+            Size = 1;
+            Color = SKColors.Black;
+            InsideColor = SKColors.Transparent;
         }
 
-        public override Bitmap Apply(Bitmap bmp)
+        public override SKBitmap Apply(SKBitmap bmp)
         {
-            if (UseGradient && Gradient != null && Gradient.IsValid)
-            {
-                return ImageEffectsProcessing.DrawBorder(bmp, Gradient, Size, Type, DashStyle);
-            }
-
-            return ImageEffectsProcessing.DrawBorder(bmp, Color, Size, Type, DashStyle);
+             // TODO: Draw border
+             return bmp;
         }
 
-        protected override string GetSummary()
+        protected override string? GetSummary()
         {
-            return Size + "px";
-        }
-
-        private void AddDefaultGradient()
-        {
-            Gradient = new GradientInfo();
-            Gradient.Colors.Add(new GradientStop(Color.FromArgb(68, 120, 194), 0f));
-            Gradient.Colors.Add(new GradientStop(Color.FromArgb(13, 58, 122), 50f));
-            Gradient.Colors.Add(new GradientStop(Color.FromArgb(6, 36, 78), 50f));
-            Gradient.Colors.Add(new GradientStop(Color.FromArgb(23, 89, 174), 100f));
+            return Size.ToString();
         }
     }
 }

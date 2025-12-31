@@ -1,32 +1,7 @@
-#region License Information (GPL v3)
-
-/*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
-
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version 2
-    of the License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
-*/
-
-#endregion License Information (GPL v3)
-
 using ShareX.Avalonia.Common;
 using ShareX.Avalonia.ImageEffects.Helpers;
 using System.ComponentModel;
-using System.Drawing;
+using SkiaSharp;
 
 namespace ShareX.Avalonia.ImageEffects
 {
@@ -38,23 +13,23 @@ namespace ShareX.Avalonia.ImageEffects
         [DefaultValue(0)]
         public int BorderSize { get; set; }
 
-        [DefaultValue(typeof(Color), "Transparent")]
-        public Color BorderColor { get; set; }
+        // [DefaultValue(typeof(Color), "Transparent")]
+        public SKColor BorderColor { get; set; }
 
         public Pixelate()
         {
-            this.ApplyDefaultPropertyValues();
+            // this.ApplyDefaultPropertyValues();
+            Size = 16;
+            BorderColor = SKColors.Transparent;
         }
 
-        public override Bitmap Apply(Bitmap bmp)
+        public override SKBitmap Apply(SKBitmap bmp)
         {
-            using (bmp)
-            {
-                return ImageEffectsProcessing.Pixelate(bmp, Size, BorderSize, BorderColor);
-            }
+             ImageEffectsProcessing.Pixelate(bmp, Size);
+             return bmp;
         }
 
-        protected override string GetSummary()
+        protected override string? GetSummary()
         {
             return $"{Size}, {BorderSize}";
         }

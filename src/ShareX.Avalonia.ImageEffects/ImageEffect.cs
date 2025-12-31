@@ -27,7 +27,7 @@ using ShareX.Avalonia.Common;
 using Newtonsoft.Json;
 using ShareX.Avalonia.ImageEffects.Helpers;
 using System.ComponentModel;
-using System.Drawing;
+using SkiaSharp;
 
 namespace ShareX.Avalonia.ImageEffects
 {
@@ -45,7 +45,7 @@ namespace ShareX.Avalonia.ImageEffects
             Enabled = true;
         }
 
-        public abstract Bitmap Apply(Bitmap bmp);
+        public abstract SKBitmap Apply(SKBitmap bmp);
 
         protected virtual string? GetSummary()
         {

@@ -1,61 +1,37 @@
-#region License Information (GPL v3)
-
-/*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
-
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version 2
-    of the License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
-*/
-
-#endregion License Information (GPL v3)
-
 using ShareX.Avalonia.Common;
 using ShareX.Avalonia.ImageEffects.Helpers;
 using System.ComponentModel;
-using System.Drawing;
+using SkiaSharp;
 
-namespace ShareX.Avalonia.ImageEffects
+namespace ShareX.Avalonia.ImageEffects.Manipulations
 {
-    public class Skew : ImageEffect
+    [Description("Skew")]
+    internal class Skew : ImageEffect
     {
-        [DefaultValue(0), Description("How much pixel skew left to right.")]
-        public int Horizontally { get; set; }
+        [DefaultValue(0f)]
+        public float X { get; set; }
 
-        [DefaultValue(0), Description("How much pixel skew top to bottom.")]
-        public int Vertically { get; set; }
+        [DefaultValue(0f)]
+        public float Y { get; set; }
+
+        // [DefaultValue(typeof(Color), "Transparent")]
+        public SKColor BackgroundColor { get; set; }
 
         public Skew()
         {
-            this.ApplyDefaultPropertyValues();
+            // this.ApplyDefaultPropertyValues();
+            BackgroundColor = SKColors.Transparent;
         }
 
-        public override Bitmap Apply(Bitmap bmp)
+        public override SKBitmap Apply(SKBitmap bmp)
         {
-            if (Horizontally == 0 && Vertically == 0)
-            {
-                return bmp;
-            }
-
-            return ImageEffectsProcessing.AddSkew(bmp, Horizontally, Vertically);
+            // TODO: Skew implementation
+            return bmp;
         }
 
-        protected override string GetSummary()
+        protected override string? GetSummary()
         {
-            return $"{Horizontally}px, {Vertically}px";
+            return $"{X}, {Y}";
         }
     }
 }

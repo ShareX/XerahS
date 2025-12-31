@@ -1,74 +1,27 @@
-#region License Information (GPL v3)
-
-/*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
-
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version 2
-    of the License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
-*/
-
-#endregion License Information (GPL v3)
-
 using ShareX.Avalonia.Common;
 using ShareX.Avalonia.ImageEffects.Helpers;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Imaging;
-using DrawingPoint = System.Drawing.Point;
+using SkiaSharp;
+
 
 namespace ShareX.Avalonia.ImageEffects
 {
     [Description("RGB split")]
     public class RGBSplit : ImageEffect
     {
-        [DefaultValue(typeof(DrawingPoint), "-5, 0")]
-        public DrawingPoint OffsetRed { get; set; } = new DrawingPoint(-5, 0);
+        // [DefaultValue(typeof(DrawingPoint), "-5, 0")]
+        public SKPoint OffsetRed { get; set; } = new SKPoint(-5, 0);
 
-        [DefaultValue(typeof(DrawingPoint), "0, 0")]
-        public DrawingPoint OffsetGreen { get; set; }
+        // [DefaultValue(typeof(DrawingPoint), "0, 0")]
+        public SKPoint OffsetGreen { get; set; }
 
-        [DefaultValue(typeof(DrawingPoint), "5, 0")]
-        public DrawingPoint OffsetBlue { get; set; } = new DrawingPoint(5, 0);
+        // [DefaultValue(typeof(DrawingPoint), "5, 0")]
+        public SKPoint OffsetBlue { get; set; } = new SKPoint(5, 0);
 
-        public override Bitmap Apply(Bitmap bmp)
+        public override SKBitmap Apply(SKBitmap bmp)
         {
-            Bitmap bmpResult = bmp.CreateEmptyBitmap();
-
-            using (UnsafeBitmap source = new UnsafeBitmap(bmp, true, ImageLockMode.ReadOnly))
-            using (UnsafeBitmap dest = new UnsafeBitmap(bmpResult, true, ImageLockMode.WriteOnly))
-            {
-                int right = source.Width - 1;
-                int bottom = source.Height - 1;
-
-                for (int y = 0; y < source.Height; y++)
-                {
-                    for (int x = 0; x < source.Width; x++)
-                    {
-                        ColorBgra colorR = source.GetPixel(MathHelpers.Clamp(x - OffsetRed.X, 0, right), MathHelpers.Clamp(y - OffsetRed.Y, 0, bottom));
-                        ColorBgra colorG = source.GetPixel(MathHelpers.Clamp(x - OffsetGreen.X, 0, right), MathHelpers.Clamp(y - OffsetGreen.Y, 0, bottom));
-                        ColorBgra colorB = source.GetPixel(MathHelpers.Clamp(x - OffsetBlue.X, 0, right), MathHelpers.Clamp(y - OffsetBlue.Y, 0, bottom));
-                        ColorBgra shiftedColor = new ColorBgra((byte)(colorB.Blue * colorB.Alpha / 255), (byte)(colorG.Green * colorG.Alpha / 255),
-                            (byte)(colorR.Red * colorR.Alpha / 255), (byte)((colorR.Alpha + colorG.Alpha + colorB.Alpha) / 3));
-                        dest.SetPixel(x, y, shiftedColor);
-                    }
-                }
-            }
-
-            return bmpResult;
+            // TODO: Skia implementation of channel split
+            return bmp;
         }
     }
 }

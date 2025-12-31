@@ -1,59 +1,45 @@
-#region License Information (GPL v3)
-
-/*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
-
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version 2
-    of the License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
-*/
-
-#endregion License Information (GPL v3)
-
 using ShareX.Avalonia.Common;
 using ShareX.Avalonia.ImageEffects.Helpers;
-using System;
 using System.ComponentModel;
-using System.Drawing;
+using SkiaSharp;
 
-namespace ShareX.Avalonia.ImageEffects
+namespace ShareX.Avalonia.ImageEffects.Manipulations
 {
     [Description("Rounded corners")]
-    public class RoundedCorners : ImageEffect
+    internal class RoundedCorners : ImageEffect
     {
-        private int cornerRadius;
-
         [DefaultValue(20)]
-        public int CornerRadius
-        {
-            get => cornerRadius;
-            set => cornerRadius = Math.Max(0, value);
-        }
+        public int CornerRadius { get; set; }
+
+        [DefaultValue(false)]
+        public bool RoundTopLeft { get; set; }
+
+        [DefaultValue(false)]
+        public bool RoundTopRight { get; set; }
+
+        [DefaultValue(false)]
+        public bool RoundBottomLeft { get; set; }
+
+        [DefaultValue(false)]
+        public bool RoundBottomRight { get; set; }
+
+        // [DefaultValue(typeof(Color), "Transparent")]
+        public SKColor BackgroundColor { get; set; }
 
         public RoundedCorners()
         {
-            this.ApplyDefaultPropertyValues();
+            // this.ApplyDefaultPropertyValues();
+            CornerRadius = 20;
+            BackgroundColor = SKColors.Transparent;
         }
 
-        public override Bitmap Apply(Bitmap bmp)
+        public override SKBitmap Apply(SKBitmap bmp)
         {
-            return ImageEffectsProcessing.RoundedCorners(bmp, CornerRadius);
+            // TODO: Rounded corners implementation
+            return bmp;
         }
 
-        protected override string GetSummary()
+        protected override string? GetSummary()
         {
             return CornerRadius.ToString();
         }
