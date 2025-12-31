@@ -30,6 +30,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Threading;
 using ShareX.Avalonia.UI.ViewModels;
 using ShareX.Avalonia.Annotations.Models;
 using Avalonia.Platform.Storage;
@@ -45,6 +46,10 @@ namespace ShareX.Avalonia.UI.Views
         private Control? _currentShape;
         private bool _isDrawing;
 
+        private const double MinZoom = 0.25;
+        private const double MaxZoom = 4.0;
+        private const double ZoomStep = 0.1;
+
         // Selection state
         private Control? _selectedShape;
         private Point _lastDragPoint;
@@ -54,6 +59,55 @@ namespace ShareX.Avalonia.UI.Views
         private List<global::Avalonia.Controls.Shapes.Rectangle> _selectionHandles = new();
         private bool _isDraggingHandle;
         private global::Avalonia.Controls.Shapes.Rectangle? _draggedHandle;
+
+        private Point GetCanvasPosition(PointerEventArgs e, Canvas canvas)
+        {
+            return e.GetPosition(canvas);
+        }
+
+        private void OnPreviewPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+        {
+            if (DataContext is not MainViewModel vm) return;
+            if (!e.KeyModifiers.HasFlag(KeyModifiers.Control)) return;
+
+            var oldZoom = vm.Zoom;
+            var direction = e.Delta.Y > 0 ? 1 : -1;
+            var newZoom = Math.Clamp(Math.Round((oldZoom + direction * ZoomStep) * 100) / 100, MinZoom, MaxZoom);
+            if (Math.Abs(newZoom - oldZoom) < 0.0001) return;
+
+            var scrollViewer = this.FindControl<ScrollViewer>("CanvasScrollViewer");
+            if (scrollViewer != null)
+            {
+                var pointerPosition = e.GetPosition(scrollViewer);
+                var offsetBefore = scrollViewer.Offset;
+                var logicalPoint = new Vector(
+                    (offsetBefore.X + pointerPosition.X) / oldZoom,
+                    (offsetBefore.Y + pointerPosition.Y) / oldZoom);
+
+                vm.Zoom = newZoom;
+
+                Dispatcher.UIThread.Post(() =>
+                {
+                    var targetOffset = new Vector(
+                        logicalPoint.X * newZoom - pointerPosition.X,
+                        logicalPoint.Y * newZoom - pointerPosition.Y);
+
+                    // Clamp to available extent to avoid jumpy scrolling near edges
+                    var maxX = Math.Max(0, scrollViewer.Extent.Width - scrollViewer.Viewport.Width);
+                    var maxY = Math.Max(0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
+
+                    scrollViewer.Offset = new Vector(
+                        Math.Clamp(targetOffset.X, 0, maxX),
+                        Math.Clamp(targetOffset.Y, 0, maxY));
+                }, DispatcherPriority.Render);
+            }
+            else
+            {
+                vm.Zoom = newZoom;
+            }
+
+            e.Handled = true;
+        }
         
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
@@ -226,6 +280,9 @@ namespace ShareX.Avalonia.UI.Views
         public EditorView()
         {
             InitializeComponent();
+
+            // Capture wheel events in tunneling phase so ScrollViewer doesn't scroll when using Ctrl+wheel zoom.
+            AddHandler(PointerWheelChangedEvent, OnPreviewPointerWheelChanged, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, true);
         }
 
         protected override void OnLoaded(RoutedEventArgs e)
@@ -512,7 +569,7 @@ namespace ShareX.Avalonia.UI.Views
             var canvas = sender as Canvas;
             if (canvas == null) return;
 
-            var point = e.GetPosition(canvas);
+            var point = GetCanvasPosition(e, canvas);
 
             // Check if clicking a handle
             if ((_selectedShape != null && vm.ActiveTool == EditorTool.Select) || vm.ActiveTool == EditorTool.Crop)
@@ -525,7 +582,7 @@ namespace ShareX.Avalonia.UI.Views
                      {
                          _isDraggingHandle = true;
                          _draggedHandle = handle;
-                         _startPoint = e.GetPosition(overlay); // Use overlay coords for handles
+                             _startPoint = GetCanvasPosition(e, overlay); // Use overlay coords for handles
                          
                          // If we are cropping, ensure we are selecting the crop overlay
                          if (vm.ActiveTool == EditorTool.Crop)
@@ -860,7 +917,7 @@ namespace ShareX.Avalonia.UI.Views
         {
             var canvas = sender as Canvas;
             if (canvas == null) return;
-            var currentPoint = e.GetPosition(canvas);
+            var currentPoint = GetCanvasPosition(e, canvas);
 
             if (_isDraggingHandle && _draggedHandle != null && _selectedShape != null)
             {

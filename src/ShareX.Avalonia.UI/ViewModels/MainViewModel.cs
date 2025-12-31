@@ -69,6 +69,13 @@ namespace ShareX.Avalonia.UI.ViewModels
         [ObservableProperty]
         private double _shadowBlur = 30;
 
+        private const double MinZoom = 0.25;
+        private const double MaxZoom = 4.0;
+        private const double ZoomStep = 0.1;
+
+        [ObservableProperty]
+        private double _zoom = 1.0;
+
         [ObservableProperty]
         private string _imageDimensions = "No image";
 
@@ -188,6 +195,18 @@ namespace ShareX.Avalonia.UI.ViewModels
             });
         }
 
+        partial void OnZoomChanged(double value)
+        {
+            var clamped = Math.Clamp(value, MinZoom, MaxZoom);
+            if (Math.Abs(clamped - value) > 0.0001)
+            {
+                Zoom = clamped;
+                return;
+            }
+
+            StatusText = $"Zoom {clamped:P0}";
+        }
+
         [RelayCommand]
         private async Task CaptureFullscreen()
         {
@@ -267,6 +286,24 @@ namespace ShareX.Avalonia.UI.ViewModels
         {
             IsEffectsPanelOpen = !IsEffectsPanelOpen;
             StatusText = IsEffectsPanelOpen ? "Effects panel opened" : "Effects panel closed";
+        }
+
+        [RelayCommand]
+        private void ZoomIn()
+        {
+            Zoom = Math.Clamp(Math.Round((Zoom + ZoomStep) * 100) / 100, MinZoom, MaxZoom);
+        }
+
+        [RelayCommand]
+        private void ZoomOut()
+        {
+            Zoom = Math.Clamp(Math.Round((Zoom - ZoomStep) * 100) / 100, MinZoom, MaxZoom);
+        }
+
+        [RelayCommand]
+        private void ResetZoom()
+        {
+            Zoom = 1.0;
         }
 
         [RelayCommand]

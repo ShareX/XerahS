@@ -251,52 +251,60 @@
                         CornerRadius="{Binding CanvasCornerRadius}"
                         Padding="{Binding CanvasPadding}"
                         BoxShadow="{Binding CanvasShadow}">
-                    <!-- Preview Image & Canvas -->
-                    <Border Background="#FFFFFF"
-                            CornerRadius="{Binding PreviewCornerRadius}"
-                            ClipToBounds="True">
-                        <!-- Viewbox ensures we see the whole image scaled to fit -->
-                        <Viewbox Stretch="Uniform">
-                            <!-- Container sized to match actual image dimensions -->
-                            <Grid Name="CanvasContainer" 
-                                  Width="{Binding ImageWidth}" 
-                                  Height="{Binding ImageHeight}">
-                                
-                                <!-- Image Layer -->
-                                <Image Name="PreviewImageControl"
-                                       Source="{Binding PreviewImage}"
-                                       Stretch="Fill"
-                                       HorizontalAlignment="Stretch"
-                                       VerticalAlignment="Stretch"/>
+                    <ScrollViewer Name="CanvasScrollViewer"
+                                  Background="Transparent"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto">
+                        <!-- Preview Image & Canvas -->
+                        <Border Background="#FFFFFF"
+                                CornerRadius="{Binding PreviewCornerRadius}"
+                                ClipToBounds="True">
+                            <LayoutTransformControl>
+                                <LayoutTransformControl.LayoutTransform>
+                                    <ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+                                </LayoutTransformControl.LayoutTransform>
 
-                                <!-- Annotation Layer (Saved content) -->
-                                <Canvas Name="AnnotationCanvas"
-                                        Background="Transparent"
-                                        IsVisible="{Binding HasPreviewImage}"
-                                        HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Stretch"
-                                        Cursor="Cross"
-                                        PointerPressed="OnCanvasPointerPressed"
-                                        PointerMoved="OnCanvasPointerMoved"
-                                        PointerReleased="OnCanvasPointerReleased">
-                                </Canvas>
+                                <!-- Container sized to match actual image dimensions -->
+                                <Grid Name="CanvasContainer" 
+                                      Width="{Binding ImageWidth}" 
+                                      Height="{Binding ImageHeight}">
+                                    
+                                    <!-- Image Layer -->
+                                    <Image Name="PreviewImageControl"
+                                           Source="{Binding PreviewImage}"
+                                           Stretch="Fill"
+                                           HorizontalAlignment="Stretch"
+                                           VerticalAlignment="Stretch"/>
 
-                                <!-- Overlay Layer (Transient UI: Selection handles, Crop) -->
-                                <Canvas Name="OverlayCanvas"
-                                        IsHitTestVisible="False"
-                                        HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Stretch">
-                                    <Rectangle Name="CropOverlay" 
-                                               IsVisible="False"
-                                               Stroke="White"
-                                               StrokeThickness="2"
-                                               StrokeDashArray="4,2"
-                                               Fill="#80000000" />
-                                    <!-- Selection Handles will be added here dynamically -->
-                                </Canvas>
-                            </Grid>
-                        </Viewbox>
-                    </Border>
+                                    <!-- Annotation Layer (Saved content) -->
+                                    <Canvas Name="AnnotationCanvas"
+                                            Background="Transparent"
+                                            IsVisible="{Binding HasPreviewImage}"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            Cursor="Cross"
+                                            PointerPressed="OnCanvasPointerPressed"
+                                            PointerMoved="OnCanvasPointerMoved"
+                                            PointerReleased="OnCanvasPointerReleased">
+                                    </Canvas>
+
+                                    <!-- Overlay Layer (Transient UI: Selection handles, Crop) -->
+                                    <Canvas Name="OverlayCanvas"
+                                            IsHitTestVisible="False"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch">
+                                        <Rectangle Name="CropOverlay" 
+                                                   IsVisible="False"
+                                                   Stroke="White"
+                                                   StrokeThickness="2"
+                                                   StrokeDashArray="4,2"
+                                                   Fill="#80000000" />
+                                        <!-- Selection Handles will be added here dynamically -->
+                                    </Canvas>
+                                </Grid>
+                            </LayoutTransformControl>
+                        </Border>
+                    </ScrollViewer>
                 </Border>
             </Grid>
 
@@ -671,8 +679,33 @@
                                VerticalAlignment="Center"/>
                 </StackPanel>
                 
-                <!-- Right: Version Info -->
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+                <!-- Right: Zoom + Version Info -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <Button Width="28" Height="28" CornerRadius="6" Background="#FFFFFF0D" BorderBrush="#FFFFFF1A" BorderThickness="1"
+                                Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom out (Ctrl + Wheel)">
+                            <TextBlock Text="-" Foreground="#E2E8F0" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <Slider Width="140"
+                                Minimum="0.25" Maximum="4"
+                                SmallChange="0.1" LargeChange="0.25"
+                                Value="{Binding Zoom}"
+                                VerticalAlignment="Center"/>
+                        <Button Width="28" Height="28" CornerRadius="6" Background="#FFFFFF0D" BorderBrush="#FFFFFF1A" BorderThickness="1"
+                                Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom in (Ctrl + Wheel)">
+                            <TextBlock Text="+" Foreground="#E2E8F0" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <Button Width="52" Height="28" CornerRadius="6" Background="#14B8A680" BorderBrush="#14B8A64D" BorderThickness="1"
+                                Command="{Binding ResetZoomCommand}" ToolTip.Tip="Reset zoom">
+                            <TextBlock Text="100%" Foreground="#5EEAD4" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <TextBlock Text="{Binding Zoom, StringFormat='{}{0:P0}'}" 
+                                   Foreground="#E2E8F0"
+                                   FontSize="12"
+                                   VerticalAlignment="Center"
+                                   Margin="4,0,0,0"/>
+                    </StackPanel>
+
                     <TextBlock Text="{Binding AppVersion}" 
                                Foreground="#8B5CF6"
                                FontSize="12"
