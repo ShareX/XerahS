@@ -254,28 +254,29 @@
             <Grid Grid.Column="0" Margin="20">
                 <Border Background="{Binding CanvasBackground}"
                         CornerRadius="{Binding CanvasCornerRadius}"
-                        Padding="{Binding CanvasPadding}"
-                        BoxShadow="{Binding CanvasShadow}">
-                    <ScrollViewer Name="CanvasScrollViewer"
-                                  Background="Transparent"
-                                  HorizontalScrollBarVisibility="Auto"
-                                  VerticalScrollBarVisibility="Auto"
-                                  PointerPressed="OnScrollViewerPointerPressed"
-                                  PointerMoved="OnScrollViewerPointerMoved"
-                                  PointerReleased="OnScrollViewerPointerReleased">
-                        <!-- Preview Image & Canvas -->
+                        Padding="{Binding CanvasPadding}">
+                    <!-- Outer Border: Shadow effect -->
+                    <Border BoxShadow="{Binding CanvasShadow}">
+                        <!-- Inner Border: Corner Radius with clipping -->
                         <Border Background="#FFFFFF"
                                 CornerRadius="{Binding PreviewCornerRadius}"
                                 ClipToBounds="True">
-                            <LayoutTransformControl>
-                                <LayoutTransformControl.LayoutTransform>
-                                    <ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
-                                </LayoutTransformControl.LayoutTransform>
+                            <ScrollViewer Name="CanvasScrollViewer"
+                                          Background="Transparent"
+                                          HorizontalScrollBarVisibility="Auto"
+                                          VerticalScrollBarVisibility="Auto"
+                                          PointerPressed="OnScrollViewerPointerPressed"
+                                          PointerMoved="OnScrollViewerPointerMoved"
+                                          PointerReleased="OnScrollViewerPointerReleased">
+                                <LayoutTransformControl>
+                                    <LayoutTransformControl.LayoutTransform>
+                                        <ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+                                    </LayoutTransformControl.LayoutTransform>
 
-                                <!-- Container sized to match actual image dimensions -->
-                                <Grid Name="CanvasContainer" 
-                                      Width="{Binding ImageWidth}" 
-                                      Height="{Binding ImageHeight}">
+                                    <!-- Container sized to match actual image dimensions -->
+                                    <Grid Name="CanvasContainer" 
+                                          Width="{Binding ImageWidth}" 
+                                          Height="{Binding ImageHeight}">
                                     
                                     <!-- Image Layer -->
                                     <Image Name="PreviewImageControl"
@@ -314,8 +315,9 @@
                                     </Canvas>
                                 </Grid>
                             </LayoutTransformControl>
+                        </ScrollViewer>
                         </Border>
-                    </ScrollViewer>
+                    </Border>
                 </Border>
             </Grid>
 
