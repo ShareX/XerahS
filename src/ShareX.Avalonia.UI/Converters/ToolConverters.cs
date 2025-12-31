@@ -116,7 +116,7 @@ namespace ShareX.Avalonia.UI.Converters
         public static readonly SelectedWidthToBackgroundConverter Instance = new();
 
         private static readonly IBrush SelectedBrush = new SolidColorBrush(Color.Parse("#8B5CF6"));
-        private static readonly IBrush UnselectedBrush = new SolidColorBrush(Color.Parse("#FFFFFF0D"));
+        private static readonly IBrush UnselectedBrush = new SolidColorBrush(Color.Parse("#25263A"));
 
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {

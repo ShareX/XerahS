@@ -16,7 +16,7 @@ namespace ShareX.Avalonia.UI.Converters
             {
                 return new SolidColorBrush(Color.Parse("#8B5CF6")); // Active purple
             }
-            return new SolidColorBrush(Color.Parse("#FFFFFF0D")); // Inactive transparent white
+            return new SolidColorBrush(Color.Parse("#25263A")); // Inactive dark slate
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

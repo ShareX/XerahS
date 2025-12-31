@@ -43,7 +43,7 @@
                     </Button>
                     <Button Command="{Binding ClearCommand}"
                             Background="Transparent"
-                            BorderBrush="#FFFFFF1A"
+                            BorderBrush="#3B3B52"
                             BorderThickness="1"
                             Foreground="White"
                             Padding="16,10"
@@ -53,15 +53,7 @@
                     </Button>
                 </StackPanel>
                 
-                <!-- Settings Button (Right) -->
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
-                    <Button Content="⚙" 
-                            Width="40" Height="40"
-                            Background="#FFFFFF0D"
-                            Foreground="#94A3B8"
-                            CornerRadius="12"
-                            ToolTip.Tip="Settings"/>
-                </StackPanel>
+                <!-- Settings Button (Right) - REMOVED -->
             </DockPanel>
         </Border>
 
@@ -150,10 +142,11 @@
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Crop (C)"/>
                             
                             <!-- Panel Toggle -->
-                            <Button Content="FX" Width="40" Height="40" 
+                                <Button Content="FX" Width="40" Height="40" 
                                     Command="{Binding ToggleEffectsPanelCommand}"
                                     Background="{Binding IsEffectsPanelOpen, Converter={StaticResource BoolToActiveBackgroundConverter}}" 
-                                    Foreground="White" CornerRadius="8" ToolTip.Tip="Image Effects Panel (F)"/>
+                                    Foreground="White" CornerRadius="8" ToolTip.Tip="Image Effects Panel (F)"
+                                    BorderBrush="#3B3B52" BorderThickness="1"/>
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
@@ -210,7 +203,8 @@
                                         <Button Width="32" Height="32"
                                                 Command="{Binding DataContext.SetStrokeWidthCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding .}"
-                                                CornerRadius="8"
+                                            CornerRadius="8"
+                                            BorderBrush="#3B3B52" BorderThickness="1"
                                                 ToolTip.Tip="{Binding ., StringFormat='{}{0}px'}">
                                             <Button.Background>
                                                 <MultiBinding Converter="{StaticResource SelectedWidthToBackground}">
@@ -231,19 +225,23 @@
                     <!-- Undo/Redo -->
                     <Border BorderThickness="0,0,1,0" BorderBrush="#3B3B52" Padding="0,0,12,0">
                         <StackPanel Orientation="Horizontal" Spacing="4">
-                            <Button Content="↶" Width="32" Height="32" Background="#FFFFFF0D" Foreground="#94A3B8" CornerRadius="8" 
+                                <Button Content="↶" Width="32" Height="32" Background="#25263A" Foreground="#E2E8F0" CornerRadius="8" 
+                                    BorderBrush="#3B3B52" BorderThickness="1"
                                     Command="{Binding UndoCommand}" ToolTip.Tip="Undo (Ctrl+Z)"/>
-                            <Button Content="↷" Width="32" Height="32" Background="#FFFFFF0D" Foreground="#94A3B8" CornerRadius="8" 
+                                <Button Content="↷" Width="32" Height="32" Background="#25263A" Foreground="#E2E8F0" CornerRadius="8" 
+                                    BorderBrush="#3B3B52" BorderThickness="1"
                                     Command="{Binding RedoCommand}" ToolTip.Tip="Redo (Ctrl+Shift+Z)"/>
                         </StackPanel>
                     </Border>
                     
                     <!-- Delete / Clear -->
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Button Content="🧹" Width="32" Height="32" Background="#FFFFFF0D" Foreground="#E2E8F0" CornerRadius="8"
-                                Command="{Binding ClearAnnotationsCommand}" ToolTip.Tip="Clear all annotations"/>
-                        <Button Content="🗑" Width="32" Height="32" Background="#FFFFFF0D" Foreground="#F43F5E" CornerRadius="8" 
-                                Command="{Binding DeleteSelectedCommand}" ToolTip.Tip="Delete Selected (Del)"/>
+                        <Button Content="🧹" Width="32" Height="32" Background="#25263A" Foreground="#E2E8F0" CornerRadius="8"
+                            BorderBrush="#3B3B52" BorderThickness="1"
+                            Command="{Binding ClearAnnotationsCommand}" ToolTip.Tip="Clear all annotations"/>
+                        <Button Content="🗑" Width="32" Height="32" Background="#25263A" Foreground="#F43F5E" CornerRadius="8" 
+                            BorderBrush="#3B3B52" BorderThickness="1"
+                            Command="{Binding DeleteSelectedCommand}" ToolTip.Tip="Delete Selected (Del)"/>
                     </StackPanel>
                 </StackPanel>
             </StackPanel>
@@ -416,7 +414,7 @@
                 <!-- Format Selection (Left) -->
                 <Border DockPanel.Dock="Left" 
                         BorderThickness="0,0,1,0" 
-                        BorderBrush="#FFFFFF1A" 
+                        BorderBrush="#3B3B52" 
                         Padding="0,0,12,0"
                         Margin="0,0,12,0">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -431,8 +429,8 @@
                                     FontWeight="SemiBold"/>
                             <Button Content="JPEG" 
                                     Width="60" Height="28"
-                                    Background="#FFFFFF0D"
-                                    BorderBrush="#FFFFFF0F"
+                                    Background="#25263A"
+                                    BorderBrush="#3B3B52"
                                     BorderThickness="1"
                                     Foreground="White"
                                     CornerRadius="8"
@@ -451,7 +449,7 @@
                         <Button.Styles>
                             <Style Selector="Button">
                                 <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="BorderBrush" Value="#FFFFFF1A"/>
+                                <Setter Property="BorderBrush" Value="#3B3B52"/>
                                 <Setter Property="BorderThickness" Value="1"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="Padding" Value="12,6"/>
@@ -513,7 +511,7 @@
                 <!-- Right: Zoom + Version Info -->
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                        <Button Width="28" Height="28" CornerRadius="6" Background="#FFFFFF0D" BorderBrush="#FFFFFF1A" BorderThickness="1"
+                        <Button Width="28" Height="28" CornerRadius="6" Background="#25263A" BorderBrush="#3B3B52" BorderThickness="1"
                                 Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom out (Ctrl + Wheel)">
                             <TextBlock Text="-" Foreground="#E2E8F0" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Button>
@@ -522,7 +520,7 @@
                                 SmallChange="0.1" LargeChange="0.25"
                                 Value="{Binding Zoom}"
                                 VerticalAlignment="Center"/>
-                        <Button Width="28" Height="28" CornerRadius="6" Background="#FFFFFF0D" BorderBrush="#FFFFFF1A" BorderThickness="1"
+                        <Button Width="28" Height="28" CornerRadius="6" Background="#25263A" BorderBrush="#3B3B52" BorderThickness="1"
                                 Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom in (Ctrl + Wheel)">
                             <TextBlock Text="+" Foreground="#E2E8F0" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Button>
