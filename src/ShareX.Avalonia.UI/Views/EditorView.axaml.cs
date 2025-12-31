@@ -1,3 +1,28 @@
+#region License Information (GPL v3)
+
+/*
+    ShareX.Avalonia - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2025 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
+
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -10,6 +35,7 @@ using ShareX.Avalonia.Annotations.Models;
 using Avalonia.Platform.Storage;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace ShareX.Avalonia.UI.Views
 {
@@ -215,6 +241,32 @@ namespace ShareX.Avalonia.UI.Views
                 vm.SaveAsRequested += ShowSaveAsDialog;
                 vm.CopyRequested += CopyToClipboard;
                 vm.ShowErrorDialog += ShowErrorDialog;
+                vm.PropertyChanged -= OnViewModelPropertyChanged;
+                vm.PropertyChanged += OnViewModelPropertyChanged;
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.PropertyChanged -= OnViewModelPropertyChanged;
+            }
+
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (DataContext is not MainViewModel vm) return;
+
+            if (e.PropertyName == nameof(MainViewModel.SelectedColor))
+            {
+                ApplySelectedColor(vm.SelectedColor);
+            }
+            else if (e.PropertyName == nameof(MainViewModel.StrokeWidth))
+            {
+                ApplySelectedStrokeWidth(vm.StrokeWidth);
             }
         }
 
@@ -383,6 +435,75 @@ namespace ShareX.Avalonia.UI.Views
                     _selectedShape = null;
                 }
             }
+        }
+
+        private void ApplySelectedColor(string colorHex)
+        {
+            if (_selectedShape == null) return;
+
+            var brush = new SolidColorBrush(Color.Parse(colorHex));
+
+            switch (_selectedShape)
+            {
+                case Shape shape:
+                    if (shape.Tag is HighlightAnnotation)
+                    {
+                        var highlightColor = Color.Parse(colorHex);
+                        shape.Stroke = Brushes.Transparent;
+                        shape.Fill = new SolidColorBrush(ApplyHighlightAlpha(highlightColor));
+                        break;
+                    }
+
+                    shape.Stroke = brush;
+
+                    if (shape is global::Avalonia.Controls.Shapes.Path path)
+                    {
+                        path.Fill = brush;
+                    }
+                    break;
+                case TextBox textBox:
+                    textBox.Foreground = brush;
+                    break;
+                case Grid grid:
+                    foreach (var child in grid.Children)
+                    {
+                        if (child is Ellipse ellipse)
+                        {
+                            ellipse.Fill = brush;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        private void ApplySelectedStrokeWidth(int width)
+        {
+            if (_selectedShape == null) return;
+
+            switch (_selectedShape)
+            {
+                case Shape shape:
+                    shape.StrokeThickness = width;
+                    break;
+                case TextBox textBox:
+                    textBox.FontSize = Math.Max(12, width * 4);
+                    textBox.BorderThickness = new Thickness(Math.Max(1, width / 2));
+                    break;
+                case Grid grid:
+                    foreach (var child in grid.Children)
+                    {
+                        if (child is Ellipse ellipse)
+                        {
+                            ellipse.StrokeThickness = Math.Max(1, width);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        private static Color ApplyHighlightAlpha(Color baseColor)
+        {
+            return Color.FromArgb(0x55, baseColor.R, baseColor.G, baseColor.B);
         }
 
         private async void OnCanvasPointerPressed(object sender, PointerPressedEventArgs e)
@@ -633,10 +754,10 @@ namespace ShareX.Avalonia.UI.Views
                     
                     var effectRect = new global::Avalonia.Controls.Shapes.Rectangle
                     {
-                         Stroke = (vm.ActiveTool == EditorTool.Magnify) ? Brushes.Black : Brushes.Transparent,
-                         StrokeThickness = 2,
-                         Fill = (vm.ActiveTool == EditorTool.Highlighter) ? new SolidColorBrush(Color.Parse("#55FFFF00")) : Brushes.Transparent, // Yellow for highlighter
-                         Tag = CreateEffectAnnotation(vm.ActiveTool) // Create and attach logic model
+                        Stroke = (vm.ActiveTool == EditorTool.Magnify) ? brush : Brushes.Transparent,
+                        StrokeThickness = vm.StrokeWidth,
+                        Fill = (vm.ActiveTool == EditorTool.Highlighter) ? new SolidColorBrush(ApplyHighlightAlpha(Color.Parse(vm.SelectedColor))) : Brushes.Transparent,
+                        Tag = CreateEffectAnnotation(vm.ActiveTool) // Create and attach logic model
                     };
                     
                     // For Blur/Pixelate, we might want a translucent overlay to show where it is

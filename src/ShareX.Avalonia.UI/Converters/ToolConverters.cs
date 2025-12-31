@@ -1,4 +1,29 @@
+#region License Information (GPL v3)
+
+/*
+    ShareX.Avalonia - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2025 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
@@ -41,7 +66,7 @@ namespace ShareX.Avalonia.UI.Converters
     /// <summary>
     /// Converts selected color comparison to border brush for color swatch highlighting
     /// </summary>
-    public class SelectedColorToBorderConverter : IValueConverter
+    public class SelectedColorToBorderConverter : IValueConverter, IMultiValueConverter
     {
         public static readonly SelectedColorToBorderConverter Instance = new();
 
@@ -60,7 +85,24 @@ namespace ShareX.Avalonia.UI.Converters
             return UnselectedBrush;
         }
 
+        public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (values.Count >= 2 && values[0] is string selectedColor && values[1] is string swatchColor)
+            {
+                return string.Equals(selectedColor, swatchColor, StringComparison.OrdinalIgnoreCase)
+                    ? SelectedBrush
+                    : UnselectedBrush;
+            }
+
+            return UnselectedBrush;
+        }
+
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object? ConvertBack(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -69,7 +111,7 @@ namespace ShareX.Avalonia.UI.Converters
     /// <summary>
     /// Converts stroke width comparison to background for width button highlighting
     /// </summary>
-    public class SelectedWidthToBackgroundConverter : IValueConverter
+    public class SelectedWidthToBackgroundConverter : IValueConverter, IMultiValueConverter
     {
         public static readonly SelectedWidthToBackgroundConverter Instance = new();
 
@@ -85,7 +127,26 @@ namespace ShareX.Avalonia.UI.Converters
             return UnselectedBrush;
         }
 
+        public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (values.Count >= 2 && values[0] is int selectedWidth)
+            {
+                var widthObj = values[1];
+                if (widthObj is int width || (widthObj is string widthStr && int.TryParse(widthStr, out width)))
+                {
+                    return selectedWidth == width ? SelectedBrush : UnselectedBrush;
+                }
+            }
+
+            return UnselectedBrush;
+        }
+
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object? ConvertBack(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

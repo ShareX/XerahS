@@ -162,20 +162,34 @@
                 <Border BorderThickness="0,0,1,0" BorderBrush="#FFFFFF1A" Padding="0,0,12,0">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock Text="Color" FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center"/>
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <Border Width="24" Height="24" Background="#EF4444" CornerRadius="4" Cursor="Hand"/>
-                            <Border Width="24" Height="24" Background="#F97316" CornerRadius="4" Cursor="Hand"/>
-                            <Border Width="24" Height="24" Background="#EAB308" CornerRadius="4" Cursor="Hand"/>
-                            <Border Width="24" Height="24" Background="#22C55E" CornerRadius="4" Cursor="Hand"/>
-                            <Border Width="24" Height="24" Background="#0EA5E9" CornerRadius="4" Cursor="Hand"/>
-                            <Border Width="24" Height="24" Background="#6366F1" CornerRadius="4" Cursor="Hand"/>
-                            <Border Width="24" Height="24" Background="#A855F7" CornerRadius="4" Cursor="Hand"/>
-                            <Border Width="24" Height="24" Background="#EC4899" CornerRadius="4" Cursor="Hand"/>
-                            <Border Width="24" Height="24" Background="#FFFFFF" CornerRadius="4" Cursor="Hand"/>
-                            <Border Width="24" Height="24" Background="#000000" CornerRadius="4" Cursor="Hand"/>
-                            <Border Width="24" Height="24" Background="#64748B" CornerRadius="4" Cursor="Hand"/>
-                            <Border Width="24" Height="24" Background="#1E293B" CornerRadius="4" Cursor="Hand"/>
-                        </StackPanel>
+                        <ItemsControl ItemsSource="{x:Static vm:MainViewModel.ColorPalette}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="4"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Width="28" Height="28" Padding="0"
+                                            Command="{Binding DataContext.SetColorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding .}"
+                                            Background="Transparent"
+                                            BorderThickness="0">
+                                        <Border Width="24" Height="24"
+                                                Background="{Binding .}"
+                                                CornerRadius="4"
+                                                BorderThickness="2">
+                                            <Border.BorderBrush>
+                                                <MultiBinding Converter="{StaticResource SelectedColorToBorder}">
+                                                    <Binding Path="DataContext.SelectedColor" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                    <Binding />
+                                                </MultiBinding>
+                                            </Border.BorderBrush>
+                                        </Border>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Border>
                 
@@ -183,23 +197,32 @@
                 <Border BorderThickness="0,0,1,0" BorderBrush="#FFFFFF1A" Padding="0,0,12,0">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock Text="Width" FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center"/>
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <Button Width="32" Height="32" Background="#FFFFFF0D" CornerRadius="8" ToolTip.Tip="2px">
-                                <Ellipse Width="4" Height="4" Fill="#94A3B8"/>
-                            </Button>
-                            <Button Width="32" Height="32" Background="#FFFFFF0D" CornerRadius="8" ToolTip.Tip="4px">
-                                <Ellipse Width="6" Height="6" Fill="#94A3B8"/>
-                            </Button>
-                            <Button Width="32" Height="32" Background="#FFFFFF0D" CornerRadius="8" ToolTip.Tip="6px">
-                                <Ellipse Width="8" Height="8" Fill="#94A3B8"/>
-                            </Button>
-                            <Button Width="32" Height="32" Background="#FFFFFF0D" CornerRadius="8" ToolTip.Tip="8px">
-                                <Ellipse Width="10" Height="10" Fill="#94A3B8"/>
-                            </Button>
-                            <Button Width="32" Height="32" Background="#FFFFFF0D" CornerRadius="8" ToolTip.Tip="10px">
-                                <Ellipse Width="12" Height="12" Fill="#94A3B8"/>
-                            </Button>
-                        </StackPanel>
+                        <ItemsControl ItemsSource="{x:Static vm:MainViewModel.StrokeWidths}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="4"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Width="32" Height="32"
+                                            Command="{Binding DataContext.SetStrokeWidthCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding .}"
+                                            CornerRadius="8"
+                                            ToolTip.Tip="{Binding ., StringFormat='{}{0}px'}">
+                                        <Button.Background>
+                                            <MultiBinding Converter="{StaticResource SelectedWidthToBackground}">
+                                                <Binding Path="DataContext.StrokeWidth" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                <Binding />
+                                            </MultiBinding>
+                                        </Button.Background>
+                                        <Ellipse Width="{Binding .}"
+                                                 Height="{Binding .}"
+                                                 Fill="#94A3B8"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Border>
                 
