@@ -235,6 +235,41 @@ must be treated as platform code and cannot be copied wholesale.
 
 **Persistence:** `%AppData%/ShareX.Avalonia/uploader-instances.json`
 
+### Next: File-Type Routing (Planned)
+
+**Specification:** See `FILETYPE_ROUTING_SPEC.md` (in brain artifacts)
+
+**Goals:**
+- Deterministic routing based on file extension
+- Conflict prevention (no overlapping file types per category)
+- "All File Types" as exclusive option
+- UI showing available/blocked file types
+
+**Data model additions:**
+- `FileTypeScope` class (AllFileTypes flag + FileExtensions list)
+- `UploaderInstance.FileTypeRouting` property
+- `IUploaderProvider.GetSupportedFileTypes()` method
+
+**Routing logic:**
+```
+1. Exact extension match (e.g., .png → Imgur)
+2. "All File Types" fallback
+3. No match → error/notification
+```
+
+**UI features:**
+- File type selector with conflict detection
+- Disabled checkboxes for already-assigned types
+- Tooltip showing which instance blocks a type
+- Real-time validation
+
+**Implementation phases:**
+1. Data model extensions
+2. Routing engine + validation
+3. Provider metadata
+4. UI (file type selector, conflict warnings)
+5. Upload workflow integration
+
 ### Future TODO - Dynamic Plugin Loading
 
 - Extract common abstractions into core library for third-party plugins
