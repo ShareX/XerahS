@@ -1,0 +1,106 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:vm="using:ShareX.Avalonia.UI.ViewModels"
+             x:Class="ShareX.Avalonia.UI.Views.ApplicationSettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <Design.DataContext>
+        <vm:SettingsViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*" Margin="20">
+        <TextBlock Grid.Row="0" Text="Application Settings" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,20"/>
+
+        <TabControl Grid.Row="1">
+            <!-- General Tab -->
+            <TabItem Header="General">
+                <ScrollViewer>
+                    <StackPanel Margin="20" Spacing="20">
+                        <!-- System Tray -->
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="System Tray" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <CheckBox IsChecked="{Binding ShowTray}" Content="Show tray icon"/>
+                                    <CheckBox IsChecked="{Binding SilentRun}" Content="Start minimized to tray" IsEnabled="{Binding ShowTray}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Theme Tab -->
+            <TabItem Header="Theme">
+                 <ScrollViewer>
+                    <StackPanel Margin="20" Spacing="20">
+                         <StackPanel Spacing="10">
+                            <TextBlock Text="Theme" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="Select Application Theme:"/>
+                                    <ComboBox SelectedIndex="{Binding SelectedTheme}" Width="200" HorizontalAlignment="Left">
+                                        <ComboBoxItem Content="Default"/>
+                                        <ComboBoxItem Content="Dark"/>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                 </ScrollViewer>
+            </TabItem>
+
+            <!-- Paths Tab -->
+            <TabItem Header="Paths">
+                <ScrollViewer>
+                    <StackPanel Margin="20" Spacing="20">
+                         <!-- Screenshots Folder -->
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Screenshots Folder" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <CheckBox IsChecked="{Binding UseCustomScreenshotsPath}" Content="Use custom screenshots path"/>
+                                    <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding UseCustomScreenshotsPath}">
+                                        <TextBox Grid.Column="0" Text="{Binding ScreenshotsFolder}" Watermark="Path to screenshots folder"/>
+                                        <Button Grid.Column="1" Content="Browse..." Command="{Binding BrowseFolderCommand}" Margin="10,0,0,0"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Subfolder Pattern -->
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Subfolder Pattern" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <TextBox Text="{Binding SaveImageSubFolderPattern}" Watermark="%y-%mo"/>
+                                    <TextBlock Text="Example: 2025-01" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            
+            <!-- History Tab -->
+            <TabItem Header="History">
+                <TextBlock Text="History settings placeholder" Margin="20" Foreground="Gray"/>
+            </TabItem>
+
+             <!-- Proxy Tab -->
+            <TabItem Header="Proxy">
+                <TextBlock Text="Proxy settings placeholder" Margin="20" Foreground="Gray"/>
+            </TabItem>
+
+             <!-- Advanced Tab -->
+             <TabItem Header="Advanced">
+                <TextBlock Text="Advanced settings placeholder" Margin="20" Foreground="Gray"/>
+            </TabItem>
+        </TabControl>
+        
+        <!-- Bottom Action Buttons (Save/Reset) could go here or remain global, but typically per-page saving isn't needed if using immediate binding or main window save -->
+    </Grid>
+</UserControl>

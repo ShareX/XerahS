@@ -25,6 +25,29 @@ namespace ShareX.Avalonia.UI.ViewModels
         [ObservableProperty]
         private int _selectedTheme;
 
+        // Task Settings - General
+        [ObservableProperty]
+        private bool _playSoundAfterCapture;
+
+        [ObservableProperty]
+        private bool _showToastNotification;
+
+        // Task Settings - Capture
+        [ObservableProperty]
+        private bool _showCursor;
+
+        [ObservableProperty]
+        private double _screenshotDelay;
+
+        [ObservableProperty]
+        private bool _captureTransparent;
+
+        [ObservableProperty]
+        private bool _captureShadow;
+
+        [ObservableProperty]
+        private bool _captureClientArea;
+
         public SettingsViewModel()
         {
             LoadSettings();
@@ -34,13 +57,22 @@ namespace ShareX.Avalonia.UI.ViewModels
         {
             var settings = SettingManager.Settings;
             
-            _screenshotsFolder = settings.CustomScreenshotsPath ?? 
+            ScreenshotsFolder = settings.CustomScreenshotsPath ?? 
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "ShareX");
-            _saveImageSubFolderPattern = settings.SaveImageSubFolderPattern ?? "%y-%mo";
-            _useCustomScreenshotsPath = settings.UseCustomScreenshotsPath;
-            _showTray = settings.ShowTray;
-            _silentRun = settings.SilentRun;
-            _selectedTheme = settings.SelectedTheme;
+            SaveImageSubFolderPattern = settings.SaveImageSubFolderPattern ?? "%y-%mo";
+            UseCustomScreenshotsPath = settings.UseCustomScreenshotsPath;
+            ShowTray = settings.ShowTray;
+            SilentRun = settings.SilentRun;
+            SelectedTheme = settings.SelectedTheme;
+
+            // Task Settings Defaults (Placeholder for now until TaskSettings object is fully integrated)
+            PlaySoundAfterCapture = true;
+            ShowToastNotification = true;
+            ShowCursor = true;
+            ScreenshotDelay = 0.0;
+            CaptureTransparent = true;
+            CaptureShadow = true;
+            CaptureClientArea = false;
         }
 
         [RelayCommand]
@@ -54,6 +86,9 @@ namespace ShareX.Avalonia.UI.ViewModels
             settings.ShowTray = ShowTray;
             settings.SilentRun = SilentRun;
             settings.SelectedTheme = SelectedTheme;
+            
+            // TODO: Save Task settings to appropriate object (e.g., TaskSettings)
+            // For now, these are just tied to the view model state.
             
             // TODO: Save to disk
             // SettingManager.Save();

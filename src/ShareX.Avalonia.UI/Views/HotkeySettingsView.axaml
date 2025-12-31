@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ShareX.Avalonia.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ShareX.Avalonia.UI.Views.HotkeySettingsView"
+             x:DataType="vm:HotkeySettingsViewModel">
+
+    <Design.DataContext>
+        <vm:HotkeySettingsViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*" Margin="20">
+        <TextBlock Grid.Row="0" Text="Hotkey Settings" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,20"/>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*, 150">
+            <!-- Hotkey List -->
+            <Border Grid.Column="0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4">
+                <ListBox ItemsSource="{Binding Hotkeys}" SelectedItem="{Binding SelectedHotkey}" Background="Transparent">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding Description}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                <Border Grid.Column="1" Background="{DynamicResource SystemControlBackgroundBaseMediumBrush}" CornerRadius="3" Padding="8,4">
+                                    <TextBlock Text="{Binding KeyString}" FontFamily="Consolas, Monospace" FontSize="12"/>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <!-- Sidebar Actions -->
+            <StackPanel Grid.Column="1" Margin="20,0,0,0" Spacing="10">
+                <Button Content="Add" Command="{Binding AddCommand}" HorizontalAlignment="Stretch"/>
+                <Button Content="Remove" Command="{Binding RemoveCommand}" HorizontalAlignment="Stretch"/>
+                <Button Content="Edit" Command="{Binding EditCommand}" HorizontalAlignment="Stretch" Classes="accent"/>
+                <Separator/>
+                <Button Content="Duplicate" Command="{Binding DuplicateCommand}" HorizontalAlignment="Stretch"/>
+                <Button Content="Move Up" Command="{Binding MoveUpCommand}" HorizontalAlignment="Stretch"/>
+                <Button Content="Move Down" Command="{Binding MoveDownCommand}" HorizontalAlignment="Stretch"/>
+                <Separator/>
+                <Button Content="Reset" Command="{Binding ResetCommand}" HorizontalAlignment="Stretch"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

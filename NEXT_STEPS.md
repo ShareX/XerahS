@@ -8,19 +8,22 @@ We have successfully implemented the Reimagined UI (WinShot-inspired), Multi-mon
 
 ### ✅ Recently Completed
 - **Modern UI Redesign**: Two-row toolbar, sidebar settings, dark theme.
+- **Settings Architecture Refactor**:
+    - Reorganized settings navigation into a hierarchical structure (Application, Task, Hotkey, Destination).
+    - **Application Settings**: Migrated "General", "Theme", "Paths" to dedicated MVVM view.
+    - **Task Settings**: Ported "General" and "Capture" tabs with MVVM bindings.
+    - **Hotkey Settings**: Designed and implemented UI for managing global hotkeys.
 - **Region Capture**:
     - Fixed DPI scaling issues.
     - Added **Multi-monitor support** (spanning all screens).
     - Absolute coordinate mapping.
 - **Annotation System**:
-    - **Tools**: Rectangle, Ellipse, Line, Arrow, Text.
-    - **Interaction**: Object Selection (Click), Drag-to-Move, Delete.
-    - **Undo/Redo**: Full stack implementation.
-    - **Styling**: Color palette and stroke width selection.
-- **Window Management**: Fixed dragging by title bar.
-- **Status Bar**: Live version display (vX.Y.Z) and dimensions.
+    - Tools: Rectangle, Ellipse, Line, Arrow, Text.
+    - Undo/Redo stack.
 
 ### 🚧 In Progress (Phase 6.6)
+- **Destination Settings**: Porting the Destination configuration UI.
+- **Workflow & Hotkey Logic**: Connecting the Hotkey UI to actual registration logic (`HotkeyManager`).
 - **Crop Tool**: Logic to crop the captured image.
 - **Export Integration**: Wiring "Copy", "Save", "Upload" buttons to backend services.
 

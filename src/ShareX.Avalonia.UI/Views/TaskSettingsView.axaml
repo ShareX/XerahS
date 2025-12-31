@@ -1,0 +1,85 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ShareX.Avalonia.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ShareX.Avalonia.UI.Views.TaskSettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <Design.DataContext>
+        <vm:SettingsViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*" Margin="20">
+        <TextBlock Grid.Row="0" Text="Task Settings" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,20"/>
+
+        <TabControl Grid.Row="1">
+            <!-- General Tab -->
+            <TabItem Header="General">
+                <ScrollViewer>
+                    <StackPanel Margin="20" Spacing="20">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Notifications" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <CheckBox IsChecked="{Binding PlaySoundAfterCapture}" Content="Play sound after capture"/>
+                                    <CheckBox IsChecked="{Binding ShowToastNotification}" Content="Show toast notification after task completed"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Capture Tab -->
+            <TabItem Header="Capture">
+                <ScrollViewer>
+                    <StackPanel Margin="20" Spacing="20">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="General" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <CheckBox IsChecked="{Binding ShowCursor}" Content="Show cursor in screenshots"/>
+                                    <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto">
+                                         <TextBlock Grid.Column="0" Text="Screenshot delay:" VerticalAlignment="Center"/>
+                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenshotDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" Width="100"/>
+                                         <TextBlock Grid.Column="4" Text="seconds" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <CheckBox IsChecked="{Binding CaptureTransparent}" Content="Capture transparency"/>
+                                    <CheckBox IsChecked="{Binding CaptureShadow}" Content="Capture window shadow" IsEnabled="{Binding CaptureTransparent}" Margin="20,0,0,0"/>
+                                    <CheckBox IsChecked="{Binding CaptureClientArea}" Content="Capture client area (remove window chrome)"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Image Tab -->
+            <TabItem Header="Image">
+                 <TextBlock Text="Image settings placeholder" Margin="20" Foreground="Gray"/>
+            </TabItem>
+
+            <!-- Upload Tab -->
+            <TabItem Header="Upload">
+                 <TextBlock Text="Upload settings placeholder" Margin="20" Foreground="Gray"/>
+            </TabItem>
+
+            <!-- Actions Tab -->
+            <TabItem Header="Actions">
+                 <TextBlock Text="Actions actions placeholder" Margin="20" Foreground="Gray"/>
+            </TabItem>
+
+            <!-- Tools Tab -->
+            <TabItem Header="Tools">
+                 <TextBlock Text="Tools settings placeholder" Margin="20" Foreground="Gray"/>
+            </TabItem>
+            
+             <!-- Advanced Tab -->
+            <TabItem Header="Advanced">
+                 <TextBlock Text="Advanced settings placeholder" Margin="20" Foreground="Gray"/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

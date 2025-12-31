@@ -19,7 +19,7 @@ namespace ShareX.Avalonia.UI.ViewModels
 
         public HistoryViewModel()
         {
-            _historyItems = new ObservableCollection<HistoryItem>();
+            HistoryItems = new ObservableCollection<HistoryItem>();
             
             // Create history manager with default path
             var historyPath = Path.Combine(
@@ -37,10 +37,10 @@ namespace ShareX.Avalonia.UI.ViewModels
             // Load from HistoryManager
             var items = _historyManager.GetHistoryItems();
             
-            _historyItems.Clear();
+            HistoryItems.Clear();
             foreach (var item in items)
             {
-                _historyItems.Add(item);
+                HistoryItems.Add(item);
             }
         }
 
