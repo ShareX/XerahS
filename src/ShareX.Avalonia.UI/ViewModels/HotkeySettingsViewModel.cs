@@ -11,7 +11,7 @@ public partial class HotkeySettingsViewModel : ViewModelBase
 {
     public ObservableCollection<HotkeyItemViewModel> Hotkeys { get; } = new();
 
-    public Func<HotkeySettings, Task<bool>>? EditHotkeyRequester { get; set; }
+    public Func<ShareX.Avalonia.Core.Hotkeys.HotkeySettings, Task<bool>>? EditHotkeyRequester { get; set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RemoveCommand))]
@@ -25,7 +25,7 @@ public partial class HotkeySettingsViewModel : ViewModelBase
 
     public HotkeySettingsViewModel()
     {
-        if (Avalonia.Application.Current is App app)
+        if (global::Avalonia.Application.Current is App app)
         {
             _manager = app.HotkeyManager;
         }
@@ -48,7 +48,7 @@ public partial class HotkeySettingsViewModel : ViewModelBase
     [RelayCommand]
     private async Task Add()
     {
-        var newHotkey = new HotkeySettings();
+        var newHotkey = new ShareX.Avalonia.Core.Hotkeys.HotkeySettings();
         
         if (EditHotkeyRequester != null)
         {
@@ -102,8 +102,8 @@ public partial class HotkeySettingsViewModel : ViewModelBase
         if (SelectedHotkey != null && _manager != null)
         {
             // Shallow copy for now, deep would be better
-            var clone = new HotkeySettings(SelectedHotkey.Model.Job, 
-                new Platform.Abstractions.Models.HotkeyInfo(
+            var clone = new ShareX.Avalonia.Core.Hotkeys.HotkeySettings(SelectedHotkey.Model.Job, 
+                new Platform.Abstractions.HotkeyInfo(
                     SelectedHotkey.Model.HotkeyInfo.Key, 
                     SelectedHotkey.Model.HotkeyInfo.Modifiers));
             

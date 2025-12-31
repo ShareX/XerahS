@@ -120,6 +120,11 @@ public class HotkeyManager : IDisposable
             Debug.WriteLine($"HotkeyManager: Failed to register {settings}");
         }
 
+        if (!Hotkeys.Contains(settings))
+        {
+            Hotkeys.Add(settings);
+        }
+
         return result;
     }
 
@@ -133,6 +138,11 @@ public class HotkeyManager : IDisposable
 
         bool result = _hotkeyService.UnregisterHotkey(settings.HotkeyInfo);
         _hotkeyMap.Remove(settings.HotkeyInfo.Id);
+
+        if (Hotkeys.Contains(settings))
+        {
+            Hotkeys.Remove(settings);
+        }
 
         return result;
     }

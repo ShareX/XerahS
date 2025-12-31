@@ -6,13 +6,13 @@ namespace ShareX.Avalonia.UI.ViewModels;
 public partial class HotkeyItemViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private HotkeySettings _model;
+    private ShareX.Avalonia.Core.Hotkeys.HotkeySettings _model;
 
     public string Description => Model.TaskSettings.Description ?? Model.TaskSettings.Job.ToString();
     
     public string KeyString => Model.HotkeyInfo.ToString();
 
-    public HotkeyItemViewModel(HotkeySettings model)
+    public HotkeyItemViewModel(ShareX.Avalonia.Core.Hotkeys.HotkeySettings model)
     {
         _model = model;
     }

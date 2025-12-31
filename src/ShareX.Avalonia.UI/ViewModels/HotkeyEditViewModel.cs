@@ -13,7 +13,7 @@ namespace ShareX.Avalonia.UI.ViewModels;
 public partial class HotkeyEditViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private HotkeySettings _model;
+    private ShareX.Avalonia.Core.Hotkeys.HotkeySettings _model;
 
     [ObservableProperty]
     private Key _selectedKey;
@@ -28,7 +28,7 @@ public partial class HotkeyEditViewModel : ViewModelBase
 
     public string WindowTitle => Model.HotkeyInfo.Id == 0 ? "Add Hotkey" : "Edit Hotkey";
 
-    public HotkeyEditViewModel(HotkeySettings model)
+    public HotkeyEditViewModel(ShareX.Avalonia.Core.Hotkeys.HotkeySettings model)
     {
         _model = model;
         _selectedKey = model.HotkeyInfo.Key;

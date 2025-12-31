@@ -41,7 +41,15 @@ public class HotkeySettings
     /// <summary>
     /// The action to execute when this hotkey is triggered
     /// </summary>
-    public HotkeyType Job { get; set; }
+    /// <summary>
+    /// The action to execute when this hotkey is triggered.
+    /// Proxies to TaskSettings.Job.
+    /// </summary>
+    public HotkeyType Job 
+    { 
+        get => TaskSettings.Job;
+        set => TaskSettings.Job = value;
+    }
 
     /// <summary>
     /// Configuration for the task to execute
@@ -64,11 +72,10 @@ public class HotkeySettings
         TaskSettings = new TaskSettings();
     }
 
-    public HotkeySettings(HotkeyType job, HotkeyInfo hotkeyInfo)
+    public HotkeySettings(HotkeyType job, HotkeyInfo hotkeyInfo) : this()
     {
-        Job = job;
+        TaskSettings.Job = job;
         HotkeyInfo = hotkeyInfo;
-        TaskSettings = new TaskSettings();
     }
 
     public override string ToString()
