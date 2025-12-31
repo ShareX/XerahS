@@ -164,6 +164,13 @@ namespace ShareX.Avalonia.UI.Views
         
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
+            // When a text annotation TextBox has focus, let it handle all typing
+            // so that tool hotkeys (R, E, T, etc.) do not switch tools while editing.
+            if (e.Source is TextBox)
+            {
+                return;
+            }
+
             if (DataContext is MainViewModel vm)
             {
                 if (e.Key == Key.Delete)
@@ -806,9 +813,10 @@ namespace ShareX.Avalonia.UI.Views
                         BorderThickness = new Thickness(1), // Visible border while editing
                         BorderBrush = Brushes.White, 
                         FontSize = Math.Max(12, vm.StrokeWidth * 4),
-                        Text = "Text",
+                        Text = string.Empty,
                         Padding = new Thickness(4),
-                        MinWidth = 50
+                        MinWidth = 50,
+                        AcceptsReturn = false // Single-line text annotation
                     };
                     
                     // Position it
@@ -830,9 +838,17 @@ namespace ShareX.Avalonia.UI.Views
                         }
                     };
 
-                    canvas.Children.Add(textBox);
-                    textBox.Focus();
-                    _isDrawing = false; 
+                    // Pressing Enter should finalize the text annotation instead of inserting a newline.
+                    textBox.KeyDown += (s, args) =>
+                    {
+                        if (args.Key == Key.Enter)
+                        {
+                            args.Handled = true;
+                            // Move focus away so LostFocus handler finalizes/removes the editing chrome.
+                            this.Focus();
+                        }
+                    };
+
                     canvas.Children.Add(textBox);
                     textBox.Focus();
                     _isDrawing = false; 
