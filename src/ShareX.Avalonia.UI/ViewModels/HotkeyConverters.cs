@@ -22,6 +22,7 @@ public class HotkeyStatusColorConverter : IValueConverter
                 HotkeyStatus.Registered => new SolidColorBrush(Colors.LimeGreen),
                 HotkeyStatus.Failed => new SolidColorBrush(Colors.Red),
                 HotkeyStatus.NotConfigured => new SolidColorBrush(Colors.Orange),
+                HotkeyStatus.Recording => new SolidColorBrush(Colors.Yellow),
                 _ => new SolidColorBrush(Colors.Gray)
             };
         }

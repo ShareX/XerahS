@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using System.Reflection;
+using ShareX.Avalonia.Common;
 
 namespace ShareX.Avalonia.Uploaders.PluginSystem;
 
@@ -41,7 +42,7 @@ public class PluginLoader
     {
         try
         {
-            Console.WriteLine($"Loading plugin: {metadata.Manifest.PluginId} from {metadata.AssemblyPath}");
+            DebugHelper.WriteLine($"Loading plugin: {metadata.Manifest.PluginId} from {metadata.AssemblyPath}");
 
             // Create isolated load context
             var loadContext = new PluginLoadContext(metadata.AssemblyPath, metadata.PluginDirectory);
@@ -54,7 +55,7 @@ public class PluginLoader
             if (providerType == null)
             {
                 metadata.LoadError = $"Entry point type not found: {metadata.Manifest.EntryPoint}";
-                Console.WriteLine($"ERROR: {metadata.LoadError}");
+                DebugHelper.WriteLine($"ERROR: {metadata.LoadError}");
                 return null;
             }
 
@@ -62,7 +63,7 @@ public class PluginLoader
             if (!typeof(IUploaderProvider).IsAssignableFrom(providerType))
             {
                 metadata.LoadError = $"Type {providerType.FullName} does not implement IUploaderProvider";
-                Console.WriteLine($"ERROR: {metadata.LoadError}");
+                DebugHelper.WriteLine($"ERROR: {metadata.LoadError}");
                 return null;
             }
 
@@ -71,14 +72,14 @@ public class PluginLoader
             if (provider == null)
             {
                 metadata.LoadError = "Failed to instantiate provider";
-                Console.WriteLine($"ERROR: {metadata.LoadError}");
+                DebugHelper.WriteLine($"ERROR: {metadata.LoadError}");
                 return null;
             }
 
             // Verify plugin ID matches
             if (provider.ProviderId != metadata.Manifest.PluginId)
             {
-                Console.WriteLine($"WARNING: Plugin ID mismatch - manifest: {metadata.Manifest.PluginId}, provider: {provider.ProviderId}");
+                DebugHelper.WriteLine($"WARNING: Plugin ID mismatch - manifest: {metadata.Manifest.PluginId}, provider: {provider.ProviderId}");
                 // Allow it but warn
             }
 
@@ -86,33 +87,33 @@ public class PluginLoader
             _loadedContexts[metadata.Manifest.PluginId] = loadContext;
 
             metadata.Provider = provider;
-            Console.WriteLine($"Successfully loaded plugin: {metadata}");
+            DebugHelper.WriteLine($"Successfully loaded plugin: {metadata}");
 
             return provider;
         }
         catch (FileNotFoundException ex)
         {
             metadata.LoadError = $"Assembly not found: {ex.FileName}";
-            Console.WriteLine($"ERROR loading plugin {metadata.Manifest.PluginId}: {metadata.LoadError}");
+            DebugHelper.WriteLine($"ERROR loading plugin {metadata.Manifest.PluginId}: {metadata.LoadError}");
         }
         catch (TypeLoadException ex)
         {
             metadata.LoadError = $"Type load error: {ex.Message}";
-            Console.WriteLine($"ERROR loading plugin {metadata.Manifest.PluginId}: {metadata.LoadError}");
+            DebugHelper.WriteLine($"ERROR loading plugin {metadata.Manifest.PluginId}: {metadata.LoadError}");
         }
         catch (ReflectionTypeLoadException ex)
         {
             metadata.LoadError = $"Reflection error: {ex.Message}";
             foreach (var loaderEx in ex.LoaderExceptions)
             {
-                Console.WriteLine($"  Loader exception: {loaderEx?.Message}");
+                DebugHelper.WriteLine($"  Loader exception: {loaderEx?.Message}");
             }
         }
         catch (Exception ex)
         {
             metadata.LoadError = $"Unexpected error: {ex.Message}";
-            Console.WriteLine($"ERROR loading plugin {metadata.Manifest.PluginId}: {metadata.LoadError}");
-            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            DebugHelper.WriteLine($"ERROR loading plugin {metadata.Manifest.PluginId}: {metadata.LoadError}");
+            DebugHelper.WriteLine($"Stack trace: {ex.StackTrace}");
         }
 
         return null;
@@ -140,12 +141,12 @@ public class PluginLoader
                 GC.WaitForPendingFinalizers();
             }
 
-            Console.WriteLine($"Unloaded plugin: {pluginId}");
+            DebugHelper.WriteLine($"Unloaded plugin: {pluginId}");
             return true;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error unloading plugin {pluginId}: {ex.Message}");
+            DebugHelper.WriteLine($"Error unloading plugin {pluginId}: {ex.Message}");
             return false;
         }
     }

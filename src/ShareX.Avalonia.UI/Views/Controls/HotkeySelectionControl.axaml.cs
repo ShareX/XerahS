@@ -29,7 +29,7 @@ public partial class HotkeySelectionControl : UserControl
         _debugLog = (msg) =>
         {
             _debugMessages.Add(msg);
-            System.Diagnostics.Debug.WriteLine($"[HotkeyDebug] {msg}");
+            ShareX.Avalonia.Common.DebugHelper.WriteLine($"[Hotkey] {msg}");
             callback(msg);
         };
     }
@@ -37,10 +37,14 @@ public partial class HotkeySelectionControl : UserControl
     public static void Log(string message)
     {
         var time = DateTime.Now.ToString("HH:mm:ss.fff");
-        _debugLog?.Invoke($"[{time}] {message}");
+        var formattedMsg = $"[{time}] {message}";
+        // Also log to DebugHelper for file logging
+        ShareX.Avalonia.Common.DebugHelper.WriteLine($"[Hotkey] {message}");
+        _debugLog?.Invoke(formattedMsg);
     }
     
     public static string GetDebugLog() => string.Join("\n", _debugMessages);
+
 
     private enum ControlMode
     {
@@ -210,6 +214,10 @@ public partial class HotkeySelectionControl : UserControl
             _previousKey = _viewModel.Model.HotkeyInfo.Key;
             _previousModifiers = _viewModel.Model.HotkeyInfo.Modifiers;
             Log($"StartRecording: Saved previous key={_previousKey}, mods={_previousModifiers}");
+            
+            // Set status to Recording so the indicator dot turns yellow
+            _viewModel.Model.HotkeyInfo.Status = Platform.Abstractions.HotkeyStatus.Recording;
+            _viewModel.Refresh();
         }
         else
         {
@@ -228,18 +236,35 @@ public partial class HotkeySelectionControl : UserControl
 
     private void StopRecording()
     {
+        Log("StopRecording: ENTERED");
         _mode = ControlMode.Normal;
+        Log("StopRecording: Mode set to Normal");
         
         // Re-enable global hotkeys
         if (global::Avalonia.Application.Current is App app && app.HotkeyManager != null)
         {
             app.HotkeyManager.IgnoreHotkeys = false;
+            Log("StopRecording: Global hotkeys re-enabled");
             
             // Re-register the hotkey with new binding
             if (_viewModel != null)
             {
-                app.HotkeyManager.RegisterHotkey(_viewModel.Model);
+                var key = _viewModel.Model.HotkeyInfo.Key;
+                var mods = _viewModel.Model.HotkeyInfo.Modifiers;
+                var id = _viewModel.Model.HotkeyInfo.Id;
+                Log($"StopRecording: Attempting to register hotkey: {_viewModel.Model.HotkeyInfo}");
+                Log($"StopRecording: Details - Key={key}, Modifiers={mods}, Id={id}");
+                var success = app.HotkeyManager.RegisterHotkey(_viewModel.Model);
+                Log($"StopRecording: RegisterHotkey returned: {success}, Status: {_viewModel.Model.HotkeyInfo.Status}");
             }
+            else
+            {
+                Log("StopRecording: WARNING - _viewModel is NULL, cannot register");
+            }
+        }
+        else
+        {
+            Log("StopRecording: WARNING - HotkeyManager not available");
         }
 
         // Restore visual appearance
@@ -248,8 +273,10 @@ public partial class HotkeySelectionControl : UserControl
         
         _viewModel?.Refresh();
         UpdateButtonContent();
+        Log($"StopRecording: Button content updated to: {HotkeyButton.Content}");
         
         OnHotkeyChanged();
+        Log("StopRecording: COMPLETED");
     }
 
     private void CancelRecording()

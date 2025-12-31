@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Avalonia.Common;
 using ShareX.Avalonia.Core;
 using ShareX.Avalonia.Core.Hotkeys;
 using System;
@@ -38,7 +39,7 @@ public static partial class TaskHelpers
 {
     public static async Task ExecuteJob(HotkeyType job, TaskSettings? taskSettings = null)
     {
-        Console.WriteLine($"Executing job: {job}");
+        DebugHelper.WriteLine($"Executing job: {job}");
 
         Image? capturedImage = null;
 
@@ -46,40 +47,40 @@ public static partial class TaskHelpers
         {
             if (!PlatformServices.IsInitialized)
             {
-                Console.WriteLine("Platform services not initialized.");
+                DebugHelper.WriteLine("Platform services not initialized.");
                 return;
             }
 
             switch (job)
             {
                 case HotkeyType.RectangleRegion:
-                    Console.WriteLine("Execute: Rectangle Region Capture");
+                    DebugHelper.WriteLine("Execute: Rectangle Region Capture");
                     capturedImage = await PlatformServices.ScreenCapture.CaptureRegionAsync();
                     break;
 
                 case HotkeyType.PrintScreen:
-                    Console.WriteLine("Execute: Fullscreen Capture");
+                    DebugHelper.WriteLine("Execute: Fullscreen Capture");
                     capturedImage = await PlatformServices.ScreenCapture.CaptureFullScreenAsync();
                     break;
 
                 case HotkeyType.ActiveWindow:
-                    Console.WriteLine("Execute: Active Window Capture");
+                    DebugHelper.WriteLine("Execute: Active Window Capture");
                     capturedImage = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window);
                     break;
 
                 case HotkeyType.ClipboardUpload:
-                    Console.WriteLine("Execute: Clipboard Upload");
+                    DebugHelper.WriteLine("Execute: Clipboard Upload");
                     // await UploadManager.ClipboardUpload(taskSettings);
                     break;
                     
                 default:
-                    Console.WriteLine($"Job type {job} not implemented yet.");
+                    DebugHelper.WriteLine($"Job type {job} not implemented yet.");
                     break;
             }
 
             if (capturedImage != null)
             {
-                Console.WriteLine("Capture successful. Starting workflow...");
+                DebugHelper.WriteLine("Capture successful. Starting workflow...");
                 // Create a basic workflow task for now (Capture -> Upload -> Clipboard)
                 // In the future this should respect TaskSettings.AfterCaptureJob
                 var workflow = WorkflowTask.CreateImageUploadTask(capturedImage, $"screenshot_{DateTime.Now:yyyyMMdd_HHmmss}.png");
@@ -87,17 +88,17 @@ public static partial class TaskHelpers
                 
                 if (workflow.Result?.IsSuccess == true)
                 {
-                    Console.WriteLine($"Job completed successfully. URL: {workflow.Result.URL}");
+                    DebugHelper.WriteLine($"Job completed successfully. URL: {workflow.Result.URL}");
                 }
                 else
                 {
-                    Console.WriteLine($"Job failed. Errors: {string.Join(", ", workflow.Result?.Errors ?? new())}");
+                    DebugHelper.WriteLine($"Job failed. Errors: {string.Join(", ", workflow.Result?.Errors ?? new())}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error executing job {job}: {ex.Message}");
+            DebugHelper.WriteException(ex, $"Error executing job {job}");
         }
     }
 }

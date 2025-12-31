@@ -31,6 +31,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
+// Only import DebugHelper from Common, not the whole namespace
+using DebugHelper = ShareX.Avalonia.Common.DebugHelper;
+
 namespace ShareX.Avalonia.Platform.Windows;
 
 /// <summary>
@@ -214,6 +217,9 @@ public class WindowsHotkeyService : IHotkeyService
 
             uint modifiers = GetModifiers(hotkeyInfo.Modifiers);
             uint vk = KeyToVirtualKey(hotkeyInfo.Key);
+            
+            // Debug log before registration attempt
+            DebugHelper.WriteLine($"RegisterHotKey attempt: hwnd=0x{_hwnd:X}, id={hotkeyInfo.Id}, key={hotkeyInfo.Key} (VK=0x{vk:X2}), mods=0x{modifiers:X}");
 
             bool result = RegisterHotKey(_hwnd, hotkeyInfo.Id, modifiers, vk);
 
@@ -221,13 +227,15 @@ public class WindowsHotkeyService : IHotkeyService
             {
                 hotkeyInfo.Status = HotkeyStatus.Registered;
                 _registeredHotkeys[hotkeyInfo.Id] = hotkeyInfo;
-                Debug.WriteLine($"Hotkey registered: {hotkeyInfo} (ID: {hotkeyInfo.Id})");
+                DebugHelper.WriteLine($"Hotkey registered: {hotkeyInfo} (ID: {hotkeyInfo.Id}, VK: 0x{vk:X2}, Mods: 0x{modifiers:X})");
             }
             else
             {
                 hotkeyInfo.Status = HotkeyStatus.Failed;
                 int error = Marshal.GetLastWin32Error();
-                Debug.WriteLine($"Failed to register hotkey: {hotkeyInfo} (Error: {error})");
+                // 1409 = ERROR_HOTKEY_ALREADY_REGISTERED
+                string errorMsg = error == 1409 ? "Hotkey already registered by another application" : $"Win32 error {error}";
+                DebugHelper.WriteLine($"Failed to register hotkey: {hotkeyInfo} (VK: 0x{vk:X2}, Mods: 0x{modifiers:X}) - {errorMsg}");
             }
 
             return result;
@@ -237,22 +245,27 @@ public class WindowsHotkeyService : IHotkeyService
     public bool UnregisterHotkey(HotkeyInfo hotkeyInfo)
     {
         if (hotkeyInfo.Id == 0 || _hwnd == IntPtr.Zero)
+        {
+            DebugHelper.WriteLine($"UnregisterHotkey: Skipped - Id={hotkeyInfo.Id}, hwnd=0x{_hwnd:X}");
             return false;
+        }
 
         lock (_lock)
         {
+            DebugHelper.WriteLine($"UnregisterHotkey attempt: hwnd=0x{_hwnd:X}, id={hotkeyInfo.Id}, hotkey={hotkeyInfo}");
             bool result = UnregisterHotKey(_hwnd, hotkeyInfo.Id);
 
             if (result)
             {
                 _registeredHotkeys.Remove(hotkeyInfo.Id);
                 hotkeyInfo.Status = HotkeyStatus.NotConfigured;
-                Debug.WriteLine($"Hotkey unregistered: {hotkeyInfo}");
+                DebugHelper.WriteLine($"Hotkey unregistered successfully: {hotkeyInfo}");
             }
             else
             {
+                int error = Marshal.GetLastWin32Error();
                 hotkeyInfo.Status = HotkeyStatus.Failed;
-                Debug.WriteLine($"Failed to unregister hotkey: {hotkeyInfo}");
+                DebugHelper.WriteLine($"Failed to unregister hotkey: {hotkeyInfo} - Win32 error {error}");
             }
 
             return result;
@@ -282,7 +295,7 @@ public class WindowsHotkeyService : IHotkeyService
 
     private static uint GetModifiers(KeyModifiers modifiers)
     {
-        uint result = MOD_NOREPEAT; // Prevent repeat triggers
+        uint result = 0; // Don't use MOD_NOREPEAT - it can cause registration failures (Error 1408)
 
         if (modifiers.HasFlag(KeyModifiers.Control))
             result |= MOD_CONTROL;
@@ -299,6 +312,7 @@ public class WindowsHotkeyService : IHotkeyService
     private static uint KeyToVirtualKey(Key key)
     {
         // Avalonia Key enum maps closely to Windows virtual key codes
+        // Note: OemOpenBrackets = Oem4 = [{ and OemCloseBrackets = Oem6 = ]}
         return key switch
         {
             Key.Back => 0x08,
@@ -337,9 +351,9 @@ public class WindowsHotkeyService : IHotkeyService
             Key.Oem1 => 0xBA, // ;:
             Key.Oem2 => 0xBF, // /?
             Key.Oem3 => 0xC0, // `~
-            Key.Oem4 => 0xDB, // [{
+            Key.Oem4 => 0xDB, // [{ (also known as OemOpenBrackets)
             Key.Oem5 => 0xDC, // \|
-            Key.Oem6 => 0xDD, // ]}
+            Key.Oem6 => 0xDD, // ]} (also known as OemCloseBrackets)
             Key.Oem7 => 0xDE, // '"
             _ => (uint)key // Direct mapping for many keys
         };

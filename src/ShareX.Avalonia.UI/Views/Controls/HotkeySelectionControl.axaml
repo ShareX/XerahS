@@ -18,7 +18,8 @@
                      Width="10" Height="10" 
                      Margin="0,0,10,0"
                      VerticalAlignment="Center"
-                     Fill="{Binding Model.HotkeyInfo.Status, Converter={x:Static vm:HotkeyStatusColorConverter.Instance}}"/>
+                     Fill="{Binding Status, Converter={x:Static vm:HotkeyStatusColorConverter.Instance}}"/>
+
             
             <!-- Task Description (Dropdown button) -->
             <Button Grid.Column="1" 

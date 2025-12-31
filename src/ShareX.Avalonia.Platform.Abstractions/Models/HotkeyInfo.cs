@@ -151,5 +151,6 @@ public enum HotkeyStatus
     NotConfigured,
     Registered,
     Failed,
-    UnsupportedPlatform
+    UnsupportedPlatform,
+    Recording  // User is currently editing this hotkey
 }

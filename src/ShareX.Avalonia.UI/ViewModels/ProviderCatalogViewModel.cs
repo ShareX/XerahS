@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ShareX.Avalonia.Common;
 using ShareX.Avalonia.Uploaders.PluginSystem;
 using System.Collections.ObjectModel;
 
@@ -64,7 +65,7 @@ public partial class ProviderCatalogViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to add provider: {ex.Message}");
+            DebugHelper.WriteException(ex, "Failed to add provider");
         }
     }
 

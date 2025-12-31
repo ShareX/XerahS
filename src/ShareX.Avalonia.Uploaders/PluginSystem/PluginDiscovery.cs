@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
+using ShareX.Avalonia.Common;
 
 namespace ShareX.Avalonia.Uploaders.PluginSystem;
 
@@ -46,7 +47,7 @@ public class PluginDiscovery
 
         if (!Directory.Exists(pluginsDirectory))
         {
-            Console.WriteLine($"Plugins directory not found: {pluginsDirectory}");
+            DebugHelper.WriteLine($"Plugins directory not found: {pluginsDirectory}");
             return discovered;
         }
 
@@ -59,7 +60,7 @@ public class PluginDiscovery
 
             if (!File.Exists(manifestPath))
             {
-                Console.WriteLine($"No {ManifestFileName} found in {Path.GetFileName(pluginDir)}, skipping");
+                DebugHelper.WriteLine($"No {ManifestFileName} found in {Path.GetFileName(pluginDir)}, skipping");
                 continue;
             }
 
@@ -72,7 +73,7 @@ public class PluginDiscovery
                 // Validate manifest
                 if (!ValidateManifest(manifest, out var error))
                 {
-                    Console.WriteLine($"Invalid manifest in {Path.GetFileName(pluginDir)}: {error}");
+                    DebugHelper.WriteLine($"Invalid manifest in {Path.GetFileName(pluginDir)}: {error}");
                     continue;
                 }
 
@@ -82,18 +83,18 @@ public class PluginDiscovery
 
                 if (!File.Exists(assemblyPath))
                 {
-                    Console.WriteLine($"Plugin assembly not found: {assemblyFileName} in {Path.GetFileName(pluginDir)}");
+                    DebugHelper.WriteLine($"Plugin assembly not found: {assemblyFileName} in {Path.GetFileName(pluginDir)}");
                     continue;
                 }
 
                 var metadata = new PluginMetadata(manifest, pluginDir, assemblyPath);
                 discovered.Add(metadata);
 
-                Console.WriteLine($"Discovered plugin: {metadata}");
+                DebugHelper.WriteLine($"Discovered plugin: {metadata}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error discovering plugin in {Path.GetFileName(pluginDir)}: {ex.Message}");
+                DebugHelper.WriteLine($"Error discovering plugin in {Path.GetFileName(pluginDir)}: {ex.Message}");
             }
         }
 
@@ -112,7 +113,7 @@ public class PluginDiscovery
 
             if (manifest == null)
             {
-                Console.WriteLine($"Failed to deserialize manifest: {manifestPath}");
+                DebugHelper.WriteLine($"Failed to deserialize manifest: {manifestPath}");
                 return null;
             }
 
@@ -120,12 +121,12 @@ public class PluginDiscovery
         }
         catch (JsonException ex)
         {
-            Console.WriteLine($"JSON error in {Path.GetFileName(manifestPath)}: {ex.Message}");
+            DebugHelper.WriteLine($"JSON error in {Path.GetFileName(manifestPath)}: {ex.Message}");
             return null;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading manifest {Path.GetFileName(manifestPath)}: {ex.Message}");
+            DebugHelper.WriteLine($"Error loading manifest {Path.GetFileName(manifestPath)}: {ex.Message}");
             return null;
         }
     }

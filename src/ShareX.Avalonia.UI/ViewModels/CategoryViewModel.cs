@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ShareX.Avalonia.Common;
 using ShareX.Avalonia.Uploaders.PluginSystem;
 using System.Collections.ObjectModel;
 
@@ -63,7 +64,7 @@ public partial class CategoryViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to open catalog: {ex.Message}");
+            DebugHelper.WriteException(ex, "Failed to open catalog");
         }
     }
 
@@ -88,7 +89,7 @@ public partial class CategoryViewModel : ViewModelBase
         catch (Exception ex)
         {
             // TODO: Show error to user
-            Console.WriteLine($"Failed to set default: {ex.Message}");
+            DebugHelper.WriteException(ex, "Failed to set default");
         }
     }
 
@@ -105,7 +106,7 @@ public partial class CategoryViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to duplicate: {ex.Message}");
+            DebugHelper.WriteException(ex, "Failed to duplicate");
         }
     }
 
@@ -126,7 +127,7 @@ public partial class CategoryViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to remove: {ex.Message}");
+            DebugHelper.WriteException(ex, "Failed to remove");
         }
     }
 

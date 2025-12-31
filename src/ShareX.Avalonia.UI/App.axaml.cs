@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
+using ShareX.Avalonia.Common;
 using ShareX.Avalonia.UI.Views;
 using ShareX.Avalonia.UI.ViewModels;
 using ShareX.Avalonia.Uploaders.PluginSystem;
@@ -47,7 +48,7 @@ public partial class App : Application
         var s3Provider = new AmazonS3Provider();
         ProviderCatalog.RegisterProvider(s3Provider);
 
-        Console.WriteLine("Registered built-in providers: Imgur, Amazon S3");
+        DebugHelper.WriteLine("Registered built-in providers: Imgur, Amazon S3");
     }
 
     private void InitializeHotkeys()
@@ -66,17 +67,17 @@ public partial class App : Application
             var defaultHotkeys = Core.Hotkeys.HotkeyManager.GetDefaultHotkeyList();
             HotkeyManager.UpdateHotkeys(defaultHotkeys);
             
-            Console.WriteLine($"Initialized hotkey manager with {defaultHotkeys.Count} default hotkeys");
+            DebugHelper.WriteLine($"Initialized hotkey manager with {defaultHotkeys.Count} default hotkeys");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to initialize hotkeys: {ex.Message}");
+            DebugHelper.WriteException(ex, "Failed to initialize hotkeys");
         }
     }
 
     private async void HotkeyManager_HotkeyTriggered(object? sender, Core.Hotkeys.HotkeySettings settings)
     {
-        Console.WriteLine($"Hotkey triggered: {settings}");
+        DebugHelper.WriteLine($"Hotkey triggered: {settings}");
         
         // Execute the job associated with the hotkey
         await Core.Helpers.TaskHelpers.ExecuteJob(settings.Job, settings.TaskSettings);

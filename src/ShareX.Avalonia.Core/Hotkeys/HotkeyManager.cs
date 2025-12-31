@@ -102,10 +102,11 @@ public class HotkeyManager : IDisposable
             return false;
         }
 
-        // Unregister if already registered
-        if (settings.HotkeyInfo.Status == HotkeyStatus.Registered)
+        // Always try to unregister first if this hotkey has an ID
+        // Ignore failures - the hotkey might not have been registered yet
+        if (settings.HotkeyInfo.Id != 0)
         {
-            UnregisterHotkey(settings);
+            UnregisterHotkey(settings); // Don't check result
         }
 
         bool result = _hotkeyService.RegisterHotkey(settings.HotkeyInfo);

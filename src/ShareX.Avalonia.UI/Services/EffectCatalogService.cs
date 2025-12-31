@@ -1,3 +1,4 @@
+using ShareX.Avalonia.Common;
 using ShareX.Avalonia.ImageEffects;
 using System;
 using System.Collections.Generic;
@@ -36,9 +37,10 @@ namespace ShareX.Avalonia.UI.Services
                 catch (Exception ex)
                 {
                     // Log or ignore effects that fail to instantiate
-                    Console.WriteLine($"Failed to instantiate effect: {type.Name} - {ex.Message}");
+                    DebugHelper.WriteException(ex, $"Failed to instantiate effect: {type.Name}");
                 }
             }
+
 
             return effectViewModels;
         }

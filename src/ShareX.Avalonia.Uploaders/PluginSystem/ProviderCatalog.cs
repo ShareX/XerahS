@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Avalonia.Common;
+
 namespace ShareX.Avalonia.Uploaders.PluginSystem;
 
 /// <summary>
@@ -45,7 +47,7 @@ public static class ProviderCatalog
         {
             if (_pluginsLoaded)
             {
-                Console.WriteLine("Plugins already loaded, skipping");
+                DebugHelper.WriteLine("Plugins already loaded, skipping");
                 return;
             }
 
@@ -74,18 +76,18 @@ public static class ProviderCatalog
                         _providers[provider.ProviderId] = provider;
                         _pluginMetadata[provider.ProviderId] = metadata;
                         successCount++;
-                        Console.WriteLine($"✓ Loaded: {metadata.Manifest.Name}");
+                        DebugHelper.WriteLine($"✓ Loaded: {metadata.Manifest.Name}");
                     }
                     else
                     {
                         failureCount++;
-                        Console.WriteLine($"✗ Failed: {metadata.Manifest.Name} - {metadata.LoadError}");
+                        DebugHelper.WriteLine($"✗ Failed: {metadata.Manifest.Name} - {metadata.LoadError}");
                     }
                 }
                 catch (Exception ex)
                 {
                     failureCount++;
-                    Console.WriteLine($"✗ Error loading {metadata.Manifest.Name}: {ex.Message}");
+                    DebugHelper.WriteLine($"✗ Error loading {metadata.Manifest.Name}: {ex.Message}");
                 }
             }
 
