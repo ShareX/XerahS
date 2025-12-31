@@ -57,6 +57,21 @@ public class ImgurProvider : UploaderProviderBase
         return new ImgurUploader(config);
     }
 
+    public override Dictionary<UploaderCategory, string[]> GetSupportedFileTypes()
+    {
+        return new Dictionary<UploaderCategory, string[]>
+        {
+            { 
+                UploaderCategory.Image, 
+                new[] { "png", "jpg", "jpeg", "gif", "apng", "bmp", "tiff", "webp", "mp4", "avi", "mov" } 
+            },
+            { 
+                UploaderCategory.Text, 
+                new[] { "txt", "log", "json", "xml", "md", "html", "css", "js" } 
+            }
+        };
+    }
+
     // UI view will be created in Phase 3
     public override object? CreateConfigView()
     {

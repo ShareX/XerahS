@@ -57,10 +57,30 @@ public class AmazonS3Provider : UploaderProviderBase
         return new AmazonS3Uploader(config);
     }
 
-    // UI view will be created in Phase 3
+    public override Dictionary<UploaderCategory, string[]> GetSupportedFileTypes()
+    {
+        // S3 supports all file types for all categories
+        var allTypes = new[] { 
+            "png", "jpg", "jpeg", "gif", "bmp", "tiff", "webp", "svg",  // Common images
+            "mp4", "avi", "mov", "mkv", "flv", "wmv", "webm",           // Videos  
+            "txt", "log", "json", "xml", "md", "html", "css", "js",     // Text
+            "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",         // Documents
+            "zip", "rar", "7z", "tar", "gz",                            // Archives
+            "exe", "dll", "so", "dmg", "apk", "ipa"                     // Executables
+        };
+
+        return new Dictionary<UploaderCategory, string[]>
+        {
+            { UploaderCategory.Image, allTypes },
+            { UploaderCategory.Text, allTypes },
+            { UploaderCategory.File, allTypes }
+        };
+    }
+
+    // UI view will be created later
     public override object? CreateConfigView()
     {
-        // TODO: Return AmazonS3ConfigView instance when UI is implemented
+        // TODO: Return S3ConfigView instance when UI is implemented
         return null;
     }
 }

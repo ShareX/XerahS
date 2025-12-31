@@ -72,6 +72,12 @@ public interface IUploaderProvider
     Uploader CreateInstance(string settingsJson);
 
     /// <summary>
+    /// Get file types supported by this provider for each category.
+    /// Returns dictionary of Category → Supported extensions (without leading dot, lowercase)
+    /// </summary>
+    Dictionary<UploaderCategory, string[]> GetSupportedFileTypes();
+
+    /// <summary>
     /// Validates the serialized settings JSON
     /// </summary>
     bool ValidateSettings(string settingsJson);

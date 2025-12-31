@@ -221,6 +221,162 @@ public class InstanceManager
         }
     }
 
+    #region File-Type Routing
+
+    /// <summary>
+    /// Get the destination instance for a specific file based on category and extension.
+    /// Returns null if no match found.
+    /// </summary>
+    /// <param name="category">Upload category</param>
+    /// <param name="fileExtension">File extension (with or without leading dot, case-insensitive)</param>
+    public UploaderInstance? GetDestinationForFile(UploaderCategory category, string fileExtension)
+    {
+        lock (_lock)
+        {
+            // Normalize extension (remove leading dot, lowercase)
+            var ext = fileExtension.TrimStart('.').ToLowerInvariant();
+
+            var instances = GetInstancesByCategory(category);
+
+            // 1. Try exact file extension match first
+            var exactMatch = instances.FirstOrDefault(i =>
+                !i.FileTypeRouting.AllFileTypes &&
+                i.FileTypeRouting.FileExtensions.Any(e => e.Equals(ext, StringComparison.OrdinalIgnoreCase)));
+
+            if (exactMatch != null)
+                return exactMatch;
+
+            // 2. Fallback to "All File Types" instance
+            var allTypesMatch = instances.FirstOrDefault(i => i.FileTypeRouting.AllFileTypes);
+
+            return allTypesMatch;
+        }
+    }
+
+    /// <summary>
+    /// Check if a specific file type can be added to an instance in a category.
+    /// Returns false if type is already handled by another instance or if any instance has "All File Types".
+    /// </summary>
+    /// <param name="category">Upload category</param>
+    /// <param name="excludeInstanceId">Instance ID to exclude from check (when editing existing instance)</param>
+    /// <param name="fileExtension">File extension to check</param>
+    public bool CanAddFileType(UploaderCategory category, Guid excludeInstanceId, string fileExtension)
+    {
+        lock (_lock)
+        {
+            var ext = fileExtension.TrimStart('.').ToLowerInvariant();
+            
+            var otherInstances = _configuration.Instances
+                .Where(i => i.Category == category && i.InstanceId != excludeInstanceId);
+
+            // Cannot add if any other instance has "All File Types"
+            if (otherInstances.Any(i => i.FileTypeRouting.AllFileTypes))
+                return false;
+
+            // Cannot add if file type is already handled by another instance
+            return !otherInstances.Any(i =>
+                i.FileTypeRouting.FileExtensions.Any(e => e.Equals(ext, StringComparison.OrdinalIgnoreCase)));
+        }
+    }
+
+    /// <summary>
+    /// Check if an instance can set "All File Types" for its category.
+    /// Returns false if other instances exist in the same category.
+    /// </summary>
+    /// <param name="category">Upload category</param>
+    /// <param name="currentInstanceId">Instance ID requesting "All File Types"</param>
+    public bool CanSetAllFileTypes(UploaderCategory category, Guid currentInstanceId)
+    {
+        lock (_lock)
+        {
+            var otherInstances = _configuration.Instances
+                .Where(i => i.Category == category && i.InstanceId != currentInstanceId);
+
+            // Can only set "All File Types" if no other instances exist in this category
+            return !otherInstances.Any();
+        }
+    }
+
+    /// <summary>
+    /// Get file types that are already handled by other instances in a category.
+    /// Used for UI to show which types are unavailable.
+    /// </summary>
+    /// <param name="category">Upload category</param>
+    /// <param name="excludeInstanceId">Instance ID to exclude from check</param>
+    public Dictionary<string, string> GetBlockedFileTypes(UploaderCategory category, Guid excludeInstanceId)
+    {
+        lock (_lock)
+        {
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            
+            var otherInstances = _configuration.Instances
+                .Where(i => i.Category == category && i.InstanceId != excludeInstanceId);
+
+            foreach (var instance in otherInstances)
+            {
+                if (instance.FileTypeRouting.AllFileTypes)
+                {
+                    result["*"] = instance.DisplayName;
+                }
+                else
+                {
+                    foreach (var ext in instance.FileTypeRouting.FileExtensions)
+                    {
+                        result[ext] = instance.DisplayName;
+                    }
+                }
+            }
+
+            return result;
+        }
+    }
+
+    /// <summary>
+    /// Validate that an instance's file type configuration doesn't conflict with others.
+    /// Returns error message if invalid, null if valid.
+    /// </summary>
+    public string? ValidateFileTypeConfiguration(UploaderInstance instance)
+    {
+        lock (_lock)
+        {
+            var otherInstances = _configuration.Instances
+                .Where(i => i.Category == instance.Category && i.InstanceId != instance.InstanceId);
+
+            if (instance.FileTypeRouting.AllFileTypes)
+            {
+                if (otherInstances.Any())
+                {
+                    return $"Cannot set 'All File Types' - {otherInstances.Count()} other instance(s) exist in {instance.Category} category";
+                }
+            }
+            else
+            {
+                // Check for "All File Types" conflicts
+                var allTypesInstance = otherInstances.FirstOrDefault(i => i.FileTypeRouting.AllFileTypes);
+                if (allTypesInstance != null)
+                {
+                    return $"Cannot add file types - '{allTypesInstance.DisplayName}' handles all file types in {instance.Category}";
+                }
+
+                // Check for specific file type conflicts
+                foreach (var ext in instance.FileTypeRouting.FileExtensions)
+                {
+                    var conflictingInstance = otherInstances.FirstOrDefault(i =>
+                        i.FileTypeRouting.FileExtensions.Any(e => e.Equals(ext, StringComparison.OrdinalIgnoreCase)));
+
+                    if (conflictingInstance != null)
+                    {
+                        return $"File type '{ext}' is already handled by '{conflictingInstance.DisplayName}'";
+                    }
+                }
+            }
+
+            return null; // Valid
+        }
+    }
+
+    #endregion
+
     private InstanceConfiguration LoadConfiguration()
     {
         try

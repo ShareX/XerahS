@@ -51,14 +51,19 @@ public class UploaderInstance
     public string DisplayName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Serialized provider-specific settings as JSON
+    /// Serialized provider-specific configuration as JSON
     /// </summary>
     public string SettingsJson { get; set; } = "{}";
 
     /// <summary>
+    /// Defines which file types this instance handles
+    /// </summary>
+    public FileTypeScope FileTypeRouting { get; set; } = new();
+
+    /// <summary>
     /// When this instance was created
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     /// <summary>
     /// When this instance was last modified

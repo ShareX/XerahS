@@ -40,6 +40,14 @@ public abstract class UploaderProviderBase : IUploaderProvider
     public abstract Type ConfigModelType { get; }
 
     /// <summary>
+    /// Get file types supported by this provider for each category.
+    /// Override to specify which file extensions each category supports.
+    /// </summary>
+    public abstract Dictionary<UploaderCategory, string[]> GetSupportedFileTypes();
+
+    public abstract Uploader CreateInstance(string settingsJson);
+
+    /// <summary>
     /// Override to provide custom config view, return null for property grid
     /// </summary>
     public virtual object? CreateConfigView()
@@ -47,7 +55,6 @@ public abstract class UploaderProviderBase : IUploaderProvider
         return null;
     }
 
-    public abstract Uploader CreateInstance(string settingsJson);
 
     /// <summary>
     /// Default validation: checks if JSON can be deserialized to ConfigModelType
