@@ -96,13 +96,13 @@
             <!-- Action Buttons -->
             <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
                 <Button Content="Reset" 
-                        Command="{Binding ResetEffectCommand}"
+                        Click="OnResetClicked"
                         Background="#FFFFFF0D"
                         Foreground="#94A3B8"
                         Padding="16,8"
                         CornerRadius="8"/>
                 <Button Content="Apply" 
-                        Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).ApplyEffectCommand}"
+                        Click="OnApplyClicked"
                         Background="#8B5CF6"
                         Foreground="White"
                         Padding="16,8"

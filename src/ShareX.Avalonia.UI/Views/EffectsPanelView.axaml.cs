@@ -18,5 +18,24 @@ namespace ShareX.Avalonia.UI.Views
                 vm.SelectCategoryCommand.Execute(category);
             }
         }
+
+        private void OnResetClicked(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is EffectsPanelViewModel vm)
+            {
+                vm.ResetEffectCommand.Execute(null);
+            }
+        }
+
+        private void OnApplyClicked(object? sender, RoutedEventArgs e)
+        {
+            // Notify parent that an effect should be applied
+            // This will be handled by the parent view (EditorView or MainWindow)
+            if (DataContext is EffectsPanelViewModel vm && vm.SelectedEffect != null)
+            {
+                // TODO: Implement effect application logic
+                // For now, this is a placeholder for parent view integration
+            }
+        }
     }
 }
