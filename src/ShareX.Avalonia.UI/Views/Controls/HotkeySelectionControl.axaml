@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ShareX.Avalonia.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="40"
+             x:Class="ShareX.Avalonia.UI.Views.Controls.HotkeySelectionControl"
+             x:DataType="vm:HotkeyItemViewModel">
+    
+    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" 
+            BorderThickness="1" 
+            CornerRadius="4" 
+            Padding="8,4"
+            Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+            <!-- Status Icon -->
+            <Ellipse Grid.Column="0" 
+                     Width="10" Height="10" 
+                     Margin="0,0,10,0"
+                     VerticalAlignment="Center"
+                     Fill="{Binding Model.HotkeyInfo.Status, Converter={x:Static vm:HotkeyStatusColorConverter.Instance}}"/>
+            
+            <!-- Task Description (Dropdown button) -->
+            <Button Grid.Column="1" 
+                    x:Name="TaskButton"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Left"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="5,2"
+                    Click="TaskButton_Click">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Description}" 
+                               FontWeight="{Binding IsSelected, Converter={x:Static vm:BoolToFontWeightConverter.Instance}}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text=" ▼" FontSize="10" VerticalAlignment="Center" Foreground="Gray"/>
+                </StackPanel>
+                <Button.ContextMenu>
+                    <ContextMenu x:Name="TaskContextMenu"/>
+                </Button.ContextMenu>
+            </Button>
+            
+            <!-- Hotkey Capture Button -->
+            <Border Grid.Column="2" 
+                    Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" 
+                    CornerRadius="3" 
+                    Margin="10,0"
+                    MinWidth="150">
+                <Button x:Name="HotkeyButton"
+                        Content="{Binding KeyString}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        FontFamily="Consolas, Monospace"
+                        FontWeight="Bold"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Padding="10,4"
+                        Focusable="True"
+                        Cursor="Hand"
+                        KeyDown="HotkeyButton_KeyDown"
+                        KeyUp="HotkeyButton_KeyUp"
+                        Click="HotkeyButton_Click"/>
+            </Border>
+            
+            <!-- Edit Button -->
+            <Button Grid.Column="3" 
+                    Content="Edit"
+                    Click="EditButton_Click"
+                    Padding="10,4"/>
+        </Grid>
+    </Border>
+</UserControl>

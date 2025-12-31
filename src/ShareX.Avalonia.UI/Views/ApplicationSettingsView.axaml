@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              xmlns:vm="using:ShareX.Avalonia.UI.ViewModels"
+             xmlns:views="using:ShareX.Avalonia.UI.Views.Controls"
              x:Class="ShareX.Avalonia.UI.Views.ApplicationSettingsView"
              x:DataType="vm:SettingsViewModel">
 
@@ -88,28 +89,20 @@
             <!-- Hotkeys Tab -->
             <TabItem Header="Hotkeys">
                 <Grid RowDefinitions="*,Auto" Margin="20">
-                    <!-- Hotkeys List -->
-                    <Border Grid.Row="0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
-                        <ListBox ItemsSource="{Binding HotkeySettings.Hotkeys}" 
-                                 SelectedItem="{Binding HotkeySettings.SelectedHotkey}"
-                                 Background="Transparent">
-                            <ListBox.ItemTemplate>
+                    <!-- Hotkeys List using HotkeySelectionControl -->
+                    <ScrollViewer Grid.Row="0" Margin="0,0,0,10">
+                        <ItemsControl ItemsSource="{Binding HotkeySettings.Hotkeys}">
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid ColumnDefinitions="*,Auto">
-                                        <TextBlock Grid.Column="0" Text="{Binding Description}" VerticalAlignment="Center" Margin="10,0"/>
-                                        <Border Grid.Column="1" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" CornerRadius="3" Padding="8,2" Margin="0,0,10,0">
-                                            <TextBlock Text="{Binding KeyString}" FontWeight="Bold" FontFamily="Consolas, Monospace"/>
-                                        </Border>
-                                    </Grid>
+                                    <views:HotkeySelectionControl Margin="0,0,0,5"/>
                                 </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </Border>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
 
                     <!-- Action Buttons -->
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                        <Button Content="Add..." Command="{Binding HotkeySettings.AddCommand}"/>
-                        <Button Content="Edit..." Command="{Binding HotkeySettings.EditCommand}"/>
+                        <Button Content="Add" Command="{Binding HotkeySettings.AddCommand}"/>
                         <Button Content="Duplicate" Command="{Binding HotkeySettings.DuplicateCommand}"/>
                         <Button Content="Remove" Command="{Binding HotkeySettings.RemoveCommand}"/>
                         <Border Width="1" Background="Gray" Margin="5,0"/>

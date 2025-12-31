@@ -72,3 +72,9 @@ We have successfully implemented the Reimagined UI, Multi-monitor Region Capture
 - Smart Eraser tool has visual structure but no actual erasing logic yet
 - Upload functionality uses basic implementations, needs full provider integration
 - Cross-platform testing pending for Linux/macOS
+- **Hotkey Key Capture Not Working**: The HotkeySelectionControl fails to capture keyboard input during edit mode. Multiple approaches tried:
+  - Button-based capture with AddHandler and handledEventsToo: true
+  - Tunnel routing strategy
+  - UserControl-level fallback handler
+  - Visual feedback (yellow background) works, but key events not reaching handler
+  - **Needs Investigation**: May require window-level key capture or platform-specific implementation similar to SnapX

@@ -46,20 +46,17 @@ public partial class HotkeySettingsViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task Add()
+    private void Add()
     {
+        if (_manager == null) return;
+        
+        // Create new hotkey with default settings
         var newHotkey = new ShareX.Avalonia.Core.Hotkeys.HotkeySettings();
         
-        if (EditHotkeyRequester != null)
-        {
-            if (await EditHotkeyRequester(newHotkey))
-            {
-               if (_manager != null && _manager.RegisterHotkey(newHotkey))
-               {
-                   LoadHotkeys();
-               }
-            }
-        }
+        // Add to list (user will configure inline via HotkeySelectionControl)
+        _manager.Hotkeys.Add(newHotkey);
+        
+        LoadHotkeys();
     }
 
     [RelayCommand(CanExecute = nameof(CanModifyHotkey))]
