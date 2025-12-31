@@ -292,10 +292,13 @@
                                     </Canvas>
 
                                     <!-- Overlay Layer (Transient UI: Selection handles, Crop) -->
-                                    <Canvas Name="OverlayCanvas"
-                                            IsHitTestVisible="False"
+                                        <Canvas Name="OverlayCanvas"
+                                            IsHitTestVisible="True"
                                             HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Stretch">
+                                            VerticalAlignment="Stretch"
+                                            PointerPressed="OnCanvasPointerPressed"
+                                            PointerMoved="OnCanvasPointerMoved"
+                                            PointerReleased="OnCanvasPointerReleased">
                                         <Rectangle Name="CropOverlay" 
                                                    IsVisible="False"
                                                    Stroke="White"

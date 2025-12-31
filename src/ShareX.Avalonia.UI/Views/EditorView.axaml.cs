@@ -60,9 +60,9 @@ namespace ShareX.Avalonia.UI.Views
         private bool _isDraggingShape;
         
         // Handles
-        private List<global::Avalonia.Controls.Shapes.Rectangle> _selectionHandles = new();
+        private List<Shape> _selectionHandles = new();
         private bool _isDraggingHandle;
-        private global::Avalonia.Controls.Shapes.Rectangle? _draggedHandle;
+        private Shape? _draggedHandle;
 
         private Point GetCanvasPosition(PointerEventArgs e, Canvas canvas)
         {
@@ -275,6 +275,9 @@ namespace ShareX.Avalonia.UI.Views
 
             if (_selectedShape == null) return;
 
+            // Skip handles for shapes without measurable bounds (e.g., lines)
+            if (_selectedShape.Bounds.Width <= 0 || _selectedShape.Bounds.Height <= 0) return;
+
             // Calculate bounds
             var left = Canvas.GetLeft(_selectedShape);
             var top = Canvas.GetTop(_selectedShape);
@@ -308,20 +311,20 @@ namespace ShareX.Avalonia.UI.Views
             else if (tag.Contains("Top") || tag.Contains("Bottom")) cursor = new Cursor(StandardCursorType.SizeNorthSouth);
             else if (tag.Contains("Left") || tag.Contains("Right")) cursor = new Cursor(StandardCursorType.SizeWestEast);
 
-            var handle = new global::Avalonia.Controls.Shapes.Rectangle
+            var handle = new Ellipse
             {
-                Width = 10,
-                Height = 10,
-                Fill = Brushes.White,
-                Stroke = Brushes.Blue,
-                StrokeThickness = 1,
+                Width = 12,
+                Height = 12,
+                Fill = new SolidColorBrush(Color.Parse("#FFFFFFFF")),
+                Stroke = new SolidColorBrush(Color.Parse("#8B5CF6")),
+                StrokeThickness = 2,
                 Tag = tag, // Store position intent
                 Cursor = cursor
             };
             
             // Center the handle
-            Canvas.SetLeft(handle, x - 5);
-            Canvas.SetTop(handle, y - 5);
+            Canvas.SetLeft(handle, x - handle.Width / 2);
+            Canvas.SetTop(handle, y - handle.Height / 2);
             
             overlay.Children.Add(handle);
             _selectionHandles.Add(handle);
@@ -628,13 +631,13 @@ namespace ShareX.Avalonia.UI.Views
 
             var point = GetCanvasPosition(e, canvas);
 
-            // Check if clicking a handle
-            if ((_selectedShape != null && vm.ActiveTool == EditorTool.Select) || vm.ActiveTool == EditorTool.Crop)
+            // Check if clicking a handle (always allow when a shape is selected, regardless of active tool)
+            if (_selectedShape != null || vm.ActiveTool == EditorTool.Crop)
             {
                  var overlay = this.FindControl<Canvas>("OverlayCanvas");
                  if (overlay != null)
                  {
-                     var handle = e.Source as global::Avalonia.Controls.Shapes.Rectangle;
+                     var handle = e.Source as Shape;
                      if (handle != null && overlay.Children.Contains(handle))
                      {
                          _isDraggingHandle = true;
@@ -1213,7 +1216,13 @@ namespace ShareX.Avalonia.UI.Views
                 _isDrawing = false;
                 if (_currentShape != null)
                 {
-                    _undoStack.Push(_currentShape);
+                    var createdShape = _currentShape;
+                    _undoStack.Push(createdShape);
+
+                    // Auto-select newly created shape so resize handles appear immediately
+                    _selectedShape = createdShape;
+                    UpdateSelectionHandles();
+
                     // _currentShape is now managed by the canvas/undo stack
                     _currentShape = null;
                 }
