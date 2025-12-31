@@ -78,42 +78,12 @@ namespace ShareX.Avalonia.ImageEffects
 
         public override SKBitmap Apply(SKBitmap bmp)
         {
-            // return ImageEffectsProcessing.AddGlow(bmp, Size, Strength, Color, Offset, UseGradient ? Gradient : null);
-            return bmp;
+            return ImageEffectsProcessing.AddGlow(bmp, Size, Strength, Color, Offset, UseGradient);
         }
 
         protected override string? GetSummary()
         {
             return Size.ToString();
         }
-
-        /*
-        private static GradientInfo CreateDefaultGradient()
-        {
-            GradientInfo gradientInfo = new GradientInfo
-            {
-                Type = LinearGradientMode.ForwardDiagonal
-            };
-
-            switch (Random.Next(0, 3))
-            {
-                case 0:
-                    gradientInfo.Colors.Add(new GradientStop(Color.FromArgb(0, 187, 138), 0f));
-                    gradientInfo.Colors.Add(new GradientStop(Color.FromArgb(0, 105, 163), 100f));
-                    break;
-                case 1:
-                    gradientInfo.Colors.Add(new GradientStop(Color.FromArgb(255, 3, 135), 0f));
-                    gradientInfo.Colors.Add(new GradientStop(Color.FromArgb(255, 143, 3), 100f));
-                    break;
-                default:
-                    gradientInfo.Colors.Add(new GradientStop(Color.FromArgb(184, 11, 195), 0f));
-                    gradientInfo.Colors.Add(new GradientStop(Color.FromArgb(98, 54, 255), 100f));
-                    break;
-            }
-
-            return gradientInfo;
-        }
-        */
     }
 }
-

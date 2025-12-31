@@ -38,7 +38,6 @@ namespace ShareX.Avalonia.ImageEffects.Manipulations
         [DefaultValue(10)]
         public int Margin { get; set; }
 
-        // [DefaultValue(typeof(Color), "Transparent")]
         public SKColor Color { get; set; }
 
         [DefaultValue(10)]
@@ -54,8 +53,7 @@ namespace ShareX.Avalonia.ImageEffects.Manipulations
 
         public override SKBitmap Apply(SKBitmap bmp)
         {
-             // TODO: AutoCrop implementation
-             return bmp;
+             return ImageEffectsProcessing.AutoCrop(bmp, Color, Tolerance, Margin);
         }
 
         protected override string? GetSummary()
@@ -64,4 +62,3 @@ namespace ShareX.Avalonia.ImageEffects.Manipulations
         }
     }
 }
-

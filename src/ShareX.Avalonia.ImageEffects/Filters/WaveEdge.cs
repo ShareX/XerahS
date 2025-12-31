@@ -28,7 +28,7 @@ using ShareX.Avalonia.Common;
 using ShareX.Avalonia.ImageEffects.Helpers;
 using System.ComponentModel;
 using SkiaSharp;
-// using AnchorSides = ShareX.Avalonia.ImageEffects.Helpers.ImageEffectsProcessing.AnchorSides;
+
 
 namespace ShareX.Avalonia.ImageEffects
 {
@@ -41,20 +41,20 @@ namespace ShareX.Avalonia.ImageEffects
         [DefaultValue(20)]
         public int Range { get; set; }
 
-        // [DefaultValue(AnchorSides.All)]
-        // public AnchorSides Sides { get; set; }
+        [DefaultValue(AnchorSides.All)]
+        public AnchorSides Sides { get; set; }
 
         public WaveEdge()
         {
             // this.ApplyDefaultPropertyValues();
             Depth = 15;
             Range = 20;
+            Sides = AnchorSides.All;
         }
 
         public override SKBitmap Apply(SKBitmap bmp)
         {
-            // return ImageEffectsProcessing.WavyEdges(bmp, Depth, Range, Sides, SKColors.Transparent);
-            return bmp;
+            return ImageEffectsProcessing.DrawWaveEdge(bmp, Depth, Range, Sides);
         }
 
         protected override string? GetSummary()
@@ -63,4 +63,3 @@ namespace ShareX.Avalonia.ImageEffects
         }
     }
 }
-

@@ -46,9 +46,7 @@ namespace ShareX.Avalonia.ImageEffects
 
         public override SKBitmap Apply(SKBitmap bmp)
         {
-            // TODO: Skia implementation of channel split
-            return bmp;
+            return ImageEffectsProcessing.ApplyRGBSplit(bmp, OffsetRed, OffsetGreen, OffsetBlue);
         }
     }
 }
-

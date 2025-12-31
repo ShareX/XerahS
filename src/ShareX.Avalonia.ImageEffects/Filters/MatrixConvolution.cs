@@ -70,9 +70,13 @@ namespace ShareX.Avalonia.ImageEffects
 
         public override SKBitmap Apply(SKBitmap bmp)
         {
-             // TODO: Implement Matrix Convolution using SKImageFilter.CreateMatrixConvolution
-             return bmp;
+            float[] kernel = new float[] {
+                X0Y0, X1Y0, X2Y0,
+                X0Y1, X1Y1, X2Y1,
+                X0Y2, X1Y2, X2Y2
+            };
+            
+            return ImageEffectsProcessing.ApplyConvolutionMatrix(bmp, kernel, 3, (float)Factor, Offset);
         }
     }
 }
-

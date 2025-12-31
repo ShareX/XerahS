@@ -29,6 +29,12 @@ using ShareX.Avalonia.ImageEffects.Helpers;
 using System.ComponentModel;
 using SkiaSharp;
 
+
+using ShareX.Avalonia.Common;
+using ShareX.Avalonia.ImageEffects.Helpers;
+using System.ComponentModel;
+using SkiaSharp;
+
 namespace ShareX.Avalonia.ImageEffects.Adjustments
 {
     [Description("Black & White")]
@@ -36,9 +42,13 @@ namespace ShareX.Avalonia.ImageEffects.Adjustments
     {
         public override SKBitmap Apply(SKBitmap bmp)
         {
-             // TODO
-             return bmp;
+            float[] matrix = new float[] {
+                0.2126f, 0.7152f, 0.0722f, 0, 0,
+                0.2126f, 0.7152f, 0.0722f, 0, 0,
+                0.2126f, 0.7152f, 0.0722f, 0, 0,
+                0, 0, 0, 1, 0
+            };
+            return ImageEffectsProcessing.ApplyColorMatrix(bmp, matrix);
         }
     }
 }
-

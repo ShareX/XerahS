@@ -80,8 +80,7 @@ namespace ShareX.Avalonia.ImageEffects
 
         public override SKBitmap Apply(SKBitmap bmp)
         {
-            // return ImageEffectsProcessing.DrawReflection(bmp, Percentage, MaxAlpha, MinAlpha, Offset, Skew, SkewSize);
-            return bmp;
+            return ImageEffectsProcessing.DrawReflection(bmp, Percentage, MaxAlpha, MinAlpha, Offset, Skew, SkewSize);
         }
 
         protected override string? GetSummary()
@@ -90,4 +89,3 @@ namespace ShareX.Avalonia.ImageEffects
         }
     }
 }
-

@@ -49,9 +49,7 @@ namespace ShareX.Avalonia.ImageEffects.Adjustments
 
         public override SKBitmap Apply(SKBitmap bmp)
         {
-            // TODO
-            return bmp;
+            return ImageEffectsProcessing.DrawPolaroid(bmp, Margin, Rotate);
         }
     }
 }
-

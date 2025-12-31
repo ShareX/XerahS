@@ -55,8 +55,7 @@ namespace ShareX.Avalonia.ImageEffects.Adjustments
 
         public override SKBitmap Apply(SKBitmap bmp)
         {
-            // TODO
-            return bmp;
+            return ImageEffectsProcessing.ApplyOpacity(bmp, Opacity);
         }
 
         protected override string? GetSummary()
@@ -65,4 +64,3 @@ namespace ShareX.Avalonia.ImageEffects.Adjustments
         }
     }
 }
-
