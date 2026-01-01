@@ -76,6 +76,124 @@ namespace ShareX.Ava.UI.Views
             return e.GetPosition(canvas);
         }
 
+        /// <summary>
+        /// Sample pixel color from the rendered canvas (including annotations) at the specified canvas coordinates
+        /// </summary>
+        private async System.Threading.Tasks.Task<string?> GetPixelColorFromRenderedCanvas(Point canvasPoint)
+        {
+            if (DataContext is not MainViewModel vm || vm.PreviewImage == null) return null;
+
+            try
+            {
+                // We need to sample from the RENDERED canvas including all annotations
+                var container = this.FindControl<Grid>("CanvasContainer");
+                if (container == null || container.Width <= 0 || container.Height <= 0) return null;
+
+                // Render the container (image + annotations) to a bitmap
+                var rtb = new global::Avalonia.Media.Imaging.RenderTargetBitmap(
+                    new PixelSize((int)container.Width, (int)container.Height), 
+                    new Vector(96, 96));
+                
+                rtb.Render(container);
+
+                // Convert to SKBitmap for pixel access
+                using var skBitmap = Helpers.BitmapConversionHelpers.ToSKBitmap(rtb);
+
+                // Convert canvas point to pixel coordinates
+                int x = (int)Math.Round(canvasPoint.X);
+                int y = (int)Math.Round(canvasPoint.Y);
+
+                System.Diagnostics.Debug.WriteLine($"GetPixelColorFromRenderedCanvas: Canvas point ({canvasPoint.X:F2}, {canvasPoint.Y:F2}) -> Pixel ({x}, {y})");
+                System.Diagnostics.Debug.WriteLine($"GetPixelColorFromRenderedCanvas: Rendered size ({skBitmap.Width}, {skBitmap.Height}), Zoom: {vm.Zoom}");
+
+                // Valid ate bounds
+                if (x < 0 || y < 0 || x >= skBitmap.Width || y >= skBitmap.Height)
+                {
+                    System.Diagnostics.Debug.WriteLine($"GetPixelColorFromRenderedCanvas: Out of bounds!");
+                    return null;
+                }
+
+                // Get pixel color from rendered output
+                var skColor = skBitmap.GetPixel(x, y);
+                
+                // Convert to hex string
+                var colorHex = $"#{skColor.Red:X2}{skColor.Green:X2}{skColor.Blue:X2}";
+                System.Diagnostics.Debug.WriteLine($"GetPixelColorFromRenderedCanvas: Sampled color {colorHex} at ({x}, {y})");
+                
+                return colorHex;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetPixelColorFromRenderedCanvas failed: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Sample pixel color from the preview image at the specified canvas coordinates
+        /// </summary>
+        private string? GetPixelColor(Point canvasPoint)
+        {
+            if (DataContext is not MainViewModel vm || vm.PreviewImage == null) return null;
+
+            try
+            {
+                // Canvas point is already in image coordinates (no zoom adjustment needed here
+                // because GetCanvasPosition gets position relative to the canvas which is already scaled)
+                int x = (int)Math.Round(canvasPoint.X);
+                int y = (int)Math.Round(canvasPoint.Y);
+
+                System.Diagnostics.Debug.WriteLine($"GetPixelColor: Canvas point ({canvasPoint.X:F2}, {canvasPoint.Y:F2}) -> Pixel ({x}, {y})");
+                System.Diagnostics.Debug.WriteLine($"GetPixelColor: Image size ({vm.PreviewImage.Size.Width}, {vm.PreviewImage.Size.Height}), Zoom: {vm.Zoom}");
+
+                // Validate bounds
+                if (x < 0 || y < 0 || x >= vm.PreviewImage.Size.Width || y >= vm.PreviewImage.Size.Height)
+                {
+                    System.Diagnostics.Debug.WriteLine($"GetPixelColor: Out of bounds!");
+                    return null;
+                }
+
+                // IMPORTANT: We sample from the BASE image (vm.PreviewImage), not from the rendered canvas
+                // This means we get the original pixel color, ignoring any annotations drawn on top.
+                // This is the correct behavior for Smart Eraser - it should match the background,
+                // not other annotations.
+
+                // Use cached SKBitmap if available, otherwise create one
+                SkiaSharp.SKBitmap? skBitmap = _cachedSkBitmap;
+                bool shouldDispose = false;
+
+                if (skBitmap == null)
+                {
+                    skBitmap = Helpers.BitmapConversionHelpers.ToSKBitmap(vm.PreviewImage);
+                    shouldDispose = true;
+                }
+
+                try
+                {
+                    // Get pixel color
+                    var skColor = skBitmap.GetPixel(x, y);
+                    
+                    // Convert to hex string
+                    var colorHex = $"#{skColor.Red:X2}{skColor.Green:X2}{skColor.Blue:X2}";
+                    System.Diagnostics.Debug.WriteLine($"GetPixelColor: Sampled color {colorHex} at ({x}, {y})");
+                    
+                    return colorHex;
+                }
+                finally
+                {
+                    if (shouldDispose)
+                    {
+                        skBitmap?.Dispose();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetPixelColor failed: {ex.Message}");
+                return null;
+            }
+        }
+
         private void OnPreviewPointerWheelChanged(object? sender, PointerWheelEventArgs e)
         {
             if (DataContext is not MainViewModel vm) return;
@@ -423,6 +541,12 @@ namespace ShareX.Ava.UI.Views
             else if (e.PropertyName == nameof(MainViewModel.StrokeWidth))
             {
                 ApplySelectedStrokeWidth(vm.StrokeWidth);
+            }
+            else if (e.PropertyName == nameof(MainViewModel.PreviewImage))
+            {
+                // Invalidate cached bitmap when preview image changes
+                _cachedSkBitmap?.Dispose();
+                _cachedSkBitmap = null;
             }
         }
 
@@ -1016,9 +1140,24 @@ namespace ShareX.Ava.UI.Views
 
                     FreehandAnnotation freehand;
                     if (vm.ActiveTool == EditorTool.SmartEraser)
+                    {
+                        // Sample pixel color from rendered canvas (including annotations)
+                        var sampledColor = await GetPixelColorFromRenderedCanvas(_startPoint);
+                        
                         freehand = new SmartEraserAnnotation();
+                        
+                        // If we got a valid color, use it as solid color; otherwise fall back to semi-transparent red
+                        if (!string.IsNullOrEmpty(sampledColor))
+                        {
+                            freehand.StrokeColor = sampledColor;
+                            // Update polyline to use solid sampled color
+                            polyline.Stroke = new SolidColorBrush(Color.Parse(sampledColor));
+                        }
+                    }
                     else
+                    {
                         freehand = new FreehandAnnotation();
+                    }
 
                     freehand.Points.Add(_startPoint);
                     polyline.Tag = freehand;
