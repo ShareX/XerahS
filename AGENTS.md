@@ -86,6 +86,7 @@ This project uses multiple AI developer agents working in parallel. See [MULTI_A
 - Follow existing patterns in each project area.
 - Keep changes minimal and targeted.
 - Add small comments only when necessary to explain non-obvious logic.
+- **Always build the solution (`dotnet build`) at the end of a coding session to ensure no compilation errors were introduced.**
 
 ## Testing
 
