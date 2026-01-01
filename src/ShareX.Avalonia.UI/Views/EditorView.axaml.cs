@@ -1580,6 +1580,19 @@ namespace ShareX.Ava.UI.Views
                 if (_currentShape != null)
                 {
                     var createdShape = _currentShape;
+                    
+                    // Special handling for crop tool - execute crop immediately on mouse release
+                    if (DataContext is MainViewModel vm && vm.ActiveTool == EditorTool.Crop && createdShape.Name == "CropOverlay")
+                    {
+                        // Execute the crop operation
+                        PerformCrop();
+                        
+                        // Clear the current shape and don't add to undo stack
+                        _currentShape = null;
+                        e.Pointer.Capture(null);
+                        return;
+                    }
+                    
                     _undoStack.Push(createdShape);
 
                     // Auto-select newly created shape so resize handles appear immediately,
