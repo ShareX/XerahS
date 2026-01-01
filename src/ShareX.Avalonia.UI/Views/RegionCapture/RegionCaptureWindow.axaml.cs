@@ -185,11 +185,17 @@ namespace ShareX.Ava.UI.Views.RegionCapture
 
         private void CancelSelection()
         {
-            // Hide selection border and info text
-            var border = this.FindControl<Border>("SelectionBorder");
+            // Hide selection borders and info text
+            var border = this.FindControl<Rectangle>("SelectionBorder");
             if (border != null)
             {
                 border.IsVisible = false;
+            }
+
+            var borderInner = this.FindControl<Rectangle>("SelectionBorderInner");
+            if (borderInner != null)
+            {
+                borderInner.IsVisible = false;
             }
 
             var infoText = this.FindControl<TextBlock>("InfoText");
@@ -234,7 +240,8 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 _startPoint = point.Position;
                 _isSelecting = true;
                 
-                var border = this.FindControl<Border>("SelectionBorder");
+                // Show both border rectangles
+                var border = this.FindControl<Rectangle>("SelectionBorder");
                 if (border != null)
                 {
                     border.IsVisible = true;
@@ -242,6 +249,16 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                     Canvas.SetTop(border, _startPoint.Y);
                     border.Width = 0;
                     border.Height = 0;
+                }
+
+                var borderInner = this.FindControl<Rectangle>("SelectionBorderInner");
+                if (borderInner != null)
+                {
+                    borderInner.IsVisible = true;
+                    Canvas.SetLeft(borderInner, _startPoint.X);
+                    Canvas.SetTop(borderInner, _startPoint.Y);
+                    borderInner.Width = 0;
+                    borderInner.Height = 0;
                 }
 
                 // Update darkening overlay with zero-size selection (keeps full screen dimmed)
@@ -263,7 +280,8 @@ namespace ShareX.Ava.UI.Views.RegionCapture
             if (!_isSelecting) return;
 
             var currentPoint = point.Position;
-            var border = this.FindControl<Border>("SelectionBorder");
+            var border = this.FindControl<Rectangle>("SelectionBorder");
+            var borderInner = this.FindControl<Rectangle>("SelectionBorderInner");
             var infoText = this.FindControl<TextBlock>("InfoText");
 
             if (border != null)
@@ -274,10 +292,20 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 var width = Math.Abs(_startPoint.X - currentPoint.X);
                 var height = Math.Abs(_startPoint.Y - currentPoint.Y);
 
+                // Update outer border (white solid)
                 Canvas.SetLeft(border, x);
                 Canvas.SetTop(border, y);
                 border.Width = width;
                 border.Height = height;
+
+                // Update inner border (black dashed - static marching ants pattern)
+                if (borderInner != null)
+                {
+                    Canvas.SetLeft(borderInner, x);
+                    Canvas.SetTop(borderInner, y);
+                    borderInner.Width = width;
+                    borderInner.Height = height;
+                }
 
                 // Update darkening overlay to cut out the selection area
                 UpdateDarkeningOverlay(x, y, width, height);

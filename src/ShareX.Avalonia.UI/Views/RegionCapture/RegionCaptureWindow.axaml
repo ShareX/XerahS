@@ -26,11 +26,26 @@
               Fill="#80000000"
               IsVisible="True" />
         
-        <Border Name="SelectionBorder"
-                BorderBrush="Red"
-                BorderThickness="1"
-                Background="#20FFFFFF"
-                IsVisible="False" />
+        <!-- Selection border with marching ants effect -->
+        <Rectangle Name="SelectionBorder"
+                   StrokeThickness="1"
+                   Fill="Transparent"
+                   IsVisible="False">
+            <Rectangle.Stroke>
+                <SolidColorBrush Color="White" />
+            </Rectangle.Stroke>
+        </Rectangle>
+        
+        <!-- Inner black dashed border for marching ants effect -->
+        <Rectangle Name="SelectionBorderInner"
+                   StrokeThickness="1"
+                   Fill="Transparent"
+                   IsVisible="False">
+            <Rectangle.Stroke>
+                <SolidColorBrush Color="Black" />
+            </Rectangle.Stroke>
+            <Rectangle.StrokeDashArray>4,4</Rectangle.StrokeDashArray>
+        </Rectangle>
         
         <TextBlock Name="InfoText" 
                    Foreground="White" 
