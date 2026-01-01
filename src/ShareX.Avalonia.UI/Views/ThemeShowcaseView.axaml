@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="ShareX.Ava.UI.Views.ThemeShowcaseView">
+  <Border Padding="16" Background="{DynamicResource BackgroundBrush}">
+    <StackPanel Spacing="12">
+      <TextBlock Text="Dark Theme Showcase" FontSize="18" FontWeight="Bold" />
+      <TextBlock Text="Body text uses TextColor and base typography." />
+
+      <TextBox Width="240" Watermark="Sample input" />
+
+      <Border Background="{DynamicResource LightBackgroundBrush}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="1"
+              Padding="12">
+        <StackPanel Spacing="6">
+          <TextBlock Text="Bordered surface" />
+          <Separator />
+          <TextBlock Text="Separator uses dual tone." />
+        </StackPanel>
+      </Border>
+
+      <HyperlinkButton Content="Hyperlink sample" NavigateUri="https://example.com" />
+
+      <Menu>
+        <MenuItem Header="File">
+          <MenuItem Header="New" />
+          <MenuItem Header="Open" />
+          <MenuItem Header="Exit" />
+        </MenuItem>
+        <MenuItem Header="Edit">
+          <MenuItem Header="Undo" />
+          <MenuItem Header="Redo" />
+        </MenuItem>
+      </Menu>
+
+      <Border Background="{DynamicResource DarkBackgroundBrush}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="1"
+              Padding="8">
+        <StackPanel Spacing="4">
+          <TextBlock Text="CheckerBrush" />
+          <Rectangle Fill="{DynamicResource CheckerBrush}" Height="80" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </Border>
+</UserControl>

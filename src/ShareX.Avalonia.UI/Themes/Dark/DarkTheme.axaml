@@ -1,0 +1,140 @@
+<Styles xmlns="https://github.com/avaloniaui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <Color x:Key="BackgroundColor">#272727</Color>
+    <Color x:Key="LightBackgroundColor">#2E2E2E</Color>
+    <Color x:Key="DarkBackgroundColor">#222222</Color>
+    <Color x:Key="TextColor">#E7E9EA</Color>
+    <Color x:Key="BorderColor">#1F1F1F</Color>
+    <Color x:Key="CheckerColor">#2E2E2E</Color>
+    <Color x:Key="CheckerColor2">#272727</Color>
+    <Color x:Key="LinkColor">#A6D4FF</Color>
+    <Color x:Key="MenuHighlightColor">#2E2E2E</Color>
+    <Color x:Key="MenuHighlightBorderColor">#3F3F3F</Color>
+    <Color x:Key="MenuBorderColor">#3F3F3F</Color>
+    <Color x:Key="MenuCheckBackgroundColor">#333333</Color>
+    <Color x:Key="SeparatorLightColor">#2C2C2C</Color>
+    <Color x:Key="SeparatorDarkColor">#1F1F1F</Color>
+
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{DynamicResource BackgroundColor}" />
+    <SolidColorBrush x:Key="LightBackgroundBrush" Color="{DynamicResource LightBackgroundColor}" />
+    <SolidColorBrush x:Key="DarkBackgroundBrush" Color="{DynamicResource DarkBackgroundColor}" />
+    <SolidColorBrush x:Key="TextBrush" Color="{DynamicResource TextColor}" />
+    <SolidColorBrush x:Key="BorderBrush" Color="{DynamicResource BorderColor}" />
+    <SolidColorBrush x:Key="LinkBrush" Color="{DynamicResource LinkColor}" />
+    <SolidColorBrush x:Key="MenuHighlightBrush" Color="{DynamicResource MenuHighlightColor}" />
+    <SolidColorBrush x:Key="MenuHighlightBorderBrush" Color="{DynamicResource MenuHighlightBorderColor}" />
+    <SolidColorBrush x:Key="MenuBorderBrush" Color="{DynamicResource MenuBorderColor}" />
+    <SolidColorBrush x:Key="MenuCheckBackgroundBrush" Color="{DynamicResource MenuCheckBackgroundColor}" />
+    <SolidColorBrush x:Key="SeparatorLightBrush" Color="{DynamicResource SeparatorLightColor}" />
+    <SolidColorBrush x:Key="SeparatorDarkBrush" Color="{DynamicResource SeparatorDarkColor}" />
+
+    <FontFamily x:Key="AppFontFamily">Segoe UI</FontFamily>
+    <x:Double x:Key="AppFontSize">13</x:Double>
+
+    <x:Double x:Key="CheckerSize">15</x:Double>
+    <SolidColorBrush x:Key="CheckerColorBrush" Color="{DynamicResource CheckerColor}" />
+    <SolidColorBrush x:Key="CheckerColor2Brush" Color="{DynamicResource CheckerColor2}" />
+    <DrawingBrush x:Key="CheckerBrush"
+                  TileMode="Tile"
+                  Stretch="None"
+                  DestinationRect="0,0,30,30,Absolute"
+                  SourceRect="0,0,30,30,Absolute">
+      <DrawingBrush.Drawing>
+        <DrawingGroup>
+          <GeometryDrawing Brush="{DynamicResource CheckerColorBrush}" Geometry="M0,0 L15,0 15,15 0,15 Z M15,15 L30,15 30,30 15,30 Z" />
+          <GeometryDrawing Brush="{DynamicResource CheckerColor2Brush}" Geometry="M15,0 L30,0 30,15 15,15 Z M0,15 L15,15 15,30 0,30 Z" />
+        </DrawingGroup>
+      </DrawingBrush.Drawing>
+    </DrawingBrush>
+  </Styles.Resources>
+
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource AppFontSize}" />
+  </Style>
+
+  <Style Selector="Panel">
+    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+  </Style>
+
+  <Style Selector="Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+  </Style>
+
+  <Style Selector="ContentControl">
+    <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource AppFontSize}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource AppFontSize}" />
+  </Style>
+
+  <Style Selector="ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+  </Style>
+
+  <Style Selector="TextBox">
+    <Setter Property="Background" Value="{DynamicResource DarkBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+  </Style>
+
+  <Style Selector="ComboBox">
+    <Setter Property="Background" Value="{DynamicResource DarkBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+  </Style>
+
+  <Style Selector="ListBox">
+    <Setter Property="Background" Value="{DynamicResource DarkBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+  </Style>
+
+  <Style Selector="Menu">
+    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource MenuBorderBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+  </Style>
+
+  <Style Selector="MenuItem">
+    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource MenuBorderBrush}" />
+  </Style>
+
+  <Style Selector="MenuItem:pointerover">
+    <Setter Property="Background" Value="{DynamicResource MenuHighlightBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource MenuHighlightBorderBrush}" />
+  </Style>
+
+  <Style Selector="MenuItem /template/ Border#PART_CheckMarkBorder">
+    <Setter Property="Background" Value="{DynamicResource MenuCheckBackgroundBrush}" />
+  </Style>
+
+  <Style Selector="HyperlinkButton">
+    <Setter Property="Foreground" Value="{DynamicResource LinkBrush}" />
+  </Style>
+  <Style Selector="HyperlinkButton:pointerover">
+    <Setter Property="Foreground" Value="{DynamicResource LinkBrush}" />
+  </Style>
+
+  <Style Selector="Separator">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="Transparent" Padding="0" Margin="0">
+          <Grid RowDefinitions="*,*">
+            <Border Background="{DynamicResource SeparatorLightBrush}" Height="1" />
+            <Border Background="{DynamicResource SeparatorDarkBrush}" Height="1" Grid.Row="1" />
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>

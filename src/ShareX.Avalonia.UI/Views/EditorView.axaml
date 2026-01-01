@@ -6,11 +6,11 @@
              xmlns:views="using:ShareX.Ava.UI.Views"
              xmlns:models="using:ShareX.Ava.Annotations.Models"
              xmlns:converters="using:ShareX.Ava.UI.Converters"
+             xmlns:controls="using:ShareX.Ava.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
              x:Class="ShareX.Ava.UI.Views.EditorView"
              x:DataType="vm:MainViewModel"
-             Focusable="True"
-             KeyDown="OnKeyDown">
+             Focusable="True">
 
     <UserControl.Resources>
         <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
@@ -254,18 +254,14 @@
 
         <!-- Row 2: Main Content Area with Preview and Sidebar -->
         <Grid Grid.Row="2" ColumnDefinitions="*,288">
-            
-            <!-- Central Preview Canvas -->
-             <Grid Grid.Column="0" Margin="20">
-                 <Border Background="{Binding CanvasBackground}"
-                         Padding="{Binding CanvasPadding}">
-                     <!-- Outer Border: Shadow effect -->
-                     <Border BoxShadow="{Binding CanvasShadow}"
-                            CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}">
-                         <!-- Inner Border: Corner Radius with clipping -->
-                         <Border Background="#FFFFFF"
-                                 CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
-                                 ClipToBounds="True">
+            <Grid Grid.Column="0" Margin="20">
+                <Border Background="{Binding CanvasBackground}"
+                        Padding="{Binding CanvasPadding}">
+                    <Border BoxShadow="{Binding CanvasShadow}"
+                           CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}">
+                        <Border Background="#FFFFFF"
+                                CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                ClipToBounds="True">
                             <ScrollViewer Name="CanvasScrollViewer"
                                           Background="Transparent"
                                           HorizontalScrollBarVisibility="Auto"
@@ -277,51 +273,20 @@
                                     <LayoutTransformControl.LayoutTransform>
                                         <ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
                                     </LayoutTransformControl.LayoutTransform>
-
-                                    <!-- Container sized to match actual image dimensions -->
                                     <Border CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
-                                             ClipToBounds="True"
-                                             Background="Transparent">
-                                        <Grid Name="CanvasContainer" 
-                                              Width="{Binding ImageWidth}" 
+                                            ClipToBounds="True"
+                                            Background="Transparent">
+                                        <Grid Name="CanvasContainer"
+                                              Width="{Binding ImageWidth}"
                                               Height="{Binding ImageHeight}">
-                                        
-                                        <!-- Image Layer -->
-                                        <Image Name="PreviewImageControl"
-                                               Source="{Binding PreviewImage}"
-                                               Stretch="Uniform"
-                                               HorizontalAlignment="Stretch"
-                                               VerticalAlignment="Stretch"/>
-
-                                        <!-- Annotation Layer (Saved content) -->
-                                        <Canvas Name="AnnotationCanvas"
-                                                Background="Transparent"
-                                                IsVisible="{Binding HasPreviewImage}"
-                                                HorizontalAlignment="Stretch"
-                                                VerticalAlignment="Stretch"
-                                                Cursor="Cross"
-                                                PointerPressed="OnCanvasPointerPressed"
-                                                PointerMoved="OnCanvasPointerMoved"
-                                                PointerReleased="OnCanvasPointerReleased">
-                                        </Canvas>
-
-                                        <!-- Overlay Layer (Transient UI: Selection handles, Crop) -->
-                                            <Canvas Name="OverlayCanvas"
-                                                IsHitTestVisible="True"
-                                                HorizontalAlignment="Stretch"
-                                                VerticalAlignment="Stretch"
-                                                PointerPressed="OnCanvasPointerPressed"
-                                                PointerMoved="OnCanvasPointerMoved"
-                                                PointerReleased="OnCanvasPointerReleased">
-                                            <Rectangle Name="CropOverlay" 
-                                                       IsVisible="False"
-                                                       Stroke="White"
-                                                       StrokeThickness="2"
-                                                       StrokeDashArray="4,2"
-                                                       Fill="#80000000" />
-                                            <!-- Selection Handles will be added here dynamically -->
-                                        </Canvas>
-                                    </Grid>
+                                            <Image Name="PreviewImageControl"
+                                                   Source="{Binding PreviewImage}"
+                                                   Stretch="Uniform"
+                                                   HorizontalAlignment="Stretch"
+                                                   VerticalAlignment="Stretch"/>
+                                            <controls:AnnotationCanvas x:Name="AnnotationCanvasControl"
+                                                                       IsHitTestVisible="{Binding HasPreviewImage}" />
+                                        </Grid>
                                     </Border>
                                 </LayoutTransformControl>
                             </ScrollViewer>
@@ -564,8 +529,7 @@
                 VerticalAlignment="Stretch"
                 Width="400"
                 Padding="16">
-            <views:EffectsPanelView DataContext="{Binding EffectsPanel}"
-                                    ApplyRequested="OnEffectsPanelApplyRequested"/>
+            <views:EffectsPanelView DataContext="{Binding EffectsPanel}" />
         </Border>
     </Grid>
 </UserControl>
