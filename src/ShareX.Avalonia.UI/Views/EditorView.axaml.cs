@@ -29,13 +29,11 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.VisualTree;
-using Avalonia.Threading;
-using ShareX.Ava.UI.ViewModels;
-using ShareX.Ava.Annotations.Models;
 using Avalonia.Platform.Storage;
-using System;
-using System.Collections.Generic;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using ShareX.Ava.Annotations.Models;
+using ShareX.Ava.UI.ViewModels;
 using System.ComponentModel;
 
 namespace ShareX.Ava.UI.Views
@@ -58,12 +56,12 @@ namespace ShareX.Ava.UI.Views
         private Control? _selectedShape;
         private Point _lastDragPoint;
         private bool _isDraggingShape;
-        
+
         // Handles
-        private List<Shape> _selectionHandles = new();
+        private List<Control> _selectionHandles = new();
         private bool _isDraggingHandle;
-        private Shape? _draggedHandle;
-        
+        private Control? _draggedHandle;
+
         // Store arrow/line endpoints for editing
         private Dictionary<Control, (Point Start, Point End)> _shapeEndpoints = new();
 
@@ -164,7 +162,7 @@ namespace ShareX.Ava.UI.Views
                 e.Handled = true;
             }
         }
-        
+
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
             // When a text annotation TextBox has focus, let it handle all typing
@@ -184,18 +182,18 @@ namespace ShareX.Ava.UI.Views
                 }
                 else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
                 {
-                     if (e.Key == Key.Z)
-                     {
-                         vm.UndoCommand.Execute(null);
-                         e.Handled = true;
-                         return;
-                     }
-                     else if (e.Key == Key.Y) // Standard Redo
-                     {
-                         vm.RedoCommand.Execute(null);
-                         e.Handled = true;
-                         return;
-                     }
+                    if (e.Key == Key.Z)
+                    {
+                        vm.UndoCommand.Execute(null);
+                        e.Handled = true;
+                        return;
+                    }
+                    else if (e.Key == Key.Y) // Standard Redo
+                    {
+                        vm.RedoCommand.Execute(null);
+                        e.Handled = true;
+                        return;
+                    }
                 }
                 // Ctrl+Shift+Z is also common for Redo, check modifiers
                 else if (e.KeyModifiers.HasFlag(KeyModifiers.Control | KeyModifiers.Shift) && e.Key == Key.Z)
@@ -270,7 +268,7 @@ namespace ShareX.Ava.UI.Views
                 }
             }
         }
-        
+
         private void UpdateSelectionHandles()
         {
             var overlay = this.FindControl<Canvas>("OverlayCanvas");
@@ -292,7 +290,7 @@ namespace ShareX.Ava.UI.Views
                 CreateHandle(line.EndPoint.X, line.EndPoint.Y, "LineEnd");
                 return;
             }
-            
+
             // Special handling for Arrow (Path with geometry)
             if (_selectedShape is global::Avalonia.Controls.Shapes.Path arrowPath)
             {
@@ -313,7 +311,7 @@ namespace ShareX.Ava.UI.Views
             var shapeTop = Canvas.GetTop(_selectedShape);
             var width = _selectedShape.Bounds.Width;
             var height = _selectedShape.Bounds.Height;
-            
+
             // Allow handles even if Width/Height are NaN (e.g. Line)? 
             // For now assume shapes have explicit size setting in OnPointerMoved
             if (double.IsNaN(width)) width = _selectedShape.Width;
@@ -333,7 +331,7 @@ namespace ShareX.Ava.UI.Views
         private void CreateHandle(double x, double y, string tag)
         {
             var overlay = this.FindControl<Canvas>("OverlayCanvas");
-            
+
             // Determine cursor based on position tag
             Cursor cursor = Cursor.Parse("Hand");
             if (tag.Contains("TopLeft") || tag.Contains("BottomRight")) cursor = new Cursor(StandardCursorType.TopLeftCorner);
@@ -341,23 +339,31 @@ namespace ShareX.Ava.UI.Views
             else if (tag.Contains("Top") || tag.Contains("Bottom")) cursor = new Cursor(StandardCursorType.SizeNorthSouth);
             else if (tag.Contains("Left") || tag.Contains("Right")) cursor = new Cursor(StandardCursorType.SizeWestEast);
 
-            var handle = new Ellipse
+            // Create modern handle with shadow using a border wrapper
+            var handleBorder = new Border
             {
-                Width = 12,
-                Height = 12,
-                Fill = new SolidColorBrush(Color.Parse("#FFFFFFFF")),
-                Stroke = new SolidColorBrush(Color.Parse("#8B5CF6")),
-                StrokeThickness = 2,
-                Tag = tag, // Store position intent
-                Cursor = cursor
+                Width = 15,
+                Height = 15,
+                CornerRadius = new CornerRadius(10), // Perfect circle
+                Background = Brushes.White,
+                Tag = tag,
+                Cursor = cursor,
+                BoxShadow = new BoxShadows(new BoxShadow
+                {
+                    OffsetX = 0,
+                    OffsetY = 0,
+                    Blur = 8,
+                    Spread = 0,
+                    Color = Color.FromArgb(100, 0, 0, 0)
+                })
             };
-            
+
             // Center the handle
-            Canvas.SetLeft(handle, x - handle.Width / 2);
-            Canvas.SetTop(handle, y - handle.Height / 2);
-            
-            overlay.Children.Add(handle);
-            _selectionHandles.Add(handle);
+            Canvas.SetLeft(handleBorder, x - handleBorder.Width / 2);
+            Canvas.SetTop(handleBorder, y - handleBorder.Height / 2);
+
+            overlay.Children.Add(handleBorder);
+            _selectionHandles.Add(handleBorder);
         }
 
         private Stack<Control> _undoStack = new();
@@ -418,12 +424,12 @@ namespace ShareX.Ava.UI.Views
         {
             var container = this.FindControl<Grid>("CanvasContainer");
             if (container == null || container.Width <= 0 || container.Height <= 0) return null;
-            
+
             // Wait for layout update if needed?
             // Render the container to a bitmap
             // Since the container is sized to the Image (e.g. 1920x1080), extracting it should yield full res
-            
-            try 
+
+            try
             {
                 var rtb = new global::Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize((int)container.Width, (int)container.Height), new Vector(96, 96));
                 rtb.Render(container);
@@ -440,7 +446,7 @@ namespace ShareX.Ava.UI.Views
         {
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel?.StorageProvider == null) return null;
-            
+
             try
             {
                 var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
@@ -455,7 +461,7 @@ namespace ShareX.Ava.UI.Views
                     },
                     SuggestedFileName = $"ShareX_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png"
                 });
-                
+
                 return file?.Path.LocalPath;
             }
             catch (Exception ex)
@@ -473,10 +479,10 @@ namespace ShareX.Ava.UI.Views
                 using var memoryStream = new System.IO.MemoryStream();
                 image.Save(memoryStream);
                 memoryStream.Position = 0;
-                
+
                 // Load into System.Drawing.Image (what Windows clipboard expects)
                 using var drawingImage = System.Drawing.Image.FromStream(memoryStream);
-                
+
                 // Use platform-specific clipboard service for native OS compatibility
                 ShareX.Ava.Platform.Abstractions.PlatformServices.Clipboard.SetImage(drawingImage);
             }
@@ -485,7 +491,7 @@ namespace ShareX.Ava.UI.Views
                 System.Diagnostics.Debug.WriteLine($"Clipboard copy failed: {ex.Message}");
                 throw;
             }
-            
+
             await System.Threading.Tasks.Task.CompletedTask;
         }
 
@@ -510,7 +516,7 @@ namespace ShareX.Ava.UI.Views
             {
                 Text = message,
                 TextWrapping = TextWrapping.Wrap,
-                MaxWidth =460
+                MaxWidth = 460
             };
 
             var buttonPanel = new StackPanel
@@ -534,7 +540,7 @@ namespace ShareX.Ava.UI.Views
 
             await messageBox.ShowDialog(TopLevel.GetTopLevel(this) as Window);
         }
-        
+
         // --- LOGIC MIGRATED FROM MAINWINDOW.AXAML.CS ---
 
         private void PerformUndo()
@@ -547,7 +553,7 @@ namespace ShareX.Ava.UI.Views
                 {
                     canvas.Children.Remove(shape);
                     _redoStack.Push(shape);
-                    
+
                     if (_selectedShape == shape) _selectedShape = null;
                 }
             }
@@ -701,27 +707,27 @@ namespace ShareX.Ava.UI.Views
             var point = GetCanvasPosition(e, canvas);
 
             // Check if clicking a handle (always allow when a shape is selected, regardless of active tool)
-              if (_selectedShape != null || vm.ActiveTool == EditorTool.Crop)
+            if (_selectedShape != null || vm.ActiveTool == EditorTool.Crop)
             {
-                  var overlay = this.FindControl<Canvas>("OverlayCanvas");
-                 if (overlay != null)
-                 {
-                     var handle = e.Source as Shape;
-                     if (handle != null && overlay.Children.Contains(handle))
-                     {
-                         _isDraggingHandle = true;
-                         _draggedHandle = handle;
-                             _startPoint = GetCanvasPosition(e, overlay); // Use overlay coords for handles
-                         
-                         // If we are cropping, ensure we are selecting the crop overlay
-                         if (vm.ActiveTool == EditorTool.Crop)
-                         {
-                              var cropOverlay = this.FindControl<global::Avalonia.Controls.Shapes.Rectangle>("CropOverlay");
-                              _selectedShape = cropOverlay;
-                         }
-                         return;
-                     }
-                 }
+                var overlay = this.FindControl<Canvas>("OverlayCanvas");
+                if (overlay != null)
+                {
+                    var handle = e.Source as Control;
+                    if (handle != null && overlay.Children.Contains(handle) && _selectionHandles.Contains(handle))
+                    {
+                        _isDraggingHandle = true;
+                        _draggedHandle = handle;
+                        _startPoint = GetCanvasPosition(e, overlay); // Use overlay coords for handles
+
+                        // If we are cropping, ensure we are selecting the crop overlay
+                        if (vm.ActiveTool == EditorTool.Crop)
+                        {
+                            var cropOverlay = this.FindControl<global::Avalonia.Controls.Shapes.Rectangle>("CropOverlay");
+                            _selectedShape = cropOverlay;
+                        }
+                        return;
+                    }
+                }
             }
 
             if (vm.ActiveTool == EditorTool.Select)
@@ -775,62 +781,63 @@ namespace ShareX.Ava.UI.Views
                     Canvas.SetTop(cropOverlay, _startPoint.Y);
                     cropOverlay.Width = 0;
                     cropOverlay.Height = 0;
-                    _currentShape = cropOverlay; 
+                    _currentShape = cropOverlay;
                 }
                 return;
             }
-            
+
             if (vm.ActiveTool == EditorTool.Image)
             {
-                 _isDrawing = false;
-                 // File Picker logic
-                 var topLevel = TopLevel.GetTopLevel(this);
-                 if (topLevel?.StorageProvider != null)
-                 {
-                     var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-                     {
-                         Title = "Select Image",
-                         AllowMultiple = false,
-                         FileTypeFilter = new[] { FilePickerFileTypes.ImageAll }
-                     });
+                _isDrawing = false;
+                // File Picker logic
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel?.StorageProvider != null)
+                {
+                    var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                    {
+                        Title = "Select Image",
+                        AllowMultiple = false,
+                        FileTypeFilter = new[] { FilePickerFileTypes.ImageAll }
+                    });
 
-                     if (files.Count > 0)
-                     {
-                         try {
-                             using var stream = await files[0].OpenReadAsync();
-                             var bitmap = new global::Avalonia.Media.Imaging.Bitmap(stream);
-                             
-                             var imageControl = new Image
-                             {
-                                 Source = bitmap,
-                                 Width = bitmap.Size.Width,
-                                 Height = bitmap.Size.Height
-                             };
-                             
-                             var annotation = new ImageAnnotation();
-                             annotation.SetImage(bitmap);
-                             imageControl.Tag = annotation;
-                             
-                             // Center on click point
-                             Canvas.SetLeft(imageControl, _startPoint.X - bitmap.Size.Width / 2);
-                             Canvas.SetTop(imageControl, _startPoint.Y - bitmap.Size.Height / 2);
-                             
-                             canvas.Children.Add(imageControl);
-                             _undoStack.Push(imageControl);
-                             
-                             _currentShape = imageControl;
-                             _selectedShape = imageControl;
-                             UpdateSelectionHandles();
-                         }
-                         catch (Exception ex)
-                         {
-                             System.Diagnostics.Debug.WriteLine(ex.Message);
-                         }
-                     }
-                 }
-                 return;
+                    if (files.Count > 0)
+                    {
+                        try
+                        {
+                            using var stream = await files[0].OpenReadAsync();
+                            var bitmap = new global::Avalonia.Media.Imaging.Bitmap(stream);
+
+                            var imageControl = new Image
+                            {
+                                Source = bitmap,
+                                Width = bitmap.Size.Width,
+                                Height = bitmap.Size.Height
+                            };
+
+                            var annotation = new ImageAnnotation();
+                            annotation.SetImage(bitmap);
+                            imageControl.Tag = annotation;
+
+                            // Center on click point
+                            Canvas.SetLeft(imageControl, _startPoint.X - bitmap.Size.Width / 2);
+                            Canvas.SetTop(imageControl, _startPoint.Y - bitmap.Size.Height / 2);
+
+                            canvas.Children.Add(imageControl);
+                            _undoStack.Push(imageControl);
+
+                            _currentShape = imageControl;
+                            _selectedShape = imageControl;
+                            UpdateSelectionHandles();
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine(ex.Message);
+                        }
+                    }
+                }
+                return;
             }
-            
+
             switch (vm.ActiveTool)
             {
                 case EditorTool.Rectangle:
@@ -876,20 +883,20 @@ namespace ShareX.Ava.UI.Views
                         Foreground = brush,
                         Background = Brushes.Transparent,
                         BorderThickness = new Thickness(1), // Visible border while editing
-                        BorderBrush = Brushes.White, 
+                        BorderBrush = Brushes.White,
                         FontSize = Math.Max(12, vm.StrokeWidth * 4),
                         Text = string.Empty,
                         Padding = new Thickness(4),
                         MinWidth = 50,
                         AcceptsReturn = false // Single-line text annotation
                     };
-                    
+
                     // Position it
                     Canvas.SetLeft(textBox, _startPoint.X);
                     Canvas.SetTop(textBox, _startPoint.Y);
-                    
+
                     // Add logic to remove border when lost focus?
-                    textBox.LostFocus += (s, args) => 
+                    textBox.LostFocus += (s, args) =>
                     {
                         if (s is TextBox tb)
                         {
@@ -916,16 +923,16 @@ namespace ShareX.Ava.UI.Views
 
                     canvas.Children.Add(textBox);
                     textBox.Focus();
-                    _isDrawing = false; 
-                    return; 
+                    _isDrawing = false;
+                    return;
 
                 case EditorTool.Spotlight:
                     _currentShape = new global::Avalonia.Controls.Shapes.Ellipse
                     {
-                        Stroke = new SolidColorBrush(Color.Parse("#B0000000")), 
-                        StrokeThickness = 4000, 
-                        Fill = Brushes.Transparent, 
-                        IsHitTestVisible = true 
+                        Stroke = new SolidColorBrush(Color.Parse("#B0000000")),
+                        StrokeThickness = 4000,
+                        Fill = Brushes.Transparent,
+                        IsHitTestVisible = true
                     };
                     break;
 
@@ -939,17 +946,17 @@ namespace ShareX.Ava.UI.Views
                     // The "Actual" rendering would ideally be done by a custom control or custom drawing visual.
                     // For MVP, since we implemented BaseEffectAnnotation as logical models, 
                     // we can't directly add them to a Canvas unless they are Avalonia Controls or we wrap them.
-                    
+
                     // QUICK FIX STRATEGY: 
                     // Use a standardized Avalonia Border/Rectangle for the UI representation 
                     // and attaching the logic via attached properties or Tag or ViewModel synchronization.
-                    
+
                     // Better approach for Avalonia: 
                     // Create an 'AnnotationControl' wrapper that takes the 'Annotation' model and renders it.
                     // But we don't have that yet.
-                    
-                     // Fallback to simple shapes representing the logical annotation:
-                    
+
+                    // Fallback to simple shapes representing the logical annotation:
+
                     var effectRect = new global::Avalonia.Controls.Shapes.Rectangle
                     {
                         Stroke = (vm.ActiveTool == EditorTool.Magnify) ? brush : Brushes.Transparent,
@@ -957,17 +964,17 @@ namespace ShareX.Ava.UI.Views
                         Fill = (vm.ActiveTool == EditorTool.Highlighter) ? new SolidColorBrush(ApplyHighlightAlpha(Color.Parse(vm.SelectedColor))) : Brushes.Transparent,
                         Tag = CreateEffectAnnotation(vm.ActiveTool) // Create and attach logic model
                     };
-                    
+
                     // For Blur/Pixelate, we might want a translucent overlay to show where it is
                     if (vm.ActiveTool == EditorTool.Blur)
-                         effectRect.Fill = new SolidColorBrush(Color.Parse("#200000FF")); // Faint blue
+                        effectRect.Fill = new SolidColorBrush(Color.Parse("#200000FF")); // Faint blue
                     else if (vm.ActiveTool == EditorTool.Pixelate)
-                         effectRect.Fill = new SolidColorBrush(Color.Parse("#2000FF00")); // Faint green
-                    
+                        effectRect.Fill = new SolidColorBrush(Color.Parse("#2000FF00")); // Faint green
+
                     _currentShape = effectRect;
                     break;
-                    
-                 case EditorTool.SpeechBalloon:
+
+                case EditorTool.SpeechBalloon:
                     // Placeholder: Draw a generic path or just a rect for now
                     // A real speech balloon needs a custom shape control
                     _currentShape = new global::Avalonia.Controls.Shapes.Rectangle
@@ -979,29 +986,29 @@ namespace ShareX.Ava.UI.Views
                         RadiusY = 10
                     };
                     break;
- 
-                 case EditorTool.Pen:
-                 case EditorTool.SmartEraser:
+
+                case EditorTool.Pen:
+                case EditorTool.SmartEraser:
                     // Freehand drawing requires a Polyline
-                         var polyline = new Polyline
-                         {
-                             Stroke = (vm.ActiveTool == EditorTool.SmartEraser) ? new SolidColorBrush(Color.Parse("#80FF0000")) : brush,
-                             StrokeThickness = (vm.ActiveTool == EditorTool.SmartEraser) ? 10 : vm.StrokeWidth,
-                             Points = new Points { _startPoint }
-                         };
-                         polyline.SetValue(Panel.ZIndexProperty, 1);
-                         
-                         FreehandAnnotation freehand;
-                         if (vm.ActiveTool == EditorTool.SmartEraser) 
-                             freehand = new SmartEraserAnnotation();
-                         else 
-                             freehand = new FreehandAnnotation();
-                             
-                         freehand.Points.Add(_startPoint);
-                         polyline.Tag = freehand;
-                         
-                         _currentShape = polyline;
-                     break;
+                    var polyline = new Polyline
+                    {
+                        Stroke = (vm.ActiveTool == EditorTool.SmartEraser) ? new SolidColorBrush(Color.Parse("#80FF0000")) : brush,
+                        StrokeThickness = (vm.ActiveTool == EditorTool.SmartEraser) ? 10 : vm.StrokeWidth,
+                        Points = new Points { _startPoint }
+                    };
+                    polyline.SetValue(Panel.ZIndexProperty, 1);
+
+                    FreehandAnnotation freehand;
+                    if (vm.ActiveTool == EditorTool.SmartEraser)
+                        freehand = new SmartEraserAnnotation();
+                    else
+                        freehand = new FreehandAnnotation();
+
+                    freehand.Points.Add(_startPoint);
+                    polyline.Tag = freehand;
+
+                    _currentShape = polyline;
+                    break;
 
                 case EditorTool.Number:
                     // Use existing number logic (it was here before)
@@ -1010,14 +1017,14 @@ namespace ShareX.Ava.UI.Views
                         Width = 30,
                         Height = 30
                     };
-                    
+
                     var bg = new global::Avalonia.Controls.Shapes.Ellipse
                     {
                         Fill = brush,
                         Stroke = Brushes.White,
                         StrokeThickness = 2
                     };
-                    
+
                     var numText = new TextBlock
                     {
                         Text = vm.NumberCounter.ToString(),
@@ -1026,20 +1033,20 @@ namespace ShareX.Ava.UI.Views
                         VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
                         FontWeight = FontWeight.Bold
                     };
-                    
+
                     numberGrid.Children.Add(bg);
                     numberGrid.Children.Add(numText);
-                    
+
                     Canvas.SetLeft(numberGrid, _startPoint.X - 15);
                     Canvas.SetTop(numberGrid, _startPoint.Y - 15);
-                    
+
                     _currentShape = numberGrid;
                     vm.NumberCounter++;
-                    
+
                     canvas.Children.Add(numberGrid);
                     _undoStack.Push(numberGrid);
                     _redoStack.Clear();
-                    _currentShape = null; 
+                    _currentShape = null;
                     _isDrawing = false;
                     return;
             }
@@ -1067,7 +1074,7 @@ namespace ShareX.Ava.UI.Views
                 var handleTag = _draggedHandle.Tag?.ToString();
                 var deltaX = currentPoint.X - _startPoint.X;
                 var deltaY = currentPoint.Y - _startPoint.Y;
-                
+
                 // Special handling for Line endpoints
                 if (_selectedShape is global::Avalonia.Controls.Shapes.Line targetLine)
                 {
@@ -1079,12 +1086,12 @@ namespace ShareX.Ava.UI.Views
                     {
                         targetLine.EndPoint = currentPoint;
                     }
-                    
+
                     _startPoint = currentPoint;
                     UpdateSelectionHandles();
                     return;
                 }
-                
+
                 // Special handling for Arrow endpoints
                 if (_selectedShape is global::Avalonia.Controls.Shapes.Path arrowPath && DataContext is MainViewModel vm)
                 {
@@ -1093,7 +1100,7 @@ namespace ShareX.Ava.UI.Views
                     {
                         Point arrowStart = endpoints.Start;
                         Point arrowEnd = endpoints.End;
-                        
+
                         // Update the appropriate endpoint
                         if (handleTag == "ArrowStart")
                         {
@@ -1103,30 +1110,30 @@ namespace ShareX.Ava.UI.Views
                         {
                             arrowEnd = currentPoint;
                         }
-                        
+
                         // Store updated endpoints
                         _shapeEndpoints[arrowPath] = (arrowStart, arrowEnd);
-                        
+
                         // Recreate arrow geometry with new points
                         arrowPath.Data = CreateArrowGeometry(arrowStart, arrowEnd, vm.StrokeWidth * 3);
                     }
-                    
+
                     _startPoint = currentPoint;
                     UpdateSelectionHandles();
                     return;
                 }
-                
+
                 // Get current bounds for regular shapes
                 var left = Canvas.GetLeft(_selectedShape);
                 var top = Canvas.GetTop(_selectedShape);
                 var width = _selectedShape.Bounds.Width;
                 var height = _selectedShape.Bounds.Height;
-                 if (double.IsNaN(width)) width = _selectedShape.Width;
-                 if (double.IsNaN(height)) height = _selectedShape.Height;
+                if (double.IsNaN(width)) width = _selectedShape.Width;
+                if (double.IsNaN(height)) height = _selectedShape.Height;
 
                 // Helper to update properties
                 // Rectangle/Ellipse use Width/Height
-                
+
                 if (_selectedShape is global::Avalonia.Controls.Shapes.Rectangle || _selectedShape is global::Avalonia.Controls.Shapes.Ellipse || _selectedShape is Grid)
                 {
                     double newLeft = left;
@@ -1180,16 +1187,16 @@ namespace ShareX.Ava.UI.Views
                     {
                         var newStart = new Point(endpoints.Start.X + deltaX, endpoints.Start.Y + deltaY);
                         var newEnd = new Point(endpoints.End.X + deltaX, endpoints.End.Y + deltaY);
-                        
+
                         _shapeEndpoints[arrowPath] = (newStart, newEnd);
                         arrowPath.Data = CreateArrowGeometry(newStart, newEnd, vm.StrokeWidth * 3);
                     }
-                    
+
                     _lastDragPoint = currentPoint;
                     UpdateSelectionHandles();
                     return;
                 }
-                
+
                 // Regular shape moving
                 var left = Canvas.GetLeft(_selectedShape);
                 var top = Canvas.GetTop(_selectedShape);
@@ -1203,7 +1210,7 @@ namespace ShareX.Ava.UI.Views
             }
 
             if (!_isDrawing || _currentShape == null) return;
-            
+
             if (_currentShape is global::Avalonia.Controls.Shapes.Line line)
             {
                 line.EndPoint = currentPoint;
@@ -1219,7 +1226,7 @@ namespace ShareX.Ava.UI.Views
                 updated.Add(currentPoint);
                 polyline.Points = updated;
                 polyline.InvalidateVisual();
-                
+
                 if (polyline.Tag is FreehandAnnotation freehand)
                 {
                     freehand.Points.Add(currentPoint);
@@ -1246,7 +1253,7 @@ namespace ShareX.Ava.UI.Views
                     rect.Height = height;
                     Canvas.SetLeft(rect, x);
                     Canvas.SetTop(rect, y);
-                    
+
                     // Trigger update for effects
                     if (rect.Tag is BaseEffectAnnotation)
                     {
@@ -1285,23 +1292,23 @@ namespace ShareX.Ava.UI.Views
                     double top = Canvas.GetTop(shape);
                     double width = shape.Bounds.Width;
                     double height = shape.Bounds.Height;
-                    
+
                     if (width <= 0 || height <= 0) return;
 
                     annotation.StartPoint = new Point(left, top);
                     annotation.EndPoint = new Point(left + width, top + height);
-                    
+
                     // Convert to SKBitmap 
                     using var skBitmap = Helpers.BitmapConversionHelpers.ToSKBitmap(vm.PreviewImage);
-                    
+
                     annotation.UpdateEffect(skBitmap);
-                    
+
                     if (annotation.EffectBitmap != null && shape is Shape visibleShape)
                     {
-                        visibleShape.Fill = new ImageBrush(annotation.EffectBitmap) 
-                        { 
+                        visibleShape.Fill = new ImageBrush(annotation.EffectBitmap)
+                        {
                             Stretch = Stretch.None,
-                            SourceRect = new RelativeRect(0, 0, width, height, RelativeUnit.Absolute) 
+                            SourceRect = new RelativeRect(0, 0, width, height, RelativeUnit.Absolute)
                         };
                     }
                 }
@@ -1320,7 +1327,7 @@ namespace ShareX.Ava.UI.Views
                 // Calculate arrow head
                 var d = end - start;
                 var length = Math.Sqrt(d.X * d.X + d.Y * d.Y);
-                
+
                 if (length > 0)
                 {
                     var ux = d.X / length;
@@ -1328,7 +1335,7 @@ namespace ShareX.Ava.UI.Views
 
                     // Modern arrow: narrower angle (20 degrees instead of 30)
                     var arrowAngle = Math.PI / 9; // 20 degrees for sleeker look
-                     
+
                     // Calculate arrowhead base point (where arrow meets the line)
                     var arrowBase = new Point(
                         end.X - headSize * ux,
@@ -1338,7 +1345,7 @@ namespace ShareX.Ava.UI.Views
                     var p1 = new Point(
                         end.X - headSize * Math.Cos(Math.Atan2(uy, ux) - arrowAngle),
                         end.Y - headSize * Math.Sin(Math.Atan2(uy, ux) - arrowAngle));
-                    
+
                     var p2 = new Point(
                         end.X - headSize * Math.Cos(Math.Atan2(uy, ux) + arrowAngle),
                         end.Y - headSize * Math.Sin(Math.Atan2(uy, ux) + arrowAngle));
@@ -1347,7 +1354,7 @@ namespace ShareX.Ava.UI.Views
                     ctx.BeginFigure(start, false);
                     ctx.LineTo(arrowBase);
                     ctx.EndFigure(false);
-                    
+
                     // Draw filled arrowhead triangle
                     ctx.BeginFigure(end, true);
                     ctx.LineTo(p1);
@@ -1420,8 +1427,8 @@ namespace ShareX.Ava.UI.Views
             var w = cropOverlay.Width;
             var h = cropOverlay.Height;
 
-             var scaling = 1.0; 
-             if (VisualRoot is TopLevel tl) scaling = tl.RenderScaling;
+            var scaling = 1.0;
+            if (VisualRoot is TopLevel tl) scaling = tl.RenderScaling;
 
             var physX = (int)(x * scaling);
             var physY = (int)(y * scaling);
@@ -1429,7 +1436,7 @@ namespace ShareX.Ava.UI.Views
             var physH = (int)(h * scaling);
 
             vm.CropImage(physX, physY, physW, physH);
-            
+
             cropOverlay.IsVisible = false;
             vm.StatusText = "Image cropped";
         }
