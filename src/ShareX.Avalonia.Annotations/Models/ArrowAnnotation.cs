@@ -47,32 +47,54 @@ public class ArrowAnnotation : Annotation
     {
         var pen = CreatePen();
         
-        // Draw line
-        context.DrawLine(pen, StartPoint, EndPoint);
-        
         // Calculate arrow head
-        var angle = Math.Atan2(EndPoint.Y - StartPoint.Y, EndPoint.X - StartPoint.X);
-        var arrowAngle = Math.PI / 6; // 30 degrees
+        var dx = EndPoint.X - StartPoint.X;
+        var dy = EndPoint.Y - StartPoint.Y;
+        var length = Math.Sqrt(dx * dx + dy * dy);
         
-        var point1 = new Point(
-            EndPoint.X - ArrowHeadSize * Math.Cos(angle - arrowAngle),
-            EndPoint.Y - ArrowHeadSize * Math.Sin(angle - arrowAngle));
-        
-        var point2 = new Point(
-            EndPoint.X - ArrowHeadSize * Math.Cos(angle + arrowAngle),
-            EndPoint.Y - ArrowHeadSize * Math.Sin(angle + arrowAngle));
-        
-        // Draw arrow head
-        var geometry = new StreamGeometry();
-        using (var ctx = geometry.Open())
+        if (length > 0)
         {
-            ctx.BeginFigure(EndPoint, true);
-            ctx.LineTo(point1);
-            ctx.LineTo(point2);
-            ctx.EndFigure(true);
+            var ux = dx / length;
+            var uy = dy / length;
+            
+            // Modern arrow: narrower angle (20 degrees instead of 30)
+            var arrowAngle = Math.PI / 9; // 20 degrees for sleeker look
+            var angle = Math.Atan2(dy, dx);
+            
+            // Calculate arrowhead base point
+            var arrowBase = new Point(
+                EndPoint.X - ArrowHeadSize * ux,
+                EndPoint.Y - ArrowHeadSize * uy);
+            
+            // Draw line from start to arrow base
+            context.DrawLine(pen, StartPoint, arrowBase);
+            
+            // Arrow head wing points
+            var point1 = new Point(
+                EndPoint.X - ArrowHeadSize * Math.Cos(angle - arrowAngle),
+                EndPoint.Y - ArrowHeadSize * Math.Sin(angle - arrowAngle));
+            
+            var point2 = new Point(
+                EndPoint.X - ArrowHeadSize * Math.Cos(angle + arrowAngle),
+                EndPoint.Y - ArrowHeadSize * Math.Sin(angle + arrowAngle));
+            
+            // Draw filled arrow head triangle
+            var geometry = new StreamGeometry();
+            using (var ctx = geometry.Open())
+            {
+                ctx.BeginFigure(EndPoint, true);
+                ctx.LineTo(point1);
+                ctx.LineTo(point2);
+                ctx.EndFigure(true);
+            }
+            
+            context.DrawGeometry(CreateStrokeBrush(), pen, geometry);
         }
-        
-        context.DrawGeometry(CreateStrokeBrush(), pen, geometry);
+        else
+        {
+            // Fallback for zero-length arrow
+            context.DrawLine(pen, StartPoint, EndPoint);
+        }
     }
 
     public override bool HitTest(Point point, double tolerance = 5)

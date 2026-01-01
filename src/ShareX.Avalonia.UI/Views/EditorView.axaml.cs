@@ -1230,10 +1230,6 @@ namespace ShareX.Ava.UI.Views
             var geometry = new StreamGeometry();
             using (var ctx = geometry.Open())
             {
-                // Draw line
-                ctx.BeginFigure(start, false);
-                ctx.LineTo(end);
-
                 // Calculate arrow head
                 var d = end - start;
                 var length = Math.Sqrt(d.X * d.X + d.Y * d.Y);
@@ -1243,16 +1239,40 @@ namespace ShareX.Ava.UI.Views
                     var ux = d.X / length;
                     var uy = d.Y / length;
 
-                    // Arrow head points
-                    var p1 = new Point(end.X - headSize * ux + headSize * 0.5 * uy, end.Y - headSize * uy - headSize * 0.5 * ux);
-                    var p2 = new Point(end.X - headSize * ux - headSize * 0.5 * uy, end.Y - headSize * uy + headSize * 0.5 * ux);
+                    // Modern arrow: narrower angle (20 degrees instead of 30)
+                    var arrowAngle = Math.PI / 9; // 20 degrees for sleeker look
+                    
+                    // Calculate arrowhead base point (where arrow meets the line)
+                    var arrowBase = new Point(
+                        end.X - headSize * ux,
+                        end.Y - headSize * uy);
 
+                    // Arrow head wing points
+                    var p1 = new Point(
+                        end.X - headSize * Math.Cos(Math.Atan2(uy, ux) - arrowAngle),
+                        end.Y - headSize * Math.Sin(Math.Atan2(uy, ux) - arrowAngle));
+                    
+                    var p2 = new Point(
+                        end.X - headSize * Math.Cos(Math.Atan2(uy, ux) + arrowAngle),
+                        end.Y - headSize * Math.Sin(Math.Atan2(uy, ux) + arrowAngle));
+
+                    // Draw line from start to arrow base (not to endpoint)
+                    ctx.BeginFigure(start, false);
+                    ctx.LineTo(arrowBase);
                     ctx.EndFigure(false);
                     
-                    ctx.BeginFigure(end, true); // Filled
+                    // Draw filled arrowhead triangle
+                    ctx.BeginFigure(end, true);
                     ctx.LineTo(p1);
                     ctx.LineTo(p2);
+                    ctx.EndFigure(true);
+                }
+                else
+                {
+                    // Fallback for zero-length arrow
+                    ctx.BeginFigure(start, false);
                     ctx.LineTo(end);
+                    ctx.EndFigure(false);
                 }
             }
             return geometry;
