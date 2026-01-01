@@ -5,11 +5,16 @@
              xmlns:vm="using:ShareX.Ava.UI.ViewModels"
              xmlns:views="using:ShareX.Ava.UI.Views"
              xmlns:models="using:ShareX.Ava.Annotations.Models"
+             xmlns:converters="using:ShareX.Ava.UI.Converters"
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
              x:Class="ShareX.Ava.UI.Views.EditorView"
              x:DataType="vm:MainViewModel"
              Focusable="True"
              KeyDown="OnKeyDown">
+
+    <UserControl.Resources>
+        <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
+    </UserControl.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
         <!-- Row 0: Capture Toolbar -->
@@ -251,16 +256,15 @@
         <Grid Grid.Row="2" ColumnDefinitions="*,288">
             
             <!-- Central Preview Canvas -->
-            <Grid Grid.Column="0" Margin="20">
-                <Border Background="{Binding CanvasBackground}"
-                        CornerRadius="{Binding CanvasCornerRadius}"
-                        Padding="{Binding CanvasPadding}">
-                    <!-- Outer Border: Shadow effect -->
-                    <Border BoxShadow="{Binding CanvasShadow}">
-                        <!-- Inner Border: Corner Radius with clipping -->
-                        <Border Background="#FFFFFF"
-                                CornerRadius="{Binding PreviewCornerRadius}"
-                                ClipToBounds="True">
+             <Grid Grid.Column="0" Margin="20">
+                 <Border Background="{Binding CanvasBackground}"
+                         Padding="{Binding CanvasPadding}">
+                     <!-- Outer Border: Shadow effect -->
+                     <Border BoxShadow="{Binding CanvasShadow}">
+                         <!-- Inner Border: Corner Radius with clipping -->
+                         <Border Background="#FFFFFF"
+                                 CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                 ClipToBounds="True">
                             <ScrollViewer Name="CanvasScrollViewer"
                                           Background="Transparent"
                                           HorizontalScrollBarVisibility="Auto"
@@ -274,48 +278,52 @@
                                     </LayoutTransformControl.LayoutTransform>
 
                                     <!-- Container sized to match actual image dimensions -->
-                                    <Grid Name="CanvasContainer" 
-                                          Width="{Binding ImageWidth}" 
-                                          Height="{Binding ImageHeight}">
-                                    
-                                    <!-- Image Layer -->
-                                    <Image Name="PreviewImageControl"
-                                           Source="{Binding PreviewImage}"
-                                           Stretch="Uniform"
-                                           HorizontalAlignment="Stretch"
-                                           VerticalAlignment="Stretch"/>
+                                    <Border CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                             ClipToBounds="True"
+                                             Background="Transparent">
+                                        <Grid Name="CanvasContainer" 
+                                              Width="{Binding ImageWidth}" 
+                                              Height="{Binding ImageHeight}">
+                                        
+                                        <!-- Image Layer -->
+                                        <Image Name="PreviewImageControl"
+                                               Source="{Binding PreviewImage}"
+                                               Stretch="Uniform"
+                                               HorizontalAlignment="Stretch"
+                                               VerticalAlignment="Stretch"/>
 
-                                    <!-- Annotation Layer (Saved content) -->
-                                    <Canvas Name="AnnotationCanvas"
-                                            Background="Transparent"
-                                            IsVisible="{Binding HasPreviewImage}"
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Stretch"
-                                            Cursor="Cross"
-                                            PointerPressed="OnCanvasPointerPressed"
-                                            PointerMoved="OnCanvasPointerMoved"
-                                            PointerReleased="OnCanvasPointerReleased">
-                                    </Canvas>
+                                        <!-- Annotation Layer (Saved content) -->
+                                        <Canvas Name="AnnotationCanvas"
+                                                Background="Transparent"
+                                                IsVisible="{Binding HasPreviewImage}"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
+                                                Cursor="Cross"
+                                                PointerPressed="OnCanvasPointerPressed"
+                                                PointerMoved="OnCanvasPointerMoved"
+                                                PointerReleased="OnCanvasPointerReleased">
+                                        </Canvas>
 
-                                    <!-- Overlay Layer (Transient UI: Selection handles, Crop) -->
-                                        <Canvas Name="OverlayCanvas"
-                                            IsHitTestVisible="True"
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Stretch"
-                                            PointerPressed="OnCanvasPointerPressed"
-                                            PointerMoved="OnCanvasPointerMoved"
-                                            PointerReleased="OnCanvasPointerReleased">
-                                        <Rectangle Name="CropOverlay" 
-                                                   IsVisible="False"
-                                                   Stroke="White"
-                                                   StrokeThickness="2"
-                                                   StrokeDashArray="4,2"
-                                                   Fill="#80000000" />
-                                        <!-- Selection Handles will be added here dynamically -->
-                                    </Canvas>
-                                </Grid>
-                            </LayoutTransformControl>
-                        </ScrollViewer>
+                                        <!-- Overlay Layer (Transient UI: Selection handles, Crop) -->
+                                            <Canvas Name="OverlayCanvas"
+                                                IsHitTestVisible="True"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
+                                                PointerPressed="OnCanvasPointerPressed"
+                                                PointerMoved="OnCanvasPointerMoved"
+                                                PointerReleased="OnCanvasPointerReleased">
+                                            <Rectangle Name="CropOverlay" 
+                                                       IsVisible="False"
+                                                       Stroke="White"
+                                                       StrokeThickness="2"
+                                                       StrokeDashArray="4,2"
+                                                       Fill="#80000000" />
+                                            <!-- Selection Handles will be added here dynamically -->
+                                        </Canvas>
+                                    </Grid>
+                                    </Border>
+                                </LayoutTransformControl>
+                            </ScrollViewer>
                         </Border>
                     </Border>
                 </Border>

@@ -195,6 +195,11 @@ namespace ShareX.Ava.UI.ViewModels
             UpdateCanvasProperties();
         }
 
+        partial void OnPreviewCornerRadiusChanged(double value)
+        {
+            UpdateCanvasProperties();
+        }
+
         partial void OnShadowBlurChanged(double value)
         {
             UpdateCanvasProperties();
@@ -218,6 +223,7 @@ namespace ShareX.Ava.UI.ViewModels
                 OffsetX = 0,
                 OffsetY = 10
             });
+            CanvasCornerRadius = Math.Max(0, PreviewCornerRadius);
         }
 
         private static ObservableCollection<GradientPreset> BuildGradientPresets()
