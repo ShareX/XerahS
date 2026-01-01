@@ -52,34 +52,36 @@ public class SpotlightAnnotation : Annotation
     {
         if (CanvasSize.Width <= 0 || CanvasSize.Height <= 0) return;
 
+        // Normalize the spotlight rectangle (ensure it goes from min to max)
+        var spotX = Math.Min(StartPoint.X, EndPoint.X);
+        var spotY = Math.Min(StartPoint.Y, EndPoint.Y);
+        var spotW = Math.Abs(EndPoint.X - StartPoint.X);
+        var spotH = Math.Abs(EndPoint.Y - StartPoint.Y);
+        var spotlightRect = new Rect(spotX, spotY, spotW, spotH);
+
         // Create dark overlay brush
         var overlayBrush = new SolidColorBrush(Color.FromArgb(DarkenOpacity, 0, 0, 0));
         
-        // Full canvas rectangle
-        var fullRect = new Rect(0, 0, CanvasSize.Width, CanvasSize.Height);
+        // Create geometry for the darkening overlay using EvenOdd fill rule
+        // This creates a frame around the spotlight rectangle
+        var pathGeometry = new PathGeometry { FillRule = FillRule.EvenOdd };
         
-        // Spotlight ellipse rectangle
-        var spotlightRect = new Rect(StartPoint, EndPoint);
+        // Outer figure: full canvas
+        var outerFigure = new PathFigure { StartPoint = new Point(0, 0), IsClosed = true };
+        outerFigure.Segments.Add(new LineSegment { Point = new Point(CanvasSize.Width, 0) });
+        outerFigure.Segments.Add(new LineSegment { Point = new Point(CanvasSize.Width, CanvasSize.Height) });
+        outerFigure.Segments.Add(new LineSegment { Point = new Point(0, CanvasSize.Height) });
+        pathGeometry.Figures.Add(outerFigure);
         
-        // Create geometry with hole using PathGeometry
-        var pathGeometry = new PathGeometry();
-        var pathFigure = new PathFigure { StartPoint = new Point(0, 0), IsClosed = true };
+        // Inner figure: spotlight rectangle (hole)
+        var innerFigure = new PathFigure { StartPoint = spotlightRect.TopLeft, IsClosed = true };
+        innerFigure.Segments.Add(new LineSegment { Point = spotlightRect.TopRight });
+        innerFigure.Segments.Add(new LineSegment { Point = spotlightRect.BottomRight });
+        innerFigure.Segments.Add(new LineSegment { Point = spotlightRect.BottomLeft });
+        pathGeometry.Figures.Add(innerFigure);
         
-        // Outer rectangle (full canvas)
-        pathFigure.Segments.Add(new LineSegment { Point = new Point(CanvasSize.Width, 0) });
-        pathFigure.Segments.Add(new LineSegment { Point = new Point(CanvasSize.Width, CanvasSize.Height) });
-        pathFigure.Segments.Add(new LineSegment { Point = new Point(0, CanvasSize.Height) });
-        pathFigure.Segments.Add(new LineSegment { Point = new Point(0, 0) });
-        
-        pathGeometry.Figures.Add(pathFigure);
-        
-        // Draw overlay
+        // Draw the overlay (darkens everything except the rectangle)
         context.DrawGeometry(overlayBrush, null, pathGeometry);
-        
-        // Draw spotlight ellipse border (optional - for visibility)
-        var pen = new Pen(new SolidColorBrush(Colors.Yellow), 2);
-        var ellipseGeometry = new EllipseGeometry(spotlightRect);
-        context.DrawGeometry(null, pen, ellipseGeometry);
     }
 
     public override bool HitTest(Point point, double tolerance = 5)

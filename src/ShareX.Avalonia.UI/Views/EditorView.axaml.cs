@@ -937,13 +937,19 @@ namespace ShareX.Ava.UI.Views
                     return;
 
                 case EditorTool.Spotlight:
-                    _currentShape = new global::Avalonia.Controls.Shapes.Ellipse
+                    // Create a spotlight control that will render the darkening effect
+                    var spotlightAnnotation = new SpotlightAnnotation();
+                    
+                    // Set canvas size for the darkening overlay
+                    spotlightAnnotation.CanvasSize = new Size(canvas.Bounds.Width, canvas.Bounds.Height);
+                    
+                    var spotlightControl = new ShareX.Ava.UI.Controls.SpotlightControl
                     {
-                        Stroke = new SolidColorBrush(Color.Parse("#B0000000")),
-                        StrokeThickness = 4000,
-                        Fill = Brushes.Transparent,
+                        Annotation = spotlightAnnotation,
                         IsHitTestVisible = true
                     };
+                    
+                    _currentShape = spotlightControl;
                     break;
 
                 // --- NEW TOOLS ---
@@ -1063,7 +1069,7 @@ namespace ShareX.Ava.UI.Views
 
             if (_currentShape != null)
             {
-                if (vm.ActiveTool != EditorTool.Line && vm.ActiveTool != EditorTool.Arrow && vm.ActiveTool != EditorTool.Pen && vm.ActiveTool != EditorTool.SmartEraser)
+                if (vm.ActiveTool != EditorTool.Line && vm.ActiveTool != EditorTool.Arrow && vm.ActiveTool != EditorTool.Pen && vm.ActiveTool != EditorTool.SmartEraser && vm.ActiveTool != EditorTool.Spotlight)
                 {
                     Canvas.SetLeft(_currentShape, _startPoint.X);
                     Canvas.SetTop(_currentShape, _startPoint.Y);
@@ -1276,6 +1282,21 @@ namespace ShareX.Ava.UI.Views
                     ellipse.Height = height;
                     Canvas.SetLeft(ellipse, x);
                     Canvas.SetTop(ellipse, y);
+                }
+                else if (_currentShape is ShareX.Ava.UI.Controls.SpotlightControl spotlightControl && spotlightControl.Annotation is SpotlightAnnotation spotlight)
+                {
+                    // Update spotlight annotation bounds
+                    spotlight.StartPoint = _startPoint;
+                    spotlight.EndPoint = currentPoint;
+                    
+                    // Update canvas size for the entire image (needed for darkening overlay)
+                    var parentCanvas = this.FindControl<Canvas>("AnnotationCanvas");
+                    if (parentCanvas != null)
+                    {
+                        spotlight.CanvasSize = new Size(parentCanvas.Bounds.Width, parentCanvas.Bounds.Height);
+                    }
+                    
+                    spotlightControl.InvalidateVisual();
                 }
             }
         }
