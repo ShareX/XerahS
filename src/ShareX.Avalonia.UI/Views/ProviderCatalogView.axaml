@@ -22,30 +22,27 @@
 
         <!-- Provider List -->
         <ScrollViewer Grid.Row="1" Padding="20">
-            <ItemsControl ItemsSource="{Binding AvailableProviders}">
-                <ItemsControl.ItemTemplate>
+            <ListBox ItemsSource="{Binding AvailableProviders}"
+                     SelectedItem="{Binding SelectedProvider}"
+                     SelectionMode="Single"
+                     Background="Transparent"
+                     BorderThickness="0">
+                <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:ProviderViewModel">
-                        <Button Command="{Binding SelectCommand}"
-                                Classes.selected="{Binding IsSelected}"
-                                Margin="0,0,0,12"
-                                Padding="16"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Left"
-                                CornerRadius="6"
+                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
-                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
-                            <Button.Styles>
-                                <Style Selector="Button:pointerover">
+                                CornerRadius="6"
+                                Padding="16"
+                                Margin="0,0,0,12"
+                                Cursor="Hand">
+                            <Border.Styles>
+                                <!-- Hover state -->
+                                <Style Selector="Border:pointerover">
                                     <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
                                     <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
                                 </Style>
-                                <Style Selector="Button.selected">
-                                    <Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}"/>
-                                    <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
-                                    <Setter Property="BorderThickness" Value="2"/>
-                                </Style>
-                            </Button.Styles>
+                            </Border.Styles>
 
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <!-- Radio Indicator -->
@@ -88,10 +85,22 @@
                                       VerticalAlignment="Top"
                                       IsVisible="{Binding !!SupportedFileTypesDisplay}"/>
                             </Grid>
-                        </Button>
+                        </Border>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                </ListBox.ItemTemplate>
+                
+                <!-- Selected item styling -->
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                        <Setter Property="Background" Value="Transparent"/>
+                    </Style>
+                    <Style Selector="ListBoxItem:selected Border">
+                        <Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+                        <Setter Property="BorderThickness" Value="2"/>
+                    </Style>
+                </ListBox.Styles>
+            </ListBox>
         </ScrollViewer>
 
         <!-- Footer Actions -->

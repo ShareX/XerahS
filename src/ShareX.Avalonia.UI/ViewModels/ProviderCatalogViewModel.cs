@@ -38,59 +38,34 @@ public partial class ProviderCatalogViewModel : ViewModelBase
         
         foreach (var provider in providers)
         {
-            var vm = new ProviderViewModel(provider, Category, OnProviderSelected);
+            var vm = new ProviderViewModel(provider, Category);
             AvailableProviders.Add(vm);
-            DebugHelper.WriteLine($"[ProviderCatalog] Added provider: {provider.Name} (ID: {provider.ProviderId}), IsSelected: {vm.IsSelected}");
+            DebugHelper.WriteLine($"[ProviderCatalog] Added provider: {provider.Name} (ID: {provider.ProviderId})");
         }
         
         DebugHelper.WriteLine($"[ProviderCatalog] Total providers in AvailableProviders: {AvailableProviders.Count}");
     }
 
-    private void OnProviderSelected(ProviderViewModel selected)
-    {
-        DebugHelper.WriteLine($"[ProviderCatalog] OnProviderSelected called for: {selected.Name}");
-        
-        // Deselect all others
-        foreach (var provider in AvailableProviders)
-        {
-            if (provider != selected && provider.IsSelected)
-            {
-                provider.IsSelected = false;
-            }
-        }
-        
-        // Select this one
-        selected.IsSelected = true;
-    }
 
     [RelayCommand]
     private void AddSelected()
     {
-        DebugHelper.WriteLine($"[ProviderCatalog] AddSelected called, AvailableProviders count: {AvailableProviders.Count}");
+        DebugHelper.WriteLine($"[ProviderCatalog] AddSelected called, SelectedProvider: {SelectedProvider?.Name ?? "null"}");
         
-        // Log state of all providers
-        for (int i = 0; i < AvailableProviders.Count; i++)
+        if (SelectedProvider == null)
         {
-            var p = AvailableProviders[i];
-            DebugHelper.WriteLine($"[ProviderCatalog]   Provider {i}: {p.Name} (ID: {p.ProviderId}), IsSelected: {p.IsSelected}");
-        }
-        
-        var selectedProvider = AvailableProviders.FirstOrDefault(p => p.IsSelected);
-
-        if (selectedProvider == null)
-        {
-            DebugHelper.WriteLine("[ProviderCatalog] No provider selected (all IsSelected are false)");
+            DebugHelper.WriteLine("[ProviderCatalog] No provider selected");
             return;
         }
 
         try
         {
-            DebugHelper.WriteLine($"[ProviderCatalog] Selected provider found: {selectedProvider.Name}");
+            DebugHelper.WriteLine($"[ProviderCatalog] Selected provider: {SelectedProvider.Name}");
             
-            var provider = ProviderCatalog.GetProvider(selectedProvider.ProviderId);
+            var provider = ProviderCatalog.GetProvider(SelectedProvider.ProviderId);
             if (provider == null)
             {
-                DebugHelper.WriteLine($"[ProviderCatalog] ERROR: Provider not found in catalog: {selectedProvider.ProviderId}");
+                DebugHelper.WriteLine($"[ProviderCatalog] ERROR: Provider not found in catalog: {SelectedProvider.ProviderId}");
                 return;
             }
 
@@ -156,15 +131,12 @@ public partial class ProviderViewModel : ViewModelBase
 
     public UploaderCategory[] SupportedCategories { get; }
 
-    private readonly Action<ProviderViewModel>? _onSelect;
-
-    public ProviderViewModel(IUploaderProvider provider, UploaderCategory? filterCategory = null, Action<ProviderViewModel>? onSelect = null)
+    public ProviderViewModel(IUploaderProvider provider, UploaderCategory? filterCategory = null)
     {
         _providerId = provider.ProviderId;
         _name = provider.Name;
         _description = provider.Description;
         SupportedCategories = provider.SupportedCategories;
-        _onSelect = onSelect;
 
         // Display supported file types for the filter category if provided
         if (filterCategory.HasValue)
@@ -177,12 +149,5 @@ public partial class ProviderViewModel : ViewModelBase
                 SupportedFileTypesDisplay = types.Length > 8 ? $"{typeStr}, +{types.Length - 8} more" : typeStr;
             }
         }
-    }
-
-    [RelayCommand]
-    private void Select()
-    {
-        DebugHelper.WriteLine($"[ProviderViewModel] Select command called for: {Name}");
-        _onSelect?.Invoke(this);
     }
 }
