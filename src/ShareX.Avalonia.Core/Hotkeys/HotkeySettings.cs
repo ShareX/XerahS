@@ -23,8 +23,12 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Ava.Common;
 using ShareX.Ava.Platform.Abstractions;
 using ShareX.Ava.Core;
+using Avalonia.Input;
+
+using HotkeyInfo = ShareX.Ava.Platform.Abstractions.HotkeyInfo;
 
 namespace ShareX.Ava.Core.Hotkeys;
 
@@ -45,6 +49,7 @@ public class HotkeySettings
     /// The action to execute when this hotkey is triggered.
     /// Proxies to TaskSettings.Job.
     /// </summary>
+    [Newtonsoft.Json.JsonIgnore]
     public HotkeyType Job 
     { 
         get => TaskSettings.Job;
@@ -76,6 +81,12 @@ public class HotkeySettings
     {
         TaskSettings.Job = job;
         HotkeyInfo = hotkeyInfo;
+    }
+
+    public HotkeySettings(HotkeyType job, Key key) : this()
+    {
+        TaskSettings.Job = job;
+        HotkeyInfo = new HotkeyInfo(key);
     }
 
     public override string ToString()

@@ -54,11 +54,20 @@ public partial class App : Application
             // Subscribe to hotkey triggers
             HotkeyManager.HotkeyTriggered += HotkeyManager_HotkeyTriggered;
 
-            // Load default hotkeys
-            var defaultHotkeys = Core.Hotkeys.HotkeyManager.GetDefaultHotkeyList();
-            HotkeyManager.UpdateHotkeys(defaultHotkeys);
+            // Load hotkeys from configuration
+            var hotkeys = Core.SettingManager.HotkeysConfig.Hotkeys;
             
-            DebugHelper.WriteLine($"Initialized hotkey manager with {defaultHotkeys.Count} default hotkeys");
+            // If configuration is empty/null, fallback to defaults
+            if (hotkeys == null || hotkeys.Count == 0)
+            {
+                hotkeys = Core.Hotkeys.HotkeyManager.GetDefaultHotkeyList();
+                // Update config with defaults so they get saved
+                Core.SettingManager.HotkeysConfig.Hotkeys = hotkeys;
+            }
+
+            HotkeyManager.UpdateHotkeys(hotkeys);
+            
+            DebugHelper.WriteLine($"Initialized hotkey manager with {hotkeys.Count} hotkeys from configuration");
         }
         catch (Exception ex)
         {

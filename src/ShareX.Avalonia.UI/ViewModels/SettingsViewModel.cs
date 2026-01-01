@@ -91,23 +91,26 @@ namespace ShareX.Ava.UI.ViewModels
             SilentRun = settings.SilentRun;
             SelectedTheme = settings.SelectedTheme;
 
-            // Task Settings Defaults (Placeholder for now until TaskSettings object is fully integrated)
-            PlaySoundAfterCapture = true;
-            ShowToastNotification = true;
-            ShowCursor = true;
-            ScreenshotDelay = 0.0;
-            CaptureTransparent = true;
-            CaptureShadow = true;
-            CaptureClientArea = false;
+            // Task Settings - General
+            var taskSettings = settings.DefaultTaskSettings;
+            PlaySoundAfterCapture = taskSettings.GeneralSettings.PlaySoundAfterCapture;
+            ShowToastNotification = taskSettings.GeneralSettings.ShowToastNotificationAfterTaskCompleted;
+            
+            // Task Settings - Capture
+            ShowCursor = taskSettings.CaptureSettings.ShowCursor;
+            ScreenshotDelay = (double)taskSettings.CaptureSettings.ScreenshotDelay;
+            CaptureTransparent = taskSettings.CaptureSettings.CaptureTransparent;
+            CaptureShadow = taskSettings.CaptureSettings.CaptureShadow;
+            CaptureClientArea = taskSettings.CaptureSettings.CaptureClientArea;
 
             // Task Settings - File Naming Defaults
-            NameFormatPattern = "%y%mo%dT%h%mi_%ra{10}";
-            NameFormatPatternActiveWindow = "%y%mo%dT%h%mi_%pn_%ra{10}";
-            FileUploadUseNamePattern = false;
-            FileUploadReplaceProblematicCharacters = false;
-            URLRegexReplace = false;
-            URLRegexReplacePattern = "^https?://(.+)$";
-            URLRegexReplaceReplacement = "https://$1";
+            NameFormatPattern = taskSettings.UploadSettings.NameFormatPattern;
+            NameFormatPatternActiveWindow = taskSettings.UploadSettings.NameFormatPatternActiveWindow;
+            FileUploadUseNamePattern = taskSettings.UploadSettings.FileUploadUseNamePattern;
+            FileUploadReplaceProblematicCharacters = taskSettings.UploadSettings.FileUploadReplaceProblematicCharacters;
+            URLRegexReplace = taskSettings.UploadSettings.URLRegexReplace;
+            URLRegexReplacePattern = taskSettings.UploadSettings.URLRegexReplacePattern;
+            URLRegexReplaceReplacement = taskSettings.UploadSettings.URLRegexReplaceReplacement;
         }
 
         [RelayCommand]
@@ -122,11 +125,26 @@ namespace ShareX.Ava.UI.ViewModels
             settings.SilentRun = SilentRun;
             settings.SelectedTheme = SelectedTheme;
             
-            // TODO: Save Task settings to appropriate object (e.g., TaskSettings)
-            // For now, these are just tied to the view model state.
+            // Save Task Settings
+            var taskSettings = settings.DefaultTaskSettings;
+            taskSettings.GeneralSettings.PlaySoundAfterCapture = PlaySoundAfterCapture;
+            taskSettings.GeneralSettings.ShowToastNotificationAfterTaskCompleted = ShowToastNotification;
             
-            // TODO: Save to disk
-            // SettingManager.Save();
+            taskSettings.CaptureSettings.ShowCursor = ShowCursor;
+            taskSettings.CaptureSettings.ScreenshotDelay = (decimal)ScreenshotDelay;
+            taskSettings.CaptureSettings.CaptureTransparent = CaptureTransparent;
+            taskSettings.CaptureSettings.CaptureShadow = CaptureShadow;
+            taskSettings.CaptureSettings.CaptureClientArea = CaptureClientArea;
+
+            taskSettings.UploadSettings.NameFormatPattern = NameFormatPattern;
+            taskSettings.UploadSettings.NameFormatPatternActiveWindow = NameFormatPatternActiveWindow;
+            taskSettings.UploadSettings.FileUploadUseNamePattern = FileUploadUseNamePattern;
+            taskSettings.UploadSettings.FileUploadReplaceProblematicCharacters = FileUploadReplaceProblematicCharacters;
+            taskSettings.UploadSettings.URLRegexReplace = URLRegexReplace;
+            taskSettings.UploadSettings.URLRegexReplacePattern = URLRegexReplacePattern;
+            taskSettings.UploadSettings.URLRegexReplaceReplacement = URLRegexReplaceReplacement;
+            
+            SettingManager.SaveApplicationConfig();
         }
 
         [RelayCommand]

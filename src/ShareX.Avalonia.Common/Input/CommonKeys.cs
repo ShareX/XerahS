@@ -29,7 +29,7 @@ namespace ShareX.Ava.Common
 {
     // Simplified Keys enum compatible with System.Windows.Forms.Keys
     [Flags]
-    public enum Keys
+    public enum CommonKeys
     {
         Modifiers = -65536,
         None = 0,

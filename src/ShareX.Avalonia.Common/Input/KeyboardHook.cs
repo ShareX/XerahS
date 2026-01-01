@@ -34,16 +34,16 @@ namespace ShareX.Ava.Common
 
     public class KeyEventArgs : EventArgs
     {
-        public Keys KeyData { get; }
-        public Keys KeyCode => KeyData & Keys.KeyCode;
-        public Keys Modifiers => KeyData & Keys.Modifiers;
-        public bool Shift => (KeyData & Keys.Shift) == Keys.Shift;
-        public bool Control => (KeyData & Keys.Control) == Keys.Control;
-        public bool Alt => (KeyData & Keys.Alt) == Keys.Alt;
+        public CommonKeys KeyData { get; }
+        public CommonKeys KeyCode => KeyData & CommonKeys.KeyCode;
+        public CommonKeys Modifiers => KeyData & CommonKeys.Modifiers;
+        public bool Shift => (KeyData & CommonKeys.Shift) == CommonKeys.Shift;
+        public bool Control => (KeyData & CommonKeys.Control) == CommonKeys.Control;
+        public bool Alt => (KeyData & CommonKeys.Alt) == CommonKeys.Alt;
         public bool Handled { get; set; }
         public bool SuppressKeyPress { get; set; }
 
-        public KeyEventArgs(Keys keyData)
+        public KeyEventArgs(CommonKeys keyData)
         {
             KeyData = keyData;
         }
@@ -131,27 +131,27 @@ namespace ShareX.Ava.Common
         private KeyEventArgs GetKeyEventArgs(IntPtr key)
         {
             int vkCode = Marshal.ReadInt32(key); // KBDLLHOOKSTRUCT.vkCode is first
-            Keys keyData = (Keys)vkCode | GetModifierKeys();
+            CommonKeys keyData = (CommonKeys)vkCode | GetModifierKeys();
             return new KeyEventArgs(keyData);
         }
 
-        private static Keys GetModifierKeys()
+        private static CommonKeys GetModifierKeys()
         {
-            Keys modifiers = Keys.None;
+            CommonKeys modifiers = CommonKeys.None;
 
             if ((NativeMethods.GetKeyState(VirtualKeyCode.SHIFT) & 0x8000) != 0)
             {
-                modifiers |= Keys.Shift;
+                modifiers |= CommonKeys.Shift;
             }
 
             if ((NativeMethods.GetKeyState(VirtualKeyCode.CONTROL) & 0x8000) != 0)
             {
-                modifiers |= Keys.Control;
+                modifiers |= CommonKeys.Control;
             }
 
             if ((NativeMethods.GetKeyState(VirtualKeyCode.MENU) & 0x8000) != 0)
             {
-                modifiers |= Keys.Alt;
+                modifiers |= CommonKeys.Alt;
             }
 
             return modifiers;

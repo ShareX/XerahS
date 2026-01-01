@@ -30,9 +30,9 @@ using System.Text;
 
 namespace ShareX.Ava.Common
 {
-    public class HotkeyInfo
+    public class CommonHotkeyInfo
     {
-        public Keys Hotkey { get; set; }
+        public CommonKeys Hotkey { get; set; }
 
         [JsonIgnore]
         public ushort ID { get; set; }
@@ -40,15 +40,15 @@ namespace ShareX.Ava.Common
         [JsonIgnore]
         public HotkeyStatus Status { get; set; }
 
-        public Keys KeyCode => Hotkey & Keys.KeyCode;
+        public CommonKeys KeyCode => Hotkey & CommonKeys.KeyCode;
 
-        public Keys ModifiersKeys => Hotkey & Keys.Modifiers;
+        public CommonKeys ModifiersKeys => Hotkey & CommonKeys.Modifiers;
 
-        public bool Control => Hotkey.HasFlag(Keys.Control);
+        public bool Control => Hotkey.HasFlag(CommonKeys.Control);
 
-        public bool Shift => Hotkey.HasFlag(Keys.Shift);
+        public bool Shift => Hotkey.HasFlag(CommonKeys.Shift);
 
-        public bool Alt => Hotkey.HasFlag(Keys.Alt);
+        public bool Alt => Hotkey.HasFlag(CommonKeys.Alt);
 
         public bool Win { get; set; }
 
@@ -67,21 +67,21 @@ namespace ShareX.Ava.Common
             }
         }
 
-        public bool IsOnlyModifiers => KeyCode == Keys.ControlKey || KeyCode == Keys.ShiftKey || KeyCode == Keys.Menu || (KeyCode == Keys.None && Win);
+        public bool IsOnlyModifiers => KeyCode == CommonKeys.ControlKey || KeyCode == CommonKeys.ShiftKey || KeyCode == CommonKeys.Menu || (KeyCode == CommonKeys.None && Win);
 
-        public bool IsValidHotkey => KeyCode != Keys.None && !IsOnlyModifiers;
+        public bool IsValidHotkey => KeyCode != CommonKeys.None && !IsOnlyModifiers;
 
-        public HotkeyInfo()
+        public CommonHotkeyInfo()
         {
             Status = HotkeyStatus.NotConfigured;
         }
 
-        public HotkeyInfo(Keys hotkey) : this()
+        public CommonHotkeyInfo(CommonKeys hotkey) : this()
         {
             Hotkey = hotkey;
         }
 
-        public HotkeyInfo(Keys hotkey, ushort id) : this(hotkey)
+        public CommonHotkeyInfo(CommonKeys hotkey, ushort id) : this(hotkey)
         {
             ID = id;
         }
@@ -114,33 +114,33 @@ namespace ShareX.Ava.Common
             {
                 text += "...";
             }
-            else if (KeyCode == Keys.Back)
+            else if (KeyCode == CommonKeys.Back)
             {
                 text += "Backspace";
             }
-            else if (KeyCode == Keys.Return)
+            else if (KeyCode == CommonKeys.Return)
             {
                 text += "Enter";
             }
-            else if (KeyCode == Keys.Capital)
+            else if (KeyCode == CommonKeys.Capital)
             {
                 text += "Caps Lock";
             }
-            else if (KeyCode == Keys.Next)
+            else if (KeyCode == CommonKeys.Next)
             {
                 text += "Page Down";
             }
-            else if (KeyCode == Keys.Scroll)
+            else if (KeyCode == CommonKeys.Scroll)
             {
                 text += "Scroll Lock";
             }
-            else if (KeyCode >= Keys.D0 && KeyCode <= Keys.D9)
+            else if (KeyCode >= CommonKeys.D0 && KeyCode <= CommonKeys.D9)
             {
-                text += (KeyCode - Keys.D0).ToString();
+                text += (KeyCode - CommonKeys.D0).ToString();
             }
-            else if (KeyCode >= Keys.NumPad0 && KeyCode <= Keys.NumPad9)
+            else if (KeyCode >= CommonKeys.NumPad0 && KeyCode <= CommonKeys.NumPad9)
             {
-                text += "Numpad " + (KeyCode - Keys.NumPad0).ToString();
+                text += "Numpad " + (KeyCode - CommonKeys.NumPad0).ToString();
             }
             else
             {
@@ -150,7 +150,7 @@ namespace ShareX.Ava.Common
             return text;
         }
 
-        private string ToStringWithSpaces(Keys key)
+        private string ToStringWithSpaces(CommonKeys key)
         {
             string name = key.ToString();
 
