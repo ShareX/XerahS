@@ -1,7 +1,7 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
+    ShareX.Avalonia - The Avalonia UI implementation of ShareX
     Copyright (c) 2007-2025 ShareX Team
 
     This program is free software; you can redistribute it and/or
@@ -23,42 +23,71 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Common
+#nullable enable
+
+namespace ShareX.Ava.Common;
+
+public class ConvolutionMatrix
 {
-    public class ConvolutionMatrix
+    private readonly double[,] matrix;
+
+    public int Width => matrix.GetLength(1);
+    public int Height => matrix.GetLength(0);
+    public float Offset { get; set; }
+
+    public bool ConsiderAlpha { get; set; }
+
+    public ConvolutionMatrix() : this(3)
     {
-        private readonly double[,] matrix;
+    }
 
-        public int Width => matrix.GetLength(1);
-        public int Height => matrix.GetLength(0);
-        public byte Offset { get; set; }
+    public ConvolutionMatrix(int size) : this(size, size)
+    {
+    }
 
-        public bool ConsiderAlpha { get; set; }
+    public ConvolutionMatrix(int height, int width)
+    {
+        matrix = new double[height, width];
+    }
 
-        public ConvolutionMatrix() : this(3)
+    public void SetAll(double value)
+    {
+        for (int y = 0; y < Height; y++)
         {
-        }
-
-        public ConvolutionMatrix(int size) : this(size, size)
-        {
-        }
-
-        public ConvolutionMatrix(int height, int width)
-        {
-            matrix = new double[height, width];
-        }
-
-        public void SetAll(double value)
-        {
-            for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
             {
-                for (int x = 0; x < Width; x++)
-                {
-                    matrix[y, x] = value;
-                }
+                matrix[y, x] = value;
+            }
+        }
+    }
+
+    public ref double this[int y, int x] => ref matrix[y, x];
+
+    internal float[] ToKernelArray()
+    {
+        float[] kernel = new float[Width * Height];
+        int index = 0;
+        for (int y = 0; y < Height; y++)
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                kernel[index++] = (float)matrix[y, x];
+            }
+        }
+        return kernel;
+    }
+
+    internal float GetDivisor()
+    {
+        double sum = 0;
+        for (int y = 0; y < Height; y++)
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                sum += matrix[y, x];
             }
         }
 
-        public ref double this[int y, int x] => ref matrix[y, x];
+        return Math.Abs(sum) < double.Epsilon ? 1f : (float)sum;
     }
 }

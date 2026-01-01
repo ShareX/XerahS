@@ -1,7 +1,7 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX - A program that allows you to take screenshots and share any file type
+    ShareX.Avalonia - The Avalonia UI implementation of ShareX
     Copyright (c) 2007-2025 ShareX Team
 
     This program is free software; you can redistribute it and/or
@@ -23,220 +23,214 @@
 
 #endregion License Information (GPL v3)
 
+#nullable enable
+
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
+using SkiaSharp;
 
-namespace ShareX.Ava.Common
+namespace ShareX.Ava.Common;
+
+public static class ColorMatrixManager
 {
-    public static class ColorMatrixManager
+    private const float Rw = 0.3086f;
+    private const float Gw = 0.6094f;
+    private const float Bw = 0.0820f;
+
+    public static SKBitmap Apply(SKBitmap bmp, float[] matrix)
     {
-        // RGB weights for luminance calculation
-        private const float rw = 0.3086f;
-        private const float gw = 0.6094f;
-        private const float bw = 0.0820f;
+        if (bmp is null) throw new ArgumentNullException(nameof(bmp));
+        if (matrix is null) throw new ArgumentNullException(nameof(matrix));
 
-        public static Bitmap Apply(this ColorMatrix matrix, Bitmap bmp)
+        SKBitmap result = new SKBitmap(bmp.Info);
+        using SKPaint paint = new SKPaint { ColorFilter = SKColorFilter.CreateColorMatrix(matrix) };
+        using SKCanvas canvas = new SKCanvas(result);
+        canvas.Clear(SKColors.Transparent);
+        canvas.DrawBitmap(bmp, 0, 0, paint);
+        return result;
+    }
+
+    public static SKBitmap ChangeGamma(SKBitmap bmp, float value)
+    {
+        if (bmp is null) throw new ArgumentNullException(nameof(bmp));
+
+        value = MathHelpers.Clamp(value, 0.1f, 5.0f);
+        byte[] table = new byte[256];
+        for (int i = 0; i < 256; i++)
         {
-            Bitmap dest = bmp.CreateEmptyBitmap();
-            Rectangle destRect = new Rectangle(0, 0, dest.Width, dest.Height);
-            Apply(matrix, bmp, dest, destRect);
-            return dest;
+            table[i] = (byte)MathHelpers.Clamp((int)(Math.Pow(i / 255f, value) * 255f + 0.5f), 0, 255);
         }
 
-        public static void Apply(this ColorMatrix matrix, Bitmap src, Bitmap dest, Rectangle destRect)
+        using SKColorFilter filter = SKColorFilter.CreateTable(table, table, table, table);
+        SKBitmap result = new SKBitmap(bmp.Info);
+        using SKCanvas canvas = new SKCanvas(result);
+        using SKPaint paint = new SKPaint { ColorFilter = filter };
+        canvas.Clear(SKColors.Transparent);
+        canvas.DrawBitmap(bmp, 0, 0, paint);
+        return result;
+    }
+
+    public static float[] Inverse()
+    {
+        return CreateMatrix(new[]
         {
-            using (Graphics g = Graphics.FromImage(dest))
-            using (ImageAttributes ia = new ImageAttributes())
-            {
-                ia.ClearColorMatrix();
-                ia.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                g.SetHighQuality();
-                g.DrawImage(src, destRect, 0, 0, src.Width, src.Height, GraphicsUnit.Pixel, ia);
-            }
-        }
+            new[] { -1f, 0f, 0f, 0f, 0f },
+            new[] { 0f, -1f, 0f, 0f, 0f },
+            new[] { 0f, 0f, -1f, 0f, 0f },
+            new[] { 0f, 0f, 0f, 1f, 0f },
+            new[] { 1f, 1f, 1f, 0f, 1f }
+        });
+    }
 
-        /// <param name="bmp"></param>
-        /// <param name="value">1 = No change (Min 0.1, Max 5.0)</param>
-        public static Bitmap ChangeGamma(Bitmap bmp, float value)
+    public static float[] Alpha(float value, float add = 0f)
+    {
+        return CreateMatrix(new[]
         {
-            value = value.Clamp(0.1f, 5.0f);
+            new[] { 1f, 0f, 0f, 0f, 0f },
+            new[] { 0f, 1f, 0f, 0f, 0f },
+            new[] { 0f, 0f, 1f, 0f, 0f },
+            new[] { 0f, 0f, 0f, value, 0f },
+            new[] { 0f, 0f, 0f, add, 1f }
+        });
+    }
 
-            Bitmap bmpResult = bmp.CreateEmptyBitmap();
-
-            using (Graphics g = Graphics.FromImage(bmpResult))
-            using (ImageAttributes ia = new ImageAttributes())
-            {
-                ia.ClearColorMatrix();
-                ia.SetGamma(value, ColorAdjustType.Bitmap);
-                g.SetHighQuality();
-                g.DrawImage(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height), 0, 0, bmp.Width, bmp.Height, GraphicsUnit.Pixel, ia);
-            }
-
-            return bmpResult;
-        }
-
-        public static ColorMatrix Inverse()
+    public static float[] Brightness(float value)
+    {
+        return CreateMatrix(new[]
         {
-            return new ColorMatrix(new[]
-            {
-                new float[] { -1, 0, 0, 0, 0 },
-                new float[] { 0, -1, 0, 0, 0 },
-                new float[] { 0, 0, -1, 0, 0 },
-                new float[] { 0, 0, 0, 1, 0 },
-                new float[] { 1, 1, 1, 0, 1 }
-            });
-        }
+            new[] { 1f, 0f, 0f, 0f, 0f },
+            new[] { 0f, 1f, 0f, 0f, 0f },
+            new[] { 0f, 0f, 1f, 0f, 0f },
+            new[] { 0f, 0f, 0f, 1f, 0f },
+            new[] { value, value, value, 0f, 1f }
+        });
+    }
 
-        /// <param name="value">1 = No change</param>
-        /// <param name="add">0 = No change</param>
-        public static ColorMatrix Alpha(float value, float add = 0f)
+    public static float[] Contrast(float value)
+    {
+        return CreateMatrix(new[]
         {
-            return new ColorMatrix(new[]
-            {
-                new float[] { 1, 0, 0, 0, 0 },
-                new float[] { 0, 1, 0, 0, 0 },
-                new float[] { 0, 0, 1, 0, 0 },
-                new float[] { 0, 0, 0, value, 0 },
-                new float[] { 0, 0, 0, add, 1 }
-            });
-        }
+            new[] { value, 0f, 0f, 0f, 0f },
+            new[] { 0f, value, 0f, 0f, 0f },
+            new[] { 0f, 0f, value, 0f, 0f },
+            new[] { 0f, 0f, 0f, 1f, 0f },
+            new[] { 0f, 0f, 0f, 0f, 1f }
+        });
+    }
 
-        /// <param name="value">0 = No change</param>
-        public static ColorMatrix Brightness(float value)
+    public static float[] BlackWhite()
+    {
+        return CreateMatrix(new[]
         {
-            return new ColorMatrix(new[]
-            {
-                new float[] { 1, 0, 0, 0, 0 },
-                new float[] { 0, 1, 0, 0, 0 },
-                new float[] { 0, 0, 1, 0, 0 },
-                new float[] { 0, 0, 0, 1, 0 },
-                new float[] { value, value, value, 0, 1 }
-            });
-        }
+            new[] { 1.5f, 1.5f, 1.5f, 0f, 0f },
+            new[] { 1.5f, 1.5f, 1.5f, 0f, 0f },
+            new[] { 1.5f, 1.5f, 1.5f, 0f, 0f },
+            new[] { 0f, 0f, 0f, 1f, 0f },
+            new[] { -1f, -1f, -1f, 0f, 1f }
+        });
+    }
 
-        /// <param name="value">1 = No change</param>
-        public static ColorMatrix Contrast(float value)
+    public static float[] Polaroid()
+    {
+        return CreateMatrix(new[]
         {
-            return new ColorMatrix(new[]
-            {
-                new float[] { value, 0, 0, 0, 0 },
-                new float[] { 0, value, 0, 0, 0 },
-                new float[] { 0, 0, value, 0, 0 },
-                new float[] { 0, 0, 0, 1, 0 },
-                new float[] { 0, 0, 0, 0, 1 }
-            });
-        }
+            new[] { 1.438f, -0.062f, -0.062f, 0f, 0f },
+            new[] { -0.122f, 1.378f, -0.122f, 0f, 0f },
+            new[] { -0.016f, -0.016f, 1.483f, 0f, 0f },
+            new[] { 0f, 0f, 0f, 1f, 0f },
+            new[] { -0.03f, 0.05f, -0.02f, 0f, 1f }
+        });
+    }
 
-        public static ColorMatrix BlackWhite()
+    public static float[] Grayscale(float value = 1f)
+    {
+        return CreateMatrix(new[]
         {
-            return new ColorMatrix(new[]
-            {
-                new float[] { 1.5f, 1.5f, 1.5f, 0, 0 },
-                new float[] { 1.5f, 1.5f, 1.5f, 0, 0 },
-                new float[] { 1.5f, 1.5f, 1.5f, 0, 0 },
-                new float[] { 0, 0, 0, 1, 0 },
-                new float[] { -1, -1, -1, 0, 1 }
-            });
-        }
+            new[] { Rw * value, Rw * value, Rw * value, 0f, 0f },
+            new[] { Gw * value, Gw * value, Gw * value, 0f, 0f },
+            new[] { Bw * value, Bw * value, Bw * value, 0f, 0f },
+            new[] { 0f, 0f, 0f, 1f, 0f },
+            new[] { 0f, 0f, 0f, 0f, 1f }
+        });
+    }
 
-        public static ColorMatrix Polaroid()
+    public static float[] Sepia(float value = 1f)
+    {
+        return CreateMatrix(new[]
         {
-            return new ColorMatrix(new[]
-            {
-                new float[] { 1.438f, -0.062f, -0.062f, 0, 0 },
-                new float[] { -0.122f, 1.378f, -0.122f, 0, 0 },
-                new float[] { -0.016f, -0.016f, 1.483f, 0, 0 },
-                new float[] { 0, 0, 0, 1, 0 },
-                new float[] { -0.03f, 0.05f, -0.02f, 0, 1 }
-            });
-        }
+            new[] { 0.393f * value, 0.349f * value, 0.272f * value, 0f, 0f },
+            new[] { 0.769f * value, 0.686f * value, 0.534f * value, 0f, 0f },
+            new[] { 0.189f * value, 0.168f * value, 0.131f * value, 0f, 0f },
+            new[] { 0f, 0f, 0f, 1f, 0f },
+            new[] { 0f, 0f, 0f, 0f, 1f }
+        });
+    }
 
-        /// <param name="value">1 = Default</param>
-        public static ColorMatrix Grayscale(float value = 1)
+    public static float[] Hue(float angle)
+    {
+        float a = angle * (float)(Math.PI / 180);
+        float c = (float)Math.Cos(a);
+        float s = (float)Math.Sin(a);
+
+        return CreateMatrix(new[]
         {
-            return new ColorMatrix(new[]
-            {
-                new float[] { rw * value, rw * value, rw * value, 0, 0 },
-                new float[] { gw * value, gw * value, gw * value, 0, 0 },
-                new float[] { bw * value, bw * value, bw * value, 0, 0 },
-                new float[] { 0, 0, 0, 1, 0 },
-                new float[] { 0, 0, 0, 0, 1 }
-            });
-        }
+            new[] { (Rw + (c * (1 - Rw))) + (s * -Rw), (Rw + (c * -Rw)) + (s * 0.143f), (Rw + (c * -Rw)) + (s * -(1 - Rw)), 0f, 0f },
+            new[] { (Gw + (c * -Gw)) + (s * -Gw), (Gw + (c * (1 - Gw))) + (s * 0.14f), (Gw + (c * -Gw)) + (s * Gw), 0f, 0f },
+            new[] { (Bw + (c * -Bw)) + (s * (1 - Bw)), (Bw + (c * -Bw)) + (s * -0.283f), (Bw + (c * (1 - Bw))) + (s * Bw), 0f, 0f },
+            new[] { 0f, 0f, 0f, 1f, 0f },
+            new[] { 0f, 0f, 0f, 0f, 1f }
+        });
+    }
 
-        /// <param name="value">1 = Default</param>
-        public static ColorMatrix Sepia(float value = 1)
+    public static float[] Saturation(float value)
+    {
+        return CreateMatrix(new[]
         {
-            return new ColorMatrix(new[]
-            {
-                new float[] { 0.393f * value, 0.349f * value, 0.272f * value, 0, 0 },
-                new float[] { 0.769f * value, 0.686f * value, 0.534f * value, 0, 0 },
-                new float[] { 0.189f * value, 0.168f * value, 0.131f * value, 0, 0 },
-                new float[] { 0, 0, 0, 1, 0 },
-                new float[] { 0, 0, 0, 0, 1 }
-            });
-        }
+            new[] { ((1f - value) * Rw) + value, (1f - value) * Rw, (1f - value) * Rw, 0f, 0f },
+            new[] { (1f - value) * Gw, ((1f - value) * Gw) + value, (1f - value) * Gw, 0f, 0f },
+            new[] { (1f - value) * Bw, (1f - value) * Bw, ((1f - value) * Bw) + value, 0f, 0f },
+            new[] { 0f, 0f, 0f, 1f, 0f },
+            new[] { 0f, 0f, 0f, 0f, 1f }
+        });
+    }
 
-        /// <param name="angle">0 = No change</param>
-        public static ColorMatrix Hue(float angle)
+    public static float[] Colorize(SKColor color, float value)
+    {
+        float r = color.Red / 255f;
+        float g = color.Green / 255f;
+        float b = color.Blue / 255f;
+        float invAmount = 1 - value;
+
+        return CreateMatrix(new[]
         {
-            float a = angle * (float)(Math.PI / 180);
-            float c = (float)Math.Cos(a);
-            float s = (float)Math.Sin(a);
+            new[] { invAmount + (value * r * Rw), value * g * Rw, value * b * Rw, 0f, 0f },
+            new[] { value * r * Gw, invAmount + (value * g * Gw), value * b * Gw, 0f, 0f },
+            new[] { value * r * Bw, value * g * Bw, invAmount + (value * b * Bw), 0f, 0f },
+            new[] { 0f, 0f, 0f, 1f, 0f },
+            new[] { 0f, 0f, 0f, 0f, 1f }
+        });
+    }
 
-            return new ColorMatrix(new[]
-            {
-                new float[] { (rw + (c * (1 - rw))) + (s * -rw), (rw + (c * -rw)) + (s * 0.143f), (rw + (c * -rw)) + (s * -(1 - rw)), 0, 0 },
-                new float[] { (gw + (c * -gw)) + (s * -gw), (gw + (c * (1 - gw))) + (s * 0.14f), (gw + (c * -gw)) + (s * gw), 0, 0 },
-                new float[] { (bw + (c * -bw)) + (s * (1 - bw)), (bw + (c * -bw)) + (s * -0.283f), (bw + (c * (1 - bw))) + (s * bw), 0, 0 },
-                new float[] { 0, 0, 0, 1, 0 },
-                new float[] { 0, 0, 0, 0, 1 }
-            });
-        }
-
-        /// <param name="value">1 = No change</param>
-        public static ColorMatrix Saturation(float value)
+    public static float[] Mask(float opacity, SKColor color)
+    {
+        return CreateMatrix(new[]
         {
-            return new ColorMatrix(new[]
-            {
-                new float[] { ((1.0f - value) * rw) + value, (1.0f - value) * rw, (1.0f - value) * rw, 0, 0 },
-                new float[] { (1.0f - value) * gw, ((1.0f - value) * gw) + value, (1.0f - value) * gw, 0, 0 },
-                new float[] { (1.0f - value) * bw, (1.0f - value) * bw, ((1.0f - value) * bw) + value, 0, 0 },
-                new float[] { 0, 0, 0, 1, 0 },
-                new float[] { 0, 0, 0, 0, 1 }
-            });
-        }
+            new[] { 0f, 0f, 0f, 0f, 0f },
+            new[] { 0f, 0f, 0f, 0f, 0f },
+            new[] { 0f, 0f, 0f, 0f, 0f },
+            new[] { 0f, 0f, 0f, color.Alpha / 255f * opacity, 0f },
+            new[] { color.Red / 255f, color.Green / 255f, color.Blue / 255f, 0f, 1f }
+        });
+    }
 
-        /// <param name="color"></param>
-        /// <param name="value">0 = No change</param>
-        public static ColorMatrix Colorize(Color color, float value)
+    private static float[] CreateMatrix(float[][] matrix)
+    {
+        // Skia expects a 4x5 matrix flattened row-major: R, G, B, A rows.
+        return new[]
         {
-            float r = (float)color.R / 255;
-            float g = (float)color.G / 255;
-            float b = (float)color.B / 255;
-            float inv_amount = 1 - value;
-
-            return new ColorMatrix(new[]
-            {
-                new float[] { inv_amount + (value * r * rw), value * g * rw, value * b * rw, 0, 0 },
-                new float[] { value * r * gw, inv_amount + (value * g * gw), value * b * gw, 0, 0 },
-                new float[] { value * r * bw, value * g * bw, inv_amount + (value * b * bw), 0, 0 },
-                new float[] { 0, 0, 0, 1, 0 },
-                new float[] { 0, 0, 0, 0, 1 }
-            });
-        }
-
-        public static ColorMatrix Mask(float opacity, Color color)
-        {
-            return new ColorMatrix(new[]
-            {
-                new float[] { 0, 0, 0, 0, 0 },
-                new float[] { 0, 0, 0, 0, 0 },
-                new float[] { 0, 0, 0, 0, 0 },
-                new float[] { 0, 0, 0, color.A / 255f * opacity, 0 },
-                new float[] { ((float)color.R).Remap(0, 255, 0, 1), ((float)color.G).Remap(0, 255, 0, 1), ((float)color.B).Remap(0, 255, 0, 1), 0, 1 }
-            });
-        }
+            matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3], matrix[0][4],
+            matrix[1][0], matrix[1][1], matrix[1][2], matrix[1][3], matrix[1][4],
+            matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3], matrix[2][4],
+            matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3], matrix[3][4]
+        };
     }
 }
