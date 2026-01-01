@@ -31,65 +31,57 @@
                                 CornerRadius="6"
                                 Padding="16"
                                 Margin="0,0,0,12"
-                                Cursor="Hand">
+                                Cursor="Hand"
+                                Tapped="OnProviderTapped"
+                                Tag="{Binding}">
                             <Border.Styles>
                                 <Style Selector="Border:pointerover">
                                     <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
                                     <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
                                 </Style>
-                                <Style Selector="Border[IsVisible=True]:pointerover" x:DataType="vm:ProviderViewModel">
-                                    <Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}"/>
-                                </Style>
                             </Border.Styles>
                             
-                            <RadioButton IsChecked="{Binding IsSelected, Mode=TwoWay}" 
-                                         GroupName="ProviderSelection">
-                                <RadioButton.Template>
-                                    <ControlTemplate>
-                                        <Grid ColumnDefinitions="Auto,*,Auto">
-                                            <!-- Radio Indicator -->
-                                            <Border Grid.Column="0"
-                                                    Width="20" 
-                                                    Height="20"
-                                                    CornerRadius="10"
-                                                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                                                    BorderThickness="2"
-                                                    Margin="0,0,12,0"
-                                                    VerticalAlignment="Top">
-                                                <Ellipse Width="10" 
-                                                         Height="10"
-                                                         Fill="{DynamicResource AccentFillColorDefaultBrush}"
-                                                         IsVisible="{Binding IsSelected}"/>
-                                            </Border>
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <!-- Radio Indicator -->
+                                <Border Grid.Column="0"
+                                        Width="20" 
+                                        Height="20"
+                                        CornerRadius="10"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="2"
+                                        Margin="0,0,12,0"
+                                        VerticalAlignment="Top">
+                                    <Ellipse Width="10" 
+                                             Height="10"
+                                             Fill="{DynamicResource AccentFillColorDefaultBrush}"
+                                             IsVisible="{Binding IsSelected}"/>
+                                </Border>
 
-                                            <!-- Provider Info -->
-                                            <StackPanel Grid.Column="1" Spacing="6">
-                                                <TextBlock Text="{Binding Name}" 
-                                                           FontWeight="SemiBold"
-                                                           FontSize="15"/>
-                                                <TextBlock Text="{Binding Description}"
-                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                           TextWrapping="Wrap"/>
-                                                <TextBlock Text="{Binding SupportedFileTypesDisplay}"
-                                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                           FontSize="11"
-                                                           TextWrapping="Wrap"
-                                                           IsVisible="{Binding !!SupportedFileTypesDisplay}"/>
-                                            </StackPanel>
+                                <!-- Provider Info -->
+                                <StackPanel Grid.Column="1" Spacing="6">
+                                    <TextBlock Text="{Binding Name}" 
+                                               FontWeight="SemiBold"
+                                               FontSize="15"/>
+                                    <TextBlock Text="{Binding Description}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding SupportedFileTypesDisplay}"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                               FontSize="11"
+                                               TextWrapping="Wrap"
+                                               IsVisible="{Binding !!SupportedFileTypesDisplay}"/>
+                                </StackPanel>
 
-                                            <!-- Status Icon -->
-                                            <Path Grid.Column="2"
-                                                  Data="M12,2A10,10,0,1,1,2,12,10,10,0,0,1,12,2M12,7a1,1,0,0,0-1,1v4a1,1,0,0,0,2,0V8A1,1,0,0,0,12,7m0,8a1,1,0,1,0,1,1A1,1,0,0,0,12,15Z"
-                                                  Fill="{DynamicResource AccentFillColorDefaultBrush}"
-                                                  Width="20"
-                                                  Height="20"
-                                                  ToolTip.Tip="{Binding SupportedFileTypesDisplay}"
-                                                  VerticalAlignment="Top"
-                                                  IsVisible="{Binding !!SupportedFileTypesDisplay}"/>
-                                        </Grid>
-                                    </ControlTemplate>
-                                </RadioButton.Template>
-                            </RadioButton>
+                                <!-- Status Icon -->
+                                <Path Grid.Column="2"
+                                      Data="M12,2A10,10,0,1,1,2,12,10,10,0,0,1,12,2M12,7a1,1,0,0,0-1,1v4a1,1,0,0,0,2,0V8A1,1,0,0,0,12,7m0,8a1,1,0,1,0,1,1A1,1,0,0,0,12,15Z"
+                                      Fill="{DynamicResource AccentFillColorDefaultBrush}"
+                                      Width="20"
+                                      Height="20"
+                                      ToolTip.Tip="{Binding SupportedFileTypesDisplay}"
+                                      VerticalAlignment="Top"
+                                      IsVisible="{Binding !!SupportedFileTypesDisplay}"/>
+                            </Grid>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

@@ -38,12 +38,29 @@ public partial class ProviderCatalogViewModel : ViewModelBase
         
         foreach (var provider in providers)
         {
-            var vm = new ProviderViewModel(provider, Category);
+            var vm = new ProviderViewModel(provider, Category, OnProviderSelected);
             AvailableProviders.Add(vm);
             DebugHelper.WriteLine($"[ProviderCatalog] Added provider: {provider.Name} (ID: {provider.ProviderId}), IsSelected: {vm.IsSelected}");
         }
         
         DebugHelper.WriteLine($"[ProviderCatalog] Total providers in AvailableProviders: {AvailableProviders.Count}");
+    }
+
+    private void OnProviderSelected(ProviderViewModel selected)
+    {
+        DebugHelper.WriteLine($"[ProviderCatalog] OnProviderSelected called for: {selected.Name}");
+        
+        // Deselect all others
+        foreach (var provider in AvailableProviders)
+        {
+            if (provider != selected && provider.IsSelected)
+            {
+                provider.IsSelected = false;
+            }
+        }
+        
+        // Select this one
+        selected.IsSelected = true;
     }
 
     [RelayCommand]
@@ -139,12 +156,15 @@ public partial class ProviderViewModel : ViewModelBase
 
     public UploaderCategory[] SupportedCategories { get; }
 
-    public ProviderViewModel(IUploaderProvider provider, UploaderCategory? filterCategory = null)
+    private readonly Action<ProviderViewModel>? _onSelect;
+
+    public ProviderViewModel(IUploaderProvider provider, UploaderCategory? filterCategory = null, Action<ProviderViewModel>? onSelect = null)
     {
         _providerId = provider.ProviderId;
         _name = provider.Name;
         _description = provider.Description;
         SupportedCategories = provider.SupportedCategories;
+        _onSelect = onSelect;
 
         // Display supported file types for the filter category if provided
         if (filterCategory.HasValue)
@@ -157,5 +177,12 @@ public partial class ProviderViewModel : ViewModelBase
                 SupportedFileTypesDisplay = types.Length > 8 ? $"{typeStr}, +{types.Length - 8} more" : typeStr;
             }
         }
+    }
+
+    [RelayCommand]
+    private void Select()
+    {
+        DebugHelper.WriteLine($"[ProviderViewModel] Select command called for: {Name}");
+        _onSelect?.Invoke(this);
     }
 }
