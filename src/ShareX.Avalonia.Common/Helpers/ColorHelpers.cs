@@ -1,7 +1,7 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
+    ShareX.Avalonia - The Avalonia UI implementation of ShareX
     Copyright (c) 2007-2025 ShareX Team
 
     This program is free software; you can redistribute it and/or
@@ -22,6 +22,8 @@
 */
 
 #endregion License Information (GPL v3)
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -82,6 +84,16 @@ namespace ShareX.Ava.Common
                 case ColorFormat.ARGB:
                     return string.Format("{0:X2}{1:X2}{2:X2}{3:X2}", color.A, color.R, color.G, color.B);
             }
+        }
+
+        public static string GetColorName(Color color)
+        {
+            if (color.IsNamedColor && !string.IsNullOrEmpty(color.Name))
+            {
+                return color.Name;
+            }
+
+            return ColorTranslator.ToHtml(color);
         }
 
         public static int ColorToDecimal(Color color, ColorFormat format = ColorFormat.RGB)

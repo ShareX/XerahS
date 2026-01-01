@@ -1,13 +1,16 @@
 # CX01: Port Missing HelpersLib Utilities
 
 ## Priority
-🔥 **HIGH** - Foundation for other features
+**HIGH** - Foundation for other features
 
 ## Assignee
 **Codex** (macOS, VS Code)
 
 ## Branch
 `feature/backend-gaps`
+
+## Status
+Completed on 2026-01-01 by Codex (NameParser utilities and word lists ported)
 
 ## Objective
 Port remaining non-UI helpers from `ShareX.HelpersLib` to `ShareX.Avalonia.Common` to achieve feature parity for core utility functions.
@@ -97,3 +100,29 @@ Port remaining non-UI helpers from `ShareX.HelpersLib` to `ShareX.Avalonia.Commo
 - [AGENTS.md](../AGENTS.md) - Code style rules
 - [MULTI_AGENT_COORDINATION.md](../MULTI_AGENT_COORDINATION.md) - Agent protocol
 - [ShareX.HelpersLib](../../../ShareX/ShareX.HelpersLib/) - Source reference
+
+---
+
+## Work Report: Codex
+
+### Files Modified
+- `src/ShareX.Avalonia.Common/Helpers/NameParser.cs`
+- `src/ShareX.Avalonia.Common/Helpers/CodeMenuEntryFilename.cs` (new)
+- `src/ShareX.Avalonia.Common/Helpers/CodeMenuEntryPixelInfo.cs` (new)
+- `src/ShareX.Avalonia.Common/ShareX.Avalonia.Common.csproj`
+- `src/ShareX.Avalonia.Common/Resources/adjectives.txt` (new)
+- `src/ShareX.Avalonia.Common/Resources/animals.txt` (new)
+
+### New Types
+- `CodeMenuEntryFilename` - token metadata for filename/path parsing
+- `CodeMenuEntryPixelInfo` - token metadata and formatter for pixel/color info
+
+### Assumptions
+- Reused English descriptions for code menu entries instead of localized resource strings.
+- Packaged adjective/animal word lists as text resources copied to the output directory.
+
+### Dependencies
+- No new NuGet dependencies added.
+
+---
+

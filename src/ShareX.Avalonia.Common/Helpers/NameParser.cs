@@ -1,7 +1,7 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
+    ShareX.Avalonia - The Avalonia UI implementation of ShareX
     Copyright (c) 2007-2025 ShareX Team
 
     This program is free software; you can redistribute it and/or
@@ -23,10 +23,14 @@
 
 #endregion License Information (GPL v3)
 
+#nullable enable
+
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace ShareX.Ava.Common
@@ -40,30 +44,34 @@ namespace ShareX.Ava.Common
         URL // URL path encodes
     }
 
-    /// <summary>
-    /// Lightweight placeholder parser used by watermarking and custom uploaders.
-    /// Supports a focused subset of ShareX tokens (dimensions, date/time, user/computer info and increment).
-    /// </summary>
     public class NameParser
     {
-        public NameParserType Type { get; }
+        private static readonly Lazy<string[]> Adjectives = new(() => LoadWordList("adjectives.txt"));
+        private static readonly Lazy<string[]> Animals = new(() => LoadWordList("animals.txt"));
+
+        public NameParserType Type { get; private set; }
         public int MaxNameLength { get; set; }
         public int MaxTitleLength { get; set; }
-        public int AutoIncrementNumber { get; set; }
-        public int ImageWidth { get; set; }
-        public int ImageHeight { get; set; }
-        public string? WindowText { get; set; }
-        public string? ProcessName { get; set; }
+        public int AutoIncrementNumber { get; set; } // %i, %ia, %ib, %iAa, %ix
+        public int ImageWidth { get; set; } // %width
+        public int ImageHeight { get; set; } // %height
+        public string? WindowText { get; set; } // %t
+        public string? ProcessName { get; set; } // %pn
         public TimeZoneInfo? CustomTimeZone { get; set; }
+        public bool IsPreviewMode { get; set; }
+
+        protected NameParser()
+        {
+        }
 
         public NameParser(NameParserType nameParserType)
         {
             Type = nameParserType;
         }
 
-        public static string Parse(NameParserType type, string pattern)
+        public static string Parse(NameParserType nameParserType, string pattern)
         {
-            return new NameParser(type).Parse(pattern);
+            return new NameParser(nameParserType).Parse(pattern);
         }
 
         public string Parse(string? pattern)
@@ -73,96 +81,88 @@ namespace ShareX.Ava.Common
                 return string.Empty;
             }
 
-            string result = pattern;
+            StringBuilder sb = new StringBuilder(pattern);
 
-            if (Type == NameParserType.Text)
+            if (WindowText != null)
             {
-                result = result.Replace("\\n", Environment.NewLine, StringComparison.Ordinal);
-            }
+                string windowText = SanitizeInput(WindowText);
 
-            result = ReplaceCoreTokens(result);
-            result = SanitizeByType(result);
-
-            if (MaxNameLength > 0 && result.Length > MaxNameLength)
-            {
-                result = result[..MaxNameLength];
-            }
-
-            return result;
-        }
-
-        private string ReplaceCoreTokens(string input)
-        {
-            StringBuilder sb = new StringBuilder(input);
-
-            if (!string.IsNullOrEmpty(WindowText))
-            {
-                string text = WindowText;
-
-                if (MaxTitleLength > 0 && text.Length > MaxTitleLength)
+                if (MaxTitleLength > 0)
                 {
-                    text = text[..MaxTitleLength];
+                    windowText = windowText.Truncate(MaxTitleLength);
                 }
 
-                sb.Replace("%t", text);
+                sb.Replace(CodeMenuEntryFilename.t.ToPrefixString(), windowText);
             }
 
-            if (!string.IsNullOrEmpty(ProcessName))
+            if (ProcessName != null)
             {
-                sb.Replace("%pn", ProcessName);
+                string processName = SanitizeInput(ProcessName);
+
+                sb.Replace(CodeMenuEntryFilename.pn.ToPrefixString(), processName);
             }
 
-            sb.Replace("%width", ImageWidth > 0 ? ImageWidth.ToString(CultureInfo.InvariantCulture) : string.Empty);
-            sb.Replace("%height", ImageHeight > 0 ? ImageHeight.ToString(CultureInfo.InvariantCulture) : string.Empty);
+            string width = ImageWidth > 0 ? ImageWidth.ToString(CultureInfo.InvariantCulture) : string.Empty;
+            string height = ImageHeight > 0 ? ImageHeight.ToString(CultureInfo.InvariantCulture) : string.Empty;
 
-            DateTime now = CustomTimeZone != null ? TimeZoneInfo.ConvertTime(DateTime.Now, CustomTimeZone) : DateTime.Now;
-            sb.Replace("%y", now.Year.ToString(CultureInfo.InvariantCulture));
-            sb.Replace("%yy", now.ToString("yy", CultureInfo.InvariantCulture));
-            sb.Replace("%mo", now.Month.ToString("00", CultureInfo.InvariantCulture));
-            sb.Replace("%mon", CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(now.Month));
-            sb.Replace("%mon2", CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(now.Month));
-            sb.Replace("%d", now.Day.ToString("00", CultureInfo.InvariantCulture));
+            sb.Replace(CodeMenuEntryFilename.width.ToPrefixString(), width);
+            sb.Replace(CodeMenuEntryFilename.height.ToPrefixString(), height);
 
-            if (sb.ToString().Contains("%pm", StringComparison.Ordinal))
+            DateTime dt = DateTime.Now;
+
+            if (CustomTimeZone != null)
             {
-                sb.Replace("%h", ((now.Hour % 12 == 0 ? 12 : now.Hour % 12)).ToString("00", CultureInfo.InvariantCulture));
-                sb.Replace("%pm", now.Hour >= 12 ? "PM" : "AM");
+                dt = TimeZoneInfo.ConvertTime(dt, CustomTimeZone);
+            }
+
+            sb.Replace(CodeMenuEntryFilename.mon2.ToPrefixString(), CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(dt.Month))
+                .Replace(CodeMenuEntryFilename.mon.ToPrefixString(), CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(dt.Month))
+                .Replace(CodeMenuEntryFilename.yy.ToPrefixString(), dt.ToString("yy", CultureInfo.InvariantCulture))
+                .Replace(CodeMenuEntryFilename.y.ToPrefixString(), dt.Year.ToString(CultureInfo.InvariantCulture))
+                .Replace(CodeMenuEntryFilename.mo.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Month))
+                .Replace(CodeMenuEntryFilename.d.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Day));
+
+            string hour;
+
+            if (sb.ToString().Contains(CodeMenuEntryFilename.pm.ToPrefixString(), StringComparison.Ordinal))
+            {
+                hour = GeneralHelpers.HourTo12(dt.Hour);
             }
             else
             {
-                sb.Replace("%h", now.Hour.ToString("00", CultureInfo.InvariantCulture));
+                hour = GeneralHelpers.AddZeroes(dt.Hour);
             }
 
-            sb.Replace("%mi", now.Minute.ToString("00", CultureInfo.InvariantCulture));
-            sb.Replace("%s", now.Second.ToString("00", CultureInfo.InvariantCulture));
-            sb.Replace("%ms", now.Millisecond.ToString("000", CultureInfo.InvariantCulture));
-            sb.Replace("%unix", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
+            sb.Replace(CodeMenuEntryFilename.h.ToPrefixString(), hour)
+                .Replace(CodeMenuEntryFilename.mi.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Minute))
+                .Replace(CodeMenuEntryFilename.s.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Second))
+                .Replace(CodeMenuEntryFilename.ms.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Millisecond, 3))
+                .Replace(CodeMenuEntryFilename.wy.ToPrefixString(), dt.WeekOfYear().ToString(CultureInfo.InvariantCulture))
+                .Replace(CodeMenuEntryFilename.w2.ToPrefixString(), CultureInfo.InvariantCulture.DateTimeFormat.GetDayName(dt.DayOfWeek))
+                .Replace(CodeMenuEntryFilename.w.ToPrefixString(), CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(dt.DayOfWeek))
+                .Replace(CodeMenuEntryFilename.pm.ToPrefixString(), dt.Hour >= 12 ? "PM" : "AM");
 
-            sb.Replace("%un", Environment.UserName);
-            sb.Replace("%uln", Environment.UserDomainName);
-            sb.Replace("%cn", Environment.MachineName);
-            sb.Replace("%n", Environment.NewLine);
+            sb.Replace(CodeMenuEntryFilename.unix.ToPrefixString(), DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
 
-            if (sb.ToString().Contains("%i", StringComparison.Ordinal)
-                || sb.ToString().Contains("%ib", StringComparison.Ordinal)
-                || sb.ToString().Contains("%iB", StringComparison.Ordinal)
-                || sb.ToString().Contains("%iAa", StringComparison.Ordinal)
-                || sb.ToString().Contains("%iaA", StringComparison.Ordinal)
-                || sb.ToString().Contains("%ia", StringComparison.Ordinal)
-                || sb.ToString().Contains("%iA", StringComparison.Ordinal)
-                || sb.ToString().Contains("%ix", StringComparison.Ordinal)
-                || sb.ToString().Contains("%iX", StringComparison.Ordinal))
+            if (sb.ToString().Contains(CodeMenuEntryFilename.i.ToPrefixString(), StringComparison.Ordinal)
+                || sb.ToString().Contains(CodeMenuEntryFilename.ib.ToPrefixString(), StringComparison.Ordinal)
+                || sb.ToString().Contains(CodeMenuEntryFilename.ib.ToPrefixString().Replace('b', 'B'), StringComparison.Ordinal)
+                || sb.ToString().Contains(CodeMenuEntryFilename.iAa.ToPrefixString(), StringComparison.Ordinal)
+                || sb.ToString().Contains(CodeMenuEntryFilename.iAa.ToPrefixString().Replace("Aa", "aA"), StringComparison.Ordinal)
+                || sb.ToString().Contains(CodeMenuEntryFilename.ia.ToPrefixString(), StringComparison.Ordinal)
+                || sb.ToString().Contains(CodeMenuEntryFilename.ia.ToPrefixString().Replace('a', 'A'), StringComparison.Ordinal)
+                || sb.ToString().Contains(CodeMenuEntryFilename.ix.ToPrefixString(), StringComparison.Ordinal)
+                || sb.ToString().Contains(CodeMenuEntryFilename.ix.ToPrefixString().Replace('x', 'X'), StringComparison.Ordinal))
             {
                 AutoIncrementNumber++;
 
-                // Base
                 try
                 {
-                    foreach (Tuple<string, int[]> entry in ListEntryWithValues(sb.ToString(), "%ib", 2))
+                    foreach (Tuple<string, int[]> entry in ListEntryWithValues(sb.ToString(), CodeMenuEntryFilename.ib.ToPrefixString(), 2))
                     {
                         sb.Replace(entry.Item1, GeneralHelpers.AddZeroes(AutoIncrementNumber.ToBase(entry.Item2[0], GeneralHelpers.AlphanumericInverse), entry.Item2[1]));
                     }
-                    foreach (Tuple<string, int[]> entry in ListEntryWithValues(sb.ToString(), "%iB", 2))
+                    foreach (Tuple<string, int[]> entry in ListEntryWithValues(sb.ToString(), CodeMenuEntryFilename.ib.ToPrefixString().Replace('b', 'B'), 2))
                     {
                         sb.Replace(entry.Item1, GeneralHelpers.AddZeroes(AutoIncrementNumber.ToBase(entry.Item2[0], GeneralHelpers.Alphanumeric), entry.Item2[1]));
                     }
@@ -171,143 +171,241 @@ namespace ShareX.Ava.Common
                 {
                 }
 
-                // Alphanumeric Dual Case (Base 62)
-                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), "%iAa"))
+                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), CodeMenuEntryFilename.iAa.ToPrefixString()))
                 {
                     sb.Replace(entry.Item1, GeneralHelpers.AddZeroes(AutoIncrementNumber.ToBase(62, GeneralHelpers.Alphanumeric), entry.Item2));
                 }
-                sb.Replace("%iAa", AutoIncrementNumber.ToBase(62, GeneralHelpers.Alphanumeric));
+                sb.Replace(CodeMenuEntryFilename.iAa.ToPrefixString(), AutoIncrementNumber.ToBase(62, GeneralHelpers.Alphanumeric));
 
-                // Alphanumeric Dual Case (Base 62)
-                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), "%iaA"))
+                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), CodeMenuEntryFilename.iAa.ToPrefixString().Replace("Aa", "aA")))
                 {
                     sb.Replace(entry.Item1, GeneralHelpers.AddZeroes(AutoIncrementNumber.ToBase(62, GeneralHelpers.AlphanumericInverse), entry.Item2));
                 }
-                sb.Replace("%iaA", AutoIncrementNumber.ToBase(62, GeneralHelpers.AlphanumericInverse));
+                sb.Replace(CodeMenuEntryFilename.iAa.ToPrefixString().Replace("Aa", "aA"), AutoIncrementNumber.ToBase(62, GeneralHelpers.AlphanumericInverse));
 
-                // Alphanumeric Single Case (Base 36)
-                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), "%ia"))
+                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), CodeMenuEntryFilename.ia.ToPrefixString()))
                 {
                     sb.Replace(entry.Item1, GeneralHelpers.AddZeroes(AutoIncrementNumber.ToBase(36, GeneralHelpers.Alphanumeric), entry.Item2).ToLowerInvariant());
                 }
-                sb.Replace("%ia", AutoIncrementNumber.ToBase(36, GeneralHelpers.Alphanumeric).ToLowerInvariant());
+                sb.Replace(CodeMenuEntryFilename.ia.ToPrefixString(), AutoIncrementNumber.ToBase(36, GeneralHelpers.Alphanumeric).ToLowerInvariant());
 
-                // Alphanumeric Single Case Capital (Base 36)
-                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), "%iA"))
+                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), CodeMenuEntryFilename.ia.ToPrefixString().Replace('a', 'A')))
                 {
                     sb.Replace(entry.Item1, GeneralHelpers.AddZeroes(AutoIncrementNumber.ToBase(36, GeneralHelpers.Alphanumeric), entry.Item2).ToUpperInvariant());
                 }
-                sb.Replace("%iA", AutoIncrementNumber.ToBase(36, GeneralHelpers.Alphanumeric).ToUpperInvariant());
+                sb.Replace(CodeMenuEntryFilename.ia.ToPrefixString().Replace('a', 'A'), AutoIncrementNumber.ToBase(36, GeneralHelpers.Alphanumeric).ToUpperInvariant());
 
-                // Hexadecimal (Base 16)
-                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), "%ix"))
+                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), CodeMenuEntryFilename.ix.ToPrefixString()))
                 {
-                    sb.Replace(entry.Item1, AutoIncrementNumber.ToString("x" + entry.Item2.ToString()));
+                    sb.Replace(entry.Item1, AutoIncrementNumber.ToString("x" + entry.Item2.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture));
                 }
-                sb.Replace("%ix", AutoIncrementNumber.ToString("x"));
+                sb.Replace(CodeMenuEntryFilename.ix.ToPrefixString(), AutoIncrementNumber.ToString("x", CultureInfo.InvariantCulture));
 
-                // Hexadecimal Capital (Base 16)
-                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), "%iX"))
+                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), CodeMenuEntryFilename.ix.ToPrefixString().Replace('x', 'X')))
                 {
-                    sb.Replace(entry.Item1, AutoIncrementNumber.ToString("X" + entry.Item2.ToString()));
+                    sb.Replace(entry.Item1, AutoIncrementNumber.ToString("X" + entry.Item2.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture));
                 }
-                sb.Replace("%iX", AutoIncrementNumber.ToString("X"));
+                sb.Replace(CodeMenuEntryFilename.ix.ToPrefixString().Replace('x', 'X'), AutoIncrementNumber.ToString("X", CultureInfo.InvariantCulture));
 
-                // Number (Base 10)
-                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), "%i"))
+                foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), CodeMenuEntryFilename.i.ToPrefixString()))
                 {
-                    sb.Replace(entry.Item1, AutoIncrementNumber.ToString("d" + entry.Item2.ToString()));
+                    sb.Replace(entry.Item1, AutoIncrementNumber.ToString("d" + entry.Item2.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture));
                 }
-                sb.Replace("%i", AutoIncrementNumber.ToString("d"));
+                sb.Replace(CodeMenuEntryFilename.i.ToPrefixString(), AutoIncrementNumber.ToString("d", CultureInfo.InvariantCulture));
             }
-            
+
+            sb.Replace(CodeMenuEntryFilename.un.ToPrefixString(), Environment.UserName);
+            sb.Replace(CodeMenuEntryFilename.uln.ToPrefixString(), Environment.UserDomainName);
+            sb.Replace(CodeMenuEntryFilename.cn.ToPrefixString(), Environment.MachineName);
+
+            if (Type == NameParserType.Text)
+            {
+                sb.Replace(CodeMenuEntryFilename.n.ToPrefixString(), Environment.NewLine);
+            }
+
             string result = sb.ToString();
 
-            // Random generators
-            foreach (Tuple<string, int> entry in ListEntryWithValue(result, "%rna"))
+            result = result.ReplaceAll(CodeMenuEntryFilename.radjective.ToPrefixString(),
+                () => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(GetRandomWord(Adjectives.Value)));
+            result = result.ReplaceAll(CodeMenuEntryFilename.ranimal.ToPrefixString(),
+                () => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(GetRandomWord(Animals.Value)));
+
+            foreach (Tuple<string, string> entry in ListEntryWithArgument(result, CodeMenuEntryFilename.rf.ToPrefixString()))
             {
-                result = result.Replace(entry.Item1, GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Base56).ToString()));
+                result = result.ReplaceAll(entry.Item1, () =>
+                {
+                    try
+                    {
+                        string path = entry.Item2;
+
+                        if (FileHelpers.IsTextFile(path))
+                        {
+                            return GetRandomLineFromFile(path);
+                        }
+
+                        throw new InvalidOperationException("Valid text file path is required.");
+                    }
+                    catch (Exception e) when (IsPreviewMode)
+                    {
+                        return e.Message;
+                    }
+                });
             }
 
-            foreach (Tuple<string, int> entry in ListEntryWithValue(result, "%rn"))
+            foreach (Tuple<string, int> entry in ListEntryWithValue(result, CodeMenuEntryFilename.rna.ToPrefixString()))
             {
-                result = result.Replace(entry.Item1, GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Numbers).ToString()));
+                result = result.ReplaceAll(entry.Item1, () => GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Base56).ToString()));
             }
 
-            foreach (Tuple<string, int> entry in ListEntryWithValue(result, "%ra"))
+            foreach (Tuple<string, int> entry in ListEntryWithValue(result, CodeMenuEntryFilename.rn.ToPrefixString()))
             {
-                result = result.Replace(entry.Item1, GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Alphanumeric).ToString()));
+                result = result.ReplaceAll(entry.Item1, () => GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Numbers).ToString()));
             }
 
-            foreach (Tuple<string, int> entry in ListEntryWithValue(result, "%rx"))
+            foreach (Tuple<string, int> entry in ListEntryWithValue(result, CodeMenuEntryFilename.ra.ToPrefixString()))
             {
-                result = result.Replace(entry.Item1, GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Hexadecimal.ToLowerInvariant()).ToString()));
+                result = result.ReplaceAll(entry.Item1, () => GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Alphanumeric).ToString()));
             }
-            
-            foreach (Tuple<string, int> entry in ListEntryWithValue(result, "%rX"))
+
+            foreach (Tuple<string, int> entry in ListEntryWithValue(result, CodeMenuEntryFilename.rx.ToPrefixString()))
             {
-                result = result.Replace(entry.Item1, GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Hexadecimal.ToUpperInvariant()).ToString()));
+                result = result.ReplaceAll(entry.Item1, () => GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Hexadecimal.ToLowerInvariant()).ToString()));
             }
-            
-            // Default random replacements (single char if no argument, though logical default is usually length 1 or ignored? Original logic doesn't explicitly handle no-arg %ra other than as a single replacement in some contexts, but here let's stick to explicit replacements if needed. 
-            // Actually original code handles %rna, %rn etc without arguments as single char too.
-            
-            result = result.Replace("%rna", GeneralHelpers.GetRandomChar(GeneralHelpers.Base56).ToString());
-            result = result.Replace("%rn", GeneralHelpers.GetRandomChar(GeneralHelpers.Numbers).ToString());
-            result = result.Replace("%ra", GeneralHelpers.GetRandomChar(GeneralHelpers.Alphanumeric).ToString());
-            result = result.Replace("%rx", GeneralHelpers.GetRandomChar(GeneralHelpers.Hexadecimal.ToLowerInvariant()).ToString());
-            result = result.Replace("%rX", GeneralHelpers.GetRandomChar(GeneralHelpers.Hexadecimal.ToUpperInvariant()).ToString());
-            result = result.Replace("%guid", Guid.NewGuid().ToString().ToLowerInvariant());
-            result = result.Replace("%GUID", Guid.NewGuid().ToString().ToUpperInvariant());
+
+            foreach (Tuple<string, int> entry in ListEntryWithValue(result, CodeMenuEntryFilename.rx.ToPrefixString().Replace('x', 'X')))
+            {
+                result = result.ReplaceAll(entry.Item1, () => GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Hexadecimal.ToUpperInvariant()).ToString()));
+            }
+
+            foreach (Tuple<string, int> entry in ListEntryWithValue(result, CodeMenuEntryFilename.remoji.ToPrefixString()))
+            {
+                result = result.ReplaceAll(entry.Item1, () => GeneralHelpers.RepeatGenerator(entry.Item2, () => RandomCrypto.Pick(Emoji.Emojis)));
+            }
+
+            result = result.ReplaceAll(CodeMenuEntryFilename.rna.ToPrefixString(), () => GeneralHelpers.GetRandomChar(GeneralHelpers.Base56).ToString());
+            result = result.ReplaceAll(CodeMenuEntryFilename.rn.ToPrefixString(), () => GeneralHelpers.GetRandomChar(GeneralHelpers.Numbers).ToString());
+            result = result.ReplaceAll(CodeMenuEntryFilename.ra.ToPrefixString(), () => GeneralHelpers.GetRandomChar(GeneralHelpers.Alphanumeric).ToString());
+            result = result.ReplaceAll(CodeMenuEntryFilename.rx.ToPrefixString(), () => GeneralHelpers.GetRandomChar(GeneralHelpers.Hexadecimal.ToLowerInvariant()).ToString());
+            result = result.ReplaceAll(CodeMenuEntryFilename.rx.ToPrefixString().Replace('x', 'X'), () => GeneralHelpers.GetRandomChar(GeneralHelpers.Hexadecimal.ToUpperInvariant()).ToString());
+            result = result.ReplaceAll(CodeMenuEntryFilename.guid.ToPrefixString().ToLowerInvariant(), () => Guid.NewGuid().ToString().ToLowerInvariant());
+            result = result.ReplaceAll(CodeMenuEntryFilename.guid.ToPrefixString().ToUpperInvariant(), () => Guid.NewGuid().ToString().ToUpperInvariant());
+            result = result.ReplaceAll(CodeMenuEntryFilename.remoji.ToPrefixString(), () => RandomCrypto.Pick(Emoji.Emojis));
+
+            if (Type == NameParserType.FileName)
+            {
+                result = FileHelpers.SanitizeFileName(result);
+            }
+            else if (Type == NameParserType.FilePath)
+            {
+                result = FileHelpers.SanitizePath(result);
+            }
+            else if (Type == NameParserType.URL)
+            {
+                result = URLHelpers.GetValidURL(result);
+            }
+
+            if (MaxNameLength > 0)
+            {
+                result = result.Truncate(MaxNameLength);
+            }
 
             return result;
         }
 
-        private string SanitizeByType(string text)
+        private string SanitizeInput(string input)
         {
-            switch (Type)
+            input = input.Trim().Replace(' ', '_');
+
+            if (Type == NameParserType.FileName || Type == NameParserType.FilePath)
             {
-                case NameParserType.FileName:
-                    return RemoveCharacters(text, Path.GetInvalidFileNameChars());
-                case NameParserType.FilePath:
-                    return RemoveCharacters(text, Path.GetInvalidPathChars());
-                case NameParserType.URL:
-                    return Uri.EscapeDataString(text);
-                default:
-                    return text;
+                input = FileHelpers.SanitizeFileName(input);
             }
+
+            return input;
         }
 
-        private static string RemoveCharacters(string text, char[] invalidChars)
+        private static string GetRandomWord(IReadOnlyList<string> words)
         {
-            return new string(text.Where(c => !invalidChars.Contains(c)).ToArray());
+            if (words == null || words.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            string? word = GeneralHelpers.Pick(words.ToList());
+            return word?.Trim() ?? string.Empty;
+        }
+
+        private string GetRandomLineFromFile(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+            {
+                throw new FileNotFoundException("File not found.", path);
+            }
+
+            string[] lines = File.ReadAllLines(path);
+            if (lines.Length == 0)
+            {
+                throw new InvalidOperationException("File is empty.");
+            }
+
+            string? line = GeneralHelpers.Pick(lines.ToList());
+            return line?.Trim() ?? string.Empty;
+        }
+
+        private static string[] LoadWordList(string fileName)
+        {
+            try
+            {
+                string resourcesPath = Path.Combine(AppContext.BaseDirectory, "Resources", fileName);
+
+                if (File.Exists(resourcesPath))
+                {
+                    return File.ReadAllLines(resourcesPath)
+                        .Select(line => line.Trim())
+                        .Where(line => !string.IsNullOrWhiteSpace(line))
+                        .ToArray();
+                }
+
+                Assembly assembly = typeof(NameParser).Assembly;
+                string? resourceName = assembly.GetManifestResourceNames().FirstOrDefault(name => name.EndsWith(fileName, StringComparison.OrdinalIgnoreCase));
+
+                if (resourceName != null)
+                {
+                    using Stream? stream = assembly.GetManifestResourceStream(resourceName);
+                    if (stream != null)
+                    {
+                        List<string> lines = new List<string>();
+                        using StreamReader reader = new StreamReader(stream);
+                        while (!reader.EndOfStream)
+                        {
+                            string? line = reader.ReadLine();
+
+                            if (!string.IsNullOrWhiteSpace(line))
+                            {
+                                lines.Add(line.Trim());
+                            }
+                        }
+                        return lines.ToArray();
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            return Array.Empty<string>();
         }
 
         private IEnumerable<Tuple<string, string[]>> ListEntryWithArguments(string text, string entry, int elements)
         {
-            int index = 0;
-            while ((index = text.IndexOf(entry + "{", index, StringComparison.Ordinal)) != -1)
+            foreach (Tuple<string, string> o in text.ForEachBetween(entry + "{", "}"))
             {
-                int closeIndex = text.IndexOf("}", index, StringComparison.Ordinal);
-                if (closeIndex != -1)
+                string[] s = o.Item2.Split(',');
+                if (elements > s.Length)
                 {
-                    string fullMatch = text.Substring(index, closeIndex - index + 1);
-                    string content = text.Substring(index + entry.Length + 1, closeIndex - (index + entry.Length + 1));
-                    string[] args = content.Split(',');
-                    
-                    if (elements > args.Length)
-                    {
-                        Array.Resize(ref args, elements);
-                    }
-                    
-                    yield return new Tuple<string, string[]>(fullMatch, args);
-                    
-                    index = closeIndex + 1;
+                    Array.Resize(ref s, elements);
                 }
-                else
-                {
-                    break;
-                }
+                yield return new Tuple<string, string[]>(o.Item1, s);
             }
         }
 
@@ -324,7 +422,7 @@ namespace ShareX.Ava.Common
             foreach (Tuple<string, string[]> o in ListEntryWithArguments(text, entry, elements))
             {
                 int[] a = new int[o.Item2.Length];
-                for (int i = 0; i < o.Item2.Length; ++i)
+                for (int i = o.Item2.Length - 1; i >= 0; --i)
                 {
                     if (int.TryParse(o.Item2[i], out int n))
                     {
