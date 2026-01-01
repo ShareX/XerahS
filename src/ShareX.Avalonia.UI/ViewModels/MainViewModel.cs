@@ -23,21 +23,15 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Avalonia.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.Ava.Core;
-using ShareX.Ava.Core.Managers;
-using ShareX.Ava.Core.Tasks;
-using ShareX.Ava.Platform.Abstractions;
-using ShareX.Ava.Uploaders;
 using ShareX.Ava.Annotations.Models;
+using ShareX.Ava.Core;
+using ShareX.Ava.Core.Tasks;
+using System.Collections.ObjectModel;
 
 namespace ShareX.Ava.UI.ViewModels
 {
@@ -90,10 +84,10 @@ namespace ShareX.Ava.UI.ViewModels
         }
 
         [ObservableProperty]
-        private double _previewPadding = 0;
+        private double _previewPadding = 30;
 
         [ObservableProperty]
-        private double _previewCornerRadius = 16;
+        private double _previewCornerRadius = 15;
 
         [ObservableProperty]
         private double _shadowBlur = 30;
@@ -171,7 +165,7 @@ namespace ShareX.Ava.UI.ViewModels
 
         // Event for View to provide flattened image
         public event Func<Task<Bitmap?>>? SnapshotRequested;
-        
+
         // Event for View to show SaveAs dialog and return selected path
         public event Func<Task<string?>>? SaveAsRequested;
 
@@ -461,14 +455,14 @@ namespace ShareX.Ava.UI.ViewModels
             ImageDimensions = "No image";
             StatusText = "Ready";
             ResetNumberCounter();
-            
+
             // Clear annotations as well
             ClearAnnotationsRequested?.Invoke(this, EventArgs.Empty);
         }
 
         // Event for View to handle clipboard copy (requires TopLevel access)
         public event Func<Bitmap, Task>? CopyRequested;
-        
+
         // Event for View to show error dialog
         public event Func<string, string, Task>? ShowErrorDialog;
 
@@ -489,14 +483,14 @@ namespace ShareX.Ava.UI.ViewModels
                 StatusText = "No image to copy";
                 return;
             }
-            
+
             if (CopyRequested != null)
             {
                 try
                 {
                     await CopyRequested.Invoke(imageToUse);
-                    StatusText = snapshot != null 
-                        ? "Image with annotations copied to clipboard" 
+                    StatusText = snapshot != null
+                        ? "Image with annotations copied to clipboard"
                         : "Image copied to clipboard";
                     ExportState = "Copied";
                     ShareX.Ava.Common.DebugHelper.WriteLine("Clipboard copy: Image copied to clipboard.");
@@ -506,7 +500,7 @@ namespace ShareX.Ava.UI.ViewModels
                     var errorMessage = $"Failed to copy image to clipboard.\n\nError: {ex.Message}";
                     StatusText = $"Copy failed: {ex.Message}";
                     ShareX.Ava.Common.DebugHelper.WriteLine($"Clipboard copy failed: {ex.Message}");
-                    
+
                     // Show error dialog
                     if (ShowErrorDialog != null)
                     {
@@ -523,7 +517,7 @@ namespace ShareX.Ava.UI.ViewModels
         [RelayCommand]
         private async Task QuickSave()
         {
-             // Try get flattened image first
+            // Try get flattened image first
             Bitmap? snapshot = null;
             if (SnapshotRequested != null)
             {
@@ -549,7 +543,7 @@ namespace ShareX.Ava.UI.ViewModels
                 {
                     _currentSourceImage.Save(path, System.Drawing.Imaging.ImageFormat.Png);
                 }
-                
+
                 StatusText = $"Saved to {filename}";
                 ExportState = "Saved";
                 ShareX.Ava.Common.DebugHelper.WriteLine($"File saved: {path}");
@@ -570,7 +564,7 @@ namespace ShareX.Ava.UI.ViewModels
                 StatusText = "SaveAs dialog not available";
                 return;
             }
-            
+
             // Show file picker dialog via View
             var path = await SaveAsRequested.Invoke();
             if (string.IsNullOrEmpty(path))
@@ -578,28 +572,28 @@ namespace ShareX.Ava.UI.ViewModels
                 StatusText = "Save cancelled";
                 return;
             }
-            
+
             // Get flattened image with annotations
             Bitmap? snapshot = null;
             if (SnapshotRequested != null)
             {
                 snapshot = await SnapshotRequested.Invoke();
             }
-            
+
             var imageToSave = snapshot ?? PreviewImage;
             if (imageToSave == null)
             {
                 StatusText = "No image to save";
                 return;
             }
-            
+
             try
             {
                 // Save based on file extension
                 var extension = System.IO.Path.GetExtension(path).ToLowerInvariant();
-                
+
                 imageToSave.Save(path);
-                
+
                 var filename = System.IO.Path.GetFileName(path);
                 StatusText = $"Saved to {filename}";
                 ExportState = "Saved";
@@ -666,7 +660,7 @@ namespace ShareX.Ava.UI.ViewModels
             var cropped = new System.Drawing.Bitmap(rect.Width, rect.Height);
             using (var g = System.Drawing.Graphics.FromImage(cropped))
             {
-                g.DrawImage(_currentSourceImage, new System.Drawing.Rectangle(0, 0, cropped.Width, cropped.Height), 
+                g.DrawImage(_currentSourceImage, new System.Drawing.Rectangle(0, 0, cropped.Width, cropped.Height),
                     rect, System.Drawing.GraphicsUnit.Pixel);
             }
 
