@@ -15,9 +15,19 @@
     <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="20">
         <TextBlock Grid.Row="0" Text="Hotkey Settings" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,20"/>
 
-        <Grid Grid.Row="1" ColumnDefinitions="*, 150">
+        <Grid Grid.Row="1" RowDefinitions="Auto,*">
+            <!-- Action Buttons moved to top -->
+            <WrapPanel Grid.Row="0" Margin="0,0,0,10">
+                <Button Content="Add" Command="{Binding AddCommand}" MinWidth="90" Margin="0,0,10,10"/>
+                <Button Content="Remove" Command="{Binding RemoveCommand}" MinWidth="90" Margin="0,0,10,10"/>
+                <Button Content="Duplicate" Command="{Binding DuplicateCommand}" MinWidth="90" Margin="0,0,10,10"/>
+                <Button Content="Move Up" Command="{Binding MoveUpCommand}" MinWidth="90" Margin="0,0,10,10"/>
+                <Button Content="Move Down" Command="{Binding MoveDownCommand}" MinWidth="90" Margin="0,0,10,10"/>
+                <Button Content="Reset" Command="{Binding ResetCommand}" MinWidth="90" Margin="0,0,10,10"/>
+            </WrapPanel>
+
             <!-- Hotkey List using HotkeySelectionControl -->
-            <ScrollViewer Grid.Column="0">
+            <ScrollViewer Grid.Row="1">
                 <ItemsControl ItemsSource="{Binding Hotkeys}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -26,18 +36,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-
-            <!-- Sidebar Actions -->
-            <StackPanel Grid.Column="1" Margin="20,0,0,0" Spacing="10">
-                <Button Content="Add" Command="{Binding AddCommand}" HorizontalAlignment="Stretch"/>
-                <Button Content="Remove" Command="{Binding RemoveCommand}" HorizontalAlignment="Stretch"/>
-                <Separator/>
-                <Button Content="Duplicate" Command="{Binding DuplicateCommand}" HorizontalAlignment="Stretch"/>
-                <Button Content="Move Up" Command="{Binding MoveUpCommand}" HorizontalAlignment="Stretch"/>
-                <Button Content="Move Down" Command="{Binding MoveDownCommand}" HorizontalAlignment="Stretch"/>
-                <Separator/>
-                <Button Content="Reset" Command="{Binding ResetCommand}" HorizontalAlignment="Stretch"/>
-            </StackPanel>
         </Grid>
         
         <!-- Debug Info Toggle -->
