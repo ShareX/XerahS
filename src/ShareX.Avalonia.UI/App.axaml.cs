@@ -30,11 +30,6 @@ public partial class App : Application
             // Register UI Service
             Platform.Abstractions.PlatformServices.RegisterUIService(new Services.AvaloniaUIService());
 
-            // Register Direct-Reference Providers (Plugins)
-            DebugHelper.WriteLine("[App] Registering external providers...");
-            ProviderCatalog.RegisterProvider(new ShareX.Imgur.Plugin.ImgurProvider());
-            ProviderCatalog.RegisterProvider(new ShareX.AmazonS3.Plugin.AmazonS3Provider());
-
             // Save settings on exit
             desktop.Exit += (sender, args) =>
             {

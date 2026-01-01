@@ -17,7 +17,5 @@
     <ProjectReference Include="..\ShareX.Avalonia.Platform.Abstractions\ShareX.Avalonia.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.ImageEffects\ShareX.Avalonia.ImageEffects.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Annotations\ShareX.Avalonia.Annotations.csproj" />
-    <ProjectReference Include="..\Plugins\ShareX.Imgur.Plugin\ShareX.Imgur.Plugin.csproj" />
-    <ProjectReference Include="..\Plugins\ShareX.AmazonS3.Plugin\ShareX.AmazonS3.Plugin.csproj" />
   </ItemGroup>
 </Project>
