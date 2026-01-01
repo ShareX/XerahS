@@ -81,14 +81,14 @@
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Ellipse}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Ellipse}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Ellipse (E)"/>
-                            <Button Content="→" Width="40" Height="40" 
-                                    Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Arrow}"
-                                    Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Arrow}" 
-                                    Foreground="White" CornerRadius="8" ToolTip.Tip="Arrow (A)"/>
                             <Button Content="—" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Line}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Line}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Line (L)"/>
+                            <Button Content="→" Width="40" Height="40" 
+                                    Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Arrow}"
+                                    Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Arrow}" 
+                                    Foreground="White" CornerRadius="8" ToolTip.Tip="Arrow (A)"/>
                             
                             <!-- Drawing -->
                             <Button Content="✏️" Width="40" Height="40" 
