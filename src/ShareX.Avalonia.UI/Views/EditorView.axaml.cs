@@ -864,6 +864,40 @@ namespace ShareX.Ava.UI.Views
                 }
             }
 
+            // Allow dragging selected shapes even when not in Select tool mode
+            // This enables immediate repositioning after creating an annotation
+            if (_selectedShape != null && vm.ActiveTool != EditorTool.Select)
+            {
+                // Hit test to see if we clicked on the selected shape
+                var hitSource = e.Source as global::Avalonia.Visual;
+                Control? hitTarget = null;
+
+                while (hitSource != null && hitSource != canvas)
+                {
+                    if (canvas.Children.Contains(hitSource as Control))
+                    {
+                        hitTarget = hitSource as Control;
+                        break;
+                    }
+                    hitSource = hitSource.GetVisualParent();
+                }
+
+                // If we clicked on the currently selected shape, start dragging it
+                if (hitTarget == _selectedShape)
+                {
+                    _lastDragPoint = point;
+                    _isDraggingShape = true;
+                    e.Pointer.Capture(canvas);
+                    return;
+                }
+                else
+                {
+                    // Clicked elsewhere, deselect and continue with new shape creation
+                    _selectedShape = null;
+                    UpdateSelectionHandles();
+                }
+            }
+
             if (vm.ActiveTool == EditorTool.Select)
             {
                 // Hit test - find the direct child of the canvas
