@@ -23,42 +23,20 @@
 
 #endregion License Information (GPL v3)
 
+using Avalonia.Input;
 using ShareX.Ava.Common;
 using System.Collections.Generic;
+using ShareX.Ava.Core.Hotkeys;
+using ShareX.Ava.Platform.Abstractions;
+
+using HotkeyInfo = ShareX.Ava.Platform.Abstractions.HotkeyInfo;
 
 namespace ShareX.Ava.Core;
 
 /// <summary>
 /// Hotkey configuration bound to a specific task
 /// </summary>
-public class HotkeySettings
-{
-    public HotkeyInfo HotkeyInfo { get; set; }
-
-    public TaskSettings TaskSettings { get; set; }
-
-    public HotkeySettings()
-    {
-        HotkeyInfo = new HotkeyInfo();
-        TaskSettings = new TaskSettings();
-    }
-
-    public HotkeySettings(HotkeyType job, Keys hotkey = Keys.None) : this()
-    {
-        TaskSettings = new TaskSettings { Job = job };
-        HotkeyInfo = new HotkeyInfo(hotkey);
-    }
-
-    public override string ToString()
-    {
-        if (HotkeyInfo != null && TaskSettings != null)
-        {
-            return $"Hotkey: {HotkeyInfo}, Description: {TaskSettings}, Job: {TaskSettings.Job}";
-        }
-
-        return "";
-    }
-}
+// Duplicate HotkeySettings class removed. Using ShareX.Ava.Core.Hotkeys.HotkeySettings instead.
 
 /// <summary>
 /// Hotkeys configuration storage
@@ -74,11 +52,11 @@ public class HotkeysConfig : SettingsBase<HotkeysConfig>
     {
         return new List<HotkeySettings>
         {
-            new HotkeySettings(HotkeyType.PrintScreen, Keys.PrintScreen),
-            new HotkeySettings(HotkeyType.ActiveWindow, Keys.Alt | Keys.PrintScreen),
-            new HotkeySettings(HotkeyType.RectangleRegion, Keys.Control | Keys.PrintScreen),
-            new HotkeySettings(HotkeyType.ScreenRecorder, Keys.Shift | Keys.PrintScreen),
-            new HotkeySettings(HotkeyType.ScreenRecorderGIF, Keys.Control | Keys.Shift | Keys.PrintScreen),
+            new HotkeySettings(HotkeyType.PrintScreen, new HotkeyInfo(Key.PrintScreen)),
+            new HotkeySettings(HotkeyType.ActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Alt)),
+            new HotkeySettings(HotkeyType.RectangleRegion, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control)),
+            new HotkeySettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift)),
+            new HotkeySettings(HotkeyType.ScreenRecorderGIF, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift)),
         };
     }
 }
