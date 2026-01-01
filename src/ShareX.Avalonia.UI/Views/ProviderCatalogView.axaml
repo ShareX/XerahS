@@ -1,0 +1,125 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
+             x:Class="ShareX.Ava.UI.Views.ProviderCatalogView"
+             x:DataType="vm:ProviderCatalogViewModel"
+             MinWidth="600"
+             MinHeight="400">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Padding="20">
+            <StackPanel Spacing="8">
+                <TextBlock Text="Add Destination from Catalog" 
+                           FontSize="20" 
+                           FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding Category, StringFormat='Select a provider for {0} uploads'}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Provider List -->
+        <ScrollViewer Grid.Row="1" Padding="20">
+            <ListBox ItemsSource="{Binding AvailableProviders}"
+                     SelectedItem="{Binding SelectedProvider}"
+                     SelectionMode="Single"
+                     Background="Transparent"
+                     BorderThickness="0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ProviderViewModel">
+                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="16"
+                                Margin="0,0,0,12"
+                                Cursor="Hand">
+                            <Border.Styles>
+                                <!-- Hover state -->
+                                <Style Selector="Border:pointerover">
+                                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+                                </Style>
+                            </Border.Styles>
+
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <!-- Radio Indicator -->
+                                <Border Grid.Column="0"
+                                        Width="20" 
+                                        Height="20"
+                                        CornerRadius="10"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="2"
+                                        Margin="0,0,12,0"
+                                        VerticalAlignment="Top">
+                                    <Ellipse Width="10" 
+                                             Height="10"
+                                             Fill="{DynamicResource AccentFillColorDefaultBrush}"
+                                             IsVisible="{Binding IsSelected}"/>
+                                </Border>
+
+                                <!-- Provider Info -->
+                                <StackPanel Grid.Column="1" Spacing="6">
+                                    <TextBlock Text="{Binding Name}" 
+                                               FontWeight="SemiBold"
+                                               FontSize="15"/>
+                                    <TextBlock Text="{Binding Description}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding SupportedFileTypesDisplay}"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                               FontSize="11"
+                                               TextWrapping="Wrap"
+                                               IsVisible="{Binding !!SupportedFileTypesDisplay}"/>
+                                </StackPanel>
+
+                                <!-- Status Icon -->
+                                <Path Grid.Column="2"
+                                      Data="M12,2A10,10,0,1,1,2,12,10,10,0,0,1,12,2M12,7a1,1,0,0,0-1,1v4a1,1,0,0,0,2,0V8A1,1,0,0,0,12,7m0,8a1,1,0,1,0,1,1A1,1,0,0,0,12,15Z"
+                                      Fill="{DynamicResource AccentFillColorDefaultBrush}"
+                                      Width="20"
+                                      Height="20"
+                                      ToolTip.Tip="{Binding SupportedFileTypesDisplay}"
+                                      VerticalAlignment="Top"
+                                      IsVisible="{Binding !!SupportedFileTypesDisplay}"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+                
+                <!-- Selected item styling -->
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                        <Setter Property="Background" Value="Transparent"/>
+                    </Style>
+                    <Style Selector="ListBoxItem:selected Border">
+                        <Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+                        <Setter Property="BorderThickness" Value="2"/>
+                    </Style>
+                </ListBox.Styles>
+            </ListBox>
+        </ScrollViewer>
+
+        <!-- Footer Actions -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="20">
+            <StackPanel Orientation="Horizontal" 
+                        HorizontalAlignment="Right"
+                        Spacing="10">
+                <Button Content="Cancel" 
+                        Command="{Binding CancelCommand}"
+                        MinWidth="90"/>
+                <Button Content="Add Selected" 
+                        Command="{Binding AddSelectedCommand}"
+                        Classes="accent"
+                        MinWidth="110"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

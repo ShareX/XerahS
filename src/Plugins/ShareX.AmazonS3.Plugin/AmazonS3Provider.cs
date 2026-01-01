@@ -1,7 +1,7 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
+    ShareX - A program that allows you to take screenshots and share any file type
     Copyright (c) 2007-2025 ShareX Team
 
     This program is free software; you can redistribute it and/or
@@ -24,9 +24,10 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
+using ShareX.Ava.Uploaders;
 using ShareX.Ava.Uploaders.PluginSystem;
 
-namespace ShareX.Ava.Uploaders.Plugins.AmazonS3Plugin;
+namespace ShareX.AmazonS3.Plugin;
 
 /// <summary>
 /// Amazon S3 file uploader provider (supports Image, Text, and File categories)
@@ -42,8 +43,9 @@ public class AmazonS3Provider : UploaderProviderBase
 
     public AmazonS3Provider()
     {
-        // Register this provider with the catalog
-        ProviderCatalog.RegisterProvider(this);
+        // For plugins, we don't self-register as they are loaded via PluginLoader
+        // But for internal ones we might still want it. 
+        // In the external plugin assembly, this ctor will still run if activated.
     }
 
     public override Uploader CreateInstance(string settingsJson)
@@ -79,8 +81,12 @@ public class AmazonS3Provider : UploaderProviderBase
 
     public override object? CreateConfigView()
     {
-        // Config views are created by UI layer to avoid circular dependencies
-        // UI will look up AmazonS3ConfigView based on ProviderId
-        return null;
+        // Return the Axaml view
+        return new Views.AmazonS3ConfigView();
+    }
+
+    public override IUploaderConfigViewModel? CreateConfigViewModel()
+    {
+        return new ViewModels.AmazonS3ConfigViewModel();
     }
 }

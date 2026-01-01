@@ -1,7 +1,7 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
+    ShareX - A program that allows you to take screenshots and share any file type
     Copyright (c) 2007-2025 ShareX Team
 
     This program is free software; you can redistribute it and/or
@@ -25,7 +25,7 @@
 
 using ShareX.Ava.Uploaders.FileUploaders;
 
-namespace ShareX.Ava.Uploaders.Plugins.AmazonS3Plugin;
+namespace ShareX.AmazonS3.Plugin;
 
 /// <summary>
 /// Configuration model for Amazon S3 uploader
@@ -51,4 +51,14 @@ public class S3ConfigModel
     public bool SetPublicACL { get; set; } = true;
     
     public bool UsePathStyleUrl { get; set; } = false;
+
+    public bool SignedPayload { get; set; } = false;
+
+    public string Endpoint { get; set; } = "s3.amazonaws.com";
+
+    public bool RemoveExtensionImage { get; set; } = false;
+
+    public bool RemoveExtensionVideo { get; set; } = false;
+
+    public bool RemoveExtensionText { get; set; } = false;
 }

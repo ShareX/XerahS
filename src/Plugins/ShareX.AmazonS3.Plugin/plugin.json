@@ -1,0 +1,14 @@
+{
+  "pluginId": "amazons3",
+  "name": "Amazon S3 Uploader",
+  "version": "1.0.0",
+  "author": "ShareX Team",
+  "description": "Upload files to Amazon S3 and compatible services",
+  "apiVersion": "1.0",
+  "entryPoint": "ShareX.AmazonS3.Plugin.AmazonS3Provider",
+  "assemblyFileName": "ShareX.AmazonS3.Plugin.dll",
+  "supportedCategories": ["Image", "Text", "File"],
+  "configViewId": "amazons3",
+  "dependencies": [],
+  "homepageUrl": "https://aws.amazon.com/s3/"
+}

@@ -53,10 +53,9 @@ public abstract class UploaderProviderBase : IUploaderProvider
     /// <summary>
     /// Override to provide custom config view, return null for property grid
     /// </summary>
-    public virtual object? CreateConfigView()
-    {
-        return null;
-    }
+    public virtual object? CreateConfigView() => null;
+
+    public virtual IUploaderConfigViewModel? CreateConfigViewModel() => null;
 
 
     /// <summary>

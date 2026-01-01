@@ -1,0 +1,122 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
+             x:Class="ShareX.Ava.UI.Controls.FileTypeSelectorControl"
+             x:DataType="vm:UploaderInstanceViewModel">
+    
+    <StackPanel Spacing="10">
+        <!-- All File Types Checkbox -->
+        <CheckBox Content="Handle all file types for this category"
+                  IsChecked="{Binding IsAllFileTypes}"
+                  FontWeight="SemiBold"/>
+
+        <!-- File Type Selector (disabled when All File Types is checked) -->
+        <StackPanel Spacing="5" IsEnabled="{Binding !IsAllFileTypes}">
+            <TextBlock Text="Specific File Types:" FontWeight="SemiBold"/>
+            <TextBlock Text="Select which file types this instance should handle"
+                       FontSize="11"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Margin="0,0,0,5"/>
+
+            <!-- File Type Grid -->
+            <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="10"
+                    MinHeight="120"
+                    MaxHeight="200">
+                <ScrollViewer>
+                    <ItemsControl ItemsSource="{Binding AvailableFileTypes}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding DisplayText}"
+                                          IsChecked="{Binding IsSelected}"
+                                          IsEnabled="{Binding !IsBlocked}"
+                                          ToolTip.Tip="{Binding ToolTip}"
+                                          Margin="0,0,10,5">
+                                    <CheckBox.Styles>
+                                        <Style Selector="CheckBox:disabled">
+                                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}"/>
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                        </Style>
+                                        <Style Selector="CheckBox:disabled /template/ ContentPresenter">
+                                            <Setter Property="TextBlock.TextDecorations" Value="Strikethrough"/>
+                                        </Style>
+                                    </CheckBox.Styles>
+                                </CheckBox>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Selected Summary -->
+            <Border Background="{DynamicResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="8"
+                    IsVisible="{Binding SelectedFileExtensions.Count}">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Selected file types:"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <ItemsControl ItemsSource="{Binding SelectedFileExtensions}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                        CornerRadius="3"
+                                        Padding="6,2"
+                                        Margin="0,0,4,4">
+                                    <TextBlock Text="{Binding StringFormat='.{0}'}"
+                                               Foreground="White"
+                                               FontSize="11"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- Conflict Warning -->
+        <Border Background="{DynamicResource SystemFillColorCautionBackground}"
+                BorderBrush="{DynamicResource SystemFillColorCautionBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="10"
+                IsVisible="{Binding ConflictWarning.HasConflict}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="⚠️" FontSize="16" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding ConflictWarning.Message}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Current Scope Display -->
+        <Border Background="{DynamicResource LayerFillColorDefaultBrush}"
+                Padding="10"
+                CornerRadius="4">
+            <StackPanel Spacing="4">
+                <TextBlock Text="Current file type scope:"
+                           FontSize="11"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Text="{Binding FileTypeScopeDisplay}"
+                           FontWeight="SemiBold"/>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

@@ -1,7 +1,7 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
+    ShareX - A program that allows you to take screenshots and share any file type
     Copyright (c) 2007-2025 ShareX Team
 
     This program is free software; you can redistribute it and/or
@@ -26,27 +26,34 @@
 using Newtonsoft.Json;
 using ShareX.Ava.Uploaders;
 using ShareX.Ava.Uploaders.PluginSystem;
-using ShareX.Imgur.Plugin.Views;
-using ShareX.Imgur.Plugin.ViewModels;
 
 namespace ShareX.Imgur.Plugin;
 
 /// <summary>
-/// Provider for Imgur uploader instances
+/// Imgur image uploader provider (supports Image category only)
 /// </summary>
 public class ImgurProvider : UploaderProviderBase
 {
     public override string ProviderId => "imgur";
     public override string Name => "Imgur";
-    public override string Description => "Upload images and videos to Imgur";
-    public override Version Version => new(1, 0, 0);
-    public override UploaderCategory[] SupportedCategories => new[] { UploaderCategory.Image, UploaderCategory.Text };
+    public override string Description => "Upload images to Imgur - free image hosting service";
+    public override Version Version => new Version(1, 0, 0);
+    public override UploaderCategory[] SupportedCategories => new[] { UploaderCategory.Image };
     public override Type ConfigModelType => typeof(ImgurConfigModel);
+
+    public ImgurProvider()
+    {
+    }
 
     public override Uploader CreateInstance(string settingsJson)
     {
-        var config = Newtonsoft.Json.JsonConvert.DeserializeObject<ImgurConfigModel>(settingsJson);
-        return new ImgurUploader(config!);
+        var config = JsonConvert.DeserializeObject<ImgurConfigModel>(settingsJson);
+        if (config == null)
+        {
+            throw new InvalidOperationException("Failed to deserialize Imgur settings");
+        }
+
+        return new ImgurUploader(config);
     }
 
     public override Dictionary<UploaderCategory, string[]> GetSupportedFileTypes()
@@ -56,20 +63,17 @@ public class ImgurProvider : UploaderProviderBase
             { 
                 UploaderCategory.Image, 
                 new[] { "png", "jpg", "jpeg", "gif", "apng", "bmp", "tiff", "webp", "mp4", "avi", "mov" } 
-            },
-            { 
-                UploaderCategory.Text, 
-                new[] { "txt", "log", "json", "xml", "md", "html", "css", "js" } 
             }
         };
     }
 
     public override object? CreateConfigView()
     {
-        // Return plugin's own UI view
-        var view = new ImgurConfigView();
-        var viewModel = new ImgurConfigViewModel();
-        view.DataContext = viewModel;
-        return view;
+        return new Views.ImgurConfigView();
+    }
+
+    public override IUploaderConfigViewModel? CreateConfigViewModel()
+    {
+        return new ViewModels.ImgurConfigViewModel();
     }
 }

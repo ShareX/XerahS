@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
-             x:Class="ShareX.Ava.UI.Views.AmazonS3ConfigView"
+             xmlns:vm="using:ShareX.AmazonS3.Plugin.ViewModels"
+             x:Class="ShareX.AmazonS3.Plugin.Views.AmazonS3ConfigView"
              x:DataType="vm:AmazonS3ConfigViewModel">
     
     <StackPanel Spacing="15">
@@ -38,20 +38,24 @@
                      HorizontalAlignment="Left"/>
         </StackPanel>
 
-        <!-- Region -->
+        <!-- Region / Endpoint -->
         <StackPanel Spacing="5">
-            <TextBlock Text="Region *" FontWeight="Medium"/>
-            <ComboBox SelectedIndex="{Binding RegionIndex}"
-                      Width="250"
+            <TextBlock Text="Endpoint / Region *" FontWeight="Medium"/>
+            <ComboBox ItemsSource="{Binding Endpoints}"
+                      SelectedIndex="{Binding RegionIndex}"
+                      Width="350"
                       HorizontalAlignment="Left">
-                <ComboBoxItem Content="us-east-1 (N. Virginia)"/>
-                <ComboBoxItem Content="us-west-1 (N. California)"/>
-                <ComboBoxItem Content="us-west-2 (Oregon)"/>
-                <ComboBoxItem Content="eu-west-1 (Ireland)"/>
-                <ComboBoxItem Content="eu-central-1 (Frankfurt)"/>
-                <ComboBoxItem Content="ap-southeast-1 (Singapore)"/>
-                <ComboBoxItem Content="ap-southeast-2 (Sydney)"/>
-                <ComboBoxItem Content="ap-northeast-1 (Tokyo)"/>
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock Text="{Binding Name}"/>
+                            <TextBlock Text="{Binding Endpoint, StringFormat='({0})'}" 
+                                       FontSize="10" 
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
             </ComboBox>
         </StackPanel>
 
@@ -62,7 +66,7 @@
                      Watermark="uploads/"
                      Width="300"
                      HorizontalAlignment="Left"/>
-            <TextBlock Text="Example: 'uploads/' will save files as uploads/filename.png" 
+            <TextBlock Text="Example: 'uploads/%y/%mo/' will save files as uploads/2026/01/filename.png" 
                        FontSize="11"
                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                        TextWrapping="Wrap"
@@ -96,10 +100,21 @@
             </ComboBox>
         </StackPanel>
 
-        <!-- Set Public ACL -->
-        <CheckBox Content="Make uploads public (public-read ACL)"
-                  IsChecked="{Binding SetPublicACL}"
-                  Margin="0,5,0,0"/>
+        <StackPanel Spacing="5">
+            <!-- Set Public ACL -->
+            <CheckBox Content="Make uploads public (public-read ACL)"
+                      IsChecked="{Binding SetPublicACL}"/>
+
+            <!-- Signed Payload -->
+            <CheckBox Content="Signed payload" IsChecked="{Binding SignedPayload}" Margin="0,5,0,0" />
+                
+            <TextBlock Text="Remove extension:" FontWeight="Bold" Margin="0,15,0,5" />
+            <StackPanel Orientation="Horizontal" Spacing="20">
+                <CheckBox Content="Image" IsChecked="{Binding RemoveExtensionImage}" />
+                <CheckBox Content="Video" IsChecked="{Binding RemoveExtensionVideo}" />
+                <CheckBox Content="Text" IsChecked="{Binding RemoveExtensionText}" />
+            </StackPanel>
+        </StackPanel>
 
         <!-- Status Message -->
         <Border Background="{DynamicResource SystemFillColorAttentionBackground}"

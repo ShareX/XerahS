@@ -8,14 +8,12 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
 
-  <!-- Plugin metadata -->
   <PropertyGroup>
-    <PluginId>imgur</PluginId>
-    <PluginName>Imgur Uploader</PluginName>
+    <PluginId>amazons3</PluginId>
+    <PluginName>Amazon S3 Uploader</PluginName>
     <Version>1.0.0</Version>
   </PropertyGroup>
 
-  <!-- Avalonia packages for UI - use exact versions from main app -->
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.2.2" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.2" />
@@ -23,7 +21,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
-  <!-- Reference host assemblies (don't copy, use host's version) -->
   <ItemGroup>
     <ProjectReference Include="..\..\ShareX.Avalonia.Uploaders\ShareX.Avalonia.Uploaders.csproj">
       <Private>false</Private>
@@ -35,7 +32,6 @@
     </ProjectReference>
   </ItemGroup>
 
-  <!-- Include plugin.json in output -->
   <ItemGroup>
     <None Include="plugin.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

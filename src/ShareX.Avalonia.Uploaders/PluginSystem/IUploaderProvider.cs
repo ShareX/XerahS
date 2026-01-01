@@ -68,6 +68,12 @@ public interface IUploaderProvider
     object? CreateConfigView();
 
     /// <summary>
+    /// Creates a configuration ViewModel for this provider.
+    /// Returns null if no custom VM provided.
+    /// </summary>
+    IUploaderConfigViewModel? CreateConfigViewModel();
+
+    /// <summary>
     /// Create an uploader instance from serialized JSON settings
     /// </summary>
     Uploader CreateInstance(string settingsJson);

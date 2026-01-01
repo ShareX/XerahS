@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:ShareX.Ava.UI.ViewModels"
+             xmlns:controls="using:ShareX.Ava.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="ShareX.Ava.UI.Views.DestinationSettingsView"
              x:DataType="vm:DestinationSettingsViewModel">
@@ -56,19 +57,24 @@
                                           Width="16" Height="16"
                                           Margin="0,0,8,0"
                                           IsVisible="{Binding IsDefault}"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding DisplayName}" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock Text="{Binding DisplayName}" FontWeight="Medium"/>
+                                        <TextBlock Text="{Binding FileTypeScopeDisplay}" 
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
                                     <Button Grid.Column="2" Content="⋮" Padding="8,4" Margin="4,0,0,0">
                                         <Button.Flyout>
                                             <MenuFlyout>
                                                 <MenuItem Header="Set as Default" 
-                                                          Command="{Binding $parent[ListBox].((vm:DestinationSettingsViewModel)DataContext).SelectedCategory.SetAsDefaultCommand}"
+                                                          Command="{Binding $parent[ListBox].DataContext.SelectedCategory.SetAsDefaultCommand}"
                                                           CommandParameter="{Binding}"/>
                                                 <MenuItem Header="Duplicate" 
-                                                          Command="{Binding $parent[ListBox].((vm:DestinationSettingsViewModel)DataContext).SelectedCategory.DuplicateInstanceCommand}"
+                                                          Command="{Binding $parent[ListBox].DataContext.SelectedCategory.DuplicateInstanceCommand}"
                                                           CommandParameter="{Binding}"/>
                                                 <Separator/>
                                                 <MenuItem Header="Remove" 
-                                                          Command="{Binding $parent[ListBox].((vm:DestinationSettingsViewModel)DataContext).SelectedCategory.RemoveInstanceCommand}"
+                                                          Command="{Binding $parent[ListBox].DataContext.SelectedCategory.RemoveInstanceCommand}"
                                                           CommandParameter="{Binding}"/>
                                             </MenuFlyout>
                                         </Button.Flyout>
@@ -112,11 +118,23 @@
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
-                            <!-- Provider-specific settings would go here -->
-                            <TextBlock Text="Provider-specific settings panel will be loaded here" 
-                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                       FontStyle="Italic"
-                                       Margin="0,10,0,0"/>
+                            <!-- File Type Configuration -->
+                            <StackPanel Spacing="5" Margin="0,10,0,0">
+                                <TextBlock Text="File Type Configuration" FontSize="14" FontWeight="SemiBold"/>
+                                <ContentControl Content="{Binding SelectedCategory.SelectedInstance}">
+                                    <ContentControl.ContentTemplate>
+                                        <DataTemplate>
+                                            <controls:FileTypeSelectorControl/>
+                                        </DataTemplate>
+                                    </ContentControl.ContentTemplate>
+                                </ContentControl>
+                            </StackPanel>
+
+                            <!-- Provider-specific settings -->
+                            <StackPanel Spacing="5" Margin="0,10,0,0">
+                                <TextBlock Text="Provider Configuration" FontSize="14" FontWeight="SemiBold"/>
+                                <ContentControl Content="{Binding SelectedCategory.SelectedInstance.ConfigView}"/>
+                            </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
                 </Border>

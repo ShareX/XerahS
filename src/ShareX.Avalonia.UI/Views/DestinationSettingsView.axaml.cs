@@ -9,6 +9,15 @@ namespace ShareX.Ava.UI.Views
         {
             InitializeComponent();
             DataContext = new ViewModels.DestinationSettingsViewModel();
+            
+            // Call async Initialize when the view is loaded
+            Loaded += async (s, e) =>
+            {
+                if (DataContext is ViewModels.DestinationSettingsViewModel vm)
+                {
+                    await vm.Initialize();
+                }
+            };
         }
 
         private void InitializeComponent()

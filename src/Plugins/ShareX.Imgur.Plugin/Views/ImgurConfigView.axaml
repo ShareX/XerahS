@@ -29,12 +29,45 @@
         <StackPanel Spacing="5">
             <TextBlock Text="Account Type" FontWeight="Medium"/>
             <ComboBox SelectedIndex="{Binding AccountTypeIndex}"
-                      Width="200"
-                      HorizontalAlignment="Left">
+                       Width="200"
+                       HorizontalAlignment="Left">
                 <ComboBoxItem Content="Anonymous"/>
                 <ComboBoxItem Content="User Account"/>
             </ComboBox>
         </StackPanel>
+
+        <!-- OAuth Login (Only visible for User Account) -->
+        <Border Background="{DynamicResource SystemFillColorSecondaryBackground}"
+                Padding="15"
+                CornerRadius="4"
+                IsVisible="{Binding AccountTypeIndex}">
+            <StackPanel Spacing="10">
+                <TextBlock Text="Account Login" FontWeight="SemiBold"/>
+                
+                <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding !IsLoggedIn}">
+                    <Button Content="Step 1: Open Login URL" 
+                            Command="{Binding OpenLoginUrlCommand}"/>
+                </StackPanel>
+
+                <StackPanel Spacing="5" IsVisible="{Binding !IsLoggedIn}">
+                    <TextBlock Text="Step 2: Enter PIN from Imgur" FontSize="12"/>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBox Text="{Binding Pin}" 
+                                 Watermark="Enter PIN" 
+                                 Width="150"/>
+                        <Button Content="Complete Login" 
+                                Command="{Binding CompleteLoginCommand}"
+                                Classes="accent"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding IsLoggedIn}">
+                    <TextBlock Text="✓ Logged in" Foreground="Green" VerticalAlignment="Center"/>
+                    <Button Content="Fetch Albums" 
+                            Command="{Binding FetchAlbumsCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
 
         <!-- Album (optional) -->
         <StackPanel Spacing="5">

@@ -1,39 +1,15 @@
-#region License Information (GPL v3)
-
-/*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
-
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version 2
-    of the License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
-*/
-
-#endregion License Information (GPL v3)
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using Newtonsoft.Json;
-using ShareX.Ava.Uploaders.Plugins.AmazonS3Plugin;
 using ShareX.Ava.Uploaders.FileUploaders;
+using ShareX.Ava.Uploaders.PluginSystem;
+using System.Collections.ObjectModel;
 
-namespace ShareX.Ava.UI.ViewModels;
+namespace ShareX.AmazonS3.Plugin.ViewModels;
 
 /// <summary>
 /// ViewModel for Amazon S3 configuration
 /// </summary>
-public partial class AmazonS3ConfigViewModel : ObservableObject
+public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfigViewModel
 {
     [ObservableProperty]
     private string _accessKeyId = string.Empty;
@@ -45,7 +21,7 @@ public partial class AmazonS3ConfigViewModel : ObservableObject
     private string _bucketName = string.Empty;
 
     [ObservableProperty]
-    private int _regionIndex = 0;
+    private int _regionIndex = 16; // Default to US East (N. Virginia)
 
     [ObservableProperty]
     private string _objectPrefix = string.Empty;
@@ -60,21 +36,23 @@ public partial class AmazonS3ConfigViewModel : ObservableObject
     private bool _setPublicACL = true;
 
     [ObservableProperty]
+    private bool _signedPayload = false;
+
+    [ObservableProperty]
     private string? _statusMessage;
 
-    private readonly string[] _regions = new[]
-    {
-        "us-east-1",
-        "us-west-1",
-        "us-west-2",
-        "eu-west-1",
-        "eu-central-1",
-        "ap-southeast-1",
-        "ap-southeast-2",
-        "ap-northeast-1"
-    };
+    [ObservableProperty]
+    private bool _removeExtensionImage = false;
 
-    private readonly string[] _storageClasses = new[]
+    [ObservableProperty]
+    private bool _removeExtensionVideo = false;
+
+    [ObservableProperty]
+    private bool _removeExtensionText = false;
+
+    public ObservableCollection<AmazonS3Endpoint> Endpoints { get; } = new(AmazonS3Uploader.Endpoints);
+
+    public string[] StorageClasses { get; } = new[]
     {
         "STANDARD",
         "REDUCED_REDUNDANCY",
@@ -93,12 +71,18 @@ public partial class AmazonS3ConfigViewModel : ObservableObject
                 AccessKeyId = config.AccessKeyId ?? string.Empty;
                 SecretAccessKey = config.SecretAccessKey ?? string.Empty;
                 BucketName = config.BucketName ?? string.Empty;
-                RegionIndex = Array.IndexOf(_regions, config.Region);
-                if (RegionIndex < 0) RegionIndex = 0;
+                
+                int index = Endpoints.ToList().FindIndex(e => e.Endpoint == config.Endpoint);
+                if (index >= 0) RegionIndex = index;
+
                 ObjectPrefix = config.ObjectPrefix ?? string.Empty;
                 CustomDomain = config.CustomDomain ?? string.Empty;
                 StorageClassIndex = (int)config.StorageClass;
                 SetPublicACL = config.SetPublicACL;
+                SignedPayload = config.SignedPayload;
+                RemoveExtensionImage = config.RemoveExtensionImage;
+                RemoveExtensionVideo = config.RemoveExtensionVideo;
+                RemoveExtensionText = config.RemoveExtensionText;
             }
         }
         catch
@@ -114,11 +98,16 @@ public partial class AmazonS3ConfigViewModel : ObservableObject
             AccessKeyId = AccessKeyId,
             SecretAccessKey = SecretAccessKey,
             BucketName = BucketName,
-            Region = _regions[RegionIndex],
+            Endpoint = Endpoints[RegionIndex].Endpoint,
+            Region = Endpoints[RegionIndex].Region,
             ObjectPrefix = string.IsNullOrWhiteSpace(ObjectPrefix) ? null : ObjectPrefix,
             CustomDomain = string.IsNullOrWhiteSpace(CustomDomain) ? null : CustomDomain,
             StorageClass = (AmazonS3StorageClass)StorageClassIndex,
-            SetPublicACL = SetPublicACL
+            SetPublicACL = SetPublicACL,
+            SignedPayload = SignedPayload,
+            RemoveExtensionImage = RemoveExtensionImage,
+            RemoveExtensionVideo = RemoveExtensionVideo,
+            RemoveExtensionText = RemoveExtensionText
         };
 
         return JsonConvert.SerializeObject(config, Formatting.Indented);

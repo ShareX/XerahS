@@ -81,6 +81,7 @@ public class PluginLoadContext : AssemblyLoadContext
         return name == "ShareX.Ava.Uploaders" ||
                name == "ShareX.Ava.Common" ||
                name == "Newtonsoft.Json" ||
+               name == "CommunityToolkit.Mvvm" ||
                name?.StartsWith("System.") == true ||
                name?.StartsWith("Microsoft.") == true ||
                name?.StartsWith("Avalonia.") == true;

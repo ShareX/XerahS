@@ -1,7 +1,7 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
+    ShareX - A program that allows you to take screenshots and share any file type
     Copyright (c) 2007-2025 ShareX Team
 
     This program is free software; you can redistribute it and/or
@@ -24,7 +24,7 @@
 #endregion License Information (GPL v3)
 
 using ShareX.Ava.Common;
-using ShareX.UploadersLib.ImageUploaders;
+using ShareX.Ava.Uploaders;
 
 namespace ShareX.Imgur.Plugin;
 

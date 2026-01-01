@@ -6,8 +6,6 @@ using ShareX.Ava.Common;
 using ShareX.Ava.UI.Views;
 using ShareX.Ava.UI.ViewModels;
 using ShareX.Ava.Uploaders.PluginSystem;
-using ShareX.Ava.Uploaders.Plugins.ImgurPlugin;
-using ShareX.Ava.Uploaders.Plugins.AmazonS3Plugin;
 
 namespace ShareX.Ava.UI;
 
@@ -20,9 +18,6 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        // Register built-in providers at startup
-        RegisterProviders();
-
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new Views.MainWindow
@@ -46,19 +41,6 @@ public partial class App : Application
     }
 
     public Core.Hotkeys.HotkeyManager? HotkeyManager { get; private set; }
-
-    private void RegisterProviders()
-    {
-        // Register Imgur provider
-        var imgurProvider = new ImgurProvider();
-        ProviderCatalog.RegisterProvider(imgurProvider);
-
-        // Register Amazon S3 provider
-        var s3Provider = new AmazonS3Provider();
-        ProviderCatalog.RegisterProvider(s3Provider);
-
-        DebugHelper.WriteLine("Registered built-in providers: Imgur, Amazon S3");
-    }
 
     private void InitializeHotkeys()
     {

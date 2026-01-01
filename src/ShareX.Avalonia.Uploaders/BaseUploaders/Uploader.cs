@@ -96,12 +96,12 @@ namespace ShareX.Ava.Uploaders
             }
         }
 
-        internal string SendRequest(HttpMethod method, string url, Dictionary<string, string> args = null, NameValueCollection headers = null, CookieCollection cookies = null)
+        protected internal string SendRequest(HttpMethod method, string url, Dictionary<string, string> args = null, NameValueCollection headers = null, CookieCollection cookies = null)
         {
             return SendRequest(method, url, (Stream)null, null, args, headers, cookies);
         }
 
-        protected string SendRequest(HttpMethod method, string url, Stream data, string contentType = null, Dictionary<string, string> args = null, NameValueCollection headers = null,
+        protected internal string SendRequest(HttpMethod method, string url, Stream data, string contentType = null, Dictionary<string, string> args = null, NameValueCollection headers = null,
             CookieCollection cookies = null)
         {
             using (HttpWebResponse webResponse = GetResponse(method, url, data, contentType, args, headers, cookies))
@@ -110,7 +110,7 @@ namespace ShareX.Ava.Uploaders
             }
         }
 
-        protected string SendRequest(HttpMethod method, string url, string content, string contentType = null, Dictionary<string, string> args = null, NameValueCollection headers = null,
+        protected internal string SendRequest(HttpMethod method, string url, string content, string contentType = null, Dictionary<string, string> args = null, NameValueCollection headers = null,
             CookieCollection cookies = null)
         {
             byte[] data = Encoding.UTF8.GetBytes(content);
@@ -123,7 +123,7 @@ namespace ShareX.Ava.Uploaders
             }
         }
 
-        internal string SendRequestURLEncoded(HttpMethod method, string url, Dictionary<string, string> args, NameValueCollection headers = null, CookieCollection cookies = null)
+        protected internal string SendRequestURLEncoded(HttpMethod method, string url, Dictionary<string, string> args, NameValueCollection headers = null, CookieCollection cookies = null)
         {
             string query = URLHelpers.CreateQueryString(args);
 

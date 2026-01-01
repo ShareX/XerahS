@@ -1,6 +1,8 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:ShareX.Ava.UI"
+             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
+             xmlns:views="using:ShareX.Ava.UI.Views"
              xmlns:converters="using:ShareX.Ava.UI.Converters"
              xmlns:sty="using:FluentAvalonia.Styling"
              x:Class="ShareX.Ava.UI.App"
@@ -16,6 +18,11 @@
 
     <Application.DataTemplates>
         <local:ViewLocator/>
+        
+        <!-- Manual DataTemplate registrations for modal dialogs -->
+        <DataTemplate DataType="vm:ProviderCatalogViewModel">
+            <views:ProviderCatalogView/>
+        </DataTemplate>
     </Application.DataTemplates>
   
     <Application.Styles>
