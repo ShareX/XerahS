@@ -34,7 +34,7 @@ namespace ShareX.Ava.App
         public static void Main(string[] args)
         {
             // Initialize logging
-            var logPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ShareX", "ShareX.log");
+            var logPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), ShareX.Ava.Core.SettingManager.AppName, "ShareX.log");
             ShareX.Ava.Common.DebugHelper.Init(logPath);
             
             var dh = ShareX.Ava.Common.DebugHelper.Logger;
