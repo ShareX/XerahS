@@ -61,10 +61,26 @@ public partial class AnnotationCanvas : UserControl
 
     private void HookCollectionChanged()
     {
+        if (ViewModel == null) return;
+
         if (ViewModel?.Annotations != null)
         {
             ViewModel.Annotations.CollectionChanged -= OnAnnotationsChanged;
             ViewModel.Annotations.CollectionChanged += OnAnnotationsChanged;
+        }
+
+        ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AnnotationCanvasViewModel.SelectedAnnotation) ||
+            e.PropertyName == nameof(AnnotationCanvasViewModel.ActiveTool) ||
+            e.PropertyName == nameof(AnnotationCanvasViewModel.StrokeColor) ||
+            e.PropertyName == nameof(AnnotationCanvasViewModel.StrokeWidth))
+        {
+            InvalidateVisual();
         }
     }
 

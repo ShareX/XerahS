@@ -65,6 +65,8 @@ namespace ShareX.Ava.UI.Views
             if (this.FindControl<AnnotationCanvas>("AnnotationCanvasControl") is { } canvas)
             {
                 canvas.ViewModel = _canvasViewModel;
+                canvas.Focusable = true;
+                canvas.Focus();
             }
 
             if (DataContext is MainViewModel vm)
