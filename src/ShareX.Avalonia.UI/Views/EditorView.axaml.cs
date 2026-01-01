@@ -846,6 +846,59 @@ namespace ShareX.Ava.UI.Views
 
             var point = GetCanvasPosition(e, canvas);
 
+            // Handle right-click to delete shape
+            if (props.IsRightButtonPressed)
+            {
+                // Hit test to find the shape under cursor
+                var hitSource = e.Source as global::Avalonia.Visual;
+                Control? hitTarget = null;
+
+                while (hitSource != null && hitSource != canvas)
+                {
+                    if (canvas.Children.Contains(hitSource as Control))
+                    {
+                        hitTarget = hitSource as Control;
+                        break;
+                    }
+                    hitSource = hitSource.GetVisualParent();
+                }
+
+                // Delete the shape if found (don't delete crop overlay)
+                if (hitTarget != null && hitTarget.Name != "CropOverlay")
+                {
+                    canvas.Children.Remove(hitTarget);
+                    
+                    // Remove from undo stack if present
+                    if (_undoStack.Contains(hitTarget))
+                    {
+                        var tempStack = new Stack<Control>();
+                        while (_undoStack.Count > 0)
+                        {
+                            var item = _undoStack.Pop();
+                            if (item != hitTarget)
+                            {
+                                tempStack.Push(item);
+                            }
+                        }
+                        while (tempStack.Count > 0)
+                        {
+                            _undoStack.Push(tempStack.Pop());
+                        }
+                    }
+
+                    // Clear selection if this was the selected shape
+                    if (_selectedShape == hitTarget)
+                    {
+                        _selectedShape = null;
+                        UpdateSelectionHandles();
+                    }
+
+                    vm.StatusText = "Shape deleted";
+                    e.Handled = true;
+                }
+                return;
+            }
+
             // Check if clicking a handle (always allow when a shape is selected, regardless of active tool)
             if (_selectedShape != null || vm.ActiveTool == EditorTool.Crop)
             {
