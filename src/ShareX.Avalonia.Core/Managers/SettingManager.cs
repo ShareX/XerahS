@@ -166,10 +166,12 @@ namespace ShareX.Ava.Core
         /// </summary>
         public static void LoadApplicationConfig(bool fallbackSupport = true)
         {
-            Settings = ApplicationConfig.Load(ApplicationConfigFilePath, BackupFolder, fallbackSupport) ?? new ApplicationConfig();
+            var path = ApplicationConfigFilePath;
+            DebugHelper.WriteLine($"ApplicationConfig load started: {path}");
+            Settings = ApplicationConfig.Load(path, BackupFolder, fallbackSupport) ?? new ApplicationConfig();
             Settings.CreateBackup = true;
             Settings.CreateWeeklyBackup = true;
-            // Hook events if needed
+            DebugHelper.WriteLine($"ApplicationConfig load finished: {path}");
         }
 
         /// <summary>
@@ -177,10 +179,13 @@ namespace ShareX.Ava.Core
         /// </summary>
         public static void LoadUploadersConfig(bool fallbackSupport = true)
         {
-            UploadersConfig = UploadersConfig.Load(UploadersConfigFilePath, BackupFolder, fallbackSupport) ?? new UploadersConfig();
+            var path = UploadersConfigFilePath;
+            DebugHelper.WriteLine($"UploadersConfig load started: {path}");
+            UploadersConfig = UploadersConfig.Load(path, BackupFolder, fallbackSupport) ?? new UploadersConfig();
             UploadersConfig.CreateBackup = true;
             UploadersConfig.CreateWeeklyBackup = true;
             UploadersConfig.SupportDPAPIEncryption = true;
+            DebugHelper.WriteLine($"UploadersConfig load finished: {path}");
         }
 
         /// <summary>
@@ -188,9 +193,12 @@ namespace ShareX.Ava.Core
         /// </summary>
         public static void LoadHotkeysConfig(bool fallbackSupport = true)
         {
-            HotkeysConfig = HotkeysConfig.Load(HotkeysConfigFilePath, BackupFolder, fallbackSupport) ?? new HotkeysConfig();
+            var path = HotkeysConfigFilePath;
+            DebugHelper.WriteLine($"HotkeysConfig load started: {path}");
+            HotkeysConfig = HotkeysConfig.Load(path, BackupFolder, fallbackSupport) ?? new HotkeysConfig();
             HotkeysConfig.CreateBackup = true;
             HotkeysConfig.CreateWeeklyBackup = true;
+            DebugHelper.WriteLine($"HotkeysConfig load finished: {path}");
         }
 
         private static void InitializeRecentTasks()

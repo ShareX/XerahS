@@ -33,6 +33,43 @@ namespace ShareX.Ava.App
         [STAThread]
         public static void Main(string[] args)
         {
+            // Initialize logging
+            var logPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ShareX", "ShareX.log");
+            ShareX.Ava.Common.DebugHelper.Init(logPath);
+            
+            var dh = ShareX.Ava.Common.DebugHelper.Logger;
+            dh.AsyncWrite = false; // Synchronous for startup
+
+            dh.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - ShareX starting.");
+            
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            dh.WriteLine($"Version: {version} Dev");
+            
+            #if DEBUG
+            dh.WriteLine("Build: Debug");
+            #else
+            dh.WriteLine("Build: Release");
+            #endif
+
+            dh.WriteLine($"Command line: \"{Environment.ProcessPath}\"");
+            dh.WriteLine($"Personal path: {logPath}");
+            dh.WriteLine($"Operating system: {System.Runtime.InteropServices.RuntimeInformation.OSDescription} ({System.Runtime.InteropServices.RuntimeInformation.OSArchitecture})");
+            dh.WriteLine($".NET version: {System.Environment.Version}");
+            
+            bool isElevated = false;
+            if (OperatingSystem.IsWindows())
+            {
+                using (var identity = System.Security.Principal.WindowsIdentity.GetCurrent())
+                {
+                    var principal = new System.Security.Principal.WindowsPrincipal(identity);
+                    isElevated = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+                }
+            }
+            dh.WriteLine($"Running as elevated process: {isElevated}");
+            dh.WriteLine($"Flags: Dev");
+
+            dh.AsyncWrite = true; // Switch back to async
+
             InitializePlatformServices();
             
             // Initialize settings

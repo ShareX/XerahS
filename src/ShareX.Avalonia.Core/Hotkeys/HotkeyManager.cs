@@ -114,7 +114,8 @@ public class HotkeyManager : IDisposable
         if (result)
         {
             _hotkeyMap[settings.HotkeyInfo.Id] = settings;
-            Debug.WriteLine($"HotkeyManager: Registered {settings}");
+            // Debug.WriteLine($"HotkeyManager: Registered {settings}");
+            ShareX.Ava.Common.DebugHelper.WriteLine($"Hotkey registered: {settings}");
         }
         else
         {

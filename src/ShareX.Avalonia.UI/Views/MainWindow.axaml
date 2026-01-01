@@ -89,6 +89,11 @@
                         <ui:NavigationViewItem Content="Destination Settings" Tag="Settings_Dest" />
                     </ui:NavigationViewItem.MenuItems>
                  </ui:NavigationViewItem>
+                 <ui:NavigationViewItem Content="Debug" Tag="Debug">
+                    <ui:NavigationViewItem.IconSource>
+                        <ui:SymbolIconSource Symbol="Code"/>
+                    </ui:NavigationViewItem.IconSource>
+                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
             
             <ui:NavigationView.Content>

@@ -90,7 +90,7 @@ namespace ShareX.Ava.UI.ViewModels
         }
 
         [ObservableProperty]
-        private double _previewPadding = 50;
+        private double _previewPadding = 0;
 
         [ObservableProperty]
         private double _previewCornerRadius = 16;
@@ -496,11 +496,13 @@ namespace ShareX.Ava.UI.ViewModels
                         ? "Image with annotations copied to clipboard" 
                         : "Image copied to clipboard";
                     ExportState = "Copied";
+                    ShareX.Ava.Common.DebugHelper.WriteLine("Clipboard copy: Image copied to clipboard.");
                 }
                 catch (Exception ex)
                 {
                     var errorMessage = $"Failed to copy image to clipboard.\n\nError: {ex.Message}";
                     StatusText = $"Copy failed: {ex.Message}";
+                    ShareX.Ava.Common.DebugHelper.WriteLine($"Clipboard copy failed: {ex.Message}");
                     
                     // Show error dialog
                     if (ShowErrorDialog != null)
@@ -547,10 +549,12 @@ namespace ShareX.Ava.UI.ViewModels
                 
                 StatusText = $"Saved to {filename}";
                 ExportState = "Saved";
+                ShareX.Ava.Common.DebugHelper.WriteLine($"File saved: {path}");
             }
             catch (Exception ex)
             {
                 StatusText = $"Save failed: {ex.Message}";
+                ShareX.Ava.Common.DebugHelper.WriteLine($"File save failed: {ex.Message}");
             }
             await Task.CompletedTask;
         }
@@ -597,10 +601,12 @@ namespace ShareX.Ava.UI.ViewModels
                 StatusText = $"Saved to {filename}";
                 ExportState = "Saved";
                 LastSavedPath = path;
+                ShareX.Ava.Common.DebugHelper.WriteLine($"File saved (Save As): {path}");
             }
             catch (Exception ex)
             {
                 StatusText = $"Save failed: {ex.Message}";
+                ShareX.Ava.Common.DebugHelper.WriteLine($"File save failed (Save As): {ex.Message}");
             }
         }
 

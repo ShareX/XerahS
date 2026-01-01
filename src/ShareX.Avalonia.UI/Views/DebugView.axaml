@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="ShareX.Ava.UI.Views.DebugView"
+             x:DataType="vm:DebugViewModel">
+    
+    <Design.DataContext>
+        <vm:DebugViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Toolbar -->
+        <Border Grid.Row="0" Padding="10" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Command="{Binding CopyCommand}" Content="Copy" />
+                <Button Command="{Binding ClearCommand}" Content="Clear" />
+                <Button Command="{Binding UploadCommand}" Content="Upload" />
+            </StackPanel>
+        </Border>
+
+        <!-- Log Output -->
+        <TextBox Grid.Row="1" 
+                 Text="{Binding LogText}"
+                 IsReadOnly="True"
+                 FontFamily="Consolas, Monospace"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 BorderThickness="0"
+                 Background="Transparent"
+                 Padding="10"/>
+    </Grid>
+</UserControl>

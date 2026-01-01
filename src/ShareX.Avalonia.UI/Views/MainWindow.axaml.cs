@@ -83,6 +83,9 @@ namespace ShareX.Ava.UI.Views
                     case "Settings_Dest":
                         contentFrame.Content = new DestinationSettingsView();
                         break;
+                    case "Debug":
+                        contentFrame.Content = new DebugView();
+                        break;
                 }
             }
         }
