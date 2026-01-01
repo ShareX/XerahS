@@ -7,7 +7,7 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 
 ## ✨ Key Features
 - **Cross-Platform**: Runs on Windows, Linux, and macOS (targeting).
-- **Modern UI**: Reimagined interface inspired by modern design principles (WinShot inspiration).
+- **Modern UI**: Reimagined interface inspired by modern design principles (SnapX and WinShot inspiration).
 - **Powerful Capture**:
     - **Region Capture**: supports multi-monitor setups with crosshair cursor.
     - **Fullscreen** & **Window** capture modes.

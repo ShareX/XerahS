@@ -38,17 +38,16 @@ This document defines the coordination rules for parallel development on ShareX.
 
 ### Codex (Backend)
 - ✅ ShareX.Avalonia.Core (logic only, not Models exposed to UI)
-- ✅ ShareX.Avalonia.Common (Helpers, utilities)
+- ✅ ShareX.Avalonia.Common (Helpers, utilities) - **Priority: Port Gaps**
 - ✅ ShareX.Avalonia.Media (encoding, FFmpeg)
 - ✅ ShareX.Avalonia.History (persistence, managers)
-- ✅ ShareX.Avalonia.CLI (when created)
-- ✅ Settings import/export logic
+- ✅ ShareX.Avalonia.Annotations (Logic/Models - Phase 2)
 - ❌ NO Avalonia UI projects or XAML
 
 ### Copilot (UI)
 - ✅ ShareX.Avalonia.UI/ViewModels/*
 - ✅ ShareX.Avalonia.UI/Views/*
-- ✅ ShareX.Avalonia.UI/Services/* (UI-layer services)
+- ✅ ShareX.Avalonia.UI/Controls/AnnotationCanvas - **Priority: Phase 2**
 - ✅ UI wiring and MVVM bindings
 - ❌ NO Core logic or backend processing (unless directed)
 
@@ -56,9 +55,7 @@ This document defines the coordination rules for parallel development on ShareX.
 - ✅ ShareX.Avalonia.Platform.Abstractions
 - ✅ ShareX.Avalonia.Platform.Windows/Linux/macOS
 - ✅ Project structure and solution files
-- ✅ AGENTS.md, NEXT_STEPS.md, documentation
-- ✅ Cross-cutting interfaces and enums
-- ✅ Integration and merge work
+- ✅ Merge Review & Documentation
 
 ---
 
@@ -66,10 +63,9 @@ This document defines the coordination rules for parallel development on ShareX.
 
 ### Branch Naming
 ```
-feature/cli              # Codex: CLI implementation
-feature/settings-import  # Codex: Settings migration
-feature/ui-history       # Copilot: History UI
-feature/platform-linux   # Antigravity: Linux platform
+feature/annotation-canvas  # Copilot: Canvas implementation
+feature/backend-gaps       # Codex: HelpersLib porting
+feature/automation-tasks   # Codex: Automation engine
 ```
 
 ### Commit Rules
@@ -161,11 +157,82 @@ Agents MUST stop and ask Antigravity if:
 
 | Task | Agent | Branch | Status |
 |------|-------|--------|--------|
-| CLI Implementation | Codex | `feature/cli` | 📋 Planned |
-| Settings Import | Codex | `feature/settings-import` | 📋 Planned |
+| **Annotation Canvas (Phase 2)** | Copilot | `feature/annotation-canvas` | 🔥 **Next Priority** |
+| **Backend Gap Filling** | Codex | `feature/backend-gaps` | 🔥 **Next Priority** |
+| Plugin System | Antigravity | `feature/uploaders` | ✅ Complete |
 | History UI | Copilot | `feature/ui-history` | 📋 Planned |
-| Screen Capture UI | Copilot | `feature/capture-ui` | 📋 Planned |
-| Platform Linux | Antigravity | `feature/platform-linux` | 📋 Planned |
+| Screen Recorder Logic | Codex | `feature/recorder-core` | 📋 Planned |
+
+---
+
+## 🎯 Comprehensive Gap Analysis & Detailed Scope
+
+This section outlines the specific missing features compared to ShareX (WinForms) and assigns them to agents.
+
+### 1. `ShareX.HelpersLib` (Foundation)
+**Status**: ~60% Ported.
+**Missing**:
+- Advanced image manipulators (ColorMatrix, ConvolutionMatrix).
+- System integration helpers (verified platform agnostic).
+- **Assignment**: **Codex** (`feature/backend-gaps`)
+  - *Goal*: Port remaining non-UI helpers to `ShareX.Avalonia.Common`.
+
+### 2. `ShareX.ScreenCaptureLib` (Capture Engine)
+**Status**: Region/Fullscreen implemented.
+**Missing**:
+- **Screen Recording**: FFmpeg integration, command line generation.
+- **Scrolling Capture**: Image stitching logic.
+- **OCR**: Text recognition integration.
+- **Assignment**:
+  - **Logic**: **Codex** (`feature/recorder-core`) - FFmpeg wrapper, stitching logic.
+  - **UI**: **Copilot** - Recording overlay, region selection updates.
+
+### 3. `ShareX.MediaLib` (Processing)
+**Status**: Basic.
+**Missing**:
+- Image Combiner.
+- Video Converter (UI & Logic).
+- GIF Encoding optimization.
+- **Assignment**: **Codex** - Port core logic to `ShareX.Avalonia.Media`.
+
+### 4. `ShareX` (Application Tools)
+**Status**: Main Window & Settings done.
+**Missing Tools**:
+- Color Picker.
+- Screen Ruler.
+- Image Editor (Annotation Canvas).
+- QR Code Generator/Decoder.
+- DNS Changer / Hash Check (Low priority).
+- **Assignment**: **Copilot** (`feature/tools-ui`)
+  - *Goal*: Create `ShareX.Avalonia.UI/Tools/*`.
+
+### 5. `ShareX.HistoryLib` (Persistence)
+**Status**: Basic Manager exists.
+**Missing**:
+- Advanced History View (search, filter, thumbnails).
+- **Assignment**: **Copilot** (`feature/ui-history`) - Build the grid view.
+
+### 6. `ShareX.UploadersLib` (Plugins)
+**Status**: Architecture Done. Imgur/S3 Done.
+**Strategy**: **Do not port all 50+ uploaders.**
+- Wait for community contributions via the new Plugin System.
+- Implement only highly requested ones on demand.
+
+---
+
+## 🚀 Execution Plan (Next 3 Sprints)
+
+### Sprint 1: The Editor & The Foundation
+- **Copilot**: Build `AnnotationCanvas` (Phase 2). This is the "Image Editor".
+- **Codex**: Port `HelpersLib` gaps and `MediaLib` basics.
+
+### Sprint 2: Tools & Recorder
+- **Copilot**: Color Picker, Ruler, QR Code UI.
+- **Codex**: Screen Recorder logic (FFmpeg piping).
+
+### Sprint 3: Polish & History
+- **Copilot**: History Window & Image History.
+- **Codex**: Scrolling Capture logic.
 
 ---
 
