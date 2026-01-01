@@ -272,12 +272,30 @@ must be treated as platform code and cannot be copied wholesale.
 4. UI (file type selector, conflict warnings)
 5. Upload workflow integration
 
-### Future TODO - Dynamic Plugin Loading
+### ✅ Completed: Dynamic Plugin System (Jan 2025)
 
-- Extract common abstractions into core library for third-party plugins
-- Implement DLL-based plugin loader scanning `%AppData%/ShareX.Avalonia/Plugins`
-- Remove hard-coded provider registration
-- Add plugin marketplace/discovery UI
+**Architecture implemented:**
+- **Pure Dynamic Loading**: No compile-time plugin references in host app.
+- **Isolation**: `PluginLoadContext` (AssemblyLoadContext) for each plugin.
+- **Shared Dependencies**: Framework assemblies (Avalonia, Newtonsoft.Json) shared from host context.
+- **Static Lifecycle**: Static `PluginLoader` prevents premature GC of contexts.
+- **Dynamic UI**: Plugins expose configuration views via `IUploaderProvider.GetConfigView`.
+
+**Components:**
+- `PluginDiscovery`: Scans `Plugins/` folder for `plugin.json` manifests.
+- `PluginLoader`: Loads assemblies and instantiates providers.
+- `ProviderCatalog`: Central registry for both built-in and dynamic providers.
+
+**Plugins Implemented:**
+- `ShareX.Imgur.Plugin`: Image uploading with OAuth2.
+- `ShareX.AmazonS3.Plugin`: S3 bucket uploads (Image/Text/File).
+
+**Status:**
+- [x] Extract common abstractions into `ShareX.Avalonia.Uploaders`.
+- [x] Implement `PluginLoadContext` and loading logic.
+- [x] Implement `plugin.json` manifest system.
+- [x] Create Imgur and S3 plugins as standalone DLLs.
+- [x] Integrate with UI (Catalog & Settings).
 
 ### TODO - Full Automation Workflow (Path B)
 
