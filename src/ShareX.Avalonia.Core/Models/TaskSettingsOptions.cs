@@ -291,7 +291,7 @@ public class ImageBeautifierOptions
     public ImageBeautifierOptions()
     {
         Margin = 80;
-        Padding = 30;
+        Padding = 40;
         SmartPadding = true;
         RoundedCorner = 20;
         ShadowRadius = 30;
