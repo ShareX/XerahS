@@ -44,13 +44,24 @@ public partial class ProviderCatalogViewModel : ViewModelBase
     [RelayCommand]
     private void AddSelected()
     {
-        if (SelectedProvider == null || !SelectedProvider.IsSelected)
+        var selectedProvider = AvailableProviders.FirstOrDefault(p => p.IsSelected);
+
+        if (selectedProvider == null)
+        {
+            DebugHelper.WriteLine("No provider selected");
             return;
+        }
 
         try
         {
-            var provider = ProviderCatalog.GetProvider(SelectedProvider.ProviderId);
-            if (provider == null) return;
+            var provider = ProviderCatalog.GetProvider(selectedProvider.ProviderId);
+            if (provider == null)
+            {
+                DebugHelper.WriteLine($"Provider not found in catalog: {selectedProvider.ProviderId}");
+                return;
+            }
+
+            DebugHelper.WriteLine($"Adding new instance for provider: {provider.Name}");
 
             var instance = new UploaderInstance
             {

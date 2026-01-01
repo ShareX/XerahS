@@ -110,7 +110,6 @@
                         MinWidth="90"/>
                 <Button Content="Add Selected" 
                         Command="{Binding AddSelectedCommand}"
-                        IsEnabled="{Binding SelectedProvider.IsSelected}"
                         Classes="accent"
                         MinWidth="110"/>
             </StackPanel>
