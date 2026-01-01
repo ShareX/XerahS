@@ -63,8 +63,34 @@ public partial class DestinationSettingsViewModel : ViewModelBase
         }
         
         Common.DebugHelper.WriteLine("[DestinationSettings] ========================================");
+
+        // Force add providers for testing
+        ForceAddTestInstance("imgur", UploaderCategory.Image);
+        ForceAddTestInstance("amazons3", UploaderCategory.Image);
         
         LoadCategories();
+    }
+
+    private void ForceAddTestInstance(string providerId, UploaderCategory category)
+    {
+        var provider = ProviderCatalog.GetProvider(providerId);
+        if (provider != null)
+        {
+            // Check if instance already exists
+            var existing = InstanceManager.Instance.GetInstances().Any(i => i.ProviderId == providerId);
+            if (!existing)
+            {
+                var instance = new UploaderInstance
+                {
+                    ProviderId = provider.ProviderId,
+                    Category = category,
+                    DisplayName = $"{provider.Name}",
+                    SettingsJson = provider.GetDefaultSettings(category)
+                };
+                InstanceManager.Instance.AddInstance(instance);
+                Common.DebugHelper.WriteLine($"[ForceAdd] Added test instance: {instance.DisplayName}");
+            }
+        }
     }
 
     private void LoadCategories()
