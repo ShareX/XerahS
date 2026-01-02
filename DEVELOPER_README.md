@@ -18,6 +18,57 @@ This project follows the **MVVM (Model-View-ViewModel)** pattern using the `Comm
 ### Services & Dependency Injection
 Services are initialized in `Program.cs` and `App.axaml.cs`. We use a Service Locator pattern via `PlatformServices` static class for easy access in ViewModels (though Constructor Injection is preferred where possible).
 
+### UI Theme & FluentAvalonia
+
+This project uses **FluentAvaloniaUI** (v2.4.1) which provides a modern Fluent Design System for Avalonia applications.
+
+#### ⚠️ Important: ContextMenu vs ContextFlyout
+
+**Issue**: Standard `ContextMenu` controls may not render correctly with FluentAvaloniaTheme. They use legacy Popup windows which are not fully styled by the theme.
+
+**Solution**: Use `ContextFlyout` with `MenuFlyout` instead:
+
+```xml
+<!-- ❌ DON'T: Standard ContextMenu (may be invisible) -->
+<Border.ContextMenu>
+    <ContextMenu>
+        <MenuItem Header="Action" Command="{Binding MyCommand}"/>
+    </ContextMenu>
+</Border.ContextMenu>
+
+<!-- ✅ DO: Use ContextFlyout with MenuFlyout -->
+<Border.ContextFlyout>
+    <MenuFlyout>
+        <MenuItem Header="Action" Command="{Binding MyCommand}"/>
+    </MenuFlyout>
+</Border.ContextFlyout>
+```
+
+#### Binding in DataTemplates with Flyouts/Popups
+
+When using `ContextFlyout` or `ContextMenu` inside a `DataTemplate`, bindings to the parent ViewModel require special syntax because popups/flyouts exist outside the normal visual tree:
+
+```xml
+<DataTemplate x:DataType="local:MyItem">
+    <Border>
+        <Border.ContextFlyout>
+            <MenuFlyout>
+                <!-- Bind to parent UserControl's DataContext -->
+                <MenuItem Header="Edit" 
+                          Command="{Binding $parent[UserControl].DataContext.EditCommand}"
+                          CommandParameter="{Binding}"/>
+            </MenuFlyout>
+        </Border.ContextFlyout>
+    </Border>
+</DataTemplate>
+```
+
+**Key Points**:
+- Use `$parent[UserControl].DataContext` to access the View's ViewModel from within a flyout
+- `CommandParameter="{Binding}"` passes the current item (DataTemplate's DataContext)
+- Avalonia 11.x properly resolves `$parent` in flyouts/overlays
+- For shared flyouts, define them in `UserControl.Resources` and reference via `{StaticResource}`
+
 ### Annotation System
 The annotation system is built on a polymorphic model architecture with UI integration via `EditorView`:
 *   **Models**: Located in `ShareX.Avalonia.Annotations/Models/`, inheriting from base `Annotation` class
