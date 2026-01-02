@@ -112,10 +112,10 @@ public static class PluginConfigurationVerifier
         {
             result.Status = PluginVerificationStatus.Error;
             result.Message = $"⚠️ Config view may not load - {result.ProblematicFiles.Count} duplicate framework DLL(s) detected";
-            result.Issues.Add($"Found {result.ProblematicFiles.Count} duplicate framework assemblies that should be excluded:");
+            result.Issues.Add($"Found {result.ProblematicFiles.Count} duplicate framework assemblies in the plugin folder:");
             result.Issues.AddRange(result.ProblematicFiles);
             result.Issues.Add("");
-            result.Issues.Add("Fix: Add <ExcludeAssets>runtime</ExcludeAssets> to NuGet package references in .csproj");
+            result.Issues.Add("Fix: Delete these duplicate DLLs from the plugin folder, then restart the app.");
         }
         else if (result.FileCount >= 16)
         {

@@ -173,18 +173,28 @@
                                     </Expander>
                                     
                                     <!-- Clean Duplicates Button -->
-                                    <Button Content="🗑️ Clean Duplicate Files"
-                                            Command="{Binding SelectedCategory.SelectedInstance.CleanDuplicatesCommand}"
-                                            HorizontalAlignment="Left"
-                                            Margin="0,8,0,0"
-                                            Background="{DynamicResource AccentButtonBackground}"
-                                            Foreground="White">
-                                        <ToolTip.Tip>
-                                            <TextBlock Text="Automatically delete duplicate framework DLLs from the plugin folder"
-                                                       TextWrapping="Wrap"
-                                                       MaxWidth="300"/>
-                                        </ToolTip.Tip>
-                                    </Button>
+                                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,8,0,0">
+                                        <Button Content="🗑️ Clean Duplicate Files"
+                                                Command="{Binding SelectedCategory.SelectedInstance.CleanDuplicatesCommand}"
+                                                HorizontalAlignment="Left"
+                                                Background="{DynamicResource AccentButtonBackground}"
+                                                Foreground="White">
+                                            <ToolTip.Tip>
+                                                <TextBlock Text="Automatically delete duplicate framework DLLs from the plugin folder"
+                                                           TextWrapping="Wrap"
+                                                           MaxWidth="300"/>
+                                            </ToolTip.Tip>
+                                        </Button>
+                                        <Button Content="📂 Open Plugins Folder"
+                                                Command="{Binding SelectedCategory.SelectedInstance.OpenPluginsFolderCommand}"
+                                                HorizontalAlignment="Left">
+                                            <ToolTip.Tip>
+                                                <TextBlock Text="Open this provider's plugin folder in Explorer"
+                                                           TextWrapping="Wrap"
+                                                           MaxWidth="260"/>
+                                            </ToolTip.Tip>
+                                        </Button>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
 

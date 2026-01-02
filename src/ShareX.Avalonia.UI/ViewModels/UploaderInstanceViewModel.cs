@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ShareX.Ava.Uploaders.PluginSystem;
 using System.Collections.ObjectModel;
+using System.IO;
 
 namespace ShareX.Ava.UI.ViewModels;
 
@@ -298,5 +299,33 @@ public partial class UploaderInstanceViewModel : ViewModelBase
         IsAvailable = instance.IsAvailable;
         
         ConfigViewModel?.LoadFromJson(SettingsJson);
+    }
+
+    [RelayCommand]
+    private void OpenPluginsFolder()
+    {
+        try
+        {
+            var pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins", ProviderId);
+            Common.DebugHelper.WriteLine($"[UploaderInstanceVM] Opening plugins folder: {pluginsPath}");
+
+            if (!Directory.Exists(pluginsPath))
+            {
+                Common.DebugHelper.WriteLine("[UploaderInstanceVM] Plugins folder does not exist, creating...");
+                Directory.CreateDirectory(pluginsPath);
+            }
+
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = pluginsPath,
+                UseShellExecute = true,
+                Verb = "open"
+            };
+            System.Diagnostics.Process.Start(psi);
+        }
+        catch (Exception ex)
+        {
+            Common.DebugHelper.WriteException(ex, "Failed to open plugins folder");
+        }
     }
 }
