@@ -8,6 +8,7 @@ using ShareX.Ava.Common;
 using ShareX.Ava.Core.Tasks;
 using ShareX.Ava.Common.Helpers;
 using ShareX.Ava.Platform.Abstractions;
+using ShareX.Ava.History;
 
 namespace ShareX.Ava.Core.Tasks.Processors
 {
@@ -64,12 +65,41 @@ namespace ShareX.Ava.Core.Tasks.Processors
              {
                  info.FilePath = filePath;
                  DebugHelper.WriteLine($"Image saved: {filePath}");
-             }
-             else
-             {
-                 DebugHelper.WriteLine("Failed to save image.");
-                 // info.Status = TaskStatus.Failed; // Logic to handle failure
-             }
+                 
+                // Add to History
+                try
+                {
+                    DebugHelper.WriteLine("Trace: History pipeline - Starting history item creation.");
+                    
+                    // Use centralized settings folder
+                    var historyPath = Path.Combine(SettingManager.SettingsFolder, ShareXResources.HistoryFileName);
+
+                    DebugHelper.WriteLine($"Trace: History pipeline - History file path: {historyPath}");
+                    
+                    var historyManager = new HistoryManagerXML(historyPath);
+                    var historyItem = new HistoryItem
+                    {
+                        FilePath = filePath,
+                        FileName = Path.GetFileName(filePath),
+                        DateTime = DateTime.Now,
+                        Type = "Image"
+                    };
+                    
+                    historyManager.AppendHistoryItem(historyItem);
+                    DebugHelper.WriteLine($"Trace: History pipeline - AppendHistoryItem called for: {historyItem.FileName}");
+                    DebugHelper.WriteLine($"Added to history: {historyItem.FileName}");
+                }
+                catch (Exception ex)
+                {
+                    DebugHelper.WriteLine($"Failed to add to history: {ex.Message}");
+                    DebugHelper.WriteException(ex);
+                }
+            }
+            else
+            {
+                DebugHelper.WriteLine("Failed to save image.");
+                // info.Status = TaskStatus.Failed; // Logic to handle failure
+            }
 
              await Task.CompletedTask;
         }

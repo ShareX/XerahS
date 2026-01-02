@@ -46,15 +46,31 @@ This project uses multiple AI developer agents working in parallel. See [MULTI_A
 
 - Always summarize code changes in the final response, and use that summary when performing `git push` after each code update.
 
-## Semantic Versioning
+## Semantic Versioning Automation
 
-- Use semantic versioning for all versioned artifacts: MAJOR.MINOR.PATCH.
-- MAJOR: breaking changes to public APIs, data contracts, or user-visible behavior.
-- MINOR: backward-compatible features or enhancements.
-- PATCH: backward-compatible bug fixes or small corrections.
-- Pre-release and build metadata follow SemVer 2.0.0 conventions.
+**Product Name**: ShareX Ava (Project files/UI should reflect this, code namespace remains `ShareX.Avalonia`)
 
-## Purpose
+**Current Version**: 0.1.0 (Managed centrally in `Directory.Build.props`)
+
+**Rules for Agents**:
+1. **Automated Version Bumping**:
+   - **PATCH (x.x.X)**: Bump for bug fixes, refactors, or minor tasks (Complexity ≤ 3).
+   - **MINOR (x.X.x)**: Bump for new features, significant UI changes, or new workflows (Complexity 4-7).
+   - **MAJOR (X.x.x)**: Bump for breaking changes or major releases (Complexity ≥ 8).
+
+2. **How to Bump**:
+   - Check `Directory.Build.props` for the current version.
+   - Increment accordingly based on the highest complexity of changes in your session.
+   - Update `<Version>` tag in `Directory.Build.props`.
+   - **Do not** update individual `.csproj` versions; they inherit from `Directory.Build.props`.
+
+3. **Commit Messages**:
+   - Prefix commits with `[vX.Y.Z]` relative to the new version.
+   - Example: `[v0.1.1] [Fix] Captured images now display in Editor`
+
+## Semantic Versioning Standards
+- Uses standard SemVer 2.0.0 (MAJOR.MINOR.PATCH).
+- Pre-release tags allowed (e.g., `0.1.0-alpha.1`) for unstable features.
 
 - This document provides clear operating instructions for LLM-assisted work in this repository.
 

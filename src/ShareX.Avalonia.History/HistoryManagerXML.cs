@@ -45,6 +45,7 @@ namespace ShareX.Ava.History
         internal override List<HistoryItem> Load(string filePath)
         {
             List<HistoryItem> historyItemList = new List<HistoryItem>();
+            DebugHelper.WriteLine($"Trace: HistoryManagerXML - Loading from path: {filePath}");
 
             if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
             {
@@ -56,30 +57,43 @@ namespace ShareX.Ava.History
                         IgnoreWhitespace = true
                     };
 
-                    using (StreamReader streamReader = new StreamReader(filePath, Encoding.UTF8))
-                    using (XmlReader reader = XmlReader.Create(streamReader, settings))
+                    try 
                     {
-                        reader.MoveToContent();
-
-                        while (!reader.EOF)
+                        using (StreamReader streamReader = new StreamReader(filePath, Encoding.UTF8))
+                        using (XmlReader reader = XmlReader.Create(streamReader, settings))
                         {
-                            if (reader.NodeType == XmlNodeType.Element && reader.Name == "HistoryItem")
+                            reader.MoveToContent();
+
+                            while (!reader.EOF)
                             {
-                                if (XNode.ReadFrom(reader) is XElement element)
+                                if (reader.NodeType == XmlNodeType.Element && reader.Name == "HistoryItem")
                                 {
-                                    HistoryItem hi = ParseHistoryItem(element);
-                                    historyItemList.Add(hi);
+                                    if (XNode.ReadFrom(reader) is XElement element)
+                                    {
+                                        HistoryItem hi = ParseHistoryItem(element);
+                                        historyItemList.Add(hi);
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                reader.Read();
+                                else
+                                {
+                                    reader.Read();
+                                }
                             }
                         }
                     }
+                    catch (Exception ex)
+                    {
+                         DebugHelper.WriteLine($"Trace: HistoryManagerXML - Error loading history: {ex.Message}");
+                         DebugHelper.WriteException(ex);
+                    }
                 }
             }
+            else
+            {
+                 DebugHelper.WriteLine($"Trace: HistoryManagerXML - File not found or invalid path: {filePath}");
+            }
 
+            DebugHelper.WriteLine($"Trace: HistoryManagerXML - Loaded {historyItemList.Count} items.");
             return historyItemList;
         }
 
@@ -132,42 +146,52 @@ namespace ShareX.Ava.History
 
         protected override bool Append(string filePath, IEnumerable<HistoryItem> historyItems)
         {
+            DebugHelper.WriteLine($"Trace: HistoryManagerXML - Appending to path: {filePath}");
             if (!string.IsNullOrEmpty(filePath))
             {
                 lock (thisLock)
                 {
-                    FileHelpers.CreateDirectoryFromFilePath(filePath);
-
-                    using (FileStream fileStream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, FileOptions.WriteThrough))
-                    using (XmlTextWriter writer = new XmlTextWriter(fileStream, Encoding.UTF8))
+                    try
                     {
-                        writer.Formatting = Formatting.Indented;
-                        writer.Indentation = 4;
+                        FileHelpers.CreateDirectoryFromFilePath(filePath);
 
-                        foreach (HistoryItem historyItem in historyItems)
+                        using (FileStream fileStream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, FileOptions.WriteThrough))
+                        using (XmlTextWriter writer = new XmlTextWriter(fileStream, Encoding.UTF8))
                         {
-                            writer.WriteStartElement("HistoryItem");
-                            writer.WriteElementIfNotEmpty("Filename", historyItem.FileName);
-                            writer.WriteElementIfNotEmpty("Filepath", historyItem.FilePath);
-                            writer.WriteElementIfNotEmpty("DateTimeUtc", historyItem.DateTime.ToString("o"));
-                            writer.WriteElementIfNotEmpty("Type", historyItem.Type);
-                            writer.WriteElementIfNotEmpty("Host", historyItem.Host);
-                            writer.WriteElementIfNotEmpty("URL", historyItem.URL);
-                            writer.WriteElementIfNotEmpty("ThumbnailURL", historyItem.ThumbnailURL);
-                            writer.WriteElementIfNotEmpty("DeletionURL", historyItem.DeletionURL);
-                            writer.WriteElementIfNotEmpty("ShortenedURL", historyItem.ShortenedURL);
-                            writer.WriteEndElement();
+                            writer.Formatting = Formatting.Indented;
+                            writer.Indentation = 4;
+
+                            foreach (HistoryItem historyItem in historyItems)
+                            {
+                                writer.WriteStartElement("HistoryItem");
+                                writer.WriteElementIfNotEmpty("Filename", historyItem.FileName);
+                                writer.WriteElementIfNotEmpty("Filepath", historyItem.FilePath);
+                                writer.WriteElementIfNotEmpty("DateTimeUtc", historyItem.DateTime.ToString("o"));
+                                writer.WriteElementIfNotEmpty("Type", historyItem.Type);
+                                writer.WriteElementIfNotEmpty("Host", historyItem.Host);
+                                writer.WriteElementIfNotEmpty("URL", historyItem.URL);
+                                writer.WriteElementIfNotEmpty("ThumbnailURL", historyItem.ThumbnailURL);
+                                writer.WriteElementIfNotEmpty("DeletionURL", historyItem.DeletionURL);
+                                writer.WriteElementIfNotEmpty("ShortenedURL", historyItem.ShortenedURL);
+                                writer.WriteEndElement();
+                            }
+
+                            writer.WriteWhitespace(Environment.NewLine);
                         }
 
-                        writer.WriteWhitespace(Environment.NewLine);
+                        Backup(FilePath);
+                        DebugHelper.WriteLine("Trace: HistoryManagerXML - Append successful.");
+                        return true;
                     }
-
-                    Backup(FilePath);
+                    catch (Exception ex)
+                    {
+                        DebugHelper.WriteLine($"Trace: HistoryManagerXML - Error appending history: {ex.Message}");
+                        DebugHelper.WriteException(ex);
+                    }
                 }
-
-                return true;
             }
-
+            
+            DebugHelper.WriteLine("Trace: HistoryManagerXML - Append failed (invalid path or error).");
             return false;
         }
     }

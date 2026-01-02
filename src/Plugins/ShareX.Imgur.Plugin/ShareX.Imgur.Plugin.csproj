@@ -12,7 +12,7 @@
   <PropertyGroup>
     <PluginId>imgur</PluginId>
     <PluginName>Imgur Uploader</PluginName>
-    <Version>1.0.0</Version>
+
   </PropertyGroup>
 
   <!-- Avalonia packages for UI - use exact versions from main app -->

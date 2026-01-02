@@ -13,57 +13,56 @@
 
     <Grid RowDefinitions="Auto,*">
         <!-- Toolbar -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="10">
-            <Button Content="Refresh" Command="{Binding RefreshHistoryCommand}" />
-            <Button Content="Toggle View" Command="{Binding ToggleViewCommand}" />
-            <TextBlock Text="{Binding HistoryItems.Count, StringFormat='Items: {0}'}" 
-                       VerticalAlignment="Center" 
-                       Margin="10,0,0,0"/>
-        </StackPanel>
+        <Border Grid.Row="0" Padding="12,8">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Content="🔄 Refresh" Command="{Binding RefreshHistoryCommand}" 
+                        Padding="12,8" CornerRadius="8"/>
+                <Button Content="{Binding IsGridView, Converter={x:Static vm:HistoryViewModel.ViewToggleConverter}}" 
+                        Command="{Binding ToggleViewCommand}"
+                        Padding="12,8" CornerRadius="8"/>
+                <TextBlock Text="{Binding HistoryItems.Count, StringFormat='📁 {0} items'}" 
+                           VerticalAlignment="Center" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" Margin="10,0,0,0"/>
+            </StackPanel>
+        </Border>
 
-        <!-- History List -->
+        <!-- History Grid/List -->
         <ScrollViewer Grid.Row="1">
-            <ItemsControl ItemsSource="{Binding HistoryItems}">
+            <ItemsControl ItemsSource="{Binding HistoryItems}" Margin="12">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border BorderBrush="Gray" 
-                                BorderThickness="1" 
-                                Margin="5" 
-                                Padding="10"
-                                Background="#20FFFFFF">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <!-- Thumbnail placeholder -->
-                                <Border Grid.Column="0" 
-                                        Width="80" 
-                                        Height="60" 
-                                        Background="#40000000"
-                                        Margin="0,0,10,0">
-                                    <TextBlock Text="📷" 
-                                               FontSize="32" 
-                                               HorizontalAlignment="Center" 
-                                               VerticalAlignment="Center"/>
+                        <Border Margin="6" Background="#252535" CornerRadius="8" 
+                                Width="180" Padding="8"
+                                PointerPressed="OnItemPointerPressed">
+                            <Border.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="✏️ Open in Editor" 
+                                              Command="{Binding $parent[UserControl].((vm:HistoryViewModel)DataContext).EditImageCommand}"
+                                              CommandParameter="{Binding}"/>
+                                    <Separator/>
+                                    <MenuItem Header="📂 Open File Location"/>
+                                    <MenuItem Header="📋 Copy File Path"/>
+                                    <MenuItem Header="🔗 Copy URL" IsVisible="{Binding URL, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <Separator/>
+                                    <MenuItem Header="🗑️ Delete"/>
+                                </ContextMenu>
+                            </Border.ContextMenu>
+                            <StackPanel Spacing="8">
+                                <!-- Thumbnail -->
+                                <Border Height="120" Background="#1a1a2e" CornerRadius="6" ClipToBounds="True">
+                                    <Image Source="{Binding FilePath}" Stretch="UniformToFill"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-
                                 <!-- Info -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding FileName}" FontWeight="Bold"/>
-                                    <TextBlock Text="{Binding DateTime, StringFormat='yyyy-MM-dd HH:mm:ss'}" 
-                                               FontSize="11" 
-                                               Foreground="Gray"/>
-                                    <TextBlock Text="{Binding URL}" 
-                                               Foreground="Blue" 
-                                               FontSize="11"/>
-                                </StackPanel>
-
-                                <!-- Actions -->
-                                <StackPanel Grid.Column="2" 
-                                            Orientation="Horizontal" 
-                                            Spacing="5"
-                                            VerticalAlignment="Center">
-                                    <Button Content="Open" Width="60"/>
-                                    <Button Content="Copy URL" Width="80"/>
-                                </StackPanel>
-                            </Grid>
+                                <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" Foreground="White"
+                                           TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding FileName}"/>
+                                <TextBlock Text="{Binding DateTime, StringFormat='yyyy-MM-dd HH:mm'}" 
+                                           FontSize="11" Foreground="#6B7280"/>
+                            </StackPanel>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

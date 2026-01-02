@@ -18,7 +18,7 @@
 
     <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
         <!-- Row 0: Capture Toolbar -->
-        <Border Grid.Row="0" Padding="16,12">
+        <Border Grid.Row="0" Background="#252535" Padding="16,12">
             <DockPanel>
                 <!-- Capture Buttons (Left) -->
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="8">
@@ -64,6 +64,7 @@
 
         <!-- Row 1: Annotation Toolbar (only visible when screenshot exists) -->
         <Border Grid.Row="1" 
+                Background="#2A2A3E" 
                 Padding="12,8"
                 IsVisible="{Binding HasPreviewImage}">
             <StackPanel Orientation="Vertical" Spacing="10">
@@ -77,29 +78,29 @@
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Select (V)"/>
                             
                             <!-- Shapes -->
-                            <Button Content="▭" Width="40" Height="40" 
+                            <Button Content="Γû¡" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Rectangle}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Rectangle}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Rectangle (R)"/>
-                            <Button Content="○" Width="40" Height="40" 
+                            <Button Content="Γùï" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Ellipse}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Ellipse}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Ellipse (E)"/>
-                            <Button Content="—" Width="40" Height="40" 
+                            <Button Content="ΓÇö" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Line}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Line}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Line (L)"/>
-                            <Button Content="→" Width="40" Height="40" 
+                            <Button Content="ΓåÆ" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Arrow}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Arrow}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Arrow (A)"/>
                             
                             <!-- Drawing -->
-                            <Button Content="✏️" Width="40" Height="40" 
+                            <Button Content="Γ£Å∩╕Å" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Pen}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Pen}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Freehand (P)"/>
-                            <Button Content="🖍️" Width="40" Height="40" 
+                            <Button Content="≡ƒûì∩╕Å" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Highlighter}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Highlighter}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Highlighter (H)"/>
@@ -109,38 +110,38 @@
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Text}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Text}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Text (T)"/>
-                            <Button Content="💬" Width="40" Height="40" 
+                            <Button Content="≡ƒÆ¼" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.SpeechBalloon}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=SpeechBalloon}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Speech Balloon (B)"/>
-                            <Button Content="①" Width="40" Height="40" 
+                            <Button Content="Γæá" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Number}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Number}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Step/Number (N)"/>
 
                             <!-- Effects & Utils -->
-                            <Button Content="💧" Width="40" Height="40" 
+                            <Button Content="≡ƒÆº" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Blur}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Blur}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Blur Region"/>
-                            <Button Content="▒" Width="40" Height="40" 
+                            <Button Content="ΓûÆ" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Pixelate}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Pixelate}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Pixelate Region"/>
-                            <Button Content="🔍" Width="40" Height="40" 
+                            <Button Content="≡ƒöì" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Magnify}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Magnify}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Magnifier (M)"/>
-                            <Button Content="🔦" Width="40" Height="40" 
+                            <Button Content="≡ƒöª" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Spotlight}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Spotlight}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Spotlight (S)"/>
-                            <Button Content="🪄" Width="40" Height="40" 
+                            <Button Content="≡ƒ¬ä" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.SmartEraser}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=SmartEraser}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Smart Eraser"/>
 
-                            <Button Content="✂" Width="40" Height="40" 
+                            <Button Content="Γ£é" Width="40" Height="40" 
                                     Command="{Binding SelectToolCommand}" CommandParameter="{x:Static models:EditorTool.Crop}"
                                     Background="{Binding ActiveTool, Converter={StaticResource ActiveToolToBackground}, ConverterParameter=Crop}" 
                                     Foreground="White" CornerRadius="8" ToolTip.Tip="Crop (C)"/>
@@ -229,10 +230,10 @@
                     <!-- Undo/Redo -->
                     <Border BorderThickness="0,0,1,0" BorderBrush="#3B3B52" Padding="0,0,12,0">
                         <StackPanel Orientation="Horizontal" Spacing="4">
-                                <Button Content="↶" Width="32" Height="32" Background="#25263A" Foreground="#E2E8F0" CornerRadius="8" 
+                                <Button Content="Γå╢" Width="32" Height="32" Background="#25263A" Foreground="#E2E8F0" CornerRadius="8" 
                                     BorderBrush="#3B3B52" BorderThickness="1"
                                     Command="{Binding UndoCommand}" ToolTip.Tip="Undo (Ctrl+Z)"/>
-                                <Button Content="↷" Width="32" Height="32" Background="#25263A" Foreground="#E2E8F0" CornerRadius="8" 
+                                <Button Content="Γå╖" Width="32" Height="32" Background="#25263A" Foreground="#E2E8F0" CornerRadius="8" 
                                     BorderBrush="#3B3B52" BorderThickness="1"
                                     Command="{Binding RedoCommand}" ToolTip.Tip="Redo (Ctrl+Shift+Z)"/>
                         </StackPanel>
@@ -240,10 +241,10 @@
                     
                     <!-- Delete / Clear -->
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Button Content="🧹" Width="32" Height="32" Background="#25263A" Foreground="#E2E8F0" CornerRadius="8"
+                        <Button Content="≡ƒº╣" Width="32" Height="32" Background="#25263A" Foreground="#E2E8F0" CornerRadius="8"
                             BorderBrush="#3B3B52" BorderThickness="1"
                             Command="{Binding ClearAnnotationsCommand}" ToolTip.Tip="Clear all annotations"/>
-                        <Button Content="🗑" Width="32" Height="32" Background="#25263A" Foreground="#F43F5E" CornerRadius="8" 
+                        <Button Content="≡ƒùæ" Width="32" Height="32" Background="#25263A" Foreground="#F43F5E" CornerRadius="8" 
                             BorderBrush="#3B3B52" BorderThickness="1"
                             Command="{Binding DeleteSelectedCommand}" ToolTip.Tip="Delete Selected (Del)"/>
                     </StackPanel>
@@ -330,7 +331,7 @@
             </Grid>
 
             <!-- Right Sidebar (Settings Panel) -->
-            <Border Grid.Column="1" Padding="20">
+            <Border Grid.Column="1" Background="#252535" Padding="20">
                 <ScrollViewer>
                     <StackPanel Spacing="25">
                         <TextBlock Text="Settings" 
@@ -417,6 +418,7 @@
 
         <!-- Row 3: Export Toolbar (only visible when screenshot exists) -->
         <Border Grid.Row="3" 
+                Background="#252535" 
                 Padding="12,10"
                 IsVisible="{Binding HasPreviewImage}">
             <DockPanel>
@@ -452,7 +454,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button Command="{Binding CopyCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="📋" FontSize="14"/>
+                            <TextBlock Text="≡ƒôï" FontSize="14"/>
                             <TextBlock Text="Copy" FontSize="12"/>
                         </StackPanel>
                         <Button.Styles>
@@ -469,7 +471,7 @@
                     
                     <Button Command="{Binding QuickSaveCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="⬇" FontSize="14"/>
+                            <TextBlock Text="Γ¼ç" FontSize="14"/>
                             <TextBlock Text="Quick Save" FontSize="12"/>
                         </StackPanel>
                         <Button.Styles>
@@ -486,7 +488,7 @@
                     
                     <Button Command="{Binding SaveAsCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="💾" FontSize="14"/>
+                            <TextBlock Text="≡ƒÆ╛" FontSize="14"/>
                             <TextBlock Text="Save As..." FontSize="12"/>
                         </StackPanel>
                         <Button.Styles>
@@ -504,7 +506,7 @@
         </Border>
 
         <!-- Row 4: Status Bar (always visible) -->
-        <Border Grid.Row="4" Padding="16,8">
+        <Border Grid.Row="4" Background="#1E1E2E" Padding="16,8">
             <DockPanel>
                 <!-- Right: Version Info (Strictly Bottom Right) -->
                 <TextBlock DockPanel.Dock="Right" 

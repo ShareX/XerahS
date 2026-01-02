@@ -11,7 +11,7 @@
   <PropertyGroup>
     <PluginId>amazons3</PluginId>
     <PluginName>Amazon S3 Uploader</PluginName>
-    <Version>1.0.0</Version>
+
   </PropertyGroup>
 
   <ItemGroup>

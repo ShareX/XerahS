@@ -15,18 +15,23 @@ namespace ShareX.Ava.UI.Services
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                if (global::Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
-                    desktop.MainWindow is Views.MainWindow mainWindow)
-                {
-                    // Clone image to ensure ViewModel owns its copy
-                    var imageClone = (System.Drawing.Image)image.Clone();
+                // Create a clone of the image for independent editing
+                var imageClone = (System.Drawing.Image)image.Clone();
 
-                    // Update ViewModel
-                    MainViewModel.Current?.UpdatePreview(imageClone);
+                // Create independent Editor Window
+                var editorWindow = new Views.EditorWindow();
+                
+                // Create independent ViewModel for this editor instance
+                var editorViewModel = new MainViewModel();
+                
+                // Set DataContext BEFORE initializing preview so bindings update correctly
+                editorWindow.DataContext = editorViewModel;
+                
+                // Initialize the preview image
+                editorViewModel.UpdatePreview(imageClone);
 
-                    // Navigate
-                    mainWindow.NavigateToEditor();
-                }
+                // Show the window
+                editorWindow.Show();
             });
         }
     }

@@ -5,14 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="using:FluentAvalonia.UI.Controls"
         xmlns:views="using:ShareX.Ava.UI.Views"
-        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        xmlns:common="clr-namespace:ShareX.Ava.Common;assembly=ShareX.Avalonia.Common"
+        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="650"
         x:Class="ShareX.Ava.UI.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Title="ShareX"
-        Width="1200" Height="800"
-        Background="#1E1E2E"
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
+        Title="{x:Static common:ShareXResources.ProductName}"
+        Icon="/Assets/sharex.ico"
+        WindowState="Normal"
+        WindowStartupLocation="CenterScreen"
+
         Opened="OnWindowOpened">
 
     <Window.DataTemplates>
@@ -27,32 +28,7 @@
 
     <Grid RowDefinitions="Auto,*">
         
-        <!-- Header Row with Logo and Window Controls -->
-        <Grid Grid.Row="0" Height="40" Background="#1E1E2E" ColumnDefinitions="*,Auto" PointerPressed="OnTitleBarPointerPressed">
-            <TextBlock Grid.Column="0" 
-                       Text="ShareX" 
-                       FontSize="16" 
-                       FontWeight="Bold" 
-                       Foreground="White"
-                       VerticalAlignment="Center"
-                       Margin="20,0,0,0"/>
-            
-            <!-- Window Controls -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="0">
-                <Button Content="—" Width="46" Height="40" 
-                        Background="Transparent" 
-                        Foreground="White"
-                        Click="OnMinimizeClick"/>
-                <Button Content="□" Width="46" Height="40" 
-                        Background="Transparent" 
-                        Foreground="White"
-                        Click="OnMaximizeClick"/>
-                <Button Content="✕" Width="46" Height="40" 
-                        Background="Transparent" 
-                        Foreground="White"
-                        Click="OnCloseClick"/>
-            </StackPanel>
-        </Grid>
+        <!-- Header Row reserved for future use or native integration -->
 
         <!-- Main Navigation Shell -->
         <ui:NavigationView Grid.Row="1" 

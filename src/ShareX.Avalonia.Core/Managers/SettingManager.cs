@@ -38,7 +38,7 @@ namespace ShareX.Ava.Core
     /// </summary>
     public static class SettingManager
     {
-        public const string AppName = "ShareX.Ava";
+        public const string AppName = "ShareX Ava";
 
         #region Constants
 
