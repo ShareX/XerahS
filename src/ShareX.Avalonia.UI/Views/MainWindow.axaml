@@ -12,7 +12,7 @@
         Width="1200" Height="800"
         Background="#1E1E2E"
         ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="40"
         Opened="OnWindowOpened">
 
     <Window.DataTemplates>
@@ -27,31 +27,16 @@
 
     <Grid RowDefinitions="Auto,*">
         
-        <!-- Header Row with Logo and Window Controls -->
-        <Grid Grid.Row="0" Height="40" Background="#1E1E2E" ColumnDefinitions="*,Auto" PointerPressed="OnTitleBarPointerPressed">
+        <!-- Header Row with Logo (Native Window Buttons are overlayed by OS) -->
+        <!-- Header Row with Logo (Native Window Buttons are overlayed by OS) -->
+        <Grid Grid.Row="0" Height="40" Background="#1E1E2E" ColumnDefinitions="Auto,*" IsHitTestVisible="False">
             <TextBlock Grid.Column="0" 
-                       Text="ShareX" 
+                       Text="ShareX Ava" 
                        FontSize="16" 
                        FontWeight="Bold" 
                        Foreground="White"
                        VerticalAlignment="Center"
-                       Margin="20,0,0,0"/>
-            
-            <!-- Window Controls -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="0">
-                <Button Content="—" Width="46" Height="40" 
-                        Background="Transparent" 
-                        Foreground="White"
-                        Click="OnMinimizeClick"/>
-                <Button Content="□" Width="46" Height="40" 
-                        Background="Transparent" 
-                        Foreground="White"
-                        Click="OnMaximizeClick"/>
-                <Button Content="✕" Width="46" Height="40" 
-                        Background="Transparent" 
-                        Foreground="White"
-                        Click="OnCloseClick"/>
-            </StackPanel>
+                       Margin="20,0,0,0"/> 
         </Grid>
 
         <!-- Main Navigation Shell -->

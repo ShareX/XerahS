@@ -201,30 +201,8 @@ namespace ShareX.Ava.UI.Views
             }
         }
 
-        private void OnTitleBarPointerPressed(object sender, PointerPressedEventArgs e)
-        {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
-            {
-                BeginMoveDrag(e);
-            }
-        }
+
         
-        // Window Button Handlers
-        private void OnMinimizeClick(object? sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        private void OnMaximizeClick(object? sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-        }
-
-        private void OnCloseClick(object? sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
