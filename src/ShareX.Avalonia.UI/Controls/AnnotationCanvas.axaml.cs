@@ -49,11 +49,13 @@ public partial class AnnotationCanvas : UserControl
     private HandleKind _activeHandle = HandleKind.None;
     private TextBox? _textEditor;
 
-    private const double HandleSize = 8;
+    private const double HandleSize = 15;
 
     private bool _isCropping;
 
     private SKBitmap? _cachedSourceSk;
+    
+    private List<Border> _selectionHandles = new List<Border>();
 
     static AnnotationCanvas()
     {
@@ -95,6 +97,12 @@ public partial class AnnotationCanvas : UserControl
     private void HookCollectionChanged()
     {
         if (ViewModel == null) return;
+        
+        // Ensure overlay is hit test visible so handles can be clicked
+        if (_overlay != null)
+        {
+            _overlay.IsHitTestVisible = true;
+        }
 
         if (ViewModel?.Annotations != null)
         {
@@ -114,6 +122,7 @@ public partial class AnnotationCanvas : UserControl
             e.PropertyName == nameof(AnnotationCanvasViewModel.StrokeWidth))
         {
             InvalidateVisual();
+            UpdateSelectionHandles();
         }
     }
 
@@ -142,16 +151,20 @@ public partial class AnnotationCanvas : UserControl
             annotation.Render(context);
         }
 
+        // Draw selection outline only (handles are now Border controls in overlay)
         if (ViewModel.SelectedAnnotation != null && ViewModel.SelectedAnnotation is not CropAnnotation)
         {
             var bounds = ViewModel.SelectedAnnotation.GetBounds();
-            var selectionPen = new Pen(Brushes.DodgerBlue, 1, dashStyle: new DashStyle(new double[] { 4, 4 }, 0));
-            context.DrawRectangle(null, selectionPen, bounds.Inflate(2));
-
-            foreach (var handle in GetHandles(bounds))
+            
+            // Use theme-aware colors for selection outline
+            IBrush accentBrush = Brushes.DodgerBlue;
+            if (Application.Current?.TryFindResource("SystemAccentColor", out var accentRes) == true && accentRes is Color accentColor)
             {
-                context.DrawRectangle(Brushes.White, new Pen(Brushes.DodgerBlue, 1), handle);
+                accentBrush = new SolidColorBrush(accentColor);
             }
+            
+            var selectionPen = new Pen(accentBrush, 1, dashStyle: new DashStyle(new double[] { 4, 4 }, 0));
+            context.DrawRectangle(null, selectionPen, bounds.Inflate(2));
         }
     }
 
@@ -184,25 +197,29 @@ public partial class AnnotationCanvas : UserControl
     private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (ViewModel == null) return;
+        
         var pos = e.GetPosition(this);
         _startPoint = pos;
         _lastPoint = pos;
 
+        // Check if clicking on a handle - Use robust Source check
+        // Note: _overlay must be IsHitTestVisible=True for this to work
+        if (e.Source is Control sourceControl && _selectionHandles.Contains(sourceControl))
+        {
+            if (sourceControl.Tag is HandleKind kind)
+            {
+                _activeHandle = kind;
+                _isResizing = true;
+                e.Pointer.Capture(this);
+                e.Handled = true;
+                return;
+            }
+        }
+
         if (ViewModel.ActiveTool == EditorTool.Select)
         {
             var hit = HitTestAnnotation(pos);
-            if (ViewModel.SelectedAnnotation != null)
-            {
-                var handle = HitHandle(ViewModel.SelectedAnnotation.GetBounds(), pos);
-                if (handle != HandleKind.None)
-                {
-                    _activeHandle = handle;
-                    _isResizing = true;
-                    e.Pointer.Capture(this);
-                    return;
-                }
-            }
-
+            
             if (hit != null)
             {
                 ViewModel.SelectedAnnotation = hit;
@@ -258,6 +275,7 @@ public partial class AnnotationCanvas : UserControl
             ApplyResize(ViewModel.SelectedAnnotation, _activeHandle, pos);
             _lastPoint = pos;
             InvalidateVisual();
+            UpdateSelectionHandles(); // Update handle positions during resize
             return;
         }
 
@@ -267,6 +285,7 @@ public partial class AnnotationCanvas : UserControl
             MoveAnnotation(ViewModel.SelectedAnnotation, delta);
             _lastPoint = pos;
             InvalidateVisual();
+            UpdateSelectionHandles(); // Update handle positions during move
             return;
         }
 
@@ -299,6 +318,14 @@ public partial class AnnotationCanvas : UserControl
                 {
                     UpdateEffect(effect);
                 }
+                
+                // Select the newly drawn annotation and show handles
+                if (_activeAnnotation != null)
+                {
+                    ViewModel.SelectedAnnotation = _activeAnnotation;
+                    UpdateSelectionHandles();
+                }
+                
                 ViewModel.CommitCurrentState();
             }
 
@@ -315,6 +342,7 @@ public partial class AnnotationCanvas : UserControl
                 UpdateEffect(eff);
             }
             ViewModel.CommitCurrentState();
+            UpdateSelectionHandles(); // Final handle update after operation complete
         }
 
         e.Pointer.Capture(null);
@@ -527,6 +555,11 @@ public partial class AnnotationCanvas : UserControl
     {
         if (_canvas == null || _overlay == null || ViewModel == null) return;
 
+        // Use theme-aware border color
+        var borderBrush = Application.Current?.TryFindResource("SystemControlForegroundBaseHighBrush", out var borderRes) == true && borderRes is IBrush brush
+            ? brush
+            : Brushes.White;
+
         _textEditor = new TextBox
         {
             Width = 200,
@@ -534,7 +567,7 @@ public partial class AnnotationCanvas : UserControl
             Foreground = new SolidColorBrush(Color.Parse(ViewModel.StrokeColor)),
             Background = Brushes.Transparent,
             BorderThickness = new Thickness(1),
-            BorderBrush = Brushes.White,
+            BorderBrush = borderBrush,
             Padding = new Thickness(4)
         };
 
@@ -563,7 +596,8 @@ public partial class AnnotationCanvas : UserControl
         _textEditor.LostFocus -= OnTextCommit;
 
         _overlay.Children.Remove(_textEditor);
-        _overlay.IsHitTestVisible = false;
+        // Do NOT set IsHitTestVisible to false, otherwise handles become unclickable
+        // _overlay.IsHitTestVisible = false; 
         _textEditor = null;
 
         if (string.IsNullOrWhiteSpace(text))
@@ -584,6 +618,79 @@ public partial class AnnotationCanvas : UserControl
         ViewModel.CommitCurrentState();
         InvalidateVisual();
     }
+
+    private void UpdateSelectionHandles()
+    {
+        if (_overlay == null) return;
+
+        // Clear existing handles
+        foreach (var handle in _selectionHandles)
+        {
+            _overlay.Children.Remove(handle);
+        }
+        _selectionHandles.Clear();
+
+        if (ViewModel?.SelectedAnnotation == null || ViewModel.SelectedAnnotation is CropAnnotation) return;
+
+        var bounds = ViewModel.SelectedAnnotation.GetBounds();
+        if (bounds.Width <= 0 || bounds.Height <= 0) return;
+
+        // Create 8 handles
+        CreateHandle(bounds.TopLeft, HandleKind.TopLeft);
+        CreateHandle(new Point(bounds.Center.X, bounds.Top), HandleKind.TopCenter);
+        CreateHandle(bounds.TopRight, HandleKind.TopRight);
+        CreateHandle(new Point(bounds.Right, bounds.Center.Y), HandleKind.RightCenter);
+        CreateHandle(bounds.BottomRight, HandleKind.BottomRight);
+        CreateHandle(new Point(bounds.Center.X, bounds.Bottom), HandleKind.BottomCenter);
+        CreateHandle(bounds.BottomLeft, HandleKind.BottomLeft);
+        CreateHandle(new Point(bounds.Left, bounds.Center.Y), HandleKind.LeftCenter);
+    }
+
+    private void CreateHandle(Point position, HandleKind kind)
+    {
+        if (_overlay == null) return;
+
+        // Determine cursor based on handle kind
+        StandardCursorType cursorType = kind switch
+        {
+            HandleKind.TopLeft or HandleKind.BottomRight => StandardCursorType.TopLeftCorner,
+            HandleKind.TopRight or HandleKind.BottomLeft => StandardCursorType.TopRightCorner,
+            HandleKind.TopCenter or HandleKind.BottomCenter => StandardCursorType.SizeNorthSouth,
+            HandleKind.LeftCenter or HandleKind.RightCenter => StandardCursorType.SizeWestEast,
+            _ => StandardCursorType.Hand
+        };
+
+        // Get theme-aware colors
+        IBrush accentBrush = Brushes.DodgerBlue;
+        if (Application.Current?.TryFindResource("SystemAccentColor", out var accentRes) == true && accentRes is Color accentColor)
+        {
+            accentBrush = new SolidColorBrush(accentColor);
+        }
+
+        var handleBorder = new Border
+        {
+            Width = HandleSize,
+            Height = HandleSize,
+            CornerRadius = new CornerRadius(HandleSize / 2), // Circular
+            Background = Brushes.White,
+            BorderBrush = accentBrush,
+            BorderThickness = new Thickness(2),
+            Tag = kind,
+            Cursor = new Cursor(cursorType),
+            BoxShadow = new BoxShadows(new BoxShadow { Blur = 4, Color = Colors.Black, OffsetX = 0, OffsetY = 2, Spread = 0 })
+        };
+
+        // Note: No event handlers attached - events bubble to main AnnotationCanvas handlers
+
+        // Center the handle on the position
+        Canvas.SetLeft(handleBorder, position.X - HandleSize / 2);
+        Canvas.SetTop(handleBorder, position.Y - HandleSize / 2);
+
+        _overlay.Children.Add(handleBorder);
+        _selectionHandles.Add(handleBorder);
+    }
+
+
 
     private enum HandleKind
     {
