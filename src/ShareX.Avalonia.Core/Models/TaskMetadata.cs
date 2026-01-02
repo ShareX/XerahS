@@ -38,6 +38,8 @@ public class TaskMetadata : IDisposable
 
     public Bitmap? Image { get; set; }
 
+    public string? UploadURL { get; set; }
+
     private string? windowTitle;
 
     public string? WindowTitle
