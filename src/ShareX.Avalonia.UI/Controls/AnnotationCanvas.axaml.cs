@@ -225,6 +225,7 @@ namespace ShareX.Ava.UI.Controls
                      CreatePolylineAnnotation(canvas, brush, vm);
                      break;
                  case EditorTool.Blur:
+                 case EditorTool.Pixelate:
                  case EditorTool.Magnify:
                  case EditorTool.Highlighter:
                  case EditorTool.SpeechBalloon:
@@ -241,8 +242,8 @@ namespace ShareX.Ava.UI.Controls
                  {
                      if (canvas != null && !canvas.Children.Contains(_currentShape))
                      {
-                         // Don't set Canvas.Left/Top for Arrow - geometry uses absolute coordinates
-                         if (vm.ActiveTool != EditorTool.Arrow)
+                         // Don't set Canvas.Left/Top for Line/Arrow - they use absolute coordinates
+                         if (vm.ActiveTool != EditorTool.Arrow && vm.ActiveTool != EditorTool.Line)
                          {
                              Canvas.SetLeft(_currentShape, _startPoint.X);
                              Canvas.SetTop(_currentShape, _startPoint.Y);
