@@ -141,4 +141,70 @@ public static class PluginConfigurationVerifier
 
         return result;
     }
+
+    /// <summary>
+    /// Cleans duplicate framework DLLs from a plugin folder
+    /// </summary>
+    /// <param name="providerId">The plugin provider ID</param>
+    /// <returns>Number of files deleted</returns>
+    public static int CleanDuplicateFrameworkDlls(string providerId)
+    {
+        var pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins", providerId);
+        
+        if (!Directory.Exists(pluginsPath))
+        {
+            return 0;
+        }
+
+        int deletedCount = 0;
+        var files = Directory.GetFiles(pluginsPath, "*.*", SearchOption.TopDirectoryOnly);
+
+        foreach (var dll in ProblematicDlls)
+        {
+            var filePath = Path.Combine(pluginsPath, dll);
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    File.Delete(filePath);
+                    deletedCount++;
+                    Common.DebugHelper.WriteLine($"[PluginVerifier] Deleted duplicate DLL: {dll}");
+                }
+                catch (Exception ex)
+                {
+                    Common.DebugHelper.WriteException(ex, $"Failed to delete {dll}");
+                }
+            }
+        }
+
+        // Also clean up other Avalonia-related DLLs that might be duplicates
+        var avaloniaPatterns = new[] { "Avalonia.*.dll", "MicroCom.*.dll" };
+        foreach (var pattern in avaloniaPatterns)
+        {
+            var matchingFiles = Directory.GetFiles(pluginsPath, pattern, SearchOption.TopDirectoryOnly);
+            foreach (var file in matchingFiles)
+            {
+                var fileName = Path.GetFileName(file);
+                // Skip the main Avalonia.dll if it's in the list already
+                if (ProblematicDlls.Contains(fileName, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue; // Already handled above
+                }
+                
+                // Delete other Avalonia assemblies
+                try
+                {
+                    File.Delete(file);
+                    deletedCount++;
+                    Common.DebugHelper.WriteLine($"[PluginVerifier] Deleted Avalonia-related DLL: {fileName}");
+                }
+                catch (Exception ex)
+                {
+                    Common.DebugHelper.WriteException(ex, $"Failed to delete {fileName}");
+                }
+            }
+        }
+
+        return deletedCount;
+    }
 }

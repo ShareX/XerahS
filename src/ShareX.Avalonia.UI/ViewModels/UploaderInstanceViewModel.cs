@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using ShareX.Ava.Uploaders.PluginSystem;
 using System.Collections.ObjectModel;
 
@@ -100,6 +101,29 @@ public partial class UploaderInstanceViewModel : ViewModelBase
         HasVerificationError = result.Status == PluginVerificationStatus.Error;
         
         Common.DebugHelper.WriteLine($"[UploaderInstanceVM] Plugin verification for {ProviderId}: {result.Status} - {result.Message}");
+    }
+
+    [RelayCommand]
+    private void CleanDuplicates()
+    {
+        Common.DebugHelper.WriteLine($"[UploaderInstanceVM] Cleaning duplicate DLLs for {ProviderId}");
+        
+        var deletedCount = PluginConfigurationVerifier.CleanDuplicateFrameworkDlls(ProviderId);
+        
+        if (deletedCount > 0)
+        {
+            Common.DebugHelper.WriteLine($"[UploaderInstanceVM] Deleted {deletedCount} duplicate DLL(s)");
+            
+            // Re-verify after cleanup
+            VerifyPluginConfiguration();
+            
+            // Update status message to show success
+            VerificationMessage = $"✓ Cleaned {deletedCount} duplicate DLL(s) - Please restart the application";
+        }
+        else
+        {
+            VerificationMessage = "No duplicate files found to clean";
+        }
     }
 
     private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

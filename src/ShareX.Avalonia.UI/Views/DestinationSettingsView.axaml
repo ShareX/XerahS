@@ -171,6 +171,20 @@
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
                                     </Expander>
+                                    
+                                    <!-- Clean Duplicates Button -->
+                                    <Button Content="🗑️ Clean Duplicate Files"
+                                            Command="{Binding SelectedCategory.SelectedInstance.CleanDuplicatesCommand}"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,8,0,0"
+                                            Background="{DynamicResource AccentButtonBackground}"
+                                            Foreground="White">
+                                        <ToolTip.Tip>
+                                            <TextBlock Text="Automatically delete duplicate framework DLLs from the plugin folder"
+                                                       TextWrapping="Wrap"
+                                                       MaxWidth="300"/>
+                                        </ToolTip.Tip>
+                                    </Button>
                                 </StackPanel>
                             </Border>
 
