@@ -454,7 +454,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button Command="{Binding CopyCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="≡ƒôï" FontSize="14"/>
+                            <TextBlock Text="📋" FontSize="14"/>
                             <TextBlock Text="Copy" FontSize="12"/>
                         </StackPanel>
                         <Button.Styles>
@@ -471,7 +471,7 @@
                     
                     <Button Command="{Binding QuickSaveCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="Γ¼ç" FontSize="14"/>
+                            <TextBlock Text="⬇" FontSize="14"/>
                             <TextBlock Text="Quick Save" FontSize="12"/>
                         </StackPanel>
                         <Button.Styles>
@@ -488,7 +488,7 @@
                     
                     <Button Command="{Binding SaveAsCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="≡ƒÆ╛" FontSize="14"/>
+                            <TextBlock Text="💾" FontSize="14"/>
                             <TextBlock Text="Save As..." FontSize="12"/>
                         </StackPanel>
                         <Button.Styles>
