@@ -91,6 +91,30 @@
                                 </StackPanel>
                             </Border>
                         </StackPanel>
+
+                        <!-- After Capture Tasks Section -->
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="After capture" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="Choose actions to perform automatically after capturing" 
+                                               FontSize="12" 
+                                               Foreground="Gray" 
+                                               Margin="0,0,0,4"/>
+                                    <CheckBox IsChecked="{Binding SaveImageToFile}" 
+                                              Content="Save image to file"/>
+                                    <CheckBox IsChecked="{Binding CopyImageToClipboard}" 
+                                              Content="Copy image to clipboard"/>
+                                    <CheckBox IsChecked="{Binding UploadImageToHost}" 
+                                              Content="Upload image to host"
+                                              FontWeight="SemiBold"/>
+                                    <CheckBox IsChecked="{Binding AnnotateImage}" 
+                                              Content="Annotate image"/>
+                                    <CheckBox IsChecked="{Binding ShowAfterCaptureWindow}" 
+                                              Content="Show after capture window"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

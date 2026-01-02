@@ -75,6 +75,72 @@ namespace ShareX.Ava.UI.ViewModels
         [ObservableProperty]
         private string _uRLRegexReplaceReplacement;
 
+        // Task Settings - After Capture
+        public bool SaveImageToFile
+        {
+            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.SaveImageToFile);
+            set
+            {
+                if (value)
+                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.SaveImageToFile;
+                else
+                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.SaveImageToFile;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool CopyImageToClipboard
+        {
+            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyImageToClipboard);
+            set
+            {
+                if (value)
+                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.CopyImageToClipboard;
+                else
+                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.CopyImageToClipboard;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool UploadImageToHost
+        {
+            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost);
+            set
+            {
+                if (value)
+                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.UploadImageToHost;
+                else
+                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.UploadImageToHost;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool AnnotateImage
+        {
+            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AnnotateImage);
+            set
+            {
+                if (value)
+                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.AnnotateImage;
+                else
+                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.AnnotateImage;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool ShowAfterCaptureWindow
+        {
+            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.ShowAfterCaptureWindow);
+            set
+            {
+                if (value)
+                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.ShowAfterCaptureWindow;
+                else
+                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.ShowAfterCaptureWindow;
+                OnPropertyChanged();
+            }
+        }
+
         public SettingsViewModel()
         {
             HotkeySettings = new HotkeySettingsViewModel();
