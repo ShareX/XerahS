@@ -91,6 +91,53 @@ Located in `Views/RegionCapture/`:
 *   Multi-monitor DPI handling
 *   Uses `System.Drawing.Graphics.CopyFromScreen` (GDI+) for pixel capture on Windows
 
+## Plugin System
+
+### ⚠️ Critical: Plugin Config Views Not Loading
+
+**Problem**: Plugin configuration UI doesn't appear in Destination Settings even though the plugin is loaded.
+
+**Root Cause**: Duplicate framework DLLs in the plugin output folder. When plugins include Avalonia, CommunityToolkit.Mvvm, or Newtonsoft.Json assemblies, the dynamic loading system may fail to initialize config views due to type identity mismatches.
+
+**Solution**: **Always use `ExcludeAssets=runtime`** on NuGet package references for shared dependencies:
+
+```xml
+<!-- ✅ CORRECT: Shared framework dependencies -->
+<ItemGroup>
+  <PackageReference Include="Avalonia" Version="11.2.2">
+    <ExcludeAssets>runtime</ExcludeAssets>
+  </PackageReference>
+  <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.2">
+    <ExcludeAssets>runtime</ExcludeAssets>
+  </PackageReference>
+  <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0">
+    <ExcludeAssets>runtime</ExcludeAssets>
+  </PackageReference>
+  <PackageReference Include="Newtonsoft.Json" Version="13.0.4">
+    <ExcludeAssets>runtime</ExcludeAssets>
+  </PackageReference>
+</ItemGroup>
+```
+
+**Verification**: A properly configured plugin folder should contain **4-5 files**:
+```
+Plugins/myplugin/
+├── ShareX.MyPlugin.Plugin.dll
+├── ShareX.Avalonia.Platform.Abstractions.dll (if needed)
+├── plugin.json
+├── ShareX.MyPlugin.Plugin.runtimeconfig.json
+└── runtimes/ (platform-specific natives only)
+```
+
+**Bad Sign**: If you see 20+ files including `Avalonia.*.dll`, `CommunityToolkit.Mvvm.dll`, etc., the config view will **not load**.
+
+**Debugging**:
+1. Check plugin folder file count - should be ~4 files, not 20+
+2. Enable debug logging in `UploaderInstanceViewModel.InitializeConfigViewModel()`
+3. Look for `ConfigView created: null` or type loading errors
+
+See also: `docs/plugin_development_guide.md` for complete plugin setup instructions.
+
 ## Contribution
 1.  Review project documentation and existing code patterns
 2.  Ensure code compiles with `dotnet build` (0 errors)

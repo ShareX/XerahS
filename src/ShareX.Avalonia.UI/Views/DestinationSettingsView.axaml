@@ -103,6 +103,77 @@
                         IsVisible="{Binding SelectedCategory.SelectedInstance, Converter={x:Static ObjectConverters.IsNotNull}}">
                     <ScrollViewer>
                         <StackPanel Spacing="10">
+                            <!-- Plugin Verification Status Banner -->
+                            <Border Background="{DynamicResource SystemFillColorSuccessBackground}"
+                                    BorderBrush="{DynamicResource SystemAccentColor}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="12"
+                                    IsVisible="{Binding !SelectedCategory.SelectedInstance.HasVerificationWarning}"
+                                    Margin="0,0,0,10">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="{Binding SelectedCategory.SelectedInstance.VerificationMessage}"
+                                               FontWeight="Medium"
+                                               Foreground="{DynamicResource SystemFillColorSuccessForeground}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource SystemFillColorCautionBackground}"
+                                    BorderBrush="#FFA500"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="12"
+                                    IsVisible="{Binding SelectedCategory.SelectedInstance.HasVerificationWarning}"
+                                    Margin="0,0,0,10">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="{Binding SelectedCategory.SelectedInstance.VerificationMessage}"
+                                               FontWeight="Medium"
+                                               Foreground="#FFA500"/>
+                                    <Expander Header="Details" IsExpanded="False">
+                                        <ItemsControl ItemsSource="{Binding SelectedCategory.SelectedInstance.VerificationIssues}"
+                                                      Margin="10,5,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" 
+                                                               FontSize="11"
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,2"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Expander>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource SystemFillColorCriticalBackground}"
+                                    BorderBrush="#DC3545"
+                                    BorderThickness="2"
+                                    CornerRadius="4"
+                                    Padding="12"
+                                    IsVisible="{Binding SelectedCategory.SelectedInstance.HasVerificationError}"
+                                    Margin="0,0,0,10">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="{Binding SelectedCategory.SelectedInstance.VerificationMessage}"
+                                               FontWeight="SemiBold"
+                                               Foreground="#DC3545"/>
+                                    <Expander Header="Show Fix Instructions" IsExpanded="True">
+                                        <ItemsControl ItemsSource="{Binding SelectedCategory.SelectedInstance.VerificationIssues}"
+                                                      Margin="10,5,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" 
+                                                               FontSize="11"
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,2"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Expander>
+                                </StackPanel>
+                            </Border>
+
                             <TextBlock Text="Instance Settings" FontWeight="SemiBold" FontSize="16"/>
                             
                             <StackPanel Spacing="5">

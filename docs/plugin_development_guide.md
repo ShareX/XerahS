@@ -37,11 +37,20 @@ Use the following configuration in your `.csproj` file to ensure correct build o
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Avalonia (if you have UI) -->
-    <PackageReference Include="Avalonia" Version="11.2.1" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.1" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <!-- ⚠️ CRITICAL: Shared framework dependencies MUST use ExcludeAssets=runtime -->
+    <!-- This prevents duplicate DLLs and ensures config views load properly -->
+    <PackageReference Include="Avalonia" Version="11.2.2">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.2">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -76,7 +85,8 @@ Use the following configuration in your `.csproj` file to ensure correct build o
   </Target>
 
 </Project>
-```
+
+> **⚠️ Important**: If you omit `<ExcludeAssets>runtime</ExcludeAssets>` on NuGet packages, your plugin folder will contain 20+ duplicate DLLs and **your config view will not load** in the UI. Always verify your plugin folder has only 4-5 files after building.
 
 ## 2. The Manifest (`plugin.json`)
 

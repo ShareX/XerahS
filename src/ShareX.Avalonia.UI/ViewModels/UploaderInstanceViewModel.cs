@@ -51,6 +51,21 @@ public partial class UploaderInstanceViewModel : ViewModelBase
     [ObservableProperty]
     private ConflictWarningViewModel _conflictWarning = new();
 
+    [ObservableProperty]
+    private string _verificationStatus = string.Empty;
+
+    [ObservableProperty]
+    private string _verificationMessage = string.Empty;
+
+    [ObservableProperty]
+    private List<string> _verificationIssues = new();
+
+    [ObservableProperty]
+    private bool _hasVerificationWarning;
+
+    [ObservableProperty]
+    private bool _hasVerificationError;
+
     /// <summary>
     /// The actual instance model
     /// </summary>
@@ -68,9 +83,23 @@ public partial class UploaderInstanceViewModel : ViewModelBase
 
         InitializeConfigViewModel();
         InitializeFileTypeScope();
+        VerifyPluginConfiguration();
         
         // Subscribe to file type changes
         PropertyChanged += OnPropertyChanged;
+    }
+
+    private void VerifyPluginConfiguration()
+    {
+        var result = PluginConfigurationVerifier.VerifyPluginConfiguration(ProviderId);
+        
+        VerificationMessage = result.Message;
+        VerificationIssues = result.Issues;
+        VerificationStatus = result.Status.ToString();
+        HasVerificationWarning = result.Status == PluginVerificationStatus.Warning;
+        HasVerificationError = result.Status == PluginVerificationStatus.Error;
+        
+        Common.DebugHelper.WriteLine($"[UploaderInstanceVM] Plugin verification for {ProviderId}: {result.Status} - {result.Message}");
     }
 
     private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
