@@ -38,7 +38,7 @@
             </Grid>
 
             <!-- Instance List and Details -->
-            <Grid Grid.Row="1" RowDefinitions="*,Auto,280">
+            <Grid Grid.Row="1" RowDefinitions="*,Auto,*">
                 <!-- Instance List -->
                 <Border Grid.Row="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
