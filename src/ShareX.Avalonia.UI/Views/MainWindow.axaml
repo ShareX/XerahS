@@ -61,7 +61,7 @@
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem Content="Application Settings" Tag="Settings_App" />
                         <ui:NavigationViewItem Content="Task Settings" Tag="Settings_Task" />
-                        <ui:NavigationViewItem Content="Hotkey Settings" Tag="Settings_Hotkey" />
+
                         <ui:NavigationViewItem Content="Destination Settings" Tag="Settings_Dest" />
                     </ui:NavigationViewItem.MenuItems>
                  </ui:NavigationViewItem>

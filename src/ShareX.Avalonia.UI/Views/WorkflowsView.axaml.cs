@@ -9,7 +9,25 @@ public partial class WorkflowsView : UserControl
     public WorkflowsView()
     {
         InitializeComponent();
-        DataContext = new WorkflowsViewModel();
+        var vm = new WorkflowsViewModel();
+        DataContext = vm;
+        
+        // Wire up the edit requester (same pattern as ApplicationSettingsView)
+        vm.EditHotkeyRequester = async (settings) => 
+        {
+            var editVm = new HotkeyEditViewModel(settings);
+            var dialog = new HotkeyEditView
+            {
+                DataContext = editVm
+            };
+            
+            if (VisualRoot is Window window)
+            {
+               return await dialog.ShowDialog<bool>(window);
+            }
+            
+            return false;
+        };
     }
 
     private void InitializeComponent()

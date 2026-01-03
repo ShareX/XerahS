@@ -52,4 +52,19 @@ public partial class HotkeyEditViewModel : ViewModelBase
         SelectedKey = Key.None;
         SelectedModifiers = KeyModifiers.None;
     }
+
+    public string KeyText 
+    {
+        get
+        {
+            if (SelectedKey == Key.None && SelectedModifiers == KeyModifiers.None)
+                return "None";
+                
+            var info = new HotkeyInfo { Key = SelectedKey, Modifiers = SelectedModifiers };
+            return info.ToString();
+        }
+    }
+
+    partial void OnSelectedKeyChanged(Key value) => OnPropertyChanged(nameof(KeyText));
+    partial void OnSelectedModifiersChanged(KeyModifiers value) => OnPropertyChanged(nameof(KeyText));
 }

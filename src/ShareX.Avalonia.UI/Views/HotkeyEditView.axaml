@@ -21,19 +21,36 @@
                           HorizontalAlignment="Stretch"/>
             </StackPanel>
 
-            <!-- Key Configuration -->
+            <!-- Hotkey Configuration -->
             <StackPanel Spacing="5">
                 <TextBlock Text="Hotkey:" FontWeight="SemiBold"/>
+                
                 <Grid ColumnDefinitions="*,Auto">
-                    <TextBox x:Name="KeyTextBox" 
-                             Text="{Binding Model.HotkeyInfo}"
-                             IsReadOnly="True"
-                             Watermark="Press key combination..."
-                             KeyDown="KeyTextBox_KeyDown"/>
+                    <!-- Hotkey Capture Button -->
+                    <Border Grid.Column="0" 
+                            Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" 
+                            CornerRadius="3" 
+                            MinWidth="150">
+                        <Button x:Name="HotkeyButton"
+                                Content="{Binding KeyText}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontFamily="Consolas, Monospace"
+                                FontWeight="Bold"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Padding="10,6"
+                                HorizontalAlignment="Stretch"
+                                Focusable="True"
+                                Cursor="Hand"
+                                Click="HotkeyButton_Click"/>
+                    </Border>
+                    
                     <Button Grid.Column="1" Content="Clear" Command="{Binding ClearCommand}" Margin="10,0,0,0"/>
                 </Grid>
-                <TextBlock Text="Click in the box and press keys to set." 
-                           FontSize="12" Foreground="Gray"/>
+                
+                <TextBlock Text="Click to record. Press Escape to cancel." 
+                           FontSize="12" Foreground="Gray" Margin="0,5,0,0"/>
             </StackPanel>
         </StackPanel>
 

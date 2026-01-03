@@ -77,9 +77,7 @@ namespace ShareX.Ava.UI.Views
                     case "Settings_Task":
                         contentFrame.Content = new TaskSettingsView();
                         break;
-                    case "Settings_Hotkey":
-                        contentFrame.Content = new HotkeySettingsView();
-                        break;
+
                     case "Settings_Dest":
                         contentFrame.Content = new DestinationSettingsView();
                         break;

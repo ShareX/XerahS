@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:ShareX.Ava.UI.ViewModels"
              xmlns:views="using:ShareX.Ava.UI.Views"
+             xmlns:controls="using:ShareX.Ava.UI.Views.Controls"
              xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="ShareX.Ava.UI.Views.WorkflowsView"
@@ -15,20 +16,45 @@
             
             <!-- Toolbar -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="20">
-                <TextBlock Text="Workflows" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="Workflows" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                
                 <Button Command="{Binding AddWorkflowCommand}" ToolTip.Tip="Add New Workflow">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <ui:SymbolIcon Symbol="Add"/>
                         <TextBlock Text="Add New"/>
                     </StackPanel>
                 </Button>
+                
+                <ui:CommandBarSeparator />
+                
                 <Button Command="{Binding RemoveWorkflowCommand}" 
                         IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Remove Selected Workflow">
-                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <ui:SymbolIcon Symbol="Delete"/>
-                        <TextBlock Text="Remove"/>
-                    </StackPanel>
+                        ToolTip.Tip="Remove Selected">
+                    <ui:SymbolIcon Symbol="Delete"/>
+                </Button>
+                 
+                <Button Command="{Binding DuplicateCommand}" 
+                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        ToolTip.Tip="Duplicate">
+                    <ui:SymbolIcon Symbol="Copy"/>
+                </Button>
+                
+                <Button Command="{Binding MoveUpCommand}" 
+                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        ToolTip.Tip="Move Up">
+                    <ui:SymbolIcon Symbol="ChevronUp"/>
+                </Button>
+                 
+                <Button Command="{Binding MoveDownCommand}" 
+                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        ToolTip.Tip="Move Down">
+                    <ui:SymbolIcon Symbol="ChevronDown"/>
+                </Button>
+
+                <ui:CommandBarSeparator />
+
+                <Button Command="{Binding ResetCommand}" ToolTip.Tip="Reset to Defaults">
+                    <ui:SymbolIcon Symbol="Refresh"/>
                 </Button>
             </StackPanel>
 
@@ -36,19 +62,7 @@
             <ListBox Grid.Row="1" ItemsSource="{Binding Workflows}" SelectedItem="{Binding SelectedWorkflow}" Margin="20,0,20,20">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid ColumnDefinitions="*, Auto, Auto">
-                            <StackPanel Grid.Column="0" Spacing="5">
-                                <TextBlock Text="{Binding Description}" FontWeight="SemiBold" FontSize="16"/>
-                                <TextBlock Text="{Binding Job}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            </StackPanel>
-                            
-                            <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="4" Padding="8,4" Margin="10,0" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding HotkeyText}" FontFamily="Consolas, Monospace"/>
-                            </Border>
-                            
-                            <!-- Edit Button Placeholder -->
-                            <Button Grid.Column="2" Content="Edit" Margin="5,0"/>
-                        </Grid>
+                        <controls:HotkeySelectionControl Margin="0,5"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
@@ -57,13 +71,12 @@
         <!-- Wizard Overlay -->
         <Border Background="{DynamicResource SolidBackgroundFillColorBase}" IsVisible="{Binding IsWizardOpen}" 
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
-                Margin="40" CornerRadius="12" BoxShadow="0 0 20 0 #40000000">
+                Margin="40" CornerRadius="12" BoxShadow="0 0 20 0 #40000000"
+                Grid.RowSpan="2">
             <Grid RowDefinitions="*, Auto">
                 
                 <!-- Wizard View -->
                 <views:WorkflowWizardView Grid.Row="0" DataContext="{Binding WizardViewModel}"/>
-                
-                <!-- Helper for when context is null (shouldn't be if IsWizardOpen is true, but good practice) -->
                 
                 <!-- Bottom Action Bar -->
                 <Border Grid.Row="1" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
@@ -76,6 +89,5 @@
                 </Border>
             </Grid>
         </Border>
-
     </Grid>
 </UserControl>
