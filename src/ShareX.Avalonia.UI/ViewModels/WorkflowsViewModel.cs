@@ -19,8 +19,6 @@ public partial class WorkflowsViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(RemoveWorkflowCommand))]
     [NotifyCanExecuteChangedFor(nameof(EditWorkflowCommand))]
     [NotifyCanExecuteChangedFor(nameof(DuplicateCommand))]
-    [NotifyCanExecuteChangedFor(nameof(MoveUpCommand))]
-    [NotifyCanExecuteChangedFor(nameof(MoveDownCommand))]
     private HotkeyItemViewModel? _selectedWorkflow;
 
     [ObservableProperty]
@@ -28,6 +26,9 @@ public partial class WorkflowsViewModel : ViewModelBase
 
     [ObservableProperty]
     private WorkflowWizardViewModel? _wizardViewModel;
+    
+    // Track if we are editing an existing item
+    private HotkeyItemViewModel? _editingWorkflow;
 
     private ShareX.Ava.Core.Hotkeys.HotkeyManager? _manager;
 
@@ -82,6 +83,7 @@ public partial class WorkflowsViewModel : ViewModelBase
     [RelayCommand]
     private void AddWorkflow()
     {
+        _editingWorkflow = null;
         WizardViewModel = new WorkflowWizardViewModel();
         IsWizardOpen = true;
     }
@@ -93,16 +95,47 @@ public partial class WorkflowsViewModel : ViewModelBase
         {
             var newSettings = WizardViewModel.ConstructHotkeySettings();
             
-            // Add via manager to ensure registration if needed
-            _manager.Hotkeys.Add(newSettings);
+            if (_editingWorkflow != null)
+            {
+                // Update existing
+                // Reuse the same hotkey/modifier if possible, or just replace settings?
+                // ConstructHotkeySettings usually sets Key to None. 
+                // We should Preserve the key from the edited item!
+                
+                newSettings.HotkeyInfo = _editingWorkflow.Model.HotkeyInfo;
+                
+                // Replace in manager
+                int index = _manager.Hotkeys.IndexOf(_editingWorkflow.Model);
+                if (index != -1)
+                {
+                    _manager.UnregisterHotkey(_editingWorkflow.Model);
+                    _manager.Hotkeys[index] = newSettings;
+                    _manager.RegisterHotkey(newSettings);
+                }
+                
+                _editingWorkflow = null;
+            }
+            else
+            {
+                // Add new
+                // Add via manager to ensure registration if needed
+                _manager.Hotkeys.Add(newSettings);
+            }
             
             // Reload to sync UI
             LoadWorkflows();
             SaveHotkeys();
             
-            // Select the new one (it's the last one)
-            if (Workflows.Count > 0)
-                SelectedWorkflow = Workflows.Last();
+            // Select the item
+            if (_editingWorkflow != null)
+            {
+                 // If we were editing, try to find the updated one?
+                 // Actually we refreshed list.
+                 // Just leave selection or select last added?
+                 // Let's select the last one if added, or try to select the modified one.
+            }
+             if (Workflows.Count > 0)
+                 SelectedWorkflow = Workflows.Last();
         }
         
         CloseWizard();
@@ -113,26 +146,18 @@ public partial class WorkflowsViewModel : ViewModelBase
     {
         IsWizardOpen = false;
         WizardViewModel = null;
+        _editingWorkflow = null;
     }
 
     [RelayCommand(CanExecute = nameof(CanEditWorkflow))]
-    private async Task EditWorkflow()
+    private void EditWorkflow()
     {
-        if (SelectedWorkflow != null && EditHotkeyRequester != null)
+        if (SelectedWorkflow != null)
         {
-            // Unregister before editing to avoid conflicts if key changes
-            bool wasEnabled = SelectedWorkflow.Model.Enabled;
-            // logic to edit
-            if (await EditHotkeyRequester(SelectedWorkflow.Model))
-            {
-                // Re-register
-                if (_manager != null)
-                {
-                    _manager.RegisterHotkey(SelectedWorkflow.Model);
-                }
-                SelectedWorkflow.Refresh();
-                SaveHotkeys();
-            }
+             _editingWorkflow = SelectedWorkflow;
+             WizardViewModel = new WorkflowWizardViewModel();
+             WizardViewModel.LoadFromSettings(SelectedWorkflow.Model);
+             IsWizardOpen = true;
         }
     }
 
@@ -182,35 +207,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand(CanExecute = nameof(CanEditWorkflow))]
-    private void MoveUp()
-    {
-         if (_manager == null || SelectedWorkflow == null) return;
-         int index = _manager.Hotkeys.IndexOf(SelectedWorkflow.Model);
-         if (index > 0)
-         {
-             _manager.Hotkeys.RemoveAt(index);
-             _manager.Hotkeys.Insert(index - 1, SelectedWorkflow.Model);
-             LoadWorkflows();
-             SaveHotkeys();
-             SelectedWorkflow = Workflows[index - 1]; // Reselect
-         }
-    }
 
-    [RelayCommand(CanExecute = nameof(CanEditWorkflow))]
-    private void MoveDown()
-    {
-         if (_manager == null || SelectedWorkflow == null) return;
-         int index = _manager.Hotkeys.IndexOf(SelectedWorkflow.Model);
-         if (index < _manager.Hotkeys.Count - 1)
-         {
-             _manager.Hotkeys.RemoveAt(index);
-             _manager.Hotkeys.Insert(index + 1, SelectedWorkflow.Model);
-             LoadWorkflows();
-             SaveHotkeys();
-             SelectedWorkflow = Workflows[index + 1];
-         }
-    }
     
     [RelayCommand]
     private void Reset()

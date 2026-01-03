@@ -9,7 +9,7 @@
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="650"
         x:Class="ShareX.Ava.UI.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Title="{x:Static common:ShareXResources.ProductName}"
+        Title="{x:Static common:ShareXResources.ProductNameWithVersion}"
         Icon="/Assets/Logo.ico"
         WindowState="Normal"
         WindowStartupLocation="CenterScreen"

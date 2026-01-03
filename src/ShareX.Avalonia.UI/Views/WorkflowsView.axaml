@@ -27,35 +27,22 @@
                 
                 <ui:CommandBarSeparator />
                 
-                <Button Command="{Binding RemoveWorkflowCommand}" 
+                <Button Content="Edit" Command="{Binding EditWorkflowCommand}" 
                         IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Remove Selected">
-                    <ui:SymbolIcon Symbol="Delete"/>
-                </Button>
-                 
-                <Button Command="{Binding DuplicateCommand}" 
+                        ToolTip.Tip="Edit Selected Workflow"/>
+
+                <Button Content="Duplicate" Command="{Binding DuplicateCommand}" 
                         IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Duplicate">
-                    <ui:SymbolIcon Symbol="Copy"/>
+                        ToolTip.Tip="Duplicate"/>
+
+                <Button Content="Remove" Command="{Binding RemoveWorkflowCommand}" 
+                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        ToolTip.Tip="Remove">
                 </Button>
                 
-                <Button Command="{Binding MoveUpCommand}" 
-                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Move Up">
-                    <ui:SymbolIcon Symbol="ChevronUp"/>
-                </Button>
-                 
-                <Button Command="{Binding MoveDownCommand}" 
-                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Move Down">
-                    <ui:SymbolIcon Symbol="ChevronDown"/>
-                </Button>
-
                 <ui:CommandBarSeparator />
 
-                <Button Command="{Binding ResetCommand}" ToolTip.Tip="Reset to Defaults">
-                    <ui:SymbolIcon Symbol="Refresh"/>
-                </Button>
+                <Button Command="{Binding ResetCommand}" ToolTip.Tip="Reset to Defaults" Content="Reset" />
             </StackPanel>
 
             <!-- List -->
@@ -84,7 +71,7 @@
                         CornerRadius="0,0,12,12" Padding="20">
                     <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
                         <Button Content="Cancel" Command="{Binding CloseWizardCommand}"/>
-                        <Button Content="Create Workflow" Command="{Binding CompleteWizardCommand}" Classes="accent"/>
+                        <Button Content="{Binding WizardViewModel.ButtonText, FallbackValue=Create}" Classes="accent" Command="{Binding CompleteWizardCommand}"/>
                     </StackPanel>
                 </Border>
             </Grid>
