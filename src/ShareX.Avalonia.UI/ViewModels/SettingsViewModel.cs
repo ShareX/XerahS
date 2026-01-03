@@ -108,8 +108,9 @@ namespace ShareX.Ava.UI.ViewModels
 
         partial void OnIsPluginExtensionRegisteredChanged(bool value)
         {
-            // TODO: Implement IIntegrationService.SetPluginExtensionRegistration(value)
-            // For now, this is a stub - will be implemented when IIntegrationService is created
+            if (_isLoading) return; // Don't trigger during initial load
+            
+            ShareX.Ava.Core.Integration.IntegrationHelper.SetPluginExtensionRegistration(value);
         }
 
         // Task Settings - General
@@ -267,9 +268,8 @@ namespace ShareX.Ava.UI.ViewModels
             URLRegexReplaceReplacement = taskSettings.UploadSettings.URLRegexReplaceReplacement;
             
             // Integration Settings
-            // TODO: Check actual platform support when IIntegrationService is implemented
             SupportsFileAssociations = OperatingSystem.IsWindows();
-            IsPluginExtensionRegistered = false; // TODO: Load from IIntegrationService
+            IsPluginExtensionRegistered = ShareX.Ava.Core.Integration.IntegrationHelper.IsPluginExtensionRegistered();
         }
 
         protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
