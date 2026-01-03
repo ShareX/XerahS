@@ -214,6 +214,13 @@ namespace ShareX.Ava.Platform.MacOS.Services
             catch (Exception ex)
             {
                 DebugHelper.WriteException(ex, "MacOSHotkeyService: Failed to start SharpHook.");
+                lock (_lock)
+                {
+                    foreach (var hotkey in _registeredHotkeys.Values)
+                    {
+                        hotkey.Status = ShareX.Ava.Platform.Abstractions.HotkeyStatus.Failed;
+                    }
+                }
             }
         }
 
