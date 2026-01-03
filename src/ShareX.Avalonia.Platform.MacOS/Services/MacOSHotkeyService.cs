@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using System;
+using System.Diagnostics;
 using ShareX.Ava.Platform.Abstractions;
 using DebugHelper = ShareX.Ava.Common.DebugHelper;
 
@@ -36,11 +37,33 @@ namespace ShareX.Ava.Platform.MacOS.Services
     {
         private bool _isSuspended;
         private bool _loggedUnsupported;
+        private bool? _accessibilityEnabled;
 
         public event EventHandler<HotkeyTriggeredEventArgs>? HotkeyTriggered;
 
         public bool RegisterHotkey(HotkeyInfo hotkeyInfo)
         {
+            if (_isSuspended)
+            {
+                if (hotkeyInfo != null)
+                {
+                    hotkeyInfo.Status = ShareX.Ava.Platform.Abstractions.HotkeyStatus.NotConfigured;
+                }
+
+                return false;
+            }
+
+            if (!IsAccessibilityEnabled())
+            {
+                LogAccessibilityRequired();
+                if (hotkeyInfo != null)
+                {
+                    hotkeyInfo.Status = ShareX.Ava.Platform.Abstractions.HotkeyStatus.Failed;
+                }
+
+                return false;
+            }
+
             if (hotkeyInfo != null)
             {
                 hotkeyInfo.Status = ShareX.Ava.Platform.Abstractions.HotkeyStatus.Failed;
@@ -80,6 +103,61 @@ namespace ShareX.Ava.Platform.MacOS.Services
 
         public void Dispose()
         {
+        }
+
+        private bool IsAccessibilityEnabled()
+        {
+            if (_accessibilityEnabled.HasValue)
+            {
+                return _accessibilityEnabled.Value;
+            }
+
+            const string script = "tell application \\\"System Events\\\" to get UI elements enabled";
+            var output = RunOsaScriptWithOutput(script);
+            _accessibilityEnabled = string.Equals(output?.Trim(), "true", StringComparison.OrdinalIgnoreCase);
+            return _accessibilityEnabled.Value;
+        }
+
+        private static string? RunOsaScriptWithOutput(string script)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "osascript",
+                Arguments = $"-e \"{script}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            try
+            {
+                using var process = Process.Start(startInfo);
+                if (process == null)
+                {
+                    return null;
+                }
+
+                var output = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+                return process.ExitCode == 0 ? output : null;
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "MacOSHotkeyService.RunOsaScriptWithOutput failed");
+                return null;
+            }
+        }
+
+        private void LogAccessibilityRequired()
+        {
+            if (_loggedUnsupported)
+            {
+                return;
+            }
+
+            _loggedUnsupported = true;
+            DebugHelper.WriteLine("MacOSHotkeyService: Accessibility permission is required for global hotkeys.");
         }
 
         private void LogUnsupported(string member)

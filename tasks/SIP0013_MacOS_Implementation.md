@@ -44,7 +44,7 @@ Implement the following interfaces located in `Abstractions`:
 - **Implementation**:
   - Use `SharpHook` (if already in use) or native P/Invoke (ObjC runtime) to register global shortcuts.
   - *Note*: Ensure "Accessibility" permissions are handled/requested.
-- **Status**: Stub implementation (returns not supported) added for MVP wiring.
+- **Status**: Stub implementation with Accessibility permission check (hotkey registration still TODO).
 
 #### 3. IClipboardService (if not fully covered by Avalonia)
 **File**: `src/ShareX.Avalonia.Platform.MacOS/MacOSClipboardService.cs`
