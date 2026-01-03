@@ -2,7 +2,7 @@
 
 A cross-platform port of the popular **ShareX** screen capture and file sharing tool, built with **Avalonia UI** and .NET 9.
 
-![ShareX Avalonia](https://getsharex.com/img/sharex_256.png)
+![ShareX Avalonia](https://getsharex.com/img/ShareX_Logo.png)
 *(Note: Project is in active development)*
 
 ## ✨ Key Features
