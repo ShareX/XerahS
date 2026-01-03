@@ -1,11 +1,11 @@
-# ShareX.Avalonia
+﻿# ShareX.Avalonia
 
-A cross-platform port of the popular **ShareX** screen capture and file sharing tool, built with **Avalonia UI** and .NET 9.
+A cross-platform port of the popular **ShareX** screen capture and file sharing tool, built with **Avalonia UI** and .NET 10.
 
 ![ShareX Avalonia](https://sharex.com/img/sharex_256.png)
 *(Note: Project is in active development)*
 
-## ✨ Key Features
+## âœ¨ Key Features
 - **Cross-Platform**: Runs on Windows, Linux, and macOS (targeting).
 - **Modern UI**: Reimagined interface inspired by modern design principles (SnapX and WinShot inspiration).
 - **Powerful Capture**:
@@ -27,10 +27,10 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 - **Serialization**: Save and load annotations with full type support
 - **Task Workflow**: Configurable after-capture tasks (Save, Copy, Upload)
 
-## 🚀 Getting Started
+## ðŸš€ Getting Started
 
 ### Prerequisites
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 
 ### Building and Running
 ```bash
@@ -45,9 +45,25 @@ dotnet build
 dotnet run --project src/ShareX.Avalonia.App/ShareX.Avalonia.App.csproj
 ```
 
-## 🛠️ Developer Information
+### macOS Permissions (Screen Recording)
+Screen capture on macOS requires Screen Recording permission:
+1. Open **System Settings** > **Privacy & Security** > **Screen Recording**.
+2. Enable ShareX.Avalonia for screen capture access.
+3. Restart the app after granting permission.
+
+## ðŸ› ï¸ Developer Information
 
 See [DEVELOPER_README.md](DEVELOPER_README.md) for architecture details and contribution guidelines.
 
-## 📄 License
+## ðŸ“„ License
 GPL-3.0 (See LICENSE file)
+
+
+
+
+
+
+
+
+
+

@@ -1,37 +1,42 @@
-# ShareX.Avalonia Development Walkthrough
+﻿# ShareX.Avalonia Development Walkthrough
 
-**Last Updated**: 2025-12-31  
+**Last Updated**: 2026-01-03  
 **Overall Progress**: ~97%  
 **Build Status**: 0 errors, 1230 warnings (platform compatibility)
 
 ## Major Accomplishments
 
 ### Core Features (100% Complete)
-- ✅ **Multi-Monitor Region Capture** with crosshair cursor
-- ✅ **16+ Annotation Tools** with full keyboard shortcuts
-- ✅ **50+ Image Effects** with category-based browsing
-- ✅ **Serialization System** for all annotation types
-- ✅ **Modern UI** with dark theme and gradient buttons
-- ✅ **Plugin Architecture** with dynamic loading
+- âœ… **Multi-Monitor Region Capture** with crosshair cursor
+- âœ… **16+ Annotation Tools** with full keyboard shortcuts
+- âœ… **50+ Image Effects** with category-based browsing
+- âœ… **Serialization System** for all annotation types
+- âœ… **Modern UI** with dark theme and gradient buttons
+- âœ… **Plugin Architecture** with dynamic loading
+- バ. **macOS Platform MVP**: platform project + `screencapture` screenshot service
 
 ### Annotation Phase 2 (100% Complete)
-- ✅ Effect Shapes: Blur, Pixelate, Magnify, Highlight
-- ✅ Freehand Tools: Pen, Highlighter, Smart Eraser
-- ✅ Advanced Shapes: Speech Balloon, Image insertion, Spotlight
-- ✅ Keyboard shortcuts for all tools (V, R, E, A, L, P, H, T, B, N, C, M, S, F)
-- ✅ Polymorphic JSON serialization
-- ✅ Real-time effect rendering
+- âœ… Effect Shapes: Blur, Pixelate, Magnify, Highlight
+- âœ… Freehand Tools: Pen, Highlighter, Smart Eraser
+- âœ… Advanced Shapes: Speech Balloon, Image insertion, Spotlight
+- âœ… Keyboard shortcuts for all tools (V, R, E, A, L, P, H, T, B, N, C, M, S, F)
+- âœ… Polymorphic JSON serialization
+- âœ… Real-time effect rendering
 
 ### Build Status
 | Category | Status |
 |----------|--------|
-| Core Libraries | ✅ 0 errors |
-| UI Projects | ✅ 0 errors |
-| Annotation System | ✅ 0 errors |
-| Image Effects | ✅ 0 errors |
-| Overall | ✅ Clean build |
+| Core Libraries | âœ… 0 errors |
+| UI Projects | âœ… 0 errors |
+| Annotation System | âœ… 0 errors |
+| Image Effects | âœ… 0 errors |
+| Overall | âœ… Clean build |
 
 ## Next: Testing & Distribution
 - Comprehensive functional testing
 - Cross-platform verification (Linux/macOS)
 - CI/CD pipeline setup
+
+
+
+

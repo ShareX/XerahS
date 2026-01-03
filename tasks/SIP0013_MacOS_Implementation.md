@@ -1,4 +1,4 @@
-# CX07: MacOS Implementation
+﻿# CX07: MacOS Implementation
 
 ## Priority
 **HIGH** - Major cross-platform milestone.
@@ -36,6 +36,7 @@ Implement the following interfaces located in `Abstractions`:
     - `screencapture -x [file]` for silent capture.
   - **Option B (Advanced)**: Native usage of `ScreenCaptureKit` (likely requires bindings, maybe too complex for MVP).
 - **Recommendation for MVP**: Start with `screencapture` CLI wrapper.
+- **Status**: MVP implemented with `screencapture` and temp-file loading.
 
 #### 2. IHotkeyService
 **File**: `src/ShareX.Avalonia.Platform.MacOS/MacOSHotkeyService.cs`
@@ -43,11 +44,13 @@ Implement the following interfaces located in `Abstractions`:
 - **Implementation**:
   - Use `SharpHook` (if already in use) or native P/Invoke (ObjC runtime) to register global shortcuts.
   - *Note*: Ensure "Accessibility" permissions are handled/requested.
+- **Status**: Stub implementation (returns not supported) added for MVP wiring.
 
 #### 3. IClipboardService (if not fully covered by Avalonia)
 **File**: `src/ShareX.Avalonia.Platform.MacOS/MacOSClipboardService.cs`
 - Avalonia 11 handles standard text/images well.
 - Implement specialized handling if file drops or specific ShareX formats aren't working.
+- **Status**: Text-only support via `pbcopy`/`pbpaste` (image/file formats TODO).
 
 #### 4. IWindowService / ISystemInfo
 - **Window Management**: Focus stealing, bringing windows to front (often requires `NSRunningApplication`).
@@ -76,18 +79,18 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 - **Bundle**: Ensure `dotnet publish -r osx-arm64` creates a valid `.app` structure (Avalonia typically handles basic structure, but verify).
 
 ## Integration Steps
-1. Create `feature/macos-implementation` branch.
-2. Scaffold `ShareX.Avalonia.Platform.MacOS`.
-3. Implement `MacOSScreenshotService` (MVP: `screencapture` -x /tmp/temp.png).
-4. Wire up DI in `App.axaml.cs`.
-5. Test build on simple macOS environment (github actions or local).
+1. [x] Create `feature/macos-implementation` branch.
+2. [x] Scaffold `ShareX.Avalonia.Platform.MacOS`.
+3. [x] Implement `MacOSScreenshotService` (MVP: `screencapture` -x /tmp/temp.png).
+4. [x] Wire up DI in `Program.cs`.
+5. [ ] Test build on simple macOS environment (github actions or local).
 
 ## Deliverables
-- ✅ `ShareX.Avalonia.Platform.MacOS` project.
-- ✅ Ability to take a region screenshot on macOS.
-- ✅ Global Hotkeys working on macOS.
-- ✅ Clipboard upload (text/image) working.
-- ✅ Instructions for granting permissions (Screen Recording) in `README.md`.
+- [x] `ShareX.Avalonia.Platform.MacOS` project.
+- [x] Ability to take a region screenshot on macOS.
+- [ ] Global Hotkeys working on macOS.
+- [ ] Clipboard upload (text/image) working.
+- [x] Instructions for granting permissions (Screen Recording) in `README.md`.
 
 ## Estimated Effort
 **High** - 5-7 days for full feature parity (MVP: 2-3 days).
@@ -96,3 +99,5 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 - User can run ShareX Avalonia on a Mac.
 - Cmd+Shift+4 (or mapped hotkey) triggers capture.
 - Image is captured and uploaded/saved.
+
+

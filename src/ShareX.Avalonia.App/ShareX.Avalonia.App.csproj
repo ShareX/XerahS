@@ -12,5 +12,6 @@
     <ProjectReference Include="..\ShareX.Avalonia.UI\ShareX.Avalonia.UI.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Platform.Windows\ShareX.Avalonia.Platform.Windows.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.MacOS\ShareX.Avalonia.Platform.MacOS.csproj" />
   </ItemGroup>
 </Project>

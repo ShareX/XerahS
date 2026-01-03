@@ -10,7 +10,7 @@ This project follows the **MVVM (Model-View-ViewModel)** pattern using the `Comm
 *   **ShareX.Avalonia.Core**: Core application logic, task management (`WorkerTask`), and business models
 *   **ShareX.Avalonia.Annotations**: Annotation system with 16+ annotation types and serialization support
 *   **ShareX.Avalonia.ImageEffects**: 50+ image effects (filters, adjustments, manipulations) using SkiaSharp
-*   **ShareX.Avalonia.Platform.***: Platform-specific implementations (e.g., `WindowsScreenCaptureService`)
+*   **ShareX.Avalonia.Platform.***: Platform-specific implementations (e.g., `WindowsScreenCaptureService`, `MacOSScreenshotService`)
 *   **ShareX.Avalonia.ScreenCapture**: Screen capture logic and region selection
 *   **ShareX.Avalonia.Uploaders**: Upload providers (Imgur, Amazon S3, etc.)
 *   **ShareX.Avalonia.History**: Capture history management
@@ -163,6 +163,7 @@ Located in `Views/RegionCapture/`:
 *   `RegionCaptureWindow`: Spans **all monitors** (Virtual Screen) with crosshair cursor
 *   Multi-monitor DPI handling
 *   Uses `System.Drawing.Graphics.CopyFromScreen` (GDI+) for pixel capture on Windows
+*   macOS MVP capture uses `screencapture` via `MacOSScreenshotService`
 
 ## Plugin System
 

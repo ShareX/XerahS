@@ -28,6 +28,10 @@ We have successfully implemented the Reimagined UI, Multi-monitor Region Capture
 - **Backend Porting (ShareX.HelpersLib)**:
     - Continuing to port non-UI utilities (Gap Report)
     - Enforcing platform abstraction rules
+- **macOS Platform Layer (CX07)**:
+    - MVP `ShareX.Avalonia.Platform.MacOS` project created
+    - `screencapture` screenshot service implemented
+    - Hotkey/clipboard services stubbed (feature work pending)
 - **Testing**:
     - Comprehensive testing of the new Plugin System
 

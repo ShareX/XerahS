@@ -96,6 +96,13 @@ namespace ShareX.Ava.App
                 // Initialize Windows platform with our UI wrapper
                 ShareX.Ava.Platform.Windows.WindowsPlatform.Initialize(uiCaptureService);
             }
+            else if (OperatingSystem.IsMacOS())
+            {
+                var macCaptureService = new ShareX.Ava.Platform.MacOS.MacOSScreenshotService();
+                var uiCaptureService = new ShareX.Ava.UI.Services.ScreenCaptureService(macCaptureService);
+
+                ShareX.Ava.Platform.MacOS.MacOSPlatform.Initialize(uiCaptureService);
+            }
             else
             {
                 // Fallback for non-Windows (or generic stubs)
