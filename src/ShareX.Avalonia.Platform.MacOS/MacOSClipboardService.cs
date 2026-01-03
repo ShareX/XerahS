@@ -66,8 +66,8 @@ namespace ShareX.Ava.Platform.MacOS
 
         public bool ContainsFileDropList()
         {
-            LogUnsupported("ContainsFileDropList");
-            return false;
+            var files = GetFileDropList();
+            return files != null && files.Length > 0;
         }
 
         public string? GetText()
@@ -181,13 +181,51 @@ namespace ShareX.Ava.Platform.MacOS
 
         public string[]? GetFileDropList()
         {
-            LogUnsupported("GetFileDropList");
-            return null;
+            try
+            {
+                var script = "try\n" +
+                             "set fileList to the clipboard as list\n" +
+                             "set output to \"\"\n" +
+                             "repeat with f in fileList\n" +
+                             "set output to output & (POSIX path of f) & \"\\n\"\n" +
+                             "end repeat\n" +
+                             "return output\n" +
+                             "end try\n" +
+                             "return \"\"";
+
+                var output = RunOsaScriptWithOutput(script);
+                if (string.IsNullOrWhiteSpace(output))
+                {
+                    return null;
+                }
+
+                var lines = output.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                return lines.Length == 0 ? null : lines;
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "MacOSClipboardService.GetFileDropList failed");
+                return null;
+            }
         }
 
         public void SetFileDropList(string[] files)
         {
-            LogUnsupported("SetFileDropList");
+            if (files == null || files.Length == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                var fileList = string.Join(", ", BuildPosixFileList(files));
+                var script = $"set the clipboard to {{{fileList}}}";
+                RunOsaScript(script);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "MacOSClipboardService.SetFileDropList failed");
+            }
         }
 
         public object? GetData(string format)
@@ -263,6 +301,43 @@ namespace ShareX.Ava.Platform.MacOS
 
             process.WaitForExit();
             return process.ExitCode == 0;
+        }
+
+        private static string? RunOsaScriptWithOutput(string script)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "osascript",
+                Arguments = $"-e \"{script}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = Process.Start(startInfo);
+            if (process == null)
+            {
+                return null;
+            }
+
+            var output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            return process.ExitCode == 0 ? output : null;
+        }
+
+        private static IEnumerable<string> BuildPosixFileList(IEnumerable<string> files)
+        {
+            foreach (var file in files)
+            {
+                if (string.IsNullOrWhiteSpace(file))
+                {
+                    continue;
+                }
+
+                var escaped = file.Replace("\\", "\\\\").Replace("\"", "\\\"");
+                yield return $"POSIX file \\\"{escaped}\\\"";
+            }
         }
 
         private static void TryDelete(string path)
