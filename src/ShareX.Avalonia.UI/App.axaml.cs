@@ -92,18 +92,33 @@ public partial class App : Application
     {
         DebugHelper.WriteLine($"Hotkey triggered: {settings}");
         
-        // Navigate to Editor first
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && 
-            desktop.MainWindow is MainWindow mainWindow)
+        bool isCaptureJob = settings.Job is Core.HotkeyType.PrintScreen
+                                          or Core.HotkeyType.ActiveWindow
+                                          or Core.HotkeyType.RectangleRegion
+                                          or Core.HotkeyType.CustomRegion
+                                          or Core.HotkeyType.LastRegion;
+
+        // For capture jobs, avoid bringing the main window forward until the capture completes.
+        if (!isCaptureJob && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            desktop.MainWindow is MainWindow immediateMainWindow)
         {
-            mainWindow.NavigateToEditor();
+            immediateMainWindow.NavigateToEditor();
         }
         
-        // Subscribe to TaskManager task completion to capture the result
-        Core.Managers.TaskManager.Instance.TaskCompleted += (s, task) =>
+        // Subscribe once to task completion so we can update preview (and show the window for capture jobs).
+        void HandleTaskCompleted(object? s, Core.Tasks.WorkerTask task)
         {
+            Core.Managers.TaskManager.Instance.TaskCompleted -= HandleTaskCompleted;
             OnTaskCompleted(task, EventArgs.Empty);
-        };
+
+            if (isCaptureJob && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+                desktop.MainWindow is MainWindow mainWindowAfterCapture)
+            {
+                mainWindowAfterCapture.NavigateToEditor();
+            }
+        }
+
+        Core.Managers.TaskManager.Instance.TaskCompleted += HandleTaskCompleted;
         
         // Execute the job associated with the hotkey
         await Core.Helpers.TaskHelpers.ExecuteJob(settings.Job, settings.TaskSettings);
