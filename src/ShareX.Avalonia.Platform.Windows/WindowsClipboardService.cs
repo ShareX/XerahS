@@ -26,6 +26,7 @@
 using ShareX.Ava.Platform.Abstractions;
 using System;
 using System.Drawing;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -103,7 +104,7 @@ namespace ShareX.Ava.Platform.Windows
 
             try
             {
-                Clipboard.SetText(text);
+                RunInStaThread(() => Clipboard.SetText(text));
             }
             catch (Exception ex)
             {
@@ -337,8 +338,39 @@ namespace ShareX.Ava.Platform.Windows
 
         public Task SetTextAsync(string text)
         {
-            SetText(text);
-            return Task.CompletedTask;
+            return Task.Run(() => SetText(text));
+        }
+
+        private static void RunInStaThread(Action action)
+        {
+            if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
+            {
+                action();
+                return;
+            }
+
+            Exception? captured = null;
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    action();
+                }
+                catch (Exception ex)
+                {
+                    captured = ex;
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.IsBackground = true;
+            thread.Start();
+            thread.Join();
+
+            if (captured != null)
+            {
+                throw captured;
+            }
         }
     }
 }
