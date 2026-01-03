@@ -11,6 +11,9 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 - **Powerful Capture**:
     - **Region Capture**: supports multi-monitor setups with crosshair cursor.
     - **Fullscreen** & **Window** capture modes.
+- **macOS Support (MVP)**:
+    - Screenshot service via native `screencapture`
+    - Global hotkeys powered by SharpHook (requires Accessibility permission)
 - **Advanced Annotation Tools**:
     - **Basic Shapes**: Rectangle, Ellipse, Line, Arrow, Text, Number/Step
     - **Effect Shapes**: Blur, Pixelate, Magnify, Highlight with real-time preview

@@ -31,7 +31,8 @@ We have successfully implemented the Reimagined UI, Multi-monitor Region Capture
 - **macOS Platform Layer (CX07)**:
     - MVP `ShareX.Avalonia.Platform.MacOS` project created
     - `screencapture` screenshot service implemented
-    - Hotkey/clipboard services stubbed (feature work pending)
+    - SharpHook global hotkeys implemented (needs on-device validation)
+    - Clipboard/text/image/files implemented via `pbcopy`/`osascript` (needs verification)
 - **Testing**:
     - Comprehensive testing of the new Plugin System
 

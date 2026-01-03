@@ -13,7 +13,7 @@
 - âœ… **Serialization System** for all annotation types
 - âœ… **Modern UI** with dark theme and gradient buttons
 - âœ… **Plugin Architecture** with dynamic loading
-- バ. **macOS Platform MVP**: platform project + `screencapture` screenshot service
+ - バ. **macOS Platform MVP**: platform project + `screencapture` screenshot service + SharpHook global hotkeys (validation pending)
 
 ### Annotation Phase 2 (100% Complete)
 - âœ… Effect Shapes: Blur, Pixelate, Magnify, Highlight
