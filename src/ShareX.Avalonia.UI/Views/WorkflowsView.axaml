@@ -70,7 +70,7 @@
                         CornerRadius="0,0,12,12" Padding="20">
                     <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
                         <Button Content="Cancel" Command="{Binding CloseWizardCommand}"/>
-                        <Button Content="Create Workflow" Command="{Binding CompleteWizardCommand}" Classes="accent"/>
+                        <Button Content="{Binding WizardViewModel.ButtonText, FallbackValue=Create}" Classes="accent" Command="{Binding CompleteWizardCommand}"/>
                     </StackPanel>
                 </Border>
             </Grid>

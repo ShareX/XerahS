@@ -11,7 +11,7 @@
         
         <!-- Header -->
         <StackPanel Grid.Row="0" Spacing="5" Margin="0,0,0,20">
-            <TextBlock Text="Create New Workflow" FontSize="24" FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="SemiBold"/>
             <TextBlock Text="Select a task type and destination to get started." Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
         </StackPanel>
 
