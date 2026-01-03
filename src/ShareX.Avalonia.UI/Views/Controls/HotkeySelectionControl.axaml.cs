@@ -106,7 +106,27 @@ public partial class HotkeySelectionControl : UserControl
             handledEventsToo: true);
         
         Log($"OnLoaded: END - HotkeyButton={HotkeyButton != null}");
+
+        // Handle selection even if children (Buttons) handle the event
+        this.AddHandler(PointerPressedEvent, OnControlPointerPressed, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, true);
     }
+
+    private void OnControlPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+    {
+        // Find the parent ListBoxItem and select it
+        if (this.FindAncestorOfType<ListBoxItem>() is ListBoxItem listBoxItem)
+        {
+            if (!listBoxItem.IsSelected)
+            {
+                listBoxItem.IsSelected = true;
+                // We don't mark as handled because we want the button to still work (e.g. open menu)
+            }
+        }
+    }
+
+    // Remove the old handler if it exists or keep it for XAML compatibility if I don't remove it from XAML yet
+    // I will remove the XAML attribute in next step. For now I name this differently.
+
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
