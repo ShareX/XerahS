@@ -80,7 +80,7 @@ public partial class PluginInstallerViewModel : ViewModelBase
             {
                 new FilePickerFileType("ShareX Avalonia Plugin")
                 {
-                    Patterns = new[] { "*.sxap" }
+                    Patterns = new[] { "*.sxadp" }
                 }
             }
         });

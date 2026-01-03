@@ -12,12 +12,12 @@
         
         <!-- File Selection -->
         <StackPanel Grid.Row="0" Spacing="10">
-            <TextBlock Text="Plugin Package (.sxap)" FontWeight="SemiBold"/>
+            <TextBlock Text="Plugin Package (.sxadp)" FontWeight="SemiBold"/>
             <Grid ColumnDefinitions="*,Auto">
                 <TextBox Grid.Column="0" 
                          Text="{Binding PackageFilePath}" 
                          IsReadOnly="True"
-                         Watermark="Select a .sxap file..."/>
+                         Watermark="Select a .sxadp file..."/>
                 <Button Grid.Column="1" 
                         Content="Browse..." 
                         Command="{Binding BrowsePackageCommand}"

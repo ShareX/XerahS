@@ -1,4 +1,4 @@
-# CX05: Plugin Packaging System - .sxap Installer
+# CX05: Plugin Packaging System - .sxadp Installer
 
 ## Priority
 **MEDIUM** - Enables user-friendly plugin installation workflow
@@ -19,7 +19,7 @@ git checkout -b feature/plugin-packaging
 ```
 
 ## Objective
-Implement the `.sxap` (ShareX Avalonia Plugin) packaging system to allow users to install plugins via file picker or drag & drop, eliminating manual extraction to `Plugins/` folder.
+Implement the `.sxadp` (ShareX Avalonia Plugin) packaging system to allow users to install plugins via file picker or drag & drop, eliminating manual extraction to `Plugins/` folder.
 
 ## Background
 Currently, plugins must be **manually extracted** to `Plugins/PluginName/` directory. This task implements:
@@ -42,7 +42,7 @@ using ShareX.Avalonia.Common;
 namespace ShareX.Avalonia.Uploaders.PluginSystem;
 
 /// <summary>
-/// Handles packaging and installation of .sxap plugin files
+/// Handles packaging and installation of .sxadp plugin files
 /// </summary>
 public static class PluginPackager
 {
@@ -50,7 +50,7 @@ public static class PluginPackager
     private const long MaxPackageSize = 100_000_000; // 100MB
     
     /// <summary>
-    /// Package a plugin directory into .sxap file
+    /// Package a plugin directory into .sxadp file
     /// </summary>
     public static string Package(string pluginDirectory, string outputFilePath)
     {
@@ -73,7 +73,7 @@ public static class PluginPackager
     }
     
     /// <summary>
-    /// Extract and install .sxap package to Plugins directory
+    /// Extract and install .sxadp package to Plugins directory
     /// </summary>
     public static PluginMetadata? InstallPackage(string packageFilePath, string pluginsDirectory)
     {
@@ -86,7 +86,7 @@ public static class PluginPackager
             throw new InvalidDataException($"Package exceeds maximum size of {MaxPackageSize / 1_000_000}MB");
         
         // 2. Extract to temp directory first
-        string tempDir = Path.Combine(Path.GetTempPath(), $"sxap_{Guid.NewGuid()}");
+        string tempDir = Path.Combine(Path.GetTempPath(), $"sxadp_{Guid.NewGuid()}");
         Directory.CreateDirectory(tempDir);
         
         try
@@ -139,7 +139,7 @@ public static class PluginPackager
     }
     
     /// <summary>
-    /// Load manifest from .sxap file without installing
+    /// Load manifest from .sxadp file without installing
     /// </summary>
     public static PluginManifest? PreviewPackage(string packageFilePath)
     {
@@ -196,12 +196,12 @@ public static class PluginPackager
         
         <!-- File Selection -->
         <StackPanel Grid.Row="0" Spacing="10">
-            <TextBlock Text="Plugin Package (.sxap)" FontWeight="SemiBold"/>
+            <TextBlock Text="Plugin Package (.sxadp)" FontWeight="SemiBold"/>
             <Grid ColumnDefinitions="*,Auto">
                 <TextBox Grid.Column="0" 
                          Text="{Binding PackageFilePath}" 
                          IsReadOnly="True"
-                         Watermark="Select a .sxap file..."/>
+                         Watermark="Select a .sxadp file..."/>
                 <Button Grid.Column="1" 
                         Content="Browse..." 
                         Command="{Binding BrowsePackageCommand}"
@@ -315,7 +315,7 @@ public partial class PluginInstallerViewModel : ViewModelBase
             {
                 new FilePickerFileType("ShareX Avalonia Plugin")
                 {
-                    Patterns = new[] { "*.sxap" }
+                    Patterns = new[] { "*.sxadp" }
                 }
             }
         });
@@ -467,7 +467,7 @@ Add button to Uploaders tab (find the appropriate location):
 
 ## Don't Worry About
 - Drag & drop support (Phase 3, future work)
-- File association with .sxap (Phase 3, future work)
+- File association with .sxadp (Phase 3, future work)
 - Plugin uninstall UI (future work)
 - Code signing verification (future work)
 
@@ -476,7 +476,7 @@ Add button to Uploaders tab (find the appropriate location):
 - ✅ `PluginInstallerDialog.axaml` + ViewModel + code-behind
 - ✅ Integration with ApplicationSettingsView
 - ✅ Build succeeds on `feature/plugin-packaging`
-- ✅ Manual test: Install a .sxap package successfully
+- ✅ Manual test: Install a .sxadp package successfully
 - ✅ Commit and push changes
 
 ## Testing
@@ -485,12 +485,12 @@ Add button to Uploaders tab (find the appropriate location):
 
 1. **Create test plugin package**:
    - Use existing Imgur plugin folder
-   - ZIP it manually: `Compress-Archive -Path "Plugins\imgur" -DestinationPath "imgur.sxap"`
+   - ZIP it manually: `Compress-Archive -Path "Plugins\imgur" -DestinationPath "imgur.sxadp"`
 
 2. **Test installer UI**:
    - Run app → Settings → Uploaders
    - Click "Install Plugin..." button
-   - Browse to `imgur.sxap`
+   - Browse to `imgur.sxadp`
    - Verify manifest preview shows correctly
    - Click "Install"
    - Check `Plugins/imgur/` folder created
@@ -507,7 +507,7 @@ Add button to Uploaders tab (find the appropriate location):
 
 ### Expected Debug Output
 ```
-[PluginPackager] Plugin packaged: imgur.sxap
+[PluginPackager] Plugin packaged: imgur.sxadp
 [PluginPackager] Plugin installed: Imgur Uploader v1.0.0 to Plugins\imgur
 [ProviderCatalog] Loading plugins from: Plugins
 [ProviderCatalog] ✓ Loaded: Imgur Uploader
