@@ -13,7 +13,7 @@
         <!-- Access Key ID -->
         <StackPanel Spacing="5">
             <TextBlock Text="Access Key ID *" FontWeight="Medium"/>
-            <TextBox Text="{Binding AccessKeyId}" 
+            <TextBox Text="{Binding AccessKeyId, UpdateSourceTrigger=PropertyChanged}" 
                      Watermark="Enter AWS Access Key ID"
                      Width="400"
                      HorizontalAlignment="Left"/>
@@ -22,7 +22,7 @@
         <!-- Secret Access Key -->
         <StackPanel Spacing="5">
             <TextBlock Text="Secret Access Key *" FontWeight="Medium"/>
-            <TextBox Text="{Binding SecretAccessKey}" 
+            <TextBox Text="{Binding SecretAccessKey, UpdateSourceTrigger=PropertyChanged}" 
                      Watermark="Enter AWS Secret Access Key"
                      PasswordChar="●"
                      Width="400"
@@ -32,7 +32,7 @@
         <!-- Bucket Name -->
         <StackPanel Spacing="5">
             <TextBlock Text="Bucket Name *" FontWeight="Medium"/>
-            <TextBox Text="{Binding BucketName}" 
+            <TextBox Text="{Binding BucketName, UpdateSourceTrigger=PropertyChanged}" 
                      Watermark="my-bucket-name"
                      Width="300"
                      HorizontalAlignment="Left"/>
@@ -62,7 +62,7 @@
         <!-- Object Prefix -->
         <StackPanel Spacing="5">
             <TextBlock Text="Object Prefix (Optional)" FontWeight="Medium"/>
-            <TextBox Text="{Binding ObjectPrefix}" 
+            <TextBox Text="{Binding ObjectPrefix, UpdateSourceTrigger=PropertyChanged}" 
                      Watermark="uploads/"
                      Width="300"
                      HorizontalAlignment="Left"/>
@@ -77,10 +77,13 @@
         <!-- Custom Domain -->
         <StackPanel Spacing="5">
             <TextBlock Text="Custom Domain (Optional)" FontWeight="Medium"/>
-            <TextBox Text="{Binding CustomDomain}" 
+            <CheckBox Content="Use custom domain (CNAME)"
+                      IsChecked="{Binding UseCustomCNAME}"/>
+            <TextBox Text="{Binding CustomDomain, UpdateSourceTrigger=PropertyChanged}" 
                      Watermark="https://cdn.example.com"
                      Width="400"
-                     HorizontalAlignment="Left"/>
+                     HorizontalAlignment="Left"
+                     IsEnabled="{Binding UseCustomCNAME}"/>
             <TextBlock Text="Use custom domain instead of S3 URL for uploaded files" 
                        FontSize="11"
                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
