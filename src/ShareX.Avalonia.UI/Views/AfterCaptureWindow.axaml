@@ -1,0 +1,87 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:ShareX.Ava.UI.ViewModels"
+        mc:Ignorable="d"
+        x:Class="ShareX.Ava.UI.Views.AfterCaptureWindow"
+        x:DataType="vm:AfterCaptureViewModel"
+        Title="After Capture Tasks"
+        Width="900"
+        Height="600"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid ColumnDefinitions="2*,*"
+          RowDefinitions="*,Auto"
+          Margin="20">
+        <Border Grid.Column="0"
+                Grid.Row="0"
+                Margin="0,0,15,0"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+            <ScrollViewer>
+                <Image Source="{Binding PreviewImage}"
+                       Stretch="Uniform"
+                       Margin="10"/>
+            </ScrollViewer>
+        </Border>
+
+        <ScrollViewer Grid.Column="1"
+                      Grid.Row="0">
+            <StackPanel Spacing="12">
+                <TextBlock Text="After Capture"
+                           FontWeight="SemiBold"
+                           FontSize="16"/>
+                <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="10">
+                    <StackPanel Spacing="8">
+                        <CheckBox Content="Save image to file"
+                                  IsChecked="{Binding SaveImageToFile}"/>
+                        <CheckBox Content="Copy image to clipboard"
+                                  IsChecked="{Binding CopyImageToClipboard}"/>
+                        <CheckBox Content="Annotate image"
+                                  IsChecked="{Binding AnnotateImage}"/>
+                        <CheckBox Content="Upload image to host"
+                                  IsChecked="{Binding UploadImageToHost}"/>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="After Upload"
+                           FontWeight="SemiBold"
+                           FontSize="16"
+                           Margin="0,10,0,0"/>
+                <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="10">
+                    <StackPanel Spacing="8">
+                        <CheckBox Content="Copy URL to clipboard"
+                                  IsChecked="{Binding CopyURLToClipboard}"/>
+                        <CheckBox Content="Use URL shortener"
+                                  IsChecked="{Binding UseURLShortener}"/>
+                        <CheckBox Content="Share URL"
+                                  IsChecked="{Binding ShareURL}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,15,0,0">
+            <Button Content="Cancel"
+                    Command="{Binding CancelCommand}"
+                    MinWidth="90"/>
+            <Button Content="Continue"
+                    Command="{Binding ContinueCommand}"
+                    MinWidth="90"/>
+        </StackPanel>
+    </Grid>
+</Window>

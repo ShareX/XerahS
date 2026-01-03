@@ -115,6 +115,26 @@
                                 </StackPanel>
                             </Border>
                         </StackPanel>
+
+                        <!-- After Upload Tasks Section -->
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="After upload" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="Choose actions to perform automatically after upload" 
+                                               FontSize="12" 
+                                               Foreground="Gray" 
+                                               Margin="0,0,0,4"/>
+                                    <CheckBox IsChecked="{Binding CopyURLToClipboard}" 
+                                              Content="Copy URL to clipboard"
+                                              FontWeight="SemiBold"/>
+                                    <CheckBox IsChecked="{Binding UseURLShortener}" 
+                                              Content="Use URL shortener"/>
+                                    <CheckBox IsChecked="{Binding ShareURL}" 
+                                              Content="Share URL"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

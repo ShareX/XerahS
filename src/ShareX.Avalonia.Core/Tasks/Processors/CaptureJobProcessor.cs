@@ -54,6 +54,29 @@ namespace ShareX.Ava.Core.Tasks.Processors
                 $"AfterCaptureJob={settings.AfterCaptureJob}, " +
                 $"UploadImageToHost={settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost)}");
 
+            if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.ShowAfterCaptureWindow))
+            {
+                if (!PlatformServices.IsInitialized)
+                {
+                    DebugHelper.WriteLine("ShowAfterCaptureWindow requested but UI service is not initialized.");
+                }
+                else
+                {
+                    var result = await PlatformServices.UI.ShowAfterCaptureWindowAsync(
+                        info.Metadata.Image,
+                        settings.AfterCaptureJob,
+                        settings.AfterUploadJob);
+                    if (result.Cancel)
+                    {
+                        DebugHelper.WriteLine("After capture window cancelled; aborting workflow.");
+                        return;
+                    }
+
+                    settings.AfterCaptureJob = result.Capture;
+                    settings.AfterUploadJob = result.Upload;
+                }
+            }
+
             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.SaveImageToFile))
             {
                 await SaveImageToFileAsync(info);

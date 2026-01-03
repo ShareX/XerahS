@@ -122,45 +122,6 @@ public enum TaskStatus
     History
 }
 
-[Flags]
-public enum AfterCaptureTasks // Localized
-{
-    None = 0,
-    ShowQuickTaskMenu = 1,
-    ShowAfterCaptureWindow = 1 << 1,
-    BeautifyImage = 1 << 2,
-    AddImageEffects = 1 << 3,
-    AnnotateImage = 1 << 4,
-    CopyImageToClipboard = 1 << 5,
-    PinToScreen = 1 << 6,
-    SendImageToPrinter = 1 << 7,
-    SaveImageToFile = 1 << 8,
-    SaveImageToFileWithDialog = 1 << 9,
-    SaveThumbnailImageToFile = 1 << 10,
-    PerformActions = 1 << 11,
-    CopyFileToClipboard = 1 << 12,
-    CopyFilePathToClipboard = 1 << 13,
-    ShowInExplorer = 1 << 14,
-    AnalyzeImage = 1 << 15,
-    ScanQRCode = 1 << 16,
-    DoOCR = 1 << 17,
-    ShowBeforeUploadWindow = 1 << 18,
-    UploadImageToHost = 1 << 19,
-    DeleteFile = 1 << 20
-}
-
-[Flags]
-public enum AfterUploadTasks // Localized
-{
-    None = 0,
-    ShowAfterUploadWindow = 1,
-    UseURLShortener = 1 << 1,
-    ShareURL = 1 << 2,
-    CopyURLToClipboard = 1 << 3,
-    OpenURL = 1 << 4,
-    ShowQRCode = 1 << 5
-}
-
 public enum CaptureType
 {
     Fullscreen,

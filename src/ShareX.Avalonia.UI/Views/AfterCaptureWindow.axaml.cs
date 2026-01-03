@@ -1,4 +1,4 @@
-﻿#region License Information (GPL v3)
+#region License Information (GPL v3)
 
 /*
     ShareX.Avalonia - The Avalonia UI implementation of ShareX
@@ -23,29 +23,20 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Core;
-using System;
-using System.Drawing;
-using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 
-namespace ShareX.Ava.Platform.Abstractions
+namespace ShareX.Ava.UI.Views;
+
+public partial class AfterCaptureWindow : Window
 {
-    /// <summary>
-    /// Service for interacting with the main UI (e.g. navigation, showing windows)
-    /// </summary>
-    public interface IUIService
+    public AfterCaptureWindow()
     {
-        /// <summary>
-        /// Shows the image editor with the provided image
-        /// </summary>
-        Task ShowEditorAsync(Image image);
+        InitializeComponent();
+    }
 
-        /// <summary>
-        /// Shows the After Capture window and returns selected tasks.
-        /// </summary>
-        Task<(AfterCaptureTasks Capture, AfterUploadTasks Upload, bool Cancel)> ShowAfterCaptureWindowAsync(
-            Image image,
-            AfterCaptureTasks afterCapture,
-            AfterUploadTasks afterUpload);
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }
