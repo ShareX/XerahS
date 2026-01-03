@@ -26,6 +26,10 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform;
 using ShareX.Ava.Platform.Abstractions;
 using DebugHelper = ShareX.Ava.Common.DebugHelper;
 
@@ -41,56 +45,146 @@ namespace ShareX.Ava.Platform.MacOS
 
         public Rectangle GetVirtualScreenBounds()
         {
-            LogNotImplemented(nameof(GetVirtualScreenBounds));
-            return Rectangle.Empty;
+            var screens = TryGetScreens();
+            if (screens == null || screens.ScreenCount == 0)
+            {
+                LogNotImplemented(nameof(GetVirtualScreenBounds));
+                return Rectangle.Empty;
+            }
+
+            return CombineRectangles(GetScreenBounds(screens));
         }
 
         public Rectangle GetWorkingArea()
         {
-            LogNotImplemented(nameof(GetWorkingArea));
-            return Rectangle.Empty;
+            var screens = TryGetScreens();
+            if (screens == null || screens.ScreenCount == 0)
+            {
+                LogNotImplemented(nameof(GetWorkingArea));
+                return Rectangle.Empty;
+            }
+
+            return CombineRectangles(GetScreenWorkingAreas(screens));
         }
 
         public Rectangle GetActiveScreenBounds()
         {
-            LogNotImplemented(nameof(GetActiveScreenBounds));
-            return Rectangle.Empty;
+            var screen = GetPrimaryScreen();
+            if (screen == null)
+            {
+                LogNotImplemented(nameof(GetActiveScreenBounds));
+                return Rectangle.Empty;
+            }
+
+            return ToDrawingRect(screen.Bounds);
         }
 
         public Rectangle GetActiveScreenWorkingArea()
         {
-            LogNotImplemented(nameof(GetActiveScreenWorkingArea));
-            return Rectangle.Empty;
+            var screen = GetPrimaryScreen();
+            if (screen == null)
+            {
+                LogNotImplemented(nameof(GetActiveScreenWorkingArea));
+                return Rectangle.Empty;
+            }
+
+            return ToDrawingRect(screen.WorkingArea);
         }
 
         public Rectangle GetPrimaryScreenBounds()
         {
-            LogNotImplemented(nameof(GetPrimaryScreenBounds));
-            return Rectangle.Empty;
+            var screen = GetPrimaryScreen();
+            if (screen == null)
+            {
+                LogNotImplemented(nameof(GetPrimaryScreenBounds));
+                return Rectangle.Empty;
+            }
+
+            return ToDrawingRect(screen.Bounds);
         }
 
         public Rectangle GetPrimaryScreenWorkingArea()
         {
-            LogNotImplemented(nameof(GetPrimaryScreenWorkingArea));
-            return Rectangle.Empty;
+            var screen = GetPrimaryScreen();
+            if (screen == null)
+            {
+                LogNotImplemented(nameof(GetPrimaryScreenWorkingArea));
+                return Rectangle.Empty;
+            }
+
+            return ToDrawingRect(screen.WorkingArea);
         }
 
         public ScreenInfo[] GetAllScreens()
         {
-            LogNotImplemented(nameof(GetAllScreens));
-            return Array.Empty<ScreenInfo>();
+            var screens = TryGetScreens();
+            if (screens == null || screens.ScreenCount == 0)
+            {
+                LogNotImplemented(nameof(GetAllScreens));
+                return Array.Empty<ScreenInfo>();
+            }
+
+            var screenList = new List<ScreenInfo>();
+            foreach (var screen in screens.All)
+            {
+                screenList.Add(ToScreenInfo(screen));
+            }
+
+            return screenList.ToArray();
         }
 
         public ScreenInfo GetScreenFromPoint(System.Drawing.Point point)
         {
-            LogNotImplemented(nameof(GetScreenFromPoint));
-            return CreateDefaultScreenInfo();
+            var screens = TryGetScreens();
+            if (screens == null || screens.ScreenCount == 0)
+            {
+                LogNotImplemented(nameof(GetScreenFromPoint));
+                return CreateDefaultScreenInfo();
+            }
+
+            foreach (var screen in screens.All)
+            {
+                var bounds = ToDrawingRect(screen.Bounds);
+                if (bounds.Contains(point))
+                {
+                    return ToScreenInfo(screen);
+                }
+            }
+
+            var primary = GetPrimaryScreen();
+            return primary == null ? CreateDefaultScreenInfo() : ToScreenInfo(primary);
         }
 
         public ScreenInfo GetScreenFromRectangle(System.Drawing.Rectangle rectangle)
         {
-            LogNotImplemented(nameof(GetScreenFromRectangle));
-            return CreateDefaultScreenInfo();
+            var screens = TryGetScreens();
+            if (screens == null || screens.ScreenCount == 0)
+            {
+                LogNotImplemented(nameof(GetScreenFromRectangle));
+                return CreateDefaultScreenInfo();
+            }
+
+            Screen? bestScreen = null;
+            long bestArea = -1;
+            foreach (var screen in screens.All)
+            {
+                var bounds = ToDrawingRect(screen.Bounds);
+                var intersection = Rectangle.Intersect(bounds, rectangle);
+                long area = (long)intersection.Width * intersection.Height;
+                if (area > bestArea)
+                {
+                    bestArea = area;
+                    bestScreen = screen;
+                }
+            }
+
+            if (bestScreen == null)
+            {
+                LogNotImplemented(nameof(GetScreenFromRectangle));
+                return CreateDefaultScreenInfo();
+            }
+
+            return ToScreenInfo(bestScreen);
         }
 
         private static ScreenInfo CreateDefaultScreenInfo()
@@ -116,6 +210,89 @@ namespace ShareX.Ava.Platform.MacOS
             }
 
             DebugHelper.WriteLine($"MacOSScreenService: {memberName} is not implemented yet.");
+        }
+
+        private static Screens? TryGetScreens()
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+            {
+                return lifetime.MainWindow?.Screens;
+            }
+
+            return null;
+        }
+
+        private static Screen? GetPrimaryScreen()
+        {
+            var screens = TryGetScreens();
+            if (screens == null || screens.ScreenCount == 0)
+            {
+                return null;
+            }
+
+            return screens.Primary;
+        }
+
+        private static Rectangle CombineRectangles(IEnumerable<Rectangle> rectangles)
+        {
+            var rectList = new List<Rectangle>(rectangles);
+            if (rectList.Count == 0)
+            {
+                return Rectangle.Empty;
+            }
+
+            int left = int.MaxValue;
+            int top = int.MaxValue;
+            int right = int.MinValue;
+            int bottom = int.MinValue;
+
+            foreach (var rect in rectList)
+            {
+                left = Math.Min(left, rect.Left);
+                top = Math.Min(top, rect.Top);
+                right = Math.Max(right, rect.Right);
+                bottom = Math.Max(bottom, rect.Bottom);
+            }
+
+            if (left == int.MaxValue || top == int.MaxValue)
+            {
+                return Rectangle.Empty;
+            }
+
+            return new Rectangle(left, top, right - left, bottom - top);
+        }
+
+        private static IEnumerable<Rectangle> GetScreenBounds(Screens screens)
+        {
+            foreach (var screen in screens.All)
+            {
+                yield return ToDrawingRect(screen.Bounds);
+            }
+        }
+
+        private static IEnumerable<Rectangle> GetScreenWorkingAreas(Screens screens)
+        {
+            foreach (var screen in screens.All)
+            {
+                yield return ToDrawingRect(screen.WorkingArea);
+            }
+        }
+
+        private static Rectangle ToDrawingRect(PixelRect rect)
+        {
+            return new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
+        }
+
+        private static ScreenInfo ToScreenInfo(Screen screen)
+        {
+            return new ScreenInfo
+            {
+                Bounds = ToDrawingRect(screen.Bounds),
+                WorkingArea = ToDrawingRect(screen.WorkingArea),
+                IsPrimary = screen.IsPrimary,
+                DeviceName = screen.DisplayName ?? string.Empty,
+                BitsPerPixel = 0
+            };
         }
     }
 }

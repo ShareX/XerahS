@@ -55,6 +55,7 @@ Implement the following interfaces located in `Abstractions`:
 #### 4. IWindowService / ISystemInfo
 - **Window Management**: Focus stealing, bringing windows to front (often requires `NSRunningApplication`).
 - **Startup**: "Open at Login" logic (Launch Agents).
+- **Status**: Screen service uses Avalonia `Screens` when a main window is available; window service remains stubbed.
 
 ### Phase 3: Dependency Injection
 **File**: `src/ShareX.Avalonia.App/Program.cs` or `Startup.cs`
