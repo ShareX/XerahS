@@ -50,7 +50,7 @@ Implement the following interfaces located in `Abstractions`:
 **File**: `src/ShareX.Avalonia.Platform.MacOS/MacOSClipboardService.cs`
 - Avalonia 11 handles standard text/images well.
 - Implement specialized handling if file drops or specific ShareX formats aren't working.
-- **Status**: Text-only support via `pbcopy`/`pbpaste` (image/file formats TODO).
+- **Status**: Text via `pbcopy`/`pbpaste`, PNG image support via `osascript` (file formats TODO).
 
 #### 4. IWindowService / ISystemInfo
 - **Window Management**: Focus stealing, bringing windows to front (often requires `NSRunningApplication`).

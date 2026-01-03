@@ -26,6 +26,7 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Threading.Tasks;
 using ShareX.Ava.Common;
 using ShareX.Ava.Platform.Abstractions;
@@ -33,7 +34,7 @@ using ShareX.Ava.Platform.Abstractions;
 namespace ShareX.Ava.Platform.MacOS
 {
     /// <summary>
-    /// macOS clipboard service using pbcopy/pbpaste for text (MVP).
+    /// macOS clipboard service using pbcopy/pbpaste for text and osascript for PNG images (MVP).
     /// </summary>
     public class MacOSClipboardService : IClipboardService
     {
@@ -52,8 +53,15 @@ namespace ShareX.Ava.Platform.MacOS
 
         public bool ContainsImage()
         {
-            LogUnsupported("ContainsImage");
-            return false;
+            try
+            {
+                return TryExportClipboardImage(out _);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "MacOSClipboardService.ContainsImage failed");
+                return false;
+            }
         }
 
         public bool ContainsFileDropList()
@@ -125,13 +133,50 @@ namespace ShareX.Ava.Platform.MacOS
 
         public Image? GetImage()
         {
-            LogUnsupported("GetImage");
-            return null;
+            if (!TryExportClipboardImage(out var tempFile))
+            {
+                return null;
+            }
+
+            try
+            {
+                using var fileStream = File.OpenRead(tempFile);
+                using var tempImage = Image.FromStream(fileStream);
+                return new Bitmap(tempImage);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "MacOSClipboardService.GetImage failed");
+                return null;
+            }
+            finally
+            {
+                TryDelete(tempFile);
+            }
         }
 
         public void SetImage(Image image)
         {
-            LogUnsupported("SetImage");
+            if (image == null)
+            {
+                return;
+            }
+
+            var tempFile = Path.Combine(Path.GetTempPath(), $"sharex_ava_clip_{Guid.NewGuid():N}.png");
+            try
+            {
+                image.Save(tempFile, System.Drawing.Imaging.ImageFormat.Png);
+                var script = $"set the clipboard to (read (POSIX file \\\"{tempFile}\\\") as «class PNGf»)";
+                RunOsaScript(script);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "MacOSClipboardService.SetImage failed");
+            }
+            finally
+            {
+                TryDelete(tempFile);
+            }
         }
 
         public string[]? GetFileDropList()
@@ -181,6 +226,57 @@ namespace ShareX.Ava.Platform.MacOS
 
             _loggedUnsupported = true;
             DebugHelper.WriteLine($"MacOSClipboardService: {member} is not implemented yet.");
+        }
+
+        private static bool TryExportClipboardImage(out string tempFile)
+        {
+            tempFile = Path.Combine(Path.GetTempPath(), $"sharex_ava_clip_{Guid.NewGuid():N}.png");
+            var script = $"try\nwrite (the clipboard as «class PNGf») to (POSIX file \\\"{tempFile}\\\")\nreturn \\\"1\\\"\nend try\nreturn \\\"0\\\"";
+
+            var result = RunOsaScript(script);
+            if (!result || !File.Exists(tempFile))
+            {
+                TryDelete(tempFile);
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool RunOsaScript(string script)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "osascript",
+                Arguments = $"-e \"{script}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = Process.Start(startInfo);
+            if (process == null)
+            {
+                return false;
+            }
+
+            process.WaitForExit();
+            return process.ExitCode == 0;
+        }
+
+        private static void TryDelete(string path)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+            catch
+            {
+            }
         }
     }
 }
