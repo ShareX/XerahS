@@ -84,28 +84,38 @@ public static class PluginPackager
             throw new InvalidDataException($"Package exceeds maximum size of {MaxPackageSize / 1_000_000}MB");
         }
 
+        DebugHelper.WriteLine($"Plugin install requested: {packageFilePath}");
+
+        using var archive = ZipFile.OpenRead(packageFilePath);
+        var manifestEntry = archive.GetEntry(ManifestFileName);
+        if (manifestEntry == null)
+        {
+            throw new InvalidDataException($"Package does not contain {ManifestFileName}");
+        }
+
+        string manifestJson;
+        using (var stream = manifestEntry.Open())
+        using (var reader = new StreamReader(stream))
+        {
+            manifestJson = reader.ReadToEnd();
+        }
+
+        var manifest = LoadAndValidateManifestJson(manifestJson);
+
+        string targetDir = Path.Combine(pluginsDirectory, manifest.PluginId);
+        if (Directory.Exists(targetDir))
+        {
+            throw new InvalidOperationException(
+                $"Plugin '{manifest.PluginId}' (v{manifest.Version}) is already installed. " +
+                "Please uninstall it first or use a different plugin ID.");
+        }
+
         string tempDir = Path.Combine(Path.GetTempPath(), $"sxap_{Guid.NewGuid()}");
         Directory.CreateDirectory(tempDir);
 
         try
         {
-            ZipFile.ExtractToDirectory(packageFilePath, tempDir);
-
-            string manifestPath = Path.Combine(tempDir, ManifestFileName);
-            if (!File.Exists(manifestPath))
-            {
-                throw new InvalidDataException($"Package does not contain {ManifestFileName}");
-            }
-
-            var manifest = LoadAndValidateManifest(manifestPath);
-
-            string targetDir = Path.Combine(pluginsDirectory, manifest.PluginId);
-            if (Directory.Exists(targetDir))
-            {
-                throw new InvalidOperationException(
-                    $"Plugin '{manifest.PluginId}' (v{manifest.Version}) is already installed. " +
-                    "Please uninstall it first or use a different plugin ID.");
-            }
+            ExtractArchiveSafely(archive, tempDir);
 
             string assemblyFileName = manifest.GetAssemblyFileName();
             string assemblyPath = Path.Combine(tempDir, assemblyFileName);
@@ -151,6 +161,12 @@ public static class PluginPackager
             return null;
         }
 
+        var fileInfo = new FileInfo(packageFilePath);
+        if (fileInfo.Length > MaxPackageSize)
+        {
+            throw new InvalidDataException($"Package exceeds maximum size of {MaxPackageSize / 1_000_000}MB");
+        }
+
         using var archive = ZipFile.OpenRead(packageFilePath);
         var manifestEntry = archive.GetEntry(ManifestFileName);
         if (manifestEntry == null)
@@ -161,12 +177,17 @@ public static class PluginPackager
         using var stream = manifestEntry.Open();
         using var reader = new StreamReader(stream);
         string json = reader.ReadToEnd();
-        return JsonConvert.DeserializeObject<PluginManifest>(json);
+        return LoadAndValidateManifestJson(json);
     }
 
     private static PluginManifest LoadAndValidateManifest(string manifestPath)
     {
         string json = File.ReadAllText(manifestPath);
+        return LoadAndValidateManifestJson(json);
+    }
+
+    private static PluginManifest LoadAndValidateManifestJson(string json)
+    {
         var manifest = JsonConvert.DeserializeObject<PluginManifest>(json);
 
         if (manifest == null)
@@ -180,5 +201,42 @@ public static class PluginPackager
         }
 
         return manifest;
+    }
+
+    private static void ExtractArchiveSafely(ZipArchive archive, string destinationDirectory)
+    {
+        string destinationRoot = Path.GetFullPath(destinationDirectory);
+        if (!destinationRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
+        {
+            destinationRoot += Path.DirectorySeparatorChar;
+        }
+
+        foreach (var entry in archive.Entries)
+        {
+            if (string.IsNullOrWhiteSpace(entry.FullName))
+            {
+                continue;
+            }
+
+            string targetPath = Path.GetFullPath(Path.Combine(destinationDirectory, entry.FullName));
+            if (!targetPath.StartsWith(destinationRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException("Package contains an invalid entry path.");
+            }
+
+            if (string.IsNullOrEmpty(entry.Name))
+            {
+                Directory.CreateDirectory(targetPath);
+                continue;
+            }
+
+            string? directoryPath = Path.GetDirectoryName(targetPath);
+            if (!string.IsNullOrEmpty(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+
+            entry.ExtractToFile(targetPath, true);
+        }
     }
 }
