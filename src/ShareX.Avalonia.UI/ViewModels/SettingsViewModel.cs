@@ -124,6 +124,20 @@ namespace ShareX.Ava.UI.ViewModels
             }
         }
 
+        // Integration Settings
+        [ObservableProperty]
+        private bool _isPluginExtensionRegistered;
+
+        [ObservableProperty]
+        private bool _supportsFileAssociations;
+
+        partial void OnIsPluginExtensionRegisteredChanged(bool value)
+        {
+            if (_isLoading) return; // Don't trigger during initial load
+            
+            ShareX.Ava.Core.Integration.IntegrationHelper.SetPluginExtensionRegistration(value);
+        }
+
         // Task Settings - General
         [ObservableProperty]
         private bool _playSoundAfterCapture;
@@ -317,6 +331,10 @@ namespace ShareX.Ava.UI.ViewModels
             URLRegexReplace = taskSettings.UploadSettings.URLRegexReplace;
             URLRegexReplacePattern = taskSettings.UploadSettings.URLRegexReplacePattern;
             URLRegexReplaceReplacement = taskSettings.UploadSettings.URLRegexReplaceReplacement;
+            
+            // Integration Settings
+            SupportsFileAssociations = OperatingSystem.IsWindows();
+            IsPluginExtensionRegistered = ShareX.Ava.Core.Integration.IntegrationHelper.IsPluginExtensionRegistered();
         }
 
         protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)

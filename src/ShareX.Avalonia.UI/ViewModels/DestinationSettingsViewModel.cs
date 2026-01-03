@@ -1,3 +1,10 @@
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Common = ShareX.Ava.Common;
+using ShareX.Ava.Core;
+using ShareX.Ava.UI.Views;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -6,7 +13,9 @@ using ShareX.Ava.Common;
 using ShareX.Ava.Core;
 using ShareX.Ava.Uploaders;
 using ShareX.Ava.Uploaders.PluginSystem;
+using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace ShareX.Ava.UI.ViewModels;
 
@@ -100,6 +109,28 @@ public partial class DestinationSettingsViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task OpenPluginInstaller()
+    {
+        var mainWindow = Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            ? desktop.MainWindow
+            : null;
+
+        if (mainWindow == null)
+        {
+            Common.DebugHelper.WriteLine("[DestinationSettings] Cannot open plugin installer (main window missing).");
+            return;
+        }
+
+        try
+        {
+            var dialog = new PluginInstallerDialog();
+            await dialog.ShowDialog<bool>(mainWindow);
+        }
+        catch (Exception ex)
+        {
+            Common.DebugHelper.WriteException(ex, "Failed to open plugin installer");
+        }
+    }
     private async Task ImportShareXConfig()
     {
         try

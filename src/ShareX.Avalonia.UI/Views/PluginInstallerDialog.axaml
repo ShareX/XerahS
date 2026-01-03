@@ -1,0 +1,82 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ShareX.Ava.UI.ViewModels"
+        x:Class="ShareX.Ava.UI.Views.PluginInstallerDialog"
+        x:DataType="vm:PluginInstallerViewModel"
+        Title="Install Plugin"
+        Width="500" Height="400"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+    
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto,Auto">
+        
+        <!-- File Selection -->
+        <StackPanel Grid.Row="0" Spacing="10">
+            <TextBlock Text="Plugin Package (.sxadp)" FontWeight="SemiBold"/>
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBox Grid.Column="0" 
+                         Text="{Binding PackageFilePath}" 
+                         IsReadOnly="True"
+                         Watermark="Select a .sxadp file..."/>
+                <Button Grid.Column="1" 
+                        Content="Browse..." 
+                        Command="{Binding BrowsePackageCommand}"
+                        Margin="5,0,0,0"/>
+            </Grid>
+        </StackPanel>
+        
+        <!-- Plugin Info Preview -->
+        <Border Grid.Row="1" 
+                Margin="0,20,0,0"
+                Padding="15"
+                Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                CornerRadius="4"
+                IsVisible="{Binding Manifest, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding Manifest.Name}" 
+                           FontSize="18" 
+                           FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding ManifestVersionAuthor}" 
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                <TextBlock Text="{Binding Manifest.Description}" 
+                           TextWrapping="Wrap"
+                           Margin="0,5,0,0"/>
+                <Separator Margin="0,10"/>
+                <StackPanel Spacing="4">
+                    <TextBlock>
+                        <Run Text="Plugin ID: "/>
+                        <Run Text="{Binding Manifest.PluginId}" FontFamily="Consolas"/>
+                    </TextBlock>
+                    <TextBlock>
+                        <Run Text="API Version: "/>
+                        <Run Text="{Binding Manifest.ApiVersion}"/>
+                    </TextBlock>
+                    <TextBlock Text="{Binding ManifestCategories}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        
+        <!-- Error Message -->
+        <TextBlock Grid.Row="2"
+                   Text="{Binding ErrorMessage}"
+                   Foreground="Red"
+                   TextWrapping="Wrap"
+                   Margin="0,10,0,0"
+                   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="3" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,20,0,0">
+            <Button Content="Install" 
+                    Command="{Binding InstallCommand}"
+                    IsEnabled="{Binding CanInstall}"
+                    Classes="accent"/>
+            <Button Content="Cancel" 
+                    Command="{Binding CancelCommand}"/>
+        </StackPanel>
+        
+    </Grid>
+</Window>

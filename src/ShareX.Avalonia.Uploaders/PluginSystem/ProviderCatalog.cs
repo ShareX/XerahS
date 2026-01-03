@@ -42,11 +42,11 @@ public static class ProviderCatalog
     /// Load plugins from the specified directory
     /// </summary>
     /// <param name="pluginsDirectory">Path to Plugins/ directory</param>
-    public static void LoadPlugins(string pluginsDirectory)
+    public static void LoadPlugins(string pluginsDirectory, bool forceReload = false)
     {
         lock (_lock)
         {
-            if (_pluginsLoaded)
+            if (_pluginsLoaded && !forceReload)
             {
                 DebugHelper.WriteLine("[Plugins] Already loaded, skipping");
                 return;
@@ -74,6 +74,12 @@ public static class ProviderCatalog
 
             foreach (var metadata in discovered)
             {
+                if (_pluginMetadata.ContainsKey(metadata.Manifest.PluginId))
+                {
+                    DebugHelper.WriteLine($"[Plugins] Plugin already loaded: {metadata.Manifest.PluginId}");
+                    continue;
+                }
+
                 try
                 {
                     DebugHelper.WriteLine($"[Plugins] Attempting to load: {metadata.Manifest.Name} (id: {metadata.Manifest.PluginId})");

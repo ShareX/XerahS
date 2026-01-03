@@ -42,7 +42,6 @@
                 </StackPanel>
             </Grid>
 
-
             <!-- Instance List and Provider Configuration (Side-by-Side) -->
             <Grid Grid.Row="1" ColumnDefinitions="0.3*,Auto,0.7*">
                 <!-- Instance List (Left Column) -->

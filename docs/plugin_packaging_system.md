@@ -1,7 +1,7 @@
 # Plugin Packaging System Implementation Plan
 
 **Status**: 📋 Planned  
-**Extension**: `.sxap` (ShareX Avalonia Plugin)  
+**Extension**: `.sxadp` (ShareX Avalonia Plugin)  
 **Inspired by**: ShareX `.sxie` (ShareX Image Effect) format
 
 ---
@@ -36,10 +36,10 @@ MyEffect.sxie (ZIP archive)
 
 ---
 
-## 2. Proposed Solution: `.sxap` Format
+## 2. Proposed Solution: `.sxadp` Format
 
 ### Extension Name Recommendation
-**`.sxap`** = **S**hare**X** **A**valonia **P**lugin
+**`.sxadp`** = **S**hare**X** **A**valonia **P**lugin
 
 **Rationale**:
 - Follows ShareX naming convention (`.sxie` for Image Effects)
@@ -54,10 +54,10 @@ MyEffect.sxie (ZIP archive)
 ## 3. Package Structure
 
 ### Archive Format
-`.sxap` files are **ZIP archives** with the following structure:
+`.sxadp` files are **ZIP archives** with the following structure:
 
 ```
-ImgurUploader.sxap (ZIP archive)
+ImgurUploader.sxadp (ZIP archive)
 ├── plugin.json                          # Manifest (REQUIRED)
 ├── ShareX.Uploader.Imgur.dll            # Main assembly (REQUIRED)
 ├── Newtonsoft.Json.dll                  # Dependencies (OPTIONAL)
@@ -98,7 +98,7 @@ public static class PluginPackager
     private const string ManifestFileName = "plugin.json";
     
     /// <summary>
-    /// Package a plugin directory into .sxap file
+    /// Package a plugin directory into .sxadp file
     /// </summary>
     public static string Package(string pluginDirectory, string outputFilePath)
     {
@@ -125,7 +125,7 @@ public static class PluginPackager
     }
     
     /// <summary>
-    /// Extract and install .sxap package to Plugins directory
+    /// Extract and install .sxadp package to Plugins directory
     /// </summary>
     public static PluginMetadata? InstallPackage(string packageFilePath, string pluginsDirectory)
     {
@@ -178,7 +178,7 @@ public static class PluginPackager
 **Location**: `ShareX.Avalonia.UI/Views/PluginInstallerDialog.axaml`
 
 **Features**:
-- File picker for `.sxap` files
+- File picker for `.sxadp` files
 - Display plugin metadata (name, version, author, description)
 - Show installation location
 - Install button
@@ -206,7 +206,7 @@ public class PluginInstallerViewModel : ViewModelBase
             Title = "Select Plugin Package",
             Filters = new List<FileDialogFilter>
             {
-                new() { Name = "ShareX Avalonia Plugin", Extensions = { "sxap" } }
+                new() { Name = "ShareX Avalonia Plugin", Extensions = { "sxadp" } }
             }
         };
         
@@ -261,7 +261,7 @@ public class PluginInstallerViewModel : ViewModelBase
         Margin="0,0,0,10"/>
 ```
 
-**2. Drag & Drop Support** - Allow dragging `.sxap` files onto main window
+**2. Drag & Drop Support** - Allow dragging `.sxadp` files onto main window
 
 **Location**: `MainWindow.axaml.cs`
 
@@ -271,11 +271,11 @@ private async void OnDrop(object? sender, DragEventArgs e)
     if (e.Data.Contains(DataFormats.Files))
     {
         var files = e.Data.GetFiles();
-        var sxapFiles = files?.Where(f => f.Path.LocalPath.EndsWith(".sxap", StringComparison.OrdinalIgnoreCase));
+        var sxadpFiles = files?.Where(f => f.Path.LocalPath.EndsWith(".sxadp", StringComparison.OrdinalIgnoreCase));
         
-        if (sxapFiles?.Any() == true)
+        if (sxadpFiles?.Any() == true)
         {
-            foreach (var file in sxapFiles)
+            foreach (var file in sxadpFiles)
             {
                 await InstallPlugin(file.Path.LocalPath);
             }
@@ -284,17 +284,17 @@ private async void OnDrop(object? sender, DragEventArgs e)
 }
 ```
 
-**3. File Association** - Register `.sxap` extension with Windows
+**3. File Association** - Register `.sxadp` extension with Windows
 
 **Location**: `IntegrationHelpers.cs` (similar to ShareX's `.sxie` registration)
 
 ```csharp
-private static readonly string ShellPluginExtensionPath = @"Software\Classes\.sxap";
-private static readonly string ShellPluginExtensionValue = "ShareX.Avalonia.sxap";
+private static readonly string ShellPluginExtensionPath = @"Software\Classes\.sxadp";
+private static readonly string ShellPluginExtensionValue = "ShareX.Avalonia.sxadp";
 
-public static void RegisterSxapExtension()
+public static void RegistersxadpExtension()
 {
-    // Register .sxap extension
+    // Register .sxadp extension
     // Associate with ShareX.Avalonia.exe
     // Add "Install Plugin" context menu
 }
@@ -331,20 +331,20 @@ cd ImgurUploader
 # - ShareX.Uploader.Imgur.dll
 # - Dependencies
 
-# 3. Create .sxap package (using 7-Zip or similar)
-7z a ImgurUploader.sxap *
+# 3. Create .sxadp package (using 7-Zip or similar)
+7z a ImgurUploader.sxadp *
 ```
 
 **Option B: CLI Tool (future enhancement)**
 ```bash
-sxap-pack --input ./ImgurUploader --output ImgurUploader.sxap
+sxadp-pack --input ./ImgurUploader --output ImgurUploader.sxadp
 ```
 
 **Option C: GUI Packager (future enhancement)**
 - Similar to ShareX's `ImageEffectPackagerForm`
 - Browse for plugin directory
 - Auto-validate manifest
-- Generate `.sxap` file
+- Generate `.sxadp` file
 
 ---
 
@@ -399,16 +399,16 @@ ShareX.Avalonia/
 ## 9. Example Usage
 
 ### End User Workflow
-1. Download `ImgurUploader.sxap` from plugin repository
+1. Download `ImgurUploader.sxadp` from plugin repository
 2. Open ShareX.Avalonia → Settings → Uploaders
 3. Click "Install Plugin..." button
-4. Select `ImgurUploader.sxap` file
+4. Select `ImgurUploader.sxadp` file
 5. Review plugin details
 6. Click "Install"
 7. Plugin appears in Uploaders list
 
 ### Alternative: Drag & Drop
-1. Drag `ImgurUploader.sxap` onto ShareX.Avalonia window
+1. Drag `ImgurUploader.sxadp` onto ShareX.Avalonia window
 2. Confirm installation prompt
 3. Plugin installed automatically
 
@@ -427,7 +427,7 @@ ShareX.Avalonia/
 
 ## 11. Comparison with ShareX
 
-| Feature | ShareX (.sxie) | ShareX.Avalonia (.sxap) |
+| Feature | ShareX (.sxie) | ShareX.Avalonia (.sxadp) |
 |---------|----------------|-------------------------|
 | Format | ZIP archive | ZIP archive |
 | Manifest | Config.json (ImageEffectPreset) | plugin.json (PluginManifest) |
@@ -440,8 +440,8 @@ ShareX.Avalonia/
 
 ## 12. Success Criteria
 
-✅ Users can install plugins by double-clicking `.sxap` files  
-✅ Users can drag & drop `.sxap` files onto app window  
+✅ Users can install plugins by double-clicking `.sxadp` files  
+✅ Users can drag & drop `.sxadp` files onto app window  
 ✅ Invalid packages are rejected with clear error messages  
 ✅ Installed plugins appear in Uploaders list immediately  
 ✅ Plugins are isolated and don't conflict with each other  
