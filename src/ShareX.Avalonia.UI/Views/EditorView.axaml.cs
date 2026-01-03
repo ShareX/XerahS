@@ -631,6 +631,9 @@ namespace ShareX.Ava.UI.Views
                 // Invalidate cached bitmap when preview image changes
                 _cachedSkBitmap?.Dispose();
                 _cachedSkBitmap = null;
+                ClearAllAnnotations();
+                ResetScrollViewerOffset();
+                _lastZoom = vm.Zoom;
             }
             else if (e.PropertyName == nameof(MainViewModel.ActiveTool))
             {
@@ -877,6 +880,15 @@ namespace ShareX.Ava.UI.Views
             // Clean up cached bitmap
             _cachedSkBitmap?.Dispose();
             _cachedSkBitmap = null;
+            ResetScrollViewerOffset();
+        }
+
+        private void ResetScrollViewerOffset()
+        {
+            var scrollViewer = this.FindControl<ScrollViewer>("CanvasScrollViewer");
+            if (scrollViewer == null) return;
+
+            Dispatcher.UIThread.Post(() => scrollViewer.Offset = new Vector(0, 0), DispatcherPriority.Render);
         }
 
         private void ApplySelectedColor(string colorHex)

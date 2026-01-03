@@ -649,6 +649,11 @@ namespace ShareX.Ava.UI.ViewModels
             // HasPreviewImage = true; // Handled by OnPreviewImageChanged
             ImageDimensions = $"{image.Width} x {image.Height}";
             StatusText = $"Image: {image.Width} × {image.Height}";
+
+            // Reset view state for the new image
+            Zoom = 1.0;
+            ClearAnnotationsRequested?.Invoke(this, EventArgs.Empty);
+            ResetNumberCounter();
         }
 
         public void CropImage(int x, int y, int width, int height)
