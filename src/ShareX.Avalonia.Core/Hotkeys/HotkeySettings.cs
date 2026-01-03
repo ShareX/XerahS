@@ -91,6 +91,6 @@ public class HotkeySettings
 
     public override string ToString()
     {
-        return $"{Job}: {HotkeyInfo}";
+        return $"{EnumExtensions.GetDescription(Job)}: {HotkeyInfo}";
     }
 }

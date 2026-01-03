@@ -17,6 +17,11 @@ public partial class HotkeyItemViewModel : ViewModelBase
     
     public string KeyString => Model.HotkeyInfo.ToString();
     
+    /// <summary>
+    /// Full description using HotkeySettings.ToString() format: "Job: KeyBinding"
+    /// </summary>
+    public string FullDescription => Model.ToString();
+    
     // Expose Status for binding - reads from Model.HotkeyInfo.Status
     public Platform.Abstractions.HotkeyStatus Status => Model.HotkeyInfo.Status;
 
@@ -29,6 +34,7 @@ public partial class HotkeyItemViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(Description));
         OnPropertyChanged(nameof(KeyString));
+        OnPropertyChanged(nameof(FullDescription));
         OnPropertyChanged(nameof(Status));
     }
 }

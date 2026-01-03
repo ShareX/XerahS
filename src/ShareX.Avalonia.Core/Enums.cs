@@ -144,157 +144,231 @@ public enum ScreenRecordStartMethod
 
 public enum HotkeyType // Localized
 {
+    [Description("None")]
     None,
     // Upload
     [Category(EnumExtensions.HotkeyType_Category_Upload)]
+    [Description("Upload file")]
     FileUpload,
     [Category(EnumExtensions.HotkeyType_Category_Upload)]
+    [Description("Upload folder")]
     FolderUpload,
     [Category(EnumExtensions.HotkeyType_Category_Upload)]
+    [Description("Upload from clipboard")]
     ClipboardUpload,
     [Category(EnumExtensions.HotkeyType_Category_Upload)]
+    [Description("Upload from clipboard with content viewer")]
     ClipboardUploadWithContentViewer,
     [Category(EnumExtensions.HotkeyType_Category_Upload)]
+    [Description("Upload text")]
     UploadText,
     [Category(EnumExtensions.HotkeyType_Category_Upload)]
+    [Description("Upload from URL")]
     UploadURL,
     [Category(EnumExtensions.HotkeyType_Category_Upload)]
+    [Description("Drag and drop upload")]
     DragDropUpload,
     [Category(EnumExtensions.HotkeyType_Category_Upload)]
+    [Description("Shorten URL")]
     ShortenURL,
     [Category(EnumExtensions.HotkeyType_Category_Upload)]
+    [Description("Stop all active uploads")]
     StopUploads,
     // Screen capture
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Capture entire screen")]
     PrintScreen,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Capture active window")]
     ActiveWindow,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Capture pre configured window")]
     CustomWindow,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Capture active monitor")]
     ActiveMonitor,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Capture region")]
     RectangleRegion,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Capture region (Light)")]
     RectangleLight,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Capture region (Transparent)")]
     RectangleTransparent,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Capture pre configured region")]
     CustomRegion,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Capture last region")]
     LastRegion,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Start/Stop scrolling capture")]
     ScrollingCapture,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Auto capture")]
     AutoCapture,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Start auto capture using last region")]
     StartAutoCapture,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
+    [Description("Stop auto capture")]
     StopAutoCapture,
     // Screen record
     [Category(EnumExtensions.HotkeyType_Category_ScreenRecord)]
+    [Description("Start/Stop screen recording")]
     ScreenRecorder,
     [Category(EnumExtensions.HotkeyType_Category_ScreenRecord)]
+    [Description("Start/Stop screen recording using active window region")]
     ScreenRecorderActiveWindow,
     [Category(EnumExtensions.HotkeyType_Category_ScreenRecord)]
+    [Description("Start/Stop screen recording using pre configured region")]
     ScreenRecorderCustomRegion,
     [Category(EnumExtensions.HotkeyType_Category_ScreenRecord)]
+    [Description("Start/Stop screen recording using last region")]
     StartScreenRecorder,
     [Category(EnumExtensions.HotkeyType_Category_ScreenRecord)]
+    [Description("Start/Stop screen recording (GIF)")]
     ScreenRecorderGIF,
     [Category(EnumExtensions.HotkeyType_Category_ScreenRecord)]
+    [Description("Start/Stop screen recording (GIF) using active window region")]
     ScreenRecorderGIFActiveWindow,
     [Category(EnumExtensions.HotkeyType_Category_ScreenRecord)]
+    [Description("Start/Stop screen recording (GIF) using pre configured region")]
     ScreenRecorderGIFCustomRegion,
     [Category(EnumExtensions.HotkeyType_Category_ScreenRecord)]
+    [Description("Start/Stop screen recording (GIF) using last region")]
     StartScreenRecorderGIF,
     [Category(EnumExtensions.HotkeyType_Category_ScreenRecord)]
+    [Description("Stop screen recording")]
     StopScreenRecording,
     [Category(EnumExtensions.HotkeyType_Category_ScreenRecord)]
+    [Description("Pause screen recording")]
     PauseScreenRecording,
     [Category(EnumExtensions.HotkeyType_Category_ScreenRecord)]
+    [Description("Abort screen recording")]
     AbortScreenRecording,
     // Tools
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Color picker")]
     ColorPicker,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Screen color picker")]
     ScreenColorPicker,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Ruler")]
     Ruler,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Pin to screen")]
     PinToScreen,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Pin to screen (From screen)")]
     PinToScreenFromScreen,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Pin to screen (From clipboard)")]
     PinToScreenFromClipboard,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Pin to screen (From file)")]
     PinToScreenFromFile,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Pin to screen (Close all)")]
     PinToScreenCloseAll,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Image editor")]
     ImageEditor,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Image beautifier")]
     ImageBeautifier,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Image effects")]
     ImageEffects,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Image viewer")]
     ImageViewer,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Image combiner")]
     ImageCombiner,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Image splitter")]
     ImageSplitter,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Image thumbnailer")]
     ImageThumbnailer,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Video converter")]
     VideoConverter,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Video thumbnailer")]
     VideoThumbnailer,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Analyze image")]
     AnalyzeImage,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("OCR")]
     OCR,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("QR code")]
     QRCode,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("QR code (Scan screen)")]
     QRCodeDecodeFromScreen,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("QR code (Scan region)")]
     QRCodeScanRegion,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Hash checker")]
     HashCheck,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Metadata")]
     Metadata,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Strip metadata")]
     StripMetadata,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Directory indexer")]
     IndexFolder,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Clipboard viewer")]
     ClipboardViewer,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Borderless window")]
     BorderlessWindow,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Make active window borderless")]
     ActiveWindowBorderless,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Make active window top most")]
     ActiveWindowTopMost,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Inspect window")]
     InspectWindow,
     [Category(EnumExtensions.HotkeyType_Category_Tools)]
+    [Description("Monitor test")]
     MonitorTest,
     // Other
     [Category(EnumExtensions.HotkeyType_Category_Other)]
+    [Description("Disable/Enable hotkeys")]
     DisableHotkeys,
     [Category(EnumExtensions.HotkeyType_Category_Other)]
+    [Description("Open main window")]
     OpenMainWindow,
     [Category(EnumExtensions.HotkeyType_Category_Other)]
+    [Description("Open screenshots folder")]
     OpenScreenshotsFolder,
     [Category(EnumExtensions.HotkeyType_Category_Other)]
+    [Description("Open history window")]
     OpenHistory,
     [Category(EnumExtensions.HotkeyType_Category_Other)]
+    [Description("Open image history window")]
     OpenImageHistory,
     [Category(EnumExtensions.HotkeyType_Category_Other)]
+    [Description("Toggle actions toolbar")]
     ToggleActionsToolbar,
     [Category(EnumExtensions.HotkeyType_Category_Other)]
+    [Description("Toggle tray menu")]
     ToggleTrayMenu,
     [Category(EnumExtensions.HotkeyType_Category_Other)]
+    [Description("Exit ShareX")]
     ExitShareX
 }
 
