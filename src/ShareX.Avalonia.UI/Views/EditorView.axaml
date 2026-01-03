@@ -264,10 +264,11 @@
                               PointerMoved="OnScrollViewerPointerMoved"
                               PointerReleased="OnScrollViewerPointerReleased">
                     <Border x:Name="PreviewFrame"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Background="{Binding CanvasBackground}"
-                            Padding="{Binding CanvasPadding}">
+                            IsVisible="{Binding HasPreviewImage}"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center"
+                             Background="{Binding CanvasBackground}"
+                             Padding="{Binding CanvasPadding}">
                         <!-- Outer Border: Shadow effect -->
                         <Border BoxShadow="{Binding CanvasShadow}"
                                CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}">
@@ -334,8 +335,10 @@
 
             <!-- Right Sidebar (Settings Panel) -->
             <Border Grid.Column="1" Padding="20">
-                <ScrollViewer>
-                    <StackPanel Spacing="25">
+                <ScrollViewer Padding="0,0,40,0"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                     <StackPanel Spacing="25">
                         <TextBlock Text="Settings" 
                                    FontSize="18" 
                                    FontWeight="Bold" 
