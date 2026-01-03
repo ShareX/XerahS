@@ -169,6 +169,9 @@ public partial class UploaderInstanceViewModel : ViewModelBase
                     // Sync settings back to JSON when any property changes
                     SettingsJson = ConfigViewModel.ToJson();
                     Instance.SettingsJson = SettingsJson;
+                    
+                    // Persist changes to disk
+                    InstanceManager.Instance.UpdateInstance(Instance);
                 };
             }
 
