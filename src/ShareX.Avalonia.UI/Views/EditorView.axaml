@@ -263,25 +263,23 @@
                               PointerPressed="OnScrollViewerPointerPressed"
                               PointerMoved="OnScrollViewerPointerMoved"
                               PointerReleased="OnScrollViewerPointerReleased">
-                    <Border x:Name="PreviewFrame"
-                            IsVisible="{Binding HasPreviewImage}"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center"
-                             Background="{Binding CanvasBackground}"
-                             Padding="{Binding CanvasPadding}">
-                        <!-- Outer Border: Shadow effect -->
-                        <Border BoxShadow="{Binding CanvasShadow}"
-                               CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}">
-                            <!-- Inner Border: Corner Radius with clipping -->
-                            <Border Background="#FFFFFF"
-                                    CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
-                                    ClipToBounds="True">
-                                <LayoutTransformControl>
-                                    <LayoutTransformControl.LayoutTransform>
-                                        <ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
-                                    </LayoutTransformControl.LayoutTransform>
-
-                                    <!-- Container sized to match actual image dimensions -->
+                    <LayoutTransformControl>
+                        <LayoutTransformControl.LayoutTransform>
+                            <ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+                        </LayoutTransformControl.LayoutTransform>
+                        <Border x:Name="PreviewFrame"
+                                IsVisible="{Binding HasPreviewImage}"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center"
+                                 Background="{Binding CanvasBackground}"
+                                 Padding="{Binding CanvasPadding}">
+                            <!-- Outer Border: Shadow effect -->
+                            <Border BoxShadow="{Binding CanvasShadow}"
+                                   CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}">
+                                <!-- Inner Border: Corner Radius with clipping -->
+                                <Border Background="#FFFFFF"
+                                        CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                        ClipToBounds="True">
                                     <Border CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
                                             ClipToBounds="True"
                                             Background="Transparent">
@@ -326,10 +324,10 @@
                                         </Canvas>
                                     </Grid>
                                     </Border>
-                                </LayoutTransformControl>
+                                </Border>
                             </Border>
                         </Border>
-                    </Border>
+                    </LayoutTransformControl>
                 </ScrollViewer>
             </Grid>
 
