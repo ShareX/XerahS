@@ -306,18 +306,39 @@ Add checkbox to Integration/Advanced settings tab:
 **ViewModel**: `ApplicationSettingsViewModel.cs`
 
 ```csharp
+private readonly IIntegrationService _integrationService;
+
+public ApplicationSettingsViewModel(IIntegrationService integrationService)
+{
+    _integrationService = integrationService;
+    LoadIntegrationSettings();
+}
+
 [ObservableProperty]
 private bool _isPluginExtensionRegistered;
 
+[ObservableProperty]
+private bool _supportsFileAssociations;
+
 partial void OnIsPluginExtensionRegisteredChanged(bool value)
 {
-    IntegrationHelpers.CreatePluginExtension(value);
+    _integrationService.SetPluginExtensionRegistration(value);
 }
 
 private void LoadIntegrationSettings()
 {
-    IsPluginExtensionRegistered = IntegrationHelpers.CheckPluginExtension();
+    SupportsFileAssociations = _integrationService.SupportsFileAssociations();
+    IsPluginExtensionRegistered = _integrationService.IsPluginExtensionRegistered();
 }
+```
+
+**XAML Update**: Show/hide checkbox based on platform support
+
+```xml
+<CheckBox Content="Associate .sxadp files with ShareX.Avalonia"
+          IsChecked="{Binding IsPluginExtensionRegistered}"
+          IsVisible="{Binding SupportsFileAssociations}"
+          ToolTip.Tip="Allows double-clicking .sxadp files to install plugins"/>
 ```
 
 ---
