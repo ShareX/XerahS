@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.Abstractions\ShareX.Avalonia.Platform.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
