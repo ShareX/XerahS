@@ -86,6 +86,36 @@
                 </ScrollViewer>
             </TabItem>
             
+            <!-- Integration Tab -->
+            <TabItem Header="Integration">
+                <ScrollViewer>
+                    <StackPanel Margin="20" Spacing="20">
+                        <!-- Windows Integration -->
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Windows" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <CheckBox Content="Associate .sxadp files with ShareX.Avalonia"
+                                              IsChecked="{Binding IsPluginExtensionRegistered}"
+                                              IsVisible="{Binding SupportsFileAssociations}"
+                                              ToolTip.Tip="Allows double-clicking .sxadp plugin packages to install them"/>
+                                    
+                                    <TextBlock Text="Note: File associations require Windows and are managed through the Windows Registry."
+                                               FontSize="11"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               TextWrapping="Wrap"
+                                               IsVisible="{Binding SupportsFileAssociations}"/>
+                                    
+                                    <TextBlock Text="File associations are not supported on this platform."
+                                               FontSize="11"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               IsVisible="{Binding !SupportsFileAssociations}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
 
 
             <!-- History Tab -->
