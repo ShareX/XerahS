@@ -66,7 +66,9 @@ public partial class WorkflowWizardViewModel : ObservableObject
         LoadJobCategories();
         // Default selection
         SelectedJob = JobCategories.FirstOrDefault()?.Jobs.FirstOrDefault();
-        WorkflowName = "My New Workflow";
+        
+        // Default workflow name from selected job
+        WorkflowName = SelectedJob?.Description ?? "My New Workflow";
             
         // Default tasks
         TaskSaveToFile = true;
@@ -156,6 +158,13 @@ public partial class WorkflowWizardViewModel : ObservableObject
         // Auto-set reasonable defaults based on job category
         if (value != null)
         {
+            // Update workflow name to match job description (if it's still default or empty)
+            if (string.IsNullOrWhiteSpace(WorkflowName) || WorkflowName == "My New Workflow" || 
+                JobCategories.SelectMany(c => c.Jobs).Any(j => j.Description == WorkflowName))
+            {
+                WorkflowName = value.Description;
+            }
+            
             string category = GetHotkeyCategory(value.Model.Job);
             
             if (category == EnumExtensions.HotkeyType_Category_Upload)
@@ -270,7 +279,8 @@ public partial class WorkflowWizardViewModel : ObservableObject
         settings.Job = SelectedJob?.Model.Job ?? HotkeyType.None;
         
         // Apply Destination Logic from Selected UploaderInstance
-        if (SelectedDestination != null)
+        // Only if Upload task is enabled!
+        if (TaskUpload && SelectedDestination != null)
         {
             var instance = SelectedDestination.Instance;
             
@@ -302,7 +312,7 @@ public partial class WorkflowWizardViewModel : ObservableObject
             
             // Find in Custom Uploaders List
             var customUploaders = SettingManager.UploadersConfig.CustomUploadersList;
-            int customIndex = customUploaders.FindIndex(c => c.Name == instance.DisplayName); 
+            // int customIndex = customUploaders.FindIndex(c => c.Name == instance.DisplayName); 
             // Wait, UploaderInstance.InstanceId is unique. ProviderId is the type.
             // If the user created a specific Custom Uploader instance, it corresponds to an entry in CustomUploadersList.
             

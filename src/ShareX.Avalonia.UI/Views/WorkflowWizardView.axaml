@@ -36,31 +36,12 @@
                 </Grid>
             </Border>
 
-            <!-- Column 2: Destination -->
+            <!-- Column 2: Settings -->
             <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
-                 <Grid RowDefinitions="Auto, *">
-                    <TextBlock Text="2. Select Destination" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                    
-                    <ListBox Grid.Row="1" ItemsSource="{Binding AvailableDestinations}" SelectedItem="{Binding SelectedDestination}">
-                        <ListBox.DataTemplates>
-                            <DataTemplate DataType="vm:UploaderInstanceViewModel">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="{Binding DisplayName}"/>
-                                    <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.DataTemplates>
-                    </ListBox>
-                 </Grid>
-            </Border>
-
-             <!-- Column 3: Settings -->
-            <Border Grid.Column="4" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
                 <ScrollViewer>
                     <StackPanel Spacing="20">
-                         <TextBlock Text="3. Configure" FontWeight="SemiBold"/>
+                         <TextBlock Text="2. Configure" FontWeight="SemiBold"/>
                          
                          <StackPanel Spacing="5">
                              <TextBlock Text="Workflow Name"/>
@@ -89,6 +70,26 @@
 
                     </StackPanel>
                 </ScrollViewer>
+            </Border>
+
+            <!-- Column 3: Destination -->
+            <Border Grid.Column="4" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="10"
+                    IsVisible="{Binding TaskUpload}">
+                 <Grid RowDefinitions="Auto, *">
+                    <TextBlock Text="3. Select Destination" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    
+                    <ListBox Grid.Row="1" ItemsSource="{Binding AvailableDestinations}" SelectedItem="{Binding SelectedDestination}">
+                        <ListBox.DataTemplates>
+                            <DataTemplate DataType="vm:UploaderInstanceViewModel">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="{Binding DisplayName}"/>
+                                    <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.DataTemplates>
+                    </ListBox>
+                 </Grid>
             </Border>
         </Grid>
 

@@ -27,16 +27,17 @@
                 
                 <ui:CommandBarSeparator />
                 
-                <Button Command="{Binding RemoveWorkflowCommand}" 
+                <Button Content="Edit" Command="{Binding EditWorkflowCommand}" 
                         IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Remove Selected">
-                    <ui:SymbolIcon Symbol="Delete"/>
-                </Button>
-                 
-                <Button Command="{Binding DuplicateCommand}" 
+                        ToolTip.Tip="Edit Selected Workflow"/>
+
+                <Button Content="Duplicate" Command="{Binding DuplicateCommand}" 
                         IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Duplicate">
-                    <ui:SymbolIcon Symbol="Copy"/>
+                        ToolTip.Tip="Duplicate"/>
+
+                <Button Content="Remove" Command="{Binding RemoveWorkflowCommand}" 
+                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        ToolTip.Tip="Remove">
                 </Button>
                 
                 <ui:CommandBarSeparator />
