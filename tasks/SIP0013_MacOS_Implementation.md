@@ -44,7 +44,7 @@ Implement the following interfaces located in `Abstractions`:
 - **Implementation**:
   - Use `SharpHook` (if already in use) or native P/Invoke (ObjC runtime) to register global shortcuts.
   - *Note*: Ensure "Accessibility" permissions are handled/requested.
-- **Status**: Stub implementation with Accessibility permission check (hotkey registration still TODO).
+- **Status**: SharpHook-based global hotkeys implemented with Accessibility permission check (runtime validation pending).
 
 #### 3. IClipboardService (if not fully covered by Avalonia)
 **File**: `src/ShareX.Avalonia.Platform.MacOS/MacOSClipboardService.cs`
@@ -89,7 +89,7 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 ## Deliverables
 - [x] `ShareX.Avalonia.Platform.MacOS` project.
 - [x] Ability to take a region screenshot on macOS.
-- [ ] Global Hotkeys working on macOS.
+- [x] Global Hotkeys implemented on macOS (SharpHook; validation pending).
 - [ ] Clipboard upload (text/image) working.
 - [x] Instructions for granting permissions (Screen Recording) in `README.md`.
 
