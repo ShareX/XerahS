@@ -264,6 +264,8 @@
                               PointerMoved="OnScrollViewerPointerMoved"
                               PointerReleased="OnScrollViewerPointerReleased">
                     <Border x:Name="PreviewFrame"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
                             Background="{Binding CanvasBackground}"
                             Padding="{Binding CanvasPadding}">
                         <!-- Outer Border: Shadow effect -->
