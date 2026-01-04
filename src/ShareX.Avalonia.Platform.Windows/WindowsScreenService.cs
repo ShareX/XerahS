@@ -36,6 +36,12 @@ namespace ShareX.Ava.Platform.Windows
     /// </summary>
     public class WindowsScreenService : IScreenService
     {
+        public bool UsePerScreenScalingForRegionCaptureLayout => false;
+
+        public bool UseWindowPositionForRegionCaptureFallback => false;
+
+        public bool UseLogicalCoordinatesForRegionCapture => false;
+
         public Rectangle GetVirtualScreenBounds()
         {
             return SystemInformation.VirtualScreen;

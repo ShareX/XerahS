@@ -43,6 +43,12 @@ namespace ShareX.Ava.Platform.MacOS
         private static readonly HashSet<string> Warned = new(StringComparer.Ordinal);
         private static readonly object WarnLock = new();
 
+        public bool UsePerScreenScalingForRegionCaptureLayout => true;
+
+        public bool UseWindowPositionForRegionCaptureFallback => true;
+
+        public bool UseLogicalCoordinatesForRegionCapture => true;
+
         public Rectangle GetVirtualScreenBounds()
         {
             var screens = TryGetScreens();

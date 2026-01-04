@@ -33,6 +33,21 @@ namespace ShareX.Ava.Platform.Abstractions
     public interface IScreenService
     {
         /// <summary>
+        /// Use per-screen scaling for region capture layout calculations.
+        /// </summary>
+        bool UsePerScreenScalingForRegionCaptureLayout { get; }
+
+        /// <summary>
+        /// Use actual window position when converting fallback mouse coordinates.
+        /// </summary>
+        bool UseWindowPositionForRegionCaptureFallback { get; }
+
+        /// <summary>
+        /// Use logical (screen coordinate) points when computing region capture rectangles.
+        /// </summary>
+        bool UseLogicalCoordinatesForRegionCapture { get; }
+
+        /// <summary>
         /// Gets the bounds of the virtual screen (all screens combined)
         /// </summary>
         Rectangle GetVirtualScreenBounds();

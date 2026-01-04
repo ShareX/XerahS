@@ -1,3 +1,28 @@
+#region License Information (GPL v3)
+
+/*
+    ShareX.Ava - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2025 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
+
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -37,6 +62,10 @@ namespace ShareX.Ava.UI.Views.RegionCapture
         // Store window position for coordinate conversion
         private int _windowLeft = 0;
         private int _windowTop = 0;
+        private bool _usePerScreenScalingForLayout;
+        private bool _useWindowPositionForFallback;
+        private bool _useLogicalCoordinatesForCapture;
+        private bool _loggedPointerMoveFallback;
         
         // Result task completion source to return value to caller
         private readonly System.Threading.Tasks.TaskCompletionSource<SKRectI> _tcs;
@@ -45,10 +74,13 @@ namespace ShareX.Ava.UI.Views.RegionCapture
         private const byte DarkenOpacity = 128; // 0-255, where 128 is 50% opacity (can be calculated from BackgroundDimStrength)
         private bool _useDarkening = true;
         
+        private readonly Stopwatch _openStopwatch = Stopwatch.StartNew();
+
 #if DEBUG
         // Debug logging
         private System.IO.StreamWriter? _debugLog;
         private readonly string _debugLogPath;
+        private bool _loggedInitialLayout;
 #endif
         
         public RegionCaptureWindow()
@@ -70,6 +102,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
             {
                 _debugLog = new System.IO.StreamWriter(_debugLogPath, append: true) { AutoFlush = true };
                 DebugLog("INIT", "RegionCaptureWindow created");
+                DebugLog("INIT", $"Initial state: RenderScaling={RenderScaling}, Position={Position}, Bounds={Bounds}, ClientSize={ClientSize}");
             }
             catch
             {
@@ -96,6 +129,17 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 _debugLog?.Flush();
                 _debugLog?.Dispose();
             };
+
+            this.LayoutUpdated += (s, e) =>
+            {
+                if (_loggedInitialLayout)
+                {
+                    return;
+                }
+
+                _loggedInitialLayout = true;
+                DebugLogLayout("LayoutUpdated");
+            };
 #endif
         }
         
@@ -113,6 +157,31 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 // Silently ignore logging errors
             }
 #endif
+        }
+
+        [Conditional("DEBUG")]
+        private void DebugLogLayout(string reason)
+        {
+            var selectionCanvas = this.FindControl<Canvas>("SelectionCanvas");
+            var backgroundContainer = this.FindControl<Canvas>("BackgroundContainer");
+            var overlay = this.FindControl<Path>("DarkeningOverlay");
+
+            DebugLog("LAYOUT", $"[{reason}] Window: Bounds={Bounds}, ClientSize={ClientSize}, Width={Width} Height={Height}, RenderScaling={RenderScaling}, Position={Position}");
+
+            if (selectionCanvas != null)
+            {
+                DebugLog("LAYOUT", $"[{reason}] SelectionCanvas: Bounds={selectionCanvas.Bounds}, DesiredSize={selectionCanvas.DesiredSize}");
+            }
+
+            if (backgroundContainer != null)
+            {
+                DebugLog("LAYOUT", $"[{reason}] BackgroundContainer: Bounds={backgroundContainer.Bounds}, DesiredSize={backgroundContainer.DesiredSize}");
+            }
+
+            if (overlay != null)
+            {
+                DebugLog("LAYOUT", $"[{reason}] DarkeningOverlay: Bounds={overlay.Bounds}, IsVisible={overlay.IsVisible}");
+            }
         }
 
         public System.Threading.Tasks.Task<SKRectI> GetResultAsync()
@@ -133,7 +202,18 @@ namespace ShareX.Ava.UI.Views.RegionCapture
         {
             base.OnOpened(e);
             
-            DebugLog("LIFECYCLE", "OnOpened started");
+            DebugLog("LIFECYCLE", $"OnOpened started (elapsed {_openStopwatch.ElapsedMilliseconds}ms since ctor)");
+            DebugLog("WINDOW", $"OnOpened state: RenderScaling={RenderScaling}, Position={Position}, Bounds={Bounds}, ClientSize={ClientSize}");
+
+            if (ShareX.Ava.Platform.Abstractions.PlatformServices.IsInitialized)
+            {
+                var screenService = ShareX.Ava.Platform.Abstractions.PlatformServices.Screen;
+                _usePerScreenScalingForLayout = screenService?.UsePerScreenScalingForRegionCaptureLayout ?? false;
+                _useWindowPositionForFallback = screenService?.UseWindowPositionForRegionCaptureFallback ?? false;
+                _useLogicalCoordinatesForCapture = screenService?.UseLogicalCoordinatesForRegionCapture ?? false;
+            }
+
+            DebugLog("WINDOW", $"Region capture policy: PerScreenScaling={_usePerScreenScalingForLayout}, UseWindowPositionFallback={_useWindowPositionForFallback}, UseLogicalCoords={_useLogicalCoordinatesForCapture}");
             
             // Delay removed per user request
             // await Task.Delay(250);
@@ -155,6 +235,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 foreach (var screen in Screens.All)
                 {
                     DebugLog("SCREEN", $"Screen {screenIndex}: Bounds={screen.Bounds}, Scaling={screen.Scaling}, IsPrimary={screen.IsPrimary}");
+                    DebugLog("SCREEN", $"Screen {screenIndex}: RenderScaling={RenderScaling}, ScreenScaling={screen.Scaling}");
                     
                     if (first)
                     {
@@ -178,15 +259,26 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 
                 // Size first to avoid transient invalid window bounds on macOS.
                 UpdateWindowSize(minX, minY);
+                DebugLog("WINDOW", $"Post-UpdateWindowSize: Width={Width}, Height={Height}, ClientSize={ClientSize}, RenderScaling={RenderScaling}");
 
                 // Position window at absolute top-left of virtual screen
                 Position = new PixelPoint(minX, minY);
                 DebugLog("WINDOW", $"Set Position to: {Position}");
                 DebugLog("WINDOW", $"Actual Position after set: {Position}, RenderScaling: {RenderScaling}");
+                DebugLogLayout("AfterPosition");
                 
-                // Store window position for coordinate conversion
-                _windowLeft = minX;
-                _windowTop = minY;
+                // Store window position for coordinate conversion (platform policy)
+                if (_useWindowPositionForFallback)
+                {
+                    _windowLeft = Position.X;
+                    _windowTop = Position.Y;
+                }
+                else
+                {
+                    _windowLeft = minX;
+                    _windowTop = minY;
+                }
+                DebugLog("WINDOW", $"Stored window origin for fallback: {_windowLeft},{_windowTop} (Position={Position})");
                 
                 // Check if all screens are 100% DPI (Scaling == 1.0)
                 // We only enable background images and darkening if ALL screens are 1.0, to avoid mixed-DPI offsets.
@@ -209,6 +301,8 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 {
                     DebugLog("IMAGE", "Enabling background images and darkening (Standard DPI detected)");
                     container.Children.Clear();
+
+                    var backgroundStopwatch = Stopwatch.StartNew();
                     
                     screenIndex = 0;
                     foreach (var screen in Screens.All)
@@ -221,11 +315,19 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                             screen.Bounds.X + screen.Bounds.Width, screen.Bounds.Y + screen.Bounds.Height);
                         DebugLog("IMAGE", $"Screen {screenIndex} capture rect: {skScreenRect}");
 
+                        var captureStopwatch = Stopwatch.StartNew();
                         var screenshot = await ShareX.Ava.Platform.Abstractions.PlatformServices.ScreenCapture.CaptureRectAsync(skScreenRect);
+                        captureStopwatch.Stop();
+                        DebugLog("IMAGE", $"Screen {screenIndex} capture duration: {captureStopwatch.ElapsedMilliseconds}ms");
                         
                         if (screenshot != null)
                         {
+                            DebugLog("IMAGE", $"Screen {screenIndex} capture result: {screenshot.Width}x{screenshot.Height}");
+                            var convertStopwatch = Stopwatch.StartNew();
                             var avaloniaBitmap = ConvertToAvaloniaBitmap(screenshot);
+                            convertStopwatch.Stop();
+                            DebugLog("IMAGE", $"Screen {screenIndex} bitmap conversion: {convertStopwatch.ElapsedMilliseconds}ms");
+
                             var imageControl = new Image
                             {
                                 Source = avaloniaBitmap,
@@ -234,12 +336,30 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                             };
                             RenderOptions.SetBitmapInterpolationMode(imageControl, BitmapInterpolationMode.HighQuality);
 
-                            // Since we are 1.0 scaling, Logic == Physical
-                            // Simple layout:
-                            double logLeft = screen.Bounds.X - minX;
-                            double logTop = screen.Bounds.Y - minY;
-                            double logWidth = screen.Bounds.Width;
-                            double logHeight = screen.Bounds.Height;
+                            double logLeft;
+                            double logTop;
+                            double logWidth;
+                            double logHeight;
+
+                            if (_usePerScreenScalingForLayout)
+                            {
+                                // Use per-screen scaling for logical sizing on macOS.
+                                var layoutScale = Math.Abs(screen.Scaling) < 0.001 ? 1.0 : screen.Scaling;
+                                logLeft = (screen.Bounds.X - minX) / layoutScale;
+                                logTop = (screen.Bounds.Y - minY) / layoutScale;
+                                logWidth = screen.Bounds.Width / layoutScale;
+                                logHeight = screen.Bounds.Height / layoutScale;
+                                DebugLog("IMAGE", $"Screen {screenIndex} logical target (ScreenScaling {layoutScale}): {logWidth}x{logHeight}");
+                            }
+                            else
+                            {
+                                // Default layout uses logical bounds directly.
+                                logLeft = screen.Bounds.X - minX;
+                                logTop = screen.Bounds.Y - minY;
+                                logWidth = screen.Bounds.Width;
+                                logHeight = screen.Bounds.Height;
+                                DebugLog("IMAGE", $"Screen {screenIndex} logical target (Default): {logWidth}x{logHeight}");
+                            }
                             
                             imageControl.Width = logWidth;
                             imageControl.Height = logHeight;
@@ -249,12 +369,24 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                             container.Children.Add(imageControl);
                             
                             DebugLog("IMAGE", $"Screen {screenIndex} placed at ({logLeft}, {logTop}) size {logWidth}x{logHeight}");
+                            if (!double.IsNaN(Width) && !double.IsNaN(Height) && (logWidth > Width || logHeight > Height))
+                            {
+                                DebugLog("IMAGE", $"WARNING: Image size exceeds window size. Image={logWidth}x{logHeight}, Window={Width}x{Height}");
+                            }
                             
                             screenshot.Dispose();
+                        }
+                        else
+                        {
+                            DebugLog("IMAGE", $"Screen {screenIndex} capture returned null");
                         }
                         
                         screenIndex++;
                     }
+
+                    backgroundStopwatch.Stop();
+                    DebugLog("IMAGE", $"Background capture total: {backgroundStopwatch.ElapsedMilliseconds}ms");
+                    DebugLogLayout("AfterBackgroundCapture");
                     
                     // Enable darkening
                     InitializeFullScreenDarkening();
@@ -278,17 +410,33 @@ namespace ShareX.Ava.UI.Views.RegionCapture
             double logicalMaxX = double.MinValue;
             double logicalMaxY = double.MinValue;
             
-            var currentScaling = RenderScaling;
-            
             foreach (var screen in Screens.All)
             {
                 var offsetX = screen.Bounds.X - minX;
                 var offsetY = screen.Bounds.Y - minY;
-                
-                var logLeft = offsetX / currentScaling;
-                var logTop = offsetY / currentScaling;
-                var logRight = logLeft + (screen.Bounds.Width / currentScaling);
-                var logBottom = logTop + (screen.Bounds.Height / currentScaling);
+
+                double logLeft;
+                double logTop;
+                double logRight;
+                double logBottom;
+
+                if (_usePerScreenScalingForLayout)
+                {
+                    var scale = Math.Abs(screen.Scaling) < 0.001 ? 1.0 : screen.Scaling;
+                    logLeft = offsetX / scale;
+                    logTop = offsetY / scale;
+                    logRight = logLeft + (screen.Bounds.Width / scale);
+                    logBottom = logTop + (screen.Bounds.Height / scale);
+                    DebugLog("WINDOW", $"UpdateWindowSize screen: Bounds={screen.Bounds}, ScreenScaling={scale}, LogicalRect=({logLeft},{logTop}) to ({logRight},{logBottom})");
+                }
+                else
+                {
+                    logLeft = offsetX;
+                    logTop = offsetY;
+                    logRight = logLeft + screen.Bounds.Width;
+                    logBottom = logTop + screen.Bounds.Height;
+                    DebugLog("WINDOW", $"UpdateWindowSize screen: Bounds={screen.Bounds}, LogicalRect=({logLeft},{logTop}) to ({logRight},{logBottom})");
+                }
                 
                 logicalMinX = Math.Min(logicalMinX, logLeft);
                 logicalMinY = Math.Min(logicalMinY, logTop);
@@ -298,7 +446,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
             
             Width = logicalMaxX - logicalMinX;
             Height = logicalMaxY - logicalMinY;
-            DebugLog("WINDOW", $"UpdateWindowSize: Scaling={currentScaling}, Size={Width}x{Height}");
+            DebugLog("WINDOW", $"UpdateWindowSize: LogicalBounds=({logicalMinX},{logicalMinY}) to ({logicalMaxX},{logicalMaxY}), Size={Width}x{Height}");
         }
 
         private void UpdateImagesLayout(int minX, int minY)
@@ -428,6 +576,25 @@ namespace ShareX.Ava.UI.Views.RegionCapture
             _isSelecting = false;
         }
 
+        private SKPointI ConvertLogicalToPhysical(Point logicalPos)
+        {
+            var physicalX = _windowLeft + (int)Math.Round(logicalPos.X * RenderScaling);
+            var physicalY = _windowTop + (int)Math.Round(logicalPos.Y * RenderScaling);
+            return new SKPointI(physicalX, physicalY);
+        }
+
+        private SKPointI ConvertLogicalToScreen(Point logicalPos)
+        {
+            if (_useLogicalCoordinatesForCapture)
+            {
+                var screenX = (int)Math.Round(logicalPos.X + Position.X);
+                var screenY = (int)Math.Round(logicalPos.Y + Position.Y);
+                return new SKPointI(screenX, screenY);
+            }
+
+            return ConvertLogicalToPhysical(logicalPos);
+        }
+
         private void OnPointerPressed(object sender, PointerPressedEventArgs e)
         {
             var point = e.GetCurrentPoint(this);
@@ -454,14 +621,21 @@ namespace ShareX.Ava.UI.Views.RegionCapture
             // Handle left-click to start selection
             if (point.Properties.IsLeftButtonPressed)
             {
-                // Store physical coordinates for final screenshot region (from Win32 API)
-                _startPointPhysical = GetGlobalMousePosition();
-                
                 // Store logical coordinates for visual rendering (from Avalonia - already correct)
                 _startPointLogical = point.Position;
+
+                // Store screen coordinates for final screenshot region
+                _startPointPhysical = _useLogicalCoordinatesForCapture
+                    ? ConvertLogicalToScreen(_startPointLogical)
+                    : GetGlobalMousePosition();
                 _isSelecting = true;
                 
                 DebugLog("MOUSE", $"PointerPressed: Physical={_startPointPhysical}, Logical={_startPointLogical}");
+                if (!_useLogicalCoordinatesForCapture && _startPointPhysical.X == 0 && _startPointPhysical.Y == 0)
+                {
+                    _startPointPhysical = ConvertLogicalToScreen(_startPointLogical);
+                    DebugLog("MOUSE", $"PointerPressed: Physical position is (0,0); using fallback from logical -> {_startPointPhysical}");
+                }
                 
                 // Use Avalonia's logical coordinates directly for rendering
                 var relativeX = _startPointLogical.X;
@@ -540,7 +714,20 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 UpdateDarkeningOverlay(x, y, width, height);
                 
                 // Get physical coordinates for info display
-                var currentPointPhysical = GetGlobalMousePosition();
+                var currentPointPhysical = _useLogicalCoordinatesForCapture
+                    ? ConvertLogicalToScreen(currentPointLogical)
+                    : GetGlobalMousePosition();
+                var useFallbackForInfo = !_useLogicalCoordinatesForCapture && currentPointPhysical.X == 0 && currentPointPhysical.Y == 0;
+                if (useFallbackForInfo)
+                {
+                    currentPointPhysical = ConvertLogicalToScreen(currentPointLogical);
+                    if (!_loggedPointerMoveFallback)
+                    {
+                        _loggedPointerMoveFallback = true;
+                        DebugLog("MOUSE", $"PointerMoved: Physical position is (0,0); using fallback from logical -> {currentPointPhysical}");
+                    }
+                }
+
                 var physicalX = Math.Min(_startPointPhysical.X, currentPointPhysical.X);
                 var physicalY = Math.Min(_startPointPhysical.Y, currentPointPhysical.Y);
                 var physicalWidth = Math.Abs(_startPointPhysical.X - currentPointPhysical.X);
@@ -578,21 +765,20 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 _isSelecting = false;
                 
                 // Get final position in physical screen coordinates (from Win32 API)
-                var currentPointPhysical = GetGlobalMousePosition();
+                var currentPointPhysical = _useLogicalCoordinatesForCapture
+                    ? ConvertLogicalToScreen(e.GetCurrentPoint(this).Position)
+                    : GetGlobalMousePosition();
                 
                 // Fallback: If Win32 API fails (returns 0,0), calculate from Avalonia position
-                if (currentPointPhysical.X == 0 && currentPointPhysical.Y == 0)
+                if (!_useLogicalCoordinatesForCapture && currentPointPhysical.X == 0 && currentPointPhysical.Y == 0)
                 {
                     var point = e.GetCurrentPoint(this);
                     var logicalPos = point.Position;
                     
                     // Convert logical to physical using window position and render scaling
                     // Note: This is approximate for mixed-DPI, but better than (0,0)
-                    var physicalX = _windowLeft + (int)(logicalPos.X * RenderScaling);
-                    var physicalY = _windowTop + (int)(logicalPos.Y * RenderScaling);
-                    
-                    currentPointPhysical = new SKPointI(physicalX, physicalY);
-                    DebugLog("MOUSE", $"PointerReleased: Win32 API failed, using fallback. Logical={logicalPos}, Calculated Physical={currentPointPhysical}");
+                    currentPointPhysical = ConvertLogicalToScreen(logicalPos);
+                    DebugLog("MOUSE", $"PointerReleased: Win32 API failed, using fallback. Logical={logicalPos}, RenderScaling={RenderScaling}, WindowPos={_windowLeft},{_windowTop}, WindowPosition={Position}, Calculated Physical={currentPointPhysical}");
                 }
                 else
                 {
