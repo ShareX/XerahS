@@ -98,20 +98,19 @@ namespace ShareX.Ava.App
                 ShareX.Ava.Platform.Windows.WindowsPlatform.Initialize(uiCaptureService);
                 return;
             }
-#endif
+#elif MACOS
             if (OperatingSystem.IsMacOS())
             {
                 var macCaptureService = new ShareX.Ava.Platform.MacOS.MacOSScreenshotService();
                 var uiCaptureService = new ShareX.Ava.UI.Services.ScreenCaptureService(macCaptureService);
 
                 ShareX.Ava.Platform.MacOS.MacOSPlatform.Initialize(uiCaptureService);
+                return;
             }
-            else
-            {
-                // Fallback for non-Windows (or generic stubs)
-                // In future: LinuxPlatform.Initialize()
-                System.Diagnostics.Debug.WriteLine("Warning: Non-Windows platform detected, services may not be fully functional.");
-            }
+#endif
+            // Fallback for non-Windows/MacOS (or generic stubs)
+            // In future: LinuxPlatform.Initialize()
+            System.Diagnostics.Debug.WriteLine("Warning: Platform not fully supported, services may not be fully functional.");
         }
 
         public static AppBuilder BuildAvaloniaApp()
