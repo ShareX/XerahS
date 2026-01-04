@@ -16,7 +16,7 @@
         <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto,*,Auto,Auto">
+    <Grid RowDefinitions="Auto,*,Auto">
         <!-- Row 0: Annotation Toolbar (always visible) -->
         <Border Grid.Row="0" 
                 Padding="12,8">
@@ -389,40 +389,11 @@
             </Border>
         </Grid>
 
-        <!-- Row 2: Export Toolbar (always visible) -->
-        <Border Grid.Row="2" 
-                Padding="12,10">
-            <DockPanel>
-                <!-- Format Selection (Left) -->
-                <Border DockPanel.Dock="Left" 
-                        BorderThickness="0,0,1,0" 
-                        BorderBrush="#3B3B52" 
-                        Padding="0,0,12,0"
-                        Margin="0,0,12,0">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="Format" FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center"/>
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <Button Content="PNG" 
-                                    Width="60" Height="28"
-                                    Background="#8B5CF6"
-                                    Foreground="White"
-                                    CornerRadius="8"
-                                    FontSize="11"
-                                    FontWeight="SemiBold"/>
-                            <Button Content="JPEG" 
-                                    Width="60" Height="28"
-                                    Background="#25263A"
-                                    BorderBrush="#3B3B52"
-                                    BorderThickness="1"
-                                    Foreground="White"
-                                    CornerRadius="8"
-                                    FontSize="11"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-                
-                <!-- Export Actions (Center-Right) -->
-                <StackPanel Orientation="Horizontal" Spacing="8">
+        <!-- Row 2: Combined Bottom Bar (Export + Zoom Controls) -->
+        <Border Grid.Row="2" Padding="16,8">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Left: Export Actions -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
                     <Button Command="{Binding CopyCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <TextBlock Text="📋" FontSize="14"/>
@@ -473,14 +444,12 @@
                         </Button.Styles>
                     </Button>
                 </StackPanel>
-            </DockPanel>
-        </Border>
-
-        <!-- Row 3: Status Bar (always visible) -->
-        <Border Grid.Row="3" Padding="16,8">
-            <DockPanel>
-                <!-- Left: Zoom Controls -->
-                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                
+                <!-- Center: Empty spacer -->
+                <Border Grid.Column="1"/>
+                
+                <!-- Right: Zoom Controls -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <Button Width="28" Height="28" CornerRadius="6" Background="#25263A" BorderBrush="#3B3B52" BorderThickness="1"
                             Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom out (Ctrl + Wheel)">
                         <TextBlock Text="-" Foreground="#E2E8F0" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -504,11 +473,11 @@
                                VerticalAlignment="Center"
                                Margin="4,0,0,0"/>
                 </StackPanel>
-            </DockPanel>
+            </Grid>
         </Border>
 
-        <!-- Effects Panel Overlay (Grid.RowSpan=4 to cover entire view) -->
-        <Border Grid.Row="0" Grid.RowSpan="4"
+        <!-- Effects Panel Overlay (Grid.RowSpan=3 to cover entire view) -->
+        <Border Grid.Row="0" Grid.RowSpan="3"
                 IsVisible="{Binding IsEffectsPanelOpen}"
                 Background="#80000000"
                 HorizontalAlignment="Right"
