@@ -41,6 +41,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
 
         // Darkening overlay settings (configurable from RegionCaptureOptions)
         private const byte DarkenOpacity = 128; // 0-255, where 128 is 50% opacity (can be calculated from BackgroundDimStrength)
+        private bool _useDarkening = true;
         
 #if DEBUG
         // Debug logging
@@ -132,8 +133,8 @@ namespace ShareX.Ava.UI.Views.RegionCapture
             
             DebugLog("LIFECYCLE", "OnOpened started");
             
-            // Allow window to move to correct position before calculating coordinates
-            await Task.Delay(250);
+            // Delay removed per user request
+            // await Task.Delay(250);
             
             DebugLog("WINDOW", "Post-delay, beginning screen enumeration");
             
@@ -190,21 +191,86 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 _windowLeft = minX;
                 _windowTop = minY;
                 
-                // Populate background images for each screen - DISABLED per user request
-                var container = this.FindControl<Canvas>("BackgroundContainer");
-                if (container != null)
+                // Check if all screens are 100% DPI (Scaling == 1.0)
+                // We only enable background images and darkening if ALL screens are 1.0, to avoid mixed-DPI offsets.
+                bool allScreensStandardDpi = true;
+                foreach (var screen in Screens.All)
                 {
-                    container.Children.Clear();
+                    if (Math.Abs(screen.Scaling - 1.0) > 0.001)
+                    {
+                        allScreensStandardDpi = false;
+                        break;
+                    }
                 }
-
-                // Initial Layout Calculation - DISABLED
-                // UpdateImagesLayout(minX, minY);
-                // UpdateWindowSize(minX, minY);
-
-                // Initialize the darkening overlay - DISABLED
-                // InitializeFullScreenDarkening();
                 
-                // Handle dynamic DPI changes - DISABLED
+                DebugLog("WINDOW", $"DPI Check: All screens standard DPI (1.0)? {allScreensStandardDpi}");
+
+                _useDarkening = allScreensStandardDpi;
+                var container = this.FindControl<Canvas>("BackgroundContainer");
+                
+                if (_useDarkening && container != null && ShareX.Ava.Platform.Abstractions.PlatformServices.IsInitialized)
+                {
+                    DebugLog("IMAGE", "Enabling background images and darkening (Standard DPI detected)");
+                    container.Children.Clear();
+                    
+                    screenIndex = 0;
+                    foreach (var screen in Screens.All)
+                    {
+                        DebugLog("IMAGE", $"--- Processing screen {screenIndex} for background ---");
+                        
+                        // 1. Capture screen content (Physical)
+                        var screenRect = new System.Drawing.Rectangle(
+                            screen.Bounds.X, screen.Bounds.Y, 
+                            screen.Bounds.Width, screen.Bounds.Height);
+                        DebugLog("IMAGE", $"Screen {screenIndex} capture rect: {screenRect}");
+                            
+                        var screenshot = await ShareX.Ava.Platform.Abstractions.PlatformServices.ScreenCapture.CaptureRectAsync(screenRect);
+                        
+                        if (screenshot != null)
+                        {
+                            var avaloniaBitmap = ConvertToAvaloniaBitmap(screenshot);
+                            var imageControl = new Image
+                            {
+                                Source = avaloniaBitmap,
+                                Stretch = Stretch.Fill,
+                                Tag = screen
+                            };
+                            RenderOptions.SetBitmapInterpolationMode(imageControl, BitmapInterpolationMode.HighQuality);
+
+                            // Since we are 1.0 scaling, Logic == Physical
+                            // Simple layout:
+                            double logLeft = screen.Bounds.X - minX;
+                            double logTop = screen.Bounds.Y - minY;
+                            double logWidth = screen.Bounds.Width;
+                            double logHeight = screen.Bounds.Height;
+                            
+                            imageControl.Width = logWidth;
+                            imageControl.Height = logHeight;
+                            Canvas.SetLeft(imageControl, logLeft);
+                            Canvas.SetTop(imageControl, logTop);
+
+                            container.Children.Add(imageControl);
+                            
+                            DebugLog("IMAGE", $"Screen {screenIndex} placed at ({logLeft}, {logTop}) size {logWidth}x{logHeight}");
+                            
+                            screenshot.Dispose();
+                        }
+                        
+                        screenIndex++;
+                    }
+                    
+                    // Enable darkening
+                    InitializeFullScreenDarkening();
+                }
+                else
+                {
+                    DebugLog("IMAGE", "Disabling background images and darkening (Mixed/High DPI detected)");
+                    if (container != null)
+                    {
+                        container.Children.Clear();
+                    }
+                    // Do NOT initialize darkening
+                }
             }
         }
         
@@ -280,6 +346,8 @@ namespace ShareX.Ava.UI.Views.RegionCapture
 
         private void InitializeFullScreenDarkening()
         {
+            if (!_useDarkening) return;
+
             var overlay = this.FindControl<Path>("DarkeningOverlay");
             if (overlay == null) return;
 
@@ -301,6 +369,8 @@ namespace ShareX.Ava.UI.Views.RegionCapture
 
         private void UpdateDarkeningOverlay(double selX, double selY, double selWidth, double selHeight)
         {
+            if (!_useDarkening) return;
+
             var overlay = this.FindControl<Path>("DarkeningOverlay");
             if (overlay == null) return;
 
