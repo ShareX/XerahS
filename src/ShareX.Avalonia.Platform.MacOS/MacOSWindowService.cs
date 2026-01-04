@@ -1,7 +1,7 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
+    ShareX.Ava - The Avalonia UI implementation of ShareX
     Copyright (c) 2007-2025 ShareX Team
 
     This program is free software; you can redistribute it and/or
@@ -48,8 +48,14 @@ namespace ShareX.Ava.Platform.MacOS
 
         public bool SetForegroundWindow(IntPtr handle)
         {
-            LogNotImplemented(nameof(SetForegroundWindow));
-            return false;
+            if (!TryGetFrontWindowInfo(out var appName, out _, out _))
+            {
+                return false;
+            }
+
+            var script = $"tell application \\\"{appName}\\\" to activate";
+            var output = RunOsaScriptWithOutput(script);
+            return output != null;
         }
 
         public string GetWindowText(IntPtr handle)
@@ -79,14 +85,26 @@ namespace ShareX.Ava.Platform.MacOS
 
         public bool IsWindowMaximized(IntPtr handle)
         {
-            LogNotImplemented(nameof(IsWindowMaximized));
-            return false;
+            const string script =
+                "tell application \\\"System Events\\\"\\n" +
+                "set frontApp to first application process whose frontmost is true\\n" +
+                "return zoomed of front window of frontApp\\n" +
+                "end tell";
+
+            var output = RunOsaScriptWithOutput(script);
+            return output?.Trim().Equals("true", StringComparison.OrdinalIgnoreCase) == true;
         }
 
         public bool IsWindowMinimized(IntPtr handle)
         {
-            LogNotImplemented(nameof(IsWindowMinimized));
-            return false;
+            const string script =
+                "tell application \\\"System Events\\\"\\n" +
+                "set frontApp to first application process whose frontmost is true\\n" +
+                "return miniaturized of front window of frontApp\\n" +
+                "end tell";
+
+            var output = RunOsaScriptWithOutput(script);
+            return output?.Trim().Equals("true", StringComparison.OrdinalIgnoreCase) == true;
         }
 
         public bool ShowWindow(IntPtr handle, int cmdShow)
