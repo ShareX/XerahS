@@ -51,7 +51,8 @@ namespace ShareX.Ava.Platform.MacOS
                 clipboardService: new MacOSClipboardService(),
                 windowService: new MacOSWindowService(),
                 screenCaptureService: screenCaptureService,
-                hotkeyService: new MacOSHotkeyService()
+                hotkeyService: new MacOSHotkeyService(),
+                inputService: new MacOSInputService()
             );
         }
     }
