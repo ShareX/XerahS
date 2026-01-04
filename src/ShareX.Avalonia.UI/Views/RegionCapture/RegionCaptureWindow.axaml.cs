@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -41,20 +42,74 @@ namespace ShareX.Ava.UI.Views.RegionCapture
         // Darkening overlay settings (configurable from RegionCaptureOptions)
         private const byte DarkenOpacity = 128; // 0-255, where 128 is 50% opacity (can be calculated from BackgroundDimStrength)
         
+#if DEBUG
+        // Debug logging
+        private System.IO.StreamWriter? _debugLog;
+        private readonly string _debugLogPath;
+#endif
+        
         public RegionCaptureWindow()
         {
             InitializeComponent();
             _tcs = new System.Threading.Tasks.TaskCompletionSource<System.Drawing.Rectangle>();
+            
+#if DEBUG
+            // Initialize debug logging
+            var debugFolder = System.IO.Path.Combine(
+                ShareX.Ava.Core.SettingManager.PersonalFolder,
+                "debug");
+            System.IO.Directory.CreateDirectory(debugFolder);
+            
+            var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss-fff");
+            _debugLogPath = System.IO.Path.Combine(debugFolder, $"region-capture-{timestamp}.log");
+            
+            try
+            {
+                _debugLog = new System.IO.StreamWriter(_debugLogPath, append: true) { AutoFlush = true };
+                DebugLog("INIT", "RegionCaptureWindow created");
+            }
+            catch
+            {
+                _debugLog = null;
+            }
+#endif
             
             // Close on Escape key
             this.KeyDown += (s, e) =>
             {
                 if (e.Key == Key.Escape)
                 {
+                    DebugLog("INPUT", "Escape key pressed - cancelling");
                     _tcs.TrySetResult(System.Drawing.Rectangle.Empty);
                     Close();
                 }
             };
+            
+#if DEBUG
+            // Clean up debug log on close
+            this.Closed += (s, e) =>
+            {
+                DebugLog("LIFECYCLE", "Window closing");
+                _debugLog?.Flush();
+                _debugLog?.Dispose();
+            };
+#endif
+        }
+        
+        [Conditional("DEBUG")]
+        private void DebugLog(string category, string message)
+        {
+#if DEBUG
+            try
+            {
+                var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
+                _debugLog?.WriteLine($"[{timestamp}] {category,-12} | {message}");
+            }
+            catch
+            {
+                // Silently ignore logging errors
+            }
+#endif
         }
 
         public System.Threading.Tasks.Task<System.Drawing.Rectangle> GetResultAsync()
@@ -75,17 +130,29 @@ namespace ShareX.Ava.UI.Views.RegionCapture
         {
             base.OnOpened(e);
             
+            DebugLog("LIFECYCLE", "OnOpened started");
+            
+            // Allow window to move to correct position before calculating coordinates
+            await Task.Delay(250);
+            
+            DebugLog("WINDOW", "Post-delay, beginning screen enumeration");
+            
             // Multi-monitor support: Span all screens at physical pixel dimensions
             if (Screens.ScreenCount > 0)
             {
+                DebugLog("SCREEN", $"Screen count: {Screens.ScreenCount}");
+                
                 var minX = 0;
                 var minY = 0;
                 var maxX = 0;
                 var maxY = 0;
                 
                 bool first = true;
+                int screenIndex = 0;
                 foreach (var screen in Screens.All)
                 {
+                    DebugLog("SCREEN", $"Screen {screenIndex}: Bounds={screen.Bounds}, Scaling={screen.Scaling}, IsPrimary={screen.IsPrimary}");
+                    
                     if (first)
                     {
                         minX = screen.Bounds.X;
@@ -101,78 +168,108 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                         maxX = Math.Max(maxX, screen.Bounds.Right);
                         maxY = Math.Max(maxY, screen.Bounds.Bottom);
                     }
+                    screenIndex++;
                 }
+                
+                DebugLog("WINDOW", $"Virtual screen bounds: ({minX}, {minY}) to ({maxX}, {maxY})");
                 
                 // Position window at absolute top-left of virtual screen
                 Position = new PixelPoint(minX, minY);
+                DebugLog("WINDOW", $"Set Position to: {Position}");
                 
-                // Calculate logical size required to cover all screens
-                // We use PointToClient to determine the Logical extent of the virtual screen relative to the window origin
-                // This automatically handles the mixed DPI scaling logic of the underlying platform
+                // Read back actual position after setting
+                DebugLog("WINDOW", $"Actual Position after set: {Position}, RenderScaling: {RenderScaling}");
+                
+                // Revert to PointToClient logic for Sizing (Milestone)
                 var topLeft = this.PointToClient(new PixelPoint(minX, minY));
                 var bottomRight = this.PointToClient(new PixelPoint(maxX, maxY));
-                var logicalWidth = bottomRight.X - topLeft.X;
-                var logicalHeight = bottomRight.Y - topLeft.Y;
-
-                // Set window size to logical units
-                Width = logicalWidth;
-                Height = logicalHeight;
+                Width = bottomRight.X - topLeft.X;
+                Height = bottomRight.Y - topLeft.Y;
                 
                 // Store window position for coordinate conversion
                 _windowLeft = minX;
                 _windowTop = minY;
                 
-                // Populate background images for each screen
+                // Populate background images for each screen - DISABLED per user request
                 var container = this.FindControl<Canvas>("BackgroundContainer");
-                if (container != null && ShareX.Ava.Platform.Abstractions.PlatformServices.IsInitialized)
+                if (container != null)
                 {
                     container.Children.Clear();
-                    
-                    foreach (var screen in Screens.All)
-                    {
-                        // 1. Capture screen content (Physical)
-                        var screenRect = new System.Drawing.Rectangle(
-                            screen.Bounds.X, screen.Bounds.Y, 
-                            screen.Bounds.Width, screen.Bounds.Height);
-                            
-                        var screenshot = await ShareX.Ava.Platform.Abstractions.PlatformServices.ScreenCapture.CaptureRectAsync(screenRect);
-                        
-                        if (screenshot != null)
-                        {
-                            var avaloniaBitmap = ConvertToAvaloniaBitmap(screenshot);
-                            var imageControl = new Image
-                            {
-                                Source = avaloniaBitmap,
-                                Stretch = Stretch.Fill
-                            };
-                            RenderOptions.SetBitmapInterpolationMode(imageControl, BitmapInterpolationMode.HighQuality);
-
-                            // 2. Calculate Logical Position and Size for this screen image
-                            var screenTopLeft = this.PointToClient(screen.Bounds.TopLeft);
-                            var screenBottomRight = this.PointToClient(screen.Bounds.BottomRight);
-                            
-                            var screenLogicalWidth = screenBottomRight.X - screenTopLeft.X;
-                            var screenLogicalHeight = screenBottomRight.Y - screenTopLeft.Y;
-
-                            imageControl.Width = screenLogicalWidth;
-                            imageControl.Height = screenLogicalHeight;
-
-                            Canvas.SetLeft(imageControl, screenTopLeft.X);
-                            Canvas.SetTop(imageControl, screenTopLeft.Y);
-
-                            container.Children.Add(imageControl);
-                            
-                            screenshot.Dispose();
-                        }
-                    }
                 }
 
-                // Initialize the darkening overlay to cover the entire screen
-                InitializeFullScreenDarkening();
+                // Initial Layout Calculation - DISABLED
+                // UpdateImagesLayout(minX, minY);
+                // UpdateWindowSize(minX, minY);
+
+                // Initialize the darkening overlay - DISABLED
+                // InitializeFullScreenDarkening();
                 
-                ShareX.Ava.Common.DebugHelper.WriteLine($"RegionCapture: Window position: ({minX}, {minY})");
-                ShareX.Ava.Common.DebugHelper.WriteLine($"RegionCapture: Window size: {logicalWidth}x{logicalHeight}");
-                ShareX.Ava.Common.DebugHelper.WriteLine($"RegionCapture: RenderScaling: {RenderScaling}");
+                // Handle dynamic DPI changes - DISABLED
+            }
+        }
+        
+        private void UpdateWindowSize(int minX, int minY)
+        {
+            double logicalMinX = double.MaxValue;
+            double logicalMinY = double.MaxValue;
+            double logicalMaxX = double.MinValue;
+            double logicalMaxY = double.MinValue;
+            
+            var currentScaling = RenderScaling;
+            
+            foreach (var screen in Screens.All)
+            {
+                var offsetX = screen.Bounds.X - minX;
+                var offsetY = screen.Bounds.Y - minY;
+                
+                var logLeft = offsetX / currentScaling;
+                var logTop = offsetY / currentScaling;
+                var logRight = logLeft + (screen.Bounds.Width / currentScaling);
+                var logBottom = logTop + (screen.Bounds.Height / currentScaling);
+                
+                logicalMinX = Math.Min(logicalMinX, logLeft);
+                logicalMinY = Math.Min(logicalMinY, logTop);
+                logicalMaxX = Math.Max(logicalMaxX, logRight);
+                logicalMaxY = Math.Max(logicalMaxY, logBottom);
+            }
+            
+            Width = logicalMaxX - logicalMinX;
+            Height = logicalMaxY - logicalMinY;
+            DebugLog("WINDOW", $"UpdateWindowSize: Scaling={currentScaling}, Size={Width}x{Height}");
+        }
+
+        private void UpdateImagesLayout(int minX, int minY)
+        {
+            var container = this.FindControl<Canvas>("BackgroundContainer");
+            if (container == null) return;
+            
+            var currentScaling = RenderScaling;
+            DebugLog("LAYOUT", $"UpdateImagesLayout: Scaling={currentScaling}");
+            
+            int idx = 0;
+            foreach (var child in container.Children)
+            {
+                if (child is Image img && img.Tag is Avalonia.Platform.Screen screen)
+                {
+                    // Calculate based on WINDOW scaling, not Screen scaling
+                    // We want 1 image pixel = 1 physical pixel
+                    
+                    var physicalOffsetX = screen.Bounds.X - minX;
+                    var physicalOffsetY = screen.Bounds.Y - minY;
+                    
+                    var logicalLeft = physicalOffsetX / currentScaling;
+                    var logicalTop = physicalOffsetY / currentScaling;
+                    var logicalWidth = screen.Bounds.Width / currentScaling;
+                    var logicalHeight = screen.Bounds.Height / currentScaling;
+                    
+                    img.Width = logicalWidth;
+                    img.Height = logicalHeight;
+                    Canvas.SetLeft(img, logicalLeft);
+                    Canvas.SetTop(img, logicalTop);
+                    
+                    DebugLog("LAYOUT", $"Screen {idx} Layout: Physical {screen.Bounds.Width}x{screen.Bounds.Height} -> Logical {logicalWidth}x{logicalHeight} (@ {currentScaling}x)");
+                }
+                idx++;
             }
         }
 
@@ -297,6 +394,8 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 _startPointLogical = point.Position;
                 _isSelecting = true;
                 
+                DebugLog("MOUSE", $"PointerPressed: Physical={_startPointPhysical}, Logical={_startPointLogical}");
+                
                 // Use Avalonia's logical coordinates directly for rendering
                 var relativeX = _startPointLogical.X;
                 var relativeY = _startPointLogical.Y;
@@ -414,11 +513,32 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 // Get final position in physical screen coordinates (from Win32 API)
                 var currentPointPhysical = GetGlobalMousePosition();
                 
+                // Fallback: If Win32 API fails (returns 0,0), calculate from Avalonia position
+                if (currentPointPhysical.IsEmpty || (currentPointPhysical.X == 0 && currentPointPhysical.Y == 0))
+                {
+                    var point = e.GetCurrentPoint(this);
+                    var logicalPos = point.Position;
+                    
+                    // Convert logical to physical using window position and render scaling
+                    // Note: This is approximate for mixed-DPI, but better than (0,0)
+                    var physicalX = _windowLeft + (int)(logicalPos.X * RenderScaling);
+                    var physicalY = _windowTop + (int)(logicalPos.Y * RenderScaling);
+                    
+                    currentPointPhysical = new System.Drawing.Point(physicalX, physicalY);
+                    DebugLog("MOUSE", $"PointerReleased: Win32 API failed, using fallback. Logical={logicalPos}, Calculated Physical={currentPointPhysical}");
+                }
+                else
+                {
+                    DebugLog("MOUSE", $"PointerReleased: Physical={currentPointPhysical}");
+                }
+                
                 // Calculate final rect in physical coordinates for screenshot
                 var x = Math.Min(_startPointPhysical.X, currentPointPhysical.X);
                 var y = Math.Min(_startPointPhysical.Y, currentPointPhysical.Y);
                 var width = Math.Abs(_startPointPhysical.X - currentPointPhysical.X);
                 var height = Math.Abs(_startPointPhysical.Y - currentPointPhysical.Y);
+                
+                DebugLog("RESULT", $"Final selection rect: X={x}, Y={y}, W={width}, H={height}");
 
                 // Ensure non-zero size
                 if (width <= 0) width = 1;

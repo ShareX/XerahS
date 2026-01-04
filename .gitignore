@@ -16,3 +16,6 @@ obj/
 .DS_Store
 Thumbs.db
 src/ShareX.Avalonia.UI/build_log.txt
+
+# Debug logs
+debug/

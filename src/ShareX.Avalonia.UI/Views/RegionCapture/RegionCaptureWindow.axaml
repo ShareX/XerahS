@@ -13,7 +13,9 @@
         Cursor="Cross"
         PointerPressed="OnPointerPressed"
         PointerMoved="OnPointerMoved"
-        PointerReleased="OnPointerReleased">
+        PointerReleased="OnPointerReleased"
+        CanResize="False"
+        WindowStartupLocation="Manual">
     
     <Canvas Name="SelectionCanvas">
         <!-- Background screenshots container -->
