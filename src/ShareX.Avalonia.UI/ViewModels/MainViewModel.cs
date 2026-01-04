@@ -28,7 +28,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.Ava.Annotations.Models;
+using ShareX.Editor.Annotations;
 using ShareX.Ava.Core;
 using ShareX.Ava.Core.Tasks;
 using System.Collections.ObjectModel;

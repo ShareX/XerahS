@@ -34,7 +34,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SkiaSharp;
-using ShareX.Ava.Annotations.Models;
+using ShareX.Editor.Annotations;
 using ShareX.Ava.UI.ViewModels;
 using System.ComponentModel;
 

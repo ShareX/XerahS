@@ -1,5 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using ShareX.Ava.ImageEffects;
+using ShareX.Editor.ImageEffects;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;

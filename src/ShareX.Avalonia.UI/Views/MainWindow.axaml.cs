@@ -8,7 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using ShareX.Ava.UI.ViewModels;
-using ShareX.Ava.Annotations.Models;
+using ShareX.Editor.Annotations;
 using FluentAvalonia.UI.Controls;
 
 namespace ShareX.Ava.UI.Views

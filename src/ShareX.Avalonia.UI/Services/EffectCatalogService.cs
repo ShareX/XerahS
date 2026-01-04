@@ -1,5 +1,5 @@
 using ShareX.Ava.Common;
-using ShareX.Ava.ImageEffects;
+using ShareX.Editor.ImageEffects;
 using System;
 using System.Collections.Generic;
 using System.Linq;

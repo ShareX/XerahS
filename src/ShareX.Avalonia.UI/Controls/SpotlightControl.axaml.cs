@@ -26,7 +26,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using ShareX.Ava.Annotations.Models;
+using ShareX.Editor.Annotations;
 
 namespace ShareX.Ava.UI.Controls;
 

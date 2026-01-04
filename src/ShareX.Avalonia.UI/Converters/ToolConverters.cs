@@ -28,7 +28,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using ShareX.Ava.UI.ViewModels;
-using ShareX.Ava.Annotations.Models;
+using ShareX.Editor.Annotations;
 
 namespace ShareX.Ava.UI.Converters
 {
