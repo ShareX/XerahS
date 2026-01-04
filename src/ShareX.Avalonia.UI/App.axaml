@@ -30,5 +30,17 @@
         <!-- TODO: Re-enable dark theme when ready -->
         <!-- <StyleInclude Source="avares://ShareX.Avalonia.UI/Themes/Dark/DarkTheme.axaml" /> -->
         <sty:FluentAvaloniaTheme />
+        <Style Selector="Button.DarkButton">
+            <Setter Property="Background" Value="#25263A"/>
+            <Setter Property="Foreground" Value="#E2E8F0"/>
+            <Setter Property="BorderBrush" Value="#3B3B52"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+        <Style Selector="Button.DarkButton.active">
+            <Setter Property="Background" Value="#8B5CF6"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#8B5CF6"/>
+        </Style>
     </Application.Styles>
 </Application>
