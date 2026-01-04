@@ -160,22 +160,8 @@ namespace ShareX.Ava.UI.ViewModels
         private void OpenFolder(HistoryItem? item)
         {
             if (item == null || string.IsNullOrEmpty(item.FilePath)) return;
-            if (!File.Exists(item.FilePath)) return;
-
-            try
-            {
-                // Open folder and select the file
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "explorer.exe",
-                    Arguments = $"/select,\"{item.FilePath}\"",
-                    UseShellExecute = true
-                });
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteLine($"Failed to open folder: {ex.Message}");
-            }
+            
+            FileHelpers.OpenFolderWithFile(item.FilePath);
         }
 
         [RelayCommand]
