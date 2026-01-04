@@ -38,6 +38,7 @@ namespace ShareX.Ava.Platform.Abstractions
         private static IClipboardService? _clipboardService;
         private static IWindowService? _windowService;
         private static IInputService? _inputService;
+        private static IFontService? _fontService;
 
         public static IPlatformInfo PlatformInfo
         {
@@ -69,6 +70,12 @@ namespace ShareX.Ava.Platform.Abstractions
             set => _inputService = value;
         }
 
+        public static IFontService Fonts
+        {
+            get => _fontService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
+            set => _fontService = value;
+        }
+
         private static IHotkeyService? _hotkeyService;
         public static IHotkeyService Hotkey
         {
@@ -95,7 +102,7 @@ namespace ShareX.Ava.Platform.Abstractions
         /// Checks if platform services have been initialized
         /// </summary>
         public static bool IsInitialized =>
-            _platformInfo != null && _screenService != null && _clipboardService != null && _windowService != null && _screenCaptureService != null && _hotkeyService != null && _inputService != null;
+            _platformInfo != null && _screenService != null && _clipboardService != null && _windowService != null && _screenCaptureService != null && _hotkeyService != null && _inputService != null && _fontService != null;
 
         /// <summary>
         /// Initializes platform services with provided implementations
@@ -107,7 +114,8 @@ namespace ShareX.Ava.Platform.Abstractions
             IWindowService windowService,
             IScreenCaptureService screenCaptureService,
             IHotkeyService hotkeyService,
-            IInputService inputService)
+            IInputService inputService,
+            IFontService fontService)
         {
             _platformInfo = platformInfo ?? throw new ArgumentNullException(nameof(platformInfo));
             _screenService = screenService ?? throw new ArgumentNullException(nameof(screenService));
@@ -116,6 +124,7 @@ namespace ShareX.Ava.Platform.Abstractions
             _windowService = windowService ?? throw new ArgumentNullException(nameof(windowService));
             _screenCaptureService = screenCaptureService ?? throw new ArgumentNullException(nameof(screenCaptureService));
             _hotkeyService = hotkeyService ?? throw new ArgumentNullException(nameof(hotkeyService));
+            _fontService = fontService ?? throw new ArgumentNullException(nameof(fontService));
         }
 
         public static void RegisterUIService(IUIService uiService)
@@ -136,6 +145,7 @@ namespace ShareX.Ava.Platform.Abstractions
             _screenCaptureService = null;
             _inputService = null;
             _hotkeyService = null;
+            _fontService = null;
         }
     }
 }

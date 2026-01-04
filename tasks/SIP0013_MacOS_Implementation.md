@@ -9,90 +9,204 @@
 ## Branch
 `feature/macos-implementation`
 
-## Objective
-Implement full support for macOS in ShareX Avalonia. This includes creating a dedicated platform project, implementing native services (Screen Capture, Hotkeys, Clipboard), and ensuring the application packages and runs correctly on macOS environments.
+---
 
-## Background
-ShareX Avalonia is designed to be cross-platform. Currently, it has a `ShareX.Avalonia.Platform.Windows` project for Windows-specific implementations. To support macOS, we need a parallel `ShareX.Avalonia.Platform.MacOS` project that implements the abstract services defined in `ShareX.Avalonia.Platform.Abstractions`.
+## Current Status: 100% Complete (2026-01-04 10:00) � code complete; manual macOS validation pending
 
-## Scope
+> [!NOTE]
+> The build-breaking `IInputService` gap has been fixed. macOS now has all 8 service files matching Windows.
 
-### Phase 1: Project Structure
-1. **Create Project**: `src/ShareX.Avalonia.Platform.MacOS` (Class Library).
-2. **References**:
-   - Add reference to `ShareX.Avalonia.Platform.Abstractions`.
-   - Add reference to `ShareX.Avalonia.Common`.
-   - Add `Avalonia` packages (if native UI integration is needed).
+---
 
-### Phase 2: Platform Services Implementation
-Implement the following interfaces located in `Abstractions`:
+## Guiding Principle
 
-#### 1. IScreenshotService
-**File**: `src/ShareX.Avalonia.Platform.MacOS/MacOSScreenshotService.cs`
-- **Mechanism**:
-  - **Option A (Simpler)**: Wrapper around the native `screencapture` CLI tool (pre-installed on macOS).
-    - `screencapture -i [file]` for interactive.
-    - `screencapture -c` for clipboard.
-    - `screencapture -x [file]` for silent capture.
-  - **Option B (Advanced)**: Native usage of `ScreenCaptureKit` (likely requires bindings, maybe too complex for MVP).
-- **Recommendation for MVP**: Start with `screencapture` CLI wrapper.
+> [!IMPORTANT]
+> **For each function in the Windows implementation, implement the corresponding macOS function.**
+> 
+> This ensures feature parity across platforms. Use the Windows implementation as your reference.
 
-#### 2. IHotkeyService
-**File**: `src/ShareX.Avalonia.Platform.MacOS/MacOSHotkeyService.cs`
-- **Challenge**: Global hotkeys on macOS require generic event handling or Carbon/Cocoa APIs.
-- **Implementation**:
-  - Use `SharpHook` (if already in use) or native P/Invoke (ObjC runtime) to register global shortcuts.
-  - *Note*: Ensure "Accessibility" permissions are handled/requested.
+---
 
-#### 3. IClipboardService (if not fully covered by Avalonia)
-**File**: `src/ShareX.Avalonia.Platform.MacOS/MacOSClipboardService.cs`
-- Avalonia 11 handles standard text/images well.
-- Implement specialized handling if file drops or specific ShareX formats aren't working.
+## Service File Parity Checklist
 
-#### 4. IWindowService / ISystemInfo
-- **Window Management**: Focus stealing, bringing windows to front (often requires `NSRunningApplication`).
-- **Startup**: "Open at Login" logic (Launch Agents).
+| Windows File | macOS File | Status |
+|--------------|------------|--------|
+| `WindowsClipboardService.cs` | `MacOSClipboardService.cs` | Complete |
+| `WindowsScreenCaptureService.cs` | `MacOSScreenshotService.cs` | Complete |
+| `WindowsScreenService.cs` | `MacOSScreenService.cs` | Complete |
+| `WindowsWindowService.cs` | `MacOSWindowService.cs` | Complete |
+| `WindowsPlatformInfo.cs` | `MacOSPlatformInfo.cs` | Complete |
+| `WindowsHotkeyService.cs` | `MacOSHotkeyService.cs` | Complete |
+| `WindowsInputService.cs` | `MacOSInputService.cs` | Complete |
+| `WindowsPlatform.cs` | `MacOSPlatform.cs` | Complete |
 
-### Phase 3: Dependency Injection
-**File**: `src/ShareX.Avalonia.App/Program.cs` or `Startup.cs`
-- Detect OS: `RuntimeInformation.IsOSPlatform(OSPlatform.OSX)`.
-- Register `MacOS` implementations instead of `Windows` ones.
+---
+
+## Remaining Work: MacOSWindowService.cs
+
+### Function-by-Function Comparison
+
+| Windows Method | Windows Implementation | macOS Status | Action Required |
+|----------------|------------------------|--------------|-----------------|
+| `GetForegroundWindow()` | `NativeMethods.GetForegroundWindow()` | Returns Zero | OK for macOS (no HWND) |
+| `SetForegroundWindow(handle)` | `NativeMethods.SetForegroundWindow(handle)` | AppleScript | Done |
+| `GetWindowText(handle)` | `NativeMethods.GetWindowText(handle)` | osascript | Done |
+| `GetWindowClassName(handle)` | `NativeMethods.GetClassName(handle)` | osascript | Done |
+| `GetWindowBounds(handle)` | `CaptureHelpers.GetWindowRectangle(handle)` | osascript | Done |
+| `GetWindowClientBounds(handle)` | `NativeMethods.GetClientRect(handle)` | osascript | Done |
+| `IsWindowVisible(handle)` | `NativeMethods.IsWindowVisible(handle)` | AppleScript | Done |
+| `IsWindowMaximized(handle)` | `NativeMethods.IsZoomed(handle)` | AppleScript | Done |
+| `IsWindowMinimized(handle)` | `NativeMethods.IsIconic(handle)` | AppleScript | Done |
+| `ShowWindow(handle, cmdShow)` | `NativeMethods.ShowWindow(handle, cmdShow)` | AppleScript | Done |
+| `SetWindowPos(...)` | `NativeMethods.SetWindowPos(...)` | AppleScript | Done |
+| `GetAllWindows()` | EnumWindows (simplified) | Front only | Acceptable MVP |
+| `GetWindowProcessId(handle)` | `NativeMethods.GetWindowThreadProcessId` | osascript | Done |
+
+---
+
+## Implementation Guide for Remaining Methods
+
+**File**: `src/ShareX.Avalonia.Platform.MacOS/MacOSWindowService.cs`
+
+Use AppleScript via `osascript`. The file already has a `RunOsaScriptWithOutput` helper.
+
+### 1. SetForegroundWindow (Priority: HIGH)
+
+Activates an application by bringing it to front.
 
 ```csharp
-if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+public bool SetForegroundWindow(IntPtr handle)
 {
-    services.AddSingleton<IScreenshotService, MacOSScreenshotService>();
-    services.AddSingleton<IHotkeyService, MacOSHotkeyService>();
-    // ...
+    // Get app name from cached front window info or parameter
+    if (!TryGetFrontWindowInfo(out var appName, out _, out _))
+        return false;
+    
+    var script = $"tell application \\\"{appName}\\\" to activate";
+    var output = RunOsaScriptWithOutput(script);
+    return output != null; // null means error
 }
 ```
 
-### Phase 4: Packaging & Permissions
-- **Info.plist**: Configure properly.
-- **Entitlements**:
-  - `com.apple.security.device.camera` (if webcam needed)
-  - `com.apple.security.device.microphone` (if audio needed)
-  - Screen Recording permission (handled by OS prompt, but app must handle denial gracefully).
-- **Bundle**: Ensure `dotnet publish -r osx-arm64` creates a valid `.app` structure (Avalonia typically handles basic structure, but verify).
+### 2. IsWindowMaximized (Priority: MEDIUM)
 
-## Integration Steps
-1. Create `feature/macos-implementation` branch.
-2. Scaffold `ShareX.Avalonia.Platform.MacOS`.
-3. Implement `MacOSScreenshotService` (MVP: `screencapture` -x /tmp/temp.png).
-4. Wire up DI in `App.axaml.cs`.
-5. Test build on simple macOS environment (github actions or local).
+```csharp
+public bool IsWindowMaximized(IntPtr handle)
+{
+    const string script =
+        "tell application \\\"System Events\\\"\\n" +
+        "set frontApp to first application process whose frontmost is true\\n" +
+        "return zoomed of front window of frontApp\\n" +
+        "end tell";
+    
+    var output = RunOsaScriptWithOutput(script);
+    return output?.Trim().Equals("true", StringComparison.OrdinalIgnoreCase) == true;
+}
+```
 
-## Deliverables
-- ✅ `ShareX.Avalonia.Platform.MacOS` project.
-- ✅ Ability to take a region screenshot on macOS.
-- ✅ Global Hotkeys working on macOS.
-- ✅ Clipboard upload (text/image) working.
-- ✅ Instructions for granting permissions (Screen Recording) in `README.md`.
+### 3. IsWindowMinimized (Priority: MEDIUM)
 
-## Estimated Effort
-**High** - 5-7 days for full feature parity (MVP: 2-3 days).
+```csharp
+public bool IsWindowMinimized(IntPtr handle)
+{
+    const string script =
+        "tell application \\\"System Events\\\"\\n" +
+        "set frontApp to first application process whose frontmost is true\\n" +
+        "return miniaturized of front window of frontApp\\n" +
+        "end tell";
+    
+    var output = RunOsaScriptWithOutput(script);
+    return output?.Trim().Equals("true", StringComparison.OrdinalIgnoreCase) == true;
+}
+```
+
+### 4. ShowWindow (Priority: LOW)
+
+Map Windows `cmdShow` values to AppleScript commands.
+
+```csharp
+public bool ShowWindow(IntPtr handle, int cmdShow)
+{
+    // SW_MINIMIZE = 6, SW_RESTORE = 9, SW_MAXIMIZE = 3
+    string? script = cmdShow switch
+    {
+        6 => "tell application \"System Events\" to set miniaturized of front window of (first process whose frontmost is true) to true",
+        9 => "tell application \"System Events\" to set miniaturized of front window of (first process whose frontmost is true) to false",
+        3 => "tell application \"System Events\" to set zoomed of front window of (first process whose frontmost is true) to true",
+        _ => null
+    };
+    
+    if (script == null) return false;
+    return RunOsaScriptWithOutput(script.Replace("\"", "\\\"")) != null;
+}
+```
+
+### 5. SetWindowPos (Priority: LOW)
+
+```csharp
+public bool SetWindowPos(IntPtr handle, IntPtr handleInsertAfter, int x, int y, int width, int height, uint flags)
+{
+    var script =
+        "tell application \\\"System Events\\\"\\n" +
+        "set frontApp to first application process whose frontmost is true\\n" +
+        $"set position of front window of frontApp to {{{x}, {y}}}\\n" +
+        $"set size of front window of frontApp to {{{width}, {height}}}\\n" +
+        "end tell";
+    
+    return RunOsaScriptWithOutput(script) != null;
+}
+```
+
+---
+
+## Verification Plan
+
+### Build Verification
+```bash
+cd src/ShareX.Avalonia.Platform.MacOS
+dotnet build
+```
+
+### Manual Testing on macOS
+1. Run the app on macOS
+2. Register a hotkey (e.g., Cmd+Shift+4)
+3. Press hotkey to verify screenshot captured
+4. Verify image appears in editor/history
+
+---
+
+## Task Checklist
+
+- [x] Create `ShareX.Avalonia.Platform.MacOS` project
+- [x] Implement `MacOSScreenshotService` (screencapture CLI)
+- [x] Implement `MacOSHotkeyService` (SharpHook)
+- [x] Implement `MacOSClipboardService` (pbcopy/pbpaste + osascript)
+- [x] Implement `MacOSScreenService` (Avalonia Screens)
+- [x] Implement `MacOSPlatformInfo`
+- [x] Implement `MacOSInputService` (GetCursorPosition)
+- [x] Wire up `MacOSPlatform.Initialize()` with all services
+- [x] **Implement `SetForegroundWindow`** - HIGH PRIORITY
+- [x] **Implement `IsWindowMaximized`**
+- [x] **Implement `IsWindowMinimized`**
+- [x] Implement `ShowWindow` (optional)
+- [x] Implement `SetWindowPos` (optional)
+- [x] Build verification (dotnet build)
+- [ ] Manual testing on macOS hardware
+
+---
+
+## Estimated Remaining Effort
+**0 hours** - Code complete; awaiting manual macOS validation
 
 ## Success Criteria
-- User can run ShareX Avalonia on a Mac.
-- Cmd+Shift+4 (or mapped hotkey) triggers capture.
-- Image is captured and uploaded/saved.
+- Project builds without errors
+- All required interface methods have implementations (not stubs)
+- Hotkey triggers capture flow on macOS
+- App can bring itself to foreground after capture
+
+
+
+
+
+
+
+

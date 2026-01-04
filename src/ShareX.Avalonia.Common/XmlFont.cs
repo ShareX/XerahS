@@ -47,8 +47,17 @@ namespace ShareX.Ava.Common
 
         public XmlFont(string fontName, float fontSize, FontStyle fontStyle = FontStyle.Regular)
         {
-            Font font = CreateFont(fontName, fontSize, fontStyle);
-            Init(font);
+            if (OperatingSystem.IsWindows())
+            {
+                Font font = CreateFont(fontName, fontSize, fontStyle);
+                Init(font);
+                return;
+            }
+
+            FontFamily = fontName;
+            Size = fontSize;
+            Style = fontStyle;
+            GraphicsUnit = GraphicsUnit.Point;
         }
 
         private void Init(Font font)
@@ -64,6 +73,11 @@ namespace ShareX.Ava.Common
 
         private Font CreateFont(string fontName, float fontSize, FontStyle fontStyle)
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                throw new PlatformNotSupportedException("System.Drawing.Font is only supported on Windows.");
+            }
+
             try
             {
                 return new Font(fontName, fontSize, fontStyle);
@@ -86,6 +100,11 @@ namespace ShareX.Ava.Common
 
         public Font ToFont()
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                throw new PlatformNotSupportedException("System.Drawing.Font is only supported on Windows.");
+            }
+
             return new Font(FontFamily, Size, Style, GraphicsUnit);
         }
 

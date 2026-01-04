@@ -32,3 +32,11 @@ We use **SkiaSharp**, which is a .NET binding for Google's Skia graphics engine 
 
 Use `Avalonia.Media.Bitmap` for **displaying** images in the UI.
 Use `SkiaSharp` for **editing, processing, and saving** images.
+
+---
+
+### macOS: Why don't global hotkeys work?
+
+**Q: Hotkeys never fire on macOS. What should I check?**
+
+**A:** macOS requires Accessibility permission for global key monitoring. Open `System Settings` → `Privacy & Security` → `Accessibility` and allow the ShareX Ava app (bundle or `dotnet run`). Restart the app after granting permission. Hotkeys are powered by SharpHook; without Accessibility, it cannot receive events.

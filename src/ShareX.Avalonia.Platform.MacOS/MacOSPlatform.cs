@@ -1,7 +1,7 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
+    ShareX.Avalonia - The Avalonia UI implementation of ShareX
     Copyright (c) 2007-2025 ShareX Team
 
     This program is free software; you can redistribute it and/or
@@ -24,36 +24,36 @@
 #endregion License Information (GPL v3)
 
 using ShareX.Ava.Platform.Abstractions;
+using ShareX.Ava.Platform.MacOS.Services;
 
-namespace ShareX.Ava.Platform.Windows
+namespace ShareX.Ava.Platform.MacOS
 {
     /// <summary>
-    /// Initializes Windows platform services
+    /// Initializes macOS platform services
     /// </summary>
-    public static class WindowsPlatform
+    public static class MacOSPlatform
     {
         /// <summary>
-        /// Initializes all Windows platform services
+        /// Initializes all macOS platform services
         /// </summary>
         public static void Initialize(IScreenCaptureService? screenCaptureService = null)
         {
-            var screenService = new WindowsScreenService();
-            
-            // If no service provided, use default Windows GDI+ implementation
+            var screenService = new MacOSScreenService();
+
             if (screenCaptureService == null)
             {
-                screenCaptureService = new WindowsScreenCaptureService(screenService);
+                screenCaptureService = new MacOSScreenshotService();
             }
-            
+
             PlatformServices.Initialize(
-                platformInfo: new WindowsPlatformInfo(),
+                platformInfo: new MacOSPlatformInfo(),
                 screenService: screenService,
-                clipboardService: new WindowsClipboardService(),
-                windowService: new WindowsWindowService(),
+                clipboardService: new MacOSClipboardService(),
+                windowService: new MacOSWindowService(),
                 screenCaptureService: screenCaptureService,
-                hotkeyService: new WindowsHotkeyService(),
-                inputService: new WindowsInputService(),
-                fontService: new WindowsFontService()
+                hotkeyService: new MacOSHotkeyService(),
+                inputService: new MacOSInputService(),
+                fontService: new MacOSFontService()
             );
         }
     }

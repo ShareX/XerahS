@@ -81,20 +81,30 @@ namespace ShareX.Ava.App
 
         private static void InitializePlatformServices()
         {
+#if WINDOWS
             if (OperatingSystem.IsWindows())
             {
                 // Create Windows platform services
                 var screenService = new ShareX.Ava.Platform.Windows.WindowsScreenService();
-                
+
                 // Create Windows capture service (GDI+)
                 var winCaptureService = new ShareX.Ava.Platform.Windows.WindowsScreenCaptureService(screenService);
-                
+
                 // Create UI capture service (Wrapper with Region UI)
                 // This delegates to winCaptureService for actual capture
                 var uiCaptureService = new ShareX.Ava.UI.Services.ScreenCaptureService(winCaptureService);
-                
+
                 // Initialize Windows platform with our UI wrapper
                 ShareX.Ava.Platform.Windows.WindowsPlatform.Initialize(uiCaptureService);
+                return;
+            }
+#endif
+            if (OperatingSystem.IsMacOS())
+            {
+                var macCaptureService = new ShareX.Ava.Platform.MacOS.MacOSScreenshotService();
+                var uiCaptureService = new ShareX.Ava.UI.Services.ScreenCaptureService(macCaptureService);
+
+                ShareX.Ava.Platform.MacOS.MacOSPlatform.Initialize(uiCaptureService);
             }
             else
             {

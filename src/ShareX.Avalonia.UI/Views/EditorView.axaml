@@ -276,14 +276,13 @@
                             <!-- Outer Border: Shadow effect -->
                             <Border BoxShadow="{Binding CanvasShadow}"
                                    CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}">
-                                <!-- Smart Padding Border: Uses top-left pixel color -->
+                                <!-- Padding Border: Uses top-left pixel color -->
                                 <Border Background="{Binding SmartPaddingColor}"
                                         Padding="{Binding SmartPaddingThickness}"
-                                        CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}">
-                                    <!-- Inner Border: Corner Radius with clipping -->
-                                    <Border Background="#FFFFFF"
-                                            CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
-                                            ClipToBounds="True">
+                                        CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                        ClipToBounds="True">
+                                    <!-- Inner Border: White background only -->
+                                    <Border Background="#FFFFFF">
                                         <Grid Name="CanvasContainer"
                                               Width="{Binding ImageWidth}"
                                               Height="{Binding ImageHeight}">
@@ -354,10 +353,10 @@
                                     Background="#374151"/>
                         </StackPanel>
 
-                        <!-- Smart Padding Slider -->
+                        <!-- Padding Slider -->
                         <StackPanel Spacing="8">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="Smart Padding" Foreground="#9CA3AF"/>
+                                <TextBlock Grid.Column="0" Text="Padding" Foreground="#9CA3AF"/>
                                 <TextBlock Grid.Column="1" Text="{Binding SmartPadding, StringFormat='{}{0:F0}px'}" Foreground="White"/>
                             </Grid>
                             <Slider Minimum="0" 

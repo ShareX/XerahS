@@ -4,7 +4,7 @@
 
 **Progress: ~97% of Core Editor Features Complete**
 
-We have successfully implemented the Reimagined UI, Multi-monitor Region Capture, comprehensive Annotation System with 16+ tools, and Image Effects integration.
+We have successfully implemented the Reimagined UI, Multi-monitor Region Capture, comprehensive Annotation System with 17 annotation types, and Image Effects integration with 40+ effects.
 
 ### ✅ Recently Completed
 - **Plugin Architecture (Phase 3 - 100%)**:
@@ -28,6 +28,11 @@ We have successfully implemented the Reimagined UI, Multi-monitor Region Capture
 - **Backend Porting (ShareX.HelpersLib)**:
     - Continuing to port non-UI utilities (Gap Report)
     - Enforcing platform abstraction rules
+- **macOS Platform Layer (CX07)**:
+    - MVP `ShareX.Avalonia.Platform.MacOS` project created
+    - `screencapture` screenshot service implemented
+    - SharpHook global hotkeys implemented (needs on-device validation)
+    - Clipboard/text/image/files implemented via `pbcopy`/`osascript` (needs verification)
 - **Testing**:
     - Comprehensive testing of the new Plugin System
 
@@ -49,11 +54,12 @@ We have successfully implemented the Reimagined UI, Multi-monitor Region Capture
     - [ ] Copy/Paste in native apps (Paint, Word, etc.)
 - [ ] **Cross-Platform**:
     - [ ] Linux compatibility testing
-    - [ ] macOS compatibility testing
+    - [ ] macOS compatibility testing (hotkeys, clipboard, screen/window services)
 - [ ] **Distribution**:
     - [ ] App Icon and Assets
     - [ ] System Tray Icon (Platform specific)
     - [ ] CI/CD Pipeline setup
+    - [ ] macOS `osx-arm64` publish validation (entitlements, Screen Recording prompt) — see `docs/macos_publish_checklist.md`
 
 ---
 

@@ -174,18 +174,13 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 
                 DebugLog("WINDOW", $"Virtual screen bounds: ({minX}, {minY}) to ({maxX}, {maxY})");
                 
+                // Size first to avoid transient invalid window bounds on macOS.
+                UpdateWindowSize(minX, minY);
+
                 // Position window at absolute top-left of virtual screen
                 Position = new PixelPoint(minX, minY);
                 DebugLog("WINDOW", $"Set Position to: {Position}");
-                
-                // Read back actual position after setting
                 DebugLog("WINDOW", $"Actual Position after set: {Position}, RenderScaling: {RenderScaling}");
-                
-                // Revert to PointToClient logic for Sizing (Milestone)
-                var topLeft = this.PointToClient(new PixelPoint(minX, minY));
-                var bottomRight = this.PointToClient(new PixelPoint(maxX, maxY));
-                Width = bottomRight.X - topLeft.X;
-                Height = bottomRight.Y - topLeft.Y;
                 
                 // Store window position for coordinate conversion
                 _windowLeft = minX;

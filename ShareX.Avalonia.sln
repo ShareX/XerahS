@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.AmazonS3.Plugin", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.PluginExporter", "src\ShareX.Avalonia.PluginExporter\ShareX.Avalonia.PluginExporter.csproj", "{F0A1664B-87CC-42C3-B152-654CC1331525}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Platform.MacOS", "src\ShareX.Avalonia.Platform.MacOS\ShareX.Avalonia.Platform.MacOS.csproj", "{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -283,6 +285,18 @@ Global
 		{F0A1664B-87CC-42C3-B152-654CC1331525}.Release|x64.Build.0 = Release|Any CPU
 		{F0A1664B-87CC-42C3-B152-654CC1331525}.Release|x86.ActiveCfg = Release|Any CPU
 		{F0A1664B-87CC-42C3-B152-654CC1331525}.Release|x86.Build.0 = Release|Any CPU
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}.Debug|x64.Build.0 = Debug|Any CPU
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}.Debug|x86.Build.0 = Debug|Any CPU
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}.Release|x64.ActiveCfg = Release|Any CPU
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}.Release|x64.Build.0 = Release|Any CPU
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}.Release|x86.ActiveCfg = Release|Any CPU
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -308,5 +322,6 @@ Global
 		{3C6F3C12-78FE-40CD-A300-86F9DEAF047F} = {58D3A2C3-F96F-5E57-2C6B-ECE59D6A18FC}
 		{21ADE7E5-729D-437E-9337-357875682C52} = {58D3A2C3-F96F-5E57-2C6B-ECE59D6A18FC}
 		{F0A1664B-87CC-42C3-B152-654CC1331525} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{E948629F-A1FC-42D2-A9BF-E5A55689BAA6} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal

@@ -1,7 +1,7 @@
 # ShareX.Avalonia Hotkey System Implementation Plan
 
 **Created**: 2025-12-31  
-**Status**: Planning  
+**Status**: In progress (Windows complete, macOS implemented via SharpHook pending validation)  
 **Priority**: High (Core functionality needed for automation workflow)
 
 ---
@@ -340,8 +340,8 @@ public class HotkeySettingsViewModel : ViewModelBase
 - May need special handling for Wayland
 
 ### Recommended Approach
-- **MVP**: Windows only (Phase 1-5)
-- **Future**: Add macOS/Linux using platform-specific implementations
+- **MVP**: Windows + macOS (SharpHook) implementations
+- **Future**: Add Linux (X11/Wayland) using platform-specific implementations
 
 ---
 
@@ -441,7 +441,6 @@ new HotkeySettings(HotkeyType.ScreenRecorderGIF, Keys.Control | Keys.Shift | Key
 
 ## Next Steps
 
-1. **Review this plan** and approve architecture
-2. **Start Phase 1**: Create `IHotkeyService` interface
-3. **Continue Phase 2**: Implement `WindowsHotkeyService` with P/Invoke
-4. **Test MVP**: Register one hotkey, trigger capture, verify workflow
+1. Validate macOS SharpHook hotkeys on hardware with Accessibility granted.
+2. Add Linux implementation (X11 first, Wayland fallback/no-op).
+3. Expand automated tests for HotkeyManager across platforms (mock providers).

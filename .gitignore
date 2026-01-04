@@ -19,3 +19,6 @@ src/ShareX.Avalonia.UI/build_log.txt
 
 # Debug logs
 debug/
+
+# Local tooling
+.dotnet/
