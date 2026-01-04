@@ -34,7 +34,7 @@ namespace ShareX.Ava.UI.Services
 
         public async Task<SKBitmap?> CaptureRegionAsync()
         {
-            System.Drawing.Rectangle selection = System.Drawing.Rectangle.Empty;
+            SKRectI selection = SKRectI.Empty;
 
             // Show UI window on UI thread
             await Dispatcher.UIThread.InvokeAsync(async () =>

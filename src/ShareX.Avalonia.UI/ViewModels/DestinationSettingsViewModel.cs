@@ -1,16 +1,12 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Common = ShareX.Ava.Common;
 using ShareX.Ava.Core;
 using ShareX.Ava.UI.Views;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Platform.Storage;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using ShareX.Ava.Common;
-using ShareX.Ava.Core;
 using ShareX.Ava.Uploaders;
 using ShareX.Ava.Uploaders.PluginSystem;
 using System;

@@ -28,6 +28,7 @@ using System.Runtime.Versioning;
 #endif
 using ShareX.Ava.Platform.Abstractions;
 using System.Threading.Tasks;
+using SkiaSharp;
 
 namespace ShareX.Ava.Common.Helpers
 {
@@ -83,16 +84,14 @@ namespace ShareX.Ava.Common.Helpers
             Clipboard?.SetFileDropList(files);
         }
         
-        public static void SetImage(object image)
+        public static SKBitmap? GetImage()
         {
-            // IClipboardService.SetImage takes an 'Image' (abstract? or System.Drawing?).
-            // Need to verify IClipboardService signature again to see what 'Image' type it uses.
-            // If it uses Avalonia or Skia image, we need to handle that.
-            // Earlier view showed `void SetImage(Image image);` -> likely Avalonia.Media.Imaging.Bitmap or similar?
-            // Actually, in Abstractions it was probably just `Image` which might be ambiguous.
-            // Let's assume for now we just delegate.
-            // Clipboard?.SetImage(image); 
-            // Commenting out until type is verified to avoid build errors.
+            return Clipboard?.GetImage();
+        }
+
+        public static void SetImage(SKBitmap image)
+        {
+            Clipboard?.SetImage(image);
         }
 
         public static void Clear()

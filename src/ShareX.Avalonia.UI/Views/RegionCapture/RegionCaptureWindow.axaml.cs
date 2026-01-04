@@ -12,22 +12,24 @@ using Point = Avalonia.Point;
 using Rectangle = Avalonia.Controls.Shapes.Rectangle;
 using Path = Avalonia.Controls.Shapes.Path;
 using Avalonia.VisualTree;
+using SkiaSharp;
 
 namespace ShareX.Ava.UI.Views.RegionCapture
 {
     public partial class RegionCaptureWindow : Window
     {
-        private System.Drawing.Point GetGlobalMousePosition()
+        private SKPointI GetGlobalMousePosition()
         {
             if (ShareX.Ava.Platform.Abstractions.PlatformServices.IsInitialized)
             {
-                return ShareX.Ava.Platform.Abstractions.PlatformServices.Input.GetCursorPosition();
+                var p = ShareX.Ava.Platform.Abstractions.PlatformServices.Input.GetCursorPosition();
+                return new SKPointI(p.X, p.Y);
             }
-            return System.Drawing.Point.Empty;
+            return new SKPointI(0, 0);
         }
 
         // Start point in physical screen coordinates (for final screenshot region)
-        private System.Drawing.Point _startPointPhysical;
+        private SKPointI _startPointPhysical;
         // Start point in logical window coordinates (for visual rendering)
         private Point _startPointLogical;
         private bool _isSelecting;
@@ -37,7 +39,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
         private int _windowTop = 0;
         
         // Result task completion source to return value to caller
-        private readonly System.Threading.Tasks.TaskCompletionSource<System.Drawing.Rectangle> _tcs;
+        private readonly System.Threading.Tasks.TaskCompletionSource<SKRectI> _tcs;
 
         // Darkening overlay settings (configurable from RegionCaptureOptions)
         private const byte DarkenOpacity = 128; // 0-255, where 128 is 50% opacity (can be calculated from BackgroundDimStrength)
@@ -52,7 +54,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
         public RegionCaptureWindow()
         {
             InitializeComponent();
-            _tcs = new System.Threading.Tasks.TaskCompletionSource<System.Drawing.Rectangle>();
+            _tcs = new System.Threading.Tasks.TaskCompletionSource<SKRectI>();
             
 #if DEBUG
             // Initialize debug logging
@@ -81,7 +83,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 if (e.Key == Key.Escape)
                 {
                     DebugLog("INPUT", "Escape key pressed - cancelling");
-                    _tcs.TrySetResult(System.Drawing.Rectangle.Empty);
+                    _tcs.TrySetResult(SKRectI.Empty);
                     Close();
                 }
             };
@@ -113,7 +115,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
 #endif
         }
 
-        public System.Threading.Tasks.Task<System.Drawing.Rectangle> GetResultAsync()
+        public System.Threading.Tasks.Task<SKRectI> GetResultAsync()
         {
             return _tcs.Task;
         }
@@ -214,13 +216,10 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                         DebugLog("IMAGE", $"--- Processing screen {screenIndex} for background ---");
                         
                         // 1. Capture screen content (Physical)
-                        var screenRect = new System.Drawing.Rectangle(
+                        var skScreenRect = new SKRectI(
                             screen.Bounds.X, screen.Bounds.Y, 
-                            screen.Bounds.Width, screen.Bounds.Height);
-                        DebugLog("IMAGE", $"Screen {screenIndex} capture rect: {screenRect}");
-                            
-                        // Convert System.Drawing.Rectangle to SKRect
-                        var skScreenRect = new SkiaSharp.SKRect(screenRect.Left, screenRect.Top, screenRect.Right, screenRect.Bottom);
+                            screen.Bounds.X + screen.Bounds.Width, screen.Bounds.Y + screen.Bounds.Height);
+                        DebugLog("IMAGE", $"Screen {screenIndex} capture rect: {skScreenRect}");
 
                         var screenshot = await ShareX.Ava.Platform.Abstractions.PlatformServices.ScreenCapture.CaptureRectAsync(skScreenRect);
                         
@@ -445,7 +444,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 else
                 {
                     // No active selection - close the window
-                    _tcs.TrySetResult(System.Drawing.Rectangle.Empty);
+                    _tcs.TrySetResult(SKRectI.Empty);
                     Close();
                     e.Handled = true;
                 }
@@ -582,7 +581,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 var currentPointPhysical = GetGlobalMousePosition();
                 
                 // Fallback: If Win32 API fails (returns 0,0), calculate from Avalonia position
-                if (currentPointPhysical.IsEmpty || (currentPointPhysical.X == 0 && currentPointPhysical.Y == 0))
+                if (currentPointPhysical.X == 0 && currentPointPhysical.Y == 0)
                 {
                     var point = e.GetCurrentPoint(this);
                     var logicalPos = point.Position;
@@ -592,7 +591,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                     var physicalX = _windowLeft + (int)(logicalPos.X * RenderScaling);
                     var physicalY = _windowTop + (int)(logicalPos.Y * RenderScaling);
                     
-                    currentPointPhysical = new System.Drawing.Point(physicalX, physicalY);
+                    currentPointPhysical = new SKPointI(physicalX, physicalY);
                     DebugLog("MOUSE", $"PointerReleased: Win32 API failed, using fallback. Logical={logicalPos}, Calculated Physical={currentPointPhysical}");
                 }
                 else
@@ -613,7 +612,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                 if (height <= 0) height = 1;
 
                 // Create result rectangle in physical screen coordinates
-                var resultRect = new System.Drawing.Rectangle(x, y, width, height);
+                var resultRect = new SKRectI(x, y, x + width, y + height);
                 
                 _tcs.TrySetResult(resultRect);
                 Close();

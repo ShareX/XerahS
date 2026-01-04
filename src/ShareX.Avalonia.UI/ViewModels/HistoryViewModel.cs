@@ -124,15 +124,10 @@ namespace ShareX.Ava.UI.ViewModels
 
             try
             {
-                // Load the image from file
+                // Load the image from file directly as SKBitmap
                 using var fs = new FileStream(item.FilePath, FileMode.Open, FileAccess.Read);
-                var image = System.Drawing.Image.FromStream(fs);
-                
-                // Convert System.Drawing.Image to SKBitmap for editor service
-                using var ms = new MemoryStream();
-                image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                ms.Position = 0;
-                using var skBitmap = SKBitmap.Decode(ms);
+                var skBitmap = SKBitmap.Decode(fs);
+                if (skBitmap == null) return;
 
                 // Open in Editor using the platform service
                 await ShareX.Ava.Platform.Abstractions.PlatformServices.UI.ShowEditorAsync(skBitmap);

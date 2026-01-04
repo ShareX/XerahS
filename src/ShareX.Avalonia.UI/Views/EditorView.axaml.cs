@@ -731,21 +731,8 @@ namespace ShareX.Ava.UI.Views
         {
             try
             {
-                // Convert Avalonia Bitmap to System.Drawing.Image for native clipboard
-                using var memoryStream = new System.IO.MemoryStream();
-                image.Save(memoryStream);
-                memoryStream.Position = 0;
-
-                // Load into System.Drawing.Image (what Windows clipboard expects)
-                using var drawingImage = System.Drawing.Image.FromStream(memoryStream);
-
-                // Convert System.Drawing.Image to SKBitmap for platform service
-                using var ms2 = new System.IO.MemoryStream();
-                drawingImage.Save(ms2, System.Drawing.Imaging.ImageFormat.Png);
-                ms2.Position = 0;
-                using var skBitmap = SKBitmap.Decode(ms2);
-
-                // Use platform-specific clipboard service for native OS compatibility
+                // Convert Avalonia Bitmap directly to SKBitmap for platform clipboard
+                using var skBitmap = Helpers.BitmapConversionHelpers.ToSKBitmap(image);
                 ShareX.Ava.Platform.Abstractions.PlatformServices.Clipboard.SetImage(skBitmap);
             }
             catch (Exception ex)
