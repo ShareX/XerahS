@@ -39,6 +39,18 @@
                            SelectionChanged="OnNavSelectionChanged">
             <!-- ... existing content ... -->
             <ui:NavigationView.MenuItems>
+                <!-- Capture Section (New Parent Item) -->
+                <ui:NavigationViewItem Content="Capture" Tag="Capture" SelectsOnInvoked="False" IsExpanded="True">
+                    <ui:NavigationViewItem.IconSource>
+                        <ui:SymbolIconSource Symbol="Camera"/>
+                    </ui:NavigationViewItem.IconSource>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem Content="Fullscreen" Tag="Capture_Fullscreen" />
+                        <ui:NavigationViewItem Content="Region" Tag="Capture_Region" />
+                        <ui:NavigationViewItem Content="Window" Tag="Capture_Window" />
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+                
                 <ui:NavigationViewItem Content="Editor" Tag="Editor" IsSelected="True">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Edit"/>

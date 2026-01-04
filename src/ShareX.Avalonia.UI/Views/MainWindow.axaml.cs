@@ -52,12 +52,25 @@ namespace ShareX.Ava.UI.Views
             var contentFrame = this.FindControl<ContentControl>("ContentFrame");
             var selectedItem = navView?.SelectedItem as NavigationViewItem;
             
-            if (contentFrame != null && selectedItem != null)
+            if (contentFrame != null && selectedItem != null && DataContext is MainViewModel vm)
             {
                 var tag = selectedItem.Tag?.ToString();
                 
                 switch (tag)
                 {
+                    case "Capture_Fullscreen":
+                        vm.CaptureFullscreenCommand.Execute(null);
+                        // Navigate back to Editor to see the captured image
+                        NavigateToEditor();
+                        break;
+                    case "Capture_Region":
+                        vm.CaptureRegionCommand.Execute(null);
+                        NavigateToEditor();
+                        break;
+                    case "Capture_Window":
+                        vm.CaptureWindowCommand.Execute(null);
+                        NavigateToEditor();
+                        break;
                     case "Editor":
                         if (_editorView == null) _editorView = new EditorView();
                         contentFrame.Content = _editorView;

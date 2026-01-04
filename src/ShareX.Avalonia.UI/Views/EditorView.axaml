@@ -16,56 +16,10 @@
         <converters:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadius" />
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
-        <!-- Row 0: Capture Toolbar -->
-        <Border Grid.Row="0" Padding="16,12" IsVisible="{Binding ShowCaptureToolbar}">
-            <DockPanel>
-                <!-- Capture Buttons (Left) -->
-                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="8">
-                    <Button Command="{Binding CaptureFullscreenCommand}"
-                            Background="#8B5CF6"
-                            Foreground="White"
-                            Padding="16,10"
-                            CornerRadius="12"
-                            FontWeight="SemiBold">
-                        Fullscreen
-                    </Button>
-                    <Button Command="{Binding CaptureRegionCommand}"
-                            Background="#14B8A6"
-                            Foreground="White"
-                            Padding="16,10"
-                            CornerRadius="12"
-                            FontWeight="SemiBold">
-                        Region
-                    </Button>
-                    <Button Command="{Binding CaptureWindowCommand}"
-                            Background="#EC4899"
-                            Foreground="White"
-                            Padding="16,10"
-                            CornerRadius="12"
-                            FontWeight="SemiBold">
-                        Window
-                    </Button>
-                    <Button Command="{Binding ClearCommand}"
-                            Background="Transparent"
-                            BorderBrush="#3B3B52"
-                            BorderThickness="1"
-                            Foreground="White"
-                            Padding="16,10"
-                            CornerRadius="12"
-                            IsVisible="{Binding HasPreviewImage}">
-                        Clear
-                    </Button>
-                </StackPanel>
-                
-                <!-- Settings Button (Right) - REMOVED -->
-            </DockPanel>
-        </Border>
-
-        <!-- Row 1: Annotation Toolbar (only visible when screenshot exists) -->
-        <Border Grid.Row="1" 
-                Padding="12,8"
-                IsVisible="{Binding HasPreviewImage}">
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+        <!-- Row 0: Annotation Toolbar (always visible) -->
+        <Border Grid.Row="0" 
+                Padding="12,8">
             <StackPanel Orientation="Vertical" Spacing="10">
                 <!-- Row 1: Tools only -->
                 <Border BorderThickness="0,0,0,1" BorderBrush="#3B3B52" Padding="0,0,0,8">
@@ -251,8 +205,8 @@
             </StackPanel>
         </Border>
 
-        <!-- Row 2: Main Content Area with Preview and Sidebar -->
-        <Grid Grid.Row="2" ColumnDefinitions="*,288">
+        <!-- Row 1: Main Content Area with Preview and Sidebar -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,288">
             
             <!-- Central Preview Canvas -->
             <Grid Grid.Column="0" Margin="20">
@@ -435,10 +389,9 @@
             </Border>
         </Grid>
 
-        <!-- Row 3: Export Toolbar (only visible when screenshot exists) -->
-        <Border Grid.Row="3" 
-                Padding="12,10"
-                IsVisible="{Binding HasPreviewImage}">
+        <!-- Row 2: Export Toolbar (always visible) -->
+        <Border Grid.Row="2" 
+                Padding="12,10">
             <DockPanel>
                 <!-- Format Selection (Left) -->
                 <Border DockPanel.Dock="Left" 
@@ -523,8 +476,8 @@
             </DockPanel>
         </Border>
 
-        <!-- Row 4: Status Bar (always visible) -->
-        <Border Grid.Row="4" Padding="16,8">
+        <!-- Row 3: Status Bar (always visible) -->
+        <Border Grid.Row="3" Padding="16,8">
             <DockPanel>
                 <!-- Left: Zoom Controls -->
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
@@ -554,8 +507,8 @@
             </DockPanel>
         </Border>
 
-        <!-- Effects Panel Overlay (Grid.RowSpan=5 to cover entire view) -->
-        <Border Grid.Row="0" Grid.RowSpan="5"
+        <!-- Effects Panel Overlay (Grid.RowSpan=4 to cover entire view) -->
+        <Border Grid.Row="0" Grid.RowSpan="4"
                 IsVisible="{Binding IsEffectsPanelOpen}"
                 Background="#80000000"
                 HorizontalAlignment="Right"
