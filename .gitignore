@@ -22,3 +22,8 @@ debug/
 
 # Local tooling
 .dotnet/
+
+# Local build logs
+build.log
+build*.txt
+*.log
