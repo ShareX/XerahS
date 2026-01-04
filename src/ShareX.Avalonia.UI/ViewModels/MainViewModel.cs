@@ -78,6 +78,12 @@ namespace ShareX.Ava.UI.ViewModels
                 ImageHeight = value.Size.Height;
                 HasPreviewImage = true;
                 OnPropertyChanged(nameof(SmartPaddingColor));
+                
+                // Apply smart padding crop if enabled (but not if we're already applying it)
+                if (UseSmartPadding && !_isApplyingSmartPadding)
+                {
+                    ApplySmartPaddingCrop();
+                }
             }
             else
             {
@@ -92,6 +98,11 @@ namespace ShareX.Ava.UI.ViewModels
 
         [ObservableProperty]
         private double _smartPadding = 0;
+
+        [ObservableProperty]
+        private bool _useSmartPadding = false;
+
+        private bool _isApplyingSmartPadding = false;
 
         public Thickness SmartPaddingThickness => new Thickness(SmartPadding);
 
@@ -231,6 +242,11 @@ namespace ShareX.Ava.UI.ViewModels
             OnPropertyChanged(nameof(SmartPaddingThickness));
         }
 
+        partial void OnUseSmartPaddingChanged(bool value)
+        {
+            ApplySmartPaddingCrop();
+        }
+
         partial void OnPreviewCornerRadiusChanged(double value)
         {
             UpdateCanvasProperties();
@@ -255,6 +271,132 @@ namespace ShareX.Ava.UI.ViewModels
 
             var skColor = skBitmap.GetPixel(x, y);
             return Color.FromArgb(skColor.Alpha, skColor.Red, skColor.Green, skColor.Blue);
+        }
+
+        private void ApplySmartPaddingCrop()
+        {
+            if (_originalSourceImage == null || PreviewImage == null)
+            {
+                return;
+            }
+
+            if (_isApplyingSmartPadding)
+            {
+                return; // Prevent recursive calls
+            }
+
+            if (!UseSmartPadding)
+            {
+                // Restore original image from backup
+                if (!_isApplyingSmartPadding && _originalSourceImage != null)
+                {
+                    _isApplyingSmartPadding = true;
+                    try
+                    {
+                        UpdatePreview(_originalSourceImage);
+                        StatusText = "Smart Padding: Restored original image";
+                    }
+                    finally
+                    {
+                        _isApplyingSmartPadding = false;
+                    }
+                }
+                return;
+            }
+
+            _isApplyingSmartPadding = true;
+            try
+            {
+                // Start from the original image backup
+                using var ms = new System.IO.MemoryStream();
+                _originalSourceImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                ms.Position = 0;
+                using var skBitmap = SkiaSharp.SKBitmap.Decode(ms);
+                
+                if (skBitmap == null) return;
+
+                // Get top-left pixel color as reference
+                var targetColor = skBitmap.GetPixel(0, 0);
+                const int tolerance = 30; // Color tolerance for matching
+
+                // Find bounds of content (non-matching pixels)
+                int minX = skBitmap.Width;
+                int minY = skBitmap.Height;
+                int maxX = 0;
+                int maxY = 0;
+
+                for (int y = 0; y < skBitmap.Height; y++)
+                {
+                    for (int x = 0; x < skBitmap.Width; x++)
+                    {
+                        var pixel = skBitmap.GetPixel(x, y);
+                        
+                        // Check if pixel is different from target color (within tolerance)
+                        if (Math.Abs(pixel.Red - targetColor.Red) > tolerance ||
+                            Math.Abs(pixel.Green - targetColor.Green) > tolerance ||
+                            Math.Abs(pixel.Blue - targetColor.Blue) > tolerance ||
+                            Math.Abs(pixel.Alpha - targetColor.Alpha) > tolerance)
+                        {
+                            minX = Math.Min(minX, x);
+                            minY = Math.Min(minY, y);
+                            maxX = Math.Max(maxX, x);
+                            maxY = Math.Max(maxY, y);
+                        }
+                    }
+                }
+
+                // Check if we found any content
+                if (minX > maxX || minY > maxY)
+                {
+                    // No content found, keep original
+                    StatusText = "Smart Padding: No content to crop";
+                    return;
+                }
+
+                // Calculate crop rectangle
+                int cropX = minX;
+                int cropY = minY;
+                int cropWidth = maxX - minX + 1;
+                int cropHeight = maxY - minY + 1;
+
+                // Ensure valid dimensions
+                if (cropWidth <= 0 || cropHeight <= 0)
+                {
+                    return;
+                }
+
+                // Perform the crop on the original image
+                var rect = new System.Drawing.Rectangle(cropX, cropY, cropWidth, cropHeight);
+                var imageRect = new System.Drawing.Rectangle(0, 0, _originalSourceImage.Width, _originalSourceImage.Height);
+                rect.Intersect(imageRect);
+
+                if (rect.Width <= 0 || rect.Height <= 0) return;
+
+                var cropped = new System.Drawing.Bitmap(rect.Width, rect.Height);
+                using (var g = System.Drawing.Graphics.FromImage(cropped))
+                {
+                    g.DrawImage(_originalSourceImage, new System.Drawing.Rectangle(0, 0, cropped.Width, cropped.Height),
+                        rect, System.Drawing.GraphicsUnit.Pixel);
+                }
+
+                // Update preview with cropped image
+                _currentSourceImage = cropped;
+                using var croppedMs = new System.IO.MemoryStream();
+                cropped.Save(croppedMs, System.Drawing.Imaging.ImageFormat.Png);
+                croppedMs.Position = 0;
+                PreviewImage = new Bitmap(croppedMs);
+                ImageDimensions = $"{cropped.Width} x {cropped.Height}";
+                StatusText = $"Smart Padding: Cropped to {cropWidth}x{cropHeight}";
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Smart Padding error: {ex.Message}";
+                ShareX.Ava.Common.DebugHelper.WriteLine($"Smart padding crop failed: {ex.Message}");
+            }
+            finally
+            {
+                _isApplyingSmartPadding = false;
+            }
         }
 
         [RelayCommand]
@@ -510,6 +652,8 @@ namespace ShareX.Ava.UI.ViewModels
         private void Clear()
         {
             PreviewImage = null;
+            _currentSourceImage = null;
+            _originalSourceImage = null;
             // HasPreviewImage = false; // Handled by OnPreviewImageChanged
             ImageDimensions = "No image";
             StatusText = "Ready";
@@ -688,6 +832,7 @@ namespace ShareX.Ava.UI.ViewModels
         }
 
         private System.Drawing.Image? _currentSourceImage;
+        private System.Drawing.Image? _originalSourceImage; // Backup for smart padding restore
 
         public void UpdatePreview(System.Drawing.Image image)
         {
@@ -707,6 +852,12 @@ namespace ShareX.Ava.UI.ViewModels
             Zoom = 1.0;
             ClearAnnotationsRequested?.Invoke(this, EventArgs.Empty);
             ResetNumberCounter();
+            
+            // Backup original image when first loaded (not during smart padding operations)
+            if (!_isApplyingSmartPadding && _originalSourceImage == null)
+            {
+                _originalSourceImage = (System.Drawing.Image)image.Clone();
+            }
         }
 
         public void UpdatePreview(SkiaSharp.SKBitmap image)

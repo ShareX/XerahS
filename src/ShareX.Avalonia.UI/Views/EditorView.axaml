@@ -363,6 +363,10 @@
                                     Maximum="200" 
                                     Value="{Binding SmartPadding}"
                                     Background="#374151"/>
+                            <!-- Smart Padding Checkbox -->
+                            <CheckBox IsChecked="{Binding UseSmartPadding}"
+                                      Foreground="#9CA3AF"
+                                      Content="Smart Padding"/>
                         </StackPanel>
 
                         <!-- Rounded Corner Slider -->
