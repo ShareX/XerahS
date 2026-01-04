@@ -1,4 +1,5 @@
 using System;
+using ShareX.Ava.Common;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -109,7 +110,17 @@ public partial class WorkflowsViewModel : ViewModelBase
                 if (index != -1)
                 {
                     _manager.UnregisterHotkey(_editingWorkflow.Model);
-                    _manager.Hotkeys[index] = newSettings;
+                    
+                    // Insert at correct position if possible
+                    if (index <= _manager.Hotkeys.Count)
+                    {
+                        _manager.Hotkeys.Insert(index, newSettings);
+                    }
+                    else
+                    {
+                        _manager.Hotkeys.Add(newSettings);
+                    }
+                    
                     _manager.RegisterHotkey(newSettings);
                 }
                 
@@ -154,10 +165,13 @@ public partial class WorkflowsViewModel : ViewModelBase
     {
         if (SelectedWorkflow != null)
         {
+        if (SelectedWorkflow != null)
+        {
              _editingWorkflow = SelectedWorkflow;
              WizardViewModel = new WorkflowWizardViewModel();
              WizardViewModel.LoadFromSettings(SelectedWorkflow.Model);
              IsWizardOpen = true;
+        }
         }
     }
 

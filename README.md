@@ -7,14 +7,17 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 
 ## ✨ Key Features
 - **Cross-Platform**: Runs on Windows, Linux, and macOS (targeting).
-- **Modern UI**: Reimagined interface inspired by modern design principles (SnapX and WinShot inspiration).
+- **Modern UI**: Reimagined interface inspired by modern design principles.
 - **Powerful Capture**:
     - **Region Capture**: supports multi-monitor setups with crosshair cursor.
     - **Fullscreen** & **Window** capture modes.
+- **Plugin Architecture**:
+    - **Dynamic Loading**: Zero compile-time coupling with `plugin.json` discovery
+    - **Uploaders**: Extensions support (Imgur, Amazon S3, etc.)
 - **Advanced Annotation Tools**:
     - **Basic Shapes**: Rectangle, Ellipse, Line, Arrow, Text, Number/Step
     - **Effect Shapes**: Blur, Pixelate, Magnify, Highlight with real-time preview
-    - **Freehand Tools**: Pen, Highlighter, Smart Eraser
+    - **Freehand Tools**: Pen, Highlighter, Smart Eraser (UI Ready)
     - **Advanced Shapes**: Speech Balloon, Image/Sticker insertion, Spotlight
     - **Object-based** selection, moving, resizing, and deletion
     - **Full Undo/Redo** support

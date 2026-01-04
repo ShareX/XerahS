@@ -16,7 +16,7 @@
 
 ### Annotation Phase 2 (100% Complete)
 - ✅ Effect Shapes: Blur, Pixelate, Magnify, Highlight
-- ✅ Freehand Tools: Pen, Highlighter, Smart Eraser
+- ✅ Freehand Tools: Pen, Highlighter, Smart Eraser (UI Ready, Logic Pending)
 - ✅ Advanced Shapes: Speech Balloon, Image insertion, Spotlight
 - ✅ Keyboard shortcuts for all tools (V, R, E, A, L, P, H, T, B, N, C, M, S, F)
 - ✅ Polymorphic JSON serialization
