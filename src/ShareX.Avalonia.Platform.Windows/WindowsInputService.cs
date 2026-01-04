@@ -23,37 +23,35 @@
 
 #endregion License Information (GPL v3)
 
+using System.Drawing;
+using System.Runtime.InteropServices;
 using ShareX.Ava.Platform.Abstractions;
 
 namespace ShareX.Ava.Platform.Windows
 {
     /// <summary>
-    /// Initializes Windows platform services
+    /// Windows-specific implementation of IInputService using Win32 API
     /// </summary>
-    public static class WindowsPlatform
+    public class WindowsInputService : IInputService
     {
-        /// <summary>
-        /// Initializes all Windows platform services
-        /// </summary>
-        public static void Initialize(IScreenCaptureService? screenCaptureService = null)
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
         {
-            var screenService = new WindowsScreenService();
-            
-            // If no service provided, use default Windows GDI+ implementation
-            if (screenCaptureService == null)
+            public int X;
+            public int Y;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool GetCursorPos(out POINT lpPoint);
+
+        /// <inheritdoc/>
+        public Point GetCursorPosition()
+        {
+            if (GetCursorPos(out POINT p))
             {
-                screenCaptureService = new WindowsScreenCaptureService(screenService);
+                return new Point(p.X, p.Y);
             }
-            
-            PlatformServices.Initialize(
-                platformInfo: new WindowsPlatformInfo(),
-                screenService: screenService,
-                clipboardService: new WindowsClipboardService(),
-                windowService: new WindowsWindowService(),
-                screenCaptureService: screenCaptureService,
-                hotkeyService: new WindowsHotkeyService(),
-                inputService: new WindowsInputService()
-            );
+            return Point.Empty;
         }
     }
 }
