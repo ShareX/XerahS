@@ -276,13 +276,13 @@
                             <!-- Outer Border: Shadow effect -->
                             <Border BoxShadow="{Binding CanvasShadow}"
                                    CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}">
-                                <!-- Inner Border: Corner Radius with clipping -->
-                                <Border Background="#FFFFFF"
+                                <!-- Padding Border: Uses top-left pixel color -->
+                                <Border Background="{Binding SmartPaddingColor}"
+                                        Padding="{Binding SmartPaddingThickness}"
                                         CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
                                         ClipToBounds="True">
-                                    <Border CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
-                                            ClipToBounds="True"
-                                            Background="Transparent">
+                                    <!-- Inner Border: White background only -->
+                                    <Border Background="#FFFFFF">
                                         <Grid Name="CanvasContainer"
                                               Width="{Binding ImageWidth}"
                                               Height="{Binding ImageHeight}">
@@ -307,7 +307,7 @@
                                         </Canvas>
 
                                         <!-- Overlay Layer (Transient UI: Selection handles, Crop) -->
-                                            <Canvas Name="OverlayCanvas"
+                                        <Canvas Name="OverlayCanvas"
                                                 IsHitTestVisible="True"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"
@@ -320,7 +320,6 @@
                                                        StrokeThickness="2"
                                                        StrokeDashArray="4,2"
                                                        Fill="#80000000" />
-                                            <!-- Selection Handles will be added here dynamically -->
                                         </Canvas>
                                     </Grid>
                                     </Border>
@@ -342,10 +341,10 @@
                                    FontWeight="Bold" 
                                    Foreground="White"/>
 
-                        <!-- Padding Slider -->
+                        <!-- Margin Slider -->
                         <StackPanel Spacing="8">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="Padding" Foreground="#9CA3AF"/>
+                                <TextBlock Grid.Column="0" Text="Margin" Foreground="#9CA3AF"/>
                                 <TextBlock Grid.Column="1" Text="{Binding PreviewPadding, StringFormat='{}{0:F0}px'}" Foreground="White"/>
                             </Grid>
                             <Slider Minimum="0" 
@@ -354,10 +353,22 @@
                                     Background="#374151"/>
                         </StackPanel>
 
-                        <!-- Corner Radius Slider -->
+                        <!-- Padding Slider -->
                         <StackPanel Spacing="8">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="Corner Radius" Foreground="#9CA3AF"/>
+                                <TextBlock Grid.Column="0" Text="Padding" Foreground="#9CA3AF"/>
+                                <TextBlock Grid.Column="1" Text="{Binding SmartPadding, StringFormat='{}{0:F0}px'}" Foreground="White"/>
+                            </Grid>
+                            <Slider Minimum="0" 
+                                    Maximum="200" 
+                                    Value="{Binding SmartPadding}"
+                                    Background="#374151"/>
+                        </StackPanel>
+
+                        <!-- Rounded Corner Slider -->
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Rounded Corner" Foreground="#9CA3AF"/>
                                 <TextBlock Grid.Column="1" Text="{Binding PreviewCornerRadius, StringFormat='{}{0:F0}px'}" Foreground="White"/>
                             </Grid>
                             <Slider Minimum="0" 
@@ -366,10 +377,10 @@
                                     Background="#374151"/>
                         </StackPanel>
 
-                        <!-- Shadow Blur Slider -->
+                        <!-- Shadow Slider -->
                         <StackPanel Spacing="8">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="Shadow Blur" Foreground="#9CA3AF"/>
+                                <TextBlock Grid.Column="0" Text="Shadow" Foreground="#9CA3AF"/>
                                 <TextBlock Grid.Column="1" Text="{Binding ShadowBlur, StringFormat='{}{0:F0}px'}" Foreground="White"/>
                             </Grid>
                             <Slider Minimum="0" 
@@ -394,9 +405,9 @@
                             </UniformGrid>
                         </StackPanel>
 
-                        <!-- Gradient Presets -->
+                        <!-- Background -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Gradient Presets" Foreground="#9CA3AF"/>
+                            <TextBlock Text="Background" Foreground="#9CA3AF"/>
                             <ItemsControl ItemsSource="{Binding GradientPresets}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -414,6 +425,7 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </StackPanel>
+
                     </StackPanel>
                 </ScrollViewer>
             </Border>

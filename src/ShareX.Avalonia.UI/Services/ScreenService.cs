@@ -1,75 +1,33 @@
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using ShareX.Ava.Platform.Abstractions;
 
 namespace ShareX.Ava.UI.Services
 {
+    /// <summary>
+    /// UI-layer stub for ScreenService - delegates to platform implementation
+    /// This is kept as a fallback for when PlatformServices might not be fully initialized
+    /// </summary>
     public class ScreenService : IScreenService
     {
-        private Rectangle DefaultScreen => new Rectangle(0, 0, 1920, 1080);
+        private readonly IScreenService? _platformImpl;
 
-        public Rectangle GetVirtualScreenBounds()
+        public ScreenService(IScreenService? platformImpl = null)
         {
-            // TODO: Implement using Avalonia's screen API
-            return DefaultScreen;
+            _platformImpl = platformImpl;
         }
 
-        public Rectangle GetWorkingArea()
-        {
-            // TODO: Implement using Avalonia's screen API
-            return DefaultScreen;
-        }
+        private IScreenService GetImpl() => _platformImpl ?? throw new System.InvalidOperationException("No platform screen service registered");
 
-        public Rectangle GetActiveScreenBounds()
-        {
-            // TODO: Implement using Avalonia's screen API
-            return DefaultScreen;
-        }
-
-        public Rectangle GetActiveScreenWorkingArea()
-        {
-            // TODO: Implement using Avalonia's screen API
-            return DefaultScreen;
-        }
-
-        public Rectangle GetPrimaryScreenBounds()
-        {
-            // TODO: Implement using Avalonia's screen API
-            return DefaultScreen;
-        }
-
-        public Rectangle GetPrimaryScreenWorkingArea()
-        {
-            // TODO: Implement using Avalonia's screen API
-            return DefaultScreen;
-        }
-
-        public ScreenInfo[] GetAllScreens()
-        {
-            // TODO: Implement using Avalonia's screen API
-            return new[]
-            {
-                new ScreenInfo
-                {
-                    Bounds = DefaultScreen,
-                    WorkingArea = DefaultScreen,
-                    IsPrimary = true,
-                    DeviceName = "Primary",
-                    BitsPerPixel = 32
-                }
-            };
-        }
-
-        public ScreenInfo GetScreenFromPoint(Point point)
-        {
-            // TODO: Implement using Avalonia's screen API
-            return GetAllScreens()[0];
-        }
-
-        public ScreenInfo GetScreenFromRectangle(Rectangle rectangle)
-        {
-            // TODO: Implement using Avalonia's screen API
-            return GetAllScreens()[0];
-        }
+        public Rectangle GetVirtualScreenBounds() => GetImpl().GetVirtualScreenBounds();
+        public Rectangle GetWorkingArea() => GetImpl().GetWorkingArea();
+        public Rectangle GetActiveScreenBounds() => GetImpl().GetActiveScreenBounds();
+        public Rectangle GetActiveScreenWorkingArea() => GetImpl().GetActiveScreenWorkingArea();
+        public Rectangle GetPrimaryScreenBounds() => GetImpl().GetPrimaryScreenBounds();
+        public Rectangle GetPrimaryScreenWorkingArea() => GetImpl().GetPrimaryScreenWorkingArea();
+        public ScreenInfo[] GetAllScreens() => GetImpl().GetAllScreens();
+        public ScreenInfo GetScreenFromPoint(Point point) => GetImpl().GetScreenFromPoint(point);
+        public ScreenInfo GetScreenFromRectangle(Rectangle rectangle) => GetImpl().GetScreenFromRectangle(rectangle);
     }
 }

@@ -28,7 +28,7 @@ namespace ShareX.Ava.Common
     public static class ShareXResources
     {
         public const string ProductName = "ShareX Ava";
-        public const string Version = "v0.1.0-alpha";
+        public const string Version = "v0.2.0";
         public const string ProductNameWithVersion = ProductName + " " + Version;
         public const string HistoryFileName = "History.xml";
         public static string UserAgent => "ShareX.Ava";
