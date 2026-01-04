@@ -457,15 +457,19 @@ public static class FileHelpers
 
         try
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo("explorer.exe", $"/select,\"{filePath}\"")
+            // Windows Explorer /select argument requires backslashes
+            string args = $"/select,\"{filePath.Replace('/', '\\')}\"";
+
+            ProcessStartInfo startInfo = new ProcessStartInfo("explorer.exe", args)
             {
                 UseShellExecute = true
             };
             Process.Start(startInfo);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine(ex);
             return false;
         }
     }

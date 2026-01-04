@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../ShareX"
+		},
+		{
+			"path": "../../../../OneDrive/Documents/ShareX Ava/debug"
 		}
 	],
 	"settings": {}

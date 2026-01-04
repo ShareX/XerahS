@@ -6,21 +6,20 @@
         x:Class="ShareX.Ava.UI.Views.RegionCapture.RegionCaptureWindow"
         Title="RegionCaptureWindow"
         TransparencyLevelHint="Transparent"
-        Background="Transparent"
+        Background="{x:Null}"
         SystemDecorations="None"
         Topmost="True"
         ShowInTaskbar="False"
-        Focusable="True"
         Cursor="Cross"
         PointerPressed="OnPointerPressed"
         PointerMoved="OnPointerMoved"
-        PointerReleased="OnPointerReleased">
+        PointerReleased="OnPointerReleased"
+        CanResize="False"
+        WindowStartupLocation="Manual">
     
-    <Canvas Name="SelectionCanvas" Background="Transparent" ClipToBounds="True" Margin="0">
-        <!-- Background screenshot -->
-        <Image Name="BackgroundImage" 
-               Stretch="Fill"
-               RenderOptions.BitmapInterpolationMode="HighQuality" />
+    <Canvas Name="SelectionCanvas">
+        <!-- Background screenshots container -->
+        <Canvas Name="BackgroundContainer" />
         
         <!-- Darkening overlay with cutout for selection - visible by default -->
         <Path Name="DarkeningOverlay"
