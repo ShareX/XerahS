@@ -276,13 +276,14 @@
                             <!-- Outer Border: Shadow effect -->
                             <Border BoxShadow="{Binding CanvasShadow}"
                                    CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}">
-                                <!-- Inner Border: Corner Radius with clipping -->
-                                <Border Background="#FFFFFF"
-                                        CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
-                                        ClipToBounds="True">
-                                    <Border CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
-                                            ClipToBounds="True"
-                                            Background="Transparent">
+                                <!-- Smart Padding Border: Uses top-left pixel color -->
+                                <Border Background="{Binding SmartPaddingColor}"
+                                        Padding="{Binding SmartPaddingThickness}"
+                                        CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}">
+                                    <!-- Inner Border: Corner Radius with clipping -->
+                                    <Border Background="#FFFFFF"
+                                            CornerRadius="{Binding CanvasCornerRadius, Converter={StaticResource DoubleToCornerRadius}}"
+                                            ClipToBounds="True">
                                         <Grid Name="CanvasContainer"
                                               Width="{Binding ImageWidth}"
                                               Height="{Binding ImageHeight}">
@@ -307,7 +308,7 @@
                                         </Canvas>
 
                                         <!-- Overlay Layer (Transient UI: Selection handles, Crop) -->
-                                            <Canvas Name="OverlayCanvas"
+                                        <Canvas Name="OverlayCanvas"
                                                 IsHitTestVisible="True"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"
@@ -320,7 +321,6 @@
                                                        StrokeThickness="2"
                                                        StrokeDashArray="4,2"
                                                        Fill="#80000000" />
-                                            <!-- Selection Handles will be added here dynamically -->
                                         </Canvas>
                                     </Grid>
                                     </Border>
@@ -351,6 +351,18 @@
                             <Slider Minimum="0" 
                                     Maximum="200" 
                                     Value="{Binding PreviewPadding}"
+                                    Background="#374151"/>
+                        </StackPanel>
+
+                        <!-- Smart Padding Slider -->
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Smart Padding" Foreground="#9CA3AF"/>
+                                <TextBlock Grid.Column="1" Text="{Binding SmartPadding, StringFormat='{}{0:F0}px'}" Foreground="White"/>
+                            </Grid>
+                            <Slider Minimum="0" 
+                                    Maximum="200" 
+                                    Value="{Binding SmartPadding}"
                                     Background="#374151"/>
                         </StackPanel>
 
