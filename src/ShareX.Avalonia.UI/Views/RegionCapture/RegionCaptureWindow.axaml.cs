@@ -62,33 +62,16 @@ namespace ShareX.Ava.UI.Views.RegionCapture
             return _tcs.Task;
         }
 
-        public async Task SetBackgroundScreenshot()
+        // Helper to convert System.Drawing.Bitmap to Avalonia Bitmap
+        private Bitmap ConvertToAvaloniaBitmap(System.Drawing.Image source)
         {
-            // Capture full screen before showing the window
-            if (ShareX.Ava.Platform.Abstractions.PlatformServices.IsInitialized)
-            {
-                var screenshot = await ShareX.Ava.Platform.Abstractions.PlatformServices.ScreenCapture.CaptureFullScreenAsync();
-                if (screenshot != null)
-                {
-                    // Convert System.Drawing.Image to Avalonia Bitmap
-                    using var memoryStream = new System.IO.MemoryStream();
-                    screenshot.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
-                    memoryStream.Position = 0;
-                    
-                    var avaloniaBitmap = new Bitmap(memoryStream);
-                    
-                    var backgroundImage = this.FindControl<Image>("BackgroundImage");
-                    if (backgroundImage != null)
-                    {
-                        backgroundImage.Source = avaloniaBitmap;
-                    }
-                    
-                    screenshot.Dispose();
-                }
-            }
+            using var memoryStream = new System.IO.MemoryStream();
+            source.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+            memoryStream.Position = 0;
+            return new Bitmap(memoryStream);
         }
 
-        protected override void OnOpened(EventArgs e)
+        protected override async void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
             
@@ -120,30 +103,68 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                     }
                 }
                 
-                
-                // Convert screen bounds to logical coordinates by dividing by RenderScaling
-                // This correctly maps physical pixels to DPI-scaled logical units
-                var physicalWidth = maxX - minX;
-                var physicalHeight = maxY - minY;
-                var logicalWidth = physicalWidth / RenderScaling;
-                var logicalHeight = physicalHeight / RenderScaling;
-
+                // Position window at absolute top-left of virtual screen
                 Position = new PixelPoint(minX, minY);
                 
+                // Calculate logical size required to cover all screens
+                // We use PointToClient to determine the Logical extent of the virtual screen relative to the window origin
+                // This automatically handles the mixed DPI scaling logic of the underlying platform
+                var topLeft = this.PointToClient(new PixelPoint(minX, minY));
+                var bottomRight = this.PointToClient(new PixelPoint(maxX, maxY));
+                var logicalWidth = bottomRight.X - topLeft.X;
+                var logicalHeight = bottomRight.Y - topLeft.Y;
+
                 // Set window size to logical units
                 Width = logicalWidth;
                 Height = logicalHeight;
                 
-                // Store window position for coordinate conversion (keep in physical pixels)
+                // Store window position for coordinate conversion
                 _windowLeft = minX;
                 _windowTop = minY;
                 
-                // Size the background image to matched logical size
-                var backgroundImage = this.FindControl<Image>("BackgroundImage");
-                if (backgroundImage != null)
+                // Populate background images for each screen
+                var container = this.FindControl<Canvas>("BackgroundContainer");
+                if (container != null && ShareX.Ava.Platform.Abstractions.PlatformServices.IsInitialized)
                 {
-                    backgroundImage.Width = logicalWidth;
-                    backgroundImage.Height = logicalHeight;
+                    container.Children.Clear();
+                    
+                    foreach (var screen in Screens.All)
+                    {
+                        // 1. Capture screen content (Physical)
+                        var screenRect = new System.Drawing.Rectangle(
+                            screen.Bounds.X, screen.Bounds.Y, 
+                            screen.Bounds.Width, screen.Bounds.Height);
+                            
+                        var screenshot = await ShareX.Ava.Platform.Abstractions.PlatformServices.ScreenCapture.CaptureRectAsync(screenRect);
+                        
+                        if (screenshot != null)
+                        {
+                            var avaloniaBitmap = ConvertToAvaloniaBitmap(screenshot);
+                            var imageControl = new Image
+                            {
+                                Source = avaloniaBitmap,
+                                Stretch = Stretch.Fill
+                            };
+                            RenderOptions.SetBitmapInterpolationMode(imageControl, BitmapInterpolationMode.HighQuality);
+
+                            // 2. Calculate Logical Position and Size for this screen image
+                            var screenTopLeft = this.PointToClient(screen.Bounds.TopLeft);
+                            var screenBottomRight = this.PointToClient(screen.Bounds.BottomRight);
+                            
+                            var screenLogicalWidth = screenBottomRight.X - screenTopLeft.X;
+                            var screenLogicalHeight = screenBottomRight.Y - screenTopLeft.Y;
+
+                            imageControl.Width = screenLogicalWidth;
+                            imageControl.Height = screenLogicalHeight;
+
+                            Canvas.SetLeft(imageControl, screenTopLeft.X);
+                            Canvas.SetTop(imageControl, screenTopLeft.Y);
+
+                            container.Children.Add(imageControl);
+                            
+                            screenshot.Dispose();
+                        }
+                    }
                 }
 
                 // Initialize the darkening overlay to cover the entire screen

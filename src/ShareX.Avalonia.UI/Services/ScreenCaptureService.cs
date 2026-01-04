@@ -40,9 +40,7 @@ namespace ShareX.Ava.UI.Services
             {
                 var window = new RegionCaptureWindow();
                 
-                // Capture screenshot and set as background BEFORE showing the window
-                await window.SetBackgroundScreenshot();
-                
+                // Window will handle background capture in OnOpened
                 window.Show();
                 selection = await window.GetResultAsync();
             });
