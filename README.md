@@ -47,7 +47,7 @@ dotnet run --project src/ShareX.Avalonia.App/ShareX.Avalonia.App.csproj
 
 ## 🛠️ Developer Information
 
-See [DEVELOPER_README.md](DEVELOPER_README.md) for architecture details and contribution guidelines.
+See [DEVELOPER_README.md](docs/guides/DEVELOPER_README.md) for architecture details and contribution guidelines.
 
 ## 📄 License
 GPL-3.0 (See LICENSE file)
