@@ -8,7 +8,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>..\ShareX.Avalonia.UI\Assets\Logo.ico</ApplicationIcon>
     <DefineConstants Condition="'$(OS)' == 'Windows_NT'">$(DefineConstants);WINDOWS</DefineConstants>
-    <DefineConstants Condition="'$(OS)' != 'Windows_NT'">$(DefineConstants);MACOS</DefineConstants>
+    <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
+    <DefineConstants Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(DefineConstants);LINUX</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" Version="11.3.10" />
@@ -18,5 +19,6 @@
     <ProjectReference Include="..\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Platform.Windows\ShareX.Avalonia.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />
     <ProjectReference Include="..\ShareX.Avalonia.Platform.MacOS\ShareX.Avalonia.Platform.MacOS.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.Linux\ShareX.Avalonia.Platform.Linux.csproj" Condition="'$(OS)' != 'Windows_NT'" />
   </ItemGroup>
 </Project>

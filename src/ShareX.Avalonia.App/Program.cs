@@ -107,6 +107,12 @@ namespace ShareX.Ava.App
                 ShareX.Ava.Platform.MacOS.MacOSPlatform.Initialize(uiCaptureService);
                 return;
             }
+#elif LINUX
+            if (OperatingSystem.IsLinux())
+            {
+                ShareX.Ava.Platform.Linux.LinuxPlatform.Initialize();
+                return;
+            }
 #endif
             // Fallback for non-Windows/MacOS (or generic stubs)
             // In future: LinuxPlatform.Initialize()
