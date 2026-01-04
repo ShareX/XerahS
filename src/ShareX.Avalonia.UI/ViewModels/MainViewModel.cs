@@ -77,6 +77,7 @@ namespace ShareX.Ava.UI.ViewModels
                 ImageWidth = value.Size.Width;
                 ImageHeight = value.Size.Height;
                 HasPreviewImage = true;
+                OnPropertyChanged(nameof(SmartPaddingColor));
             }
             else
             {
@@ -88,6 +89,32 @@ namespace ShareX.Ava.UI.ViewModels
 
         [ObservableProperty]
         private double _previewPadding = 30;
+
+        [ObservableProperty]
+        private double _smartPadding = 0;
+
+        public Thickness SmartPaddingThickness => new Thickness(SmartPadding);
+
+        public IBrush SmartPaddingColor
+        {
+            get
+            {
+                if (_previewImage == null || _smartPadding <= 0)
+                {
+                    return Brushes.Transparent;
+                }
+
+                try
+                {
+                    var topLeftColor = SamplePixelColor(PreviewImage, 0, 0);
+                    return new SolidColorBrush(topLeftColor);
+                }
+                catch
+                {
+                    return Brushes.Transparent;
+                }
+            }
+        }
 
         [ObservableProperty]
         private double _previewCornerRadius = 15;
@@ -198,6 +225,12 @@ namespace ShareX.Ava.UI.ViewModels
             UpdateCanvasProperties();
         }
 
+        partial void OnSmartPaddingChanged(double value)
+        {
+            OnPropertyChanged(nameof(SmartPaddingColor));
+            OnPropertyChanged(nameof(SmartPaddingThickness));
+        }
+
         partial void OnPreviewCornerRadiusChanged(double value)
         {
             UpdateCanvasProperties();
@@ -206,6 +239,22 @@ namespace ShareX.Ava.UI.ViewModels
         partial void OnShadowBlurChanged(double value)
         {
             UpdateCanvasProperties();
+        }
+
+        private Color SamplePixelColor(Bitmap bitmap, int x, int y)
+        {
+            using var stream = new System.IO.MemoryStream();
+            bitmap.Save(stream);
+            stream.Position = 0;
+
+            using var skBitmap = SkiaSharp.SKBitmap.Decode(stream);
+            if (skBitmap == null || x >= skBitmap.Width || y >= skBitmap.Height)
+            {
+                return Colors.Transparent;
+            }
+
+            var skColor = skBitmap.GetPixel(x, y);
+            return Color.FromArgb(skColor.Alpha, skColor.Red, skColor.Green, skColor.Blue);
         }
 
         [RelayCommand]
@@ -227,6 +276,7 @@ namespace ShareX.Ava.UI.ViewModels
                 OffsetY = 10
             });
             CanvasCornerRadius = Math.Max(0, PreviewCornerRadius);
+            OnPropertyChanged(nameof(SmartPaddingColor));
         }
 
         private static ObservableCollection<GradientPreset> BuildGradientPresets()
