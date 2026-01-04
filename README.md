@@ -65,7 +65,7 @@ Global hotkeys use SharpHook and need Accessibility permission:
 
 See [DEVELOPER_README.md](docs/guides/DEVELOPER_README.md) for architecture details and contribution guidelines.
 
-## 📄 License
+## 📄 [License](LICENSE.txt)
 
 
 
