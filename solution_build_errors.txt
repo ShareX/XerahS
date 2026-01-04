@@ -1,0 +1,10 @@
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Media\VideoThumbnailer.cs(132,38): error CS0117: 'ImageHelpers' does not contain a definition for 'SaveImage' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Media\ShareX.Avalonia.Media.csproj]
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Media\VideoThumbnailer.cs(224,47): error CS0117: 'ImageHelpers' does not contain a definition for 'LoadImage' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Media\ShareX.Avalonia.Media.csproj]
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Media\VideoThumbnailer.cs(229,56): error CS1503: Argument 1: cannot convert from 'System.Drawing.Bitmap' to 'SkiaSharp.SKBitmap' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Media\ShareX.Avalonia.Media.csproj]
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Helpers\TaskHelpers.cs(326,41): error CS1503: Argument 1: cannot convert from 'System.Drawing.Bitmap' to 'SkiaSharp.SKBitmap' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj]
+
+Build FAILED.
+    94 Warning(s)
+    4 Error(s)
+
+Time Elapsed 00:00:11.24

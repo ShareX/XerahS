@@ -709,6 +709,35 @@ namespace ShareX.Ava.UI.ViewModels
             ResetNumberCounter();
         }
 
+        public void UpdatePreview(SkiaSharp.SKBitmap image)
+        {
+            if (image == null) return;
+
+            // 1. Update PreviewImage (Avalonia Bitmap)
+            // We can use our helper or memory stream
+            using (var imageSnapshot = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100))
+            {
+                using var ms = imageSnapshot.AsStream();
+                PreviewImage = new Bitmap(ms);
+            }
+
+            // 2. Update _currentSourceImage (System.Drawing.Image) for legacy tools (Crop)
+            // We need to convert SKBitmap -> System.Drawing.Image
+            using (var imageSnapshot = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100))
+            {
+                using var ms = imageSnapshot.AsStream();
+                _currentSourceImage = System.Drawing.Image.FromStream(ms);
+            }
+
+            ImageDimensions = $"{image.Width} x {image.Height}";
+            StatusText = $"Image: {image.Width} × {image.Height}";
+
+            // Reset view state
+            Zoom = 1.0;
+            ClearAnnotationsRequested?.Invoke(this, EventArgs.Empty);
+            ResetNumberCounter();
+        }
+
         public void CropImage(int x, int y, int width, int height)
         {
             if (_currentSourceImage == null) return;

@@ -1,9 +1,10 @@
 using System;
-using System.Drawing;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using ShareX.Ava.Platform.Abstractions;
 using ShareX.Ava.UI.Views.RegionCapture;
+using SkiaSharp;
+// REMOVED: System.Drawing (except for temporary conversion if needed, but strict replacement preferred if possible)
 
 namespace ShareX.Ava.UI.Services
 {
@@ -16,22 +17,22 @@ namespace ShareX.Ava.UI.Services
             _platformImpl = platformImpl;
         }
 
-        public Task<Image?> CaptureRectAsync(Rectangle rect)
+        public Task<SKBitmap?> CaptureRectAsync(SKRect rect)
         {
             return _platformImpl.CaptureRectAsync(rect);
         }
 
-        public Task<Image?> CaptureFullScreenAsync()
+        public Task<SKBitmap?> CaptureFullScreenAsync()
         {
             return _platformImpl.CaptureFullScreenAsync();
         }
 
-        public Task<Image?> CaptureActiveWindowAsync(IWindowService windowService)
+        public Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService)
         {
             return _platformImpl.CaptureActiveWindowAsync(windowService);
         }
 
-        public async Task<Image?> CaptureRegionAsync()
+        public async Task<SKBitmap?> CaptureRegionAsync()
         {
             System.Drawing.Rectangle selection = System.Drawing.Rectangle.Empty;
 
@@ -54,7 +55,8 @@ namespace ShareX.Ava.UI.Services
             await Task.Delay(200);
 
             // Delegate capture to platform implementation
-            return await _platformImpl.CaptureRectAsync(selection);
+            var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
+            return await _platformImpl.CaptureRectAsync(skRect);
         }
     }
 }

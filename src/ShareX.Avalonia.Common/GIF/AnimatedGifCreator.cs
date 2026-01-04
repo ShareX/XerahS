@@ -24,7 +24,9 @@
 #endregion License Information (GPL v3)
 
 using System;
-using System.Drawing;
+using System.Drawing; // Kept for legacy compatibility if needed, but we prefer Skia
+using SkiaSharp;
+
 using System.IO;
 using ShareX.Ava.Common;
 
@@ -46,7 +48,8 @@ namespace ShareX.Ava.Common.GIF
             Repeat = repeat;
         }
 
-        public void AddFrame(Image img, GIFQuality quality = GIFQuality.Default)
+        public void AddFrame(SKBitmap img, GIFQuality quality = GIFQuality.Default)
+
         {
             GifClass gif = new GifClass();
             gif.LoadGifPicture(img, quality);
@@ -69,11 +72,15 @@ namespace ShareX.Ava.Common.GIF
 
         public void AddFrame(string path, GIFQuality quality = GIFQuality.Default)
         {
-            using (Bitmap bmp = ImageHelpers.LoadImage(path))
+            using (SKBitmap? bmp = ImageHelpers.LoadBitmap(path))
             {
-                AddFrame(bmp, quality);
+                if (bmp != null)
+                {
+                    AddFrame(bmp, quality);
+                }
             }
         }
+
 
         private void Finish()
         {

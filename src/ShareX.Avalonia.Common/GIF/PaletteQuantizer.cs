@@ -24,8 +24,9 @@
 #endregion License Information (GPL v3)
 
 using System.Collections;
-using System.Drawing;
-using System.Drawing.Imaging;
+using System.Collections.Generic;
+using SkiaSharp;
+using ShareX.Ava.Common.GIF;
 
 namespace ShareX.Ava.Common.GIF
 {
@@ -41,13 +42,11 @@ namespace ShareX.Ava.Common.GIF
         /// <remarks>
         /// Palette quantization only requires a single quantization step
         /// </remarks>
-        public PaletteQuantizer(ArrayList palette)
+        public PaletteQuantizer(List<SKColor> palette)
             : base(true)
         {
             _colorMap = new Hashtable();
-
-            _colors = new Color[palette.Count];
-            palette.CopyTo(_colors);
+            _colors = palette.ToArray();
         }
 
         /// <summary>
@@ -74,7 +73,7 @@ namespace ShareX.Ava.Common.GIF
                     // Transparent. Lookup the first color with an alpha value of 0
                     for (int index = 0; index < _colors.Length; index++)
                     {
-                        if (_colors[index].A == 0)
+                        if (_colors[index].Alpha == 0)
                         {
                             colorIndex = (byte)index;
                             break;
@@ -92,11 +91,11 @@ namespace ShareX.Ava.Common.GIF
                     // Loop through the entire palette, looking for the closest color match
                     for (int index = 0; index < _colors.Length; index++)
                     {
-                        Color paletteColor = _colors[index];
+                        SKColor paletteColor = _colors[index];
 
-                        int redDistance = paletteColor.R - red;
-                        int greenDistance = paletteColor.G - green;
-                        int blueDistance = paletteColor.B - blue;
+                        int redDistance = paletteColor.Red - red;
+                        int greenDistance = paletteColor.Green - green;
+                        int blueDistance = paletteColor.Blue - blue;
 
                         int distance = (redDistance * redDistance) +
                                        (greenDistance * greenDistance) +
@@ -126,16 +125,10 @@ namespace ShareX.Ava.Common.GIF
         /// <summary>
         /// Retrieve the palette for the quantized image
         /// </summary>
-        /// <param name="palette">Any old palette, this is overrwritten</param>
         /// <returns>The new color palette</returns>
-        protected override ColorPalette GetPalette(ColorPalette palette)
+        protected override List<SKColor> GetPalette()
         {
-            for (int index = 0; index < _colors.Length; index++)
-            {
-                palette.Entries[index] = _colors[index];
-            }
-
-            return palette;
+            return new List<SKColor>(_colors);
         }
 
         /// <summary>
@@ -146,6 +139,6 @@ namespace ShareX.Ava.Common.GIF
         /// <summary>
         /// List of all colors in the palette
         /// </summary>
-        protected Color[] _colors;
+        protected SKColor[] _colors;
     }
 }

@@ -1,4 +1,4 @@
-using System.Drawing;
+using SkiaSharp;
 using System.Threading.Tasks;
 using ShareX.Ava.Platform.Abstractions;
 using Avalonia;
@@ -44,12 +44,12 @@ namespace ShareX.Ava.UI.Services
             _ = SetTextAsync(text);
         }
 
-        public Image? GetImage()
+        public SKBitmap? GetImage()
         {
             return null;
         }
 
-        public void SetImage(Image image)
+        public void SetImage(SKBitmap image)
         {
             // TODO: Implement
         }

@@ -1,0 +1,10 @@
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Common\Colors\GradientInfo.cs(168,44): error CS0029: Cannot implicitly convert type 'SkiaSharp.SKBitmap' to 'System.Drawing.Image' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj]
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Common\GIF\GifClass.cs(62,38): error CS1503: Argument 1: cannot convert from 'System.Drawing.Image' to 'SkiaSharp.SKBitmap' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj]
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Common\GIF\AnimatedGifCreator.cs(72,46): error CS0117: 'ImageHelpers' does not contain a definition for 'LoadImage' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj]
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Common\ImageFilesCache.cs(47,36): error CS0117: 'ImageHelpers' does not contain a definition for 'LoadImage' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj]
+
+Build FAILED.
+    596 Warning(s)
+    4 Error(s)
+
+Time Elapsed 00:00:03.08

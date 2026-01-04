@@ -26,16 +26,19 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using SkiaSharp;
+using System.Drawing.Imaging;
 
 namespace ShareX.Ava.Common
 {
     public class ImageFilesCache : IDisposable
     {
-        private Dictionary<string, Bitmap> images = new Dictionary<string, Bitmap>();
+        private Dictionary<string, SKBitmap> images = new Dictionary<string, SKBitmap>();
 
-        public Bitmap GetImage(string filePath)
+        public SKBitmap? GetImage(string filePath)
         {
-            Bitmap bmp = null;
+            SKBitmap? bmp = null;
 
             if (!string.IsNullOrEmpty(filePath))
             {
@@ -44,7 +47,7 @@ namespace ShareX.Ava.Common
                     return images[filePath];
                 }
 
-                bmp = ImageHelpers.LoadImage(filePath);
+                bmp = ImageHelpers.LoadBitmap(filePath);
 
                 if (bmp != null)
                 {
@@ -55,9 +58,9 @@ namespace ShareX.Ava.Common
             return bmp;
         }
 
-        public Bitmap GetFileIconAsImage(string filePath, bool isSmallIcon = true)
+        public SKBitmap? GetFileIconAsImage(string filePath, bool isSmallIcon = true)
         {
-            Bitmap bmp = null;
+            SKBitmap? bmp = null;
 
             if (!string.IsNullOrEmpty(filePath))
             {
@@ -65,16 +68,31 @@ namespace ShareX.Ava.Common
                 {
                     return images[filePath];
                 }
-
+                
+                // NativeMethods.GetFileIcon returns System.Drawing.Icon (Windows only)
+                // We keep this for now as NativeMethods wasn't fully refactored.
+                // Assuming Windows platform for this specific method call or it returns null on others.
+                
                 using (Icon? icon = NativeMethods.GetFileIcon(filePath, isSmallIcon))
                 {
                     if (icon != null && icon.Width > 0 && icon.Height > 0)
                     {
-                        bmp = icon.ToBitmap();
-
-                        if (bmp != null)
+                        using (Bitmap sysBmp = icon.ToBitmap())
                         {
-                            images.Add(filePath, bmp);
+                            if (sysBmp != null)
+                            {
+                                using (MemoryStream ms = new MemoryStream())
+                                {
+                                    sysBmp.Save(ms, ImageFormat.Png);
+                                    ms.Seek(0, SeekOrigin.Begin);
+                                    bmp = SKBitmap.Decode(ms);
+                                }
+
+                                if (bmp != null)
+                                {
+                                    images.Add(filePath, bmp);
+                                }
+                            }
                         }
                     }
                 }
@@ -97,7 +115,7 @@ namespace ShareX.Ava.Common
         {
             if (images != null)
             {
-                foreach (Bitmap bmp in images.Values)
+                foreach (SKBitmap bmp in images.Values)
                 {
                     if (bmp != null)
                     {

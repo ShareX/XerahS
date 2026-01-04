@@ -5,8 +5,10 @@ using ShareX.Ava.Core;
 
 using ShareX.Ava.Common;
 
+using ShareX.Ava.Core.Helpers;
 using ShareX.Ava.Core.Tasks.Processors;
 using ShareX.Ava.Platform.Abstractions;
+using SkiaSharp;
 
 namespace ShareX.Ava.Core.Tasks
 {
@@ -75,40 +77,47 @@ namespace ShareX.Ava.Core.Tasks
             // Perform Capture Phase based on Job Type
             if (PlatformServices.IsInitialized)
             {
-                System.Drawing.Image? image = null;
+                if (Status == TaskStatus.Canceled) return;
+
+                // Step 2: Capture
+                // ---------------------------------------------------------------------
+                // UpdateStatus("Capturing...");
+                DebugHelper.WriteLine("Capturing...");
                 
-                switch (Info.TaskSettings.Job)
+                // Check capture type from settings
+                SKBitmap? capturedBitmap = null;
+
+                if (Info.TaskSettings.Job == HotkeyType.RectangleRegion)
                 {
-                    case HotkeyType.PrintScreen:
-                        image = await PlatformServices.ScreenCapture.CaptureFullScreenAsync();
-                        break;
-                        
-                    case HotkeyType.RectangleRegion:
-                        image = await PlatformServices.ScreenCapture.CaptureRegionAsync();
-                        break;
-                        
-                    case HotkeyType.ActiveWindow:
-                        if (PlatformServices.Window != null)
-                        {
-                            image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window);
-                        }
-                        break;
+                    capturedBitmap = await PlatformServices.ScreenCapture.CaptureRegionAsync();
+                }
+                else if (Info.TaskSettings.Job == HotkeyType.PrintScreen)
+                {
+                    capturedBitmap = await PlatformServices.ScreenCapture.CaptureFullScreenAsync();
+                }
+                else if (Info.TaskSettings.Job == HotkeyType.ActiveWindow)
+                {
+                    capturedBitmap = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window);
                 }
                 
-                if (image is System.Drawing.Bitmap bitmap)
+                // If capture failed or canceled
+                if (capturedBitmap == null)
                 {
-                    Info.Metadata.Image = bitmap;
-                    DebugHelper.WriteLine($"Captured image: {bitmap.Width}x{bitmap.Height}");
+                    // UpdateStatus("Canceled");
+                    DebugHelper.WriteLine("Canceled");
+                    Status = TaskStatus.Canceled;
+                    return;
                 }
-                else if (image != null)
+
+                Info.Metadata.Image = capturedBitmap;
+                DebugHelper.WriteLine($"Captured image: {capturedBitmap.Width}x{capturedBitmap.Height}");
+
+                // Step 3: Process Image Tasks
+                // ---------------------------------------------------------------------
+                if (Info.TaskSettings.Job != HotkeyType.None)
                 {
-                    // Convert to Bitmap if it's a different Image type
-                    Info.Metadata.Image = new System.Drawing.Bitmap(image);
-                    DebugHelper.WriteLine($"Converted image to Bitmap: {image.Width}x{image.Height}");
-                }
-                else
-                {
-                    DebugHelper.WriteLine($"Capture returned null for job type: {Info.TaskSettings.Job}");
+                    var processor = new Processors.CaptureJobProcessor();
+                    await processor.ProcessAsync(Info, token); // Added token parameter
                 }
             }
             else
@@ -117,8 +126,10 @@ namespace ShareX.Ava.Core.Tasks
             }
 
             // Execute Capture Job (File Save, Clipboard, etc)
+            // The previous CaptureJobProcessor call seems to replace this.
+            // Keeping it here as per the diff's end point, but it might be redundant or need adjustment.
             var captureProcessor = new CaptureJobProcessor();
-            await captureProcessor.ProcessAsync(Info, token);
+            await captureProcessor.ProcessAsync(Info, token); // Ensure this is intended if the above block also calls it.
 
             // Execute Upload Job
             var uploadProcessor = new UploadJobProcessor();

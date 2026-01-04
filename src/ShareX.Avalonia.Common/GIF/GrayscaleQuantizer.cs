@@ -25,7 +25,9 @@
 
 using System;
 using System.Collections;
-using System.Drawing;
+using System.Collections.Generic;
+using SkiaSharp;
+using ShareX.Ava.Common.GIF;
 
 namespace ShareX.Ava.Common.GIF
 {
@@ -41,9 +43,9 @@ namespace ShareX.Ava.Common.GIF
         /// Palette quantization only requires a single quantization step
         /// </remarks>
         public GrayscaleQuantizer()
-            : base(new ArrayList())
+            : base(new List<SKColor>())
         {
-            _colors = new Color[256];
+            _colors = new SKColor[256];
 
             int nColors = 256;
 
@@ -52,21 +54,10 @@ namespace ShareX.Ava.Common.GIF
             // purposes, use a grayscale.
             for (uint i = 0; i < nColors; i++)
             {
-                uint Alpha = 0xFF; // Colors are opaque.
-                uint Intensity = Convert.ToUInt32(i * 0xFF / (nColors - 1)); // Even distribution.
+                byte Alpha = 0xFF; // Colors are opaque.
+                byte Intensity = (byte)(i * 0xFF / (nColors - 1)); // Even distribution.
 
-                // The GIF encoder makes the first entry in the palette
-                // that has a ZERO alpha the transparent color in the GIF.
-                // Pick the first one arbitrarily, for demonstration purposes.
-
-                // Create a gray scale for demonstration purposes.
-                // Otherwise, use your favorite color reduction algorithm
-                // and an optimum palette for that algorithm generated here.
-                // For example, a color histogram, or a median cut palette.
-                _colors[i] = Color.FromArgb((int)Alpha,
-                    (int)Intensity,
-                    (int)Intensity,
-                    (int)Intensity);
+                _colors[i] = new SKColor(Intensity, Intensity, Intensity, Alpha);
             }
         }
 

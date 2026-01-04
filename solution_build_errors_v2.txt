@@ -1,0 +1,13 @@
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Tasks\WorkerTask.cs(100,43): error CS0029: Cannot implicitly convert type 'System.Drawing.Bitmap' to 'SkiaSharp.SKBitmap' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj]
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Tasks\WorkerTask.cs(106,43): error CS0029: Cannot implicitly convert type 'System.Drawing.Bitmap' to 'SkiaSharp.SKBitmap' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj]
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Tasks\Processors\CaptureJobProcessor.cs(66,25): error CS1503: Argument 1: cannot convert from 'SkiaSharp.SKBitmap' to 'System.Drawing.Image' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj]
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Tasks\Processors\CaptureJobProcessor.cs(89,58): error CS1503: Argument 1: cannot convert from 'SkiaSharp.SKBitmap' to 'System.Drawing.Image' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj]
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Tasks\Processors\CaptureJobProcessor.cs(100,64): error CS1503: Argument 1: cannot convert from 'SkiaSharp.SKBitmap' to 'System.Drawing.Image' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj]
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Tasks\Processors\CaptureJobProcessor.cs(122,27): error CS0029: Cannot implicitly convert type 'SkiaSharp.SKBitmap' to 'System.Drawing.Bitmap' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj]
+C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Tasks\Processors\CaptureJobProcessor.cs(128,61): error CS1503: Argument 1: cannot convert from 'System.Drawing.Bitmap' to 'SkiaSharp.SKBitmap' [C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj]
+
+Build FAILED.
+    36 Warning(s)
+    7 Error(s)
+
+Time Elapsed 00:00:03.15

@@ -119,7 +119,8 @@ public enum TaskStatus
     Stopped,
     Failed,
     Completed,
-    History
+    History,
+    Canceled
 }
 
 public enum CaptureType

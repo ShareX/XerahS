@@ -25,7 +25,6 @@
 
 using System;
 using System.IO;
-using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,6 +36,8 @@ using ShareX.Ava.Platform.Abstractions;
 using ShareX.Ava.Uploaders;
 using ShareX.Ava.Uploaders.PluginSystem;
 using ShareX.Ava.History;
+using SkiaSharp;
+// REMOVED: System.Drawing
 
 namespace ShareX.Ava.Core.Tasks.Processors
 {
@@ -119,7 +120,7 @@ namespace ShareX.Ava.Core.Tasks.Processors
         {
              if (info.Metadata?.Image == null) return;
              
-             Bitmap bmp = info.Metadata.Image;
+             SKBitmap bmp = info.Metadata.Image;
 
              // TaskHelpers contains the logic for folder resolution, naming, and file exists handling.
              // It runs synchronously (System.Drawing limitation), so wrap in Task.Run if needed, 

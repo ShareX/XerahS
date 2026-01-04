@@ -118,13 +118,13 @@ namespace ShareX.Ava.UI.Views.RegionCapture
             return _tcs.Task;
         }
 
-        // Helper to convert System.Drawing.Bitmap to Avalonia Bitmap
-        private Bitmap ConvertToAvaloniaBitmap(System.Drawing.Image source)
+        // Helper to convert SkiaSharp.SKBitmap to Avalonia Bitmap
+        private Bitmap ConvertToAvaloniaBitmap(SkiaSharp.SKBitmap source)
         {
-            using var memoryStream = new System.IO.MemoryStream();
-            source.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
-            memoryStream.Position = 0;
-            return new Bitmap(memoryStream);
+            if (source == null) return null;
+            using var image = source.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+            using var stream = image.AsStream();
+            return new Bitmap(stream);
         }
 
         protected override async void OnOpened(EventArgs e)
@@ -219,7 +219,10 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                             screen.Bounds.Width, screen.Bounds.Height);
                         DebugLog("IMAGE", $"Screen {screenIndex} capture rect: {screenRect}");
                             
-                        var screenshot = await ShareX.Ava.Platform.Abstractions.PlatformServices.ScreenCapture.CaptureRectAsync(screenRect);
+                        // Convert System.Drawing.Rectangle to SKRect
+                        var skScreenRect = new SkiaSharp.SKRect(screenRect.Left, screenRect.Top, screenRect.Right, screenRect.Bottom);
+
+                        var screenshot = await ShareX.Ava.Platform.Abstractions.PlatformServices.ScreenCapture.CaptureRectAsync(skScreenRect);
                         
                         if (screenshot != null)
                         {

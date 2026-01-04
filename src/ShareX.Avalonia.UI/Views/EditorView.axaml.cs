@@ -26,12 +26,14 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
+using Path = Avalonia.Controls.Shapes.Path;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using SkiaSharp;
 using ShareX.Ava.Annotations.Models;
 using ShareX.Ava.UI.ViewModels;
 using System.ComponentModel;
@@ -737,8 +739,14 @@ namespace ShareX.Ava.UI.Views
                 // Load into System.Drawing.Image (what Windows clipboard expects)
                 using var drawingImage = System.Drawing.Image.FromStream(memoryStream);
 
+                // Convert System.Drawing.Image to SKBitmap for platform service
+                using var ms2 = new System.IO.MemoryStream();
+                drawingImage.Save(ms2, System.Drawing.Imaging.ImageFormat.Png);
+                ms2.Position = 0;
+                using var skBitmap = SKBitmap.Decode(ms2);
+
                 // Use platform-specific clipboard service for native OS compatibility
-                ShareX.Ava.Platform.Abstractions.PlatformServices.Clipboard.SetImage(drawingImage);
+                ShareX.Ava.Platform.Abstractions.PlatformServices.Clipboard.SetImage(skBitmap);
             }
             catch (Exception ex)
             {

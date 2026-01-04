@@ -24,9 +24,9 @@
 #endregion License Information (GPL v3)
 
 using System;
-using System.Collections;
-using System.Drawing;
-using System.Drawing.Imaging;
+using System.Collections.Generic;
+using SkiaSharp;
+using ShareX.Ava.Common.GIF;
 
 namespace ShareX.Ava.Common.GIF
 {
@@ -91,21 +91,39 @@ namespace ShareX.Ava.Common.GIF
         /// <summary>
         /// Retrieve the palette for the quantized image
         /// </summary>
-        /// <param name="original">Any old palette, this is overrwritten</param>
         /// <returns>The new color palette</returns>
-        protected override ColorPalette GetPalette(ColorPalette original)
+        protected override List<SKColor> GetPalette()
         {
             // First off convert the octree to _maxColors colors
-            ArrayList palette = _octree.Palletize(_maxColors - 1);
-
-            // Then convert the palette based on those colors
-            for (int index = 0; index < palette.Count; index++)
-                original.Entries[index] = (Color)palette[index];
+            List<SKColor> palette = _octree.Palletize(_maxColors - 1);
 
             // Add the transparent color
-            original.Entries[_maxColors] = Color.FromArgb(0, 0, 0, 0);
+            while (palette.Count < _maxColors)
+            {
+                palette.Add(SKColors.Black); // Fill gaps
+            }
+            
+            // Ensure we have room for transparent color at _maxColors
+            // The original logic expected _maxColors + 1 palette size or used _maxColors as the index for transparent.
+            // If _maxColors is 255, index is 255. 
+            // If we have 256 colors max (0..255), we might need 256 entries.
+            // Skia palette (if we were using one) expects colors.
+            // We just return the list.
+            
+            // Note: The GIF encoder will likely expect the transparent index to point to a transparent color.
+            if (palette.Count <= _maxColors)
+            {
+                if (palette.Count == _maxColors)
+                    palette.Add(SKColors.Transparent);
+                else
+                    palette.Insert(_maxColors, SKColors.Transparent);
+            }
+            else
+            {
+                palette[_maxColors] = SKColors.Transparent;
+            }
 
-            return original;
+            return palette;
         }
 
         /// <summary>
@@ -231,13 +249,13 @@ namespace ShareX.Ava.Common.GIF
             /// </summary>
             /// <param name="colorCount">The maximum number of colors</param>
             /// <returns>An arraylist with the palettized colors</returns>
-            public ArrayList Palletize(int colorCount)
+            public List<SKColor> Palletize(int colorCount)
             {
                 while (Leaves > colorCount)
                     Reduce();
 
                 // Now palettize the nodes
-                ArrayList palette = new ArrayList(Leaves);
+                List<SKColor> palette = new List<SKColor>(Leaves);
                 int paletteIndex = 0;
                 _root.ConstructPalette(palette, ref paletteIndex);
 
@@ -414,7 +432,7 @@ namespace ShareX.Ava.Common.GIF
                 /// </summary>
                 /// <param name="palette">The palette</param>
                 /// <param name="paletteIndex">The current palette index</param>
-                public void ConstructPalette(ArrayList palette, ref int paletteIndex)
+                public void ConstructPalette(List<SKColor> palette, ref int paletteIndex)
                 {
                     if (_leaf)
                     {
@@ -422,7 +440,7 @@ namespace ShareX.Ava.Common.GIF
                         _paletteIndex = paletteIndex++;
 
                         // And set the color of the palette entry
-                        palette.Add(Color.FromArgb(_red / _pixelCount, _green / _pixelCount, _blue / _pixelCount));
+                        palette.Add(new SKColor((byte)(_red / _pixelCount), (byte)(_green / _pixelCount), (byte)(_blue / _pixelCount)));
                     }
                     else
                     {

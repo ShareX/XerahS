@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.10" />
-    <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    <PackageReference Include="SkiaSharp" Version="2.88.9" />
   </ItemGroup>
 
   <ItemGroup>

@@ -26,6 +26,8 @@
 using ShareX.Ava.Platform.Abstractions;
 using System;
 using System.Drawing;
+using System.IO;
+using SkiaSharp;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -112,11 +114,21 @@ namespace ShareX.Ava.Platform.Windows
             }
         }
 
-        public Image? GetImage()
+        public SKBitmap? GetImage()
         {
             try
             {
-                return Clipboard.GetImage();
+                using (var image = Clipboard.GetImage())
+                {
+                    if (image == null) return null;
+                    
+                    using (var ms = new MemoryStream())
+                    {
+                        image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                        ms.Position = 0;
+                        return SKBitmap.Decode(ms);
+                    }
+                }
             }
             catch
             {
@@ -124,17 +136,23 @@ namespace ShareX.Ava.Platform.Windows
             }
         }
 
-        public void SetImage(Image image)
+        public void SetImage(SKBitmap image)
         {
             if (image == null)
                 return;
 
             try
             {
-                // Convert Image to DIB (Device Independent Bitmap) format for clipboard
+                // Convert SKBitmap to DIB (Device Independent Bitmap) format for clipboard
                 using (var ms = new MemoryStream())
                 {
-                    image.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
+                    // Encode to BMP
+                    using (var skImage = SKImage.FromBitmap(image))
+                    using (var data = skImage.Encode(SKEncodedImageFormat.Bmp, 100))
+                    {
+                        data.SaveTo(ms);
+                    }
+                    
                     ms.Position = 0;
 
                     // Read BMP header to skip it (clipboard wants DIB, not BMP)

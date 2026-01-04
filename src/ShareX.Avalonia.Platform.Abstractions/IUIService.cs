@@ -25,8 +25,9 @@
 
 using ShareX.Ava.Core;
 using System;
-using System.Drawing;
 using System.Threading.Tasks;
+using SkiaSharp;
+// REMOVED: System.Drawing
 
 namespace ShareX.Ava.Platform.Abstractions
 {
@@ -38,13 +39,13 @@ namespace ShareX.Ava.Platform.Abstractions
         /// <summary>
         /// Shows the image editor with the provided image
         /// </summary>
-        Task ShowEditorAsync(Image image);
+        Task ShowEditorAsync(SKBitmap image);
 
         /// <summary>
         /// Shows the After Capture window and returns selected tasks.
         /// </summary>
         Task<(AfterCaptureTasks Capture, AfterUploadTasks Upload, bool Cancel)> ShowAfterCaptureWindowAsync(
-            Image image,
+            SKBitmap image,
             AfterCaptureTasks afterCapture,
             AfterUploadTasks afterUpload);
     }

@@ -25,7 +25,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+// using System.Drawing; 
+using SkiaSharp;
+
 using System.IO;
 using ShareX.Ava.Common;
 
@@ -53,7 +55,8 @@ namespace ShareX.Ava.Common.GIF
         public List<byte> ImageDescriptor = new List<byte>();
         public List<byte> ImageData = new List<byte>();
 
-        public void LoadGifPicture(Image img, GIFQuality quality)
+        public void LoadGifPicture(SKBitmap img, GIFQuality quality)
+
         {
             List<byte> dataList;
 

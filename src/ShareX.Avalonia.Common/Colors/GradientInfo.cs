@@ -165,7 +165,10 @@ namespace ShareX.Ava.Common.Colors
             {
                 if (checkers && IsTransparent)
                 {
-                    using (Image checker = ImageHelpers.CreateCheckerPattern())
+                    using (SkiaSharp.SKBitmap checkerSK = ImageHelpers.CreateCheckerPattern())
+                    using (SkiaSharp.SKData data = checkerSK.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100))
+                    using (System.IO.MemoryStream ms = new System.IO.MemoryStream(data.ToArray()))
+                    using (Image checker = Image.FromStream(ms))
                     using (Brush checkerBrush = new TextureBrush(checker, WrapMode.Tile))
                     {
                         g.FillRectangle(checkerBrush, rect);

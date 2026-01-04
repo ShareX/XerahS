@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
-using System.Drawing;
 using System.Threading.Tasks;
+using SkiaSharp;
 
 namespace ShareX.Ava.Platform.Abstractions
 {
@@ -66,12 +66,12 @@ namespace ShareX.Ava.Platform.Abstractions
         /// <summary>
         /// Gets an image from the clipboard
         /// </summary>
-        Image? GetImage();
+        SKBitmap? GetImage();
 
         /// <summary>
         /// Sets an image to the clipboard
         /// </summary>
-        void SetImage(Image image);
+        void SetImage(SKBitmap image);
 
         /// <summary>
         /// Gets file drop list from the clipboard

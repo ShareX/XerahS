@@ -11,4 +11,7 @@
     <ProjectReference Include="..\ShareX.Avalonia.History\ShareX.Avalonia.History.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Uploaders\ShareX.Avalonia.Uploaders.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="2.88.9" />
+  </ItemGroup>
 </Project>

@@ -25,11 +25,12 @@
 
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 using ShareX.Ava.Common;
 using ShareX.Ava.Platform.Abstractions;
+using SkiaSharp;
+// REMOVED: System.Drawing
 
 namespace ShareX.Ava.Platform.MacOS
 {
@@ -131,7 +132,7 @@ namespace ShareX.Ava.Platform.MacOS
             }
         }
 
-        public Image? GetImage()
+        public SKBitmap? GetImage()
         {
             if (!TryExportClipboardImage(out var tempFile))
             {
@@ -141,8 +142,7 @@ namespace ShareX.Ava.Platform.MacOS
             try
             {
                 using var fileStream = File.OpenRead(tempFile);
-                using var tempImage = Image.FromStream(fileStream);
-                return new Bitmap(tempImage);
+                return SKBitmap.Decode(fileStream);
             }
             catch (Exception ex)
             {
@@ -155,7 +155,7 @@ namespace ShareX.Ava.Platform.MacOS
             }
         }
 
-        public void SetImage(Image image)
+        public void SetImage(SKBitmap image)
         {
             if (image == null)
             {
@@ -165,7 +165,15 @@ namespace ShareX.Ava.Platform.MacOS
             var tempFile = Path.Combine(Path.GetTempPath(), $"sharex_ava_clip_{Guid.NewGuid():N}.png");
             try
             {
-                image.Save(tempFile, System.Drawing.Imaging.ImageFormat.Png);
+                using (var stream = File.OpenWrite(tempFile))
+                {
+                    using (var skImage = SKImage.FromBitmap(image))
+                    using (var data = skImage.Encode(SKEncodedImageFormat.Png, 100))
+                    {
+                        data.SaveTo(stream);
+                    }
+                }
+                
                 var script = $"set the clipboard to (read (POSIX file \\\"{tempFile}\\\") as «class PNGf»)";
                 RunOsaScript(script);
             }

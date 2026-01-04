@@ -1,0 +1,30 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  ShareX.Avalonia.Services.Abstractions -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Services.Abstractions\bin\Debug\net10.0\ShareX.Avalonia.Services.Abstractions.dll
+  ShareX.Avalonia.Platform.Abstractions -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Platform.Abstractions\bin\Debug\net10.0\ShareX.Avalonia.Platform.Abstractions.dll
+  ShareX.Avalonia.Services -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Services\bin\Debug\net10.0\ShareX.Avalonia.Services.dll
+  ShareX.Avalonia.Common -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Common\bin\Debug\net10.0\ShareX.Avalonia.Common.dll
+  ShareX.Avalonia.Platform.MacOS -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Platform.MacOS\bin\Debug\net10.0\ShareX.Avalonia.Platform.MacOS.dll
+  ShareX.Avalonia.Uploaders -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Uploaders\bin\Debug\net10.0\ShareX.Avalonia.Uploaders.dll
+  ShareX.Avalonia.Indexer -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Indexer\bin\Debug\net10.0\ShareX.Avalonia.Indexer.dll
+  ShareX.Avalonia.Media -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Media\bin\Debug\net10.0\ShareX.Avalonia.Media.dll
+  ShareX.Avalonia.ImageEffects -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.ImageEffects\bin\Debug\net10.0-windows\ShareX.Avalonia.ImageEffects.dll
+  ShareX.Avalonia.History -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.History\bin\Debug\net10.0\ShareX.Avalonia.History.dll
+  ShareX.Avalonia.Platform.Windows -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Platform.Windows\bin\Debug\net10.0-windows\ShareX.Avalonia.Platform.Windows.dll
+  ShareX.Avalonia.Annotations -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Annotations\bin\Debug\net10.0-windows\ShareX.Avalonia.Annotations.dll
+  ShareX.Imgur.Plugin -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\Plugins\ShareX.Imgur.Plugin\bin\Debug\net10.0\ShareX.Imgur.Plugin.dll
+  ShareX.Avalonia.PluginExporter -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.PluginExporter\bin\Debug\net10.0\ShareX.Avalonia.PluginExporter.dll
+  Copied Imgur Uploader plugin to: C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\Plugins\ShareX.Imgur.Plugin\..\..\ShareX.Avalonia.App\bin\Debug\net10.0\Plugins\imgur
+  ShareX.AmazonS3.Plugin -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\Plugins\ShareX.AmazonS3.Plugin\bin\Debug\net10.0\ShareX.AmazonS3.Plugin.dll
+  Copied Amazon S3 Uploader plugin to: C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\Plugins\ShareX.AmazonS3.Plugin\..\..\ShareX.Avalonia.App\bin\Debug\net10.0\Plugins\amazons3
+  ShareX.Avalonia.ScreenCapture -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.ScreenCapture\bin\Debug\net10.0\ShareX.Avalonia.ScreenCapture.dll
+  ShareX.Avalonia.ViewModels -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.ViewModels\bin\Debug\net10.0\ShareX.Avalonia.ViewModels.dll
+  ShareX.Avalonia.Core -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\bin\Debug\net10.0\ShareX.Avalonia.Core.dll
+  ShareX.Avalonia.UI -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\bin\Debug\net10.0-windows\ShareX.Avalonia.UI.dll
+  ShareX.Avalonia.App -> C:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.App\bin\Debug\net10.0-windows\ShareX.Avalonia.App.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.33

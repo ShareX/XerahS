@@ -27,8 +27,8 @@ using ShareX.Ava.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
+using SkiaSharp;
 
 namespace ShareX.Ava.Media
 {
@@ -126,11 +126,14 @@ namespace ShareX.Ava.Media
             {
                 if (Options.CombineScreenshots)
                 {
-                    using (Image img = CombineScreenshots(tempThumbnails))
+                    using (SKBitmap img = CombineScreenshots(tempThumbnails))
                     {
-                        string tempFilePath = Path.Combine(GetOutputDirectory(), Path.GetFileNameWithoutExtension(MediaPath) + Options.FilenameSuffix + "." + EnumExtensions.GetDescription(Options.ImageFormat));
-                        ImageHelpers.SaveImage(img, tempFilePath);
-                        thumbnails.Add(new VideoThumbnailInfo(tempFilePath));
+                        if (img != null)
+                        {
+                            string tempFilePath = Path.Combine(GetOutputDirectory(), Path.GetFileNameWithoutExtension(MediaPath) + Options.FilenameSuffix + "." + EnumExtensions.GetDescription(Options.ImageFormat));
+                            ImageHelpers.SaveBitmap(img, tempFilePath);
+                            thumbnails.Add(new VideoThumbnailInfo(tempFilePath));
+                        }
                     }
 
                     if (!Options.KeepScreenshots)
@@ -197,122 +200,126 @@ namespace ShareX.Ava.Media
             return (int)((RandomFast.NextDouble() * (mediaSeekTimes[start + 1] - mediaSeekTimes[start])) + mediaSeekTimes[start]);
         }
 
-        private Image CombineScreenshots(List<VideoThumbnailInfo> thumbnails)
+        private SKBitmap CombineScreenshots(List<VideoThumbnailInfo> thumbnails)
         {
-            List<Bitmap> images = new List<Bitmap>();
-            Image finalImage = null;
+            List<SKBitmap> images = new List<SKBitmap>();
+            SKBitmap finalImage = null;
 
             try
             {
                 string infoString = "";
                 int infoStringHeight = 0;
-
-                if (Options.AddVideoInfo)
+                
+                using (SKPaint fontPaint = new SKPaint { TextSize = 12, Typeface = SKTypeface.FromFamilyName("Arial"), Color = SKColors.Black, IsAntialias = true })
                 {
-                    infoString = VideoInfo.ToString();
-
-                    using (Font font = new Font("Arial", 12))
-                    using (var bmp = new Bitmap(1, 1))
-                    using (var g = Graphics.FromImage(bmp))
+                    if (Options.AddVideoInfo)
                     {
-                        infoStringHeight = (int)g.MeasureString(infoString, font).Height;
-                    }
-                }
-
-                foreach (VideoThumbnailInfo thumbnail in thumbnails)
-                {
-                    Bitmap bmp = ImageHelpers.LoadImage(thumbnail.FilePath);
-
-                    if (Options.MaxThumbnailWidth > 0 && bmp.Width > Options.MaxThumbnailWidth)
-                    {
-                        int maxThumbnailHeight = (int)((float)Options.MaxThumbnailWidth / bmp.Width * bmp.Height);
-                        bmp = ImageHelpers.ResizeImage(bmp, Options.MaxThumbnailWidth, maxThumbnailHeight);
+                        infoString = VideoInfo.ToString();
+                        SKRect textBounds = new SKRect();
+                        fontPaint.MeasureText(infoString, ref textBounds);
+                        infoStringHeight = (int)textBounds.Height + 5; // Add some padding
                     }
 
-                    images.Add(bmp);
-                }
-
-                int columnCount = Options.ColumnCount;
-
-                int thumbWidth = images[0].Width;
-
-                int width = (Options.Padding * 2) +
-                            (thumbWidth * columnCount) +
-                            ((columnCount - 1) * Options.Spacing);
-
-                int rowCount = (int)Math.Ceiling(images.Count / (float)columnCount);
-
-                int thumbHeight = images[0].Height;
-
-                int height = (Options.Padding * 3) +
-                             infoStringHeight +
-                             (thumbHeight * rowCount) +
-                             ((rowCount - 1) * Options.Spacing);
-
-                finalImage = new Bitmap(width, height);
-
-                using (Graphics g = Graphics.FromImage(finalImage))
-                {
-                    g.Clear(Color.WhiteSmoke);
-
-                    if (!string.IsNullOrEmpty(infoString))
+                    foreach (VideoThumbnailInfo thumbnail in thumbnails)
                     {
-                        using (Font font = new Font("Arial", 12))
+                        SKBitmap? bmp = ImageHelpers.LoadBitmap(thumbnail.FilePath);
+
+                        if (bmp != null)
                         {
-                            g.DrawString(infoString, font, Brushes.Black, Options.Padding, Options.Padding);
+                            if (Options.MaxThumbnailWidth > 0 && bmp.Width > Options.MaxThumbnailWidth)
+                            {
+                                int maxThumbnailHeight = (int)((float)Options.MaxThumbnailWidth / bmp.Width * bmp.Height);
+                                SKBitmap resized = ImageHelpers.ResizeImage(bmp, Options.MaxThumbnailWidth, maxThumbnailHeight);
+                                bmp.Dispose();
+                                bmp = resized;
+                            }
+
+                            images.Add(bmp);
                         }
                     }
 
-                    int i = 0;
-                    int offsetY = (Options.Padding * 2) + infoStringHeight;
+                    if (images.Count == 0) return null;
 
-                    for (int y = 0; y < rowCount; y++)
+                    int columnCount = Options.ColumnCount;
+
+                    int thumbWidth = images[0].Width;
+
+                    int width = (Options.Padding * 2) +
+                                (thumbWidth * columnCount) +
+                                ((columnCount - 1) * Options.Spacing);
+
+                    int rowCount = (int)Math.Ceiling(images.Count / (float)columnCount);
+
+                    int thumbHeight = images[0].Height;
+
+                    int height = (Options.Padding * 3) +
+                                 infoStringHeight +
+                                 (thumbHeight * rowCount) +
+                                 ((rowCount - 1) * Options.Spacing);
+
+                    finalImage = new SKBitmap(width, height);
+
+                    using (SKCanvas g = new SKCanvas(finalImage))
                     {
-                        int offsetX = Options.Padding;
+                        g.Clear(SKColors.WhiteSmoke);
 
-                        for (int x = 0; x < columnCount; x++)
+                        if (!string.IsNullOrEmpty(infoString))
                         {
-                            if (Options.DrawShadow)
-                            {
-                                int shadowOffset = 3;
-
-                                using (Brush shadowBrush = new SolidBrush(Color.FromArgb(75, Color.Black)))
-                                {
-                                    g.FillRectangle(shadowBrush, offsetX + shadowOffset, offsetY + shadowOffset, thumbWidth, thumbHeight);
-                                }
-                            }
-
-                            g.DrawImage(images[i], offsetX, offsetY, thumbWidth, thumbHeight);
-
-                            if (Options.DrawBorder)
-                            {
-                                g.DrawRectangle(Pens.Black, offsetX, offsetY, thumbWidth - 1, thumbHeight - 1);
-                            }
-
-                            if (Options.AddTimestamp)
-                            {
-                                int timestampOffset = 10;
-
-                                using (Font font = new Font("Arial", 10, FontStyle.Bold))
-                                {
-                                    g.DrawString(thumbnails[i].Timestamp.ToString(), font, Brushes.White, offsetX + timestampOffset, offsetY + timestampOffset);
-                                }
-                            }
-
-                            i++;
-
-                            if (i >= images.Count)
-                            {
-                                return finalImage;
-                            }
-
-                            offsetX += thumbWidth + Options.Spacing;
+                             g.DrawText(infoString, Options.Padding, Options.Padding + infoStringHeight - 5, fontPaint);
                         }
 
-                        offsetY += thumbHeight + Options.Spacing;
+                        int i = 0;
+                        int offsetY = (Options.Padding * 2) + infoStringHeight;
+                        
+                        using (SKPaint shadowPaint = new SKPaint { Color = new SKColor(0, 0, 0, 75) })
+                        using (SKPaint borderPaint = new SKPaint { Color = SKColors.Black, IsStroke = true, StrokeWidth = 1 })
+                        using (SKPaint timestampPaint = new SKPaint { TextSize = 10, Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold), Color = SKColors.White, IsAntialias = true })
+                        {
+
+                            for (int y = 0; y < rowCount; y++)
+                            {
+                                int offsetX = Options.Padding;
+
+                                for (int x = 0; x < columnCount; x++)
+                                {
+                                    if (Options.DrawShadow)
+                                    {
+                                        int shadowOffset = 3;
+                                        g.DrawRect(offsetX + shadowOffset, offsetY + shadowOffset, thumbWidth, thumbHeight, shadowPaint);
+                                    }
+
+                                    g.DrawBitmap(images[i], offsetX, offsetY);
+
+                                    if (Options.DrawBorder)
+                                    {
+                                        g.DrawRect(offsetX, offsetY, thumbWidth - 1, thumbHeight - 1, borderPaint);
+                                    }
+
+                                    if (Options.AddTimestamp)
+                                    {
+                                        int timestampOffset = 10;
+                                        string timestampText = thumbnails[i].Timestamp.ToString();
+                                        // Simple text shadow/outline for readability? Original didn't have it explicit but usually good.
+                                        // Original used Brushes.White.
+                                        g.DrawText(timestampText, offsetX + timestampOffset, offsetY + timestampOffset + 10, timestampPaint); // +10 for approximate baseline
+                                    }
+
+                                    i++;
+
+                                    if (i >= images.Count)
+                                    {
+                                        return finalImage;
+                                    }
+
+                                    offsetX += thumbWidth + Options.Spacing;
+                                }
+
+                                offsetY += thumbHeight + Options.Spacing;
+                            }
+                        }
                     }
                 }
-
+                
                 return finalImage;
             }
             catch
@@ -326,7 +333,7 @@ namespace ShareX.Ava.Media
             }
             finally
             {
-                foreach (Bitmap image in images)
+                foreach (SKBitmap image in images)
                 {
                     if (image != null)
                     {
