@@ -5,7 +5,7 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 ![ShareX Avalonia](https://getsharex.com/img/ShareX_Logo.png)
 *(Note: Project is in active development)*
 
-## âœ¨ Key Features
+## ✨ Key Features
 - **Cross-Platform**: Runs on Windows, Linux, and macOS (targeting).
 - **Modern UI**: Reimagined interface inspired by modern design principles.
 - **Powerful Capture**:
@@ -31,7 +31,7 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 - **Serialization**: Save and load annotations with full type support
 - **Task Workflow**: Configurable after-capture tasks (Save, Copy, Upload)
 
-## ðŸš€ Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 - [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
@@ -61,13 +61,11 @@ Global hotkeys use SharpHook and need Accessibility permission:
 2. Enable ShareX.Avalonia (or the published app bundle) for accessibility access.
 3. Restart the app and retest hotkeys.
 
-## ðŸ› ï¸ Developer Information
+## 🛠️ Developer Information
 
 See [DEVELOPER_README.md](docs/guides/DEVELOPER_README.md) for architecture details and contribution guidelines.
 
-## ðŸ“„ License
-GPL-3.0 (See LICENSE file)
-
+## 📄 License
 
 
 

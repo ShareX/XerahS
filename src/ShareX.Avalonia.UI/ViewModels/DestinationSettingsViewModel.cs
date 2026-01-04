@@ -131,6 +131,7 @@ public partial class DestinationSettingsViewModel : ViewModelBase
             Common.DebugHelper.WriteException(ex, "Failed to open plugin installer");
         }
     }
+    [RelayCommand]
     private async Task ImportShareXConfig()
     {
         try
