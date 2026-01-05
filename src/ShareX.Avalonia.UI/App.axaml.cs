@@ -29,6 +29,9 @@ public partial class App : Application
             
             // Register UI Service
             Platform.Abstractions.PlatformServices.RegisterUIService(new Services.AvaloniaUIService());
+            
+            // Wire up Editor clipboard to platform implementation
+            ShareX.Editor.Services.EditorServices.Clipboard = new Services.EditorClipboardAdapter();
 
             // Save settings on exit
             desktop.Exit += (sender, args) =>
