@@ -27,10 +27,11 @@ namespace ShareX.Ava.Common
 {
     public static class ShareXResources
     {
-        public const string ProductName = "ShareX Ava";
+        public const string AppName = "XerahS";
+        public const string ProductName = AppName;
         public const string Version = "v0.2.0";
         public const string ProductNameWithVersion = ProductName + " " + Version;
         public const string HistoryFileName = "History.db";
-        public static string UserAgent => "ShareX.Ava";
+        public static string UserAgent => AppName;
     }
 }

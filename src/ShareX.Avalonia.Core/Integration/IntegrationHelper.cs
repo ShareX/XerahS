@@ -1,5 +1,6 @@
 using Microsoft.Win32;
 using ShareX.Ava.Common;
+using ShareX.Ava.Core;
 using System.Runtime.InteropServices;
 
 namespace ShareX.Ava.Core.Integration;
@@ -10,9 +11,9 @@ namespace ShareX.Ava.Core.Integration;
 public static class IntegrationHelper
 {
     private const string ShellPluginExtensionPath = @"Software\Classes\.sxadp";
-    private const string ShellPluginExtensionValue = "ShareX.Avalonia.sxadp";
+    private static readonly string ShellPluginExtensionValue = $"{SettingManager.AppName}.sxadp";
     private static readonly string ShellPluginAssociatePath = $@"Software\Classes\{ShellPluginExtensionValue}";
-    private const string ShellPluginAssociateValue = "ShareX Avalonia plugin";
+    private static readonly string ShellPluginAssociateValue = $"{SettingManager.AppName} plugin";
     private static readonly string ShellPluginIconPath = $@"{ShellPluginAssociatePath}\DefaultIcon";
     private static readonly string ShellPluginCommandPath = $@"{ShellPluginAssociatePath}\shell\open\command";
     
@@ -76,7 +77,7 @@ public static class IntegrationHelper
         // Notify Windows shell of file association change
         SHChangeNotify(0x08000000, 0x0000, IntPtr.Zero, IntPtr.Zero);
         
-        DebugHelper.WriteLine("Registered .sxadp file association");
+        DebugHelper.WriteLine($"Registered .sxadp file association for {SettingManager.AppName}");
     }
     
     private static void UnregisterPluginExtension()
@@ -84,7 +85,7 @@ public static class IntegrationHelper
         RemoveRegistryKey(ShellPluginExtensionPath);
         RemoveRegistryKey(ShellPluginAssociatePath);
         
-        DebugHelper.WriteLine("Unregistered .sxadp file association");
+        DebugHelper.WriteLine($"Unregistered .sxadp file association for {SettingManager.AppName}");
     }
     
     // Registry helper methods

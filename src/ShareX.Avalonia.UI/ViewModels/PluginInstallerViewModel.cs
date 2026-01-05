@@ -31,6 +31,7 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ShareX.Ava.Common;
+using ShareX.Ava.Core;
 using ShareX.Ava.Uploaders.PluginSystem;
 
 namespace ShareX.Ava.UI.ViewModels;
@@ -78,7 +79,7 @@ public partial class PluginInstallerViewModel : ViewModelBase
             AllowMultiple = false,
             FileTypeFilter = new[]
             {
-                new FilePickerFileType("ShareX Avalonia Plugin")
+                new FilePickerFileType($"{SettingManager.AppName} Plugin")
                 {
                     Patterns = new[] { "*.sxadp" }
                 }

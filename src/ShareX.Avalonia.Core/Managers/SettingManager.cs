@@ -38,7 +38,7 @@ namespace ShareX.Ava.Core
     /// </summary>
     public static class SettingManager
     {
-        public const string AppName = "ShareX Ava";
+        public const string AppName = ShareXResources.AppName;
 
         #region Constants
 
@@ -55,7 +55,7 @@ namespace ShareX.Ava.Core
         #region Static Properties
 
         /// <summary>
-        /// Root folder for user settings. Defaults to Documents/ShareX.
+        /// Root folder for user settings. Defaults to Documents/XerahS.
         /// </summary>
         public static string PersonalFolder
         {
