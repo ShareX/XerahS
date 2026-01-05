@@ -44,10 +44,12 @@ namespace ShareX.Ava.Common
         public bool StringWrite { get; set; } = true;
         public bool FileWrite { get; set; } = false;
         public string LogFilePath { get; private set; }
+        public string LogFilePathTemplate { get; private set; }
 
         private readonly object loggerLock = new object();
         private ConcurrentQueue<string> messageQueue = new ConcurrentQueue<string>();
         private StringBuilder sbMessages = new StringBuilder();
+        private string _currentDate;
 
         public Logger()
         {
@@ -58,7 +60,10 @@ namespace ShareX.Ava.Common
             if (!string.IsNullOrEmpty(logFilePath))
             {
                 FileWrite = true;
+                LogFilePathTemplate = logFilePath;
                 LogFilePath = logFilePath;
+                _currentDate = DateTime.Now.ToString("yyyy-MM-dd");
+                
                 string directory = Path.GetDirectoryName(LogFilePath);
 
                 if (!string.IsNullOrEmpty(directory))
@@ -71,6 +76,41 @@ namespace ShareX.Ava.Common
         protected void OnMessageAdded(string message)
         {
             MessageAdded?.Invoke(message);
+        }
+
+        private string GetCurrentLogFilePath()
+        {
+            // Check if we need to rotate to a new date
+            string today = DateTime.Now.ToString("yyyy-MM-dd");
+            if (today != _currentDate)
+            {
+                _currentDate = today;
+                
+                // Build the path with yyyy-MM folder structure
+                string baseTemplate = LogFilePathTemplate;
+                string directory = Path.GetDirectoryName(baseTemplate);
+                string filename = Path.GetFileNameWithoutExtension(baseTemplate);
+                string extension = Path.GetExtension(baseTemplate);
+                
+                // Extract the base directory (before Logs folder)
+                string currentMonthFolder = DateTime.Now.ToString("yyyy-MM");
+                
+                // Reconstruct path: replace the date in the directory structure
+                if (directory.Contains("Logs"))
+                {
+                    // Find the Logs folder in the path
+                    int logsIndex = directory.LastIndexOf("Logs");
+                    if (logsIndex >= 0)
+                    {
+                        string baseDir = directory.Substring(0, logsIndex);
+                        directory = Path.Combine(baseDir, "Logs", currentMonthFolder);
+                    }
+                }
+                
+                LogFilePath = Path.Combine(directory, $"{filename}-{today}{extension}");
+            }
+
+            return LogFilePath;
         }
 
         public void ProcessMessageQueue()
@@ -89,11 +129,19 @@ namespace ShareX.Ava.Common
                         sbMessages.Append(message);
                     }
 
-                    if (FileWrite && !string.IsNullOrEmpty(LogFilePath))
+                    if (FileWrite && !string.IsNullOrEmpty(LogFilePathTemplate))
                     {
                         try
                         {
-                            File.AppendAllText(LogFilePath, message, Encoding.UTF8);
+                            string currentLogPath = GetCurrentLogFilePath();
+                            string directory = Path.GetDirectoryName(currentLogPath);
+
+                            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                            {
+                                Directory.CreateDirectory(directory);
+                            }
+
+                            File.AppendAllText(currentLogPath, message, Encoding.UTF8);
                         }
                         catch (Exception e)
                         {

@@ -33,8 +33,10 @@ namespace ShareX.Ava.App
         [STAThread]
         public static void Main(string[] args)
         {
-            // Initialize logging
-            var logPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), ShareX.Ava.Core.SettingManager.AppName, "ShareX.log");
+            // Initialize logging with datestamped file in Logs/yyyy-mm folder structure
+            var baseFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), ShareX.Ava.Core.SettingManager.AppName);
+            var logsFolder = System.IO.Path.Combine(baseFolder, "Logs", DateTime.Now.ToString("yyyy-MM"));
+            var logPath = System.IO.Path.Combine(logsFolder, $"ShareX-{DateTime.Now:yyyy-MM-dd}.log");
             ShareX.Ava.Common.DebugHelper.Init(logPath);
             
             var dh = ShareX.Ava.Common.DebugHelper.Logger;
@@ -52,7 +54,7 @@ namespace ShareX.Ava.App
             #endif
 
             dh.WriteLine($"Command line: \"{Environment.ProcessPath}\"");
-            dh.WriteLine($"Personal path: {logPath}");
+            dh.WriteLine($"Personal path: {logsFolder}");
             dh.WriteLine($"Operating system: {System.Runtime.InteropServices.RuntimeInformation.OSDescription} ({System.Runtime.InteropServices.RuntimeInformation.OSArchitecture})");
             dh.WriteLine($".NET version: {System.Environment.Version}");
             
