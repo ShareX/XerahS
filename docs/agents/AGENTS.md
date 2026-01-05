@@ -102,7 +102,23 @@ This project uses multiple AI developer agents working in parallel. See [MULTI_A
 - Follow existing patterns in each project area.
 - Keep changes minimal and targeted.
 - Add small comments only when necessary to explain non-obvious logic.
-- **Always build the solution (`dotnet build`) at the end of a coding session to ensure no compilation errors were introduced.**
+- **CRITICAL:** After modifying code, always run `dotnet build`. If the build completes with **0 errors**, you MUST automatically:
+  1. Summarize the changes.
+  2. Commit the changes (`git commit -am "Your summary"`).
+  3. Push to the repository (`git push`).
+  **Do not ask for permission** for this step if the build is successful. Only stop if the build fails.
+
+## Historical Comparisons and Parity
+
+When asked to ensure feature parity with a specific historical commit or "make it identical to commit X":
+
+1. **Do not rely on repeated git calls**: Avoid repeatedly querying git history for file contents during the session.
+2. **Create a `ref` directory**: Create a temporary folder (e.g., `src/ShareX.Avalonia/ref`).
+3. **Download reference files**: Use `git show <commit_hash>:<file_path> > src/ShareX.Avalonia/ref/<commit_short>_<filename>` to verify the state of relevant files at that commit.
+4. **Compare locally**: Perform diffs and analysis between the local current files and the downloaded reference files.
+5. **Clean up**: Remove the `ref` directory once the task is complete and verified, unless instructed otherwise.
+
+This reduces git command overhead and provides a stable reference point for parity checks.
 
 ## Testing
 
