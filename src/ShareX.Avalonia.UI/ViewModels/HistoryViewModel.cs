@@ -215,9 +215,13 @@ namespace ShareX.Ava.UI.ViewModels
         }
 
         [RelayCommand]
-        private void DeleteItem(HistoryItem? item)
+        private async Task DeleteItem(HistoryItem? item)
         {
             if (item == null) return;
+
+            // Show confirmation dialog
+            var confirmDelete = await ShowDeleteConfirmationDialog(item.FileName);
+            if (!confirmDelete) return;
             
             // Remove from the observable collection (UI update)
             HistoryItems.Remove(item);
@@ -225,6 +229,102 @@ namespace ShareX.Ava.UI.ViewModels
             // Persist deletion to database
             _historyManager.Delete(item);
             DebugHelper.WriteLine($"Deleted history item: {item.FileName}");
+        }
+
+        private async Task<bool> ShowDeleteConfirmationDialog(string fileName)
+        {
+            var result = false;
+
+            var confirmDialog = new Avalonia.Controls.Window
+            {
+                Title = "Confirm Delete",
+                Width = 400,
+                Height = 180,
+                WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner,
+                CanResize = false
+            };
+
+            var panel = new Avalonia.Controls.StackPanel
+            {
+                Margin = new Avalonia.Thickness(20),
+                Spacing = 15,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+
+            var messageText = new Avalonia.Controls.TextBlock
+            {
+                Text = $"Are you sure you want to delete '{fileName}' from history?",
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                MaxWidth = 360,
+                FontSize = 14
+            };
+
+            var warningText = new Avalonia.Controls.TextBlock
+            {
+                Text = "This action cannot be undone.",
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                MaxWidth = 360,
+                FontSize = 12,
+                Foreground = Avalonia.Media.Brushes.Orange,
+                FontWeight = Avalonia.Media.FontWeight.SemiBold
+            };
+
+            var buttonPanel = new Avalonia.Controls.StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Spacing = 10,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                Margin = new Avalonia.Thickness(0, 10, 0, 0)
+            };
+
+            var deleteButton = new Avalonia.Controls.Button
+            {
+                Content = "Delete",
+                Padding = new Avalonia.Thickness(24, 8),
+                Background = Avalonia.Media.Brushes.Red,
+                Foreground = Avalonia.Media.Brushes.White
+            };
+
+            var cancelButton = new Avalonia.Controls.Button
+            {
+                Content = "Cancel",
+                Padding = new Avalonia.Thickness(24, 8),
+                IsDefault = true
+            };
+
+            deleteButton.Click += (s, e) =>
+            {
+                result = true;
+                confirmDialog.Close();
+            };
+
+            cancelButton.Click += (s, e) =>
+            {
+                result = false;
+                confirmDialog.Close();
+            };
+
+            buttonPanel.Children.Add(cancelButton);
+            buttonPanel.Children.Add(deleteButton);
+
+            panel.Children.Add(messageText);
+            panel.Children.Add(warningText);
+            panel.Children.Add(buttonPanel);
+
+            confirmDialog.Content = panel;
+
+            // Get the main window as the owner
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                && desktop.MainWindow != null)
+            {
+                await confirmDialog.ShowDialog(desktop.MainWindow);
+            }
+            else
+            {
+                await confirmDialog.ShowDialog((Avalonia.Controls.Window?)null);
+            }
+
+            return result;
         }
 
         public void Dispose()

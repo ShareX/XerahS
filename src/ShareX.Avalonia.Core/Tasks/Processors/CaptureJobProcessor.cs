@@ -135,8 +135,8 @@ namespace ShareX.Ava.Core.Tasks.Processors
                 {
                     DebugHelper.WriteLine("Trace: History pipeline - Starting history item creation.");
                     
-                    // Use centralized settings folder
-                    var historyPath = Path.Combine(SettingManager.SettingsFolder, ShareXResources.HistoryFileName);
+                    // Use centralized history file path
+                    var historyPath = SettingManager.GetHistoryFilePath();
 
                     DebugHelper.WriteLine($"Trace: History pipeline - History file path: {historyPath}");
                     

@@ -50,7 +50,18 @@ namespace ShareX.Ava.History
             connection = new SqliteConnection(connectionString);
             connection.Open();
 
+            // Enable WAL mode for better concurrent access (allows readers while writing)
+            SetWalMode();
             SetBusyTimeout(5000);
+        }
+
+        private void SetWalMode()
+        {
+            using (SqliteCommand cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA journal_mode=WAL;";
+                cmd.ExecuteNonQuery();
+            }
         }
 
         private void SetBusyTimeout(int milliseconds)

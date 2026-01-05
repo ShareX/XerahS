@@ -24,21 +24,31 @@ namespace ShareX.Ava.UI.Views
 
         private async void OnItemPointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            // Only handle double-left-click
             // Right-click is handled natively by Avalonia ContextMenu
             var point = e.GetCurrentPoint(sender as Visual);
             
-            if (e.ClickCount == 2 && point.Properties.IsLeftButtonPressed)
-            {
-                if (sender is not Border border || border.DataContext is not HistoryItem item)
-                    return;
+            if (!point.Properties.IsLeftButtonPressed)
+                return;
 
-                if (DataContext is HistoryViewModel vm)
-                {
-                    DebugHelper.WriteLine($"HistoryView.OnItemPointerPressed - Double-click detected on item: {item.FileName}");
-                    await vm.EditImageCommand.ExecuteAsync(item);
-                    e.Handled = true;
-                }
+            if (sender is not Border border || border.DataContext is not HistoryItem item)
+                return;
+
+            if (DataContext is not HistoryViewModel vm)
+                return;
+
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            {
+                // Ctrl+Click: Open file with default application
+                DebugHelper.WriteLine($"HistoryView - Ctrl+Click: Opening file {item.FileName}");
+                vm.OpenFileCommand.Execute(item);
+                e.Handled = true;
+            }
+            else if (e.ClickCount == 1)
+            {
+                // Single-click: Open in Editor
+                DebugHelper.WriteLine($"HistoryView - Click: Opening in editor {item.FileName}");
+                await vm.EditImageCommand.ExecuteAsync(item);
+                e.Handled = true;
             }
         }
     }

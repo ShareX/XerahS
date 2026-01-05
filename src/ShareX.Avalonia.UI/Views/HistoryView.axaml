@@ -20,7 +20,7 @@
             <MenuItem Header="✏️ Open in Editor..." 
                       Command="{Binding $parent[UserControl].DataContext.EditImageCommand}"
                       CommandParameter="{Binding}"/>
-            <MenuItem Header="📄 Open File" 
+            <MenuItem Header="📄 Open File (Ctrl+Click)" 
                       Command="{Binding $parent[UserControl].DataContext.OpenFileCommand}"
                       CommandParameter="{Binding}"/>
             <MenuItem Header="📂 Show in File Explorer..." 
@@ -35,7 +35,7 @@
                       CommandParameter="{Binding}"
                       IsVisible="{Binding URL, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
             <Separator/>
-            <MenuItem Header="🗑️ Delete from History" 
+            <MenuItem Header="🗑️ Delete from History..." 
                       Command="{Binding $parent[UserControl].DataContext.DeleteItemCommand}"
                       CommandParameter="{Binding}"/>
         </MenuFlyout>
