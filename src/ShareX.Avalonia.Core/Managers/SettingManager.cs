@@ -48,6 +48,7 @@ namespace ShareX.Ava.Core
         public const string UploadersConfigFileName = UploadersConfigFileNamePrefix + "." + UploadersConfigFileNameExtension;
         public const string HotkeysConfigFileName = "HotkeysConfig.json";
         public const string BackupFolderName = "Backup";
+        public const string SettingsFolderName = "Settings";
 
         #endregion
 
@@ -71,9 +72,9 @@ namespace ShareX.Ava.Core
         private static string _personalFolder = "";
 
         /// <summary>
-        /// Folder containing settings files (same as PersonalFolder unless portable mode overrides - handled by PersonalFolder getter/setter in theory)
+        /// Folder containing settings files
         /// </summary>
-        public static string SettingsFolder => PersonalFolder;
+        public static string SettingsFolder => Path.Combine(PersonalFolder, SettingsFolderName);
 
         /// <summary>
         /// Backup folder path
