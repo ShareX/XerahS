@@ -371,7 +371,7 @@ namespace ShareX.Ava.Core
         /// </summary>
         public static string GetHistoryFilePath()
         {
-            var path = Path.Combine(SettingsFolder, ShareXResources.HistoryFileName);
+            var path = Path.Combine(PersonalFolder, ShareXResources.HistoryFileName);
             DebugHelper.WriteLine($"History file path: {path} (exists={File.Exists(path)})");
             return path;
         }
