@@ -140,7 +140,7 @@ namespace ShareX.Ava.Core.Tasks.Processors
 
                     DebugHelper.WriteLine($"Trace: History pipeline - History file path: {historyPath}");
                     
-                    var historyManager = new HistoryManagerXML(historyPath);
+                    using var historyManager = new HistoryManagerSQLite(historyPath);
                     var historyItem = new HistoryItem
                     {
                         FilePath = filePath,

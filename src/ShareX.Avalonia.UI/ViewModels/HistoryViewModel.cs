@@ -17,7 +17,7 @@ using SkiaSharp;
 
 namespace ShareX.Ava.UI.ViewModels
 {
-    public partial class HistoryViewModel : ViewModelBase
+    public partial class HistoryViewModel : ViewModelBase, IDisposable
     {
         // Converter for view toggle button text
         public static IValueConverter ViewToggleConverter { get; } = new FuncValueConverter<bool, string>(
@@ -56,7 +56,7 @@ namespace ShareX.Ava.UI.ViewModels
         [ObservableProperty]
         private bool _isLoading = false;
 
-        private readonly HistoryManager _historyManager;
+        private readonly HistoryManagerSQLite _historyManager;
 
         public HistoryViewModel()
         {
@@ -66,7 +66,7 @@ namespace ShareX.Ava.UI.ViewModels
             var historyPath = SettingManager.GetHistoryFilePath();
             DebugHelper.WriteLine($"HistoryViewModel - History file path: {historyPath}");
 
-            _historyManager = new HistoryManagerXML(historyPath);
+            _historyManager = new HistoryManagerSQLite(historyPath);
             
             // Don't load history in constructor - do it asynchronously after view is displayed
             LoadHistoryAsync();
@@ -222,8 +222,14 @@ namespace ShareX.Ava.UI.ViewModels
             // Remove from the observable collection (UI update)
             HistoryItems.Remove(item);
             
-            // TODO: Persist deletion to history file
+            // Persist deletion to database
+            _historyManager.Delete(item);
             DebugHelper.WriteLine($"Deleted history item: {item.FileName}");
+        }
+
+        public void Dispose()
+        {
+            _historyManager?.Dispose();
         }
     }
 }
