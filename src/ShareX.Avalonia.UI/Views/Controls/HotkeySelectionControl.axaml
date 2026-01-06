@@ -34,7 +34,7 @@
                     <TextBlock Text="{Binding Description}" 
                                FontWeight="{Binding IsSelected, Converter={x:Static vm:BoolToFontWeightConverter.Instance}}"
                                VerticalAlignment="Center"/>
-                    <TextBlock Text=" ▼" FontSize="10" VerticalAlignment="Center" Foreground="Gray"/>
+
                 </StackPanel>
                 <Button.ContextMenu>
                     <ContextMenu x:Name="TaskContextMenu"/>
