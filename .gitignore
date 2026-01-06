@@ -24,11 +24,7 @@ debug/
 .dotnet/
 
 # Local build logs
-build.log
-build*.txt
-*_build*.txt
 *.log
-*.code-workspace
 errors.md
 
 # Local packaging output

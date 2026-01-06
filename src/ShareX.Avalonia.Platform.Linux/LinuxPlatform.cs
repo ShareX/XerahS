@@ -70,10 +70,10 @@ namespace ShareX.Ava.Platform.Linux
 
     internal class StubScreenCaptureService : IScreenCaptureService
     {
-        public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureRegionAsync() => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
-        public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureRectAsync(SkiaSharp.SKRect rect) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
-        public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureFullScreenAsync() => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
-        public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
+        public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
+        public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureRectAsync(SkiaSharp.SKRect rect, CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
+        public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
+        public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
     }
 
     internal class StubHotkeyService : IHotkeyService

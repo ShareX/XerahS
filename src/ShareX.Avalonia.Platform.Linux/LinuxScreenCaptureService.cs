@@ -45,10 +45,10 @@ namespace ShareX.Ava.Platform.Linux
         public static bool IsWayland => 
             Environment.GetEnvironmentVariable("XDG_SESSION_TYPE")?.Equals("wayland", StringComparison.OrdinalIgnoreCase) == true;
 
-        public async Task<SKBitmap?> CaptureRegionAsync()
+        public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
             // Fullscreen capture - region selection is handled at UI level
-            return await CaptureFullScreenAsync();
+            return await CaptureFullScreenAsync(options);
         }
 
         public async Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)

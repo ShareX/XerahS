@@ -10,10 +10,10 @@ using System;
 
 namespace ShareX.Ava.UI.ViewModels;
 
-public partial class HotkeyEditViewModel : ViewModelBase
+public partial class WorkflowEditorViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private ShareX.Ava.Core.Hotkeys.HotkeySettings _model;
+    private HotkeySettings _model;
 
     [ObservableProperty]
     private Key _selectedKey;
@@ -26,14 +26,23 @@ public partial class HotkeyEditViewModel : ViewModelBase
 
     public List<HotkeyType> AvailableJobs { get; }
 
-    public string WindowTitle => Model.HotkeyInfo.Id == 0 ? "Add Hotkey" : "Edit Hotkey";
+    public string WindowTitle => Model.HotkeyInfo.Id == 0 ? "Add Workflow" : "Edit Workflow";
 
-    public HotkeyEditViewModel(ShareX.Ava.Core.Hotkeys.HotkeySettings model)
+    // Sub-ViewModels
+    public TaskSettingsViewModel TaskSettings { get; private set; }
+
+    public WorkflowEditorViewModel(HotkeySettings model)
     {
         _model = model;
         _selectedKey = model.HotkeyInfo.Key;
         _selectedModifiers = model.HotkeyInfo.Modifiers;
         _selectedJob = model.Job;
+
+        // Initialize TaskSettings VM
+        if (model.TaskSettings == null)
+            model.TaskSettings = new TaskSettings();
+            
+        TaskSettings = new TaskSettingsViewModel(model.TaskSettings);
 
         AvailableJobs = Enum.GetValues(typeof(HotkeyType)).Cast<HotkeyType>().ToList();
     }
@@ -43,7 +52,12 @@ public partial class HotkeyEditViewModel : ViewModelBase
         Model.HotkeyInfo.Key = SelectedKey;
         Model.HotkeyInfo.Modifiers = SelectedModifiers;
         Model.Job = SelectedJob;
-        // Model.TaskSettings.Job = SelectedJob; // Sync task settings job
+        
+        // Ensure TaskSettings knows its job too
+        if (Model.TaskSettings != null)
+        {
+            Model.TaskSettings.Job = SelectedJob;
+        }
     }
 
     [RelayCommand]

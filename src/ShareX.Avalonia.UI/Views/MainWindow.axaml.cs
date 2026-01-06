@@ -93,9 +93,9 @@ namespace ShareX.Ava.UI.Views
                     case "Settings_App":
                         contentFrame.Content = new ApplicationSettingsView();
                         break;
-                    case "Settings_Task":
-                        contentFrame.Content = new TaskSettingsView();
-                        break;
+                    // case "Settings_Task":
+                    //    contentFrame.Content = new TaskSettingsPanel(); // Not used globally anymore
+                    //    break;
 
                     case "Settings_Dest":
                         contentFrame.Content = new DestinationSettingsView();
@@ -258,13 +258,32 @@ namespace ShareX.Ava.UI.Views
 
         private async Task ExecuteCaptureAsync(HotkeyType jobType, AfterCaptureTasks afterCapture = AfterCaptureTasks.SaveImageToFile)
         {
-            // Clone default settings to use user's config (paths, patterns, etc.)
-            var defaultSettings = SettingManager.Settings.DefaultTaskSettings;
-            var json = Newtonsoft.Json.JsonConvert.SerializeObject(defaultSettings);
-            var settings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json)!;
+            TaskSettings settings;
 
+            // Find an existing workflow for this job type
+            var workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(x => x.Job == jobType);
+
+            if (workflow != null && workflow.TaskSettings != null)
+            {
+                // Clone workflow settings to avoid modifying the original instance during execution
+                var json = Newtonsoft.Json.JsonConvert.SerializeObject(workflow.TaskSettings);
+                settings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json)!;
+
+                // Note: We deliberately ignore the 'afterCapture' parameter if a workflow is found,
+                // as the workflow's configured tasks should take precedence.
+                // We only use 'afterCapture' as a fallback when creating a temporary task setting.
+            }
+            else
+            {
+                // No workflow found, create brand new default settings (no globals)
+                settings = new TaskSettings();
+                settings.Job = jobType;
+                // Apply the requested after capture actions since we have no user pref
+                settings.AfterCaptureJob = afterCapture;
+            }
+
+            // Ensure Job is correct (if workflow had different job, we technically picked it by job, but safe to set)
             settings.Job = jobType;
-            settings.AfterCaptureJob = afterCapture;
 
             // Subscribe to task completion to update Editor preview
             void HandleTaskCompleted(object? s, WorkerTask task)

@@ -15,8 +15,8 @@ public partial class WorkflowsView : UserControl
         // Wire up the edit requester (same pattern as ApplicationSettingsView)
         vm.EditHotkeyRequester = async (settings) => 
         {
-            var editVm = new HotkeyEditViewModel(settings);
-            var dialog = new HotkeyEditView
+            var editVm = new WorkflowEditorViewModel(settings);
+            var dialog = new WorkflowEditorView
             {
                 DataContext = editVm
             };

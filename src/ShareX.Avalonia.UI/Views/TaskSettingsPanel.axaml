@@ -4,17 +4,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:ShareX.Ava.UI.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ShareX.Ava.UI.Views.TaskSettingsView"
-             x:DataType="vm:SettingsViewModel">
+             x:Class="ShareX.Ava.UI.Views.TaskSettingsPanel"
+             x:DataType="vm:TaskSettingsViewModel">
 
     <Design.DataContext>
         <vm:SettingsViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*" Margin="20">
-        <TextBlock Grid.Row="0" Text="Task Settings" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,20"/>
-
-        <TabControl Grid.Row="1">
+    <Grid RowDefinitions="*" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <TabControl Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinHeight="300">
             <!-- General Tab -->
             <TabItem Header="General">
                 <ScrollViewer>

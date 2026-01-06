@@ -82,11 +82,33 @@ public partial class WorkflowsViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void AddWorkflow()
+    private async Task AddWorkflow()
     {
-        _editingWorkflow = null;
-        WizardViewModel = new WorkflowWizardViewModel();
-        IsWizardOpen = true;
+        // Create new blank workflow with defaults
+        var newSettings = new ShareX.Ava.Core.Hotkeys.HotkeySettings();
+        // Maybe default job?
+        newSettings.Job = ShareX.Ava.Core.HotkeyType.RectangleRegion;
+        newSettings.TaskSettings = new TaskSettings();
+        
+        if (EditHotkeyRequester != null)
+        {
+            var saved = await EditHotkeyRequester(newSettings);
+            if (saved)
+            {
+                 if (_manager != null)
+                 {
+                     _manager.Hotkeys.Add(newSettings);
+                     _manager.RegisterHotkey(newSettings);
+                 }
+                 else
+                 {
+                     SettingManager.WorkflowsConfig.Hotkeys.Add(newSettings);
+                 }
+                 
+                 SaveHotkeys();
+                 LoadWorkflows();
+            }
+        }
     }
 
     [RelayCommand]
@@ -161,17 +183,20 @@ public partial class WorkflowsViewModel : ViewModelBase
     }
 
     [RelayCommand(CanExecute = nameof(CanEditWorkflow))]
-    private void EditWorkflow()
+    private async Task EditWorkflow()
     {
-        if (SelectedWorkflow != null)
+        if (SelectedWorkflow != null && EditHotkeyRequester != null)
         {
-        if (SelectedWorkflow != null)
-        {
-             _editingWorkflow = SelectedWorkflow;
-             WizardViewModel = new WorkflowWizardViewModel();
-             WizardViewModel.LoadFromSettings(SelectedWorkflow.Model);
-             IsWizardOpen = true;
-        }
+            var changed = await EditHotkeyRequester(SelectedWorkflow.Model);
+            if (changed)
+            {
+                SaveHotkeys();
+                // Refresh specific item or reload all?
+                // Reloading ensures displayed description updates if Hotkey/Job changed
+                LoadWorkflows();
+                // Restore selection?
+                // For now, reload clears selection, but cleaner UI
+            }
         }
     }
 

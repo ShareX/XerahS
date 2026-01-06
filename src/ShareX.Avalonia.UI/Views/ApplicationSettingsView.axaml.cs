@@ -18,8 +18,8 @@ namespace ShareX.Ava.UI.Views
             // Wire up the edit requester
             vm.HotkeySettings.EditHotkeyRequester = async (settings) => 
             {
-                var editVm = new ViewModels.HotkeyEditViewModel(settings);
-                var dialog = new HotkeyEditView
+                var editVm = new ViewModels.WorkflowEditorViewModel(settings);
+                var dialog = new WorkflowEditorView
                 {
                     DataContext = editVm
                 };
