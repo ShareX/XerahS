@@ -1,33 +1,39 @@
 # Task Settings UI Gap Analysis
 
 **Source:** `ShareX\Forms\TaskSettingsForm.cs` (WinForms)
-**Target:** `src\ShareX.Avalonia.UI\Views\TaskSettingsPanel.axaml` (Avalonia)
+**Target:** 
+1. `src\ShareX.Avalonia.UI\Views\WorkflowEditorView.axaml` (Container / Task & Destinations)
+2. `src\ShareX.Avalonia.UI\Views\TaskSettingsPanel.axaml` (Inner Settings Panel)
 
 ## Executive Summary
-The Avalonia implementation of the Task Settings UI is currently incomplete compared to the WinForms version. While basic General, Capture, and File Naming settings are present, significant sections such as Region Capture, Screen Recording, OCR, Watch Folders, and deep customization options (Toast window, Thumbnail, Quality) are missing.
+The Avalonia implementation splits the functionality of the single WinForms `TaskSettingsForm` into two views: `WorkflowEditorView` (acting as the container/wizard) and `TaskSettingsPanel` (embedded within the "Settings" tab of the editor). 
 
-The Avalonia version also adopts a different UX pattern for "Actions" (After Capture/Upload tasks), presenting them as direct checkboxes in the UI, whereas WinForms uses a MenuButton approach on the Task tab.
+- **WorkflowEditorView**: Handles the "Task" description, Job selection, Hotkey recording, and "Destinations" selection.
+- **TaskSettingsPanel**: Handles the granular settings for General, Capture, Image, Upload, etc.
+
+Significant gaps remain in `TaskSettingsPanel`, particularly for Region Capture, Screen Recording, OCR, and Watch Folders.
 
 ---
 
 ## 1. Task Tab (WinForms)
-*Avalonia Status: **Missing / Redesigned***
+*Avalonia Status: **Split / Partially Implemented***
 
-The dedicated "Task" tab does not exist in the Avalonia implementation. Some functional equivalents are moved to the "Upload" tab, but most settings are missing.
+In WinForms, this tab handles Task selection, Description, Folder paths, and Destinations. In Avalonia, this responsibility is moved to `WorkflowEditorView`.
 
-| Control (WinForms) | Avalonia Equivalent | Status | Notes |
-| :--- | :--- | :--- | :--- |
-| **Screenshots Folder** | None | :x: MISSING | Path textbox, Browse button, Override checkbox. |
-| **Custom Uploaders** | None | :x: MISSING | Selection combobox, Override checkbox. |
-| **FTP Accounts** | None | :x: MISSING | Selection combobox, Override checkbox. |
-| **Description** | None | :x: MISSING | Task description field. |
-| **After Capture Tasks** | Upload Tab > "After capture" | :twisted_rightwards_arrows: MOVED | Converted from MenuButton list to checkboxes (`SaveImageToFile`, `CopyImageToClipboard`, etc.). |
-| **After Upload Tasks** | Upload Tab > "After upload" | :twisted_rightwards_arrows: MOVED | Converted from MenuButton list to checkboxes (`CopyURLToClipboard`, etc.). |
-| **Destinations** | None | :x: MISSING | MenuButton to configure Image/Text/File destinations. |
-| **Override Settings** | None | :x: MISSING | Checkboxes for overriding global settings. |
+| Control (WinForms) | Avalonia Equivalent | Status | Location | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| **Description** | `tbDescription` | :white_check_mark: MATCH | `WorkflowEditorView` | Top of the "Task" tab. |
+| **Task Selection** | `cmsTask` (MenuButton) | :white_check_mark: MATCH | `WorkflowEditorView` | Implemented as "Category" and "Task" ComboBoxes. |
+| **Destinations** | `btnDestinations` | :white_check_mark: MATCH | `WorkflowEditorView` | Dedicated "Destinations" tab with ListBox selector. |
+| **Screenshots Folder** | `txtScreenshotsFolder` | :x: MISSING | - | Custom folder path override is implementation missing. |
+| **Custom Uploaders** | `cbCustomUploaders` | :x: MISSING | - | |
+| **FTP Accounts** | `cbFTPAccounts` | :x: MISSING | - | |
+| **Override Settings** | Checkboxes | :x: MISSING | - | "Override screenshots folder", "Override custom uploader", etc. are missing. |
+| **After Capture Tasks** | `btnAfterCapture` | :twisted_rightwards_arrows: MOVED | `TaskSettingsPanel` | Moved to "Upload" tab > "After capture" group as checkboxes. |
+| **After Upload Tasks** | `btnAfterUpload` | :twisted_rightwards_arrows: MOVED | `TaskSettingsPanel` | Moved to "Upload" tab > "After upload" group as checkboxes. |
 
 ## 2. General Tab (WinForms)
-*Avalonia Status: **Partial***
+*Avalonia Status: **Partial*** (in `TaskSettingsPanel`)
 
 Avalonia implements basic notification toggles but lacks the deep customization of the WinForms version.
 
@@ -43,7 +49,7 @@ Avalonia implements basic notification toggles but lacks the deep customization 
 | **Play Sound After Upload** | None | :x: MISSING | |
 
 ## 3. Image Tab (WinForms)
-*Avalonia Status: **Significant Differences***
+*Avalonia Status: **Significant Differences*** (in `TaskSettingsPanel`)
 
 Avalonia focuses on Image Effects configuration here, missing standard quality/thumbnail settings.
 
@@ -55,7 +61,7 @@ Avalonia focuses on Image Effects configuration here, missing standard quality/t
 | **Image Effects** | Image Tab (Full Editor) | :wrench: MODIFIED | WinForms has simple checkboxes. Avalonia embeds the full Effects Editor (Presets, List, PropertyGrid, Preview) directly into the tab. |
 
 ## 4. Capture Tab (WinForms)
-*Avalonia Status: **Partial***
+*Avalonia Status: **Partial*** (in `TaskSettingsPanel`)
 
 Basic "General" capture settings are implemented. Major features (Region Capture options, Screen Recorder, OCR) are completely absent.
 
@@ -86,7 +92,7 @@ Basic "General" capture settings are implemented. Major features (Region Capture
 | **OCR Settings** | None | :x: MISSING | Auto-copy, Silent mode, Default language. |
 
 ## 5. Upload Tab (WinForms)
-*Avalonia Status: **Partial***
+*Avalonia Status: **Partial*** (in `TaskSettingsPanel`)
 
 File naming is mostly implemented. Advanced upload filters and clipboard upload settings are missing.
 
@@ -110,19 +116,19 @@ File naming is mostly implemented. Advanced upload filters and clipboard upload 
 ## 6. Actions Tab
 *Status: **Pending***
 *   **WinForms**: Fully functional list of custom actions (external programs) with Add/Edit/Duplicate buttons.
-*   **Avalonia**: `Actions` tab exists but contains only a placeholder.
+*   **Avalonia**: `TaskSettingsPanel` > `Actions` tab exists but contains only a placeholder.
 
 ## 7. Tools Tab
 *Status: **Pending***
 *   **WinForms**: Settings for tools like Color Picker (hex format, etc).
-*   **Avalonia**: `Tools` tab exists but contains only a placeholder.
+*   **Avalonia**: `TaskSettingsPanel` > `Tools` tab exists but contains only a placeholder.
 
 ## 8. Watch Folders Tab
 *Status: **Missing***
 *   **WinForms**: Configuration for folder monitoring.
-*   **Avalonia**: Tab does not exist.
+*   **Avalonia**: Tab does not exist in either view.
 
 ## 9. Advanced Tab
 *Status: **Pending***
 *   **WinForms**: PropertyGrid exposing all settings.
-*   **Avalonia**: `Advanced` tab exists but contains only a placeholder.
+*   **Avalonia**: `TaskSettingsPanel` > `Advanced` tab exists but contains only a placeholder.
