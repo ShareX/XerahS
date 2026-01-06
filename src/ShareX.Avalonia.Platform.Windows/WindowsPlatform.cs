@@ -39,10 +39,17 @@ namespace ShareX.Ava.Platform.Windows
         {
             var screenService = new WindowsScreenService();
             
-            // If no service provided, use default Windows GDI+ implementation
+            // If no service provided, use modern DXGI capture if supported, otherwise GDI+
             if (screenCaptureService == null)
             {
-                screenCaptureService = new WindowsScreenCaptureService(screenService);
+                if (WindowsModernCaptureService.IsSupported)
+                {
+                    screenCaptureService = new WindowsModernCaptureService(screenService);
+                }
+                else
+                {
+                    screenCaptureService = new WindowsScreenCaptureService(screenService);
+                }
             }
             
             PlatformServices.Initialize(
