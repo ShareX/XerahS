@@ -40,6 +40,7 @@
                             <TextBlock Text="General" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
                                 <StackPanel Spacing="10">
+                                    <CheckBox IsChecked="{Binding UseModernCapture}" Content="Use modern screen capture (Direct3D11)"/>
                                     <CheckBox IsChecked="{Binding ShowCursor}" Content="Show cursor in screenshots"/>
                                     <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto">
                                          <TextBlock Grid.Column="0" Text="Screenshot delay:" VerticalAlignment="Center"/>

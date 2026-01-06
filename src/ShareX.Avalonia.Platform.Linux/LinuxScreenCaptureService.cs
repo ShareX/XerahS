@@ -51,7 +51,7 @@ namespace ShareX.Ava.Platform.Linux
             return await CaptureFullScreenAsync();
         }
 
-        public async Task<SKBitmap?> CaptureRectAsync(SKRect rect)
+        public async Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
         {
             // Capture full screen and crop
             var fullBitmap = await CaptureFullScreenAsync();
@@ -91,7 +91,7 @@ namespace ShareX.Ava.Platform.Linux
             }
         }
 
-        public async Task<SKBitmap?> CaptureFullScreenAsync()
+        public async Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
         {
             DebugHelper.WriteLine("LinuxScreenCaptureService: Attempting screenshot capture...");
 
@@ -112,7 +112,7 @@ namespace ShareX.Ava.Platform.Linux
             return null;
         }
 
-        public async Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService)
+        public async Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null)
         {
             // Most Linux tools support window capture with --window flag
             // For now, fall back to fullscreen

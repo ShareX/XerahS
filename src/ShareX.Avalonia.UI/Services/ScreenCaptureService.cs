@@ -45,12 +45,12 @@ namespace ShareX.Ava.UI.Services
             _platformImpl = platformImpl;
         }
 
-        public Task<SKBitmap?> CaptureRectAsync(SKRect rect)
+        public Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
         {
-            return _platformImpl.CaptureRectAsync(rect);
+            return _platformImpl.CaptureRectAsync(rect, options);
         }
 
-        public async Task<SKBitmap?> CaptureFullScreenAsync()
+        public async Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
         {
 #if DEBUG
             var totalStopwatch = Stopwatch.StartNew();
@@ -67,7 +67,7 @@ namespace ShareX.Ava.UI.Services
 #endif
 
             var captureStopwatch = Stopwatch.StartNew();
-            var result = await _platformImpl.CaptureFullScreenAsync();
+            var result = await _platformImpl.CaptureFullScreenAsync(options);
             captureStopwatch.Stop();
 
 #if DEBUG
@@ -82,12 +82,12 @@ namespace ShareX.Ava.UI.Services
             return result;
         }
 
-        public Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService)
+        public Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null)
         {
-            return _platformImpl.CaptureActiveWindowAsync(windowService);
+            return _platformImpl.CaptureActiveWindowAsync(windowService, options);
         }
 
-        public async Task<SKBitmap?> CaptureRegionAsync()
+        public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
             SKRectI selection = SKRectI.Empty;
             string? logPath = null;
@@ -118,11 +118,14 @@ namespace ShareX.Ava.UI.Services
             await Task.Delay(200);
 
             // Delegate capture to platform implementation
+            bool effectiveModern = options?.UseModernCapture ?? SettingManager.Settings.DefaultTaskSettings.CaptureSettings.UseModernCapture;
+            AppendLog(logPath, "CONFIG", $"Capture Configuration: UseModernCapture={effectiveModern} (Explicit={options?.UseModernCapture.ToString() ?? "null"}), ShowCursor={options?.ShowCursor ?? SettingManager.Settings.DefaultTaskSettings.CaptureSettings.ShowCursor}");
+            
             AppendLog(logPath, "CAPTURE", "Calling Platform.CaptureRectAsync...");
             var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
             
             var captureStopwatch = Stopwatch.StartNew();
-            var result = await _platformImpl.CaptureRectAsync(skRect);
+            var result = await _platformImpl.CaptureRectAsync(skRect, options);
             captureStopwatch.Stop();
             
             AppendLog(logPath, "CAPTURE", $"Platform.CaptureRectAsync returned in {captureStopwatch.ElapsedMilliseconds}ms. Result={(result != null ? "Bitmap" : "Null")}");

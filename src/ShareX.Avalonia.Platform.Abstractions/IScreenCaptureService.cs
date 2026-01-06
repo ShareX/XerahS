@@ -10,21 +10,21 @@ namespace ShareX.Ava.Platform.Abstractions
         /// Captures a region of the screen.
         /// </summary>
         /// <returns>SkiaSharp.SKBitmap if successful, null otherwise.</returns>
-        Task<SKBitmap?> CaptureRegionAsync();
+        Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null);
 
         /// <summary>
         /// Captures a specific region of the screen
         /// </summary>
-        Task<SKBitmap?> CaptureRectAsync(SKRect rect);
+        Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null);
         
         /// <summary>
         /// Captures the full screen
         /// </summary>
-        Task<SKBitmap?> CaptureFullScreenAsync();
+        Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null);
         
         /// <summary>
         /// Captures the active window
         /// </summary>
-        Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService);
+        Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null);
     }
 }

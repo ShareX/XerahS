@@ -47,7 +47,7 @@ namespace ShareX.Ava.Platform.Windows
         /// <summary>
         /// Captures a specific region of the screen
         /// </summary>
-        public async Task<SKBitmap?> CaptureRectAsync(SKRect rect)
+        public async Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
         {
             return await Task.Run(() =>
             {
@@ -77,16 +77,16 @@ namespace ShareX.Ava.Platform.Windows
         /// On Windows platform layer, this just falls back to fullscreen or throws, 
         /// as UI interaction should be handled by the UI layer wrapper.
         /// </summary>
-        public async Task<SKBitmap?> CaptureRegionAsync()
+        public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
             // Default to fullscreen if called directly without UI wrapper
-            return await CaptureFullScreenAsync();
+            return await CaptureFullScreenAsync(options);
         }
 
         /// <summary>
         /// Captures the entire screen
         /// </summary>
-        public async Task<SKBitmap?> CaptureFullScreenAsync()
+        public async Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
         {
             return await Task.Run(() =>
             {
@@ -113,7 +113,7 @@ namespace ShareX.Ava.Platform.Windows
         /// <summary>
         /// Captures the active window
         /// </summary>
-        public async Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService)
+        public async Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null)
         {
             return await Task.Run(() =>
             {

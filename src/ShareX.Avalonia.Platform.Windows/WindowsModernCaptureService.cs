@@ -63,16 +63,19 @@ namespace ShareX.Ava.Platform.Windows
             _fallbackService = new WindowsScreenCaptureService(screenService);
         }
 
-        public async Task<SKBitmap?> CaptureRegionAsync()
+        public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
-            return await CaptureFullScreenAsync();
+            return await CaptureFullScreenAsync(options);
         }
 
-        public async Task<SKBitmap?> CaptureRectAsync(SKRect rect)
+        public async Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
         {
-            if (!IsSupported || !ShareX.Ava.Core.SettingManager.Settings.UseModernCapture)
+            bool useModern = options?.UseModernCapture ?? 
+                ShareX.Ava.Core.SettingManager.Settings.DefaultTaskSettings.CaptureSettings.UseModernCapture;
+
+            if (!IsSupported || !useModern)
             {
-                return await _fallbackService.CaptureRectAsync(rect);
+                return await _fallbackService.CaptureRectAsync(rect, options);
             }
 
             return await Task.Run(() =>
@@ -109,14 +112,17 @@ namespace ShareX.Ava.Platform.Windows
                     // Fall back to GDI+ on error
                     return null;
                 }
-            }) ?? await _fallbackService.CaptureRectAsync(rect);
+            }) ?? await _fallbackService.CaptureRectAsync(rect, options);
         }
 
-        public async Task<SKBitmap?> CaptureFullScreenAsync()
+        public async Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
         {
-            if (!IsSupported || !ShareX.Ava.Core.SettingManager.Settings.UseModernCapture)
+            bool useModern = options?.UseModernCapture ?? 
+                ShareX.Ava.Core.SettingManager.Settings.DefaultTaskSettings.CaptureSettings.UseModernCapture;
+
+            if (!IsSupported || !useModern)
             {
-                return await _fallbackService.CaptureFullScreenAsync();
+                return await _fallbackService.CaptureFullScreenAsync(options);
             }
 
             return await Task.Run(() =>
@@ -129,10 +135,10 @@ namespace ShareX.Ava.Platform.Windows
                 {
                     return null;
                 }
-            }) ?? await _fallbackService.CaptureFullScreenAsync();
+            }) ?? await _fallbackService.CaptureFullScreenAsync(options);
         }
 
-        public async Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService)
+        public async Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null)
         {
             // For window capture, we capture the window bounds
             var hwnd = windowService.GetForegroundWindow();
@@ -141,7 +147,7 @@ namespace ShareX.Ava.Platform.Windows
             var bounds = windowService.GetWindowBounds(hwnd);
             if (bounds.Width <= 0 || bounds.Height <= 0) return null;
 
-            return await CaptureRectAsync(new SKRect(bounds.X, bounds.Y, bounds.Right, bounds.Bottom));
+            return await CaptureRectAsync(new SKRect(bounds.X, bounds.Y, bounds.Right, bounds.Bottom), options);
         }
 
         /// <summary>

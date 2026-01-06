@@ -91,6 +91,27 @@ public static partial class TaskHelpers
             DebugHelper.WriteLine($"Applied default destinations: Image={taskSettings.ImageDestination}, Text={taskSettings.TextDestination}, File={taskSettings.FileDestination}");
         }
 
+        if (taskSettings.UseDefaultCaptureSettings && SettingManager.Settings?.DefaultTaskSettings != null)
+        {
+            var defaults = SettingManager.Settings.DefaultTaskSettings.CaptureSettings;
+            // Create a new instance to avoid reference modification
+            taskSettings.CaptureSettings = new TaskSettingsCapture
+            {
+                UseModernCapture = defaults.UseModernCapture,
+                ShowCursor = defaults.ShowCursor,
+                ScreenshotDelay = defaults.ScreenshotDelay,
+                CaptureTransparent = defaults.CaptureTransparent,
+                CaptureShadow = defaults.CaptureShadow,
+                CaptureShadowOffset = defaults.CaptureShadowOffset,
+                CaptureClientArea = defaults.CaptureClientArea,
+                CaptureAutoHideTaskbar = defaults.CaptureAutoHideTaskbar,
+                CaptureAutoHideDesktopIcons = defaults.CaptureAutoHideDesktopIcons,
+                CaptureCustomRegion = defaults.CaptureCustomRegion,
+                CaptureCustomWindow = defaults.CaptureCustomWindow
+            };
+            DebugHelper.WriteLine($"Applied default CaptureSettings: UseModernCapture={taskSettings.CaptureSettings.UseModernCapture}");
+        }
+
         DebugHelper.WriteLine(
             $"Task settings: AfterCaptureJob={taskSettings.AfterCaptureJob}, " +
             $"UploadImageToHost={taskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost)}, " +

@@ -313,7 +313,7 @@ namespace ShareX.Ava.UI.ViewModels
             ShowTray = settings.ShowTray;
             SilentRun = settings.SilentRun;
             SelectedTheme = settings.SelectedTheme;
-            UseModernCapture = settings.UseModernCapture;
+            // UseModernCapture = settings.UseModernCapture; // Remapped below
 
             // Task Settings - General
             var taskSettings = settings.DefaultTaskSettings;
@@ -326,6 +326,7 @@ namespace ShareX.Ava.UI.ViewModels
             CaptureTransparent = taskSettings.CaptureSettings.CaptureTransparent;
             CaptureShadow = taskSettings.CaptureSettings.CaptureShadow;
             CaptureClientArea = taskSettings.CaptureSettings.CaptureClientArea;
+            UseModernCapture = taskSettings.CaptureSettings.UseModernCapture;
 
             // Task Settings - File Naming Defaults
             NameFormatPattern = taskSettings.UploadSettings.NameFormatPattern;
@@ -363,7 +364,7 @@ namespace ShareX.Ava.UI.ViewModels
             settings.ShowTray = ShowTray;
             settings.SilentRun = SilentRun;
             settings.SelectedTheme = SelectedTheme;
-            settings.UseModernCapture = UseModernCapture;
+            // settings.UseModernCapture = UseModernCapture; // Remapped below
             
             // Save Task Settings
             var taskSettings = settings.DefaultTaskSettings;
@@ -375,6 +376,7 @@ namespace ShareX.Ava.UI.ViewModels
             taskSettings.CaptureSettings.CaptureTransparent = CaptureTransparent;
             taskSettings.CaptureSettings.CaptureShadow = CaptureShadow;
             taskSettings.CaptureSettings.CaptureClientArea = CaptureClientArea;
+            taskSettings.CaptureSettings.UseModernCapture = UseModernCapture;
 
             taskSettings.UploadSettings.NameFormatPattern = NameFormatPattern;
             taskSettings.UploadSettings.NameFormatPatternActiveWindow = NameFormatPatternActiveWindow;

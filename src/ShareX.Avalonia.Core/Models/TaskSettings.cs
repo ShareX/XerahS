@@ -195,6 +195,9 @@ public class TaskSettingsCapture
 {
     #region Capture / General
 
+    [Category("Capture"), DefaultValue(true), Description("Use modern screen capture (Direct3D11) if available.")]
+    public bool UseModernCapture { get; set; } = true;
+
     public bool ShowCursor = true;
     public decimal ScreenshotDelay = 0;
     public bool CaptureTransparent = false;

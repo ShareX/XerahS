@@ -105,20 +105,30 @@ namespace ShareX.Ava.Core.Tasks
                 var captureStopwatch = Stopwatch.StartNew();
                 DebugHelper.WriteLine($"Capture start: Job={Info.TaskSettings.Job}");
                 
+                // Create capture options from task settings
+                var captureOptions = new CaptureOptions
+                {
+                    UseModernCapture = Info.TaskSettings.CaptureSettings.UseModernCapture,
+                    ShowCursor = Info.TaskSettings.CaptureSettings.ShowCursor,
+                    CaptureTransparent = Info.TaskSettings.CaptureSettings.CaptureTransparent,
+                    CaptureShadow = Info.TaskSettings.CaptureSettings.CaptureShadow,
+                    CaptureClientArea = Info.TaskSettings.CaptureSettings.CaptureClientArea
+                };
+
                 switch (Info.TaskSettings.Job)
                 {
                     case HotkeyType.PrintScreen:
-                        image = await PlatformServices.ScreenCapture.CaptureFullScreenAsync();
+                        image = await PlatformServices.ScreenCapture.CaptureFullScreenAsync(captureOptions);
                         break;
                         
                     case HotkeyType.RectangleRegion:
-                        image = await PlatformServices.ScreenCapture.CaptureRegionAsync();
+                        image = await PlatformServices.ScreenCapture.CaptureRegionAsync(captureOptions);
                         break;
                         
                     case HotkeyType.ActiveWindow:
                         if (PlatformServices.Window != null)
                         {
-                            image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window);
+                            image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
                         }
                         break;
                 }

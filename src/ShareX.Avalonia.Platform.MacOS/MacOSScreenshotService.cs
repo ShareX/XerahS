@@ -39,12 +39,12 @@ namespace ShareX.Ava.Platform.MacOS
     /// </summary>
     public class MacOSScreenshotService : IScreenCaptureService
     {
-        public Task<SKBitmap?> CaptureRegionAsync()
+        public Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
             return CaptureWithArgumentsAsync("-i -t png");
         }
 
-        public Task<SKBitmap?> CaptureRectAsync(SKRect rect)
+        public Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
         {
             if (rect.Width <= 0 || rect.Height <= 0)
             {
@@ -55,12 +55,12 @@ namespace ShareX.Ava.Platform.MacOS
             return CaptureWithArgumentsAsync(args);
         }
 
-        public Task<SKBitmap?> CaptureFullScreenAsync()
+        public Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
         {
             return CaptureWithArgumentsAsync("-x -t png");
         }
 
-        public Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService)
+        public Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null)
         {
             return CaptureWithArgumentsAsync("-w -t png");
         }
