@@ -25,6 +25,7 @@
 
 using ShareX.Ava.Platform.Abstractions;
 using ShareX.Ava.Platform.MacOS.Services;
+using ShareX.Ava.Common;
 
 namespace ShareX.Ava.Platform.MacOS
 {
@@ -43,6 +44,7 @@ namespace ShareX.Ava.Platform.MacOS
             if (screenCaptureService == null)
             {
                 screenCaptureService = new MacOSScreenshotService();
+                DebugHelper.WriteLine("macOS: Using MacOSScreenshotService (screencapture CLI)");
             }
 
             PlatformServices.Initialize(

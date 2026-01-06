@@ -35,6 +35,9 @@ namespace ShareX.Ava.Platform.Linux
 
     internal class StubScreenService : IScreenService
     {
+        public bool UsePerScreenScalingForRegionCaptureLayout => false;
+        public bool UseWindowPositionForRegionCaptureFallback => false;
+        public bool UseLogicalCoordinatesForRegionCapture => false;
         public Rectangle GetVirtualScreenBounds() => Rectangle.Empty;
         public Rectangle GetWorkingArea() => Rectangle.Empty;
         public Rectangle GetActiveScreenBounds() => Rectangle.Empty;
