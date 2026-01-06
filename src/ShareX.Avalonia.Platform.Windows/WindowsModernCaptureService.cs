@@ -201,7 +201,7 @@ namespace ShareX.Ava.Platform.Windows
                     }
                     devicesToDispose.Add(device);
 
-                    using var deviceContext = device.ImmediateContext;
+                    // using var deviceContext = device.ImmediateContext; // REMOVED: Premature disposal causes NRE later
 
                     foreach(var (output, _, bounds) in group)
                     {
