@@ -46,7 +46,7 @@ namespace ShareX.Ava.Core
         public const string UploadersConfigFileNamePrefix = "UploadersConfig";
         public const string UploadersConfigFileNameExtension = "json";
         public const string UploadersConfigFileName = UploadersConfigFileNamePrefix + "." + UploadersConfigFileNameExtension;
-        public const string HotkeysConfigFileName = "HotkeysConfig.json";
+        public const string WorkflowsConfigFileName = "WorkflowsConfig.json";
         public const string BackupFolderName = "Backup";
         public const string SettingsFolderName = "Settings";
 
@@ -117,20 +117,20 @@ namespace ShareX.Ava.Core
         }
 
         /// <summary>
-        /// Hotkeys config file path
+        /// Workflows config file path
         /// </summary>
-        public static string HotkeysConfigFilePath
+        public static string WorkflowsConfigFilePath
         {
             get
             {
-                string hotkeysConfigFolder = SettingsFolder;
+                string workflowsConfigFolder = SettingsFolder;
 
-                if (Settings != null && !string.IsNullOrEmpty(Settings.CustomHotkeysConfigPath))
+                if (Settings != null && !string.IsNullOrEmpty(Settings.CustomWorkflowsConfigPath))
                 {
-                    hotkeysConfigFolder = FileHelpers.ExpandFolderVariables(Settings.CustomHotkeysConfigPath);
+                    workflowsConfigFolder = FileHelpers.ExpandFolderVariables(Settings.CustomWorkflowsConfigPath);
                 }
 
-                return Path.Combine(hotkeysConfigFolder, HotkeysConfigFileName);
+                return Path.Combine(workflowsConfigFolder, WorkflowsConfigFileName);
             }
         }
 
@@ -145,9 +145,9 @@ namespace ShareX.Ava.Core
         public static UploadersConfig UploadersConfig { get; set; } = new UploadersConfig();
 
         /// <summary>
-        /// Hotkeys configuration
+        /// Workflows configuration
         /// </summary>
-        public static HotkeysConfig HotkeysConfig { get; set; } = new HotkeysConfig();
+        public static WorkflowsConfig WorkflowsConfig { get; set; } = new WorkflowsConfig();
 
         /// <summary>
         /// Default task settings (shortcut)
@@ -168,7 +168,7 @@ namespace ShareX.Ava.Core
             EnsureDirectoriesExist();
             LoadApplicationConfig();
             LoadUploadersConfig();
-            LoadHotkeysConfig();
+            LoadWorkflowsConfig();
             InitializeRecentTasks();
         }
 
@@ -200,16 +200,16 @@ namespace ShareX.Ava.Core
         }
 
         /// <summary>
-        /// Load hotkeys config from file using SettingsBase mechanism
+        /// Load workflows config from file using SettingsBase mechanism
         /// </summary>
-        public static void LoadHotkeysConfig(bool fallbackSupport = true)
+        public static void LoadWorkflowsConfig(bool fallbackSupport = true)
         {
-            var path = HotkeysConfigFilePath;
-            DebugHelper.WriteLine($"HotkeysConfig load started: {path}");
-            HotkeysConfig = HotkeysConfig.Load(path, BackupFolder, fallbackSupport) ?? new HotkeysConfig();
-            HotkeysConfig.CreateBackup = true;
-            HotkeysConfig.CreateWeeklyBackup = true;
-            DebugHelper.WriteLine($"HotkeysConfig load finished: {path}");
+            var path = WorkflowsConfigFilePath;
+            DebugHelper.WriteLine($"WorkflowsConfig load started: {path}");
+            WorkflowsConfig = WorkflowsConfig.Load(path, BackupFolder, fallbackSupport) ?? new WorkflowsConfig();
+            WorkflowsConfig.CreateBackup = true;
+            WorkflowsConfig.CreateWeeklyBackup = true;
+            DebugHelper.WriteLine($"WorkflowsConfig load finished: {path}");
         }
 
         private static void InitializeRecentTasks()
@@ -231,14 +231,14 @@ namespace ShareX.Ava.Core
         {
             SaveApplicationConfig();
             SaveUploadersConfig();
-            SaveHotkeysConfig();
+            SaveWorkflowsConfig();
         }
 
         public static void SaveAllSettingsAsync()
         {
             SaveApplicationConfigAsync();
             SaveUploadersConfigAsync();
-            SaveHotkeysConfigAsync();
+            SaveWorkflowsConfigAsync();
         }
 
         /// <summary>
@@ -270,16 +270,16 @@ namespace ShareX.Ava.Core
         }
 
         /// <summary>
-        /// Save hotkeys config to file
+        /// Save workflows config to file
         /// </summary>
-        public static void SaveHotkeysConfig()
+        public static void SaveWorkflowsConfig()
         {
-            HotkeysConfig?.Save(HotkeysConfigFilePath);
+            WorkflowsConfig?.Save(WorkflowsConfigFilePath);
         }
 
-        public static void SaveHotkeysConfigAsync()
+        public static void SaveWorkflowsConfigAsync()
         {
-            HotkeysConfig?.SaveAsync(HotkeysConfigFilePath);
+            WorkflowsConfig?.SaveAsync(WorkflowsConfigFilePath);
         }
 
         private static void UpdateRecentTasks()
@@ -356,8 +356,8 @@ namespace ShareX.Ava.Core
             if (File.Exists(UploadersConfigFilePath)) File.Delete(UploadersConfigFilePath);
             UploadersConfig = new UploadersConfig();
             
-            if (File.Exists(HotkeysConfigFilePath)) File.Delete(HotkeysConfigFilePath);
-            HotkeysConfig = new HotkeysConfig();
+            if (File.Exists(WorkflowsConfigFilePath)) File.Delete(WorkflowsConfigFilePath);
+            WorkflowsConfig = new WorkflowsConfig();
         }
 
         /// <summary>

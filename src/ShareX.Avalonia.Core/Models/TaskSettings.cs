@@ -177,7 +177,15 @@ public class TaskSettingsImage
 
     #endregion Image / Thumbnail
 
-    public List<ImageEffectPreset> ImageEffectPresets = new List<ImageEffectPreset>();
+    #region Image / Effects
+
+    public List<ImageEffectPreset> ImageEffectPresets = new List<ImageEffectPreset>() { ImageEffectPreset.GetDefaultPreset() };
+    public int SelectedImageEffectPreset = 0;
+    public bool ShowImageEffectsWindowAfterCapture = false;
+    public bool ImageEffectOnlyRegionCapture = false;
+    public bool UseRandomImageEffect = false;
+
+    #endregion Image / Effects
 }
 
 /// <summary>

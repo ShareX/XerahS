@@ -39,9 +39,9 @@ namespace ShareX.Ava.Core;
 // Duplicate HotkeySettings class removed. Using ShareX.Ava.Core.Hotkeys.HotkeySettings instead.
 
 /// <summary>
-/// Hotkeys configuration storage
+/// Workflows configuration storage
 /// </summary>
-public class HotkeysConfig : SettingsBase<HotkeysConfig>
+public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
 {
     public List<HotkeySettings> Hotkeys { get; set; } = GetDefaultHotkeyList();
 

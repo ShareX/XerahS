@@ -61,7 +61,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         else
         {
             // Fallback if manager isn't ready (e.g. design time)
-            foreach (var hk in SettingManager.HotkeysConfig.Hotkeys)
+            foreach (var hk in SettingManager.WorkflowsConfig.Hotkeys)
             {
                 Workflows.Add(new HotkeyItemViewModel(hk));
             }
@@ -72,12 +72,12 @@ public partial class WorkflowsViewModel : ViewModelBase
     {
         if (_manager != null)
         {
-            SettingManager.HotkeysConfig.Hotkeys = _manager.Hotkeys;
-            SettingManager.SaveHotkeysConfigAsync();
+            SettingManager.WorkflowsConfig.Hotkeys = _manager.Hotkeys;
+            SettingManager.SaveWorkflowsConfigAsync();
         }
         else
         {
-            SettingManager.SaveHotkeysConfig();
+            SettingManager.SaveWorkflowsConfig();
         }
     }
 
@@ -190,7 +190,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         }
         else if (SelectedWorkflow != null && _manager == null) // Fallback
         {
-             SettingManager.HotkeysConfig.Hotkeys.Remove(SelectedWorkflow.Model);
+             SettingManager.WorkflowsConfig.Hotkeys.Remove(SelectedWorkflow.Model);
              Workflows.Remove(SelectedWorkflow);
              SaveHotkeys();
         }

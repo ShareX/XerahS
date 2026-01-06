@@ -243,8 +243,8 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
     [Category("Paths"), Description("Custom uploaders config path.")]
     public string CustomUploadersConfigPath { get; set; } = "";
 
-    [Category("Paths"), Description("Custom hotkeys config path.")]
-    public string CustomHotkeysConfigPath { get; set; } = "";
+    [Category("Paths"), Description("Custom workflows config path.")]
+    public string CustomWorkflowsConfigPath { get; set; } = "";
 
     [Category("Paths"), Description("Secondary custom screenshots path.")]
     public string CustomScreenshotsPath2 { get; set; } = "";

@@ -58,14 +58,14 @@ public partial class App : Application
             HotkeyManager.HotkeyTriggered += HotkeyManager_HotkeyTriggered;
 
             // Load hotkeys from configuration
-            var hotkeys = Core.SettingManager.HotkeysConfig.Hotkeys;
+            var hotkeys = Core.SettingManager.WorkflowsConfig.Hotkeys;
             
             // If configuration is empty/null, fallback to defaults
             if (hotkeys == null || hotkeys.Count == 0)
             {
                 hotkeys = Core.Hotkeys.HotkeyManager.GetDefaultHotkeyList();
                 // Update config with defaults so they get saved
-                Core.SettingManager.HotkeysConfig.Hotkeys = hotkeys;
+                Core.SettingManager.WorkflowsConfig.Hotkeys = hotkeys;
             }
 
             HotkeyManager.UpdateHotkeys(hotkeys);

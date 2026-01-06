@@ -17,7 +17,15 @@ public class AnnotationOptions
 public class ImageEffectPreset
 {
     public string Name { get; set; } = "";
-    // Simplified: No Effects list for now to avoid dependency hell
+
+    // TODO: Add Effects list when ShareX.Editor reference is added
+    // [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto)]
+    // public List<ImageEffect> Effects { get; set; } = new();
+
+    public static ImageEffectPreset GetDefaultPreset()
+    {
+        return new ImageEffectPreset { Name = "Default" };
+    }
 }
 
 public class ColorPickerOptions
