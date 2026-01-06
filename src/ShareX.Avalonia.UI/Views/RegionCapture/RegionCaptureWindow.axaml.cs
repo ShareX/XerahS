@@ -79,7 +79,7 @@ namespace ShareX.Ava.UI.Views.RegionCapture
 #if DEBUG
         // Debug logging
         private System.IO.StreamWriter? _debugLog;
-        private readonly string _debugLogPath;
+        public string? DebugLogPath { get; private set; }
         private bool _loggedInitialLayout;
 #endif
         
@@ -92,15 +92,15 @@ namespace ShareX.Ava.UI.Views.RegionCapture
             // Initialize debug logging
             var debugFolder = System.IO.Path.Combine(
                 ShareX.Ava.Core.SettingManager.PersonalFolder,
-                "debug");
+                "Debug");
             System.IO.Directory.CreateDirectory(debugFolder);
             
             var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss-fff");
-            _debugLogPath = System.IO.Path.Combine(debugFolder, $"region-capture-{timestamp}.log");
+            DebugLogPath = System.IO.Path.Combine(debugFolder, $"region-capture-{timestamp}.log");
             
             try
             {
-                _debugLog = new System.IO.StreamWriter(_debugLogPath, append: true) { AutoFlush = true };
+                _debugLog = new System.IO.StreamWriter(DebugLogPath, append: true) { AutoFlush = true };
                 DebugLog("INIT", "RegionCaptureWindow created");
                 DebugLog("INIT", $"Initial state: RenderScaling={RenderScaling}, Position={Position}, Bounds={Bounds}, ClientSize={ClientSize}");
             }

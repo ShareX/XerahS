@@ -90,11 +90,16 @@ namespace ShareX.Ava.UI.Services
         public async Task<SKBitmap?> CaptureRegionAsync()
         {
             SKRectI selection = SKRectI.Empty;
+            string? logPath = null;
+            var regionStopwatch = Stopwatch.StartNew();
 
             // Show UI window on UI thread
             await Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 var window = new RegionCaptureWindow();
+#if DEBUG
+                logPath = window.DebugLogPath;
+#endif
                 
                 // Window will handle background capture in OnOpened
                 window.Show();
@@ -103,15 +108,44 @@ namespace ShareX.Ava.UI.Services
 
             if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
             {
+                AppendLog(logPath, "CANCEL", "Selection was empty or cancelled. Aborting.");
                 return null;
             }
+
+            AppendLog(logPath, "SELECTION", $"Received selection: {selection}, Delaying 200ms...");
 
             // Small delay to allow window to close fully
             await Task.Delay(200);
 
             // Delegate capture to platform implementation
+            AppendLog(logPath, "CAPTURE", "Calling Platform.CaptureRectAsync...");
             var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
-            return await _platformImpl.CaptureRectAsync(skRect);
+            
+            var captureStopwatch = Stopwatch.StartNew();
+            var result = await _platformImpl.CaptureRectAsync(skRect);
+            captureStopwatch.Stop();
+            
+            AppendLog(logPath, "CAPTURE", $"Platform.CaptureRectAsync returned in {captureStopwatch.ElapsedMilliseconds}ms. Result={(result != null ? "Bitmap" : "Null")}");
+            
+            regionStopwatch.Stop();
+            AppendLog(logPath, "TOTAL", $"Total region capture workflow time: {regionStopwatch.ElapsedMilliseconds}ms");
+
+            return result;
+        }
+
+        [Conditional("DEBUG")]
+        private void AppendLog(string? path, string category, string message)
+        {
+#if DEBUG
+            if (string.IsNullOrEmpty(path)) return;
+            try
+            {
+                using var sw = new StreamWriter(path, append: true);
+                var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
+                sw.WriteLine($"[{timestamp}] {category,-12} | {message}");
+            }
+            catch { }
+#endif
         }
 
 #if DEBUG
