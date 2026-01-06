@@ -42,7 +42,7 @@
                 
                 <ui:CommandBarSeparator />
 
-                <Button Command="{Binding ResetCommand}" ToolTip.Tip="Reset to Defaults" Content="Reset" />
+                <Button Command="{Binding ResetCommand}" ToolTip.Tip="Reset to Defaults" Content="Reset..." />
             </StackPanel>
 
             <!-- List -->

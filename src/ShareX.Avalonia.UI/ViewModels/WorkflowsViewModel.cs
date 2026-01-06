@@ -169,9 +169,25 @@ public partial class WorkflowsViewModel : ViewModelBase
 
 
     
+    /// <summary>
+    /// Delegate to request confirmation from the UI.
+    /// Arguments: Title, Message
+    /// Returns: True if confirmed, False otherwise
+    /// </summary>
+    public Func<string, string, Task<bool>>? ConfirmByUi { get; set; }
+
     [RelayCommand]
-    private void Reset()
+    private async Task Reset()
     {
+        if (ConfirmByUi != null)
+        {
+            var confirmed = await ConfirmByUi("Reset Workflows", "Are you sure you want to reset all workflows to default settings? This cannot be undone.");
+            if (!confirmed)
+            {
+                return;
+            }
+        }
+
         if (_manager != null)
         {
             var defaults = HotkeyManager.GetDefaultHotkeyList();

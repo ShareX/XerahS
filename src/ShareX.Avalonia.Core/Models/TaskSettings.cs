@@ -49,13 +49,10 @@ public class TaskSettings
 
     public HotkeyType Job = HotkeyType.None;
 
-    public bool UseDefaultAfterCaptureJob = true;
     public AfterCaptureTasks AfterCaptureJob = AfterCaptureTasks.CopyImageToClipboard | AfterCaptureTasks.SaveImageToFile;
 
-    public bool UseDefaultAfterUploadJob = true;
     public AfterUploadTasks AfterUploadJob = AfterUploadTasks.CopyURLToClipboard;
 
-    public bool UseDefaultDestinations = true;
     public ImageDestination ImageDestination = ImageDestination.Imgur;
     public FileDestination ImageFileDestination = FileDestination.Dropbox;
     public TextDestination TextDestination = TextDestination.Pastebin;
@@ -73,25 +70,18 @@ public class TaskSettings
     public bool OverrideScreenshotsFolder = false;
     public string ScreenshotsFolder = "";
 
-    public bool UseDefaultGeneralSettings = true;
     public TaskSettingsGeneral GeneralSettings = new TaskSettingsGeneral();
 
-    public bool UseDefaultImageSettings = true;
     public TaskSettingsImage ImageSettings = new TaskSettingsImage();
 
-    public bool UseDefaultCaptureSettings = true;
     public TaskSettingsCapture CaptureSettings = new TaskSettingsCapture();
 
-    public bool UseDefaultUploadSettings = true;
     public TaskSettingsUpload UploadSettings = new TaskSettingsUpload();
 
-    public bool UseDefaultActions = true;
     public List<ExternalProgram> ExternalPrograms = new List<ExternalProgram>();
 
-    public bool UseDefaultToolsSettings = true;
     public TaskSettingsTools ToolsSettings = new TaskSettingsTools();
 
-    public bool UseDefaultAdvancedSettings = true;
     public TaskSettingsAdvanced AdvancedSettings = new TaskSettingsAdvanced();
 
     public bool WatchFolderEnabled = false;
@@ -101,11 +91,6 @@ public class TaskSettings
     {
         return !string.IsNullOrEmpty(Description) ? Description : EnumExtensions.GetDescription(Job);
     }
-
-    public bool IsUsingDefaultSettings =>
-        UseDefaultAfterCaptureJob && UseDefaultAfterUploadJob && UseDefaultDestinations && !OverrideFTP && !OverrideCustomUploader &&
-        !OverrideScreenshotsFolder && UseDefaultGeneralSettings && UseDefaultImageSettings && UseDefaultCaptureSettings && UseDefaultUploadSettings &&
-        UseDefaultActions && UseDefaultToolsSettings && UseDefaultAdvancedSettings && !WatchFolderEnabled;
 
     public FileDestination GetFileDestinationByDataType(EDataType dataType)
     {

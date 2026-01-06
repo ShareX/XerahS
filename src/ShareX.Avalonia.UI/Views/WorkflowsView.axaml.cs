@@ -28,6 +28,27 @@ public partial class WorkflowsView : UserControl
             
             return false;
         };
+
+        // Wire up confirmation dialog
+        vm.ConfirmByUi = async (title, message) =>
+        {
+            var dialog = new FluentAvalonia.UI.Controls.ContentDialog
+            {
+                Title = title,
+                Content = message,
+                PrimaryButtonText = "Yes",
+                CloseButtonText = "No",
+                DefaultButton = FluentAvalonia.UI.Controls.ContentDialogButton.Close
+            };
+
+            if (VisualRoot is Window window)
+            {
+                var result = await dialog.ShowAsync();
+                return result == FluentAvalonia.UI.Controls.ContentDialogResult.Primary;
+            }
+
+            return false;
+        };
     }
 
     private void InitializeComponent()
