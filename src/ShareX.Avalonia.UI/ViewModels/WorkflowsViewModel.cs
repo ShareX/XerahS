@@ -22,14 +22,9 @@ public partial class WorkflowsViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(DuplicateCommand))]
     private HotkeyItemViewModel? _selectedWorkflow;
 
-    [ObservableProperty]
-    private bool _isWizardOpen;
 
-    [ObservableProperty]
-    private WorkflowWizardViewModel? _wizardViewModel;
     
-    // Track if we are editing an existing item
-    private HotkeyItemViewModel? _editingWorkflow;
+
 
     private ShareX.Ava.Core.Hotkeys.HotkeyManager? _manager;
 
@@ -111,76 +106,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
-    private void CompleteWizard()
-    {
-        if (WizardViewModel != null && _manager != null)
-        {
-            var newSettings = WizardViewModel.ConstructHotkeySettings();
-            
-            if (_editingWorkflow != null)
-            {
-                // Update existing
-                // Reuse the same hotkey/modifier if possible, or just replace settings?
-                // ConstructHotkeySettings usually sets Key to None. 
-                // We should Preserve the key from the edited item!
-                
-                newSettings.HotkeyInfo = _editingWorkflow.Model.HotkeyInfo;
-                
-                // Replace in manager
-                int index = _manager.Hotkeys.IndexOf(_editingWorkflow.Model);
-                if (index != -1)
-                {
-                    _manager.UnregisterHotkey(_editingWorkflow.Model);
-                    
-                    // Insert at correct position if possible
-                    if (index <= _manager.Hotkeys.Count)
-                    {
-                        _manager.Hotkeys.Insert(index, newSettings);
-                    }
-                    else
-                    {
-                        _manager.Hotkeys.Add(newSettings);
-                    }
-                    
-                    _manager.RegisterHotkey(newSettings);
-                }
-                
-                _editingWorkflow = null;
-            }
-            else
-            {
-                // Add new
-                // Add via manager to ensure registration if needed
-                _manager.Hotkeys.Add(newSettings);
-            }
-            
-            // Reload to sync UI
-            LoadWorkflows();
-            SaveHotkeys();
-            
-            // Select the item
-            if (_editingWorkflow != null)
-            {
-                 // If we were editing, try to find the updated one?
-                 // Actually we refreshed list.
-                 // Just leave selection or select last added?
-                 // Let's select the last one if added, or try to select the modified one.
-            }
-             if (Workflows.Count > 0)
-                 SelectedWorkflow = Workflows.Last();
-        }
-        
-        CloseWizard();
-    }
 
-    [RelayCommand]
-    private void CloseWizard()
-    {
-        IsWizardOpen = false;
-        WizardViewModel = null;
-        _editingWorkflow = null;
-    }
 
     [RelayCommand(CanExecute = nameof(CanEditWorkflow))]
     private async Task EditWorkflow()

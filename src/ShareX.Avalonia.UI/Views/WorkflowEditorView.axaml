@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:ShareX.Ava.UI.ViewModels"
         xmlns:views="using:ShareX.Ava.UI.Views"
+        xmlns:converters="using:ShareX.Ava.UI.Converters"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
         x:Class="ShareX.Ava.UI.Views.WorkflowEditorView"
         x:DataType="vm:WorkflowEditorViewModel"
@@ -27,9 +28,32 @@
 
                         <StackPanel Spacing="5">
                             <TextBlock Text="Task:" FontWeight="SemiBold"/>
-                            <ComboBox ItemsSource="{Binding AvailableJobs}" 
-                                      SelectedItem="{Binding SelectedJob}"
-                                      HorizontalAlignment="Stretch"/>
+                            <Grid ColumnDefinitions="*, 10, *">
+                                <ComboBox Grid.Column="0" 
+                                          ItemsSource="{Binding JobCategories}" 
+                                          SelectedItem="{Binding SelectedJobCategory}"
+                                          HorizontalAlignment="Stretch"
+                                          PlaceholderText="Select Category">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                
+                                <ComboBox Grid.Column="2" 
+                                          ItemsSource="{Binding SelectedJobCategory.Jobs}" 
+                                          SelectedItem="{Binding SelectedJobItem}"
+                                          IsEnabled="{Binding SelectedJobCategory, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                          HorizontalAlignment="Stretch"
+                                          PlaceholderText="Select Task">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Description}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
                         </StackPanel>
 
                         <StackPanel Spacing="5">
@@ -71,9 +95,21 @@
             </TabItem>
 
             <!-- Tab 3: Destinations -->
-            <TabItem Header="Destinations">
-                <TextBlock Text="Destination settings will be moved here..." Margin="20" Foreground="Gray"/>
-                <!-- Logic to be implemented in next step -->
+            <TabItem Header="Destinations" IsVisible="{Binding TaskSettings.UploadImageToHost}">
+                <Grid RowDefinitions="Auto, *" Margin="20">
+                    <TextBlock Text="Select Destination" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    
+                    <ListBox Grid.Row="1" ItemsSource="{Binding AvailableDestinations}" SelectedItem="{Binding SelectedDestination}">
+                        <ListBox.DataTemplates>
+                            <DataTemplate DataType="vm:UploaderInstanceViewModel">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="{Binding DisplayName}"/>
+                                    <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.DataTemplates>
+                    </ListBox>
+                 </Grid>
             </TabItem>
         </TabControl>
 

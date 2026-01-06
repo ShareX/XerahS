@@ -93,9 +93,7 @@ namespace ShareX.Ava.UI.Views
                     case "Settings_App":
                         contentFrame.Content = new ApplicationSettingsView();
                         break;
-                    // case "Settings_Task":
-                    //    contentFrame.Content = new TaskSettingsPanel(); // Not used globally anymore
-                    //    break;
+
 
                     case "Settings_Dest":
                         contentFrame.Content = new DestinationSettingsView();

@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ShareX.Ava.Core.Hotkeys;
 using ShareX.Ava.Core;
@@ -7,6 +8,12 @@ using Avalonia.Input;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+
+using ShareX.Ava.Uploaders;
+using ShareX.UploadersLib;
+using ShareX.Ava.Uploaders.PluginSystem;
+using System.Collections.ObjectModel;
+using ShareX.Ava.Common;
 
 namespace ShareX.Ava.UI.ViewModels;
 
@@ -24,9 +31,37 @@ public partial class WorkflowEditorViewModel : ViewModelBase
     [ObservableProperty]
     private HotkeyType _selectedJob;
 
-    public List<HotkeyType> AvailableJobs { get; }
+
+
+    // Destinations
+    public ObservableCollection<UploaderInstanceViewModel> AvailableDestinations { get; } = new();
+
+    [ObservableProperty]
+    private UploaderInstanceViewModel? _selectedDestination;
+
+    private CategoryViewModel _imageCategory;
+    private CategoryViewModel _textCategory;
+    private CategoryViewModel _fileCategory;
+    private CategoryViewModel _urlCategory;
 
     public string WindowTitle => Model.HotkeyInfo.Id == 0 ? "Add Workflow" : "Edit Workflow";
+
+    // Categories
+    public ObservableCollection<JobCategoryViewModel> JobCategories { get; } = new();
+
+    [ObservableProperty]
+    private JobCategoryViewModel? _selectedJobCategory;
+
+    [ObservableProperty]
+    private HotkeyItemViewModel? _selectedJobItem;
+
+    partial void OnSelectedJobItemChanged(HotkeyItemViewModel? value)
+    {
+        if (value != null)
+        {
+             SelectedJob = value.Model.Job;
+        }
+    }
 
     // Sub-ViewModels
     public TaskSettingsViewModel TaskSettings { get; private set; }
@@ -44,7 +79,144 @@ public partial class WorkflowEditorViewModel : ViewModelBase
             
         TaskSettings = new TaskSettingsViewModel(model.TaskSettings);
 
-        AvailableJobs = Enum.GetValues(typeof(HotkeyType)).Cast<HotkeyType>().ToList();
+        TaskSettings = new TaskSettingsViewModel(model.TaskSettings);
+
+        LoadJobCategories();
+
+        // Select the current job from the category tree
+        SelectJobInCategories(model.Job);
+
+        InitializeCategories();
+        UpdateDestinations();
+        LoadSelectedDestination();
+    }
+
+    private void InitializeCategories()
+    {
+        _imageCategory = new CategoryViewModel("Image Uploaders", UploaderCategory.Image);
+        _imageCategory.LoadInstances();
+
+        _textCategory = new CategoryViewModel("Text Uploaders", UploaderCategory.Text);
+        _textCategory.LoadInstances();
+
+        _fileCategory = new CategoryViewModel("File Uploaders", UploaderCategory.File);
+        _fileCategory.LoadInstances();
+
+        _urlCategory = new CategoryViewModel("URL Shorteners", UploaderCategory.UrlShortener);
+        _urlCategory.LoadInstances();
+    }
+
+    partial void OnSelectedJobChanged(HotkeyType value)
+    {
+        UpdateDestinations();
+    }
+
+    private void UpdateDestinations()
+    {
+        AvailableDestinations.Clear();
+
+        string category = GetHotkeyCategory(SelectedJob);
+        
+        // Determine which destination types to show based on category
+        bool showImageUploaders = false;
+        bool showTextUploaders = false;
+        bool showFileUploaders = false;
+
+        switch (category)
+        {
+            case EnumExtensions.HotkeyType_Category_ScreenCapture:
+            case EnumExtensions.HotkeyType_Category_ScreenRecord:
+                showImageUploaders = true;
+                showFileUploaders = true;
+                break;
+                
+            case EnumExtensions.HotkeyType_Category_Upload:
+                if (SelectedJob == HotkeyType.UploadText)
+                {
+                    showTextUploaders = true;
+                    showFileUploaders = true;
+                }
+                else if (SelectedJob == HotkeyType.FileUpload || SelectedJob == HotkeyType.FolderUpload)
+                {
+                    showFileUploaders = true;
+                }
+                else 
+                {
+                    showImageUploaders = true;
+                    showFileUploaders = true;
+                }
+                break;
+                
+            case EnumExtensions.HotkeyType_Category_Tools:
+                showImageUploaders = true;
+                showFileUploaders = true;
+                break;
+        }
+
+        if (showImageUploaders)
+        {
+            foreach (var instance in _imageCategory.Instances)
+                AvailableDestinations.Add(instance);
+        }
+        
+        if (showTextUploaders)
+        {
+            foreach (var instance in _textCategory.Instances)
+                AvailableDestinations.Add(instance);
+        }
+
+        if (showFileUploaders)
+        {
+            foreach (var instance in _fileCategory.Instances)
+                AvailableDestinations.Add(instance);
+        }
+        
+        if (SelectedDestination == null)
+        {
+             SelectedDestination = AvailableDestinations.FirstOrDefault();
+        }
+    }
+
+
+
+    private void LoadSelectedDestination()
+    {
+        // Logic to try and find the currently configured destination in the list
+        // Simplified version of WorkflowWizardViewModel.LoadFromSettings
+        
+         UploaderInstanceViewModel? matched = null;
+         var settings = Model;
+
+        if (settings.TaskSettings.OverrideCustomUploader)
+        {
+            var customList = SettingManager.UploadersConfig.CustomUploadersList;
+            if (settings.TaskSettings.CustomUploaderIndex >= 0 && settings.TaskSettings.CustomUploaderIndex < customList.Count)
+            {
+                var custom = customList[settings.TaskSettings.CustomUploaderIndex];
+                matched = AvailableDestinations.FirstOrDefault(d => d.DisplayName == custom.Name);
+            }
+        }
+        else if (settings.TaskSettings.OverrideFTP)
+        {
+            var ftpList = SettingManager.UploadersConfig.FTPAccountList;
+            if (settings.TaskSettings.FTPIndex >= 0 && settings.TaskSettings.FTPIndex < ftpList.Count)
+            {
+                var ftp = ftpList[settings.TaskSettings.FTPIndex];
+                matched = AvailableDestinations.FirstOrDefault(d => d.DisplayName == $"FTP: {ftp.Name}");
+            }
+        }
+        else
+        {
+            var imgDest = settings.TaskSettings.ImageDestination;
+            if (imgDest != ImageDestination.CustomImageUploader && imgDest != ImageDestination.FileUploader)
+            {
+                 var candidate = AvailableDestinations.FirstOrDefault(d => d.Instance.ProviderId == imgDest.ToString());
+                 if (candidate != null) matched = candidate;
+            }
+        }
+
+        if (matched != null)
+            SelectedDestination = matched;
     }
 
     public void Save()
@@ -81,4 +253,82 @@ public partial class WorkflowEditorViewModel : ViewModelBase
 
     partial void OnSelectedKeyChanged(Key value) => OnPropertyChanged(nameof(KeyText));
     partial void OnSelectedModifiersChanged(KeyModifiers value) => OnPropertyChanged(nameof(KeyText));
+
+    private void LoadJobCategories()
+    {
+        // Group HotkeyTypes by their Category attribute
+        var allTypes = Enum.GetValues(typeof(HotkeyType)).Cast<HotkeyType>()
+            .Where(t => t != HotkeyType.None);
+
+        var grouped = allTypes.GroupBy(GetHotkeyCategory)
+            .Where(g => !string.IsNullOrEmpty(g.Key))
+            .OrderBy(g => GetCategoryOrder(g.Key));
+
+        foreach (var group in grouped)
+        {
+            var category = new JobCategoryViewModel(GetCategoryDisplayName(group.Key), group);
+            JobCategories.Add(category);
+        }
+    }
+
+    private void SelectJobInCategories(HotkeyType job)
+    {
+        foreach (var category in JobCategories)
+        {
+            var item = category.Jobs.FirstOrDefault(j => j.Model.Job == job);
+            if (item != null)
+            {
+                SelectedJobCategory = category;
+                SelectedJobItem = item;
+                break;
+            }
+        }
+        
+        // If not found (e.g. None), maybe select first generic
+        if (SelectedJobItem == null && JobCategories.Count > 0)
+        {
+             SelectedJobCategory = JobCategories[0];
+             SelectedJobItem = SelectedJobCategory.Jobs.FirstOrDefault();
+        }
+    }
+
+    private string GetHotkeyCategory(HotkeyType type)
+    {
+        var field = type.GetType().GetField(type.ToString());
+        if (field != null)
+        {
+            var attrs = (CategoryAttribute[])field.GetCustomAttributes(typeof(CategoryAttribute), false);
+            if (attrs.Length > 0)
+            {
+                return attrs[0].Category;
+            }
+        }
+        return string.Empty;
+    }
+
+    private string GetCategoryDisplayName(string category)
+    {
+        return category switch
+        {
+            EnumExtensions.HotkeyType_Category_Upload => "Upload",
+            EnumExtensions.HotkeyType_Category_ScreenCapture => "Screen Capture",
+            EnumExtensions.HotkeyType_Category_ScreenRecord => "Screen Record",
+            EnumExtensions.HotkeyType_Category_Tools => "Tools",
+            EnumExtensions.HotkeyType_Category_Other => "Other",
+            _ => category
+        };
+    }
+
+    private int GetCategoryOrder(string category)
+    {
+        return category switch
+        {
+            EnumExtensions.HotkeyType_Category_ScreenCapture => 0,
+            EnumExtensions.HotkeyType_Category_ScreenRecord => 1,
+            EnumExtensions.HotkeyType_Category_Upload => 2,
+            EnumExtensions.HotkeyType_Category_Tools => 3,
+            EnumExtensions.HotkeyType_Category_Other => 4,
+            _ => 99
+        };
+    }
 }

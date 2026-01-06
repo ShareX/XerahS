@@ -55,26 +55,6 @@
             </ListBox>
         </Grid>
 
-        <!-- Wizard Overlay -->
-        <Border Background="{DynamicResource SolidBackgroundFillColorBase}" IsVisible="{Binding IsWizardOpen}" 
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
-                Margin="40" CornerRadius="12" BoxShadow="0 0 20 0 #40000000"
-                Grid.RowSpan="2">
-            <Grid RowDefinitions="*, Auto">
-                
-                <!-- Wizard View -->
-                <views:WorkflowWizardView Grid.Row="0" DataContext="{Binding WizardViewModel}"/>
-                
-                <!-- Bottom Action Bar -->
-                <Border Grid.Row="1" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
-                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0"
-                        CornerRadius="0,0,12,12" Padding="20">
-                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                        <Button Content="Cancel" Command="{Binding CloseWizardCommand}"/>
-                        <Button Content="{Binding WizardViewModel.ButtonText, FallbackValue=Create}" Classes="accent" Command="{Binding CompleteWizardCommand}"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </Border>
+
     </Grid>
 </UserControl>
