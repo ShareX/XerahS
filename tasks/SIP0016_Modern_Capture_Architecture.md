@@ -14,6 +14,11 @@ The implementation will be executed in three distinct stages, prioritizing the W
 ### Stage 1: Windows - Direct3D11 & WinRT Integration
 **Objective**: Replace the legacy GDI+ (`System.Drawing`) capture method with a hardware-accelerated solution using Direct3D11 and Windows Runtime (WinRT) APIs.
 
+**Current Implementation Status**: ✅ Complete
+- `WindowsModernCaptureService` implemented using `Vortice.Direct3D11`/`DXGI`.
+- Supports hardware-accelerated capture on Windows 10 (17763)+.
+- Automatically falls back to GDI+ on older systems or if modern capture fails.
+
 **Technical Requirements**:
 *   **Direct3D11 Device Management**: Implement management of D3D11 devices and contexts to handle GPU resources efficiently.
 *   **Windows.Graphics.Capture API**: Utilize the `Windows.Graphics.Capture` namespace (introducted in Windows 10 build 1803) for high-performance frame capture.
@@ -27,8 +32,10 @@ The implementation will be executed in three distinct stages, prioritizing the W
 ### Stage 2: Linux - XDG Portals & Wayland Support
 **Objective**: Replace the current `StubScreenCaptureService` in `ShareX.Avalonia.Platform.Linux` with a functional implementation using XDG Desktop Portals.
 
-> [!NOTE]
-> The `ShareX.Avalonia.Platform.Linux` project already exists with a `StubScreenCaptureService` that returns `null` for all capture methods. This stage will implement a real `LinuxScreenCaptureService`.
+**Current Implementation Status**: ✅ Complete
+- `LinuxScreenCaptureService` implemented with robust fallback chain.
+- Supports `gnome-screenshot`, `spectacle` (KDE), `scrot`, and `import`.
+- Works on both Wayland and X11 sessions.
 
 **Technical Requirements**:
 *   **DBus Communication**: Implement a DBus client to communicate with session services.

@@ -89,12 +89,23 @@ namespace ShareX.Ava.App
                 // Create Windows platform services
                 var screenService = new ShareX.Ava.Platform.Windows.WindowsScreenService();
 
-                // Create Windows capture service (GDI+)
-                var winCaptureService = new ShareX.Ava.Platform.Windows.WindowsScreenCaptureService(screenService);
+                // Create Windows capture service
+                ShareX.Ava.Platform.Abstractions.IScreenCaptureService realCaptureService;
+
+                if (ShareX.Ava.Platform.Windows.WindowsModernCaptureService.IsSupported)
+                {
+                    ShareX.Ava.Common.DebugHelper.WriteLine("Windows: Using WindowsModernCaptureService (Direct3D11/DXGI)");
+                    realCaptureService = new ShareX.Ava.Platform.Windows.WindowsModernCaptureService(screenService);
+                }
+                else
+                {
+                    ShareX.Ava.Common.DebugHelper.WriteLine("Windows: Using WindowsScreenCaptureService (GDI+)");
+                    realCaptureService = new ShareX.Ava.Platform.Windows.WindowsScreenCaptureService(screenService);
+                }
 
                 // Create UI capture service (Wrapper with Region UI)
-                // This delegates to winCaptureService for actual capture
-                var uiCaptureService = new ShareX.Ava.UI.Services.ScreenCaptureService(winCaptureService);
+                // This delegates to realCaptureService for actual capture
+                var uiCaptureService = new ShareX.Ava.UI.Services.ScreenCaptureService(realCaptureService);
 
                 // Initialize Windows platform with our UI wrapper
                 ShareX.Ava.Platform.Windows.WindowsPlatform.Initialize(uiCaptureService);
@@ -103,6 +114,7 @@ namespace ShareX.Ava.App
 #elif MACOS
             if (OperatingSystem.IsMacOS())
             {
+                ShareX.Ava.Common.DebugHelper.WriteLine("macOS: Using MacOSScreenshotService (screencapture CLI)");
                 var macCaptureService = new ShareX.Ava.Platform.MacOS.MacOSScreenshotService();
                 var uiCaptureService = new ShareX.Ava.UI.Services.ScreenCaptureService(macCaptureService);
 
