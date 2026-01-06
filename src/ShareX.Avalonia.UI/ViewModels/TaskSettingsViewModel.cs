@@ -8,9 +8,12 @@ namespace ShareX.Ava.UI.ViewModels
     {
         private TaskSettings _settings;
 
+        public ImageEffectsViewModel ImageEffects { get; private set; }
+
         public TaskSettingsViewModel(TaskSettings settings)
         {
             _settings = settings;
+            ImageEffects = new ImageEffectsViewModel(Model.ImageSettings);
         }
 
         // Expose underlying model if needed

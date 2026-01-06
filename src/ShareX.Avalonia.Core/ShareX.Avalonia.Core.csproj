@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -10,6 +11,7 @@
     <ProjectReference Include="..\ShareX.Avalonia.History\ShareX.Avalonia.History.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.History\ShareX.Avalonia.History.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Uploaders\ShareX.Avalonia.Uploaders.csproj" />
+    <ProjectReference Include="..\..\..\ShareX.Editor\src\ShareX.Editor\ShareX.Editor.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SkiaSharp" Version="2.88.9" />

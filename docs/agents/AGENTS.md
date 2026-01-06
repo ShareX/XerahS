@@ -108,6 +108,14 @@ This project uses multiple AI developer agents working in parallel. See [MULTI_A
   3. Push to the repository (`git push`).
   **Do not ask for permission** for this step if the build is successful. Only stop if the build fails.
 
+## SkiaSharp Version Constraint
+
+**IMPORTANT (Until Avalonia 12 is released):** All `.csproj` files in this repository MUST use **SkiaSharp version 2.88.9**. Do NOT upgrade to SkiaSharp 3.x as it is incompatible with Avalonia 11.x.
+
+- When adding SkiaSharp to a new project: `<PackageReference Include="SkiaSharp" Version="2.88.9" />`
+- If you encounter version conflicts, always downgrade to 2.88.9.
+- This constraint applies to all projects including `ShareX.Avalonia.*` and `ShareX.Editor`.
+
 ## Historical Comparisons and Parity
 
 When asked to ensure feature parity with a specific historical commit or "make it identical to commit X":

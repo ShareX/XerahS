@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using Newtonsoft.Json;
 using ShareX.Ava.Common;
+using ShareX.Editor.ImageEffects;
 
 namespace ShareX.Ava.Core;
 
@@ -18,13 +19,17 @@ public class ImageEffectPreset
 {
     public string Name { get; set; } = "";
 
-    // TODO: Add Effects list when ShareX.Editor reference is added
-    // [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto)]
-    // public List<ImageEffect> Effects { get; set; } = new();
+    [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto)]
+    public List<ImageEffect> Effects { get; set; } = new();
 
     public static ImageEffectPreset GetDefaultPreset()
     {
         return new ImageEffectPreset { Name = "Default" };
+    }
+
+    public override string ToString()
+    {
+        return Name;
     }
 }
 

@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:ShareX.Ava.UI.ViewModels"
+             xmlns:controls="using:ShareX.Ava.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ShareX.Ava.UI.Views.TaskSettingsPanel"
              x:DataType="vm:TaskSettingsViewModel">
@@ -55,9 +56,57 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- Image Tab -->
             <TabItem Header="Image">
-                 <TextBlock Text="Image settings placeholder" Margin="20" Foreground="Gray"/>
+                <Grid ColumnDefinitions="*, 2*" Margin="10">
+                    <!-- Presets -->
+                    <DockPanel Grid.Column="0" Margin="0,0,10,0">
+                        <TextBlock Text="Presets:" DockPanel.Dock="Top" Margin="0,0,0,5"/>
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="5" Margin="0,0,0,5">
+                            <Button Command="{Binding ImageEffects.AddPresetCommand}" Content="Add"/>
+                            <Button Command="{Binding ImageEffects.RemovePresetCommand}" Content="Remove"/>
+                        </StackPanel>
+                        <ListBox ItemsSource="{Binding ImageEffects.Presets}" SelectedItem="{Binding ImageEffects.SelectedPreset}" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
+                    </DockPanel>
+
+                    <!-- Effects Editor -->
+                    <Grid Grid.Column="1" ColumnDefinitions="*, *" Margin="5">
+                        <!-- Effects List -->
+                        <DockPanel Grid.Column="0" Margin="0,0,5,0">
+                            <TextBlock Text="Effects:" DockPanel.Dock="Top" Margin="0,0,0,5"/>
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="5" Margin="0,0,0,5">
+                                <Button Content="Add...">
+                                    <Button.Flyout>
+                                        <Flyout Placement="BottomEdgeAlignedLeft" ShowMode="Standard">
+                                            <Menu ItemsSource="{Binding ImageEffects.AvailableEffects}">
+                                                <Menu.Styles>
+                                                    <Style Selector="MenuItem" x:DataType="vm:EffectCategory">
+                                                        <Setter Property="Header" Value="{Binding Name}"/>
+                                                        <Setter Property="ItemsSource" Value="{Binding Effects}"/>
+                                                    </Style>
+                                                    <Style Selector="MenuItem" x:DataType="vm:EffectType">
+                                                        <Setter Property="Header" Value="{Binding Name}"/>
+                                                        <Setter Property="Command" Value="{Binding $parent[UserControl].DataContext.ImageEffects.AddEffectCommand}"/>
+                                                        <Setter Property="CommandParameter" Value="{Binding Type}"/>
+                                                    </Style>
+                                                </Menu.Styles>
+                                            </Menu>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
+                                <Button Command="{Binding ImageEffects.RemoveEffectCommand}" Content="Remove"/>
+                            </StackPanel>
+                            <ListBox ItemsSource="{Binding ImageEffects.Effects}" SelectedItem="{Binding ImageEffects.SelectedEffect}" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
+                        </DockPanel>
+
+                        <!-- Property Grid -->
+                        <DockPanel Grid.Column="1">
+                            <TextBlock Text="Properties:" DockPanel.Dock="Top" Margin="0,0,0,5"/>
+                            <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+                                <controls:PropertyGrid SelectedObject="{Binding ImageEffects.SelectedEffect}" Margin="5"/>
+                            </Border>
+                        </DockPanel>
+                    </Grid>
+                </Grid>
             </TabItem>
 
             <!-- Upload Tab -->
