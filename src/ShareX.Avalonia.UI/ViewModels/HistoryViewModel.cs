@@ -68,6 +68,11 @@ namespace ShareX.Ava.UI.ViewModels
 
             _historyManager = new HistoryManagerSQLite(historyPath);
             
+            // Configure backup settings similar to JSON files
+            _historyManager.BackupFolder = SettingManager.HistoryBackupFolder;
+            _historyManager.CreateBackup = true;
+            _historyManager.CreateWeeklyBackup = true;
+            
             // Don't load history in constructor - do it asynchronously after view is displayed
             LoadHistoryAsync();
         }

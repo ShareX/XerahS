@@ -109,7 +109,7 @@ namespace ShareX.Ava.History
             {
                 if (CreateBackup)
                 {
-                    FileHelpers.CopyFile(filePath, BackupFolder);
+                    FileHelpers.BackupFileZip(filePath, BackupFolder);
                 }
 
                 if (CreateWeeklyBackup)

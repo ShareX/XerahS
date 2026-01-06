@@ -157,6 +157,9 @@ SELECT last_insert_rowid();";
                 transaction.Commit();
             }
 
+            // Backup database after successful write
+            Backup(FilePath);
+
             return true;
         }
 

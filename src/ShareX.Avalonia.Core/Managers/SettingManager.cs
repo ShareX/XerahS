@@ -77,9 +77,19 @@ namespace ShareX.Ava.Core
         public static string SettingsFolder => Path.Combine(PersonalFolder, SettingsFolderName);
 
         /// <summary>
+        /// History folder path
+        /// </summary>
+        public static string HistoryFolder => Path.Combine(PersonalFolder, ShareXResources.HistoryFolderName);
+
+        /// <summary>
         /// Backup folder path
         /// </summary>
         public static string BackupFolder => Path.Combine(SettingsFolder, BackupFolderName);
+
+        /// <summary>
+        /// History backup folder path
+        /// </summary>
+        public static string HistoryBackupFolder => Path.Combine(HistoryFolder, BackupFolderName);
 
         /// <summary>
         /// Application config file path
@@ -364,14 +374,24 @@ namespace ShareX.Ava.Core
             {
                 FileHelpers.CreateDirectory(BackupFolder);
             }
+
+            if (!string.IsNullOrEmpty(HistoryFolder))
+            {
+                FileHelpers.CreateDirectory(HistoryFolder);
+            }
+
+            if (!string.IsNullOrEmpty(HistoryBackupFolder))
+            {
+                FileHelpers.CreateDirectory(HistoryBackupFolder);
+            }
         }
 
         /// <summary>
-        /// Returns the history file path in the current settings folder and logs it.
+        /// Returns the history file path in the dedicated History folder.
         /// </summary>
         public static string GetHistoryFilePath()
         {
-            var path = Path.Combine(PersonalFolder, ShareXResources.HistoryFileName);
+            var path = Path.Combine(HistoryFolder, ShareXResources.HistoryFileName);
             DebugHelper.WriteLine($"History file path: {path} (exists={File.Exists(path)})");
             return path;
         }

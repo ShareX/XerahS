@@ -410,6 +410,83 @@ public static class FileHelpers
         return null;
     }
 
+    public static string? BackupFileZip(string filePath, string destinationFolder)
+    {
+        if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+        {
+            return null;
+        }
+
+        try
+        {
+            // Create yyyy-MM subfolder
+            string monthFolder = Path.Combine(destinationFolder, DateTime.Now.ToString("yyyy-MM"));
+            if (!Directory.Exists(monthFolder))
+            {
+                Directory.CreateDirectory(monthFolder);
+            }
+
+            // Create zip file with date stamp: yyyy-MM-dd format
+            string zipFileName = $"backup-{DateTime.Now:yyyy-MM-dd}.zip";
+            string zipFilePath = Path.Combine(monthFolder, zipFileName);
+
+            // If a backup for today already exists, delete it (we're updating with latest)
+            if (File.Exists(zipFilePath))
+            {
+                File.Delete(zipFilePath);
+            }
+
+            // Create zip file containing the database file and its associated files
+            using (var archive = System.IO.Compression.ZipFile.Open(zipFilePath, System.IO.Compression.ZipArchiveMode.Create))
+            {
+                string fileName = Path.GetFileName(filePath);
+                using (var fileStream = File.OpenRead(filePath))
+                {
+                    var entry = archive.CreateEntry(fileName);
+                    using (var entryStream = entry.Open())
+                    {
+                        fileStream.CopyTo(entryStream);
+                    }
+                }
+
+                // For SQLite databases, also backup WAL and SHM files if they exist
+                string walFile = filePath + "-wal";
+                string shmFile = filePath + "-shm";
+
+                if (File.Exists(walFile))
+                {
+                    using (var fileStream = File.OpenRead(walFile))
+                    {
+                        var entry = archive.CreateEntry(Path.GetFileName(walFile));
+                        using (var entryStream = entry.Open())
+                        {
+                            fileStream.CopyTo(entryStream);
+                        }
+                    }
+                }
+
+                if (File.Exists(shmFile))
+                {
+                    using (var fileStream = File.OpenRead(shmFile))
+                    {
+                        var entry = archive.CreateEntry(Path.GetFileName(shmFile));
+                        using (var entryStream = entry.Open())
+                        {
+                            fileStream.CopyTo(entryStream);
+                        }
+                    }
+                }
+            }
+
+            return zipFilePath;
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine($"Failed to create backup: {e}");
+            return null;
+        }
+    }
+
     private static int WeekOfYear(DateTime dateTime)
     {
         return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTime, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
