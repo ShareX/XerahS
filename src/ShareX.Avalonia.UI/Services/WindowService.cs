@@ -83,5 +83,11 @@ namespace ShareX.Ava.UI.Services
             // TODO: Implement using platform-specific APIs
             return 0;
         }
+
+        public IntPtr SearchWindow(string windowTitle)
+        {
+            // TODO: Implement using platform-specific APIs
+            return IntPtr.Zero;
+        }
     }
 }

@@ -179,5 +179,23 @@ namespace ShareX.Ava.Platform.Linux
         {
              return 0;
         }
+
+        public IntPtr SearchWindow(string windowTitle)
+        {
+            // TODO: Implement proper X11 window search
+            if (string.IsNullOrEmpty(windowTitle) || _display == IntPtr.Zero)
+                return IntPtr.Zero;
+
+            // Fallback: iterate through all windows and find one with matching title
+            var windows = GetAllWindows();
+            foreach (var w in windows)
+            {
+                if (!string.IsNullOrEmpty(w.Title) && w.Title.Contains(windowTitle, StringComparison.OrdinalIgnoreCase))
+                {
+                    return w.Handle;
+                }
+            }
+            return IntPtr.Zero;
+        }
     }
 }

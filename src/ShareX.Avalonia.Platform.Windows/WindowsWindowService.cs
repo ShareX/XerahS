@@ -160,5 +160,39 @@ namespace ShareX.Ava.Platform.Windows
             NativeMethods.GetWindowThreadProcessId(handle, out uint processId);
             return processId;
         }
+
+        public IntPtr SearchWindow(string windowTitle)
+        {
+            if (string.IsNullOrEmpty(windowTitle))
+                return IntPtr.Zero;
+
+            // First, try exact match using FindWindow
+            IntPtr hWnd = NativeMethods.FindWindow(null, windowTitle);
+
+            if (hWnd == IntPtr.Zero)
+            {
+                // Fallback: iterate through all processes and find one with matching main window title
+                foreach (var process in System.Diagnostics.Process.GetProcesses())
+                {
+                    try
+                    {
+                        if (process.MainWindowTitle.Contains(windowTitle, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return process.MainWindowHandle;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore access denied exceptions for system processes
+                    }
+                    finally
+                    {
+                        process.Dispose();
+                    }
+                }
+            }
+
+            return hWnd;
+        }
     }
 }

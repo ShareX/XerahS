@@ -165,6 +165,20 @@ namespace ShareX.Ava.Platform.MacOS
             return TryGetFrontWindowInfo(out _, out _, out var pid) ? pid : 0;
         }
 
+        public IntPtr SearchWindow(string windowTitle)
+        {
+            // TODO: Implement proper macOS window search via AppleScript
+            // For now, check if front window matches
+            if (TryGetFrontWindowInfo(out var title, out _, out _))
+            {
+                if (!string.IsNullOrEmpty(title) && title.Contains(windowTitle, StringComparison.OrdinalIgnoreCase))
+                {
+                    return IntPtr.Zero; // macOS doesn't use handles the same way
+                }
+            }
+            return IntPtr.Zero;
+        }
+
         private static void LogNotImplemented(string memberName)
         {
             lock (WarnLock)

@@ -180,11 +180,17 @@ namespace ShareX.Ava.Core.Tasks
                                 if (selectedWindow != null)
                                 {
                                     Log($"User selected window: '{selectedWindow.Title}' (Handle: {selectedWindow.Handle})");
-                                    targetWindow = selectedWindow.Title;
-                                    PlatformServices.Window.SetForegroundWindow(selectedWindow.Handle);
-                                    await Task.Delay(250, token);
-                                    image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
-                                    Log($"Capture active window result: {image != null}");
+                                    Log($"Window bounds: X={selectedWindow.Bounds.X}, Y={selectedWindow.Bounds.Y}, W={selectedWindow.Bounds.Width}, H={selectedWindow.Bounds.Height}");
+                                    
+                                    // Capture using window bounds directly (not by making it active)
+                                    var windowRect = new SKRectI(
+                                        selectedWindow.Bounds.X, 
+                                        selectedWindow.Bounds.Y, 
+                                        selectedWindow.Bounds.X + selectedWindow.Bounds.Width, 
+                                        selectedWindow.Bounds.Y + selectedWindow.Bounds.Height);
+                                    
+                                    image = await PlatformServices.ScreenCapture.CaptureRectAsync(windowRect);
+                                    Log($"Capture window rect result: {image != null}");
                                 }
                                 else
                                 {
@@ -198,41 +204,44 @@ namespace ShareX.Ava.Core.Tasks
                                 DebugHelper.WriteLine("Custom window capture failed: Window selector not available");
                             }
                         }
-                        else if (!string.IsNullOrEmpty(targetWindow))
+                        else
                         {
-                            var windows = PlatformServices.Window.GetAllWindows();
-                            Log($"Total open windows found: {windows.Length}");
+                            // Use SearchWindow to find the target window (matches original ShareX behavior)
+                            Log($"Searching for window using SearchWindow: '{targetWindow}'");
+                            IntPtr hWnd = PlatformServices.Window.SearchWindow(targetWindow);
 
-                            foreach (var w in windows) 
+                            if (hWnd != IntPtr.Zero)
                             {
-                                if (w.Title.Contains(targetWindow, StringComparison.OrdinalIgnoreCase))
+                                Log($"Window found with handle: {hWnd}");
+                                
+                                // Get window bounds for logging and potential restore
+                                var bounds = PlatformServices.Window.GetWindowBounds(hWnd);
+                                Log($"Window bounds: X={bounds.X}, Y={bounds.Y}, W={bounds.Width}, H={bounds.Height}");
+                                
+                                // Restore if minimized (like original ShareX)
+                                if (PlatformServices.Window.IsWindowMinimized(hWnd))
                                 {
-                                     Log($"[MATCH] Window found: '{w.Title}' (Handle: {w.Handle})");
+                                    Log("Window is minimized, restoring...");
+                                    PlatformServices.Window.ShowWindow(hWnd, 9); // SW_RESTORE = 9
+                                    await Task.Delay(250, token);
                                 }
-                                else 
+
+                                // Activate the window if not already active (like original ShareX)
+                                if (PlatformServices.Window.GetForegroundWindow() != hWnd)
                                 {
-                                     // Log all windows to see what's available
-                                     // Log($"[NO MATCH] '{w.Title}'"); 
+                                    Log("Activating window...");
+                                    PlatformServices.Window.SetForegroundWindow(hWnd);
+                                    await Task.Delay(100, token);
                                 }
-                            }
 
-                            var winInfo = windows.FirstOrDefault(w => w.Title.Contains(targetWindow, StringComparison.OrdinalIgnoreCase));
-
-                            if (winInfo != null && winInfo.Handle != IntPtr.Zero)
-                            {
-                                Log($"Activating window handle {winInfo.Handle}");
-                                PlatformServices.Window.SetForegroundWindow(winInfo.Handle);
-
-                                // Give it a moment to come to foreground
-                                await Task.Delay(250, token);
-
+                                // Capture the active window
                                 image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
                                 Log($"Capture active window result: {image != null}");
                             }
                             else
                             {
-                                Log($"Window with title containing '{targetWindow}' not found.");
-                                DebugHelper.WriteLine($"Custom window capture failed: Window with title containing '{targetWindow}' not found.");
+                                Log($"Window with title containing '{targetWindow}' not found via SearchWindow.");
+                                DebugHelper.WriteLine($"Custom window capture failed: Unable to find window with title '{targetWindow}'.");
                             }
                         }
                     }

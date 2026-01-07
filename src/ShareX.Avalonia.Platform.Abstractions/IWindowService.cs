@@ -97,6 +97,13 @@ namespace ShareX.Ava.Platform.Abstractions
         /// Gets the process ID of the window
         /// </summary>
         uint GetWindowProcessId(IntPtr handle);
+
+        /// <summary>
+        /// Searches for a window by title. First tries exact match, then partial/contains match.
+        /// </summary>
+        /// <param name="windowTitle">Title or partial title to search for</param>
+        /// <returns>Window handle if found, IntPtr.Zero otherwise</returns>
+        IntPtr SearchWindow(string windowTitle);
     }
 
     /// <summary>
