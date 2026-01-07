@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
 using ShareX.Ava.Common;
+using ShareX.Ava.Core;
 using ShareX.Ava.UI.Views;
 using ShareX.Editor.ViewModels;
 using ShareX.Ava.Uploaders.PluginSystem;
@@ -38,9 +39,44 @@ public partial class App : Application
             {
                 ShareX.Ava.Core.SettingManager.SaveAllSettings();
             };
+
+            // Subscribe to workflow completion for notification
+            Core.Managers.TaskManager.Instance.TaskCompleted += OnWorkflowTaskCompleted;
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void OnWorkflowTaskCompleted(object? sender, Core.Tasks.WorkerTask task)
+    {
+        // Check if notification should be shown
+        var taskSettings = task.Info?.TaskSettings ?? SettingManager.Settings.DefaultTaskSettings;
+        if (taskSettings?.GeneralSettings?.ShowToastNotificationAfterTaskCompleted == true)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    // Show a simple notification via tray icon
+                    // Note: Full INotificationService implementation would be better, using simple approach for now
+                    var message = task.Info?.FileName ?? "Task completed";
+                    DebugHelper.WriteLine($"Workflow completed: {message}");
+                    
+                    // TODO: Implement platform-specific notification (Windows toast, macOS notification center, etc.)
+                    // For now, log and optionally show via main window
+                }
+                catch (Exception ex)
+                {
+                    DebugHelper.WriteException(ex, "Failed to show workflow notification");
+                }
+            });
+        }
+    }
+
+    private void TrayIcon_Clicked(object? sender, EventArgs e)
+    {
+        // The TrayIconHelper handles the action based on settings
+        // This is triggered on left-click via the Command binding
     }
 
     public Core.Hotkeys.HotkeyManager? HotkeyManager { get; private set; }

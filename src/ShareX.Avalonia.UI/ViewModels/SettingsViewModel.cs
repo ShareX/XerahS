@@ -197,6 +197,49 @@ namespace ShareX.Ava.UI.ViewModels
             ShareX.Ava.Core.Integration.IntegrationHelper.SetPluginExtensionRegistration(value);
         }
 
+        // OS Integration Settings
+        public bool RunAtStartup
+        {
+            get => SettingManager.Settings.RunAtStartup;
+            set
+            {
+                if (SettingManager.Settings.RunAtStartup != value)
+                {
+                    SettingManager.Settings.RunAtStartup = value;
+                    OnPropertyChanged();
+                    // TODO: Call platform-specific startup registration service
+                }
+            }
+        }
+
+        public bool EnableContextMenuIntegration
+        {
+            get => SettingManager.Settings.EnableContextMenuIntegration;
+            set
+            {
+                if (SettingManager.Settings.EnableContextMenuIntegration != value)
+                {
+                    SettingManager.Settings.EnableContextMenuIntegration = value;
+                    OnPropertyChanged();
+                    // TODO: Call platform-specific context menu registration service
+                }
+            }
+        }
+
+        public bool EnableSendToIntegration
+        {
+            get => SettingManager.Settings.EnableSendToIntegration;
+            set
+            {
+                if (SettingManager.Settings.EnableSendToIntegration != value)
+                {
+                    SettingManager.Settings.EnableSendToIntegration = value;
+                    OnPropertyChanged();
+                    // TODO: Call platform-specific Send To registration service
+                }
+            }
+        }
+
         // Task Settings - General
         [ObservableProperty]
         private bool _playSoundAfterCapture;

@@ -155,26 +155,32 @@
             <TabItem Header="Integration">
                 <ScrollViewer>
                     <StackPanel Margin="20" Spacing="20">
-                        <!-- Windows Integration -->
+                        <!-- OS Integration -->
                         <StackPanel Spacing="10">
-                            <TextBlock Text="Windows" FontWeight="SemiBold"/>
+                            <TextBlock Text="System Integration" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
                                 <StackPanel Spacing="10">
+                                    <CheckBox IsChecked="{Binding RunAtStartup}" 
+                                              Content="Run at system startup"/>
+                                    <CheckBox IsChecked="{Binding EnableContextMenuIntegration}" 
+                                              Content="Add 'Upload with ShareX' to context menu"
+                                              ToolTip.Tip="Adds an option to upload files from the right-click context menu"/>
+                                    <CheckBox IsChecked="{Binding EnableSendToIntegration}" 
+                                              Content="Add to 'Send To' menu"
+                                              ToolTip.Tip="Adds ShareX to the 'Send To' menu for quick file access"/>
+                                              
+                                    <Separator Margin="0,5"/>
+                                    <TextBlock Text="File Associations" FontWeight="SemiBold" FontSize="12"/>
+                                    
                                     <CheckBox Content="Associate .xsdp files with this application"
                                               IsChecked="{Binding IsPluginExtensionRegistered}"
                                               IsVisible="{Binding SupportsFileAssociations}"
                                               ToolTip.Tip="Allows double-clicking .xsdp plugin packages to install them"/>
                                     
-                                    <TextBlock Text="Note: File associations require Windows and are managed through the Windows Registry."
+                                    <TextBlock Text="Note: Some integration features require platform-specific support and may not be available on all systems."
                                                FontSize="11"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                               TextWrapping="Wrap"
-                                               IsVisible="{Binding SupportsFileAssociations}"/>
-                                    
-                                    <TextBlock Text="File associations are not supported on this platform."
-                                               FontSize="11"
-                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                               IsVisible="{Binding !SupportsFileAssociations}"/>
+                                               TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

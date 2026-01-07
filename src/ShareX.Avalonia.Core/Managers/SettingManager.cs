@@ -72,6 +72,19 @@ namespace ShareX.Ava.Core
         private static string _personalFolder = "";
 
         /// <summary>
+        /// Event raised when settings are saved
+        /// </summary>
+        public static event EventHandler? SettingsChanged;
+
+        /// <summary>
+        /// Raises the SettingsChanged event
+        /// </summary>
+        public static void RaiseSettingsChanged()
+        {
+            SettingsChanged?.Invoke(null, EventArgs.Empty);
+        }
+
+        /// <summary>
         /// Folder containing settings files
         /// </summary>
         public static string SettingsFolder => Path.Combine(PersonalFolder, SettingsFolderName);
@@ -248,6 +261,7 @@ namespace ShareX.Ava.Core
         {
             UpdateRecentTasks();
             Settings?.Save(ApplicationConfigFilePath);
+            RaiseSettingsChanged();
         }
 
         public static void SaveApplicationConfigAsync()

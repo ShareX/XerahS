@@ -75,6 +75,11 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
     public UpdateChannel UpdateChannel = UpdateChannel.Release;
     public bool CheckPreReleaseUpdates = false;
 
+    // OS Integration (platform-agnostic naming)
+    public bool RunAtStartup = false;
+    public bool EnableContextMenuIntegration = false;
+    public bool EnableSendToIntegration = false;
+
     #endregion Settings - General
 
     #region Settings - Theme

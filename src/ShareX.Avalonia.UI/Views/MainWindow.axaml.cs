@@ -261,6 +261,37 @@ namespace ShareX.Ava.UI.Views
             }
             
             this.Activate();
+this.Focus();
+        }
+
+        public void NavigateToSettings()
+        {
+            var navView = this.FindControl<NavigationView>("NavView");
+            if (navView != null)
+            {
+                // Navigate to Settings (Tag="Settings")
+                foreach (var item in navView.MenuItems)
+                {
+                    if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == "Settings")
+                    {
+                        navView.SelectedItem = navItem;
+                        break;
+                    }
+                }
+            }
+
+            // Ensure window is visible and active
+            if (!this.IsVisible)
+            {
+                this.Show();
+            }
+
+            if (this.WindowState == Avalonia.Controls.WindowState.Minimized)
+            {
+                this.WindowState = Avalonia.Controls.WindowState.Normal;
+            }
+
+            this.Activate();
             this.Focus();
         }
 

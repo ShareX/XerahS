@@ -5,6 +5,7 @@
              xmlns:views="using:ShareX.Ava.UI.Views"
              xmlns:converters="clr-namespace:ShareX.Editor.Converters;assembly=ShareX.Editor"
              xmlns:sty="using:FluentAvalonia.Styling"
+             xmlns:core="using:ShareX.Ava.Core"
              x:Class="ShareX.Ava.UI.App"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
@@ -43,4 +44,27 @@
             <Setter Property="BorderBrush" Value="#8B5CF6"/>
         </Style>
     </Application.Styles>
+
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon Icon="avares://ShareX.Avalonia.UI/Assets/Icons/sharex16.ico"
+                      ToolTipText="ShareX"
+                      IsVisible="{Binding ShowTray, Source={x:Static local:TrayIconHelper.Instance}}"
+                      Command="{Binding TrayClickCommand, Source={x:Static local:TrayIconHelper.Instance}}"
+                      Clicked="TrayIcon_Clicked">
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Capture Region" Command="{Binding CaptureRegionCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
+                        <NativeMenuItem Header="Capture Screen" Command="{Binding CaptureScreenCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
+                        <NativeMenuItem Header="Capture Window" Command="{Binding CaptureWindowCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
+                        <NativeMenuItemSeparator/>
+                        <NativeMenuItem Header="Open Main Window" Command="{Binding OpenMainWindowCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
+                        <NativeMenuItem Header="Settings" Command="{Binding OpenSettingsCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
+                        <NativeMenuItemSeparator/>
+                        <NativeMenuItem Header="Exit" Command="{Binding ExitCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
+                    </NativeMenu>
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
 </Application>
