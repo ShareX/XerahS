@@ -89,5 +89,11 @@ namespace ShareX.Ava.UI.Services
             // TODO: Implement using platform-specific APIs
             return IntPtr.Zero;
         }
+
+        public bool ActivateWindow(IntPtr handle)
+        {
+            // TODO: Implement using platform-specific APIs
+            return false;
+        }
     }
 }

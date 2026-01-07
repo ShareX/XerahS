@@ -74,6 +74,7 @@ namespace ShareX.Ava.Platform.Linux
         public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureRectAsync(SkiaSharp.SKRect rect, CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
         public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
         public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
+        public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureWindowAsync(System.IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
     }
 
     internal class StubHotkeyService : IHotkeyService

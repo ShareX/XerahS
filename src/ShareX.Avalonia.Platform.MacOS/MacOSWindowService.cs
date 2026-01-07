@@ -179,6 +179,12 @@ namespace ShareX.Ava.Platform.MacOS
             return IntPtr.Zero;
         }
 
+        public bool ActivateWindow(IntPtr handle)
+        {
+            // macOS uses AppleScript, SetForegroundWindow already does this
+            return SetForegroundWindow(handle);
+        }
+
         private static void LogNotImplemented(string memberName)
         {
             lock (WarnLock)

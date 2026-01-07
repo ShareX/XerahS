@@ -104,6 +104,13 @@ namespace ShareX.Ava.Platform.Abstractions
         /// <param name="windowTitle">Title or partial title to search for</param>
         /// <returns>Window handle if found, IntPtr.Zero otherwise</returns>
         IntPtr SearchWindow(string windowTitle);
+
+        /// <summary>
+        /// Activates a window, bringing it to the foreground. Uses robust activation techniques.
+        /// </summary>
+        /// <param name="handle">Window handle to activate</param>
+        /// <returns>True if window was successfully activated</returns>
+        bool ActivateWindow(IntPtr handle);
     }
 
     /// <summary>

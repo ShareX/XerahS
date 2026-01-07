@@ -114,5 +114,10 @@ namespace ShareX.Ava.UI.Services
 
             return result;
         }
+
+        public Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
+        {
+            return _platformImpl.CaptureWindowAsync(windowHandle, windowService, options);
+        }
     }
 }

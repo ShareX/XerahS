@@ -197,5 +197,11 @@ namespace ShareX.Ava.Platform.Linux
             }
             return IntPtr.Zero;
         }
+
+        public bool ActivateWindow(IntPtr handle)
+        {
+            // Use SetForegroundWindow which does XSetInputFocus + XRaiseWindow
+            return SetForegroundWindow(handle);
+        }
     }
 }

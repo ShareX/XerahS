@@ -111,6 +111,11 @@ namespace ShareX.Ava.Platform.MacOS
             return _fallbackService.CaptureActiveWindowAsync(windowService, options);
         }
 
+        public Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
+        {
+            return _fallbackService.CaptureWindowAsync(windowHandle, windowService, options);
+        }
+
         private SKBitmap? CaptureFullscreenNative()
         {
             var stopwatch = Stopwatch.StartNew();

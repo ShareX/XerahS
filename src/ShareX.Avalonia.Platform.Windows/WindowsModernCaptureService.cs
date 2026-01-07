@@ -150,6 +150,16 @@ namespace ShareX.Ava.Platform.Windows
             return await CaptureRectAsync(new SKRect(bounds.X, bounds.Y, bounds.Right, bounds.Bottom), options);
         }
 
+        public async Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
+        {
+            if (windowHandle == IntPtr.Zero) return null;
+
+            var bounds = windowService.GetWindowBounds(windowHandle);
+            if (bounds.Width <= 0 || bounds.Height <= 0) return null;
+
+            return await CaptureRectAsync(new SKRect(bounds.X, bounds.Y, bounds.Right, bounds.Bottom), options);
+        }
+
         /// <summary>
         /// Captures the entire virtual screen using DXGI Output Duplication
         /// </summary>

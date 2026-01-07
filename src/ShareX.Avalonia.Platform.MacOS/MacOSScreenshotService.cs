@@ -65,6 +65,16 @@ namespace ShareX.Ava.Platform.MacOS
             return CaptureWithArgumentsAsync("-w -t png");
         }
 
+        public Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
+        {
+            // macOS doesn't have direct window-by-handle capture via screencapture CLI
+            // Get bounds and capture rect as fallback
+            if (windowHandle == IntPtr.Zero) return Task.FromResult<SKBitmap?>(null);
+            var bounds = windowService.GetWindowBounds(windowHandle);
+            if (bounds.Width <= 0 || bounds.Height <= 0) return Task.FromResult<SKBitmap?>(null);
+            return CaptureRectAsync(new SKRect(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height), options);
+        }
+
         private static Task<SKBitmap?> CaptureWithArgumentsAsync(string arguments)
         {
             return Task.Run<SKBitmap?>(() =>

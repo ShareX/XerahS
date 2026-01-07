@@ -119,6 +119,16 @@ namespace ShareX.Ava.Platform.Linux
             return await CaptureFullScreenAsync();
         }
 
+        public async Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
+        {
+            // TODO: Implement Linux window capture by handle
+            // For now, get bounds and capture rect
+            if (windowHandle == IntPtr.Zero) return null;
+            var bounds = windowService.GetWindowBounds(windowHandle);
+            if (bounds.Width <= 0 || bounds.Height <= 0) return null;
+            return await CaptureRectAsync(new SKRect(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height), options);
+        }
+
         /// <summary>
         /// Capture using gnome-screenshot (GNOME desktop)
         /// </summary>

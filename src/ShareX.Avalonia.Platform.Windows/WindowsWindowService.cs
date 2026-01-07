@@ -194,5 +194,44 @@ namespace ShareX.Ava.Platform.Windows
 
             return hWnd;
         }
+
+        public bool ActivateWindow(IntPtr handle)
+        {
+            if (handle == IntPtr.Zero)
+                return false;
+
+            try
+            {
+                // Restore if minimized
+                if (NativeMethods.IsIconic(handle))
+                {
+                    NativeMethods.ShowWindow(handle, 9); // SW_RESTORE = 9
+                }
+
+                // Try standard activation first
+                NativeMethods.SetForegroundWindow(handle);
+
+                // Check if it worked
+                if (NativeMethods.GetForegroundWindow() == handle)
+                    return true;
+
+                // Workaround: Simulate Alt key press to bypass foreground lock
+                // This is a common technique when SetForegroundWindow fails
+                NativeMethods.keybd_event(0x12, 0, 0, UIntPtr.Zero); // VK_MENU (Alt) down
+                NativeMethods.keybd_event(0x12, 0, 2, UIntPtr.Zero); // VK_MENU up
+
+                // Try again
+                NativeMethods.SetForegroundWindow(handle);
+
+                // Use BringWindowToTop as additional measure
+                NativeMethods.BringWindowToTop(handle);
+
+                return NativeMethods.GetForegroundWindow() == handle;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

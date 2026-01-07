@@ -167,18 +167,44 @@ namespace ShareX.Ava.Core.Tasks
                                 var selectedWindow = await ShowWindowSelectorCallback();
                                 if (selectedWindow != null)
                                 {
-                                    TroubleshootingHelper.Log("CustomWindow", "UI", $"User selected window: '{selectedWindow.Title}' (Handle: {selectedWindow.Handle})");
+                                    TroubleshootingHelper.Log("CustomWindow", "UI", $"User selected window: '{selectedWindow.Title}' (Handle: {selectedWindow.Handle}, PID: {selectedWindow.ProcessId})");
                                     TroubleshootingHelper.Log("CustomWindow", "UI", $"Window bounds: X={selectedWindow.Bounds.X}, Y={selectedWindow.Bounds.Y}, W={selectedWindow.Bounds.Width}, H={selectedWindow.Bounds.Height}");
                                     
-                                    // Capture using window bounds directly (not by making it active)
-                                    var windowRect = new SKRectI(
-                                        selectedWindow.Bounds.X, 
-                                        selectedWindow.Bounds.Y, 
-                                        selectedWindow.Bounds.X + selectedWindow.Bounds.Width, 
-                                        selectedWindow.Bounds.Y + selectedWindow.Bounds.Height);
+                                    // Restore if minimized
+                                    if (PlatformServices.Window.IsWindowMinimized(selectedWindow.Handle))
+                                    {
+                                        TroubleshootingHelper.Log("CustomWindow", "WINDOW", "Window is minimized, restoring...");
+                                        PlatformServices.Window.ShowWindow(selectedWindow.Handle, 9); // SW_RESTORE = 9
+                                        await Task.Delay(250, token);
+                                    }
+
+                                    // Capture using window handle directly (guarantees correct window)
+                                    TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capturing window by handle: {selectedWindow.Handle}");
                                     
-                                    image = await PlatformServices.ScreenCapture.CaptureRectAsync(windowRect);
-                                    TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capture window rect result: {image != null}");
+                                    // Log window info at capture time for verification
+                                    var captureTimeTitle = PlatformServices.Window.GetWindowText(selectedWindow.Handle);
+                                    var captureTimeBounds = PlatformServices.Window.GetWindowBounds(selectedWindow.Handle);
+                                    TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Selected title: '{selectedWindow.Title}'");
+                                    TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Capture-time title: '{captureTimeTitle}'");
+                                    TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Capture-time bounds: X={captureTimeBounds.X}, Y={captureTimeBounds.Y}, W={captureTimeBounds.Width}, H={captureTimeBounds.Height}");
+                                    
+                                    // Always activate the selected window before capture
+                                    TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", "Activating selected window before capture...");
+                                    if (!PlatformServices.Window.ActivateWindow(selectedWindow.Handle))
+                                    {
+                                        TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", "ActivateWindow returned false, but proceeding check...");
+                                    }
+                                    await Task.Delay(250, token); // Increased delay for activation to settle
+                                    
+                                    // Verify foreground is now our target
+                                    var foregroundHandle = PlatformServices.Window.GetForegroundWindow();
+                                    var foregroundTitle = PlatformServices.Window.GetWindowText(foregroundHandle);
+                                    TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", $"After activation - Foreground handle: {foregroundHandle}, Title: '{foregroundTitle}'");
+                                    TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", $"Foreground matches selected: {foregroundHandle == selectedWindow.Handle}");
+                                    
+                                    // Capture active window
+                                    image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
+                                    TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capture active window result: {image != null}");
                                 }
                                 else
                                 {
@@ -214,17 +240,19 @@ namespace ShareX.Ava.Core.Tasks
                                     await Task.Delay(250, token);
                                 }
 
-                                // Activate the window if not already active (like original ShareX)
-                                if (PlatformServices.Window.GetForegroundWindow() != hWnd)
-                                {
-                                    TroubleshootingHelper.Log("CustomWindow", "WINDOW", "Activating window...");
-                                    PlatformServices.Window.SetForegroundWindow(hWnd);
-                                    await Task.Delay(100, token);
-                                }
-
-                                // Capture the active window
-                                image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
-                                TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capture active window result: {image != null}");
+                                // Capture using window handle directly (guarantees correct window)
+                                TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capturing window by handle: {hWnd}");
+                                
+                                // Verify window title at capture time matches search term
+                                var captureTimeTitle = PlatformServices.Window.GetWindowText(hWnd);
+                                var captureTimeBounds = PlatformServices.Window.GetWindowBounds(hWnd);
+                                TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Search term: '{targetWindow}'");
+                                TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Capture-time title: '{captureTimeTitle}'");
+                                TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Capture-time bounds: X={captureTimeBounds.X}, Y={captureTimeBounds.Y}, W={captureTimeBounds.Width}, H={captureTimeBounds.Height}");
+                                TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Title contains search term: {captureTimeTitle?.Contains(targetWindow, StringComparison.OrdinalIgnoreCase) ?? false}");
+                                
+                                image = await PlatformServices.ScreenCapture.CaptureWindowAsync(hWnd, PlatformServices.Window, captureOptions);
+                                TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capture window result: {image != null}");
                             }
                             else
                             {
