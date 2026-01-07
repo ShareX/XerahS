@@ -108,6 +108,9 @@ int sck_is_available(); // Returns 1 if macOS 12.3+, 0 otherwise
 - **[NEW]** `src/ShareX.Avalonia.Platform.MacOS/MacOSScreenCaptureKitService.cs` - Native capture service
 - **[MODIFY]** `src/ShareX.Avalonia.Platform.MacOS/MacOSPlatform.cs` - Register new service with fallback logic
 
+### CI/CD
+- **[NEW]** `.github/workflows/macos-build.yml` - Automated build for native library and solution
+
 ## Verification Plan
 
 ### Automated (Build)

@@ -1,0 +1,34 @@
+name: macOS Build
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Build Native Library
+      working-directory: native/macos
+      run: |
+        make
+        ls -l libscreencapturekit_bridge.dylib
+
+    - name: Build .NET Solution
+      run: dotnet build src/ShareX.Avalonia.sln -c Release
+
+    - name: Upload Native Library Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-native-lib
+        path: native/macos/libscreencapturekit_bridge.dylib
