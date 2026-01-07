@@ -50,10 +50,21 @@ namespace ShareX.Ava.UI.ViewModels
         private bool _silentRun;
 
         [ObservableProperty]
-        private int _selectedTheme;
+        private bool _useModernCapture;
 
         [ObservableProperty]
-        private bool _useModernCapture;
+        private bool _trayIconProgressEnabled;
+
+        [ObservableProperty]
+        private bool _taskbarProgressEnabled;
+
+        [ObservableProperty]
+        private bool _autoCheckUpdate;
+
+        [ObservableProperty]
+        private UpdateChannel _updateChannel;
+
+        public UpdateChannel[] UpdateChannels => (UpdateChannel[])Enum.GetValues(typeof(UpdateChannel));
 
         // History Settings
         public bool HistorySaveTasks
@@ -313,7 +324,10 @@ namespace ShareX.Ava.UI.ViewModels
             ShowTray = settings.ShowTray;
             SilentRun = settings.SilentRun;
             SelectedTheme = settings.SelectedTheme;
-            // UseModernCapture = settings.UseModernCapture; // Remapped below
+            TrayIconProgressEnabled = settings.TrayIconProgressEnabled;
+            TaskbarProgressEnabled = settings.TaskbarProgressEnabled;
+            AutoCheckUpdate = settings.AutoCheckUpdate;
+            UpdateChannel = settings.UpdateChannel;
 
             // Task Settings - General
             var taskSettings = settings.DefaultTaskSettings;
@@ -364,8 +378,11 @@ namespace ShareX.Ava.UI.ViewModels
             settings.ShowTray = ShowTray;
             settings.SilentRun = SilentRun;
             settings.SelectedTheme = SelectedTheme;
-            // settings.UseModernCapture = UseModernCapture; // Remapped below
-            
+            settings.TrayIconProgressEnabled = TrayIconProgressEnabled;
+            settings.TaskbarProgressEnabled = TaskbarProgressEnabled;
+            settings.AutoCheckUpdate = AutoCheckUpdate;
+            settings.UpdateChannel = UpdateChannel;
+
             // Save Task Settings
             var taskSettings = settings.DefaultTaskSettings;
             taskSettings.GeneralSettings.PlaySoundAfterCapture = PlaySoundAfterCapture;

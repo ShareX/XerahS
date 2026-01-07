@@ -20,13 +20,55 @@
             <TabItem Header="General">
                 <ScrollViewer>
                     <StackPanel Margin="20" Spacing="20">
-                        <!-- System Tray -->
+                        <!-- System -->
                         <StackPanel Spacing="10">
-                            <TextBlock Text="System Tray" FontWeight="SemiBold"/>
+                            <TextBlock Text="System" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
                                 <StackPanel Spacing="10">
                                     <CheckBox IsChecked="{Binding ShowTray}" Content="Show tray icon"/>
                                     <CheckBox IsChecked="{Binding SilentRun}" Content="Start minimized to tray" IsEnabled="{Binding ShowTray}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Updates -->
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Updates" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <CheckBox IsChecked="{Binding AutoCheckUpdate}" Content="Automatically check for updates"/>
+                                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto">
+                                         <TextBlock Grid.Column="0" 
+                                                   Text="Update channel:" 
+                                                   VerticalAlignment="Center" 
+                                                   Margin="0,0,10,0"/>
+                                         <ComboBox Grid.Column="1" 
+                                                  ItemsSource="{Binding UpdateChannels}"
+                                                  SelectedItem="{Binding UpdateChannel}"
+                                                  IsEnabled="{Binding AutoCheckUpdate}"
+                                                  HorizontalAlignment="Left"
+                                                  Width="150"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Tray Icon -->
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Tray Icon" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <CheckBox IsChecked="{Binding TrayIconProgressEnabled}" Content="Show progress on tray icon"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Taskbar -->
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Taskbar" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <CheckBox IsChecked="{Binding TaskbarProgressEnabled}" Content="Show progress on taskbar"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
