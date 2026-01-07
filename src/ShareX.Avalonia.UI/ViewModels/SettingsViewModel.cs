@@ -50,6 +50,9 @@ namespace ShareX.Ava.UI.ViewModels
         private bool _silentRun;
 
         [ObservableProperty]
+        private int _selectedTheme;
+
+        [ObservableProperty]
         private bool _useModernCapture;
 
         [ObservableProperty]
@@ -65,6 +68,48 @@ namespace ShareX.Ava.UI.ViewModels
         private UpdateChannel _updateChannel;
 
         public UpdateChannel[] UpdateChannels => (UpdateChannel[])Enum.GetValues(typeof(UpdateChannel));
+
+        // Tray Click Actions
+        public HotkeyType TrayLeftClickAction
+        {
+            get => SettingManager.Settings.TrayLeftClickAction;
+            set
+            {
+                if (SettingManager.Settings.TrayLeftClickAction != value)
+                {
+                    SettingManager.Settings.TrayLeftClickAction = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeyType TrayLeftDoubleClickAction
+        {
+            get => SettingManager.Settings.TrayLeftDoubleClickAction;
+            set
+            {
+                if (SettingManager.Settings.TrayLeftDoubleClickAction != value)
+                {
+                    SettingManager.Settings.TrayLeftDoubleClickAction = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeyType TrayMiddleClickAction
+        {
+            get => SettingManager.Settings.TrayMiddleClickAction;
+            set
+            {
+                if (SettingManager.Settings.TrayMiddleClickAction != value)
+                {
+                    SettingManager.Settings.TrayMiddleClickAction = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeyType[] TrayClickActions => (HotkeyType[])Enum.GetValues(typeof(HotkeyType));
 
         // History Settings
         public bool HistorySaveTasks

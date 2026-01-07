@@ -59,6 +59,29 @@
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
                                 <StackPanel Spacing="10">
                                     <CheckBox IsChecked="{Binding TrayIconProgressEnabled}" Content="Show progress on tray icon"/>
+                                    
+                                    <Separator Margin="0,5"/>
+                                    <TextBlock Text="Click Actions" FontWeight="SemiBold" FontSize="12"/>
+
+                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" Margin="0,5,0,0">
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Left click:" VerticalAlignment="Center" Margin="0,0,10,5"/>
+                                        <ComboBox Grid.Row="0" Grid.Column="1" 
+                                                  ItemsSource="{Binding TrayClickActions}"
+                                                  SelectedItem="{Binding TrayLeftClickAction}"
+                                                  HorizontalAlignment="Stretch" Margin="0,0,0,5"/>
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Double click:" VerticalAlignment="Center" Margin="0,0,10,5"/>
+                                        <ComboBox Grid.Row="1" Grid.Column="1" 
+                                                  ItemsSource="{Binding TrayClickActions}"
+                                                  SelectedItem="{Binding TrayLeftDoubleClickAction}"
+                                                  HorizontalAlignment="Stretch" Margin="0,0,0,5"/>
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Middle click:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <ComboBox Grid.Row="2" Grid.Column="1" 
+                                                  ItemsSource="{Binding TrayClickActions}"
+                                                  SelectedItem="{Binding TrayMiddleClickAction}"
+                                                  HorizontalAlignment="Stretch"/>
+                                    </Grid>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
