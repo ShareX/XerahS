@@ -95,10 +95,10 @@
                             <TextBlock Text="Windows" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
                                 <StackPanel Spacing="10">
-                                    <CheckBox Content="Associate .sxadp files with ShareX.Avalonia"
+                                    <CheckBox Content="Associate .xsdp files with this application"
                                               IsChecked="{Binding IsPluginExtensionRegistered}"
                                               IsVisible="{Binding SupportsFileAssociations}"
-                                              ToolTip.Tip="Allows double-clicking .sxadp plugin packages to install them"/>
+                                              ToolTip.Tip="Allows double-clicking .xsdp plugin packages to install them"/>
                                     
                                     <TextBlock Text="Note: File associations require Windows and are managed through the Windows Registry."
                                                FontSize="11"

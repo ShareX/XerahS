@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "ShareX.Avalonia.App": {
+      "commandName": "Project",
+      "commandLineArgs": "",
+      "workingDirectory": "."
+    }
+  }
+}

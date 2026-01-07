@@ -165,4 +165,85 @@ public partial class AfterCaptureViewModel : ViewModelBase
     {
         AfterUploadTasks = enabled ? AfterUploadTasks | flag : AfterUploadTasks & ~flag;
     }
+
+    // General Settings Proxies
+    public bool ShowTray
+    {
+        get => SettingManager.Settings.ShowTray;
+        set
+        {
+            if (SettingManager.Settings.ShowTray != value)
+            {
+                SettingManager.Settings.ShowTray = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public bool SilentRun
+    {
+        get => SettingManager.Settings.SilentRun;
+        set
+        {
+            if (SettingManager.Settings.SilentRun != value)
+            {
+                SettingManager.Settings.SilentRun = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public bool TrayIconProgressEnabled
+    {
+        get => SettingManager.Settings.TrayIconProgressEnabled;
+        set
+        {
+            if (SettingManager.Settings.TrayIconProgressEnabled != value)
+            {
+                SettingManager.Settings.TrayIconProgressEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public bool TaskbarProgressEnabled
+    {
+        get => SettingManager.Settings.TaskbarProgressEnabled;
+        set
+        {
+            if (SettingManager.Settings.TaskbarProgressEnabled != value)
+            {
+                SettingManager.Settings.TaskbarProgressEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public bool AutoCheckUpdate
+    {
+        get => SettingManager.Settings.AutoCheckUpdate;
+        set
+        {
+            if (SettingManager.Settings.AutoCheckUpdate != value)
+            {
+                SettingManager.Settings.AutoCheckUpdate = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public UpdateChannel UpdateChannel
+    {
+        get => SettingManager.Settings.UpdateChannel;
+        set
+        {
+            if (SettingManager.Settings.UpdateChannel != value)
+            {
+                SettingManager.Settings.UpdateChannel = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public UpdateChannel[] UpdateChannels => (UpdateChannel[])Enum.GetValues(typeof(UpdateChannel));
 }

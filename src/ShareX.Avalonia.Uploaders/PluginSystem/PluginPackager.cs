@@ -32,7 +32,7 @@ using ShareX.Ava.Common;
 namespace ShareX.Ava.Uploaders.PluginSystem;
 
 /// <summary>
-/// Handles packaging and installation of .sxadp plugin files
+/// Handles packaging and installation of .xsdp plugin files
 /// </summary>
 public static class PluginPackager
 {
@@ -40,10 +40,10 @@ public static class PluginPackager
     private const long MaxPackageSize = 100_000_000; // 100MB
 
     /// <summary>
-    /// Package a plugin directory into a .sxadp archive.
+    /// Package a plugin directory into a .xsdp archive.
     /// </summary>
     /// <param name="pluginDirectory">Root directory of the plugin.</param>
-    /// <param name="outputFilePath">Destination .sxadp file path.</param>
+    /// <param name="outputFilePath">Destination .xsdp file path.</param>
     /// <returns>Path to the created package.</returns>
     public static string Package(string pluginDirectory, string outputFilePath)
     {
@@ -68,7 +68,7 @@ public static class PluginPackager
     /// <summary>
     /// Extracts a package into the Plugins directory and returns metadata.
     /// </summary>
-    /// <param name="packageFilePath">Path to the .sxadp file.</param>
+    /// <param name="packageFilePath">Path to the .xsdp file.</param>
     /// <param name="pluginsDirectory">Root Plugins directory.</param>
     /// <returns>Metadata for the installed plugin.</returns>
     public static PluginMetadata? InstallPackage(string packageFilePath, string pluginsDirectory)
@@ -110,7 +110,7 @@ public static class PluginPackager
                 "Please uninstall it first or use a different plugin ID.");
         }
 
-        string tempDir = Path.Combine(Path.GetTempPath(), $"sxadp_{Guid.NewGuid()}");
+        string tempDir = Path.Combine(Path.GetTempPath(), $"xsdp_{Guid.NewGuid()}");
         Directory.CreateDirectory(tempDir);
 
         try
@@ -152,7 +152,7 @@ public static class PluginPackager
     /// <summary>
     /// Reads manifest data from a package without installing it.
     /// </summary>
-    /// <param name="packageFilePath">Path to the .sxadp package.</param>
+    /// <param name="packageFilePath">Path to the .xsdp package.</param>
     /// <returns>Deserialized manifest or null.</returns>
     public static PluginManifest? PreviewPackage(string packageFilePath)
     {

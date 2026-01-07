@@ -153,17 +153,17 @@ internal static class Program
 
         if (string.IsNullOrWhiteSpace(outputPath))
         {
-            return Path.Combine(Environment.CurrentDirectory, $"{pluginName}.sxadp");
+            return Path.Combine(Environment.CurrentDirectory, $"{pluginName}.xsdp");
         }
 
         if (Directory.Exists(outputPath))
         {
-            return Path.Combine(outputPath, $"{pluginName}.sxadp");
+            return Path.Combine(outputPath, $"{pluginName}.xsdp");
         }
 
         if (!Path.HasExtension(outputPath))
         {
-            return $"{outputPath}.sxadp";
+            return $"{outputPath}.xsdp";
         }
 
         return outputPath;
@@ -177,6 +177,6 @@ internal static class Program
         Console.WriteLine();
         Console.WriteLine("Examples:");
         Console.WriteLine("  PluginExporter \"C:\\Path\\To\\Plugin\"");
-        Console.WriteLine("  PluginExporter \"C:\\Path\\To\\Plugin\" -o \"C:\\Output\\MyPlugin.sxadp\"");
+        Console.WriteLine("  PluginExporter \"C:\\Path\\To\\Plugin\" -o \"C:\\Output\\MyPlugin.xsdp\"");
     }
 }
