@@ -35,7 +35,7 @@ namespace ShareX.Ava.Core.Hotkeys;
 /// <summary>
 /// Links a hotkey binding to an action type
 /// </summary>
-public class HotkeySettings
+public class WorkflowSettings
 {
     /// <summary>
     /// The key binding for this hotkey
@@ -71,19 +71,19 @@ public class HotkeySettings
     /// </summary>
     public bool Enabled { get; set; } = true;
 
-    public HotkeySettings()
+    public WorkflowSettings()
     {
         HotkeyInfo = new HotkeyInfo();
         TaskSettings = new TaskSettings();
     }
 
-    public HotkeySettings(HotkeyType job, HotkeyInfo hotkeyInfo) : this()
+    public WorkflowSettings(HotkeyType job, HotkeyInfo hotkeyInfo) : this()
     {
         TaskSettings.Job = job;
         HotkeyInfo = hotkeyInfo;
     }
 
-    public HotkeySettings(HotkeyType job, Key key) : this()
+    public WorkflowSettings(HotkeyType job, Key key) : this()
     {
         TaskSettings.Job = job;
         HotkeyInfo = new HotkeyInfo(key);

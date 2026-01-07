@@ -183,7 +183,7 @@ public enum HotkeyType // Localized
     [Description("Capture active window")]
     ActiveWindow,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
-    [Description("Capture pre configured window")]
+    [Description("Capture any window")]
     CustomWindow,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
     [Description("Capture active monitor")]

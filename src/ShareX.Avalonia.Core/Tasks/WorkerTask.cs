@@ -27,6 +27,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 using ShareX.Ava.Core;
 using ShareX.Ava.Common;
 using ShareX.Ava.Core.Tasks.Processors;
@@ -46,6 +47,12 @@ namespace ShareX.Ava.Core.Tasks
 
         public event EventHandler StatusChanged;
         public event EventHandler TaskCompleted;
+
+        /// <summary>
+        /// Delegate to show window selector when CustomWindow capture has no target configured.
+        /// Returns selected window or null if cancelled.
+        /// </summary>
+        public static Func<Task<ShareX.Ava.Platform.Abstractions.WindowInfo?>>? ShowWindowSelectorCallback { get; set; }
 
         private WorkerTask(TaskSettings taskSettings, SKBitmap? inputImage = null)
         {
@@ -136,6 +143,100 @@ namespace ShareX.Ava.Core.Tasks
                             image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
                         }
                         break;
+
+                    case HotkeyType.CustomWindow:
+                    if (PlatformServices.Window != null)
+                    {
+                        var debugFolder = System.IO.Path.Combine(SettingManager.PersonalFolder, "Troubleshooting", "CustomWindow");
+                        try { System.IO.Directory.CreateDirectory(debugFolder); } catch {}
+                        var logFile = System.IO.Path.Combine(debugFolder, $"custom-window-{DateTime.Now:yyyyMMdd-HHmmss-fff}.log");
+
+                        void Log(string message) 
+                        {
+                            try 
+                            { 
+                                System.IO.File.AppendAllText(logFile, $"[{DateTime.Now:HH:mm:ss.fff}] {message}{Environment.NewLine}"); 
+                            } 
+                            catch {} 
+                        }
+
+                        Log($"Task started for CustomWindow");
+                        Log($"TaskSettings provided: {Info.TaskSettings != null}");
+
+                        string targetWindow = Info.TaskSettings?.CaptureSettings?.CaptureCustomWindow;
+                        Log($"Configured target window: '{targetWindow}'");
+                        
+                        // Also inspect global settings as sanity check
+                        Log($"Global default target window: '{SettingManager.DefaultTaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
+
+                        if (string.IsNullOrEmpty(targetWindow))
+                        {
+                            // No target window configured - show window selector
+                            Log("No target window configured. Showing window selector...");
+                            
+                            if (ShowWindowSelectorCallback != null)
+                            {
+                                var selectedWindow = await ShowWindowSelectorCallback();
+                                if (selectedWindow != null)
+                                {
+                                    Log($"User selected window: '{selectedWindow.Title}' (Handle: {selectedWindow.Handle})");
+                                    targetWindow = selectedWindow.Title;
+                                    PlatformServices.Window.SetForegroundWindow(selectedWindow.Handle);
+                                    await Task.Delay(250, token);
+                                    image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
+                                    Log($"Capture active window result: {image != null}");
+                                }
+                                else
+                                {
+                                    Log("User cancelled window selection");
+                                    DebugHelper.WriteLine("Custom window capture cancelled by user");
+                                }
+                            }
+                            else
+                            {
+                                Log("Window selector callback not configured");
+                                DebugHelper.WriteLine("Custom window capture failed: Window selector not available");
+                            }
+                        }
+                        else if (!string.IsNullOrEmpty(targetWindow))
+                        {
+                            var windows = PlatformServices.Window.GetAllWindows();
+                            Log($"Total open windows found: {windows.Length}");
+
+                            foreach (var w in windows) 
+                            {
+                                if (w.Title.Contains(targetWindow, StringComparison.OrdinalIgnoreCase))
+                                {
+                                     Log($"[MATCH] Window found: '{w.Title}' (Handle: {w.Handle})");
+                                }
+                                else 
+                                {
+                                     // Log all windows to see what's available
+                                     // Log($"[NO MATCH] '{w.Title}'"); 
+                                }
+                            }
+
+                            var winInfo = windows.FirstOrDefault(w => w.Title.Contains(targetWindow, StringComparison.OrdinalIgnoreCase));
+
+                            if (winInfo != null && winInfo.Handle != IntPtr.Zero)
+                            {
+                                Log($"Activating window handle {winInfo.Handle}");
+                                PlatformServices.Window.SetForegroundWindow(winInfo.Handle);
+
+                                // Give it a moment to come to foreground
+                                await Task.Delay(250, token);
+
+                                image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
+                                Log($"Capture active window result: {image != null}");
+                            }
+                            else
+                            {
+                                Log($"Window with title containing '{targetWindow}' not found.");
+                                DebugHelper.WriteLine($"Custom window capture failed: Window with title containing '{targetWindow}' not found.");
+                            }
+                        }
+                    }
+                    break;
                 }
 
                 captureStopwatch.Stop();

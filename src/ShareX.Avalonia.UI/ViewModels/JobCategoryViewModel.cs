@@ -17,7 +17,7 @@ public class JobCategoryViewModel
     {
         Name = name;
         Jobs = new ObservableCollection<HotkeyItemViewModel>(
-            jobs.Select(j => new HotkeyItemViewModel(new HotkeySettings(j, Key.None)))
+            jobs.Select(j => new HotkeyItemViewModel(new WorkflowSettings(j, Key.None)))
         );
     }
 }

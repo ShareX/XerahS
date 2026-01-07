@@ -245,9 +245,9 @@ public partial class HotkeySelectionControl : UserControl
         }
         
         // Disable global hotkeys while recording
-        if (global::Avalonia.Application.Current is App app && app.HotkeyManager != null)
+        if (global::Avalonia.Application.Current is App app && app.WorkflowManager != null)
         {
-            app.HotkeyManager.IgnoreHotkeys = true;
+            app.WorkflowManager.IgnoreHotkeys = true;
             Log("StartRecording: Global hotkeys disabled");
         }
         
@@ -261,9 +261,9 @@ public partial class HotkeySelectionControl : UserControl
         Log("StopRecording: Mode set to Normal");
         
         // Re-enable global hotkeys
-        if (global::Avalonia.Application.Current is App app && app.HotkeyManager != null)
+        if (global::Avalonia.Application.Current is App app && app.WorkflowManager != null)
         {
-            app.HotkeyManager.IgnoreHotkeys = false;
+            app.WorkflowManager.IgnoreHotkeys = false;
             Log("StopRecording: Global hotkeys re-enabled");
             
             // Re-register the hotkey with new binding
@@ -274,7 +274,7 @@ public partial class HotkeySelectionControl : UserControl
                 var id = _viewModel.Model.HotkeyInfo.Id;
                 Log($"StopRecording: Attempting to register hotkey: {_viewModel.Model.HotkeyInfo}");
                 Log($"StopRecording: Details - Key={key}, Modifiers={mods}, Id={id}");
-                var success = app.HotkeyManager.RegisterHotkey(_viewModel.Model);
+                var success = app.WorkflowManager.RegisterHotkey(_viewModel.Model);
                 Log($"StopRecording: RegisterHotkey returned: {success}, Status: {_viewModel.Model.HotkeyInfo.Status}");
             }
             else

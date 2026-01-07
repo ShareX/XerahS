@@ -20,7 +20,7 @@ namespace ShareX.Ava.UI.ViewModels;
 public partial class WorkflowEditorViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private HotkeySettings _model;
+    private WorkflowSettings _model;
 
     [ObservableProperty]
     private Key _selectedKey;
@@ -92,7 +92,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
     // Sub-ViewModels
     public TaskSettingsViewModel TaskSettings { get; private set; }
 
-    public WorkflowEditorViewModel(HotkeySettings model)
+    public WorkflowEditorViewModel(WorkflowSettings model)
     {
         _model = model;
         _selectedKey = model.HotkeyInfo.Key;

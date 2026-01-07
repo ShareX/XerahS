@@ -60,12 +60,10 @@ public static partial class TaskHelpers
             }
         }
 
-        // Ensure the job type in settings matches the requested job
         if (taskSettings.Job != job && job != HotkeyType.None)
         {
             taskSettings.Job = job;
         }
-
 
         DebugHelper.WriteLine(
             $"Task settings: AfterCaptureJob={taskSettings.AfterCaptureJob}, " +

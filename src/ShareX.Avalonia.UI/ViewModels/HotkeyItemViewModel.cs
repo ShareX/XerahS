@@ -8,7 +8,7 @@ namespace ShareX.Ava.UI.ViewModels;
 public partial class HotkeyItemViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private ShareX.Ava.Core.Hotkeys.HotkeySettings _model;
+    private ShareX.Ava.Core.Hotkeys.WorkflowSettings _model;
 
     public string Description => 
         string.IsNullOrEmpty(Model.TaskSettings.Description) 
@@ -18,14 +18,14 @@ public partial class HotkeyItemViewModel : ViewModelBase
     public string KeyString => Model.HotkeyInfo.ToString();
     
     /// <summary>
-    /// Full description using HotkeySettings.ToString() format: "Job: KeyBinding"
+    /// Full description using WorkflowSettings.ToString() format: "Job: KeyBinding"
     /// </summary>
     public string FullDescription => Model.ToString();
     
     // Expose Status for binding - reads from Model.HotkeyInfo.Status
     public Platform.Abstractions.HotkeyStatus Status => Model.HotkeyInfo.Status;
 
-    public HotkeyItemViewModel(ShareX.Ava.Core.Hotkeys.HotkeySettings model)
+    public HotkeyItemViewModel(ShareX.Ava.Core.Hotkeys.WorkflowSettings model)
     {
         _model = model;
     }

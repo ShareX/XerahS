@@ -76,6 +76,10 @@
                                     <CheckBox IsChecked="{Binding CaptureShadow}" Content="Capture window shadow" IsEnabled="{Binding CaptureTransparent}" Margin="20,0,0,0"/>
                                     <CheckBox IsChecked="{Binding CaptureClientArea}" Content="Capture client area (remove window chrome)"/>
                                     <CheckBox IsChecked="{Binding CaptureAutoHideTaskbar}" Content="Auto hide taskbar during capture"/>
+                                    <Grid ColumnDefinitions="Auto, 10, *">
+                                         <TextBlock Grid.Column="0" Text="Window title:" VerticalAlignment="Center"/>
+                                         <TextBox Grid.Column="2" Text="{Binding CaptureCustomWindow, UpdateSourceTrigger=PropertyChanged}" Watermark="Window title to capture (CustomWindow job)"/>
+                                    </Grid>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

@@ -36,16 +36,16 @@ namespace ShareX.Ava.Core.Hotkeys;
 /// <summary>
 /// High-level hotkey management - orchestrates registration and triggering
 /// </summary>
-public class HotkeyManager : IDisposable
+public class WorkflowManager : IDisposable
 {
     private readonly IHotkeyService _hotkeyService;
-    private readonly Dictionary<ushort, HotkeySettings> _hotkeyMap = new();
+    private readonly Dictionary<ushort, WorkflowSettings> _hotkeyMap = new();
     private bool _disposed;
 
     /// <summary>
     /// List of all configured hotkeys
     /// </summary>
-    public List<HotkeySettings> Hotkeys { get; private set; } = new();
+    public List<WorkflowSettings> Workflows { get; private set; } = new();
 
     /// <summary>
     /// When true, hotkeys are temporarily disabled
@@ -59,9 +59,9 @@ public class HotkeyManager : IDisposable
     /// <summary>
     /// Fired when a hotkey is triggered
     /// </summary>
-    public event EventHandler<HotkeySettings>? HotkeyTriggered;
+    public event EventHandler<WorkflowSettings>? HotkeyTriggered;
 
-    public HotkeyManager(IHotkeyService hotkeyService)
+    public WorkflowManager(IHotkeyService hotkeyService)
     {
         _hotkeyService = hotkeyService ?? throw new ArgumentNullException(nameof(hotkeyService));
         _hotkeyService.HotkeyTriggered += OnHotkeyServiceTriggered;
@@ -79,10 +79,10 @@ public class HotkeyManager : IDisposable
     /// <summary>
     /// Update hotkeys from configuration
     /// </summary>
-    public void UpdateHotkeys(List<HotkeySettings> hotkeys, bool showFailedHotkeys = false)
+    public void UpdateHotkeys(List<WorkflowSettings> hotkeys, bool showFailedHotkeys = false)
     {
         UnregisterAllHotkeys();
-        Hotkeys = hotkeys ?? new List<HotkeySettings>();
+        Workflows = hotkeys ?? new List<WorkflowSettings>();
         RegisterAllHotkeys();
 
         if (showFailedHotkeys)
@@ -94,7 +94,7 @@ public class HotkeyManager : IDisposable
     /// <summary>
     /// Register a single hotkey
     /// </summary>
-    public bool RegisterHotkey(HotkeySettings settings)
+    public bool RegisterHotkey(WorkflowSettings settings)
     {
         if (!settings.Enabled || !settings.HotkeyInfo.IsValid)
         {
@@ -116,15 +116,20 @@ public class HotkeyManager : IDisposable
             _hotkeyMap[settings.HotkeyInfo.Id] = settings;
             // Debug.WriteLine($"HotkeyManager: Registered {settings}");
             ShareX.Ava.Common.DebugHelper.WriteLine($"Hotkey registered: {settings}");
+
+            if (settings.Job == HotkeyType.CustomWindow)
+            {
+                ShareX.Ava.Common.DebugHelper.WriteLine($"[DEBUG] Registering CustomWindow hotkey. Title='{settings.TaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
+            }
         }
         else
         {
             Debug.WriteLine($"HotkeyManager: Failed to register {settings}");
         }
 
-        if (!Hotkeys.Contains(settings))
+        if (!Workflows.Contains(settings))
         {
-            Hotkeys.Add(settings);
+            Workflows.Add(settings);
         }
 
         return result;
@@ -133,7 +138,7 @@ public class HotkeyManager : IDisposable
     /// <summary>
     /// Unregister a single hotkey
     /// </summary>
-    public bool UnregisterHotkey(HotkeySettings settings)
+    public bool UnregisterHotkey(WorkflowSettings settings)
     {
         if (settings.HotkeyInfo.Id == 0)
             return false;
@@ -141,9 +146,9 @@ public class HotkeyManager : IDisposable
         bool result = _hotkeyService.UnregisterHotkey(settings.HotkeyInfo);
         _hotkeyMap.Remove(settings.HotkeyInfo.Id);
 
-        if (Hotkeys.Contains(settings))
+        if (Workflows.Contains(settings))
         {
-            Hotkeys.Remove(settings);
+            Workflows.Remove(settings);
         }
 
         return result;
@@ -154,7 +159,7 @@ public class HotkeyManager : IDisposable
     /// </summary>
     public void RegisterAllHotkeys()
     {
-        foreach (var settings in Hotkeys.ToList())
+        foreach (var settings in Workflows.ToList())
         {
             RegisterHotkey(settings);
         }
@@ -168,7 +173,7 @@ public class HotkeyManager : IDisposable
         _hotkeyService.UnregisterAll();
         _hotkeyMap.Clear();
 
-        foreach (var settings in Hotkeys)
+        foreach (var settings in Workflows)
         {
             settings.HotkeyInfo.Status = HotkeyStatus.NotConfigured;
             settings.HotkeyInfo.Id = 0;
@@ -186,9 +191,9 @@ public class HotkeyManager : IDisposable
     /// <summary>
     /// Get list of hotkeys that failed to register
     /// </summary>
-    public List<HotkeySettings> GetFailedHotkeys()
+    public List<WorkflowSettings> GetFailedHotkeys()
     {
-        return Hotkeys.Where(h => h.HotkeyInfo.Status == HotkeyStatus.Failed).ToList();
+        return Workflows.Where(h => h.HotkeyInfo.Status == HotkeyStatus.Failed).ToList();
     }
 
     /// <summary>
@@ -208,11 +213,11 @@ public class HotkeyManager : IDisposable
     }
 
     /// <summary>
-    /// Get the default hotkey list (matches ShareX defaults)
+    /// Get the default hotkey list
     /// </summary>
-    public static List<HotkeySettings> GetDefaultHotkeyList()
+    public static List<WorkflowSettings> GetDefaultWorkflowList()
     {
-        return WorkflowsConfig.GetDefaultHotkeyList();
+        return WorkflowsConfig.GetDefaultWorkflowList();
     }
 
     public void Dispose()

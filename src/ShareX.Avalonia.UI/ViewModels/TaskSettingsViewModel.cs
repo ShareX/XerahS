@@ -153,6 +153,20 @@ namespace ShareX.Ava.UI.ViewModels
                 }
             }
         }
+
+        public string CaptureCustomWindow
+        {
+            get => _settings.CaptureSettings.CaptureCustomWindow;
+            set
+            {
+                if (_settings.CaptureSettings.CaptureCustomWindow != value)
+                {
+                    ShareX.Ava.Common.DebugHelper.WriteLine($"[DEBUG] Setting CaptureCustomWindow to: '{value}'");
+                    _settings.CaptureSettings.CaptureCustomWindow = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         
         #endregion
 

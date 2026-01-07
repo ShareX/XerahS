@@ -7,14 +7,14 @@ namespace ShareX.Ava.UI.ViewModels;
 
 public partial class WorkflowItemViewModel : ObservableObject
 {
-    private readonly HotkeySettings _hotkeySettings;
+    private readonly WorkflowSettings _hotkeySettings;
 
-    public WorkflowItemViewModel(HotkeySettings hotkeySettings)
+    public WorkflowItemViewModel(WorkflowSettings hotkeySettings)
     {
         _hotkeySettings = hotkeySettings;
     }
 
-    public HotkeySettings Model => _hotkeySettings;
+    public WorkflowSettings Model => _hotkeySettings;
 
     public string Description
     {

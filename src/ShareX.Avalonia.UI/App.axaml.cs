@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
@@ -35,6 +36,56 @@ public partial class App : Application
             
             // Wire up Editor clipboard to platform implementation
             ShareX.Editor.Services.EditorServices.Clipboard = new Services.EditorClipboardAdapter();
+
+            // Setup window selector callback for CustomWindow hotkey
+            Core.Tasks.WorkerTask.ShowWindowSelectorCallback = async () =>
+            {
+                var tcs = new TaskCompletionSource<Platform.Abstractions.WindowInfo?>();
+                
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    try
+                    {
+                        var viewModel = new ViewModels.WindowSelectorViewModel();
+                        var dialog = new Window
+                        {
+                            Title = "Select Window to Capture",
+                            Width = 400,
+                            Height = 500,
+                            WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner,
+                            Content = new Views.WindowSelectorDialog { DataContext = viewModel }
+                        };
+
+                        viewModel.OnWindowSelected = (window) =>
+                        {
+                            tcs.TrySetResult(window);
+                            dialog.Close();
+                        };
+
+                        viewModel.OnCancelled = () =>
+                        {
+                            tcs.TrySetResult(null);
+                            dialog.Close();
+                        };
+
+                        if (desktop.MainWindow != null)
+                        {
+                            dialog.ShowDialog(desktop.MainWindow);
+                        }
+                        else
+                        {
+                            dialog.Show();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Common.DebugHelper.WriteException(ex, "Failed to show window selector");
+                        tcs.TrySetResult(null);
+                    }
+                });
+                
+                return await tcs.Task;
+            };
 
             desktop.Exit += (sender, args) =>
             {
@@ -99,7 +150,7 @@ public partial class App : Application
         // This is triggered on left-click via the Command binding
     }
 
-    public Core.Hotkeys.HotkeyManager? HotkeyManager { get; private set; }
+    public Core.Hotkeys.WorkflowManager? WorkflowManager { get; private set; }
 
     private void InitializeHotkeys()
     {
@@ -108,10 +159,10 @@ public partial class App : Application
         try
         {
             var hotkeyService = Platform.Abstractions.PlatformServices.Hotkey;
-            HotkeyManager = new Core.Hotkeys.HotkeyManager(hotkeyService);
+            WorkflowManager = new Core.Hotkeys.WorkflowManager(hotkeyService);
             
             // Subscribe to hotkey triggers
-            HotkeyManager.HotkeyTriggered += HotkeyManager_HotkeyTriggered;
+            WorkflowManager.HotkeyTriggered += HotkeyManager_HotkeyTriggered;
 
             // Load hotkeys from configuration
             var hotkeys = Core.SettingManager.WorkflowsConfig.Hotkeys;
@@ -119,12 +170,12 @@ public partial class App : Application
             // If configuration is empty/null, fallback to defaults
             if (hotkeys == null || hotkeys.Count == 0)
             {
-                hotkeys = Core.Hotkeys.HotkeyManager.GetDefaultHotkeyList();
+                hotkeys = Core.Hotkeys.WorkflowManager.GetDefaultWorkflowList();
                 // Update config with defaults so they get saved
                 Core.SettingManager.WorkflowsConfig.Hotkeys = hotkeys;
             }
 
-            HotkeyManager.UpdateHotkeys(hotkeys);
+            WorkflowManager.UpdateHotkeys(hotkeys);
             
             DebugHelper.WriteLine($"Initialized hotkey manager with {hotkeys.Count} hotkeys from configuration");
         }
@@ -147,12 +198,13 @@ public partial class App : Application
         }
     }
 
-    private async void HotkeyManager_HotkeyTriggered(object? sender, Core.Hotkeys.HotkeySettings settings)
+    private async void HotkeyManager_HotkeyTriggered(object? sender, Core.Hotkeys.WorkflowSettings settings)
     {
         DebugHelper.WriteLine($"Hotkey triggered: {settings}");
         
         bool isCaptureJob = settings.Job is Core.HotkeyType.PrintScreen
                                           or Core.HotkeyType.ActiveWindow
+                                          or Core.HotkeyType.CustomWindow
                                           or Core.HotkeyType.RectangleRegion
                                           or Core.HotkeyType.CustomRegion
                                           or Core.HotkeyType.LastRegion;
@@ -179,7 +231,13 @@ public partial class App : Application
 
         Core.Managers.TaskManager.Instance.TaskCompleted += HandleTaskCompleted;
         
-        // Execute the job associated with the hotkey
-        await Core.Helpers.TaskHelpers.ExecuteJob(settings.Job, settings.TaskSettings);
+        if (settings != null)
+        {
+            if (settings.Job == Core.HotkeyType.CustomWindow)
+            {
+               DebugHelper.WriteLine($"[DEBUG] Hotkey triggered for CustomWindow. Configured title: '{settings.TaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
+            }
+            await Core.Helpers.TaskHelpers.ExecuteJob(settings.Job, settings.TaskSettings);
+        }
     }
 }

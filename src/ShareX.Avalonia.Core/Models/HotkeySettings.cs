@@ -1,3 +1,4 @@
+#nullable disable
 #region License Information (GPL v3)
 
 /*
@@ -43,21 +44,21 @@ namespace ShareX.Ava.Core;
 /// </summary>
 public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
 {
-    public List<HotkeySettings> Hotkeys { get; set; } = GetDefaultHotkeyList();
+    public List<WorkflowSettings> Hotkeys { get; set; } = GetDefaultWorkflowList();
 
     /// <summary>
     /// Get default hotkey list for ShareX
     /// </summary>
-    public static List<HotkeySettings> GetDefaultHotkeyList()
+    public static List<WorkflowSettings> GetDefaultWorkflowList()
     {
-        return new List<HotkeySettings>
+        return new List<WorkflowSettings>
         {
-            new HotkeySettings(HotkeyType.PrintScreen, new HotkeyInfo(Key.PrintScreen)),
-            new HotkeySettings(HotkeyType.RectangleRegion, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control)),
-            new HotkeySettings(HotkeyType.ActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Alt)),
-            new HotkeySettings(HotkeyType.CustomWindow, new HotkeyInfo()),
-            new HotkeySettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift)),
-            new HotkeySettings(HotkeyType.ScreenRecorderGIF, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift)),
+            new WorkflowSettings(HotkeyType.PrintScreen, new HotkeyInfo(Key.PrintScreen)),
+            new WorkflowSettings(HotkeyType.RectangleRegion, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control)),
+            new WorkflowSettings(HotkeyType.ActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Alt)),
+            new WorkflowSettings(HotkeyType.CustomWindow, new HotkeyInfo()),
+            new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift)),
+            new WorkflowSettings(HotkeyType.ScreenRecorderGIF, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift)),
         };
     }
 }

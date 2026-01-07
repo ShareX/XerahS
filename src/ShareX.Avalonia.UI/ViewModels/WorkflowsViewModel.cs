@@ -28,18 +28,18 @@ public partial class WorkflowsViewModel : ViewModelBase
     
 
 
-    private ShareX.Ava.Core.Hotkeys.HotkeyManager? _manager;
+    private ShareX.Ava.Core.Hotkeys.WorkflowManager? _manager;
 
     /// <summary>
     /// Delegate to request editing a hotkey. Set by the View.
     /// </summary>
-    public Func<HotkeySettings, Task<bool>>? EditHotkeyRequester { get; set; }
+    public Func<WorkflowSettings, Task<bool>>? EditHotkeyRequester { get; set; }
 
     public WorkflowsViewModel()
     {
         if (global::Avalonia.Application.Current is App app)
         {
-            _manager = app.HotkeyManager;
+            _manager = app.WorkflowManager;
         }
 
         LoadWorkflows();
@@ -49,10 +49,10 @@ public partial class WorkflowsViewModel : ViewModelBase
     {
         Workflows.Clear();
         
-        IEnumerable<HotkeySettings> source;
+        IEnumerable<WorkflowSettings> source;
         if (_manager != null)
         {
-            source = _manager.Hotkeys;
+            source = _manager.Workflows;
         }
         else
         {
@@ -70,7 +70,7 @@ public partial class WorkflowsViewModel : ViewModelBase
     {
         if (_manager != null)
         {
-            SettingManager.WorkflowsConfig.Hotkeys = _manager.Hotkeys;
+            SettingManager.WorkflowsConfig.Hotkeys = _manager.Workflows;
         }
         SettingManager.SaveWorkflowsConfig();
     }
@@ -79,7 +79,7 @@ public partial class WorkflowsViewModel : ViewModelBase
     private async Task AddWorkflow()
     {
         // Create new blank workflow with defaults
-        var newSettings = new ShareX.Ava.Core.Hotkeys.HotkeySettings();
+        var newSettings = new ShareX.Ava.Core.Hotkeys.WorkflowSettings();
         // Maybe default job?
         newSettings.Job = ShareX.Ava.Core.HotkeyType.RectangleRegion;
         newSettings.TaskSettings = new TaskSettings();
@@ -91,7 +91,7 @@ public partial class WorkflowsViewModel : ViewModelBase
             {
                  if (_manager != null)
                  {
-                     _manager.Hotkeys.Add(newSettings);
+                     _manager.Workflows.Add(newSettings);
                      _manager.RegisterHotkey(newSettings);
                  }
                  else
@@ -133,7 +133,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         if (SelectedWorkflow != null && _manager != null)
         {
             _manager.UnregisterHotkey(SelectedWorkflow.Model);
-            _manager.Hotkeys.Remove(SelectedWorkflow.Model);
+            _manager.Workflows.Remove(SelectedWorkflow.Model);
             LoadWorkflows();
             SaveHotkeys();
             SelectedWorkflow = null;
@@ -151,7 +151,7 @@ public partial class WorkflowsViewModel : ViewModelBase
     {
         if (SelectedWorkflow != null && _manager != null)
         {
-            var clone = new ShareX.Ava.Core.Hotkeys.HotkeySettings(SelectedWorkflow.Model.Job, 
+            var clone = new ShareX.Ava.Core.Hotkeys.WorkflowSettings(SelectedWorkflow.Model.Job, 
                 new HotkeyInfo(
                     SelectedWorkflow.Model.HotkeyInfo.Key, 
                     SelectedWorkflow.Model.HotkeyInfo.Modifiers));
@@ -160,7 +160,7 @@ public partial class WorkflowsViewModel : ViewModelBase
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(SelectedWorkflow.Model.TaskSettings);
             clone.TaskSettings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json);
 
-            _manager.Hotkeys.Add(clone);
+            _manager.Workflows.Add(clone);
             LoadWorkflows();
             SaveHotkeys();
         }
@@ -174,7 +174,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         var index = Workflows.IndexOf(SelectedWorkflow);
         if (index <= 0) return;
         
-        var hotkeys = _manager?.Hotkeys ?? SettingManager.WorkflowsConfig.Hotkeys;
+        var hotkeys = _manager?.Workflows ?? SettingManager.WorkflowsConfig.Hotkeys;
         var model = SelectedWorkflow.Model;
         var modelIndex = hotkeys.IndexOf(model);
         
@@ -202,7 +202,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         var index = Workflows.IndexOf(SelectedWorkflow);
         if (index < 0 || index >= Workflows.Count - 1) return;
         
-        var hotkeys = _manager?.Hotkeys ?? SettingManager.WorkflowsConfig.Hotkeys;
+        var hotkeys = _manager?.Workflows ?? SettingManager.WorkflowsConfig.Hotkeys;
         var model = SelectedWorkflow.Model;
         var modelIndex = hotkeys.IndexOf(model);
         
@@ -245,7 +245,7 @@ public partial class WorkflowsViewModel : ViewModelBase
 
         if (_manager != null)
         {
-            var defaults = HotkeyManager.GetDefaultHotkeyList();
+            var defaults = WorkflowManager.GetDefaultWorkflowList();
             _manager.UpdateHotkeys(defaults);
             LoadWorkflows();
             SaveHotkeys();
