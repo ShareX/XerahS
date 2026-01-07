@@ -25,13 +25,13 @@
                                     <CheckBox IsChecked="{Binding PlaySoundAfterCapture}" Content="Play sound after capture"/>
                                     <CheckBox IsChecked="{Binding PlaySoundAfterUpload}" Content="Play sound after upload"/>
                                     <CheckBox IsChecked="{Binding PlaySoundAfterAction}" Content="Play sound after action"/>
-                                    <CheckBox IsChecked="{Binding ShowToastNotification}" Content="Show toast notification after task completed"/>
-                                    <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto" IsVisible="{Binding ShowToastNotification}">
+                                    <CheckBox IsChecked="{Binding ShowToastNotification}" Content="Show toast notification after task completed" IsEnabled="False" ToolTip.Tip="Feature temporarily unavailable"/>
+                                    <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto" IsVisible="{Binding ShowToastNotification}" IsEnabled="False">
                                          <TextBlock Grid.Column="0" Text="Duration:" VerticalAlignment="Center"/>
                                          <NumericUpDown Grid.Column="2" Value="{Binding ToastWindowDuration}" Minimum="0.1" Maximum="30" Increment="0.5" FormatString="0.0" Width="100"/>
                                          <TextBlock Grid.Column="4" Text="seconds" VerticalAlignment="Center"/>
                                     </Grid>
-                                    <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto" IsVisible="{Binding ShowToastNotification}">
+                                    <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto" IsVisible="{Binding ShowToastNotification}" IsEnabled="False">
                                          <TextBlock Grid.Column="0" Text="Fade duration:" VerticalAlignment="Center"/>
                                          <NumericUpDown Grid.Column="2" Value="{Binding ToastWindowFadeDuration}" Minimum="0" Maximum="5" Increment="0.1" FormatString="0.0" Width="100"/>
                                          <TextBlock Grid.Column="4" Text="seconds" VerticalAlignment="Center"/>

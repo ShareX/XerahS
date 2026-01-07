@@ -24,68 +24,25 @@
 #endregion License Information (GPL v3)
 
 using System;
-using Microsoft.Toolkit.Uwp.Notifications;
 using ShareX.Ava.Services.Abstractions;
+using ShareX.Ava.Common;
 
 namespace ShareX.Ava.Platform.Windows;
 
 /// <summary>
-/// Windows-specific notification service using Windows Toast Notifications (UWP).
+/// Windows notification service stub.
+/// TODO: Implement proper Windows notification mechanism.
+/// Currently logs notifications to debug output only.
 /// </summary>
-public class WindowsNotificationService : INotificationService, IDisposable
+public class WindowsNotificationService : INotificationService
 {
-    public WindowsNotificationService()
-    {
-    }
-
     public void ShowNotification(string title, string message, NotificationType type = NotificationType.Info)
     {
-        try
-        {
-            // Note: For this to work, the app must have an AUMID registered or be packaged.
-            new ToastContentBuilder()
-                .AddText(title)
-                .AddText(message)
-                .Show();
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[Windows Notification Error] {ex.Message}");
-        }
+        DebugHelper.WriteLine($"[Notification] {title}: {message}");
     }
 
     public void ShowNotification(string title, string message, string actionText, Action action, NotificationType type = NotificationType.Info)
     {
-        try
-        {
-            new ToastContentBuilder()
-                .AddText(title)
-                .AddText(message)
-                // Buttons require more setup for handling clicks (ToastNotificationManagerCompat.OnActivated)
-                // For this iteration we settle for showing the button visual.
-                .AddButton(new ToastButton()
-                    .SetContent(actionText)
-                    .AddArgument("action", "click"))
-                .Show();
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[Windows Notification Error] {ex.Message}");
-        }
-    }
-
-    public void Dispose()
-    {
-        // Microsoft.Toolkit.Uwp.Notifications 7.1.x: Uninstall() is on ToastNotificationManagerCompat
-        // But if the method is missing in the dll version we got, we skip it.
-        // It generally shouldn't be missing if TFM is correct.
-        try 
-        {
-             ToastNotificationManagerCompat.Uninstall();
-        }
-        catch 
-        { 
-             // Intentionally ignored
-        }
+        DebugHelper.WriteLine($"[Notification] {title}: {message} (Action: {actionText})");
     }
 }
