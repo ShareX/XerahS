@@ -29,6 +29,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using ShareX.Ava.Core;
+using ShareX.Ava.Core.Helpers;
 using ShareX.Ava.Common;
 using ShareX.Ava.Core.Tasks.Processors;
 using ShareX.Ava.Platform.Abstractions;
@@ -147,40 +148,27 @@ namespace ShareX.Ava.Core.Tasks
                     case HotkeyType.CustomWindow:
                     if (PlatformServices.Window != null)
                     {
-                        var debugFolder = System.IO.Path.Combine(SettingManager.PersonalFolder, "Troubleshooting", "CustomWindow");
-                        try { System.IO.Directory.CreateDirectory(debugFolder); } catch {}
-                        var logFile = System.IO.Path.Combine(debugFolder, $"custom-window-{DateTime.Now:yyyyMMdd-HHmmss-fff}.log");
-
-                        void Log(string message) 
-                        {
-                            try 
-                            { 
-                                System.IO.File.AppendAllText(logFile, $"[{DateTime.Now:HH:mm:ss.fff}] {message}{Environment.NewLine}"); 
-                            } 
-                            catch {} 
-                        }
-
-                        Log($"Task started for CustomWindow");
-                        Log($"TaskSettings provided: {Info.TaskSettings != null}");
+                        TroubleshootingHelper.Log("CustomWindow", "TASK", "Task started for CustomWindow");
+                        TroubleshootingHelper.Log("CustomWindow", "TASK", $"TaskSettings provided: {Info.TaskSettings != null}");
 
                         string targetWindow = Info.TaskSettings?.CaptureSettings?.CaptureCustomWindow;
-                        Log($"Configured target window: '{targetWindow}'");
+                        TroubleshootingHelper.Log("CustomWindow", "CONFIG", $"Configured target window: '{targetWindow}'");
                         
                         // Also inspect global settings as sanity check
-                        Log($"Global default target window: '{SettingManager.DefaultTaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
+                        TroubleshootingHelper.Log("CustomWindow", "CONFIG", $"Global default target window: '{SettingManager.DefaultTaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
 
                         if (string.IsNullOrEmpty(targetWindow))
                         {
                             // No target window configured - show window selector
-                            Log("No target window configured. Showing window selector...");
+                            TroubleshootingHelper.Log("CustomWindow", "UI", "No target window configured. Showing window selector...");
                             
                             if (ShowWindowSelectorCallback != null)
                             {
                                 var selectedWindow = await ShowWindowSelectorCallback();
                                 if (selectedWindow != null)
                                 {
-                                    Log($"User selected window: '{selectedWindow.Title}' (Handle: {selectedWindow.Handle})");
-                                    Log($"Window bounds: X={selectedWindow.Bounds.X}, Y={selectedWindow.Bounds.Y}, W={selectedWindow.Bounds.Width}, H={selectedWindow.Bounds.Height}");
+                                    TroubleshootingHelper.Log("CustomWindow", "UI", $"User selected window: '{selectedWindow.Title}' (Handle: {selectedWindow.Handle})");
+                                    TroubleshootingHelper.Log("CustomWindow", "UI", $"Window bounds: X={selectedWindow.Bounds.X}, Y={selectedWindow.Bounds.Y}, W={selectedWindow.Bounds.Width}, H={selectedWindow.Bounds.Height}");
                                     
                                     // Capture using window bounds directly (not by making it active)
                                     var windowRect = new SKRectI(
@@ -190,38 +178,38 @@ namespace ShareX.Ava.Core.Tasks
                                         selectedWindow.Bounds.Y + selectedWindow.Bounds.Height);
                                     
                                     image = await PlatformServices.ScreenCapture.CaptureRectAsync(windowRect);
-                                    Log($"Capture window rect result: {image != null}");
+                                    TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capture window rect result: {image != null}");
                                 }
                                 else
                                 {
-                                    Log("User cancelled window selection");
+                                    TroubleshootingHelper.Log("CustomWindow", "UI", "User cancelled window selection");
                                     DebugHelper.WriteLine("Custom window capture cancelled by user");
                                 }
                             }
                             else
                             {
-                                Log("Window selector callback not configured");
+                                TroubleshootingHelper.Log("CustomWindow", "ERROR", "Window selector callback not configured");
                                 DebugHelper.WriteLine("Custom window capture failed: Window selector not available");
                             }
                         }
                         else
                         {
                             // Use SearchWindow to find the target window (matches original ShareX behavior)
-                            Log($"Searching for window using SearchWindow: '{targetWindow}'");
+                            TroubleshootingHelper.Log("CustomWindow", "SEARCH", $"Searching for window using SearchWindow: '{targetWindow}'");
                             IntPtr hWnd = PlatformServices.Window.SearchWindow(targetWindow);
 
                             if (hWnd != IntPtr.Zero)
                             {
-                                Log($"Window found with handle: {hWnd}");
+                                TroubleshootingHelper.Log("CustomWindow", "SEARCH", $"Window found with handle: {hWnd}");
                                 
                                 // Get window bounds for logging and potential restore
                                 var bounds = PlatformServices.Window.GetWindowBounds(hWnd);
-                                Log($"Window bounds: X={bounds.X}, Y={bounds.Y}, W={bounds.Width}, H={bounds.Height}");
+                                TroubleshootingHelper.Log("CustomWindow", "WINDOW", $"Window bounds: X={bounds.X}, Y={bounds.Y}, W={bounds.Width}, H={bounds.Height}");
                                 
                                 // Restore if minimized (like original ShareX)
                                 if (PlatformServices.Window.IsWindowMinimized(hWnd))
                                 {
-                                    Log("Window is minimized, restoring...");
+                                    TroubleshootingHelper.Log("CustomWindow", "WINDOW", "Window is minimized, restoring...");
                                     PlatformServices.Window.ShowWindow(hWnd, 9); // SW_RESTORE = 9
                                     await Task.Delay(250, token);
                                 }
@@ -229,18 +217,18 @@ namespace ShareX.Ava.Core.Tasks
                                 // Activate the window if not already active (like original ShareX)
                                 if (PlatformServices.Window.GetForegroundWindow() != hWnd)
                                 {
-                                    Log("Activating window...");
+                                    TroubleshootingHelper.Log("CustomWindow", "WINDOW", "Activating window...");
                                     PlatformServices.Window.SetForegroundWindow(hWnd);
                                     await Task.Delay(100, token);
                                 }
 
                                 // Capture the active window
                                 image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
-                                Log($"Capture active window result: {image != null}");
+                                TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capture active window result: {image != null}");
                             }
                             else
                             {
-                                Log($"Window with title containing '{targetWindow}' not found via SearchWindow.");
+                                TroubleshootingHelper.Log("CustomWindow", "ERROR", $"Window with title containing '{targetWindow}' not found via SearchWindow.");
                                 DebugHelper.WriteLine($"Custom window capture failed: Unable to find window with title '{targetWindow}'.");
                             }
                         }

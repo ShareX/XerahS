@@ -33,6 +33,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using ShareX.Ava.Core.Helpers;
 using Point = Avalonia.Point;
 using Rectangle = Avalonia.Controls.Shapes.Rectangle;
 using Path = Avalonia.Controls.Shapes.Path;
@@ -82,39 +83,15 @@ namespace ShareX.Ava.UI.Views.RegionCapture
         private bool _dragStarted;
         private const int DragThreshold = 5;
 
-#if DEBUG
-        // Debug logging
-        private System.IO.StreamWriter? _debugLog;
-        public string? DebugLogPath { get; private set; }
-        private bool _loggedInitialLayout;
-#endif
+        // Debug logging is now handled by TroubleshootingHelper
         
         public RegionCaptureWindow()
         {
             InitializeComponent();
             _tcs = new System.Threading.Tasks.TaskCompletionSource<SKRectI>();
             
-#if DEBUG
-            // Initialize debug logging
-            var debugFolder = System.IO.Path.Combine(
-                ShareX.Ava.Core.SettingManager.PersonalFolder,
-                "Troubleshooting", "RegionCapture");
-            System.IO.Directory.CreateDirectory(debugFolder);
-            
-            var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss-fff");
-            DebugLogPath = System.IO.Path.Combine(debugFolder, $"region-capture-{timestamp}.log");
-            
-            try
-            {
-                _debugLog = new System.IO.StreamWriter(DebugLogPath, append: true) { AutoFlush = true };
-                DebugLog("INIT", "RegionCaptureWindow created");
-                DebugLog("INIT", $"Initial state: RenderScaling={RenderScaling}, Position={Position}, Bounds={Bounds}, ClientSize={ClientSize}");
-            }
-            catch
-            {
-                _debugLog = null;
-            }
-#endif
+            DebugLog("INIT", "RegionCaptureWindow created");
+            DebugLog("INIT", $"Initial state: RenderScaling={RenderScaling}, Position={Position}, Bounds={Bounds}, ClientSize={ClientSize}");
             
             // Close on Escape key
             this.KeyDown += (s, e) =>
@@ -126,43 +103,12 @@ namespace ShareX.Ava.UI.Views.RegionCapture
                     Close();
                 }
             };
-            
-#if DEBUG
-            // Clean up debug log on close
-            this.Closed += (s, e) =>
-            {
-                DebugLog("LIFECYCLE", "Window closing");
-                _debugLog?.Flush();
-                _debugLog?.Dispose();
-            };
-
-            this.LayoutUpdated += (s, e) =>
-            {
-                if (_loggedInitialLayout)
-                {
-                    return;
-                }
-
-                _loggedInitialLayout = true;
-                DebugLogLayout("LayoutUpdated");
-            };
-#endif
         }
         
         [Conditional("DEBUG")]
         private void DebugLog(string category, string message)
         {
-#if DEBUG
-            try
-            {
-                var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
-                _debugLog?.WriteLine($"[{timestamp}] {category,-12} | {message}");
-            }
-            catch
-            {
-                // Silently ignore logging errors
-            }
-#endif
+            TroubleshootingHelper.Log("RegionCapture", category, message);
         }
 
         [Conditional("DEBUG")]
