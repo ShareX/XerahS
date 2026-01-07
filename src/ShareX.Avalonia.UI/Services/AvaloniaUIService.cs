@@ -26,6 +26,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
+using ShareX.Ava.Common;
 using ShareX.Ava.Core;
 using ShareX.Ava.Platform.Abstractions;
 using ShareX.Ava.UI.ViewModels;
@@ -46,6 +47,7 @@ namespace ShareX.Ava.UI.Services
                 // Create independent ViewModel for this editor instance
                 var editorViewModel = new MainViewModel();
                 editorViewModel.ShowCaptureToolbar = false;
+                editorViewModel.ApplicationName = ShareXResources.AppName;
 
                 // Set DataContext BEFORE initializing preview so bindings update correctly
                 editorWindow.DataContext = editorViewModel;

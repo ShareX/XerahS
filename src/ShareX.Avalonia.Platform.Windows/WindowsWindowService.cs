@@ -234,7 +234,7 @@ namespace ShareX.Ava.Platform.Windows
                 // Hack: Simulate Alt key press to bypass restrictions
                 NativeMethods.keybd_event(0x12, 0, 0, UIntPtr.Zero); // VK_MENU down
                 NativeMethods.keybd_event(0x12, 0, 2, UIntPtr.Zero); // VK_MENU up
-                
+
                 NativeMethods.SetForegroundWindow(handle);
             }
             finally

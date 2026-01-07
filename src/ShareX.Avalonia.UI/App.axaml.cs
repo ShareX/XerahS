@@ -21,10 +21,12 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var mainViewModel = new MainViewModel();
+            mainViewModel.ApplicationName = ShareXResources.AppName;
 
             desktop.MainWindow = new Views.MainWindow
             {
-                DataContext = new MainViewModel(),
+                DataContext = mainViewModel,
             };
 
             InitializeHotkeys();
