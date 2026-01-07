@@ -346,6 +346,12 @@ namespace ShareX.Ava.Common
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool BringWindowToTop(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
+        [DllImport("kernel32.dll")]
+        public static extern uint GetCurrentThreadId();
+
         public const int CURSOR_SHOWING = 0x00000001;
         public const int DI_NORMAL = 0x0003;
     }

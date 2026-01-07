@@ -196,38 +196,56 @@ namespace ShareX.Ava.Platform.Windows
             if (handle == IntPtr.Zero)
                 return false;
 
+            // 1. Restore if minimized
+            if (NativeMethods.IsIconic(handle))
+            {
+                NativeMethods.ShowWindow(handle, 9); // SW_RESTORE
+            }
+
+            // 2. Try standard activation
+            NativeMethods.SetForegroundWindow(handle);
+            if (NativeMethods.GetForegroundWindow() == handle)
+                return true;
+
+            // 3. Robust activation using AttachThreadInput
+            uint foregroundThreadId = NativeMethods.GetWindowThreadProcessId(NativeMethods.GetForegroundWindow(), out _);
+            uint currentThreadId = NativeMethods.GetCurrentThreadId();
+            uint targetThreadId = NativeMethods.GetWindowThreadProcessId(handle, out _);
+
+            bool attachedForeground = false;
+            bool attachedTarget = false;
+
             try
             {
-                // Restore if minimized
-                if (NativeMethods.IsIconic(handle))
+                if (foregroundThreadId != currentThreadId)
                 {
-                    NativeMethods.ShowWindow(handle, 9); // SW_RESTORE = 9
+                    attachedForeground = NativeMethods.AttachThreadInput(foregroundThreadId, currentThreadId, true);
+                }
+                if (targetThreadId != currentThreadId)
+                {
+                    attachedTarget = NativeMethods.AttachThreadInput(targetThreadId, currentThreadId, true);
                 }
 
-                // Try standard activation first
+                // Try SetForegroundWindow again
                 NativeMethods.SetForegroundWindow(handle);
-
-                // Check if it worked
-                if (NativeMethods.GetForegroundWindow() == handle)
-                    return true;
-
-                // Workaround: Simulate Alt key press to bypass foreground lock
-                // This is a common technique when SetForegroundWindow fails
-                NativeMethods.keybd_event(0x12, 0, 0, UIntPtr.Zero); // VK_MENU (Alt) down
-                NativeMethods.keybd_event(0x12, 0, 2, UIntPtr.Zero); // VK_MENU up
-
-                // Try again
-                NativeMethods.SetForegroundWindow(handle);
-
-                // Use BringWindowToTop as additional measure
                 NativeMethods.BringWindowToTop(handle);
+                NativeMethods.ShowWindow(handle, 5); // SW_SHOW
 
-                return NativeMethods.GetForegroundWindow() == handle;
+                // Hack: Simulate Alt key press to bypass restrictions
+                NativeMethods.keybd_event(0x12, 0, 0, UIntPtr.Zero); // VK_MENU down
+                NativeMethods.keybd_event(0x12, 0, 2, UIntPtr.Zero); // VK_MENU up
+                
+                NativeMethods.SetForegroundWindow(handle);
             }
-            catch
+            finally
             {
-                return false;
+                if (attachedForeground)
+                    NativeMethods.AttachThreadInput(foregroundThreadId, currentThreadId, false);
+                if (attachedTarget)
+                    NativeMethods.AttachThreadInput(targetThreadId, currentThreadId, false);
             }
+
+            return NativeMethods.GetForegroundWindow() == handle;
         }
     }
 }
