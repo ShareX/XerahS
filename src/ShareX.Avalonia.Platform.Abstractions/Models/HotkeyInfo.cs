@@ -46,11 +46,13 @@ public class HotkeyInfo
     /// <summary>
     /// Unique identifier assigned during registration
     /// </summary>
+    [System.Runtime.Serialization.IgnoreDataMember]
     public ushort Id { get; set; }
 
     /// <summary>
     /// Current registration status
     /// </summary>
+    [System.Runtime.Serialization.IgnoreDataMember]
     public HotkeyStatus Status { get; set; } = HotkeyStatus.NotConfigured;
 
     /// <summary>
