@@ -33,9 +33,6 @@ namespace ShareX.Ava.UI.Views
             var navView = this.FindControl<NavigationView>("NavView");
             if (navView != null)
             {
-                // Update navigation items with Workflow IDs
-                UpdateNavigationItems(navView);
-
                 // Force selection of first item
                 if (navView.MenuItems[0] is NavigationViewItem item)
                 {
@@ -49,6 +46,13 @@ namespace ShareX.Ava.UI.Views
         {
             // Maximize window and center it on screen
             this.WindowState = Avalonia.Controls.WindowState.Maximized;
+            
+            // Update navigation items after settings are loaded
+            var navView = this.FindControl<NavigationView>("NavView");
+            if (navView != null)
+            {
+                UpdateNavigationItems(navView);
+            }
         }
 
         private void InitializeComponent()
@@ -68,66 +72,19 @@ namespace ShareX.Ava.UI.Views
                 
                 switch (tag)
                 {
-                    case "Capture_Fullscreen":
-                        _ = ExecuteCaptureAsync(HotkeyType.PrintScreen);
-                        // Navigate back to Editor to see the captured image
-                        NavigateToEditor();
-                        break;
-                    case "Capture_Region":
-                        _ = ExecuteCaptureAsync(HotkeyType.RectangleRegion);
-                        NavigateToEditor();
-                        break;
-                    case "Capture_SelectedWindow":
-                        // Show Window Selector Dialog
-                        if (DataContext is MainViewModel vm2)
+                    case "Capture_0":
+                    case "Capture_1":
+                    case "Capture_2":
+                        // Execute workflow by index
+                        if (int.TryParse(tag.Replace("Capture_", ""), out int workflowIndex))
                         {
-                            vm2.IsModalOpen = true;
-                            var windowSelector = new WindowSelectorViewModel();
-                            
-                            var dialog = new WindowSelectorDialog
+                            var workflows = SettingManager.WorkflowsConfig.Hotkeys.Take(3).ToList();
+                            if (workflowIndex < workflows.Count)
                             {
-                                DataContext = windowSelector
-                            };
-                            
-                            vm2.ModalContent = dialog;
-                            
-                            windowSelector.OnCancelled = () =>
-                            {
-                                vm2.IsModalOpen = false;
-                                vm2.ModalContent = null;
-                            };
-                            
-                            windowSelector.OnWindowSelected = async (windowInfo) =>
-                            {
-                                vm2.IsModalOpen = false;
-                                vm2.ModalContent = null;
-                                
-                                if (PlatformServices.IsInitialized && PlatformServices.ScreenCapture != null)
-                                {
-                                    // 1. Bring window to front
-                                    PlatformServices.Window?.SetForegroundWindow(windowInfo.Handle);
-                                    
-                                    // 2. Wait for it to settle/animate
-                                    await Task.Delay(250);
-                                    
-                                    // 3. Capture rect
-                                    // TODO: If we need PrintWindow (exclusive window capture), we need a new API.
-                                    // For now, capture rect.
-                                    var bmp = await PlatformServices.ScreenCapture.CaptureRectAsync(new SkiaSharp.SKRect(
-                                        windowInfo.Bounds.Left, 
-                                        windowInfo.Bounds.Top, 
-                                        windowInfo.Bounds.Right, 
-                                        windowInfo.Bounds.Bottom));
-                                        
-                                    if (bmp != null)
-                                    {
-                                        // 4. Start workflow with this image
-                                        // We use ActiveWindow hotkey type to inherit those settings, but pass the image.
-                                        await ExecuteCaptureAsync(HotkeyType.ActiveWindow, image: bmp);
-                                        NavigateToEditor();
-                                    }
-                                }
-                            };
+                                var workflow = workflows[workflowIndex];
+                                _ = ExecuteCaptureAsync(workflow.Job);
+                                NavigateToEditor();
+                            }
                         }
                         break;
                     case "Editor":
@@ -352,46 +309,29 @@ namespace ShareX.Ava.UI.Views
         }
         private void UpdateNavigationItems(NavigationView navView)
         {
-            foreach (var item in navView.MenuItems)
-            {
-                if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == "Capture")
-                {
-                    foreach (var subItem in navItem.MenuItems)
-                    {
-                        if (subItem is NavigationViewItem subNavItem && subNavItem.Tag is string tag)
-                        {
-                            HotkeyType? jobType = tag switch
-                            {
-                                "Capture_Fullscreen" => HotkeyType.PrintScreen,
-                                "Capture_Region" => HotkeyType.RectangleRegion,
-                                "Capture_SelectedWindow" => HotkeyType.CustomWindow,
-                                _ => null
-                            };
+            var captureItem = this.FindControl<NavigationViewItem>("CaptureNavItem");
+            if (captureItem == null) return;
 
-                            if (jobType.HasValue)
-                            {
-                                var workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(x => x.Job == jobType.Value);
-                                if (workflow != null && !string.IsNullOrEmpty(workflow.WorkflowID))
-                                {
-                                    // subNavItem.Content is initially a string (e.g., "Fullscreen")
-                                    // We replace it with a styled StackPanel
-                                    var currentContent = subNavItem.Content?.ToString() ?? "";
-                                    
-                                    var panel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 5 };
-                                    panel.Children.Add(new TextBlock { Text = currentContent });
-                                    panel.Children.Add(new TextBlock 
-                                    { 
-                                        Text = $"({workflow.WorkflowID})",
-                                        Foreground = Brushes.Gray,
-                                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-                                    });
-                                    
-                                    subNavItem.Content = panel;
-                                }
-                            }
-                        }
-                    }
-                }
+            // Clear existing items
+            captureItem.MenuItems.Clear();
+
+            // Get first 3 workflows
+            var workflows = SettingManager.WorkflowsConfig.Hotkeys.Take(3).ToList();
+
+            for (int i = 0; i < workflows.Count; i++)
+            {
+                var workflow = workflows[i];
+                var description = string.IsNullOrEmpty(workflow.TaskSettings.Description)
+                    ? ShareX.Ava.Common.EnumExtensions.GetDescription(workflow.Job)
+                    : workflow.TaskSettings.Description;
+
+                var navItem = new NavigationViewItem
+                {
+                    Content = description,
+                    Tag = $"Capture_{i}" // Use index-based tag
+                };
+
+                captureItem.MenuItems.Add(navItem);
             }
         }
     }

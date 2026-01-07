@@ -40,16 +40,11 @@
                            SelectionChanged="OnNavSelectionChanged">
             <!-- ... existing content ... -->
             <ui:NavigationView.MenuItems>
-                <!-- Capture Section (New Parent Item) -->
-                <ui:NavigationViewItem Content="Capture" Tag="Capture" SelectsOnInvoked="False" IsExpanded="True">
+                <!-- Capture Section - Items populated dynamically from first 3 workflows -->
+                <ui:NavigationViewItem Content="Capture" Tag="Capture" SelectsOnInvoked="False" IsExpanded="True" Name="CaptureNavItem">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Camera"/>
                     </ui:NavigationViewItem.IconSource>
-                    <ui:NavigationViewItem.MenuItems>
-                        <ui:NavigationViewItem Content="Fullscreen" Tag="Capture_Fullscreen" />
-                        <ui:NavigationViewItem Content="Region" Tag="Capture_Region" />
-                        <ui:NavigationViewItem Content="Selected Window" Tag="Capture_SelectedWindow" />
-                    </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
                 
                 <ui:NavigationViewItem Content="Editor" Tag="Editor" IsSelected="True">

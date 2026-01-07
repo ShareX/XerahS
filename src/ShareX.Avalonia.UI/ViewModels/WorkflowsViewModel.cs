@@ -20,6 +20,8 @@ public partial class WorkflowsViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(RemoveWorkflowCommand))]
     [NotifyCanExecuteChangedFor(nameof(EditWorkflowCommand))]
     [NotifyCanExecuteChangedFor(nameof(DuplicateCommand))]
+    [NotifyCanExecuteChangedFor(nameof(MoveUpCommand))]
+    [NotifyCanExecuteChangedFor(nameof(MoveDownCommand))]
     private HotkeyItemViewModel? _selectedWorkflow;
 
 
@@ -57,10 +59,8 @@ public partial class WorkflowsViewModel : ViewModelBase
             source = SettingManager.WorkflowsConfig.Hotkeys;
         }
 
-        // Sort by WorkflowID
-        var sorted = source.OrderBy(x => x.WorkflowID).ToList();
-
-        foreach (var hk in sorted)
+        // No sorting - use the stored order
+        foreach (var hk in source)
         {
             Workflows.Add(new HotkeyItemViewModel(hk));
         }
@@ -71,12 +71,8 @@ public partial class WorkflowsViewModel : ViewModelBase
         if (_manager != null)
         {
             SettingManager.WorkflowsConfig.Hotkeys = _manager.Hotkeys;
-            SettingManager.SaveWorkflowsConfigAsync();
         }
-        else
-        {
-            SettingManager.SaveWorkflowsConfig();
-        }
+        SettingManager.SaveWorkflowsConfig();
     }
 
     [RelayCommand]
@@ -87,9 +83,6 @@ public partial class WorkflowsViewModel : ViewModelBase
         // Maybe default job?
         newSettings.Job = ShareX.Ava.Core.HotkeyType.RectangleRegion;
         newSettings.TaskSettings = new TaskSettings();
-        
-        // Assign next available WorkflowID
-        newSettings.WorkflowID = GetNextWorkflowID();
         
         if (EditHotkeyRequester != null)
         {
@@ -166,9 +159,6 @@ public partial class WorkflowsViewModel : ViewModelBase
             // Deep copy TaskSettings using JSON
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(SelectedWorkflow.Model.TaskSettings);
             clone.TaskSettings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json);
-            
-            // Assign next available WorkflowID
-            clone.WorkflowID = GetNextWorkflowID();
 
             _manager.Hotkeys.Add(clone);
             LoadWorkflows();
@@ -176,23 +166,60 @@ public partial class WorkflowsViewModel : ViewModelBase
         }
     }
 
-    private string GetNextWorkflowID()
+    [RelayCommand(CanExecute = nameof(CanMoveUp))]
+    private void MoveUp()
     {
-        IEnumerable<HotkeySettings> source = _manager != null ? _manager.Hotkeys : SettingManager.WorkflowsConfig.Hotkeys;
+        if (SelectedWorkflow == null) return;
         
-        int maxId = 0;
-        foreach (var hk in source)
+        var index = Workflows.IndexOf(SelectedWorkflow);
+        if (index <= 0) return;
+        
+        var hotkeys = _manager?.Hotkeys ?? SettingManager.WorkflowsConfig.Hotkeys;
+        var model = SelectedWorkflow.Model;
+        var modelIndex = hotkeys.IndexOf(model);
+        
+        if (modelIndex > 0)
         {
-            if (!string.IsNullOrEmpty(hk.WorkflowID) && hk.WorkflowID.StartsWith("W") && hk.WorkflowID.Length > 1)
-            {
-                if (int.TryParse(hk.WorkflowID.Substring(1), out int result))
-                {
-                    if (result > maxId) maxId = result;
-                }
-            }
+            hotkeys.RemoveAt(modelIndex);
+            hotkeys.Insert(modelIndex - 1, model);
+            SaveHotkeys();
+            LoadWorkflows();
+            SelectedWorkflow = Workflows.FirstOrDefault(w => w.Model == model);
         }
+    }
+
+    private bool CanMoveUp()
+    {
+        if (SelectedWorkflow == null) return false;
+        return Workflows.IndexOf(SelectedWorkflow) > 0;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanMoveDown))]
+    private void MoveDown()
+    {
+        if (SelectedWorkflow == null) return;
         
-        return $"W{(maxId + 1):D2}";
+        var index = Workflows.IndexOf(SelectedWorkflow);
+        if (index < 0 || index >= Workflows.Count - 1) return;
+        
+        var hotkeys = _manager?.Hotkeys ?? SettingManager.WorkflowsConfig.Hotkeys;
+        var model = SelectedWorkflow.Model;
+        var modelIndex = hotkeys.IndexOf(model);
+        
+        if (modelIndex >= 0 && modelIndex < hotkeys.Count - 1)
+        {
+            hotkeys.RemoveAt(modelIndex);
+            hotkeys.Insert(modelIndex + 1, model);
+            SaveHotkeys();
+            LoadWorkflows();
+            SelectedWorkflow = Workflows.FirstOrDefault(w => w.Model == model);
+        }
+    }
+
+    private bool CanMoveDown()
+    {
+        if (SelectedWorkflow == null) return false;
+        return Workflows.IndexOf(SelectedWorkflow) < Workflows.Count - 1;
     }
 
 

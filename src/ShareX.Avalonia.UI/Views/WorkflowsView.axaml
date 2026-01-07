@@ -42,6 +42,18 @@
                 
                 <ui:CommandBarSeparator />
 
+                <Button Command="{Binding MoveUpCommand}" ToolTip.Tip="Move Up"
+                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <ui:SymbolIcon Symbol="ChevronUp"/>
+                </Button>
+
+                <Button Command="{Binding MoveDownCommand}" ToolTip.Tip="Move Down"
+                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <ui:SymbolIcon Symbol="ChevronDown"/>
+                </Button>
+                
+                <ui:CommandBarSeparator />
+
                 <Button Command="{Binding ResetCommand}" ToolTip.Tip="Reset to Defaults" Content="Reset..." />
             </StackPanel>
 

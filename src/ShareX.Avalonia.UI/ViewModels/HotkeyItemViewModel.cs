@@ -11,10 +11,9 @@ public partial class HotkeyItemViewModel : ViewModelBase
     private ShareX.Ava.Core.Hotkeys.HotkeySettings _model;
 
     public string Description => 
-        (string.IsNullOrEmpty(Model.WorkflowID) ? "" : $"{Model.WorkflowID} ") +
-        (string.IsNullOrEmpty(Model.TaskSettings.Description) 
+        string.IsNullOrEmpty(Model.TaskSettings.Description) 
             ? EnumExtensions.GetDescription(Model.TaskSettings.Job) 
-            : Model.TaskSettings.Description);
+            : Model.TaskSettings.Description;
     
     public string KeyString => Model.HotkeyInfo.ToString();
     

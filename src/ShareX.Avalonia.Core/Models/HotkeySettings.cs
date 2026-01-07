@@ -52,32 +52,12 @@ public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
     {
         return new List<HotkeySettings>
         {
-            new HotkeySettings(HotkeyType.PrintScreen, new HotkeyInfo(Key.PrintScreen)) { WorkflowID = "W01" },
-            new HotkeySettings(HotkeyType.ActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Alt)) { WorkflowID = "W03" },
-            new HotkeySettings(HotkeyType.CustomWindow, new HotkeyInfo()) { WorkflowID = "W04" },
-            new HotkeySettings(HotkeyType.RectangleRegion, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control)) { WorkflowID = "W02" },
-            new HotkeySettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift)) { WorkflowID = "W05" },
-            new HotkeySettings(HotkeyType.ScreenRecorderGIF, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift)) { WorkflowID = "W06" },
+            new HotkeySettings(HotkeyType.PrintScreen, new HotkeyInfo(Key.PrintScreen)),
+            new HotkeySettings(HotkeyType.RectangleRegion, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control)),
+            new HotkeySettings(HotkeyType.ActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Alt)),
+            new HotkeySettings(HotkeyType.CustomWindow, new HotkeyInfo()),
+            new HotkeySettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift)),
+            new HotkeySettings(HotkeyType.ScreenRecorderGIF, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift)),
         };
-    }
-
-    /// <summary>
-    /// Ensures that default hotkeys have their correct WorkflowIDs even if loaded from legacy config.
-    /// </summary>
-    public void EnsureWorkflowIDs()
-    {
-        var defaults = GetDefaultHotkeyList();
-        
-        foreach (var hotkey in Hotkeys)
-        {
-            if (string.IsNullOrEmpty(hotkey.WorkflowID))
-            {
-                var defaultMatch = defaults.FirstOrDefault(d => d.TaskSettings.Job == hotkey.TaskSettings.Job);
-                if (defaultMatch != null)
-                {
-                    hotkey.WorkflowID = defaultMatch.WorkflowID;
-                }
-            }
-        }
     }
 }
