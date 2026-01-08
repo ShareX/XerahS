@@ -75,6 +75,7 @@ namespace ShareX.Avalonia.ScreenCapture.Recording;
 
 public interface IRecordingService
 {
+    // Note: CancellationToken support deferred to future optimization
     Task StartRecordingAsync(RecordingOptions options);
     Task StopRecordingAsync();
     event EventHandler<RecordingErrorEventArgs> ErrorOccurred;
@@ -118,14 +119,58 @@ New components will be organized as follows:
 
 ### Type Definitions
 
+#### Enumerations
+```csharp
+public enum CaptureMode
+{
+    Screen,
+    Window,
+    Region
+}
+
+public enum RecordingStatus
+{
+    Idle,
+    Initializing,
+    Recording,
+    Paused,
+    Finalizing,
+    Error
+}
+
+public enum VideoCodec
+{
+    H264,
+    HEVC,
+    VP9,
+    AV1
+}
+
+public enum PixelFormat
+{
+    Bgra8888,
+    Nv12,
+    Rgba8888,
+    Unknown
+}
+```
+
 #### RecordingOptions
 ```csharp
 public class RecordingOptions
 {
     public CaptureMode Mode { get; set; } // Screen, Window, Region
+    // Use IntPtr for Window Handle.
+    // Windows: HWND. Linux: XID. macOS: WindowID (int cast to IntPtr).
+    // Future refactor may introduce a typed WindowId struct if needed.
     public IntPtr TargetWindowHandle { get; set; }
     public Rectangle Region { get; set; }
+    
+    // OutputPath:
+    // If null/empty -> PlatformManager.GetDefaultOutputPath() acts as fallback
+    // Default Pattern: "ShareX/Screenshots/yyyy-MM/Date_Time.mp4"
     public string OutputPath { get; set; }
+    
     public ScreenRecordingSettings Settings { get; set; } // Reference to config
 }
 ```
@@ -182,14 +227,19 @@ public class AudioBufferEventArgs : EventArgs
 }
 ```
 
-### Dependency Injection
+### Dependency Injection & PlatformManager
 Services will be registered in `App.axaml.cs` (or `Bootstrapper.cs`):
 
 ```csharp
 // In ConfigureServices
 services.AddSingleton<IRecordingService, ScreenRecorderService>();
-// ScreenRecorderService internally manages platform specific sources via PlatformManager
 ```
+
+**PlatformManager Responsibility**:
+`ScreenRecorderService` does NOT instantiate platform classes directly. Instead, it uses `PlatformManager`:
+- `PlatformManager` acts as the service locator for OS-specific implementations.
+- Example: `_captureSource = PlatformManager.CreateCaptureSource();`
+- This ensures `ScreenRecorderService` remains platform-agnostic code.
 
 ## Configuration & Persistence
 
@@ -210,6 +260,11 @@ public class ScreenRecordingSettings
     public bool ForceFFmpeg { get; set; } = false;
 }
 ```
+
+### Configuration Storage Rules
+1.  **ApplicationConfig.json**: Stores global defaults for the application.
+2.  **WorkflowsConfig.json**: Stores specific settings for user-defined workflows.
+3.  **Precedence**: Workflow-specific settings in `WorkflowsConfig.json` **override** global defaults in `ApplicationConfig.json`. If a workflow setting is missing, it falls back to the Application default.
 
 ### UI Integration
 *   `MainViewModel.StartRecordingCommand`: Triggers `IRecordingService.StartRecordingAsync`.
