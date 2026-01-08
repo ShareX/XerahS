@@ -96,7 +96,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
             // Create frame pool
             _framePool = Direct3D11CaptureFramePool.Create(
                 _device,
-                Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
+                global::Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 2, // Number of buffers
                 _captureItem.Size);
 
@@ -131,7 +131,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
 
             _framePool = Direct3D11CaptureFramePool.Create(
                 _device,
-                Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
+                global::Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 2,
                 _captureItem.Size);
 
@@ -209,42 +209,64 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
 
     private FrameData ConvertSurfaceToFrameData(IDirect3DSurface surface, TimeSpan systemRelativeTime)
     {
-        // Get the underlying Direct3D11 texture
-        var access = surface as Windows.Graphics.DirectX.Direct3D11.IDirect3DDxgiInterfaceAccess;
-        if (access == null)
-        {
-            throw new InvalidOperationException("Failed to get Direct3D interface access");
-        }
-
-        var dxgiResource = access.GetInterface(typeof(IDXGISurface).GUID);
-        var dxgiSurface = Marshal.GetObjectForIUnknown(dxgiResource) as IDXGISurface;
-
-        if (dxgiSurface == null)
-        {
-            throw new InvalidOperationException("Failed to get DXGI surface");
-        }
-
+        // Get the underlying Direct3D11 texture via COM interop
+        // IDirect3DDxgiInterfaceAccess is a COM interface for accessing DXGI interfaces from WinRT objects
+        var surfacePtr = Marshal.GetIUnknownForObject(surface);
+        
         try
         {
-            var desc = dxgiSurface.Description;
-
-            // Map surface for CPU access
-            var mapped = dxgiSurface.Map(MapFlags.Read);
-
-            return new FrameData
+            var iidAccess = typeof(IDirect3DDxgiInterfaceAccess).GUID;
+            Marshal.QueryInterface(surfacePtr, ref iidAccess, out var accessPtr);
+            
+            if (accessPtr == IntPtr.Zero)
             {
-                DataPtr = mapped.DataPointer,
-                Stride = mapped.Pitch,
-                Width = (int)desc.Width,
-                Height = (int)desc.Height,
-                Timestamp = (long)(systemRelativeTime.TotalMilliseconds * 10000), // Convert to 100ns units
-                Format = PixelFormat.Bgra32 // WGC always provides BGRA32
-            };
+                throw new InvalidOperationException("Failed to get IDirect3DDxgiInterfaceAccess");
+            }
+
+            try
+            {
+                var access = (IDirect3DDxgiInterfaceAccess)Marshal.GetObjectForIUnknown(accessPtr);
+                var dxgiGuid = typeof(IDXGISurface).GUID;
+                var hr = access.GetInterface(ref dxgiGuid, out var dxgiPtr);
+                
+                if (hr != 0 || dxgiPtr == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException($"Failed to get DXGI surface: HRESULT {hr}");
+                }
+
+                var dxgiSurface = (IDXGISurface)Marshal.GetObjectForIUnknown(dxgiPtr);
+                Marshal.Release(dxgiPtr);
+
+                try
+                {
+                    var desc = dxgiSurface.Description;
+
+                    // Map surface for CPU access
+                    var mapped = dxgiSurface.Map(Vortice.DXGI.MapFlags.Read);
+
+                    return new FrameData
+                    {
+                        DataPtr = mapped.DataPointer,
+                        Stride = (int)mapped.Pitch,
+                        Width = (int)desc.Width,
+                        Height = (int)desc.Height,
+                        Timestamp = (long)(systemRelativeTime.TotalMilliseconds * 10000), // Convert to 100ns units
+                        Format = PixelFormat.Bgra32 // WGC always provides BGRA32
+                    };
+                }
+                finally
+                {
+                    dxgiSurface.Unmap();
+                }
+            }
+            finally
+            {
+                Marshal.Release(accessPtr);
+            }
         }
         finally
         {
-            dxgiSurface.Unmap();
-            Marshal.Release(dxgiResource);
+            Marshal.Release(surfacePtr);
         }
     }
 
@@ -335,10 +357,27 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
 }
 
 /// <summary>
+/// COM interface for accessing DXGI interfaces from WinRT Direct3D objects
+/// This interface must be defined manually as it's not provided by the WinRT SDK
+/// </summary>
+[ComImport]
+[Guid("A9B3D012-3DF2-4EE3-B8D1-8695F457D3C1")]
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+internal interface IDirect3DDxgiInterfaceAccess
+{
+    [PreserveSig]
+    int GetInterface([In] ref Guid iid, out IntPtr p);
+}
+
+
+/// <summary>
 /// Helper class for creating GraphicsCaptureItem from HWND/HMONITOR
+/// Uses IGraphicsCaptureItemInterop COM interface (works without Windows App SDK)
 /// </summary>
 internal static class CaptureHelper
 {
+    private static readonly Guid GraphicsCaptureItemGuid = new("79C3F95B-31F7-4EC2-A464-632EF5D30760");
+    
     [DllImport("user32.dll")]
     private static extern IntPtr GetDesktopWindow();
 
@@ -346,7 +385,14 @@ internal static class CaptureHelper
     {
         try
         {
-            return GraphicsCaptureItem.TryCreateFromWindowId(Win32Interop.GetWindowIdFromWindow(hwnd));
+            var interop = GraphicsCaptureItemInterop.GetInterop();
+            if (interop == null) return null;
+            
+            var guid = GraphicsCaptureItemGuid;
+            var hr = interop.CreateForWindow(hwnd, ref guid, out var item);
+            if (hr != 0 || item == null) return null;
+            
+            return item;
         }
         catch
         {
@@ -358,7 +404,14 @@ internal static class CaptureHelper
     {
         try
         {
-            return GraphicsCaptureItem.TryCreateFromDisplayId(Win32Interop.GetDisplayIdFromMonitor(hmonitor));
+            var interop = GraphicsCaptureItemInterop.GetInterop();
+            if (interop == null) return null;
+            
+            var guid = GraphicsCaptureItemGuid;
+            var hr = interop.CreateForMonitor(hmonitor, ref guid, out var item);
+            if (hr != 0 || item == null) return null;
+            
+            return item;
         }
         catch
         {
@@ -368,17 +421,89 @@ internal static class CaptureHelper
 }
 
 /// <summary>
-/// Win32 interop for getting WindowId and DisplayId
+/// COM interface for creating GraphicsCaptureItem from Win32 handles
+/// This avoids the need for Windows App SDK WindowId/DisplayId types
 /// </summary>
-internal static class Win32Interop
+[ComImport]
+[Guid("3628E81B-3CAC-4C60-B7F4-23CE0E0C3356")]
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+internal interface IGraphicsCaptureItemInterop
 {
-    public static Windows.UI.WindowId GetWindowIdFromWindow(IntPtr hwnd)
+    [PreserveSig]
+    int CreateForWindow(
+        IntPtr window,
+        [In] ref Guid riid,
+        [Out, MarshalAs(UnmanagedType.Interface)] out GraphicsCaptureItem result);
+
+    [PreserveSig]
+    int CreateForMonitor(
+        IntPtr monitor,
+        [In] ref Guid riid,
+        [Out, MarshalAs(UnmanagedType.Interface)] out GraphicsCaptureItem result);
+}
+
+/// <summary>
+/// Helper to get the IGraphicsCaptureItemInterop activation factory
+/// </summary>
+internal static class GraphicsCaptureItemInterop
+{
+    private static IGraphicsCaptureItemInterop? _interop;
+
+    public static IGraphicsCaptureItemInterop? GetInterop()
     {
-        return Windows.UI.WindowId.CreateFromWin32(hwnd.ToInt64());
+        if (_interop != null) return _interop;
+
+        try
+        {
+            // Get the activation factory for GraphicsCaptureItem
+            var hString = WindowsRuntimeMarshal.StringToHString("Windows.Graphics.Capture.GraphicsCaptureItem");
+            var iid = typeof(IGraphicsCaptureItemInterop).GUID;
+            var hr = RoGetActivationFactory(hString, ref iid, out var factory);
+            WindowsRuntimeMarshal.FreeHString(hString);
+            
+            if (hr != 0) return null;
+            
+            _interop = (IGraphicsCaptureItemInterop?)Marshal.GetObjectForIUnknown(factory);
+            Marshal.Release(factory);
+            
+            return _interop;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
-    public static Windows.Graphics.DisplayId GetDisplayIdFromMonitor(IntPtr hmonitor)
+    [DllImport("combase.dll", PreserveSig = true)]
+    private static extern int RoGetActivationFactory(
+        IntPtr activatableClassId,
+        [In] ref Guid iid,
+        out IntPtr factory);
+}
+
+/// <summary>
+/// Helper for WinRT string marshaling
+/// </summary>
+internal static class WindowsRuntimeMarshal
+{
+    [DllImport("combase.dll", PreserveSig = true)]
+    private static extern int WindowsCreateString(
+        [MarshalAs(UnmanagedType.LPWStr)] string sourceString,
+        int length,
+        out IntPtr hstring);
+
+    [DllImport("combase.dll", PreserveSig = true)]
+    private static extern int WindowsDeleteString(IntPtr hstring);
+
+    public static IntPtr StringToHString(string str)
     {
-        return Windows.Graphics.DisplayId.CreateFromInt64(hmonitor.ToInt64());
+        WindowsCreateString(str, str.Length, out var hstring);
+        return hstring;
+    }
+
+    public static void FreeHString(IntPtr hstring)
+    {
+        WindowsDeleteString(hstring);
     }
 }
+

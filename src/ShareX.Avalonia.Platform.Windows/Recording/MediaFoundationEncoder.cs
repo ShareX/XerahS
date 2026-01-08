@@ -129,7 +129,7 @@ public class MediaFoundationEncoder : IVideoEncoder
                 // H.264 in MP4 container
                 outputMediaType.SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
                 outputMediaType.SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
-                outputMediaType.SetUINT32(MF_MT_AVG_BITRATE, _format!.Bitrate);
+                outputMediaType.SetUINT32(MF_MT_AVG_BITRATE, (uint)_format!.Bitrate);
                 outputMediaType.SetUINT32(MF_MT_INTERLACE_MODE, (uint)MFVideoInterlaceMode.Progressive);
                 MFSetAttributeSize(outputMediaType, MF_MT_FRAME_SIZE, _format.Width, _format.Height);
                 MFSetAttributeRatio(outputMediaType, MF_MT_FRAME_RATE, _format.FPS, 1);

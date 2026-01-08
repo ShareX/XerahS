@@ -82,6 +82,9 @@ namespace XerahS.UI.Views
                         if (_editorView == null) _editorView = new EditorView();
                         contentFrame.Content = _editorView;
                         break;
+                    case "Recording":
+                        contentFrame.Content = new RecordingView();
+                        break;
                     case "History":
                         contentFrame.Content = new HistoryView();
                         break;

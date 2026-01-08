@@ -18,6 +18,7 @@
     <ProjectReference Include="..\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Platform.Abstractions\ShareX.Avalonia.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Services.Abstractions\ShareX.Avalonia.Services.Abstractions.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.ScreenCapture\ShareX.Avalonia.ScreenCapture.csproj" />
     <ProjectReference Include="..\..\..\ShareX.Editor\src\ShareX.Editor\ShareX.Editor.csproj" />
   </ItemGroup>
   <ItemGroup>

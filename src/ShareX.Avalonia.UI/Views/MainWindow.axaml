@@ -47,6 +47,12 @@
                     </ui:NavigationViewItem.IconSource>
                 </ui:NavigationViewItem>
                 
+                <ui:NavigationViewItem Content="Recording" Tag="Recording">
+                    <ui:NavigationViewItem.IconSource>
+                        <ui:SymbolIconSource Symbol="Video"/>
+                    </ui:NavigationViewItem.IconSource>
+                </ui:NavigationViewItem>
+                
                 <ui:NavigationViewItem Content="Editor" Tag="Editor" IsSelected="True">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Edit"/>

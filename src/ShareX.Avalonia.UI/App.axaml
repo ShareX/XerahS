@@ -4,6 +4,7 @@
              xmlns:vm="using:XerahS.UI.ViewModels"
              xmlns:views="using:XerahS.UI.Views"
              xmlns:converters="clr-namespace:ShareX.Editor.Converters;assembly=ShareX.Editor"
+             xmlns:uiconverters="clr-namespace:XerahS.UI.Converters"
              xmlns:sty="using:FluentAvalonia.Styling"
              xmlns:core="using:XerahS.Core"
              x:Class="XerahS.UI.App"
@@ -16,7 +17,9 @@
         <converters:SelectedWidthToBackgroundConverter x:Key="SelectedWidthToBackground"/>
         <converters:BoolToActiveBackgroundConverter x:Key="BoolToActiveBackgroundConverter"/>
         <converters:EqualsConverter x:Key="EqualsConverter"/>
+        <uiconverters:BoolToRecordingColorConverter x:Key="BoolToRecordingColorConverter"/>
     </Application.Resources>
+
 
     <Application.DataTemplates>
         <local:ViewLocator/>
