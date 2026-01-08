@@ -70,6 +70,64 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private string? _outputFilePath;
 
+    // Stage 3: Recording settings
+    [ObservableProperty]
+    private int _fps = 30;
+
+    [ObservableProperty]
+    private int _bitrateKbps = 4000;
+
+    [ObservableProperty]
+    private VideoCodec _codec = VideoCodec.H264;
+
+    [ObservableProperty]
+    private bool _showCursor = true;
+
+    /// <summary>
+    /// Available codecs for selection
+    /// </summary>
+    public List<VideoCodec> AvailableCodecs { get; } = new()
+    {
+        VideoCodec.H264,
+        VideoCodec.HEVC,
+        VideoCodec.VP9,
+        VideoCodec.AV1
+    };
+
+    /// <summary>
+    /// Available FPS options
+    /// </summary>
+    public List<int> AvailableFPS { get; } = new() { 15, 24, 30, 60, 120 };
+
+    /// <summary>
+    /// Available bitrate options (in kbps)
+    /// </summary>
+    public List<int> AvailableBitrates { get; } = new() { 1000, 2000, 4000, 8000, 16000, 32000 };
+
+    /// <summary>
+    /// Encoder information for display
+    /// Stage 3: Hardware encoder detection
+    /// </summary>
+    public string EncoderInfo
+    {
+        get
+        {
+            // Simple platform check - detailed detection happens at runtime
+            if (OperatingSystem.IsWindows() && Environment.OSVersion.Version.Build >= 17134)
+            {
+                return "Modern recording available (Windows.Graphics.Capture + Media Foundation). Hardware encoding will be used if available.";
+            }
+            else if (OperatingSystem.IsWindows())
+            {
+                return "Using FFmpeg fallback for recording (requires Windows 10 1803+ for native recording).";
+            }
+            else
+            {
+                return "Platform-specific recording support not yet implemented. FFmpeg fallback will be used.";
+            }
+        }
+    }
+
     public RecordingViewModel()
     {
         Current = this;
@@ -181,9 +239,10 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
                 Mode = CaptureMode.Screen,
                 Settings = new ScreenRecordingSettings
                 {
-                    FPS = 30,
-                    BitrateKbps = 4000,
-                    Codec = VideoCodec.H264
+                    FPS = Fps,
+                    BitrateKbps = BitrateKbps,
+                    Codec = Codec,
+                    ShowCursor = ShowCursor
                 }
             };
 
@@ -194,7 +253,8 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
             options.OutputPath = Path.Combine(recordingsPath, $"Recording_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4");
             OutputFilePath = options.OutputPath;
 
-            DebugHelper.WriteLine($"Starting recording to: {options.OutputPath}");
+            DebugHelper.WriteLine($"Starting recording: {Codec} @ {Fps}fps, {BitrateKbps}kbps, Cursor={ShowCursor}");
+            DebugHelper.WriteLine($"Output path: {options.OutputPath}");
 
             await _recorderService.StartRecordingAsync(options);
         }

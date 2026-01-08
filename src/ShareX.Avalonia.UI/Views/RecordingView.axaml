@@ -67,7 +67,91 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
-                
+
+                <!-- Recording Settings Card (Stage 3) -->
+                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="24">
+
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Recording Settings"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"/>
+
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="12" ColumnSpacing="16">
+
+                            <!-- Codec -->
+                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                       Text="Video Codec:"
+                                       VerticalAlignment="Center"/>
+                            <ComboBox Grid.Row="0" Grid.Column="1"
+                                      ItemsSource="{Binding AvailableCodecs}"
+                                      SelectedItem="{Binding Codec}"
+                                      IsEnabled="{Binding !IsRecording}"
+                                      HorizontalAlignment="Stretch"
+                                      MinWidth="150"/>
+
+                            <!-- FPS -->
+                            <TextBlock Grid.Row="1" Grid.Column="0"
+                                       Text="Frame Rate (FPS):"
+                                       VerticalAlignment="Center"/>
+                            <ComboBox Grid.Row="1" Grid.Column="1"
+                                      ItemsSource="{Binding AvailableFPS}"
+                                      SelectedItem="{Binding Fps}"
+                                      IsEnabled="{Binding !IsRecording}"
+                                      HorizontalAlignment="Stretch"
+                                      MinWidth="150"/>
+
+                            <!-- Bitrate -->
+                            <TextBlock Grid.Row="2" Grid.Column="0"
+                                       Text="Bitrate (kbps):"
+                                       VerticalAlignment="Center"/>
+                            <ComboBox Grid.Row="2" Grid.Column="1"
+                                      ItemsSource="{Binding AvailableBitrates}"
+                                      SelectedItem="{Binding BitrateKbps}"
+                                      IsEnabled="{Binding !IsRecording}"
+                                      HorizontalAlignment="Stretch"
+                                      MinWidth="150"/>
+
+                            <!-- Show Cursor -->
+                            <TextBlock Grid.Row="3" Grid.Column="0"
+                                       Text="Show Cursor:"
+                                       VerticalAlignment="Center"/>
+                            <CheckBox Grid.Row="3" Grid.Column="1"
+                                      IsChecked="{Binding ShowCursor}"
+                                      IsEnabled="{Binding !IsRecording}"
+                                      Content="Include mouse cursor in recording"/>
+
+                        </Grid>
+
+                        <TextBlock Text="Note: Higher bitrates and frame rates will result in larger file sizes. Hardware encoding may be used automatically if available."
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"/>
+
+                        <!-- Encoder Info -->
+                        <Border Background="{DynamicResource SystemFillColorAttentionBackgroundBrush}"
+                                BorderBrush="{DynamicResource SystemFillColorAttentionBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="12,8"
+                                Margin="0,8,0,0">
+                            <StackPanel Spacing="4" Orientation="Horizontal">
+                                <PathIcon Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,7H13V9H11V7M11,11H13V17H11V11Z"
+                                          Width="16"
+                                          Height="16"
+                                          Foreground="{DynamicResource SystemFillColorAttentionBrush}"/>
+                                <TextBlock Text="{Binding EncoderInfo}"
+                                           FontSize="11"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
                 <!-- Instructions Card -->
                 <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
