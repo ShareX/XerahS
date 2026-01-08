@@ -208,6 +208,16 @@ public class ScreenRecorderService : IRecordingService
         // This allows us to stay platform-agnostic here
         dynamic source = _captureSource;
 
+        // Stage 2: Configure cursor capture if supported
+        try
+        {
+            source.ShowCursor = options.Settings?.ShowCursor ?? true;
+        }
+        catch
+        {
+            // Platform doesn't support ShowCursor property - ignore
+        }
+
         switch (options.Mode)
         {
             case CaptureMode.Screen:
@@ -223,8 +233,8 @@ public class ScreenRecorderService : IRecordingService
                 break;
 
             case CaptureMode.Region:
-                // Stage 2: Region mode requires post-capture cropping
-                // For Stage 1, fall back to full screen
+                // Stage 2: Region mode uses full screen capture + post-capture cropping
+                // This is more efficient than trying to capture a specific region with WGC
                 source.InitializeForPrimaryMonitor();
                 break;
 
@@ -239,13 +249,39 @@ public class ScreenRecorderService : IRecordingService
     {
         if (_disposed || _status != RecordingStatus.Recording) return;
 
+        FrameData? croppedFrame = null;
         try
         {
-            _encoder?.WriteFrame(e.Frame);
+            FrameData frameToEncode = e.Frame;
+
+            // Stage 2: Crop frame if in Region mode
+            if (_currentOptions?.Mode == CaptureMode.Region && _currentOptions.Region.Width > 0 && _currentOptions.Region.Height > 0)
+            {
+                try
+                {
+                    croppedFrame = RegionCropper.CropFrame(e.Frame, _currentOptions.Region);
+                    frameToEncode = croppedFrame.Value;
+                }
+                catch (Exception cropEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to crop frame: {cropEx.Message}");
+                    // Fall back to uncropped frame
+                }
+            }
+
+            _encoder?.WriteFrame(frameToEncode);
         }
         catch (Exception ex)
         {
             HandleFatalError(ex, true);
+        }
+        finally
+        {
+            // Free cropped frame memory to prevent leak
+            if (croppedFrame.HasValue)
+            {
+                RegionCropper.FreeCroppedFrame(croppedFrame.Value);
+            }
         }
     }
 

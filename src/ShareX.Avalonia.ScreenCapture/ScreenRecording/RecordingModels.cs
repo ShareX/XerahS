@@ -88,6 +88,12 @@ public class ScreenRecordingSettings
     public string? MicrophoneDeviceId { get; set; }
 
     /// <summary>
+    /// Capture mouse cursor in recording
+    /// Stage 2: Window & Region Parity
+    /// </summary>
+    public bool ShowCursor { get; set; } = true;
+
+    /// <summary>
     /// Force FFmpeg mode instead of native recording
     /// Trigger condition for Stage 4 FFmpeg fallback
     /// </summary>

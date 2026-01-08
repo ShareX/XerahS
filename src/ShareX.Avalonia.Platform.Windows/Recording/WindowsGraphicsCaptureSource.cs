@@ -74,6 +74,13 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
     public event EventHandler<FrameArrivedEventArgs>? FrameArrived;
 
     /// <summary>
+    /// Whether to capture the mouse cursor in the recording
+    /// Stage 2: Window & Region Parity
+    /// Default: true
+    /// </summary>
+    public bool ShowCursor { get; set; } = true;
+
+    /// <summary>
     /// Initialize capture for a specific window
     /// </summary>
     public void InitializeForWindow(IntPtr hwnd)
@@ -158,7 +165,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
             }
 
             _session = _framePool.CreateCaptureSession(_captureItem);
-            _session.IsCursorCaptureEnabled = true; // Capture cursor by default
+            _session.IsCursorCaptureEnabled = ShowCursor; // Stage 2: Configurable cursor capture
             _session.StartCapture();
             _isCapturing = true;
         }

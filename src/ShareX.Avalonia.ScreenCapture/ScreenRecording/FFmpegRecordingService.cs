@@ -234,6 +234,11 @@ public class FFmpegRecordingService : IRecordingService
                 // Use gdigrab for screen capture on Windows
                 args.Add("-f gdigrab");
                 args.Add("-framerate " + settings.FPS);
+                // Stage 2: Cursor capture support
+                if (settings.ShowCursor)
+                {
+                    args.Add("-draw_mouse 1");
+                }
                 args.Add("-i desktop");
                 break;
 
@@ -241,6 +246,10 @@ public class FFmpegRecordingService : IRecordingService
                 // Window capture would need window title - defer to region for now
                 args.Add("-f gdigrab");
                 args.Add("-framerate " + settings.FPS);
+                if (settings.ShowCursor)
+                {
+                    args.Add("-draw_mouse 1");
+                }
                 args.Add("-i desktop");
                 break;
 
@@ -248,6 +257,10 @@ public class FFmpegRecordingService : IRecordingService
                 // Region capture with gdigrab
                 args.Add("-f gdigrab");
                 args.Add("-framerate " + settings.FPS);
+                if (settings.ShowCursor)
+                {
+                    args.Add("-draw_mouse 1");
+                }
                 if (options.Region.Width > 0 && options.Region.Height > 0)
                 {
                     args.Add($"-offset_x {options.Region.X}");
