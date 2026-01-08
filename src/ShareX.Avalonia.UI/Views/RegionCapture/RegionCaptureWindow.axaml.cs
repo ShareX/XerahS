@@ -733,6 +733,24 @@ namespace XerahS.UI.Views.RegionCapture
             return false;
         }
 
+        /// <summary>
+        /// Gets the DPI scaling factor for the screen containing the specified physical point.
+        /// </summary>
+        private double GetScalingForPhysicalPoint(int physicalX, int physicalY)
+        {
+            foreach (var screen in Screens.All)
+            {
+                // Screen.Bounds is in physical pixels
+                if (screen.Bounds.Contains(new PixelPoint(physicalX, physicalY)))
+                {
+                    return screen.Scaling > 0 ? screen.Scaling : 1.0;
+                }
+            }
+
+            // Fallback to window's RenderScaling if no screen found
+            return RenderScaling;
+        }
+
         private void UpdateWindowSelection(SKPointI mousePos)
         {
             if (_windows == null) return;
@@ -746,15 +764,18 @@ namespace XerahS.UI.Views.RegionCapture
                 // Convert window bounds (physical) to logical for rendering
                 double logicalX, logicalY, logicalW, logicalH;
 
-                var currentScaling = RenderScaling;
+                // Use the DPI scaling of the monitor where the window resides (fixes mixed-DPI offset)
+                var windowCenterX = window.Bounds.X + window.Bounds.Width / 2;
+                var windowCenterY = window.Bounds.Y + window.Bounds.Height / 2;
+                var targetMonitorScaling = GetScalingForPhysicalPoint(windowCenterX, windowCenterY);
 
                 var relativeX = window.Bounds.X - _windowLeft;
                 var relativeY = window.Bounds.Y - _windowTop;
 
-                logicalX = relativeX / currentScaling;
-                logicalY = relativeY / currentScaling;
-                logicalW = window.Bounds.Width / currentScaling;
-                logicalH = window.Bounds.Height / currentScaling;
+                logicalX = relativeX / targetMonitorScaling;
+                logicalY = relativeY / targetMonitorScaling;
+                logicalW = window.Bounds.Width / targetMonitorScaling;
+                logicalH = window.Bounds.Height / targetMonitorScaling;
 
                 // Update visuals to match window
                 var border = this.FindControl<Rectangle>("SelectionBorder");
