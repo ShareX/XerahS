@@ -3,6 +3,12 @@
 ## Goal
 Upgrade the `ShareX.Avalonia` screen recording subsystem to utilize modern, high-performance, and OS-native APIs. The current process-based integration utilizing FFmpeg CLI is robust but lacks efficiency and modern OS integration (e.g., proper cursor composition, protected content handling). This proposal outlines a staged approach to implement robust recording providers for Windows, Linux, and macOS, with a focus on Windows.Graphics.Capture (WGC).
 
+## Milestones
+
+| Date | Commit | Description |
+|------|--------|-------------|
+| 2026-01-08 | `30f7273` | **Stage 1 Zero Build Errors**: UI integration complete (RecordingViewModel, RecordingToolbarView, RecordingView), COM interop fixed (IGraphicsCaptureItemInterop, IDirect3DDxgiInterfaceAccess), TFM standardized to net10.0-windows + TargetPlatformVersion=10.0.19041.0 |
+
 ## Implementation Plan
 
 The implementation will be executed in seven distinct stages, prioritizing core recording capability, followed by advanced features, and finally cross-platform support.
