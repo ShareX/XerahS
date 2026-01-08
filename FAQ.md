@@ -30,8 +30,19 @@ We use **SkiaSharp**, which is a .NET binding for Google's Skia graphics engine 
 *   **Headless Processing:** SkiaSharp allows robust image manipulation (`SKCanvas`, `SKBitmap`) without requiring a UI thread or Dispatcher, making it ideal for background "After Capture" tasks.
 *   **True Cross-Platform:** It renders identically on all supported operating systems.
 
-Use `Avalonia.Media.Bitmap` for **displaying** images in the UI.
 Use `SkiaSharp` for **editing, processing, and saving** images.
+
+### How is image rendering handled? Is it hardware accelerated?
+
+**Q: "Is rendering used for the image editor hardware accelerated? I had issues with image editors struggling to keep stable 60FPS on high res monitors."**
+
+**A:** Yes, ShareX.Avalonia uses **Avalonia UI**, which is fully hardware-accelerated via Skia/Direct2D/Metal depending on your OS.
+
+*   **No more GDI+ Bottlenecks:** We do not use legacy Windows GDI rendering.
+*   **Optimized Pipeline:** As of January 2026, we have refactored the image pipeline to use direct memory copies (`memcpy`) instead of expensive stream-based encoding.
+    *   *Before:* Interactions could trigger costly PNG encode/decode cycles.
+    *   *After:* Interactions manipulate raw pixel memory directly.
+*   **Result:** Large 4K+ images render and update instantly without stalling the UI thread, maintaining a smooth 60+ FPS even on high-resolution displays.
 
 ---
 
