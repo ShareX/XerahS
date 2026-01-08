@@ -112,8 +112,11 @@ namespace XerahS.Platform.Windows
                 else
                 {
                     DebugHelper.WriteLine("Native recording NOT supported. Requires Windows 10 1803+ and Media Foundation.");
-                    // Stage 4: FFmpeg fallback will be initialized here
-                    // ScreenRecorderService.FallbackServiceFactory = () => new FFmpegRecordingService();
+                    DebugHelper.WriteLine("Initializing FFmpeg fallback recording service.");
+
+                    // Set up FFmpeg fallback
+                    XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService.FallbackServiceFactory =
+                        () => new XerahS.ScreenCapture.ScreenRecording.FFmpegRecordingService();
                 }
             }
             catch (Exception ex)
