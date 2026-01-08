@@ -25,8 +25,10 @@
 
 using XerahS.Common;
 using XerahS.Core.Helpers;
+using XerahS.Core.Managers;
 using XerahS.Core.Tasks.Processors;
 using XerahS.Platform.Abstractions;
+using XerahS.ScreenCapture.ScreenRecording;
 using SkiaSharp;
 using System.Diagnostics;
 
@@ -257,6 +259,35 @@ namespace XerahS.Core.Tasks
                             }
                         }
                         break;
+
+                    // Stage 5: Screen Recording Integration
+                    case HotkeyType.ScreenRecorder:
+                    case HotkeyType.StartScreenRecorder:
+                        await HandleStartRecordingAsync(CaptureMode.Screen);
+                        return; // Recording tasks don't proceed to image processing
+
+                    case HotkeyType.ScreenRecorderActiveWindow:
+                        if (PlatformServices.Window != null)
+                        {
+                            var foregroundWindow = PlatformServices.Window.GetForegroundWindow();
+                            await HandleStartRecordingAsync(CaptureMode.Window, foregroundWindow);
+                        }
+                        return;
+
+                    case HotkeyType.ScreenRecorderCustomRegion:
+                        // TODO: Show region selector UI and get selected region
+                        // For now, just start full screen recording
+                        DebugHelper.WriteLine("ScreenRecorderCustomRegion: Region selector not yet implemented, falling back to full screen");
+                        await HandleStartRecordingAsync(CaptureMode.Screen);
+                        return;
+
+                    case HotkeyType.StopScreenRecording:
+                        await HandleStopRecordingAsync();
+                        return;
+
+                    case HotkeyType.AbortScreenRecording:
+                        await HandleAbortRecordingAsync();
+                        return;
                 }
 
                 captureStopwatch.Stop();
@@ -294,6 +325,95 @@ namespace XerahS.Core.Tasks
                 _cancellationTokenSource.Cancel();
             }
         }
+
+        #region Recording Handlers (Stage 5)
+
+        private async Task HandleStartRecordingAsync(CaptureMode mode, IntPtr windowHandle = default)
+        {
+            try
+            {
+                // Check if already recording
+                if (ScreenRecordingManager.Instance.IsRecording)
+                {
+                    DebugHelper.WriteLine("Recording already in progress, stopping existing recording first...");
+                    await ScreenRecordingManager.Instance.StopRecordingAsync();
+                }
+
+                // Build recording options from task settings
+                var recordingOptions = new RecordingOptions
+                {
+                    Mode = mode,
+                    Settings = Info.TaskSettings.CaptureSettings.ScreenRecordingSettings,
+                    TargetWindowHandle = windowHandle
+                };
+
+                // Generate output path
+                string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                string recordingsPath = Path.Combine(documentsPath, "ShareX", "Recordings", DateTime.Now.ToString("yyyy-MM"));
+                Directory.CreateDirectory(recordingsPath);
+                recordingOptions.OutputPath = Path.Combine(recordingsPath, $"Recording_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4");
+
+                DebugHelper.WriteLine($"Starting recording: Mode={mode}, Codec={recordingOptions.Settings?.Codec}, FPS={recordingOptions.Settings?.FPS}");
+                DebugHelper.WriteLine($"Output path: {recordingOptions.OutputPath}");
+
+                // Start recording via manager
+                await ScreenRecordingManager.Instance.StartRecordingAsync(recordingOptions);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to start recording");
+                throw;
+            }
+        }
+
+        private async Task HandleStopRecordingAsync()
+        {
+            try
+            {
+                if (!ScreenRecordingManager.Instance.IsRecording)
+                {
+                    DebugHelper.WriteLine("No recording in progress to stop");
+                    return;
+                }
+
+                DebugHelper.WriteLine("Stopping recording...");
+                string? outputPath = await ScreenRecordingManager.Instance.StopRecordingAsync();
+
+                if (!string.IsNullOrEmpty(outputPath))
+                {
+                    DebugHelper.WriteLine($"Recording saved to: {outputPath}");
+                    // TODO: Process recording file (upload, after-capture tasks, etc.)
+                    // For now, just log the completion
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to stop recording");
+                throw;
+            }
+        }
+
+        private async Task HandleAbortRecordingAsync()
+        {
+            try
+            {
+                if (!ScreenRecordingManager.Instance.IsRecording)
+                {
+                    DebugHelper.WriteLine("No recording in progress to abort");
+                    return;
+                }
+
+                DebugHelper.WriteLine("Aborting recording...");
+                await ScreenRecordingManager.Instance.AbortRecordingAsync();
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to abort recording");
+                throw;
+            }
+        }
+
+        #endregion
 
         protected virtual void OnStatusChanged()
         {

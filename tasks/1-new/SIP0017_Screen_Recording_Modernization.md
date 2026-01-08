@@ -57,6 +57,8 @@
 |-----------|--------|-------|
 | ShareX config import logic | ❌ Not Started | |
 | Modern vs Legacy toggle in UI | ❌ Not Started | |
+| Default Workflows | ❌ Not Started | Add "Record Gaming Screen" (Modern) vs "Record Screen" (FFmpeg) |
+| **Workflow Pipeline Integration** | ❌ Not Started | **CRITICAL**: Wire `WorkerTask.cs` to trigger recording services |
 
 ### Stage 6: Audio Support — 🔴 Not Started
 
@@ -172,6 +174,11 @@ dotnet build ShareX.Avalonia.sln
    - Verify fallback message in logs
    - Verify FFmpeg process started
 
+3. **Workflow Integration Test (Stage 5)**
+   - Add a new Hotkey for "Screen Recorder"
+   - Press Hotkey -> Should START recording
+   - Press Hotkey again -> Should STOP recording
+
 ---
 
 ## Risks and Mitigations
@@ -196,6 +203,28 @@ dotnet build ShareX.Avalonia.sln
 7. ✅ Add configurable cursor capture (Stage 2)
 8. 🚀 Implement advanced encoding options (Stage 3)
 9. 🚀 Add audio capture support (Stage 6)
+
+### ⏳ Pending: Stage 5 Migration & Presets
+
+**Files to modify:**
+
+1. **[MODIFY]** `src/ShareX.Avalonia.Core/Settings/WorkflowsConfig.cs` (or equivalent location for defaults)
+   - Update `GetDefaultWorkflowList()` to include two distinct recording workflows:
+     - **"Record Gaming Screen"**: Explicitly uses Modern Capture (WGC + MediaFoundation)
+     - **"Record Screen"**: Explicitly uses FFmpeg fallback (Legacy support)
+
+2. **[MODIFY]** `src/ShareX.Avalonia.Core/Tasks/WorkerTask.cs`
+   - **CRITICAL GAP FIX**: current `WorkerTask` ignores recording jobs.
+   - Add case for `HotkeyType.ScreenRecorder`, `ScreenRecorderActiveWindow`, `ScreenRecorderCustomRegion`.
+   - **Implement Toggle Logic**:
+     - Check `ScreenRecorderService.IsRecording`.
+     - If `false`: Call `StartRecordingAsync` (passing capture region/window info).
+     - If `true`: Call `StopRecordingAsync`.
+   - Ensure `WorkerTask` does not block indefinitely while recording (fire-and-forget start, or manage state properly).
+
+3. **[MODIFY]** `src/ShareX.Avalonia.UI/Views/TaskSettingsPanel.axaml`
+   - Enable "Screen Recorder" in the Job selection dropdown (if strictly filtered).
+   - Ensure specific recording settings (Region/Window) are exposed when this Job is selected.
 
 ---
 

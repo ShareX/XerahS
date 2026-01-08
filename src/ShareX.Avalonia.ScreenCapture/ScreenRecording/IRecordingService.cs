@@ -28,8 +28,9 @@ namespace XerahS.ScreenCapture.ScreenRecording;
 /// <summary>
 /// Main interface for screen recording services
 /// Implementations: ScreenRecorderService (native), FFmpegRecordingService (fallback)
+/// Stage 5: Added IDisposable for proper resource cleanup
 /// </summary>
-public interface IRecordingService
+public interface IRecordingService : IDisposable
 {
     /// <summary>
     /// Start a new recording session

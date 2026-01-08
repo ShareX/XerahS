@@ -27,6 +27,7 @@ using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using XerahS.Common;
+using XerahS.Core.Managers;
 using XerahS.ScreenCapture.ScreenRecording;
 
 namespace XerahS.UI.ViewModels;
@@ -34,10 +35,10 @@ namespace XerahS.UI.ViewModels;
 /// <summary>
 /// ViewModel for screen recording controls
 /// Manages recording state and provides commands for UI binding
+/// Stage 5: Updated to use ScreenRecordingManager for shared state
 /// </summary>
 public partial class RecordingViewModel : ViewModelBase, IDisposable
 {
-    private readonly ScreenRecorderService _recorderService;
     private readonly System.Timers.Timer _durationTimer;
     private bool _disposed;
 
@@ -131,9 +132,10 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
     public RecordingViewModel()
     {
         Current = this;
-        _recorderService = new ScreenRecorderService();
-        _recorderService.StatusChanged += OnStatusChanged;
-        _recorderService.ErrorOccurred += OnErrorOccurred;
+
+        // Subscribe to global recording manager events
+        ScreenRecordingManager.Instance.StatusChanged += OnStatusChanged;
+        ScreenRecordingManager.Instance.ErrorOccurred += OnErrorOccurred;
 
         // Timer to update duration display
         _durationTimer = new System.Timers.Timer(100); // Update every 100ms
@@ -256,7 +258,8 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
             DebugHelper.WriteLine($"Starting recording: {Codec} @ {Fps}fps, {BitrateKbps}kbps, Cursor={ShowCursor}");
             DebugHelper.WriteLine($"Output path: {options.OutputPath}");
 
-            await _recorderService.StartRecordingAsync(options);
+            // Use global recording manager (Stage 5)
+            await ScreenRecordingManager.Instance.StartRecordingAsync(options);
         }
         catch (Exception ex)
         {
@@ -273,7 +276,8 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         try
         {
             DebugHelper.WriteLine("Stopping recording...");
-            await _recorderService.StopRecordingAsync();
+            // Use global recording manager (Stage 5)
+            await ScreenRecordingManager.Instance.StopRecordingAsync();
             DebugHelper.WriteLine($"Recording saved to: {OutputFilePath}");
         }
         catch (Exception ex)
@@ -301,9 +305,9 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         _durationTimer.Stop();
         _durationTimer.Dispose();
 
-        _recorderService.StatusChanged -= OnStatusChanged;
-        _recorderService.ErrorOccurred -= OnErrorOccurred;
-        _recorderService.Dispose();
+        // Unsubscribe from global recording manager events (Stage 5)
+        ScreenRecordingManager.Instance.StatusChanged -= OnStatusChanged;
+        ScreenRecordingManager.Instance.ErrorOccurred -= OnErrorOccurred;
 
         GC.SuppressFinalize(this);
     }
