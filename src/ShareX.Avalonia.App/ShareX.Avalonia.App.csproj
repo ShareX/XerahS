@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows</TargetFramework>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.19041.0</TargetFramework>
     <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
-    <TargetPlatformVersion Condition="'$(OS)' == 'Windows_NT'">10.0.19041.0</TargetPlatformVersion>
     <OutputType Condition="'$(OS)' == 'Windows_NT'">WinExe</OutputType>
     <OutputType Condition="'$(OS)' != 'Windows_NT'">Exe</OutputType>
     <AssemblyName>XerahS</AssemblyName>

@@ -1,16 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
-    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- Windows.Graphics.Capture requires Windows 10 1803 (17763) minimum -->
-    <!-- Using 19041 (2004) for better API support -->
-    <WindowsSdkPackageVersion>10.0.19041.42</WindowsSdkPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +21,7 @@
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
     <PackageReference Include="Vortice.Direct3D11" Version="3.7.0" />
     <PackageReference Include="Vortice.DXGI" Version="3.7.0" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.1.5" />
   </ItemGroup>
 
 </Project>

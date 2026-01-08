@@ -24,8 +24,8 @@
 #endregion License Information (GPL v3)
 
 using System.Runtime.InteropServices;
-using Windows.Graphics.Capture;
-using Windows.Graphics.DirectX.Direct3D11;
+using WGC = global::Windows.Graphics.Capture;
+using WD3D = global::Windows.Graphics.DirectX.Direct3D11;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using XerahS.ScreenCapture.ScreenRecording;
@@ -38,11 +38,11 @@ namespace XerahS.Platform.Windows.Recording;
 /// </summary>
 public class WindowsGraphicsCaptureSource : ICaptureSource
 {
-    private GraphicsCaptureItem? _captureItem;
-    private Direct3D11CaptureFramePool? _framePool;
-    private GraphicsCaptureSession? _session;
+    private WGC.GraphicsCaptureItem? _captureItem;
+    private WGC.Direct3D11CaptureFramePool? _framePool;
+    private WGC.GraphicsCaptureSession? _session;
     private ID3D11Device? _d3dDevice;
-    private IDirect3DDevice? _device;
+    private WD3D.IDirect3DDevice? _device;
     private readonly object _lock = new();
     private bool _isCapturing;
     private bool _disposed;
@@ -62,7 +62,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
                 if (version.Build < 17134) return false;
 
                 // Try to create a test capture item to verify API availability
-                return GraphicsCaptureSession.IsSupported();
+                return WGC.GraphicsCaptureSession.IsSupported();
             }
             catch
             {
@@ -94,7 +94,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
             }
 
             // Create frame pool
-            _framePool = Direct3D11CaptureFramePool.Create(
+            _framePool = WGC.Direct3D11CaptureFramePool.Create(
                 _device,
                 global::Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 2, // Number of buffers
@@ -180,7 +180,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
         return Task.CompletedTask;
     }
 
-    private void OnFrameArrived(Direct3D11CaptureFramePool sender, object args)
+    private void OnFrameArrived(WGC.Direct3D11CaptureFramePool sender, object args)
     {
         if (_disposed || !_isCapturing) return;
 
@@ -207,7 +207,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
         }
     }
 
-    private FrameData ConvertSurfaceToFrameData(IDirect3DSurface surface, TimeSpan systemRelativeTime)
+    private FrameData ConvertSurfaceToFrameData(WD3D.IDirect3DSurface surface, TimeSpan systemRelativeTime)
     {
         // Get the underlying Direct3D11 texture via COM interop
         // IDirect3DDxgiInterfaceAccess is a COM interface for accessing DXGI interfaces from WinRT objects
@@ -289,12 +289,12 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
         return device;
     }
 
-    private static IDirect3DDevice CreateDirect3DDeviceFromD3D11Device(ID3D11Device d3dDevice)
+    private static WD3D.IDirect3DDevice CreateDirect3DDeviceFromD3D11Device(ID3D11Device d3dDevice)
     {
         // Use Windows.Graphics.Capture interop to create IDirect3DDevice
         var dxgiDevice = d3dDevice.QueryInterface<IDXGIDevice>();
         var inspectable = CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice);
-        return (IDirect3DDevice)inspectable;
+        return (WD3D.IDirect3DDevice)inspectable;
     }
 
     [DllImport("d3d11.dll", EntryPoint = "CreateDirect3D11DeviceFromDXGIDevice", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
@@ -381,7 +381,7 @@ internal static class CaptureHelper
     [DllImport("user32.dll")]
     private static extern IntPtr GetDesktopWindow();
 
-    public static GraphicsCaptureItem? CreateItemForWindow(IntPtr hwnd)
+    public static WGC.GraphicsCaptureItem? CreateItemForWindow(IntPtr hwnd)
     {
         try
         {
@@ -400,7 +400,7 @@ internal static class CaptureHelper
         }
     }
 
-    public static GraphicsCaptureItem? CreateItemForMonitor(IntPtr hmonitor)
+    public static WGC.GraphicsCaptureItem? CreateItemForMonitor(IntPtr hmonitor)
     {
         try
         {
@@ -433,13 +433,13 @@ internal interface IGraphicsCaptureItemInterop
     int CreateForWindow(
         IntPtr window,
         [In] ref Guid riid,
-        [Out, MarshalAs(UnmanagedType.Interface)] out GraphicsCaptureItem result);
+        [Out, MarshalAs(UnmanagedType.Interface)] out WGC.GraphicsCaptureItem result);
 
     [PreserveSig]
     int CreateForMonitor(
         IntPtr monitor,
         [In] ref Guid riid,
-        [Out, MarshalAs(UnmanagedType.Interface)] out GraphicsCaptureItem result);
+        [Out, MarshalAs(UnmanagedType.Interface)] out WGC.GraphicsCaptureItem result);
 }
 
 /// <summary>

@@ -26,6 +26,7 @@
 using Newtonsoft.Json;
 using XerahS.Common;
 using XerahS.Uploaders;
+using XerahS.ScreenCapture.ScreenRecording;
 using System.ComponentModel;
 using System.Drawing;
 
@@ -210,6 +211,7 @@ public class TaskSettingsCapture
 
     public RegionCaptureOptions RegionCaptureOptions = new RegionCaptureOptions();
     public FFmpegOptions FFmpegOptions = new FFmpegOptions();
+    public ScreenRecordingSettings ScreenRecordingSettings = new ScreenRecordingSettings();
     public ScrollingCaptureOptions ScrollingCaptureOptions = new ScrollingCaptureOptions();
     public OCROptions OCROptions = new OCROptions();
 }
