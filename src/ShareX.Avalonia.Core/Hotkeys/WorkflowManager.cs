@@ -56,6 +56,11 @@ public class WorkflowManager : IDisposable
     /// </summary>
     public event EventHandler<WorkflowSettings>? HotkeyTriggered;
 
+    /// <summary>
+    /// Fired when the workflows list is modified (added, removed, reordered)
+    /// </summary>
+    public event EventHandler? WorkflowsChanged;
+
     public WorkflowManager(IHotkeyService hotkeyService)
     {
         _hotkeyService = hotkeyService ?? throw new ArgumentNullException(nameof(hotkeyService));
@@ -84,6 +89,8 @@ public class WorkflowManager : IDisposable
         {
             ShowFailedHotkeys();
         }
+
+        WorkflowsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -125,6 +132,7 @@ public class WorkflowManager : IDisposable
         if (!Workflows.Contains(settings))
         {
             Workflows.Add(settings);
+            WorkflowsChanged?.Invoke(this, EventArgs.Empty);
         }
 
         return result;
@@ -144,6 +152,7 @@ public class WorkflowManager : IDisposable
         if (Workflows.Contains(settings))
         {
             Workflows.Remove(settings);
+            WorkflowsChanged?.Invoke(this, EventArgs.Empty);
         }
 
         return result;
@@ -205,6 +214,21 @@ public class WorkflowManager : IDisposable
                 Debug.WriteLine($"  - {h}");
             }
         }
+    }
+
+    /// <summary>
+    /// Move a workflow from one index to another
+    /// </summary>
+    public void MoveWorkflow(int oldIndex, int newIndex)
+    {
+        if (oldIndex < 0 || oldIndex >= Workflows.Count || newIndex < 0 || newIndex >= Workflows.Count)
+            return;
+
+        var item = Workflows[oldIndex];
+        Workflows.RemoveAt(oldIndex);
+        Workflows.Insert(newIndex, item);
+        
+        WorkflowsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>

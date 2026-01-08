@@ -55,9 +55,14 @@ public partial class WorkflowsViewModel : ViewModelBase
         }
 
         // No sorting - use the stored order
+        int index = 0;
         foreach (var hk in source)
         {
-            Workflows.Add(new HotkeyItemViewModel(hk));
+            var vm = new HotkeyItemViewModel(hk);
+            // Highlight top 3 (0, 1, 2)
+            vm.IsNavWorkflow = index < 3;
+            Workflows.Add(vm);
+            index++;
         }
     }
 
@@ -175,8 +180,16 @@ public partial class WorkflowsViewModel : ViewModelBase
 
         if (modelIndex > 0)
         {
-            hotkeys.RemoveAt(modelIndex);
-            hotkeys.Insert(modelIndex - 1, model);
+            if (_manager != null)
+            {
+                _manager.MoveWorkflow(modelIndex, modelIndex - 1);
+            }
+            else
+            {
+                hotkeys.RemoveAt(modelIndex);
+                hotkeys.Insert(modelIndex - 1, model);
+            }
+            
             SaveHotkeys();
             LoadWorkflows();
             SelectedWorkflow = Workflows.FirstOrDefault(w => w.Model == model);
@@ -203,8 +216,16 @@ public partial class WorkflowsViewModel : ViewModelBase
 
         if (modelIndex >= 0 && modelIndex < hotkeys.Count - 1)
         {
-            hotkeys.RemoveAt(modelIndex);
-            hotkeys.Insert(modelIndex + 1, model);
+            if (_manager != null)
+            {
+                _manager.MoveWorkflow(modelIndex, modelIndex + 1);
+            }
+            else
+            {
+                hotkeys.RemoveAt(modelIndex);
+                hotkeys.Insert(modelIndex + 1, model);
+            }
+
             SaveHotkeys();
             LoadWorkflows();
             SelectedWorkflow = Workflows.FirstOrDefault(w => w.Model == model);

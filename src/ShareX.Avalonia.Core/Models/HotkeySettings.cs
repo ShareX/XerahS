@@ -49,14 +49,42 @@ public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
     /// </summary>
     public static List<WorkflowSettings> GetDefaultWorkflowList()
     {
-        return new List<WorkflowSettings>
+        var list = new List<WorkflowSettings>();
+
+        // WF01: Full screen capture
+        var wf01 = new WorkflowSettings(HotkeyType.PrintScreen, new HotkeyInfo(Key.PrintScreen))
         {
-            new WorkflowSettings(HotkeyType.PrintScreen, new HotkeyInfo(Key.PrintScreen)),
-            new WorkflowSettings(HotkeyType.RectangleRegion, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control)),
-            new WorkflowSettings(HotkeyType.ActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Alt)),
-            new WorkflowSettings(HotkeyType.CustomWindow, new HotkeyInfo()),
-            new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift)),
-            new WorkflowSettings(HotkeyType.ScreenRecorderGIF, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift)),
+            Name = "Full screen capture"
         };
+        wf01.TaskSettings.CaptureSettings.UseModernCapture = true;
+        list.Add(wf01);
+
+        // WF02: Active window capture
+        var wf02 = new WorkflowSettings(HotkeyType.ActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Alt))
+        {
+            Name = "Active window capture"
+        };
+        wf02.TaskSettings.CaptureSettings.UseModernCapture = true;
+        list.Add(wf02);
+
+        // WF03: Record screen using GDI
+        var wf03 = new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift))
+        {
+            Name = "Record screen using GDI"
+        };
+        wf03.TaskSettings.CaptureSettings.UseModernCapture = false;
+        wf03.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingBackend = XerahS.ScreenCapture.ScreenRecording.RecordingBackend.GDI;
+        list.Add(wf03);
+
+        // WF04: Record screen for game
+        var wf04 = new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift))
+        {
+            Name = "Record screen for game"
+        };
+        wf04.TaskSettings.CaptureSettings.UseModernCapture = true;
+        wf04.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingIntent = XerahS.ScreenCapture.ScreenRecording.RecordingIntent.Game;
+        list.Add(wf04);
+
+        return list;
     }
 }

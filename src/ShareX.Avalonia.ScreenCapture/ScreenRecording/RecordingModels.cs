@@ -92,6 +92,16 @@ public class ScreenRecordingSettings
     /// Trigger condition for Stage 4 FFmpeg fallback
     /// </summary>
     public bool ForceFFmpeg { get; set; } = false;
+
+    /// <summary>
+    /// Intent of the recording
+    /// </summary>
+    public RecordingIntent RecordingIntent { get; set; } = RecordingIntent.Default;
+
+    /// <summary>
+    /// Backend technology for screen recording
+    /// </summary>
+    public RecordingBackend RecordingBackend { get; set; } = RecordingBackend.Default;
 }
 
 /// <summary>

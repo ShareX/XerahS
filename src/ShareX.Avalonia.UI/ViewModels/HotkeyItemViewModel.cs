@@ -35,4 +35,13 @@ public partial class HotkeyItemViewModel : ViewModelBase
         OnPropertyChanged(nameof(FullDescription));
         OnPropertyChanged(nameof(Status));
     }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsHighlighted))]
+    [NotifyPropertyChangedFor(nameof(NavLabelVisible))]
+    private bool _isNavWorkflow;
+
+    public bool IsHighlighted => IsNavWorkflow;
+    
+    public bool NavLabelVisible => IsNavWorkflow;
 }

@@ -41,4 +41,13 @@ public partial class WorkflowItemViewModel : ObservableObject
         OnPropertyChanged(nameof(Job));
         OnPropertyChanged(nameof(HotkeyText));
     }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsHighlighted))]
+    [NotifyPropertyChangedFor(nameof(NavLabelVisible))]
+    private bool _isNavWorkflow;
+
+    public bool IsHighlighted => IsNavWorkflow;
+    
+    public bool NavLabelVisible => IsNavWorkflow;
 }

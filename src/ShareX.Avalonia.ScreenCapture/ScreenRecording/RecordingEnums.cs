@@ -100,3 +100,22 @@ public enum PixelFormat
     /// <summary>Unknown or unsupported format</summary>
     Unknown
 }
+
+/// <summary>
+/// Intent of the recording (Game vs Default)
+/// </summary>
+public enum RecordingIntent
+{
+    Default,
+    Game
+}
+
+/// <summary>
+/// Backend technology for screen recording
+/// </summary>
+public enum RecordingBackend
+{
+    Default,
+    GDI,
+    Modern
+}

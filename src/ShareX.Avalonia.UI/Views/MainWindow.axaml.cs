@@ -1,9 +1,11 @@
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Markup.Xaml;
-using FluentAvalonia.UI.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Threading;
 using XerahS.Core;
-using XerahS.Core.Managers;
+using XerahS.UI.ViewModels;
+using XerahS.Core.Hotkeys;
+using Avalonia; // For Application.Current
 using XerahS.Core.Tasks;
 using ShareX.Editor.Annotations;
 using ShareX.Editor.ViewModels;
@@ -43,6 +45,20 @@ namespace XerahS.UI.Views
             if (navView != null)
             {
                 UpdateNavigationItems(navView);
+            }
+
+            if (Application.Current is App app && app.WorkflowManager != null)
+            {
+                app.WorkflowManager.WorkflowsChanged += (s, args) =>
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        if (navView != null)
+                        {
+                            UpdateNavigationItems(navView);
+                        }
+                    });
+                };
             }
         }
 
@@ -341,7 +357,15 @@ namespace XerahS.UI.Views
             captureItem.MenuItems.Clear();
 
             // Get first 3 workflows
-            var workflows = SettingManager.WorkflowsConfig.Hotkeys.Take(3).ToList();
+            List<WorkflowSettings> workflows;
+            if (Application.Current is App app && app.WorkflowManager != null)
+            {
+                workflows = app.WorkflowManager.Workflows.Take(3).ToList();
+            }
+            else
+            {
+                workflows = SettingManager.WorkflowsConfig.Hotkeys.Take(3).ToList();
+            }
 
             for (int i = 0; i < workflows.Count; i++)
             {
