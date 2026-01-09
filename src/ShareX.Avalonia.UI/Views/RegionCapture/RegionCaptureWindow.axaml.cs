@@ -59,6 +59,7 @@ namespace XerahS.UI.Views.RegionCapture
         // Store window position for coordinate conversion
         private int _windowLeft = 0;
         private int _windowTop = 0;
+        private double _capturedScaling = 1.0; // Captured at window open to ensure consistent coordinate conversion
         private bool _usePerScreenScalingForLayout;
         private bool _useWindowPositionForFallback;
         private bool _useLogicalCoordinatesForCapture;
@@ -247,6 +248,12 @@ namespace XerahS.UI.Views.RegionCapture
                     _windowTop = minY;
                 }
                 DebugLog("WINDOW", $"Stored window origin for fallback: {_windowLeft},{_windowTop} (Position={Position})");
+
+                // Capture scaling at this point - use 1.0 to match the physical pixel coordinate system
+                // used for the overlay layout. RenderScaling can change as the mouse moves between
+                // monitors, so we need a stable value.
+                _capturedScaling = 1.0;
+                DebugLog("WINDOW", $"Captured scaling for coordinate conversion: {_capturedScaling}");
 
                 // Comprehensive DPI troubleshooting logging
                 TroubleshootingHelper.LogEnvironment("RegionCapture");
@@ -751,17 +758,20 @@ namespace XerahS.UI.Views.RegionCapture
                 // Convert window bounds (physical) to logical for rendering
                 double logicalX, logicalY, logicalW, logicalH;
 
-                var currentScaling = RenderScaling;
-
                 var relativeX = window.Bounds.X - _windowLeft;
                 var relativeY = window.Bounds.Y - _windowTop;
+
+                // Use captured scaling for conversion to ensure consistency with overlay layout.
+                // RenderScaling can change dynamically as mouse moves between monitors,
+                // but _capturedScaling was captured at window open time.
+                var currentScaling = _capturedScaling;
 
                 logicalX = relativeX / currentScaling;
                 logicalY = relativeY / currentScaling;
                 logicalW = window.Bounds.Width / currentScaling;
                 logicalH = window.Bounds.Height / currentScaling;
 
-                // Get screen index and scaling for this window
+                // Get screen index and scaling for this window (for logging/comparison)
                 int screenIndex = 0;
                 double screenScaling = 1.0;
                 foreach (var screen in Screens.All)
