@@ -111,7 +111,7 @@ public class WorkflowSettings
         var workflowString = $"{Name ?? string.Empty}|{Job}|{Enabled}|{TaskSettings?.Job}|{TaskSettings?.Description ?? string.Empty}";
 
         var hash = sha1.ComputeHash(System.Text.Encoding.UTF8.GetBytes(workflowString));
-        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, 8);
     }
 
     /// <summary>

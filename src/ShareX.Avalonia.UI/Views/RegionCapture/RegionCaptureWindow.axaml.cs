@@ -248,6 +248,11 @@ namespace XerahS.UI.Views.RegionCapture
                 }
                 DebugLog("WINDOW", $"Stored window origin for fallback: {_windowLeft},{_windowTop} (Position={Position})");
 
+                // Comprehensive DPI troubleshooting logging
+                TroubleshootingHelper.LogEnvironment("RegionCapture");
+                TroubleshootingHelper.LogMonitorInfo("RegionCapture", Screens.All);
+                TroubleshootingHelper.LogVirtualScreenBounds("RegionCapture", minX, minY, maxX, maxY, Width, Height, RenderScaling);
+
                 // Check if all screens are 100% DPI (Scaling == 1.0)
                 // We only enable background images and darkening if ALL screens are 1.0, to avoid mixed-DPI offsets.
                 bool allScreensStandardDpi = true;
@@ -755,6 +760,34 @@ namespace XerahS.UI.Views.RegionCapture
                 logicalY = relativeY / currentScaling;
                 logicalW = window.Bounds.Width / currentScaling;
                 logicalH = window.Bounds.Height / currentScaling;
+
+                // Get screen index and scaling for this window
+                int screenIndex = 0;
+                double screenScaling = 1.0;
+                foreach (var screen in Screens.All)
+                {
+                    if (screen.Bounds.Contains(new Avalonia.PixelPoint(window.Bounds.X, window.Bounds.Y)))
+                    {
+                        screenScaling = screen.Scaling;
+                        break;
+                    }
+                    screenIndex++;
+                }
+
+                // Comprehensive selection logging for DPI troubleshooting
+                int processId = 0;
+                if (XerahS.Platform.Abstractions.PlatformServices.IsInitialized)
+                {
+                    try { processId = (int)(XerahS.Platform.Abstractions.PlatformServices.Window?.GetWindowProcessId(window.Handle) ?? 0); }
+                    catch { }
+                }
+                TroubleshootingHelper.LogWindowSelection("RegionCapture",
+                    window.Title ?? "",
+                    processId,
+                    new System.Drawing.Rectangle(window.Bounds.X, window.Bounds.Y, window.Bounds.Width, window.Bounds.Height),
+                    currentScaling,
+                    logicalX, logicalY, logicalW, logicalH,
+                    screenIndex, screenScaling);
 
                 // Update visuals to match window
                 var border = this.FindControl<Rectangle>("SelectionBorder");
