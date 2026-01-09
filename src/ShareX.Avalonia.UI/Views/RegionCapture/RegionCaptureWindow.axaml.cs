@@ -59,10 +59,11 @@ namespace XerahS.UI.Views.RegionCapture
         // Store window position for coordinate conversion
         private int _windowLeft = 0;
         private int _windowTop = 0;
+        private double _capturedScaling = 1.0; // Captured at window open to ensure consistent coordinate conversion
         private bool _usePerScreenScalingForLayout;
         private bool _useWindowPositionForFallback;
         private bool _useLogicalCoordinatesForCapture;
-        private bool _loggedPointerMoveFallback;
+        // _loggedPointerMoveFallback removed: Unused warning fix
 
         // Result task completion source to return value to caller
         private readonly System.Threading.Tasks.TaskCompletionSource<SKRectI> _tcs;
@@ -248,6 +249,17 @@ namespace XerahS.UI.Views.RegionCapture
                 }
                 DebugLog("WINDOW", $"Stored window origin for fallback: {_windowLeft},{_windowTop} (Position={Position})");
 
+                // Capture scaling at this point - use 1.0 to match the physical pixel coordinate system
+                // used for the overlay layout. RenderScaling can change as the mouse moves between
+                // monitors, so we need a stable value.
+                _capturedScaling = 1.0;
+                DebugLog("WINDOW", $"Captured scaling for coordinate conversion: {_capturedScaling}");
+
+                // Comprehensive DPI troubleshooting logging
+                LogEnvironment("RegionCapture");
+                LogMonitorInfo("RegionCapture", Screens.All);
+                LogVirtualScreenBounds("RegionCapture", minX, minY, maxX, maxY, Width, Height, RenderScaling);
+
                 // Check if all screens are 100% DPI (Scaling == 1.0)
                 // We only enable background images and darkening if ALL screens are 1.0, to avoid mixed-DPI offsets.
                 bool allScreensStandardDpi = true;
@@ -416,9 +428,35 @@ namespace XerahS.UI.Views.RegionCapture
                 logicalMaxY = Math.Max(logicalMaxY, logBottom);
             }
 
-            Width = logicalMaxX - logicalMinX;
-            Height = logicalMaxY - logicalMinY;
+            var targetWidth = logicalMaxX - logicalMinX;
+            var targetHeight = logicalMaxY - logicalMinY;
+
+            // Set both Width/Height and ClientSize to force proper sizing
+            // 2026-01-09 21:50: ClientSize was not updating to match Width/Height on MIKE-NB
+            Width = targetWidth;
+            Height = targetHeight;
+            ClientSize = new Avalonia.Size(targetWidth, targetHeight);
+
             DebugLog("WINDOW", $"UpdateWindowSize: LogicalBounds=({logicalMinX},{logicalMinY}) to ({logicalMaxX},{logicalMaxY}), Size={Width}x{Height}");
+            DebugLog("WINDOW", $"UpdateWindowSize: ClientSize set to {ClientSize.Width}x{ClientSize.Height}");
+
+            // Also explicitly size the SelectionCanvas to ensure it covers the entire virtual screen
+            // 2026-01-09 22:30: ClientSize is logical (scaled), so Canvas must also be logical size.
+            // If targetWidth is physical (2496), and RenderScaling is 1.25, ClientSize becomes ~2012.
+            // We must size Canvas to ~2012 too, otherwise it will be larger than window content area
+            // and might be clipped or offset if alignment is Center (default).
+            // We forced Top/Left alignment in XAML, but correct sizing is safer.
+            
+            var selectionCanvas = this.FindControl<Canvas>("SelectionCanvas");
+            if (selectionCanvas != null)
+            {
+                var canvasScale = RenderScaling;
+                if (canvasScale < 0.1) canvasScale = 1.0;
+
+                selectionCanvas.Width = targetWidth / canvasScale;
+                selectionCanvas.Height = targetHeight / canvasScale;
+                DebugLog("CANVAS", $"SelectionCanvas sized to {selectionCanvas.Width}x{selectionCanvas.Height} (Target={targetWidth}x{targetHeight} / Scale={canvasScale})");
+            }
         }
 
         private void UpdateImagesLayout(int minX, int minY)
@@ -764,18 +802,85 @@ namespace XerahS.UI.Views.RegionCapture
                 // Convert window bounds (physical) to logical for rendering
                 double logicalX, logicalY, logicalW, logicalH;
 
-                // Use the DPI scaling of the monitor where the window resides (fixes mixed-DPI offset)
-                var windowCenterX = window.Bounds.X + window.Bounds.Width / 2;
-                var windowCenterY = window.Bounds.Y + window.Bounds.Height / 2;
-                var targetMonitorScaling = GetScalingForPhysicalPoint(windowCenterX, windowCenterY);
+                // Find containing screen to determine layout offset
+                Avalonia.Platform.Screen? containingScreen = null;
+                double screenScaling = 1.0;
+                int screenIndex = 0;
+                int currentIdx = 0;
+                
+                // Use global RenderScaling for the counter-scaling, checking validity
+                var scaling = RenderScaling;
+                if (scaling < 0.1) scaling = 1.0;
+                
+                foreach (var screen in Screens.All)
+                {
+                    if (screen.Bounds.Contains(new Avalonia.PixelPoint(window.Bounds.X, window.Bounds.Y)))
+                    {
+                        containingScreen = screen;
+                        screenScaling = screen.Scaling;
+                        screenIndex = currentIdx;
+                        break;
+                    }
+                    currentIdx++;
+                }
 
-                var relativeX = window.Bounds.X - _windowLeft;
-                var relativeY = window.Bounds.Y - _windowTop;
+                // Match the window layout logic first (Physical Layout)
+                if (containingScreen != null)
+                {
+                    // _windowLeft was initialized to minX in OnOpened (unless fallback used)
+                    var screenLayoutOffsetX = containingScreen.Bounds.X - _windowLeft;
+                    var screenLayoutOffsetY = containingScreen.Bounds.Y - _windowTop;
 
-                logicalX = relativeX / targetMonitorScaling;
-                logicalY = relativeY / targetMonitorScaling;
-                logicalW = window.Bounds.Width / targetMonitorScaling;
-                logicalH = window.Bounds.Height / targetMonitorScaling;
+                    // Position within the screen
+                    var withinScreenX = window.Bounds.X - containingScreen.Bounds.X;
+                    var withinScreenY = window.Bounds.Y - containingScreen.Bounds.Y;
+
+                    // "Ideal" layout coordinates (Physical pixels)
+                    var idealX = screenLayoutOffsetX + withinScreenX;
+                    var idealY = screenLayoutOffsetY + withinScreenY;
+                    var idealW = window.Bounds.Width;
+                    var idealH = window.Bounds.Height;
+
+                    // CRITICAL FIX (2026-01-09 22:30):
+                    // Reverted Hybrid Scaling. Now that SelectionCanvas alignment (Top/Left) and sizing (Logical) 
+                    // are fixed, we should go back to using RenderScaling for both Position and Size.
+                    
+                    logicalX = idealX / scaling;
+                    logicalY = idealY / scaling;
+                    logicalW = idealW / scaling;
+                    logicalH = idealH / scaling;
+
+                    DebugLog("SELECTION", $"Counter-scaling (Retry): Ideal=({idealX},{idealY}) {idealW}x{idealH} / Scaling {scaling} -> Logical=({logicalX},{logicalY})");
+                }
+                else
+                {
+                    // Fallback
+                    var relativeX = window.Bounds.X - _windowLeft;
+                    var relativeY = window.Bounds.Y - _windowTop;
+                    
+                    logicalX = relativeX / scaling;
+                    logicalY = relativeY / scaling;
+                    logicalW = window.Bounds.Width / scaling;
+                    logicalH = window.Bounds.Height / scaling;
+                }
+
+                // Screen index and scaling already determined above for layout
+
+
+                // Comprehensive selection logging for DPI troubleshooting
+                int processId = 0;
+                if (XerahS.Platform.Abstractions.PlatformServices.IsInitialized)
+                {
+                    try { processId = (int)(XerahS.Platform.Abstractions.PlatformServices.Window?.GetWindowProcessId(window.Handle) ?? 0); }
+                    catch { }
+                }
+                LogWindowSelection("RegionCapture",
+                    window.Title ?? "",
+                    processId,
+                    new System.Drawing.Rectangle(window.Bounds.X, window.Bounds.Y, window.Bounds.Width, window.Bounds.Height),
+                    scaling,
+                    logicalX, logicalY, logicalW, logicalH,
+                    screenIndex, screenScaling);
 
                 // Update visuals to match window
                 var border = this.FindControl<Rectangle>("SelectionBorder");
@@ -889,6 +994,79 @@ namespace XerahS.UI.Views.RegionCapture
                     Canvas.SetTop(infoText, labelY);
                 }
             }
+        }
+        // Local Logging Helpers (Moved from TroubleshootingHelper to avoid Core->Avalonia dependency)
+        
+        [Conditional("DEBUG")]
+        private void LogWindowSelection(string category, string windowTitle, int processId, System.Drawing.Rectangle physicalBounds, double renderScaling, double logicalX, double logicalY, double logicalW, double logicalH, int screenIndex, double screenScaling)
+        {
+            TroubleshootingHelper.Log(category, "SELECTION", $"Window: \"{TruncateString(windowTitle, 30)}\" (PID={processId})");
+            TroubleshootingHelper.Log(category, "SELECTION", $"  Physical: ({physicalBounds.X},{physicalBounds.Y}) {physicalBounds.Width}x{physicalBounds.Height}");
+            TroubleshootingHelper.Log(category, "SELECTION", $"  Overlay RenderScaling: {renderScaling:F3}");
+            TroubleshootingHelper.Log(category, "SELECTION", $"  Screen[{screenIndex}] Scaling: {screenScaling:F3}");
+            
+            if (Math.Abs(renderScaling - screenScaling) > 0.001)
+            {
+                 TroubleshootingHelper.Log(category, "WARNING", $"  ** SCALING MISMATCH: Overlay={renderScaling:F3} vs PerMonitor={screenScaling:F3} **");
+            }
+            else
+            {
+                 TroubleshootingHelper.Log(category, "SELECTION", $"  Per-monitor DPI scale: {screenScaling:F3}");
+            }
+
+            TroubleshootingHelper.Log(category, "SELECTION", $"  Computed logical: ({logicalX:F1},{logicalY:F1}) {logicalW:F1}x{logicalH:F1}");
+            TroubleshootingHelper.Log(category, "SELECTION", $"  Alt (per-monitor): ({physicalBounds.X / screenScaling:F1},?) {physicalBounds.Width / screenScaling:F1}x?");
+        }
+
+        [Conditional("DEBUG")]
+        private void LogEnvironment(string category)
+        {
+            TroubleshootingHelper.Log(category, "ENVIRONMENT", "=== Environment Details ===");
+            TroubleshootingHelper.Log(category, "ENVIRONMENT", $"Machine: {Environment.MachineName}");
+            TroubleshootingHelper.Log(category, "ENVIRONMENT", $"User: {Environment.UserName}");
+            TroubleshootingHelper.Log(category, "ENVIRONMENT", $"OS: {Environment.OSVersion}");
+            TroubleshootingHelper.Log(category, "ENVIRONMENT", $".NET: {Environment.Version}");
+            TroubleshootingHelper.Log(category, "ENVIRONMENT", $"Architecture: {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}");
+            TroubleshootingHelper.Log(category, "ENVIRONMENT", $"Process Architecture: {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}");
+            TroubleshootingHelper.Log(category, "ENVIRONMENT", "DPI Awareness: (check app manifest for dpiAwareness setting)");
+            TroubleshootingHelper.Log(category, "ENVIRONMENT", $"Log time: {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff zzz}");
+        }
+
+        [Conditional("DEBUG")]
+        private void LogMonitorInfo(string category, System.Collections.Generic.IEnumerable<Avalonia.Platform.Screen> screens)
+        {
+            TroubleshootingHelper.Log(category, "MONITORS", "=== Monitor Configuration ===");
+            int i = 0;
+            foreach (var s in screens)
+            {
+                var dpi = s.Scaling * 96.0; 
+                TroubleshootingHelper.Log(category, "MONITORS", $"Screen {i}: Bounds={s.Bounds}, IsPrimary={s.IsPrimary}, Avalonia.Scaling={s.Scaling:F3}, Win32.DPI={dpi:F0}x{dpi:F0} (Scale={s.Scaling:F3})");
+                i++;
+            }
+            TroubleshootingHelper.Log(category, "MONITORS", $"Total monitors: {i}");
+        }
+        
+        [Conditional("DEBUG")]
+        private void LogVirtualScreenBounds(string category, int minX, int minY, int maxX, int maxY, double overlayWidth, double overlayHeight, double renderScaling)
+        {
+            TroubleshootingHelper.Log(category, "VIRTUAL", "=== Virtual Screen Bounds ===");
+            TroubleshootingHelper.Log(category, "VIRTUAL", $"Virtual screen: ({minX},{minY}) to ({maxX},{maxY})");
+            TroubleshootingHelper.Log(category, "VIRTUAL", $"Virtual size: {maxX - minX}x{maxY - minY} px");
+            TroubleshootingHelper.Log(category, "VIRTUAL", $"Overlay size: {overlayWidth:F0}x{overlayHeight:F0} logical");
+            TroubleshootingHelper.Log(category, "VIRTUAL", $"Overlay RenderScaling: {renderScaling:F3}");
+            
+            var expectedW = (maxX - minX) / renderScaling;
+            var expectedH = (maxY - minY) / renderScaling;
+            if (Math.Abs(expectedW - overlayWidth) > 2 || Math.Abs(expectedH - overlayHeight) > 2)
+            {
+                TroubleshootingHelper.Log(category, "WARNING", $"  ** OVERLAY SIZE MISMATCH: Expected {expectedW:F0}x{expectedH:F0}, Got {overlayWidth:F0}x{overlayHeight:F0} (diff: {overlayWidth-expectedW:F0}x{overlayHeight-expectedH:F0}) **");
+            }
+        }
+
+        private static string TruncateString(string value, int maxLength)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+            return value.Length <= maxLength ? value : value.Substring(0, maxLength) + "...";
         }
     }
 }
