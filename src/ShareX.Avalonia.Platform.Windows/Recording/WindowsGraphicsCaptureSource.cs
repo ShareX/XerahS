@@ -56,16 +56,46 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
         {
             try
             {
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", "Checking Windows.Graphics.Capture support...");
+
                 // Check Windows version >= 10.0.17134 (1803)
                 var version = Environment.OSVersion.Version;
-                if (version.Major < 10) return false;
-                if (version.Build < 17134) return false;
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", $"OS Version: {version.Major}.{version.Minor}.{version.Build}");
+
+                if (version.Major < 10)
+                {
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", $"✗ OS Major version {version.Major} < 10");
+                    return false;
+                }
+
+                if (version.Build < 17134)
+                {
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", $"✗ OS Build {version.Build} < 17134 (requires Windows 10 1803+)");
+                    return false;
+                }
+
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", $"✓ OS version check passed (10.{version.Minor}.{version.Build})");
 
                 // Try to create a test capture item to verify API availability
-                return WGC.GraphicsCaptureSession.IsSupported();
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", "Calling GraphicsCaptureSession.IsSupported()...");
+                bool apiSupported = WGC.GraphicsCaptureSession.IsSupported();
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", $"GraphicsCaptureSession.IsSupported() = {apiSupported}");
+
+                if (apiSupported)
+                {
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", "✓ Windows.Graphics.Capture is fully supported");
+                }
+                else
+                {
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", "✗ GraphicsCaptureSession.IsSupported() returned false");
+                }
+
+                return apiSupported;
             }
-            catch
+            catch (Exception ex)
             {
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", $"✗ EXCEPTION checking WGC support: {ex.GetType().Name}: {ex.Message}");
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", $"Stack trace: {ex.StackTrace}");
                 return false;
             }
         }

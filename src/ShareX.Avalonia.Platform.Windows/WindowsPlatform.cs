@@ -95,33 +95,61 @@ namespace XerahS.Platform.Windows
         /// </summary>
         public static void InitializeRecording()
         {
+            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "=== WindowsPlatform.InitializeRecording() START ===");
+
             try
             {
+                // Get OS version for logging
+                var osVersion = Environment.OSVersion.Version;
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", $"OS Version: {osVersion.Major}.{osVersion.Minor}.{osVersion.Build}");
+
+                // Check Windows.Graphics.Capture support
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "Checking WindowsGraphicsCaptureSource.IsSupported...");
+                bool wgcSupported = Recording.WindowsGraphicsCaptureSource.IsSupported;
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", $"WindowsGraphicsCaptureSource.IsSupported = {wgcSupported}");
+
+                // Check Media Foundation support
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "Checking MediaFoundationEncoder.IsAvailable...");
+                bool mfAvailable = Recording.MediaFoundationEncoder.IsAvailable;
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", $"MediaFoundationEncoder.IsAvailable = {mfAvailable}");
+
                 // Check if native recording is supported
-                if (Recording.WindowsGraphicsCaptureSource.IsSupported && 
-                    Recording.MediaFoundationEncoder.IsAvailable)
+                if (wgcSupported && mfAvailable)
                 {
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "✓ Native recording (WGC + Media Foundation) is supported. Enabling modern recording.");
                     DebugHelper.WriteLine("Native recording (WGC + Media Foundation) is supported. Enabling modern recording.");
-                    
+
                     // Set up factory functions for native recording
-                    XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService.CaptureSourceFactory = 
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "Setting CaptureSourceFactory...");
+                    XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService.CaptureSourceFactory =
                         () => new Recording.WindowsGraphicsCaptureSource();
-                    
-                    XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService.EncoderFactory = 
+
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "Setting EncoderFactory...");
+                    XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService.EncoderFactory =
                         () => new Recording.MediaFoundationEncoder();
+
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "✓ Factories registered successfully");
                 }
                 else
                 {
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", $"✗ Native recording NOT supported. WGC={wgcSupported}, MF={mfAvailable}");
                     DebugHelper.WriteLine("Native recording NOT supported. Requires Windows 10 1803+ and Media Foundation.");
+                    DebugHelper.WriteLine($"  - Windows.Graphics.Capture support: {wgcSupported}");
+                    DebugHelper.WriteLine($"  - Media Foundation availability: {mfAvailable}");
                     DebugHelper.WriteLine("Initializing FFmpeg fallback recording service.");
 
                     // Set up FFmpeg fallback
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "Setting FallbackServiceFactory (FFmpeg)...");
                     XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService.FallbackServiceFactory =
                         () => new XerahS.ScreenCapture.ScreenRecording.FFmpegRecordingService();
                 }
+
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "=== WindowsPlatform.InitializeRecording() COMPLETE ===");
             }
             catch (Exception ex)
             {
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", $"✗ EXCEPTION: {ex.GetType().Name}: {ex.Message}");
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", $"Stack trace: {ex.StackTrace}");
                 DebugHelper.WriteException(ex, "Failed to initialize recording support");
             }
         }

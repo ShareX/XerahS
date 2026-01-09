@@ -299,17 +299,24 @@ Program.Main()
 
 1. **[src/ShareX.Avalonia.App/Program.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.App\Program.cs)**
    - Removed synchronous `InitializeRecording()` calls (lines 111, 122, 129)
+   - Added `InitializeRecordingAsync()` method (lines 146-178)
+   - Sets `ScreenRecordingManager.PlatformInitializationTask` for race condition handling
    - Added comments documenting async initialization
 
 2. **[src/ShareX.Avalonia.UI/App.axaml.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\App.axaml.cs)**
-   - Added `InitializeRecordingAsync()` method (lines 109-142)
-   - Invoked from `OnFrameworkInitializationCompleted()` (line 103)
+   - Added `PostUIInitializationCallback` property (line 113)
+   - Invoked callback from `OnFrameworkInitializationCompleted()` (line 103)
 
-3. **[src/ShareX.Avalonia.UI/ViewModels/RecordingViewModel.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\ViewModels\RecordingViewModel.cs)**
-   - Added `FeatureDescription` property (lines 154-178)
-   - Added `UsageNotes` property (lines 180-200)
+3. **[src/ShareX.Avalonia.Core/Managers/ScreenRecordingManager.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Managers\ScreenRecordingManager.cs)**
+   - Added `PlatformInitializationTask` property (line 51) for race condition handling
+   - Added `EnsureRecordingInitialized()` method (lines 368-386)
+   - Updated `StartRecordingAsync()` to await initialization (line 105)
 
-4. **[src/ShareX.Avalonia.UI/Views/RecordingView.axaml](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\Views\RecordingView.axaml)**
+4. **[src/ShareX.Avalonia.UI/ViewModels/RecordingViewModel.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\ViewModels\RecordingViewModel.cs)**
+   - Added `FeatureDescription` property (lines 157-178)
+   - Added `UsageNotes` property (lines 183-200)
+
+5. **[src/ShareX.Avalonia.UI/Views/RecordingView.axaml](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\Views\RecordingView.axaml)**
    - Updated header text binding (line 22)
    - Updated usage notes binding (line 203)
 
@@ -357,6 +364,101 @@ Background Thread (Parallel):
 
 ---
 
+## Race Condition Fix (Post-Implementation)
+
+### Issue Discovered After Initial Fix
+
+After implementing the async initialization, a **race condition** was discovered:
+
+**Problem:**
+1. User starts the app → UI loads immediately ✅
+2. User navigates to Recording tab and clicks "Start" ⚠️
+3. Background initialization hasn't finished yet
+4. `CaptureSourceFactory` and `EncoderFactory` are still `null`
+5. Recording fails with "Platform initialization missing" error
+
+Looking at [ScreenRecorderService.cs:86-88](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.ScreenCapture\ScreenRecording\ScreenRecorderService.cs#L86-L88):
+```csharp
+if (CaptureSourceFactory == null)
+{
+    throw new InvalidOperationException("CaptureSourceFactory not set. Platform initialization missing.");
+}
+```
+
+[ScreenRecordingManager.cs:299](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Managers\ScreenRecordingManager.cs#L299) has fallback logic, but both native and fallback paths can fail if clicked too early.
+
+### Solution Implemented
+
+Added **awaitable initialization** with automatic waiting:
+
+**1. Added PlatformInitializationTask property** in [ScreenRecordingManager.cs:51](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Managers\ScreenRecordingManager.cs#L51):
+```csharp
+/// <summary>
+/// Task representing platform-specific recording initialization.
+/// Set by the application startup code and awaited before starting recording.
+/// </summary>
+public static System.Threading.Tasks.Task? PlatformInitializationTask { get; set; }
+```
+
+**2. Updated Program.cs** ([line 149](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.App\Program.cs#L149)) to set the shared task:
+```csharp
+XerahS.Core.Managers.ScreenRecordingManager.PlatformInitializationTask = System.Threading.Tasks.Task.Run(() =>
+{
+    // Platform initialization code...
+});
+```
+
+**3. Added EnsureRecordingInitialized()** ([ScreenRecordingManager.cs:368-386](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Managers\ScreenRecordingManager.cs#L368-L386)):
+```csharp
+private static async Task EnsureRecordingInitialized()
+{
+    var initTask = PlatformInitializationTask;
+
+    if (initTask != null && !initTask.IsCompleted)
+    {
+        DebugHelper.WriteLine("ScreenRecordingManager: Waiting for recording initialization to complete...");
+        await initTask;
+        DebugHelper.WriteLine("ScreenRecordingManager: Recording initialization wait completed");
+    }
+}
+```
+
+**4. Updated StartRecordingAsync()** ([line 105](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Managers\ScreenRecordingManager.cs#L105)) to await initialization:
+```csharp
+public async Task StartRecordingAsync(RecordingOptions options)
+{
+    // Wait for platform recording initialization to complete if it's still running
+    await EnsureRecordingInitialized();
+
+    // Rest of recording start logic...
+}
+```
+
+### Behavior After Fix
+
+**User clicks "Start" immediately after app launch:**
+1. `StartRecordingAsync()` is called
+2. `EnsureRecordingInitialized()` detects initialization is still running
+3. UI shows "Initializing..." status (via RecordingViewModel)
+4. Waits for background init to complete (typically 1-3 seconds remaining)
+5. Proceeds with recording once factories are ready
+
+**User clicks "Start" after initialization completes:**
+1. `StartRecordingAsync()` is called
+2. `EnsureRecordingInitialized()` sees task is already completed
+3. Returns immediately (no wait)
+4. Proceeds with recording
+
+### Benefits
+
+- ✅ **No user-visible errors** - Graceful wait instead of failure
+- ✅ **Automatic synchronization** - No manual coordination needed
+- ✅ **Fast when ready** - Zero overhead if already initialized
+- ✅ **Thread-safe** - Proper async/await pattern
+- ✅ **Fallback preserved** - Still falls back to FFmpeg if init fails
+
+---
+
 ## New Abstractions and Interfaces
 
 **No new abstractions were required.** The existing architecture already provided proper platform abstraction:
@@ -368,8 +470,9 @@ Background Thread (Parallel):
 
 The fixes primarily involved:
 1. **Timing change:** Moving initialization from sync to async
-2. **UI enhancement:** Adding platform-aware ViewModel properties
-3. **No architectural changes** to the platform abstraction layer
+2. **Race condition fix:** Added awaitable initialization with automatic waiting
+3. **UI enhancement:** Adding platform-aware ViewModel properties
+4. **No architectural changes** to the platform abstraction layer
 
 ---
 

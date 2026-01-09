@@ -53,17 +53,34 @@ public class MediaFoundationEncoder : IVideoEncoder
         {
             try
             {
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", "Checking Media Foundation availability...");
+
                 // Try to initialize MF
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", $"Calling MFStartup(version={MF_VERSION:X}, flags=MFSTARTUP_FULL)...");
+                var startTime = System.Diagnostics.Stopwatch.StartNew();
                 var hr = MFStartup(MF_VERSION, MFSTARTUP_FULL);
+                startTime.Stop();
+
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", $"MFStartup() returned HRESULT: 0x{hr:X8} (took {startTime.ElapsedMilliseconds}ms)");
+
                 if (hr == 0)
                 {
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", "✓ MFStartup succeeded (S_OK)");
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", "Calling MFShutdown()...");
                     MFShutdown();
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", "✓ Media Foundation is available");
                     return true;
                 }
-                return false;
+                else
+                {
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", $"✗ MFStartup failed with HRESULT 0x{hr:X8}");
+                    return false;
+                }
             }
-            catch
+            catch (Exception ex)
             {
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", $"✗ EXCEPTION checking MF availability: {ex.GetType().Name}: {ex.Message}");
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", $"Stack trace: {ex.StackTrace}");
                 return false;
             }
         }

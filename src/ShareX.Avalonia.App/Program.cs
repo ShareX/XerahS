@@ -145,31 +145,42 @@ namespace XerahS.App
         /// </summary>
         private static void InitializeRecordingAsync()
         {
-            // Run on a background thread to avoid blocking UI
-            _ = System.Threading.Tasks.Task.Run(() =>
+            XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "=== InitializeRecordingAsync() CALLED ===");
+
+            // Run on a background thread to avoid blocking UI and store task in shared location
+            XerahS.Core.Managers.ScreenRecordingManager.PlatformInitializationTask = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
+                    XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Background task started");
+                    XerahS.Common.DebugHelper.WriteLine("Starting async recording initialization...");
 #if WINDOWS
                     if (OperatingSystem.IsWindows())
                     {
+                        XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Platform is Windows, calling WindowsPlatform.InitializeRecording()");
                         XerahS.Platform.Windows.WindowsPlatform.InitializeRecording();
                     }
 #elif MACOS
                     if (OperatingSystem.IsMacOS())
                     {
+                        XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Platform is macOS, calling MacOSPlatform.InitializeRecording()");
                         XerahS.Platform.MacOS.MacOSPlatform.InitializeRecording();
                     }
 #elif LINUX
                     if (OperatingSystem.IsLinux())
                     {
+                        XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Platform is Linux, calling LinuxPlatform.InitializeRecording()");
                         XerahS.Platform.Linux.LinuxPlatform.InitializeRecording();
                     }
 #endif
+                    XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Background task completed successfully");
+                    XerahS.Common.DebugHelper.WriteLine("Async recording initialization completed successfully");
                 }
                 catch (Exception ex)
                 {
+                    XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", $"✗ Background task EXCEPTION: {ex.GetType().Name}: {ex.Message}");
                     XerahS.Common.DebugHelper.WriteException(ex, "Failed to initialize recording capabilities");
+                    // Don't rethrow - allow app to continue with fallback
                 }
             });
         }
