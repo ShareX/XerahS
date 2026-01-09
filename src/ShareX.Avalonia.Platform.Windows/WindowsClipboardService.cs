@@ -137,31 +137,49 @@ namespace XerahS.Platform.Windows
 
             try
             {
-                // Convert SKBitmap to PNG, then to System.Drawing.Bitmap for clipboard
-                using (var ms = new MemoryStream())
+                // Optimized Clipboard set:
+                // Create System.Drawing.Bitmap and copy pixels directly instead of encoding/decoding PNG.
+                
+                int width = image.Width;
+                int height = image.Height;
+
+                // Format32bppArgb in System.Drawing corresponds to BGRA8888 in SkiaSharp (on Windows/LittleEndian)
+                using (var bmp = new System.Drawing.Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
                 {
-                    // Encode to PNG (more reliable than BMP for SkiaSharp)
-                    using (var skImage = SKImage.FromBitmap(image))
+                    var bounds = new System.Drawing.Rectangle(0, 0, width, height);
+                    var bmpData = bmp.LockBits(bounds, System.Drawing.Imaging.ImageLockMode.WriteOnly, bmp.PixelFormat);
+
+                    try
                     {
-                        if (skImage == null)
-                            throw new InvalidOperationException("Failed to create SKImage from bitmap");
-
-                        using (var data = skImage.Encode(SKEncodedImageFormat.Png, 100))
+                        // Define the expected format in the destination (System.Drawing.Bitmap)
+                        // This ensures that if the source SKBitmap is different, ReadPixels will convert it.
+                        var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+                        
+                        // Copy pixels directly into the locked bitmap memory
+                        var pixmap = image.PeekPixels();
+                        if (pixmap != null)
                         {
-                            if (data == null)
-                                throw new InvalidOperationException("Failed to encode image to PNG format");
-
-                            data.SaveTo(ms);
+                            if (!pixmap.ReadPixels(info, bmpData.Scan0, bmpData.Stride, 0, 0))
+                            {
+                                throw new Exception("Failed to read pixels from SKBitmap into System.Drawing.Bitmap buffer");
+                            }
+                        }
+                        else
+                        {
+                           // Force pixel allocation if needed (unlikely for valid image)
+                           image.GetPixels();
+                           if (!image.PeekPixels()?.ReadPixels(info, bmpData.Scan0, bmpData.Stride, 0, 0) ?? false)
+                           {
+                                throw new Exception("Failed to read pixels from SKBitmap into System.Drawing.Bitmap buffer (fallback)");
+                           }
                         }
                     }
-
-                    ms.Position = 0;
-
-                    // Use System.Drawing to set clipboard (simpler and more reliable)
-                    using (var drawingBitmap = new Bitmap(ms))
+                    finally
                     {
-                        RunInStaThread(() => Clipboard.SetImage(drawingBitmap));
+                        bmp.UnlockBits(bmpData);
                     }
+
+                    RunInStaThread(() => Clipboard.SetImage(bmp));
                 }
             }
             catch (Exception ex)

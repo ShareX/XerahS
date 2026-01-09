@@ -59,6 +59,7 @@ namespace XerahS.UI.Views.RegionCapture
         // Store window position for coordinate conversion
         private int _windowLeft = 0;
         private int _windowTop = 0;
+        private double _capturedScaling = 1.0; // Captured at window open to ensure consistent coordinate conversion
         private bool _usePerScreenScalingForLayout;
         private bool _useWindowPositionForFallback;
         private bool _useLogicalCoordinatesForCapture;
@@ -247,6 +248,17 @@ namespace XerahS.UI.Views.RegionCapture
                     _windowTop = minY;
                 }
                 DebugLog("WINDOW", $"Stored window origin for fallback: {_windowLeft},{_windowTop} (Position={Position})");
+
+                // Capture scaling at this point - use 1.0 to match the physical pixel coordinate system
+                // used for the overlay layout. RenderScaling can change as the mouse moves between
+                // monitors, so we need a stable value.
+                _capturedScaling = 1.0;
+                DebugLog("WINDOW", $"Captured scaling for coordinate conversion: {_capturedScaling}");
+
+                // Comprehensive DPI troubleshooting logging
+                TroubleshootingHelper.LogEnvironment("RegionCapture");
+                TroubleshootingHelper.LogMonitorInfo("RegionCapture", Screens.All);
+                TroubleshootingHelper.LogVirtualScreenBounds("RegionCapture", minX, minY, maxX, maxY, Width, Height, RenderScaling);
 
                 // Check if all screens are 100% DPI (Scaling == 1.0)
                 // We only enable background images and darkening if ALL screens are 1.0, to avoid mixed-DPI offsets.
@@ -776,6 +788,34 @@ namespace XerahS.UI.Views.RegionCapture
                 logicalY = relativeY / targetMonitorScaling;
                 logicalW = window.Bounds.Width / targetMonitorScaling;
                 logicalH = window.Bounds.Height / targetMonitorScaling;
+
+                // Get screen index and scaling for this window (for logging/comparison)
+                int screenIndex = 0;
+                double screenScaling = 1.0;
+                foreach (var screen in Screens.All)
+                {
+                    if (screen.Bounds.Contains(new Avalonia.PixelPoint(window.Bounds.X, window.Bounds.Y)))
+                    {
+                        screenScaling = screen.Scaling;
+                        break;
+                    }
+                    screenIndex++;
+                }
+
+                // Comprehensive selection logging for DPI troubleshooting
+                int processId = 0;
+                if (XerahS.Platform.Abstractions.PlatformServices.IsInitialized)
+                {
+                    try { processId = (int)(XerahS.Platform.Abstractions.PlatformServices.Window?.GetWindowProcessId(window.Handle) ?? 0); }
+                    catch { }
+                }
+                TroubleshootingHelper.LogWindowSelection("RegionCapture",
+                    window.Title ?? "",
+                    processId,
+                    new System.Drawing.Rectangle(window.Bounds.X, window.Bounds.Y, window.Bounds.Width, window.Bounds.Height),
+                    currentScaling,
+                    logicalX, logicalY, logicalW, logicalH,
+                    screenIndex, screenScaling);
 
                 // Update visuals to match window
                 var border = this.FindControl<Rectangle>("SelectionBorder");

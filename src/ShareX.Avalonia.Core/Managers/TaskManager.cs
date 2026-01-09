@@ -1,4 +1,5 @@
 using XerahS.Common;
+using XerahS.Core.Helpers;
 using XerahS.Core.Tasks;
 using System.Collections.Concurrent;
 
@@ -21,8 +22,12 @@ namespace XerahS.Core.Managers
 
         public async Task StartTask(TaskSettings taskSettings, SkiaSharp.SKBitmap? inputImage = null)
         {
+            TroubleshootingHelper.Log(taskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", $"StartTask Entry: TaskSettings={taskSettings != null}");
+            
             var task = WorkerTask.Create(taskSettings, inputImage);
             _tasks.Add(task);
+            
+            TroubleshootingHelper.Log(task.Info?.TaskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", "Task created");
 
             task.StatusChanged += (s, e) => DebugHelper.WriteLine($"Task Status: {task.Status}");
             task.TaskCompleted += (s, e) =>
@@ -31,7 +36,9 @@ namespace XerahS.Core.Managers
                 TaskCompleted?.Invoke(this, task);
             };
 
+            TroubleshootingHelper.Log(task.Info?.TaskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", "Calling task.StartAsync...");
             await task.StartAsync();
+            TroubleshootingHelper.Log(task.Info?.TaskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", "task.StartAsync completed");
         }
 
         public void StopAllTasks()

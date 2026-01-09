@@ -57,9 +57,9 @@
                       Clicked="TrayIcon_Clicked">
                 <TrayIcon.Menu>
                     <NativeMenu>
-                        <NativeMenuItem Header="Capture Region" Command="{Binding CaptureRegionCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
-                        <NativeMenuItem Header="Capture Screen" Command="{Binding CaptureScreenCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
-                        <NativeMenuItem Header="Capture Window" Command="{Binding CaptureWindowCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
+                        <NativeMenuItem Header="{Binding Workflow1Name, Source={x:Static local:TrayIconHelper.Instance}}" Command="{Binding Workflow1Command, Source={x:Static local:TrayIconHelper.Instance}}" IsVisible="{Binding HasWorkflow1, Source={x:Static local:TrayIconHelper.Instance}}"/>
+                        <NativeMenuItem Header="{Binding Workflow2Name, Source={x:Static local:TrayIconHelper.Instance}}" Command="{Binding Workflow2Command, Source={x:Static local:TrayIconHelper.Instance}}" IsVisible="{Binding HasWorkflow2, Source={x:Static local:TrayIconHelper.Instance}}"/>
+                        <NativeMenuItem Header="{Binding Workflow3Name, Source={x:Static local:TrayIconHelper.Instance}}" Command="{Binding Workflow3Command, Source={x:Static local:TrayIconHelper.Instance}}" IsVisible="{Binding HasWorkflow3, Source={x:Static local:TrayIconHelper.Instance}}"/>
                         <NativeMenuItemSeparator/>
                         <NativeMenuItem Header="Open Main Window" Command="{Binding OpenMainWindowCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
                         <NativeMenuItem Header="Settings" Command="{Binding OpenSettingsCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>

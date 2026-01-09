@@ -280,6 +280,158 @@ namespace XerahS.Common
         [DllImport("user32.dll")]
         public static extern bool SetCursorPos(int x, int y);
 
+        #region DPI APIs for Troubleshooting
+
+        /// <summary>
+        /// Monitor DPI type for GetDpiForMonitor
+        /// </summary>
+        public enum MONITOR_DPI_TYPE
+        {
+            /// <summary>Effective DPI that incorporates accessibility overrides.</summary>
+            MDT_EFFECTIVE_DPI = 0,
+            /// <summary>DPI that ensures text is readable.</summary>
+            MDT_ANGULAR_DPI = 1,
+            /// <summary>Raw physical DPI of the monitor.</summary>
+            MDT_RAW_DPI = 2,
+            /// <summary>Default (same as MDT_EFFECTIVE_DPI).</summary>
+            MDT_DEFAULT = MDT_EFFECTIVE_DPI
+        }
+
+        /// <summary>
+        /// Monitor from point/window flags
+        /// </summary>
+        public const uint MONITOR_DEFAULTTONULL = 0;
+        public const uint MONITOR_DEFAULTTOPRIMARY = 1;
+        public const uint MONITOR_DEFAULTTONEAREST = 2;
+
+        [DllImport("shcore.dll")]
+        private static extern int GetDpiForMonitor(IntPtr hMonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForWindow(IntPtr hwnd);
+
+        /// <summary>
+        /// Gets the DPI scale factor for the monitor containing the specified point.
+        /// Returns 1.0 if the API call fails or on unsupported OS versions.
+        /// </summary>
+        /// <param name="x">X coordinate in physical screen pixels</param>
+        /// <param name="y">Y coordinate in physical screen pixels</param>
+        /// <returns>Scale factor (e.g., 1.0, 1.25, 1.5, 2.0)</returns>
+        public static double GetMonitorScaleFactorFromPoint(int x, int y)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || Environment.OSVersion.Version.Major < 6)
+                return 1.0;
+
+            try
+            {
+                var pt = new POINT { X = x, Y = y };
+                var hMonitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+                if (hMonitor == IntPtr.Zero)
+                    return 1.0;
+
+                if (GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out _) == 0)
+                {
+                    return dpiX / 96.0;
+                }
+            }
+            catch
+            {
+                // Silently fail on older Windows versions
+            }
+            return 1.0;
+        }
+
+        /// <summary>
+        /// Gets the DPI scale factor for a specific monitor handle.
+        /// Returns 1.0 if the API call fails.
+        /// </summary>
+        /// <param name="hMonitor">Monitor handle from MonitorFromPoint/MonitorFromWindow</param>
+        /// <returns>Scale factor (e.g., 1.0, 1.25, 1.5, 2.0)</returns>
+        public static double GetMonitorScaleFactor(IntPtr hMonitor)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || hMonitor == IntPtr.Zero)
+                return 1.0;
+
+            try
+            {
+                if (GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out _) == 0)
+                {
+                    return dpiX / 96.0;
+                }
+            }
+            catch
+            {
+                // Silently fail on older Windows versions
+            }
+            return 1.0;
+        }
+
+        /// <summary>
+        /// Gets the DPI scale factor for the window's current monitor.
+        /// </summary>
+        /// <param name="hwnd">Window handle</param>
+        /// <returns>Scale factor (e.g., 1.0, 1.25, 1.5, 2.0)</returns>
+        public static double GetWindowScaleFactor(IntPtr hwnd)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || hwnd == IntPtr.Zero)
+                return 1.0;
+
+            try
+            {
+                // Try GetDpiForWindow first (Windows 10 1607+)
+                uint dpi = GetDpiForWindow(hwnd);
+                if (dpi > 0)
+                    return dpi / 96.0;
+
+                // Fallback to MonitorFromWindow + GetDpiForMonitor
+                var hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+                return GetMonitorScaleFactor(hMonitor);
+            }
+            catch
+            {
+                return 1.0;
+            }
+        }
+
+        /// <summary>
+        /// Gets the raw DPI values for a monitor (for troubleshooting/logging).
+        /// </summary>
+        /// <param name="x">X coordinate in physical screen pixels</param>
+        /// <param name="y">Y coordinate in physical screen pixels</param>
+        /// <param name="dpiX">Output: Horizontal DPI</param>
+        /// <param name="dpiY">Output: Vertical DPI</param>
+        /// <returns>True if successful, false otherwise</returns>
+        public static bool TryGetMonitorDpi(int x, int y, out uint dpiX, out uint dpiY)
+        {
+            dpiX = 96;
+            dpiY = 96;
+
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return false;
+
+            try
+            {
+                var pt = new POINT { X = x, Y = y };
+                var hMonitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+                if (hMonitor == IntPtr.Zero)
+                    return false;
+
+                return GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out dpiX, out dpiY) == 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        #endregion DPI APIs for Troubleshooting
+
         public static System.Drawing.Icon? GetFileIcon(string filePath, bool isSmallIcon)
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

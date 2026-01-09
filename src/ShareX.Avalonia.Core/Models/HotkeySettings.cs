@@ -45,6 +45,32 @@ public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
     public List<WorkflowSettings> Hotkeys { get; set; } = GetDefaultWorkflowList();
 
     /// <summary>
+    /// Ensure all workflows have valid IDs after loading
+    /// </summary>
+    public void EnsureWorkflowIds()
+    {
+        bool needsSave = false;
+
+        if (Hotkeys != null)
+        {
+            foreach (var workflow in Hotkeys)
+            {
+                if (string.IsNullOrEmpty(workflow.Id))
+                {
+                    workflow.EnsureId();
+                    needsSave = true;
+                }
+            }
+        }
+
+        // Save if we generated any new IDs
+        if (needsSave && !string.IsNullOrEmpty(FilePath))
+        {
+            Save();
+        }
+    }
+
+    /// <summary>
     /// Get default hotkey list for ShareX
     /// </summary>
     public static List<WorkflowSettings> GetDefaultWorkflowList()

@@ -297,11 +297,7 @@ namespace XerahS.UI.ViewModels
 
             try
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = item.FilePath,
-                    UseShellExecute = true
-                });
+                XerahS.Platform.Abstractions.PlatformServices.System.OpenFile(item.FilePath);
             }
             catch (Exception ex)
             {
@@ -314,7 +310,7 @@ namespace XerahS.UI.ViewModels
         {
             if (item == null || string.IsNullOrEmpty(item.FilePath)) return;
 
-            FileHelpers.OpenFolderWithFile(item.FilePath);
+            XerahS.Platform.Abstractions.PlatformServices.System.ShowFileInExplorer(item.FilePath);
         }
 
         [RelayCommand]

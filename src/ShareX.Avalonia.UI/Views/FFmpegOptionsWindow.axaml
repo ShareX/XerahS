@@ -1,0 +1,230 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        mc:Ignorable="d"
+        x:Class="XerahS.UI.Views.FFmpegOptionsWindow"
+        x:DataType="vm:FFmpegOptionsViewModel"
+        Width="700" Height="780"
+        Title="FFmpeg Recording Options">
+
+  <Design.DataContext>
+    <vm:FFmpegOptionsViewModel />
+  </Design.DataContext>
+
+  <ScrollViewer>
+    <StackPanel Margin="20" Spacing="16">
+
+      <TextBlock Text="FFmpeg Recording Options"
+                 FontSize="20"
+                 FontWeight="SemiBold"/>
+      <TextBlock Text="Configure the FFmpeg fallback encoder used for recording and audio capture."
+                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                 TextWrapping="Wrap"/>
+
+      <!-- General -->
+      <Border BorderThickness="1"
+              BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+              Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+              CornerRadius="8"
+              Padding="14">
+        <StackPanel Spacing="12">
+          <TextBlock Text="General" FontWeight="SemiBold"/>
+
+          <StackPanel Spacing="8">
+            <CheckBox Content="Override FFmpeg executable path"
+                      IsChecked="{Binding OverrideCLIPath}"/>
+            <Grid ColumnDefinitions="130,*,Auto" ColumnSpacing="8">
+              <TextBlock VerticalAlignment="Center" Text="Executable path:" Width="130"/>
+              <TextBox Grid.Column="1" Text="{Binding CLIPath}" Width="400"/>
+              <Button Grid.Column="2" Content="Browse…" Click="BrowseFFmpeg_Click"/>
+            </Grid>
+            <TextBlock Text="{Binding EffectiveFFmpegPath}"
+                       FontFamily="Consolas, monospace"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+          </StackPanel>
+
+          <Grid ColumnDefinitions="150,*,150,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="8">
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Video source:"/>
+            <ComboBox Grid.Row="0" Grid.Column="1"
+                      ItemsSource="{Binding VideoCaptureDevices}"
+                      SelectedItem="{Binding SelectedVideoDevice}"
+                      HorizontalAlignment="Stretch"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" Text="Audio source:"/>
+            <ComboBox Grid.Row="0" Grid.Column="3"
+                      ItemsSource="{Binding AudioCaptureDevices}"
+                      SelectedItem="{Binding SelectedAudioDevice}"
+                      HorizontalAlignment="Stretch"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Video codec:"/>
+            <ComboBox Grid.Row="1" Grid.Column="1"
+                      ItemsSource="{Binding VideoCodecs}"
+                      SelectedItem="{Binding VideoCodec}"
+                      HorizontalAlignment="Stretch"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Text="Audio codec:"/>
+            <ComboBox Grid.Row="1" Grid.Column="3"
+                      ItemsSource="{Binding AudioCodecs}"
+                      SelectedItem="{Binding AudioCodec}"
+                      HorizontalAlignment="Stretch"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Extra args:"/>
+            <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3"
+                     Text="{Binding UserArgs}"
+                     Watermark="Additional ffmpeg arguments"/>
+          </Grid>
+
+          <CheckBox Content="Use custom full command"
+                    IsChecked="{Binding UseCustomCommands}"/>
+          <TextBox Text="{Binding CustomCommands}"
+                   AcceptsReturn="True"
+                   Height="80"
+                   Watermark="Full ffmpeg command when overriding"
+                   TextWrapping="Wrap"/>
+        </StackPanel>
+      </Border>
+
+      <!-- Video -->
+      <Border BorderThickness="1"
+              BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+              Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+              CornerRadius="8"
+              Padding="14">
+        <StackPanel Spacing="12">
+          <TextBlock Text="Video" FontWeight="SemiBold"/>
+
+          <Grid ColumnDefinitions="160,*,160,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="8">
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="x264 preset:"/>
+            <ComboBox Grid.Row="0" Grid.Column="1"
+                      ItemsSource="{Binding X264Presets}"
+                      SelectedItem="{Binding X264Preset}"
+                      HorizontalAlignment="Stretch"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" Text="x264 CRF:"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="3"
+                           Minimum="0" Maximum="51"
+                           Value="{Binding X264CRF}"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="x264 Bitrate (kbps):"/>
+            <NumericUpDown Grid.Row="1" Grid.Column="1"
+                           Minimum="100" Maximum="50000" Increment="100"
+                           Value="{Binding X264Bitrate}"
+                           IsEnabled="{Binding X264UseBitrate}"/>
+            <CheckBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
+                      IsChecked="{Binding X264UseBitrate}"
+                      Content="Use bitrate instead of CRF"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="VPx Bitrate (kbps):"/>
+            <NumericUpDown Grid.Row="2" Grid.Column="1"
+                           Minimum="100" Maximum="50000" Increment="100"
+                           Value="{Binding VPxBitrate}"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Text="XviD QScale:"/>
+            <NumericUpDown Grid.Row="2" Grid.Column="3"
+                           Minimum="1" Maximum="31"
+                           Value="{Binding XviDQScale}"/>
+
+            <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="NVENC preset:"/>
+            <ComboBox Grid.Row="3" Grid.Column="1"
+                      ItemsSource="{Binding NvencPresets}"
+                      SelectedItem="{Binding NvencPreset}"/>
+            <TextBlock Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" Text="NVENC tune:"/>
+            <ComboBox Grid.Row="3" Grid.Column="3"
+                      ItemsSource="{Binding NvencTunes}"
+                      SelectedItem="{Binding NvencTune}"/>
+          </Grid>
+
+          <Grid ColumnDefinitions="160,*,160,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="8">
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="NVENC Bitrate (kbps):"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="1"
+                           Minimum="100" Maximum="50000" Increment="100"
+                           Value="{Binding NvencBitrate}"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" Text="GIF palette stats:"/>
+            <ComboBox Grid.Row="0" Grid.Column="3"
+                      ItemsSource="{Binding GifStatsModes}"
+                      SelectedItem="{Binding GifStatsMode}"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="GIF dither:"/>
+            <ComboBox Grid.Row="1" Grid.Column="1"
+                      ItemsSource="{Binding GifDithers}"
+                      SelectedItem="{Binding GifDither}"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Text="GIF Bayer scale:"/>
+            <NumericUpDown Grid.Row="1" Grid.Column="3"
+                           Minimum="0" Maximum="10"
+                           Value="{Binding GifBayerScale}"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="AMF usage:"/>
+            <ComboBox Grid.Row="2" Grid.Column="1"
+                      ItemsSource="{Binding AmfUsages}"
+                      SelectedItem="{Binding AmfUsage}"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Text="AMF quality:"/>
+            <ComboBox Grid.Row="2" Grid.Column="3"
+                      ItemsSource="{Binding AmfQualities}"
+                      SelectedItem="{Binding AmfQuality}"/>
+          </Grid>
+
+          <Grid ColumnDefinitions="160,*,160,*" RowDefinitions="Auto,Auto" RowSpacing="8" ColumnSpacing="8">
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="AMF Bitrate (kbps):"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="1"
+                           Minimum="100" Maximum="50000" Increment="100"
+                           Value="{Binding AmfBitrate}"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" Text="QSV preset:"/>
+            <ComboBox Grid.Row="0" Grid.Column="3"
+                      ItemsSource="{Binding QsvPresets}"
+                      SelectedItem="{Binding QsvPreset}"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="QSV Bitrate (kbps):"/>
+            <NumericUpDown Grid.Row="1" Grid.Column="1"
+                           Minimum="100" Maximum="50000" Increment="100"
+                           Value="{Binding QsvBitrate}"/>
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <!-- Audio -->
+      <Border BorderThickness="1"
+              BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+              Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+              CornerRadius="8"
+              Padding="14">
+        <StackPanel Spacing="12">
+          <TextBlock Text="Audio" FontWeight="SemiBold"/>
+
+          <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="8">
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="AAC bitrate (kbps):"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="1"
+                           Minimum="32" Maximum="512" Increment="16"
+                           Value="{Binding AACBitrate}"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Opus bitrate (kbps):"/>
+            <NumericUpDown Grid.Row="1" Grid.Column="1"
+                           Minimum="32" Maximum="512" Increment="16"
+                           Value="{Binding OpusBitrate}"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Vorbis QScale:"/>
+            <NumericUpDown Grid.Row="2" Grid.Column="1"
+                           Minimum="0" Maximum="10"
+                           Value="{Binding VorbisQScale}"/>
+
+            <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="MP3 QScale:"/>
+            <NumericUpDown Grid.Row="3" Grid.Column="1"
+                           Minimum="0" Maximum="10"
+                           Value="{Binding MP3QScale}"/>
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+        <Button Content="Close" Width="100" Click="Close_Click"/>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+
+</Window>

@@ -227,8 +227,21 @@ public class WorkflowManager : IDisposable
         var item = Workflows[oldIndex];
         Workflows.RemoveAt(oldIndex);
         Workflows.Insert(newIndex, item);
-        
+
         WorkflowsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Get a workflow by its unique ID
+    /// </summary>
+    /// <param name="id">The workflow ID (SHA-1 hash)</param>
+    /// <returns>The workflow settings if found, null otherwise</returns>
+    public WorkflowSettings? GetWorkflowById(string id)
+    {
+        if (string.IsNullOrEmpty(id))
+            return null;
+
+        return Workflows.FirstOrDefault(w => w.Id == id);
     }
 
     /// <summary>

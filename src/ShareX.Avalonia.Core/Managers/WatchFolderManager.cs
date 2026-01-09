@@ -19,7 +19,7 @@ namespace XerahS.Core.Managers
             StopWatchers();
 
             // TaskSettings access via SettingManager would be needed here
-            var settings = SettingManager.DefaultTaskSettings;
+            var settings = SettingManager.GetOrCreateWorkflowTaskSettings(HotkeyType.None);
 
             if (settings != null && settings.WatchFolderEnabled)
             {

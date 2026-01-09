@@ -35,8 +35,6 @@ namespace XerahS.Core;
 /// </summary>
 public class ApplicationConfig : SettingsBase<ApplicationConfig>
 {
-    public TaskSettings DefaultTaskSettings = new TaskSettings();
-
     public DateTime FirstTimeRunDate = DateTime.Now;
     public string FileUploadDefaultDirectory = "";
     public int NameParserAutoIncrementNumber = 0;

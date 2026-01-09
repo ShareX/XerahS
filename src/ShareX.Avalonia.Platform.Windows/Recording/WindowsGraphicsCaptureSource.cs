@@ -120,17 +120,41 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
 
     /// <summary>
     /// Initialize capture for the primary monitor
+    /// Note: Monitor capture requires Windows 10 20H1 (build 19041) or later
     /// </summary>
     public void InitializeForPrimaryMonitor()
     {
         if (_disposed) throw new ObjectDisposedException(nameof(WindowsGraphicsCaptureSource));
 
+        // Check if running on Windows 10 20H1+ for monitor capture
+        var version = Environment.OSVersion.Version;
+        System.Diagnostics.Debug.WriteLine($"Windows version: {version.Major}.{version.Minor}.{version.Build}");
+        
+        if (version.Build < 19041)
+        {
+            throw new PlatformNotSupportedException(
+                $"Monitor capture requires Windows 10 20H1 (build 19041) or later. Current build: {version.Build}");
+        }
+
         try
         {
             _d3dDevice = CreateD3DDevice();
+            System.Diagnostics.Debug.WriteLine("D3D device created successfully");
+            
             _device = CreateDirect3DDeviceFromD3D11Device(_d3dDevice);
+            System.Diagnostics.Debug.WriteLine("IDirect3DDevice created successfully");
 
-            _captureItem = CaptureHelper.CreateItemForMonitor(GetPrimaryMonitorHandle());
+            var monitorHandle = GetPrimaryMonitorHandle();
+            System.Diagnostics.Debug.WriteLine($"Primary monitor handle: 0x{monitorHandle:X}");
+            
+            if (monitorHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Failed to get primary monitor handle");
+            }
+
+            _captureItem = CaptureHelper.CreateItemForMonitor(monitorHandle);
+            System.Diagnostics.Debug.WriteLine($"Capture item created: {_captureItem?.DisplayName ?? "null"}");
+            
             if (_captureItem == null)
             {
                 throw new InvalidOperationException("Failed to create capture item for monitor");
@@ -143,9 +167,11 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
                 _captureItem.Size);
 
             _framePool.FrameArrived += OnFrameArrived;
+            System.Diagnostics.Debug.WriteLine("Frame pool created and event wired");
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"InitializeForPrimaryMonitor failed: {ex}");
             Dispose();
             throw new PlatformNotSupportedException(
                 "Failed to initialize Windows.Graphics.Capture for monitor.",
@@ -409,21 +435,26 @@ internal static class CaptureHelper
 
     public static WGC.GraphicsCaptureItem? CreateItemForMonitor(IntPtr hmonitor)
     {
-        try
+        var interop = GraphicsCaptureItemInterop.GetInterop();
+        if (interop == null)
         {
-            var interop = GraphicsCaptureItemInterop.GetInterop();
-            if (interop == null) return null;
-            
-            var guid = GraphicsCaptureItemGuid;
-            var hr = interop.CreateForMonitor(hmonitor, ref guid, out var item);
-            if (hr != 0 || item == null) return null;
-            
-            return item;
+            throw new InvalidOperationException("Failed to get IGraphicsCaptureItemInterop activation factory. Windows.Graphics.Capture may not be supported.");
         }
-        catch
+        
+        var guid = GraphicsCaptureItemGuid;
+        var hr = interop.CreateForMonitor(hmonitor, ref guid, out var item);
+        
+        if (hr != 0)
         {
-            return null;
+            throw new InvalidOperationException($"CreateForMonitor failed with HRESULT 0x{hr:X8}. Monitor handle: 0x{hmonitor:X}");
         }
+        
+        if (item == null)
+        {
+            throw new InvalidOperationException($"CreateForMonitor returned null for monitor handle 0x{hmonitor:X}");
+        }
+        
+        return item;
     }
 }
 

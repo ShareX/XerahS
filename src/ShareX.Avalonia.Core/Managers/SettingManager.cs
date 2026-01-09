@@ -23,7 +23,10 @@
 
 #endregion License Information (GPL v3)
 
+using System.Linq;
 using XerahS.Common;
+using XerahS.Core.Hotkeys;
+using XerahS.Platform.Abstractions;
 using XerahS.Uploaders;
 
 // ReSharper disable MemberCanBePrivate.Global
@@ -161,9 +164,45 @@ namespace XerahS.Core
         public static WorkflowsConfig WorkflowsConfig { get; set; } = new WorkflowsConfig();
 
         /// <summary>
-        /// Default task settings (shortcut)
+        /// Get the first workflow matching the specified HotkeyType.
+        /// Returns null if no workflow exists for that type.
+        /// Use this instead of GetOrCreateWorkflowTaskSettings when you need workflow-specific settings.
         /// </summary>
-        public static TaskSettings DefaultTaskSettings => Settings.DefaultTaskSettings;
+        public static WorkflowSettings? GetFirstWorkflow(HotkeyType hotkeyType)
+        {
+            return WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Job == hotkeyType);
+        }
+
+        /// <summary>
+        /// Retrieve a workflow's task settings by hotkey type, creating a workflow entry if none exists.
+        /// </summary>
+        [Obsolete("Use GetFirstWorkflow() to get the full WorkflowSettings, or pass TaskSettings explicitly. " +
+                  "Looking up by HotkeyType is ambiguous when multiple workflows share the same type.")]
+        public static TaskSettings GetOrCreateWorkflowTaskSettings(HotkeyType hotkeyType)
+        {
+            WorkflowsConfig ??= new WorkflowsConfig();
+            WorkflowsConfig.Hotkeys ??= new List<WorkflowSettings>();
+
+            var workflow = WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Job == hotkeyType);
+            if (workflow == null)
+            {
+                workflow = new WorkflowSettings(hotkeyType, new HotkeyInfo());
+                WorkflowsConfig.Hotkeys.Add(workflow);
+            }
+
+            if (workflow.TaskSettings == null)
+            {
+                workflow.TaskSettings = new TaskSettings();
+            }
+
+            return workflow.TaskSettings;
+        }
+
+        /// <summary>
+        /// Get a default TaskSettings instance.
+        /// Use this for fallback/global settings instead of looking up by HotkeyType.
+        /// </summary>
+        public static TaskSettings DefaultTaskSettings { get; } = new TaskSettings();
 
         /// <summary>
         /// Recent task manager
@@ -220,6 +259,10 @@ namespace XerahS.Core
             WorkflowsConfig = WorkflowsConfig.Load(path, BackupFolder, fallbackSupport) ?? new WorkflowsConfig();
             WorkflowsConfig.CreateBackup = true;
             WorkflowsConfig.CreateWeeklyBackup = true;
+
+            // Ensure all workflows have valid IDs
+            WorkflowsConfig.EnsureWorkflowIds();
+
             DebugHelper.WriteLine($"WorkflowsConfig load finished: {path}");
         }
 
@@ -287,11 +330,13 @@ namespace XerahS.Core
         public static void SaveWorkflowsConfig()
         {
             WorkflowsConfig?.Save(WorkflowsConfigFilePath);
+            RaiseSettingsChanged();
         }
 
         public static void SaveWorkflowsConfigAsync()
         {
             WorkflowsConfig?.SaveAsync(WorkflowsConfigFilePath);
+            RaiseSettingsChanged();
         }
 
         private static void UpdateRecentTasks()

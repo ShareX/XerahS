@@ -43,6 +43,12 @@ public class TaskSettings
     [JsonIgnore]
     public bool IsSafeTaskSettings => TaskSettingsReference != null;
 
+    /// <summary>
+    /// The ID of the workflow that this task settings belongs to
+    /// </summary>
+    [JsonIgnore]
+    public string? WorkflowId { get; set; }
+
     public string Description = "";
 
     public HotkeyType Job = HotkeyType.None;
@@ -210,7 +216,7 @@ public class TaskSettingsCapture
     #endregion Capture / Screen recorder
 
     public RegionCaptureOptions RegionCaptureOptions = new RegionCaptureOptions();
-    public FFmpegOptions FFmpegOptions = new FFmpegOptions();
+    public FFmpegOptions FFmpegOptions { get; set; } = new FFmpegOptions();
     public ScreenRecordingSettings ScreenRecordingSettings = new ScreenRecordingSettings();
     public ScrollingCaptureOptions ScrollingCaptureOptions = new ScrollingCaptureOptions();
     public OCROptions OCROptions = new OCROptions();

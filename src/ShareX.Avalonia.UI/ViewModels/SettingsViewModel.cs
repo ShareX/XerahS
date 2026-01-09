@@ -68,6 +68,8 @@ namespace XerahS.UI.ViewModels
 
         public UpdateChannel[] UpdateChannels => (UpdateChannel[])Enum.GetValues(typeof(UpdateChannel));
 
+        private TaskSettings ActiveTaskSettings => SettingManager.GetOrCreateWorkflowTaskSettings(HotkeyType.None);
+
         // Tray Click Actions
         public HotkeyType TrayLeftClickAction
         {
@@ -290,65 +292,65 @@ namespace XerahS.UI.ViewModels
         // Task Settings - After Capture
         public bool SaveImageToFile
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.SaveImageToFile);
+            get => ActiveTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.SaveImageToFile);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.SaveImageToFile;
+                    ActiveTaskSettings.AfterCaptureJob |= AfterCaptureTasks.SaveImageToFile;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.SaveImageToFile;
+                    ActiveTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.SaveImageToFile;
                 OnPropertyChanged();
             }
         }
 
         public bool CopyImageToClipboard
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyImageToClipboard);
+            get => ActiveTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyImageToClipboard);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.CopyImageToClipboard;
+                    ActiveTaskSettings.AfterCaptureJob |= AfterCaptureTasks.CopyImageToClipboard;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.CopyImageToClipboard;
+                    ActiveTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.CopyImageToClipboard;
                 OnPropertyChanged();
             }
         }
 
         public bool UploadImageToHost
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost);
+            get => ActiveTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.UploadImageToHost;
+                    ActiveTaskSettings.AfterCaptureJob |= AfterCaptureTasks.UploadImageToHost;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.UploadImageToHost;
+                    ActiveTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.UploadImageToHost;
                 OnPropertyChanged();
             }
         }
 
         public bool AnnotateImage
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AnnotateImage);
+            get => ActiveTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AnnotateImage);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.AnnotateImage;
+                    ActiveTaskSettings.AfterCaptureJob |= AfterCaptureTasks.AnnotateImage;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.AnnotateImage;
+                    ActiveTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.AnnotateImage;
                 OnPropertyChanged();
             }
         }
 
         public bool ShowAfterCaptureWindow
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.ShowAfterCaptureWindow);
+            get => ActiveTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.ShowAfterCaptureWindow);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.ShowAfterCaptureWindow;
+                    ActiveTaskSettings.AfterCaptureJob |= AfterCaptureTasks.ShowAfterCaptureWindow;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.ShowAfterCaptureWindow;
+                    ActiveTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.ShowAfterCaptureWindow;
                 OnPropertyChanged();
             }
         }
@@ -356,39 +358,39 @@ namespace XerahS.UI.ViewModels
         // Task Settings - After Upload
         public bool CopyURLToClipboard
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.CopyURLToClipboard);
+            get => ActiveTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.CopyURLToClipboard);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterUploadJob |= AfterUploadTasks.CopyURLToClipboard;
+                    ActiveTaskSettings.AfterUploadJob |= AfterUploadTasks.CopyURLToClipboard;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterUploadJob &= ~AfterUploadTasks.CopyURLToClipboard;
+                    ActiveTaskSettings.AfterUploadJob &= ~AfterUploadTasks.CopyURLToClipboard;
                 OnPropertyChanged();
             }
         }
 
         public bool UseURLShortener
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.UseURLShortener);
+            get => ActiveTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.UseURLShortener);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterUploadJob |= AfterUploadTasks.UseURLShortener;
+                    ActiveTaskSettings.AfterUploadJob |= AfterUploadTasks.UseURLShortener;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterUploadJob &= ~AfterUploadTasks.UseURLShortener;
+                    ActiveTaskSettings.AfterUploadJob &= ~AfterUploadTasks.UseURLShortener;
                 OnPropertyChanged();
             }
         }
 
         public bool ShareURL
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.ShareURL);
+            get => ActiveTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.ShareURL);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterUploadJob |= AfterUploadTasks.ShareURL;
+                    ActiveTaskSettings.AfterUploadJob |= AfterUploadTasks.ShareURL;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterUploadJob &= ~AfterUploadTasks.ShareURL;
+                    ActiveTaskSettings.AfterUploadJob &= ~AfterUploadTasks.ShareURL;
                 OnPropertyChanged();
             }
         }
@@ -416,8 +418,8 @@ namespace XerahS.UI.ViewModels
             AutoCheckUpdate = settings.AutoCheckUpdate;
             UpdateChannel = settings.UpdateChannel;
 
-            // Task Settings - General
-            var taskSettings = settings.DefaultTaskSettings;
+            // Task Settings - General (from primary workflow)
+            var taskSettings = ActiveTaskSettings;
             PlaySoundAfterCapture = taskSettings.GeneralSettings.PlaySoundAfterCapture;
             ShowToastNotification = taskSettings.GeneralSettings.ShowToastNotificationAfterTaskCompleted;
 
@@ -471,7 +473,7 @@ namespace XerahS.UI.ViewModels
             settings.UpdateChannel = UpdateChannel;
 
             // Save Task Settings
-            var taskSettings = settings.DefaultTaskSettings;
+            var taskSettings = ActiveTaskSettings;
             taskSettings.GeneralSettings.PlaySoundAfterCapture = PlaySoundAfterCapture;
             taskSettings.GeneralSettings.ShowToastNotificationAfterTaskCompleted = ShowToastNotification;
 

@@ -102,3 +102,12 @@ This forces the build system to include the correct Windows SDK reference assemb
 2.  **Keep contexts alive**: The `PluginLoader` must maintain a static reference to the created `AssemblyLoadContexts`. If these are garbage collected, the plugin assemblies will be unloaded, causing crashes or missing functionality.
 3.  **Share framework dependencies**: Plugins must not ship with their own copies of framework assemblies (e.g., `Avalonia.dll`, `CommunityToolkit.Mvvm`). The `PluginLoadContext` must be configured to return `null` for these shared assemblies, forcing the runtime to resolve them from the Host application's context. This ensures that `Plugin.Button` is compatible with `Host.Button`.
 4.  **Templating limitations**: In Avalonia, overriding `ControlTemplate` in a plugin requires careful Command wiring, as standard resource lookup chains may specific to the load context.
+5.  **Plugin TFM must match Host TFM**: Plugin projects must use the **exact same Target Framework Moniker (TFM)** as the host application. If the host targets `net10.0-windows10.0.19041.0` on Windows, plugins must also use conditional TFM matching:
+
+    ```xml
+    <!-- Plugins must match host TFM exactly -->
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
+    ```
+
+    **Why**: Plugin build targets that copy outputs to the host's bin folder (e.g., `$(TargetFramework)\Plugins\`) will use the plugin's TFM in the path. If the plugin targets `net10.0` but the host outputs to `net10.0-windows10.0.19041.0`, plugins end up in the wrong folder and fail to load at runtime. This causes provider settings UI to not appear.

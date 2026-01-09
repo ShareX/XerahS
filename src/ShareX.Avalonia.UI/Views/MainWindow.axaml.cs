@@ -14,6 +14,7 @@ using XerahS.Core.Managers;
 using ShareX.Editor.Annotations;
 using ShareX.Editor.ViewModels;
 using ShareX.Editor.Views;
+using XerahS.UI.Helpers;
 
 namespace XerahS.UI.Views
 {
@@ -81,23 +82,36 @@ namespace XerahS.UI.Views
             {
                 var tag = selectedItem.Tag?.ToString();
 
+                // Handle workflow execution by ID
+                if (tag != null && tag.StartsWith("Capture_"))
+                {
+                    var workflowId = tag.Replace("Capture_", "");
+                    if (!string.IsNullOrEmpty(workflowId))
+                    {
+                        WorkflowSettings? workflow = null;
+
+                        // Try to get workflow from WorkflowManager first
+                        if (Application.Current is App app && app.WorkflowManager != null)
+                        {
+                            workflow = app.WorkflowManager.GetWorkflowById(workflowId);
+                        }
+
+                        // Fallback to SettingManager
+                        if (workflow == null)
+                        {
+                            workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Id == workflowId);
+                        }
+
+                        if (workflow != null)
+                        {
+                            _ = ExecuteCaptureAsync(workflow.Job, workflow.Id);
+                            NavigateToEditor();
+                        }
+                    }
+                }
+
                 switch (tag)
                 {
-                    case "Capture_0":
-                    case "Capture_1":
-                    case "Capture_2":
-                        // Execute workflow by index
-                        if (int.TryParse(tag.Replace("Capture_", ""), out int workflowIndex))
-                        {
-                            var workflows = SettingManager.WorkflowsConfig.Hotkeys.Take(3).ToList();
-                            if (workflowIndex < workflows.Count)
-                            {
-                                var workflow = workflows[workflowIndex];
-                                _ = ExecuteCaptureAsync(workflow.Job);
-                                NavigateToEditor();
-                            }
-                        }
-                        break;
                     case "Editor":
                         if (_editorView == null) _editorView = new EditorView();
                         contentFrame.Content = _editorView;
@@ -309,18 +323,41 @@ namespace XerahS.UI.Views
             this.Focus();
         }
 
-        private async Task ExecuteCaptureAsync(HotkeyType jobType, AfterCaptureTasks afterCapture = AfterCaptureTasks.SaveImageToFile, SkiaSharp.SKBitmap? image = null)
+        private async Task ExecuteCaptureAsync(HotkeyType jobType, string? workflowId = null, AfterCaptureTasks afterCapture = AfterCaptureTasks.SaveImageToFile, SkiaSharp.SKBitmap? image = null)
         {
             TaskSettings settings;
 
-            // Find an existing workflow for this job type
-            var workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(x => x.Job == jobType);
+            // Find an existing workflow - prefer by ID if provided, otherwise by job type
+            WorkflowSettings? workflow = null;
+
+            if (!string.IsNullOrEmpty(workflowId))
+            {
+                // Try to find by ID first
+                if (Application.Current is App app && app.WorkflowManager != null)
+                {
+                    workflow = app.WorkflowManager.GetWorkflowById(workflowId);
+                }
+
+                if (workflow == null)
+                {
+                    workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(x => x.Id == workflowId);
+                }
+            }
+
+            // Fallback to job type if no ID provided or not found
+            if (workflow == null)
+            {
+                workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(x => x.Job == jobType);
+            }
 
             if (workflow != null && workflow.TaskSettings != null)
             {
                 // Clone workflow settings to avoid modifying the original instance during execution
                 var json = Newtonsoft.Json.JsonConvert.SerializeObject(workflow.TaskSettings);
                 settings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json)!;
+
+                // Store the workflow ID in the task settings for troubleshooting
+                settings.WorkflowId = workflow.Id;
 
                 // Note: We deliberately ignore the 'afterCapture' parameter if a workflow is found,
                 // as the workflow's configured tasks should take precedence.
@@ -357,35 +394,8 @@ namespace XerahS.UI.Views
             var captureItem = this.FindControl<NavigationViewItem>("CaptureNavItem");
             if (captureItem == null) return;
 
-            // Clear existing items
-            captureItem.MenuItems.Clear();
-
-            // Get first 3 workflows
-            List<WorkflowSettings> workflows;
-            if (Application.Current is App app && app.WorkflowManager != null)
-            {
-                workflows = app.WorkflowManager.Workflows.Take(3).ToList();
-            }
-            else
-            {
-                workflows = SettingManager.WorkflowsConfig.Hotkeys.Take(3).ToList();
-            }
-
-            for (int i = 0; i < workflows.Count; i++)
-            {
-                var workflow = workflows[i];
-                var description = string.IsNullOrEmpty(workflow.TaskSettings.Description)
-                    ? XerahS.Common.EnumExtensions.GetDescription(workflow.Job)
-                    : workflow.TaskSettings.Description;
-
-                var navItem = new NavigationViewItem
-                {
-                    Content = description,
-                    Tag = $"Capture_{i}" // Use index-based tag
-                };
-
-                captureItem.MenuItems.Add(navItem);
-            }
+            // Use shared helper to update navigation items
+            NavigationItemsHelper.UpdateCaptureNavigationItems(captureItem);
         }
     }
 }

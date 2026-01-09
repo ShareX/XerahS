@@ -25,6 +25,7 @@
 
 using System.Diagnostics;
 using XerahS.Media;
+using XerahS.Common;
 
 namespace XerahS.ScreenCapture.ScreenRecording;
 
@@ -297,11 +298,87 @@ public class FFmpegRecordingService : IRecordingService
                 break;
         }
 
-        // Audio settings
+        // Stage 6: Audio capture support
         if (settings.CaptureSystemAudio || settings.CaptureMicrophone)
         {
-            // TODO: Add audio capture via dshow or other input
-            // For now, no audio in fallback mode (Stage 1)
+            if (OperatingSystem.IsWindows())
+            {
+                // Windows audio capture via dshow (DirectShow)
+                if (settings.CaptureSystemAudio)
+                {
+                    // WASAPI loopback for system audio (Windows Vista+)
+                    // Note: This captures the default audio output device
+                    args.Add("-f dshow");
+                    args.Add("-i audio=\"Stereo Mix\"");
+                    args.Add("-c:a aac");
+                    args.Add("-b:a 192k");
+
+                    DebugHelper.WriteLine("FFmpeg: Capturing system audio via Stereo Mix (dshow)");
+                    DebugHelper.WriteLine("  Note: Requires 'Stereo Mix' to be enabled in Windows Sound settings");
+                }
+                else if (settings.CaptureMicrophone)
+                {
+                    // Microphone capture
+                    if (!string.IsNullOrEmpty(settings.MicrophoneDeviceId))
+                    {
+                        args.Add("-f dshow");
+                        args.Add($"-i audio=\"{settings.MicrophoneDeviceId}\"");
+                    }
+                    else
+                    {
+                        // Use default microphone
+                        args.Add("-f dshow");
+                        args.Add("-i audio=\"@device_cm_{33D9A762-90C8-11D0-BD43-00A0C911CE86}\\wave_{00000000-0000-0000-0000-000000000000}\"");
+                    }
+                    args.Add("-c:a aac");
+                    args.Add("-b:a 192k");
+
+                    DebugHelper.WriteLine("FFmpeg: Capturing microphone audio via dshow");
+                }
+
+                // TODO: Mix both system audio and microphone requires filter_complex
+                // For Stage 6 MVP, we support one audio source at a time
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                // Linux audio capture via PulseAudio or ALSA
+                if (settings.CaptureSystemAudio)
+                {
+                    // PulseAudio loopback monitor
+                    args.Add("-f pulse");
+                    args.Add("-i default");
+                    args.Add("-c:a aac");
+                    args.Add("-b:a 192k");
+
+                    DebugHelper.WriteLine("FFmpeg: Capturing system audio via PulseAudio (Linux)");
+                }
+                else if (settings.CaptureMicrophone)
+                {
+                    // PulseAudio microphone
+                    args.Add("-f pulse");
+                    args.Add(!string.IsNullOrEmpty(settings.MicrophoneDeviceId)
+                        ? $"-i {settings.MicrophoneDeviceId}"
+                        : "-i default");
+                    args.Add("-c:a aac");
+                    args.Add("-b:a 192k");
+
+                    DebugHelper.WriteLine("FFmpeg: Capturing microphone via PulseAudio (Linux)");
+                }
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                // macOS audio capture via avfoundation
+                if (settings.CaptureSystemAudio || settings.CaptureMicrophone)
+                {
+                    // avfoundation for audio on macOS
+                    args.Add("-f avfoundation");
+                    args.Add("-i \":0\""); // Default audio device
+                    args.Add("-c:a aac");
+                    args.Add("-b:a 192k");
+
+                    DebugHelper.WriteLine("FFmpeg: Capturing audio via avfoundation (macOS)");
+                }
+            }
         }
 
         // Output options

@@ -25,17 +25,47 @@
                                     <CheckBox IsChecked="{Binding PlaySoundAfterCapture}" Content="Play sound after capture"/>
                                     <CheckBox IsChecked="{Binding PlaySoundAfterUpload}" Content="Play sound after upload"/>
                                     <CheckBox IsChecked="{Binding PlaySoundAfterAction}" Content="Play sound after action"/>
-                                    <CheckBox IsChecked="{Binding ShowToastNotification}" Content="Show toast notification after task completed" IsEnabled="False" ToolTip.Tip="Feature temporarily unavailable"/>
-                                    <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto" IsVisible="{Binding ShowToastNotification}" IsEnabled="False">
-                                         <TextBlock Grid.Column="0" Text="Duration:" VerticalAlignment="Center"/>
-                                         <NumericUpDown Grid.Column="2" Value="{Binding ToastWindowDuration}" Minimum="0.1" Maximum="30" Increment="0.5" FormatString="0.0" Width="100"/>
-                                         <TextBlock Grid.Column="4" Text="seconds" VerticalAlignment="Center"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto" IsVisible="{Binding ShowToastNotification}" IsEnabled="False">
-                                         <TextBlock Grid.Column="0" Text="Fade duration:" VerticalAlignment="Center"/>
-                                         <NumericUpDown Grid.Column="2" Value="{Binding ToastWindowFadeDuration}" Minimum="0" Maximum="5" Increment="0.1" FormatString="0.0" Width="100"/>
-                                         <TextBlock Grid.Column="4" Text="seconds" VerticalAlignment="Center"/>
-                                    </Grid>
+                                    <CheckBox IsChecked="{Binding ShowToastNotification}" Content="Show toast notification after task completed"/>
+                                    
+                                    <!-- Toast Settings -->
+                                    <StackPanel Spacing="10" Margin="20,0,0,0" IsVisible="{Binding ShowToastNotification}">
+                                        <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto, 20, Auto, 10, Auto, 10, Auto">
+                                             <TextBlock Grid.Column="0" Text="Duration:" VerticalAlignment="Center"/>
+                                             <NumericUpDown Grid.Column="2" Value="{Binding ToastWindowDuration}" Minimum="0.5" Maximum="30" Increment="0.5" FormatString="0.0" Width="80"/>
+                                             <TextBlock Grid.Column="4" Text="seconds" VerticalAlignment="Center"/>
+                                            
+                                             <TextBlock Grid.Column="6" Text="Fade duration:" VerticalAlignment="Center"/>
+                                             <NumericUpDown Grid.Column="8" Value="{Binding ToastWindowFadeDuration}" Minimum="0" Maximum="5" Increment="0.1" FormatString="0.0" Width="80"/>
+                                             <TextBlock Grid.Column="10" Text="seconds" VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <CheckBox IsChecked="{Binding ToastWindowAutoHide}" Content="Auto hide toast notification"/>
+
+                                        <Grid ColumnDefinitions="Auto, 10, *, 20, Auto, 10, Auto, 5, Auto, 5, Auto">
+                                            <TextBlock Grid.Column="0" Text="Placement:" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="2" ItemsSource="{Binding ContentAlignments}" SelectedItem="{Binding ToastWindowPlacement}" HorizontalAlignment="Stretch"/>
+                                            
+                                            <TextBlock Grid.Column="4" Text="Size:" VerticalAlignment="Center"/>
+                                            <NumericUpDown Grid.Column="6" Value="{Binding ToastWindowWidth}" Minimum="100" Maximum="2000" Increment="10" Width="80"/>
+                                            <TextBlock Grid.Column="8" Text="x" VerticalAlignment="Center"/>
+                                            <NumericUpDown Grid.Column="10" Value="{Binding ToastWindowHeight}" Minimum="50" Maximum="1000" Increment="10" Width="80"/>
+                                        </Grid>
+
+                                        <Grid ColumnDefinitions="Auto, 10, *">
+                                            <TextBlock Grid.Column="0" Text="Left click action:" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowLeftClickAction}" HorizontalAlignment="Stretch"/>
+                                        </Grid>
+
+                                        <Grid ColumnDefinitions="Auto, 10, *">
+                                            <TextBlock Grid.Column="0" Text="Middle click action:" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowMiddleClickAction}" HorizontalAlignment="Stretch"/>
+                                        </Grid>
+
+                                        <Grid ColumnDefinitions="Auto, 10, *">
+                                            <TextBlock Grid.Column="0" Text="Right click action:" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowRightClickAction}" HorizontalAlignment="Stretch"/>
+                                        </Grid>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -101,6 +131,14 @@
                                          <TextBlock Grid.Column="0" Text="Start delay:" VerticalAlignment="Center"/>
                                          <NumericUpDown Grid.Column="2" Value="{Binding ScreenRecordStartDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" Width="100"/>
                                          <TextBlock Grid.Column="4" Text="seconds" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="Auto, 10, *">
+                                         <TextBlock Grid.Column="0" Text="Recording intent:" VerticalAlignment="Center"/>
+                                         <ComboBox Grid.Column="2"
+                                                   ItemsSource="{Binding RecordingIntents}"
+                                                   SelectedItem="{Binding RecordingIntent}"
+                                                   HorizontalAlignment="Stretch"
+                                                   MinWidth="150"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
@@ -303,14 +341,31 @@
                  <TextBlock Text="Actions actions placeholder" Margin="20" Foreground="Gray"/>
             </TabItem>
 
-            <!-- Tools Tab -->
-            <TabItem Header="Tools">
-                 <TextBlock Text="Tools settings placeholder" Margin="20" Foreground="Gray"/>
-            </TabItem>
-            
              <!-- Advanced Tab -->
             <TabItem Header="Advanced">
                  <TextBlock Text="Advanced settings placeholder" Margin="20" Foreground="Gray"/>
+            </TabItem>
+
+            <!-- Tools Tab -->
+            <TabItem Header="Tools">
+                <ScrollViewer>
+                    <StackPanel Margin="20" Spacing="20">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Capture" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="Configure FFmpeg fallback options for screen recording and audio capture."
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"/>
+                                    <Button Content="Configure FFmpeg..."
+                                            Command="{Binding OpenFFmpegOptionsCommand}"
+                                            HorizontalAlignment="Left"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
     </Grid>

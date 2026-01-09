@@ -103,12 +103,34 @@ namespace XerahS.Platform.Abstractions
             private set => _uiService = value;
         }
 
+        private static IToastService? _toastService;
+        public static IToastService Toast
+        {
+            get => _toastService ?? throw new InvalidOperationException("Toast service not initialized. Call RegisterToastService() first.");
+            private set => _toastService = value;
+        }
+
+        /// <summary>
+        /// Checks if toast service has been initialized
+        /// </summary>
+        public static bool IsToastServiceInitialized => _toastService != null;
+
 
         /// <summary>
         /// Checks if platform services have been initialized
         /// </summary>
         public static bool IsInitialized =>
             _platformInfo != null && _screenService != null && _clipboardService != null && _windowService != null && _screenCaptureService != null && _hotkeyService != null && _inputService != null && _fontService != null;
+
+        /// <summary>
+        /// Initializes platform services with provided implementations
+        /// </summary>
+        private static ISystemService? _systemService;
+        public static ISystemService System
+        {
+            get => _systemService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
+            set => _systemService = value;
+        }
 
         /// <summary>
         /// Initializes platform services with provided implementations
@@ -122,6 +144,7 @@ namespace XerahS.Platform.Abstractions
             IHotkeyService hotkeyService,
             IInputService inputService,
             IFontService fontService,
+            ISystemService systemService,
             INotificationService? notificationService = null)
         {
             _platformInfo = platformInfo ?? throw new ArgumentNullException(nameof(platformInfo));
@@ -132,12 +155,21 @@ namespace XerahS.Platform.Abstractions
             _screenCaptureService = screenCaptureService ?? throw new ArgumentNullException(nameof(screenCaptureService));
             _hotkeyService = hotkeyService ?? throw new ArgumentNullException(nameof(hotkeyService));
             _fontService = fontService ?? throw new ArgumentNullException(nameof(fontService));
+            _systemService = systemService ?? throw new ArgumentNullException(nameof(systemService));
             _notificationService = notificationService;  // Optional - null means no native notifications
         }
 
         public static void RegisterUIService(IUIService uiService)
         {
             _uiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
+        }
+
+        /// <summary>
+        /// Registers the toast notification service
+        /// </summary>
+        public static void RegisterToastService(IToastService toastService)
+        {
+            _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
         }
 
 
@@ -155,6 +187,8 @@ namespace XerahS.Platform.Abstractions
             _hotkeyService = null;
             _fontService = null;
             _notificationService = null;
+            _toastService = null;
+            _systemService = null;
         }
     }
 }

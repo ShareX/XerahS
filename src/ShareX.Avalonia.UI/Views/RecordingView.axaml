@@ -80,7 +80,7 @@
                                    FontSize="16"
                                    FontWeight="SemiBold"/>
 
-                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="12" ColumnSpacing="16">
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="12" ColumnSpacing="16">
 
                             <!-- Codec -->
                             <TextBlock Grid.Row="0" Grid.Column="0"
@@ -124,9 +124,39 @@
                                       IsEnabled="{Binding !IsRecording}"
                                       Content="Include mouse cursor in recording"/>
 
+                            <!-- Stage 6: Audio Settings -->
+                            <!-- System Audio -->
+                            <TextBlock Grid.Row="4" Grid.Column="0"
+                                       Text="System Audio:"
+                                       VerticalAlignment="Center"/>
+                            <CheckBox Grid.Row="4" Grid.Column="1"
+                                      IsChecked="{Binding CaptureSystemAudio}"
+                                      IsEnabled="{Binding !IsRecording}"
+                                      Content="Capture system audio output"/>
+
+                            <!-- Microphone -->
+                            <TextBlock Grid.Row="5" Grid.Column="0"
+                                       Text="Microphone:"
+                                       VerticalAlignment="Center"/>
+                            <CheckBox Grid.Row="5" Grid.Column="1"
+                                      IsChecked="{Binding CaptureMicrophone}"
+                                      IsEnabled="{Binding !IsRecording}"
+                                      Content="Capture microphone input"/>
+
+                            <!-- Recording Intent -->
+                            <TextBlock Grid.Row="6" Grid.Column="0"
+                                       Text="Recording intent:"
+                                       VerticalAlignment="Center"/>
+                            <ComboBox Grid.Row="6" Grid.Column="1"
+                                      ItemsSource="{Binding AvailableRecordingIntents}"
+                                      SelectedItem="{Binding RecordingIntent}"
+                                      IsEnabled="{Binding !IsRecording}"
+                                      HorizontalAlignment="Stretch"
+                                      MinWidth="150"/>
+
                         </Grid>
 
-                        <TextBlock Text="Note: Higher bitrates and frame rates will result in larger file sizes. Hardware encoding may be used automatically if available."
+                        <TextBlock Text="Note: Higher bitrates and frame rates will result in larger file sizes. Hardware encoding may be used automatically if available. Audio capture requires FFmpeg and appropriate system audio devices."
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    FontSize="12"
                                    TextWrapping="Wrap"/>

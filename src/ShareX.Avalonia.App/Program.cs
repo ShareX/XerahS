@@ -119,12 +119,14 @@ namespace XerahS.App
                 var uiCaptureService = new XerahS.UI.Services.ScreenCaptureService(macCaptureService);
 
                 XerahS.Platform.MacOS.MacOSPlatform.Initialize(uiCaptureService);
+                XerahS.Platform.MacOS.MacOSPlatform.InitializeRecording(); // Stage 7: Cross-platform recording
                 return;
             }
 #elif LINUX
             if (OperatingSystem.IsLinux())
             {
                 XerahS.Platform.Linux.LinuxPlatform.Initialize();
+                XerahS.Platform.Linux.LinuxPlatform.InitializeRecording(); // Stage 7: Cross-platform recording
                 return;
             }
 #endif

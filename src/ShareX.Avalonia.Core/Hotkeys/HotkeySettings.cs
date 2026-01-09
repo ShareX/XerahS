@@ -35,6 +35,11 @@ namespace XerahS.Core.Hotkeys;
 public class WorkflowSettings
 {
     /// <summary>
+    /// Unique identifier for this workflow (SHA-1 hash)
+    /// </summary>
+    public string Id { get; set; } = string.Empty;
+
+    /// <summary>
     /// The key binding for this hotkey
     /// </summary>
     public HotkeyInfo HotkeyInfo { get; set; }
@@ -78,16 +83,45 @@ public class WorkflowSettings
     {
         TaskSettings.Job = job;
         HotkeyInfo = hotkeyInfo;
+        // Generate ID after properties are set
+        EnsureId();
     }
 
     public WorkflowSettings(HotkeyType job, Key key) : this()
     {
         TaskSettings.Job = job;
         HotkeyInfo = new HotkeyInfo(key);
+        // Generate ID after properties are set
+        EnsureId();
     }
 
     public override string ToString()
     {
         return $"{EnumExtensions.GetDescription(Job)}: {HotkeyInfo}";
+    }
+
+    /// <summary>
+    /// Generate a SHA-1 hash for this workflow based on its content
+    /// </summary>
+    public string GenerateId()
+    {
+        using var sha1 = System.Security.Cryptography.SHA1.Create();
+
+        // Create a unique string representation of the workflow
+        var workflowString = $"{Name ?? string.Empty}|{Job}|{Enabled}|{TaskSettings?.Job}|{TaskSettings?.Description ?? string.Empty}";
+
+        var hash = sha1.ComputeHash(System.Text.Encoding.UTF8.GetBytes(workflowString));
+        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, 8);
+    }
+
+    /// <summary>
+    /// Ensure this workflow has a valid Id, generating one if necessary
+    /// </summary>
+    public void EnsureId()
+    {
+        if (string.IsNullOrEmpty(Id))
+        {
+            Id = GenerateId();
+        }
     }
 }

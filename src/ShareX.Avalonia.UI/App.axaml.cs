@@ -34,6 +34,9 @@ public partial class App : Application
             // Register UI Service
             Platform.Abstractions.PlatformServices.RegisterUIService(new Services.AvaloniaUIService());
 
+            // Register Toast Service
+            Platform.Abstractions.PlatformServices.RegisterToastService(new Services.AvaloniaToastService());
+
             // Wire up Editor clipboard to platform implementation
             ShareX.Editor.Services.EditorServices.Clipboard = new Services.EditorClipboardAdapter();
 
@@ -102,38 +105,80 @@ public partial class App : Application
     private void OnWorkflowTaskCompleted(object? sender, Core.Tasks.WorkerTask task)
     {
         // Check if notification should be shown
-        var taskSettings = task.Info?.TaskSettings ?? SettingManager.Settings.DefaultTaskSettings;
+        var taskSettings = task.Info?.TaskSettings ?? new TaskSettings();
         if (taskSettings?.GeneralSettings?.ShowToastNotificationAfterTaskCompleted == true)
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 try
                 {
-                    var message = task.Info?.FileName ?? "Task completed";
-                    var title = "ShareX";
+                    var generalSettings = taskSettings.GeneralSettings;
+                    var filePath = task.Info?.FilePath;
+                    var url = task.Info?.Result?.URL ?? task.Info?.Result?.ShortenedURL;
+
+                    // Prepare toast title and text
+                    string? title = null;
+                    string? text = null;
 
                     if (task.Info?.Result?.IsError == true)
                     {
-                        title = "Upload Failed";
-                        message = task.Info.Result.ToString(); // Contains error message
+                        title = "Task Failed";
+                        text = task.Info.Result.ToString();
                     }
-                    else if (!string.IsNullOrEmpty(task.Info?.Result?.ShortenedURL))
+                    else if (!string.IsNullOrEmpty(url))
                     {
                         title = "Upload Completed";
-                        message = task.Info.Result.ShortenedURL;
+                        text = url;
+                    }
+                    else
+                    {
+                        title = "Task Completed";
+                        text = task.Info?.FileName ?? "Operation completed successfully.";
                     }
 
-                    DebugHelper.WriteLine($"Workflow completed: {message}");
-
-                    // Use platform notification service if available
-                    try
+                    // Determine image path for toast if file is an image
+                    string? imagePath = null;
+                    if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath) && FileHelpers.IsImageFile(filePath))
                     {
-                        PlatformServices.Notification.ShowNotification(title, message);
+                        imagePath = filePath;
                     }
-                    catch (InvalidOperationException)
+
+                    // Build toast configuration from settings
+                    var toastConfig = new ToastConfig
                     {
-                        // Notification service not available on this platform
-                        DebugHelper.WriteLine("Notification service not available.");
+                        Title = title,
+                        Text = text,
+                        ImagePath = imagePath,
+                        FilePath = filePath,
+                        URL = url,
+                        Duration = generalSettings.ToastWindowDuration,
+                        FadeDuration = generalSettings.ToastWindowFadeDuration,
+                        Placement = generalSettings.ToastWindowPlacement,
+                        Size = generalSettings.ToastWindowSize,
+                        LeftClickAction = MapToastClickAction(generalSettings.ToastWindowLeftClickAction),
+                        RightClickAction = MapToastClickAction(generalSettings.ToastWindowRightClickAction),
+                        MiddleClickAction = MapToastClickAction(generalSettings.ToastWindowMiddleClickAction),
+                        AutoHide = generalSettings.ToastWindowAutoHide
+                    };
+
+                    DebugHelper.WriteLine($"Showing toast: {title} - {text}");
+
+                    // Show toast using the toast service
+                    if (PlatformServices.IsToastServiceInitialized)
+                    {
+                        PlatformServices.Toast.ShowToast(toastConfig);
+                    }
+                    else
+                    {
+                        // Fallback to native notification
+                        try
+                        {
+                            PlatformServices.Notification.ShowNotification(title ?? "ShareX", text ?? "Task completed");
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            DebugHelper.WriteLine("Toast and notification services not available.");
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -200,7 +245,7 @@ public partial class App : Application
 
     private async void HotkeyManager_HotkeyTriggered(object? sender, Core.Hotkeys.WorkflowSettings settings)
     {
-        DebugHelper.WriteLine($"Hotkey triggered: {settings}");
+        DebugHelper.WriteLine($"Hotkey triggered: {settings} (ID: {settings?.Id ?? "null"})");
 
         bool isCaptureJob = settings.Job is Core.HotkeyType.PrintScreen
                                           or Core.HotkeyType.ActiveWindow
@@ -237,7 +282,32 @@ public partial class App : Application
             {
                 DebugHelper.WriteLine($"[DEBUG] Hotkey triggered for CustomWindow. Configured title: '{settings.TaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
             }
-            await Core.Helpers.TaskHelpers.ExecuteJob(settings.Job, settings.TaskSettings);
+
+            // Execute workflow with its ID for troubleshooting
+            await Core.Helpers.TaskHelpers.ExecuteWorkflow(settings, settings.Id);
         }
+    }
+
+    /// <summary>
+    /// Maps ToastClickAction from Core namespace to Platform.Abstractions namespace
+    /// </summary>
+    private static Platform.Abstractions.ToastClickAction MapToastClickAction(Core.ToastClickAction coreAction)
+    {
+        return coreAction switch
+        {
+            Core.ToastClickAction.CloseNotification => Platform.Abstractions.ToastClickAction.CloseNotification,
+            Core.ToastClickAction.AnnotateImage => Platform.Abstractions.ToastClickAction.AnnotateImage,
+            Core.ToastClickAction.CopyImageToClipboard => Platform.Abstractions.ToastClickAction.CopyImageToClipboard,
+            Core.ToastClickAction.CopyFile => Platform.Abstractions.ToastClickAction.CopyFile,
+            Core.ToastClickAction.CopyFilePath => Platform.Abstractions.ToastClickAction.CopyFilePath,
+            Core.ToastClickAction.CopyUrl => Platform.Abstractions.ToastClickAction.CopyUrl,
+            Core.ToastClickAction.OpenFile => Platform.Abstractions.ToastClickAction.OpenFile,
+            Core.ToastClickAction.OpenFolder => Platform.Abstractions.ToastClickAction.OpenFolder,
+            Core.ToastClickAction.OpenUrl => Platform.Abstractions.ToastClickAction.OpenUrl,
+            Core.ToastClickAction.Upload => Platform.Abstractions.ToastClickAction.Upload,
+            Core.ToastClickAction.PinToScreen => Platform.Abstractions.ToastClickAction.PinToScreen,
+            Core.ToastClickAction.DeleteFile => Platform.Abstractions.ToastClickAction.DeleteFile,
+            _ => Platform.Abstractions.ToastClickAction.CloseNotification
+        };
     }
 }
