@@ -25,6 +25,7 @@
 
 using XerahS.Common;
 using XerahS.ScreenCapture.ScreenRecording;
+using System.Runtime.InteropServices;
 
 namespace XerahS.Core.Managers;
 
@@ -98,7 +99,8 @@ public class ScreenRecordingManager
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
 
-        IRecordingService recordingService;
+        Exception? lastError = null;
+        bool preferFallback = ShouldForceFallback(options);
 
         lock (_lock)
         {
@@ -107,42 +109,52 @@ public class ScreenRecordingManager
                 throw new InvalidOperationException("A recording is already in progress. Stop the current recording before starting a new one.");
             }
 
-            // Create recording service
-            recordingService = new ScreenRecorderService();
-
-            // Wire up events
-            recordingService.StatusChanged += OnRecordingStatusChanged;
-            recordingService.ErrorOccurred += OnRecordingErrorOccurred;
-
-            _currentRecording = recordingService;
             _currentOptions = options;
         }
 
-        try
+        for (int attempt = 0; attempt < 2; attempt++)
         {
-            DebugHelper.WriteLine($"ScreenRecordingManager: Starting recording - Mode={options.Mode}, Codec={options.Settings?.Codec}, FPS={options.Settings?.FPS}");
-            await recordingService.StartRecordingAsync(options);
-        }
-        catch (Exception ex)
-        {
-            DebugHelper.WriteException(ex, "ScreenRecordingManager: Failed to start recording");
+            bool useFallback = preferFallback || attempt == 1;
+            var recordingService = CreateRecordingService(useFallback);
 
-            // Clean up on failure
             lock (_lock)
             {
-                if (recordingService != null)
-                {
-                    recordingService.StatusChanged -= OnRecordingStatusChanged;
-                    recordingService.ErrorOccurred -= OnRecordingErrorOccurred;
-                    recordingService.Dispose();
-                }
-
-                _currentRecording = null;
-                _currentOptions = null;
+                _currentRecording = recordingService;
             }
 
-            throw;
+            try
+            {
+                WireRecordingEvents(recordingService);
+                DebugHelper.WriteLine($"ScreenRecordingManager: Starting {(useFallback ? "fallback (FFmpeg)" : "native")} recording - Mode={options.Mode}, Codec={options.Settings?.Codec}, FPS={options.Settings?.FPS}");
+                await recordingService.StartRecordingAsync(options);
+                return;
+            }
+            catch (Exception ex) when (!useFallback && CanFallbackFrom(ex))
+            {
+                DebugHelper.WriteException(ex, "ScreenRecordingManager: Native recording failed, attempting FFmpeg fallback...");
+                lastError = ex;
+                CleanupCurrentRecording(recordingService);
+                preferFallback = true;
+            }
+            catch
+            {
+                CleanupCurrentRecording(recordingService);
+                lock (_lock)
+                {
+                    _currentOptions = null;
+                    _currentRecording = null;
+                }
+                throw;
+            }
         }
+
+        lock (_lock)
+        {
+            _currentOptions = null;
+            _currentRecording = null;
+        }
+
+        throw lastError ?? new InvalidOperationException("Recording failed and no fallback recording service is available.");
     }
 
     /// <summary>
@@ -191,9 +203,7 @@ public class ScreenRecordingManager
             {
                 if (recordingService != null)
                 {
-                    recordingService.StatusChanged -= OnRecordingStatusChanged;
-                    recordingService.ErrorOccurred -= OnRecordingErrorOccurred;
-                    recordingService.Dispose();
+                    CleanupCurrentRecording(recordingService);
                 }
 
                 _currentRecording = null;
@@ -241,14 +251,70 @@ public class ScreenRecordingManager
             {
                 if (recordingService != null)
                 {
-                    recordingService.StatusChanged -= OnRecordingStatusChanged;
-                    recordingService.ErrorOccurred -= OnRecordingErrorOccurred;
-                    recordingService.Dispose();
+                    CleanupCurrentRecording(recordingService);
                 }
 
                 _currentRecording = null;
                 _currentOptions = null;
             }
+        }
+    }
+
+    private static IRecordingService CreateRecordingService(bool useFallback)
+    {
+        if (useFallback)
+        {
+            if (ScreenRecorderService.FallbackServiceFactory != null)
+            {
+                return ScreenRecorderService.FallbackServiceFactory();
+            }
+
+            return new FFmpegRecordingService();
+        }
+
+        return new ScreenRecorderService();
+    }
+
+    private static bool ShouldForceFallback(RecordingOptions options)
+    {
+        var settings = options.Settings;
+
+        if (settings?.ForceFFmpeg == true)
+        {
+            return true;
+        }
+
+        // Audio capture currently routes through FFmpeg fallback
+        if (settings is not null && (settings.CaptureSystemAudio || settings.CaptureMicrophone))
+        {
+            return true;
+        }
+
+        return ScreenRecorderService.CaptureSourceFactory == null || ScreenRecorderService.EncoderFactory == null;
+    }
+
+    private static bool CanFallbackFrom(Exception ex)
+    {
+        return ex is PlatformNotSupportedException || ex is COMException;
+    }
+
+    private void WireRecordingEvents(IRecordingService recordingService)
+    {
+        recordingService.StatusChanged += OnRecordingStatusChanged;
+        recordingService.ErrorOccurred += OnRecordingErrorOccurred;
+    }
+
+    private void CleanupCurrentRecording(IRecordingService recordingService)
+    {
+        try
+        {
+            recordingService.StatusChanged -= OnRecordingStatusChanged;
+            recordingService.ErrorOccurred -= OnRecordingErrorOccurred;
+            recordingService.Dispose();
+        }
+        catch
+        {
+            // Best effort cleanup
         }
     }
 
@@ -270,9 +336,7 @@ public class ScreenRecordingManager
             {
                 if (_currentRecording != null)
                 {
-                    _currentRecording.StatusChanged -= OnRecordingStatusChanged;
-                    _currentRecording.ErrorOccurred -= OnRecordingErrorOccurred;
-                    _currentRecording.Dispose();
+                    CleanupCurrentRecording(_currentRecording);
                 }
 
                 _currentRecording = null;

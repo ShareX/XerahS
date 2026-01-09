@@ -353,6 +353,13 @@ namespace XerahS.Core.Tasks
                 Directory.CreateDirectory(recordingsPath);
                 recordingOptions.OutputPath = Path.Combine(recordingsPath, $"Recording_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4");
 
+                if (recordingOptions.Settings != null &&
+                    (recordingOptions.Settings.CaptureSystemAudio || recordingOptions.Settings.CaptureMicrophone))
+                {
+                    // Force FFmpeg path until native audio capture is implemented
+                    recordingOptions.Settings.ForceFFmpeg = true;
+                }
+
                 DebugHelper.WriteLine($"Starting recording: Mode={mode}, Codec={recordingOptions.Settings?.Codec}, FPS={recordingOptions.Settings?.FPS}");
                 DebugHelper.WriteLine($"Output path: {recordingOptions.OutputPath}");
 

@@ -254,7 +254,9 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
                     ShowCursor = ShowCursor,
                     // Stage 6: Audio settings
                     CaptureSystemAudio = CaptureSystemAudio,
-                    CaptureMicrophone = CaptureMicrophone
+                    CaptureMicrophone = CaptureMicrophone,
+                    // Route audio capture through FFmpeg until native audio is available
+                    ForceFFmpeg = CaptureSystemAudio || CaptureMicrophone
                 }
             };
 
