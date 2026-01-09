@@ -27,7 +27,8 @@ namespace XerahS.Platform.Linux
                 screenCaptureService: screenCaptureService,
                 hotkeyService: new StubHotkeyService(),
                 inputService: new StubInputService(),
-                fontService: new StubFontService()
+                fontService: new StubFontService(),
+                systemService: new Services.LinuxSystemService()
             );
         }
 

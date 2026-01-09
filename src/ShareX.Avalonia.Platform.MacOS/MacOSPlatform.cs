@@ -57,7 +57,8 @@ namespace XerahS.Platform.MacOS
                 screenCaptureService: screenCaptureService,
                 hotkeyService: new MacOSHotkeyService(),
                 inputService: new MacOSInputService(),
-                fontService: new MacOSFontService()
+                fontService: new MacOSFontService(),
+                systemService: new MacOSSystemService()
             );
         }
 

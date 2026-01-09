@@ -125,6 +125,16 @@ namespace XerahS.Platform.Abstractions
         /// <summary>
         /// Initializes platform services with provided implementations
         /// </summary>
+        private static ISystemService? _systemService;
+        public static ISystemService System
+        {
+            get => _systemService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
+            set => _systemService = value;
+        }
+
+        /// <summary>
+        /// Initializes platform services with provided implementations
+        /// </summary>
         public static void Initialize(
             IPlatformInfo platformInfo,
             IScreenService screenService,
@@ -134,6 +144,7 @@ namespace XerahS.Platform.Abstractions
             IHotkeyService hotkeyService,
             IInputService inputService,
             IFontService fontService,
+            ISystemService systemService,
             INotificationService? notificationService = null)
         {
             _platformInfo = platformInfo ?? throw new ArgumentNullException(nameof(platformInfo));
@@ -144,6 +155,7 @@ namespace XerahS.Platform.Abstractions
             _screenCaptureService = screenCaptureService ?? throw new ArgumentNullException(nameof(screenCaptureService));
             _hotkeyService = hotkeyService ?? throw new ArgumentNullException(nameof(hotkeyService));
             _fontService = fontService ?? throw new ArgumentNullException(nameof(fontService));
+            _systemService = systemService ?? throw new ArgumentNullException(nameof(systemService));
             _notificationService = notificationService;  // Optional - null means no native notifications
         }
 
@@ -176,6 +188,7 @@ namespace XerahS.Platform.Abstractions
             _fontService = null;
             _notificationService = null;
             _toastService = null;
+            _systemService = null;
         }
     }
 }
