@@ -13,7 +13,9 @@
       "Bash(if [ ! -d \"docs/analysis\" ])",
       "Bash(then mkdir -p docs/analysis)",
       "Bash(else echo \"docs/analysis directory already exists\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(dotnet --version:*)",
+      "Bash(dotnet sln:*)"
     ]
   }
 }
