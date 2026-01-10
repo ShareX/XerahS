@@ -151,6 +151,54 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Platform-specific feature description
+    /// </summary>
+    public string FeatureDescription
+    {
+        get
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return "Record your screen to MP4 video using native Windows.Graphics.Capture";
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                return "Record your screen to MP4 video using FFmpeg";
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                return "Record your screen to MP4 video using FFmpeg";
+            }
+            else
+            {
+                return "Record your screen to MP4 video";
+            }
+        }
+    }
+
+    /// <summary>
+    /// Platform-specific usage notes
+    /// </summary>
+    public string UsageNotes
+    {
+        get
+        {
+            if (OperatingSystem.IsWindows() && Environment.OSVersion.Version.Build >= 17134)
+            {
+                return "Note: Recording uses Windows.Graphics.Capture (Windows 10 1803+) with Media Foundation H.264 encoding.";
+            }
+            else if (OperatingSystem.IsWindows())
+            {
+                return "Note: Recording uses FFmpeg for video encoding. Requires Windows 10 1803+ for native Windows.Graphics.Capture support.";
+            }
+            else
+            {
+                return "Note: Recording uses FFmpeg for video encoding. Ensure FFmpeg is installed and accessible in your system PATH.";
+            }
+        }
+    }
+
     public RecordingViewModel()
     {
         Current = this;

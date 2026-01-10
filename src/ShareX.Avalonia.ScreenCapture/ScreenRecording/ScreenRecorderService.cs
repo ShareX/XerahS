@@ -23,8 +23,11 @@
 
 #endregion License Information (GPL v3)
 using System.Runtime.InteropServices;
-
 using System.Diagnostics;
+using System.IO;
+using System.Drawing;
+using System.Drawing.Imaging;
+using XerahS.Common;
 
 namespace XerahS.ScreenCapture.ScreenRecording;
 
@@ -60,6 +63,12 @@ public class ScreenRecorderService : IRecordingService
     /// Set during platform initialization (Stage 4)
     /// </summary>
     public static Func<IRecordingService>? FallbackServiceFactory { get; set; }
+
+    /// <summary>
+    /// Debug: dump the first captured frame to disk for orientation analysis.
+    /// </summary>
+    public static bool DebugDumpFirstFrame { get; set; } = false;
+    private static bool _debugFrameDumped = false;
 
     public event EventHandler<RecordingErrorEventArgs>? ErrorOccurred;
     public event EventHandler<RecordingStatusEventArgs>? StatusChanged;
@@ -97,12 +106,13 @@ public class ScreenRecorderService : IRecordingService
             if (EncoderFactory == null)
             {
                 throw new InvalidOperationException("EncoderFactory not set. Platform initialization missing.");
-            }
+        }
 
             _encoder = EncoderFactory();
 
             // Determine output path
             string outputPath = GetOutputPath(options);
+            DebugHelper.WriteLine($"[ScreenRecorder] Output path resolved: {outputPath}");
 
             // Configure video format
             var videoFormat = new VideoFormat
@@ -152,6 +162,8 @@ public class ScreenRecorderService : IRecordingService
     {
         ICaptureSource? captureSource;
         IVideoEncoder? encoder;
+        string? outputPath;
+        TimeSpan elapsed;
 
         lock (_lock)
         {
@@ -165,7 +177,11 @@ public class ScreenRecorderService : IRecordingService
 
             captureSource = _captureSource;
             encoder = _encoder;
+            outputPath = _currentOptions?.OutputPath;
+            elapsed = _stopwatch.Elapsed;
         }
+
+        DebugHelper.WriteLine($"[ScreenRecorder] StopRecordingAsync invoked. Duration={elapsed.TotalSeconds:F2}s, outputPath={outputPath ?? "(null)"}");
 
         try
         {
@@ -180,6 +196,18 @@ public class ScreenRecorderService : IRecordingService
             // Finalize encoder
             encoder?.Finalize();
             encoder?.Dispose();
+
+            if (!string.IsNullOrEmpty(outputPath))
+            {
+                var info = new FileInfo(outputPath);
+                DebugHelper.WriteLine($"[ScreenRecorder] Output validation: exists={info.Exists}, size={info.Length} bytes");
+
+                // [2026-01-10T14:02:37+08:00] Fail fast on zero-byte recordings observed intermittently; outcome (2026-01-10T14:09:06+08:00) validated mp4 > 0 bytes after guarded finalize.
+                if (!info.Exists || info.Length <= 0)
+                {
+                    throw new InvalidOperationException($"Recording output invalid (exists={info.Exists}, size={info.Length}) for {outputPath}");
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -248,6 +276,8 @@ public class ScreenRecorderService : IRecordingService
     private void OnFrameCaptured(object? sender, FrameArrivedEventArgs e)
     {
         if (_disposed || _status != RecordingStatus.Recording) return;
+        
+        System.Console.WriteLine("SRS: OnFrameCaptured called"); // Low-level trace
 
         FrameData? croppedFrame = null;
         try
@@ -269,10 +299,17 @@ public class ScreenRecorderService : IRecordingService
                 }
             }
 
+            if (DebugDumpFirstFrame && !_debugFrameDumped)
+            {
+                DumpFrame(frameToEncode, "capture");
+                _debugFrameDumped = true;
+            }
+
             _encoder?.WriteFrame(frameToEncode);
         }
         catch (Exception ex)
         {
+            System.Console.WriteLine($"SRS: Error in OnFrameCaptured: {ex.Message}");
             HandleFatalError(ex, true);
         }
         finally
@@ -391,5 +428,26 @@ public class ScreenRecorderService : IRecordingService
         }
 
         GC.SuppressFinalize(this);
+    }
+
+    private static void DumpFrame(FrameData frame, string tag)
+    {
+        try
+        {
+            string dumpDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ShareX", "Recordings", "FrameDumps");
+            Directory.CreateDirectory(dumpDir);
+
+            string fileName = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss-fff}_{tag}_{frame.Width}x{frame.Height}.png";
+            string path = Path.Combine(dumpDir, fileName);
+
+            using var bitmap = new Bitmap(frame.Width, frame.Height, frame.Stride, System.Drawing.Imaging.PixelFormat.Format32bppArgb, frame.DataPtr);
+            bitmap.Save(path, ImageFormat.Png);
+
+            DebugHelper.WriteLine($"[ScreenRecorder] Dumped frame to {path}");
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteLine($"[ScreenRecorder] Frame dump failed: {ex.Message}");
+        }
     }
 }

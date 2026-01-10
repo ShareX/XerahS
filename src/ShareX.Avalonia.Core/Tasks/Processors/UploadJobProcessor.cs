@@ -26,8 +26,7 @@ namespace XerahS.Core.Tasks.Processors
 
             token.ThrowIfCancellationRequested();
 
-            DebugHelper.WriteLine($"Starting upload for {info.FileName}...");
-            DebugHelper.WriteLine($"Upload data type: {info.DataType}, FilePath: {info.FilePath}");
+            DebugHelper.WriteLine($"[UploadTrace {info.CorrelationId}] Starting upload; dataType={info.DataType}, filePath=\"{info.FilePath}\", fileName=\"{info.FileName}\"");
             DebugHelper.WriteLine($"Image destination: {info.TaskSettings.ImageDestination}");
 
             // Wrap legacy synchronous upload in Task.Run
@@ -39,7 +38,8 @@ namespace XerahS.Core.Tasks.Processors
 
                 if (result.IsSuccess)
                 {
-                    DebugHelper.WriteLine($"Upload successful: {result.URL}");
+                    info.Metadata.UploadURL = result.URL;
+                    DebugHelper.WriteLine($"[UploadTrace {info.CorrelationId}] Upload successful: {result.URL}");
                     await HandleAfterUploadTasksAsync(info, result, token);
                 }
                 else
@@ -69,8 +69,7 @@ namespace XerahS.Core.Tasks.Processors
                 }
                 else if (info.DataType == EDataType.File)
                 {
-                    // Return UploadFile(info);
-                    return null; // TODO implement file
+                    return UploadFile(info);
                 }
             }
             catch (Exception ex)
@@ -119,6 +118,39 @@ namespace XerahS.Core.Tasks.Processors
             return UploadImageWithPluginSystem(info) ??
                 new UploadResult { IsSuccess = false, Response = "Uploader service not found or initialization failed." };
 
+        }
+
+        private UploadResult? UploadFile(TaskInfo info)
+        {
+            var destination = info.TaskSettings.GetFileDestinationByDataType(info.DataType);
+
+            if (UploaderFactory.FileUploaderServices.TryGetValue(destination, out var service))
+            {
+                var helper = new TaskReferenceHelper()
+                {
+                    DataType = EDataType.File,
+                    StopRequested = false,
+                    OverrideFTP = info.TaskSettings.OverrideFTP,
+                    FTPIndex = info.TaskSettings.FTPIndex,
+                    OverrideCustomUploader = info.TaskSettings.OverrideCustomUploader,
+                    CustomUploaderIndex = info.TaskSettings.CustomUploaderIndex
+                };
+
+                var uploader = service.CreateUploader(SettingManager.UploadersConfig, helper);
+
+                if (!string.IsNullOrEmpty(info.FilePath))
+                {
+                    return uploader switch
+                    {
+                        FileUploader fileUploader => fileUploader.UploadFile(info.FilePath),
+                        GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
+                        _ => null
+                    };
+                }
+            }
+
+            DebugHelper.WriteLine($"No legacy file uploader service found for destination: {destination}");
+            return new UploadResult { IsSuccess = false, Response = $"File uploader not found for {destination}" };
         }
 
         private UploadResult? UploadImageWithPluginSystem(TaskInfo info)

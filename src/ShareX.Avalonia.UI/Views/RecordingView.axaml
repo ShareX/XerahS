@@ -16,10 +16,10 @@
         
         <!-- Header -->
         <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,24">
-            <TextBlock Text="Screen Recording" 
-                       FontSize="28" 
+            <TextBlock Text="Screen Recording"
+                       FontSize="28"
                        FontWeight="SemiBold"/>
-            <TextBlock Text="Record your screen to MP4 video using native Windows.Graphics.Capture"
+            <TextBlock Text="{Binding FeatureDescription}"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
         </StackPanel>
         
@@ -199,8 +199,8 @@
                             <TextBlock Text="2. Perform actions you want to capture"/>
                             <TextBlock Text="3. Click 'Stop' to end recording and save the video"/>
                         </StackPanel>
-                        
-                        <TextBlock Text="Note: Recording uses Windows.Graphics.Capture (Windows 10 1803+) with Media Foundation H.264 encoding."
+
+                        <TextBlock Text="{Binding UsageNotes}"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    FontSize="12"
                                    TextWrapping="Wrap"

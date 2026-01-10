@@ -43,6 +43,13 @@ public class ScreenRecordingManager
     private readonly object _lock = new();
     private IRecordingService? _currentRecording;
     private RecordingOptions? _currentOptions;
+    private TaskCompletionSource<bool>? _stopSignal;
+
+    /// <summary>
+    /// Task representing platform-specific recording initialization.
+    /// Set by the application startup code and awaited before starting recording.
+    /// </summary>
+    public static System.Threading.Tasks.Task? PlatformInitializationTask { get; set; }
 
     private ScreenRecordingManager()
     {
@@ -92,6 +99,34 @@ public class ScreenRecordingManager
     }
 
     /// <summary>
+    /// Signals the current recording task to stop.
+    /// Used by the hotkey handler to resume the waiting WorkerTask.
+    /// </summary>
+    public void SignalStop()
+    {
+        lock (_lock)
+        {
+            _stopSignal?.TrySetResult(true);
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously waits for the Stop signal.
+    /// Called by the WorkerTask to yield execution while recording.
+    /// </summary>
+    public Task WaitForStopSignalAsync()
+    {
+        lock (_lock)
+        {
+            if (_stopSignal == null || _stopSignal.Task.IsCompleted)
+            {
+                _stopSignal = new TaskCompletionSource<bool>();
+            }
+            return _stopSignal.Task;
+        }
+    }
+
+    /// <summary>
     /// Starts a new recording session
     /// </summary>
     /// <param name="options">Recording configuration</param>
@@ -99,6 +134,10 @@ public class ScreenRecordingManager
     public async Task StartRecordingAsync(RecordingOptions options)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
+
+        // Wait for platform recording initialization to complete if it's still running
+        // This ensures factories are set up before we try to create recording services
+        await EnsureRecordingInitialized();
 
         Exception? lastError = null;
         bool preferFallback = ShouldForceFallback(options);
@@ -111,6 +150,8 @@ public class ScreenRecordingManager
             }
 
             _currentOptions = options;
+            // Reset stop signal for new session
+            _stopSignal = new TaskCompletionSource<bool>();
         }
 
         for (int attempt = 0; attempt < 2; attempt++)
@@ -188,6 +229,9 @@ public class ScreenRecordingManager
         {
             DebugHelper.WriteLine("ScreenRecordingManager: Stopping recording...");
             await recordingService.StopRecordingAsync();
+            
+            // Ensure waiting tasks are signaled
+            SignalStop();
 
             // Notify completion
             if (!string.IsNullOrEmpty(outputPath))
@@ -287,16 +331,30 @@ public class ScreenRecordingManager
 
         if (settings?.ForceFFmpeg == true)
         {
+            TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "ForceFFmpeg setting is enabled -> using FFmpeg");
             return true;
         }
 
         // Audio capture currently routes through FFmpeg fallback
         if (settings is not null && (settings.CaptureSystemAudio || settings.CaptureMicrophone))
         {
+            TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "Audio capture requested -> using FFmpeg");
             return true;
         }
 
-        return ScreenRecorderService.CaptureSourceFactory == null || ScreenRecorderService.EncoderFactory == null;
+        bool captureFactoryNull = ScreenRecorderService.CaptureSourceFactory == null;
+        bool encoderFactoryNull = ScreenRecorderService.EncoderFactory == null;
+
+        TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", $"Factory status: CaptureSourceFactory={(captureFactoryNull ? "NULL" : "SET")}, EncoderFactory={(encoderFactoryNull ? "NULL" : "SET")}");
+
+        if (captureFactoryNull || encoderFactoryNull)
+        {
+            TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "✗ Factories not initialized -> forcing FFmpeg fallback");
+            return true;
+        }
+
+        TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "✓ Factories initialized -> using native recording");
+        return false;
     }
 
     private static bool CanFallbackFrom(Exception ex)
@@ -348,6 +406,30 @@ public class ScreenRecordingManager
                 _currentRecording = null;
                 _currentOptions = null;
             }
+        }
+    }
+
+    /// <summary>
+    /// Ensures platform recording initialization has completed before starting recording.
+    /// Waits for the async initialization task if it's still running.
+    /// </summary>
+    private static async Task EnsureRecordingInitialized()
+    {
+        try
+        {
+            var initTask = PlatformInitializationTask;
+
+            if (initTask != null && !initTask.IsCompleted)
+            {
+                DebugHelper.WriteLine("ScreenRecordingManager: Waiting for recording initialization to complete...");
+                await initTask;
+                DebugHelper.WriteLine("ScreenRecordingManager: Recording initialization wait completed");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Initialization failed, but we can still continue with fallback
+            DebugHelper.WriteException(ex, "ScreenRecordingManager: Error waiting for recording initialization");
         }
     }
 }

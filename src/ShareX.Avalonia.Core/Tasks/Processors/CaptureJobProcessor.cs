@@ -115,6 +115,13 @@ namespace XerahS.Core.Tasks.Processors
             // though here we are already on background thread from WorkerTask.
 
             string? filePath = TaskHelpers.SaveImageAsFile(bmp, info.TaskSettings);
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                var directory = Path.GetDirectoryName(filePath) ?? "";
+                var fileName = Path.GetFileName(filePath);
+                var extension = Path.GetExtension(filePath);
+                DebugHelper.WriteLine($"[PathTrace {info.CorrelationId}] SaveImageToFile: dir=\"{directory}\", fileName=\"{fileName}\", ext=\"{extension}\", fullPath=\"{filePath}\"");
+            }
 
             if (!string.IsNullOrEmpty(filePath))
             {
