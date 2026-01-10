@@ -9,6 +9,7 @@ using Avalonia.Input;
 using ShareX.Avalonia.UI.Services;
 using ShareX.Avalonia.Platform.Abstractions.Capture;
 using SkiaSharp;
+using XerahS.Core.Helpers;
 
 namespace XerahS.UI.Views.RegionCapture
 {
@@ -44,7 +45,7 @@ namespace XerahS.UI.Views.RegionCapture
 
             try
             {
-                DebugLog("INIT", "Initializing NEW capture backend");
+                TroubleshootingHelper.Log("RegionCapture","INIT", "Initializing NEW capture backend");
 
                 // Create platform-specific backend
                 IRegionCaptureBackend backend;
@@ -69,7 +70,7 @@ namespace XerahS.UI.Views.RegionCapture
                 else
 #endif
                 {
-                    DebugLog("ERROR", "Unsupported platform for new backend");
+                    TroubleshootingHelper.Log("RegionCapture","ERROR", "Unsupported platform for new backend");
                     return false;
                 }
 
@@ -77,27 +78,27 @@ namespace XerahS.UI.Views.RegionCapture
                 _newMonitors = _newCaptureService.GetMonitors();
                 _newVirtualDesktopLogical = _newCaptureService.GetVirtualDesktopBoundsLogical();
 
-                DebugLog("INIT", $"NEW backend initialized successfully with {_newMonitors.Length} monitors");
+                TroubleshootingHelper.Log("RegionCapture","INIT", $"NEW backend initialized successfully with {_newMonitors.Length} monitors");
 
                 var capabilities = _newCaptureService.GetCapabilities();
-                DebugLog("INIT", $"Backend: {capabilities.BackendName} {capabilities.Version}");
-                DebugLog("INIT", $"  HW Accel: {capabilities.SupportsHardwareAcceleration}");
-                DebugLog("INIT", $"  Per-Mon DPI: {capabilities.SupportsPerMonitorDpi}");
+                TroubleshootingHelper.Log("RegionCapture","INIT", $"Backend: {capabilities.BackendName} {capabilities.Version}");
+                TroubleshootingHelper.Log("RegionCapture","INIT", $"  HW Accel: {capabilities.SupportsHardwareAcceleration}");
+                TroubleshootingHelper.Log("RegionCapture","INIT", $"  Per-Mon DPI: {capabilities.SupportsPerMonitorDpi}");
 
                 foreach (var monitor in _newMonitors)
                 {
-                    DebugLog("MONITOR", $"{monitor.Name}:");
-                    DebugLog("MONITOR", $"  Physical: {monitor.Bounds}");
-                    DebugLog("MONITOR", $"  Scale: {monitor.ScaleFactor}x ({monitor.PhysicalDpi:F0} DPI)");
-                    DebugLog("MONITOR", $"  Primary: {monitor.IsPrimary}");
+                    TroubleshootingHelper.Log("RegionCapture","MONITOR", $"{monitor.Name}:");
+                    TroubleshootingHelper.Log("RegionCapture","MONITOR", $"  Physical: {monitor.Bounds}");
+                    TroubleshootingHelper.Log("RegionCapture","MONITOR", $"  Scale: {monitor.ScaleFactor}x ({monitor.PhysicalDpi:F0} DPI)");
+                    TroubleshootingHelper.Log("RegionCapture","MONITOR", $"  Primary: {monitor.IsPrimary}");
                 }
 
                 return true;
             }
             catch (Exception ex)
             {
-                DebugLog("ERROR", $"Failed to initialize new backend: {ex.Message}");
-                DebugLog("ERROR", $"Stack: {ex.StackTrace}");
+                TroubleshootingHelper.Log("RegionCapture","ERROR", $"Failed to initialize new backend: {ex.Message}");
+                TroubleshootingHelper.Log("RegionCapture","ERROR", $"Stack: {ex.StackTrace}");
                 return false;
             }
         }
@@ -110,15 +111,15 @@ namespace XerahS.UI.Views.RegionCapture
         {
             if (_newCaptureService == null)
             {
-                DebugLog("ERROR", "PositionWindowWithNewBackend called but service is null");
+                TroubleshootingHelper.Log("RegionCapture","ERROR", "PositionWindowWithNewBackend called but service is null");
                 return;
             }
 
-            DebugLog("WINDOW", "=== Using NEW backend for positioning ===");
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", "=== Using NEW backend for positioning ===");
 
             // Get virtual desktop bounds in logical coordinates
             var logicalBounds = _newVirtualDesktopLogical;
-            DebugLog("WINDOW", $"Virtual desktop logical: {logicalBounds}");
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Virtual desktop logical: {logicalBounds}");
 
             // Position window (Avalonia uses logical coordinates for Position)
             Position = new PixelPoint(
@@ -129,15 +130,15 @@ namespace XerahS.UI.Views.RegionCapture
             Width = logicalBounds.Width;
             Height = logicalBounds.Height;
 
-            DebugLog("WINDOW", $"Window positioned at: {Position}");
-            DebugLog("WINDOW", $"Window size: {Width}x{Height}");
-            DebugLog("WINDOW", $"RenderScaling: {RenderScaling}");
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Window positioned at: {Position}");
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Window size: {Width}x{Height}");
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"RenderScaling: {RenderScaling}");
 
             // Log physical bounds for comparison
             var physicalBounds = _newCaptureService.GetVirtualDesktopBoundsPhysical();
-            DebugLog("WINDOW", $"Virtual desktop physical: {physicalBounds}");
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Virtual desktop physical: {physicalBounds}");
 
-            DebugLog("WINDOW", "=== NEW backend positioning complete ===");
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", "=== NEW backend positioning complete ===");
         }
 
         /// <summary>
@@ -149,35 +150,30 @@ namespace XerahS.UI.Views.RegionCapture
             if (_newCaptureService == null)
                 throw new InvalidOperationException("New capture service not initialized");
 
-            // Convert window-local logical to absolute logical
-            var absoluteLogical = new LogicalPoint(
-                logicalWindowPos.X + _newVirtualDesktopLogical.X,
-                logicalWindowPos.Y + _newVirtualDesktopLogical.Y);
+            // Convert window-local logical to absolute physical
+            // FIX (Round 2): Apply RenderScaling to logical coordinates before adding to physical Position
+            // This fixes the "to the left" offset when RenderScaling > 1
+            var physicalX = Position.X + (logicalWindowPos.X * RenderScaling);
+            var physicalY = Position.Y + (logicalWindowPos.Y * RenderScaling);
 
-            // Convert to physical
-            var physical = _newCaptureService.LogicalToPhysical(absoluteLogical);
-
-            return new SKPointI(physical.X, physical.Y);
+            return new SKPointI((int)Math.Round(physicalX), (int)Math.Round(physicalY));
         }
 
         /// <summary>
         /// NEW: Convert physical point to logical using new backend.
-        /// For window-local coordinates, subtract virtual desktop origin.
+        /// For window-local coordinates, subtract window position.
         /// </summary>
         private Point ConvertPhysicalToLogicalNew(SKPointI physicalScreen)
         {
             if (_newCaptureService == null)
                 throw new InvalidOperationException("New capture service not initialized");
 
-            // Convert to logical absolute
-            var absoluteLogical = _newCaptureService.PhysicalToLogical(
-                new PhysicalPoint(physicalScreen.X, physicalScreen.Y));
+            // Convert absolute physical to window-local logical
+            // FIX (Round 2): Subtract physical Position then unscale by RenderScaling
+            var logicalX = (physicalScreen.X - Position.X) / RenderScaling;
+            var logicalY = (physicalScreen.Y - Position.Y) / RenderScaling;
 
-            // Convert to window-local logical
-            var windowLocalX = absoluteLogical.X - _newVirtualDesktopLogical.X;
-            var windowLocalY = absoluteLogical.Y - _newVirtualDesktopLogical.Y;
-
-            return new Point(windowLocalX, windowLocalY);
+            return new Point(logicalX, logicalY);
         }
 
         /// <summary>
@@ -193,11 +189,18 @@ namespace XerahS.UI.Views.RegionCapture
             _startPointPhysical = physical;
             _startPointLogical = logicalPos;
 
-            DebugLog("INPUT", $"[NEW] Pressed: Window-local={logicalPos}, Physical={physical}");
+            TroubleshootingHelper.Log("RegionCapture","INPUT", $"[NEW] Pressed: Window-local={logicalPos}, Physical={physical}");
 
             _isSelecting = true;
             _dragStarted = false;
-            _hoveredWindow = null;
+
+            // Detect window under cursor at press time (for single-click window selection)
+            UpdateWindowSelection(physical);
+
+            if (_hoveredWindow != null)
+            {
+                TroubleshootingHelper.Log("RegionCapture", "INPUT", $"[NEW] Window detected at press: {_hoveredWindow.Title}");
+            }
         }
 
         /// <summary>
@@ -222,12 +225,12 @@ namespace XerahS.UI.Views.RegionCapture
                     if (dragDistance >= DragThreshold)
                     {
                         _dragStarted = true;
-                        DebugLog("INPUT", $"[NEW] Drag started (distance: {dragDistance:F2}px)");
+                        TroubleshootingHelper.Log("RegionCapture","INPUT", $"[NEW] Drag started (distance: {dragDistance:F2}px)");
                     }
                 }
 
-                // Update selection rectangle
-                UpdateSelectionRectangleNew(currentPhysical);
+                // Update selection rectangle - pass both logical and physical coords
+                UpdateSelectionRectangleNew(logicalPos, currentPhysical);
             }
             else if (!_dragStarted)
             {
@@ -241,7 +244,19 @@ namespace XerahS.UI.Views.RegionCapture
         /// </summary>
         private void OnPointerReleasedNew(PointerReleasedEventArgs e)
         {
-            if (!_isSelecting || _newCaptureService == null) return;
+            TroubleshootingHelper.Log("RegionCapture","INPUT", $"[NEW] OnPointerReleasedNew called: _isSelecting={_isSelecting}, _newCaptureService={(_newCaptureService != null ? "initialized" : "null")}");
+
+            if (_newCaptureService == null)
+            {
+                TroubleshootingHelper.Log("RegionCapture","ERROR", "[NEW] Release event called but service is null");
+                return;
+            }
+
+            if (!_isSelecting)
+            {
+                TroubleshootingHelper.Log("RegionCapture","WARNING", "[NEW] Release event called but not selecting - ignoring");
+                return;
+            }
 
             _isSelecting = false;
 
@@ -249,33 +264,11 @@ namespace XerahS.UI.Views.RegionCapture
             if (!_dragStarted && _hoveredWindow != null)
             {
                 var rect = _hoveredWindow.Bounds;
-                DebugLog("RESULT", $"[NEW] Selected window: {rect}");
+                TroubleshootingHelper.Log("RegionCapture","RESULT", $"[NEW] Selected window: {rect}");
 
-                // Capture the window using new backend
-                try
-                {
-                    // Convert physical rect to logical for capture service
-                    var physicalRect = new PhysicalRectangle(rect.X, rect.Y, rect.Width, rect.Height);
-                    var logicalRect = _newCaptureService.PhysicalToLogical(physicalRect);
-
-                    var captureOptions = new RegionCaptureOptions
-                    {
-                        IncludeCursor = false
-                    };
-
-                    DebugLog("CAPTURE", $"[NEW] Capturing window: Physical={physicalRect}, Logical={logicalRect}");
-                    var captureTask = _newCaptureService.CaptureRegionAsync(logicalRect, captureOptions);
-                    captureTask.Wait();
-
-                    _capturedBitmap = captureTask.Result;
-                    DebugLog("CAPTURE", $"[NEW] Captured window bitmap: {_capturedBitmap?.Width}x{_capturedBitmap?.Height}");
-                }
-                catch (Exception ex)
-                {
-                    DebugLog("ERROR", $"[NEW] Window capture failed: {ex.Message}");
-                    _capturedBitmap = null;
-                }
-
+                // Don't capture here - let ScreenCaptureService use the old platform capture which works reliably
+                // The new backend is only used for coordinate conversion and window detection
+                TroubleshootingHelper.Log("RegionCapture","WINDOW", "[NEW] Window selection complete, closing overlay");
                 _tcs.TrySetResult(new SKRectI(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height));
                 Close();
                 return;
@@ -285,7 +278,7 @@ namespace XerahS.UI.Views.RegionCapture
             var logicalPos = e.GetPosition(this);
             var currentPhysical = ConvertLogicalToPhysicalNew(logicalPos);
 
-            DebugLog("MOUSE", $"[NEW] Released: Logical={logicalPos}, Physical={currentPhysical}");
+            TroubleshootingHelper.Log("RegionCapture","MOUSE", $"[NEW] Released: Logical={logicalPos}, Physical={currentPhysical}");
 
             // Calculate selection rectangle
             var x = Math.Min(_startPointPhysical.X, currentPhysical.X);
@@ -293,69 +286,45 @@ namespace XerahS.UI.Views.RegionCapture
             var width = Math.Abs(_startPointPhysical.X - currentPhysical.X);
             var height = Math.Abs(_startPointPhysical.Y - currentPhysical.Y);
 
-            DebugLog("RESULT", $"[NEW] Final selection: X={x}, Y={y}, W={width}, H={height}");
+            TroubleshootingHelper.Log("RegionCapture","RESULT", $"[NEW] Final selection: X={x}, Y={y}, W={width}, H={height}");
 
             // Ensure non-zero size
             if (width <= 0) width = 1;
             if (height <= 0) height = 1;
 
-            // Capture the selected region using new backend
-            try
-            {
-                // Convert physical rect to logical for capture service
-                var physicalRect = new PhysicalRectangle(x, y, width, height);
-                var logicalRect = _newCaptureService.PhysicalToLogical(physicalRect);
-
-                var captureOptions = new RegionCaptureOptions
-                {
-                    IncludeCursor = false
-                };
-
-                DebugLog("CAPTURE", $"[NEW] Capturing region: Physical={physicalRect}, Logical={logicalRect}");
-
-                // Synchronous capture (we're already on UI thread and about to close)
-                var captureTask = _newCaptureService.CaptureRegionAsync(logicalRect, captureOptions);
-                captureTask.Wait(); // Wait for capture to complete before closing
-
-                _capturedBitmap = captureTask.Result;
-                DebugLog("CAPTURE", $"[NEW] Captured bitmap: {_capturedBitmap?.Width}x{_capturedBitmap?.Height}");
-            }
-            catch (Exception ex)
-            {
-                DebugLog("ERROR", $"[NEW] Capture failed: {ex.Message}");
-                _capturedBitmap = null;
-            }
-
-            // Return physical coordinates for backwards compatibility
+            // Don't capture here - let ScreenCaptureService use the old platform capture which works reliably
+            // The new backend is only used for coordinate conversion and window detection
             var resultRect = new SKRectI(x, y, x + width, y + height);
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"[NEW] Region selection complete, closing overlay: {resultRect}");
             _tcs.TrySetResult(resultRect);
             Close();
         }
 
         /// <summary>
         /// NEW: Update selection rectangle rendering.
+        /// Uses logical coordinates for visual rendering (aligned with Avalonia's coordinate space)
+        /// and physical coordinates for capture selection.
         /// </summary>
-        private void UpdateSelectionRectangleNew(SKPointI currentPhysical)
+        private void UpdateSelectionRectangleNew(Point currentLogical, SKPointI currentPhysical)
         {
             if (_newCaptureService == null) return;
 
-            // Calculate physical rectangle
-            var x = Math.Min(_startPointPhysical.X, currentPhysical.X);
-            var y = Math.Min(_startPointPhysical.Y, currentPhysical.Y);
-            var width = Math.Abs(_startPointPhysical.X - currentPhysical.X);
-            var height = Math.Abs(_startPointPhysical.Y - currentPhysical.Y);
+            // Calculate physical rectangle for capture and monitor detection
+            var physX = Math.Min(_startPointPhysical.X, currentPhysical.X);
+            var physY = Math.Min(_startPointPhysical.Y, currentPhysical.Y);
+            var physWidth = Math.Abs(_startPointPhysical.X - currentPhysical.X);
+            var physHeight = Math.Abs(_startPointPhysical.Y - currentPhysical.Y);
+            var physicalRect = new PhysicalRectangle(physX, physY, physWidth, physHeight);
 
-            var physicalRect = new PhysicalRectangle(x, y, width, height);
+            // Calculate logical rectangle for visual rendering
+            // Use Avalonia's logical coordinates directly - this ensures perfect alignment with mouse cursor
+            var logicalX = Math.Min(_startPointLogical.X, currentLogical.X);
+            var logicalY = Math.Min(_startPointLogical.Y, currentLogical.Y);
+            var logicalWidth = Math.Abs(_startPointLogical.X - currentLogical.X);
+            var logicalHeight = Math.Abs(_startPointLogical.Y - currentLogical.Y);
 
-            // Convert to logical for rendering
-            var logicalRect = _newCaptureService.PhysicalToLogical(physicalRect);
-
-            // Convert to window-local coordinates
-            var localX = logicalRect.X - _newVirtualDesktopLogical.X;
-            var localY = logicalRect.Y - _newVirtualDesktopLogical.Y;
-
-            // Update UI elements (keep existing rendering logic)
-            UpdateSelectionVisuals(localX, localY, logicalRect.Width, logicalRect.Height);
+            // Update UI elements with logical coordinates
+            UpdateSelectionVisuals(logicalX, logicalY, logicalWidth, logicalHeight);
 
             // Log for debugging
             var intersectingMonitors = _newMonitors
@@ -364,10 +333,10 @@ namespace XerahS.UI.Views.RegionCapture
 
             if (intersectingMonitors.Length > 1)
             {
-                DebugLog("SELECTION", $"[NEW] Spanning {intersectingMonitors.Length} monitors:");
+                TroubleshootingHelper.Log("RegionCapture","SELECTION", $"[NEW] Spanning {intersectingMonitors.Length} monitors:");
                 foreach (var mon in intersectingMonitors)
                 {
-                    DebugLog("SELECTION", $"  - {mon.Name} @ {mon.ScaleFactor}x");
+                    TroubleshootingHelper.Log("RegionCapture","SELECTION", $"  - {mon.Name} @ {mon.ScaleFactor}x");
                 }
             }
         }
@@ -411,7 +380,7 @@ namespace XerahS.UI.Views.RegionCapture
         {
             if (_newCaptureService != null)
             {
-                DebugLog("LIFECYCLE", "[NEW] Disposing capture service");
+                TroubleshootingHelper.Log("RegionCapture","LIFECYCLE", "[NEW] Disposing capture service");
                 _newCaptureService.Dispose();
                 _newCaptureService = null;
             }

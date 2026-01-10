@@ -93,24 +93,8 @@ namespace XerahS.UI.Services
 
             TroubleshootingHelper.Log("RegionCapture", "SELECTION", $"Received selection: {selection}");
 
-            // Check if new backend captured the bitmap
-            if (window != null && window.IsNewBackendInitialized)
-            {
-                var capturedBitmap = window.GetCapturedBitmap();
-                if (capturedBitmap != null)
-                {
-                    TroubleshootingHelper.Log("RegionCapture", "CAPTURE", $"[NEW] Using new backend captured bitmap: {capturedBitmap.Width}x{capturedBitmap.Height}");
-                    regionStopwatch.Stop();
-                    TroubleshootingHelper.Log("RegionCapture", "TOTAL", $"Total region capture workflow time: {regionStopwatch.ElapsedMilliseconds}ms");
-                    return capturedBitmap;
-                }
-                else
-                {
-                    TroubleshootingHelper.Log("RegionCapture", "WARNING", "[NEW] New backend initialized but bitmap is null, falling back to old capture");
-                }
-            }
-
-            // Fallback to old capture method (if new backend not available or failed)
+            // New backend handles window detection and coordinate conversion only
+            // Actual capture is done by the platform service below
             TroubleshootingHelper.Log("RegionCapture", "SELECTION", "Delaying 200ms...");
 
             // Small delay to allow window to close fully
