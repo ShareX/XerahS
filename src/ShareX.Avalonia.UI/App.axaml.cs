@@ -97,10 +97,20 @@ public partial class App : Application
 
             // Subscribe to workflow completion for notification
             Core.Managers.TaskManager.Instance.TaskCompleted += OnWorkflowTaskCompleted;
+
+            // Trigger async recording initialization via callback
+            // This prevents blocking the main window from showing quickly
+            PostUIInitializationCallback?.Invoke();
         }
 
         base.OnFrameworkInitializationCompleted();
     }
+
+    /// <summary>
+    /// Callback invoked after UI initialization completes.
+    /// Set by Program.cs to perform platform-specific async initialization.
+    /// </summary>
+    public static Action? PostUIInitializationCallback { get; set; }
 
     private void OnWorkflowTaskCompleted(object? sender, Core.Tasks.WorkerTask task)
     {
@@ -283,8 +293,23 @@ public partial class App : Application
                 DebugHelper.WriteLine($"[DEBUG] Hotkey triggered for CustomWindow. Configured title: '{settings.TaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
             }
 
-            // Execute workflow with its ID for troubleshooting
-            await Core.Helpers.TaskHelpers.ExecuteWorkflow(settings, settings.Id);
+            // Screen Recorder Toggle Logic (Unified Pipeline)
+            // If we are recording and get a recording-related hotkey, we Signal the existing task to stop.
+            // We do NOT start a new workflow.
+            bool isRecordingHotkey = settings.Job == Core.HotkeyType.ScreenRecorder || 
+                                     settings.Job == Core.HotkeyType.StopScreenRecording || 
+                                     settings.Job == Core.HotkeyType.StartScreenRecorder;
+
+            if (isRecordingHotkey && Core.Managers.ScreenRecordingManager.Instance.IsRecording)
+            {
+                 DebugHelper.WriteLine("Screen Recording active - flagging Stop Signal to existing task...");
+                 Core.Managers.ScreenRecordingManager.Instance.SignalStop();
+            }
+            else
+            {
+                 // Normal workflow execution
+                 await Core.Helpers.TaskHelpers.ExecuteWorkflow(settings, settings.Id);
+            }
         }
     }
 

@@ -360,19 +360,14 @@ namespace XerahS.Core.Tasks
 
         #region Recording Handlers (Stage 5)
 
+
         private async Task HandleStartRecordingAsync(CaptureMode mode, IntPtr windowHandle = default)
         {
             TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", $"HandleStartRecordingAsync Entry: mode={mode}");
             
             try
             {
-                // Check if already recording
-                if (ScreenRecordingManager.Instance.IsRecording)
-                {
-                    TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", "Already recording, stopping first");
-                    DebugHelper.WriteLine("Recording already in progress, stopping existing recording first...");
-                    await ScreenRecordingManager.Instance.StopRecordingAsync();
-                }
+                // Note: We don't check IsRecording here because App.axaml.cs ensures we only get here if NOT recording.
 
                 // Build recording options from task settings
                 var recordingOptions = new RecordingOptions
@@ -382,11 +377,16 @@ namespace XerahS.Core.Tasks
                     TargetWindowHandle = windowHandle
                 };
 
-                // Generate output path
-                string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                string recordingsPath = Path.Combine(documentsPath, "ShareX", "Recordings", DateTime.Now.ToString("yyyy-MM"));
-                Directory.CreateDirectory(recordingsPath);
-                recordingOptions.OutputPath = Path.Combine(recordingsPath, $"Recording_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4");
+                // [2026-01-10T14:40:00+08:00] Align screen recording output with screenshot naming/destination using TaskHelpers.
+                var recordingMetadata = Info.Metadata ?? new TaskMetadata();
+                string recordingsFolder = TaskHelpers.GetScreenshotsFolder(Info.TaskSettings, recordingMetadata);
+                string fileName = TaskHelpers.GetFileName(Info.TaskSettings, "mp4", recordingMetadata);
+                Directory.CreateDirectory(recordingsFolder);
+                var resolvedPath = TaskHelpers.HandleExistsFile(recordingsFolder, fileName, Info.TaskSettings);
+                recordingOptions.OutputPath = resolvedPath;
+                Info.FilePath = resolvedPath;
+                Info.DataType = EDataType.File;
+                DebugHelper.WriteLine($"[PathTrace {Info.CorrelationId}] ScreenRecorder resolved path: dir=\"{recordingsFolder}\", fileName=\"{fileName}\", fullPath=\"{resolvedPath}\"");
 
                 if (recordingOptions.Settings != null &&
                     (recordingOptions.Settings.CaptureSystemAudio || recordingOptions.Settings.CaptureMicrophone))
@@ -399,62 +399,49 @@ namespace XerahS.Core.Tasks
                 DebugHelper.WriteLine($"Starting recording: Mode={mode}, Codec={recordingOptions.Settings?.Codec}, FPS={recordingOptions.Settings?.FPS}");
                 DebugHelper.WriteLine($"Output path: {recordingOptions.OutputPath}");
 
-                // Start recording via manager
+                // 1. Start recording
                 await ScreenRecordingManager.Instance.StartRecordingAsync(recordingOptions);
                 TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", "ScreenRecordingManager.StartRecordingAsync completed");
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex, "Failed to start recording");
-                throw;
-            }
-        }
 
-        private async Task HandleStopRecordingAsync()
-        {
-            try
-            {
-                if (!ScreenRecordingManager.Instance.IsRecording)
-                {
-                    DebugHelper.WriteLine("No recording in progress to stop");
-                    return;
-                }
+                // 2. Wait for stop signal (ASYNC WAIT - Yields thread, keeps task alive)
+                TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", "Waiting for stop signal...");
+                await ScreenRecordingManager.Instance.WaitForStopSignalAsync();
+                TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", "Stop signal received. Resuming...");
 
+                // 3. Stop recording
                 DebugHelper.WriteLine("Stopping recording...");
                 string? outputPath = await ScreenRecordingManager.Instance.StopRecordingAsync();
 
                 if (!string.IsNullOrEmpty(outputPath))
                 {
                     DebugHelper.WriteLine($"Recording saved to: {outputPath}");
-                    // TODO: Process recording file (upload, after-capture tasks, etc.)
-                    // For now, just log the completion
+                    Info.FilePath = outputPath;
+                    Info.DataType = EDataType.File;
+                    
+                    // Reuse upload pipeline for recordings; flag upload when AfterUpload tasks exist.
+                    Info.TaskSettings.AfterCaptureJob |= AfterCaptureTasks.UploadImageToHost;
+
+                    var uploadProcessor = new UploadJobProcessor();
+                    await uploadProcessor.ProcessAsync(Info, CancellationToken.None);
                 }
             }
             catch (Exception ex)
             {
-                DebugHelper.WriteException(ex, "Failed to stop recording");
+                DebugHelper.WriteException(ex, "Failed during recording workflow");
                 throw;
             }
         }
 
+        private async Task HandleStopRecordingAsync()
+        {
+             // Legacy handler - mapped to SignalStop in UI now
+             await Task.CompletedTask;
+        }
+
         private async Task HandleAbortRecordingAsync()
         {
-            try
-            {
-                if (!ScreenRecordingManager.Instance.IsRecording)
-                {
-                    DebugHelper.WriteLine("No recording in progress to abort");
-                    return;
-                }
-
-                DebugHelper.WriteLine("Aborting recording...");
-                await ScreenRecordingManager.Instance.AbortRecordingAsync();
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex, "Failed to abort recording");
-                throw;
-            }
+             // Legacy handler
+             await ScreenRecordingManager.Instance.AbortRecordingAsync();
         }
 
         #endregion

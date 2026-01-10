@@ -119,6 +119,12 @@ public class TaskInfo
 
     public UploadResult Result { get; set; }
 
+    /// <summary>
+    /// Correlation identifier for structured logging across capture, save, and upload stages.
+    /// [2026-01-10T14:40:00+08:00]
+    /// </summary>
+    public string CorrelationId { get; set; } = Guid.NewGuid().ToString("N");
+
     public TaskInfo(TaskSettings? taskSettings = null)
     {
         TaskSettings = taskSettings ?? new TaskSettings();

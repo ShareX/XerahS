@@ -255,6 +255,82 @@ public partial class WorkflowEditorViewModel : ViewModelBase
         if (Model.TaskSettings != null)
         {
             Model.TaskSettings.Job = SelectedJob;
+
+            // Save Destination if selected
+            if (SelectedDestination != null)
+            {
+                // Reset overrides first to ensure clean state
+                Model.TaskSettings.OverrideCustomUploader = false;
+                Model.TaskSettings.OverrideFTP = false;
+
+                // 1. Check if it's a Custom Uploader
+                var customList = SettingManager.UploadersConfig.CustomUploadersList;
+                var customIndex = customList.FindIndex(c => c.Name == SelectedDestination.DisplayName);
+                
+                // 2. Check if it's an FTP account (DisplayName format is "FTP: Name")
+                var isFtp = SelectedDestination.DisplayName.StartsWith("FTP: ");
+                
+                if (customIndex >= 0)
+                {
+                    Model.TaskSettings.OverrideCustomUploader = true;
+                    Model.TaskSettings.CustomUploaderIndex = customIndex;
+                    DebugHelper.WriteLine($"Workflow saved with Custom Uploader: {SelectedDestination.DisplayName}");
+                }
+                else if (isFtp)
+                {
+                    var ftpName = SelectedDestination.DisplayName.Substring(5);
+                    var ftpList = SettingManager.UploadersConfig.FTPAccountList;
+                    var ftpIndex = ftpList.FindIndex(f => f.Name == ftpName);
+                    
+                    if (ftpIndex >= 0)
+                    {
+                        Model.TaskSettings.OverrideFTP = true;
+                        Model.TaskSettings.FTPIndex = ftpIndex;
+                        DebugHelper.WriteLine($"Workflow saved with FTP: {ftpName}");
+                    }
+                }
+                else if (SelectedDestination.Instance != null && !string.IsNullOrEmpty(SelectedDestination.Instance.ProviderId))
+                {
+                    // 3. Standard Uploader - Try to update relevant destination enums
+                    // We update the specific destination type based on what the provider ID parses to.
+                    // This handles Image, File, Text, and URL Shorteners.
+                    
+                    bool typeFound = false;
+
+                    if (Enum.TryParse<ImageDestination>(SelectedDestination.Instance.ProviderId, out var imgDest))
+                    {
+                        Model.TaskSettings.ImageDestination = imgDest;
+                        typeFound = true;
+                    }
+                    
+                    if (Enum.TryParse<FileDestination>(SelectedDestination.Instance.ProviderId, out var fileDest))
+                    {
+                        Model.TaskSettings.FileDestination = fileDest;
+                         typeFound = true;
+                    }
+                    
+                    if (Enum.TryParse<TextDestination>(SelectedDestination.Instance.ProviderId, out var textDest))
+                    {
+                        Model.TaskSettings.TextDestination = textDest;
+                         typeFound = true;
+                    }
+                    
+                     if (Enum.TryParse<UrlShortenerType>(SelectedDestination.Instance.ProviderId, out var urlDest))
+                    {
+                        Model.TaskSettings.URLShortenerDestination = urlDest;
+                         typeFound = true;
+                    }
+
+                    if (typeFound)
+                    {
+                        DebugHelper.WriteLine($"Workflow saved with standard destination: {SelectedDestination.Instance.ProviderId}");
+                    }
+                    else
+                    {
+                        DebugHelper.WriteLine($"Warning: Could not map provider {SelectedDestination.Instance.ProviderId} to any destination enum.");
+                    }
+                }
+            }
         }
     }
 
