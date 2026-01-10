@@ -116,6 +116,16 @@ public partial class App : Application
     {
         // Check if notification should be shown
         var taskSettings = task.Info?.TaskSettings ?? new TaskSettings();
+        
+        // Suppress toast for Screen Recorder start jobs (toast should only show on stop/finalize)
+        var job = taskSettings.Job;
+        bool isRecordingStart = job == Core.HotkeyType.ScreenRecorder || 
+                                job == Core.HotkeyType.StartScreenRecorder ||
+                                job == Core.HotkeyType.ScreenRecorderActiveWindow ||
+                                job == Core.HotkeyType.ScreenRecorderCustomRegion;
+                                
+        if (isRecordingStart) return;
+
         if (taskSettings?.GeneralSettings?.ShowToastNotificationAfterTaskCompleted == true)
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
