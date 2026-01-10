@@ -486,7 +486,7 @@ public class MediaFoundationEncoder : IVideoEncoder
         // 5: SetCurrentLength
         public static int Lock(IntPtr ptr, out IntPtr buffer, out int maxLength, out int currentLength) => Call<LockDelegate>(ptr, 3)(ptr, out buffer, out maxLength, out currentLength);
         public static int Unlock(IntPtr ptr) => Call<UnlockDelegate>(ptr, 4)(ptr);
-        public static int SetCurrentLength(IntPtr ptr, int currentLength) => Call<SetCurrentLengthDelegate>(ptr, 5)(ptr, currentLength);
+        public static int SetCurrentLength(IntPtr ptr, int currentLength) => Call<SetCurrentLengthDelegate>(ptr, 6)(ptr, currentLength);
 
         // IMFSample (Inherits IMFAttributes)
         // Correct start for IMFSample is 33.
