@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using System.Runtime.InteropServices;
+using System.Threading;
 using WGC = global::Windows.Graphics.Capture;
 using WD3D = global::Windows.Graphics.DirectX.Direct3D11;
 using Vortice.Direct3D11;
@@ -46,6 +47,121 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
     private readonly object _lock = new();
     private bool _isCapturing;
     private bool _disposed;
+    private int _frameCount = 0;
+
+    // [2026-01-10 11:30] Dedicated System Thread support
+    private global::Windows.System.DispatcherQueueController? _dispatcherQueueController;
+    private global::Windows.System.DispatcherQueue? _dispatcherQueue;
+
+    [DllImport("CoreMessaging.dll")]
+    private static extern int CreateDispatcherQueueController([In] DispatcherQueueOptions options, out IntPtr dispatcherQueueController);
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct DispatcherQueueOptions
+    {
+        public int dwSize;
+        public int threadType;
+        public int apartmentType;
+    }
+
+    private void EnsureCaptureThread()
+    {
+        lock (_lock)
+        {
+            if (_dispatcherQueueController != null) return;
+
+            try 
+            {
+                var options = new DispatcherQueueOptions
+                {
+                    dwSize = Marshal.SizeOf<DispatcherQueueOptions>(),
+                    threadType = 1, // DQTYPE_THREAD_DEDICATED
+                    apartmentType = 2 // DQTAT_COM_STA
+                };
+
+                int hr = CreateDispatcherQueueController(options, out var controllerPtr);
+                if (hr != 0 || controllerPtr == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException($"Failed to create DispatcherQueueController. HRESULT: 0x{hr:X}");
+                }
+
+                // Marshal the native pointer to the managed WinRT object
+                _dispatcherQueueController = WinRT.MarshalInterface<global::Windows.System.DispatcherQueueController>.FromAbi(controllerPtr);
+                _dispatcherQueue = _dispatcherQueueController.DispatcherQueue;
+                
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "THREAD", "Dedicated DispatcherQueue thread created successfully.");
+            }
+            catch (Exception ex)
+            {
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "THREAD", $"Failed to create dedicated thread: {ex}");
+                throw;
+            }
+        }
+    }
+    // Manual CaptureThreadProc removed
+
+
+    private void RunOnCaptureThread(Action action)
+    {
+        EnsureCaptureThread();
+        if (_dispatcherQueue == null) throw new InvalidOperationException("DispatcherQueue not initialized");
+        
+        bool enqueued = _dispatcherQueue.TryEnqueue(() =>
+        {
+            try { action(); }
+            catch (Exception ex) { Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "THREAD", $"Action failed: {ex}"); }
+        });
+
+        if (!enqueued) throw new InvalidOperationException("Failed to enqueue operation");
+    }
+
+    private async Task RunOnCaptureThreadAsync(Func<Task> action)
+    {
+        EnsureCaptureThread();
+        if (_dispatcherQueue == null) throw new InvalidOperationException("DispatcherQueue not initialized");
+
+        var tcs = new TaskCompletionSource<bool>();
+        bool enqueued = _dispatcherQueue.TryEnqueue(async () =>
+        {
+            try 
+            { 
+                await action(); 
+                tcs.SetResult(true);
+            }
+            catch (Exception ex) 
+            { 
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "THREAD", $"Async Action failed: {ex}");
+                tcs.SetException(ex);
+            }
+        });
+
+        if (!enqueued) throw new InvalidOperationException("Failed to enqueue operation");
+        await tcs.Task;
+    }
+
+    private void RunOnCaptureThreadAndWait(Action action)
+    {
+        EnsureCaptureThread();
+        if (_dispatcherQueue == null) throw new InvalidOperationException("DispatcherQueue not initialized");
+
+        var tcs = new TaskCompletionSource<bool>();
+        bool enqueued = _dispatcherQueue.TryEnqueue(() =>
+        {
+            try 
+            { 
+                action(); 
+                tcs.SetResult(true);
+            }
+            catch (Exception ex) 
+            { 
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "THREAD", $"Action failed: {ex}");
+                tcs.SetException(ex);
+            }
+        });
+
+        if (!enqueued) throw new InvalidOperationException("Failed to enqueue operation");
+        tcs.Task.GetAwaiter().GetResult();
+    }
 
     /// <summary>
     /// Check if Windows.Graphics.Capture is supported on this system
@@ -117,35 +233,38 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
     {
         if (_disposed) throw new ObjectDisposedException(nameof(WindowsGraphicsCaptureSource));
 
-        try
+        RunOnCaptureThreadAndWait(() =>
         {
-            // Create Direct3D device
-            _d3dDevice = CreateD3DDevice();
-            _device = CreateDirect3DDeviceFromD3D11Device(_d3dDevice);
-
-            // Create capture item from window handle
-            _captureItem = CaptureHelper.CreateItemForWindow(hwnd);
-            if (_captureItem == null)
+            try
             {
-                throw new InvalidOperationException("Failed to create capture item for window");
+                // Create Direct3D device
+                _d3dDevice = CreateD3DDevice();
+                _device = CreateDirect3DDeviceFromD3D11Device(_d3dDevice);
+
+                // Create capture item from window handle
+                _captureItem = CaptureHelper.CreateItemForWindow(hwnd);
+                if (_captureItem == null)
+                {
+                    throw new InvalidOperationException("Failed to create capture item for window");
+                }
+
+                // Create frame pool
+                _framePool = WGC.Direct3D11CaptureFramePool.Create(
+                    _device,
+                    global::Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
+                    2, // Number of buffers
+                    _captureItem.Size);
+
+                _framePool.FrameArrived += OnFrameArrived;
             }
-
-            // Create frame pool
-            _framePool = WGC.Direct3D11CaptureFramePool.Create(
-                _device,
-                global::Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
-                2, // Number of buffers
-                _captureItem.Size);
-
-            _framePool.FrameArrived += OnFrameArrived;
-        }
-        catch (Exception ex)
-        {
-            Dispose();
-            throw new PlatformNotSupportedException(
-                "Failed to initialize Windows.Graphics.Capture. This may be due to Windows version < 1803 or missing permissions.",
-                ex);
-        }
+            catch (Exception ex)
+            {
+                Dispose();
+                throw new PlatformNotSupportedException(
+                    "Failed to initialize Windows.Graphics.Capture. This may be due to Windows version < 1803 or missing permissions.",
+                    ex);
+            }
+        });
     }
 
     /// <summary>
@@ -167,98 +286,118 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
                 $"Monitor capture requires Windows 10 20H1 (build 19041) or later. Current build: {version.Build}");
         }
 
-        try
+        RunOnCaptureThreadAndWait(() =>
         {
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "Creating D3D11 device...");
-            _d3dDevice = CreateD3DDevice();
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "✓ D3D device created successfully");
-            
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "Creating IDirect3DDevice from D3D11...");
-            _device = CreateDirect3DDeviceFromD3D11Device(_d3dDevice);
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "✓ IDirect3DDevice created successfully");
-
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "Getting primary monitor handle...");
-            var monitorHandle = GetPrimaryMonitorHandle();
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", $"Primary monitor handle: 0x{monitorHandle:X}");
-            
-            if (monitorHandle == IntPtr.Zero)
+            try
             {
-                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "✗ Monitor handle is NULL");
-                throw new InvalidOperationException("Failed to get primary monitor handle");
-            }
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "Creating D3D11 device (on Capture Thread)...");
+                _d3dDevice = CreateD3DDevice();
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "✓ D3D device created successfully");
+                
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "Creating IDirect3DDevice from D3D11...");
+                _device = CreateDirect3DDeviceFromD3D11Device(_d3dDevice);
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "✓ IDirect3DDevice created successfully");
 
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "Calling CaptureHelper.CreateItemForMonitor...");
-            _captureItem = CaptureHelper.CreateItemForMonitor(monitorHandle);
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", $"✓ Capture item created: {_captureItem?.DisplayName ?? "null"}");
-            
-            if (_captureItem == null)
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "Getting primary monitor handle...");
+                var monitorHandle = GetPrimaryMonitorHandle();
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", $"Primary monitor handle: 0x{monitorHandle:X}");
+                
+                if (monitorHandle == IntPtr.Zero)
+                {
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "✗ Monitor handle is NULL");
+                    throw new InvalidOperationException("Failed to get primary monitor handle");
+                }
+
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "Calling CaptureHelper.CreateItemForMonitor...");
+                _captureItem = CaptureHelper.CreateItemForMonitor(monitorHandle);
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", $"✓ Capture item created: {_captureItem?.DisplayName ?? "null"}");
+                
+                if (_captureItem == null)
+                {
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "✗ Capture item is NULL");
+                    throw new InvalidOperationException("Failed to create capture item for monitor");
+                }
+
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", $"Creating frame pool (size: {_captureItem.Size.Width}x{_captureItem.Size.Height})...");
+                _framePool = WGC.Direct3D11CaptureFramePool.Create(
+                    _device,
+                    global::Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
+                    2,
+                    _captureItem.Size);
+
+                _framePool.FrameArrived += OnFrameArrived;
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "✓ Frame pool created and event wired");
+            }
+            catch (Exception ex)
             {
-                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "✗ Capture item is NULL");
-                throw new InvalidOperationException("Failed to create capture item for monitor");
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", $"✗ InitializeForPrimaryMonitor FAILED: {ex.GetType().Name}: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", $"  Inner exception: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
+                }
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", $"  Stack trace: {ex.StackTrace}");
+                Dispose();
+                throw new PlatformNotSupportedException(
+                    "Failed to initialize Windows.Graphics.Capture for monitor.",
+                    ex);
             }
-
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", $"Creating frame pool (size: {_captureItem.Size.Width}x{_captureItem.Size.Height})...");
-            _framePool = WGC.Direct3D11CaptureFramePool.Create(
-                _device,
-                global::Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
-                2,
-                _captureItem.Size);
-
-            _framePool.FrameArrived += OnFrameArrived;
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "✓ Frame pool created and event wired");
-        }
-        catch (Exception ex)
-        {
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", $"✗ InitializeForPrimaryMonitor FAILED: {ex.GetType().Name}: {ex.Message}");
-            if (ex.InnerException != null)
-            {
-                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", $"  Inner exception: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
-            }
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", $"  Stack trace: {ex.StackTrace}");
-            Dispose();
-            throw new PlatformNotSupportedException(
-                "Failed to initialize Windows.Graphics.Capture for monitor.",
-                ex);
-        }
+        });
     }
 
     public Task StartCaptureAsync()
     {
-        lock (_lock)
+        return RunOnCaptureThreadAsync(() =>
         {
-            if (_disposed) throw new ObjectDisposedException(nameof(WindowsGraphicsCaptureSource));
-            if (_isCapturing) return Task.CompletedTask;
-            if (_captureItem == null || _framePool == null)
+            lock (_lock)
             {
-                throw new InvalidOperationException("Capture source not initialized. Call InitializeForWindow or InitializeForPrimaryMonitor first.");
+                if (_disposed) throw new ObjectDisposedException(nameof(WindowsGraphicsCaptureSource));
+                if (_isCapturing) return Task.CompletedTask;
+                if (_captureItem == null || _framePool == null)
+                {
+                    throw new InvalidOperationException("Capture source not initialized. Call InitializeForWindow or InitializeForPrimaryMonitor first.");
+                }
+
+                _session = _framePool.CreateCaptureSession(_captureItem);
+                _session.IsCursorCaptureEnabled = ShowCursor; // Stage 2: Configurable cursor capture
+                
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", "StartCaptureAsync: Calling _session.StartCapture()...");
+                System.Console.WriteLine("WGC: Calling _session.StartCapture()...");
+                _session.StartCapture();
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", "StartCaptureAsync: _session.StartCapture() returned.");
+                System.Console.WriteLine("WGC: _session.StartCapture() returned. Capture started.");
+                
+                _isCapturing = true;
+                return Task.CompletedTask;
             }
-
-            _session = _framePool.CreateCaptureSession(_captureItem);
-            _session.IsCursorCaptureEnabled = ShowCursor; // Stage 2: Configurable cursor capture
-            _session.StartCapture();
-            _isCapturing = true;
-        }
-
-        return Task.CompletedTask;
+        });
     }
 
     public Task StopCaptureAsync()
     {
-        lock (_lock)
+        return RunOnCaptureThreadAsync(() =>
         {
-            if (!_isCapturing) return Task.CompletedTask;
+            lock (_lock)
+            {
+                if (!_isCapturing) return Task.CompletedTask;
 
-            _session?.Dispose();
-            _session = null;
-            _isCapturing = false;
-        }
-
-        return Task.CompletedTask;
+                _session?.Dispose();
+                _session = null;
+                _isCapturing = false;
+                return Task.CompletedTask;
+            }
+        });
     }
 
-    private void OnFrameArrived(WGC.Direct3D11CaptureFramePool sender, object args)
+    private async void OnFrameArrived(WGC.Direct3D11CaptureFramePool sender, object args)
     {
         if (_disposed || !_isCapturing) return;
+
+        // Log sparingly
+        if ((_frameCount % 30) == 0)
+        {
+             Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "WGC", $"OnFrameArrived! Frame {_frameCount}");
+             System.Console.WriteLine($"WGC: OnFrameArrived! Frame {_frameCount}");
+        }
 
         try
         {
@@ -269,81 +408,82 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
             var surface = frame.Surface;
             if (surface == null) return;
 
-            // Convert to FrameData
-            var frameData = ConvertSurfaceToFrameData(surface, frame.SystemRelativeTime);
-
-            // Raise event on capture thread
-            // Note: Encoder must handle thread marshaling if needed
-            FrameArrived?.Invoke(this, new FrameArrivedEventArgs(frameData));
-        }
-        catch (Exception ex)
-        {
-            // Log error but don't crash capture thread
-            System.Diagnostics.Debug.WriteLine($"Error processing captured frame: {ex.Message}");
-        }
-    }
-
-    private FrameData ConvertSurfaceToFrameData(WD3D.IDirect3DSurface surface, TimeSpan systemRelativeTime)
-    {
-        // Get the underlying Direct3D11 texture via COM interop
-        // IDirect3DDxgiInterfaceAccess is a COM interface for accessing DXGI interfaces from WinRT objects
-        var surfacePtr = Marshal.GetIUnknownForObject(surface);
-        
-        try
-        {
-            var iidAccess = typeof(IDirect3DDxgiInterfaceAccess).GUID;
-            Marshal.QueryInterface(surfacePtr, ref iidAccess, out var accessPtr);
+            // Use SoftwareBitmap to get access to pixel data (Standard WinRT way, robust to interop issues)
+            using var softwareBitmap = await global::Windows.Graphics.Imaging.SoftwareBitmap.CreateCopyFromSurfaceAsync(surface);
             
-            if (accessPtr == IntPtr.Zero)
-            {
-                throw new InvalidOperationException("Failed to get IDirect3DDxgiInterfaceAccess");
-            }
-
+            int width = softwareBitmap.PixelWidth;
+            int height = softwareBitmap.PixelHeight;
+            uint size = (uint)(width * height * 4);
+            
+            // Create IBuffer
+            var buffer = new global::Windows.Storage.Streams.Buffer(size);
+            buffer.Length = size; // Must set length to receive data
+            softwareBitmap.CopyToBuffer(buffer);
+            
+            // Get pointer via IBufferByteAccess
+            var bufferUnknown = Marshal.GetIUnknownForObject(buffer);
+            IntPtr dataPtr;
+            
             try
             {
-                var access = (IDirect3DDxgiInterfaceAccess)Marshal.GetObjectForIUnknown(accessPtr);
-                var dxgiGuid = typeof(IDXGISurface).GUID;
-                var hr = access.GetInterface(ref dxgiGuid, out var dxgiPtr);
-                
-                if (hr != 0 || dxgiPtr == IntPtr.Zero)
+                var iidBytes = typeof(IBufferByteAccess).GUID;
+                if (Marshal.QueryInterface(bufferUnknown, ref iidBytes, out var pByteAccess) != 0)
                 {
-                    throw new InvalidOperationException($"Failed to get DXGI surface: HRESULT {hr}");
+                    throw new InvalidCastException("Failed to query IBufferByteAccess");
                 }
-
-                var dxgiSurface = (IDXGISurface)Marshal.GetObjectForIUnknown(dxgiPtr);
-                Marshal.Release(dxgiPtr);
-
+                
                 try
                 {
-                    var desc = dxgiSurface.Description;
-
-                    // Map surface for CPU access
-                    var mapped = dxgiSurface.Map(Vortice.DXGI.MapFlags.Read);
-
-                    return new FrameData
-                    {
-                        DataPtr = mapped.DataPointer,
-                        Stride = (int)mapped.Pitch,
-                        Width = (int)desc.Width,
-                        Height = (int)desc.Height,
-                        Timestamp = (long)(systemRelativeTime.TotalMilliseconds * 10000), // Convert to 100ns units
-                        Format = PixelFormat.Bgra32 // WGC always provides BGRA32
-                    };
+                    var byteAccess = (IBufferByteAccess)Marshal.GetObjectForIUnknown(pByteAccess);
+                    byteAccess.Buffer(out dataPtr);
                 }
                 finally
                 {
-                    dxgiSurface.Unmap();
+                    Marshal.Release(pByteAccess);
                 }
             }
             finally
             {
-                Marshal.Release(accessPtr);
+                Marshal.Release(bufferUnknown);
             }
+
+            // Calculate stride
+            int stride = width * 4; // Buffer is tightly packed
+            
+            // Create FrameData (DataPtr is valid only because buffer is alive in this scope? Reference counting?)
+            // IBuffer object 'buffer' is managed wrapper. As long as 'buffer' is alive, dataPtr should be valid.
+            // But we didn't use 'using var buffer'. 'buffer' will be GC'd?
+            // No, we should invoke event BEFORE buffer is GC'd.
+            
+            var frameData = new FrameData
+            {
+                DataPtr = dataPtr,
+                Stride = stride,
+                Width = width,
+                Height = height,
+                Timestamp = (long)(frame.SystemRelativeTime.TotalMilliseconds * 10000),
+                Format = PixelFormat.Bgra32
+            };
+
+            // Raise event synchronously so we can use the pointer
+            FrameArrived?.Invoke(this, new FrameArrivedEventArgs(frameData));
+            
+            // End of method, buffer is eligible for GC.
+            // But FrameArrived handlers are synchronous, right?
+            // Yes.
+            // Wait, IBuffer is a COM object.
+            // dataPtr points to its internal memory.
+            // If buffer wrapper is GC'd, the COM object might be released.
+            // I should ensure buffer stays alive.
+            GC.KeepAlive(buffer);
         }
-        finally
+        catch (Exception ex)
         {
-            Marshal.Release(surfacePtr);
+            // Log error but don't crash capture thread
+            System.Console.WriteLine($"WGC Error processing captured frame: {ex.Message}");
         }
+
+        Interlocked.Increment(ref _frameCount);
     }
 
     private static ID3D11Device CreateD3DDevice()
@@ -413,19 +553,48 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
             _disposed = true;
             _isCapturing = false;
 
-            if (_framePool != null)
+            try
             {
-                _framePool.FrameArrived -= OnFrameArrived;
-                _framePool.Dispose();
-                _framePool = null;
-            }
+                // Run cleanup on capture thread if it exists
+                if (_dispatcherQueue != null)
+                {
+                    var cleanupTask = RunOnCaptureThreadAsync(() =>
+                    {
+                        if (_framePool != null)
+                        {
+                            _framePool.FrameArrived -= OnFrameArrived;
+                            _framePool.Dispose();
+                            _framePool = null;
+                        }
 
-            _session?.Dispose();
-            _session = null;
-            _captureItem = null;
-            _device = null;
-            _d3dDevice?.Dispose();
-            _d3dDevice = null;
+                        _session?.Dispose();
+                        _session = null;
+                        _captureItem = null;
+                        _device = null;
+                        _d3dDevice?.Dispose();
+                        _d3dDevice = null;
+                        return Task.CompletedTask;
+                    });
+                    
+                    // Wait for cleanup with timeout
+                    cleanupTask.Wait(1000);
+                }
+
+                // Shutdown the dedicated thread
+                if (_dispatcherQueueController != null)
+                {
+                    _ = _dispatcherQueueController.ShutdownQueueAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                 Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "DISPOSE", $"Error disposing: {ex}");
+            }
+            finally
+            {
+                _dispatcherQueueController = null;
+                _dispatcherQueue = null;
+            }
         }
 
         GC.SuppressFinalize(this);

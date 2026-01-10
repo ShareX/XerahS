@@ -29,30 +29,46 @@ using XerahS.Core;
 using XerahS.Core.Helpers;
 using XerahS.Core.Managers;
 using XerahS.Core.Tasks;
+using System.Runtime.InteropServices;
 
 namespace XerahS.CLI.Commands
 {
     public static class WorkflowCommand
     {
+
+
         public static Command Create()
         {
+            // ... (rest of method same)
             var runCommand = new Command("run", "Execute a workflow by ID");
 
             var workflowIdArg = new Argument<string>(
                 name: "workflow-id",
                 description: "Workflow ID (e.g., WF01)");
 
+            var durationOption = new Option<int>(
+                name: "--duration",
+                description: "Duration in seconds to record (only for recording tasks)",
+                getDefaultValue: () => 0);
+
+            var exitOnCompleteOption = new Option<bool>(
+                name: "--exit-on-complete",
+                description: "Exit the CLI process immediately after workflow completion",
+                getDefaultValue: () => false);
+
+            runCommand.AddOption(durationOption);
+            runCommand.AddOption(exitOnCompleteOption);
             runCommand.AddArgument(workflowIdArg);
 
-            runCommand.SetHandler(async (string workflowId) =>
+            runCommand.SetHandler(async (string workflowId, int duration, bool exitOnComplete) =>
             {
-                Environment.ExitCode = await RunWorkflowAsync(workflowId);
-            }, workflowIdArg);
+                Environment.ExitCode = await RunWorkflowAsync(workflowId, duration, exitOnComplete);
+            }, workflowIdArg, durationOption, exitOnCompleteOption);
 
             return runCommand;
         }
 
-        private static async Task<int> RunWorkflowAsync(string workflowId)
+        private static async Task<int> RunWorkflowAsync(string workflowId, int duration, bool exitOnComplete)
         {
             try
             {
@@ -78,10 +94,19 @@ namespace XerahS.CLI.Commands
                 var tcs = new TaskCompletionSource<bool>();
 
                 EventHandler<WorkerTask>? handler = null;
-                handler = (sender, task) =>
+                handler = async (sender, task) =>
                 {
                     if (task.Info.TaskSettings.WorkflowId == workflowId)
                     {
+                        // Check if it's a recording task and handle duration
+                        if (task.Info.TaskSettings.Job == HotkeyType.ScreenRecorder && duration > 0)
+                        {
+                            Console.WriteLine($"Recording started. Waiting for {duration} seconds...");
+                            await Task.Delay(duration * 1000);
+                            Console.WriteLine("Stopping recording...");
+                            await ScreenRecordingManager.Instance.StopRecordingAsync();
+                        }
+
                         TaskManager.Instance.TaskCompleted -= handler;
                         bool success = task.Status == Core.TaskStatus.Completed;
                         tcs.SetResult(success);
@@ -95,13 +120,12 @@ namespace XerahS.CLI.Commands
                 };
 
                 TaskManager.Instance.TaskCompleted += handler;
-
+                
                 // Use the same entry point as UI
                 await Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflowId);
 
-                // Wait for completion with timeout
-                using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-                var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(Timeout.Infinite, cts.Token));
+                // Wait for completion (with timeout backup)
+                var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(30000 + (duration * 1000)));
 
                 if (completedTask != tcs.Task)
                 {
@@ -112,13 +136,26 @@ namespace XerahS.CLI.Commands
                 bool success = await tcs.Task;
                 if (success)
                 {
+                    // If manually stopped via duration, it might already be stopped.
+                    if (ScreenRecordingManager.Instance.IsRecording && duration == 0)
+                    {
+                        Console.WriteLine("Recording active. Waiting 5 seconds before stopping (default)...");
+                        await Task.Delay(5000);
+                        await ScreenRecordingManager.Instance.StopRecordingAsync();
+                    }
+
                     Console.WriteLine($"Workflow completed successfully: {workflowId}");
+                    
+                    if (exitOnComplete)
+                    {
+                        Console.WriteLine("Exiting (--exit-on-complete specified).");
+                        return 0;
+                    }
+                    
                     return 0;
                 }
-                else
-                {
-                    return 1;
-                }
+                
+                return 1;
             }
             catch (Exception ex)
             {

@@ -220,6 +220,7 @@ public class MediaFoundationEncoder : IVideoEncoder
                 if (_frameCount == 0 || _frameCount % 30 == 0)
                 {
                     Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF_ENCODER", $"WriteFrame[{_frameCount}] calling. Stride={frame.Stride}, Height={frame.Height}, SampleTime={_sampleTime}");
+                    System.Console.WriteLine($"MF_ENCODER: WriteFrame[{_frameCount}] calling.");
                 }
 
                 // Create media buffer from frame data

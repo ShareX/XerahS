@@ -248,6 +248,8 @@ public class ScreenRecorderService : IRecordingService
     private void OnFrameCaptured(object? sender, FrameArrivedEventArgs e)
     {
         if (_disposed || _status != RecordingStatus.Recording) return;
+        
+        System.Console.WriteLine("SRS: OnFrameCaptured called"); // Low-level trace
 
         FrameData? croppedFrame = null;
         try
@@ -273,6 +275,7 @@ public class ScreenRecorderService : IRecordingService
         }
         catch (Exception ex)
         {
+            System.Console.WriteLine($"SRS: Error in OnFrameCaptured: {ex.Message}");
             HandleFatalError(ex, true);
         }
         finally
