@@ -42,6 +42,26 @@ namespace XerahS.Core.Tasks
         public bool IsBusy => Status == TaskStatus.InQueue || IsWorking;
         public bool IsWorking => Status == TaskStatus.Preparing || Status == TaskStatus.Working || Status == TaskStatus.Stopping;
 
+        /// <summary>
+        /// Determines if the task completed successfully with a valid result.
+        /// Returns true only if the task is not failed/canceled/stopped AND produced an artifact (Image, File, or URL).
+        /// </summary>
+        public bool IsSuccessful
+        {
+            get
+            {
+                if (Status == TaskStatus.Failed || Status == TaskStatus.Canceled || Status == TaskStatus.Stopped)
+                    return false;
+
+                // Check if we have any valid output
+                bool hasImage = Info.Metadata?.Image != null;
+                bool hasFile = !string.IsNullOrEmpty(Info.FilePath);
+                bool hasUrl = !string.IsNullOrEmpty(Info.Metadata?.UploadURL);
+
+                return hasImage || hasFile || hasUrl;
+            }
+        }
+
         private CancellationTokenSource _cancellationTokenSource;
 
         public event EventHandler StatusChanged;
@@ -333,6 +353,12 @@ namespace XerahS.Core.Tasks
                 else
                 {
                     DebugHelper.WriteLine($"Capture returned null for job type: {Info.TaskSettings.Job} (elapsed {captureStopwatch.ElapsedMilliseconds}ms)");
+                    
+                    // IF capture returned null (e.g. user cancelled region selection), stop the task here.
+                    // This prevents empty tasks from being marked as 'Completed' successfully.
+                    Status = TaskStatus.Stopped;
+                    OnStatusChanged();
+                    return;
                 }
             }
             else if (Info.Metadata.Image == null)

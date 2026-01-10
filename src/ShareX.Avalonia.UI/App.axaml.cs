@@ -115,6 +115,9 @@ public partial class App : Application
     private void OnWorkflowTaskCompleted(object? sender, Core.Tasks.WorkerTask task)
     {
         // Check if notification should be shown
+        // [2026-01-11] Fix: Only show toast if the task was actually successful (not cancelled/stopped) and produced a result.
+        if (!task.IsSuccessful) return;
+
         var taskSettings = task.Info?.TaskSettings ?? new TaskSettings();
         if (taskSettings?.GeneralSettings?.ShowToastNotificationAfterTaskCompleted == true)
         {
