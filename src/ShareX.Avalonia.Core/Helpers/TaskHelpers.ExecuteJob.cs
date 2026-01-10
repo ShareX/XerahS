@@ -105,8 +105,7 @@ public static partial class TaskHelpers
 
         DebugHelper.WriteLine(
             $"Task settings: AfterCaptureJob={taskSettings.AfterCaptureJob}, " +
-            $"UploadImageToHost={taskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost)}, " +
-            $"ImageDestination={taskSettings.ImageDestination}");
+            $"UploadImageToHost={taskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost)}");
 
         try
         {

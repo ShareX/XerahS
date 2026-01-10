@@ -180,46 +180,17 @@ namespace XerahS.Core.Tasks.Processors
             }
 
             DebugHelper.WriteLine($"Uploading image: {info.FilePath}");
-            DebugHelper.WriteLine($"Upload destination: {info.TaskSettings.ImageDestination}");
 
             try
             {
-                var destination = info.TaskSettings.ImageDestination;
-                if (!UploaderFactory.ImageUploaderServices.TryGetValue(destination, out var uploaderService))
+                var pluginResult = TryUploadWithPluginSystem(info);
+                if (pluginResult == null)
                 {
-                    DebugHelper.WriteLine($"No uploader found for destination: {destination}");
-                    DebugHelper.WriteLine($"Available legacy image uploaders: {string.Join(", ", UploaderFactory.ImageUploaderServices.Keys)}");
-                    var pluginResult = TryUploadWithPluginSystem(info);
-                    if (pluginResult == null)
-                    {
-                        DebugHelper.WriteLine("Plugin upload did not return a result.");
-                        return;
-                    }
-
-                    HandleUploadResult(info, pluginResult);
+                    DebugHelper.WriteLine("Plugin upload did not return a result.");
                     return;
                 }
 
-                var helper = new TaskReferenceHelper
-                {
-                    DataType = EDataType.Image,
-                    StopRequested = false,
-                    OverrideFTP = info.TaskSettings.OverrideFTP,
-                    FTPIndex = info.TaskSettings.FTPIndex,
-                    OverrideCustomUploader = info.TaskSettings.OverrideCustomUploader,
-                    CustomUploaderIndex = info.TaskSettings.CustomUploaderIndex
-                };
-
-                var uploader = uploaderService.CreateUploader(SettingManager.UploadersConfig, helper);
-
-                UploadResult? result = uploader switch
-                {
-                    FileUploader fileUploader => fileUploader.UploadFile(info.FilePath),
-                    GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
-                    _ => null
-                };
-
-                HandleUploadResult(info, result);
+                HandleUploadResult(info, pluginResult);
             }
             catch (Exception ex)
             {
@@ -256,19 +227,35 @@ namespace XerahS.Core.Tasks.Processors
             EnsurePluginsLoaded();
 
             var instanceManager = InstanceManager.Instance;
-            var defaultInstance = instanceManager.GetDefaultInstance(UploaderCategory.Image);
-            if (defaultInstance == null)
+            var configuredInstanceId = info.TaskSettings.GetDestinationInstanceIdForDataType(EDataType.Image);
+            UploaderInstance? targetInstance = null;
+
+            if (!string.IsNullOrEmpty(configuredInstanceId))
             {
-                DebugHelper.WriteLine("No default image uploader instance configured.");
+                targetInstance = instanceManager.GetInstance(configuredInstanceId);
+                if (targetInstance == null)
+                {
+                    DebugHelper.WriteLine($"Configured image uploader instance not found: {configuredInstanceId}");
+                }
+            }
+
+            if (targetInstance == null)
+            {
+                targetInstance = instanceManager.GetDefaultInstance(UploaderCategory.Image);
+            }
+
+            if (targetInstance == null)
+            {
+                DebugHelper.WriteLine("No image uploader instance configured.");
                 return null;
             }
 
-            DebugHelper.WriteLine($"Plugin instance selected: {defaultInstance.DisplayName} ({defaultInstance.ProviderId})");
+            DebugHelper.WriteLine($"Plugin instance selected: {targetInstance.DisplayName} ({targetInstance.ProviderId})");
 
-            var provider = ProviderCatalog.GetProvider(defaultInstance.ProviderId);
+            var provider = ProviderCatalog.GetProvider(targetInstance.ProviderId);
             if (provider == null)
             {
-                DebugHelper.WriteLine($"Provider not found in catalog: {defaultInstance.ProviderId}");
+                DebugHelper.WriteLine($"Provider not found in catalog: {targetInstance.ProviderId}");
                 return null;
             }
 
@@ -277,7 +264,7 @@ namespace XerahS.Core.Tasks.Processors
             Uploader uploader;
             try
             {
-                uploader = provider.CreateInstance(defaultInstance.SettingsJson);
+                uploader = provider.CreateInstance(targetInstance.SettingsJson);
             }
             catch (Exception ex)
             {

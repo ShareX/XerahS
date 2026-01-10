@@ -23,13 +23,15 @@
 
 #endregion License Information (GPL v3)
 
+using System;
+using System.Linq;
+using System.ComponentModel;
+using System.Drawing;
 using Newtonsoft.Json;
 using XerahS.Common;
 using XerahS.Uploaders;
+using XerahS.Uploaders.PluginSystem;
 using XerahS.ScreenCapture.ScreenRecording;
-using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
 
 namespace XerahS.Core;
 
@@ -58,18 +60,13 @@ public class TaskSettings
 
     public AfterUploadTasks AfterUploadJob = AfterUploadTasks.CopyURLToClipboard;
 
-    public ImageDestination ImageDestination = ImageDestination.Imgur;
-    public TextDestination TextDestination = TextDestination.Pastebin;
-    public FileDestination FileDestination = FileDestination.Dropbox;
     public UrlShortenerType URLShortenerDestination = UrlShortenerType.BITLY;
     public URLSharingServices URLSharingServiceDestination = URLSharingServices.Email;
 
     /// <summary>
-    /// Destination instance IDs (plugin system). Prefer these over enum destinations when present.
+    /// Destination instance ID (plugin system).
     /// </summary>
-    public string? ImageDestinationInstanceId { get; set; }
-    public string? TextDestinationInstanceId { get; set; }
-    public string? FileDestinationInstanceId { get; set; }
+    public string? DestinationInstanceId { get; set; }
     public string? UrlShortenerDestinationInstanceId { get; set; }
 
     public bool OverrideFTP = false;
@@ -103,13 +100,8 @@ public class TaskSettings
         return !string.IsNullOrEmpty(Description) ? Description : EnumExtensions.GetDescription(Job);
     }
 
-    public FileDestination GetFileDestinationByDataType(EDataType dataType)
-    {
-        return FileDestination;
-    }
-
     /// <summary>
-    /// Gets the provider ID (string) of the currently active destination for the specified job type.
+    /// Gets the instance ID of the destination for the specified job type (empty if not set).
     /// </summary>
     public string GetDestination(HotkeyType job)
     {
@@ -119,107 +111,34 @@ public class TaskSettings
             return instanceId;
         }
 
-        string category = EnumExtensions.GetHotkeyCategory(job);
-
-        // File Jobs (Screen Record, File Upload) -> FileDestination
-        if (category == EnumExtensions.HotkeyType_Category_ScreenRecord || 
-            job == HotkeyType.FileUpload || 
-            job == HotkeyType.FolderUpload || 
-            job == HotkeyType.DragDropUpload)
-        {
-            return FileDestination.ToString();
-        }
-        
-        // Text Jobs -> TextDestination
-        if (job == HotkeyType.UploadText)
-        {
-            return TextDestination.ToString();
-        }
-
-        // URL Jobs -> URLShortenerDestination
+        // URL shortener falls back to enum until pluginized
         if (job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL)
         {
             return URLShortenerDestination.ToString();
         }
 
-        // Default: Image Jobs (Screen Capture) -> ImageDestination
-        if (ImageDestination == ImageDestination.FileUploader)
-        {
-            return FileDestination.ToString();
-        }
-
-        return ImageDestination.ToString();
+        return string.Empty;
     }
 
     /// <summary>
-    /// Sets the destination for the specified job type, parsing the provider ID into the correct Enum.
+    /// Sets the destination for the specified job type using an instance ID.
     /// </summary>
     public bool SetDestination(HotkeyType job, string providerId)
     {
-        // If a providerId looks like SHA-1 (40 hex chars), treat as plugin instance id
-        if (!string.IsNullOrEmpty(providerId) && providerId.Length == 40 && providerId.All(c => Uri.IsHexDigit(c)))
+        if (IsValidInstanceId(providerId))
         {
-            return SetDestinationInstanceId(job, providerId);
+            if (job != HotkeyType.ShortenURL && job != HotkeyType.UploadURL)
+            {
+                return SetDestinationInstanceId(job, providerId);
+            }
         }
 
-        string category = EnumExtensions.GetHotkeyCategory(job);
-        
-        // 1. Check for File Job
-        if (category == EnumExtensions.HotkeyType_Category_ScreenRecord || 
-            job == HotkeyType.FileUpload || 
-            job == HotkeyType.FolderUpload || 
-            job == HotkeyType.DragDropUpload)
+        // URL shorteners are still enum-based until pluginized
+        if ((job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL) &&
+            Enum.TryParse<UrlShortenerType>(providerId, out var urlDest))
         {
-            if (Enum.TryParse<FileDestination>(providerId, out var fileDest))
-            {
-                FileDestination = fileDest;
-                // Also sync ImageFileDestination if widely applicable or leave specific? 
-                // Best keep them separate as intended, but FileDestination is primary here.
-                return true;
-            }
-        }
-        // 2. Check for Text Job
-        else if (job == HotkeyType.UploadText)
-        {
-             if (Enum.TryParse<TextDestination>(providerId, out var textDest))
-            {
-                TextDestination = textDest;
-                return true;
-            }
-        }
-        // 3. Check for URL Job
-        else if (job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL)
-        {
-             if (Enum.TryParse<UrlShortenerType>(providerId, out var urlDest))
-            {
-                URLShortenerDestination = urlDest;
-                return true;
-            }
-        }
-        // 4. Default: Image Job (Screen Capture, etc.)
-        else
-        {
-            // Try as FileDestination first (File Uploader Wrapper)
-            if (Enum.TryParse<FileDestination>(providerId, out var fileDest))
-            {
-                // Unify to FileDestination
-                FileDestination = fileDest;
-                
-                // If it's not a CustomImageUploader, we need to defer to FileUploader
-                if (ImageDestination != ImageDestination.CustomImageUploader)
-                {
-                    ImageDestination = ImageDestination.FileUploader;
-                }
-                
-                return true;
-            }
-            
-            // Try as ImageDestination
-            if (Enum.TryParse<ImageDestination>(providerId, out var imgDest))
-            {
-                ImageDestination = imgDest;
-                return true;
-            }
+            URLShortenerDestination = urlDest;
+            return true;
         }
 
         return false;
@@ -230,27 +149,12 @@ public class TaskSettings
     /// </summary>
     public string? GetDestinationInstanceId(HotkeyType job)
     {
-        string category = EnumExtensions.GetHotkeyCategory(job);
-
-        if (category == EnumExtensions.HotkeyType_Category_ScreenRecord ||
-            job == HotkeyType.FileUpload ||
-            job == HotkeyType.FolderUpload ||
-            job == HotkeyType.DragDropUpload)
-        {
-            return FileDestinationInstanceId;
-        }
-
-        if (job == HotkeyType.UploadText)
-        {
-            return TextDestinationInstanceId;
-        }
-
         if (job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL)
         {
             return UrlShortenerDestinationInstanceId;
         }
 
-        return ImageDestinationInstanceId;
+        return DestinationInstanceId;
     }
 
     /// <summary>
@@ -263,31 +167,56 @@ public class TaskSettings
             return false;
         }
 
-        string category = EnumExtensions.GetHotkeyCategory(job);
-
-        if (category == EnumExtensions.HotkeyType_Category_ScreenRecord ||
-            job == HotkeyType.FileUpload ||
-            job == HotkeyType.FolderUpload ||
-            job == HotkeyType.DragDropUpload)
-        {
-            FileDestinationInstanceId = instanceId;
-            return true;
-        }
-
-        if (job == HotkeyType.UploadText)
-        {
-            TextDestinationInstanceId = instanceId;
-            return true;
-        }
+        var normalized = NormalizeInstanceId(instanceId);
 
         if (job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL)
         {
-            UrlShortenerDestinationInstanceId = instanceId;
+            UrlShortenerDestinationInstanceId = normalized;
             return true;
         }
 
-        ImageDestinationInstanceId = instanceId;
+        DestinationInstanceId = normalized;
         return true;
+    }
+
+    /// <summary>
+    /// Returns the destination instance ID for the given category.
+    /// </summary>
+    public string? GetDestinationInstanceIdByCategory(UploaderCategory category)
+    {
+        return category == UploaderCategory.UrlShortener ? UrlShortenerDestinationInstanceId : DestinationInstanceId;
+    }
+
+    /// <summary>
+    /// Returns the destination instance ID for the given data type.
+    /// </summary>
+    public string? GetDestinationInstanceIdForDataType(EDataType dataType)
+    {
+        return dataType == EDataType.URL ? UrlShortenerDestinationInstanceId : DestinationInstanceId;
+    }
+
+    private static string? ResolveInstanceIdByProviderId(string providerId, HotkeyType job)
+    {
+        // Provider keys should NOT be stored as DestinationInstanceId. Reject resolution.
+        return null;
+    }
+
+    private static bool IsValidInstanceId(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var trimmed = value.Trim();
+        bool isSha1 = trimmed.Length == 40 && trimmed.All(Uri.IsHexDigit);
+        bool isGuid = Guid.TryParse(trimmed, out _);
+        return isSha1 || isGuid;
+    }
+
+    private static string NormalizeInstanceId(string value)
+    {
+        return value.Trim().ToLowerInvariant();
     }
 }
 

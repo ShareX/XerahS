@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -14,6 +15,9 @@ namespace XerahS.UI.ViewModels;
 
 public partial class WorkflowEditorViewModel : ViewModelBase
 {
+    // Prevents writing selection back while we are initializing/reloading the list
+    private bool _isLoadingSelection;
+
     [ObservableProperty]
     private WorkflowSettings _model;
 
@@ -107,9 +111,11 @@ public partial class WorkflowEditorViewModel : ViewModelBase
         // Select the current job from the category tree
         SelectJobInCategories(model.Job);
 
+        _isLoadingSelection = true;
         InitializeCategories();
         UpdateDestinations();
         LoadSelectedDestination();
+        _isLoadingSelection = false;
     }
 
     private void InitializeCategories()
@@ -129,7 +135,10 @@ public partial class WorkflowEditorViewModel : ViewModelBase
 
     partial void OnSelectedJobChanged(HotkeyType value)
     {
+        _isLoadingSelection = true;
         UpdateDestinations();
+        LoadSelectedDestination();
+        _isLoadingSelection = false;
     }
 
     private void UpdateDestinations()
@@ -234,21 +243,16 @@ public partial class WorkflowEditorViewModel : ViewModelBase
         }
         else
         {
-            // Prefer instance ID if present
-            string? instanceId = settings.TaskSettings.GetDestinationInstanceId(SelectedJob);
-            if (!string.IsNullOrEmpty(instanceId))
+            // Use the centralized instance ID stored in TaskSettings
+            string? targetInstanceId = settings.TaskSettings.GetDestinationInstanceId(SelectedJob);
+
+            if (!string.IsNullOrEmpty(targetInstanceId))
             {
-                matched = AvailableDestinations.FirstOrDefault(d => d.Instance.InstanceId == instanceId);
-                DebugHelper.WriteLine($"[DEBUG] TaskSettings returned instanceId: {instanceId}. Matched: {matched?.DisplayName}");
+                matched = AvailableDestinations.FirstOrDefault(d =>
+                    string.Equals(d.Instance.InstanceId, targetInstanceId, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (matched == null)
-            {
-                // Fallback to provider ID mapping for legacy enums
-                string targetProviderId = settings.TaskSettings.GetDestination(SelectedJob);
-                matched = AvailableDestinations.FirstOrDefault(d => d.Instance.ProviderId == targetProviderId);
-                DebugHelper.WriteLine($"[DEBUG] TaskSettings returned legacy target: {targetProviderId}. Matched: {matched?.DisplayName}");
-            }
+            DebugHelper.WriteLine($"[DEBUG] TaskSettings returned target instance: {targetInstanceId}. Matched: {matched?.DisplayName}");
         }
 
         if (matched != null)
@@ -307,19 +311,34 @@ public partial class WorkflowEditorViewModel : ViewModelBase
                 }
                 else if (SelectedDestination.Instance != null && !string.IsNullOrEmpty(SelectedDestination.Instance.InstanceId))
                 {
-                    // Save instance ID reference for plugin-based uploader
+                    // 3. Save the selected uploader instance ID
                     bool saved = Model.TaskSettings.SetDestinationInstanceId(SelectedJob, SelectedDestination.Instance.InstanceId);
-                    
+
                     if (saved)
                     {
-                         DebugHelper.WriteLine($"Workflow saved destination instance: {SelectedDestination.Instance.InstanceId} for job {SelectedJob}");
+                        DebugHelper.WriteLine($"Workflow saved destination instance: {SelectedDestination.Instance.InstanceId} for job {SelectedJob}");
                     }
                     else
                     {
-                        DebugHelper.WriteLine($"Warning: Could not map instance {SelectedDestination.Instance.InstanceId} to the appropriate destination for job {SelectedJob}");
+                        DebugHelper.WriteLine($"Warning: Could not save destination instance {SelectedDestination.Instance.InstanceId} for job {SelectedJob}");
                     }
                 }
             }
+        }
+    }
+
+    partial void OnSelectedDestinationChanged(UploaderInstanceViewModel? value)
+    {
+        if (_isLoadingSelection)
+        {
+            return;
+        }
+
+        if (value?.Instance != null && Model.TaskSettings != null)
+        {
+            // Persist the selection immediately so closing the dialog without OK does not lose context
+            Model.TaskSettings.SetDestinationInstanceId(SelectedJob, value.Instance.InstanceId);
+            DebugHelper.WriteLine($"[DEBUG] Selected destination changed to instance {value.Instance.InstanceId} for job {SelectedJob}");
         }
     }
 
