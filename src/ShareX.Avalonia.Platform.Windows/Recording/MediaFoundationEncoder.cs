@@ -44,7 +44,7 @@ public class MediaFoundationEncoder : IVideoEncoder
     private bool _disposed;
     private bool _finalized;
     private readonly object _lock = new();
-    private static readonly bool _applyOrientation180 = true; // default fix for flipped output
+    private static readonly bool _applyVerticalFlip = true; // default fix for upside-down output
 
     /// <summary>
     /// Check if Media Foundation is available on this system
@@ -345,9 +345,9 @@ public class MediaFoundationEncoder : IVideoEncoder
 
     private unsafe void CopyFrame(FrameData frame, IntPtr bufferPtr)
     {
-        if (_applyOrientation180)
+        if (_applyVerticalFlip)
         {
-            // [2026-01-10T14:24:00+08:00] Apply 180-degree rotation to correct mirrored/upside-down recordings observed in WGC->MF path.
+            // [2026-01-10T14:37:00+08:00] Apply vertical flip only; prior 180° rotation fixed upside-down but left horizontal mirror.
             byte* srcBase = (byte*)frame.DataPtr.ToPointer();
             byte* dstBase = (byte*)bufferPtr.ToPointer();
             int width = frame.Width;
@@ -358,17 +358,7 @@ public class MediaFoundationEncoder : IVideoEncoder
             {
                 byte* srcRow = srcBase + (height - 1 - y) * stride;
                 byte* dstRow = dstBase + y * stride;
-
-                for (int x = 0; x < width; x++)
-                {
-                    int srcIndex = x * 4;
-                    int dstIndex = (width - 1 - x) * 4;
-
-                    dstRow[dstIndex] = srcRow[srcIndex];
-                    dstRow[dstIndex + 1] = srcRow[srcIndex + 1];
-                    dstRow[dstIndex + 2] = srcRow[srcIndex + 2];
-                    dstRow[dstIndex + 3] = srcRow[srcIndex + 3];
-                }
+                Buffer.MemoryCopy(srcRow, dstRow, stride, stride);
             }
         }
         else
@@ -411,7 +401,7 @@ public class MediaFoundationEncoder : IVideoEncoder
             needsFinalize = !_finalized;
         }
 
-        // [2026-01-10T14:02:37+08:00] Guard against duplicate sink finalization when Dispose follows StopRecordingAsync; outcome (2026-01-10T14:09:06+08:00) shows single finalize entry with valid mp4 size.
+        // [2026-01-10T14:02:37+08:00] Guard against duplicate sink finalization when Dispose follows StopRecordingAsync; outcome (2026-01-10T14:09:06+08:00) shows single finalize entry with valid mp4 size. [2026-01-10T14:37:00+08:00] Orientation fix adjusted to vertical-only flip to remove residual mirror.
         if (needsFinalize)
         {
             Finalize();
