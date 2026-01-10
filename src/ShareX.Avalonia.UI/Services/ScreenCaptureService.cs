@@ -90,10 +90,10 @@ namespace XerahS.UI.Services
                 return null;
             }
 
-            TroubleshootingHelper.Log("RegionCapture", "SELECTION", $"Received selection: {selection}, Delaying 200ms...");
+            TroubleshootingHelper.Log("RegionCapture", "SELECTION", $"Received selection: {selection}, Delaying 50ms...");
 
             // Small delay to allow window to close fully
-            await Task.Delay(200);
+            await Task.Delay(50);
 
             // Delegate capture to platform implementation
             var workflowTaskSettings = SettingManager.GetOrCreateWorkflowTaskSettings(HotkeyType.None);

@@ -688,6 +688,8 @@ namespace XerahS.UI.Views.RegionCapture
                 {
                     var rect = _hoveredWindow.Bounds;
                     DebugLog("RESULT", $"Selected Window: {rect}");
+                    // Explicitly hide before setting result to ensure no ghosting
+                    Hide();
                     _tcs.TrySetResult(new SKRectI(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height));
                     Close();
                     return;
@@ -729,6 +731,8 @@ namespace XerahS.UI.Views.RegionCapture
                 // Create result rectangle in physical screen coordinates
                 var resultRect = new SKRectI(x, y, x + width, y + height);
 
+                // Explicitly hide before setting result to ensure no ghosting
+                Hide();
                 _tcs.TrySetResult(resultRect);
                 Close();
             }
