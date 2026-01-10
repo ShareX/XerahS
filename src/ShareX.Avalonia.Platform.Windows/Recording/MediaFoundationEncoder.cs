@@ -449,51 +449,15 @@ public class MediaFoundationEncoder : IVideoEncoder
 
         public static int Release(IntPtr ptr) => Call<ReleaseDelegate>(ptr, 2)(ptr);
 
-        // IMFAttributes (IUnknown + 15th = SetUINT32 [Index 17? No 15+3=18])
-        // IDL Order: GetUINT32(3)... SetUINT32(15 + 3 = 18?), SetGUID(18 + 3 = 21?)
-        // Verified: SetUINT32 is index 21, SetGUID is index 24 in some headers?
-        // Let's re-verify standard MF ordering.
-        // GetUINT32(3), GetUINT64(4), GetDouble(5), GetGUID(6), GetStringLength(7), GetString(8), GetAllocatedString(9), GetBlobSize(10), GetBlob(11), GetAllocatedBlob(12), GetUnknown(13)
-        // SetItem(14), DeleteItem(15), DeleteAllItems(16)
-        // SetUINT32(17), SetUINT64(18), SetDouble(19), SetGUID(20)
-        // So SetUINT32 is 17? No, IUnknown has 3 methods 0,1,2.
-        // So GetUINT32 is 3.
-        // SetItem is 14.
-        // SetUINT32 is 17.
-        // SetGUID is 20.
-        // My previous count 18/21 was maybe wrong. 
-        // Let's use 21/24 to be safe? NO. Using incorrect index crashes.
-        // Let's check ObjIdl definitions.
-        // HRESULT SetUINT32(REFGUID guidKey, UINT32 unValue);
-        // HRESULT SetGUID(REFGUID guidKey, REFGUID guidValue);
-        //
-        // Correct Offset Calculation:
-        // 0: QueryInterface
-        // 1: AddRef
-        // 2: Release
-        // 3: GetUINT32
-        // 4: GetUINT64
-        // 5: GetDouble
-        // 6: GetGUID
-        // 7: GetStringLength
-        // 8: GetString
-        // 9: GetAllocatedString
-        // 10: GetBlobSize
-        // 11: GetBlob
-        // 12: GetAllocatedBlob
-        // 13: GetUnknown
-        // 14: SetItem
-        // 15: DeleteItem
-        // 16: DeleteAllItems
-        // 17: SetUINT32
-        // 18: SetUINT64
-        // 19: SetDouble
-        // 20: SetGUID
+        // IMFAttributes (IUnknown + Methods)
+        // Correct Indices (Vortice/SharpDX standard):
+        // SetUINT32 = 21
+        // SetGUID = 24
         
-        public static int SetUINT32(IntPtr ptr, Guid key, uint value) => Call<SetUINT32Delegate>(ptr, 17)(ptr, ref key, value);
-        public static int SetGUID(IntPtr ptr, Guid key, Guid value) => Call<SetGUIDDelegate>(ptr, 20)(ptr, ref key, ref value);
+        public static int SetUINT32(IntPtr ptr, Guid key, uint value) => Call<SetUINT32Delegate>(ptr, 21)(ptr, ref key, value);
+        public static int SetGUID(IntPtr ptr, Guid key, Guid value) => Call<SetGUIDDelegate>(ptr, 24)(ptr, ref key, ref value);
 
-        // IMFSinkWriter (IUnknown + 8 methods?)
+        // IMFSinkWriter (IUnknown + 8 methods)
         // 3: AddStream
         // 4: SetInputMediaType
         // 5: BeginWriting
@@ -513,25 +477,23 @@ public class MediaFoundationEncoder : IVideoEncoder
         public static int Unlock(IntPtr ptr) => Call<UnlockDelegate>(ptr, 4)(ptr);
         public static int SetCurrentLength(IntPtr ptr, int currentLength) => Call<SetCurrentLengthDelegate>(ptr, 5)(ptr, currentLength);
 
-        // IMFSample (Inherits IMFAttributes - 27 methods total (24+3))
-        // So sample methods start at 24?
-        // IMFAttributes ends at UnlockStore(24), GetCount(25), GetItemByIndex(26), CopyAllItems(27). 
-        // Wait, standard IMFAttributes has 28 methods (0-27).
-        // So IMFSample starts at 28.
-        // 28: GetSampleFlags
-        // 29: SetSampleFlags
-        // 30: GetSampleTime
-        // 31: SetSampleTime
-        // 32: GetSampleDuration
-        // 33: SetSampleDuration
-        // 34: GetBufferCount
-        // 35: GetBufferByIndex
-        // 36: ConvertToContiguousBuffer
-        // 37: AddBuffer
+        // IMFSample (Inherits IMFAttributes)
+        // IMFAttributes has ~30 methods (0-28 or 0-32).
+        // Correct start for IMFSample is 33.
+        // 33: GetSampleFlags
+        // 34: SetSampleFlags
+        // 35: GetSampleTime
+        // 36: SetSampleTime   <-- 36
+        // 37: GetSampleDuration
+        // 38: SetSampleDuration <-- 38
+        // 39: GetBufferCount
+        // 40: GetBufferByIndex
+        // 41: ConvertToContiguousBuffer
+        // 42: AddBuffer       <-- 42
         
-        public static int SetSampleTime(IntPtr ptr, long sampleTime) => Call<SetSampleTimeDelegate>(ptr, 31)(ptr, sampleTime);
-        public static int SetSampleDuration(IntPtr ptr, long sampleDuration) => Call<SetSampleDurationDelegate>(ptr, 33)(ptr, sampleDuration);
-        public static int AddBuffer(IntPtr ptr, IntPtr buffer) => Call<AddBufferDelegate>(ptr, 37)(ptr, buffer);
+        public static int SetSampleTime(IntPtr ptr, long sampleTime) => Call<SetSampleTimeDelegate>(ptr, 36)(ptr, sampleTime);
+        public static int SetSampleDuration(IntPtr ptr, long sampleDuration) => Call<SetSampleDurationDelegate>(ptr, 38)(ptr, sampleDuration);
+        public static int AddBuffer(IntPtr ptr, IntPtr buffer) => Call<AddBufferDelegate>(ptr, 42)(ptr, buffer);
 
         private static T Call<T>(IntPtr ptr, int index) where T : Delegate
         {
