@@ -485,7 +485,7 @@ public static class FileHelpers
         }
     }
 
-    private static int WeekOfYear(DateTime dateTime)
+    public static int WeekOfYear(DateTime dateTime)
     {
         return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTime, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
     }
