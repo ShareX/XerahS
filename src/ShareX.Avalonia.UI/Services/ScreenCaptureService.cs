@@ -72,12 +72,13 @@ namespace XerahS.UI.Services
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
             SKRectI selection = SKRectI.Empty;
+            RegionCaptureWindow? window = null;
             var regionStopwatch = Stopwatch.StartNew();
 
             // Show UI window on UI thread
             await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                var window = new RegionCaptureWindow();
+                window = new RegionCaptureWindow();
 
                 // Window will handle background capture in OnOpened
                 window.Show();
@@ -90,10 +91,14 @@ namespace XerahS.UI.Services
                 return null;
             }
 
-            TroubleshootingHelper.Log("RegionCapture", "SELECTION", $"Received selection: {selection}, Delaying 50ms...");
+            TroubleshootingHelper.Log("RegionCapture", "SELECTION", $"Received selection: {selection}");
+
+            // New backend handles window detection and coordinate conversion only
+            // Actual capture is done by the platform service below
+            TroubleshootingHelper.Log("RegionCapture", "SELECTION", "Delaying 200ms...");
 
             // Small delay to allow window to close fully
-            await Task.Delay(50);
+            await Task.Delay(60);
 
             // Delegate capture to platform implementation
             var workflowTaskSettings = SettingManager.GetOrCreateWorkflowTaskSettings(HotkeyType.None);

@@ -63,7 +63,7 @@ namespace XerahS.UI.Views.RegionCapture
         private bool _usePerScreenScalingForLayout;
         private bool _useWindowPositionForFallback;
         private bool _useLogicalCoordinatesForCapture;
-        private bool _loggedPointerMoveFallback;
+        // _loggedPointerMoveFallback removed: Unused warning fix
 
         // Result task completion source to return value to caller
         private readonly System.Threading.Tasks.TaskCompletionSource<SKRectI> _tcs;
@@ -87,49 +87,63 @@ namespace XerahS.UI.Views.RegionCapture
             InitializeComponent();
             _tcs = new System.Threading.Tasks.TaskCompletionSource<SKRectI>();
 
-            DebugLog("INIT", "RegionCaptureWindow created");
-            DebugLog("INIT", $"Initial state: RenderScaling={RenderScaling}, Position={Position}, Bounds={Bounds}, ClientSize={ClientSize}");
+            TroubleshootingHelper.Log("RegionCapture", "INIT", "RegionCaptureWindow created");
+            TroubleshootingHelper.Log("RegionCapture", "INIT", $"Initial state: RenderScaling={RenderScaling}, Position={Position}, Bounds={Bounds}, ClientSize={ClientSize}");
+
+            // Try to initialize new backend
+            if (TryInitializeNewBackend())
+            {
+                TroubleshootingHelper.Log("RegionCapture", "INIT", "New capture backend enabled");
+            }
+            else
+            {
+                TroubleshootingHelper.Log("RegionCapture", "INIT", "Using legacy capture backend");
+            }
 
             // Close on Escape key
             this.KeyDown += (s, e) =>
             {
                 if (e.Key == Key.Escape)
                 {
-                    DebugLog("INPUT", "Escape key pressed - cancelling");
+                    TroubleshootingHelper.Log("RegionCapture", "INPUT", "Escape key pressed - cancelling");
+                    _tcs.TrySetResult(SKRectI.Empty);
+                    Close();
+                }
+            };
+
+            // Also handle right-click to force close for debugging
+            this.PointerPressed += (s, e) =>
+            {
+                if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+                {
+                    TroubleshootingHelper.Log("RegionCapture", "INPUT", "Right-click detected - force closing for debug");
                     _tcs.TrySetResult(SKRectI.Empty);
                     Close();
                 }
             };
         }
 
-        [Conditional("DEBUG")]
-        private void DebugLog(string category, string message)
-        {
-            TroubleshootingHelper.Log("RegionCapture", category, message);
-        }
-
-        [Conditional("DEBUG")]
         private void DebugLogLayout(string reason)
         {
             var selectionCanvas = this.FindControl<Canvas>("SelectionCanvas");
             var backgroundContainer = this.FindControl<Canvas>("BackgroundContainer");
             var overlay = this.FindControl<Path>("DarkeningOverlay");
 
-            DebugLog("LAYOUT", $"[{reason}] Window: Bounds={Bounds}, ClientSize={ClientSize}, Width={Width} Height={Height}, RenderScaling={RenderScaling}, Position={Position}");
+            TroubleshootingHelper.Log("RegionCapture", "LAYOUT", $"[{reason}] Window: Bounds={Bounds}, ClientSize={ClientSize}, Width={Width} Height={Height}, RenderScaling={RenderScaling}, Position={Position}");
 
             if (selectionCanvas != null)
             {
-                DebugLog("LAYOUT", $"[{reason}] SelectionCanvas: Bounds={selectionCanvas.Bounds}, DesiredSize={selectionCanvas.DesiredSize}");
+                TroubleshootingHelper.Log("RegionCapture", "LAYOUT", $"[{reason}] SelectionCanvas: Bounds={selectionCanvas.Bounds}, DesiredSize={selectionCanvas.DesiredSize}");
             }
 
             if (backgroundContainer != null)
             {
-                DebugLog("LAYOUT", $"[{reason}] BackgroundContainer: Bounds={backgroundContainer.Bounds}, DesiredSize={backgroundContainer.DesiredSize}");
+                TroubleshootingHelper.Log("RegionCapture", "LAYOUT", $"[{reason}] BackgroundContainer: Bounds={backgroundContainer.Bounds}, DesiredSize={backgroundContainer.DesiredSize}");
             }
 
             if (overlay != null)
             {
-                DebugLog("LAYOUT", $"[{reason}] DarkeningOverlay: Bounds={overlay.Bounds}, IsVisible={overlay.IsVisible}");
+                TroubleshootingHelper.Log("RegionCapture", "LAYOUT", $"[{reason}] DarkeningOverlay: Bounds={overlay.Bounds}, IsVisible={overlay.IsVisible}");
             }
         }
 
@@ -151,236 +165,31 @@ namespace XerahS.UI.Views.RegionCapture
         {
             base.OnOpened(e);
 
-            DebugLog("LIFECYCLE", $"OnOpened started (elapsed {_openStopwatch.ElapsedMilliseconds}ms since ctor)");
-            DebugLog("WINDOW", $"OnOpened state: RenderScaling={RenderScaling}, Position={Position}, Bounds={Bounds}, ClientSize={ClientSize}");
+            TroubleshootingHelper.Log("RegionCapture", "LIFECYCLE", $"OnOpened started (elapsed {_openStopwatch.ElapsedMilliseconds}ms since ctor)");
+            TroubleshootingHelper.Log("RegionCapture", "WINDOW", $"OnOpened state: RenderScaling={RenderScaling}, Position={Position}, Bounds={Bounds}, ClientSize={ClientSize}");
 
-            if (XerahS.Platform.Abstractions.PlatformServices.IsInitialized)
+            // Get our own handle to exclude from window detection
+            _myHandle = this.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
+
+            // Initialize window list for detection
+            if (XerahS.Platform.Abstractions.PlatformServices.IsInitialized &&
+                XerahS.Platform.Abstractions.PlatformServices.Window != null)
             {
-                var screenService = XerahS.Platform.Abstractions.PlatformServices.Screen;
-                _usePerScreenScalingForLayout = screenService?.UsePerScreenScalingForRegionCaptureLayout ?? false;
-                _useWindowPositionForFallback = screenService?.UseWindowPositionForRegionCaptureFallback ?? false;
-                _useLogicalCoordinatesForCapture = screenService?.UseLogicalCoordinatesForRegionCapture ?? false;
-
-                // Get our own handle to exclude from detection
-                _myHandle = this.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
-
-                // Initialize window list for detection
-                if (XerahS.Platform.Abstractions.PlatformServices.Window != null)
+                try
                 {
-                    try
-                    {
-                        // Fetch windows (Z-ordered) and filter visible ones
-                        _windows = XerahS.Platform.Abstractions.PlatformServices.Window.GetAllWindows()
-                            .Where(w => w.IsVisible && !IsMyWindow(w))
-                            .ToArray();
-                        DebugLog("WINDOW", $"Fetched {_windows.Length} visible windows for detection");
-                    }
-                    catch (Exception ex)
-                    {
-                        DebugLog("ERROR", $"Failed to fetch windows: {ex.Message}");
-                    }
+                    _windows = XerahS.Platform.Abstractions.PlatformServices.Window.GetAllWindows()
+                        .Where(w => w.IsVisible && !IsMyWindow(w))
+                        .ToArray();
+                    TroubleshootingHelper.Log("RegionCapture", "WINDOW", $"Fetched {_windows.Length} visible windows for detection");
+                }
+                catch (Exception ex)
+                {
+                    TroubleshootingHelper.Log("RegionCapture", "ERROR", $"Failed to fetch windows: {ex.Message}");
                 }
             }
 
-            DebugLog("WINDOW", $"Region capture policy: PerScreenScaling={_usePerScreenScalingForLayout}, UseWindowPositionFallback={_useWindowPositionForFallback}, UseLogicalCoords={_useLogicalCoordinatesForCapture}");
-
-            // Delay removed per user request
-            // await Task.Delay(250);
-
-            DebugLog("WINDOW", "Post-delay, beginning screen enumeration");
-
-            // Multi-monitor support: Span all screens at physical pixel dimensions
-            if (Screens.ScreenCount > 0)
-            {
-                DebugLog("SCREEN", $"Screen count: {Screens.ScreenCount}");
-
-                var minX = 0;
-                var minY = 0;
-                var maxX = 0;
-                var maxY = 0;
-
-                bool first = true;
-                int screenIndex = 0;
-                foreach (var screen in Screens.All)
-                {
-                    DebugLog("SCREEN", $"Screen {screenIndex}: Bounds={screen.Bounds}, Scaling={screen.Scaling}, IsPrimary={screen.IsPrimary}");
-                    DebugLog("SCREEN", $"Screen {screenIndex}: RenderScaling={RenderScaling}, ScreenScaling={screen.Scaling}");
-
-                    if (first)
-                    {
-                        minX = screen.Bounds.X;
-                        minY = screen.Bounds.Y;
-                        maxX = screen.Bounds.Right;
-                        maxY = screen.Bounds.Bottom;
-                        first = false;
-                    }
-                    else
-                    {
-                        minX = Math.Min(minX, screen.Bounds.X);
-                        minY = Math.Min(minY, screen.Bounds.Y);
-                        maxX = Math.Max(maxX, screen.Bounds.Right);
-                        maxY = Math.Max(maxY, screen.Bounds.Bottom);
-                    }
-                    screenIndex++;
-                }
-
-                DebugLog("WINDOW", $"Virtual screen bounds: ({minX}, {minY}) to ({maxX}, {maxY})");
-
-                // Size first to avoid transient invalid window bounds on macOS.
-                UpdateWindowSize(minX, minY);
-                DebugLog("WINDOW", $"Post-UpdateWindowSize: Width={Width}, Height={Height}, ClientSize={ClientSize}, RenderScaling={RenderScaling}");
-
-                // Position window at absolute top-left of virtual screen
-                Position = new PixelPoint(minX, minY);
-                DebugLog("WINDOW", $"Set Position to: {Position}");
-                DebugLog("WINDOW", $"Actual Position after set: {Position}, RenderScaling: {RenderScaling}");
-                DebugLogLayout("AfterPosition");
-
-                // Store window position for coordinate conversion (platform policy)
-                if (_useWindowPositionForFallback)
-                {
-                    _windowLeft = Position.X;
-                    _windowTop = Position.Y;
-                }
-                else
-                {
-                    _windowLeft = minX;
-                    _windowTop = minY;
-                }
-                DebugLog("WINDOW", $"Stored window origin for fallback: {_windowLeft},{_windowTop} (Position={Position})");
-
-                // Capture scaling at this point - use 1.0 to match the physical pixel coordinate system
-                // used for the overlay layout. RenderScaling can change as the mouse moves between
-                // monitors, so we need a stable value.
-                _capturedScaling = 1.0;
-                DebugLog("WINDOW", $"Captured scaling for coordinate conversion: {_capturedScaling}");
-
-                // Comprehensive DPI troubleshooting logging
-                TroubleshootingHelper.LogEnvironment("RegionCapture");
-                TroubleshootingHelper.LogMonitorInfo("RegionCapture", Screens.All);
-                TroubleshootingHelper.LogVirtualScreenBounds("RegionCapture", minX, minY, maxX, maxY, Width, Height, RenderScaling);
-
-                // Check if all screens are 100% DPI (Scaling == 1.0)
-                // We only enable background images and darkening if ALL screens are 1.0, to avoid mixed-DPI offsets.
-                bool allScreensStandardDpi = true;
-                foreach (var screen in Screens.All)
-                {
-                    if (Math.Abs(screen.Scaling - 1.0) > 0.001)
-                    {
-                        allScreensStandardDpi = false;
-                        break;
-                    }
-                }
-
-                DebugLog("WINDOW", $"DPI Check: All screens standard DPI (1.0)? {allScreensStandardDpi}");
-
-                _useDarkening = allScreensStandardDpi;
-                var container = this.FindControl<Canvas>("BackgroundContainer");
-
-                if (_useDarkening && container != null && XerahS.Platform.Abstractions.PlatformServices.IsInitialized)
-                {
-                    DebugLog("IMAGE", "Enabling background images and darkening (Standard DPI detected)");
-                    container.Children.Clear();
-
-                    var backgroundStopwatch = Stopwatch.StartNew();
-
-                    screenIndex = 0;
-                    foreach (var screen in Screens.All)
-                    {
-                        DebugLog("IMAGE", $"--- Processing screen {screenIndex} for background ---");
-
-                        // 1. Capture screen content (Physical)
-                        var skScreenRect = new SKRectI(
-                            screen.Bounds.X, screen.Bounds.Y,
-                            screen.Bounds.X + screen.Bounds.Width, screen.Bounds.Y + screen.Bounds.Height);
-                        DebugLog("IMAGE", $"Screen {screenIndex} capture rect: {skScreenRect}");
-
-                        var captureStopwatch = Stopwatch.StartNew();
-                        var screenshot = await XerahS.Platform.Abstractions.PlatformServices.ScreenCapture.CaptureRectAsync(skScreenRect);
-                        captureStopwatch.Stop();
-                        DebugLog("IMAGE", $"Screen {screenIndex} capture duration: {captureStopwatch.ElapsedMilliseconds}ms");
-
-                        if (screenshot != null)
-                        {
-                            DebugLog("IMAGE", $"Screen {screenIndex} capture result: {screenshot.Width}x{screenshot.Height}");
-                            var convertStopwatch = Stopwatch.StartNew();
-                            var avaloniaBitmap = ConvertToAvaloniaBitmap(screenshot);
-                            convertStopwatch.Stop();
-                            DebugLog("IMAGE", $"Screen {screenIndex} bitmap conversion: {convertStopwatch.ElapsedMilliseconds}ms");
-
-                            var imageControl = new Image
-                            {
-                                Source = avaloniaBitmap,
-                                Stretch = Stretch.Fill,
-                                Tag = screen
-                            };
-                            RenderOptions.SetBitmapInterpolationMode(imageControl, BitmapInterpolationMode.HighQuality);
-
-                            double logLeft;
-                            double logTop;
-                            double logWidth;
-                            double logHeight;
-
-                            if (_usePerScreenScalingForLayout)
-                            {
-                                // Use per-screen scaling for logical sizing on macOS.
-                                var layoutScale = Math.Abs(screen.Scaling) < 0.001 ? 1.0 : screen.Scaling;
-                                logLeft = (screen.Bounds.X - minX) / layoutScale;
-                                logTop = (screen.Bounds.Y - minY) / layoutScale;
-                                logWidth = screen.Bounds.Width / layoutScale;
-                                logHeight = screen.Bounds.Height / layoutScale;
-                                DebugLog("IMAGE", $"Screen {screenIndex} logical target (ScreenScaling {layoutScale}): {logWidth}x{logHeight}");
-                            }
-                            else
-                            {
-                                // Default layout uses logical bounds directly.
-                                logLeft = screen.Bounds.X - minX;
-                                logTop = screen.Bounds.Y - minY;
-                                logWidth = screen.Bounds.Width;
-                                logHeight = screen.Bounds.Height;
-                                DebugLog("IMAGE", $"Screen {screenIndex} logical target (Default): {logWidth}x{logHeight}");
-                            }
-
-                            imageControl.Width = logWidth;
-                            imageControl.Height = logHeight;
-                            Canvas.SetLeft(imageControl, logLeft);
-                            Canvas.SetTop(imageControl, logTop);
-
-                            container.Children.Add(imageControl);
-
-                            DebugLog("IMAGE", $"Screen {screenIndex} placed at ({logLeft}, {logTop}) size {logWidth}x{logHeight}");
-                            if (!double.IsNaN(Width) && !double.IsNaN(Height) && (logWidth > Width || logHeight > Height))
-                            {
-                                DebugLog("IMAGE", $"WARNING: Image size exceeds window size. Image={logWidth}x{logHeight}, Window={Width}x{Height}");
-                            }
-
-                            screenshot.Dispose();
-                        }
-                        else
-                        {
-                            DebugLog("IMAGE", $"Screen {screenIndex} capture returned null");
-                        }
-
-                        screenIndex++;
-                    }
-
-                    backgroundStopwatch.Stop();
-                    DebugLog("IMAGE", $"Background capture total: {backgroundStopwatch.ElapsedMilliseconds}ms");
-                    DebugLogLayout("AfterBackgroundCapture");
-
-                    // Enable darkening
-                    InitializeFullScreenDarkening();
-                }
-                else
-                {
-                    DebugLog("IMAGE", "Disabling background images and darkening (Mixed/High DPI detected)");
-                    if (container != null)
-                    {
-                        container.Children.Clear();
-                    }
-                    // Do NOT initialize darkening
-                }
-            }
+            // Use new backend for positioning
+            PositionWindowWithNewBackend();
 
             // Initial pointer move check to highlight window under cursor immediately
             var mousePos = GetGlobalMousePosition();
@@ -411,7 +220,7 @@ namespace XerahS.UI.Views.RegionCapture
                     logTop = offsetY / scale;
                     logRight = logLeft + (screen.Bounds.Width / scale);
                     logBottom = logTop + (screen.Bounds.Height / scale);
-                    DebugLog("WINDOW", $"UpdateWindowSize screen: Bounds={screen.Bounds}, ScreenScaling={scale}, LogicalRect=({logLeft},{logTop}) to ({logRight},{logBottom})");
+                    TroubleshootingHelper.Log("RegionCapture", "WINDOW", $"UpdateWindowSize screen: Bounds={screen.Bounds}, ScreenScaling={scale}, LogicalRect=({logLeft},{logTop}) to ({logRight},{logBottom})");
                 }
                 else
                 {
@@ -419,7 +228,7 @@ namespace XerahS.UI.Views.RegionCapture
                     logTop = offsetY;
                     logRight = logLeft + screen.Bounds.Width;
                     logBottom = logTop + screen.Bounds.Height;
-                    DebugLog("WINDOW", $"UpdateWindowSize screen: Bounds={screen.Bounds}, LogicalRect=({logLeft},{logTop}) to ({logRight},{logBottom})");
+                    TroubleshootingHelper.Log("RegionCapture", "WINDOW", $"UpdateWindowSize screen: Bounds={screen.Bounds}, LogicalRect=({logLeft},{logTop}) to ({logRight},{logBottom})");
                 }
 
                 logicalMinX = Math.Min(logicalMinX, logLeft);
@@ -428,43 +237,34 @@ namespace XerahS.UI.Views.RegionCapture
                 logicalMaxY = Math.Max(logicalMaxY, logBottom);
             }
 
-            Width = logicalMaxX - logicalMinX;
-            Height = logicalMaxY - logicalMinY;
-            DebugLog("WINDOW", $"UpdateWindowSize: LogicalBounds=({logicalMinX},{logicalMinY}) to ({logicalMaxX},{logicalMaxY}), Size={Width}x{Height}");
-        }
+            var targetWidth = logicalMaxX - logicalMinX;
+            var targetHeight = logicalMaxY - logicalMinY;
 
-        private void UpdateImagesLayout(int minX, int minY)
-        {
-            var container = this.FindControl<Canvas>("BackgroundContainer");
-            if (container == null) return;
+            // Set both Width/Height and ClientSize to force proper sizing
+            // 2026-01-09 21:50: ClientSize was not updating to match Width/Height on MIKE-NB
+            Width = targetWidth;
+            Height = targetHeight;
+            ClientSize = new Avalonia.Size(targetWidth, targetHeight);
 
-            var currentScaling = RenderScaling;
-            DebugLog("LAYOUT", $"UpdateImagesLayout: Scaling={currentScaling}");
+            TroubleshootingHelper.Log("RegionCapture", "WINDOW", $"UpdateWindowSize: LogicalBounds=({logicalMinX},{logicalMinY}) to ({logicalMaxX},{logicalMaxY}), Size={Width}x{Height}");
+            TroubleshootingHelper.Log("RegionCapture", "WINDOW", $"UpdateWindowSize: ClientSize set to {ClientSize.Width}x{ClientSize.Height}");
 
-            int idx = 0;
-            foreach (var child in container.Children)
+            // Also explicitly size the SelectionCanvas to ensure it covers the entire virtual screen
+            // 2026-01-09 22:30: ClientSize is logical (scaled), so Canvas must also be logical size.
+            // If targetWidth is physical (2496), and RenderScaling is 1.25, ClientSize becomes ~2012.
+            // We must size Canvas to ~2012 too, otherwise it will be larger than window content area
+            // and might be clipped or offset if alignment is Center (default).
+            // We forced Top/Left alignment in XAML, but correct sizing is safer.
+            
+            var selectionCanvas = this.FindControl<Canvas>("SelectionCanvas");
+            if (selectionCanvas != null)
             {
-                if (child is Image img && img.Tag is Avalonia.Platform.Screen screen)
-                {
-                    // Calculate based on WINDOW scaling, not Screen scaling
-                    // We want 1 image pixel = 1 physical pixel
+                var canvasScale = RenderScaling;
+                if (canvasScale < 0.1) canvasScale = 1.0;
 
-                    var physicalOffsetX = screen.Bounds.X - minX;
-                    var physicalOffsetY = screen.Bounds.Y - minY;
-
-                    var logicalLeft = physicalOffsetX / currentScaling;
-                    var logicalTop = physicalOffsetY / currentScaling;
-                    var logicalWidth = screen.Bounds.Width / currentScaling;
-                    var logicalHeight = screen.Bounds.Height / currentScaling;
-
-                    img.Width = logicalWidth;
-                    img.Height = logicalHeight;
-                    Canvas.SetLeft(img, logicalLeft);
-                    Canvas.SetTop(img, logicalTop);
-
-                    DebugLog("LAYOUT", $"Screen {idx} Layout: Physical {screen.Bounds.Width}x{screen.Bounds.Height} -> Logical {logicalWidth}x{logicalHeight} (@ {currentScaling}x)");
-                }
-                idx++;
+                selectionCanvas.Width = targetWidth / canvasScale;
+                selectionCanvas.Height = targetHeight / canvasScale;
+                TroubleshootingHelper.Log("RegionCapture", "CANVAS", $"SelectionCanvas sized to {selectionCanvas.Width}x{selectionCanvas.Height} (Target={targetWidth}x{targetHeight} / Scale={canvasScale})");
             }
         }
 
@@ -582,160 +382,17 @@ namespace XerahS.UI.Views.RegionCapture
 
         private void OnPointerPressed(object sender, PointerPressedEventArgs e)
         {
-            var point = e.GetCurrentPoint(this);
-
-            // Handle right-click
-            if (point.Properties.IsRightButtonPressed)
-            {
-                if (_isSelecting)
-                {
-                    // Cancel current selection
-                    CancelSelection();
-                    e.Handled = true;
-                }
-                else
-                {
-                    // No active selection - close the window
-                    _tcs.TrySetResult(SKRectI.Empty);
-                    Close();
-                    e.Handled = true;
-                }
-                return;
-            }
-
-            // Handle left-click to start selection
-            if (point.Properties.IsLeftButtonPressed)
-            {
-                // Store logical coordinates for visual rendering (from Avalonia - already correct)
-                _startPointLogical = point.Position;
-                _dragStarted = false;
-
-                // Store screen coordinates for final screenshot region
-                _startPointPhysical = _useLogicalCoordinatesForCapture
-                    ? ConvertLogicalToScreen(_startPointLogical)
-                    : GetGlobalMousePosition();
-                _isSelecting = true;
-
-                DebugLog("MOUSE", $"PointerPressed: Physical={_startPointPhysical}, Logical={_startPointLogical}");
-                if (!_useLogicalCoordinatesForCapture && _startPointPhysical.X == 0 && _startPointPhysical.Y == 0)
-                {
-                    _startPointPhysical = ConvertLogicalToScreen(_startPointLogical);
-                    DebugLog("MOUSE", $"PointerPressed: Physical position is (0,0); using fallback from logical -> {_startPointPhysical}");
-                }
-
-                // If we are hovering a window, we don't clear visuals yet.
-                // We only clear/update visuals if drag exceeds threshold.
-                // But if we weren't hovering, we should init selection border (0size).
-                if (_hoveredWindow == null)
-                {
-                    UpdateSelectionVisuals(_startPointLogical, _startPointLogical, _startPointPhysical, _startPointPhysical);
-                }
-            }
+            OnPointerPressedNew(e);
         }
 
         private void OnPointerMoved(object sender, PointerEventArgs e)
         {
-            // Check for right-click during drag to cancel selection
-            var point = e.GetCurrentPoint(this);
-            if (point.Properties.IsRightButtonPressed && _isSelecting)
-            {
-                CancelSelection();
-                e.Handled = true;
-                return;
-            }
-
-            var currentPointLogical = point.Position;
-            var currentPointPhysical = _useLogicalCoordinatesForCapture
-                ? ConvertLogicalToScreen(currentPointLogical)
-                : GetGlobalMousePosition();
-
-            // Handle selection dragging
-            if (_isSelecting)
-            {
-                // Check if drag threshold exceeded
-                if (!_dragStarted)
-                {
-                    var dist = Math.Sqrt(Math.Pow(currentPointLogical.X - _startPointLogical.X, 2) + Math.Pow(currentPointLogical.Y - _startPointLogical.Y, 2));
-                    if (dist > DragThreshold)
-                    {
-                        _dragStarted = true;
-                        _hoveredWindow = null; // Drag overrides window selection
-                    }
-                    else
-                    {
-                        // Stick to window selection if we haven't dragged far enough
-                        return;
-                    }
-                }
-
-                UpdateSelectionVisuals(_startPointLogical, currentPointLogical, _startPointPhysical, currentPointPhysical);
-            }
-            else
-            {
-                // Not selecting - check for window under cursor (Active Window detection)
-                UpdateWindowSelection(currentPointPhysical);
-            }
+            OnPointerMovedNew(e);
         }
 
         private void OnPointerReleased(object sender, PointerReleasedEventArgs e)
         {
-            if (_isSelecting)
-            {
-                _isSelecting = false;
-
-                // If we didn't drag and we have a hovered window, use that window
-                if (!_dragStarted && _hoveredWindow != null)
-                {
-                    var rect = _hoveredWindow.Bounds;
-                    DebugLog("RESULT", $"Selected Window: {rect}");
-                    // Explicitly hide before setting result to ensure no ghosting
-                    Hide();
-                    _tcs.TrySetResult(new SKRectI(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height));
-                    Close();
-                    return;
-                }
-
-                // Get final position in physical screen coordinates (from Win32 API)
-                var currentPointPhysical = _useLogicalCoordinatesForCapture
-                    ? ConvertLogicalToScreen(e.GetCurrentPoint(this).Position)
-                    : GetGlobalMousePosition();
-
-                // Fallback: If Win32 API fails (returns 0,0), calculate from Avalonia position
-                if (!_useLogicalCoordinatesForCapture && currentPointPhysical.X == 0 && currentPointPhysical.Y == 0)
-                {
-                    var point = e.GetCurrentPoint(this);
-                    var logicalPos = point.Position;
-
-                    // Convert logical to physical using window position and render scaling
-                    // Note: This is approximate for mixed-DPI, but better than (0,0)
-                    currentPointPhysical = ConvertLogicalToScreen(logicalPos);
-                    DebugLog("MOUSE", $"PointerReleased: Win32 API failed, using fallback. Logical={logicalPos}, RenderScaling={RenderScaling}, WindowPos={_windowLeft},{_windowTop}, WindowPosition={Position}, Calculated Physical={currentPointPhysical}");
-                }
-                else
-                {
-                    DebugLog("MOUSE", $"PointerReleased: Physical={currentPointPhysical}");
-                }
-
-                // Calculate final rect in physical coordinates for screenshot
-                var x = Math.Min(_startPointPhysical.X, currentPointPhysical.X);
-                var y = Math.Min(_startPointPhysical.Y, currentPointPhysical.Y);
-                var width = Math.Abs(_startPointPhysical.X - currentPointPhysical.X);
-                var height = Math.Abs(_startPointPhysical.Y - currentPointPhysical.Y);
-
-                DebugLog("RESULT", $"Final selection rect: X={x}, Y={y}, W={width}, H={height}");
-
-                // Ensure non-zero size
-                if (width <= 0) width = 1;
-                if (height <= 0) height = 1;
-
-                // Create result rectangle in physical screen coordinates
-                var resultRect = new SKRectI(x, y, x + width, y + height);
-
-                // Explicitly hide before setting result to ensure no ghosting
-                Hide();
-                _tcs.TrySetResult(resultRect);
-                Close();
-            }
+            OnPointerReleasedNew(e);
         }
 
         private IntPtr _myHandle;
@@ -744,7 +401,7 @@ namespace XerahS.UI.Views.RegionCapture
         {
             if (_myHandle != IntPtr.Zero && w.Handle == _myHandle) return true;
 
-            // Also exclude windows with empty title and small size (tooltips etc) if desired, 
+            // Also exclude windows with empty title and small size (tooltips etc) if desired,
             // but for now just safely exclude self.
             return false;
         }
@@ -762,31 +419,69 @@ namespace XerahS.UI.Views.RegionCapture
                 // Convert window bounds (physical) to logical for rendering
                 double logicalX, logicalY, logicalW, logicalH;
 
-                var relativeX = window.Bounds.X - _windowLeft;
-                var relativeY = window.Bounds.Y - _windowTop;
-
-                // Use captured scaling for conversion to ensure consistency with overlay layout.
-                // RenderScaling can change dynamically as mouse moves between monitors,
-                // but _capturedScaling was captured at window open time.
-                var currentScaling = _capturedScaling;
-
-                logicalX = relativeX / currentScaling;
-                logicalY = relativeY / currentScaling;
-                logicalW = window.Bounds.Width / currentScaling;
-                logicalH = window.Bounds.Height / currentScaling;
-
-                // Get screen index and scaling for this window (for logging/comparison)
-                int screenIndex = 0;
+                // Find containing screen to determine layout offset
+                Avalonia.Platform.Screen? containingScreen = null;
                 double screenScaling = 1.0;
+                int screenIndex = 0;
+                int currentIdx = 0;
+                
+                // Use global RenderScaling for the counter-scaling, checking validity
+                var scaling = RenderScaling;
+                if (scaling < 0.1) scaling = 1.0;
+                
                 foreach (var screen in Screens.All)
                 {
                     if (screen.Bounds.Contains(new Avalonia.PixelPoint(window.Bounds.X, window.Bounds.Y)))
                     {
+                        containingScreen = screen;
                         screenScaling = screen.Scaling;
+                        screenIndex = currentIdx;
                         break;
                     }
-                    screenIndex++;
+                    currentIdx++;
                 }
+
+                // Match the window layout logic first (Physical Layout)
+                if (containingScreen != null)
+                {
+                    // _windowLeft was initialized to minX in OnOpened (unless fallback used)
+                    var screenLayoutOffsetX = containingScreen.Bounds.X - _windowLeft;
+                    var screenLayoutOffsetY = containingScreen.Bounds.Y - _windowTop;
+
+                    // Position within the screen
+                    var withinScreenX = window.Bounds.X - containingScreen.Bounds.X;
+                    var withinScreenY = window.Bounds.Y - containingScreen.Bounds.Y;
+
+                    // "Ideal" layout coordinates (Physical pixels)
+                    var idealX = screenLayoutOffsetX + withinScreenX;
+                    var idealY = screenLayoutOffsetY + withinScreenY;
+                    var idealW = window.Bounds.Width;
+                    var idealH = window.Bounds.Height;
+
+                    // CRITICAL FIX (2026-01-09 22:30):
+                    // Reverted Hybrid Scaling. Now that SelectionCanvas alignment (Top/Left) and sizing (Logical) 
+                    // are fixed, we should go back to using RenderScaling for both Position and Size.
+                    
+                    logicalX = idealX / scaling;
+                    logicalY = idealY / scaling;
+                    logicalW = idealW / scaling;
+                    logicalH = idealH / scaling;
+
+                    TroubleshootingHelper.Log("RegionCapture", "SELECTION", $"Counter-scaling (Retry): Ideal=({idealX},{idealY}) {idealW}x{idealH} / Scaling {scaling} -> Logical=({logicalX},{logicalY})");
+                }
+                else
+                {
+                    // Fallback
+                    var relativeX = window.Bounds.X - _windowLeft;
+                    var relativeY = window.Bounds.Y - _windowTop;
+                    
+                    logicalX = relativeX / scaling;
+                    logicalY = relativeY / scaling;
+                    logicalW = window.Bounds.Width / scaling;
+                    logicalH = window.Bounds.Height / scaling;
+                }
+
+                // Screen index and scaling already determined above for layout
 
                 // Comprehensive selection logging for DPI troubleshooting
                 int processId = 0;
@@ -799,7 +494,7 @@ namespace XerahS.UI.Views.RegionCapture
                     window.Title ?? "",
                     processId,
                     new System.Drawing.Rectangle(window.Bounds.X, window.Bounds.Y, window.Bounds.Width, window.Bounds.Height),
-                    currentScaling,
+                    scaling,
                     logicalX, logicalY, logicalW, logicalH,
                     screenIndex, screenScaling);
 
@@ -915,6 +610,20 @@ namespace XerahS.UI.Views.RegionCapture
                     Canvas.SetTop(infoText, labelY);
                 }
             }
+        }
+
+        private static string TruncateString(string value, int maxLength)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+            return value.Length <= maxLength ? value : value.Substring(0, maxLength) + "...";
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+
+            // Dispose new backend if initialized
+            DisposeNewBackend();
         }
     }
 }

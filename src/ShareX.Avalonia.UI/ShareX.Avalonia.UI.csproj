@@ -17,6 +17,9 @@
     <ProjectReference Include="..\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Platform.Abstractions\ShareX.Avalonia.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.Windows\ShareX.Avalonia.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.macOS\ShareX.Avalonia.Platform.macOS.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.Linux\ShareX.Avalonia.Platform.Linux.csproj" Condition="'$(OS)' != 'Windows_NT'" />
     <ProjectReference Include="..\ShareX.Avalonia.Services.Abstractions\ShareX.Avalonia.Services.Abstractions.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.ScreenCapture\ShareX.Avalonia.ScreenCapture.csproj" />
     <ProjectReference Include="..\..\..\ShareX.Editor\src\ShareX.Editor\ShareX.Editor.csproj" />
