@@ -28,7 +28,10 @@
       "Bash(./XerahS.exe list workflows)",
       "Bash(./XerahS.exe workflow run:*)",
       "Bash(./XerahS.exe run:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(dir /s /b srcShareX.Editor 2)",
+      "Bash(cmd.exe /c \"dir /s /b src 2>nul | findstr /i EditorView\")",
+      "Bash(cmd.exe /c \"dir /s /b . 2>nul | findstr /i \"\"ShareX.Editor\"\"\")"
     ]
   }
 }

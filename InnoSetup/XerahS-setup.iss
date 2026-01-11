@@ -43,9 +43,10 @@ Name: "CreateStartupIcon"; Description: "Run {#MyAppName} when Windows starts"; 
 Source: "{#MyAppReleaseDirectory}\{#MyAppExeName}"; DestDir: {app}; Flags: ignoreversion
 Source: "{#MyAppReleaseDirectory}\*.dll"; DestDir: {app}; Flags: ignoreversion
 Source: "{#MyAppReleaseDirectory}\*.json"; DestDir: {app}; Flags: ignoreversion
-;Source: "{#MyAppReleaseDirectory}\*.png"; DestDir: {app}; Flags: ignoreversion
-;Source: "{#MyAppReleaseDirectory}\Assets\*"; DestDir: {app}\Assets; Flags: ignoreversion recursesubdirs createallsubdirs
-; Add other file types as needed, keeping it minimal for now
+Source: "{#MyAppReleaseDirectory}\runtimes\win-x64\*"; DestDir: "{app}\runtimes\win-x64"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyAppReleaseDirectory}\runtimes\win-x86\*"; DestDir: "{app}\runtimes\win-x86"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyAppReleaseDirectory}\runtimes\win-arm64\*"; DestDir: "{app}\runtimes\win-arm64"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyAppReleaseDirectory}\runtimes\win-arm\*"; DestDir: "{app}\runtimes\win-arm"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
