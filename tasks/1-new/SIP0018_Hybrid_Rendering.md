@@ -81,7 +81,7 @@ stateDiagram-v2
         Initialized --> LoadImage: PreviewImage Changed
         
         state LoadImage {
-             note right of LoadImage
+             note
                 BitmapConversionHelpers.ToSKBitmap
                 EditorCore.LoadImage(copy)
                 SKCanvasControl.Initialize
@@ -97,7 +97,7 @@ stateDiagram-v2
         }
         
         state RenderingState {
-            note right of RenderingState
+            note
                 SKCanvasControl.Draw()
                  -> EditorCore.Render(canvas, false)
             end note
