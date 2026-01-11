@@ -57,6 +57,12 @@ public class ScreenRecordingManager
     }
 
     /// <summary>
+    /// Factory function for creating the primary recording service.
+    /// MUST be initialized by the application composition root.
+    /// </summary>
+
+
+    /// <summary>
     /// Event fired when recording status changes
     /// </summary>
     public event EventHandler<RecordingStatusEventArgs>? StatusChanged;
@@ -142,7 +148,7 @@ public class ScreenRecordingManager
 
         if (string.IsNullOrEmpty(options.OutputPath))
         {
-            string screenCapturesFolder = SettingManager.ScreenCapturesFolder;
+            string screenCapturesFolder = SettingManager.ScreencastsFolder;
             string dateFolderPath = Path.Combine(screenCapturesFolder, DateTime.Now.ToString("yyyy-MM"));
             Directory.CreateDirectory(dateFolderPath);
 
@@ -322,52 +328,45 @@ public class ScreenRecordingManager
         }
     }
 
+    /// <summary>
+    /// Factory function for creating the fallback recording service (e.g. FFmpeg).
+    /// MUST be initialized by the application composition root.
+    /// </summary>
+
+
+    // ... (existing code) ...
+
     private static IRecordingService CreateRecordingService(bool useFallback)
     {
         if (useFallback)
         {
-            if (ScreenRecorderService.FallbackServiceFactory != null)
+            // Direct instantiation of FFmpeg fallback service
+            return new XerahS.ScreenCapture.ScreenRecording.FFmpegRecordingService();
+        }
+
+        // Direct instantiation of Native service
+        return new XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService();
+    }
+
+        private static bool ShouldForceFallback(RecordingOptions options)
+        {
+            var settings = options.Settings;
+
+            if (settings?.ForceFFmpeg == true)
             {
-                return ScreenRecorderService.FallbackServiceFactory();
+                TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "ForceFFmpeg setting is enabled -> using FFmpeg");
+                return true;
             }
 
-            return new FFmpegRecordingService();
+            // Audio capture currently routes through FFmpeg fallback
+            if (settings is not null && (settings.CaptureSystemAudio || settings.CaptureMicrophone))
+            {
+                TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "Audio capture requested -> using FFmpeg");
+                return true;
+            }
+
+            return false;
         }
-
-        return new ScreenRecorderService();
-    }
-
-    private static bool ShouldForceFallback(RecordingOptions options)
-    {
-        var settings = options.Settings;
-
-        if (settings?.ForceFFmpeg == true)
-        {
-            TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "ForceFFmpeg setting is enabled -> using FFmpeg");
-            return true;
-        }
-
-        // Audio capture currently routes through FFmpeg fallback
-        if (settings is not null && (settings.CaptureSystemAudio || settings.CaptureMicrophone))
-        {
-            TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "Audio capture requested -> using FFmpeg");
-            return true;
-        }
-
-        bool captureFactoryNull = ScreenRecorderService.CaptureSourceFactory == null;
-        bool encoderFactoryNull = ScreenRecorderService.EncoderFactory == null;
-
-        TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", $"Factory status: CaptureSourceFactory={(captureFactoryNull ? "NULL" : "SET")}, EncoderFactory={(encoderFactoryNull ? "NULL" : "SET")}");
-
-        if (captureFactoryNull || encoderFactoryNull)
-        {
-            TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "✗ Factories not initialized -> forcing FFmpeg fallback");
-            return true;
-        }
-
-        TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "✓ Factories initialized -> using native recording");
-        return false;
-    }
 
     private static bool CanFallbackFrom(Exception ex)
     {

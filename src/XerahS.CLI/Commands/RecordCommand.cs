@@ -26,7 +26,9 @@
 using System.CommandLine;
 using System.Drawing;
 using XerahS.Common;
+using XerahS.Core;
 using XerahS.Core.Managers;
+using XerahS.ScreenCapture.ScreenRecording;
 using XerahS.ScreenCapture.ScreenRecording;
 
 namespace XerahS.CLI.Commands
@@ -177,11 +179,12 @@ namespace XerahS.CLI.Commands
                 };
 
                 Console.WriteLine($"Starting recording: {mode} mode, {fps}fps, {codec} codec");
-                if (audio || microphone)
-                {
-                    Console.WriteLine($"Audio: system={audio}, microphone={microphone}");
-                }
-
+                // Initialize platform services
+            // In CLI, we might need a minimal initialization
+            ScreenRecordingManager.PlatformInitializationTask = Task.CompletedTask;
+            
+            // Initialize Settings
+            SettingManager.LoadAllSettings();
                 var manager = ScreenRecordingManager.Instance;
                 await manager.StartRecordingAsync(recordingOptions);
 

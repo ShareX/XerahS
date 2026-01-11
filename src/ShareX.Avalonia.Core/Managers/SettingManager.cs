@@ -96,6 +96,21 @@ namespace XerahS.Core
         public static string HistoryFolder => Path.Combine(PersonalFolder, ShareXResources.HistoryFolderName);
 
         /// <summary>
+        /// Screenshots folder path
+        /// </summary>
+        public static string ScreenshotsFolder => XerahS.Common.PathsManager.ScreenshotsFolder;
+
+        /// <summary>
+        /// Screencasts folder path
+        /// </summary>
+        public static string ScreencastsFolder => XerahS.Common.PathsManager.ScreencastsFolder;
+
+        /// <summary>
+        /// Frame dumps folder path for screen recording debug
+        /// </summary>
+        public static string FrameDumpsFolder => XerahS.Common.PathsManager.FrameDumpsFolder;
+
+        /// <summary>
         /// Backup folder path
         /// </summary>
         public static string BackupFolder => Path.Combine(SettingsFolder, BackupFolderName);
@@ -104,11 +119,6 @@ namespace XerahS.Core
         /// History backup folder path
         /// </summary>
         public static string HistoryBackupFolder => Path.Combine(HistoryFolder, BackupFolderName);
-
-        /// <summary>
-        /// Screen captures folder path
-        /// </summary>
-        public static string ScreenCapturesFolder => Path.Combine(PersonalFolder, ShareXResources.ScreenCapturesFolderName);
 
         /// <summary>
         /// Application config file path
@@ -373,6 +383,7 @@ namespace XerahS.Core
 
         #endregion
 
+
         #region Helper Methods
 
         private static string GetUploadersConfigFileName(string destinationFolder)
@@ -434,36 +445,25 @@ namespace XerahS.Core
             WorkflowsConfig = new WorkflowsConfig();
         }
 
-        /// <summary>
-        /// Ensure required directories exist
-        /// </summary>
+
+
+        public static void LoadAllSettings()
+        {
+            LoadApplicationConfig();
+            LoadUploadersConfig();
+            LoadWorkflowsConfig();
+
+
+            // Initialize PathsManager
+            XerahS.Common.PathsManager.PersonalFolder = PersonalFolder;
+            EnsureDirectoriesExist();
+        }
+
         public static void EnsureDirectoriesExist()
         {
-            if (!string.IsNullOrEmpty(SettingsFolder))
-            {
-                FileHelpers.CreateDirectory(SettingsFolder);
+                FileHelpers.CreateDirectory(FrameDumpsFolder);
             }
 
-            if (!string.IsNullOrEmpty(BackupFolder))
-            {
-                FileHelpers.CreateDirectory(BackupFolder);
-            }
-
-            if (!string.IsNullOrEmpty(HistoryFolder))
-            {
-                FileHelpers.CreateDirectory(HistoryFolder);
-            }
-
-            if (!string.IsNullOrEmpty(HistoryBackupFolder))
-            {
-                FileHelpers.CreateDirectory(HistoryBackupFolder);
-            }
-
-            if (!string.IsNullOrEmpty(ScreenCapturesFolder))
-            {
-                FileHelpers.CreateDirectory(ScreenCapturesFolder);
-            }
-        }
 
         /// <summary>
         /// Returns the history file path in the dedicated History folder.

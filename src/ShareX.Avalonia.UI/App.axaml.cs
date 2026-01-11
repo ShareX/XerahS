@@ -4,7 +4,9 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using XerahS.Common;
 using XerahS.Core;
+using XerahS.Core.Managers;
 using XerahS.Platform.Abstractions;
+
 using XerahS.UI.Views;
 using ShareX.Editor.ViewModels;
 
@@ -23,6 +25,10 @@ public partial class App : Application
         {
             var mainViewModel = new MainViewModel();
             mainViewModel.ApplicationName = ShareXResources.AppName;
+
+
+
+
 
             desktop.MainWindow = new Views.MainWindow
             {

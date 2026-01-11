@@ -26,6 +26,7 @@
 using System.Diagnostics;
 using XerahS.Media;
 using XerahS.Common;
+using XerahS.ScreenCapture.ScreenRecording;
 
 namespace XerahS.ScreenCapture.ScreenRecording;
 
@@ -395,12 +396,16 @@ public class FFmpegRecordingService : IRecordingService
     private string GetDefaultOutputPath()
     {
         // Default pattern: ShareX/Screenshots/yyyy-MM/Date_Time.mp4
-        string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        string shareXPath = Path.Combine(documentsPath, "ShareX", "Screenshots", DateTime.Now.ToString("yyyy-MM"));
-        Directory.CreateDirectory(shareXPath);
+        // Use PathsManager.ScreenshotsFolder (or potentially a new ScreencastsFolder logic if preferred, keeping it simple for now)
+        // Wait, FFmpegRecordingService is for recording, so it should probably use ScreencastsFolder.
+        // Let's check what I planned. "Update GetDefaultOutputPath to use PathsManager.ScreenshotsFolder (or ScreencastsFolder to match logic)."
+        // ScreencastsFolder makes more sense.
+        
+        string screencastsFolder = PathsManager.ScreencastsFolder;
+        Directory.CreateDirectory(screencastsFolder);
 
         string fileName = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4";
-        return Path.Combine(shareXPath, fileName);
+        return Path.Combine(screencastsFolder, fileName);
     }
 
     private void UpdateStatus(RecordingStatus newStatus)

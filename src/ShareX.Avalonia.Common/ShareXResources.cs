@@ -39,7 +39,8 @@ namespace XerahS.Common
             return version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v0.0.0";
         }
         public const string HistoryFolderName = "History";
-        public const string ScreenCapturesFolderName = "Screen Captures";
+        public const string ScreenshotsFolderName = "Screenshots";
+        public const string ScreencastsFolderName = "Screencasts";
         public const string HistoryFileName = "History.db";
         public static string UserAgent => AppName;
     }

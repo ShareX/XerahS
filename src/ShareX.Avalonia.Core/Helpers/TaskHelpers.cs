@@ -162,7 +162,7 @@ public static partial class TaskHelpers
         }
 
         // Default to Screen Captures folder
-        return SettingManager.ScreenCapturesFolder;
+        return XerahS.Common.PathsManager.ScreenshotsFolder;
     }
 
     #endregion

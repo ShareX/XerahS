@@ -25,6 +25,7 @@
 
 using System.Drawing;
 using System.Runtime.InteropServices;
+using XerahS.ScreenCapture.ScreenRecording;
 
 namespace XerahS.ScreenCapture.ScreenRecording;
 
