@@ -1,12 +1,13 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="using:ShareX.Ava.UI"
-             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
-             xmlns:views="using:ShareX.Ava.UI.Views"
+             xmlns:local="using:XerahS.UI"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             xmlns:views="using:XerahS.UI.Views"
              xmlns:converters="clr-namespace:ShareX.Editor.Converters;assembly=ShareX.Editor"
+             xmlns:uiconverters="clr-namespace:XerahS.UI.Converters"
              xmlns:sty="using:FluentAvalonia.Styling"
-             xmlns:core="using:ShareX.Ava.Core"
-             x:Class="ShareX.Ava.UI.App"
+             xmlns:core="using:XerahS.Core"
+             x:Class="XerahS.UI.App"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
@@ -16,7 +17,9 @@
         <converters:SelectedWidthToBackgroundConverter x:Key="SelectedWidthToBackground"/>
         <converters:BoolToActiveBackgroundConverter x:Key="BoolToActiveBackgroundConverter"/>
         <converters:EqualsConverter x:Key="EqualsConverter"/>
+        <uiconverters:BoolToRecordingColorConverter x:Key="BoolToRecordingColorConverter"/>
     </Application.Resources>
+
 
     <Application.DataTemplates>
         <local:ViewLocator/>
@@ -54,9 +57,9 @@
                       Clicked="TrayIcon_Clicked">
                 <TrayIcon.Menu>
                     <NativeMenu>
-                        <NativeMenuItem Header="Capture Region" Command="{Binding CaptureRegionCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
-                        <NativeMenuItem Header="Capture Screen" Command="{Binding CaptureScreenCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
-                        <NativeMenuItem Header="Capture Window" Command="{Binding CaptureWindowCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
+                        <NativeMenuItem Header="{Binding Workflow1Name, Source={x:Static local:TrayIconHelper.Instance}}" Command="{Binding Workflow1Command, Source={x:Static local:TrayIconHelper.Instance}}" IsVisible="{Binding HasWorkflow1, Source={x:Static local:TrayIconHelper.Instance}}"/>
+                        <NativeMenuItem Header="{Binding Workflow2Name, Source={x:Static local:TrayIconHelper.Instance}}" Command="{Binding Workflow2Command, Source={x:Static local:TrayIconHelper.Instance}}" IsVisible="{Binding HasWorkflow2, Source={x:Static local:TrayIconHelper.Instance}}"/>
+                        <NativeMenuItem Header="{Binding Workflow3Name, Source={x:Static local:TrayIconHelper.Instance}}" Command="{Binding Workflow3Command, Source={x:Static local:TrayIconHelper.Instance}}" IsVisible="{Binding HasWorkflow3, Source={x:Static local:TrayIconHelper.Instance}}"/>
                         <NativeMenuItemSeparator/>
                         <NativeMenuItem Header="Open Main Window" Command="{Binding OpenMainWindowCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
                         <NativeMenuItem Header="Settings" Command="{Binding OpenSettingsCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>

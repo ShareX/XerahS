@@ -1,8 +1,14 @@
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using ShareX.Ava.Core;
-using System;
+using XerahS.Core;
+using XerahS.ScreenCapture.ScreenRecording;
+using CommunityToolkit.Mvvm.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using XerahS.UI.Views;
 
-namespace ShareX.Ava.UI.ViewModels
+namespace XerahS.UI.ViewModels
 {
     public partial class TaskSettingsViewModel : ObservableObject
     {
@@ -17,6 +23,8 @@ namespace ShareX.Ava.UI.ViewModels
         }
 
         public IEnumerable<EImageFormat> ImageFormats => Enum.GetValues(typeof(EImageFormat)).Cast<EImageFormat>();
+        public IEnumerable<System.Drawing.ContentAlignment> ContentAlignments => Enum.GetValues(typeof(System.Drawing.ContentAlignment)).Cast<System.Drawing.ContentAlignment>();
+        public IEnumerable<ToastClickAction> ToastClickActions => Enum.GetValues(typeof(ToastClickAction)).Cast<ToastClickAction>();
 
         // Expose underlying model if needed
         public TaskSettings Model => _settings;
@@ -140,7 +148,22 @@ namespace ShareX.Ava.UI.ViewModels
                 }
             }
         }
-        
+
+        public IEnumerable<RecordingIntent> RecordingIntents => Enum.GetValues(typeof(RecordingIntent)).Cast<RecordingIntent>();
+
+        public RecordingIntent RecordingIntent
+        {
+            get => _settings.CaptureSettings.ScreenRecordingSettings.RecordingIntent;
+            set
+            {
+                if (_settings.CaptureSettings.ScreenRecordingSettings.RecordingIntent != value)
+                {
+                    _settings.CaptureSettings.ScreenRecordingSettings.RecordingIntent = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public bool CaptureAutoHideTaskbar
         {
             get => _settings.CaptureSettings.CaptureAutoHideTaskbar;
@@ -153,7 +176,48 @@ namespace ShareX.Ava.UI.ViewModels
                 }
             }
         }
-        
+
+        public string CaptureCustomWindow
+        {
+            get => _settings.CaptureSettings.CaptureCustomWindow;
+            set
+            {
+                if (_settings.CaptureSettings.CaptureCustomWindow != value)
+                {
+                    XerahS.Common.DebugHelper.WriteLine($"[DEBUG] Setting CaptureCustomWindow to: '{value}'");
+                    _settings.CaptureSettings.CaptureCustomWindow = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        #endregion
+
+        #region FFmpeg Options
+
+        [RelayCommand]
+        private async Task OpenFFmpegOptionsAsync()
+        {
+            var taskSettings = SettingManager.GetOrCreateWorkflowTaskSettings(HotkeyType.ScreenRecorder);
+            var ffmpegOptions = taskSettings.CaptureSettings.FFmpegOptions ?? new FFmpegOptions();
+            taskSettings.CaptureSettings.FFmpegOptions = ffmpegOptions;
+            var vm = new FFmpegOptionsViewModel(ffmpegOptions);
+            var window = new FFmpegOptionsWindow
+            {
+                DataContext = vm
+            };
+
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+                desktop.MainWindow != null)
+            {
+                await window.ShowDialog(desktop.MainWindow);
+            }
+            else
+            {
+                window.Show();
+            }
+        }
+
         #endregion
 
         #region Upload / File Naming
@@ -506,6 +570,97 @@ namespace ShareX.Ava.UI.ViewModels
                 if (Math.Abs(_settings.GeneralSettings.ToastWindowFadeDuration - value) > 0.001f)
                 {
                     _settings.GeneralSettings.ToastWindowFadeDuration = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public System.Drawing.ContentAlignment ToastWindowPlacement
+        {
+            get => _settings.GeneralSettings.ToastWindowPlacement;
+            set
+            {
+                if (_settings.GeneralSettings.ToastWindowPlacement != value)
+                {
+                    _settings.GeneralSettings.ToastWindowPlacement = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int ToastWindowWidth
+        {
+            get => _settings.GeneralSettings.ToastWindowSize.Width;
+            set
+            {
+                if (_settings.GeneralSettings.ToastWindowSize.Width != value)
+                {
+                    _settings.GeneralSettings.ToastWindowSize = new System.Drawing.Size(value, _settings.GeneralSettings.ToastWindowSize.Height);
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int ToastWindowHeight
+        {
+            get => _settings.GeneralSettings.ToastWindowSize.Height;
+            set
+            {
+                if (_settings.GeneralSettings.ToastWindowSize.Height != value)
+                {
+                    _settings.GeneralSettings.ToastWindowSize = new System.Drawing.Size(_settings.GeneralSettings.ToastWindowSize.Width, value);
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public ToastClickAction ToastWindowLeftClickAction
+        {
+            get => _settings.GeneralSettings.ToastWindowLeftClickAction;
+            set
+            {
+                if (_settings.GeneralSettings.ToastWindowLeftClickAction != value)
+                {
+                    _settings.GeneralSettings.ToastWindowLeftClickAction = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public ToastClickAction ToastWindowRightClickAction
+        {
+            get => _settings.GeneralSettings.ToastWindowRightClickAction;
+            set
+            {
+                if (_settings.GeneralSettings.ToastWindowRightClickAction != value)
+                {
+                    _settings.GeneralSettings.ToastWindowRightClickAction = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public ToastClickAction ToastWindowMiddleClickAction
+        {
+            get => _settings.GeneralSettings.ToastWindowMiddleClickAction;
+            set
+            {
+                if (_settings.GeneralSettings.ToastWindowMiddleClickAction != value)
+                {
+                    _settings.GeneralSettings.ToastWindowMiddleClickAction = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool ToastWindowAutoHide
+        {
+            get => _settings.GeneralSettings.ToastWindowAutoHide;
+            set
+            {
+                if (_settings.GeneralSettings.ToastWindowAutoHide != value)
+                {
+                    _settings.GeneralSettings.ToastWindowAutoHide = value;
                     OnPropertyChanged();
                 }
             }

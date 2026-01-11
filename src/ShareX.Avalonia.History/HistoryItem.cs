@@ -24,10 +24,8 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 
-namespace ShareX.Ava.History
+namespace XerahS.History
 {
     public class HistoryItem
     {

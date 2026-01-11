@@ -23,11 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System.Drawing;
+using XerahS.Platform.Abstractions;
 using System.Runtime.InteropServices;
-using ShareX.Ava.Platform.Abstractions;
 
-namespace ShareX.Ava.Platform.Windows
+namespace XerahS.Platform.Windows
 {
     /// <summary>
     /// Windows-specific implementation of IInputService using Win32 API

@@ -23,14 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
 using System.Resources;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class EnumExtensions
     {
@@ -172,6 +169,23 @@ namespace ShareX.Ava.Common
             Array values = Enum.GetValues(value.GetType());
             int i = Array.IndexOf(values, value) + 1;
             return i == values.Length ? (T)values.GetValue(0) : (T)values.GetValue(i);
+        }
+
+        public static string GetHotkeyCategory(this Enum value)
+        {
+            FieldInfo fi = value.GetType().GetField(value.ToString());
+
+            if (fi != null)
+            {
+                CategoryAttribute[] attributes = (CategoryAttribute[])fi.GetCustomAttributes(typeof(CategoryAttribute), false);
+
+                if (attributes.Length > 0)
+                {
+                    return attributes[0].Category;
+                }
+            }
+
+            return HotkeyType_Category_Other;
         }
 
         public static T Previous<T>(this Enum value)

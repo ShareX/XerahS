@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Platform.Abstractions
+namespace XerahS.Platform.Abstractions
 {
     public interface IFontService
     {

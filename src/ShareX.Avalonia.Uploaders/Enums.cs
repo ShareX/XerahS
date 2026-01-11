@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.ComponentModel;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     [Description("Image uploaders"), DefaultValue(Imgur)]
     public enum ImageDestination

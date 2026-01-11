@@ -23,9 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System.Drawing;
-
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class InputHelpers
     {

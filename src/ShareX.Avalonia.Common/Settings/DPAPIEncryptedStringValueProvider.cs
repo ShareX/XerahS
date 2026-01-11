@@ -26,7 +26,7 @@
 using Newtonsoft.Json.Serialization;
 using System.Reflection;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class DPAPIEncryptedStringValueProvider : IValueProvider
     {

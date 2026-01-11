@@ -1,10 +1,7 @@
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using ShareX.Ava.UI.ViewModels;
 
-namespace ShareX.Ava.UI.Views;
+namespace XerahS.UI.Views;
 
 public partial class ProviderCatalogView : UserControl
 {

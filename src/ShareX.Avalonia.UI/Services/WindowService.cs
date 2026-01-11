@@ -1,8 +1,7 @@
-using System;
+using XerahS.Platform.Abstractions;
 using System.Drawing;
-using ShareX.Ava.Platform.Abstractions;
 
-namespace ShareX.Ava.UI.Services
+namespace XerahS.UI.Services
 {
     public class WindowService : IWindowService
     {
@@ -82,6 +81,18 @@ namespace ShareX.Ava.UI.Services
         {
             // TODO: Implement using platform-specific APIs
             return 0;
+        }
+
+        public IntPtr SearchWindow(string windowTitle)
+        {
+            // TODO: Implement using platform-specific APIs
+            return IntPtr.Zero;
+        }
+
+        public bool ActivateWindow(IntPtr handle)
+        {
+            // TODO: Implement using platform-specific APIs
+            return false;
         }
     }
 }

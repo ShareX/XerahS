@@ -23,15 +23,13 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
+using XerahS.Platform.Abstractions;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
-using ShareX.Ava.Platform.Abstractions;
-using DebugHelper = ShareX.Ava.Common.DebugHelper;
+using DebugHelper = XerahS.Common.DebugHelper;
 
-namespace ShareX.Ava.Platform.MacOS
+namespace XerahS.Platform.MacOS
 {
     /// <summary>
     /// macOS window management service (stub for MVP).
@@ -137,16 +135,16 @@ namespace ShareX.Ava.Platform.MacOS
             return RunOsaScriptWithOutput(script) != null;
         }
 
-        public ShareX.Ava.Platform.Abstractions.WindowInfo[] GetAllWindows()
+        public XerahS.Platform.Abstractions.WindowInfo[] GetAllWindows()
         {
             if (!TryGetFrontWindowInfo(out var title, out var bounds, out var pid))
             {
-                return Array.Empty<ShareX.Ava.Platform.Abstractions.WindowInfo>();
+                return Array.Empty<XerahS.Platform.Abstractions.WindowInfo>();
             }
 
             return new[]
             {
-                new ShareX.Ava.Platform.Abstractions.WindowInfo
+                new XerahS.Platform.Abstractions.WindowInfo
                 {
                     Handle = IntPtr.Zero,
                     Title = title,
@@ -163,6 +161,26 @@ namespace ShareX.Ava.Platform.MacOS
         public uint GetWindowProcessId(IntPtr handle)
         {
             return TryGetFrontWindowInfo(out _, out _, out var pid) ? pid : 0;
+        }
+
+        public IntPtr SearchWindow(string windowTitle)
+        {
+            // TODO: Implement proper macOS window search via AppleScript
+            // For now, check if front window matches
+            if (TryGetFrontWindowInfo(out var title, out _, out _))
+            {
+                if (!string.IsNullOrEmpty(title) && title.Contains(windowTitle, StringComparison.OrdinalIgnoreCase))
+                {
+                    return IntPtr.Zero; // macOS doesn't use handles the same way
+                }
+            }
+            return IntPtr.Zero;
+        }
+
+        public bool ActivateWindow(IntPtr handle)
+        {
+            // macOS uses AppleScript, SetForegroundWindow already does this
+            return SetForegroundWindow(handle);
         }
 
         private static void LogNotImplemented(string memberName)

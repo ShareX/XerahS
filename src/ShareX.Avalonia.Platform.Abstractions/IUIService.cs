@@ -1,4 +1,4 @@
-﻿#region License Information (GPL v3)
+#region License Information (GPL v3)
 
 /*
     ShareX.Avalonia - The Avalonia UI implementation of ShareX
@@ -23,13 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Core;
-using System;
-using System.Threading.Tasks;
+using XerahS.Core;
 using SkiaSharp;
 // REMOVED: System.Drawing
 
-namespace ShareX.Ava.Platform.Abstractions
+namespace XerahS.Platform.Abstractions
 {
     /// <summary>
     /// Service for interacting with the main UI (e.g. navigation, showing windows)

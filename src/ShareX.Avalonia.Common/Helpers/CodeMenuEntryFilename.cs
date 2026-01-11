@@ -25,7 +25,7 @@
 
 #nullable enable
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class CodeMenuEntryFilename : CodeMenuEntry
     {

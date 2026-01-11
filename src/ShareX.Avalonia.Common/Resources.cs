@@ -25,11 +25,11 @@
 
 using System.Resources;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class Resources
     {
-        private static readonly ResourceManager resourceManager = new ResourceManager("ShareX.Ava.Common.Resources", typeof(Resources).Assembly);
+        private static readonly ResourceManager resourceManager = new ResourceManager("XerahS.Common.Resources", typeof(Resources).Assembly);
 
         public static ResourceManager ResourceManager => resourceManager;
     }

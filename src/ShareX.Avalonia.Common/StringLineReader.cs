@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System.Collections.Generic;
 using System.Text;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class StringLineReader
     {

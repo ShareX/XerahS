@@ -1,16 +1,10 @@
-using System;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using ShareX.Ava.Core;
-using ShareX.Ava.Common;
-using ShareX.Ava.Core.Tasks;
-using ShareX.Ava.Uploaders;
-using ShareX.Ava.Common.Helpers;
-using ShareX.Ava.Platform.Abstractions;
-using ShareX.Ava.Uploaders.PluginSystem;
+using XerahS.Common;
+using XerahS.Platform.Abstractions;
+using XerahS.Uploaders;
+using XerahS.Uploaders.PluginSystem;
 
-namespace ShareX.Ava.Core.Tasks.Processors
+namespace XerahS.Core.Tasks.Processors
 {
     public class UploadJobProcessor : IJobProcessor
     {
@@ -33,20 +27,18 @@ namespace ShareX.Ava.Core.Tasks.Processors
 
             token.ThrowIfCancellationRequested();
 
-            DebugHelper.WriteLine($"Starting upload for {info.FileName}...");
-            DebugHelper.WriteLine($"Upload data type: {info.DataType}, FilePath: {info.FilePath}");
-            DebugHelper.WriteLine($"Image destination: {info.TaskSettings.ImageDestination}");
-            
-            // Wrap legacy synchronous upload in Task.Run
+            DebugHelper.WriteLine($"[UploadTrace {info.CorrelationId}] Starting upload; dataType={info.DataType}, filePath=\"{info.FilePath}\", fileName=\"{info.FileName}\"");
+            // Wrap upload in Task.Run
             result = await Task.Run(() => Upload(info), token);
 
             if (result != null)
             {
                 info.Result = result;
-                
+
                 if (result.IsSuccess)
                 {
-                    DebugHelper.WriteLine($"Upload successful: {result.URL}");
+                    info.Metadata.UploadURL = result.URL;
+                    DebugHelper.WriteLine($"[UploadTrace {info.CorrelationId}] Upload successful: {result.URL}");
                     await HandleAfterUploadTasksAsync(info, result, token);
                 }
                 else
@@ -64,79 +56,46 @@ namespace ShareX.Ava.Core.Tasks.Processors
         {
             try
             {
-                // 1. Determine Data Type and Destination
-                if (info.DataType == EDataType.Image && info.Metadata?.Image != null)
+                return info.DataType switch
                 {
-                    return UploadImage(info);
-                }
-                else if (info.DataType == EDataType.Text)
-                {
-                     // Return UploadText(info);
-                     return null; // TODO implement text
-                }
-                else if (info.DataType == EDataType.File)
-                {
-                     // Return UploadFile(info);
-                     return null; // TODO implement file
-                }
+                    EDataType.Image => UploadWithPluginSystem(info, UploaderCategory.Image),
+                    EDataType.Text => UploadWithPluginSystem(info, UploaderCategory.Text),
+                    EDataType.File => UploadWithPluginSystem(info, UploaderCategory.File),
+                    _ => null
+                };
             }
             catch (Exception ex)
             {
                 DebugHelper.WriteException(ex, "UploadJobProcessor");
                 return new UploadResult { IsSuccess = false, Response = ex.Message };
             }
-
-            return null;
         }
 
-        private UploadResult? UploadImage(TaskInfo info)
-        {
-            var destination = info.TaskSettings.ImageDestination;
-            
-            if (UploaderFactory.ImageUploaderServices.TryGetValue(destination, out var service))
-            {
-                 // Create TaskReferenceHelper
-                 var helper = new TaskReferenceHelper() 
-                 {
-                     DataType = EDataType.Image,
-                     StopRequested = false, // TODO: Bind to cancellation token?
-                     OverrideFTP = info.TaskSettings.OverrideFTP,
-                     FTPIndex = info.TaskSettings.FTPIndex,
-                     OverrideCustomUploader = info.TaskSettings.OverrideCustomUploader,
-                     CustomUploaderIndex = info.TaskSettings.CustomUploaderIndex
-                 };
-
-                 var uploader = service.CreateUploader(SettingManager.UploadersConfig, helper); 
-                 
-                 if (uploader is GenericUploader genericUploader)
-                 {
-                     // Get image stream with correct format/quality settings
-                     using (MemoryStream? ms = TaskHelpers.SaveImageAsStream(info.Metadata.Image, info.TaskSettings.ImageSettings.ImageFormat, info.TaskSettings))
-                     {
-                         if (ms != null)
-                         {
-                             ms.Position = 0;
-                             return genericUploader.Upload(ms, info.FileName);
-                         }
-                     }
-                 }
-            }
-
-            DebugHelper.WriteLine($"No legacy uploader service found for destination: {destination}");
-            return UploadImageWithPluginSystem(info) ??
-                new UploadResult { IsSuccess = false, Response = "Uploader service not found or initialization failed." };
-            
-        }
-
-        private UploadResult? UploadImageWithPluginSystem(TaskInfo info)
+        private UploadResult? UploadWithPluginSystem(TaskInfo info, UploaderCategory category)
         {
             EnsurePluginsLoaded();
 
             var instanceManager = InstanceManager.Instance;
-            var defaultInstance = instanceManager.GetDefaultInstance(UploaderCategory.Image);
+            var targetInstanceId = info.TaskSettings.GetDestinationInstanceIdForDataType(info.DataType);
+            UploaderInstance? targetInstance = null;
+
+            if (!string.IsNullOrEmpty(targetInstanceId))
+            {
+                targetInstance = instanceManager.GetInstance(targetInstanceId);
+                if (targetInstance == null)
+                {
+                    DebugHelper.WriteLine($"Configured destination instance not found: {targetInstanceId}");
+                }
+                else if (targetInstance.Category != category)
+                {
+                    DebugHelper.WriteLine($"Configured destination category mismatch. Expected {category}, got {targetInstance.Category}. Continuing with configured instance.");
+                }
+            }
+
+            var defaultInstance = targetInstance ?? instanceManager.GetDefaultInstance(category);
             if (defaultInstance == null)
             {
-                DebugHelper.WriteLine("No default image uploader instance configured (plugin system).");
+                DebugHelper.WriteLine($"No uploader instance configured (plugin system) for category {category}.");
                 return null;
             }
 

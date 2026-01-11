@@ -23,15 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
 // using System.Drawing; 
 using SkiaSharp;
 
-using System.IO;
-using ShareX.Ava.Common;
-
-namespace ShareX.Ava.Common.GIF
+namespace XerahS.Common.GIF
 {
     public class GifClass
     {

@@ -25,7 +25,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace ShareX.Ava.UI.ViewModels;
+namespace XerahS.UI.ViewModels;
 
 /// <summary>
 /// ViewModel for a file type option in the selector
@@ -46,7 +46,7 @@ public partial class FileTypeOption : ObservableObject
 
     public string DisplayText => Extension.ToUpperInvariant();
 
-    public string? TooltipText => BlockedBy != null 
-        ? $"Already handled by: {BlockedBy}" 
+    public string? TooltipText => BlockedBy != null
+        ? $"Already handled by: {BlockedBy}"
         : null;
 }

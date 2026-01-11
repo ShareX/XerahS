@@ -23,24 +23,16 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using DrawingPoint = System.Drawing.Point;
 using DrawingPointF = System.Drawing.PointF;
-using DrawingRectangle = System.Drawing.Rectangle;
-using DrawingRectangleF = System.Drawing.RectangleF;
 using DrawingSize = System.Drawing.Size;
-using DrawingSizeF = System.Drawing.SizeF;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class Extensions
     {

@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Runtime.InteropServices;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class TimerResolutionManager : IDisposable
     {
@@ -57,8 +56,8 @@ namespace ShareX.Ava.Common
                 if (!enabled)
                 {
                     TimeCaps timeCaps = new TimeCaps();
-                    
-                    try 
+
+                    try
                     {
                         uint result = NativeMethods.TimeGetDevCaps(ref timeCaps, (uint)Marshal.SizeOf(typeof(TimeCaps)));
 

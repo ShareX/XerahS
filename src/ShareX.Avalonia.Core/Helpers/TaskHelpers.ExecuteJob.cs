@@ -23,28 +23,60 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using ShareX.Ava.Core;
-using ShareX.Ava.Core.Hotkeys;
-using ShareX.Ava.Core.Managers;
-using System;
-using System.Threading.Tasks;
+using XerahS.Common;
+using XerahS.Core.Managers;
 
-using ShareX.Ava.Platform.Abstractions;
-using ShareX.Ava.Core.Tasks;
-using System.Drawing;
+using XerahS.Platform.Abstractions;
 
-namespace ShareX.Ava.Core.Helpers;
+namespace XerahS.Core.Helpers;
 
 public static partial class TaskHelpers
 {
-    public static async Task ExecuteJob(HotkeyType job, TaskSettings? taskSettings = null)
+    /// <summary>
+    /// Execute a workflow using its complete settings.
+    /// This is the preferred method - avoids ambiguity with HotkeyType lookup.
+    /// </summary>
+    /// <param name="workflow">The workflow to execute</param>
+    /// <param name="workflowId">Optional workflow ID for troubleshooting (uses workflow.Id if not provided)</param>
+    public static async Task ExecuteWorkflow(Core.Hotkeys.WorkflowSettings workflow, string? workflowId = null)
     {
+        // Use provided ID or get from workflow
+        var id = workflowId ?? workflow?.Id ?? "Unknown";
+
+        // Use job type as category (for folder/file naming), log workflow ID in content
+        var logCategory = workflow?.Job.ToString() ?? "Unknown";
+
+        TroubleshootingHelper.Log(logCategory, "EXECUTE_WORKFLOW", $"Entry: workflowId={id}, workflow={workflow?.Name ?? "null"}, Job={workflow?.Job.ToString() ?? "null"}");
+
+        if (workflow == null)
+        {
+            DebugHelper.WriteLine("ExecuteWorkflow: workflow is null");
+            TroubleshootingHelper.Log(logCategory, "EXECUTE_WORKFLOW", "ABORT: workflow is null");
+            return;
+        }
+
+        // Store the workflow ID in task settings for troubleshooting
+        if (workflow.TaskSettings != null)
+        {
+            workflow.TaskSettings.WorkflowId = id;
+        }
+
+        TroubleshootingHelper.Log(logCategory, "EXECUTE_WORKFLOW", $"Calling ExecuteJob, TaskSettings={workflow.TaskSettings != null}");
+        await ExecuteJob(workflow.Job, workflow.TaskSettings, id);
+    }
+
+    public static async Task ExecuteJob(HotkeyType job, TaskSettings? taskSettings = null, string? workflowId = null)
+    {
+        // Use job type as category (for folder/file naming), log workflow ID in content
+        var logCategory = job.ToString();
+
+        TroubleshootingHelper.Log(logCategory, "EXECUTE_JOB", $"Entry: workflowId={workflowId ?? "null"}, taskSettings={taskSettings != null}");
         DebugHelper.WriteLine($"Executing job: {job}");
 
         if (!PlatformServices.IsInitialized)
         {
             DebugHelper.WriteLine("Platform services not initialized.");
+            TroubleshootingHelper.Log(logCategory, "EXECUTE_JOB", "ABORT: Platform services not initialized");
             return;
         }
 
@@ -52,7 +84,7 @@ public static partial class TaskHelpers
         if (taskSettings == null)
         {
             taskSettings = new TaskSettings();
-            
+
             // Apply job-specific defaults if needed
             if (taskSettings.Job == HotkeyType.None)
             {
@@ -60,26 +92,32 @@ public static partial class TaskHelpers
             }
         }
 
-        // Ensure the job type in settings matches the requested job
+        // Store workflow ID in task settings
+        if (!string.IsNullOrEmpty(workflowId))
+        {
+            taskSettings.WorkflowId = workflowId;
+        }
+
         if (taskSettings.Job != job && job != HotkeyType.None)
         {
             taskSettings.Job = job;
         }
 
-
         DebugHelper.WriteLine(
             $"Task settings: AfterCaptureJob={taskSettings.AfterCaptureJob}, " +
-            $"UploadImageToHost={taskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost)}, " +
-            $"ImageDestination={taskSettings.ImageDestination}");
+            $"UploadImageToHost={taskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost)}");
 
-        try 
+        try
         {
             // Start the task via TaskManager
             // This ensures it appears in the UI and follows the standard lifecycle
+            TroubleshootingHelper.Log(logCategory, "EXECUTE_JOB", "Calling TaskManager.StartTask");
             await TaskManager.Instance.StartTask(taskSettings);
+            TroubleshootingHelper.Log(logCategory, "EXECUTE_JOB", "TaskManager.StartTask completed");
         }
         catch (Exception ex)
         {
+            TroubleshootingHelper.Log(logCategory, "EXECUTE_JOB", $"ERROR: {ex.Message}");
             DebugHelper.WriteException(ex, $"Error starting job {job}");
         }
     }

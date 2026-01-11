@@ -23,13 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Platform.Abstractions;
-using System;
-using System.Drawing;
-using System.Linq;
-using System.Windows.Forms;
+using XerahS.Platform.Abstractions;
 
-namespace ShareX.Ava.Platform.Windows
+namespace XerahS.Platform.Windows
 {
     /// <summary>
     /// Windows implementation of IScreenService using System.Windows.Forms.Screen

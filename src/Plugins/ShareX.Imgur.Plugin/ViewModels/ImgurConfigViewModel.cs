@@ -1,8 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Newtonsoft.Json;
-using ShareX.Ava.Uploaders;
-using ShareX.Ava.Uploaders.PluginSystem;
+using XerahS.Uploaders;
+using XerahS.Uploaders.PluginSystem;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -113,7 +113,7 @@ public partial class ImgurConfigViewModel : ObservableObject, IUploaderConfigVie
             {
                 _config = config;
                 _uploader = new ImgurUploader(_config);
-                
+
                 ClientId = _config.ClientId ?? "30d41ft9z9r8jtt";
                 AccountTypeIndex = (int)_config.AccountType;
                 AlbumId = _config.SelectedAlbum?.id ?? string.Empty;

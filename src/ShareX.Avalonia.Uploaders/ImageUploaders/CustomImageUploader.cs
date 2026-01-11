@@ -23,11 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using System;
-using System.IO;
+using XerahS.Common;
 
-namespace ShareX.Ava.Uploaders.ImageUploaders
+namespace XerahS.Uploaders.ImageUploaders
 {
     public class CustomImageUploaderService : ImageUploaderService
     {

@@ -23,14 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Drawing; // Kept for legacy compatibility if needed, but we prefer Skia
 using SkiaSharp;
 
-using System.IO;
-using ShareX.Ava.Common;
-
-namespace ShareX.Ava.Common.GIF
+namespace XerahS.Common.GIF
 {
     public class AnimatedGifCreator : IDisposable
     {

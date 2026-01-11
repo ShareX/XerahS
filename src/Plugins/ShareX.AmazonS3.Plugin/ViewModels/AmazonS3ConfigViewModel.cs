@@ -25,8 +25,8 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using Newtonsoft.Json;
-using ShareX.Ava.Uploaders.FileUploaders;
-using ShareX.Ava.Uploaders.PluginSystem;
+using XerahS.Uploaders.FileUploaders;
+using XerahS.Uploaders.PluginSystem;
 using System.Collections.ObjectModel;
 
 namespace ShareX.AmazonS3.Plugin.ViewModels;
@@ -99,7 +99,7 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
                 AccessKeyId = config.AccessKeyId ?? string.Empty;
                 SecretAccessKey = config.SecretAccessKey ?? string.Empty;
                 BucketName = config.BucketName ?? string.Empty;
-                
+
                 int index = Endpoints.ToList().FindIndex(e => e.Endpoint == config.Endpoint);
                 if (index >= 0) RegionIndex = index;
 

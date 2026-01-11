@@ -1,9 +1,6 @@
-using System;
-using System.IO;
 using System.Runtime.InteropServices;
-using ShareX.Ava.Common;
 
-namespace ShareX.Ava.Common.Helpers
+namespace XerahS.Common.Helpers
 {
     public static class ShortcutHelpers
     {

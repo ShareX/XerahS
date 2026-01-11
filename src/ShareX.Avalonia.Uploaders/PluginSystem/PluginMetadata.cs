@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Uploaders.PluginSystem;
+namespace XerahS.Uploaders.PluginSystem;
 
 /// <summary>
 /// Runtime metadata for a loaded plugin

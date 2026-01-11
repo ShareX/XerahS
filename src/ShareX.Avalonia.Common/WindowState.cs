@@ -25,7 +25,7 @@
 
 using System.Drawing;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class WindowState
     {

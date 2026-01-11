@@ -23,14 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Drawing;
-using System.IO;
-using System.Threading.Tasks;
-using ShareX.Ava.Platform.Abstractions;
+using XerahS.Platform.Abstractions;
 using SkiaSharp;
 
-namespace ShareX.Ava.Platform.Windows
+namespace XerahS.Platform.Windows
 {
     /// <summary>
     /// Windows-specific screen capture implementation using GDI+
@@ -61,7 +57,7 @@ namespace ShareX.Ava.Platform.Windows
                         {
                             graphics.CopyFromScreen((int)rect.Left, (int)rect.Top, 0, 0, new Size((int)rect.Width, (int)rect.Height));
                         }
-                        
+
                         return ToSKBitmap(bitmap);
                     }
                 }
@@ -99,7 +95,7 @@ namespace ShareX.Ava.Platform.Windows
                         {
                             graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
                         }
-                        
+
                         return ToSKBitmap(bitmap);
                     }
                 }
@@ -131,7 +127,39 @@ namespace ShareX.Ava.Platform.Windows
                         {
                             graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
                         }
-                        
+
+                        return ToSKBitmap(bitmap);
+                    }
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Captures a specific window by its handle
+        /// </summary>
+        public async Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    if (windowHandle == IntPtr.Zero) return null;
+
+                    // Get current window bounds (fresh, not stale)
+                    var bounds = windowService.GetWindowBounds(windowHandle);
+                    if (bounds.Width <= 0 || bounds.Height <= 0) return null;
+
+                    using (var bitmap = new Bitmap(bounds.Width, bounds.Height))
+                    {
+                        using (var graphics = Graphics.FromImage(bitmap))
+                        {
+                            graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
+                        }
+
                         return ToSKBitmap(bitmap);
                     }
                 }

@@ -2,10 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
-             xmlns:controls="using:ShareX.Ava.UI.Controls"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             xmlns:controls="using:XerahS.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
-             x:Class="ShareX.Ava.UI.Views.DestinationSettingsView"
+             x:Class="XerahS.UI.Views.DestinationSettingsView"
              x:DataType="vm:DestinationSettingsViewModel">
 
     <Grid ColumnDefinitions="200,*">
@@ -201,6 +201,17 @@
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
+
+                            <!-- Show stable SHA1 instance ID for reference -->
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Instance ID" FontWeight="SemiBold"/>
+                                <TextBox Text="{Binding SelectedCategory.SelectedInstance.InstanceId}"
+                                         IsReadOnly="True"
+                                         FontFamily="Consolas, Monospace"
+                                         Background="{DynamicResource ControlAltFillColorDefaultBrush}"
+                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                         Padding="6,4,6,4"/>
+                            </StackPanel>
 
                             <TextBlock Text="Instance Settings" FontWeight="SemiBold" FontSize="16"/>
                             

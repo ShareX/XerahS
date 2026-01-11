@@ -28,7 +28,7 @@ using System.Text;
 // Replaced System.Windows.Forms.Keys with local Keys enum
 // using System.Windows.Forms; 
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class CommonHotkeyInfo
     {
@@ -175,7 +175,7 @@ namespace ShareX.Ava.Common
                 // Actually, standard ToString of enum is "NumPad0".
                 // I'll keep original logic exactly as is to match behavior.
             }
-            
+
             // Re-implementing strictly as original:
             /*
             for (int i = 0; i < name.Length; i++)

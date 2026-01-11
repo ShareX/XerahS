@@ -23,9 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-
-namespace ShareX.Ava.Core;
+namespace XerahS.Core;
 
 [Flags]
 public enum AfterCaptureTasks // Localized

@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
+using XerahS.Common;
 
-namespace ShareX.Ava.Uploaders.SharingServices
+namespace XerahS.Uploaders.SharingServices
 {
     public abstract class SimpleURLSharingService : URLSharingService
     {

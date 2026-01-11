@@ -26,13 +26,9 @@
 using Renci.SshNet;
 using Renci.SshNet.Common;
 using Renci.SshNet.Sftp;
-using ShareX.Ava.Common;
-using ShareX.UploadersLib.Properties;
-using System;
-using System.Collections.Generic;
-using System.IO;
+using XerahS.Common;
 
-namespace ShareX.Ava.Uploaders.FileUploaders
+namespace XerahS.Uploaders.FileUploaders
 {
     public sealed class SFTP : FileUploader, IDisposable
     {

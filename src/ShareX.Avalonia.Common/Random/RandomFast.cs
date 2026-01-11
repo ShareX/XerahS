@@ -23,10 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
-
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class RandomFast
     {

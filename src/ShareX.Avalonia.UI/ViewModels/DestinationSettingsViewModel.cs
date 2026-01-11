@@ -1,19 +1,15 @@
-using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Common = ShareX.Ava.Common;
-using ShareX.Ava.Core;
-using ShareX.Ava.UI.Views;
-using ShareX.Ava.Common;
-using ShareX.Ava.Uploaders;
-using ShareX.Ava.Uploaders.PluginSystem;
-using System;
+using XerahS.Common;
+using XerahS.Core;
+using XerahS.UI.Views;
+using XerahS.Uploaders;
+using XerahS.Uploaders.PluginSystem;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 
-namespace ShareX.Ava.UI.ViewModels;
+namespace XerahS.UI.ViewModels;
 
 public partial class DestinationSettingsViewModel : ViewModelBase
 {
@@ -34,7 +30,7 @@ public partial class DestinationSettingsViewModel : ViewModelBase
     {
         Common.DebugHelper.WriteLine("[DestinationSettings] ========================================");
         Common.DebugHelper.WriteLine("[DestinationSettings] Initializing destination settings...");
-        
+
         // Initialize built-in providers
         Common.DebugHelper.WriteLine("[DestinationSettings] Initializing built-in providers...");
         ProviderCatalog.InitializeBuiltInProviders();
@@ -42,7 +38,7 @@ public partial class DestinationSettingsViewModel : ViewModelBase
         // Load external plugins from Plugins folder (for third-party plugins)
         var pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
         Common.DebugHelper.WriteLine($"[DestinationSettings] Checking for external plugins in: {pluginsPath}");
-        
+
         if (Directory.Exists(pluginsPath))
         {
             try
@@ -60,13 +56,13 @@ public partial class DestinationSettingsViewModel : ViewModelBase
         foreach (var p in allProviders)
         {
             Common.DebugHelper.WriteLine($"[DestinationSettings]   - {p.Name} ({p.ProviderId})");
-            
+
             // Subscribe to config change events from each provider
             p.ConfigChanged += Provider_ConfigChanged;
         }
-        
+
         Common.DebugHelper.WriteLine("[DestinationSettings] ========================================");
-        
+
         LoadCategories();
     }
 

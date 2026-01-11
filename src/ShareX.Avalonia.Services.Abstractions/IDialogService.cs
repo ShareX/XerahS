@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Services.Abstractions;
+namespace XerahS.Services.Abstractions;
 
 /// <summary>
 /// Service for displaying dialogs and messages

@@ -1,12 +1,9 @@
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using Avalonia.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
-using ShareX.Ava.Core;
-using ShareX.Ava.Core.Hotkeys;
+using XerahS.Core;
+using XerahS.Core.Hotkeys;
+using System.Collections.ObjectModel;
 
-namespace ShareX.Ava.UI.ViewModels;
+namespace XerahS.UI.ViewModels;
 
 public class JobCategoryViewModel
 {
@@ -17,7 +14,7 @@ public class JobCategoryViewModel
     {
         Name = name;
         Jobs = new ObservableCollection<HotkeyItemViewModel>(
-            jobs.Select(j => new HotkeyItemViewModel(new HotkeySettings(j, Key.None)))
+            jobs.Select(j => new HotkeyItemViewModel(new WorkflowSettings(j, Key.None)))
         );
     }
 }

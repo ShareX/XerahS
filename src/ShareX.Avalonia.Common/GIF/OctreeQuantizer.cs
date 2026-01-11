@@ -23,12 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
-using ShareX.Ava.Common.GIF;
 
-namespace ShareX.Ava.Common.GIF
+namespace XerahS.Common.GIF
 {
     /// <summary>
     /// Quantize using an Octree
@@ -102,14 +99,14 @@ namespace ShareX.Ava.Common.GIF
             {
                 palette.Add(SKColors.Black); // Fill gaps
             }
-            
+
             // Ensure we have room for transparent color at _maxColors
             // The original logic expected _maxColors + 1 palette size or used _maxColors as the index for transparent.
             // If _maxColors is 255, index is 255. 
             // If we have 256 colors max (0..255), we might need 256 entries.
             // Skia palette (if we were using one) expects colors.
             // We just return the list.
-            
+
             // Note: The GIF encoder will likely expect the transparent index to point to a transparent color.
             if (palette.Count <= _maxColors)
             {

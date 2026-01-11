@@ -23,4 +23,3 @@
 
 #endregion License Information (GPL v3)
 
-global using ShareX.Ava.Common.Helpers;

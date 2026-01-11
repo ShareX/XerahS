@@ -2,12 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
-             xmlns:views="using:ShareX.Ava.UI.Views"
-             xmlns:controls="using:ShareX.Ava.UI.Views.Controls"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             xmlns:views="using:XerahS.UI.Views"
+             xmlns:controls="using:XerahS.UI.Views.Controls"
              xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
-             x:Class="ShareX.Ava.UI.Views.WorkflowsView"
+             x:Class="XerahS.UI.Views.WorkflowsView"
              x:DataType="vm:WorkflowsViewModel">
 
     <Grid>

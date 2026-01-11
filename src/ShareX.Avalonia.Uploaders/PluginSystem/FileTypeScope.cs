@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Uploaders.PluginSystem;
+namespace XerahS.Uploaders.PluginSystem;
 
 /// <summary>
 /// Defines which file types an uploader instance handles within its category

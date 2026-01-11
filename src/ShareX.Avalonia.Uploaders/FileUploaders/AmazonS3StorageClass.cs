@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Uploaders.FileUploaders
+namespace XerahS.Uploaders.FileUploaders
 {
     public enum AmazonS3StorageClass
     {

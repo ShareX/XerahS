@@ -1,9 +1,8 @@
-using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace ShareX.Ava.UI;
+namespace XerahS.UI;
 
 public class ViewLocator : IDataTemplate
 {

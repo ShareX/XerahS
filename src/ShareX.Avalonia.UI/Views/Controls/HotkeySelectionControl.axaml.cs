@@ -1,18 +1,13 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
-using ShareX.Ava.Core;
-using ShareX.Ava.Core.Hotkeys;
-using ShareX.Ava.Common;
-using ShareX.Ava.Platform.Abstractions;
-using ShareX.Ava.UI.ViewModels;
-using System;
-using System.Linq;
+using XerahS.Common;
+using XerahS.Core;
+using XerahS.UI.ViewModels;
 
-namespace ShareX.Ava.UI.Views.Controls;
+namespace XerahS.UI.Views.Controls;
 
 /// <summary>
 /// A control for capturing and displaying hotkey combinations.
@@ -23,26 +18,26 @@ public partial class HotkeySelectionControl : UserControl
     // Static debug log - writes to Debug output and collects in list
     private static Action<string>? _debugLog;
     private static readonly System.Collections.Generic.List<string> _debugMessages = new();
-    
+
     public static void SetDebugCallback(Action<string> callback)
     {
         _debugLog = (msg) =>
         {
             _debugMessages.Add(msg);
-            ShareX.Ava.Common.DebugHelper.WriteLine($"[Hotkey] {msg}");
+            XerahS.Common.DebugHelper.WriteLine($"[Hotkey] {msg}");
             callback(msg);
         };
     }
-    
+
     public static void Log(string message)
     {
         var time = DateTime.Now.ToString("HH:mm:ss.fff");
         var formattedMsg = $"[{time}] {message}";
         // Also log to DebugHelper for file logging
-        ShareX.Ava.Common.DebugHelper.WriteLine($"[Hotkey] {message}");
+        XerahS.Common.DebugHelper.WriteLine($"[Hotkey] {message}");
         _debugLog?.Invoke(formattedMsg);
     }
-    
+
     public static string GetDebugLog() => string.Join("\n", _debugMessages);
 
 
@@ -57,7 +52,7 @@ public partial class HotkeySelectionControl : UserControl
     private IBrush? _originalBackground;
     private Key _previousKey;
     private KeyModifiers _previousModifiers;
-    
+
     // Visual feedback colors
     private static readonly IBrush RecordingBackground = new SolidColorBrush(Color.FromRgb(255, 235, 120));
     private static readonly IBrush RecordingForeground = Brushes.Black;
@@ -65,9 +60,9 @@ public partial class HotkeySelectionControl : UserControl
     public HotkeySelectionControl()
     {
         InitializeComponent();
-        
+
         Log("HotkeySelectionControl: Constructor called");
-        
+
         DataContextChanged += OnDataContextChanged;
         Loaded += OnLoaded;
         LostFocus += OnLostFocus;
@@ -76,35 +71,35 @@ public partial class HotkeySelectionControl : UserControl
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
         Log("OnLoaded: START");
-        
+
         _originalBackground = HotkeyButton.Background;
-        
+
         // Set up debug logger if not already set - use static list for simplicity
         if (_debugLog == null)
         {
             // Use a static StringBuilder that can be read later
-            _debugLog = (msg) => 
+            _debugLog = (msg) =>
             {
                 _debugMessages.Add(msg);
                 System.Diagnostics.Debug.WriteLine($"[HotkeyDebug] {msg}");
             };
             Log("Debug logger initialized (check Debug output and static _debugMessages)");
         }
-        
+
         // CRITICAL FIX: Add handlers directly to HotkeyButton (where focus is)
         // Use both Tunnel and Bubble strategies to catch events in all phases
         HotkeyButton.AddHandler(
-            KeyDownEvent, 
-            OnPreviewKeyDown, 
-            RoutingStrategies.Tunnel | RoutingStrategies.Bubble, 
+            KeyDownEvent,
+            OnPreviewKeyDown,
+            RoutingStrategies.Tunnel | RoutingStrategies.Bubble,
             handledEventsToo: true);
-        
+
         HotkeyButton.AddHandler(
             KeyUpEvent,
             OnPreviewKeyUp,
             RoutingStrategies.Tunnel | RoutingStrategies.Bubble,
             handledEventsToo: true);
-        
+
         Log($"OnLoaded: END - HotkeyButton={HotkeyButton != null}");
 
         // Handle selection even if children (Buttons) handle the event
@@ -131,7 +126,7 @@ public partial class HotkeySelectionControl : UserControl
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
         _viewModel = DataContext as HotkeyItemViewModel;
-        
+
         if (_viewModel != null)
         {
             PopulateTaskMenu();
@@ -153,16 +148,16 @@ public partial class HotkeySelectionControl : UserControl
     private void OnPreviewKeyDown(object? sender, global::Avalonia.Input.KeyEventArgs e)
     {
         Log($"OnPreviewKeyDown: Key={e.Key}, Mods={e.KeyModifiers}, Mode={_mode}");
-        
-        if (_mode != ControlMode.Recording || _viewModel == null) 
+
+        if (_mode != ControlMode.Recording || _viewModel == null)
         {
             Log("OnPreviewKeyDown: Ignoring - not in recording mode or viewModel null");
             return;
         }
-        
+
         // Mark as handled to prevent bubbling
         e.Handled = true;
-        
+
         var key = e.Key;
         var modifiers = e.KeyModifiers;
 
@@ -195,7 +190,7 @@ public partial class HotkeySelectionControl : UserControl
     private void OnPreviewKeyUp(object? sender, global::Avalonia.Input.KeyEventArgs e)
     {
         if (_mode != ControlMode.Recording || _viewModel == null) return;
-        
+
         e.Handled = true;
 
         // PrintScreen and some media keys only fire on KeyUp
@@ -212,29 +207,29 @@ public partial class HotkeySelectionControl : UserControl
     private void StartRecording()
     {
         Log("StartRecording: ENTERED");
-        
+
         // Set mode and visual feedback FIRST, before any checks
         _mode = ControlMode.Recording;
         Log("StartRecording: Mode set to Recording");
-        
+
         // Visual feedback: yellow background - MUST happen even if ViewModel is null
         HotkeyButton.Background = RecordingBackground;
         HotkeyButton.Foreground = RecordingForeground;
         HotkeyButton.Content = "Press a key...";
         Log("StartRecording: Visual feedback set (yellow)");
-        
+
         // Take keyboard focus - critical for capturing keys
         HotkeyButton.Focusable = true;
         HotkeyButton.Focus();
         Log($"StartRecording: Focus set, IsFocused={HotkeyButton.IsFocused}");
-        
+
         // Now handle ViewModel-specific logic
         if (_viewModel != null)
         {
             _previousKey = _viewModel.Model.HotkeyInfo.Key;
             _previousModifiers = _viewModel.Model.HotkeyInfo.Modifiers;
             Log($"StartRecording: Saved previous key={_previousKey}, mods={_previousModifiers}");
-            
+
             // Set status to Recording so the indicator dot turns yellow
             _viewModel.Model.HotkeyInfo.Status = Platform.Abstractions.HotkeyStatus.Recording;
             _viewModel.Refresh();
@@ -243,14 +238,14 @@ public partial class HotkeySelectionControl : UserControl
         {
             Log("StartRecording: WARNING - _viewModel is NULL");
         }
-        
+
         // Disable global hotkeys while recording
-        if (global::Avalonia.Application.Current is App app && app.HotkeyManager != null)
+        if (global::Avalonia.Application.Current is App app && app.WorkflowManager != null)
         {
-            app.HotkeyManager.IgnoreHotkeys = true;
+            app.WorkflowManager.IgnoreHotkeys = true;
             Log("StartRecording: Global hotkeys disabled");
         }
-        
+
         Log("StartRecording: COMPLETED");
     }
 
@@ -259,13 +254,13 @@ public partial class HotkeySelectionControl : UserControl
         Log("StopRecording: ENTERED");
         _mode = ControlMode.Normal;
         Log("StopRecording: Mode set to Normal");
-        
+
         // Re-enable global hotkeys
-        if (global::Avalonia.Application.Current is App app && app.HotkeyManager != null)
+        if (global::Avalonia.Application.Current is App app && app.WorkflowManager != null)
         {
-            app.HotkeyManager.IgnoreHotkeys = false;
+            app.WorkflowManager.IgnoreHotkeys = false;
             Log("StopRecording: Global hotkeys re-enabled");
-            
+
             // Re-register the hotkey with new binding
             if (_viewModel != null)
             {
@@ -274,7 +269,7 @@ public partial class HotkeySelectionControl : UserControl
                 var id = _viewModel.Model.HotkeyInfo.Id;
                 Log($"StopRecording: Attempting to register hotkey: {_viewModel.Model.HotkeyInfo}");
                 Log($"StopRecording: Details - Key={key}, Modifiers={mods}, Id={id}");
-                var success = app.HotkeyManager.RegisterHotkey(_viewModel.Model);
+                var success = app.WorkflowManager.RegisterHotkey(_viewModel.Model);
                 Log($"StopRecording: RegisterHotkey returned: {success}, Status: {_viewModel.Model.HotkeyInfo.Status}");
             }
             else
@@ -290,11 +285,11 @@ public partial class HotkeySelectionControl : UserControl
         // Restore visual appearance
         HotkeyButton.Background = _originalBackground ?? Brushes.Transparent;
         HotkeyButton.ClearValue(Button.ForegroundProperty);
-        
+
         _viewModel?.Refresh();
         UpdateButtonContent();
         Log($"StopRecording: Button content updated to: {HotkeyButton.Content}");
-        
+
         OnHotkeyChanged();
         Log("StopRecording: COMPLETED");
     }
@@ -307,24 +302,24 @@ public partial class HotkeySelectionControl : UserControl
             _viewModel.Model.HotkeyInfo.Key = _previousKey;
             _viewModel.Model.HotkeyInfo.Modifiers = _previousModifiers;
         }
-        
+
         StopRecording();
     }
 
     private void CommitHotkey(Key key, KeyModifiers modifiers)
     {
         if (_viewModel == null) return;
-        
+
         // Validate: must not be modifier-only
         if (key == Key.None || IsModifierKey(key))
         {
             // Reject - don't commit
             return;
         }
-        
+
         _viewModel.Model.HotkeyInfo.Key = key;
         _viewModel.Model.HotkeyInfo.Modifiers = modifiers;
-        
+
         StopRecording();
     }
 
@@ -335,19 +330,19 @@ public partial class HotkeySelectionControl : UserControl
             _viewModel.Model.HotkeyInfo.Key = Key.None;
             _viewModel.Model.HotkeyInfo.Modifiers = KeyModifiers.None;
         }
-        
+
         StopRecording();
     }
 
     private void UpdateRecordingDisplay(KeyModifiers modifiers)
     {
         var parts = new System.Collections.Generic.List<string>();
-        
+
         if (modifiers.HasFlag(KeyModifiers.Control)) parts.Add("Ctrl");
         if (modifiers.HasFlag(KeyModifiers.Alt)) parts.Add("Alt");
         if (modifiers.HasFlag(KeyModifiers.Shift)) parts.Add("Shift");
         if (modifiers.HasFlag(KeyModifiers.Meta)) parts.Add("Win");
-        
+
         if (parts.Count > 0)
         {
             HotkeyButton.Content = string.Join(" + ", parts) + " + ...";
@@ -365,7 +360,7 @@ public partial class HotkeySelectionControl : UserControl
     private void HotkeyButton_Click(object? sender, RoutedEventArgs e)
     {
         Log($"HotkeyButton_Click: FIRED - current mode={_mode}");
-        
+
         if (_mode == ControlMode.Recording)
         {
             Log("HotkeyButton_Click: Already recording, canceling");
@@ -421,11 +416,11 @@ public partial class HotkeySelectionControl : UserControl
     private void PopulateTaskMenu()
     {
         if (TaskContextMenu == null || _viewModel == null) return;
-        
+
         TaskContextMenu.Items.Clear();
-        
+
         var hotkeyTypes = Enum.GetValues(typeof(HotkeyType)).Cast<HotkeyType>();
-        
+
         foreach (var hotkeyType in hotkeyTypes)
         {
             var menuItem = new MenuItem
@@ -433,7 +428,7 @@ public partial class HotkeySelectionControl : UserControl
                 Header = EnumExtensions.GetDescription(hotkeyType),
                 Tag = hotkeyType
             };
-            
+
             menuItem.Click += (s, e) =>
             {
                 if (_viewModel != null && s is MenuItem mi && mi.Tag is HotkeyType type)
@@ -442,7 +437,7 @@ public partial class HotkeySelectionControl : UserControl
                     _viewModel.Refresh();
                 }
             };
-            
+
             TaskContextMenu.Items.Add(menuItem);
         }
     }

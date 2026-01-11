@@ -23,11 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System;
+using XerahS.Platform.Abstractions;
 using System.Runtime.InteropServices;
-using ShareX.Ava.Platform.Abstractions;
 
-namespace ShareX.Ava.Platform.MacOS
+namespace XerahS.Platform.MacOS
 {
     /// <summary>
     /// macOS platform information service

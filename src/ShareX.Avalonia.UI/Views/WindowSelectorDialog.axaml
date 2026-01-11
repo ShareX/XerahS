@@ -2,9 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
+             xmlns:vm="using:XerahS.UI.ViewModels"
              mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="500"
-             x:Class="ShareX.Ava.UI.Views.WindowSelectorDialog"
+             x:Class="XerahS.UI.Views.WindowSelectorDialog"
              x:DataType="vm:WindowSelectorViewModel">
 
     <Grid RowDefinitions="Auto,*,Auto" Margin="20">

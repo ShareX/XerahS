@@ -25,7 +25,7 @@
 
 using System.ComponentModel;
 
-namespace ShareX.Ava.Indexer
+namespace XerahS.Indexer
 {
     public enum IndexerOutput
     {

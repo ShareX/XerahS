@@ -2,17 +2,25 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
+             xmlns:vm="using:XerahS.UI.ViewModels"
              mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="40"
-             x:Class="ShareX.Ava.UI.Views.Controls.HotkeySelectionControl"
+             x:Class="XerahS.UI.Views.Controls.HotkeySelectionControl"
              x:DataType="vm:HotkeyItemViewModel">
-    
+    <UserControl.Styles>
+        <Style Selector="Border.highlighted">
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColorLowBrush}" />
+        </Style>
+        <Style Selector="Border:not(.highlighted)">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}" />
+        </Style>
+    </UserControl.Styles>
+
     <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" 
             BorderThickness="1" 
             CornerRadius="4" 
             Padding="8,4"
-            Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
-        <Grid ColumnDefinitions="Auto,*,Auto">
+            Classes.highlighted="{Binding IsHighlighted}">
+        <Grid ColumnDefinitions="Auto,Auto,*,Auto">
             <!-- Status Icon -->
             <Ellipse Grid.Column="0" 
                      Width="10" Height="10" 
@@ -20,9 +28,22 @@
                      VerticalAlignment="Center"
                      Fill="{Binding Status, Converter={x:Static vm:HotkeyStatusColorConverter.Instance}}"/>
 
+            <!-- Nav Label -->
+            <Border Grid.Column="1"
+                    Background="{DynamicResource SystemAccentColor}"
+                    CornerRadius="3"
+                    Padding="4,2"
+                    Margin="0,0,8,0"
+                    IsVisible="{Binding NavLabelVisible}"
+                    VerticalAlignment="Center">
+                <TextBlock Text="Nav" 
+                           FontSize="10" 
+                           Foreground="White" 
+                           FontWeight="Bold"/>
+            </Border>
             
             <!-- Task Description (Dropdown button) -->
-            <Button Grid.Column="1" 
+            <Button Grid.Column="2" 
                     x:Name="TaskButton"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Left"
@@ -42,7 +63,7 @@
             </Button>
             
             <!-- Hotkey Capture Button -->
-            <Border Grid.Column="2" 
+            <Border Grid.Column="3" 
                     Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" 
                     CornerRadius="3" 
                     Margin="10,0"

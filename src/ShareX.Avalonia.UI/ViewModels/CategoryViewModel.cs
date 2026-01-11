@@ -1,11 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.Ava.Common;
-using ShareX.Ava.Uploaders.PluginSystem;
+using XerahS.Common;
+using XerahS.Uploaders.PluginSystem;
 using ShareX.Editor.ViewModels;
 using System.Collections.ObjectModel;
 
-namespace ShareX.Ava.UI.ViewModels;
+namespace XerahS.UI.ViewModels;
 
 /// <summary>
 /// ViewModel for a category with its instances
@@ -77,13 +77,13 @@ public partial class CategoryViewModel : ViewModelBase
         try
         {
             InstanceManager.Instance.SetDefaultInstance(Category, instance.InstanceId);
-            
+
             // Update UI
             if (DefaultInstance != null)
             {
                 DefaultInstance.IsDefault = false;
             }
-            
+
             DefaultInstance = instance;
             instance.IsDefault = true;
         }
@@ -120,7 +120,7 @@ public partial class CategoryViewModel : ViewModelBase
         {
             InstanceManager.Instance.RemoveInstance(instance.InstanceId);
             Instances.Remove(instance);
-            
+
             if (DefaultInstance == instance)
             {
                 DefaultInstance = null;
@@ -135,20 +135,20 @@ public partial class CategoryViewModel : ViewModelBase
     public void LoadInstances()
     {
         Instances.Clear();
-        
+
         var instances = InstanceManager.Instance.GetInstancesByCategory(Category);
         var defaultInstance = InstanceManager.Instance.GetDefaultInstance(Category);
-        
+
         foreach (var instance in instances)
         {
             var vm = new UploaderInstanceViewModel(instance);
-            
+
             if (defaultInstance != null && instance.InstanceId == defaultInstance.InstanceId)
             {
                 vm.IsDefault = true;
                 DefaultInstance = vm;
             }
-            
+
             Instances.Add(vm);
         }
     }

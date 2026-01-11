@@ -23,11 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class DebugTimer : IDisposable
     {

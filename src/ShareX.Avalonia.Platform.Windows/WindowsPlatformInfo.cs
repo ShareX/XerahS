@@ -23,11 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Platform.Abstractions;
-using System;
+using XerahS.Platform.Abstractions;
 using System.Runtime.InteropServices;
 
-namespace ShareX.Ava.Platform.Windows
+namespace XerahS.Platform.Windows
 {
     /// <summary>
     /// Windows platform information service

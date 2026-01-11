@@ -221,6 +221,16 @@ See also: `docs/plugin_development_guide.md` for complete plugin setup instructi
 5.  Test on multiple platforms when possible
 
 ## Building
+
+### macOS Native Library (ScreenCaptureKit)
+On macOS, build the native ScreenCaptureKit bridge library before building the .NET solution:
+```bash
+cd native/macos
+make
+ls -l libscreencapturekit_bridge.dylib
+```
+
+### .NET Solution
 ```bash
 dotnet build ShareX.Avalonia.sln
 ```

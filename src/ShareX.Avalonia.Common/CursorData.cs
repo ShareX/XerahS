@@ -23,12 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class CursorData
     {
@@ -169,18 +168,20 @@ namespace ShareX.Ava.Common
 
         public Bitmap? ToBitmap()
         {
-             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return null;
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return null;
 
             if (IsDefaultSize || Size.IsEmpty)
             {
                 // Icon.FromHandle might throw if Handle is zero/invalid
                 if (Handle == IntPtr.Zero) return null;
-                try {
+                try
+                {
                     using (Icon icon = Icon.FromHandle(Handle))
                     {
                         return icon.ToBitmap();
                     }
-                } catch { return null; }
+                }
+                catch { return null; }
             }
 
             Bitmap bmp = new Bitmap(Size.Width, Size.Height, PixelFormat.Format32bppArgb);

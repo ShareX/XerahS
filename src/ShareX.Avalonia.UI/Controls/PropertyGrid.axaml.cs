@@ -3,15 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
-using System;
-using System.Collections;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using ShareX.Ava.Common;
 using SkiaSharp;
+using System.ComponentModel;
+using System.Reflection;
 
-namespace ShareX.Ava.UI.Controls
+namespace XerahS.UI.Controls
 {
     public partial class PropertyGrid : UserControl
     {
@@ -50,12 +46,12 @@ namespace ShareX.Ava.UI.Controls
             var type = obj.GetType();
             var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.CanWrite && p.CanRead)
-                .Where(p => 
+                .Where(p =>
                 {
                     var attr = p.GetCustomAttribute<BrowsableAttribute>();
                     return attr == null || attr.Browsable;
                 })
-                .OrderBy(p => 
+                .OrderBy(p =>
                 {
                     // Basic ordering, maybe by MetadataToken or Category later
                     return p.Name;
@@ -154,7 +150,7 @@ namespace ShareX.Ava.UI.Controls
                 binding.Converter = new ColorStringConverter();
                 textBox.Bind(TextBox.TextProperty, binding);
                 textBox.LostFocus += (s, e) => PropertyValueChanged?.Invoke(this, EventArgs.Empty);
-                return textBox; 
+                return textBox;
             }
             if (type == typeof(SKColor))
             {
@@ -168,8 +164,8 @@ namespace ShareX.Ava.UI.Controls
             // Fallback for complex types?
             if (type.IsClass && type != typeof(string))
             {
-                 // Nested expandable? Too complex for now.
-                 return new TextBlock { Text = $"({type.Name})", VerticalAlignment = VerticalAlignment.Center, Foreground = Brushes.Gray };
+                // Nested expandable? Too complex for now.
+                return new TextBlock { Text = $"({type.Name})", VerticalAlignment = VerticalAlignment.Center, Foreground = Brushes.Gray };
             }
 
             return new TextBox { Text = $"(Unsupported {type.Name})", IsReadOnly = true };
@@ -226,7 +222,7 @@ namespace ShareX.Ava.UI.Controls
             {
                 if (value is SKColor c)
                 {
-                   return c.ToString();
+                    return c.ToString();
                 }
                 return value?.ToString();
             }

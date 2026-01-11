@@ -23,11 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class MimeTypes
     {

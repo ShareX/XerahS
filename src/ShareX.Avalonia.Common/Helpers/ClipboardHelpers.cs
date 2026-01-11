@@ -24,13 +24,11 @@
 #endregion License Information (GPL v3)
 
 #if NET6_0_OR_GREATER
-using System.Runtime.Versioning;
 #endif
-using ShareX.Ava.Platform.Abstractions;
-using System.Threading.Tasks;
+using XerahS.Platform.Abstractions;
 using SkiaSharp;
 
-namespace ShareX.Ava.Common.Helpers
+namespace XerahS.Common.Helpers
 {
     public static class ClipboardHelpers
     {
@@ -56,7 +54,7 @@ namespace ShareX.Ava.Common.Helpers
         // Keep sync wrappers for now if needed, or remove them if we want to force async.
         // User said "Don't need to match legacy", so we prefer Async.
         // We will remove synchronous text methods to encourage correct usage.
-        
+
         public static bool ContainsText()
         {
             return Clipboard != null && Clipboard.ContainsText();
@@ -74,8 +72,8 @@ namespace ShareX.Ava.Common.Helpers
 
         public static string[] GetFileDropList()
         {
-             // IClipboardService definition viewed earlier didn't show GetFileDropListAsync, only GetTextAsync.
-             // We will check IClipboardService again to be sure, but for now use sync if that's all that is exposed.
+            // IClipboardService definition viewed earlier didn't show GetFileDropListAsync, only GetTextAsync.
+            // We will check IClipboardService again to be sure, but for now use sync if that's all that is exposed.
             return Clipboard?.GetFileDropList();
         }
 
@@ -83,7 +81,7 @@ namespace ShareX.Ava.Common.Helpers
         {
             Clipboard?.SetFileDropList(files);
         }
-        
+
         public static SKBitmap? GetImage()
         {
             return Clipboard?.GetImage();

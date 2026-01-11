@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
+using XerahS.Common;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     // Example: Basic {base64:username:password}
     internal class CustomUploaderFunctionBase64 : CustomUploaderFunction

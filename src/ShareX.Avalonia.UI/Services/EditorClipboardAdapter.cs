@@ -1,7 +1,7 @@
 using ShareX.Editor.Services;
 using SkiaSharp;
 
-namespace ShareX.Ava.UI.Services;
+namespace XerahS.UI.Services;
 
 /// <summary>
 /// Adapter that connects the Editor's clipboard abstraction to the platform clipboard service.

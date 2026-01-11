@@ -25,7 +25,7 @@
 
 using System.Drawing;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     public interface IUploaderService
     {

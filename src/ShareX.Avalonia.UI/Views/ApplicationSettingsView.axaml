@@ -3,9 +3,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
-             xmlns:views="using:ShareX.Ava.UI.Views.Controls"
-             x:Class="ShareX.Ava.UI.Views.ApplicationSettingsView"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             xmlns:views="using:XerahS.UI.Views.Controls"
+             x:Class="XerahS.UI.Views.ApplicationSettingsView"
              x:DataType="vm:SettingsViewModel">
 
     <Design.DataContext>

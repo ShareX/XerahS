@@ -1,10 +1,7 @@
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
-using ShareX.Ava.Common;
 
-namespace ShareX.Ava.Common.Native
+namespace XerahS.Common.Native
 {
     public enum TaskbarProgressBarStatus
     {
@@ -139,7 +136,7 @@ namespace ShareX.Ava.Common.Native
         }
 
         // TODO: [Avalonia] Port SetProgressValue(Window window, ...) - Requires retrieving window handle from Avalonia Window
-        
+
         /*
         public static void SetProgressValue(Form form, int currentValue, int maximumValue = 100)
         {

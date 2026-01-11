@@ -23,10 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
+using XerahS.Common;
 using System.Drawing;
 
-namespace ShareX.Ava.History
+namespace XerahS.History
 {
     public class ImageHistorySettings
     {

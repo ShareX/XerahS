@@ -24,18 +24,14 @@
 #endregion License Information (GPL v3)
 
 using Avalonia.Input;
-using ShareX.Ava.Platform.Abstractions;
-using System;
+using XerahS.Platform.Abstractions;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 // Only import DebugHelper from Common, not the whole namespace
-using DebugHelper = ShareX.Ava.Common.DebugHelper;
+using DebugHelper = XerahS.Common.DebugHelper;
 
-namespace ShareX.Ava.Platform.Windows;
+namespace XerahS.Platform.Windows;
 
 /// <summary>
 /// Windows implementation of global hotkey registration using RegisterHotKey API
@@ -87,13 +83,13 @@ public class WindowsHotkeyService : IHotkeyService
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-    
+
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool PostThreadMessage(int idThread, uint Msg, IntPtr wParam, IntPtr lParam);
 
     [DllImport("kernel32.dll")]
     private static extern IntPtr GetModuleHandle(string? lpModuleName);
-    
+
     [DllImport("kernel32.dll")]
     private static extern int GetCurrentThreadId();
 
@@ -232,7 +228,7 @@ public class WindowsHotkeyService : IHotkeyService
             DebugHelper.WriteLine("Cannot invoke: HWND is null");
             return;
         }
-        
+
         // If we're already on the message thread, just execute
         if (GetCurrentThreadId() == _messageThreadId)
         {
@@ -241,7 +237,7 @@ public class WindowsHotkeyService : IHotkeyService
         }
 
         _actionQueue.Enqueue(action);
-        
+
         // Wake up the message loop
         // We can post to the window or the thread. Posting to window is usually safer if we have it.
         bool posted = PostMessage(_hwnd, WM_INVOKE, IntPtr.Zero, IntPtr.Zero);
@@ -281,7 +277,7 @@ public class WindowsHotkeyService : IHotkeyService
 
                 uint modifiers = GetModifiers(hotkeyInfo.Modifiers);
                 uint vk = KeyToVirtualKey(hotkeyInfo.Key);
-                
+
                 // Debug log before registration attempt
                 DebugHelper.WriteLine($"RegisterHotKey attempt: hwnd=0x{_hwnd:X}, id={hotkeyInfo.Id}, key={hotkeyInfo.Key} (VK=0x{vk:X2}), mods=0x{modifiers:X}");
 
@@ -328,11 +324,11 @@ public class WindowsHotkeyService : IHotkeyService
                 // Safety check: is it actually registered?
                 if (!_registeredHotkeys.ContainsKey(hotkeyInfo.Id))
                 {
-                     DebugHelper.WriteLine($"UnregisterHotkey: Ignored - ID {hotkeyInfo.Id} not found in local registry (prevents error 1419)");
-                     hotkeyInfo.Status = HotkeyStatus.NotConfigured;
-                     result = true; // Treat as success since it's not registered
-                     mre.Set();
-                     return;
+                    DebugHelper.WriteLine($"UnregisterHotkey: Ignored - ID {hotkeyInfo.Id} not found in local registry (prevents error 1419)");
+                    hotkeyInfo.Status = HotkeyStatus.NotConfigured;
+                    result = true; // Treat as success since it's not registered
+                    mre.Set();
+                    return;
                 }
 
                 DebugHelper.WriteLine($"UnregisterHotkey attempt: hwnd=0x{_hwnd:X}, id={hotkeyInfo.Id}, hotkey={hotkeyInfo}");
@@ -347,9 +343,9 @@ public class WindowsHotkeyService : IHotkeyService
                 else
                 {
                     int error = Marshal.GetLastWin32Error();
-                    
+
                     // If error is 1419 (Hot key is not registered), we should still clear it from our map to stay in sync
-                    if (error == 1419) 
+                    if (error == 1419)
                     {
                         DebugHelper.WriteLine($"Warning: Win32 error 1419 (Not Registered) for {hotkeyInfo}. Cleaning up local map.");
                         _registeredHotkeys.Remove(hotkeyInfo.Id);

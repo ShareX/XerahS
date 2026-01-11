@@ -25,11 +25,9 @@
 
 // Source: https://github.com/Burtsev-Alexey/net-object-deep-copy
 
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class ObjectExtensions
     {

@@ -24,13 +24,9 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
-using ShareX.Ava.Common;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using XerahS.Common;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     /// <summary>
     /// Handles importing UploadersConfig.json from ShareX (WinForms) into ShareX Avalonia.

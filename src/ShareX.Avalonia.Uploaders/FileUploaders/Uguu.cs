@@ -23,9 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System.IO;
-
-namespace ShareX.Ava.Uploaders.FileUploaders
+namespace XerahS.Uploaders.FileUploaders
 {
     public class UguuFileUploaderService : FileUploaderService
     {

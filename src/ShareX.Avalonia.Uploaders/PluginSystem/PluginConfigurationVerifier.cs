@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Uploaders.PluginSystem;
+namespace XerahS.Uploaders.PluginSystem;
 
 /// <summary>
 /// Plugin configuration verification status
@@ -85,7 +85,7 @@ public static class PluginConfigurationVerifier
 
         // Find plugin folder
         var pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins", providerId);
-        
+
         if (!Directory.Exists(pluginsPath))
         {
             result.Status = PluginVerificationStatus.Error;
@@ -150,7 +150,7 @@ public static class PluginConfigurationVerifier
     public static int CleanDuplicateFrameworkDlls(string providerId)
     {
         var pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins", providerId);
-        
+
         if (!Directory.Exists(pluginsPath))
         {
             return 0;
@@ -190,7 +190,7 @@ public static class PluginConfigurationVerifier
                 {
                     continue; // Already handled above
                 }
-                
+
                 // Delete other Avalonia assemblies
                 try
                 {

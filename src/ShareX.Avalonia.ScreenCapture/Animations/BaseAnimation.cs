@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Diagnostics;
 
-namespace ShareX.Ava.ScreenCapture
+namespace XerahS.ScreenCapture
 {
     internal class BaseAnimation
     {

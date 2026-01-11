@@ -23,8 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using ShareX.Ava.Uploaders;
+using XerahS.Uploaders;
 
 namespace ShareX.Imgur.Plugin;
 
@@ -34,19 +33,19 @@ namespace ShareX.Imgur.Plugin;
 public class ImgurConfigModel
 {
     public AccountType AccountType { get; set; } = AccountType.Anonymous;
-    
+
     public OAuth2Info? OAuth2Info { get; set; }
-    
+
     public bool DirectLink { get; set; } = true;
-    
+
     public ImgurThumbnailType ThumbnailType { get; set; } = ImgurThumbnailType.Medium_Thumbnail;
-    
+
     public bool UseGIFV { get; set; } = true;
-    
+
     public bool UploadToSelectedAlbum { get; set; } = false;
-    
+
     public ImgurAlbumData? SelectedAlbum { get; set; }
-    
+
     /// <summary>
     /// Imgur Client ID for API access
     /// </summary>

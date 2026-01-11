@@ -23,10 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Threading;
-
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class ThreadWorker
     {

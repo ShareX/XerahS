@@ -23,16 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 
-namespace ShareX.Ava.Common;
+namespace XerahS.Common;
 
 /// <summary>
 /// General helper methods
@@ -80,13 +75,13 @@ public static class GeneralHelpers
         }
         return sb.ToString();
     }
-    
+
     public static T Pick<T>(IList<T> list)
     {
         if (list == null || list.Count == 0) return default;
         return list[random.Next(list.Count)];
     }
-    
+
     private static readonly Random random = new Random();
 
     /// <summary>
@@ -95,14 +90,14 @@ public static class GeneralHelpers
     public static string GetRandomAlphanumericString(int length)
     {
         if (length <= 0) return string.Empty;
-        
+
         StringBuilder sb = new StringBuilder(length);
-        
+
         for (int i = 0; i < length; i++)
         {
             sb.Append(Alphanumeric[random.Next(Alphanumeric.Length)]);
         }
-        
+
         return sb.ToString();
     }
 
@@ -112,14 +107,14 @@ public static class GeneralHelpers
     public static string GetRandomNumber(int length)
     {
         if (length <= 0) return string.Empty;
-        
+
         StringBuilder sb = new StringBuilder(length);
-        
+
         for (int i = 0; i < length; i++)
         {
             sb.Append(random.Next(10));
         }
-        
+
         return sb.ToString();
     }
 
@@ -153,7 +148,7 @@ public static class GeneralHelpers
         {
             return result;
         }
-        
+
         return defaultValue;
     }
 
@@ -183,14 +178,14 @@ public static class GeneralHelpers
     public static string RepeatString(string str, int count)
     {
         if (string.IsNullOrEmpty(str) || count <= 0) return string.Empty;
-        
+
         StringBuilder sb = new StringBuilder(str.Length * count);
-        
+
         for (int i = 0; i < count; i++)
         {
             sb.Append(str);
         }
-        
+
         return sb.ToString();
     }
 
@@ -222,7 +217,7 @@ public static class GeneralHelpers
     public static bool IsValidURL(string url)
     {
         if (string.IsNullOrWhiteSpace(url)) return false;
-        
+
         return Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult)
             && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
     }
@@ -257,14 +252,14 @@ public static class GeneralHelpers
     public static string BytesToHex(byte[] bytes)
     {
         if (bytes == null || bytes.Length == 0) return string.Empty;
-        
+
         StringBuilder sb = new StringBuilder(bytes.Length * 2);
-        
+
         foreach (byte b in bytes)
         {
             sb.AppendFormat("{0:x2}", b);
         }
-        
+
         return sb.ToString();
     }
 
@@ -275,7 +270,7 @@ public static class GeneralHelpers
     {
         var type = typeof(T);
         var assembly = type.Assembly;
-        
+
         return assembly.GetTypes()
             .Where(t => t.IsClass && !t.IsAbstract && type.IsAssignableFrom(t))
             .Select(t => Activator.CreateInstance(t) as T)
@@ -309,11 +304,11 @@ public static class GeneralHelpers
         if (string.IsNullOrEmpty(name)) return name;
 
         StringBuilder result = new StringBuilder();
-        
+
         for (int i = 0; i < name.Length; i++)
         {
             char c = name[i];
-            
+
             if (i == 0)
             {
                 result.Append(keepCase ? c : char.ToUpper(c));
@@ -339,7 +334,7 @@ public static class GeneralHelpers
     {
         var assembly = System.Reflection.Assembly.GetEntryAssembly() ?? System.Reflection.Assembly.GetExecutingAssembly();
         var version = assembly.GetName().Version;
-        
+
         if (version == null)
         {
             return "1.0.0.0";

@@ -25,7 +25,7 @@
 
 using ReactiveUI;
 
-namespace ShareX.Ava.ViewModels;
+namespace XerahS.ViewModels;
 
 /// <summary>
 /// Base class for all ViewModels

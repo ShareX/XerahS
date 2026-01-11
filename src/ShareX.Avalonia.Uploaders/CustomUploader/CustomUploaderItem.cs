@@ -24,16 +24,12 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
-using ShareX.Ava.Common;
-using ShareX.UploadersLib.Properties;
-using System;
-using System.Collections.Generic;
+using XerahS.Common;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     public class CustomUploaderItem
     {

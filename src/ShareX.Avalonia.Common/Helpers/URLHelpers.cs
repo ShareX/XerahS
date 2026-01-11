@@ -23,15 +23,12 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     // SlashType moved to Enums.cs
 
@@ -371,10 +368,10 @@ namespace ShareX.Ava.Common
         public static string GetValidURL(string url, bool replaceSpace = false)
         {
             if (replaceSpace) url = url.Replace(' ', '_');
-            
+
             // System.Web.HttpUtility.UrlPathEncode is obsolete and not in .NET Core usually
             // We can emulate it or use WebUtility
-            return Uri.EscapeUriString(url); 
+            return Uri.EscapeUriString(url);
         }
 
         public static void OpenURL(string url)

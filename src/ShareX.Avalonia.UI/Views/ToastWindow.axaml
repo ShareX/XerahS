@@ -1,0 +1,83 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+        x:Class="XerahS.UI.Views.ToastWindow"
+        x:DataType="vm:ToastViewModel"
+        Title="Toast"
+        Topmost="True"
+        ShowInTaskbar="False"
+        CanResize="False"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        WindowStartupLocation="Manual"
+        Cursor="Hand">
+    
+    <Border Background="#CC323232"
+            BorderBrush="#282828"
+            BorderThickness="1"
+            CornerRadius="6"
+            Padding="1">
+        
+        <Grid>
+            <!-- Image display (when available) -->
+            <Image Source="{Binding Image}"
+                   IsVisible="{Binding HasImage}"
+                   Stretch="Uniform"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+            
+            <!-- Text display (when no image or as overlay) -->
+            <StackPanel VerticalAlignment="Top"
+                        HorizontalAlignment="Stretch"
+                        IsVisible="{Binding !HasImage}"
+                        Margin="10">
+                
+                <!-- Title -->
+                <TextBlock Text="{Binding Title}"
+                           IsVisible="{Binding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                           FontWeight="Bold"
+                           FontSize="14"
+                           Foreground="#F0F0F0"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,4"/>
+                
+                <!-- Main text -->
+                <TextBlock Text="{Binding Text}"
+                           FontSize="12"
+                           Foreground="#D2D2D2"
+                           TextWrapping="Wrap"
+                           TextTrimming="CharacterEllipsis"
+                           MaxHeight="200"/>
+            </StackPanel>
+            
+            <!-- URL overlay when hovering over image -->
+            <Border Background="#64000000"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Stretch"
+                    Height="40"
+                    IsVisible="{Binding HasUrl}"
+                    x:Name="UrlOverlay"
+                    Opacity="0">
+                <TextBlock Text="{Binding Url}"
+                           Foreground="White"
+                           FontSize="11"
+                           Margin="8,0"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"/>
+            </Border>
+        </Grid>
+        
+        <Border.ContextFlyout>
+            <MenuFlyout Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
+                <MenuItem Header="Copy image to clipboard" Command="{Binding CopyImageToClipboardCommand}"/>
+                <MenuItem Header="Open file" Command="{Binding OpenFileCommand}"/>
+                <MenuItem Header="Copy file path" Command="{Binding CopyFilePathCommand}"/>
+                <MenuItem Header="Copy URL" Command="{Binding CopyUrlCommand}" IsVisible="{Binding HasUrl}"/>
+            </MenuFlyout>
+        </Border.ContextFlyout>
+    </Border>
+</Window>

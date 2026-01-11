@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Runtime.InteropServices;
 
-namespace ShareX.Ava.Platform.MacOS.Native
+namespace XerahS.Platform.MacOS.Native
 {
     /// <summary>
     /// P/Invoke bindings for the native ScreenCaptureKit bridge library.

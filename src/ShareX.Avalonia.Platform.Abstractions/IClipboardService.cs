@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System.Threading.Tasks;
 using SkiaSharp;
 
-namespace ShareX.Ava.Platform.Abstractions
+namespace XerahS.Platform.Abstractions
 {
     /// <summary>
     /// Platform-agnostic clipboard service

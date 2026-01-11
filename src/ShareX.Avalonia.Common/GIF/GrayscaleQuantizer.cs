@@ -23,13 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using SkiaSharp;
-using ShareX.Ava.Common.GIF;
 
-namespace ShareX.Ava.Common.GIF
+namespace XerahS.Common.GIF
 {
     /// <summary>
     /// Summary description for PaletteQuantizer.

@@ -23,11 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using System;
+using XerahS.Common;
 using System.ComponentModel;
 
-namespace ShareX.Ava.Core;
+namespace XerahS.Core;
 
 public enum ShareXBuild
 {
@@ -183,7 +182,7 @@ public enum HotkeyType // Localized
     [Description("Capture active window")]
     ActiveWindow,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
-    [Description("Capture pre configured window")]
+    [Description("Capture any window")]
     CustomWindow,
     [Category(EnumExtensions.HotkeyType_Category_ScreenCapture)]
     [Description("Capture active monitor")]

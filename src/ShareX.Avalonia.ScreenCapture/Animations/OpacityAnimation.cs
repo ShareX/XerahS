@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using System;
+using XerahS.Common;
 
-namespace ShareX.Ava.ScreenCapture
+namespace XerahS.ScreenCapture
 {
     internal class OpacityAnimation : BaseAnimation
     {

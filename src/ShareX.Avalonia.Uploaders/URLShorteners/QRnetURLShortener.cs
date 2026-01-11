@@ -24,9 +24,8 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
-using System.Collections.Generic;
 
-namespace ShareX.Ava.Uploaders.URLShorteners
+namespace XerahS.Uploaders.URLShorteners
 {
     public class QRnetURLShortenerService : URLShortenerService
     {

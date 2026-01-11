@@ -1,15 +1,14 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-
-using ShareX.Ava.Common;
-using ShareX.Ava.Core;
-using ShareX.Ava.UI.Views;
-using ShareX.Ava.Platform.Abstractions;
+using XerahS.Common;
+using XerahS.Core;
+using XerahS.Platform.Abstractions;
+using XerahS.UI.Views;
 using ShareX.Editor.ViewModels;
-using ShareX.Ava.Uploaders.PluginSystem;
 
-namespace ShareX.Ava.UI;
+namespace XerahS.UI;
 
 public partial class App : Application
 {
@@ -22,118 +21,185 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var mainViewModel = new MainViewModel();
+            mainViewModel.ApplicationName = ShareXResources.AppName;
 
             desktop.MainWindow = new Views.MainWindow
             {
-                DataContext = new MainViewModel(),
+                DataContext = mainViewModel,
             };
-            
+
             InitializeHotkeys();
-            
+
             // Register UI Service
             Platform.Abstractions.PlatformServices.RegisterUIService(new Services.AvaloniaUIService());
-            
+
+            // Register Toast Service
+            Platform.Abstractions.PlatformServices.RegisterToastService(new Services.AvaloniaToastService());
+
             // Wire up Editor clipboard to platform implementation
             ShareX.Editor.Services.EditorServices.Clipboard = new Services.EditorClipboardAdapter();
 
+            // Setup window selector callback for CustomWindow hotkey
+            Core.Tasks.WorkerTask.ShowWindowSelectorCallback = async () =>
+            {
+                var tcs = new TaskCompletionSource<Platform.Abstractions.WindowInfo?>();
+
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    try
+                    {
+                        var viewModel = new ViewModels.WindowSelectorViewModel();
+                        var dialog = new Window
+                        {
+                            Title = "Select Window to Capture",
+                            Width = 400,
+                            Height = 500,
+                            WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner,
+                            Content = new Views.WindowSelectorDialog { DataContext = viewModel }
+                        };
+
+                        viewModel.OnWindowSelected = (window) =>
+                        {
+                            tcs.TrySetResult(window);
+                            dialog.Close();
+                        };
+
+                        viewModel.OnCancelled = () =>
+                        {
+                            tcs.TrySetResult(null);
+                            dialog.Close();
+                        };
+
+                        if (desktop.MainWindow != null)
+                        {
+                            dialog.ShowDialog(desktop.MainWindow);
+                        }
+                        else
+                        {
+                            dialog.Show();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Common.DebugHelper.WriteException(ex, "Failed to show window selector");
+                        tcs.TrySetResult(null);
+                    }
+                });
+
+                return await tcs.Task;
+            };
+
             desktop.Exit += (sender, args) =>
             {
-                ShareX.Ava.Core.SettingManager.SaveAllSettings();
+                XerahS.Core.SettingManager.SaveAllSettings();
             };
 
             // Subscribe to workflow completion for notification
             Core.Managers.TaskManager.Instance.TaskCompleted += OnWorkflowTaskCompleted;
+
+            // Trigger async recording initialization via callback
+            // This prevents blocking the main window from showing quickly
+            PostUIInitializationCallback?.Invoke();
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
+    /// <summary>
+    /// Callback invoked after UI initialization completes.
+    /// Set by Program.cs to perform platform-specific async initialization.
+    /// </summary>
+    public static Action? PostUIInitializationCallback { get; set; }
+
     private void OnWorkflowTaskCompleted(object? sender, Core.Tasks.WorkerTask task)
     {
-        var logMsg = $"[Event] Workflow task completed. ID: {task.GetHashCode()}";
-        DebugHelper.WriteLine(logMsg);
-        AppendToRegionCaptureLog(logMsg);
-
         // Check if notification should be shown
-        var taskSettings = task.Info?.TaskSettings ?? SettingManager.Settings.DefaultTaskSettings;
-        bool showNotification = taskSettings?.GeneralSettings?.ShowToastNotificationAfterTaskCompleted == true;
-        
-        var settingsLogMsg = $"[Notification] Checking settings: ShowToast={showNotification}";
-        DebugHelper.WriteLine(settingsLogMsg);
-        AppendToRegionCaptureLog(settingsLogMsg);
+        // [2026-01-11] Fix: Only show toast if the task was actually successful (not cancelled/stopped) and produced a result.
+        if (!task.IsSuccessful) return;
 
-        if (showNotification)
+        var taskSettings = task.Info?.TaskSettings ?? new TaskSettings();
+        if (taskSettings?.GeneralSettings?.ShowToastNotificationAfterTaskCompleted == true)
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 try
                 {
-                    var message = task.Info?.FileName ?? "Task completed";
-                    var title = "ShareX";
-                    
+                    var generalSettings = taskSettings.GeneralSettings;
+                    var filePath = task.Info?.FilePath;
+                    var url = task.Info?.Result?.URL ?? task.Info?.Result?.ShortenedURL;
+
+                    // Prepare toast title and text
+                    string? title = null;
+                    string? text = null;
+
                     if (task.Info?.Result?.IsError == true)
                     {
-                        title = "Upload Failed";
-                        message = task.Info.Result.ToString(); // Contains error message
+                        title = "Task Failed";
+                        text = task.Info.Result.ToString();
                     }
-                    else if (!string.IsNullOrEmpty(task.Info?.Result?.ShortenedURL))
+                    else if (!string.IsNullOrEmpty(url))
                     {
                         title = "Upload Completed";
-                        message = task.Info.Result.ShortenedURL;
+                        text = url;
+                    }
+                    else
+                    {
+                        title = "Task Completed";
+                        text = task.Info?.FileName ?? "Operation completed successfully.";
                     }
 
-                    var toastLogMsg = $"[Notification] Displaying toast: '{title}' - '{message}'";
-                    DebugHelper.WriteLine(toastLogMsg);
-                    AppendToRegionCaptureLog(toastLogMsg);
-                    
-                    // Use platform notification service if available
-                    try
+                    // Determine image path for toast if file is an image
+                    string? imagePath = null;
+                    if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath) && FileHelpers.IsImageFile(filePath))
                     {
-                        PlatformServices.Notification.ShowNotification(title, message);
-                        AppendToRegionCaptureLog("[Notification] ShowNotification called successfully.");
+                        imagePath = filePath;
                     }
-                    catch (InvalidOperationException)
+
+                    // Build toast configuration from settings
+                    var toastConfig = new ToastConfig
                     {
-                        // Notification service not available on this platform
-                        DebugHelper.WriteLine("[Notification] Service not available (InvalidOperationException).");
-                        AppendToRegionCaptureLog("[Notification] Service not available (InvalidOperationException).");
+                        Title = title,
+                        Text = text,
+                        ImagePath = imagePath,
+                        FilePath = filePath,
+                        URL = url,
+                        Duration = generalSettings.ToastWindowDuration,
+                        FadeDuration = generalSettings.ToastWindowFadeDuration,
+                        Placement = generalSettings.ToastWindowPlacement,
+                        Size = generalSettings.ToastWindowSize,
+                        LeftClickAction = MapToastClickAction(generalSettings.ToastWindowLeftClickAction),
+                        RightClickAction = MapToastClickAction(generalSettings.ToastWindowRightClickAction),
+                        MiddleClickAction = MapToastClickAction(generalSettings.ToastWindowMiddleClickAction),
+                        AutoHide = generalSettings.ToastWindowAutoHide
+                    };
+
+                    DebugHelper.WriteLine($"Showing toast: {title} - {text}");
+
+                    // Show toast using the toast service
+                    if (PlatformServices.IsToastServiceInitialized)
+                    {
+                        PlatformServices.Toast.ShowToast(toastConfig);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                         DebugHelper.WriteException(ex, "[Notification] Failed to invoke ShowNotification");
-                         AppendToRegionCaptureLog($"[Notification] Failed to invoke ShowNotification: {ex.Message}");
+                        // Fallback to native notification
+                        try
+                        {
+                            PlatformServices.Notification.ShowNotification(title ?? "ShareX", text ?? "Task completed");
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            DebugHelper.WriteLine("Toast and notification services not available.");
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    DebugHelper.WriteException(ex, "[Notification] Failed outer block");
-                    AppendToRegionCaptureLog($"[Notification] Failed outer block: {ex.Message}");
+                    DebugHelper.WriteException(ex, "Failed to show workflow notification");
                 }
             });
         }
-    }
-
-    /// <summary>
-    /// Appends a log message to the most recent region-capture-*.log file (DEBUG only).
-    /// </summary>
-    [System.Diagnostics.Conditional("DEBUG")]
-    private static void AppendToRegionCaptureLog(string message)
-    {
-#if DEBUG
-        try
-        {
-            var logPath = Views.RegionCapture.RegionCaptureWindow.LastDebugLogPath;
-            if (!string.IsNullOrEmpty(logPath) && System.IO.File.Exists(logPath))
-            {
-                var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
-                System.IO.File.AppendAllText(logPath, $"[{timestamp}] APP          | {message}\n");
-            }
-        }
-        catch
-        {
-            // Silently ignore logging errors
-        }
-#endif
     }
 
     private void TrayIcon_Clicked(object? sender, EventArgs e)
@@ -142,7 +208,7 @@ public partial class App : Application
         // This is triggered on left-click via the Command binding
     }
 
-    public Core.Hotkeys.HotkeyManager? HotkeyManager { get; private set; }
+    public Core.Hotkeys.WorkflowManager? WorkflowManager { get; private set; }
 
     private void InitializeHotkeys()
     {
@@ -151,24 +217,24 @@ public partial class App : Application
         try
         {
             var hotkeyService = Platform.Abstractions.PlatformServices.Hotkey;
-            HotkeyManager = new Core.Hotkeys.HotkeyManager(hotkeyService);
-            
+            WorkflowManager = new Core.Hotkeys.WorkflowManager(hotkeyService);
+
             // Subscribe to hotkey triggers
-            HotkeyManager.HotkeyTriggered += HotkeyManager_HotkeyTriggered;
+            WorkflowManager.HotkeyTriggered += HotkeyManager_HotkeyTriggered;
 
             // Load hotkeys from configuration
             var hotkeys = Core.SettingManager.WorkflowsConfig.Hotkeys;
-            
+
             // If configuration is empty/null, fallback to defaults
             if (hotkeys == null || hotkeys.Count == 0)
             {
-                hotkeys = Core.Hotkeys.HotkeyManager.GetDefaultHotkeyList();
+                hotkeys = Core.Hotkeys.WorkflowManager.GetDefaultWorkflowList();
                 // Update config with defaults so they get saved
                 Core.SettingManager.WorkflowsConfig.Hotkeys = hotkeys;
             }
 
-            HotkeyManager.UpdateHotkeys(hotkeys);
-            
+            WorkflowManager.UpdateHotkeys(hotkeys);
+
             DebugHelper.WriteLine($"Initialized hotkey manager with {hotkeys.Count} hotkeys from configuration");
         }
         catch (Exception ex)
@@ -190,12 +256,13 @@ public partial class App : Application
         }
     }
 
-    private async void HotkeyManager_HotkeyTriggered(object? sender, Core.Hotkeys.HotkeySettings settings)
+    private async void HotkeyManager_HotkeyTriggered(object? sender, Core.Hotkeys.WorkflowSettings settings)
     {
-        DebugHelper.WriteLine($"Hotkey triggered: {settings}");
-        
+        DebugHelper.WriteLine($"Hotkey triggered: {settings} (ID: {settings?.Id ?? "null"})");
+
         bool isCaptureJob = settings.Job is Core.HotkeyType.PrintScreen
                                           or Core.HotkeyType.ActiveWindow
+                                          or Core.HotkeyType.CustomWindow
                                           or Core.HotkeyType.RectangleRegion
                                           or Core.HotkeyType.CustomRegion
                                           or Core.HotkeyType.LastRegion;
@@ -206,7 +273,7 @@ public partial class App : Application
         {
             immediateMainWindow.NavigateToEditor();
         }
-        
+
         // Subscribe once to task completion so we can update preview (and show the window for capture jobs).
         void HandleTaskCompleted(object? s, Core.Tasks.WorkerTask task)
         {
@@ -221,8 +288,54 @@ public partial class App : Application
         }
 
         Core.Managers.TaskManager.Instance.TaskCompleted += HandleTaskCompleted;
-        
-        // Execute the job associated with the hotkey
-        await Core.Helpers.TaskHelpers.ExecuteJob(settings.Job, settings.TaskSettings);
+
+        if (settings != null)
+        {
+            if (settings.Job == Core.HotkeyType.CustomWindow)
+            {
+                DebugHelper.WriteLine($"[DEBUG] Hotkey triggered for CustomWindow. Configured title: '{settings.TaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
+            }
+
+            // Screen Recorder Toggle Logic (Unified Pipeline)
+            // If we are recording and get a recording-related hotkey, we Signal the existing task to stop.
+            // We do NOT start a new workflow.
+            bool isRecordingHotkey = settings.Job == Core.HotkeyType.ScreenRecorder || 
+                                     settings.Job == Core.HotkeyType.StopScreenRecording || 
+                                     settings.Job == Core.HotkeyType.StartScreenRecorder;
+
+            if (isRecordingHotkey && Core.Managers.ScreenRecordingManager.Instance.IsRecording)
+            {
+                 DebugHelper.WriteLine("Screen Recording active - flagging Stop Signal to existing task...");
+                 Core.Managers.ScreenRecordingManager.Instance.SignalStop();
+            }
+            else
+            {
+                 // Normal workflow execution
+                 await Core.Helpers.TaskHelpers.ExecuteWorkflow(settings, settings.Id);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Maps ToastClickAction from Core namespace to Platform.Abstractions namespace
+    /// </summary>
+    private static Platform.Abstractions.ToastClickAction MapToastClickAction(Core.ToastClickAction coreAction)
+    {
+        return coreAction switch
+        {
+            Core.ToastClickAction.CloseNotification => Platform.Abstractions.ToastClickAction.CloseNotification,
+            Core.ToastClickAction.AnnotateImage => Platform.Abstractions.ToastClickAction.AnnotateImage,
+            Core.ToastClickAction.CopyImageToClipboard => Platform.Abstractions.ToastClickAction.CopyImageToClipboard,
+            Core.ToastClickAction.CopyFile => Platform.Abstractions.ToastClickAction.CopyFile,
+            Core.ToastClickAction.CopyFilePath => Platform.Abstractions.ToastClickAction.CopyFilePath,
+            Core.ToastClickAction.CopyUrl => Platform.Abstractions.ToastClickAction.CopyUrl,
+            Core.ToastClickAction.OpenFile => Platform.Abstractions.ToastClickAction.OpenFile,
+            Core.ToastClickAction.OpenFolder => Platform.Abstractions.ToastClickAction.OpenFolder,
+            Core.ToastClickAction.OpenUrl => Platform.Abstractions.ToastClickAction.OpenUrl,
+            Core.ToastClickAction.Upload => Platform.Abstractions.ToastClickAction.Upload,
+            Core.ToastClickAction.PinToScreen => Platform.Abstractions.ToastClickAction.PinToScreen,
+            Core.ToastClickAction.DeleteFile => Platform.Abstractions.ToastClickAction.DeleteFile,
+            _ => Platform.Abstractions.ToastClickAction.CloseNotification
+        };
     }
 }

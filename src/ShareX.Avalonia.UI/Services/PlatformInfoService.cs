@@ -1,8 +1,7 @@
-using ShareX.Ava.Platform.Abstractions;
-using System;
+using XerahS.Platform.Abstractions;
 using System.Runtime.InteropServices;
 
-namespace ShareX.Ava.UI.Services
+namespace XerahS.UI.Services
 {
     public class PlatformInfoService : IPlatformInfo
     {
@@ -22,7 +21,7 @@ namespace ShareX.Ava.UI.Services
         public bool IsWindows => OperatingSystem.IsWindows();
         public bool IsLinux => OperatingSystem.IsLinux();
         public bool IsMacOS => OperatingSystem.IsMacOS();
-        
+
         public bool IsWindows10OrGreater
         {
             get
@@ -38,13 +37,13 @@ namespace ShareX.Ava.UI.Services
             {
                 if (!IsWindows) return false;
                 // Windows 11 is version 10.0 with build >= 22000
-                return Environment.OSVersion.Version.Major >= 10 && 
+                return Environment.OSVersion.Version.Major >= 10 &&
                        Environment.OSVersion.Version.Build >= 22000;
             }
         }
 
         public string RuntimeVersion => Environment.Version.ToString();
-        
+
         public bool IsElevated
         {
             get

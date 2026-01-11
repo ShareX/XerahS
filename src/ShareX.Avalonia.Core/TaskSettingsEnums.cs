@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace ShareX.Ava.Core;
+namespace XerahS.Core;
 
 public enum RegionCaptureAction
 {

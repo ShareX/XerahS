@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System.IO;
 using System.Xml.XPath;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     // Example: {xml:/files/file[1]/url}
     // Example: {xml:{response}|/files/file[1]/url}

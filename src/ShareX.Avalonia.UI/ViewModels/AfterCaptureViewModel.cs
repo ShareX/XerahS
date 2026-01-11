@@ -26,12 +26,10 @@
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.Ava.Core;
+using XerahS.Core;
 using ShareX.Editor.Helpers;
-using System;
-using System.IO;
 
-namespace ShareX.Ava.UI.ViewModels;
+namespace XerahS.UI.ViewModels;
 
 public partial class AfterCaptureViewModel : ViewModelBase
 {

@@ -3,10 +3,9 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using ShareX.Ava.Core;
-using System.Threading.Tasks;
+using XerahS.Core;
 
-namespace ShareX.Ava.UI.Views
+namespace XerahS.UI.Views
 {
     public partial class DestinationSettingsView : UserControl
     {
@@ -19,7 +18,7 @@ namespace ShareX.Ava.UI.Views
             {
                 vm.ShowMessageDialog += ShowMessageDialog;
             }
-            
+
             // Call async Initialize when the view is loaded
             Loaded += async (s, e) =>
             {
@@ -28,7 +27,7 @@ namespace ShareX.Ava.UI.Views
                     await vm.Initialize();
                 }
             };
-            
+
             // Save uploaders config when navigating away from this view
             Unloaded += (s, e) =>
             {

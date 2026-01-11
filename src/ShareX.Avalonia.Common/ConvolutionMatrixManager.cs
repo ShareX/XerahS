@@ -25,10 +25,9 @@
 
 #nullable enable
 
-using System;
 using SkiaSharp;
 
-namespace ShareX.Ava.Common;
+namespace XerahS.Common;
 
 public static class ConvolutionMatrixManager
 {

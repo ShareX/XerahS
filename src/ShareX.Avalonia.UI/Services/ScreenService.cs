@@ -23,10 +23,10 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Platform.Abstractions;
 using System.Drawing;
-using ShareX.Ava.Platform.Abstractions;
 
-namespace ShareX.Ava.UI.Services
+namespace XerahS.UI.Services
 {
     /// <summary>
     /// UI-layer stub for ScreenService - delegates to platform implementation

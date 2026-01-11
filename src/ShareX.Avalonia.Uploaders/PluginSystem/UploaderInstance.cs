@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Uploaders.PluginSystem;
+namespace XerahS.Uploaders.PluginSystem;
 
 /// <summary>
 /// Represents a configured instance of an uploader provider
@@ -33,7 +33,7 @@ public class UploaderInstance
     /// <summary>
     /// Unique identifier for this instance
     /// </summary>
-    public Guid InstanceId { get; set; }
+    public string InstanceId { get; set; } = string.Empty;
 
     /// <summary>
     /// Provider identifier (e.g., "imgur", "amazons3")
@@ -77,7 +77,6 @@ public class UploaderInstance
 
     public UploaderInstance()
     {
-        InstanceId = Guid.NewGuid();
         CreatedAt = DateTime.UtcNow;
         ModifiedAt = DateTime.UtcNow;
     }

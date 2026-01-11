@@ -25,15 +25,13 @@
 
 using Avalonia.Input;
 using Avalonia.Threading;
+using XerahS.Platform.Abstractions;
 using SharpHook;
 using SharpHook.Data;
-using ShareX.Ava.Platform.Abstractions;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using DebugHelper = ShareX.Ava.Common.DebugHelper;
+using DebugHelper = XerahS.Common.DebugHelper;
 
-namespace ShareX.Ava.Platform.MacOS.Services
+namespace XerahS.Platform.MacOS.Services
 {
     public class MacOSHotkeyService : IHotkeyService
     {
@@ -66,7 +64,7 @@ namespace ShareX.Ava.Platform.MacOS.Services
             {
                 if (hotkeyInfo != null)
                 {
-                    hotkeyInfo.Status = ShareX.Ava.Platform.Abstractions.HotkeyStatus.NotConfigured;
+                    hotkeyInfo.Status = XerahS.Platform.Abstractions.HotkeyStatus.NotConfigured;
                 }
 
                 return false;
@@ -77,7 +75,7 @@ namespace ShareX.Ava.Platform.MacOS.Services
                 LogAccessibilityRequired();
                 if (hotkeyInfo != null)
                 {
-                    hotkeyInfo.Status = ShareX.Ava.Platform.Abstractions.HotkeyStatus.Failed;
+                    hotkeyInfo.Status = XerahS.Platform.Abstractions.HotkeyStatus.Failed;
                 }
 
                 return false;
@@ -87,7 +85,7 @@ namespace ShareX.Ava.Platform.MacOS.Services
             {
                 if (hotkeyInfo != null)
                 {
-                    hotkeyInfo.Status = ShareX.Ava.Platform.Abstractions.HotkeyStatus.NotConfigured;
+                    hotkeyInfo.Status = XerahS.Platform.Abstractions.HotkeyStatus.NotConfigured;
                 }
 
                 return false;
@@ -98,7 +96,7 @@ namespace ShareX.Ava.Platform.MacOS.Services
                 var combo = (hotkeyInfo.Key, hotkeyInfo.Modifiers);
                 if (_hotkeysByCombo.ContainsKey(combo))
                 {
-                    hotkeyInfo.Status = ShareX.Ava.Platform.Abstractions.HotkeyStatus.Failed;
+                    hotkeyInfo.Status = XerahS.Platform.Abstractions.HotkeyStatus.Failed;
                     return false;
                 }
 
@@ -109,7 +107,7 @@ namespace ShareX.Ava.Platform.MacOS.Services
 
                 _registeredHotkeys[hotkeyInfo.Id] = hotkeyInfo;
                 _hotkeysByCombo[combo] = hotkeyInfo;
-                hotkeyInfo.Status = ShareX.Ava.Platform.Abstractions.HotkeyStatus.Registered;
+                hotkeyInfo.Status = XerahS.Platform.Abstractions.HotkeyStatus.Registered;
             }
 
             EnsureHookRunning();
@@ -133,7 +131,7 @@ namespace ShareX.Ava.Platform.MacOS.Services
                 }
 
                 _hotkeysByCombo.Remove((hotkeyInfo.Key, hotkeyInfo.Modifiers));
-                hotkeyInfo.Status = ShareX.Ava.Platform.Abstractions.HotkeyStatus.NotConfigured;
+                hotkeyInfo.Status = XerahS.Platform.Abstractions.HotkeyStatus.NotConfigured;
             }
 
             if (removed)
@@ -150,7 +148,7 @@ namespace ShareX.Ava.Platform.MacOS.Services
             {
                 foreach (var hotkey in _registeredHotkeys.Values)
                 {
-                    hotkey.Status = ShareX.Ava.Platform.Abstractions.HotkeyStatus.NotConfigured;
+                    hotkey.Status = XerahS.Platform.Abstractions.HotkeyStatus.NotConfigured;
                 }
 
                 _registeredHotkeys.Clear();
@@ -218,7 +216,7 @@ namespace ShareX.Ava.Platform.MacOS.Services
                 {
                     foreach (var hotkey in _registeredHotkeys.Values)
                     {
-                        hotkey.Status = ShareX.Ava.Platform.Abstractions.HotkeyStatus.Failed;
+                        hotkey.Status = XerahS.Platform.Abstractions.HotkeyStatus.Failed;
                     }
                 }
             }

@@ -23,14 +23,15 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using ShareX.Ava.Uploaders;
-using System;
-using System.IO;
+using System.Linq;
+using XerahS.Common;
+using XerahS.Core.Hotkeys;
+using XerahS.Platform.Abstractions;
+using XerahS.Uploaders;
 
 // ReSharper disable MemberCanBePrivate.Global
 
-namespace ShareX.Ava.Core
+namespace XerahS.Core
 {
     /// <summary>
     /// Manages loading and saving of all application settings.
@@ -163,9 +164,57 @@ namespace ShareX.Ava.Core
         public static WorkflowsConfig WorkflowsConfig { get; set; } = new WorkflowsConfig();
 
         /// <summary>
-        /// Default task settings (shortcut)
+        /// Get the first workflow matching the specified HotkeyType.
+        /// Returns null if no workflow exists for that type.
+        /// Use this instead of GetOrCreateWorkflowTaskSettings when you need workflow-specific settings.
         /// </summary>
-        public static TaskSettings DefaultTaskSettings => Settings.DefaultTaskSettings;
+        public static WorkflowSettings? GetFirstWorkflow(HotkeyType hotkeyType)
+        {
+            return WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Job == hotkeyType);
+        }
+
+        public static WorkflowSettings? GetWorkflowById(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            return WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Id == id);
+        }
+
+        /// <summary>
+        /// Retrieve a workflow's task settings by hotkey type, creating a workflow entry if none exists.
+        /// </summary>
+        [Obsolete("Use GetFirstWorkflow() to get the full WorkflowSettings, or pass TaskSettings explicitly. " +
+                  "Looking up by HotkeyType is ambiguous when multiple workflows share the same type.")]
+        public static TaskSettings GetOrCreateWorkflowTaskSettings(HotkeyType hotkeyType)
+        {
+            WorkflowsConfig ??= new WorkflowsConfig();
+            WorkflowsConfig.Hotkeys ??= new List<WorkflowSettings>();
+
+            var workflow = WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Job == hotkeyType);
+            if (workflow == null)
+            {
+                workflow = new WorkflowSettings(hotkeyType, new HotkeyInfo());
+                WorkflowsConfig.Hotkeys.Add(workflow);
+            }
+
+            if (workflow.TaskSettings == null)
+            {
+                workflow.TaskSettings = new TaskSettings();
+            }
+
+            return workflow.TaskSettings;
+        }
+
+        public static TaskSettings GetWorkflowTaskSettings(string workflowId)
+        {
+            var workflow = GetWorkflowById(workflowId);
+            return workflow?.TaskSettings ?? DefaultTaskSettings;
+        }
+
+        /// <summary>
+        /// Get a default TaskSettings instance.
+        /// Use this for fallback/global settings instead of looking up by HotkeyType.
+        /// </summary>
+        public static TaskSettings DefaultTaskSettings { get; } = new TaskSettings();
 
         /// <summary>
         /// Recent task manager
@@ -222,6 +271,10 @@ namespace ShareX.Ava.Core
             WorkflowsConfig = WorkflowsConfig.Load(path, BackupFolder, fallbackSupport) ?? new WorkflowsConfig();
             WorkflowsConfig.CreateBackup = true;
             WorkflowsConfig.CreateWeeklyBackup = true;
+
+            // Ensure all workflows have valid IDs
+            WorkflowsConfig.EnsureWorkflowIds();
+
             DebugHelper.WriteLine($"WorkflowsConfig load finished: {path}");
         }
 
@@ -289,11 +342,13 @@ namespace ShareX.Ava.Core
         public static void SaveWorkflowsConfig()
         {
             WorkflowsConfig?.Save(WorkflowsConfigFilePath);
+            RaiseSettingsChanged();
         }
 
         public static void SaveWorkflowsConfigAsync()
         {
             WorkflowsConfig?.SaveAsync(WorkflowsConfigFilePath);
+            RaiseSettingsChanged();
         }
 
         private static void UpdateRecentTasks()
@@ -366,10 +421,10 @@ namespace ShareX.Ava.Core
             // Delete files? Or just re-instantiate? Original returns to defaults.
             if (File.Exists(ApplicationConfigFilePath)) File.Delete(ApplicationConfigFilePath);
             Settings = new ApplicationConfig();
-            
+
             if (File.Exists(UploadersConfigFilePath)) File.Delete(UploadersConfigFilePath);
             UploadersConfig = new UploadersConfig();
-            
+
             if (File.Exists(WorkflowsConfigFilePath)) File.Delete(WorkflowsConfigFilePath);
             WorkflowsConfig = new WorkflowsConfig();
         }

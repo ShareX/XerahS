@@ -23,11 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using System.Collections.Generic;
-using System.Linq;
+using XerahS.Common;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     public static class UploaderFactory
     {

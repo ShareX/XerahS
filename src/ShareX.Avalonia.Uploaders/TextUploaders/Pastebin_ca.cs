@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace ShareX.Ava.Uploaders.TextUploaders
+namespace XerahS.Uploaders.TextUploaders
 {
     public sealed class Pastebin_ca : TextUploader
     {

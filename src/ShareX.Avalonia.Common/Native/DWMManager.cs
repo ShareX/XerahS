@@ -1,6 +1,4 @@
-using System;
-
-namespace ShareX.Ava.Common.Native
+namespace XerahS.Common.Native
 {
     public class DWMManager : IDisposable
     {

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Drawing;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class MyColorConverter : ColorConverter
     {

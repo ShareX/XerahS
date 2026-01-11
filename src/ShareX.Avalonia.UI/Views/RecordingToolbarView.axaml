@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="60"
+             x:Class="XerahS.UI.Views.RecordingToolbarView"
+             x:DataType="vm:RecordingViewModel">
+    
+    <Design.DataContext>
+        <vm:RecordingViewModel/>
+    </Design.DataContext>
+    
+    <Border Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="12,8"
+            BoxShadow="0 2 8 0 #40000000">
+        
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            
+            <!-- Recording Indicator -->
+            <Ellipse Width="12" Height="12"
+                     Fill="{Binding IsRecording, Converter={StaticResource BoolToRecordingColorConverter}}"
+                     VerticalAlignment="Center">
+                <Ellipse.Styles>
+                    <Style Selector="Ellipse">
+                        <Style.Animations>
+                            <Animation Duration="0:0:1" IterationCount="INFINITE">
+                                <KeyFrame Cue="0%">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="50%">
+                                    <Setter Property="Opacity" Value="0.3"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="100%">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </KeyFrame>
+                            </Animation>
+                        </Style.Animations>
+                    </Style>
+                </Ellipse.Styles>
+            </Ellipse>
+            
+            <!-- Duration Display -->
+            <TextBlock Text="{Binding DurationFormatted}"
+                       FontFamily="Consolas, monospace"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       MinWidth="60"/>
+            
+            <!-- Status Text -->
+            <TextBlock Text="{Binding StatusText}"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       VerticalAlignment="Center"
+                       MinWidth="80"/>
+            
+            <!-- Separator -->
+            <Border Width="1" Height="24" 
+                    Background="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    VerticalAlignment="Center"/>
+            
+            <!-- Start Button -->
+            <Button Command="{Binding StartRecordingCommand}"
+                    IsVisible="{Binding !IsRecording}"
+                    ToolTip.Tip="Start Recording">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ui:SymbolIcon Symbol="Play" FontSize="16"/>
+                    <TextBlock Text="Start" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            
+            <!-- Stop Button -->
+            <Button Command="{Binding StopRecordingCommand}"
+                    IsVisible="{Binding IsRecording}"
+                    Classes="accent"
+                    ToolTip.Tip="Stop Recording">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ui:SymbolIcon Symbol="Stop" FontSize="16"/>
+                    <TextBlock Text="Stop" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            
+        </StackPanel>
+    </Border>
+    
+</UserControl>

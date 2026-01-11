@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System.IO;
 using System.Text.RegularExpressions;
 
-namespace ShareX.Ava.Uploaders.FileUploaders
+namespace XerahS.Uploaders.FileUploaders
 {
     public sealed class ShareCX : FileUploader
     {

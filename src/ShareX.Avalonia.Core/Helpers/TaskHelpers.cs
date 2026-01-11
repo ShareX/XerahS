@@ -23,13 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
+using XerahS.Common;
 
-namespace ShareX.Ava.Core;
+namespace XerahS.Core;
 
 /// <summary>
 /// Task-related helper methods for file naming, folder management, and image processing.
@@ -57,7 +53,7 @@ public static partial class TaskHelpers
         string pattern;
 
         // Use window-specific pattern if available
-        if (!string.IsNullOrEmpty(settings.SaveImageSubFolderPatternWindow) && 
+        if (!string.IsNullOrEmpty(settings.SaveImageSubFolderPatternWindow) &&
             !string.IsNullOrEmpty(metadata?.WindowTitle))
         {
             pattern = taskSettings.UploadSettings.NameFormatPatternActiveWindow;
@@ -127,7 +123,7 @@ public static partial class TaskHelpers
             nameParser.ProcessName = metadata.ProcessName ?? "";
         }
 
-        if (taskSettings != null && taskSettings.OverrideScreenshotsFolder && 
+        if (taskSettings != null && taskSettings.OverrideScreenshotsFolder &&
             !string.IsNullOrEmpty(taskSettings.ScreenshotsFolder))
         {
             screenshotsFolder = nameParser.Parse(taskSettings.ScreenshotsFolder);
@@ -136,7 +132,7 @@ public static partial class TaskHelpers
         {
             string subFolderPattern;
 
-            if (!string.IsNullOrEmpty(settings.SaveImageSubFolderPatternWindow) && 
+            if (!string.IsNullOrEmpty(settings.SaveImageSubFolderPatternWindow) &&
                 !string.IsNullOrEmpty(nameParser.WindowText))
             {
                 subFolderPattern = settings.SaveImageSubFolderPatternWindow;
@@ -220,7 +216,7 @@ public static partial class TaskHelpers
     /// </summary>
     public static MemoryStream? SaveImageAsStream(SkiaSharp.SKBitmap bmp, EImageFormat imageFormat, TaskSettings taskSettings)
     {
-        return SaveImageAsStream(bmp, imageFormat, 
+        return SaveImageAsStream(bmp, imageFormat,
             taskSettings.ImageSettings.ImagePNGBitDepth,
             taskSettings.ImageSettings.ImageJPEGQuality,
             taskSettings.ImageSettings.ImageGIFQuality);

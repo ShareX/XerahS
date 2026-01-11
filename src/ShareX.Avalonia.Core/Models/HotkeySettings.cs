@@ -1,3 +1,4 @@
+#nullable disable
 #region License Information (GPL v3)
 
 /*
@@ -24,40 +25,92 @@
 #endregion License Information (GPL v3)
 
 using Avalonia.Input;
-using ShareX.Ava.Common;
-using System.Collections.Generic;
-using ShareX.Ava.Core.Hotkeys;
-using ShareX.Ava.Platform.Abstractions;
+using XerahS.Common;
+using XerahS.Core.Hotkeys;
 
-using HotkeyInfo = ShareX.Ava.Platform.Abstractions.HotkeyInfo;
+using HotkeyInfo = XerahS.Platform.Abstractions.HotkeyInfo;
 
-namespace ShareX.Ava.Core;
+namespace XerahS.Core;
 
 /// <summary>
 /// Hotkey configuration bound to a specific task
 /// </summary>
-// Duplicate HotkeySettings class removed. Using ShareX.Ava.Core.Hotkeys.HotkeySettings instead.
+// Duplicate HotkeySettings class removed. using XerahS.Core.Hotkeys.HotkeySettings instead.
 
 /// <summary>
 /// Workflows configuration storage
 /// </summary>
 public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
 {
-    public List<HotkeySettings> Hotkeys { get; set; } = GetDefaultHotkeyList();
+    public List<WorkflowSettings> Hotkeys { get; set; } = GetDefaultWorkflowList();
+
+    /// <summary>
+    /// Ensure all workflows have valid IDs after loading
+    /// </summary>
+    public void EnsureWorkflowIds()
+    {
+        bool needsSave = false;
+
+        if (Hotkeys != null)
+        {
+            foreach (var workflow in Hotkeys)
+            {
+                if (string.IsNullOrEmpty(workflow.Id))
+                {
+                    workflow.EnsureId();
+                    needsSave = true;
+                }
+            }
+        }
+
+        // Save if we generated any new IDs
+        if (needsSave && !string.IsNullOrEmpty(FilePath))
+        {
+            Save();
+        }
+    }
 
     /// <summary>
     /// Get default hotkey list for ShareX
     /// </summary>
-    public static List<HotkeySettings> GetDefaultHotkeyList()
+    public static List<WorkflowSettings> GetDefaultWorkflowList()
     {
-        return new List<HotkeySettings>
+        var list = new List<WorkflowSettings>();
+
+        // WF01: Full screen capture
+        var wf01 = new WorkflowSettings(HotkeyType.PrintScreen, new HotkeyInfo(Key.PrintScreen))
         {
-            new HotkeySettings(HotkeyType.PrintScreen, new HotkeyInfo(Key.PrintScreen)),
-            new HotkeySettings(HotkeyType.RectangleRegion, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control)),
-            new HotkeySettings(HotkeyType.ActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Alt)),
-            new HotkeySettings(HotkeyType.CustomWindow, new HotkeyInfo()),
-            new HotkeySettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift)),
-            new HotkeySettings(HotkeyType.ScreenRecorderGIF, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift)),
+            Name = "Full screen capture"
         };
+        wf01.TaskSettings.CaptureSettings.UseModernCapture = true;
+        list.Add(wf01);
+
+        // WF02: Active window capture
+        var wf02 = new WorkflowSettings(HotkeyType.ActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Alt))
+        {
+            Name = "Active window capture"
+        };
+        wf02.TaskSettings.CaptureSettings.UseModernCapture = true;
+        list.Add(wf02);
+
+        // WF03: Record screen using GDI
+        var wf03 = new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift))
+        {
+            Name = "Record screen using GDI"
+        };
+        wf03.TaskSettings.CaptureSettings.UseModernCapture = false;
+        wf03.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingBackend = XerahS.ScreenCapture.ScreenRecording.RecordingBackend.GDI;
+        list.Add(wf03);
+
+        // WF04: Record screen for game
+        var wf04 = new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift))
+        {
+            Name = "Record screen for game"
+        };
+        wf04.TaskSettings.CaptureSettings.UseModernCapture = true;
+        wf04.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingIntent = XerahS.ScreenCapture.ScreenRecording.RecordingIntent.Game;
+        list.Add(wf04);
+
+        return list;
     }
 }

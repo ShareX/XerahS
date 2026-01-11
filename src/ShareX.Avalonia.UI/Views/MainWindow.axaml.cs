@@ -1,34 +1,32 @@
-using Avalonia;
 using Avalonia.Controls;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Avalonia.Controls.Shapes;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using FluentAvalonia.UI.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Media;
-using ShareX.Ava.Core;
-using ShareX.Ava.Core.Managers;
-using ShareX.Ava.Core.Tasks;
-using ShareX.Ava.UI.ViewModels;
+using Avalonia.Threading;
+using XerahS.Core;
+using XerahS.UI.ViewModels;
+using XerahS.Core.Hotkeys;
+using Avalonia; // For Application.Current
+using XerahS.Core.Tasks;
+using XerahS.Core.Managers;
 using ShareX.Editor.Annotations;
 using ShareX.Editor.ViewModels;
 using ShareX.Editor.Views;
-using ShareX.Ava.Platform.Abstractions;
-using FluentAvalonia.UI.Controls;
+using XerahS.UI.Helpers;
 
-namespace ShareX.Ava.UI.Views
+namespace XerahS.UI.Views
 {
     public partial class MainWindow : Window
     {
         private EditorView? _editorView;
-        
+
         public MainWindow()
         {
             InitializeComponent();
             KeyDown += OnKeyDown;
-            
+
             // Initial Navigation
             var navView = this.FindControl<NavigationView>("NavView");
             if (navView != null)
@@ -46,12 +44,26 @@ namespace ShareX.Ava.UI.Views
         {
             // Maximize window and center it on screen
             this.WindowState = Avalonia.Controls.WindowState.Maximized;
-            
+
             // Update navigation items after settings are loaded
             var navView = this.FindControl<NavigationView>("NavView");
             if (navView != null)
             {
                 UpdateNavigationItems(navView);
+            }
+
+            if (Application.Current is App app && app.WorkflowManager != null)
+            {
+                app.WorkflowManager.WorkflowsChanged += (s, args) =>
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        if (navView != null)
+                        {
+                            UpdateNavigationItems(navView);
+                        }
+                    });
+                };
             }
         }
 
@@ -59,37 +71,53 @@ namespace ShareX.Ava.UI.Views
         {
             AvaloniaXamlLoader.Load(this);
         }
-        
+
         private void OnNavSelectionChanged(object? sender, NavigationViewSelectionChangedEventArgs e)
         {
             var navView = sender as NavigationView;
             var contentFrame = this.FindControl<ContentControl>("ContentFrame");
             var selectedItem = navView?.SelectedItem as NavigationViewItem;
-            
+
             if (contentFrame != null && selectedItem != null && DataContext is MainViewModel vm)
             {
                 var tag = selectedItem.Tag?.ToString();
-                
+
+                // Handle workflow execution by ID
+                if (tag != null && tag.StartsWith("Capture_"))
+                {
+                    var workflowId = tag.Replace("Capture_", "");
+                    if (!string.IsNullOrEmpty(workflowId))
+                    {
+                        WorkflowSettings? workflow = null;
+
+                        // Try to get workflow from WorkflowManager first
+                        if (Application.Current is App app && app.WorkflowManager != null)
+                        {
+                            workflow = app.WorkflowManager.GetWorkflowById(workflowId);
+                        }
+
+                        // Fallback to SettingManager
+                        if (workflow == null)
+                        {
+                            workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Id == workflowId);
+                        }
+
+                        if (workflow != null)
+                        {
+                            _ = ExecuteCaptureAsync(workflow.Job, workflow.Id);
+                            NavigateToEditor();
+                        }
+                    }
+                }
+
                 switch (tag)
                 {
-                    case "Capture_0":
-                    case "Capture_1":
-                    case "Capture_2":
-                        // Execute workflow by index
-                        if (int.TryParse(tag.Replace("Capture_", ""), out int workflowIndex))
-                        {
-                            var workflows = SettingManager.WorkflowsConfig.Hotkeys.Take(3).ToList();
-                            if (workflowIndex < workflows.Count)
-                            {
-                                var workflow = workflows[workflowIndex];
-                                _ = ExecuteCaptureAsync(workflow.Job);
-                                NavigateToEditor();
-                            }
-                        }
-                        break;
                     case "Editor":
                         if (_editorView == null) _editorView = new EditorView();
                         contentFrame.Content = _editorView;
+                        break;
+                    case "Recording":
+                        contentFrame.Content = new RecordingView();
                         break;
                     case "History":
                         contentFrame.Content = new HistoryView();
@@ -118,7 +146,7 @@ namespace ShareX.Ava.UI.Views
         private void OnKeyDown(object? sender, KeyEventArgs e)
         {
             if (DataContext is not MainViewModel vm) return;
-            
+
             // Skip if typing in a text input
             if (e.Source is TextBox) return;
 
@@ -227,13 +255,13 @@ namespace ShareX.Ava.UI.Views
         }
 
 
-        
+
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
             // Setup listeners if needed
         }
-            public void NavigateToEditor()
+        public void NavigateToEditor()
         {
             var navView = this.FindControl<NavigationView>("NavView");
             if (navView != null)
@@ -248,20 +276,20 @@ namespace ShareX.Ava.UI.Views
                     }
                 }
             }
-            
+
             // Ensure window is visible and active
             if (!this.IsVisible)
             {
                 this.Show();
             }
-            
+
             if (this.WindowState == Avalonia.Controls.WindowState.Minimized)
             {
                 this.WindowState = Avalonia.Controls.WindowState.Maximized;
             }
-            
+
             this.Activate();
-this.Focus();
+            this.Focus();
         }
 
         public void NavigateToSettings()
@@ -295,18 +323,41 @@ this.Focus();
             this.Focus();
         }
 
-        private async Task ExecuteCaptureAsync(HotkeyType jobType, AfterCaptureTasks afterCapture = AfterCaptureTasks.SaveImageToFile, SkiaSharp.SKBitmap? image = null)
+        private async Task ExecuteCaptureAsync(HotkeyType jobType, string? workflowId = null, AfterCaptureTasks afterCapture = AfterCaptureTasks.SaveImageToFile, SkiaSharp.SKBitmap? image = null)
         {
             TaskSettings settings;
 
-            // Find an existing workflow for this job type
-            var workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(x => x.Job == jobType);
+            // Find an existing workflow - prefer by ID if provided, otherwise by job type
+            WorkflowSettings? workflow = null;
+
+            if (!string.IsNullOrEmpty(workflowId))
+            {
+                // Try to find by ID first
+                if (Application.Current is App app && app.WorkflowManager != null)
+                {
+                    workflow = app.WorkflowManager.GetWorkflowById(workflowId);
+                }
+
+                if (workflow == null)
+                {
+                    workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(x => x.Id == workflowId);
+                }
+            }
+
+            // Fallback to job type if no ID provided or not found
+            if (workflow == null)
+            {
+                workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(x => x.Job == jobType);
+            }
 
             if (workflow != null && workflow.TaskSettings != null)
             {
                 // Clone workflow settings to avoid modifying the original instance during execution
                 var json = Newtonsoft.Json.JsonConvert.SerializeObject(workflow.TaskSettings);
                 settings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json)!;
+
+                // Store the workflow ID in the task settings for troubleshooting
+                settings.WorkflowId = workflow.Id;
 
                 // Note: We deliberately ignore the 'afterCapture' parameter if a workflow is found,
                 // as the workflow's configured tasks should take precedence.
@@ -328,7 +379,7 @@ this.Focus();
             void HandleTaskCompleted(object? s, WorkerTask task)
             {
                 TaskManager.Instance.TaskCompleted -= HandleTaskCompleted;
-                
+
                 if (task.Info?.Metadata?.Image != null && DataContext is MainViewModel vm)
                 {
                     vm.UpdatePreview(task.Info.Metadata.Image);
@@ -343,27 +394,8 @@ this.Focus();
             var captureItem = this.FindControl<NavigationViewItem>("CaptureNavItem");
             if (captureItem == null) return;
 
-            // Clear existing items
-            captureItem.MenuItems.Clear();
-
-            // Get first 3 workflows
-            var workflows = SettingManager.WorkflowsConfig.Hotkeys.Take(3).ToList();
-
-            for (int i = 0; i < workflows.Count; i++)
-            {
-                var workflow = workflows[i];
-                var description = string.IsNullOrEmpty(workflow.TaskSettings.Description)
-                    ? ShareX.Ava.Common.EnumExtensions.GetDescription(workflow.Job)
-                    : workflow.TaskSettings.Description;
-
-                var navItem = new NavigationViewItem
-                {
-                    Content = description,
-                    Tag = $"Capture_{i}" // Use index-based tag
-                };
-
-                captureItem.MenuItems.Add(navItem);
-            }
+            // Use shared helper to update navigation items
+            NavigationItemsHelper.UpdateCaptureNavigationItems(captureItem);
         }
     }
 }

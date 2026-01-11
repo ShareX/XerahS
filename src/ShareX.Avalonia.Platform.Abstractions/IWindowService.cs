@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Drawing;
 
-namespace ShareX.Ava.Platform.Abstractions
+namespace XerahS.Platform.Abstractions
 {
     /// <summary>
     /// Platform-agnostic window management service
@@ -97,6 +96,20 @@ namespace ShareX.Ava.Platform.Abstractions
         /// Gets the process ID of the window
         /// </summary>
         uint GetWindowProcessId(IntPtr handle);
+
+        /// <summary>
+        /// Searches for a window by title. First tries exact match, then partial/contains match.
+        /// </summary>
+        /// <param name="windowTitle">Title or partial title to search for</param>
+        /// <returns>Window handle if found, IntPtr.Zero otherwise</returns>
+        IntPtr SearchWindow(string windowTitle);
+
+        /// <summary>
+        /// Activates a window, bringing it to the foreground. Uses robust activation techniques.
+        /// </summary>
+        /// <param name="handle">Window handle to activate</param>
+        /// <returns>True if window was successfully activated</returns>
+        bool ActivateWindow(IntPtr handle);
     }
 
     /// <summary>

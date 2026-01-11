@@ -23,9 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System.Linq;
-
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     // Example: {select:domain1.com|domain2.com}
     internal class CustomUploaderFunctionSelect : CustomUploaderFunction

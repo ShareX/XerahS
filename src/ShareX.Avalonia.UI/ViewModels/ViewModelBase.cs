@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace ShareX.Ava.UI.ViewModels
+namespace XerahS.UI.ViewModels
 {
     public class ViewModelBase : ObservableObject
     {

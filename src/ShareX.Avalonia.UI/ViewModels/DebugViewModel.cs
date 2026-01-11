@@ -1,14 +1,12 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using ShareX.Ava.Common;
-using ShareX.Ava.Core;
-using System;
-using System.Diagnostics;
-using System.Text;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using XerahS.Common;
+using XerahS.Core;
+using System.Diagnostics;
 
-namespace ShareX.Ava.UI.ViewModels
+namespace XerahS.UI.ViewModels
 {
     public partial class DebugViewModel : ViewModelBase
     {
@@ -51,11 +49,11 @@ namespace ShareX.Ava.UI.ViewModels
                 }
             }
         }
-        
+
         [RelayCommand]
         private void Upload()
         {
-             // Placeholder for upload functionality
+            // Placeholder for upload functionality
         }
 
         [RelayCommand]
@@ -64,7 +62,7 @@ namespace ShareX.Ava.UI.ViewModels
             try
             {
                 string logsFolder = System.IO.Path.Combine(SettingManager.PersonalFolder, "Logs");
-                
+
                 if (System.IO.Directory.Exists(logsFolder))
                 {
                     ProcessStartInfo psi = new ProcessStartInfo
@@ -91,7 +89,7 @@ namespace ShareX.Ava.UI.ViewModels
             try
             {
                 string settingsFolder = SettingManager.SettingsFolder;
-                
+
                 if (System.IO.Directory.Exists(settingsFolder))
                 {
                     ProcessStartInfo psi = new ProcessStartInfo

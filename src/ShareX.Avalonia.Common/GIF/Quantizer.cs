@@ -23,12 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using SkiaSharp;
+using System.Runtime.InteropServices;
 
-namespace ShareX.Ava.Common.GIF
+namespace XerahS.Common.GIF
 {
     /// <summary>
     /// Summary description for Class1.
@@ -76,7 +74,7 @@ namespace ShareX.Ava.Common.GIF
             // Here we might need to return a result that contains indices.
             // Since SkiaSharp doesn't support Index8 well, we will return an SKBitmap
             // BUT, the problem is we are simulating what System.Drawing did.
-            
+
             // To properly support GIF logic which expects 8-bit indices:
             // We should probably just return the raw indices byte array and the palette.
             // BUT, for now, to keep signature similar (returning an object), we can return an 8-bit grayscale SKBitmap
@@ -100,7 +98,7 @@ namespace ShareX.Ava.Common.GIF
                 // Skia bitmaps don't carry a palette.
                 // We will attach it as a property or return a wrapper?
                 // For this port, we'll store it in a public property that the caller (SaveGIF) can access.
-                
+
                 _palette = GetPalette();
 
                 // Second pass

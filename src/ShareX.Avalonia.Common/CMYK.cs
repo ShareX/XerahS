@@ -26,7 +26,7 @@
 
 using System.Drawing;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public struct CMYK
     {

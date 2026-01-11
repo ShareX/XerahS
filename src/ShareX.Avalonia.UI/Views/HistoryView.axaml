@@ -1,11 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
-             xmlns:history="using:ShareX.Ava.History"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             xmlns:history="using:XerahS.History"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ShareX.Ava.UI.Views.HistoryView"
+             x:Class="XerahS.UI.Views.HistoryView"
              x:DataType="vm:HistoryViewModel"
              x:Name="Root"
              Cursor="Arrow">
@@ -41,7 +41,7 @@
         </MenuFlyout>
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
         <!-- Toolbar -->
         <Border Grid.Row="0" Padding="12,8">
             <StackPanel Orientation="Horizontal" Spacing="10">
@@ -52,10 +52,13 @@
                         Padding="12,8" CornerRadius="8" IsEnabled="{Binding !IsLoading}"/>
                 <TextBlock Text="{Binding HistoryItems.Count, StringFormat='📁 {0} items'}" 
                            VerticalAlignment="Center" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" Margin="10,0,0,0"/>
+                <TextBlock Text="{Binding IsLoadingThumbnails, StringFormat=' (loading thumbnails...)'}" 
+                           VerticalAlignment="Center" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           IsVisible="{Binding IsLoadingThumbnails}" FontSize="12" Margin="5,0,0,0"/>
             </StackPanel>
         </Border>
         
-        <!-- Loading Indicator -->
+        <!-- Loading Indicator (full history load) -->
         <Border Grid.Row="1" Padding="20" Background="#1a1a2e" IsVisible="{Binding IsLoading}">
             <StackPanel Spacing="16" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="Loading history..." FontSize="16" Foreground="White" HorizontalAlignment="Center"/>
@@ -146,5 +149,18 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+        <!-- Pagination Footer -->
+        <Border Grid.Row="3" Padding="12" Background="#1a1a2e" BorderBrush="#374151" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                <Button Content="◀ Previous" Command="{Binding PreviousPageCommand}" 
+                        IsEnabled="{Binding CanGoPrevious}" Padding="16,8"/>
+                
+                <TextBlock Text="{Binding PageInfo}" VerticalAlignment="Center" 
+                           Foreground="#9CA3AF" FontWeight="SemiBold"/>
+                
+                <Button Content="Next ▶" Command="{Binding NextPageCommand}" 
+                        IsEnabled="{Binding CanGoNext}" Padding="16,8"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>

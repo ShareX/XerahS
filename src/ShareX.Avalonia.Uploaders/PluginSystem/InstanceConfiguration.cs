@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Uploaders.PluginSystem;
+namespace XerahS.Uploaders.PluginSystem;
 
 /// <summary>
 /// Configuration model for persisting uploader instances
@@ -38,5 +38,5 @@ public class InstanceConfiguration
     /// <summary>
     /// Default instance IDs per category
     /// </summary>
-    public Dictionary<UploaderCategory, Guid> DefaultInstances { get; set; } = new();
+    public Dictionary<UploaderCategory, string> DefaultInstances { get; set; } = new();
 }

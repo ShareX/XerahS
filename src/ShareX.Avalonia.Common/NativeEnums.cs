@@ -1,6 +1,4 @@
-using System;
-
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public enum InputType : int
     {

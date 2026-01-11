@@ -23,9 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System.Collections.Generic;
-
-namespace ShareX.Ava.Uploaders.URLShorteners
+namespace XerahS.Uploaders.URLShorteners
 {
     public class TinyURLShortenerService : URLShortenerService
     {

@@ -1,4 +1,4 @@
-namespace ShareX.Ava.Uploaders.PluginSystem;
+namespace XerahS.Uploaders.PluginSystem;
 
 /// <summary>
 /// Interface for uploader-specific configuration ViewModels

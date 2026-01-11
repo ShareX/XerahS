@@ -23,11 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.IO;
 using System.Text;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class NativeMessagingHost
     {
@@ -39,7 +37,7 @@ namespace ShareX.Ava.Common
 
             byte[] bytesLength = new byte[4];
             int read = inputStream.Read(bytesLength, 0, 4);
-            
+
             if (read == 4)
             {
                 int inputLength = BitConverter.ToInt32(bytesLength, 0);

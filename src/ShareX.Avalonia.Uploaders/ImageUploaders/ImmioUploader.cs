@@ -24,9 +24,8 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
-using System.IO;
 
-namespace ShareX.Ava.Uploaders.ImageUploaders
+namespace XerahS.Uploaders.ImageUploaders
 {
     public sealed class ImmioUploader : ImageUploader
     {

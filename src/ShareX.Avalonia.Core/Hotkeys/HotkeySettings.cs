@@ -23,20 +23,22 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using ShareX.Ava.Platform.Abstractions;
-using ShareX.Ava.Core;
 using Avalonia.Input;
+using XerahS.Common;
+using HotkeyInfo = XerahS.Platform.Abstractions.HotkeyInfo;
 
-using HotkeyInfo = ShareX.Ava.Platform.Abstractions.HotkeyInfo;
-
-namespace ShareX.Ava.Core.Hotkeys;
+namespace XerahS.Core.Hotkeys;
 
 /// <summary>
 /// Links a hotkey binding to an action type
 /// </summary>
-public class HotkeySettings
+public class WorkflowSettings
 {
+    /// <summary>
+    /// Unique identifier for this workflow (SHA-1 hash)
+    /// </summary>
+    public string Id { get; set; } = string.Empty;
+
     /// <summary>
     /// The key binding for this hotkey
     /// </summary>
@@ -50,8 +52,8 @@ public class HotkeySettings
     /// Proxies to TaskSettings.Job.
     /// </summary>
     [Newtonsoft.Json.JsonIgnore]
-    public HotkeyType Job 
-    { 
+    public HotkeyType Job
+    {
         get => TaskSettings.Job;
         set => TaskSettings.Job = value;
     }
@@ -71,26 +73,61 @@ public class HotkeySettings
     /// </summary>
     public bool Enabled { get; set; } = true;
 
-    public HotkeySettings()
+    public WorkflowSettings()
     {
         HotkeyInfo = new HotkeyInfo();
         TaskSettings = new TaskSettings();
     }
 
-    public HotkeySettings(HotkeyType job, HotkeyInfo hotkeyInfo) : this()
+    public WorkflowSettings(HotkeyType job, HotkeyInfo hotkeyInfo) : this()
     {
         TaskSettings.Job = job;
         HotkeyInfo = hotkeyInfo;
+        // Generate ID after properties are set
+        EnsureId();
     }
 
-    public HotkeySettings(HotkeyType job, Key key) : this()
+    public WorkflowSettings(HotkeyType job, Key key) : this()
     {
         TaskSettings.Job = job;
         HotkeyInfo = new HotkeyInfo(key);
+        // Generate ID after properties are set
+        EnsureId();
     }
 
     public override string ToString()
     {
         return $"{EnumExtensions.GetDescription(Job)}: {HotkeyInfo}";
+    }
+
+    /// <summary>
+    /// Generate a SHA-1 hash for this workflow based on its content
+    /// </summary>
+    public string GenerateId()
+    {
+        using var sha1 = System.Security.Cryptography.SHA1.Create();
+
+        // Create a unique string representation of the workflow
+        var workflowString = $"{Name ?? string.Empty}|{Job}|{Enabled}|{TaskSettings?.Job}|{TaskSettings?.Description ?? string.Empty}";
+
+        var hash = sha1.ComputeHash(System.Text.Encoding.UTF8.GetBytes(workflowString));
+        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, 8);
+    }
+
+    /// <summary>
+    /// Ensure this workflow has a valid Id, generating one if necessary
+    /// </summary>
+    public void EnsureId()
+    {
+        if (string.IsNullOrEmpty(Id))
+        {
+            Id = GenerateId();
+        }
+
+        // Sync ID to task settings so it propagates to capture options
+        if (TaskSettings != null)
+        {
+            TaskSettings.WorkflowId = Id;
+        }
     }
 }

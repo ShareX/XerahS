@@ -23,11 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Net;
 using System.Reflection;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class ProxyInfo
     {

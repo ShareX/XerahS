@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using ShareX.Ava.Common;
+using XerahS.Common;
 
-namespace ShareX.Ava.Core.Managers
+namespace XerahS.Core.Managers
 {
     public class WatchFolderManager : IDisposable
     {
@@ -22,23 +19,23 @@ namespace ShareX.Ava.Core.Managers
             StopWatchers();
 
             // TaskSettings access via SettingManager would be needed here
-            var settings = SettingManager.DefaultTaskSettings;
+            var settings = SettingManager.GetOrCreateWorkflowTaskSettings(HotkeyType.None);
 
             if (settings != null && settings.WatchFolderEnabled)
             {
                 foreach (var folder in settings.WatchFolderList)
                 {
-                   if (Directory.Exists(folder.FolderPath))
-                   {
-                       AddWatcher(folder);
-                   }
+                    if (Directory.Exists(folder.FolderPath))
+                    {
+                        AddWatcher(folder);
+                    }
                 }
             }
         }
 
         private void AddWatcher(WatchFolderSettings settings)
         {
-            try 
+            try
             {
                 var watcher = new FileSystemWatcher(settings.FolderPath);
                 watcher.Filter = settings.Filter;
@@ -57,7 +54,7 @@ namespace ShareX.Ava.Core.Managers
         {
             // TODO: Trigger Task execution for the new file
             DebugHelper.WriteLine($"New file detected: {e.FullPath}");
-            
+
             // Logic to create a WorkerTask from the file would go here.
             // Since we are decoupling, we might fire an event or call TaskManager directly.
         }

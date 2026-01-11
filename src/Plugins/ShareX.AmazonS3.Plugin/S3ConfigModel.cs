@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Uploaders.FileUploaders;
+using XerahS.Uploaders.FileUploaders;
 
 namespace ShareX.AmazonS3.Plugin;
 
@@ -33,23 +33,23 @@ namespace ShareX.AmazonS3.Plugin;
 public class S3ConfigModel
 {
     public string AccessKeyId { get; set; } = string.Empty;
-    
+
     public string SecretAccessKey { get; set; } = string.Empty;
-    
+
     public string BucketName { get; set; } = string.Empty;
-    
+
     public string Region { get; set; } = "us-east-1";
-    
+
     public string ObjectPrefix { get; set; } = "ShareX/%y/%mo";
-    
+
     public bool UseCustomCNAME { get; set; } = false;
-    
+
     public string CustomDomain { get; set; } = string.Empty;
-    
+
     public AmazonS3StorageClass StorageClass { get; set; } = AmazonS3StorageClass.Standard;
-    
+
     public bool SetPublicACL { get; set; } = true;
-    
+
     public bool UsePathStyleUrl { get; set; } = false;
 
     public bool SignedPayload { get; set; } = false;

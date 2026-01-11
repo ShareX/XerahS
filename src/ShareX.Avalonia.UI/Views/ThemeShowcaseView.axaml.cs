@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace ShareX.Ava.UI.Views;
+namespace XerahS.UI.Views;
 
 public partial class ThemeShowcaseView : UserControl
 {

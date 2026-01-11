@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Platform.Abstractions;
+using XerahS.Platform.Abstractions;
 
-namespace ShareX.Ava.Platform.MacOS
+namespace XerahS.Platform.MacOS
 {
     public sealed class MacOSFontService : IFontService
     {

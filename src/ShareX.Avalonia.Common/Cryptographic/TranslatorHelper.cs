@@ -23,13 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class TranslatorHelper
     {

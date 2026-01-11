@@ -1,9 +1,8 @@
 using Avalonia.Data.Converters;
-using System;
+using XerahS.Common;
 using System.Globalization;
-using ShareX.Ava.Common;
 
-namespace ShareX.Ava.UI.Converters;
+namespace XerahS.UI.Converters;
 
 public class EnumToDescriptionConverter : IValueConverter
 {

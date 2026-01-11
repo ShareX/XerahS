@@ -23,12 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.Ava.Core;
+using XerahS.Core;
 
-namespace ShareX.Ava.UI.ViewModels
+namespace XerahS.UI.ViewModels
 {
     public partial class SettingsViewModel : ViewModelBase
     {
@@ -68,6 +67,8 @@ namespace ShareX.Ava.UI.ViewModels
         private UpdateChannel _updateChannel;
 
         public UpdateChannel[] UpdateChannels => (UpdateChannel[])Enum.GetValues(typeof(UpdateChannel));
+
+        private TaskSettings ActiveTaskSettings => SettingManager.GetOrCreateWorkflowTaskSettings(HotkeyType.None);
 
         // Tray Click Actions
         public HotkeyType TrayLeftClickAction
@@ -193,8 +194,8 @@ namespace ShareX.Ava.UI.ViewModels
         partial void OnIsPluginExtensionRegisteredChanged(bool value)
         {
             if (_isLoading) return; // Don't trigger during initial load
-            
-            ShareX.Ava.Core.Integration.IntegrationHelper.SetPluginExtensionRegistration(value);
+
+            XerahS.Core.Integration.IntegrationHelper.SetPluginExtensionRegistration(value);
         }
 
         // OS Integration Settings
@@ -291,65 +292,65 @@ namespace ShareX.Ava.UI.ViewModels
         // Task Settings - After Capture
         public bool SaveImageToFile
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.SaveImageToFile);
+            get => ActiveTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.SaveImageToFile);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.SaveImageToFile;
+                    ActiveTaskSettings.AfterCaptureJob |= AfterCaptureTasks.SaveImageToFile;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.SaveImageToFile;
+                    ActiveTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.SaveImageToFile;
                 OnPropertyChanged();
             }
         }
 
         public bool CopyImageToClipboard
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyImageToClipboard);
+            get => ActiveTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyImageToClipboard);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.CopyImageToClipboard;
+                    ActiveTaskSettings.AfterCaptureJob |= AfterCaptureTasks.CopyImageToClipboard;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.CopyImageToClipboard;
+                    ActiveTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.CopyImageToClipboard;
                 OnPropertyChanged();
             }
         }
 
         public bool UploadImageToHost
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost);
+            get => ActiveTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.UploadImageToHost;
+                    ActiveTaskSettings.AfterCaptureJob |= AfterCaptureTasks.UploadImageToHost;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.UploadImageToHost;
+                    ActiveTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.UploadImageToHost;
                 OnPropertyChanged();
             }
         }
 
         public bool AnnotateImage
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AnnotateImage);
+            get => ActiveTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AnnotateImage);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.AnnotateImage;
+                    ActiveTaskSettings.AfterCaptureJob |= AfterCaptureTasks.AnnotateImage;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.AnnotateImage;
+                    ActiveTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.AnnotateImage;
                 OnPropertyChanged();
             }
         }
 
         public bool ShowAfterCaptureWindow
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.ShowAfterCaptureWindow);
+            get => ActiveTaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.ShowAfterCaptureWindow);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.ShowAfterCaptureWindow;
+                    ActiveTaskSettings.AfterCaptureJob |= AfterCaptureTasks.ShowAfterCaptureWindow;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.ShowAfterCaptureWindow;
+                    ActiveTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.ShowAfterCaptureWindow;
                 OnPropertyChanged();
             }
         }
@@ -357,39 +358,39 @@ namespace ShareX.Ava.UI.ViewModels
         // Task Settings - After Upload
         public bool CopyURLToClipboard
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.CopyURLToClipboard);
+            get => ActiveTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.CopyURLToClipboard);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterUploadJob |= AfterUploadTasks.CopyURLToClipboard;
+                    ActiveTaskSettings.AfterUploadJob |= AfterUploadTasks.CopyURLToClipboard;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterUploadJob &= ~AfterUploadTasks.CopyURLToClipboard;
+                    ActiveTaskSettings.AfterUploadJob &= ~AfterUploadTasks.CopyURLToClipboard;
                 OnPropertyChanged();
             }
         }
 
         public bool UseURLShortener
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.UseURLShortener);
+            get => ActiveTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.UseURLShortener);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterUploadJob |= AfterUploadTasks.UseURLShortener;
+                    ActiveTaskSettings.AfterUploadJob |= AfterUploadTasks.UseURLShortener;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterUploadJob &= ~AfterUploadTasks.UseURLShortener;
+                    ActiveTaskSettings.AfterUploadJob &= ~AfterUploadTasks.UseURLShortener;
                 OnPropertyChanged();
             }
         }
 
         public bool ShareURL
         {
-            get => SettingManager.Settings.DefaultTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.ShareURL);
+            get => ActiveTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.ShareURL);
             set
             {
                 if (value)
-                    SettingManager.Settings.DefaultTaskSettings.AfterUploadJob |= AfterUploadTasks.ShareURL;
+                    ActiveTaskSettings.AfterUploadJob |= AfterUploadTasks.ShareURL;
                 else
-                    SettingManager.Settings.DefaultTaskSettings.AfterUploadJob &= ~AfterUploadTasks.ShareURL;
+                    ActiveTaskSettings.AfterUploadJob &= ~AfterUploadTasks.ShareURL;
                 OnPropertyChanged();
             }
         }
@@ -404,8 +405,8 @@ namespace ShareX.Ava.UI.ViewModels
         private void LoadSettings()
         {
             var settings = SettingManager.Settings;
-            
-            ScreenshotsFolder = settings.CustomScreenshotsPath ?? 
+
+            ScreenshotsFolder = settings.CustomScreenshotsPath ??
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "ShareX");
             SaveImageSubFolderPattern = settings.SaveImageSubFolderPattern ?? "%y-%mo";
             UseCustomScreenshotsPath = settings.UseCustomScreenshotsPath;
@@ -417,11 +418,11 @@ namespace ShareX.Ava.UI.ViewModels
             AutoCheckUpdate = settings.AutoCheckUpdate;
             UpdateChannel = settings.UpdateChannel;
 
-            // Task Settings - General
-            var taskSettings = settings.DefaultTaskSettings;
+            // Task Settings - General (from primary workflow)
+            var taskSettings = ActiveTaskSettings;
             PlaySoundAfterCapture = taskSettings.GeneralSettings.PlaySoundAfterCapture;
             ShowToastNotification = taskSettings.GeneralSettings.ShowToastNotificationAfterTaskCompleted;
-            
+
             // Task Settings - Capture
             ShowCursor = taskSettings.CaptureSettings.ShowCursor;
             ScreenshotDelay = (double)taskSettings.CaptureSettings.ScreenshotDelay;
@@ -438,16 +439,16 @@ namespace ShareX.Ava.UI.ViewModels
             URLRegexReplace = taskSettings.UploadSettings.URLRegexReplace;
             URLRegexReplacePattern = taskSettings.UploadSettings.URLRegexReplacePattern;
             URLRegexReplaceReplacement = taskSettings.UploadSettings.URLRegexReplaceReplacement;
-            
+
             // Integration Settings
             SupportsFileAssociations = OperatingSystem.IsWindows();
-            IsPluginExtensionRegistered = ShareX.Ava.Core.Integration.IntegrationHelper.IsPluginExtensionRegistered();
+            IsPluginExtensionRegistered = XerahS.Core.Integration.IntegrationHelper.IsPluginExtensionRegistered();
         }
 
         protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
-            
+
             // Auto-save when any property changes (after initial load)
             if (!_isLoading && e.PropertyName != nameof(HotkeySettings))
             {
@@ -459,7 +460,7 @@ namespace ShareX.Ava.UI.ViewModels
         private void SaveSettings()
         {
             var settings = SettingManager.Settings;
-            
+
             settings.CustomScreenshotsPath = ScreenshotsFolder;
             settings.SaveImageSubFolderPattern = SaveImageSubFolderPattern;
             settings.UseCustomScreenshotsPath = UseCustomScreenshotsPath;
@@ -472,10 +473,10 @@ namespace ShareX.Ava.UI.ViewModels
             settings.UpdateChannel = UpdateChannel;
 
             // Save Task Settings
-            var taskSettings = settings.DefaultTaskSettings;
+            var taskSettings = ActiveTaskSettings;
             taskSettings.GeneralSettings.PlaySoundAfterCapture = PlaySoundAfterCapture;
             taskSettings.GeneralSettings.ShowToastNotificationAfterTaskCompleted = ShowToastNotification;
-            
+
             taskSettings.CaptureSettings.ShowCursor = ShowCursor;
             taskSettings.CaptureSettings.ScreenshotDelay = (decimal)ScreenshotDelay;
             taskSettings.CaptureSettings.CaptureTransparent = CaptureTransparent;
@@ -490,7 +491,7 @@ namespace ShareX.Ava.UI.ViewModels
             taskSettings.UploadSettings.URLRegexReplace = URLRegexReplace;
             taskSettings.UploadSettings.URLRegexReplacePattern = URLRegexReplacePattern;
             taskSettings.UploadSettings.URLRegexReplaceReplacement = URLRegexReplaceReplacement;
-            
+
             SettingManager.SaveApplicationConfig();
         }
 

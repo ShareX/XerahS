@@ -23,14 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using ShareX.Ava.Common.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using XerahS.Common;
 using System.Text;
 
-namespace ShareX.Ava.History
+namespace XerahS.History
 {
     public static class HistoryHelpers
     {

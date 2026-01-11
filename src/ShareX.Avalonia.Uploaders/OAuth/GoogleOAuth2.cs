@@ -24,11 +24,10 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
-using ShareX.Ava.Common;
-using System.Collections.Generic;
+using XerahS.Common;
 using System.Collections.Specialized;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     public class GoogleOAuth2 : IOAuth2Loopback
     {

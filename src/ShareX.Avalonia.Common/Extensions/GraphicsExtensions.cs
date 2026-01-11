@@ -23,13 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Linq;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class GraphicsExtensions
     {
@@ -43,7 +40,7 @@ namespace ShareX.Ava.Common
 
         public static void DrawRectangleProper(this Graphics g, Pen pen, RectangleF rect)
         {
-             if (rect.Width > 0 && rect.Height > 0)
+            if (rect.Width > 0 && rect.Height > 0)
             {
                 g.DrawRectangle(pen, rect.X, rect.Y, rect.Width - 1, rect.Height - 1);
             }
@@ -57,9 +54,9 @@ namespace ShareX.Ava.Common
             // I'll skip complex ShadowDirection class dependency if it exists, or just implement basic shadow.
             // For now, stubs or simplified version.
         }
-        
+
         // ... (Include other methods from original file if needed, heavily GDI+ specific)
-        
+
         public static void SetHighQuality(this Graphics g)
         {
             g.CompositingQuality = CompositingQuality.HighQuality;

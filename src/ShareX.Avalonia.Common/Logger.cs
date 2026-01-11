@@ -23,14 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class Logger
     {
@@ -63,7 +60,7 @@ namespace ShareX.Ava.Common
                 LogFilePathTemplate = logFilePath;
                 LogFilePath = logFilePath;
                 _currentDate = DateTime.Now.ToString("yyyy-MM-dd");
-                
+
                 string directory = Path.GetDirectoryName(LogFilePath);
 
                 if (!string.IsNullOrEmpty(directory))
@@ -85,16 +82,16 @@ namespace ShareX.Ava.Common
             if (today != _currentDate)
             {
                 _currentDate = today;
-                
+
                 // Build the path with yyyy-MM folder structure
                 string baseTemplate = LogFilePathTemplate;
                 string directory = Path.GetDirectoryName(baseTemplate);
                 string filename = Path.GetFileNameWithoutExtension(baseTemplate);
                 string extension = Path.GetExtension(baseTemplate);
-                
+
                 // Extract the base directory (before Logs folder)
                 string currentMonthFolder = DateTime.Now.ToString("yyyy-MM");
-                
+
                 // Reconstruct path: replace the date in the directory structure
                 if (directory.Contains("Logs"))
                 {
@@ -106,7 +103,7 @@ namespace ShareX.Ava.Common
                         directory = Path.Combine(baseDir, "Logs", currentMonthFolder);
                     }
                 }
-                
+
                 LogFilePath = Path.Combine(directory, $"{filename}-{today}{extension}");
             }
 

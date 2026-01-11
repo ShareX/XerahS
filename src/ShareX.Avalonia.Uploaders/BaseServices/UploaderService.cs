@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Drawing;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     public abstract class UploaderService<T> : IUploaderService
     {

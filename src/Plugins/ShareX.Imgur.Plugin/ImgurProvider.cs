@@ -24,8 +24,8 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
-using ShareX.Ava.Uploaders;
-using ShareX.Ava.Uploaders.PluginSystem;
+using XerahS.Uploaders;
+using XerahS.Uploaders.PluginSystem;
 
 namespace ShareX.Imgur.Plugin;
 
@@ -60,9 +60,9 @@ public class ImgurProvider : UploaderProviderBase
     {
         return new Dictionary<UploaderCategory, string[]>
         {
-            { 
-                UploaderCategory.Image, 
-                new[] { "png", "jpg", "jpeg", "gif", "apng", "bmp", "tiff", "webp", "mp4", "avi", "mov" } 
+            {
+                UploaderCategory.Image,
+                new[] { "png", "jpg", "jpeg", "gif", "apng", "bmp", "tiff", "webp", "mp4", "avi", "mov" }
             }
         };
     }

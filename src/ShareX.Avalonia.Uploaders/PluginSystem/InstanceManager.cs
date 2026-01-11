@@ -24,8 +24,10 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
+using System.Text;
+using System.Security.Cryptography;
 
-namespace ShareX.Ava.Uploaders.PluginSystem;
+namespace XerahS.Uploaders.PluginSystem;
 
 /// <summary>
 /// Manages uploader instances - lifecycle, persistence, default selection
@@ -45,7 +47,7 @@ public class InstanceManager
         var configDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ShareX.Ava");
         Directory.CreateDirectory(configDir);
         _configFilePath = Path.Combine(configDir, "uploader-instances.json");
-        
+
         _configuration = LoadConfiguration();
     }
 
@@ -76,7 +78,7 @@ public class InstanceManager
     /// <summary>
     /// Get an instance by its ID
     /// </summary>
-    public UploaderInstance? GetInstance(Guid instanceId)
+    public UploaderInstance? GetInstance(string instanceId)
     {
         lock (_lock)
         {
@@ -91,6 +93,12 @@ public class InstanceManager
     {
         lock (_lock)
         {
+            if (string.IsNullOrWhiteSpace(instance.InstanceId))
+            {
+                instance.CreatedAt = DateTime.UtcNow;
+                instance.InstanceId = GenerateInstanceId(instance.ProviderId, instance.DisplayName, instance.CreatedAt);
+            }
+
             if (_configuration.Instances.Any(i => i.InstanceId == instance.InstanceId))
             {
                 throw new InvalidOperationException($"Instance with ID {instance.InstanceId} already exists");
@@ -126,7 +134,7 @@ public class InstanceManager
     /// <summary>
     /// Remove an instance
     /// </summary>
-    public void RemoveInstance(Guid instanceId)
+    public void RemoveInstance(string instanceId)
     {
         lock (_lock)
         {
@@ -134,18 +142,18 @@ public class InstanceManager
             if (instance != null)
             {
                 _configuration.Instances.Remove(instance);
-                
+
                 // Remove from defaults if it was set
                 var defaultsToRemove = _configuration.DefaultInstances
                     .Where(kvp => kvp.Value == instanceId)
                     .Select(kvp => kvp.Key)
                     .ToList();
-                
+
                 foreach (var category in defaultsToRemove)
                 {
                     _configuration.DefaultInstances.Remove(category);
                 }
-                
+
                 SaveConfiguration();
             }
         }
@@ -154,7 +162,7 @@ public class InstanceManager
     /// <summary>
     /// Duplicate an instance with new ID and optional display name
     /// </summary>
-    public UploaderInstance DuplicateInstance(Guid sourceInstanceId, string? newDisplayName = null)
+    public UploaderInstance DuplicateInstance(string sourceInstanceId, string? newDisplayName = null)
     {
         lock (_lock)
         {
@@ -164,21 +172,22 @@ public class InstanceManager
                 throw new InvalidOperationException($"Instance with ID {sourceInstanceId} not found");
             }
 
+            var createdAt = DateTime.UtcNow;
             var duplicate = new UploaderInstance
             {
-                InstanceId = Guid.NewGuid(),
+                InstanceId = GenerateInstanceId(source.ProviderId, newDisplayName ?? $"{source.DisplayName} (Copy)", createdAt),
                 ProviderId = source.ProviderId,
                 Category = source.Category,
                 DisplayName = newDisplayName ?? $"{source.DisplayName} (Copy)",
                 SettingsJson = source.SettingsJson,
-                CreatedAt = DateTime.UtcNow,
-                ModifiedAt = DateTime.UtcNow,
+                CreatedAt = createdAt,
+                ModifiedAt = createdAt,
                 IsAvailable = source.IsAvailable
             };
 
             _configuration.Instances.Add(duplicate);
             SaveConfiguration();
-            
+
             return duplicate;
         }
     }
@@ -186,7 +195,7 @@ public class InstanceManager
     /// <summary>
     /// Set the default instance for a category
     /// </summary>
-    public void SetDefaultInstance(UploaderCategory category, Guid instanceId)
+    public void SetDefaultInstance(UploaderCategory category, string instanceId)
     {
         lock (_lock)
         {
@@ -260,12 +269,12 @@ public class InstanceManager
     /// <param name="category">Upload category</param>
     /// <param name="excludeInstanceId">Instance ID to exclude from check (when editing existing instance)</param>
     /// <param name="fileExtension">File extension to check</param>
-    public bool CanAddFileType(UploaderCategory category, Guid excludeInstanceId, string fileExtension)
+    public bool CanAddFileType(UploaderCategory category, string excludeInstanceId, string fileExtension)
     {
         lock (_lock)
         {
             var ext = fileExtension.TrimStart('.').ToLowerInvariant();
-            
+
             var otherInstances = _configuration.Instances
                 .Where(i => i.Category == category && i.InstanceId != excludeInstanceId);
 
@@ -285,7 +294,7 @@ public class InstanceManager
     /// </summary>
     /// <param name="category">Upload category</param>
     /// <param name="currentInstanceId">Instance ID requesting "All File Types"</param>
-    public bool CanSetAllFileTypes(UploaderCategory category, Guid currentInstanceId)
+    public bool CanSetAllFileTypes(UploaderCategory category, string currentInstanceId)
     {
         lock (_lock)
         {
@@ -303,12 +312,12 @@ public class InstanceManager
     /// </summary>
     /// <param name="category">Upload category</param>
     /// <param name="excludeInstanceId">Instance ID to exclude from check</param>
-    public Dictionary<string, string> GetBlockedFileTypes(UploaderCategory category, Guid excludeInstanceId)
+    public Dictionary<string, string> GetBlockedFileTypes(UploaderCategory category, string excludeInstanceId)
     {
         lock (_lock)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            
+
             var otherInstances = _configuration.Instances
                 .Where(i => i.Category == category && i.InstanceId != excludeInstanceId);
 
@@ -391,7 +400,7 @@ public class InstanceManager
         {
             // If loading fails, return empty configuration
         }
-        
+
         return new InstanceConfiguration();
     }
 
@@ -406,5 +415,13 @@ public class InstanceManager
         {
             // TODO: Add proper logging
         }
+    }
+
+    private static string GenerateInstanceId(string providerId, string displayName, DateTime createdAtUtc)
+    {
+        using var sha1 = System.Security.Cryptography.SHA1.Create();
+        var input = $"{providerId}|{displayName}|{createdAtUtc:O}";
+        var hash = sha1.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
+        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
     }
 }

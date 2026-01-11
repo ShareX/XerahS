@@ -25,12 +25,9 @@
 
 using Microsoft.Data.Sqlite;
 using Newtonsoft.Json;
-using ShareX.Ava.Common;
-using ShareX.Ava.Common.Helpers;
-using System;
-using System.Collections.Generic;
+using XerahS.Common;
 
-namespace ShareX.Ava.History
+namespace XerahS.History
 {
     public class HistoryManagerSQLite : HistoryManager, IDisposable
     {
@@ -125,6 +122,64 @@ CREATE TABLE IF NOT EXISTS History (
             }
 
             return items;
+        }
+
+        public int GetTotalCount()
+        {
+            using (SqliteCommand cmd = new SqliteCommand("SELECT COUNT(*) FROM History;", connection))
+            {
+                var result = cmd.ExecuteScalar();
+                return result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+            }
+        }
+
+        public async Task<int> GetTotalCountAsync()
+        {
+            return await Task.Run(GetTotalCount);
+        }
+
+        /// <summary>
+        /// Retrieves a paged list of history items, ordered by DateTime DESC (newest first).
+        /// </summary>
+        public List<HistoryItem> GetHistoryItems(int offset, int limit)
+        {
+            List<HistoryItem> items = new List<HistoryItem>();
+
+            using (SqliteCommand cmd = new SqliteCommand("SELECT * FROM History ORDER BY DateTime DESC LIMIT @Limit OFFSET @Offset;", connection))
+            {
+                cmd.Parameters.AddWithValue("@Limit", limit);
+                cmd.Parameters.AddWithValue("@Offset", offset);
+
+                using (SqliteDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        HistoryItem item = new HistoryItem()
+                        {
+                            Id = (long)reader["Id"],
+                            FileName = reader["FileName"].ToString(),
+                            FilePath = reader["FilePath"].ToString(),
+                            DateTime = DateTime.Parse(reader["DateTime"].ToString()),
+                            Type = reader["Type"].ToString(),
+                            Host = reader["Host"].ToString(),
+                            URL = reader["URL"].ToString(),
+                            ThumbnailURL = reader["ThumbnailURL"].ToString(),
+                            DeletionURL = reader["DeletionURL"].ToString(),
+                            ShortenedURL = reader["ShortenedURL"].ToString(),
+                            Tags = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader["Tags"]?.ToString() ?? "{}")
+                        };
+
+                        items.Add(item);
+                    }
+                }
+            }
+
+            return items;
+        }
+
+        public async Task<List<HistoryItem>> GetHistoryItemsAsync(int offset, int limit)
+        {
+            return await Task.Run(() => GetHistoryItems(offset, limit));
         }
 
         protected override bool Append(string dbPath, IEnumerable<HistoryItem> historyItems)

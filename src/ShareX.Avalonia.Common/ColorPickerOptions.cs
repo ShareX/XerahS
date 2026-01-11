@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class ColorPickerOptions
     {

@@ -23,9 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     // Simplified Keys enum compatible with System.Windows.Forms.Keys
     [Flags]

@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:ShareX.Ava.UI.ViewModels"
-             x:Class="ShareX.Ava.UI.Controls.FileTypeSelectorControl"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             x:Class="XerahS.UI.Controls.FileTypeSelectorControl"
              x:DataType="vm:UploaderInstanceViewModel">
     
     <StackPanel Spacing="10">

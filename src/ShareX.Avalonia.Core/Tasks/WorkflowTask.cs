@@ -22,16 +22,13 @@
 */
 
 #endregion License Information (GPL v3)
-using ShareX.Ava.Uploaders.PluginSystem;
-using ShareX.Ava.Uploaders; // For GenericUploader and UploadResult
-using ShareX.Ava.Platform.Abstractions;
-using System;
+using XerahS.Platform.Abstractions;
+using XerahS.Uploaders; // For GenericUploader and UploadResult
+using XerahS.Uploaders.PluginSystem;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
-using System.Threading.Tasks;
 
-namespace ShareX.Ava.Core.Tasks;
+namespace XerahS.Core.Tasks;
 
 /// <summary>
 /// Represents a minimal workflow task for quick automation (Path A)
@@ -69,13 +66,13 @@ public class WorkflowTask : IDisposable
     /// </summary>
     public async Task ExecuteAsync()
     {
-       try
+        try
         {
             // Step 1: Convert image to stream
             if (Image == null)
             {
                 Result = new UploadResult { IsSuccess = false };
-               Result.Errors.Add("No image provided");
+                Result.Errors.Add("No image provided");
                 return;
             }
 
@@ -135,7 +132,7 @@ public class WorkflowTask : IDisposable
             }
 
             // Create uploader instance from settings JSON
-           var uploader = provider.CreateInstance(defaultInstance.SettingsJson) as GenericUploader;
+            var uploader = provider.CreateInstance(defaultInstance.SettingsJson) as GenericUploader;
             if (uploader == null)
             {
                 var result = new UploadResult { IsSuccess = false };

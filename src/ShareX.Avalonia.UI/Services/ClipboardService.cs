@@ -1,11 +1,7 @@
+using XerahS.Platform.Abstractions;
 using SkiaSharp;
-using System.Threading.Tasks;
-using ShareX.Ava.Platform.Abstractions;
-using Avalonia;
-using Avalonia.Input.Platform;
-using System.Linq;
 
-namespace ShareX.Ava.UI.Services
+namespace XerahS.UI.Services
 {
     public class ClipboardService : IClipboardService
     {

@@ -23,16 +23,13 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
-using ShareX.Ava.Platform.Abstractions;
+using XerahS.Platform.Abstractions;
 using SkiaSharp;
-using DebugHelper = ShareX.Ava.Common.DebugHelper;
+using System.Diagnostics;
+using DebugHelper = XerahS.Common.DebugHelper;
 // REMOVED: System.Drawing usage
 
-namespace ShareX.Ava.Platform.MacOS
+namespace XerahS.Platform.MacOS
 {
     /// <summary>
     /// macOS screen capture implementation using the native screencapture CLI.
@@ -63,6 +60,16 @@ namespace ShareX.Ava.Platform.MacOS
         public Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null)
         {
             return CaptureWithArgumentsAsync("-w -t png");
+        }
+
+        public Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
+        {
+            // macOS doesn't have direct window-by-handle capture via screencapture CLI
+            // Get bounds and capture rect as fallback
+            if (windowHandle == IntPtr.Zero) return Task.FromResult<SKBitmap?>(null);
+            var bounds = windowService.GetWindowBounds(windowHandle);
+            if (bounds.Width <= 0 || bounds.Height <= 0) return Task.FromResult<SKBitmap?>(null);
+            return CaptureRectAsync(new SKRect(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height), options);
         }
 
         private static Task<SKBitmap?> CaptureWithArgumentsAsync(string arguments)

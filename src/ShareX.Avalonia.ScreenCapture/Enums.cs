@@ -25,7 +25,7 @@
 
 using System.ComponentModel;
 
-namespace ShareX.Ava.ScreenCapture
+namespace XerahS.ScreenCapture
 {
     public enum ScreenRecordOutput
     {

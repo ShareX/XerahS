@@ -23,13 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using System;
-using System.IO;
-using System.Linq;
+using XerahS.Common;
 using System.Text;
 
-namespace ShareX.Ava.Media
+namespace XerahS.Media
 {
     public class VideoConverterOptions
     {

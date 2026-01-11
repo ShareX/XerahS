@@ -24,8 +24,8 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
-using ShareX.Ava.Uploaders;
-using ShareX.Ava.Uploaders.PluginSystem;
+using XerahS.Uploaders;
+using XerahS.Uploaders.PluginSystem;
 
 namespace ShareX.AmazonS3.Plugin;
 
@@ -62,7 +62,7 @@ public class AmazonS3Provider : UploaderProviderBase
     public override Dictionary<UploaderCategory, string[]> GetSupportedFileTypes()
     {
         // S3 supports all file types for all categories
-        var allTypes = new[] { 
+        var allTypes = new[] {
             "png", "jpg", "jpeg", "gif", "bmp", "tiff", "webp", "svg",  // Common images
             "mp4", "avi", "mov", "mkv", "flv", "wmv", "webm",           // Videos  
             "txt", "log", "json", "xml", "md", "html", "css", "js",     // Text

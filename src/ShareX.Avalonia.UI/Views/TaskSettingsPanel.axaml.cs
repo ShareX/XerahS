@@ -1,16 +1,16 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using ShareX.Ava.UI.Controls;
-using ShareX.Ava.UI.ViewModels;
+using XerahS.UI.Controls;
+using XerahS.UI.ViewModels;
 
-namespace ShareX.Ava.UI.Views
+namespace XerahS.UI.Views
 {
     public partial class TaskSettingsPanel : UserControl
     {
         public TaskSettingsPanel()
         {
             InitializeComponent();
-            
+
             // Wire up PropertyGrid property changes to preview updates
             var propertyGrid = this.FindControl<PropertyGrid>("EffectPropertyGrid");
             if (propertyGrid != null)

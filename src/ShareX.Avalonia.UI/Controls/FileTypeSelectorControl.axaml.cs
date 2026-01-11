@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace ShareX.Ava.UI.Controls;
+namespace XerahS.UI.Controls;
 
 public partial class FileTypeSelectorControl : UserControl
 {

@@ -2,11 +2,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="using:ShareX.Ava.UI.ViewModels"
-        xmlns:views="using:ShareX.Ava.UI.Views"
-        xmlns:converters="using:ShareX.Ava.UI.Converters"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        xmlns:views="using:XerahS.UI.Views"
+        xmlns:converters="using:XerahS.UI.Converters"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
-        x:Class="ShareX.Ava.UI.Views.WorkflowEditorView"
+        x:Class="XerahS.UI.Views.WorkflowEditorView"
         x:DataType="vm:WorkflowEditorViewModel"
         Title="{Binding WindowTitle}"
         Width="850" Height="650"
@@ -99,16 +99,21 @@
                 <Grid RowDefinitions="Auto, *" Margin="20">
                     <TextBlock Text="Select Destination" FontWeight="SemiBold" Margin="0,0,0,10"/>
                     
-                    <ListBox Grid.Row="1" ItemsSource="{Binding AvailableDestinations}" SelectedItem="{Binding SelectedDestination}">
-                        <ListBox.DataTemplates>
+                    <ComboBox Grid.Row="1" 
+                              ItemsSource="{Binding AvailableDestinations}" 
+                              SelectedItem="{Binding SelectedDestination}"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Top"
+                              PlaceholderText="Select default destination for this workflow">
+                        <ComboBox.ItemTemplate>
                             <DataTemplate DataType="vm:UploaderInstanceViewModel">
                                 <StackPanel Spacing="2">
                                     <TextBlock Text="{Binding DisplayName}"/>
                                     <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                 </StackPanel>
                             </DataTemplate>
-                        </ListBox.DataTemplates>
-                    </ListBox>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                  </Grid>
             </TabItem>
         </TabControl>

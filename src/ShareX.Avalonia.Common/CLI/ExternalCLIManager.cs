@@ -23,12 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public abstract class ExternalCLIManager : IDisposable
     {

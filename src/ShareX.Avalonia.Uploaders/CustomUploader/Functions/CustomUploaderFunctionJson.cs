@@ -25,7 +25,7 @@
 
 using Newtonsoft.Json.Linq;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     // Example: {json:files[0].url}
     // Example: {json:{response}|files[0].url}

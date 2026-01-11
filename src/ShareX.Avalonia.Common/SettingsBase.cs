@@ -26,10 +26,10 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.ComponentModel;
-using System.Text;
 using System.IO.Compression;
+using System.Text;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public abstract class SettingsBase<T> where T : SettingsBase<T>, new()
     {
@@ -156,7 +156,7 @@ namespace ShareX.Ava.Common
 
                             // .NET Standard 2.0 / .NET Core doesn't verify File.Replace across checks, but standard File.Replace is available in newer .NET
                             // We'll use a manual move approach if needed or File.Replace
-                            try 
+                            try
                             {
                                 File.Move(tempFilePath, filePath, true);
                             }
@@ -174,7 +174,7 @@ namespace ShareX.Ava.Common
                         {
                             File.Move(tempFilePath, filePath);
                         }
-                        
+
                         // TODO: Weekly backup logic
 
                         isSuccess = true;
@@ -205,14 +205,26 @@ namespace ShareX.Ava.Common
                 }
 
                 // Create yyyy-MM subfolder
+                // Create yyyy-MM subfolder
                 string monthFolder = Path.Combine(BackupFolder, DateTime.Now.ToString("yyyy-MM"));
                 if (!Directory.Exists(monthFolder))
                 {
                     Directory.CreateDirectory(monthFolder);
                 }
 
-                // Create zip file with date stamp: yyyy-MM-dd format
-                string zipFileName = $"backup-{DateTime.Now:yyyy-MM-dd}.zip";
+                string zipFileName;
+
+                if (CreateWeeklyBackup)
+                {
+                    // Create zip file with year and week number: yyyy-Www format
+                    zipFileName = $"backup-{DateTime.Now.Year}-W{FileHelpers.WeekOfYear(DateTime.Now):00}.zip";
+                }
+                else
+                {
+                    // Create zip file with date stamp: yyyy-MM-dd format
+                    zipFileName = $"backup-{DateTime.Now:yyyy-MM-dd}.zip";
+                }
+
                 string zipFilePath = Path.Combine(monthFolder, zipFileName);
 
                 // If a backup for today already exists, delete it (we're updating with latest)
@@ -275,7 +287,7 @@ namespace ShareX.Ava.Common
                     string fileName = Path.GetFileName(filePath);
                     string backupFilePath = Path.Combine(backupFolder, fileName);
                     fallbackFilePaths.Add(backupFilePath);
-                    
+
                     // Weekly backups retrieval logic...
                 }
             }

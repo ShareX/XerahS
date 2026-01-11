@@ -1,10 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.Ava.Common;
-using ShareX.Ava.Uploaders.PluginSystem;
+using XerahS.Common;
+using XerahS.Uploaders.PluginSystem;
 using System.Collections.ObjectModel;
 
-namespace ShareX.Ava.UI.ViewModels;
+namespace XerahS.UI.ViewModels;
 
 /// <summary>
 /// ViewModel for the provider catalog dialog
@@ -32,17 +32,17 @@ public partial class ProviderCatalogViewModel : ViewModelBase
     private void LoadProviders()
     {
         AvailableProviders.Clear();
-        
+
         var providers = ProviderCatalog.GetProvidersByCategory(Category);
         DebugHelper.WriteLine($"[ProviderCatalog] Loading {providers.Count} providers for category {Category}");
-        
+
         foreach (var provider in providers)
         {
             var vm = new ProviderViewModel(provider, Category);
             AvailableProviders.Add(vm);
             DebugHelper.WriteLine($"[ProviderCatalog] Added provider: {provider.Name} (ID: {provider.ProviderId})");
         }
-        
+
         DebugHelper.WriteLine($"[ProviderCatalog] Total providers in AvailableProviders: {AvailableProviders.Count}");
     }
 
@@ -51,7 +51,7 @@ public partial class ProviderCatalogViewModel : ViewModelBase
     private void AddSelected()
     {
         DebugHelper.WriteLine($"[ProviderCatalog] AddSelected called, SelectedProvider: {SelectedProvider?.Name ?? "null"}");
-        
+
         if (SelectedProvider == null)
         {
             DebugHelper.WriteLine("[ProviderCatalog] No provider selected");
@@ -61,7 +61,7 @@ public partial class ProviderCatalogViewModel : ViewModelBase
         try
         {
             DebugHelper.WriteLine($"[ProviderCatalog] Selected provider: {SelectedProvider.Name}");
-            
+
             var provider = ProviderCatalog.GetProvider(SelectedProvider.ProviderId);
             if (provider == null)
             {
@@ -144,7 +144,7 @@ public partial class ProviderViewModel : ViewModelBase
             var fileTypes = provider.GetSupportedFileTypes();
             if (fileTypes.TryGetValue(filterCategory.Value, out var types))
             {
-                var displayTypes = types.Take(8).Select(t => $".{t}");  
+                var displayTypes = types.Take(8).Select(t => $".{t}");
                 var typeStr = string.Join(", ", displayTypes);
                 SupportedFileTypesDisplay = types.Length > 8 ? $"{typeStr}, +{types.Length - 8} more" : typeStr;
             }

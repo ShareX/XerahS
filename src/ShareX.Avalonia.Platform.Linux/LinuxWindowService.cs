@@ -1,10 +1,8 @@
-using ShareX.Ava.Platform.Abstractions;
-using System;
-using System.Collections.Generic;
+using XerahS.Platform.Abstractions;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace ShareX.Ava.Platform.Linux
+namespace XerahS.Platform.Linux
 {
     public class LinuxWindowService : IWindowService, IDisposable
     {
@@ -40,7 +38,7 @@ namespace ShareX.Ava.Platform.Linux
         {
             if (_display == IntPtr.Zero) return IntPtr.Zero;
             NativeMethods.XGetInputFocus(_display, out IntPtr focus, out int revert_to);
-             return focus;
+            return focus;
         }
 
         public bool SetForegroundWindow(IntPtr handle)
@@ -94,7 +92,7 @@ namespace ShareX.Ava.Platform.Linux
 
         public Rectangle GetWindowClientBounds(IntPtr handle)
         {
-           return GetWindowBounds(handle);
+            return GetWindowBounds(handle);
         }
 
         public bool IsWindowVisible(IntPtr handle)
@@ -108,28 +106,28 @@ namespace ShareX.Ava.Platform.Linux
             return false;
         }
 
-        public bool IsWindowMaximized(IntPtr handle) 
+        public bool IsWindowMaximized(IntPtr handle)
         {
             // Not implemented in MVP
-            return false; 
+            return false;
         }
 
-        public bool IsWindowMinimized(IntPtr handle) 
-        { 
-             // Not implemented in MVP
-             return false;
+        public bool IsWindowMinimized(IntPtr handle)
+        {
+            // Not implemented in MVP
+            return false;
         }
 
         public bool ShowWindow(IntPtr handle, int cmdShow)
         {
             if (_display == IntPtr.Zero) return false;
-             
-             if (cmdShow == 0)
+
+            if (cmdShow == 0)
                 NativeMethods.XIconifyWindow(_display, handle, 0);
-             else
+            else
                 NativeMethods.XRaiseWindow(_display, handle);
-             
-             return true;
+
+            return true;
         }
 
         public bool SetWindowPos(IntPtr handle, IntPtr handleInsertAfter, int x, int y, int width, int height, uint flags)
@@ -142,42 +140,67 @@ namespace ShareX.Ava.Platform.Linux
         public WindowInfo[] GetAllWindows()
         {
             if (_display == IntPtr.Zero) return Array.Empty<WindowInfo>();
-            
-             var list = new List<WindowInfo>();
-             if (NativeMethods.XQueryTree(_display, _rootWindow, out IntPtr root, out IntPtr parent, out IntPtr children, out uint nchildren) != 0)
-             {
-                 if (nchildren > 0 && children != IntPtr.Zero)
-                 {
-                     IntPtr[] windowHandles = new IntPtr[nchildren];
-                     Marshal.Copy(children, windowHandles, 0, (int)nchildren);
-                     NativeMethods.XFree(children); // Must free the list
 
-                     // In X11, children are ordered bottom-to-top.
-                     // Reverse to get Z-order top-to-bottom if needed, but GetAllWindows usually doesn't imply order.
-                     
-                     foreach(var handle in windowHandles)
-                     {
-                         var bounds = GetWindowBounds(handle);
-                         // Basic filter: Check if visible? Or just return all?
-                         // Windows implementation returns active only? No, it returns foreground.
-                         // But intent is all.
-                         
-                         list.Add(new WindowInfo {
-                             Handle = handle,
-                             Title = GetWindowText(handle),
-                             ClassName = GetWindowClassName(handle),
-                             Bounds = bounds,
-                             IsVisible = IsWindowVisible(handle)
-                         });
-                      }
-                 }
-             }
-             return list.ToArray();
+            var list = new List<WindowInfo>();
+            if (NativeMethods.XQueryTree(_display, _rootWindow, out IntPtr root, out IntPtr parent, out IntPtr children, out uint nchildren) != 0)
+            {
+                if (nchildren > 0 && children != IntPtr.Zero)
+                {
+                    IntPtr[] windowHandles = new IntPtr[nchildren];
+                    Marshal.Copy(children, windowHandles, 0, (int)nchildren);
+                    NativeMethods.XFree(children); // Must free the list
+
+                    // In X11, children are ordered bottom-to-top.
+                    // Reverse to get Z-order top-to-bottom if needed, but GetAllWindows usually doesn't imply order.
+
+                    foreach (var handle in windowHandles)
+                    {
+                        var bounds = GetWindowBounds(handle);
+                        // Basic filter: Check if visible? Or just return all?
+                        // Windows implementation returns active only? No, it returns foreground.
+                        // But intent is all.
+
+                        list.Add(new WindowInfo
+                        {
+                            Handle = handle,
+                            Title = GetWindowText(handle),
+                            ClassName = GetWindowClassName(handle),
+                            Bounds = bounds,
+                            IsVisible = IsWindowVisible(handle)
+                        });
+                    }
+                }
+            }
+            return list.ToArray();
         }
 
         public uint GetWindowProcessId(IntPtr handle)
         {
-             return 0;
+            return 0;
+        }
+
+        public IntPtr SearchWindow(string windowTitle)
+        {
+            // TODO: Implement proper X11 window search
+            if (string.IsNullOrEmpty(windowTitle) || _display == IntPtr.Zero)
+                return IntPtr.Zero;
+
+            // Fallback: iterate through all windows and find one with matching title
+            var windows = GetAllWindows();
+            foreach (var w in windows)
+            {
+                if (!string.IsNullOrEmpty(w.Title) && w.Title.Contains(windowTitle, StringComparison.OrdinalIgnoreCase))
+                {
+                    return w.Handle;
+                }
+            }
+            return IntPtr.Zero;
+        }
+
+        public bool ActivateWindow(IntPtr handle)
+        {
+            // Use SetForegroundWindow which does XSetInputFocus + XRaiseWindow
+            return SetForegroundWindow(handle);
         }
     }
 }

@@ -23,13 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using CommonHelpers = ShareX.Ava.Common.Helpers;
-using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class EnumProperNameKeepCaseConverter : EnumConverter
     {

@@ -25,7 +25,7 @@
 
 using System.Drawing;
 
-namespace ShareX.Ava.Platform.Abstractions
+namespace XerahS.Platform.Abstractions
 {
     /// <summary>
     /// Platform-agnostic screen information service

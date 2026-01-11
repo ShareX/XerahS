@@ -23,15 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using ShareX.Ava.Common.Helpers;
-using ShareX.Ava.Platform.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+using XerahS.Common;
+using XerahS.Common.Helpers;
+using XerahS.Platform.Abstractions;
 
-namespace ShareX.Ava.Platform.Windows
+namespace XerahS.Platform.Windows
 {
     /// <summary>
     /// Windows implementation of IWindowService using NativeMethods
@@ -110,7 +106,7 @@ namespace ShareX.Ava.Platform.Windows
 
                 // Get window title
                 string title = NativeMethods.GetWindowTextString(hWnd);
-                
+
                 // Skip windows with no title
                 if (string.IsNullOrWhiteSpace(title))
                     return true;
@@ -132,7 +128,7 @@ namespace ShareX.Ava.Platform.Windows
 
                 // Get window bounds
                 var bounds = GetWindowBounds(hWnd);
-                
+
                 // Skip windows with zero or very small size
                 if (bounds.Width <= 1 || bounds.Height <= 1)
                     return true;
@@ -159,6 +155,97 @@ namespace ShareX.Ava.Platform.Windows
         {
             NativeMethods.GetWindowThreadProcessId(handle, out uint processId);
             return processId;
+        }
+
+        public IntPtr SearchWindow(string windowTitle)
+        {
+            if (string.IsNullOrEmpty(windowTitle))
+                return IntPtr.Zero;
+
+            // First, try exact match using FindWindow
+            IntPtr hWnd = NativeMethods.FindWindow(null, windowTitle);
+
+            if (hWnd == IntPtr.Zero)
+            {
+                // Fallback: iterate through all processes and find one with matching main window title
+                foreach (var process in System.Diagnostics.Process.GetProcesses())
+                {
+                    try
+                    {
+                        if (process.MainWindowTitle.Contains(windowTitle, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return process.MainWindowHandle;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore access denied exceptions for system processes
+                    }
+                    finally
+                    {
+                        process.Dispose();
+                    }
+                }
+            }
+
+            return hWnd;
+        }
+
+        public bool ActivateWindow(IntPtr handle)
+        {
+            if (handle == IntPtr.Zero)
+                return false;
+
+            // 1. Restore if minimized
+            if (NativeMethods.IsIconic(handle))
+            {
+                NativeMethods.ShowWindow(handle, 9); // SW_RESTORE
+            }
+
+            // 2. Try standard activation
+            NativeMethods.SetForegroundWindow(handle);
+            if (NativeMethods.GetForegroundWindow() == handle)
+                return true;
+
+            // 3. Robust activation using AttachThreadInput
+            uint foregroundThreadId = NativeMethods.GetWindowThreadProcessId(NativeMethods.GetForegroundWindow(), out _);
+            uint currentThreadId = NativeMethods.GetCurrentThreadId();
+            uint targetThreadId = NativeMethods.GetWindowThreadProcessId(handle, out _);
+
+            bool attachedForeground = false;
+            bool attachedTarget = false;
+
+            try
+            {
+                if (foregroundThreadId != currentThreadId)
+                {
+                    attachedForeground = NativeMethods.AttachThreadInput(foregroundThreadId, currentThreadId, true);
+                }
+                if (targetThreadId != currentThreadId)
+                {
+                    attachedTarget = NativeMethods.AttachThreadInput(targetThreadId, currentThreadId, true);
+                }
+
+                // Try SetForegroundWindow again
+                NativeMethods.SetForegroundWindow(handle);
+                NativeMethods.BringWindowToTop(handle);
+                NativeMethods.ShowWindow(handle, 5); // SW_SHOW
+
+                // Hack: Simulate Alt key press to bypass restrictions
+                NativeMethods.keybd_event(0x12, 0, 0, UIntPtr.Zero); // VK_MENU down
+                NativeMethods.keybd_event(0x12, 0, 2, UIntPtr.Zero); // VK_MENU up
+
+                NativeMethods.SetForegroundWindow(handle);
+            }
+            finally
+            {
+                if (attachedForeground)
+                    NativeMethods.AttachThreadInput(foregroundThreadId, currentThreadId, false);
+                if (attachedTarget)
+                    NativeMethods.AttachThreadInput(targetThreadId, currentThreadId, false);
+            }
+
+            return NativeMethods.GetForegroundWindow() == handle;
         }
     }
 }

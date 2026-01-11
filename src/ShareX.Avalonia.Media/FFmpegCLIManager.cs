@@ -23,18 +23,14 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using ShareX.MediaLib.Properties;
-using System;
+using XerahS.Common;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ShareX.Ava.Media
+namespace XerahS.Media
 {
     public class FFmpegCLIManager : ExternalCLIManager
     {
@@ -92,7 +88,7 @@ namespace ShareX.Ava.Media
             bool result = errorCode == 0;
             if (!result && ShowError)
             {
-                OutputBox.Show(Output.ToString(), ShareX.MediaLib.Properties.Resources.FFmpegError, true);
+                OutputBox.Show(Output.ToString(), "FFmpeg Error", true);
             }
             return result;
         }

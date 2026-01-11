@@ -23,13 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-using static ShareX.Ava.Common.NativeMethods;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class InputManager
     {

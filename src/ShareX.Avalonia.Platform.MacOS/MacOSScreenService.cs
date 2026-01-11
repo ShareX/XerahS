@@ -23,17 +23,15 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
-using ShareX.Ava.Platform.Abstractions;
-using DebugHelper = ShareX.Ava.Common.DebugHelper;
+using XerahS.Platform.Abstractions;
+using System.Drawing;
+using DebugHelper = XerahS.Common.DebugHelper;
 
-namespace ShareX.Ava.Platform.MacOS
+namespace XerahS.Platform.MacOS
 {
     /// <summary>
     /// macOS screen information service (stub for MVP).

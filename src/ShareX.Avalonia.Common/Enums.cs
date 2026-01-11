@@ -25,7 +25,7 @@
 
 using System.ComponentModel;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public enum EDataType // Localized
     {

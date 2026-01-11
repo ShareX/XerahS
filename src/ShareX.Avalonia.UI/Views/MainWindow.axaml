@@ -1,14 +1,14 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:ShareX.Ava.UI.ViewModels"
+        xmlns:vm="using:XerahS.UI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="using:FluentAvalonia.UI.Controls"
-        xmlns:views="using:ShareX.Ava.UI.Views"
-        xmlns:common="clr-namespace:ShareX.Ava.Common;assembly=ShareX.Avalonia.Common"
+        xmlns:views="using:XerahS.UI.Views"
+        xmlns:common="clr-namespace:XerahS.Common;assembly=ShareX.Avalonia.Common"
         xmlns:editvm="clr-namespace:ShareX.Editor.ViewModels;assembly=ShareX.Editor"
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="650"
-        x:Class="ShareX.Ava.UI.Views.MainWindow"
+        x:Class="XerahS.UI.Views.MainWindow"
         x:DataType="editvm:MainViewModel"
         Title="{x:Static common:ShareXResources.ProductNameWithVersion}"
         Icon="/Assets/Logo.ico"
@@ -44,6 +44,12 @@
                 <ui:NavigationViewItem Content="Capture" Tag="Capture" SelectsOnInvoked="False" IsExpanded="True" Name="CaptureNavItem">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Camera"/>
+                    </ui:NavigationViewItem.IconSource>
+                </ui:NavigationViewItem>
+                
+                <ui:NavigationViewItem Content="Recording" Tag="Recording">
+                    <ui:NavigationViewItem.IconSource>
+                        <ui:SymbolIconSource Symbol="Video"/>
                     </ui:NavigationViewItem.IconSource>
                 </ui:NavigationViewItem>
                 

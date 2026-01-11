@@ -23,10 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.IO;
-
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     internal sealed class MaxLengthStream : Stream
     {

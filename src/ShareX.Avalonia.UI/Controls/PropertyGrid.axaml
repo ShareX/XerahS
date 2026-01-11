@@ -2,9 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:local="using:ShareX.Ava.UI.Controls"
+             xmlns:local="using:XerahS.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
-             x:Class="ShareX.Ava.UI.Controls.PropertyGrid">
+             x:Class="XerahS.UI.Controls.PropertyGrid">
     <UserControl.Styles>
         <Style Selector="Grid.propertyRow">
             <Setter Property="Margin" Value="0,2"/>

@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
+using XerahS.Common;
 
-namespace ShareX.Ava.Uploaders.PluginSystem;
+namespace XerahS.Uploaders.PluginSystem;
 
 /// <summary>
 /// Static registry of available uploader providers (loaded from plugin DLLs)
@@ -84,7 +84,7 @@ public static class ProviderCatalog
                 {
                     DebugHelper.WriteLine($"[Plugins] Attempting to load: {metadata.Manifest.Name} (id: {metadata.Manifest.PluginId})");
                     var provider = _pluginLoader.LoadPlugin(metadata);
-                    
+
                     if (provider != null && metadata.IsLoaded)
                     {
                         // Register the provider
@@ -120,7 +120,7 @@ public static class ProviderCatalog
     public static void RegisterProvider(IUploaderProvider provider)
     {
         if (provider == null) throw new ArgumentNullException(nameof(provider));
-        
+
         lock (_lock)
         {
             if (!_providers.ContainsKey(provider.ProviderId))

@@ -25,15 +25,13 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using XerahS.Platform.Abstractions;
 
-namespace ShareX.Ava.Common;
+namespace XerahS.Common;
 
 public static class FileHelpers
 {
@@ -487,7 +485,7 @@ public static class FileHelpers
         }
     }
 
-    private static int WeekOfYear(DateTime dateTime)
+    public static int WeekOfYear(DateTime dateTime)
     {
         return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTime, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
     }
@@ -527,22 +525,9 @@ public static class FileHelpers
 
     public static bool OpenFolderWithFile(string filePath)
     {
-        if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
-        {
-            return false;
-        }
-
         try
         {
-            // Windows Explorer /select argument requires backslashes
-            string args = $"/select,\"{filePath.Replace('/', '\\')}\"";
-
-            ProcessStartInfo startInfo = new ProcessStartInfo("explorer.exe", args)
-            {
-                UseShellExecute = true
-            };
-            Process.Start(startInfo);
-            return true;
+            return PlatformServices.System.ShowFileInExplorer(filePath);
         }
         catch (Exception ex)
         {

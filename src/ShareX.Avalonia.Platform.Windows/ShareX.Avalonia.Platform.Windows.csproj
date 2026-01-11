@@ -14,13 +14,14 @@
     <ProjectReference Include="..\ShareX.Avalonia.Platform.Abstractions\ShareX.Avalonia.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Services.Abstractions\ShareX.Avalonia.Services.Abstractions.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.ScreenCapture\ShareX.Avalonia.ScreenCapture.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
     <PackageReference Include="Vortice.Direct3D11" Version="3.7.0" />
     <PackageReference Include="Vortice.DXGI" Version="3.7.0" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.1.5" />
   </ItemGroup>
 
 </Project>

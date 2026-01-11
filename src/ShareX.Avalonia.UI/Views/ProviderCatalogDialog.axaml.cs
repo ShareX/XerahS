@@ -1,8 +1,7 @@
-using Avalonia;
 using Avalonia.Controls;
-using ShareX.Ava.UI.ViewModels;
+using XerahS.UI.ViewModels;
 
-namespace ShareX.Ava.UI.Views;
+namespace XerahS.UI.Views;
 
 public partial class ProviderCatalogDialog : UserControl
 {

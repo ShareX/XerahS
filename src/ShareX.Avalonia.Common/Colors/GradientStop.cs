@@ -25,9 +25,8 @@
 
 using System.ComponentModel;
 using System.Drawing;
-using ShareX.Ava.Common;
 
-namespace ShareX.Ava.Common.Colors
+namespace XerahS.Common.Colors
 {
     public class GradientStop
     {

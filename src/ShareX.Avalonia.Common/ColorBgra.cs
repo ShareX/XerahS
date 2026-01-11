@@ -1,7 +1,7 @@
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     [StructLayout(LayoutKind.Explicit)]
     public struct ColorBgra

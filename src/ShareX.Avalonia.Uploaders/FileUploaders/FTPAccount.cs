@@ -23,13 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using ShareX.Ava.Common.Helpers;
-using System;
+using XerahS.Common;
 using System.ComponentModel;
-using System.IO;
 
-namespace ShareX.Ava.Uploaders.FileUploaders
+namespace XerahS.Uploaders.FileUploaders
 {
     public class FTPAccount : ICloneable
     {

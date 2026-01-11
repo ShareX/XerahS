@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.ScreenCapture
+namespace XerahS.ScreenCapture
 {
     public class ScrollingCaptureOptions
     {

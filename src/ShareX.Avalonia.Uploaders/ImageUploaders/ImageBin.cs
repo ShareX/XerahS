@@ -23,11 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 
-namespace ShareX.Ava.Uploaders.ImageUploaders
+namespace XerahS.Uploaders.ImageUploaders
 {
     public sealed class ImageBin : ImageUploader
     {

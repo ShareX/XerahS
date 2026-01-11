@@ -1,11 +1,10 @@
-using ShareX.Ava.Platform.Abstractions;
-using ShareX.Ava.Common;
-using System;
-using System.Collections.Generic;
-using SysPoint = System.Drawing.Point;
+using XerahS.Common;
+using XerahS.Platform.Abstractions;
+using XerahS.ScreenCapture.ScreenRecording;
 using Rectangle = System.Drawing.Rectangle;
+using SysPoint = System.Drawing.Point;
 
-namespace ShareX.Ava.Platform.Linux
+namespace XerahS.Platform.Linux
 {
     public static class LinuxPlatform
     {
@@ -15,7 +14,7 @@ namespace ShareX.Ava.Platform.Linux
             if (screenCaptureService == null)
             {
                 screenCaptureService = new LinuxScreenCaptureService();
-                DebugHelper.WriteLine(LinuxScreenCaptureService.IsWayland 
+                DebugHelper.WriteLine(LinuxScreenCaptureService.IsWayland
                     ? "Linux: Running on Wayland. Using LinuxScreenCaptureService with XDG Portal support."
                     : "Linux: Running on X11. Using LinuxScreenCaptureService with CLI fallbacks.");
             }
@@ -28,8 +27,41 @@ namespace ShareX.Ava.Platform.Linux
                 screenCaptureService: screenCaptureService,
                 hotkeyService: new StubHotkeyService(),
                 inputService: new StubInputService(),
-                fontService: new StubFontService()
+                fontService: new StubFontService(),
+                systemService: new Services.LinuxSystemService()
             );
+        }
+
+        /// <summary>
+        /// Initialize screen recording for Linux using FFmpeg-based recording
+        /// Stage 7: Cross-platform recording support
+        ///
+        /// Note: This uses FFmpegRecordingService as the primary recording method.
+        /// Future enhancement: Implement native PipeWire/XDG Portal capture source
+        /// with GStreamer or FFmpeg pipe encoder for better performance.
+        /// </summary>
+        public static void InitializeRecording()
+        {
+            try
+            {
+                // Linux uses FFmpegRecordingService as the primary recording method
+                // FFmpeg supports x11grab (X11) and various Wayland capture methods
+                DebugHelper.WriteLine("Linux: Initializing screen recording with FFmpeg backend");
+
+                // Register FFmpegRecordingService factory
+                // Note: FFmpegRecordingService is a complete recording service (not just capture/encoder)
+                // so we don't use CaptureSourceFactory/EncoderFactory pattern here
+                ScreenRecorderService.FallbackServiceFactory = () => new FFmpegRecordingService();
+
+                DebugHelper.WriteLine("Linux: Screen recording initialized successfully");
+                DebugHelper.WriteLine("  - Recording backend: FFmpeg (x11grab/Wayland)");
+                DebugHelper.WriteLine("  - Supported modes: Screen, Window, Region");
+                DebugHelper.WriteLine("  - Codecs: H.264, HEVC, VP9, AV1 (depends on FFmpeg build)");
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to initialize Linux screen recording");
+            }
         }
     }
 
@@ -51,21 +83,21 @@ namespace ShareX.Ava.Platform.Linux
 
     internal class StubClipboardService : IClipboardService
     {
-         public void SetText(string text) { }
-         public string? GetText() => string.Empty;
-         public void SetImage(SkiaSharp.SKBitmap image) { }
-         public SkiaSharp.SKBitmap? GetImage() => null;
-         public void SetFileDropList(string[] files) { }
-         public string[]? GetFileDropList() => Array.Empty<string>();
-         public void Clear() { }
-         public bool ContainsText() => false;
-         public bool ContainsImage() => false;
-         public bool ContainsFileDropList() => false;
-         public object? GetData(string format) => null;
-         public void SetData(string format, object data) { }
-         public bool ContainsData(string format) => false;
-         public System.Threading.Tasks.Task<string?> GetTextAsync() => System.Threading.Tasks.Task.FromResult<string?>(string.Empty);
-         public System.Threading.Tasks.Task SetTextAsync(string text) => System.Threading.Tasks.Task.CompletedTask;
+        public void SetText(string text) { }
+        public string? GetText() => string.Empty;
+        public void SetImage(SkiaSharp.SKBitmap image) { }
+        public SkiaSharp.SKBitmap? GetImage() => null;
+        public void SetFileDropList(string[] files) { }
+        public string[]? GetFileDropList() => Array.Empty<string>();
+        public void Clear() { }
+        public bool ContainsText() => false;
+        public bool ContainsImage() => false;
+        public bool ContainsFileDropList() => false;
+        public object? GetData(string format) => null;
+        public void SetData(string format, object data) { }
+        public bool ContainsData(string format) => false;
+        public System.Threading.Tasks.Task<string?> GetTextAsync() => System.Threading.Tasks.Task.FromResult<string?>(string.Empty);
+        public System.Threading.Tasks.Task SetTextAsync(string text) => System.Threading.Tasks.Task.CompletedTask;
     }
 
     internal class StubScreenCaptureService : IScreenCaptureService
@@ -74,6 +106,7 @@ namespace ShareX.Ava.Platform.Linux
         public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureRectAsync(SkiaSharp.SKRect rect, CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
         public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
         public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
+        public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureWindowAsync(System.IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
     }
 
     internal class StubHotkeyService : IHotkeyService

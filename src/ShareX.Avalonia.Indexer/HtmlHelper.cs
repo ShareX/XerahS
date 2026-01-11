@@ -25,7 +25,7 @@
 
 using System.Net;
 
-namespace ShareX.Ava.Indexer
+namespace XerahS.Indexer
 {
     public static class HtmlHelper
     {

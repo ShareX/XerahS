@@ -24,10 +24,8 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
-using System.Threading.Tasks;
-using ShareX.Ava.Common.Helpers;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class AppVeyor
     {

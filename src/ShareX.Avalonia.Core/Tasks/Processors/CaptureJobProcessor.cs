@@ -23,22 +23,13 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using ShareX.Ava.Core;
-using ShareX.Ava.Common;
-using ShareX.Ava.Core.Tasks;
-using ShareX.Ava.Common.Helpers;
-using ShareX.Ava.Platform.Abstractions;
-using ShareX.Ava.Uploaders;
-using ShareX.Ava.Uploaders.PluginSystem;
-using ShareX.Ava.History;
-using SkiaSharp;
+using XerahS.Common;
+using XerahS.History;
+using XerahS.Platform.Abstractions;
+using XerahS.Uploaders;
+using XerahS.Uploaders.PluginSystem;
 
-namespace ShareX.Ava.Core.Tasks.Processors
+namespace XerahS.Core.Tasks.Processors
 {
     public class CaptureJobProcessor : IJobProcessor
     {
@@ -84,19 +75,19 @@ namespace ShareX.Ava.Core.Tasks.Processors
 
             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyImageToClipboard))
             {
-                 if (PlatformServices.IsInitialized && info.Metadata?.Image != null)
-                 {
-                     PlatformServices.Clipboard.SetImage(info.Metadata.Image);
-                     DebugHelper.WriteLine("Image copied to clipboard.");
-                 }
+                if (PlatformServices.IsInitialized && info.Metadata?.Image != null)
+                {
+                    PlatformServices.Clipboard.SetImage(info.Metadata.Image);
+                    DebugHelper.WriteLine("Image copied to clipboard.");
+                }
             }
 
             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AnnotateImage))
             {
-                 if (info.Metadata.Image != null)
-                 {
-                     await PlatformServices.UI.ShowEditorAsync(info.Metadata.Image);
-                 }
+                if (info.Metadata.Image != null)
+                {
+                    await PlatformServices.UI.ShowEditorAsync(info.Metadata.Image);
+                }
             }
 
             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost))
@@ -107,39 +98,46 @@ namespace ShareX.Ava.Core.Tasks.Processors
             {
                 DebugHelper.WriteLine("UploadImageToHost flag not set; skipping upload.");
             }
-            
+
             // TODO: Add other tasks
-            
+
             await Task.CompletedTask;
         }
 
         private async Task SaveImageToFileAsync(TaskInfo info)
         {
-             if (info.Metadata?.Image == null) return;
-             
-             SkiaSharp.SKBitmap bmp = info.Metadata.Image;
+            if (info.Metadata?.Image == null) return;
 
-             // TaskHelpers contains the logic for folder resolution, naming, and file exists handling.
-             // It runs synchronously (SkiaSharp limitation), so wrap in Task.Run if needed, 
-             // though here we are already on background thread from WorkerTask.
-             
-             string? filePath = TaskHelpers.SaveImageAsFile(bmp, info.TaskSettings);
-             
-             if (!string.IsNullOrEmpty(filePath))
-             {
-                 info.FilePath = filePath;
-                 DebugHelper.WriteLine($"Image saved: {filePath}");
-                 
+            SkiaSharp.SKBitmap bmp = info.Metadata.Image;
+
+            // TaskHelpers contains the logic for folder resolution, naming, and file exists handling.
+            // It runs synchronously (SkiaSharp limitation), so wrap in Task.Run if needed, 
+            // though here we are already on background thread from WorkerTask.
+
+            string? filePath = TaskHelpers.SaveImageAsFile(bmp, info.TaskSettings);
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                var directory = Path.GetDirectoryName(filePath) ?? "";
+                var fileName = Path.GetFileName(filePath);
+                var extension = Path.GetExtension(filePath);
+                DebugHelper.WriteLine($"[PathTrace {info.CorrelationId}] SaveImageToFile: dir=\"{directory}\", fileName=\"{fileName}\", ext=\"{extension}\", fullPath=\"{filePath}\"");
+            }
+
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                info.FilePath = filePath;
+                DebugHelper.WriteLine($"Image saved: {filePath}");
+
                 // Add to History
                 try
                 {
                     DebugHelper.WriteLine("Trace: History pipeline - Starting history item creation.");
-                    
+
                     // Use centralized history file path
                     var historyPath = SettingManager.GetHistoryFilePath();
 
                     DebugHelper.WriteLine($"Trace: History pipeline - History file path: {historyPath}");
-                    
+
                     using var historyManager = new HistoryManagerSQLite(historyPath);
                     var historyItem = new HistoryItem
                     {
@@ -148,7 +146,7 @@ namespace ShareX.Ava.Core.Tasks.Processors
                         DateTime = DateTime.Now,
                         Type = "Image"
                     };
-                    
+
                     historyManager.AppendHistoryItem(historyItem);
                     DebugHelper.WriteLine($"Trace: History pipeline - AppendHistoryItem called for: {historyItem.FileName}");
                     DebugHelper.WriteLine($"Added to history: {historyItem.FileName}");
@@ -165,7 +163,7 @@ namespace ShareX.Ava.Core.Tasks.Processors
                 // info.Status = TaskStatus.Failed; // Logic to handle failure
             }
 
-             await Task.CompletedTask;
+            await Task.CompletedTask;
         }
 
         private async Task UploadImageAsync(TaskInfo info)
@@ -182,46 +180,17 @@ namespace ShareX.Ava.Core.Tasks.Processors
             }
 
             DebugHelper.WriteLine($"Uploading image: {info.FilePath}");
-            DebugHelper.WriteLine($"Upload destination: {info.TaskSettings.ImageDestination}");
 
             try
             {
-                var destination = info.TaskSettings.ImageDestination;
-                if (!UploaderFactory.ImageUploaderServices.TryGetValue(destination, out var uploaderService))
+                var pluginResult = TryUploadWithPluginSystem(info);
+                if (pluginResult == null)
                 {
-                    DebugHelper.WriteLine($"No uploader found for destination: {destination}");
-                    DebugHelper.WriteLine($"Available legacy image uploaders: {string.Join(", ", UploaderFactory.ImageUploaderServices.Keys)}");
-                    var pluginResult = TryUploadWithPluginSystem(info);
-                    if (pluginResult == null)
-                    {
-                        DebugHelper.WriteLine("Plugin upload did not return a result.");
-                        return;
-                    }
-
-                    HandleUploadResult(info, pluginResult);
+                    DebugHelper.WriteLine("Plugin upload did not return a result.");
                     return;
                 }
 
-                var helper = new TaskReferenceHelper
-                {
-                    DataType = EDataType.Image,
-                    StopRequested = false,
-                    OverrideFTP = info.TaskSettings.OverrideFTP,
-                    FTPIndex = info.TaskSettings.FTPIndex,
-                    OverrideCustomUploader = info.TaskSettings.OverrideCustomUploader,
-                    CustomUploaderIndex = info.TaskSettings.CustomUploaderIndex
-                };
-
-                var uploader = uploaderService.CreateUploader(SettingManager.UploadersConfig, helper);
-
-                UploadResult? result = uploader switch
-                {
-                    FileUploader fileUploader => fileUploader.UploadFile(info.FilePath),
-                    GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
-                    _ => null
-                };
-
-                HandleUploadResult(info, result);
+                HandleUploadResult(info, pluginResult);
             }
             catch (Exception ex)
             {
@@ -258,19 +227,35 @@ namespace ShareX.Ava.Core.Tasks.Processors
             EnsurePluginsLoaded();
 
             var instanceManager = InstanceManager.Instance;
-            var defaultInstance = instanceManager.GetDefaultInstance(UploaderCategory.Image);
-            if (defaultInstance == null)
+            var configuredInstanceId = info.TaskSettings.GetDestinationInstanceIdForDataType(EDataType.Image);
+            UploaderInstance? targetInstance = null;
+
+            if (!string.IsNullOrEmpty(configuredInstanceId))
             {
-                DebugHelper.WriteLine("No default image uploader instance configured.");
+                targetInstance = instanceManager.GetInstance(configuredInstanceId);
+                if (targetInstance == null)
+                {
+                    DebugHelper.WriteLine($"Configured image uploader instance not found: {configuredInstanceId}");
+                }
+            }
+
+            if (targetInstance == null)
+            {
+                targetInstance = instanceManager.GetDefaultInstance(UploaderCategory.Image);
+            }
+
+            if (targetInstance == null)
+            {
+                DebugHelper.WriteLine("No image uploader instance configured.");
                 return null;
             }
 
-            DebugHelper.WriteLine($"Plugin instance selected: {defaultInstance.DisplayName} ({defaultInstance.ProviderId})");
+            DebugHelper.WriteLine($"Plugin instance selected: {targetInstance.DisplayName} ({targetInstance.ProviderId})");
 
-            var provider = ProviderCatalog.GetProvider(defaultInstance.ProviderId);
+            var provider = ProviderCatalog.GetProvider(targetInstance.ProviderId);
             if (provider == null)
             {
-                DebugHelper.WriteLine($"Provider not found in catalog: {defaultInstance.ProviderId}");
+                DebugHelper.WriteLine($"Provider not found in catalog: {targetInstance.ProviderId}");
                 return null;
             }
 
@@ -279,7 +264,7 @@ namespace ShareX.Ava.Core.Tasks.Processors
             Uploader uploader;
             try
             {
-                uploader = provider.CreateInstance(defaultInstance.SettingsJson);
+                uploader = provider.CreateInstance(targetInstance.SettingsJson);
             }
             catch (Exception ex)
             {

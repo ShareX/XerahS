@@ -23,16 +23,13 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using System;
-using System.Collections.Generic;
+using XerahS.Common;
 using System.Collections.Specialized;
-using System.IO;
 using System.Net;
 using System.Net.Cache;
 using System.Text;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     internal static class RequestHelpers
     {

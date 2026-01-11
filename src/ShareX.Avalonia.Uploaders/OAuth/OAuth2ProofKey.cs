@@ -23,11 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     public enum OAuth2ChallengeMethod
     {

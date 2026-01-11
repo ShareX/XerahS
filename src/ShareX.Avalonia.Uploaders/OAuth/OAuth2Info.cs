@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     public class OAuth2Info
     {

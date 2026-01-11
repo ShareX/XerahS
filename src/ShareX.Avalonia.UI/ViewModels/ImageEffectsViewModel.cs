@@ -1,21 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.Ava.Core;
-using ShareX.Editor;
+using XerahS.Core;
+using ShareX.Editor.Extensions;
 using ShareX.Editor.ImageEffects;
 using ShareX.Editor.ImageEffects.Adjustments;
 using ShareX.Editor.ImageEffects.Drawings;
 using ShareX.Editor.ImageEffects.Manipulations;
-using ShareX.Editor.Extensions;
 using SkiaSharp;
+using System.Collections.ObjectModel;
 
-namespace ShareX.Ava.UI.ViewModels
+namespace XerahS.UI.ViewModels
 {
     public partial class ImageEffectsViewModel : ViewModelBase
     {
@@ -61,7 +55,7 @@ namespace ShareX.Ava.UI.ViewModels
         {
             this.settings = settings;
             Presets = new ObservableCollection<ImageEffectPreset>(settings.ImageEffectPresets);
-            
+
             if (Presets.Count > 0)
             {
                 int index = Math.Clamp(settings.SelectedImageEffectPreset, 0, Presets.Count - 1);
@@ -91,7 +85,7 @@ namespace ShareX.Ava.UI.ViewModels
         private void GeneratePreviewImage()
         {
             sourcePreviewBitmap?.Dispose();
-            
+
             // Try to load Logo2.png from assets
             try
             {
@@ -104,7 +98,7 @@ namespace ShareX.Ava.UI.ViewModels
                 // Fallback to a simple generated image if logo fails to load
                 sourcePreviewBitmap = new SKBitmap(PreviewSize, PreviewSize);
                 using var canvas = new SKCanvas(sourcePreviewBitmap);
-                
+
                 using var gradientPaint = new SKPaint();
                 var colors = new SKColor[] { new SKColor(70, 130, 180), new SKColor(135, 206, 235) };
                 gradientPaint.Shader = SKShader.CreateLinearGradient(
@@ -114,7 +108,7 @@ namespace ShareX.Ava.UI.ViewModels
                     null,
                     SKShaderTileMode.Clamp);
                 canvas.DrawRect(0, 0, PreviewSize, PreviewSize, gradientPaint);
-                
+
                 using var textPaint = new SKPaint
                 {
                     Color = SKColors.White,
@@ -228,7 +222,7 @@ namespace ShareX.Ava.UI.ViewModels
                 UpdatePreview();
             }
         }
-        
+
         // TODO: Move logic, rename, duplicate, etc.
     }
 

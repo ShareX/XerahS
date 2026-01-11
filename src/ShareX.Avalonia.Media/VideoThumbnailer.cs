@@ -23,14 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+using XerahS.Common;
 using SkiaSharp;
+using System.Diagnostics;
 
-namespace ShareX.Ava.Media
+namespace XerahS.Media
 {
     public class VideoThumbnailer
     {
@@ -209,7 +206,7 @@ namespace ShareX.Ava.Media
             {
                 string infoString = "";
                 int infoStringHeight = 0;
-                
+
                 using (SKPaint fontPaint = new SKPaint { TextSize = 12, Typeface = SKTypeface.FromFamilyName("Arial"), Color = SKColors.Black, IsAntialias = true })
                 {
                     if (Options.AddVideoInfo)
@@ -265,12 +262,12 @@ namespace ShareX.Ava.Media
 
                         if (!string.IsNullOrEmpty(infoString))
                         {
-                             g.DrawText(infoString, Options.Padding, Options.Padding + infoStringHeight - 5, fontPaint);
+                            g.DrawText(infoString, Options.Padding, Options.Padding + infoStringHeight - 5, fontPaint);
                         }
 
                         int i = 0;
                         int offsetY = (Options.Padding * 2) + infoStringHeight;
-                        
+
                         using (SKPaint shadowPaint = new SKPaint { Color = new SKColor(0, 0, 0, 75) })
                         using (SKPaint borderPaint = new SKPaint { Color = SKColors.Black, IsStroke = true, StrokeWidth = 1 })
                         using (SKPaint timestampPaint = new SKPaint { TextSize = 10, Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold), Color = SKColors.White, IsAntialias = true })
@@ -319,7 +316,7 @@ namespace ShareX.Ava.Media
                         }
                     }
                 }
-                
+
                 return finalImage;
             }
             catch

@@ -24,11 +24,10 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
-using ShareX.Ava.Common;
-using System.IO;
+using XerahS.Common;
 using System.Text;
 
-namespace ShareX.Ava.Indexer
+namespace XerahS.Indexer
 {
     public class IndexerJson : Indexer
     {

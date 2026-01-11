@@ -23,10 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System.IO;
-using System.Threading.Tasks;
-
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     /// <summary>
     /// Extension methods for Uploader async support

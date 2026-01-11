@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Uploaders.SharingServices
+namespace XerahS.Uploaders.SharingServices
 {
     public class GoogleLensSharingService : SimpleURLSharingService
     {

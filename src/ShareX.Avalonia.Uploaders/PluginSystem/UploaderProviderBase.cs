@@ -25,7 +25,7 @@
 
 using Newtonsoft.Json;
 
-namespace ShareX.Ava.Uploaders.PluginSystem;
+namespace XerahS.Uploaders.PluginSystem;
 
 /// <summary>
 /// Base class for uploader providers with common functionality

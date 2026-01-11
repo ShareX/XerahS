@@ -24,11 +24,8 @@
 #endregion License Information (GPL v3)
 
 using ShareX.UploadersLib.Properties;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     public class UploaderErrorManager
     {

@@ -25,7 +25,7 @@
 
 using System.Text.RegularExpressions;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     // Example: {regex:(?<=href=").+(?=")}
     // Example: {regex:href="(.+)"|1}

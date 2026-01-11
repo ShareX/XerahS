@@ -23,15 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using ShareX.UploadersLib.Properties;
-using System;
-using System.IO;
+using XerahS.Common;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     public class OAuthListener : IDisposable
     {

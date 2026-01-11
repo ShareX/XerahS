@@ -23,16 +23,12 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using ShareX.Ava.Common.Helpers;
-using System;
-using System.Collections.Generic;
-using System.IO;
+using XerahS.Common;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace ShareX.Ava.History
+namespace XerahS.History
 {
     public class HistoryManagerXML : HistoryManager
     {
@@ -56,7 +52,7 @@ namespace ShareX.Ava.History
                         IgnoreWhitespace = true
                     };
 
-                    try 
+                    try
                     {
                         using (StreamReader streamReader = new StreamReader(filePath, Encoding.UTF8))
                         using (XmlReader reader = XmlReader.Create(streamReader, settings))
@@ -82,14 +78,14 @@ namespace ShareX.Ava.History
                     }
                     catch (Exception ex)
                     {
-                         DebugHelper.WriteLine($"Trace: HistoryManagerXML - Error loading history: {ex.Message}");
-                         DebugHelper.WriteException(ex);
+                        DebugHelper.WriteLine($"Trace: HistoryManagerXML - Error loading history: {ex.Message}");
+                        DebugHelper.WriteException(ex);
                     }
                 }
             }
             else
             {
-                 DebugHelper.WriteLine($"Trace: HistoryManagerXML - File not found or invalid path: {filePath}");
+                DebugHelper.WriteLine($"Trace: HistoryManagerXML - File not found or invalid path: {filePath}");
             }
 
             DebugHelper.WriteLine($"Trace: HistoryManagerXML - Loaded {historyItemList.Count} items.");
@@ -189,7 +185,7 @@ namespace ShareX.Ava.History
                     }
                 }
             }
-            
+
             DebugHelper.WriteLine("Trace: HistoryManagerXML - Append failed (invalid path or error).");
             return false;
         }

@@ -23,11 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class GraphicsPathExtensions
     {

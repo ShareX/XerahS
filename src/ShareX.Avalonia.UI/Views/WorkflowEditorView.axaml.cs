@@ -1,9 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using ShareX.Ava.UI.ViewModels;
+using XerahS.UI.ViewModels;
 
-namespace ShareX.Ava.UI.Views;
+namespace XerahS.UI.Views;
 
 public partial class WorkflowEditorView : Window
 {
@@ -16,7 +16,7 @@ public partial class WorkflowEditorView : Window
     {
         AvaloniaXamlLoader.Load(this);
     }
-    
+
     private bool _isRecording = false;
 
     private void HotkeyButton_Click(object? sender, RoutedEventArgs e)
@@ -33,7 +33,7 @@ public partial class WorkflowEditorView : Window
     private void OnKeyDown(object? sender, global::Avalonia.Input.KeyEventArgs e)
     {
         if (!_isRecording) return;
-        
+
         e.Handled = true;
 
         // Ignore modifier-only events for "finalizing" but track them
@@ -41,9 +41,9 @@ public partial class WorkflowEditorView : Window
 
         if (e.Key == global::Avalonia.Input.Key.Escape)
         {
-             StopRecording();
-             // Maybe clear?
-             return;
+            StopRecording();
+            // Maybe clear?
+            return;
         }
 
         if (DataContext is WorkflowEditorViewModel vm)
@@ -51,13 +51,13 @@ public partial class WorkflowEditorView : Window
             vm.SelectedKey = e.Key;
             vm.SelectedModifiers = e.KeyModifiers;
         }
-        
+
         StopRecording();
     }
 
     private void OnKeyUp(object? sender, global::Avalonia.Input.KeyEventArgs e)
     {
-       // usually irrelevant for simple hotkey
+        // usually irrelevant for simple hotkey
     }
 
     private void StopRecording()
@@ -74,14 +74,14 @@ public partial class WorkflowEditorView : Window
 
     private bool IsModifier(global::Avalonia.Input.Key key)
     {
-        return key == global::Avalonia.Input.Key.LeftCtrl || 
+        return key == global::Avalonia.Input.Key.LeftCtrl ||
                key == global::Avalonia.Input.Key.RightCtrl ||
-               key == global::Avalonia.Input.Key.LeftAlt || 
+               key == global::Avalonia.Input.Key.LeftAlt ||
                key == global::Avalonia.Input.Key.RightAlt ||
-               key == global::Avalonia.Input.Key.LeftShift || 
+               key == global::Avalonia.Input.Key.LeftShift ||
                key == global::Avalonia.Input.Key.RightShift ||
-               key == global::Avalonia.Input.Key.LWin || 
-               key == global::Avalonia.Input.Key.RWin; 
+               key == global::Avalonia.Input.Key.LWin ||
+               key == global::Avalonia.Input.Key.RWin;
     }
 
     private void OkButton_Click(object? sender, RoutedEventArgs e)

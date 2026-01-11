@@ -1,17 +1,15 @@
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.Ava.Core;
+using XerahS.Core;
+using System.Collections.ObjectModel;
 
-using System.Threading.Tasks;
-
-namespace ShareX.Ava.UI.ViewModels;
+namespace XerahS.UI.ViewModels;
 
 public partial class HotkeySettingsViewModel : ViewModelBase
 {
     public ObservableCollection<HotkeyItemViewModel> Hotkeys { get; } = new();
 
-    public Func<ShareX.Ava.Core.Hotkeys.HotkeySettings, Task<bool>>? EditHotkeyRequester { get; set; }
+    public Func<XerahS.Core.Hotkeys.WorkflowSettings, Task<bool>>? EditHotkeyRequester { get; set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RemoveCommand))]
@@ -21,13 +19,13 @@ public partial class HotkeySettingsViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(MoveDownCommand))]
     private HotkeyItemViewModel? _selectedHotkey;
 
-    private Core.Hotkeys.HotkeyManager? _manager;
+    private Core.Hotkeys.WorkflowManager? _manager;
 
     public HotkeySettingsViewModel()
     {
         if (global::Avalonia.Application.Current is App app)
         {
-            _manager = app.HotkeyManager;
+            _manager = app.WorkflowManager;
         }
 
         LoadHotkeys();
@@ -39,8 +37,8 @@ public partial class HotkeySettingsViewModel : ViewModelBase
         Hotkeys.Clear();
         if (_manager != null)
         {
-            System.Diagnostics.Debug.WriteLine($"[HotkeySettings] Manager has {_manager.Hotkeys.Count} hotkeys");
-            foreach (var hk in _manager.Hotkeys)
+            System.Diagnostics.Debug.WriteLine($"[HotkeySettings] Manager has {_manager.Workflows.Count} hotkeys");
+            foreach (var hk in _manager.Workflows)
             {
                 System.Diagnostics.Debug.WriteLine($"[HotkeySettings] Adding hotkey: {hk.Job} - {hk.HotkeyInfo}");
                 Hotkeys.Add(new HotkeyItemViewModel(hk));
@@ -60,7 +58,7 @@ public partial class HotkeySettingsViewModel : ViewModelBase
     {
         if (_manager != null)
         {
-            SettingManager.WorkflowsConfig.Hotkeys = _manager.Hotkeys;
+            SettingManager.WorkflowsConfig.Hotkeys = _manager.Workflows;
             // Save to disk
             SettingManager.SaveWorkflowsConfigAsync();
         }
@@ -70,13 +68,13 @@ public partial class HotkeySettingsViewModel : ViewModelBase
     private void Add()
     {
         if (_manager == null) return;
-        
+
         // Create new hotkey with default settings
-        var newHotkey = new ShareX.Ava.Core.Hotkeys.HotkeySettings();
-        
+        var newHotkey = new XerahS.Core.Hotkeys.WorkflowSettings();
+
         // Add to list (user will configure inline via HotkeySelectionControl)
-        _manager.Hotkeys.Add(newHotkey);
-        
+        _manager.Workflows.Add(newHotkey);
+
         LoadHotkeys();
         SaveHotkeys();
     }
@@ -88,7 +86,7 @@ public partial class HotkeySettingsViewModel : ViewModelBase
         {
             _manager.UnregisterHotkey(SelectedHotkey.Model);
             // Also remove from manager's list if separate
-            _manager.Hotkeys.Remove(SelectedHotkey.Model);
+            _manager.Workflows.Remove(SelectedHotkey.Model);
             LoadHotkeys();
             SaveHotkeys();
             SelectedHotkey = null;
@@ -123,13 +121,13 @@ public partial class HotkeySettingsViewModel : ViewModelBase
         if (SelectedHotkey != null && _manager != null)
         {
             // Shallow copy for now, deep would be better
-            var clone = new ShareX.Ava.Core.Hotkeys.HotkeySettings(SelectedHotkey.Model.Job, 
+            var clone = new XerahS.Core.Hotkeys.WorkflowSettings(SelectedHotkey.Model.Job,
                 new Platform.Abstractions.HotkeyInfo(
-                    SelectedHotkey.Model.HotkeyInfo.Key, 
+                    SelectedHotkey.Model.HotkeyInfo.Key,
                     SelectedHotkey.Model.HotkeyInfo.Modifiers));
-            
+
             // Just add to list, user needs to change key
-            _manager.Hotkeys.Add(clone);
+            _manager.Workflows.Add(clone);
             LoadHotkeys();
             SaveHotkeys();
         }
@@ -139,39 +137,39 @@ public partial class HotkeySettingsViewModel : ViewModelBase
     private void MoveUp()
     {
         // Not strictly necessary for functionality unless order matters for priority
-         if (_manager == null || SelectedHotkey == null) return;
-         int index = _manager.Hotkeys.IndexOf(SelectedHotkey.Model);
-         if (index > 0)
-         {
-             _manager.Hotkeys.RemoveAt(index);
-             _manager.Hotkeys.Insert(index - 1, SelectedHotkey.Model);
-             LoadHotkeys();
-             SaveHotkeys();
-             SelectedHotkey = Hotkeys[index - 1];
-         }
+        if (_manager == null || SelectedHotkey == null) return;
+        int index = _manager.Workflows.IndexOf(SelectedHotkey.Model);
+        if (index > 0)
+        {
+            _manager.Workflows.RemoveAt(index);
+            _manager.Workflows.Insert(index - 1, SelectedHotkey.Model);
+            LoadHotkeys();
+            SaveHotkeys();
+            SelectedHotkey = Hotkeys[index - 1];
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanModifyHotkey))]
     private void MoveDown()
     {
-         if (_manager == null || SelectedHotkey == null) return;
-         int index = _manager.Hotkeys.IndexOf(SelectedHotkey.Model);
-         if (index < _manager.Hotkeys.Count - 1)
-         {
-             _manager.Hotkeys.RemoveAt(index);
-             _manager.Hotkeys.Insert(index + 1, SelectedHotkey.Model);
-             LoadHotkeys();
-             SaveHotkeys();
-             SelectedHotkey = Hotkeys[index + 1];
-         }
+        if (_manager == null || SelectedHotkey == null) return;
+        int index = _manager.Workflows.IndexOf(SelectedHotkey.Model);
+        if (index < _manager.Workflows.Count - 1)
+        {
+            _manager.Workflows.RemoveAt(index);
+            _manager.Workflows.Insert(index + 1, SelectedHotkey.Model);
+            LoadHotkeys();
+            SaveHotkeys();
+            SelectedHotkey = Hotkeys[index + 1];
+        }
     }
-    
+
     [RelayCommand]
     private void Reset()
     {
         if (_manager != null)
         {
-            var defaults = Core.Hotkeys.HotkeyManager.GetDefaultHotkeyList();
+            var defaults = Core.Hotkeys.WorkflowManager.GetDefaultWorkflowList();
             _manager.UpdateHotkeys(defaults);
             LoadHotkeys();
             SaveHotkeys();

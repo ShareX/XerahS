@@ -23,13 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class ZipManager
     {

@@ -23,12 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using System;
+using XerahS.Common;
 using System.Diagnostics;
-using System.Linq;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     public class ProgressManager
     {

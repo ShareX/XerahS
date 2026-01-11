@@ -23,13 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.IO;
-using System.IO.Compression;
 using Newtonsoft.Json;
-using ShareX.Ava.Common;
+using XerahS.Common;
+using System.IO.Compression;
 
-namespace ShareX.Ava.Uploaders.PluginSystem;
+namespace XerahS.Uploaders.PluginSystem;
 
 /// <summary>
 /// Handles packaging and installation of .xsdp plugin files

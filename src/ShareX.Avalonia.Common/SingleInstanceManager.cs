@@ -23,15 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.IO;
 using System.IO.Pipes;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class SingleInstanceManager : IDisposable
     {

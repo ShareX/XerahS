@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace ShareX.Ava.UI.ViewModels;
+namespace XerahS.UI.ViewModels;
 
 /// <summary>
 /// ViewModel for a file type item in the selector
@@ -21,7 +21,7 @@ public partial class FileTypeItemViewModel : ObservableObject
 
     public string DisplayText => $".{Extension}";
 
-    public string ToolTip => IsBlocked 
-        ? $"Already handled by '{BlockedByInstance}'" 
+    public string ToolTip => IsBlocked
+        ? $"Already handled by '{BlockedByInstance}'"
         : $"Select to handle .{Extension} files with this instance";
 }

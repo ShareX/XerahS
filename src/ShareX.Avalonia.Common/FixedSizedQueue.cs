@@ -23,9 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System.Collections.Generic;
-
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class FixedSizedQueue<T> : Queue<T>
     {

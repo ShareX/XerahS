@@ -26,10 +26,9 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using System.IO;
 using System.Text;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class JsonHelpers
     {

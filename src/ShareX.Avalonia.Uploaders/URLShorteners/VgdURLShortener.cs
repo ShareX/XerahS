@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace ShareX.Ava.Uploaders.URLShorteners
+namespace XerahS.Uploaders.URLShorteners
 {
     public class VgdURLShortenerService : URLShortenerService
     {

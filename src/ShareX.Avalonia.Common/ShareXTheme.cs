@@ -1,14 +1,11 @@
-using System;
-using System.Collections.Generic;
+using XerahS.Platform.Abstractions;
 using System.ComponentModel;
-using ShareX.Ava.Common;
-using ShareX.Ava.Platform.Abstractions;
 using System.Drawing;
 
 // using System.Drawing.Design; // Not available in .NET Core / Avalonia Common usually?
 // using System.Windows.Forms.Design;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public class ShareXTheme
     {

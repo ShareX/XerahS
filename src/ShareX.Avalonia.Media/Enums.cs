@@ -25,7 +25,7 @@
 
 using System.ComponentModel;
 
-namespace ShareX.Ava.Media
+namespace XerahS.Media
 {
     public enum ThumbnailLocationType
     {

@@ -23,16 +23,13 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
-using ShareX.Ava.Common;
-using ShareX.Ava.Platform.Abstractions;
+using XerahS.Common;
+using XerahS.Platform.Abstractions;
 using SkiaSharp;
+using System.Diagnostics;
 // REMOVED: System.Drawing
 
-namespace ShareX.Ava.Platform.MacOS
+namespace XerahS.Platform.MacOS
 {
     /// <summary>
     /// macOS clipboard service using pbcopy/pbpaste for text and osascript for PNG images (MVP).
@@ -173,7 +170,7 @@ namespace ShareX.Ava.Platform.MacOS
                         data.SaveTo(stream);
                     }
                 }
-                
+
                 var script = $"set the clipboard to (read (POSIX file \\\"{tempFile}\\\") as «class PNGf»)";
                 RunOsaScript(script);
             }

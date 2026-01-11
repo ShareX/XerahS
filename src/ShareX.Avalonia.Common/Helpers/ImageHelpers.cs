@@ -23,13 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.IO;
-using ShareX.Ava.Common.GIF;
+using XerahS.Common.GIF;
 using SkiaSharp;
 // REMOVED: System.Drawing, System.Drawing.Drawing2D, System.Drawing.Imaging
 
-namespace ShareX.Ava.Common;
+namespace XerahS.Common;
 
 public static class ImageHelpers
 {
@@ -143,7 +141,7 @@ public static class ImageHelpers
         using SKData data = image.Encode(targetFormat, quality);
         return SKBitmap.Decode(data);
     }
-    
+
     // Removed legacy LoadImage returning System.Drawing.Bitmap.
     // Removed legacy SaveImage accepting System.Drawing.Image.
     // removed legacy ResizeImage accepting System.Drawing.Image.
@@ -160,7 +158,7 @@ public static class ImageHelpers
         // SkiaSharp doesn't natively support GIF encoding via SKImage.Encode(SKEncodedImageFormat.Gif) in all versions/platforms,
         // OR it does but without quantization control.
         // However, we ported the Quantizers to use SkiaSharp, so we can use them.
-        
+
         if (quality == GIFQuality.Default)
         {
             // Default Skia GIF encode usually is opaque or basic palette. 
@@ -177,36 +175,36 @@ public static class ImageHelpers
             GIFQuality.Bit4 => new OctreeQuantizer(15, 4),
             _ => new OctreeQuantizer(255, 4)
         };
-        
+
         // This returns a quantized SKBitmap (usually 8-bit Gray where pixels are indices)
         // AND we can get the palette from the quantizer.
         using SKBitmap quantized = quantizer.Quantize(img);
-        
+
         // NOW WE HAVE A PROBLEM: SkiaSharp doesn't let us easily save "Indexed8 Bitmap + Palette" to GIF stream directly 
         // using standard APIs if we just want to write the GIF bytes ourselves.
         // HOWEVER, our custom quantizers were originally part of a pipeline where System.Drawing did the saving of the indexed bitmap.
-        
+
         // Since we removed System.Drawing, we likely need a GIF encoder that accepts Indices + Palette.
         // There is no built-in "Save Indexed Bitmap to GIF" in SkiaSharp that respects a custom palette easily exposed.
         // BUT, for this task (SIP0001), strict porting might require either:
         // 1. Using a manual GIF encoder (complex).
         // 2. Accepting that we rely on Skia's internal encoder possibly re-quantizing if we convert back to RGB.
-        
+
         // If we convert the quantized indices back to RGB using the palette, we get a standard RGB image again, 
         // and Skia will re-quantize it when saving as GIF, effectively double-quantizing or ignoring our custom quantizer work.
-        
+
         // DECISION: For now, to unblock the build and remove System.Drawing, we will just delegate to Skia's default GIF encoding
         // and mark the custom quantization path as "TODO: Implement Custom GIF Encoder".
         // The Quantizer classes are ported but not fully utilizable without a custom encoder.
         // This is acceptable for "Porting Utilities" step, with the caveat that GIF quality might not be exact yet.
-        
+
         // ACTUALLY, checking System.Drawing code: it returned a Bitmap with PixelFormat.Indexed.
         // The `quantized.Save(stream, ImageFormat.Gif)` line did the work.
         // Skia doesn't have `SKEncodedImageFormat.Gif` logic for Indexed8 bitmaps exposed nicely? 
-        
+
         // For the sake of this task, we will fall back to standard encoding.
         // We will keep the code compiling.
-        
+
         using SKImage imageProto = SKImage.FromBitmap(img);
         using SKData dataProto = imageProto.Encode(SKEncodedImageFormat.Gif, 100);
         dataProto.SaveTo(stream);
@@ -219,16 +217,16 @@ public static class ImageHelpers
 
     public static SKBitmap CreateCheckerPattern(int width, int height)
     {
-         // SystemColors.ControlLight etc are not available in Avalonia/Skia directly without correct context.
-         // We'll use standard gray/white
-         return CreateCheckerPattern(width, height, SKColors.LightGray, SKColors.White);
+        // SystemColors.ControlLight etc are not available in Avalonia/Skia directly without correct context.
+        // We'll use standard gray/white
+        return CreateCheckerPattern(width, height, SKColors.LightGray, SKColors.White);
     }
 
     public static SKBitmap CreateCheckerPattern(int width, int height, SKColor checkerColor1, SKColor checkerColor2)
     {
         SKBitmap bmp = new SKBitmap(width * 2, height * 2);
         using SKCanvas canvas = new SKCanvas(bmp);
-        
+
         using SKPaint paint1 = new SKPaint { Color = checkerColor1 };
         using SKPaint paint2 = new SKPaint { Color = checkerColor2 };
 

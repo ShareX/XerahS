@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
+using XerahS.Common;
 
-namespace ShareX.Ava.Uploaders
+namespace XerahS.Uploaders
 {
     // Example: {random:domain1.com|domain2.com}
     internal class CustomUploaderFunctionRandom : CustomUploaderFunction

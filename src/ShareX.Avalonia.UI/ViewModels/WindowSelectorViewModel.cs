@@ -1,11 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.Ava.Platform.Abstractions;
-using System;
+using XerahS.Platform.Abstractions;
 using System.Collections.ObjectModel;
-using System.Linq;
 
-namespace ShareX.Ava.UI.ViewModels;
+namespace XerahS.UI.ViewModels;
 
 public partial class WindowSelectorViewModel : ViewModelBase
 {
@@ -32,7 +30,7 @@ public partial class WindowSelectorViewModel : ViewModelBase
         {
             var myHandle = PlatformServices.Window.GetForegroundWindow(); // Assuming this is mostly correct context or handled elsewhere
 
-            try 
+            try
             {
                 var allWindows = PlatformServices.Window.GetAllWindows();
                 // Filter visible windows with titles

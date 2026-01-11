@@ -1,9 +1,6 @@
-using System;
 using System.Drawing;
-using System.Linq;
-using ShareX.Ava.Common.Native;
 
-namespace ShareX.Ava.Common.Helpers
+namespace XerahS.Common.Helpers
 {
     public static class CaptureHelpers
     {
@@ -238,11 +235,11 @@ namespace ShareX.Ava.Common.Helpers
                 if (ignoreList.All(ignore => !className.Equals(ignore, StringComparison.OrdinalIgnoreCase)))
                 {
                     Rectangle windowRectangle = windowInfo.Rectangle;
-                    
+
                     // Use platform service for screen information
-                    if (ShareX.Ava.Platform.Abstractions.PlatformServices.IsInitialized)
+                    if (XerahS.Platform.Abstractions.PlatformServices.IsInitialized)
                     {
-                        var screenInfo = ShareX.Ava.Platform.Abstractions.PlatformServices.Screen.GetScreenFromRectangle(windowRectangle);
+                        var screenInfo = XerahS.Platform.Abstractions.PlatformServices.Screen.GetScreenFromRectangle(windowRectangle);
                         Rectangle monitorRectangle = screenInfo.Bounds;
                         return windowRectangle.Contains(monitorRectangle);
                     }

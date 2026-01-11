@@ -23,10 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System.Net.Http;
 using System.Net.Http.Headers;
 
-namespace ShareX.Ava.Common
+namespace XerahS.Common
 {
     public static class HttpClientFactory
     {

@@ -23,12 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Ava.Common;
-using System.Collections.Generic;
-using System.IO;
+using XerahS.Common;
 using System.Xml.Linq;
 
-namespace ShareX.Ava.Uploaders.FileUploaders
+namespace XerahS.Uploaders.FileUploaders
 {
     public sealed class DropIO : FileUploader
     {
