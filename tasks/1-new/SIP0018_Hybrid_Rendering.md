@@ -67,3 +67,59 @@
   <section>Verification Results</section>
 </output_format>
 ```
+
+## Component Wiring Diagram
+
+```mermaid
+stateDiagram-v2
+    state "MainViewModel" as VM {
+        PreviewImage
+    }
+
+    state "EditorView (Avalonia)" as View {
+        [*] --> Initialized
+        Initialized --> LoadImage: PreviewImage Changed
+        
+        state LoadImage {
+             note right of LoadImage
+                BitmapConversionHelpers.ToSKBitmap
+                EditorCore.LoadImage(copy)
+                SKCanvasControl.Initialize
+             end note
+        }
+        
+        LoadImage --> Idle
+        
+        state Idle {
+            [*] --> Listening
+            Listening --> RenderCore: Core.InvalidateRequested
+            Listening --> ResizeCanvas: Core.ImageChanged
+        }
+        
+        state RenderCore {
+            note right of RenderCore
+                SKCanvasControl.Draw()
+                 -> EditorCore.Render(canvas, false)
+            end note
+        }
+    }
+
+    state "EditorCore (Skia)" as Core {
+        SourceImage
+        state "Render(SKCanvas, vector=false)" as Render
+    }
+    
+    state "SKCanvasControl" as Canvas {
+        WriteableBitmap
+        Lock()
+        Draw(Action)
+    }
+
+    VM --> View: 1. PropertyChanged (PreviewImage)
+    View --> Core: 2. LoadImage(SKBitmap)
+    View --> Canvas: 3. Initialize(w, h)
+    Core --> View: 4. InvalidateRequested
+    View --> Canvas: 5. Draw(lambda)
+    Canvas --> Core: 6. Invoke lambda(SKCanvas)
+    Core --> Render: 7. Draw SourceImage + Raster Effects
+```
