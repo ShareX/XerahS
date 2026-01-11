@@ -66,7 +66,17 @@ public class WorkflowSettings
     /// <summary>
     /// Optional display name for this hotkey
     /// </summary>
-    public string? Name { get; set; }
+    public string? Name
+    {
+        get => TaskSettings?.Description;
+        set
+        {
+            if (TaskSettings != null)
+            {
+                TaskSettings.Description = value ?? string.Empty;
+            }
+        }
+    }
 
     /// <summary>
     /// Whether this hotkey is enabled
