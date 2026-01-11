@@ -9,14 +9,7 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
-### Documentation
-- 0.0.1 - `5e1184e` - Merge macOS implementation documentation
-- 0.0.2 - `6394dc7` - Add macOS support analysis and native bridge docs
-- 0.0.3 - `17a319e` - Merge Linux support documentation
-- 0.0.4 - `2e7e29c` - Create linux_support_analysis.md
-- 0.0.5 - `090d9e9` - Revise documentation for XerahS integration
-- 0.0.6 - `cabd8c3` - Merge editor extraction documentation
-- 0.0.7 - `fc4851f` - Add editor extraction technical documentation
+- Documentation updates: macOS/Linux/Editor extraction/Integration (`5e1184e`, `6394dc7`, `17a319e`, `2e7e29c`, `090d9e9`, `cabd8c3`, `fc4851f`)
 
 ## v0.3.1 - Bug Fixes
 
@@ -24,148 +17,18 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## v0.3.0 - Modern Capture Architecture (SIP0016)
 
-### Features
-- 0.3.0 - `81ccf18` - Merge toast notification system feature
-- 0.3.0 - `faebe87` - Merge hotkey persistence feature
-- 0.3.0 - `927b819` - Create workflow ID state machine documentation
-- 0.3.0 - `261c643` - Add IsSuccessful property to WorkerTask and improve task completion handling
-- 0.3.0 - `dd1f36e` - Propagate workflow ID through capture options and services
-- 0.3.0 - `97ba056` - Reduce region capture delay and hide window before result
-- 0.3.0 - `9cc0209` - Refactor region capture to use new backend for detection only
-- 0.3.0 - `f80ad00` - Use dynamic assembly version in ShareXResources
-- 0.3.0 - `3bdaaf0` - Integrate new backend capture into region selection workflow
-- 0.3.0 - `0a8e15f` - Add weekly backup option and expose WeekOfYear method
-- 0.3.0 - `5224805` - Add backup-settings command to CLI
-- 0.3.0 - `d904b17` - Skip hotkeys with 'None' job in workflows
-- 0.3.0 - `8d1dbc2` - Refactor uploader destination handling to use instance IDs
-- 0.3.0 - `21ec1e2` - Integrate new region capture backend and update DXGI API usage
-- 0.3.0 - `edc5a06` - Refactor uploader instance IDs to use SHA-1 strings
-- 0.3.0 - `3388271` - Redesign TaskSettings to unify File Destination logic
-- 0.3.0 - `e7b1603` - Refactor Destination persistence to use TaskSettings logic
-- 0.3.0 - `979dc0d` - Refactor Destination persistence to be Job-Type aware
-- 0.3.0 - `67a54ee` - Fix ImageDestination and ImageFileDestination persistence
-- 0.3.0 - `9224b62` - Refactor ScreenRecorder to Unified Pipeline
-- 0.3.0 - `7a6e47b` - Fix ScreenRecorder: Toast, Hotkey Toggle, Dest Persistence
-- 0.3.0 - `8fc451c` - ScreenRecorder: reuse screenshot naming/upload pipeline with path logs
-- 0.3.0 - `a223bd0` - Fix video output orientation to apply vertical flip only
-- 0.3.0 - `aa417f6` - Add cross-platform region capture backend and docs
-- 0.3.0 - `642133d` - ScreenRecorder: fix flipped capture with 180deg copy and dump flag
-- 0.3.0 - `1e2ef2c` - ScreenRecorder: validate mp4 finalize once and log file state
-- 0.3.0 - `4ee0c05` - Add region capture core services and Windows backends
-- 0.3.0 - `d4409f9` - Add dedicated capture thread for Windows screen recording
-- 0.3.0 - `b6bd5bb` - Add logging to MediaFoundationEncoder and move SetCurrentLength
-- 0.3.0 - `559c8cb` - Fix: Correct SetCurrentLength VTable index
-- 0.3.0 - `7534f23` - Create rules.md documentation
-- 0.3.0 - `fafb402` - Fix: Implement manual MF inline helpers and correct VTable indexes
-- 0.3.0 - `b039ec8` - Fix: Correct MediaFoundation VTable indexes
-- 0.3.0 - `295104d` - Fix: Refactor MediaFoundationEncoder to use low-level VTable interop
-- 0.3.0 - `7374dc0` - Fix: Fix COM interop marshaling for WGC and Media Foundation
-- 0.3.0 - `cba5d60` - Add skill specs, update project status, and enhance settings
-- 0.3.0 - `a88d5f9` - Add CLI and bootstrap projects for headless workflow
-- 0.3.0 - `d6773c0` - Fix race condition in async recording initialization
-- 0.3.0 - `bdeef06` - Make recording initialization async and platform-aware
-- 0.3.0 - `c79e7a7` - Merge DPI scaling fixes: Resolve conflicts in RegionCaptureWindow
-- 0.3.0 - `97097a3` - Update gitignore
-- 0.3.0 - `386aaae` - Restore RegionCaptureWindow with latest DPI fixes from MIKE-NB
-- 0.3.0 - `875fd8b` - Use target monitor scaling in region capture
-- 0.3.0 - `e7dc315` - Remove macOS build workflow and update build docs
-- 0.3.0 - `00e8728` - Stabilize coordinate conversion with captured scaling
-- 0.3.0 - `de2d17b` - Add cross-platform system service abstraction
-- 0.3.0 - `c34faa9` - Update tray menu to use workflow names and descriptions
-- 0.3.0 - `cb602a8` - Add DPI troubleshooting and logging utilities
-- 0.3.0 - `1b29c6d` - Fix workflow ID generation and improve FFmpeg options handling
-- 0.3.0 - `4c8c0df` - Add workflow ID support and improve workflow execution
-- 0.3.0 - `f1d9b88` - Add FFmpeg options UI and advanced toast settings
-- 0.3.0 - `7df7618` - Add troubleshooting logs and unify recording workflow
-- 0.3.0 - `64f2b42` - Refactor workflow and task settings management
-- 0.3.0 - `674f350` - Route audio screen recording through FFmpeg fallback
-- 0.3.0 - `b0e623e` - Add audio capture options to screen recording
-- 0.3.0 - `52844d0` - Update FAQ and move to project root
-- 0.3.0 - `affb927` - Align plugin TFMs with host application TFM
-- 0.3.0 - `6229154` - Add custom toast notification system using Avalonia
-- 0.3.0 - `ed9d756` - Update SIP0017 with Stage 7 completion status and implementation details
-- 0.3.0 - `facfe0c` - Complete SIP0017 Stage 7: Cross-Platform Recording Support
-- 0.3.0 - `c7d48f6` - Delete settings.local.json
-- 0.3.0 - `e4817b1` - Fix: Use per-monitor DPI scaling for selection rectangle on mixed-DPI setups
-- 0.3.0 - `1dc0dad` - Update SIP0017 with Stage 5 completion status and implementation details
-- 0.3.0 - `a66e6f9` - Complete SIP0017 Stage 5: Workflow Pipeline Integration
-- 0.3.0 - `9417e1d` - Update SIP0017 with Stage 3 completion status
-- 0.3.0 - `739dcfe` - Complete SIP0017 Stage 3: Advanced Native Encoding UI
-- 0.3.0 - `a34bf22` - Create WorkflowSettings_UI_Analysis.md
-- 0.3.0 - `af30444` - Add technical documentation and history loading optimizations
-- 0.3.0 - `ac09f37` - Update AGENTS.md with technical docs location rule
-- 0.3.0 - `07fae75` - Update MainWindow.axaml.cs
-- 0.3.0 - `52d86c6` - Merge master branch
-- 0.3.0 - `1db07f6` - Implement default workflows, navigation logic, and recording properties
-- 0.3.0 - `410a14c` - Update SIP0017 with Stage 2 and Stage 4 completion status
-- 0.3.0 - `ccbd9b3` - Complete SIP0017 Stage 2: Window & Region Parity implementation
-- 0.3.0 - `9a321f1` - Create settings.local.json
-- 0.3.0 - `09d6cad` - Add SIP0017 session summaries and correct staging
-- 0.3.0 - `eecc915` - Complete SIP0017 Stage 1 MVP with FFmpeg fallback implementation
-- 0.3.0 - `d12e289` - Update SIP0017 status for Stage 4 kickoff
-- 0.3.0 - `e5d8e2f` - Sync SIP0017 artifacts to repo
-- 0.3.0 - `2f44742` - Fix: Fix compilation and standardize Windows TFM
-- 0.3.0 - `f295bd2` - Create centralized Lessons_Learnt.md guide
-- 0.3.0 - `9aa61ec` - Add lessons learnt regarding Windows TFM and CsWinRT
-- 0.3.0 - `4e88d23` - Fix: Fix CsWinRT interop and TFM for Windows.Graphics.Capture
-- 0.3.0 - `bfe81da` - Add milestone for SIP0017 Stage 1 zero build errors
-- 0.3.0 - `30f7273` - Set TargetPlatformVersion for Windows builds
-- 0.3.0 - `8f0f8f5` - Add screen recording UI and ViewModel to Avalonia app
-- 0.3.0 - `24cbfd2` - Update ShareX.Avalonia.Platform.Windows.csproj
-- 0.3.0 - `552d695` - Implement native screen recording support (SIP0017)
-- 0.3.0 - `2de8015` - Add core screen recording implementation (Stage 1)
-- 0.3.0 - `fd30d4f` - Update SIP0017_Screen_Recording_Modernization.md
-- 0.3.0 - `779410b` - Update SIP0017_Screen_Recording_Modernization.md
-- 0.3.0 - `9b24777` - Move and update SIP task files, add completion status
-- 0.3.0 - `1914e72` - Move technical notes to technical docs directory
-- 0.3.0 - `b2ccfae` - Refactor and reorganize core and plugin codebase
-- 0.3.0 - `3b51a93` - Add SIP0017 Screen Recording Modernization plan
-- 0.3.0 - `b0bcb58` - Add technical note on sidebar layout stabilization
-- 0.3.0 - `88ed8dc` - Make editor window title customizable via ViewModel
-- 0.3.0 - `e35159c` - Improve window activation reliability on Windows
-- 0.3.0 - `67f39c6` - Code cleanup
-- 0.3.0 - `48b1a2c` - Add robust window activation and direct window capture
-- 0.3.0 - `c178849` - Refactor debug logging to use TroubleshootingHelper
-- 0.3.0 - `c511441` - Add cross-platform SearchWindow to IWindowService
-- 0.3.0 - `0a446d9` - Refactor hotkey system to workflows and add CustomWindow capture UI
-- 0.3.0 - `91106fb` - Stub Windows notifications and disable toast UI options
-- 0.3.0 - `919f31a` - Add detailed notification logging to workflow tasks
-- 0.3.0 - `ad4be91` - Improve Windows toast notifications and set AUMID
-- 0.3.0 - `b3c2df6` - Add platform notification service and Windows toast support
-- 0.3.0 - `035e8b4` - Add tray icon support and OS integration settings
-- 0.3.0 - `4ddfb59` - Add tray click actions to settings UI and ViewModel
-- 0.3.0 - `f4a5dc2` - Refactor general settings to ApplicationSettingsView
-- 0.3.0 - `4f4d120` - Rename plugin package extension to .xsdp and add settings UI
-- 0.3.0 - `86945ba` - Add macOS CI workflow and update architecture doc
-- 0.3.0 - `dfa4cd4` - Add native macOS ScreenCaptureKit integration
-- 0.3.0 - `6f24b2c` - Add advanced settings to TaskSettings panel and ViewModel
-- 0.3.0 - `9d84dd3` - Ignore Id and Status in HotkeyInfo serialization
-- 0.3.0 - `7b11ec1` - Remove WorkflowID from hotkey workflows and add reordering
-- 0.3.0 - `132b0fc` - Add WorkflowID to hotkey workflows and UI
-- 0.3.0 - `d3cc468` - Remove default settings flags and add reset confirmation
-- 0.3.0 - `aab8396` - Update HotkeySelectionControl.axaml
-- 0.3.0 - `8b2477d` - Improve workflow cloning and update TaskSettingsPanel UI
-- 0.3.0 - `3958351` - Refactor hotkey defaults and add CustomWindow type
-- 0.3.0 - `bf341d6` - Add window selection dialog for window capture
-- 0.3.0 - `f16e9a3` - Update Task Settings UI gap analysis and move macOS docs
-- 0.3.0 - `bad7975` - Add Task Settings UI gap analysis report
-- 0.3.0 - `76ca3c8` - Add live image effect preview to settings panel
-- 0.3.0 - `f46995f` - Add image effects editor with property grid UI
-- 0.3.0 - `054c9a9` - Add workflow description binding and dynamic window title
-- 0.3.0 - `7d2b6ee` - Remove WorkflowWizard and refactor workflow editing
-- 0.3.0 - `fd395c3` - Refactor hotkey editor to workflow editor and improve workflow settings
-- 0.3.0 - `2cbecd1` - Add 'Use Modern Capture' toggle in Advanced Settings for Direct3D11 vs GDI+ comparison
-- 0.3.0 - `25f544d` - Optimize Modern Capture (~5x faster) with batched DXGI initialization and move debug logs
-- 0.3.0 - `52ae45e` - Fix multi-monitor blank capture issue by fixing premature adapter disposal
-- 0.3.0 - `df5764e` - Add detailed performance logging to Region Capture with stopwatch timing
-- 0.3.0 - `c94ce29` - Fix: Enable modern capture selection in Program.cs and add startup logging
-- 0.3.0 - `b637a74` - Implement SIP0016 Stage 3: macOS Capture via CLI Wrapper
-- 0.3.0 - `18fd706` - Implement SIP0016 Stage 2: Linux capture with CLI fallbacks
-- 0.3.0 - `9182ff7` - Add DebugHelper logging for capture service selection
-- 0.3.0 - `1440efc` - Implement SIP0016 Stage 1: DXGI-based modern capture for Windows
-- 0.3.0 - `5d48244` - Update SIP0016_Modern_Capture_Architecture.md
-- 0.3.0 - `fea1071` - Create SIP0016_Modern_Capture_Architecture.md
-- 0.3.0 - `8c52464` - Refactor capture settings to use CaptureOptions object
+### Features & Improvements
+- 0.3.0 - Implemented Unified Screen Recording pipeline with native Windows/MF support, FFmpeg fallback, and audio options (`9224b62`, `7a6e47b`, `8fc451c`, `a223bd0`, `642133d`, `1e2ef2c`, `d4409f9`, `d6773c0`, `bdeef06`, `674f350`, `b0e623e`)
+- 0.3.0 - Modernized Region Capture backend with cross-platform and DXGI support (`97ba056`, `9cc0209`, `3bdaaf0`, `21ec1e2`, `aa417f6`, `4ee0c05`)
+- 0.3.0 - Enhanced Workflow and Hotkey system: ID persistence, state machine, reordering, and wizard UI (`faebe87`, `927b819`, `dd1f36e`, `d904b17`, `1b29c6d`, `4c8c0df`, `64f2b42`, `0a446d9`, `9d84dd3`, `7b11ec1`, `132b0fc`, `aab8396`, `8b2477d`, `3958351`, `7d2b6ee`, `fd395c3`)
+- 0.3.0 - Refactored Destination and Uploader persistence to be Job-Type aware and use TaskSettings logic (`3388271`, `e7b1603`, `979dc0d`, `67a54ee`, `8d1dbc2`, `edc5a06`)
+- 0.3.0 - New Toast Notification system with custom UI, advanced settings, and platform integration (`81ccf18`, `f1d9b88`, `6229154`, `91106fb`, `919f31a`, `ad4be91`, `b3c2df6`)
+- 0.3.0 - Settings UI improvements: Weekly Backups, Tray interaction, Image Effects editor, and ApplicationGeneral settings (`0a8e15f`, `5224805`, `c34faa9`, `035e8b4`, `4ddfb59`, `f4a5dc2`, `6f24b2c`, `d3cc468`, `76ca3c8`, `f46995f`, `054c9a9`)
+- 0.3.0 - Cross-platform support updates: macOS ScreenCaptureKit, Linux CLI wrappers, and System Service abstraction (`de2d17b`, `c511441`, `86945ba`, `dfa4cd4`, `b637a74`, `18fd706`, `1440efc`)
+- 0.3.0 - DPI scaling fixes and robust Window Activation logic (`c79e7a7`, `386aaae`, `875fd8b`, `00e8728`, `cb602a8`, `e4817b1`, `e35159c`, `48b1a2c`)
+- 0.3.0 - Performance optimizations: Modern Capture (DXGI) acceleration and Task logic improvements (`25f544d`, `52ae45e`, `df5764e`, `c94ce29`, `261c643`, `8c52464`)
+- 0.3.0 - Media Foundation encoder implementation with low-level COM/VTable interop (`b6bd5bb`, `559c8cb`, `fafb402`, `b039ec8`, `295104d`, `7374dc0`)
+- 0.3.0 - Project documentation (SIPs, Rules, FAQ) and build system updates (`f80ad00`, `7534f23`, `cba5d60`, `a88d5f9`, `97097a3`, `e7dc315`, `52844d0`, `affb927`, `ed9d756`, `facfe0c`, `c7d48f6`, `1dc0dad`, `a66e6f9`, `9417e1d`, `739dcfe`, `a34bf22`, `af30444`, `ac09f37`, `410a14c`, `ccbd9b3`, `9a321f1`, `09d6cad`, `eecc915`, `d12e289`, `e5d8e2f`, `2f44742`, `f295bd2`, `9aa61ec`, `4e88d23`, `bfe81da`, `30f7273`, `24cbfd2`, `fd30d4f`, `779410b`, `9b24777`, `1914e72`, `b2ccfae`, `3b51a93`)
 
 ## v0.2.1 - Multi-Monitor and DPI Fixes
 
@@ -175,253 +38,21 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## v0.2.0 - macOS Platform Support & Plugin System
 
-### Features
-- 0.2.0 - `5762c84` - Rename HotkeysConfig to WorkflowsConfig and add image effects
-- 0.2.0 - `7c42a83` - Add 'Open Logs Folder' command to DebugView
-- 0.2.0 - `0f20d76` - Add automatic backup for history database
-- 0.2.0 - `77b70ee` - Create workflow_overview.md documentation
-- 0.2.0 - `66f6589` - Add delete confirmation and improve history item actions
-- 0.2.0 - `435dc46` - Use PersonalFolder for history file path
-- 0.2.0 - `76e81a1` - Rename app to XerahS and update references
-- 0.2.0 - `293886c` - Add zip backup for settings file
-- 0.2.0 - `1c8014c` - Update settings folder path logic
-- 0.2.0 - `275a94a` - Implement daily log file rotation in Logger
-- 0.2.0 - `6b61f4b` - Add 'Open Settings Folder' command to DebugView
-- 0.2.0 - `22b6cf5` - Switch history storage from XML to SQLite
-- 0.2.0 - `f9d1966` - Add KNOWN_ISSUES.md with DPI scaling issue
-- 0.2.0 - `70294fb` - Update AGENTS.md and artifacts; fix: Restore Spotlight parity with ce59c54
-- 0.2.0 - `bfc56e4` - Improve clipboard image handling and update editor preview
-- 0.2.0 - `737811f` - Integrate Editor clipboard and async capture tasks
-- 0.2.0 - `7fed578` - Refactor to use MainViewModel from ShareX.Editor
-- 0.2.0 - `86c6588` - Remove image editor and effects panel UI components
-- 0.2.0 - `b73b1b5` - Update .gitignore
-- 0.2.0 - `4411a17` - Refactor editor components to ShareX.Editor namespace
-- 0.2.0 - `993d801` - Remove legacy editor and effects panel views
-- 0.2.0 - `5f1d8fd` - Add text input overlay for annotation editing
-- 0.2.0 - `fd2e185` - Change event args type for effects panel apply handler
-- 0.2.0 - `d6f0490` - Refactor EditorView to use EditorCanvas control
-- 0.2.0 - `5188051` - Update WindowsClipboardService.cs
-- 0.2.0 - `ff0678c` - Add EditorCanvas control for SkiaSharp-based editing
-- 0.2.0 - `0a6f41b` - Add SkiaSharp-Avalonia conversion helpers and update annotation rendering
-- 0.2.0 - `71478b3` - Delete ShareX.Avalonia.code-workspace
-- 0.2.0 - `75bb5a0` - Relocate ShareX.Editor to sibling repo
-- 0.2.0 - `611fd61` - Update SIP0014 with implementation status and WinForms guide
-- 0.2.0 - `a0b16b1` - Fix: Update AXAML namespace references to ShareX.Editor
-- 0.2.0 - `a2b1973` - Refactor: Remove redundant Annotations and ImageEffects projects
-- 0.2.0 - `82175d3` - Refactor: Restructure ShareX.Editor per SIP0014 with MVVM layout
-- 0.2.0 - `90b5871` - Integrate ShareX.Editor with ShareX.Avalonia.UI
-- 0.2.0 - `57bfe32` - Add ShareX.Editor DLL with core shapes and services
-- 0.2.0 - `ce59c54` - Update original image backup logic in MainViewModel
-- 0.2.0 - `d49a9e2` - Add custom styles for DarkButton in App.axaml
-- 0.2.0 - `6fbf63e` - Add macOS app bundle support and icon assets
-- 0.2.0 - `007f264` - Add output aspect ratio selection to editor
-- 0.2.0 - `b6429a0` - Combine export and zoom controls into a single bottom bar
-- 0.2.0 - `00c4898` - Refactor capture workflow and navigation UI
-- 0.2.0 - `305ca0d` - Improve region capture scaling and add debug logging
-- 0.2.0 - `93b8603` - Fix typo in SIP0014 net version
-- 0.2.0 - `dd816af` - Add initial linux platform project setup
-- 0.2.0 - `0c6f9db` - Add SkiaSharp dependency to Media project
-- 0.2.0 - `8695fb4` - Update .gitignore and remove build log files
-- 0.2.0 - `4e3aacd` - Refactor image and region types to use SkiaSharp
-- 0.2.0 - `0a79efd` - Refactor image handling to use SkiaSharp SKBitmap
-- 0.2.0 - `db97212` - Ignore build logs and remove build output files
-- 0.2.0 - `ea9ddfa` - Add SkiaSharp dependency to multiple projects
-- 0.2.0 - `765ee80` - Add smart padding crop feature to image editor
-- 0.2.0 - `d86dedb` - Refactor image handling and update SkiaSharp usage
-- 0.2.0 - `98f7027` - Add platform-specific build constants and refactor init
-- 0.2.0 - `f06e916` - Update README.md
-- 0.2.0 - `4a8adfa` - Fix Unicode icons in README and walkthrough docs
-- 0.2.0 - `c67d61d` - Refactor window sizing logic in RegionCaptureWindow
-- 0.2.0 - `1cc95b7` - Add platform checks for font handling in XmlFont
-- 0.2.0 - `9d93942` - Add cross-platform font service abstraction
-- 0.2.0 - `1e51935` - Enable cross-platform build and update docs/features
-- 0.2.0 - `d0262ad` - Rename 'Smart Padding' to 'Padding' in EditorView
-- 0.2.0 - `3143a4f` - Add ClipToBounds to outer border in EditorView
-- 0.2.0 - `a3a21f3` - Update hotkey management and docs for annotation tools
-- 0.2.0 - `4204e76` - Add smart padding feature with color sampling
-- 0.2.0 - `a887ccb` - Update UI labels for editor sliders and sections
-- 0.2.0 - `3f017b8` - Move documentation files to organized subfolders
-- 0.2.0 - `439c35a` - Implement ShowWindow and SetWindowPos for macOS
-- 0.2.0 - `51f629b` - Restructure documentation file organization
-- 0.2.0 - `b371566` - Refactor folder opening logic to use FileHelpers
-- 0.2.0 - `bb8d3cc` - Enable darkening overlay only on standard DPI screens
-- 0.2.0 - `701de84` - Add debug logging and window config to RegionCaptureWindow
-- 0.2.0 - `67d0914` - Refactor region capture to support multi-screen backgrounds
-- 0.2.0 - `fae6588` - Fix: Add macOS input service and wire into platform init
-- 0.2.0 - `9d63c9f` - Refactor region capture to use global mouse coordinates
-- 0.2.0 - `97c1ed0` - Create Logo2.png
-- 0.2.0 - `b1be349` - Add version info to product name and window title
-- 0.2.0 - `d55b222` - Improve workflow wizard defaults and UI layout
-- 0.2.0 - `21afe90` - Enable editing workflows in wizard UI
-- 0.2.0 - `da1f99d` - Refactor workflow wizard to use UploaderInstanceViewModel
-- 0.2.0 - `6302db3` - Link macOS publish checklist into CX07
-- 0.2.0 - `063fcc6` - Add macOS publish and entitlement checklist
-- 0.2.0 - `9024e76` - Ensure ListBoxItem selection on pointer press
-- 0.2.0 - `ed864c7` - Add descriptions to HotkeyType and improve hotkey display
-- 0.2.0 - `9b3ed99` - Clarify macOS hotkey permissions and validation tasks
-- 0.2.0 - `4c03403` - Refactor workflows UI and hotkey editing experience
-- 0.2.0 - `1a8f17b` - Add workflow wizard UI and view models
-- 0.2.0 - `4a7ef55` - Refresh macOS hotkey status across docs
-- 0.2.0 - `0656da6` - Add macOS hotkey validation steps
-- 0.2.0 - `5a3c2c8` - Add async loading and loading indicator to history view
-- 0.2.0 - `a96a407` - Fix: Handle SharpHook start failures for macOS hotkeys
-- 0.2.0 - `ca05d4b` - Implement macOS SharpHook hotkeys
-- 0.2.0 - `c52ca38` - Check macOS Accessibility for hotkeys
-- 0.2.0 - `97957d7` - Add macOS frontmost window info via osascript
-- 0.2.0 - `d17e1b9` - Add macOS clipboard file list support
-- 0.2.0 - `b6fac63` - Update app icon and window icons to new logo
-- 0.2.0 - `c01cd68` - Add macOS clipboard PNG support
-- 0.2.0 - `b6277d8` - Add Avalonia screen data for macOS
-- 0.2.0 - `acba9d5` - Add macOS platform MVP services and docs
-- 0.2.0 - `93c0f73` - Fix project name in license information
-- 0.2.0 - `f438568` - Add RelayCommand attribute to ImportShareXConfig
-- 0.2.0 - `2697e6b` - Add ShowCaptureToolbar property to control toolbar visibility
-- 0.2.0 - `c9a2ee0` - Add macOS platform project with screenshot service
-- 0.2.0 - `6dd9f1f` - Update README.md
-- 0.2.0 - `69c8ebb` - Update README.md
-- 0.2.0 - `6cc8eb7` - Reset view state when loading a new image
-- 0.2.0 - `0fb4b4a` - Create SIP0013_MacOS_Implementation.md
-- 0.2.0 - `c3f1399` - Improve zoom handling and centering in EditorView
-- 0.2.0 - `3af7732` - Ensure clipboard operations run on STA thread
-- 0.2.0 - `973c1b7` - Add After Capture window and after upload task options
-- 0.2.0 - `50f1b69` - Refactor image preview layout in EditorView.axaml
-- 0.2.0 - `7922eb6` - Add visibility binding and adjust sidebar scroll
-- 0.2.0 - `b622a72` - Add ShareX UploadersConfig import functionality
-- 0.2.0 - `fb38af0` - Format slider values as integers in EditorView
-- 0.2.0 - `b9a8190` - Center PreviewFrame in EditorView
-- 0.2.0 - `0d5edf7` - Defer editor navigation for capture hotkeys
-- 0.2.0 - `6c81d30` - Refactor EditorView layout to nest ScrollViewer outermost
-- 0.2.0 - `7c6efe2` - Rename task files and add ShareX config import task
-- 0.2.0 - `5cebbb5` - Fix: Make .sxadp file association checkbox functional
-- 0.2.0 - `e359219` - Improve snapshot rendering in EditorView
-- 0.2.0 - `df9bbd1` - Add Integration settings tab with .sxadp file association UI
-- 0.2.0 - `f05e502` - Add PluginExporter CLI docs and AmazonS3 plugin package
-- 0.2.0 - `4be59f3` - Update .sxadp file association to use platform abstraction
-- 0.2.0 - `a6acc5d` - Add .sxadp file association implementation plan
-- 0.2.0 - `020ddde` - Rename plugin package extension
-- 0.2.0 - `cead71a` - Add plugin exporter CLI
-- 0.2.0 - `433788c` - Fix: Harden plugin package install
-- 0.2.0 - `f81c656` - Add plugin packaging installer
-- 0.2.0 - `f9721e1` - Clear selection when ActiveTool changes
-- 0.2.0 - `0adc892` - Add CX05 - Plugin Packaging System implementation task
-- 0.2.0 - `b60676f` - Add plugin packaging system design (.sxap format)
-- 0.2.0 - `0e3aab3` - Add 'Open Plugins Folder' button to destination settings
-- 0.2.0 - `437349a` - Add uploader plugin config loading docs, remove unused class
-- 0.2.0 - `264b5db` - Update Avalonia and toolkit dependencies
-- 0.2.0 - `fc2dafc` - Add duplicate DLL cleanup for plugin folders
-- 0.2.0 - `72f0bc8` - Add plugin config verification and improve plugin docs
-- 0.2.0 - `f70f6c2` - Update DEVELOPER_README.md
-- 0.2.0 - `e189ed8` - Add detailed History UI and History Settings tasks
-- 0.2.0 - `0802010` - Enhance history UI and settings integration
-- 0.2.0 - `12ccf54` - Refactor destination settings layout and update plugin deps
-- 0.2.0 - `0f2e1a0` - Update row height in DestinationSettingsView grid
-- 0.2.0 - `937247a` - Add Imgur plugin UI task and improve plugin diagnostics
-- 0.2.0 - `697d1a2` - Refactor history management and UI polish
-- 0.2.0 - `13aafb0` - Update EditorView.axaml
-- 0.2.0 - `ff6dac4` - Update history file path to ShareX.Ava directory
-- 0.2.0 - `1370d14` - Refactor editor architecture and add history integration
-- 0.2.0 - `6122883` - Fix Unicode icons and improve annotation canvas logic
-- 0.2.0 - `29b920f` - Exclude more tools from Canvas.Left/Top assignment
-- 0.2.0 - `12d9abf` - Add Pixelate tool support to AnnotationCanvas
-- 0.2.0 - `e438d57` - Refactor annotation canvas into dedicated control
-- 0.2.0 - `dbbccf3` - Editor baseline: reapply main window chrome updates
-- 0.2.0 - `c57cf98` - Editor baseline: restore editor and annotations to 3babd33b
-- 0.2.0 - `4cdad19` - Restore Editor and Annotations to 3babd33 baseline
-- 0.2.0 - `73315c4` - Add plugin-based uploader fallback and improve debug logging
-- 0.2.0 - `d2f05c4` - Rebrand to ShareX Ava, refactor native title bar, and setup versioning
-- 0.2.0 - `ca4bf57` - Centralize versioning and update product branding
-- 0.2.0 - `2e6046c` - Wire after-capture image upload
-- 0.2.0 - `5622907` - Add FAQ explaining SkiaSharp usage in ShareX.Avalonia
-- 0.2.0 - `2a9615b` - Cleanup temporary analysis files
-- 0.2.0 - `5b8cc6a` - Fix annotation resizing: Enable OverlayCanvas hit testing and restore e.Source logic
-- 0.2.0 - `8756457` - Add After Capture Tasks UI to Task Settings
-- 0.2.0 - `83d9e07` - Add task specs for AfterCapture UI and upload backend
-- 0.2.0 - `285f99e` - Fix: Hotkey captures now display in Editor
-- 0.2.0 - `f2b2a3f` - Add MediaLib basics task specification
-- 0.2.0 - `0d76bac` - Add crop tool and number annotation support
-- 0.2.0 - `dc8659c` - Fix hotkey registration collection modification issue
-- 0.2.0 - `3cd2e4a` - Refactor and move helpers, update image processing
-- 0.2.0 - `e5c9c5b` - Improve AnnotationCanvas focus and property updates
-- 0.2.0 - `5c14abc` - Add annotation canvas and dark theme support
-- 0.2.0 - `567f30e` - Add custom dark theme and showcase view
-- 0.2.0 - `d377224` - Update multi-agent coordination and add new task files
-- 0.2.0 - `f2859d1` - Add auto-save for settings and config change events
-- 0.2.0 - `76188cc` - Add filename and pixel info code menu helpers
+### Features & Improvements
+- 0.2.0 - Implemented Plugin System with packaging `.sxadp`, CLI tools, and installer (`4f4d120`, `298`, `4be59f3`, `a6acc5d`, `020ddde`, `cead71a`, `433788c`, `f81c656`, `0adc892`, `b60676f`, `0e3aab3`, `437349a`, `fc2dafc`, `72f0bc8`, `73315c4`)
+- 0.2.0 - Initial macOS platform support: ScreenCaptureKit, SharpHook hotkeys, Clipboard, and App Bundle (`1a33aed`, `6fbf63e`, `439c35a`, `fae6588`, `ca05d4b`, `97957d7`, `d17e1b9`, `acba9d5`, `c9a2ee0`, `0fb4b4a`)
+- 0.2.0 - Major Editor refactor to ShareX.Editor, SkiaSharp transition, and new annotation tools (Crop, Pixelate, Smart Padding) (`bfc56e4`, `d6f0490`, `ff0678c`, `0a6f41b`, `4411a17`, `86c6588`, `765ee80`, `12d9abf`, `0d76bac`, `4204e76`, `5c14abc`, `5b8cc6a`, `c3f1399`)
+- 0.2.0 - History system overhaul: SQLite backend, auto-backup, and UI improvements (`0f20d76`, `22b6cf5`, `66f6589`, `5a3c2c8`, `e189ed8`, `0802010`, `697d1a2`)
+- 0.2.0 - General Settings and Configuration improvements (`7c42a83`, `293886c`, `1c8014c`, `6b61f4b`, `f2859d1`)
+- 0.2.0 - Documentation updates: Workflow overview, SIPs, and Developer guides (`77b70ee`, `1914e72`)
 
 ## v0.1.0 - Initial Feature Set
 
 ### Core Features
-- 0.1.0 - `3babd33` - Add CornerRadius binding to canvas shadow border
-- 0.1.0 - `08541b7` - Add DoubleToCornerRadiusConverter and update canvas corner radius binding
-- 0.1.0 - `a2be751` - Add tasks folder with CX01 for Codex and update coordination doc
-- 0.1.0 - `8bf74ba` - Use CaptureHelpers for window rectangle retrieval
-- 0.1.0 - `5be170d` - Adjust preview padding and corner radius defaults
-- 0.1.0 - `176689c` - Revert "Update default padding in ImageBeautifierOptions"
-- 0.1.0 - `936b59c` - Create LICENSE.txt
-- 0.1.0 - `58f989c` - Clear annotations when resetting state
-- 0.1.0 - `00b3a63` - Improve region info label formatting and positioning
-- 0.1.0 - `64be7b5` - Add marching ants effect to selection border
-- 0.1.0 - `fd47b8d` - Add right-click to cancel region selection
-- 0.1.0 - `f552e2f` - Add background screenshot and darkening overlay to region capture
-- 0.1.0 - `eefc290` - Update default padding in ImageBeautifierOptions
-- 0.1.0 - `461a386` - Refactor: rename Common classes with prefix to avoid conflicts
-- 0.1.0 - `5dd5263` - Add right-click shape deletion in editor
-- 0.1.0 - `25f4dd6` - Fix: prevent duplication of Job property in JSON serialization
-- 0.1.0 - `49aa435` - Implement persistence using HotkeysConfig and deduplicate HotkeySettings model
-- 0.1.0 - `8395e4d` - Reorder Arrow and Line tool buttons in EditorView
-- 0.1.0 - `7656dbd` - Add instruction to build solution after coding sessions
-- 0.1.0 - `9a54d73` - Fix number tool annotation and grid resize logic
-- 0.1.0 - `c93ea32` - Fix: resolve build error in SettingsViewModel
-- 0.1.0 - `dec0317` - Add move support for Line shapes in editor
-- 0.1.0 - `c2a603e` - Enable dragging of selected shapes outside Select tool
-- 0.1.0 - `10436a7` - Fix: correctly save task settings (file naming pattern) to configuration
-- 0.1.0 - `0426f55` - Update project documentation, gap analysis, and plugin guide
-- 0.1.0 - `666d2a0` - Add immediate crop execution on mouse release
-- 0.1.0 - `2304985` - Create plugin_development_guide.md
-- 0.1.0 - `8ef5a32` - Implement pixel color sampling for Smart Eraser tool
-- 0.1.0 - `74893f2` - Refactor: replace Button-based selection with ListBox for reliable provider selection
-- 0.1.0 - `af14844` - Update plugin implementation plan with pure dynamic loading architecture
-- 0.1.0 - `68fb02f` - Fix: remove custom Button ControlTemplate to restore Command binding in catalog
-- 0.1.0 - `a2adbf3` - Refactor: migrate to pure dynamic plugin loading - remove all direct references
-- 0.1.0 - `53db734` - Fix: prevent PluginLoader GC to keep AssemblyLoadContext alive for dynamic plugins
-- 0.1.0 - `62561af` - Fix: switch to direct project references for plugins to resolve assembly loading conflicts
-- 0.1.0 - `8d771ab` - Fix: remove fragile type casting in XAML bindings to resolve runtime TypeLoadException
-- 0.1.0 - `cf2addd` - Debug: force add imgur and s3 instances for testing
-- 0.1.0 - `e0c093f` - Fix: restore selection highlight by correctly binding Button classes to IsSelected
-- 0.1.0 - `e789b81` - Fix: replace provider card Border with Button to ensure reliable click handling
-- 0.1.0 - `df3ed7a` - Implement spotlight annotation with darkening overlay
-- 0.1.0 - `cf42e51` - Debug: add logging to provider card Tapped handler
-- 0.1.0 - `a7dc2d2` - Fix: replace broken RadioButton template with clickable Border for provider selection
-- 0.1.0 - `1b0e929` - Debug: add comprehensive logging for provider selection tracking
-- 0.1.0 - `a8b4fff` - Fix: provider catalog 'Add' button now correctly identifies selected provider
-- 0.1.0 - `8e9ad5a` - Optimize effect shape rendering and resource cleanup
-- 0.1.0 - `072c286` - Fix: use correct AppName for logging path in Program.cs
-- 0.1.0 - `aac45e4` - Fix: call Initialize() in DestinationSettingsView Loaded event
-- 0.1.0 - `8a08636` - Add verbose debug logging for plugin discovery and loading
-- 0.1.0 - `29626b6` - Refactor selection handle logic and improve handle UI
-- 0.1.0 - `ea204fa` - Add plugin destination UX and fix plugin compilation
-- 0.1.0 - `5b4c311` - Add editable handles for line and arrow endpoints
-- 0.1.0 - `8888ee8` - Refine arrow drawing for sleeker appearance
-- 0.1.0 - `236aee9` - Refactor HotkeySettingsView layout for action buttons
-- 0.1.0 - `a4896b8` - Add plugin implementation plan documentation
-- 0.1.0 - `ab31c05` - Implement Debug features, UI tweaks, and documentation
-- 0.1.0 - `cda7c91` - Refactor settings management and improve config handling
-- 0.1.0 - `eae2224` - Add advanced file naming and task settings options
-- 0.1.0 - `9f7cb9d` - Change ShareX.Avalonia to ShareX.Ava to avoid conflicts
-- 0.1.0 - `ef6b79e` - Add UI service abstraction and integrate image editor flow
-- 0.1.0 - `861afd1` - Fix: Marshal hotkey registration to message loop thread to resolve Win32 errors 1408/1419
-- 0.1.0 - `7357914` - Unify logging to DebugHelper and fix hotkey registration bugs
-- 0.1.0 - `80cd222` - Complete Hotkey System Reimplementation with robust key capture and inline editing
-- 0.1.0 - `ad2b45b` - Maximize window on open in MainWindow
-- 0.1.0 - `3d495bb` - Refactor EditorView layout for improved border structure
-- 0.1.0 - `fd351d0` - Update editor UI colors and remove settings button
-- 0.1.0 - `d08b179` - Refactor editor toolbar layout to vertical stack
-- 0.1.0 - `48fbe28` - Add clear annotations feature to editor
-- 0.1.0 - `a64a932` - Improve annotation canvas drawing and pointer handling
-- 0.1.0 - `656a186` - Improve text annotation editing in EditorView
-- 0.1.0 - `7b4790f` - Improve selection handles and overlay interaction in editor
-- 0.1.0 - `e44b2f2` - Refactor gradient presets to use data binding
-- 0.1.0 - `064bb3a` - Add middle mouse panning to editor canvas
+- 0.1.0 - Initial Editor implementation with Annotation Canvas, Shapes, and Gradient support (`3babd33`, `5be170d`, `5dd5263`, `8395e4d`, `dec0317`, `c2a603e`, `8888ee8`, `656a186`, `7b4790f`, `e44b2f2`, `064bb3a`)
+- 0.1.0 - Region Capture features: Marching ants, detailed info label, and background dimming (`00b3a63`, `64be7b5`, `fd47b8d`, `f552e2f`, `c67d61d`, `67d0914`, `9d63c9f`)
+- 0.1.0 - Hotkey System implementation with robust key capture and inline editing (`49aa435`, `861afd1`, `7357914`, `80cd222`, `236aee9`)
+- 0.1.0 - Plugin architecture refactoring to pure dynamic loading (`af14844`, `a2adbf3`, `53db734`, `62561af`, `8d771ab`, `ea204fa`)
 
 ---
 
