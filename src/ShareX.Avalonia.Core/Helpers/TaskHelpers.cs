@@ -161,9 +161,8 @@ public static partial class TaskHelpers
             return settings.CustomScreenshotsPath;
         }
 
-        // Default to Pictures/ShareX
-        string picturesFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-        return Path.Combine(picturesFolder, "ShareX");
+        // Default to Screen Captures folder
+        return SettingManager.ScreenCapturesFolder;
     }
 
     #endregion

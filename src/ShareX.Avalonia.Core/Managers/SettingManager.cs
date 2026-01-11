@@ -106,6 +106,11 @@ namespace XerahS.Core
         public static string HistoryBackupFolder => Path.Combine(HistoryFolder, BackupFolderName);
 
         /// <summary>
+        /// Screen captures folder path
+        /// </summary>
+        public static string ScreenCapturesFolder => Path.Combine(PersonalFolder, ShareXResources.ScreenCapturesFolderName);
+
+        /// <summary>
         /// Application config file path
         /// </summary>
         public static string ApplicationConfigFilePath => Path.Combine(SettingsFolder, ApplicationConfigFileName);
@@ -452,6 +457,11 @@ namespace XerahS.Core
             if (!string.IsNullOrEmpty(HistoryBackupFolder))
             {
                 FileHelpers.CreateDirectory(HistoryBackupFolder);
+            }
+
+            if (!string.IsNullOrEmpty(ScreenCapturesFolder))
+            {
+                FileHelpers.CreateDirectory(ScreenCapturesFolder);
             }
         }
 

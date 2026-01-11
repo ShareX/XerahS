@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using XerahS.Common;
+using XerahS.Core;
 using XerahS.Core.Helpers;
 using XerahS.ScreenCapture.ScreenRecording;
 using System.Runtime.InteropServices;
@@ -138,6 +139,17 @@ public class ScreenRecordingManager
         // Wait for platform recording initialization to complete if it's still running
         // This ensures factories are set up before we try to create recording services
         await EnsureRecordingInitialized();
+
+        if (string.IsNullOrEmpty(options.OutputPath))
+        {
+            string screenCapturesFolder = SettingManager.ScreenCapturesFolder;
+            string dateFolderPath = Path.Combine(screenCapturesFolder, DateTime.Now.ToString("yyyy-MM"));
+            Directory.CreateDirectory(dateFolderPath);
+
+            string fileName = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4";
+            options.OutputPath = Path.Combine(dateFolderPath, fileName);
+            DebugHelper.WriteLine($"ScreenRecordingManager: Generated default output path: {options.OutputPath}");
+        }
 
         Exception? lastError = null;
         bool preferFallback = ShouldForceFallback(options);

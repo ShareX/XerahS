@@ -27,6 +27,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Drawing.Imaging;
 using XerahS.Common;
 
 namespace XerahS.ScreenCapture.ScreenRecording;
@@ -329,13 +330,13 @@ public class ScreenRecorderService : IRecordingService
             return options.OutputPath;
         }
 
-        // Default pattern: ShareX/Screenshots/yyyy-MM/Date_Time.mp4
+        // Fallback: This should ideally not be reached if the Manager is used
         string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        string shareXPath = Path.Combine(documentsPath, "ShareX", "Screenshots", DateTime.Now.ToString("yyyy-MM"));
-        Directory.CreateDirectory(shareXPath);
+        string defaultPath = Path.Combine(documentsPath, ShareXResources.AppName, ShareXResources.ScreenCapturesFolderName, DateTime.Now.ToString("yyyy-MM"));
+        Directory.CreateDirectory(defaultPath);
 
         string fileName = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4";
-        return Path.Combine(shareXPath, fileName);
+        return Path.Combine(defaultPath, fileName);
     }
 
     private int GetCaptureWidth(RecordingOptions options)

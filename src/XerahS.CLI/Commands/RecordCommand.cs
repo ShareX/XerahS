@@ -156,7 +156,8 @@ namespace XerahS.CLI.Commands
                 }
 
                 // Generate default output path if not provided
-                string outputPath = output ?? GenerateDefaultOutputPath();
+                // Manager will handle it if null
+                string? outputPath = output;
 
                 var recordingOptions = new RecordingOptions
                 {
@@ -257,18 +258,6 @@ namespace XerahS.CLI.Commands
             }
         }
 
-        private static string GenerateDefaultOutputPath()
-        {
-            var baseFolder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                "ShareX",
-                "Recordings",
-                DateTime.Now.ToString("yyyy-MM"));
 
-            Directory.CreateDirectory(baseFolder);
-
-            var fileName = $"Recording_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4";
-            return Path.Combine(baseFolder, fileName);
-        }
     }
 }
