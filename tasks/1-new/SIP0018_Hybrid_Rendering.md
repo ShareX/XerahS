@@ -92,16 +92,17 @@ stateDiagram-v2
         
         state Idle {
             [*] --> Listening
-            Listening --> RenderCore: Core.InvalidateRequested
+            Listening --> RenderingState: Core.InvalidateRequested
             Listening --> ResizeCanvas: Core.ImageChanged
         }
         
-        state RenderCore {
-            note right of RenderCore
+        state RenderingState {
+            note right of RenderingState
                 SKCanvasControl.Draw()
                  -> EditorCore.Render(canvas, false)
             end note
         }
+
     }
 
     state "EditorCore (Skia)" as Core {
