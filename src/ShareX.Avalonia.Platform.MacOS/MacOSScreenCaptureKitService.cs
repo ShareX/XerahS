@@ -70,6 +70,12 @@ namespace XerahS.Platform.MacOS
             }
         }
 
+        public Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
+        {
+            // This method should only be called from the UI layer wrapper
+            return Task.FromResult(SKRectI.Empty);
+        }
+
         public Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
             // Region capture requires interactive selection - delegate to CLI

@@ -57,6 +57,12 @@ namespace XerahS.Platform.Windows
             _fallbackService = new WindowsScreenCaptureService(screenService);
         }
 
+        public Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
+        {
+            // This method should only be called from the UI layer wrapper
+            return Task.FromResult(SKRectI.Empty);
+        }
+
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
             return await CaptureFullScreenAsync(options);

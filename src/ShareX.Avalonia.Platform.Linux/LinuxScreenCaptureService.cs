@@ -42,6 +42,12 @@ namespace XerahS.Platform.Linux
         public static bool IsWayland =>
             Environment.GetEnvironmentVariable("XDG_SESSION_TYPE")?.Equals("wayland", StringComparison.OrdinalIgnoreCase) == true;
 
+        public Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
+        {
+            // This method should only be called from the UI layer wrapper
+            return Task.FromResult(SKRectI.Empty);
+        }
+
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
             // Fullscreen capture - region selection is handled at UI level

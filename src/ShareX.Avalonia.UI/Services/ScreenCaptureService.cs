@@ -47,6 +47,22 @@ namespace XerahS.UI.Services
             return _platformImpl.CaptureRectAsync(rect, options);
         }
 
+        public async Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
+        {
+            SKRectI selection = SKRectI.Empty;
+
+            // Show UI window on UI thread
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                var window = new RegionCaptureWindow();
+                window.Show();
+                selection = await window.GetResultAsync();
+            });
+
+            TroubleshootingHelper.Log("RegionSelection", "RESULT", $"Region selection returned: {selection}");
+            return selection;
+        }
+
         public async Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
         {
             var totalStopwatch = Stopwatch.StartNew();

@@ -32,6 +32,8 @@ using XerahS.ScreenCapture.ScreenRecording;
 using SkiaSharp;
 using System.Diagnostics;
 using XerahS.History;
+using Avalonia.Threading;
+using System.Drawing;
 
 namespace XerahS.Core.Tasks
 {
@@ -315,8 +317,50 @@ namespace XerahS.Core.Tasks
                     // Stage 5: Screen Recording Integration
                     case HotkeyType.ScreenRecorder:
                     case HotkeyType.StartScreenRecorder:
-                        TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecorder case matched, calling HandleStartRecordingAsync");
-                        await HandleStartRecordingAsync(CaptureMode.Screen);
+                        TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecorder case matched, showing region selector");
+
+                        // Show region selector and get user selection
+                        var regionCaptureOptions = new CaptureOptions
+                        {
+                            UseModernCapture = Info.TaskSettings.CaptureSettings.UseModernCapture,
+                            ShowCursor = Info.TaskSettings.CaptureSettings.ShowCursor,
+                            WorkflowId = Info.TaskSettings.WorkflowId
+                        };
+
+                        SKRectI selection = await PlatformServices.ScreenCapture.SelectRegionAsync(regionCaptureOptions);
+
+                        if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
+                        {
+                            TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "Region selection cancelled, aborting recording");
+                            Status = TaskStatus.Stopped;
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        // Convert SKRectI to System.Drawing.Rectangle for recording options
+                        // H.264 encoder requires even dimensions - round down to nearest even number
+                        int adjustedWidth = selection.Width - (selection.Width % 2);
+                        int adjustedHeight = selection.Height - (selection.Height % 2);
+
+                        // Ensure minimum dimensions (at least 2x2)
+                        if (adjustedWidth < 2 || adjustedHeight < 2)
+                        {
+                            TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region too small after adjustment: {adjustedWidth}x{adjustedHeight}, aborting recording");
+                            Status = TaskStatus.Stopped;
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        var recordingRegion = new Rectangle(selection.Left, selection.Top, adjustedWidth, adjustedHeight);
+
+                        if (adjustedWidth != selection.Width || adjustedHeight != selection.Height)
+                        {
+                            TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region adjusted for encoder: {selection.Width}x{selection.Height} → {adjustedWidth}x{adjustedHeight}");
+                        }
+
+                        TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region selected: {recordingRegion}, calling HandleStartRecordingAsync");
+
+                        await HandleStartRecordingAsync(CaptureMode.Region, region: recordingRegion);
                         TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "HandleStartRecordingAsync completed");
                         return; // Recording tasks don't proceed to image processing
 
@@ -389,10 +433,10 @@ namespace XerahS.Core.Tasks
         #region Recording Handlers (Stage 5)
 
 
-        private async Task HandleStartRecordingAsync(CaptureMode mode, IntPtr windowHandle = default)
+        private async Task HandleStartRecordingAsync(CaptureMode mode, IntPtr windowHandle = default, Rectangle? region = null)
         {
-            TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", $"HandleStartRecordingAsync Entry: mode={mode}");
-            
+            TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", $"HandleStartRecordingAsync Entry: mode={mode}, region={region}");
+
             try
             {
                 // Note: We don't check IsRecording here because App.axaml.cs ensures we only get here if NOT recording.
@@ -404,6 +448,13 @@ namespace XerahS.Core.Tasks
                     Settings = Info.TaskSettings.CaptureSettings.ScreenRecordingSettings,
                     TargetWindowHandle = windowHandle
                 };
+
+                // Set region if provided (for Region mode)
+                if (region.HasValue)
+                {
+                    recordingOptions.Region = region.Value;
+                    TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", $"Recording region set: {region.Value}");
+                }
 
                 // [2026-01-10T14:40:00+08:00] Align screen recording output with screenshot naming/destination using TaskHelpers.
                 var recordingMetadata = Info.Metadata ?? new TaskMetadata();
