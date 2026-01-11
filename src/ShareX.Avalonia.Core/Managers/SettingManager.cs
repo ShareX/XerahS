@@ -47,7 +47,9 @@ namespace XerahS.Core
         public const string UploadersConfigFileNamePrefix = "UploadersConfig";
         public const string UploadersConfigFileNameExtension = "json";
         public const string UploadersConfigFileName = UploadersConfigFileNamePrefix + "." + UploadersConfigFileNameExtension;
-        public const string WorkflowsConfigFileName = "WorkflowsConfig.json";
+        public const string WorkflowsConfigFileNamePrefix = "WorkflowsConfig";
+        public const string WorkflowsConfigFileNameExtension = "json";
+        public const string WorkflowsConfigFileName = WorkflowsConfigFileNamePrefix + "." + WorkflowsConfigFileNameExtension;
         public const string BackupFolderName = "Backup";
         public const string SettingsFolderName = "Settings";
 
@@ -144,7 +146,9 @@ namespace XerahS.Core
                     workflowsConfigFolder = FileHelpers.ExpandFolderVariables(Settings.CustomWorkflowsConfigPath);
                 }
 
-                return Path.Combine(workflowsConfigFolder, WorkflowsConfigFileName);
+                string workflowsConfigFileName = GetWorkflowsConfigFileName(workflowsConfigFolder);
+
+                return Path.Combine(workflowsConfigFolder, workflowsConfigFileName);
             }
         }
 
@@ -411,6 +415,49 @@ namespace XerahS.Core
             }
 
             return UploadersConfigFileName;
+        }
+
+        private static string GetWorkflowsConfigFileName(string destinationFolder)
+        {
+            if (string.IsNullOrEmpty(destinationFolder))
+            {
+                // Fallback if no specific folder is determined yet, but usually not called this way
+                return WorkflowsConfigFileName;
+            }
+
+            if (Settings != null && Settings.UseMachineSpecificWorkflowsConfig)
+            {
+                string sanitizedMachineName = FileHelpers.SanitizeFileName(Environment.MachineName);
+
+                if (!string.IsNullOrEmpty(sanitizedMachineName))
+                {
+                    string machineSpecificFileName = $"{WorkflowsConfigFileNamePrefix}-{sanitizedMachineName}.{WorkflowsConfigFileNameExtension}";
+                    string machineSpecificPath = Path.Combine(destinationFolder, machineSpecificFileName);
+
+                    // If machine specific file doesn't exist, we might want to initialize it from default
+                    if (!File.Exists(machineSpecificPath))
+                    {
+                        string defaultFilePath = Path.Combine(destinationFolder, WorkflowsConfigFileName);
+
+                        // If default exists, copy it to machine specific
+                        if (File.Exists(defaultFilePath))
+                        {
+                            try
+                            {
+                                File.Copy(defaultFilePath, machineSpecificPath, false);
+                            }
+                            catch (IOException)
+                            {
+                                // Ignore
+                            }
+                        }
+                    }
+
+                    return machineSpecificFileName;
+                }
+            }
+
+            return WorkflowsConfigFileName;
         }
 
         /// <summary>

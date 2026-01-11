@@ -243,6 +243,9 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
     [Category("Paths"), DefaultValue(true), Description("Use machine-specific uploaders config.")]
     public bool UseMachineSpecificUploadersConfig { get; set; } = true;
 
+    [Category("Paths"), DefaultValue(true), Description("Use machine-specific workflows config.")]
+    public bool UseMachineSpecificWorkflowsConfig { get; set; } = true;
+
     [Category("Paths"), Description("Custom uploaders config path.")]
     public string CustomUploadersConfigPath { get; set; } = "";
 
