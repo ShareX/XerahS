@@ -52,7 +52,7 @@ public class TaskSettings
     [JsonIgnore]
     public string? WorkflowId { get; set; }
 
-    public string Description = "";
+    public string Description { get; set; } = string.Empty;
 
     public HotkeyType Job = HotkeyType.None;
 
