@@ -80,13 +80,12 @@ stateDiagram-v2
         [*] --> Initialized
         Initialized --> LoadImage: PreviewImage Changed
         
-        state LoadImage {
-             note
-                BitmapConversionHelpers.ToSKBitmap
-                EditorCore.LoadImage(copy)
-                SKCanvasControl.Initialize
-             end note
-        }
+        state LoadImage
+        note right of LoadImage
+            BitmapConversionHelpers.ToSKBitmap
+            EditorCore.LoadImage(copy)
+            SKCanvasControl.Initialize
+        end note
         
         LoadImage --> Idle
         
@@ -96,12 +95,11 @@ stateDiagram-v2
             Listening --> ResizeCanvas: Core.ImageChanged
         }
         
-        state RenderingState {
-            note
-                SKCanvasControl.Draw()
-                 -> EditorCore.Render(canvas, false)
-            end note
-        }
+        state RenderingState
+        note right of RenderingState
+            SKCanvasControl.Draw()
+             -> EditorCore.Render(canvas, false)
+        end note
 
     }
 
