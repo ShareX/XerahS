@@ -42,8 +42,22 @@ namespace XerahS.Core.Tasks.Processors
                     await HandleAfterUploadTasksAsync(info, result, token);
                 }
                 else
+                else
                 {
-                    DebugHelper.WriteLine($"Upload failed: {result.Response}");
+                    var errorMsg = result.Response ?? "Unknown error";
+                    DebugHelper.WriteLine($"Upload failed: {errorMsg}");
+                    
+                    if (PlatformServices.IsInitialized && PlatformServices.Toast != null)
+                    {
+                        PlatformServices.Toast.ShowToast(new Platform.Abstractions.ToastConfig
+                        {
+                            Title = "Upload Failed",
+                            Text = errorMsg,
+                            Duration = 4f,
+                            AutoHide = true,
+                            IsError = true
+                        });
+                    }
                 }
             }
             else
@@ -95,8 +109,9 @@ namespace XerahS.Core.Tasks.Processors
             var defaultInstance = targetInstance ?? instanceManager.GetDefaultInstance(category);
             if (defaultInstance == null)
             {
-                DebugHelper.WriteLine($"No uploader instance configured (plugin system) for category {category}.");
-                return null;
+                var errorMsg = $"No uploader instance configured (plugin system) for category {category}.";
+                DebugHelper.WriteLine(errorMsg);
+                return new UploadResult { IsSuccess = false, Response = errorMsg };
             }
 
             DebugHelper.WriteLine($"Plugin instance selected: {defaultInstance.DisplayName} ({defaultInstance.ProviderId})");

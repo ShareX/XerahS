@@ -94,7 +94,7 @@ public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
         list.Add(wf02);
 
         // WF03: Record screen using GDI
-        var wf03 = new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift))
+        var wf03 = new WorkflowSettings(HotkeyType.ScreenRecorderActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift))
         {
             Name = "Record screen using GDI"
         };
@@ -103,7 +103,7 @@ public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
         list.Add(wf03);
 
         // WF04: Record screen for game
-        var wf04 = new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift))
+        var wf04 = new WorkflowSettings(HotkeyType.ScreenRecorderActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift))
         {
             Name = "Record screen for game"
         };

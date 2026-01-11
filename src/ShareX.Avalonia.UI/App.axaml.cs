@@ -299,7 +299,7 @@ public partial class App : Application
             // Screen Recorder Toggle Logic (Unified Pipeline)
             // If we are recording and get a recording-related hotkey, we Signal the existing task to stop.
             // We do NOT start a new workflow.
-            bool isRecordingHotkey = settings.Job == Core.HotkeyType.ScreenRecorder || 
+            bool isRecordingHotkey = settings.Job == Core.HotkeyType.ScreenRecorderActiveWindow || 
                                      settings.Job == Core.HotkeyType.StopScreenRecording || 
                                      settings.Job == Core.HotkeyType.StartScreenRecorder;
 
