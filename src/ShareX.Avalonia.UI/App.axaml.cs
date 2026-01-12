@@ -2,13 +2,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using ShareX.Editor.ViewModels;
 using XerahS.Common;
 using XerahS.Core;
-using XerahS.Core.Managers;
 using XerahS.Platform.Abstractions;
-
 using XerahS.UI.Views;
-using ShareX.Editor.ViewModels;
 
 namespace XerahS.UI;
 
@@ -17,6 +15,10 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+
+#if DEBUG
+        this.AttachDeveloperTools();
+#endif
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -25,10 +27,6 @@ public partial class App : Application
         {
             var mainViewModel = new MainViewModel();
             mainViewModel.ApplicationName = ShareXResources.AppName;
-
-
-
-
 
             desktop.MainWindow = new Views.MainWindow
             {
@@ -312,13 +310,13 @@ public partial class App : Application
 
             if (isRecordingHotkey && Core.Managers.ScreenRecordingManager.Instance.IsRecording)
             {
-                 DebugHelper.WriteLine("Screen Recording active - flagging Stop Signal to existing task...");
-                 Core.Managers.ScreenRecordingManager.Instance.SignalStop();
+                DebugHelper.WriteLine("Screen Recording active - flagging Stop Signal to existing task...");
+                Core.Managers.ScreenRecordingManager.Instance.SignalStop();
             }
             else
             {
-                 // Normal workflow execution
-                 await Core.Helpers.TaskHelpers.ExecuteWorkflow(settings, settings.Id);
+                // Normal workflow execution
+                await Core.Helpers.TaskHelpers.ExecuteWorkflow(settings, settings.Id);
             }
         }
     }
