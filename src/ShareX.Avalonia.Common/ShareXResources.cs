@@ -36,7 +36,7 @@ namespace XerahS.Common
         private static string GetVersion()
         {
             var version = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version;
-            return version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v0.0.0";
+            return version != null ? $"{version.Major}.{version.Minor}.{version.Build}" : "v0.0.0";
         }
         
         public const string HistoryFolderName = "History";
