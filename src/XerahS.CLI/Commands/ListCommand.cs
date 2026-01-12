@@ -24,6 +24,8 @@
 #endregion License Information (GPL v3)
 
 using System.CommandLine;
+using System.CommandLine.Invocation;
+using XerahS.CLI;
 using XerahS.Core;
 
 namespace XerahS.CLI.Commands
@@ -37,18 +39,17 @@ namespace XerahS.CLI.Commands
             // List workflows subcommand
             var workflowsCommand = new Command("workflows", "List all configured workflows");
 
-            var enabledOnlyOption = new Option<bool>(
-                name: "--enabled-only",
-                description: "Show only enabled workflows");
+            var enabledOnlyOption = new Option<bool>("--enabled-only") { Description = "Show only enabled workflows" };
 
-            workflowsCommand.AddOption(enabledOnlyOption);
+            workflowsCommand.Add(enabledOnlyOption);
 
-            workflowsCommand.SetHandler((bool enabledOnly) =>
+            workflowsCommand.SetAction((parseResult) =>
             {
+                var enabledOnly = parseResult.GetValue(enabledOnlyOption);
                 Environment.ExitCode = ListWorkflows(enabledOnly);
-            }, enabledOnlyOption);
+            });
 
-            listCommand.AddCommand(workflowsCommand);
+            listCommand.Add(workflowsCommand);
 
             return listCommand;
         }

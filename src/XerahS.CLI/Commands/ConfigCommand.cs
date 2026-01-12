@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using XerahS.Core;
 
 namespace XerahS.CLI.Commands
@@ -36,20 +37,20 @@ namespace XerahS.CLI.Commands
 
             // Show config subcommand
             var showCommand = new Command("show", "Show current configuration summary");
-            showCommand.SetHandler(() =>
+            showCommand.SetAction((parseResult) =>
             {
                 Environment.ExitCode = ShowConfig();
             });
 
             // Path subcommand
             var pathCommand = new Command("path", "Show configuration file paths");
-            pathCommand.SetHandler(() =>
+            pathCommand.SetAction((parseResult) =>
             {
                 Environment.ExitCode = ShowPaths();
             });
 
-            configCommand.AddCommand(showCommand);
-            configCommand.AddCommand(pathCommand);
+            configCommand.Add(showCommand);
+            configCommand.Add(pathCommand);
 
             return configCommand;
         }

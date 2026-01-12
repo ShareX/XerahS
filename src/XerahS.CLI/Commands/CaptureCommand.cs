@@ -24,6 +24,10 @@
 #endregion License Information (GPL v3)
 
 using System.CommandLine;
+using System.CommandLine.Invocation;
+using XerahS.CLI;
+using System.CommandLine.Binding;
+using System.CommandLine.Parsing;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Helpers;
@@ -40,48 +44,48 @@ namespace XerahS.CLI.Commands
         {
             var captureCommand = new Command("capture", "Screen capture operations");
             
-            var uploadOption = new Option<bool>(
-                name: "--upload",
-                description: "Upload the captured image/file"
-            );
+            var uploadOption = new Option<bool>("--upload") { Description = "Upload the captured image/file" };
 
             // Screen capture subcommand
             var screenCommand = new Command("screen", "Capture full screen");
-            var outputOption = new Option<string?>(
-                name: "--output",
-                description: "Output file path");
-            screenCommand.AddOption(outputOption);
-            screenCommand.AddOption(uploadOption);
-            screenCommand.SetHandler(async (string? output, bool upload) =>
+            var outputOption = new Option<string?>("--output") { Description = "Output file path" };
+            screenCommand.Add(outputOption);
+            screenCommand.Add(uploadOption);
+            screenCommand.SetAction((parseResult) =>
             {
-                Environment.ExitCode = await CaptureScreenAsync(output, upload);
-            }, outputOption, uploadOption);
+                var output = parseResult.GetValue(outputOption);
+                var upload = parseResult.GetValue(uploadOption);
+                Environment.ExitCode = CaptureScreenAsync(output, upload).GetAwaiter().GetResult();
+            });
 
             // Window capture subcommand
             var windowCommand = new Command("window", "Capture active window");
-            windowCommand.AddOption(outputOption);
-            windowCommand.AddOption(uploadOption);
-            windowCommand.SetHandler(async (string? output, bool upload) =>
+            windowCommand.Add(outputOption);
+            windowCommand.Add(uploadOption);
+            windowCommand.SetAction((parseResult) =>
             {
-                Environment.ExitCode = await CaptureWindowAsync(output, upload);
-            }, outputOption, uploadOption);
+                var output = parseResult.GetValue(outputOption);
+                var upload = parseResult.GetValue(uploadOption);
+                Environment.ExitCode = CaptureWindowAsync(output, upload).GetAwaiter().GetResult();
+            });
 
             // Region capture subcommand
             var regionCommand = new Command("region", "Capture specific region");
-            var regionOption = new Option<string>(
-                name: "--region",
-                description: "Region in format 'x,y,width,height' (e.g. '0,0,400,400')");
-            regionCommand.AddOption(regionOption);
-            regionCommand.AddOption(outputOption);
-            regionCommand.AddOption(uploadOption);
-            regionCommand.SetHandler(async (string region, string? output, bool upload) =>
+            var regionOption = new Option<string>("--region") { Description = "Region in format 'x,y,width,height' (e.g. '0,0,400,400')" };
+            regionCommand.Add(regionOption);
+            regionCommand.Add(outputOption);
+            regionCommand.Add(uploadOption);
+            regionCommand.SetAction((parseResult) =>
             {
-                Environment.ExitCode = await CaptureRegionAsync(region, output, upload);
-            }, regionOption, outputOption, uploadOption);
+                var region = parseResult.GetValue(regionOption);
+                var output = parseResult.GetValue(outputOption);
+                var upload = parseResult.GetValue(uploadOption);
+                Environment.ExitCode = CaptureRegionAsync(region!, output, upload).GetAwaiter().GetResult();
+            });
 
-            captureCommand.AddCommand(screenCommand);
-            captureCommand.AddCommand(windowCommand);
-            captureCommand.AddCommand(regionCommand);
+            captureCommand.Add(screenCommand);
+            captureCommand.Add(windowCommand);
+            captureCommand.Add(regionCommand);
 
             return captureCommand;
         }

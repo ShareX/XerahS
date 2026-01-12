@@ -25,8 +25,10 @@
 
 using System.CommandLine;
 using XerahS.Bootstrap;
+using XerahS.CLI;
 using XerahS.CLI.Commands;
 using XerahS.CLI.Services;
+using System.CommandLine.Parsing;
 using XerahS.Common;
 
 namespace XerahS.CLI
@@ -64,15 +66,15 @@ namespace XerahS.CLI
                 var rootCommand = new RootCommand("XerahS CLI - ShareX workflow automation");
 
                 // Add commands
-                rootCommand.AddCommand(WorkflowCommand.Create());
-                rootCommand.AddCommand(RecordCommand.Create());
-                rootCommand.AddCommand(CaptureCommand.Create());
-                rootCommand.AddCommand(ListCommand.Create());
-                rootCommand.AddCommand(ConfigCommand.Create());
-                rootCommand.AddCommand(BackupSettingsCommand.Create());
+                rootCommand.Add(WorkflowCommand.Create());
+                rootCommand.Add(RecordCommand.Create());
+                rootCommand.Add(CaptureCommand.Create());
+                rootCommand.Add(ListCommand.Create());
+                rootCommand.Add(ConfigCommand.Create());
+                rootCommand.Add(BackupSettingsCommand.Create());
 
                 // Execute
-                return await rootCommand.InvokeAsync(args);
+                return await rootCommand.Parse(args).InvokeAsync();
             }
             catch (Exception ex)
             {

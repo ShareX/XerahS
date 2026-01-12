@@ -1,4 +1,6 @@
 using System.CommandLine;
+using System.CommandLine.Invocation;
+using XerahS.CLI;
 using XerahS.Core;
 
 namespace XerahS.CLI.Commands
@@ -7,7 +9,7 @@ namespace XerahS.CLI.Commands
     {
         public BackupSettingsCommand() : base("backup-settings", "Force a backup of application settings")
         {
-            this.SetHandler(Execute);
+            this.SetAction((parseResult) => Execute());
         }
 
         public static Command Create()

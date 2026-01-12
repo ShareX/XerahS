@@ -24,7 +24,9 @@
 #endregion License Information (GPL v3)
 
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Drawing;
+using XerahS.CLI;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Managers;
@@ -42,76 +44,60 @@ namespace XerahS.CLI.Commands
             // Start recording subcommand
             var startCommand = new Command("start", "Start screen recording");
 
-            var modeOption = new Option<string>(
-                name: "--mode",
-                description: "Capture mode: screen, window, region",
-                getDefaultValue: () => "screen");
+            var modeOption = new Option<string>("--mode") { Description = "Capture mode: screen, window, region" };
+            var regionOption = new Option<string?>("--region") { Description = "Region in format 'x,y,width,height'" };
+            var fpsOption = new Option<int>("--fps") { Description = "Frames per second" };
+            var codecOption = new Option<string>("--codec") { Description = "Video codec: h264, hevc, vp9, av1" };
+            var bitrateOption = new Option<int>("--bitrate") { Description = "Bitrate in Kbps" };
+            var audioOption = new Option<bool>("--audio") { Description = "Capture system audio" };
+            var microphoneOption = new Option<bool>("--microphone") { Description = "Capture microphone" };
+            var outputOption = new Option<string?>("--output") { Description = "Output file path" };
 
-            var regionOption = new Option<string?>(
-                name: "--region",
-                description: "Region in format 'x,y,width,height'");
+            startCommand.Add(modeOption);
+            startCommand.Add(regionOption);
+            startCommand.Add(fpsOption);
+            startCommand.Add(codecOption);
+            startCommand.Add(bitrateOption);
+            startCommand.Add(audioOption);
+            startCommand.Add(microphoneOption);
+            startCommand.Add(outputOption);
 
-            var fpsOption = new Option<int>(
-                name: "--fps",
-                description: "Frames per second",
-                getDefaultValue: () => 30);
-
-            var codecOption = new Option<string>(
-                name: "--codec",
-                description: "Video codec: h264, hevc, vp9, av1",
-                getDefaultValue: () => "h264");
-
-            var bitrateOption = new Option<int>(
-                name: "--bitrate",
-                description: "Bitrate in Kbps",
-                getDefaultValue: () => 4000);
-
-            var audioOption = new Option<bool>(
-                name: "--audio",
-                description: "Capture system audio");
-
-            var microphoneOption = new Option<bool>(
-                name: "--microphone",
-                description: "Capture microphone");
-
-            var outputOption = new Option<string?>(
-                name: "--output",
-                description: "Output file path");
-
-            startCommand.AddOption(modeOption);
-            startCommand.AddOption(regionOption);
-            startCommand.AddOption(fpsOption);
-            startCommand.AddOption(codecOption);
-            startCommand.AddOption(bitrateOption);
-            startCommand.AddOption(audioOption);
-            startCommand.AddOption(microphoneOption);
-            startCommand.AddOption(outputOption);
-
-            startCommand.SetHandler(async (string mode, string? region, int fps,
-                string codec, int bitrate, bool audio, bool microphone, string? output) =>
+            startCommand.SetAction((parseResult) =>
             {
-                Environment.ExitCode = await StartRecordingAsync(mode, region, fps, codec, bitrate,
-                    audio, microphone, output);
-            }, modeOption, regionOption, fpsOption, codecOption, bitrateOption,
-               audioOption, microphoneOption, outputOption);
+                var mode = parseResult.GetValue(modeOption) ?? "screen";
+                var region = parseResult.GetValue(regionOption);
+                var fps = parseResult.GetValue(fpsOption);
+                var codec = parseResult.GetValue(codecOption) ?? "h264";
+                var bitrate = parseResult.GetValue(bitrateOption);
+                var audio = parseResult.GetValue(audioOption);
+                var microphone = parseResult.GetValue(microphoneOption);
+                var output = parseResult.GetValue(outputOption);
+
+                // apply defaults manually
+                if (fps == 0) fps = 30;
+                if (bitrate == 0) bitrate = 4000;
+
+                Environment.ExitCode = StartRecordingAsync(mode, region, fps, codec, bitrate,
+                    audio, microphone, output).GetAwaiter().GetResult();
+            });
 
             // Stop recording subcommand
             var stopCommand = new Command("stop", "Stop active recording");
-            stopCommand.SetHandler(async () =>
+            stopCommand.SetAction((parseResult) =>
             {
-                Environment.ExitCode = await StopRecordingAsync();
+                Environment.ExitCode = StopRecordingAsync().GetAwaiter().GetResult();
             });
 
             // Abort recording subcommand
             var abortCommand = new Command("abort", "Abort recording without saving");
-            abortCommand.SetHandler(async () =>
+            abortCommand.SetAction((parseResult) =>
             {
-                Environment.ExitCode = await AbortRecordingAsync();
+                Environment.ExitCode = AbortRecordingAsync().GetAwaiter().GetResult();
             });
 
-            recordCommand.AddCommand(startCommand);
-            recordCommand.AddCommand(stopCommand);
-            recordCommand.AddCommand(abortCommand);
+            recordCommand.Add(startCommand);
+            recordCommand.Add(stopCommand);
+            recordCommand.Add(abortCommand);
 
             return recordCommand;
         }

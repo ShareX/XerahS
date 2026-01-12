@@ -24,6 +24,8 @@
 #endregion License Information (GPL v3)
 
 using System.CommandLine;
+using System.CommandLine.Invocation;
+using XerahS.CLI;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Helpers;
@@ -35,46 +37,34 @@ namespace XerahS.CLI.Commands
 {
     public static class WorkflowCommand
     {
-
-
         public static Command Create()
         {
-            // ... (rest of method same)
             var runCommand = new Command("run", "Execute a workflow by ID");
 
-            var workflowIdArg = new Argument<string>(
-                name: "workflow-id",
-                description: "Workflow ID (e.g., WF01)");
+            var workflowIdArg = new Argument<string>("workflow-id");
+            var durationOption = new Option<int>("--duration");
+            durationOption.Description = "Duration in seconds to record (only for recording tasks)";
 
-            var durationOption = new Option<int>(
-                name: "--duration",
-                description: "Duration in seconds to record (only for recording tasks)",
-                getDefaultValue: () => 0);
+            var dumpFrameOption = new Option<bool>("--dump-frame") { Description = "Dump the first captured frame to disk for debugging" };
+            var exitOnCompleteOption = new Option<bool>("--exit-on-complete") { Description = "Exit the CLI process immediately after workflow completion" };
+            var regionOption = new Option<string?>("--region") { Description = "Region override in format 'x,y,width,height' (e.g. '0,0,500,500')" };
 
-            var dumpFrameOption = new Option<bool>(
-                name: "--dump-frame",
-                description: "Dump the first captured frame to disk for debugging",
-                getDefaultValue: () => false);
+            runCommand.Add(durationOption);
+            runCommand.Add(dumpFrameOption);
+            runCommand.Add(exitOnCompleteOption);
+            runCommand.Add(regionOption);
+            runCommand.Add(workflowIdArg);
 
-            var exitOnCompleteOption = new Option<bool>(
-                name: "--exit-on-complete",
-                description: "Exit the CLI process immediately after workflow completion",
-                getDefaultValue: () => false);
-
-            var regionOption = new Option<string?>(
-                name: "--region",
-                description: "Region override in format 'x,y,width,height' (e.g. '0,0,500,500')");
-
-            runCommand.AddOption(durationOption);
-            runCommand.AddOption(dumpFrameOption);
-            runCommand.AddOption(exitOnCompleteOption);
-            runCommand.AddOption(regionOption);
-            runCommand.AddArgument(workflowIdArg);
-
-            runCommand.SetHandler(async (string workflowId, int duration, bool dumpFrame, bool exitOnComplete, string? region) =>
+            runCommand.SetAction((parseResult) =>
             {
-                Environment.ExitCode = await RunWorkflowAsync(workflowId, duration, dumpFrame, exitOnComplete, region);
-            }, workflowIdArg, durationOption, dumpFrameOption, exitOnCompleteOption, regionOption);
+                var workflowId = parseResult.GetValue(workflowIdArg);
+                var duration = parseResult.GetValue(durationOption);
+                var dumpFrame = parseResult.GetValue(dumpFrameOption);
+                var exitOnComplete = parseResult.GetValue(exitOnCompleteOption);
+                var region = parseResult.GetValue(regionOption);
+
+                Environment.ExitCode = RunWorkflowAsync(workflowId, duration, dumpFrame, exitOnComplete, region).GetAwaiter().GetResult();
+            });
 
             return runCommand;
         }
