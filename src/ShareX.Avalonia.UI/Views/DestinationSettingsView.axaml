@@ -37,6 +37,9 @@
                     <Button Content="Import ShareX UploadersConfig"
                             Command="{Binding ImportShareXConfigCommand}"
                             ToolTip.Tip="Import uploader settings from ShareX (WinForms) UploadersConfig.json"/>
+                    <Button Content="Open Plugins Folder..."
+                            Command="{Binding OpenPluginsFolderCommand}"
+                            ToolTip.Tip="Open the plugins folder to add or inspect plugin files"/>
                     <Button Content="+ Add from Catalog" 
                             Command="{Binding SelectedCategory.AddFromCatalogCommand}"/>
                 </StackPanel>

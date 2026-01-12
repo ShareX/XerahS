@@ -8,6 +8,7 @@ using XerahS.UI.Views;
 using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace XerahS.UI.ViewModels;
 
@@ -36,7 +37,7 @@ public partial class DestinationSettingsViewModel : ViewModelBase
         ProviderCatalog.InitializeBuiltInProviders();
 
         // Load external plugins from Plugins folder (for third-party plugins)
-        var pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
+        var pluginsPath = PathsManager.PluginsFolder;
         Common.DebugHelper.WriteLine($"[DestinationSettings] Checking for external plugins in: {pluginsPath}");
 
         if (Directory.Exists(pluginsPath))
@@ -171,6 +172,31 @@ public partial class DestinationSettingsViewModel : ViewModelBase
         catch (Exception ex)
         {
             await ShowMessageDialogAsync("Import Failed", $"Failed to import UploadersConfig:{Environment.NewLine}{ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private void OpenPluginsFolder()
+    {
+        try
+        {
+            var pluginsPath = PathsManager.PluginsFolder;
+            if (!Directory.Exists(pluginsPath))
+            {
+                Directory.CreateDirectory(pluginsPath);
+            }
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = pluginsPath,
+                UseShellExecute = true,
+                Verb = "open"
+            };
+            Process.Start(psi);
+        }
+        catch (Exception ex)
+        {
+            Common.DebugHelper.WriteException(ex, "Failed to open plugins folder");
         }
     }
 
