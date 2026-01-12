@@ -2,10 +2,10 @@ using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.Input;
 using XerahS.Core;
 using ShareX.Editor.Extensions;
-using ShareX.Editor.ImageEffects;
-using ShareX.Editor.ImageEffects.Adjustments;
-using ShareX.Editor.ImageEffects.Drawings;
-using ShareX.Editor.ImageEffects.Manipulations;
+// TODO TODO_IMAGE_EFFECTS using ShareX.Editor.ImageEffects;
+// TODO TODO_IMAGE_EFFECTS using ShareX.Editor.ImageEffects.Adjustments;
+// TODO TODO_IMAGE_EFFECTS using ShareX.Editor.ImageEffects.Drawings;
+// TODO TODO_IMAGE_EFFECTS using ShareX.Editor.ImageEffects.Manipulations;
 using SkiaSharp;
 using System.Collections.ObjectModel;
 
@@ -33,14 +33,14 @@ namespace XerahS.UI.ViewModels
             }
         }
 
-        public ObservableCollection<ImageEffect> Effects { get; private set; } = new ObservableCollection<ImageEffect>();
+        // TODO TODO_IMAGE_EFFECTS public ObservableCollection<ImageEffect> Effects { get; private set; } = new ObservableCollection<ImageEffect>();
 
-        private ImageEffect? selectedEffect;
-        public ImageEffect? SelectedEffect
-        {
-            get => selectedEffect;
-            set => SetProperty(ref selectedEffect, value);
-        }
+        // TODO TODO_IMAGE_EFFECTS private ImageEffect? selectedEffect;
+        // TODO TODO_IMAGE_EFFECTS public ImageEffect? SelectedEffect
+        // TODO TODO_IMAGE_EFFECTS {
+        // TODO TODO_IMAGE_EFFECTS     get => selectedEffect;
+        // TODO TODO_IMAGE_EFFECTS     set => SetProperty(ref selectedEffect, value);
+        // TODO TODO_IMAGE_EFFECTS }
 
         public List<EffectCategory> AvailableEffects { get; private set; }
 
@@ -75,10 +75,10 @@ namespace XerahS.UI.ViewModels
         {
             AvailableEffects = new List<EffectCategory>
             {
-                new EffectCategory("Drawings", typeof(DrawBackground), typeof(DrawBackgroundImage), typeof(DrawBorder), typeof(DrawCheckerboard), typeof(DrawImage), typeof(DrawText)),
-                new EffectCategory("Manipulations", typeof(AutoCrop), typeof(Canvas), typeof(Crop), typeof(Flip), typeof(ForceProportions), typeof(Resize), typeof(Rotate), typeof(RoundedCorners), typeof(Scale), typeof(Skew)),
-                new EffectCategory("Adjustments", typeof(Alpha), typeof(BlackWhite), typeof(Brightness), typeof(MatrixColor), typeof(Colorize), typeof(Contrast), typeof(Gamma), typeof(Grayscale), typeof(Hue), typeof(Inverse), typeof(Polaroid), typeof(Saturation), typeof(Sepia)),
-                new EffectCategory("Filters", typeof(Blur), typeof(ColorDepth), typeof(MatrixConvolution), typeof(EdgeDetect), typeof(Emboss), typeof(GaussianBlur), typeof(Glow), typeof(MeanRemoval), typeof(Outline), typeof(Pixelate), typeof(Reflection), typeof(RGBSplit), typeof(Shadow), typeof(Sharpen), typeof(Slice), typeof(Smooth), typeof(TornEdge), typeof(WaveEdge))
+                // TODO TODO_IMAGE_EFFECTS new EffectCategory("Drawings", typeof(DrawBackground), typeof(DrawBackgroundImage), typeof(DrawBorder), typeof(DrawCheckerboard), typeof(DrawImage), typeof(DrawText)),
+                // TODO TODO_IMAGE_EFFECTS new EffectCategory("Manipulations", typeof(AutoCrop), typeof(Canvas), typeof(Crop), typeof(Flip), typeof(ForceProportions), typeof(Resize), typeof(Rotate), typeof(RoundedCorners), typeof(Scale), typeof(Skew)),
+                // TODO TODO_IMAGE_EFFECTS new EffectCategory("Adjustments", typeof(Alpha), typeof(BlackWhite), typeof(Brightness), typeof(MatrixColor), typeof(Colorize), typeof(Contrast), typeof(Gamma), typeof(Grayscale), typeof(Hue), typeof(Inverse), typeof(Polaroid), typeof(Saturation), typeof(Sepia)),
+                // TODO TODO_IMAGE_EFFECTS new EffectCategory("Filters", typeof(Blur), typeof(ColorDepth), typeof(MatrixConvolution), typeof(EdgeDetect), typeof(Emboss), typeof(GaussianBlur), typeof(Glow), typeof(MeanRemoval), typeof(Outline), typeof(Pixelate), typeof(Reflection), typeof(RGBSplit), typeof(Shadow), typeof(Sharpen), typeof(Slice), typeof(Smooth), typeof(TornEdge), typeof(WaveEdge))
             };
         }
 
@@ -128,21 +128,21 @@ namespace XerahS.UI.ViewModels
 
             try
             {
-                if (SelectedPreset != null)
-                {
-                    foreach (var effect in SelectedPreset.Effects)
-                    {
-                        if (effect.Enabled)
-                        {
-                            var processed = effect.Apply(result);
-                            if (processed != result)
-                            {
-                                result.Dispose();
-                                result = processed;
-                            }
-                        }
-                    }
-                }
+                // TODO TODO_IMAGE_EFFECTS if (SelectedPreset != null)
+                // TODO TODO_IMAGE_EFFECTS {
+                // TODO TODO_IMAGE_EFFECTS     foreach (var effect in SelectedPreset.Effects)
+                // TODO TODO_IMAGE_EFFECTS     {
+                // TODO TODO_IMAGE_EFFECTS         if (effect.Enabled)
+                // TODO TODO_IMAGE_EFFECTS         {
+                // TODO TODO_IMAGE_EFFECTS             var processed = effect.Apply(result);
+                // TODO TODO_IMAGE_EFFECTS             if (processed != result)
+                // TODO TODO_IMAGE_EFFECTS             {
+                // TODO TODO_IMAGE_EFFECTS                 result.Dispose();
+                // TODO TODO_IMAGE_EFFECTS                 result = processed;
+                // TODO TODO_IMAGE_EFFECTS             }
+                // TODO TODO_IMAGE_EFFECTS         }
+                // TODO TODO_IMAGE_EFFECTS     }
+                // TODO TODO_IMAGE_EFFECTS }
 
                 // Convert SKBitmap to Avalonia Bitmap
                 using var data = result.Encode(SKEncodedImageFormat.Png, 100);
@@ -165,15 +165,15 @@ namespace XerahS.UI.ViewModels
 
         private void UpdateEffectsList()
         {
-            Effects.Clear();
-            if (SelectedPreset != null)
-            {
-                foreach (var effect in SelectedPreset.Effects)
-                {
-                    Effects.Add(effect);
-                }
-            }
-            SelectedEffect = Effects.FirstOrDefault();
+            // TODO TODO_IMAGE_EFFECTS Effects.Clear();
+            // TODO TODO_IMAGE_EFFECTS if (SelectedPreset != null)
+            // TODO TODO_IMAGE_EFFECTS {
+            // TODO TODO_IMAGE_EFFECTS     foreach (var effect in SelectedPreset.Effects)
+            // TODO TODO_IMAGE_EFFECTS     {
+            // TODO TODO_IMAGE_EFFECTS         Effects.Add(effect);
+            // TODO TODO_IMAGE_EFFECTS     }
+            // TODO TODO_IMAGE_EFFECTS }
+            // TODO TODO_IMAGE_EFFECTS SelectedEffect = Effects.FirstOrDefault();
         }
 
         [RelayCommand]
@@ -201,26 +201,26 @@ namespace XerahS.UI.ViewModels
         [RelayCommand]
         public void AddEffect(Type effectType)
         {
-            if (SelectedPreset != null && Activator.CreateInstance(effectType) is ImageEffect effect)
-            {
-                SelectedPreset.Effects.Add(effect);
-                Effects.Add(effect);
-                SelectedEffect = effect;
-                UpdatePreview();
-            }
+            // TODO TODO_IMAGE_EFFECTS if (SelectedPreset != null && Activator.CreateInstance(effectType) is ImageEffect effect)
+            // TODO TODO_IMAGE_EFFECTS {
+            // TODO TODO_IMAGE_EFFECTS     SelectedPreset.Effects.Add(effect);
+            // TODO TODO_IMAGE_EFFECTS     Effects.Add(effect);
+            // TODO TODO_IMAGE_EFFECTS     SelectedEffect = effect;
+            // TODO TODO_IMAGE_EFFECTS     UpdatePreview();
+            // TODO TODO_IMAGE_EFFECTS }
         }
 
         [RelayCommand]
         public void RemoveEffect()
         {
-            if (SelectedPreset != null && SelectedEffect != null)
-            {
-                var effect = SelectedEffect;
-                SelectedPreset.Effects.Remove(effect);
-                Effects.Remove(effect);
-                SelectedEffect = Effects.FirstOrDefault();
-                UpdatePreview();
-            }
+            // TODO TODO_IMAGE_EFFECTS if (SelectedPreset != null && SelectedEffect != null)
+            // TODO TODO_IMAGE_EFFECTS {
+            // TODO TODO_IMAGE_EFFECTS     var effect = SelectedEffect;
+            // TODO TODO_IMAGE_EFFECTS     SelectedPreset.Effects.Remove(effect);
+            // TODO TODO_IMAGE_EFFECTS     Effects.Remove(effect);
+            // TODO TODO_IMAGE_EFFECTS     SelectedEffect = Effects.FirstOrDefault();
+            // TODO TODO_IMAGE_EFFECTS     UpdatePreview();
+            // TODO TODO_IMAGE_EFFECTS }
         }
 
         // TODO: Move logic, rename, duplicate, etc.

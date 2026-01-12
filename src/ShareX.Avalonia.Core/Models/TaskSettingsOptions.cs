@@ -1,5 +1,5 @@
 using Newtonsoft.Json;
-using ShareX.Editor.ImageEffects;
+// TODO TODO_IMAGE_EFFECTS using ShareX.Editor.ImageEffects;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -16,8 +16,8 @@ public class ImageEffectPreset
 {
     public string Name { get; set; } = "";
 
-    [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto)]
-    public List<ImageEffect> Effects { get; set; } = new();
+    // TODO TODO_IMAGE_EFFECTS [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto)]
+    // TODO TODO_IMAGE_EFFECTS public List<ImageEffect> Effects { get; set; } = new();
 
     public static ImageEffectPreset GetDefaultPreset()
     {
