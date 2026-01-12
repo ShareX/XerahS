@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using XerahS.Common;
 using XerahS.Uploaders.PluginSystem;
 using System.Collections.ObjectModel;
 
@@ -308,7 +309,7 @@ public partial class UploaderInstanceViewModel : ViewModelBase
     {
         try
         {
-            var pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins", ProviderId);
+            var pluginsPath = Path.Combine(PathsManager.PluginsFolder, ProviderId);
             Common.DebugHelper.WriteLine($"[UploaderInstanceVM] Opening plugins folder: {pluginsPath}");
 
             if (!Directory.Exists(pluginsPath))

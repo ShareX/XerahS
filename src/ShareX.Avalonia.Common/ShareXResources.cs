@@ -45,6 +45,7 @@ namespace XerahS.Common
         public const string SettingsFolderName = "Settings";
         public const string BackupFolderName = "Backup";
         public const string HistoryFileName = "History.db";
+        public const string PluginsFolderName = "Plugins";
         
         public static string UserAgent => AppName;
     }

@@ -36,6 +36,17 @@ namespace XerahS.Common
         public static string HistoryFolder => Path.Combine(PersonalFolder, ShareXResources.HistoryFolderName);
         public static string BackupFolder => Path.Combine(SettingsFolder, ShareXResources.BackupFolderName);
         public static string HistoryBackupFolder => Path.Combine(HistoryFolder, ShareXResources.BackupFolderName);
+        public static string PluginsFolder
+        {
+            get
+            {
+#if DEBUG
+                return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ShareXResources.PluginsFolderName);
+#else
+                return Path.Combine(PersonalFolder, ShareXResources.PluginsFolderName);
+#endif
+            }
+        }
 
         public static void EnsureDirectoriesExist()
         {
@@ -59,6 +70,9 @@ namespace XerahS.Common
             
             if (!Directory.Exists(BackupFolder))
                 Directory.CreateDirectory(BackupFolder);
+            
+            if (!Directory.Exists(PluginsFolder))
+                Directory.CreateDirectory(PluginsFolder);
         }
     }
 }

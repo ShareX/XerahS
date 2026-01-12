@@ -299,7 +299,7 @@ namespace XerahS.Core.Tasks.Processors
             try
             {
                 ProviderCatalog.InitializeBuiltInProviders();
-                string pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
+                string pluginsPath = PathsManager.PluginsFolder;
                 DebugHelper.WriteLine($"Loading plugins from: {pluginsPath}");
                 ProviderCatalog.LoadPlugins(pluginsPath);
                 DebugHelper.WriteLine($"Plugin providers available: {ProviderCatalog.GetAllProviders().Count}");

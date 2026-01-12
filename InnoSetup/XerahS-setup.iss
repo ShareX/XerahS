@@ -47,6 +47,7 @@ Source: "{#MyAppReleaseDirectory}\runtimes\win-x64\*"; DestDir: "{app}\runtimes\
 Source: "{#MyAppReleaseDirectory}\runtimes\win-x86\*"; DestDir: "{app}\runtimes\win-x86"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyAppReleaseDirectory}\runtimes\win-arm64\*"; DestDir: "{app}\runtimes\win-arm64"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyAppReleaseDirectory}\runtimes\win-arm\*"; DestDir: "{app}\runtimes\win-arm"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyAppReleaseDirectory}\Plugins\*"; DestDir: "{userdocs}\{#MyAppName}\Plugins"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"

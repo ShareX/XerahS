@@ -1,3 +1,4 @@
+#nullable disable
 #region License Information (GPL v3)
 
 /*
@@ -22,6 +23,8 @@
 */
 
 #endregion License Information (GPL v3)
+
+using XerahS.Common;
 
 namespace XerahS.Uploaders.PluginSystem;
 
@@ -84,7 +87,7 @@ public static class PluginConfigurationVerifier
         var result = new PluginVerificationResult();
 
         // Find plugin folder
-        var pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins", providerId);
+        var pluginsPath = Path.Combine(PathsManager.PluginsFolder, providerId);
 
         if (!Directory.Exists(pluginsPath))
         {
@@ -149,7 +152,7 @@ public static class PluginConfigurationVerifier
     /// <returns>Number of files deleted</returns>
     public static int CleanDuplicateFrameworkDlls(string providerId)
     {
-        var pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins", providerId);
+        var pluginsPath = Path.Combine(PathsManager.PluginsFolder, providerId);
 
         if (!Directory.Exists(pluginsPath))
         {
