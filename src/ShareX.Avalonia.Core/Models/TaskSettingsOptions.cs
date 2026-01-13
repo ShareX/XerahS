@@ -19,6 +19,12 @@ public class ImageEffectPreset
     // TODO TODO_IMAGE_EFFECTS [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto)]
     // TODO TODO_IMAGE_EFFECTS public List<ImageEffect> Effects { get; set; } = new();
 
+    /// <summary>
+    /// Legacy import support: stores mapped effect data from .sxie imports.
+    /// Each entry contains the target effect type name and property values.
+    /// </summary>
+    public List<MappedEffectData> MappedEffects { get; set; } = new();
+
     public static ImageEffectPreset GetDefaultPreset()
     {
         return new ImageEffectPreset { Name = "Default" };
@@ -28,6 +34,15 @@ public class ImageEffectPreset
     {
         return Name;
     }
+}
+
+/// <summary>
+/// Stores effect data from legacy imports for later instantiation.
+/// </summary>
+public class MappedEffectData
+{
+    public string TargetTypeName { get; set; } = "";
+    public Dictionary<string, object?> Properties { get; set; } = new();
 }
 
 public class ColorPickerOptions
