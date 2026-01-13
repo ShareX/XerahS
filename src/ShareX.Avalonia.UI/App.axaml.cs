@@ -12,6 +12,8 @@ namespace XerahS.UI;
 
 public partial class App : Application
 {
+    public static bool IsExiting { get; set; } = false;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -28,10 +30,32 @@ public partial class App : Application
             var mainViewModel = new MainViewModel();
             mainViewModel.ApplicationName = ShareXResources.AppName;
 
+            // Prepare for Silent Run
+            bool silentRun = XerahS.Core.SettingsManager.Settings.SilentRun;
+
+            if (silentRun)
+            {
+                // If starting silently, we don't want the last window closing to shut down the app
+                desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            }
+
             desktop.MainWindow = new Views.MainWindow
             {
                 DataContext = mainViewModel,
             };
+
+            // Apply window state based on SilentRun
+            // Note: MainWindow is automatically shown by ApplicationLifetime after this method returns.
+            // Setting it to minimized and hiding from taskbar is the best way to simulate "start hidden".
+            if (silentRun)
+            {
+                desktop.MainWindow.WindowState = Avalonia.Controls.WindowState.Minimized;
+                desktop.MainWindow.ShowInTaskbar = false;
+            }
+            else
+            {
+                desktop.MainWindow.WindowState = Avalonia.Controls.WindowState.Maximized;
+            }
 
             InitializeHotkeys();
 

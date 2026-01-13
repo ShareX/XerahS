@@ -185,8 +185,23 @@ public class TrayIconHelper : INotifyPropertyChanged
         DebugHelper.WriteLine("Tray: Open Main Window");
         if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow?.Show();
-            desktop.MainWindow?.Activate();
+            var window = desktop.MainWindow;
+            if (window != null)
+            {
+                // Ensure taskbar visibility is restored
+                window.ShowInTaskbar = true;
+                
+                window.Show();
+                
+                // If minimized, restore it
+                if (window.WindowState == Avalonia.Controls.WindowState.Minimized)
+                {
+                    window.WindowState = Avalonia.Controls.WindowState.Maximized;
+                }
+                
+                window.Activate();
+                window.Focus();
+            }
         }
     }
 
@@ -196,7 +211,15 @@ public class TrayIconHelper : INotifyPropertyChanged
         if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
             desktop.MainWindow is Views.MainWindow mainWindow)
         {
+            // Ensure visibility before navigating
+            mainWindow.ShowInTaskbar = true;
             mainWindow.Show();
+            
+            if (mainWindow.WindowState == Avalonia.Controls.WindowState.Minimized)
+            {
+                mainWindow.WindowState = Avalonia.Controls.WindowState.Maximized;
+            }
+
             mainWindow.Activate();
             mainWindow.NavigateToSettings();
         }
@@ -207,6 +230,8 @@ public class TrayIconHelper : INotifyPropertyChanged
         DebugHelper.WriteLine("Tray: Exit");
         if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            // Flag that we are explicitly exiting, so OnClosing won't cancel
+            App.IsExiting = true;
             desktop.Shutdown();
         }
     }
