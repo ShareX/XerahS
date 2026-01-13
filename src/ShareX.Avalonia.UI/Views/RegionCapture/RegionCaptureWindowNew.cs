@@ -23,6 +23,7 @@ namespace XerahS.UI.Views.RegionCapture
         private RegionCaptureService? _newCaptureService;
         private MonitorInfo[] _newMonitors = Array.Empty<MonitorInfo>();
         private LogicalRectangle _newVirtualDesktopLogical;
+        private RegionCaptureCoordinateMapper? _newCoordinateMapper;
         private SKBitmap? _capturedBitmap;
 
         // Feature flag to enable new backend
@@ -138,6 +139,10 @@ namespace XerahS.UI.Views.RegionCapture
             var physicalBounds = _newCaptureService.GetVirtualDesktopBoundsPhysical();
             TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Virtual desktop physical: {physicalBounds}");
 
+            _newCoordinateMapper = new RegionCaptureCoordinateMapper(
+                _newCaptureService,
+                new LogicalPoint(logicalBounds.X, logicalBounds.Y));
+
             TroubleshootingHelper.Log("RegionCapture","WINDOW", "=== NEW backend positioning complete ===");
         }
 
@@ -147,16 +152,11 @@ namespace XerahS.UI.Views.RegionCapture
         /// </summary>
         private SKPointI ConvertLogicalToPhysicalNew(Point logicalWindowPos)
         {
-            if (_newCaptureService == null)
+            if (_newCoordinateMapper == null)
                 throw new InvalidOperationException("New capture service not initialized");
 
-            // Convert window-local logical to absolute physical
-            // FIX (Round 2): Apply RenderScaling to logical coordinates before adding to physical Position
-            // This fixes the "to the left" offset when RenderScaling > 1
-            var physicalX = Position.X + (logicalWindowPos.X * RenderScaling);
-            var physicalY = Position.Y + (logicalWindowPos.Y * RenderScaling);
-
-            return new SKPointI((int)Math.Round(physicalX), (int)Math.Round(physicalY));
+            var physical = _newCoordinateMapper.WindowLogicalToPhysical(logicalWindowPos);
+            return new SKPointI(physical.X, physical.Y);
         }
 
         /// <summary>
@@ -165,15 +165,12 @@ namespace XerahS.UI.Views.RegionCapture
         /// </summary>
         private Point ConvertPhysicalToLogicalNew(SKPointI physicalScreen)
         {
-            if (_newCaptureService == null)
+            if (_newCoordinateMapper == null)
                 throw new InvalidOperationException("New capture service not initialized");
 
-            // Convert absolute physical to window-local logical
-            // FIX (Round 2): Subtract physical Position then unscale by RenderScaling
-            var logicalX = (physicalScreen.X - Position.X) / RenderScaling;
-            var logicalY = (physicalScreen.Y - Position.Y) / RenderScaling;
-
-            return new Point(logicalX, logicalY);
+            var logical = _newCoordinateMapper.PhysicalToWindowLogical(
+                new PhysicalPoint(physicalScreen.X, physicalScreen.Y));
+            return logical;
         }
 
         /// <summary>
@@ -292,12 +289,59 @@ namespace XerahS.UI.Views.RegionCapture
             if (width <= 0) width = 1;
             if (height <= 0) height = 1;
 
+            LogSelectionDiagnostics(
+                new LogicalPoint(_startPointLogical.X, _startPointLogical.Y),
+                new LogicalPoint(logicalPos.X, logicalPos.Y),
+                new PhysicalRectangle(x, y, width, height));
+
             // Don't capture here - let ScreenCaptureService use the old platform capture which works reliably
             // The new backend is only used for coordinate conversion and window detection
             var resultRect = new SKRectI(x, y, x + width, y + height);
             TroubleshootingHelper.Log("RegionCapture","WINDOW", $"[NEW] Region selection complete, closing overlay: {resultRect}");
             _tcs.TrySetResult(resultRect);
             Close();
+        }
+
+        private void LogSelectionDiagnostics(
+            LogicalPoint startLogical,
+            LogicalPoint endLogical,
+            PhysicalRectangle physicalRect)
+        {
+            if (_newCaptureService == null)
+                return;
+
+            var virtualPhysical = _newCaptureService.GetVirtualDesktopBoundsPhysical();
+            var virtualLogical = _newCaptureService.GetVirtualDesktopBoundsLogical();
+
+            TroubleshootingHelper.Log("RegionCapture", "DIAGNOSTIC", "[NEW] === Selection Diagnostics ===");
+            TroubleshootingHelper.Log("RegionCapture", "DIAGNOSTIC", $"Virtual desktop physical: {virtualPhysical}");
+            TroubleshootingHelper.Log("RegionCapture", "DIAGNOSTIC", $"Virtual desktop logical: {virtualLogical}");
+            TroubleshootingHelper.Log("RegionCapture", "DIAGNOSTIC", $"Selection logical: ({startLogical}) -> ({endLogical})");
+            TroubleshootingHelper.Log("RegionCapture", "DIAGNOSTIC", $"Selection physical: {physicalRect}");
+
+            var originPhysical = new PhysicalPoint(physicalRect.X, physicalRect.Y);
+            var originMonitor = _newMonitors.FirstOrDefault(m => m.Bounds.Contains(originPhysical));
+            if (originMonitor != null)
+            {
+                TroubleshootingHelper.Log("RegionCapture", "DIAGNOSTIC",
+                    $"Origin monitor: {originMonitor.Name} {originMonitor.Bounds} @ {originMonitor.ScaleFactor:F2}x");
+            }
+
+            var intersectingMonitors = _newMonitors
+                .Where(m => m.Bounds.Intersect(physicalRect) != null)
+                .ToArray();
+
+            if (intersectingMonitors.Length > 0)
+            {
+                TroubleshootingHelper.Log("RegionCapture", "DIAGNOSTIC",
+                    $"Intersecting monitors: {intersectingMonitors.Length}");
+
+                foreach (var monitor in intersectingMonitors)
+                {
+                    TroubleshootingHelper.Log("RegionCapture", "DIAGNOSTIC",
+                        $"  - {monitor.Name}: {monitor.Bounds} @ {monitor.ScaleFactor:F2}x");
+                }
+            }
         }
 
         /// <summary>
