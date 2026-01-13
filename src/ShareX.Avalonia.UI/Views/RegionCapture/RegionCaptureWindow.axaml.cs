@@ -87,6 +87,20 @@ namespace XerahS.UI.Views.RegionCapture
             InitializeComponent();
             _tcs = new System.Threading.Tasks.TaskCompletionSource<SKRectI>();
 
+            // Write comprehensive diagnostics log for multi-monitor/DPI troubleshooting
+            try
+            {
+                var diagnosticsPath = CaptureDebugHelper.WriteRegionCaptureDiagnostics(XerahS.Common.PathsManager.PersonalFolder);
+                if (!string.IsNullOrEmpty(diagnosticsPath))
+                {
+                    TroubleshootingHelper.Log("RegionCapture", "DIAGNOSTICS", $"Capture diagnostics written to: {diagnosticsPath}");
+                }
+            }
+            catch
+            {
+                // Never crash Region Capture due to diagnostics
+            }
+
             TroubleshootingHelper.Log("RegionCapture", "INIT", "RegionCaptureWindow created");
             TroubleshootingHelper.Log("RegionCapture", "INIT", $"Initial state: RenderScaling={RenderScaling}, Position={Position}, Bounds={Bounds}, ClientSize={ClientSize}");
 
