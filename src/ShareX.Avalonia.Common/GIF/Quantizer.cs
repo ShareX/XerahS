@@ -113,7 +113,7 @@ namespace XerahS.Common.GIF
         }
 
         // We add this to store the result palette
-        private List<SKColor> _palette;
+        private List<SKColor> _palette = new List<SKColor>();
         public List<SKColor> ResultPalette => _palette;
 
         /// <summary>

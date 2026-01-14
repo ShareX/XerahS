@@ -23,23 +23,25 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using Newtonsoft.Json.Serialization;
 
 namespace XerahS.Common
 {
     public class KnownTypesSerializationBinder : ISerializationBinder
     {
-        public IEnumerable<Type> KnownTypes { get; set; }
+        public IEnumerable<Type> KnownTypes { get; set; } = Array.Empty<Type>();
 
-        public void BindToName(Type serializedType, out string assemblyName, out string typeName)
+        public void BindToName(Type serializedType, out string? assemblyName, out string? typeName)
         {
             assemblyName = null;
             typeName = serializedType.Name;
         }
 
-        public Type BindToType(string assemblyName, string typeName)
+        public Type BindToType(string? assemblyName, string typeName)
         {
-            return KnownTypes.SingleOrDefault(t => t.Name == typeName);
+            return KnownTypes.SingleOrDefault(t => t.Name == typeName) ??
+                   throw new InvalidOperationException($"Unknown serialized type: {typeName}");
         }
     }
 }

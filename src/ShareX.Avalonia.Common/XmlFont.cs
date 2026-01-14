@@ -32,7 +32,7 @@ namespace XerahS.Common
     [Serializable]
     public class XmlFont
     {
-        public string FontFamily { get; set; }
+        public string FontFamily { get; set; } = string.Empty;
         public float Size { get; set; }
         public FontStyle Style { get; set; }
         public GraphicsUnit GraphicsUnit { get; set; }

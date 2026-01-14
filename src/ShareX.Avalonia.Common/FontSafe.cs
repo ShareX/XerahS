@@ -31,7 +31,7 @@ namespace XerahS.Common
     [SupportedOSPlatform("windows")]
     public class FontSafe
     {
-        public string Font { get; set; }
+        public string Font { get; set; } = string.Empty;
 
         public FontSafe()
         {
@@ -51,10 +51,14 @@ namespace XerahS.Common
         {
             if (!string.IsNullOrEmpty(Font))
             {
-                return new FontConverter().ConvertFromInvariantString(Font) as Font;
+                FontConverter converter = new FontConverter();
+                if (converter.ConvertFromInvariantString(Font) is Font parsed)
+                {
+                    return parsed;
+                }
             }
 
-            return null;
+            return SystemFonts.DefaultFont;
         }
     }
 }

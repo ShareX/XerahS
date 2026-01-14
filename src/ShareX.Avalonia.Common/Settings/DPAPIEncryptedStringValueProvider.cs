@@ -41,9 +41,9 @@ namespace XerahS.Common
             this.targetProperty = targetProperty;
         }
 
-        public object GetValue(object target)
+        public object? GetValue(object target)
         {
-            string value = (string)targetProperty.GetValue(target);
+            string? value = targetProperty.GetValue(target) as string;
 
             if (!string.IsNullOrEmpty(value))
             {
@@ -59,9 +59,9 @@ namespace XerahS.Common
             return value;
         }
 
-        public void SetValue(object target, object value)
+        public void SetValue(object target, object? value)
         {
-            string text = (string)value;
+            string? text = value as string;
 
             if (!string.IsNullOrEmpty(text) && text.StartsWith(EncryptedTag))
             {

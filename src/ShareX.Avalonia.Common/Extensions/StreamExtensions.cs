@@ -105,7 +105,7 @@ namespace XerahS.Common
         {
             if (stream.Length > 0 && !string.IsNullOrEmpty(filePath))
             {
-                string directory = Path.GetDirectoryName(filePath);
+                string? directory = Path.GetDirectoryName(filePath);
 
                 if (!string.IsNullOrEmpty(directory))
                 {
@@ -141,7 +141,7 @@ namespace XerahS.Common
             }
         }
 
-        public static T Read<T>(this Stream stream)
+        public static T Read<T>(this Stream stream) where T : struct
         {
             byte[] buffer = new byte[Marshal.SizeOf(typeof(T))];
             int bytes = stream.Read(buffer, 0, buffer.Length);

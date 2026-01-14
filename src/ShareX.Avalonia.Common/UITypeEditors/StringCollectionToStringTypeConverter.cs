@@ -30,12 +30,16 @@ namespace XerahS.Common
 {
     public class StringCollectionToStringTypeConverter : TypeConverter
     {
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
             if (destinationType == typeof(string))
             {
-                List<string> list = (List<string>)value;
-                return string.Join(", ", list);
+                if (value is List<string> list)
+                {
+                    return string.Join(", ", list);
+                }
+
+                return string.Empty;
             }
 
             return base.ConvertTo(context, culture, value, destinationType);

@@ -36,7 +36,7 @@ namespace XerahS.Common
         private uint hash;
         private uint seed;
         private uint[] table;
-        private static uint[] defaultTable;
+        private static uint[]? defaultTable;
 
         public Crc32()
         {

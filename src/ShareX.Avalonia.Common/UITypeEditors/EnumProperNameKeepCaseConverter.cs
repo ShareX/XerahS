@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using System.ComponentModel;
 using System.Globalization;
 
@@ -37,32 +38,52 @@ namespace XerahS.Common
             enumType = type;
         }
 
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destType)
+        public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destType)
         {
-            return destType == typeof(string);
-        }
-
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destType)
-        {
-            return GeneralHelpers.GetProperName(value.ToString(), true);
-        }
-
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type srcType)
-        {
-            return srcType == typeof(string);
-        }
-
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-        {
-            foreach (Enum e in Enum.GetValues(enumType).OfType<Enum>())
+            if (destType is null)
             {
-                if (GeneralHelpers.GetProperName(e.ToString(), true) == (string)value)
-                {
-                    return e;
-                }
+                return base.CanConvertTo(context, destType);
             }
 
-            return Enum.Parse(enumType, (string)value);
+            return destType == typeof(string) || base.CanConvertTo(context, destType);
+        }
+
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destType)
+        {
+            if (destType == typeof(string) && value is not null)
+            {
+                return GeneralHelpers.GetProperName(value.ToString(), true);
+            }
+
+            return base.ConvertTo(context, culture, value, destType);
+        }
+
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? srcType)
+        {
+            if (srcType is null)
+            {
+                return base.CanConvertFrom(context, srcType);
+            }
+
+            return srcType == typeof(string) || base.CanConvertFrom(context, srcType);
+        }
+
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
+        {
+            if (value is string stringValue)
+            {
+                foreach (Enum e in Enum.GetValues(enumType).OfType<Enum>())
+                {
+                    if (GeneralHelpers.GetProperName(e.ToString(), true) == stringValue)
+                    {
+                        return e;
+                    }
+                }
+
+                return Enum.Parse(enumType, stringValue);
+            }
+
+            return base.ConvertFrom(context, culture, value ?? throw new ArgumentNullException(nameof(value)));
         }
     }
 }

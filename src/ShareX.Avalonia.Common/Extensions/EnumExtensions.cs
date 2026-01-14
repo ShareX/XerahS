@@ -59,9 +59,9 @@ namespace XerahS.Common
             return value.GetLocalizedDescription(Resources.ResourceManager);
         }
 
-        public static string GetLocalizedDescription(this Enum value, ResourceManager resourceManager)
+        public static string GetLocalizedDescription(this Enum value, ResourceManager? resourceManager)
         {
-            string description = null;
+            string? description = null;
 
             if (resourceManager != null)
             {
@@ -76,12 +76,7 @@ namespace XerahS.Common
                 }
             }
 
-            if (string.IsNullOrEmpty(description))
-            {
-                description = EnumExtensions.GetDescription(value);
-            }
-
-            return description;
+            return string.IsNullOrEmpty(description) ? EnumExtensions.GetDescription(value) : description;
         }
 
         public static string GetLocalizedCategory(this Enum value)
@@ -89,9 +84,9 @@ namespace XerahS.Common
             return value.GetLocalizedCategory(Resources.ResourceManager);
         }
 
-        public static string GetLocalizedCategory(this Enum value, ResourceManager resourceManager)
+        public static string GetLocalizedCategory(this Enum value, ResourceManager? resourceManager)
         {
-            string category = null;
+            string? category = null;
 
             if (resourceManager != null)
             {
@@ -116,7 +111,7 @@ namespace XerahS.Common
                 }
             }
 
-            return category;
+            return category ?? GetDescription(value);
         }
 
         public static int GetIndex(this Enum value)

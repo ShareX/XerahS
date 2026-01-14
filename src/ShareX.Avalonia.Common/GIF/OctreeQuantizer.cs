@@ -146,7 +146,7 @@ namespace XerahS.Common.GIF
             {
                 _maxColorBits = maxColorBits;
                 _leafCount = 0;
-                _reducibleNodes = new OctreeNode[9];
+                _reducibleNodes = new OctreeNode?[9];
                 _root = new OctreeNode(0, _maxColorBits, this);
                 _previousColor = 0;
                 _previousNode = null;
@@ -195,7 +195,12 @@ namespace XerahS.Common.GIF
                 }
 
                 // Reduce the node most recently added to the list at level 'index'
-                OctreeNode node = _reducibleNodes[index];
+                OctreeNode? node = _reducibleNodes[index];
+                if (node == null)
+                {
+                    return;
+                }
+
                 _reducibleNodes[index] = node.NextReducible;
 
                 // Decrement the leaf count after reducing the node
@@ -224,7 +229,7 @@ namespace XerahS.Common.GIF
             /// <summary>
             /// Return the array of reducible nodes
             /// </summary>
-            protected OctreeNode[] ReducibleNodes
+            protected OctreeNode?[] ReducibleNodes
             {
                 get
                 {
@@ -288,7 +293,7 @@ namespace XerahS.Common.GIF
             /// <summary>
             /// Array of reducible nodes
             /// </summary>
-            private OctreeNode[] _reducibleNodes;
+            private OctreeNode?[] _reducibleNodes;
 
             /// <summary>
             /// Maximum number of significant bits in the image
@@ -298,7 +303,7 @@ namespace XerahS.Common.GIF
             /// <summary>
             /// Store the last node quantized
             /// </summary>
-            private OctreeNode _previousNode;
+            private OctreeNode? _previousNode;
 
             /// <summary>
             /// Cache the previous color quantized
@@ -336,7 +341,7 @@ namespace XerahS.Common.GIF
                         // Otherwise add this to the reducible nodes
                         NextReducible = octree.ReducibleNodes[level];
                         octree.ReducibleNodes[level] = this;
-                        _children = new OctreeNode[8];
+                        _children = new OctreeNode?[8];
                     }
                 }
 
@@ -364,7 +369,7 @@ namespace XerahS.Common.GIF
                                     ((pixel.Green & mask[level]) >> (shift - 1)) |
                                     ((pixel.Blue & mask[level]) >> (shift));
 
-                        OctreeNode child = _children[index];
+                        OctreeNode? child = _children[index];
 
                         if (child == null)
                         {
@@ -381,12 +386,12 @@ namespace XerahS.Common.GIF
                 /// <summary>
                 /// Get/Set the next reducible node
                 /// </summary>
-                public OctreeNode NextReducible { get; set; }
+                public OctreeNode? NextReducible { get; set; }
 
                 /// <summary>
                 /// Return the child nodes
                 /// </summary>
-                public OctreeNode[] Children
+                public OctreeNode?[] Children
                 {
                     get
                     {
@@ -518,7 +523,7 @@ namespace XerahS.Common.GIF
                 /// <summary>
                 /// Pointers to any child nodes
                 /// </summary>
-                private OctreeNode[] _children;
+                private OctreeNode?[] _children;
 
                 /// <summary>
                 /// The index of this node in the palette

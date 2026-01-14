@@ -65,14 +65,14 @@ namespace XerahS.Common
             return ms;
         }
 
-        public static ImageCodecInfo GetCodecInfo(this ImageFormat format)
+        public static ImageCodecInfo? GetCodecInfo(this ImageFormat format)
         {
             return ImageCodecInfo.GetImageEncoders().FirstOrDefault(info => info.FormatID.Equals(format.Guid));
         }
 
         public static string GetMimeType(this ImageFormat format)
         {
-            ImageCodecInfo codec = format.GetCodecInfo();
+            ImageCodecInfo? codec = format.GetCodecInfo();
             return codec != null ? codec.MimeType : "image/unknown";
         }
 
@@ -209,7 +209,7 @@ namespace XerahS.Common
             return task.ContinueWith(_ => action(), scheduler);
         }
 
-        public static T CloneSafe<T>(this T obj) where T : class, ICloneable
+        public static T? CloneSafe<T>(this T? obj) where T : class, ICloneable
         {
             try
             {

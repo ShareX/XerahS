@@ -50,7 +50,7 @@ namespace XerahS.Common
             return MathHelpers.IsBetween(num, min, max);
         }
 
-        public static T BetweenOrDefault<T>(this T num, T min, T max, T defaultValue = default) where T : IComparable<T>
+        public static T BetweenOrDefault<T>(this T num, T min, T max, T defaultValue = default!) where T : IComparable<T>
         {
             return MathHelpers.BetweenOrDefault(num, min, max, defaultValue);
         }

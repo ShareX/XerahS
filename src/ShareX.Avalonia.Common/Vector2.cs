@@ -23,6 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using System;
+using System.Drawing;
+
 namespace XerahS.Common
 {
     public struct Vector2
@@ -61,19 +64,14 @@ namespace XerahS.Common
             this.y = y;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (obj is Vector2 v)
-            {
-                return v.x == x && v.y == y;
-            }
-
-            return false;
+            return obj is Vector2 v && v.x == x && v.y == y;
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return HashCode.Combine(x, y);
         }
 
         public override string ToString()
