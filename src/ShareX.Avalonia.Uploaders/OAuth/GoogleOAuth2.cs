@@ -37,9 +37,9 @@ namespace XerahS.Uploaders
 
         public OAuth2Info AuthInfo { get; private set; }
         private Uploader GoogleUploader { get; set; }
-        public string RedirectURI { get; set; }
-        public string State { get; set; }
-        public string Scope { get; set; }
+        public string RedirectURI { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string Scope { get; set; } = string.Empty;
 
         public GoogleOAuth2(OAuth2Info oauth, Uploader uploader)
         {

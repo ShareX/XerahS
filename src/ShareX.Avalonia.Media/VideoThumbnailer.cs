@@ -32,12 +32,12 @@ namespace XerahS.Media
     public class VideoThumbnailer
     {
         public delegate void ProgressChangedEventHandler(int current, int length);
-        public event ProgressChangedEventHandler ProgressChanged;
+        public event ProgressChangedEventHandler? ProgressChanged;
 
         public string FFmpegPath { get; private set; }
         public VideoThumbnailOptions Options { get; private set; }
         public string MediaPath { get; private set; }
-        public VideoInfo VideoInfo { get; private set; }
+        public VideoInfo? VideoInfo { get; private set; }
 
         public VideoThumbnailer(string ffmpegPath, VideoThumbnailOptions options)
         {

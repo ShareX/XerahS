@@ -34,10 +34,10 @@ namespace XerahS.Uploaders
     public class CustomUploaderItem
     {
         [DefaultValue("")]
-        public string Version { get; set; }
+        public string Version { get; set; } = string.Empty;
 
         [DefaultValue("")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public bool ShouldSerializeName() => !string.IsNullOrEmpty(Name) && Name != URLHelpers.GetHostName(RequestURL);
 
@@ -48,15 +48,15 @@ namespace XerahS.Uploaders
         public HttpMethod RequestMethod { get; set; } = HttpMethod.POST;
 
         [DefaultValue("")]
-        public string RequestURL { get; set; }
+        public string RequestURL { get; set; } = string.Empty;
 
         [DefaultValue(null)]
-        public Dictionary<string, string> Parameters { get; set; }
+        public Dictionary<string, string>? Parameters { get; set; }
 
         public bool ShouldSerializeParameters() => Parameters != null && Parameters.Count > 0;
 
         [DefaultValue(null)]
-        public Dictionary<string, string> Headers { get; set; }
+        public Dictionary<string, string>? Headers { get; set; }
 
         public bool ShouldSerializeHeaders() => Headers != null && Headers.Count > 0;
 
@@ -64,32 +64,32 @@ namespace XerahS.Uploaders
         public CustomUploaderBody Body { get; set; }
 
         [DefaultValue(null)]
-        public Dictionary<string, string> Arguments { get; set; }
+        public Dictionary<string, string>? Arguments { get; set; }
 
         public bool ShouldSerializeArguments() => (Body == CustomUploaderBody.MultipartFormData || Body == CustomUploaderBody.FormURLEncoded) &&
             Arguments != null && Arguments.Count > 0;
 
         [DefaultValue("")]
-        public string FileFormName { get; set; }
+        public string FileFormName { get; set; } = string.Empty;
 
         public bool ShouldSerializeFileFormName() => Body == CustomUploaderBody.MultipartFormData && !string.IsNullOrEmpty(FileFormName);
 
         [DefaultValue("")]
-        public string Data { get; set; }
+        public string Data { get; set; } = string.Empty;
 
         public bool ShouldSerializeData() => (Body == CustomUploaderBody.JSON || Body == CustomUploaderBody.XML) && !string.IsNullOrEmpty(Data);
 
         [DefaultValue("")]
-        public string URL { get; set; }
+        public string URL { get; set; } = string.Empty;
 
         [DefaultValue("")]
-        public string ThumbnailURL { get; set; }
+        public string ThumbnailURL { get; set; } = string.Empty;
 
         [DefaultValue("")]
-        public string DeletionURL { get; set; }
+        public string DeletionURL { get; set; } = string.Empty;
 
         [DefaultValue("")]
-        public string ErrorMessage { get; set; }
+        public string ErrorMessage { get; set; } = string.Empty;
 
         private CustomUploaderItem()
         {

@@ -33,20 +33,20 @@ namespace XerahS.Common
     {
         public delegate void MessageAddedEventHandler(string message);
 
-        public event MessageAddedEventHandler MessageAdded;
+        public event MessageAddedEventHandler? MessageAdded;
 
         public string MessageFormat { get; set; } = "{0:yyyy-MM-dd HH:mm:ss.fff} - {1}";
         public bool AsyncWrite { get; set; } = true;
         public bool DebugWrite { get; set; } = true;
         public bool StringWrite { get; set; } = true;
         public bool FileWrite { get; set; } = false;
-        public string LogFilePath { get; private set; }
-        public string LogFilePathTemplate { get; private set; }
+        public string LogFilePath { get; private set; } = string.Empty;
+        public string LogFilePathTemplate { get; private set; } = string.Empty;
 
         private readonly object loggerLock = new object();
         private ConcurrentQueue<string> messageQueue = new ConcurrentQueue<string>();
         private StringBuilder sbMessages = new StringBuilder();
-        private string _currentDate;
+        private string _currentDate = DateTime.Now.ToString("yyyy-MM-dd");
 
         public Logger()
         {

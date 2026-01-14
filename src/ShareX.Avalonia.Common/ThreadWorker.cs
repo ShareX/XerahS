@@ -27,11 +27,11 @@ namespace XerahS.Common
 {
     public class ThreadWorker
     {
-        public event Action DoWork;
-        public event Action Completed;
+        public event Action? DoWork;
+        public event Action? Completed;
 
         private SynchronizationContext context;
-        private Thread thread;
+        private Thread? thread;
 
         public ThreadWorker()
         {

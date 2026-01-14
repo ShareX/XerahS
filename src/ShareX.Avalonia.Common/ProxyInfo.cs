@@ -31,10 +31,10 @@ namespace XerahS.Common
     public class ProxyInfo
     {
         public ProxyMethod ProxyMethod { get; set; }
-        public string Host { get; set; }
+        public string Host { get; set; } = string.Empty;
         public int Port { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
 
         public ProxyInfo()
         {

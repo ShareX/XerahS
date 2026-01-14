@@ -29,15 +29,15 @@ namespace XerahS.History
 {
     public class HistoryFilter
     {
-        public string Filename { get; set; }
-        public string URL { get; set; }
+        public string Filename { get; set; } = string.Empty;
+        public string URL { get; set; } = string.Empty;
         public bool FilterDate { get; set; }
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }
         public bool FilterType { get; set; }
-        public string Type { get; set; }
+        public string Type { get; set; } = string.Empty;
         public bool FilterHost { get; set; }
-        public string Host { get; set; }
+        public string Host { get; set; } = string.Empty;
         public bool FilterFavorites { get; set; }
 
         public int MaxItemCount { get; set; }
