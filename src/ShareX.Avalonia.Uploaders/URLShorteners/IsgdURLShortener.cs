@@ -53,7 +53,7 @@ namespace XerahS.Uploaders.URLShorteners
 
                 result.Response = SendRequest(HttpMethod.GET, APIURL, arguments);
 
-                if (!result.Response.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(result.Response) && !result.Response.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
                 {
                     result.ShortenedURL = result.Response;
                 }

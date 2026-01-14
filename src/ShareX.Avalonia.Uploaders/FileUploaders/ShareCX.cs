@@ -33,7 +33,7 @@ namespace XerahS.Uploaders.FileUploaders
         {
             UploadResult result = SendRequestFile("http://file1.share.cx/cgi-bin/upload.cgi", stream, fileName, "file_0");
 
-            if (result.IsSuccess)
+            if (result.IsSuccess && !string.IsNullOrEmpty(result.Response))
             {
                 MatchCollection matches = Regex.Matches(result.Response, "(?<=value=\")http:.+?(?=\".*></td>)");
 

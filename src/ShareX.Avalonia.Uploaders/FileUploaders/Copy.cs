@@ -72,7 +72,6 @@ namespace XerahS.Uploaders.FileUploaders
 
             return GetAuthorizationURL(URLRequestToken, URLAuthorize, AuthInfo, args);
         }
-
         public bool GetAccessToken(string? verificationCode = null)
         {
             AuthInfo.AuthVerifier = verificationCode;
@@ -90,7 +89,7 @@ namespace XerahS.Uploaders.FileUploaders
             {
                 string query = OAuthManager.GenerateQuery(URLAccountInfo, null, HttpMethod.GET, AuthInfo);
 
-                string response = SendRequest(HttpMethod.GET, query, null, APIHeaders);
+                string? response = SendRequest(HttpMethod.GET, query, null, APIHeaders);
 
                 if (!string.IsNullOrEmpty(response))
                 {
@@ -144,7 +143,7 @@ namespace XerahS.Uploaders.FileUploaders
             // There's a 1GB and 5 hour(max time for a single upload) limit to all uploads through the API.
             UploadResult result = SendRequestFile(query, stream, fileName, "file", headers: APIHeaders);
 
-            if (result.IsSuccess)
+            if (result.IsSuccess && !string.IsNullOrEmpty(result.Response))
             {
                 CopyUploadInfo? content = JsonConvert.DeserializeObject<CopyUploadInfo>(result.Response);
 
@@ -168,7 +167,7 @@ namespace XerahS.Uploaders.FileUploaders
 
                 string query = OAuthManager.GenerateQuery(url, null, HttpMethod.GET, AuthInfo);
 
-                string response = SendRequest(HttpMethod.GET, query);
+                string? response = SendRequest(HttpMethod.GET, query);
 
                 if (!string.IsNullOrEmpty(response))
                 {
@@ -178,12 +177,10 @@ namespace XerahS.Uploaders.FileUploaders
 
             return null;
         }
-
         #endregion Files and metadata
 
         public override UploadResult Upload(Stream stream, string fileName) =>
             UploadFile(stream, UploadPath, fileName) ?? new UploadResult { IsSuccess = false };
-
         public string GetLinkURL(CopyLinksInfo link, string path, CopyURLType urlType = CopyURLType.Default)
         {
             string fileName = URLHelpers.URLEncode(URLHelpers.GetFileName(path));
@@ -215,7 +212,7 @@ namespace XerahS.Uploaders.FileUploaders
 
             string content = JsonConvert.SerializeObject(publicLink);
 
-            string response = SendRequest(HttpMethod.POST, query, content, headers: APIHeaders);
+            string? response = SendRequest(HttpMethod.POST, query, content, headers: APIHeaders);
 
             if (!string.IsNullOrEmpty(response))
             {

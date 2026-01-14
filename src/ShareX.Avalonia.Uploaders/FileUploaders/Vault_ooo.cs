@@ -103,10 +103,15 @@ namespace XerahS.Uploaders.FileUploaders
             postRequestJson.Add("chunks", chunks);
             postRequestJson.Add("fileLength", fullUploadSize);
 
-            string postResult = SendRequest(HttpMethod.POST, URLHelpers.CombineURL(APIURL, fullFileName), JsonConvert.SerializeObject(postRequestJson), RequestHelpers.ContentTypeJSON, requestHeaders);
-            Vault_oooMetaInfo metaInfo = JsonConvert.DeserializeObject<Vault_oooMetaInfo>(postResult);
+            string? postResult = SendRequest(HttpMethod.POST, URLHelpers.CombineURL(APIURL, fullFileName), JsonConvert.SerializeObject(postRequestJson), RequestHelpers.ContentTypeJSON, requestHeaders);
+            Vault_oooMetaInfo? metaInfo = null;
+            
+            if (!string.IsNullOrEmpty(postResult))
+            {
+                metaInfo = JsonConvert.DeserializeObject<Vault_oooMetaInfo>(postResult);
+            }
 
-            if (string.IsNullOrEmpty(metaInfo.UrlPathName))
+            if (metaInfo == null || string.IsNullOrEmpty(metaInfo.UrlPathName))
                 throw new InvalidOperationException("No correct metaInfo returned");
 
             #region Upload in chunks
