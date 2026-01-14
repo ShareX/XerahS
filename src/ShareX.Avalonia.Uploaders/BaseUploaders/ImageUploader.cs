@@ -23,14 +23,22 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using System.Drawing;
+using System.Runtime.Versioning;
 
 namespace XerahS.Uploaders
 {
     public abstract class ImageUploader : FileUploader
     {
+        [SupportedOSPlatform("windows")]
         public UploadResult UploadImage(Image image, string fileName)
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                throw new PlatformNotSupportedException("System.Drawing image upload is only supported on Windows.");
+            }
+
             using MemoryStream stream = new MemoryStream();
             image.Save(stream, image.RawFormat);
             return Upload(stream, fileName);

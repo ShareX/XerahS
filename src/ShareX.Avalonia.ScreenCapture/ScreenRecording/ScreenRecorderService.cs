@@ -22,7 +22,9 @@
 */
 
 #endregion License Information (GPL v3)
+using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Diagnostics;
 using System.IO;
 using System.Drawing;
@@ -300,7 +302,7 @@ public class ScreenRecorderService : IRecordingService
                 }
             }
 
-            if (DebugDumpFirstFrame && !_debugFrameDumped)
+            if (OperatingSystem.IsWindows() && DebugDumpFirstFrame && !_debugFrameDumped)
             {
                 DumpFrame(frameToEncode, "capture");
                 _debugFrameDumped = true;
@@ -493,8 +495,14 @@ public class ScreenRecorderService : IRecordingService
         GC.SuppressFinalize(this);
     }
 
+    [SupportedOSPlatform("windows")]
     private static void DumpFrame(FrameData frame, string tag)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         try
         {
             string dumpDir = PathsManager.FrameDumpsFolder;

@@ -26,6 +26,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
@@ -48,6 +49,7 @@ namespace XerahS.Common
         }
     }
 
+    [SupportedOSPlatform("windows")]
     public class KeyboardHook : IDisposable
     {
         public event KeyEventHandler? KeyDown;

@@ -25,9 +25,11 @@
 
 using Newtonsoft.Json.Serialization;
 using System.Reflection;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public class DPAPIEncryptedStringValueProvider : IValueProvider
     {
         private const string EncryptedTag = "$DPAPIEncrypted$";

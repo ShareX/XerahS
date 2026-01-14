@@ -23,9 +23,12 @@
 
 #endregion License Information (GPL v3)
 
+using System.Runtime.Versioning;
+
 namespace XerahS.Common
 {
     [Serializable]
+    [SupportedOSPlatform("windows")]
     public class PrintSettings
     {
         public int Margin { get; set; }

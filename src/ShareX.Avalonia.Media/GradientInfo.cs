@@ -25,9 +25,11 @@
 
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Runtime.Versioning;
 
 namespace XerahS.Media
 {
+    [SupportedOSPlatform("windows")]
     public class GradientInfo
     {
         public LinearGradientMode Type { get; set; }

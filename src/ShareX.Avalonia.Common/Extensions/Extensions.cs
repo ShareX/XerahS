@@ -28,12 +28,14 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.Text;
+using System.Runtime.Versioning;
 using DrawingPoint = System.Drawing.Point;
 using DrawingPointF = System.Drawing.PointF;
 using DrawingSize = System.Drawing.Size;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public static class Extensions
     {
         public static void ForEach<T>(this IEnumerable<T> source, Action<T> action)

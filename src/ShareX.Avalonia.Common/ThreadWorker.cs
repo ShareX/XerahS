@@ -44,7 +44,10 @@ namespace XerahS.Common
             {
                 thread = new Thread(WorkThread);
                 thread.IsBackground = true;
-                thread.SetApartmentState(state);
+                if (OperatingSystem.IsWindows())
+                {
+                    thread.SetApartmentState(state);
+                }
                 thread.Start();
             }
         }
