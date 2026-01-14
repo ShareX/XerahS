@@ -43,7 +43,7 @@ namespace XerahS.Uploaders.FileUploaders
         {
             UploadResult result = SendRequestFile("https://transfer.sh", stream, fileName, "file");
 
-            if (result.IsSuccess)
+            if (result.IsSuccess && !string.IsNullOrEmpty(result.Response))
             {
                 result.URL = result.Response.Trim();
             }

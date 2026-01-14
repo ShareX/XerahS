@@ -235,7 +235,7 @@ namespace XerahS.Uploaders
         {
             if (string.IsNullOrEmpty(url))
             {
-                return url;
+                return url ?? string.Empty;
             }
 
             if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))

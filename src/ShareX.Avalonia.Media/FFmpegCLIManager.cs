@@ -54,7 +54,6 @@ namespace XerahS.Media
 
         public delegate void EncodeProgressChangedEventHandler(float percentage);
         public event EncodeProgressChangedEventHandler EncodeProgressChanged = percentage => { };
-
         public string FFmpegPath { get; private set; }
         public StringBuilder Output { get; private set; }
         public bool IsEncoding { get; set; }
@@ -116,7 +115,7 @@ namespace XerahS.Media
         {
             lock (this)
             {
-                string data = e.Data;
+                string? data = e.Data;
 
                 if (!string.IsNullOrEmpty(data))
                 {

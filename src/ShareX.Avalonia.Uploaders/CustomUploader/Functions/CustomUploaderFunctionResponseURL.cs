@@ -32,7 +32,7 @@ namespace XerahS.Uploaders
 
         public override string Call(ShareXCustomUploaderSyntaxParser parser, string[] parameters)
         {
-            return parser.ResponseInfo.ResponseURL;
+            return parser.ResponseInfo?.ResponseURL ?? string.Empty;
         }
     }
 }

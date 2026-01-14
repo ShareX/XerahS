@@ -49,7 +49,7 @@ namespace XerahS.Uploaders
             else
             {
                 // {xml:xpath}
-                input = parser.ResponseInfo.ResponseText;
+                input = parser.ResponseInfo?.ResponseText;
                 xpath = parameters[0];
             }
 

@@ -34,7 +34,7 @@ namespace XerahS.Uploaders.FileUploaders
 
             UploadResult result = SendRequestFile("http://filebin.ca/upload.php", stream, fileName, "file", args);
 
-            if (result.IsSuccess)
+            if (result.IsSuccess && !string.IsNullOrEmpty(result.Response))
             {
                 result.URL = result.Response.Substring(result.Response.LastIndexOf(' ') + 1).Trim();
             }

@@ -33,7 +33,7 @@ namespace XerahS.Uploaders.ImageUploaders
         {
             UploadResult result = SendRequestFile(uploadURL, stream, fileName, "fileup");
 
-            if (result.IsSuccess)
+            if (result.IsSuccess && !string.IsNullOrEmpty(result.Response))
             {
                 string lastLine = result.Response.Remove(0, result.Response.LastIndexOf('\n') + 1).Trim();
                 result.URL = lastLine;

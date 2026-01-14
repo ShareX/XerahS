@@ -30,7 +30,7 @@ namespace XerahS.Indexer
 {
     public abstract class Indexer
     {
-        protected IndexerSettings? settings = null;
+        protected IndexerSettings settings = null!;
 
         protected Indexer(IndexerSettings indexerSettings)
         {
