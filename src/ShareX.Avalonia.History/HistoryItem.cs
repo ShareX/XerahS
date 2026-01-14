@@ -31,16 +31,16 @@ namespace XerahS.History
     {
         [JsonIgnore]
         public long Id { get; set; }
-        public string FileName { get; set; }
-        public string FilePath { get; set; }
+        public string FileName { get; set; } = string.Empty;
+        public string FilePath { get; set; } = string.Empty;
         public DateTime DateTime { get; set; }
-        public string Type { get; set; }
-        public string Host { get; set; }
-        public string URL { get; set; }
-        public string ThumbnailURL { get; set; }
-        public string DeletionURL { get; set; }
-        public string ShortenedURL { get; set; }
-        public Dictionary<string, string> Tags { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public string Host { get; set; } = string.Empty;
+        public string URL { get; set; } = string.Empty;
+        public string ThumbnailURL { get; set; } = string.Empty;
+        public string DeletionURL { get; set; } = string.Empty;
+        public string ShortenedURL { get; set; } = string.Empty;
+        public Dictionary<string, string> Tags { get; set; } = new Dictionary<string, string>();
 
         [JsonIgnore]
         public string TagsWindowTitle
