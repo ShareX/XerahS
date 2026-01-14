@@ -9,11 +9,21 @@ namespace XerahS.Common.Helpers
         public static bool SetShortcut(bool create, Environment.SpecialFolder specialFolder, string shortcutName, string targetPath, string arguments = "")
         {
             string shortcutPath = GetShortcutPath(specialFolder, shortcutName);
+            if (string.IsNullOrEmpty(shortcutPath))
+            {
+                return false;
+            }
+
             return SetShortcut(create, shortcutPath, targetPath, arguments);
         }
 
         public static bool SetShortcut(bool create, string shortcutPath, string targetPath, string arguments = "")
         {
+            if (string.IsNullOrEmpty(shortcutPath) || string.IsNullOrEmpty(targetPath))
+            {
+                return false;
+            }
+
             try
             {
                 if (create)
@@ -46,7 +56,7 @@ namespace XerahS.Common.Helpers
             {
                 try
                 {
-                    string shortcutTargetPath = GetShortcutTargetPath(shortcutPath);
+                    string? shortcutTargetPath = GetShortcutTargetPath(shortcutPath);
                     return !string.IsNullOrEmpty(shortcutTargetPath) && shortcutTargetPath.Equals(targetPath, StringComparison.OrdinalIgnoreCase);
                 }
                 catch (Exception e)
@@ -104,7 +114,7 @@ namespace XerahS.Common.Helpers
             return false;
         }
 
-        private static string GetShortcutTargetPath(string shortcutPath)
+        private static string? GetShortcutTargetPath(string shortcutPath)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {

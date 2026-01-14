@@ -31,7 +31,7 @@ namespace XerahS.Common
     {
         private static readonly object lockObject = new object();
 
-        private static HttpClient client;
+        private static HttpClient? client;
 
         public static HttpClient Create()
         {
