@@ -107,7 +107,7 @@ namespace XerahS.Uploaders
 
                 if (headers["User-Agent"] != null)
                 {
-                    userAgent = headers["User-Agent"];
+                    userAgent = headers["User-Agent"]!;
                     headers.Remove("User-Agent");
                 }
 

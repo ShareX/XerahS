@@ -37,7 +37,7 @@ namespace XerahS.Uploaders.FileUploaders
             public string? SessionKey { get; set; }
         }
 
-        public UploaderErrorManager Errors { get; } = new UploaderErrorManager();
+        public new UploaderErrorManager Errors { get; } = new UploaderErrorManager();
 
         public SendSpace(string apiKey)
         {

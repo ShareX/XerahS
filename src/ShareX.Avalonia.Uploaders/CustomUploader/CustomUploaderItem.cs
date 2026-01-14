@@ -326,7 +326,7 @@ namespace XerahS.Uploaders
         {
             try
             {
-                ParseResponse(result, responseInfo, errors, input, isShortenedURL);
+                ParseResponse(result, responseInfo ?? new ResponseInfo(), errors, input, isShortenedURL);
             }
             catch (JsonReaderException e)
             {
@@ -433,7 +433,7 @@ namespace XerahS.Uploaders
         {
             if (!string.IsNullOrEmpty(RequestURL))
             {
-                NameValueCollection nvc = URLHelpers.ParseQueryString(RequestURL);
+                NameValueCollection? nvc = URLHelpers.ParseQueryString(RequestURL);
 
                 if (nvc != null && nvc.Count > 0)
                 {
@@ -446,18 +446,25 @@ namespace XerahS.Uploaders
                     {
                         if (key == null)
                         {
-                            foreach (string value in nvc.GetValues(key))
+                            string[]? values = nvc.GetValues(key);
+                            if (values != null)
                             {
-                                if (!Parameters.ContainsKey(value))
+                                foreach (string value in values)
                                 {
-                                    Parameters.Add(value, "");
+                                    if (!Parameters.ContainsKey(value))
+                                    {
+                                        Parameters.Add(value, "");
+                                    }
                                 }
                             }
                         }
                         else if (!Parameters.ContainsKey(key))
                         {
-                            string value = nvc[key];
-                            Parameters.Add(key, value);
+                            string? value = nvc[key];
+                            if (!string.IsNullOrEmpty(value))
+                            {
+                                Parameters.Add(key, value);
+                            }
                         }
                     }
 

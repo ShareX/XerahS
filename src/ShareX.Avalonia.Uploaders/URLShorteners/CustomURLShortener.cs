@@ -36,7 +36,7 @@ namespace XerahS.Uploaders.URLShorteners
             return config.CustomUploadersList != null && config.CustomUploadersList.IsValidIndex(config.CustomURLShortenerSelected);
         }
 
-        public override URLShortener CreateShortener(UploadersConfig config, TaskReferenceHelper taskInfo)
+        public override URLShortener? CreateShortener(UploadersConfig config, TaskReferenceHelper taskInfo)
         {
             int index;
 
