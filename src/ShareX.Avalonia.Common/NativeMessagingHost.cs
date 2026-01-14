@@ -31,7 +31,7 @@ namespace XerahS.Common
     {
         public string Read()
         {
-            string input = null;
+            string? input = null;
 
             Stream inputStream = Console.OpenStandardInput();
 

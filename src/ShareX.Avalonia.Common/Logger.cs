@@ -61,7 +61,7 @@ namespace XerahS.Common
                 LogFilePath = logFilePath;
                 _currentDate = DateTime.Now.ToString("yyyy-MM-dd");
 
-                string directory = Path.GetDirectoryName(LogFilePath);
+                string? directory = Path.GetDirectoryName(LogFilePath);
 
                 if (!string.IsNullOrEmpty(directory))
                 {
@@ -85,7 +85,7 @@ namespace XerahS.Common
 
                 // Build the path with yyyy-MM folder structure
                 string baseTemplate = LogFilePathTemplate;
-                string directory = Path.GetDirectoryName(baseTemplate);
+                string? directory = Path.GetDirectoryName(baseTemplate);
                 string filename = Path.GetFileNameWithoutExtension(baseTemplate);
                 string extension = Path.GetExtension(baseTemplate);
 
@@ -93,7 +93,7 @@ namespace XerahS.Common
                 string currentMonthFolder = DateTime.Now.ToString("yyyy-MM");
 
                 // Reconstruct path: replace the date in the directory structure
-                if (directory.Contains("Logs"))
+                if (!string.IsNullOrEmpty(directory) && directory.Contains("Logs"))
                 {
                     // Find the Logs folder in the path
                     int logsIndex = directory.LastIndexOf("Logs");
@@ -104,7 +104,8 @@ namespace XerahS.Common
                     }
                 }
 
-                LogFilePath = Path.Combine(directory, $"{filename}-{today}{extension}");
+                string logDirectory = directory ?? string.Empty;
+                LogFilePath = Path.Combine(logDirectory, $"{filename}-{today}{extension}");
             }
 
             return LogFilePath;
@@ -114,8 +115,13 @@ namespace XerahS.Common
         {
             lock (loggerLock)
             {
-                while (messageQueue.TryDequeue(out string message))
+                while (messageQueue.TryDequeue(out string? message))
                 {
+                    if (message == null)
+                    {
+                        continue;
+                    }
+
                     if (DebugWrite)
                     {
                         Debug.Write(message);
@@ -131,7 +137,7 @@ namespace XerahS.Common
                         try
                         {
                             string currentLogPath = GetCurrentLogFilePath();
-                            string directory = Path.GetDirectoryName(currentLogPath);
+                            string? directory = Path.GetDirectoryName(currentLogPath);
 
                             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                             {
@@ -214,7 +220,7 @@ namespace XerahS.Common
                     return sbMessages.ToString();
                 }
 
-                return null;
+                return string.Empty;
             }
         }
     }

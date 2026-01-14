@@ -29,7 +29,7 @@ namespace XerahS.Common
     {
         public static readonly string DefaultMimeType = "application/octet-stream";
 
-        public static string GetMimeTypeFromExtension(string extension)
+        public static string? GetMimeTypeFromExtension(string extension)
         {
             if (!string.IsNullOrEmpty(extension))
             {
@@ -38,9 +38,9 @@ namespace XerahS.Common
                     extension = extension.Substring(1);
                 }
 
-                if (Mappings.TryGetValue(extension, out string mime))
+                if (Mappings.TryGetValue(extension, out string? mime))
                 {
-                    return mime;
+                    return mime!;
                 }
             }
 
@@ -55,7 +55,7 @@ namespace XerahS.Common
 
                 if (!string.IsNullOrEmpty(extension))
                 {
-                    string mimeType = GetMimeTypeFromExtension(extension);
+                    string? mimeType = GetMimeTypeFromExtension(extension);
 
                     if (!string.IsNullOrEmpty(mimeType))
                     {

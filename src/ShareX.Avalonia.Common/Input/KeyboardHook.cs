@@ -72,9 +72,9 @@ namespace XerahS.Common
         private static IntPtr SetHook(int hookType, NativeMethods.HookProc hookProc)
         {
             using (Process currentProcess = Process.GetCurrentProcess())
-            using (ProcessModule currentModule = currentProcess.MainModule)
+            using (ProcessModule? currentModule = currentProcess.MainModule)
             {
-                IntPtr moduleHandle = NativeMethods.GetModuleHandle(currentModule.ModuleName);
+                IntPtr moduleHandle = NativeMethods.GetModuleHandle(currentModule?.ModuleName);
                 return NativeMethods.SetWindowsHookEx(hookType, hookProc, moduleHandle, 0);
             }
         }

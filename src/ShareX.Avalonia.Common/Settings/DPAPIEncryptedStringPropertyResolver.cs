@@ -38,7 +38,14 @@ namespace XerahS.Common
 
             foreach (JsonProperty prop in props.Where(p => p.PropertyType == typeof(string)))
             {
-                PropertyInfo pi = type.GetProperty(prop.UnderlyingName);
+                string? underlyingName = prop.UnderlyingName;
+
+                if (underlyingName == null)
+                {
+                    continue;
+                }
+
+                PropertyInfo? pi = type.GetProperty(underlyingName);
 
                 if (pi != null && pi.GetCustomAttribute(typeof(JsonEncryptAttribute), true) != null)
                 {

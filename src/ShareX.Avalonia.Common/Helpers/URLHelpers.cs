@@ -244,7 +244,7 @@ namespace XerahS.Common
 
         public static string GetHostName(string url)
         {
-            if (!string.IsNullOrEmpty(url) && Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+            if (!string.IsNullOrEmpty(url) && Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
             {
                 string host = uri.Host;
 

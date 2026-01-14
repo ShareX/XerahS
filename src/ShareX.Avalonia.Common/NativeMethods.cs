@@ -159,8 +159,8 @@ namespace XerahS.Common
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr GetModuleHandle(string lpModuleName);
+[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+public static extern IntPtr GetModuleHandle(string? lpModuleName);
 
         public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
 

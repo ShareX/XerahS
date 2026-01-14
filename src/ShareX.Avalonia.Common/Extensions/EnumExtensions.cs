@@ -90,7 +90,7 @@ namespace XerahS.Common
 
             if (resourceManager != null)
             {
-                FieldInfo fi = value.GetType().GetField(value.ToString());
+                FieldInfo? fi = value.GetType().GetField(value.ToString());
 
                 if (fi != null)
                 {
@@ -163,7 +163,7 @@ namespace XerahS.Common
         {
             Array values = Enum.GetValues(value.GetType());
             int i = Array.IndexOf(values, value) + 1;
-            return i == values.Length ? (T)values.GetValue(0) : (T)values.GetValue(i);
+            return i == values.Length ? (T)values.GetValue(0)! : (T)values.GetValue(i)!;
         }
 
         public static string GetHotkeyCategory(this Enum value)
@@ -187,7 +187,7 @@ namespace XerahS.Common
         {
             Array values = Enum.GetValues(value.GetType());
             int i = Array.IndexOf(values, value) - 1;
-            return i == -1 ? (T)values.GetValue(values.Length - 1) : (T)values.GetValue(i);
+            return i == -1 ? (T)values.GetValue(values.Length - 1)! : (T)values.GetValue(i)!;
         }
     }
 }

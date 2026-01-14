@@ -90,7 +90,9 @@ namespace XerahS.Common
                 return;
             }
 
-            DebugHelper.WriteLine("Updating ShareX from version {0} to {1}", CurrentVersion, LatestVersion);
+            string fromVersion = CurrentVersion?.ToString() ?? "unknown";
+            string toVersion = LatestVersion?.ToString() ?? "unknown";
+            DebugHelper.WriteLine("Updating ShareX from version {0} to {1}", fromVersion, toVersion);
 
             if (IsPortable)
             {

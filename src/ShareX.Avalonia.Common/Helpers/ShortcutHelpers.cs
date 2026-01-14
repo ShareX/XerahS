@@ -92,16 +92,20 @@ namespace XerahS.Common.Helpers
 
                     try
                     {
-                        Type shellType = Type.GetTypeFromProgID("WScript.Shell");
+                        Type? shellType = Type.GetTypeFromProgID("WScript.Shell");
                         if (shellType != null)
                         {
-                            dynamic shell = Activator.CreateInstance(shellType);
-                            dynamic shortcut = shell.CreateShortcut(shortcutPath);
-                            shortcut.TargetPath = targetPath;
-                            shortcut.Arguments = arguments;
-                            shortcut.WorkingDirectory = Path.GetDirectoryName(targetPath) ?? string.Empty;
-                            shortcut.Save();
-                            return true;
+                            dynamic? shell = Activator.CreateInstance(shellType);
+                            dynamic? shortcut = shell?.CreateShortcut(shortcutPath);
+
+                            if (shortcut != null)
+                            {
+                                shortcut.TargetPath = targetPath;
+                                shortcut.Arguments = arguments;
+                                shortcut.WorkingDirectory = Path.GetDirectoryName(targetPath) ?? string.Empty;
+                                shortcut.Save();
+                                return true;
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -120,12 +124,15 @@ namespace XerahS.Common.Helpers
             {
                 try
                 {
-                    Type shellType = Type.GetTypeFromProgID("WScript.Shell");
+                    Type? shellType = Type.GetTypeFromProgID("WScript.Shell");
                     if (shellType != null)
                     {
-                        dynamic shell = Activator.CreateInstance(shellType);
-                        dynamic shortcut = shell.CreateShortcut(shortcutPath);
-                        return shortcut.TargetPath;
+                        dynamic? shell = Activator.CreateInstance(shellType);
+                        dynamic? shortcut = shell?.CreateShortcut(shortcutPath);
+                        if (shortcut != null)
+                        {
+                            return shortcut.TargetPath;
+                        }
                     }
                 }
                 catch (Exception ex)

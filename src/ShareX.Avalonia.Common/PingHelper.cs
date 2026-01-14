@@ -33,7 +33,12 @@ namespace XerahS.Common
         public static PingResult PingHost(string host, int timeout = 1000, int pingCount = 4, int waitTime = 100)
         {
             PingResult pingResult = new PingResult();
-            IPAddress address = GetIpFromHost(host);
+            IPAddress? address = GetIpFromHost(host);
+            if (address == null)
+            {
+                DebugHelper.WriteLine($"Failed to resolve host \"{host}\".");
+                return pingResult;
+            }
             byte[] buffer = new byte[32];
             PingOptions pingOptions = new PingOptions(128, true);
 
@@ -65,17 +70,25 @@ namespace XerahS.Common
             return pingResult;
         }
 
-        private static IPAddress GetIpFromHost(string host)
+        private static IPAddress? GetIpFromHost(string host)
         {
-            if (!IPAddress.TryParse(host, out IPAddress address))
+            if (!IPAddress.TryParse(host, out IPAddress? address))
             {
                 try
                 {
-                    address = Dns.GetHostEntry(host).AddressList[0];
+                    IPAddress[] addresses = Dns.GetHostEntry(host).AddressList;
+
+                    if (addresses.Length == 0)
+                    {
+                        return null;
+                    }
+
+                    address = addresses[0];
                 }
                 catch (Exception e)
                 {
                     DebugHelper.WriteException(e);
+                    return null;
                 }
             }
 

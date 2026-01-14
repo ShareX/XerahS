@@ -79,7 +79,7 @@ namespace XerahS.Common
             try
             {
                 using (RegistryKey baseKey = RegistryKey.OpenBaseKey(root, view))
-                using (RegistryKey rk = baseKey.OpenSubKey(path))
+                using (RegistryKey? rk = baseKey.OpenSubKey(path))
                 {
                     if (rk != null)
                     {
@@ -107,7 +107,7 @@ namespace XerahS.Common
 
         public static bool CheckStringValue(string path, string? name = null, string? value = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
         {
-            string registryValue = GetValueString(path, name, root, view);
+            string? registryValue = GetValueString(path, name, root, view);
 
             return registryValue != null && (value == null || registryValue.Equals(value, StringComparison.OrdinalIgnoreCase));
         }
@@ -121,7 +121,7 @@ namespace XerahS.Common
             foreach (string command in commands)
             {
                 string path = $@"HKEY_CLASSES_ROOT\Applications\{fileName}\shell\{command}\command";
-                string value = Registry.GetValue(path, null, null) as string;
+                string? value = Registry.GetValue(path, null, null) as string;
 
                 if (!string.IsNullOrEmpty(value))
                 {
@@ -137,7 +137,7 @@ namespace XerahS.Common
 
             // Second method: HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache
 
-            using (RegistryKey programs = Registry.CurrentUser.OpenSubKey(@"Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache"))
+            using (RegistryKey? programs = Registry.CurrentUser.OpenSubKey(@"Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache"))
             {
                 if (programs != null)
                 {
