@@ -73,8 +73,8 @@ namespace XerahS.Uploaders
                 return false;
             }
 
-            string queryCode = null;
-            string queryState = null;
+            string? queryCode = null;
+            string? queryState = null;
 
             try
             {

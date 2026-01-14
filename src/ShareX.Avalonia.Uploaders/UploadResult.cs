@@ -30,10 +30,10 @@ namespace XerahS.Uploaders
 {
     public class UploadResult
     {
-        public string URL { get; set; } = string.Empty;
-        public string ThumbnailURL { get; set; } = string.Empty;
-        public string DeletionURL { get; set; } = string.Empty;
-        public string ShortenedURL { get; set; } = string.Empty;
+        public string? URL { get; set; }
+        public string? ThumbnailURL { get; set; }
+        public string? DeletionURL { get; set; }
+        public string? ShortenedURL { get; set; }
 
         private bool isSuccess;
 
@@ -49,7 +49,7 @@ namespace XerahS.Uploaders
             }
         }
 
-        public string Response { get; set; } = string.Empty;
+        public string? Response { get; set; }
         public UploaderErrorManager Errors { get; set; }
         public bool IsURLExpected { get; set; }
 
@@ -77,10 +77,14 @@ namespace XerahS.Uploaders
 
         public void ForceHTTPS()
         {
-            URL = URLHelpers.ForcePrefix(URL);
-            ThumbnailURL = URLHelpers.ForcePrefix(ThumbnailURL);
-            DeletionURL = URLHelpers.ForcePrefix(DeletionURL);
-            ShortenedURL = URLHelpers.ForcePrefix(ShortenedURL);
+            if (!string.IsNullOrEmpty(URL))
+                URL = URLHelpers.ForcePrefix(URL);
+            if (!string.IsNullOrEmpty(ThumbnailURL))
+                ThumbnailURL = URLHelpers.ForcePrefix(ThumbnailURL);
+            if (!string.IsNullOrEmpty(DeletionURL))
+                DeletionURL = URLHelpers.ForcePrefix(DeletionURL);
+            if (!string.IsNullOrEmpty(ShortenedURL))
+                ShortenedURL = URLHelpers.ForcePrefix(ShortenedURL);
         }
 
         public override string ToString()

@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS History (
                         ThumbnailURL = reader["ThumbnailURL"]?.ToString() ?? string.Empty,
                         DeletionURL = reader["DeletionURL"]?.ToString() ?? string.Empty,
                         ShortenedURL = reader["ShortenedURL"]?.ToString() ?? string.Empty,
-                        Tags = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader["Tags"]?.ToString() ?? "{}") ?? new Dictionary<string, string>()
+                        Tags = JsonConvert.DeserializeObject<Dictionary<string, string?>>(reader["Tags"]?.ToString() ?? "{}") ?? new Dictionary<string, string?>()
                     };
 
                     items.Add(item);
@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS History (
                             ThumbnailURL = reader["ThumbnailURL"]?.ToString() ?? string.Empty,
                             DeletionURL = reader["DeletionURL"]?.ToString() ?? string.Empty,
                             ShortenedURL = reader["ShortenedURL"]?.ToString() ?? string.Empty,
-                            Tags = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader["Tags"]?.ToString() ?? "{}") ?? new Dictionary<string, string>()
+                            Tags = JsonConvert.DeserializeObject<Dictionary<string, string?>>(reader["Tags"]?.ToString() ?? "{}") ?? new Dictionary<string, string?>()
                         };
 
                         items.Add(item);

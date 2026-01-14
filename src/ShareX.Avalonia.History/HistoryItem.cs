@@ -41,14 +41,14 @@ namespace XerahS.History
         public string ThumbnailURL { get; set; } = string.Empty;
         public string DeletionURL { get; set; } = string.Empty;
         public string ShortenedURL { get; set; } = string.Empty;
-        public Dictionary<string, string> Tags { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string?> Tags { get; set; } = new Dictionary<string, string?>();
 
         [JsonIgnore]
         public string? TagsWindowTitle
         {
             get
             {
-                if (Tags != null && Tags.TryGetValue("WindowTitle", out string value))
+                if (Tags != null && Tags.TryGetValue("WindowTitle", out string? value))
                 {
                     return value;
                 }
@@ -62,7 +62,7 @@ namespace XerahS.History
         {
             get
             {
-                if (Tags != null && Tags.TryGetValue("ProcessName", out string value))
+                if (Tags != null && Tags.TryGetValue("ProcessName", out string? value))
                 {
                     return value;
                 }
@@ -70,7 +70,6 @@ namespace XerahS.History
                 return null;
             }
         }
-
         [JsonIgnore]
         public bool Favorite
         {
@@ -82,7 +81,7 @@ namespace XerahS.History
             {
                 if (Tags == null)
                 {
-                    Tags = new Dictionary<string, string>();
+                    Tags = new Dictionary<string, string?>();
                 }
 
                 if (value)
@@ -101,7 +100,7 @@ namespace XerahS.History
         {
             get
             {
-                if (Tags != null && Tags.TryGetValue("Tag", out string value))
+                if (Tags != null && Tags.TryGetValue("Tag", out string? value))
                 {
                     return value;
                 }
@@ -112,7 +111,7 @@ namespace XerahS.History
             {
                 if (Tags == null)
                 {
-                    Tags = new Dictionary<string, string>();
+                    Tags = new Dictionary<string, string?>();
                 }
 
                 if (!string.IsNullOrEmpty(value))
