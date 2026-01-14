@@ -31,10 +31,10 @@ namespace XerahS.Uploaders.FileUploaders
 {
     public sealed class Copy : FileUploader, IOAuth
     {
-        public OAuthInfo AuthInfo { get; set; }
-        public CopyAccountInfo AccountInfo { get; set; }
-        public string UploadPath { get; set; }
-        public CopyURLType URLType { get; set; }
+        public OAuthInfo AuthInfo { get; set; } = new OAuthInfo();
+        public CopyAccountInfo? AccountInfo { get; set; }
+        public string UploadPath { get; set; } = string.Empty;
+        public CopyURLType URLType { get; set; } = CopyURLType.Default;
 
         private const string APIVersion = "1";
 
@@ -63,7 +63,7 @@ namespace XerahS.Uploaders.FileUploaders
 
         // https://developers.copy.com/documentation#authentication/oauth-handshake
         // https://developers.copy.com/console
-        public string GetAuthorizationURL()
+        public string? GetAuthorizationURL()
         {
             Dictionary<string, string> args = new Dictionary<string, string>();
             args.Add("oauth_callback", Links.Callback);
@@ -71,7 +71,7 @@ namespace XerahS.Uploaders.FileUploaders
             return GetAuthorizationURL(URLRequestToken, URLAuthorize, AuthInfo, args);
         }
 
-        public bool GetAccessToken(string verificationCode = null)
+        public bool GetAccessToken(string? verificationCode = null)
         {
             AuthInfo.AuthVerifier = verificationCode;
             return GetAccessToken(URLAccessToken, AuthInfo);
@@ -80,9 +80,9 @@ namespace XerahS.Uploaders.FileUploaders
         #region Copy accounts
 
         // https://developers.copy.com/documentation#api-calls/profile
-        public CopyAccountInfo GetAccountInfo()
+        public CopyAccountInfo? GetAccountInfo()
         {
-            CopyAccountInfo account = null;
+            CopyAccountInfo? account = null;
 
             if (OAuthInfo.CheckOAuth(AuthInfo))
             {
@@ -124,7 +124,7 @@ namespace XerahS.Uploaders.FileUploaders
 
         // https://developers.copy.com/documentation#api-calls/filesystem - Create File or Directory
         // POST https://api.copy.com/rest/files/PATH/TO/FILE?overwrite=true
-        public UploadResult UploadFile(Stream stream, string path, string fileName)
+        public UploadResult? UploadFile(Stream stream, string path, string fileName)
         {
             if (!OAuthInfo.CheckOAuth(AuthInfo))
             {
@@ -144,9 +144,9 @@ namespace XerahS.Uploaders.FileUploaders
 
             if (result.IsSuccess)
             {
-                CopyUploadInfo content = JsonConvert.DeserializeObject<CopyUploadInfo>(result.Response);
+                CopyUploadInfo? content = JsonConvert.DeserializeObject<CopyUploadInfo>(result.Response);
 
-                if (content != null && content.objects != null && content.objects.Length > 0)
+                if (content?.objects != null && content.objects.Length > 0)
                 {
                     AllowReportProgress = false;
                     result.URL = CreatePublicURL(content.objects[0].path, URLType);
@@ -158,9 +158,9 @@ namespace XerahS.Uploaders.FileUploaders
 
         // https://developers.copy.com/documentation#api-calls/filesystem - Read Root Directory
         // GET https://api.copy.com/rest/meta/copy
-        public CopyContentInfo GetMetadata(string path)
+        public CopyContentInfo? GetMetadata(string path)
         {
-            CopyContentInfo contentInfo = null;
+            CopyContentInfo? contentInfo = null;
 
             if (OAuthInfo.CheckOAuth(AuthInfo))
             {
@@ -183,7 +183,7 @@ namespace XerahS.Uploaders.FileUploaders
 
         public override UploadResult Upload(Stream stream, string fileName)
         {
-            return UploadFile(stream, UploadPath, fileName);
+            return UploadFile(stream, UploadPath, fileName)!;
         }
 
         public string GetLinkURL(CopyLinksInfo link, string path, CopyURLType urlType = CopyURLType.Default)
@@ -266,10 +266,10 @@ namespace XerahS.Uploaders.FileUploaders
     public class CopyAccountInfo
     {
         public long id { get; set; } // The user's unique Copy ID.
-        public string first_name { get; set; } // The user's first name.
-        public string last_name { get; set; } // The user's last name.
-        public CopyStorageInfo storage { get; set; }
-        public string email { get; set; }
+        public string first_name { get; set; } = string.Empty; // The user's first name.
+        public string last_name { get; set; } = string.Empty; // The user's last name.
+        public CopyStorageInfo storage { get; set; } = new CopyStorageInfo();
+        public string email { get; set; } = string.Empty;
     }
 
     public class CopyStorageInfo
@@ -282,44 +282,44 @@ namespace XerahS.Uploaders.FileUploaders
     public class CopyLinkRequest
     {
         public bool @public { get; set; }
-        public string name { get; set; }
-        public string[] paths { get; set; }
+        public string name { get; set; } = string.Empty;
+        public string[] paths { get; set; } = Array.Empty<string>();
     }
 
     public class CopyLinksInfo
     {
-        public string id { get; set; }
-        public string name { get; set; }
+        public string id { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
         public bool @public { get; set; }
         public bool expires { get; set; }
         public bool expired { get; set; }
-        public string url { get; set; }
-        public string url_short { get; set; }
-        public string creator_id { get; set; }
-        public string company_id { get; set; }
+        public string url { get; set; } = string.Empty;
+        public string url_short { get; set; } = string.Empty;
+        public string creator_id { get; set; } = string.Empty;
+        public string company_id { get; set; } = string.Empty;
         public bool confirmation_required { get; set; }
-        public string status { get; set; }
-        public string permissions { get; set; }
+        public string status { get; set; } = string.Empty;
+        public string permissions { get; set; } = string.Empty;
     }
 
     public class CopyContentInfo // https://api.copy.com/rest/meta also works on 'rest/files'
     {
-        public string id { get; set; } // Internal copy name
-        public string path { get; set; } // file path
-        public string name { get; set; } // Human readable (Filesystem) folder name
-        public string type { get; set; } // "inbox", "root", "copy", "dir", "file"?
+        public string id { get; set; } = string.Empty; // Internal copy name
+        public string path { get; set; } = string.Empty; // file path
+        public string name { get; set; } = string.Empty; // Human readable (Filesystem) folder name
+        public string type { get; set; } = string.Empty; // "inbox", "root", "copy", "dir", "file"?
         public bool stub { get; set; } // 'The stub attribute you see on all of the nodes represents if the specified node is incomplete, that is, if the children have not all been delivered to you. Basically, they will always be a stub, unless you are looking at that item directly.'
         public long? size { get; set; } // Filesizes (size attributes) are measured in bytes. If an item displayed in the filesystem is a directory or an otherwise special location which doesn't represent a file, the size attribute will be null.
         public long date_last_synced { get; set; }
         public bool @public { get; set; } // is available to public; isnt everything private but shared in copy???
-        public string url { get; set; } // web access url (private)
+        public string url { get; set; } = string.Empty; // web access url (private)
         public long revision_id { get; set; } // Revision of content
-        public CopyLinksInfo[] links { get; set; } // links array
-        public CopyContentInfo[] children { get; set; } // Children
+        public CopyLinksInfo[] links { get; set; } = Array.Empty<CopyLinksInfo>(); // links array
+        public CopyContentInfo[] children { get; set; } = Array.Empty<CopyContentInfo>(); // Children
     }
 
     public class CopyUploadInfo
     {
-        public CopyContentInfo[] objects { get; set; }
+        public CopyContentInfo[] objects { get; set; } = Array.Empty<CopyContentInfo>();
     }
 }

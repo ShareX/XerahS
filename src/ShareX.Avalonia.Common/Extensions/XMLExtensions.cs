@@ -30,7 +30,7 @@ namespace XerahS.Common
 {
     public static class XMLExtensions
     {
-        public static XElement GetNode(this XContainer element, string path)
+        public static XElement? GetNode(this XContainer? element, string path)
         {
             path = path.Trim().Trim('/');
 
@@ -66,14 +66,14 @@ namespace XerahS.Common
                         if (lastElement == null) return null;
                     }
 
-                    return (XElement)lastElement;
+                    return lastElement as XElement;
                 }
             }
 
             return null;
         }
 
-        public static XElement[] GetNodes(this XContainer element, string path)
+        public static XElement[] GetNodes(this XContainer? element, string path)
         {
             path = path.Trim().Trim('/');
 
@@ -95,21 +95,21 @@ namespace XerahS.Common
                 }
             }
 
-            return null;
+            return Array.Empty<XElement>();
         }
 
-        public static string GetValue(this XContainer element, string path, string defaultValue = null)
+        public static string? GetValue(this XContainer? element, string path, string? defaultValue = null)
         {
-            XElement xe = element.GetNode(path);
+            XElement? xe = element?.GetNode(path);
 
             if (xe != null) return xe.Value;
 
             return defaultValue;
         }
 
-        public static XElement GetElement(this XElement xe, params string[] elements)
+        public static XElement? GetElement(this XElement? xe, params string[] elements)
         {
-            XElement result = null;
+            XElement? result = null;
 
             if (xe != null && elements != null && elements.Length > 0)
             {
@@ -125,13 +125,13 @@ namespace XerahS.Common
             return result;
         }
 
-        public static XElement GetElement(this XDocument xd, params string[] elements)
+        public static XElement? GetElement(this XDocument? xd, params string[] elements)
         {
             if (xd != null && elements != null && elements.Length > 0)
             {
-                XElement result = xd.Root;
+                XElement? result = xd.Root;
 
-                if (result.Name == elements[0])
+                if (result != null && result.Name == elements[0])
                 {
                     for (int i = 1; i < elements.Length; i++)
                     {
@@ -146,34 +146,34 @@ namespace XerahS.Common
             return null;
         }
 
-        public static string GetElementValue(this XElement xe, XName name)
+        public static string GetElementValue(this XElement? xe, XName name)
         {
             if (xe != null)
             {
-                XElement xeItem = xe.Element(name);
+                XElement? xeItem = xe.Element(name);
                 if (xeItem != null) return xeItem.Value;
             }
 
             return "";
         }
 
-        public static string GetAttributeValue(this XElement xe, string name)
+        public static string GetAttributeValue(this XElement? xe, string name)
         {
             if (xe != null)
             {
-                XAttribute xaItem = xe.Attribute(name);
+                XAttribute? xaItem = xe.Attribute(name);
                 if (xaItem != null) return xaItem.Value;
             }
 
             return "";
         }
 
-        public static string GetAttributeFirstValue(this XElement xe, params string[] names)
+        public static string GetAttributeFirstValue(this XElement? xe, params string[] names)
         {
             string value;
             foreach (string name in names)
             {
-                value = xe.GetAttributeValue(name);
+                value = xe?.GetAttributeValue(name) ?? string.Empty;
                 if (!string.IsNullOrEmpty(value))
                 {
                     return value;
@@ -183,12 +183,12 @@ namespace XerahS.Common
             return "";
         }
 
-        public static XmlNode AppendElement(this XmlNode parent, string tagName)
+        public static XmlNode? AppendElement(this XmlNode parent, string tagName)
         {
             return parent.AppendElement(tagName, null, false);
         }
 
-        public static XmlNode AppendElement(this XmlNode parent, string tagName, string textContent, bool checkTextContent = true)
+        public static XmlNode? AppendElement(this XmlNode parent, string tagName, string? textContent, bool checkTextContent = true)
         {
             if (!checkTextContent || !string.IsNullOrEmpty(textContent))
             {
@@ -200,7 +200,7 @@ namespace XerahS.Common
                 }
                 else
                 {
-                    xd = parent.OwnerDocument;
+                    xd = parent.OwnerDocument!;
                 }
 
                 XmlNode node = xd.CreateElement(tagName);
@@ -218,12 +218,12 @@ namespace XerahS.Common
             return null;
         }
 
-        public static XmlNode PrependElement(this XmlNode parent, string tagName)
+        public static XmlNode? PrependElement(this XmlNode parent, string tagName)
         {
             return parent.PrependElement(tagName, null, false);
         }
 
-        public static XmlNode PrependElement(this XmlNode parent, string tagName, string textContent, bool checkTextContent = true)
+        public static XmlNode? PrependElement(this XmlNode parent, string tagName, string? textContent, bool checkTextContent = true)
         {
             if (!checkTextContent || !string.IsNullOrEmpty(textContent))
             {
@@ -235,7 +235,7 @@ namespace XerahS.Common
                 }
                 else
                 {
-                    xd = parent.OwnerDocument;
+                    xd = parent.OwnerDocument!;
                 }
 
                 XmlNode node = xd.CreateElement(tagName);
