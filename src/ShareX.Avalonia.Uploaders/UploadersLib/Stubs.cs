@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+// TODO: Replace these stubs with Avalonia-ready implementations or remove when no longer needed.
+
 using XerahS.Common;
 using XerahS.Uploaders;
 using System.ComponentModel;
@@ -244,8 +246,8 @@ namespace ShareX.UploadersLib.FileUploaders
 
     public class PushbulletDevice
     {
-        public string Key { get; set; }
-        public string Name { get; set; }
+        public string Key { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
     }
 
     public class PushbulletSettings
@@ -255,11 +257,11 @@ namespace ShareX.UploadersLib.FileUploaders
         public List<PushbulletDevice> DeviceList { get; set; } = new List<PushbulletDevice>();
         public int SelectedDevice { get; set; } = 0;
 
-        public PushbulletDevice CurrentDevice
+        public PushbulletDevice? CurrentDevice
         {
             get
             {
-                if (DeviceList != null && SelectedDevice >= 0 && SelectedDevice < DeviceList.Count)
+                if (SelectedDevice >= 0 && SelectedDevice < DeviceList.Count)
                 {
                     return DeviceList[SelectedDevice];
                 }
@@ -284,15 +286,15 @@ namespace ShareX.UploadersLib.FileUploaders
 
     public class OneDriveFileInfo
     {
-        public string id { get; set; }
-        public string name { get; set; }
-        public string webUrl { get; set; }
+        public string id { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        public string webUrl { get; set; } = string.Empty;
     }
 
     public class GoogleDriveSharedDrive
     {
-        public string id { get; set; }
-        public string name { get; set; }
+        public string id { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
 
         public override string ToString()
         {
@@ -302,12 +304,12 @@ namespace ShareX.UploadersLib.FileUploaders
 
     public class BoxFileEntry
     {
-        public string type { get; set; }
-        public string id { get; set; }
-        public string sequence_id { get; set; }
-        public string etag { get; set; }
-        public string name { get; set; }
-        public BoxFileEntry parent { get; set; }
+        public string type { get; set; } = string.Empty;
+        public string id { get; set; } = string.Empty;
+        public string sequence_id { get; set; } = string.Empty;
+        public string etag { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        public BoxFileEntry? parent { get; set; }
     }
 
     public static class OneDrive
@@ -353,62 +355,62 @@ namespace ShareX.UploadersLib.ImageUploaders
 
     public class ImgurAlbumData
     {
-        public string id { get; set; }
-        public string title { get; set; }
-        public string description { get; set; }
+        public string id { get; set; } = string.Empty;
+        public string title { get; set; } = string.Empty;
+        public string description { get; set; } = string.Empty;
         public int datetime { get; set; }
-        public string cover { get; set; }
-        public string cover_width { get; set; }
-        public string cover_height { get; set; }
-        public string account_url { get; set; }
+        public string cover { get; set; } = string.Empty;
+        public string cover_width { get; set; } = string.Empty;
+        public string cover_height { get; set; } = string.Empty;
+        public string account_url { get; set; } = string.Empty;
         public long? account_id { get; set; }
-        public string privacy { get; set; }
-        public string layout { get; set; }
+        public string privacy { get; set; } = string.Empty;
+        public string layout { get; set; } = string.Empty;
         public int views { get; set; }
-        public string link { get; set; }
+        public string link { get; set; } = string.Empty;
         public bool favorite { get; set; }
         public bool? nsfw { get; set; }
-        public string section { get; set; }
+        public string section { get; set; } = string.Empty;
         public int order { get; set; }
-        public string deletehash { get; set; }
+        public string deletehash { get; set; } = string.Empty;
         public int images_count { get; set; }
-        public ImgurImageData[] images { get; set; }
+        public ImgurImageData[] images { get; set; } = Array.Empty<ImgurImageData>();
     }
 
     public class ImgurImageData
     {
-        public string id { get; set; }
-        public string title { get; set; }
-        public string description { get; set; }
+        public string id { get; set; } = string.Empty;
+        public string title { get; set; } = string.Empty;
+        public string description { get; set; } = string.Empty;
         public int datetime { get; set; }
-        public string type { get; set; }
+        public string type { get; set; } = string.Empty;
         public bool animated { get; set; }
         public int width { get; set; }
         public int height { get; set; }
         public int size { get; set; }
         public int views { get; set; }
         public long bandwidth { get; set; }
-        public string deletehash { get; set; }
-        public string name { get; set; }
-        public string section { get; set; }
-        public string link { get; set; }
-        public string gifv { get; set; }
-        public string mp4 { get; set; }
-        public string webm { get; set; }
+        public string deletehash { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        public string section { get; set; } = string.Empty;
+        public string link { get; set; } = string.Empty;
+        public string gifv { get; set; } = string.Empty;
+        public string mp4 { get; set; } = string.Empty;
+        public string webm { get; set; } = string.Empty;
         public bool looping { get; set; }
         public bool favorite { get; set; }
         public bool? nsfw { get; set; }
-        public string vote { get; set; }
-        public string comment_preview { get; set; }
+        public string vote { get; set; } = string.Empty;
+        public string comment_preview { get; set; } = string.Empty;
     }
 
     public class ImageShackOptions
     {
-        public string Username { get; set; }
+        public string Username { get; set; } = string.Empty;
         [JsonEncrypt]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
         public bool IsPublic { get; set; }
-        public string Auth_token { get; set; }
+        public string Auth_token { get; set; } = string.Empty;
         public int ThumbnailWidth { get; set; } = 256;
         public int ThumbnailHeight { get; set; }
     }
@@ -418,41 +420,41 @@ namespace ShareX.UploadersLib.ImageUploaders
         public bool DirectLink { get; set; } = true;
 
         [Description("The title of the photo.")]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [Description("A description of the photo. May contain some limited HTML.")]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [Description("A space-seperated list of tags to apply to the photo.")]
-        public string Tags { get; set; }
+        public string Tags { get; set; } = string.Empty;
 
         [Description("Set to 0 for no, 1 for yes. Specifies who can view the photo.")]
-        public string IsPublic { get; set; }
+        public string IsPublic { get; set; } = string.Empty;
 
         [Description("Set to 0 for no, 1 for yes. Specifies who can view the photo.")]
-        public string IsFriend { get; set; }
+        public string IsFriend { get; set; } = string.Empty;
 
         [Description("Set to 0 for no, 1 for yes. Specifies who can view the photo.")]
-        public string IsFamily { get; set; }
+        public string IsFamily { get; set; } = string.Empty;
 
         [Description("Set to 1 for Safe, 2 for Moderate, or 3 for Restricted.")]
-        public string SafetyLevel { get; set; }
+        public string SafetyLevel { get; set; } = string.Empty;
 
         [Description("Set to 1 for Photo, 2 for Screenshot, or 3 for Other.")]
-        public string ContentType { get; set; }
+        public string ContentType { get; set; } = string.Empty;
 
         [Description("Set to 1 to keep the photo in global search results, 2 to hide from public searches.")]
-        public string Hidden { get; set; }
+        public string Hidden { get; set; } = string.Empty;
     }
 
     public class PhotobucketAccountInfo
     {
-        public string Subdomain { get; set; }
-        public string AlbumID { get; set; }
+        public string Subdomain { get; set; } = string.Empty;
+        public string AlbumID { get; set; } = string.Empty;
         public List<string> AlbumList { get; set; } = new List<string>();
         public int ActiveAlbumID { get; set; } = 0;
 
-        public string ActiveAlbumPath => AlbumList[ActiveAlbumID];
+        public string ActiveAlbumPath => AlbumList.Count > ActiveAlbumID && ActiveAlbumID >= 0 ? AlbumList[ActiveAlbumID] : string.Empty;
     }
 }
 
@@ -478,15 +480,15 @@ namespace ShareX.UploadersLib.TextUploaders
 
     public class PastebinSettings
     {
-        public string Username { get; set; }
+        public string Username { get; set; } = string.Empty;
         [JsonEncrypt]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
         public PastebinPrivacy Exposure { get; set; } = PastebinPrivacy.Unlisted;
         public PastebinExpiration Expiration { get; set; } = PastebinExpiration.N;
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
         public string TextFormat { get; set; } = "text";
         [JsonEncrypt]
-        public string UserKey { get; set; }
+        public string UserKey { get; set; } = string.Empty;
         public bool RawURL { get; set; }
     }
 }
@@ -497,11 +499,11 @@ namespace ShareX.UploadersLib.URLShorteners
     {
         public string Host { get; set; } = "https://kutt.it";
         [JsonEncrypt]
-        public string APIKey { get; set; }
+        public string APIKey { get; set; } = string.Empty;
         [JsonEncrypt]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
         public bool Reuse { get; set; }
-        public string Domain { get; set; }
+        public string Domain { get; set; } = string.Empty;
     }
 }
 
