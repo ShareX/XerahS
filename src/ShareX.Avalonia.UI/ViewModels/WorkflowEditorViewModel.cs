@@ -38,10 +38,10 @@ public partial class WorkflowEditorViewModel : ViewModelBase
     [ObservableProperty]
     private UploaderInstanceViewModel? _selectedDestination;
 
-    private CategoryViewModel _imageCategory;
-    private CategoryViewModel _textCategory;
-    private CategoryViewModel _fileCategory;
-    private CategoryViewModel _urlCategory;
+    private CategoryViewModel _imageCategory = null!;
+    private CategoryViewModel _textCategory = null!;
+    private CategoryViewModel _fileCategory = null!;
+    private CategoryViewModel _urlCategory = null!;
 
     public string WindowTitle
     {

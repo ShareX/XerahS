@@ -37,10 +37,10 @@ namespace XerahS.UI.ViewModels
         private bool _isLoading = true;
 
         [ObservableProperty]
-        private string _screenshotsFolder;
+        private string _screenshotsFolder = string.Empty;
 
         [ObservableProperty]
-        private string _saveImageSubFolderPattern;
+        private string _saveImageSubFolderPattern = string.Empty;
 
         [ObservableProperty]
         private bool _useCustomScreenshotsPath;
@@ -289,10 +289,10 @@ namespace XerahS.UI.ViewModels
 
         // Task Settings - Upload / File Naming
         [ObservableProperty]
-        private string _nameFormatPattern;
+        private string _nameFormatPattern = string.Empty;
 
         [ObservableProperty]
-        private string _nameFormatPatternActiveWindow;
+        private string _nameFormatPatternActiveWindow = string.Empty;
 
         [ObservableProperty]
         private bool _fileUploadUseNamePattern;
@@ -304,10 +304,10 @@ namespace XerahS.UI.ViewModels
         private bool _uRLRegexReplace;
 
         [ObservableProperty]
-        private string _uRLRegexReplacePattern;
+        private string _uRLRegexReplacePattern = string.Empty;
 
         [ObservableProperty]
-        private string _uRLRegexReplaceReplacement;
+        private string _uRLRegexReplaceReplacement = string.Empty;
 
         // Task Settings - After Capture
         public bool SaveImageToFile
