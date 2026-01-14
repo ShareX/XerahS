@@ -70,11 +70,11 @@ namespace XerahS.Uploaders.FileUploaders
                 { "oauth_callback", Links.Callback }
             };
 
-            return GetAuthorizationURL(URLRequestToken, URLAuthorize, AuthInfo, args);
+            return GetAuthorizationURL(URLRequestToken, URLAuthorize, AuthInfo, args) ?? string.Empty;
         }
         public bool GetAccessToken(string? verificationCode = null)
         {
-            AuthInfo.AuthVerifier = verificationCode;
+            AuthInfo.AuthVerifier = verificationCode ?? string.Empty;
             return GetAccessToken(URLAccessToken, AuthInfo);
         }
 
@@ -216,9 +216,12 @@ namespace XerahS.Uploaders.FileUploaders
 
             if (!string.IsNullOrEmpty(response))
             {
-                CopyLinksInfo link = JsonConvert.DeserializeObject<CopyLinksInfo>(response);
+                CopyLinksInfo? link = JsonConvert.DeserializeObject<CopyLinksInfo>(response);
 
-                return GetLinkURL(link, path, urlType);
+                if (link != null)
+                {
+                    return GetLinkURL(link, path, urlType);
+                }
             }
 
             return "";
@@ -228,12 +231,15 @@ namespace XerahS.Uploaders.FileUploaders
         {
             path = path.Trim('/');
 
-            CopyContentInfo fileInfo = GetMetadata(path);
-            foreach (CopyLinksInfo link in fileInfo.links)
+            CopyContentInfo? fileInfo = GetMetadata(path);
+            if (fileInfo?.links != null)
             {
-                if (!link.expired && link.@public)
+                foreach (CopyLinksInfo link in fileInfo.links)
                 {
-                    return GetLinkURL(link, path, urlType);
+                    if (!link.expired && link.@public)
+                    {
+                        return GetLinkURL(link, path, urlType);
+                    }
                 }
             }
 

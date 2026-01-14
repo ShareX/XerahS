@@ -185,11 +185,13 @@ CREATE TABLE IF NOT EXISTS History (
 
         protected override bool Append(string dbPath, IEnumerable<HistoryItem> historyItems)
         {
-            using (SqliteTransaction transaction = connection.BeginTransaction())
+            using (SqliteTransaction? transaction = connection?.BeginTransaction())
             {
+                if (transaction == null) return false;
+
                 foreach (HistoryItem item in historyItems)
                 {
-                    using (SqliteCommand cmd = connection.CreateCommand())
+                    using (SqliteCommand cmd = connection!.CreateCommand())
                     {
                         cmd.CommandText = @"
 INSERT INTO History
@@ -206,7 +208,8 @@ SELECT last_insert_rowid();";
                         cmd.Parameters.AddWithValue("@DeletionURL", item.DeletionURL ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@ShortenedURL", item.ShortenedURL ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@Tags", item.Tags != null ? JsonConvert.SerializeObject(item.Tags) : (object)DBNull.Value);
-                        item.Id = (long)cmd.ExecuteScalar();
+                        object? result = cmd.ExecuteScalar();
+                        item.Id = result != null ? (long)result : 0;
                     }
                 }
 
@@ -221,8 +224,8 @@ SELECT last_insert_rowid();";
 
         public void Edit(HistoryItem item)
         {
-            using (SqliteTransaction transaction = connection.BeginTransaction())
-            using (SqliteCommand cmd = connection.CreateCommand())
+            using (SqliteTransaction? transaction = connection?.BeginTransaction())
+            using (SqliteCommand cmd = connection!.CreateCommand())
             {
                 cmd.CommandText = @"
 UPDATE History SET

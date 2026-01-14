@@ -207,7 +207,7 @@ namespace XerahS.Uploaders
                 {
                     requestStream.Write(bytesArguments, 0, bytesArguments.Length);
                     requestStream.Write(bytesDataOpen, 0, bytesDataOpen.Length);
-                    if (!TransferData(data, requestStream)) return null;
+                    if (!TransferData(data, requestStream)) return result;
                     requestStream.Write(bytesDataClose, 0, bytesDataClose.Length);
                 }
 
@@ -274,7 +274,7 @@ namespace XerahS.Uploaders
                 {
                     if (!TransferData(data, requestStream, contentPosition, contentLength))
                     {
-                        return null;
+                        return result;
                     }
                 }
 
@@ -422,35 +422,38 @@ namespace XerahS.Uploaders
                 {
                     try
                     {
-                        using (HttpWebResponse webResponse = (HttpWebResponse)webException.Response)
+                        using (HttpWebResponse? webResponse = webException.Response as HttpWebResponse)
                         {
-                            ResponseInfo responseInfo = ProcessWebResponse(webResponse) ?? new ResponseInfo();
-
-                            if (responseInfo != null)
+                            if (webResponse != null)
                             {
-                                responseText = responseInfo.ResponseText;
+                                ResponseInfo responseInfo = ProcessWebResponse(webResponse) ?? new ResponseInfo();
 
-                                sb.AppendLine();
-                                sb.AppendLine("Status code:");
-                                sb.AppendLine($"({(int)responseInfo.StatusCode}) {responseInfo.StatusDescription}");
-
-                                if (!string.IsNullOrEmpty(requestURL) && !requestURL.Equals(responseInfo.ResponseURL))
+                                if (responseInfo != null)
                                 {
-                                    sb.AppendLine();
-                                    sb.AppendLine("Response URL:");
-                                    sb.AppendLine(responseInfo.ResponseURL);
-                                }
+                                    responseText = responseInfo.ResponseText;
 
-                                if (responseInfo.Headers != null)
-                                {
                                     sb.AppendLine();
-                                    sb.AppendLine("Headers:");
-                                    sb.AppendLine(responseInfo.Headers.ToString().TrimEnd());
-                                }
+                                    sb.AppendLine("Status code:");
+                                    sb.AppendLine($"({(int)responseInfo.StatusCode}) {responseInfo.StatusDescription}");
 
-                                sb.AppendLine();
-                                sb.AppendLine("Response text:");
-                                sb.AppendLine(responseInfo.ResponseText);
+                                    if (!string.IsNullOrEmpty(requestURL) && !requestURL.Equals(responseInfo.ResponseURL))
+                                    {
+                                        sb.AppendLine();
+                                        sb.AppendLine("Response URL:");
+                                        sb.AppendLine(responseInfo.ResponseURL);
+                                    }
+
+                                    if (responseInfo.Headers != null)
+                                    {
+                                        sb.AppendLine();
+                                        sb.AppendLine("Headers:");
+                                        sb.AppendLine(responseInfo.Headers.ToString().TrimEnd());
+                                    }
+
+                                    sb.AppendLine();
+                                    sb.AppendLine("Response text:");
+                                    sb.AppendLine(responseInfo.ResponseText);
+                                }
                             }
                         }
                     }
@@ -546,7 +549,7 @@ namespace XerahS.Uploaders
             return GetAccessTokenEx(accessTokenURL, authInfo, httpMethod) != null;
         }
 
-        protected NameValueCollection GetAccessTokenEx(string accessTokenURL, OAuthInfo authInfo, HttpMethod httpMethod = HttpMethod.GET)
+        protected NameValueCollection? GetAccessTokenEx(string accessTokenURL, OAuthInfo authInfo, HttpMethod httpMethod = HttpMethod.GET)
         {
             if (string.IsNullOrEmpty(authInfo.AuthToken) || string.IsNullOrEmpty(authInfo.AuthSecret))
             {
@@ -555,7 +558,7 @@ namespace XerahS.Uploaders
 
             string url = OAuthManager.GenerateQuery(accessTokenURL, null, httpMethod, authInfo);
 
-            string response = SendRequest(httpMethod, url);
+            string? response = SendRequest(httpMethod, url);
 
             if (!string.IsNullOrEmpty(response))
             {
