@@ -357,7 +357,7 @@ namespace XerahS.Common
             return collection;
         }
 
-        public static string BuildUri(string root, string path, string query = null)
+        public static string BuildUri(string root, string path, string? query = null)
         {
             UriBuilder builder = new UriBuilder(root);
             builder.Path = path;
@@ -462,7 +462,7 @@ namespace XerahS.Common
             return url1 + "/" + url2;
         }
 
-        public static string CombineURL(params string[] urls)
+        public static string CombineURL(params string[]? urls)
         {
             if (urls == null || urls.Length == 0)
             {

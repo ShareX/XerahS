@@ -28,21 +28,14 @@ namespace XerahS.Common
     public class ZipEntryInfo
     {
         public string EntryName { get; set; }
-        public string SourcePath { get; set; }
-        public Stream Data { get; set; }
+        public string? SourcePath { get; set; }
+        public Stream? Data { get; set; }
 
-        public ZipEntryInfo(string sourcePath, string entryName = null)
+        public ZipEntryInfo(string sourcePath, string? entryName = null)
         {
             SourcePath = sourcePath;
 
-            if (string.IsNullOrEmpty(entryName))
-            {
-                EntryName = Path.GetFileName(sourcePath);
-            }
-            else
-            {
-                EntryName = entryName;
-            }
+            EntryName = string.IsNullOrEmpty(entryName) ? Path.GetFileName(sourcePath) ?? string.Empty : entryName;
         }
 
         public ZipEntryInfo(Stream data, string entryName)
