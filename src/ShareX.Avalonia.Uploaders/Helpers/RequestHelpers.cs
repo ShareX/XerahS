@@ -76,20 +76,23 @@ namespace XerahS.Uploaders
 
                 if (headers["Cookie"] != null)
                 {
-                    string cookieHeader = headers["Cookie"];
+                    string? cookieHeader = headers["Cookie"];
 
                     if (cookies == null)
                     {
                         cookies = new CookieCollection();
                     }
 
-                    foreach (string cookie in cookieHeader.Split(new string[] { "; " }, StringSplitOptions.RemoveEmptyEntries))
+                    if (!string.IsNullOrEmpty(cookieHeader))
                     {
-                        string[] cookieValues = cookie.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
-
-                        if (cookieValues.Length == 2)
+                        foreach (string cookie in cookieHeader.Split(new string[] { "; " }, StringSplitOptions.RemoveEmptyEntries))
                         {
-                            cookies.Add(new Cookie(cookieValues[0], cookieValues[1], "/", request.Host.Split(':')[0]));
+                            string[] cookieValues = cookie.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
+
+                            if (cookieValues.Length == 2)
+                            {
+                                cookies.Add(new Cookie(cookieValues[0], cookieValues[1], "/", request.Host.Split(':')[0]));
+                            }
                         }
                     }
 
@@ -116,7 +119,7 @@ namespace XerahS.Uploaders
             request.CookieContainer = new CookieContainer();
             if (cookies != null) request.CookieContainer.Add(cookies);
             request.Method = method.ToString();
-            IWebProxy proxy = HelpersOptions.CurrentProxy.GetWebProxy();
+            IWebProxy? proxy = HelpersOptions.CurrentProxy.GetWebProxy();
             if (proxy != null) request.Proxy = proxy;
             request.Referer = referer ?? string.Empty;
             request.UserAgent = userAgent;

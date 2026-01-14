@@ -212,7 +212,7 @@ namespace XerahS.Media
                 {
                     if (Options.AddVideoInfo)
                     {
-                        infoString = VideoInfo.ToString();
+                        infoString = VideoInfo?.ToString() ?? string.Empty;
                         SKRect textBounds = new SKRect();
                         fontPaint.MeasureText(infoString, ref textBounds);
                         infoStringHeight = (int)textBounds.Height + 5; // Add some padding

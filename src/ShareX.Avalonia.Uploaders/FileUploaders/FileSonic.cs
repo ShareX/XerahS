@@ -73,7 +73,7 @@ namespace XerahS.Uploaders.FileUploaders
             args.Add("u", Username);
             args.Add("p", Password);
 
-            string response = SendRequest(HttpMethod.GET, APIURL, args);
+            string? response = SendRequest(HttpMethod.GET, APIURL, args);
 
             if (string.IsNullOrEmpty(response))
             {
@@ -81,7 +81,7 @@ namespace XerahS.Uploaders.FileUploaders
             }
 
             XDocument xd = XDocument.Parse(response);
-            return xd.GetValue("FSApi_Upload/getUploadUrl/response/url");
+            return xd.GetValue("FSApi_Upload/getUploadUrl/response/url") ?? string.Empty;
         }
     }
 }

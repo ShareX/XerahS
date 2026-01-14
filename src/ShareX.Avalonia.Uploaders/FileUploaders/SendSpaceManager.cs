@@ -63,7 +63,7 @@ namespace XerahS.Uploaders.FileUploaders
                     }
                     if (string.IsNullOrEmpty(SessionKey) || (DateTime.Now - LastSessionKey).TotalMinutes > 30)
                     {
-                        SessionKey = sendSpace.AuthLogin(Token, username, password).SessionKey;
+                        SessionKey = sendSpace.AuthLogin(Token, username, password)?.SessionKey;
                         if (string.IsNullOrEmpty(SessionKey)) throw new Exception("SessionKey is null or empty.");
                         LastSessionKey = DateTime.Now;
                     }

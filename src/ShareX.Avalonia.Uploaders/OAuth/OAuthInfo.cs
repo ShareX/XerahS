@@ -101,7 +101,7 @@ namespace XerahS.Uploaders
                 !string.IsNullOrEmpty(oauth.UserToken) && !string.IsNullOrEmpty(oauth.UserSecret);
         }
 
-        public OAuthInfo Clone()
+        public OAuthInfo? Clone()
         {
             return MemberwiseClone() as OAuthInfo;
         }

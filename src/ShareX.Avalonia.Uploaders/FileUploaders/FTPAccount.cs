@@ -85,7 +85,7 @@ namespace XerahS.Uploaders.FileUploaders
                     return string.Empty;
                 }
 
-                string serverProtocol;
+                string serverProtocol = "ftp://";
 
                 switch (Protocol)
                 {
@@ -259,7 +259,7 @@ namespace XerahS.Uploaders.FileUploaders
             return $"{Name} ({Host}:{Port})";
         }
 
-        public FTPAccount Clone()
+        public FTPAccount? Clone()
         {
             return MemberwiseClone() as FTPAccount;
         }

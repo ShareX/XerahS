@@ -216,7 +216,7 @@ namespace ShareX.UploadersLib.FileUploaders
             return $"{Name} - {EnumExtensions.GetDescription(RemoteProtocol)}:{Port}";
         }
 
-        public LocalhostAccount Clone()
+        public LocalhostAccount? Clone()
         {
             return MemberwiseClone() as LocalhostAccount;
         }
