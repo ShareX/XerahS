@@ -40,7 +40,7 @@ namespace XerahS.App
             var logPath = System.IO.Path.Combine(logsFolder, $"{XerahS.Common.AppResources.AppName}-{DateTime.Now:yyyyMMdd}.log");
             XerahS.Common.DebugHelper.Init(logPath);
 
-            var dh = XerahS.Common.DebugHelper.Logger;
+            var dh = XerahS.Common.DebugHelper.Logger ?? throw new InvalidOperationException("Logger not initialised");
             dh.AsyncWrite = false; // Synchronous for startup
 
             dh.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - ShareX starting.");

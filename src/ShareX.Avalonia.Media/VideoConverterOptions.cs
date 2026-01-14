@@ -30,9 +30,9 @@ namespace XerahS.Media
 {
     public class VideoConverterOptions
     {
-        public string InputFilePath { get; set; }
-        public string OutputFolderPath { get; set; }
-        public string OutputFileName { get; set; }
+        public string InputFilePath { get; set; } = string.Empty;
+        public string OutputFolderPath { get; set; } = string.Empty;
+        public string OutputFileName { get; set; } = string.Empty;
 
         public string OutputFilePath
         {

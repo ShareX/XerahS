@@ -24,7 +24,7 @@ namespace XerahS.UI.Views.RegionCapture
         private MonitorInfo[] _newMonitors = Array.Empty<MonitorInfo>();
         private LogicalRectangle _newVirtualDesktopLogical;
         private RegionCaptureCoordinateMapper? _newCoordinateMapper;
-        private SKBitmap? _capturedBitmap;
+        private SKBitmap? _capturedBitmap = null;
 
         // Feature flag to enable new backend
         private static readonly bool USE_NEW_BACKEND = true; // New backend enabled - platform backends now compile successfully

@@ -152,7 +152,7 @@ namespace XerahS.Common
 
         public string? GetParameter(string command)
         {
-            CLICommand cliCommand = GetCommand(command);
+            CLICommand? cliCommand = GetCommand(command);
 
             if (cliCommand != null)
             {
