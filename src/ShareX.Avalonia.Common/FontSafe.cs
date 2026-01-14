@@ -44,7 +44,12 @@ namespace XerahS.Common
 
         public void SetFont(Font font)
         {
-            Font = new FontConverter().ConvertToInvariantString(font);
+            string? fontString = new FontConverter().ConvertToInvariantString(font);
+
+            if (!string.IsNullOrEmpty(fontString))
+            {
+                Font = fontString;
+            }
         }
 
         public Font GetFont()

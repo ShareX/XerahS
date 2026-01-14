@@ -40,19 +40,29 @@ namespace XerahS.Common
 
         public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destType)
         {
-            if (destType is null)
+            if (destType == typeof(string))
             {
-                return base.CanConvertTo(context, destType);
+                return true;
             }
 
-            return destType == typeof(string) || base.CanConvertTo(context, destType);
+            if (destType is null)
+            {
+                return false;
+            }
+
+            return base.CanConvertTo(context, destType);
         }
 
         public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destType)
         {
             if (destType == typeof(string) && value is not null)
             {
-                return GeneralHelpers.GetProperName(value.ToString(), true);
+                string? valueName = value.ToString();
+
+                if (!string.IsNullOrEmpty(valueName))
+                {
+                    return GeneralHelpers.GetProperName(valueName, true);
+                }
             }
 
             return base.ConvertTo(context, culture, value, destType);
@@ -60,12 +70,17 @@ namespace XerahS.Common
 
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? srcType)
         {
-            if (srcType is null)
+            if (srcType == typeof(string))
             {
-                return base.CanConvertFrom(context, srcType);
+                return true;
             }
 
-            return srcType == typeof(string) || base.CanConvertFrom(context, srcType);
+            if (srcType is null)
+            {
+                return false;
+            }
+
+            return base.CanConvertFrom(context, srcType);
         }
 
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)

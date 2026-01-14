@@ -52,7 +52,7 @@ namespace XerahS.Common.Native
 
         private static readonly object syncLock = new object();
 
-        private static ITaskbarList4 taskbarList;
+        private static ITaskbarList4? taskbarList;
 
         private static ITaskbarList4 TaskbarList
         {
@@ -70,7 +70,7 @@ namespace XerahS.Common.Native
                     }
                 }
 
-                return taskbarList;
+                return taskbarList!;
             }
         }
 

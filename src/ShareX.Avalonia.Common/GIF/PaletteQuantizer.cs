@@ -58,9 +58,9 @@ namespace XerahS.Common.GIF
             int colorHash = pixel.ARGB;
 
             // Check if the color is in the lookup table
-            if (_colorMap.ContainsKey(colorHash))
+            if (_colorMap.ContainsKey(colorHash) && _colorMap[colorHash] is byte existingIndex)
             {
-                colorIndex = (byte)_colorMap[colorHash];
+                colorIndex = existingIndex;
             }
             else
             {

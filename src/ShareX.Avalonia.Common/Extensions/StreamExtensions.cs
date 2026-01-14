@@ -152,7 +152,7 @@ namespace XerahS.Common
 
             try
             {
-                retval = (T)Marshal.PtrToStructure(hdl.AddrOfPinnedObject(), typeof(T));
+                retval = Marshal.PtrToStructure<T>(hdl.AddrOfPinnedObject());
             }
             finally
             {

@@ -60,7 +60,7 @@ namespace XerahS.Common
 
                     if (actualTagName.Length > 1 && actualTagName.StartsWith("v", StringComparison.Ordinal))
                     {
-                        if (Version.TryParse(actualTagName.Substring(1), out Version version))
+                        if (Version.TryParse(actualTagName.Substring(1), out Version? version))
                         {
                             LatestVersion = version;
                         }

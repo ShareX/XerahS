@@ -87,7 +87,7 @@ namespace XerahS.Common
                 FileName = artifact.fileName;
                 DownloadURL = appveyor.GetArtifactDownloadURL(job.jobId, artifact.fileName);
                 string? versionText = build.version;
-                if (!string.IsNullOrEmpty(versionText) && Version.TryParse(versionText, out Version version))
+                if (!string.IsNullOrEmpty(versionText) && Version.TryParse(versionText, out Version? version))
                 {
                     LatestVersion = version;
                 }
