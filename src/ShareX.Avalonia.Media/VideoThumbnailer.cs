@@ -36,7 +36,7 @@ namespace XerahS.Media
 
         public string FFmpegPath { get; private set; }
         public VideoThumbnailOptions Options { get; private set; }
-        public string MediaPath { get; private set; }
+        public string MediaPath { get; private set; } = string.Empty;
         public VideoInfo? VideoInfo { get; private set; }
 
         public VideoThumbnailer(string ffmpegPath, VideoThumbnailOptions options)

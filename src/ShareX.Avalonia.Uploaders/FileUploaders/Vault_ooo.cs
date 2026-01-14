@@ -25,6 +25,7 @@
 
 using Newtonsoft.Json;
 using XerahS.Common;
+using System;
 using System.Collections.Specialized;
 using System.Security.Cryptography;
 using System.Text;
@@ -244,9 +245,9 @@ namespace XerahS.Uploaders.FileUploaders
 
         private class Vault_oooCryptoData
         {
-            public byte[] Salt { get; set; }
-            public byte[] Key { get; set; }
-            public byte[] IV { get; set; }
+            public byte[] Salt { get; set; } = Array.Empty<byte>();
+            public byte[] Key { get; set; } = Array.Empty<byte>();
+            public byte[] IV { get; set; } = Array.Empty<byte>();
         }
 
         #endregion
@@ -254,10 +255,10 @@ namespace XerahS.Uploaders.FileUploaders
         private class Vault_oooMetaInfo
         {
             [JsonProperty("urlPathName")]
-            public string UrlPathName { get; set; }
+            public string UrlPathName { get; set; } = string.Empty;
 
             [JsonProperty("token")]
-            public string Token { get; set; }
+            public string Token { get; set; } = string.Empty;
         }
     }
 }

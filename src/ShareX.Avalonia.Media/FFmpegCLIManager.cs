@@ -50,10 +50,10 @@ namespace XerahS.Media
         public const int mp3_max = 9;
 
         public delegate void EncodeStartedEventHandler();
-        public event EncodeStartedEventHandler EncodeStarted;
+        public event EncodeStartedEventHandler EncodeStarted = delegate { };
 
         public delegate void EncodeProgressChangedEventHandler(float percentage);
-        public event EncodeProgressChangedEventHandler EncodeProgressChanged;
+        public event EncodeProgressChangedEventHandler EncodeProgressChanged = percentage => { };
 
         public string FFmpegPath { get; private set; }
         public StringBuilder Output { get; private set; }

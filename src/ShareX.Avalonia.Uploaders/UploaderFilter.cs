@@ -29,7 +29,7 @@ namespace XerahS.Uploaders
 {
     public class UploaderFilter
     {
-        public string Uploader { get; set; }
+        public string Uploader { get; set; } = string.Empty;
         public List<string> Extensions { get; set; } = new List<string>();
         //public long Size { get; set; }
 

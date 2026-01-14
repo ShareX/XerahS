@@ -33,7 +33,7 @@ namespace XerahS.Uploaders
     {
         public IOAuth2Loopback OAuth { get; private set; }
 
-        private HttpListener listener;
+        private HttpListener? listener;
 
         public OAuthListener(IOAuth2Loopback oauth)
         {
@@ -79,10 +79,11 @@ namespace XerahS.Uploaders
             try
             {
                 listener = new HttpListener();
-                listener.Prefixes.Add(redirectURI);
-                listener.Start();
+                HttpListener httpListener = listener;
+                httpListener.Prefixes.Add(redirectURI);
+                httpListener.Start();
 
-                HttpListenerContext context = await listener.GetContextAsync();
+                HttpListenerContext context = await httpListener.GetContextAsync();
                 queryCode = context.Request.QueryString.Get("code");
                 queryState = context.Request.QueryString.Get("state");
 

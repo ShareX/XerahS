@@ -30,17 +30,17 @@ namespace XerahS.Media
 {
     public class VideoInfo
     {
-        public string FilePath { get; set; }
+        public string FilePath { get; set; } = string.Empty;
 
         public TimeSpan Duration { get; set; }
         public TimeSpan Start { get; set; }
         public int Bitrate { get; set; }
 
-        public string VideoCodec { get; set; }
+        public string VideoCodec { get; set; } = string.Empty;
         public Size VideoResolution { get; set; }
         public double VideoFPS { get; set; }
 
-        public string AudioCodec { get; set; }
+        public string AudioCodec { get; set; } = string.Empty;
 
         public override string ToString()
         {

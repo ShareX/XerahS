@@ -38,7 +38,7 @@ namespace XerahS.Uploaders.FileUploaders
 
         public bool IsConnected => client != null && client.IsConnected;
 
-        private SftpClient client;
+        private SftpClient? client;
 
         public SFTP(FTPAccount account)
         {

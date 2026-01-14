@@ -63,10 +63,10 @@ namespace ShareX.UploadersLib.FileUploaders
         public int Port { get; set; }
 
         [Category("Localhost")]
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
 
         [Category("Localhost"), PasswordPropertyText(true), JsonEncrypt]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         [Category("Localhost"), Description("Localhost Sub-folder Path, e.g. screenshots, %y = year, %mo = month. SubFolderPath will be automatically appended to HttpHomePath if HttpHomePath does not start with @")]
         public string SubFolderPath { get; set; }

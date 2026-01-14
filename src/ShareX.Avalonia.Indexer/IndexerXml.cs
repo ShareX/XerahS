@@ -31,7 +31,7 @@ namespace XerahS.Indexer
 {
     public class IndexerXml : Indexer
     {
-        protected XmlWriter xmlWriter;
+        protected XmlWriter xmlWriter = null!;
 
         public IndexerXml(IndexerSettings indexerSettings) : base(indexerSettings)
         {

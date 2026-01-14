@@ -23,13 +23,15 @@
 
 #endregion License Information (GPL v3)
 
+using System;
+
 namespace XerahS.Uploaders
 {
     internal abstract class CustomUploaderFunction
     {
         public abstract string Name { get; }
 
-        public virtual string[] Aliases { get; }
+        public virtual string[] Aliases { get; } = Array.Empty<string>();
 
         public virtual int MinParameterCount { get; } = 0;
 

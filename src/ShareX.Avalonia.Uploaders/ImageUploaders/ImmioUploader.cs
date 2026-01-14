@@ -43,20 +43,20 @@ namespace XerahS.Uploaders.ImageUploaders
         private class ImmioResponse
         {
             public bool Success { get; set; }
-            public ImmioPayload Payload { get; set; }
+            public ImmioPayload Payload { get; set; } = null!;
         }
 
         private class ImmioPayload
         {
-            public string Uid { get; set; }
-            public string Uri { get; set; }
-            public string Link { get; set; }
-            public string Name { get; set; }
-            public string Format { get; set; }
-            public string Ext { get; set; }
+            public string Uid { get; set; } = string.Empty;
+            public string Uri { get; set; } = string.Empty;
+            public string Link { get; set; } = string.Empty;
+            public string Name { get; set; } = string.Empty;
+            public string Format { get; set; } = string.Empty;
+            public string Ext { get; set; } = string.Empty;
             public int Width { get; set; }
             public int Height { get; set; }
-            public string Size { get; set; }
+            public string Size { get; set; } = string.Empty;
         }
     }
 }
