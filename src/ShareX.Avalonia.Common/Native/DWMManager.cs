@@ -1,5 +1,8 @@
+using System.Runtime.Versioning;
+
 namespace XerahS.Common.Native
 {
+    [SupportedOSPlatform("windows")]
     public class DWMManager : IDisposable
     {
         private bool isDWMEnabled;

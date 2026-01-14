@@ -26,9 +26,11 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common.Helpers
 {
+    [SupportedOSPlatform("windows")]
     public static class ClipboardHelpersEx
     {
         public static Bitmap ImageFromClipboardDib(byte[] data)

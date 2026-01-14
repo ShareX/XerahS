@@ -27,9 +27,11 @@ using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common.Colors
 {
+    [SupportedOSPlatform("windows")]
     public class GradientInfo
     {
         [DefaultValue(LinearGradientMode.Vertical)]

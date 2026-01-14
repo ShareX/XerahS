@@ -25,9 +25,11 @@
 
 using System.Diagnostics;
 using System.Drawing;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public class WindowInfo
     {
         public IntPtr Handle { get; }

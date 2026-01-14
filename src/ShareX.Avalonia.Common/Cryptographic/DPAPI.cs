@@ -23,12 +23,14 @@
 
 #endregion License Information (GPL v3)
 
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace XerahS.Common
 {
     // https://en.wikipedia.org/wiki/Data_Protection_API
+    [SupportedOSPlatform("windows")]
     public static class DPAPI
     {
         public static string Encrypt(string stringToEncrypt, string? optionalEntropy = null, DataProtectionScope scope = DataProtectionScope.CurrentUser)

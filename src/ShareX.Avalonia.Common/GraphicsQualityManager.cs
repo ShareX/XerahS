@@ -25,9 +25,11 @@
 
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public class GraphicsQualityManager : IDisposable
     {
         private readonly CompositingQuality previousCompositingQuality;

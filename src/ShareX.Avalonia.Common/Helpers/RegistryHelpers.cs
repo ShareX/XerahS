@@ -24,9 +24,11 @@
 #endregion License Information (GPL v3)
 
 using Microsoft.Win32;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public static class RegistryHelpers
     {
         public static void CreateRegistry(string path, string value, RegistryHive root = RegistryHive.CurrentUser)

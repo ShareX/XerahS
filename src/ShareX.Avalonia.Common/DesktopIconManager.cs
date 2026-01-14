@@ -1,5 +1,8 @@
+using System.Runtime.Versioning;
+
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public static class DesktopIconManager
     {
         public static bool AreDesktopIconsVisible()

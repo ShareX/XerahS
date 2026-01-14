@@ -24,9 +24,11 @@
 #endregion License Information (GPL v3)
 
 using System.Drawing;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public class FontSafe
     {
         public string Font { get; set; }

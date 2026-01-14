@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using System.Drawing;
+using System.Runtime.Versioning;
 
 namespace XerahS.Platform.Abstractions;
 
@@ -31,6 +32,7 @@ namespace XerahS.Platform.Abstractions;
 /// Configuration for displaying a toast notification.
 /// Uses primitive types to avoid Avalonia dependencies in the abstraction layer.
 /// </summary>
+[SupportedOSPlatform("windows")]
 public class ToastConfig
 {
     /// <summary>

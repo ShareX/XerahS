@@ -24,10 +24,12 @@
 #endregion License Information (GPL v3)
 
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public static partial class NativeMethods
     {
         [DllImport("winmm.dll", EntryPoint = "timeGetDevCaps")]

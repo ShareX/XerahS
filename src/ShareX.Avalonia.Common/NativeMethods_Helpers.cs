@@ -26,9 +26,11 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public static partial class NativeMethods
     {
         public static string GetForegroundWindowText()
