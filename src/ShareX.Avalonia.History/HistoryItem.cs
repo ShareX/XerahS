@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace XerahS.History
 {
@@ -43,7 +44,7 @@ namespace XerahS.History
         public Dictionary<string, string> Tags { get; set; } = new Dictionary<string, string>();
 
         [JsonIgnore]
-        public string TagsWindowTitle
+        public string? TagsWindowTitle
         {
             get
             {
@@ -57,7 +58,7 @@ namespace XerahS.History
         }
 
         [JsonIgnore]
-        public string TagsProcessName
+        public string? TagsProcessName
         {
             get
             {
@@ -96,7 +97,7 @@ namespace XerahS.History
         }
 
         [JsonIgnore]
-        public string Tag
+        public string? Tag
         {
             get
             {

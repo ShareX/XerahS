@@ -178,7 +178,7 @@ namespace XerahS.Uploaders
                     return RequestHelpers.ContentTypeOctetStream;
             }
 
-            return null;
+            return RequestHelpers.ContentTypeOctetStream;
         }
 
         public string GetData(CustomUploaderInput input)
@@ -256,7 +256,7 @@ namespace XerahS.Uploaders
                 return collection;
             }
 
-            return null;
+            return new NameValueCollection();
         }
 
         public void ParseResponse(UploadResult result, ResponseInfo responseInfo, UploaderErrorManager errors, CustomUploaderInput input, bool isShortenedURL = false)

@@ -54,7 +54,7 @@ namespace XerahS.Uploaders.URLShorteners
 
             if (!string.IsNullOrEmpty(response))
             {
-                QRnetURLShortenerResponse jsonResponse = JsonConvert.DeserializeObject<QRnetURLShortenerResponse>(response);
+                QRnetURLShortenerResponse? jsonResponse = JsonConvert.DeserializeObject<QRnetURLShortenerResponse>(response);
 
                 if (jsonResponse != null)
                 {

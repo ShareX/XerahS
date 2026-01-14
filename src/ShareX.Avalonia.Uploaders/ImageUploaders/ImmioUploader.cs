@@ -34,8 +34,11 @@ namespace XerahS.Uploaders.ImageUploaders
             UploadResult result = SendRequestFile("http://imm.io/store/", stream, fileName, "image");
             if (result.IsSuccess)
             {
-                ImmioResponse response = JsonConvert.DeserializeObject<ImmioResponse>(result.Response);
-                if (response != null) result.URL = response.Payload.Uri;
+                ImmioResponse? response = JsonConvert.DeserializeObject<ImmioResponse>(result.Response);
+                if (response != null)
+                {
+                    result.URL = response.Payload.Uri;
+                }
             }
             return result;
         }

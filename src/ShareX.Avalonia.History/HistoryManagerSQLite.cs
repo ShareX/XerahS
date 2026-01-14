@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using Microsoft.Data.Sqlite;
 using Newtonsoft.Json;
 using XerahS.Common;
@@ -104,7 +105,7 @@ CREATE TABLE IF NOT EXISTS History (
                 {
                     HistoryItem item = new HistoryItem()
                     {
-                        Id = (long)reader["Id"],
+                        Id = Convert.ToInt64(reader["Id"] ?? 0L),
                         FileName = reader["FileName"]?.ToString() ?? string.Empty,
                         FilePath = reader["FilePath"]?.ToString() ?? string.Empty,
                         DateTime = DateTime.TryParse(reader["DateTime"]?.ToString(), out var dt) ? dt : DateTime.MinValue,
@@ -156,7 +157,7 @@ CREATE TABLE IF NOT EXISTS History (
                     {
                         HistoryItem item = new HistoryItem()
                         {
-                            Id = (long)reader["Id"],
+                            Id = Convert.ToInt64(reader["Id"] ?? 0L),
                             FileName = reader["FileName"]?.ToString() ?? string.Empty,
                             FilePath = reader["FilePath"]?.ToString() ?? string.Empty,
                             DateTime = DateTime.TryParse(reader["DateTime"]?.ToString(), out var dt) ? dt : DateTime.MinValue,

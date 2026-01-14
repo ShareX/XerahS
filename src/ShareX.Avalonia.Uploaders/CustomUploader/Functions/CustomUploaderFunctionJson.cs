@@ -60,10 +60,11 @@ namespace XerahS.Uploaders
                     jsonPath = "$." + jsonPath;
                 }
 
-                return (string)JToken.Parse(input).SelectToken(jsonPath);
+                JToken? token = JToken.Parse(input).SelectToken(jsonPath);
+                return token?.ToString() ?? string.Empty;
             }
 
-            return null;
+            return string.Empty;
         }
     }
 }

@@ -38,10 +38,11 @@ namespace XerahS.Uploaders
 
             if (parser.ResponseInfo.Headers != null)
             {
-                return parser.ResponseInfo.Headers[header];
+                string value = parser.ResponseInfo.Headers[header];
+                return value ?? string.Empty;
             }
 
-            return null;
+            return string.Empty;
         }
     }
 }

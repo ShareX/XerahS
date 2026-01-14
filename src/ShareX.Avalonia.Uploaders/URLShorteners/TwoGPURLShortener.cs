@@ -54,7 +54,7 @@ namespace XerahS.Uploaders.URLShorteners
 
             if (!string.IsNullOrEmpty(response))
             {
-                TwoGPURLShortenerResponse jsonResponse = JsonConvert.DeserializeObject<TwoGPURLShortenerResponse>(response);
+                TwoGPURLShortenerResponse? jsonResponse = JsonConvert.DeserializeObject<TwoGPURLShortenerResponse>(response);
 
                 if (jsonResponse != null)
                 {

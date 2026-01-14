@@ -160,19 +160,19 @@ namespace XerahS.Media
 
         private string GetOutputDirectory()
         {
-            string directory;
+            string directory = Options.DefaultOutputDirectory ?? string.Empty;
 
             switch (Options.OutputLocation)
             {
                 default:
                 case ThumbnailLocationType.DefaultFolder:
-                    directory = Options.DefaultOutputDirectory;
+                    directory = Options.DefaultOutputDirectory ?? string.Empty;
                     break;
                 case ThumbnailLocationType.ParentFolder:
-                    directory = Path.GetDirectoryName(MediaPath);
+                    directory = Path.GetDirectoryName(MediaPath) ?? string.Empty;
                     break;
                 case ThumbnailLocationType.CustomFolder:
-                    directory = FileHelpers.ExpandFolderVariables(Options.CustomOutputDirectory);
+                    directory = FileHelpers.ExpandFolderVariables(Options.CustomOutputDirectory) ?? string.Empty;
                     break;
             }
 
@@ -183,7 +183,7 @@ namespace XerahS.Media
 
         private int GetTimeSlice(int count)
         {
-            return (int)(VideoInfo.Duration.TotalSeconds / count);
+            return (int)(VideoInfo!.Duration.TotalSeconds / count);
         }
 
         private int GetRandomTimeSlice(int start)

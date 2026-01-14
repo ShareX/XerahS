@@ -37,7 +37,8 @@ namespace XerahS.Uploaders
 
         public override string Call(ShareXCustomUploaderSyntaxParser parser, string[] parameters)
         {
-            string text, title = null;
+            string text;
+            string? title = null;
 
             if (parameters.Length > 1)
             {
@@ -59,7 +60,7 @@ namespace XerahS.Uploaders
                 OutputBox.Show(text, title);
             }
 
-            return null;
+            return string.Empty;
         }
     }
 }

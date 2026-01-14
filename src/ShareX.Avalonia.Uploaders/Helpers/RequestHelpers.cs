@@ -46,8 +46,8 @@ namespace XerahS.Uploaders
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
 #pragma warning restore SYSLIB0014
 
-            string accept = null;
-            string referer = null;
+            string? accept = null;
+            string? referer = null;
             string userAgent = AppResources.UserAgent;
 
             if (headers != null)
@@ -111,14 +111,14 @@ namespace XerahS.Uploaders
                 request.Headers.Add(headers);
             }
 
-            request.Accept = accept;
-            request.ContentType = contentType;
+            request.Accept = accept ?? string.Empty;
+            request.ContentType = contentType ?? string.Empty;
             request.CookieContainer = new CookieContainer();
             if (cookies != null) request.CookieContainer.Add(cookies);
             request.Method = method.ToString();
             IWebProxy proxy = HelpersOptions.CurrentProxy.GetWebProxy();
             if (proxy != null) request.Proxy = proxy;
-            request.Referer = referer;
+            request.Referer = referer ?? string.Empty;
             request.UserAgent = userAgent;
 
             if (contentLength > 0)
@@ -203,7 +203,7 @@ namespace XerahS.Uploaders
             return Encoding.UTF8.GetBytes($"\r\n--{boundary}--\r\n");
         }
 
-        public static string ResponseToString(WebResponse response)
+        public static string? ResponseToString(WebResponse response)
         {
             if (response != null)
             {

@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using CG.Web.MegaApiClient;
 using XerahS.Common;
 
@@ -49,7 +50,7 @@ namespace XerahS.Uploaders
 
         public MegaApiClient.AuthInfos GetMegaApiClientAuthInfos()
         {
-            byte[] passwordAesKey = null;
+            byte[] passwordAesKey = Array.Empty<byte>();
 
             if (!string.IsNullOrEmpty(PasswordAesKey))
             {

@@ -43,7 +43,7 @@ namespace XerahS.Uploaders
                 return TranslatorHelper.TextToBase64(text);
             }
 
-            return null;
+            return string.Empty;
         }
     }
 }

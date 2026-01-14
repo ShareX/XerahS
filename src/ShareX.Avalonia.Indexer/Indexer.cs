@@ -23,6 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using System;
+using System.IO;
+
 namespace XerahS.Indexer
 {
     public abstract class Indexer
@@ -31,28 +34,20 @@ namespace XerahS.Indexer
 
         protected Indexer(IndexerSettings indexerSettings)
         {
-            settings = indexerSettings;
+            settings = indexerSettings ?? throw new ArgumentNullException(nameof(indexerSettings));
         }
 
         public static string Index(string folderPath, IndexerSettings settings)
         {
-            Indexer indexer = null;
-
-            switch (settings.Output)
+            ArgumentNullException.ThrowIfNull(settings);
+            Indexer indexer = settings.Output switch
             {
-                case IndexerOutput.Html:
-                    indexer = new IndexerHtml(settings);
-                    break;
-                case IndexerOutput.Txt:
-                    indexer = new IndexerText(settings);
-                    break;
-                case IndexerOutput.Xml:
-                    indexer = new IndexerXml(settings);
-                    break;
-                case IndexerOutput.Json:
-                    indexer = new IndexerJson(settings);
-                    break;
-            }
+                IndexerOutput.Html => new IndexerHtml(settings),
+                IndexerOutput.Txt => new IndexerText(settings),
+                IndexerOutput.Xml => new IndexerXml(settings),
+                IndexerOutput.Json => new IndexerJson(settings),
+                _ => throw new InvalidOperationException($"Unsupported indexer output: {settings.Output}")
+            };
 
             return indexer.Index(folderPath);
         }

@@ -174,7 +174,7 @@ namespace XerahS.Media
             EncodeProgressChanged?.Invoke(percentage);
         }
 
-        public VideoInfo GetVideoInfo(string videoPath)
+        public VideoInfo? GetVideoInfo(string videoPath)
         {
             VideoInfo videoInfo = new VideoInfo();
             videoInfo.FilePath = videoPath;

@@ -83,7 +83,7 @@ namespace XerahS.Uploaders
                 }
             }
 
-            return null;
+            return string.Empty;
         }
     }
 }
