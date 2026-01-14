@@ -27,11 +27,11 @@ namespace XerahS.Common
 {
     public class CLICommand
     {
-        public string Command { get; set; }
-        public string Parameter { get; set; }
+        public string? Command { get; set; }
+        public string? Parameter { get; set; }
         public bool IsCommand { get; set; } // Starts with hyphen?
 
-        public CLICommand(string command = null, string parameter = null)
+        public CLICommand(string? command = null, string? parameter = null)
         {
             Command = command;
             Parameter = parameter;

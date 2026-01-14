@@ -25,9 +25,11 @@
 
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public static class GraphicsPathExtensions
     {
         public static void AddRectangleProper(this GraphicsPath graphicsPath, RectangleF rect, float penWidth = 1)

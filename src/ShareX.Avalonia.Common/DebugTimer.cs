@@ -30,19 +30,19 @@ namespace XerahS.Common
 {
     public class DebugTimer : IDisposable
     {
-        public string Text { get; set; }
+        public string? Text { get; set; }
 
         public TimeSpan Elapsed => timer.Elapsed;
 
-        private Stopwatch timer;
+        private readonly Stopwatch timer;
 
-        public DebugTimer(string text = null)
+        public DebugTimer(string? text = null)
         {
             Text = text;
             timer = Stopwatch.StartNew();
         }
 
-        private void Write(string time, string text = null)
+        private void Write(string time, string? text = null)
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -59,12 +59,12 @@ namespace XerahS.Common
             }
         }
 
-        public void WriteElapsedMilliseconds(string text = null)
+        public void WriteElapsedMilliseconds(string? text = null)
         {
             Write(Elapsed.TotalMilliseconds.ToString("0.000", CultureInfo.InvariantCulture) + " milliseconds.", text);
         }
 
-        public void WriteElapsedSeconds(string text = null)
+        public void WriteElapsedSeconds(string? text = null)
         {
             Write(Elapsed.TotalSeconds.ToString("0.000", CultureInfo.InvariantCulture) + " seconds.", text);
         }

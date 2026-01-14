@@ -35,7 +35,7 @@ namespace XerahS.Media
         public ThumbnailLocationType OutputLocation { get; set; }
 
         [Category("Thumbnails"), DefaultValue(""), Description("Output folder where thumbnails will get saved."), Editor(typeof(DirectoryNameEditor), typeof(UITypeEditor))]
-        public string CustomOutputDirectory { get; set; }
+        public string CustomOutputDirectory { get; set; } = string.Empty;
 
         [Category("Thumbnails"), DefaultValue(EImageFormat.PNG), Description("Thumbnail image format to save.")]
         public EImageFormat ImageFormat { get; set; }
@@ -44,7 +44,7 @@ namespace XerahS.Media
         public int ThumbnailCount { get; set; }
 
         [Category("Thumbnails"), DefaultValue("_Thumbnail"), Description("Suffix to append to the thumbnail filename.")]
-        public string FilenameSuffix { get; set; }
+        public string FilenameSuffix { get; set; } = "_Thumbnail";
 
         [Category("Thumbnails"), DefaultValue(false), Description("Choose random frame each time a media file is processed.")]
         public bool RandomFrame { get; set; }
@@ -85,7 +85,8 @@ namespace XerahS.Media
         [Category("Thumbnails / Combined"), DefaultValue(true), Description("Draw border around thumbnails.")]
         public bool DrawBorder { get; set; }
 
-        public string DefaultOutputDirectory, LastVideoPath;
+        public string DefaultOutputDirectory { get; set; } = string.Empty;
+        public string LastVideoPath { get; set; } = string.Empty;
 
         public VideoThumbnailOptions()
         {

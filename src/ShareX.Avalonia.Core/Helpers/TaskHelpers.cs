@@ -33,6 +33,181 @@ namespace XerahS.Core;
 /// </summary>
 public static partial class TaskHelpers
 {
+    #region Job Type Classification
+
+    /// <summary>
+    /// Media type classification for jobs
+    /// </summary>
+    public enum JobMediaType
+    {
+        None,
+        Image,
+        Video,
+        Text,
+        File,
+        Tool,
+        System
+    }
+
+    /// <summary>
+    /// Get the media type for a given HotkeyType job based on its category
+    /// </summary>
+    public static JobMediaType GetJobMediaType(HotkeyType job)
+    {
+        string category = job.GetHotkeyCategory();
+
+        return category switch
+        {
+            EnumExtensions.HotkeyType_Category_ScreenCapture => GetMediaTypeForScreenCapture(job),
+            EnumExtensions.HotkeyType_Category_ScreenRecord => JobMediaType.Video,
+            EnumExtensions.HotkeyType_Category_Upload => GetMediaTypeForUpload(job),
+            EnumExtensions.HotkeyType_Category_Tools => GetMediaTypeForTools(job),
+            EnumExtensions.HotkeyType_Category_Other => JobMediaType.System,
+            _ => JobMediaType.None
+        };
+    }
+
+    /// <summary>
+    /// Determine media type for screen capture jobs
+    /// </summary>
+    private static JobMediaType GetMediaTypeForScreenCapture(HotkeyType job)
+    {
+        // All screen capture jobs produce images
+        return JobMediaType.Image;
+    }
+
+    /// <summary>
+    /// Determine media type for upload jobs
+    /// </summary>
+    private static JobMediaType GetMediaTypeForUpload(HotkeyType job)
+    {
+        return job switch
+        {
+            HotkeyType.UploadText => JobMediaType.Text,
+            HotkeyType.FileUpload or
+            HotkeyType.FolderUpload or
+            HotkeyType.ClipboardUpload or
+            HotkeyType.ClipboardUploadWithContentViewer or
+            HotkeyType.DragDropUpload => JobMediaType.File,
+            HotkeyType.ShortenURL or
+            HotkeyType.UploadURL or
+            HotkeyType.StopUploads => JobMediaType.System,
+            _ => JobMediaType.None
+        };
+    }
+
+    /// <summary>
+    /// Determine media type for tool jobs
+    /// </summary>
+    private static JobMediaType GetMediaTypeForTools(HotkeyType job)
+    {
+        return job switch
+        {
+            // Image-specific tools
+            HotkeyType.ImageEditor or
+            HotkeyType.ImageBeautifier or
+            HotkeyType.ImageEffects or
+            HotkeyType.ImageViewer or
+            HotkeyType.ImageCombiner or
+            HotkeyType.ImageSplitter or
+            HotkeyType.ImageThumbnailer or
+            HotkeyType.AnalyzeImage => JobMediaType.Image,
+
+            // Video-specific tools
+            HotkeyType.VideoConverter or
+            HotkeyType.VideoThumbnailer => JobMediaType.Video,
+
+            // Text-specific tools
+            HotkeyType.OCR => JobMediaType.Text,
+
+            // All other tools are utility tools
+            _ => JobMediaType.Tool
+        };
+    }
+
+    /// <summary>
+    /// Get the media type for a TaskSettings based on its Job property
+    /// </summary>
+    public static JobMediaType GetJobMediaType(TaskSettings taskSettings)
+    {
+        return GetJobMediaType(taskSettings.Job);
+    }
+
+    /// <summary>
+    /// Check if a job is image-related
+    /// </summary>
+    public static bool IsImageJob(HotkeyType job)
+    {
+        return GetJobMediaType(job) == JobMediaType.Image;
+    }
+
+    /// <summary>
+    /// Check if a job is video-related
+    /// </summary>
+    public static bool IsVideoJob(HotkeyType job)
+    {
+        return GetJobMediaType(job) == JobMediaType.Video;
+    }
+
+    /// <summary>
+    /// Check if a job is text-related
+    /// </summary>
+    public static bool IsTextJob(HotkeyType job)
+    {
+        return GetJobMediaType(job) == JobMediaType.Text;
+    }
+
+    /// <summary>
+    /// Check if a job is file-related (mixed content)
+    /// </summary>
+    public static bool IsFileJob(HotkeyType job)
+    {
+        return GetJobMediaType(job) == JobMediaType.File;
+    }
+
+    /// <summary>
+    /// Check if a job is a tool
+    /// </summary>
+    public static bool IsToolJob(HotkeyType job)
+    {
+        return GetJobMediaType(job) == JobMediaType.Tool;
+    }
+
+    /// <summary>
+    /// Check if a job is a system/control action
+    /// </summary>
+    public static bool IsSystemJob(HotkeyType job)
+    {
+        return GetJobMediaType(job) == JobMediaType.System;
+    }
+
+    /// <summary>
+    /// Check if a job produces media output (image or video)
+    /// </summary>
+    public static bool IsMediaProducingJob(HotkeyType job)
+    {
+        var mediaType = GetJobMediaType(job);
+        return mediaType == JobMediaType.Image || mediaType == JobMediaType.Video;
+    }
+
+    /// <summary>
+    /// Check if TaskSettings is configured for image capture
+    /// </summary>
+    public static bool IsImageJob(TaskSettings taskSettings)
+    {
+        return IsImageJob(taskSettings.Job);
+    }
+
+    /// <summary>
+    /// Check if TaskSettings is configured for video recording
+    /// </summary>
+    public static bool IsVideoJob(TaskSettings taskSettings)
+    {
+        return IsVideoJob(taskSettings.Job);
+    }
+
+    #endregion
+
     #region File Naming
 
     /// <summary>
@@ -49,7 +224,7 @@ public static partial class TaskHelpers
     /// </summary>
     public static string GetFileName(TaskSettings taskSettings, string extension, TaskMetadata? metadata)
     {
-        var settings = SettingManager.Settings;
+        var settings = SettingsManager.Settings;
         string pattern;
 
         // Use window-specific pattern if available
@@ -106,7 +281,7 @@ public static partial class TaskHelpers
     /// </summary>
     public static string GetScreenshotsFolder(TaskSettings? taskSettings = null, TaskMetadata? metadata = null)
     {
-        var settings = SettingManager.Settings;
+        var settings = SettingsManager.Settings;
         string screenshotsFolder;
 
         var nameParser = new NameParser(NameParserType.FilePath);
@@ -143,27 +318,37 @@ public static partial class TaskHelpers
             }
 
             string subFolderPath = nameParser.Parse(subFolderPattern);
-            screenshotsFolder = Path.Combine(GetScreenshotsParentFolder(), subFolderPath);
+            screenshotsFolder = Path.Combine(GetScreenshotsParentFolder(taskSettings), subFolderPath);
         }
 
         return FileHelpers.GetAbsolutePath(screenshotsFolder);
     }
 
     /// <summary>
-    /// Get the parent folder for screenshots
+    /// Get the parent folder for screenshots or screencasts based on job type
     /// </summary>
-    public static string GetScreenshotsParentFolder()
+    public static string GetScreenshotsParentFolder(TaskSettings? taskSettings = null)
     {
-        var settings = SettingManager.Settings;
+        var settings = SettingsManager.Settings;
 
+        // Check if custom path is configured
         if (settings.UseCustomScreenshotsPath && !string.IsNullOrEmpty(settings.CustomScreenshotsPath))
         {
             return settings.CustomScreenshotsPath;
         }
 
-        // Default to Pictures/ShareX
-        string picturesFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-        return Path.Combine(picturesFolder, "ShareX");
+        // Determine folder based on job category
+        if (taskSettings != null)
+        {
+            string category = taskSettings.Job.GetHotkeyCategory();
+            if (category == EnumExtensions.HotkeyType_Category_ScreenRecord)
+            {
+                return XerahS.Common.PathsManager.ScreencastsFolder;
+            }
+        }
+
+        // Default to Screenshots folder
+        return XerahS.Common.PathsManager.ScreenshotsFolder;
     }
 
     #endregion
@@ -321,7 +506,7 @@ public static partial class TaskHelpers
     /// </summary>
     public static bool IsUploadAllowed()
     {
-        return !SettingManager.Settings.DisableUpload;
+        return !SettingsManager.Settings.DisableUpload;
     }
 
     #endregion

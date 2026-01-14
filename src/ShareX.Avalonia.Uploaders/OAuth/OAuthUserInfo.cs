@@ -27,10 +27,10 @@ namespace XerahS.Uploaders
 {
     public class OAuthUserInfo
     {
-        public string sub { get; set; }
-        public string name { get; set; }
-        public string given_name { get; set; }
-        public string picture { get; set; }
-        public string locale { get; set; }
+        public string sub { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        public string given_name { get; set; } = string.Empty;
+        public string picture { get; set; } = string.Empty;
+        public string locale { get; set; } = string.Empty;
     }
 }

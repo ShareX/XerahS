@@ -133,7 +133,7 @@ namespace XerahS.Common
                 .Replace(CodeMenuEntryFilename.mi.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Minute))
                 .Replace(CodeMenuEntryFilename.s.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Second))
                 .Replace(CodeMenuEntryFilename.ms.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Millisecond, 3))
-                .Replace(CodeMenuEntryFilename.wy.ToPrefixString(), dt.WeekOfYear().ToString(CultureInfo.InvariantCulture))
+                .Replace(CodeMenuEntryFilename.wy.ToPrefixString(), ISOWeek.GetWeekOfYear(dt).ToString(CultureInfo.InvariantCulture))
                 .Replace(CodeMenuEntryFilename.w2.ToPrefixString(), CultureInfo.InvariantCulture.DateTimeFormat.GetDayName(dt.DayOfWeek))
                 .Replace(CodeMenuEntryFilename.w.ToPrefixString(), CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(dt.DayOfWeek))
                 .Replace(CodeMenuEntryFilename.pm.ToPrefixString(), dt.Hour >= 12 ? "PM" : "AM");

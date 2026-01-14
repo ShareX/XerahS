@@ -58,9 +58,9 @@ public partial class HotkeySettingsViewModel : ViewModelBase
     {
         if (_manager != null)
         {
-            SettingManager.WorkflowsConfig.Hotkeys = _manager.Workflows;
+            SettingsManager.WorkflowsConfig.Hotkeys = _manager.Workflows;
             // Save to disk
-            SettingManager.SaveWorkflowsConfigAsync();
+            SettingsManager.SaveWorkflowsConfigAsync();
         }
     }
 

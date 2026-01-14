@@ -35,6 +35,6 @@ namespace XerahS.Uploaders
         public int FTPIndex { get; set; }
         public bool OverrideCustomUploader { get; set; }
         public int CustomUploaderIndex { get; set; }
-        public string TextFormat { get; set; }
+        public string TextFormat { get; set; } = string.Empty;
     }
 }

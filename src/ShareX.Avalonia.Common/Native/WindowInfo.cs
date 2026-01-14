@@ -25,9 +25,11 @@
 
 using System.Diagnostics;
 using System.Drawing;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public class WindowInfo
     {
         public IntPtr Handle { get; }
@@ -38,7 +40,7 @@ namespace XerahS.Common
 
         public string ClassName => NativeMethods.GetClassName(Handle);
 
-        public Process Process
+        public Process? Process
         {
             get
             {
@@ -63,9 +65,10 @@ namespace XerahS.Common
         {
             get
             {
-                using (Process process = Process)
+                Process? process = Process;
+                using (process)
                 {
-                    return process?.ProcessName;
+                    return process?.ProcessName ?? string.Empty;
                 }
             }
         }
@@ -74,9 +77,10 @@ namespace XerahS.Common
         {
             get
             {
-                using (Process process = Process)
+                Process? process = Process;
+                using (process)
                 {
-                    return process?.MainModule?.FileName;
+                    return process?.MainModule?.FileName ?? string.Empty;
                 }
             }
         }
@@ -87,7 +91,8 @@ namespace XerahS.Common
         {
             get
             {
-                using (Process process = Process)
+                Process? process = Process;
+                using (process)
                 {
                     return process?.Id ?? 0;
                 }
@@ -182,7 +187,7 @@ namespace XerahS.Common
             }
         }
 
-        public Icon Icon => NativeMethods.GetApplicationIcon(Handle);
+        public Icon? Icon => NativeMethods.GetApplicationIcon(Handle);
 
         public bool IsMaximized => NativeMethods.IsZoomed(Handle);
 

@@ -85,19 +85,14 @@ namespace XerahS.Uploaders.FileUploaders
                     return string.Empty;
                 }
 
-                string serverProtocol;
-
                 switch (Protocol)
                 {
                     default:
                     case FTPProtocol.FTP:
-                        serverProtocol = "ftp://";
                         break;
                     case FTPProtocol.FTPS:
-                        serverProtocol = "ftps://";
                         break;
                     case FTPProtocol.SFTP:
-                        serverProtocol = "sftp://";
                         break;
                 }
 
@@ -259,14 +254,14 @@ namespace XerahS.Uploaders.FileUploaders
             return $"{Name} ({Host}:{Port})";
         }
 
-        public FTPAccount Clone()
-        {
-            return MemberwiseClone() as FTPAccount;
-        }
-
         object ICloneable.Clone()
         {
-            return Clone();
+            return Clone()!;
+        }
+
+        public FTPAccount? Clone()
+        {
+            return MemberwiseClone() as FTPAccount;
         }
     }
 }

@@ -1,17 +1,29 @@
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common.Helpers
 {
+    [SupportedOSPlatform("windows")]
     public static class ShortcutHelpers
     {
         public static bool SetShortcut(bool create, Environment.SpecialFolder specialFolder, string shortcutName, string targetPath, string arguments = "")
         {
             string shortcutPath = GetShortcutPath(specialFolder, shortcutName);
+            if (string.IsNullOrEmpty(shortcutPath))
+            {
+                return false;
+            }
+
             return SetShortcut(create, shortcutPath, targetPath, arguments);
         }
 
         public static bool SetShortcut(bool create, string shortcutPath, string targetPath, string arguments = "")
         {
+            if (string.IsNullOrEmpty(shortcutPath) || string.IsNullOrEmpty(targetPath))
+            {
+                return false;
+            }
+
             try
             {
                 if (create)
@@ -44,7 +56,7 @@ namespace XerahS.Common.Helpers
             {
                 try
                 {
-                    string shortcutTargetPath = GetShortcutTargetPath(shortcutPath);
+                    string? shortcutTargetPath = GetShortcutTargetPath(shortcutPath);
                     return !string.IsNullOrEmpty(shortcutTargetPath) && shortcutTargetPath.Equals(targetPath, StringComparison.OrdinalIgnoreCase);
                 }
                 catch (Exception e)
@@ -80,16 +92,20 @@ namespace XerahS.Common.Helpers
 
                     try
                     {
-                        Type shellType = Type.GetTypeFromProgID("WScript.Shell");
+                        Type? shellType = Type.GetTypeFromProgID("WScript.Shell");
                         if (shellType != null)
                         {
-                            dynamic shell = Activator.CreateInstance(shellType);
-                            dynamic shortcut = shell.CreateShortcut(shortcutPath);
-                            shortcut.TargetPath = targetPath;
-                            shortcut.Arguments = arguments;
-                            shortcut.WorkingDirectory = Path.GetDirectoryName(targetPath);
-                            shortcut.Save();
-                            return true;
+                            dynamic? shell = Activator.CreateInstance(shellType);
+                            dynamic? shortcut = shell?.CreateShortcut(shortcutPath);
+
+                            if (shortcut != null)
+                            {
+                                shortcut.TargetPath = targetPath;
+                                shortcut.Arguments = arguments;
+                                shortcut.WorkingDirectory = Path.GetDirectoryName(targetPath) ?? string.Empty;
+                                shortcut.Save();
+                                return true;
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -102,18 +118,21 @@ namespace XerahS.Common.Helpers
             return false;
         }
 
-        private static string GetShortcutTargetPath(string shortcutPath)
+        private static string? GetShortcutTargetPath(string shortcutPath)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 try
                 {
-                    Type shellType = Type.GetTypeFromProgID("WScript.Shell");
+                    Type? shellType = Type.GetTypeFromProgID("WScript.Shell");
                     if (shellType != null)
                     {
-                        dynamic shell = Activator.CreateInstance(shellType);
-                        dynamic shortcut = shell.CreateShortcut(shortcutPath);
-                        return shortcut.TargetPath;
+                        dynamic? shell = Activator.CreateInstance(shellType);
+                        dynamic? shortcut = shell?.CreateShortcut(shortcutPath);
+                        if (shortcut != null)
+                        {
+                            return shortcut.TargetPath;
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -121,7 +140,7 @@ namespace XerahS.Common.Helpers
                     DebugHelper.WriteException(ex);
                 }
             }
-            return null;
+            return string.Empty;
         }
 
         private static bool DeleteShortcut(string shortcutPath)

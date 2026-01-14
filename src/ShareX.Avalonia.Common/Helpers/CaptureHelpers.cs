@@ -1,7 +1,9 @@
 using System.Drawing;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common.Helpers
 {
+    [SupportedOSPlatform("windows")]
     public static class CaptureHelpers
     {
         public static Point GetCursorPosition()

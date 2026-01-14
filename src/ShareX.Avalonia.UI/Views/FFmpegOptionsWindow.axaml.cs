@@ -1,8 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Controls.ApplicationLifetimes;
-using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 
 namespace XerahS.UI.Views;
 
@@ -25,25 +26,29 @@ public partial class FFmpegOptionsWindow : Window
 
     private async void BrowseFFmpeg_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog
+        var topLevel = TopLevel.GetTopLevel(this);
+        var storageProvider = topLevel?.StorageProvider;
+        if (storageProvider == null)
+        {
+            return;
+        }
+
+        var options = new FilePickerOpenOptions
         {
             Title = "Select FFmpeg executable",
             AllowMultiple = false,
-            Filters =
+            FileTypeFilter = new List<FilePickerFileType>
             {
-                new FileDialogFilter { Name = "FFmpeg", Extensions = { "exe" } },
-                new FileDialogFilter { Name = "All files", Extensions = { "*" } }
+                new FilePickerFileType("FFmpeg")
+                {
+                    Patterns = new[] { "ffmpeg", "ffmpeg.exe", "*.exe" }
+                },
+                new FilePickerFileType("All files") { Patterns = new[] { "*" } }
             }
         };
 
-        Window? owner = null;
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            owner = desktop.MainWindow;
-        }
-
-        var result = await dialog.ShowAsync(owner ?? this);
-        var path = result != null && result.Length > 0 ? result[0] : null;
+        var results = await storageProvider.OpenFilePickerAsync(options);
+        var path = results?.FirstOrDefault()?.TryGetLocalPath();
         if (!string.IsNullOrWhiteSpace(path) && DataContext is ViewModels.FFmpegOptionsViewModel vm)
         {
             vm.OverrideCLIPath = true;

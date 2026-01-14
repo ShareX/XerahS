@@ -48,12 +48,12 @@ namespace XerahS.Uploaders
         private const string HMACSHA1SignatureType = "HMAC-SHA1";
         private const string RSASHA1SignatureType = "RSA-SHA1";
 
-        public static string GenerateQuery(string url, Dictionary<string, string> args, HttpMethod httpMethod, OAuthInfo oauth)
+        public static string GenerateQuery(string url, Dictionary<string, string>? args, HttpMethod httpMethod, OAuthInfo oauth)
         {
             return GenerateQuery(url, args, httpMethod, oauth, out _);
         }
 
-        public static string GenerateQuery(string url, Dictionary<string, string> args, HttpMethod httpMethod, OAuthInfo oauth, out Dictionary<string, string> parameters)
+        public static string GenerateQuery(string url, Dictionary<string, string>? args, HttpMethod httpMethod, OAuthInfo oauth, out Dictionary<string, string> parameters)
         {
             if (string.IsNullOrEmpty(oauth.ConsumerKey) ||
                 (oauth.SignatureMethod == OAuthInfo.OAuthInfoSignatureMethod.HMAC_SHA1 && string.IsNullOrEmpty(oauth.ConsumerSecret)) ||
@@ -79,7 +79,7 @@ namespace XerahS.Uploaders
                     throw new NotImplementedException("Unsupported signature method");
             }
 
-            string secret = null;
+            string? secret = null;
 
             if (!string.IsNullOrEmpty(oauth.UserToken) && !string.IsNullOrEmpty(oauth.UserSecret))
             {
@@ -127,15 +127,15 @@ namespace XerahS.Uploaders
             return string.Format("{0}?{1}&{2}={3}", normalizedUrl, normalizedParameters, ParameterSignature, URLHelpers.URLEncode(signature));
         }
 
-        public static string GetAuthorizationURL(string requestTokenResponse, OAuthInfo oauth, string authorizeURL, string callback = null)
+        public static string? GetAuthorizationURL(string requestTokenResponse, OAuthInfo oauth, string authorizeURL, string? callback = null)
         {
-            string url = null;
+            string? url = null;
 
             NameValueCollection args = HttpUtility.ParseQueryString(requestTokenResponse);
 
             if (args[ParameterToken] != null)
             {
-                oauth.AuthToken = args[ParameterToken];
+                oauth.AuthToken = args[ParameterToken]!;
                 url = string.Format("{0}?{1}={2}", authorizeURL, ParameterToken, oauth.AuthToken);
 
                 if (!string.IsNullOrEmpty(callback))
@@ -145,24 +145,24 @@ namespace XerahS.Uploaders
 
                 if (args[ParameterTokenSecret] != null)
                 {
-                    oauth.AuthSecret = args[ParameterTokenSecret];
+                    oauth.AuthSecret = args[ParameterTokenSecret]!;
                 }
             }
 
             return url;
         }
 
-        public static NameValueCollection ParseAccessTokenResponse(string accessTokenResponse, OAuthInfo oauth)
+        public static NameValueCollection? ParseAccessTokenResponse(string accessTokenResponse, OAuthInfo oauth)
         {
             NameValueCollection args = HttpUtility.ParseQueryString(accessTokenResponse);
 
             if (args != null && args[ParameterToken] != null)
             {
-                oauth.UserToken = args[ParameterToken];
+                oauth.UserToken = args[ParameterToken]!;
 
                 if (args[ParameterTokenSecret] != null)
                 {
-                    oauth.UserSecret = args[ParameterTokenSecret];
+                    oauth.UserSecret = args[ParameterTokenSecret]!;
 
                     return args;
                 }
@@ -180,7 +180,7 @@ namespace XerahS.Uploaders
             return signatureBase.ToString();
         }
 
-        private static byte[] GenerateSignature(string signatureBase, string consumerSecret, string userSecret = null)
+        private static byte[] GenerateSignature(string signatureBase, string consumerSecret, string? userSecret = null)
         {
             using (HMACSHA1 hmacsha1 = new HMACSHA1())
             {
@@ -233,7 +233,18 @@ namespace XerahS.Uploaders
 
         private static string NormalizeUrl(string url)
         {
-            if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+            if (string.IsNullOrEmpty(url))
+            {
+                return url ?? string.Empty;
+            }
+
+            Uri? uri = null;
+            if (Uri.TryCreate(url, UriKind.Absolute, out Uri? result))
+            {
+                uri = result;
+            }
+
+            if (uri != null)
             {
                 string port = "";
 

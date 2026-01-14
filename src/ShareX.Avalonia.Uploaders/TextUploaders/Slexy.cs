@@ -80,7 +80,10 @@ namespace XerahS.Uploaders.TextUploaders
                 arguments.Add("tabtype", "real");
 
                 SendRequestMultiPart(APIURL, arguments);
-                ur.URL = LastResponseInfo.ResponseURL;
+                if (LastResponseInfo != null)
+                {
+                    ur.URL = LastResponseInfo.ResponseURL;
+                }
             }
 
             return ur;

@@ -5,6 +5,13 @@ namespace XerahS.Platform.Abstractions
     public interface IScreenCaptureService
     {
         /// <summary>
+        /// Shows the region selector UI and returns the selected rectangle without capturing.
+        /// Used by screen recording to get the capture area before starting recording.
+        /// </summary>
+        /// <returns>SKRectI of the selected region, or SKRectI.Empty if cancelled.</returns>
+        Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null);
+
+        /// <summary>
         /// Captures a region of the screen.
         /// </summary>
         /// <returns>SkiaSharp.SKBitmap if successful, null otherwise.</returns>

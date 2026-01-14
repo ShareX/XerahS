@@ -31,7 +31,7 @@ namespace XerahS.Indexer
 {
     public class IndexerJson : Indexer
     {
-        private JsonWriter jsonWriter;
+        private JsonWriter jsonWriter = null!;
 
         public IndexerJson(IndexerSettings indexerSettings) : base(indexerSettings)
         {

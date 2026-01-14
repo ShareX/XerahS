@@ -29,12 +29,12 @@ namespace XerahS.Common
 {
     public class FileDownloader
     {
-        public event Action FileSizeReceived;
-        public event Action ProgressChanged;
+        public event Action? FileSizeReceived;
+        public event Action? ProgressChanged;
 
-        public string URL { get; set; }
-        public string DownloadLocation { get; set; }
-        public string AcceptHeader { get; set; }
+        public string URL { get; set; } = string.Empty;
+        public string DownloadLocation { get; set; } = string.Empty;
+        public string? AcceptHeader { get; set; }
 
         public bool IsDownloading { get; private set; }
         public bool IsCanceled { get; private set; }

@@ -37,9 +37,9 @@ namespace XerahS.Core
     /// Manages loading and saving of all application settings.
     /// Provides centralized access to all configuration objects.
     /// </summary>
-    public static class SettingManager
+    public static class SettingsManager
     {
-        public const string AppName = ShareXResources.AppName;
+        public static readonly string AppName = AppResources.AppName;
 
         #region Constants
 
@@ -47,30 +47,22 @@ namespace XerahS.Core
         public const string UploadersConfigFileNamePrefix = "UploadersConfig";
         public const string UploadersConfigFileNameExtension = "json";
         public const string UploadersConfigFileName = UploadersConfigFileNamePrefix + "." + UploadersConfigFileNameExtension;
-        public const string WorkflowsConfigFileName = "WorkflowsConfig.json";
-        public const string BackupFolderName = "Backup";
-        public const string SettingsFolderName = "Settings";
+        public const string WorkflowsConfigFileNamePrefix = "WorkflowsConfig";
+        public const string WorkflowsConfigFileNameExtension = "json";
+        public const string WorkflowsConfigFileName = WorkflowsConfigFileNamePrefix + "." + WorkflowsConfigFileNameExtension;
 
         #endregion
 
         #region Static Properties
 
         /// <summary>
-        /// Root folder for user settings. Defaults to Documents/XerahS.
+        /// Root folder for user settings. Delegates to PathsManager.
         /// </summary>
         public static string PersonalFolder
         {
-            get
-            {
-                if (string.IsNullOrEmpty(_personalFolder))
-                {
-                    _personalFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), AppName);
-                }
-                return _personalFolder;
-            }
-            set => _personalFolder = value;
+            get => XerahS.Common.PathsManager.PersonalFolder;
+            set => XerahS.Common.PathsManager.PersonalFolder = value;
         }
-        private static string _personalFolder = "";
 
         /// <summary>
         /// Event raised when settings are saved
@@ -88,22 +80,37 @@ namespace XerahS.Core
         /// <summary>
         /// Folder containing settings files
         /// </summary>
-        public static string SettingsFolder => Path.Combine(PersonalFolder, SettingsFolderName);
+        public static string SettingsFolder => XerahS.Common.PathsManager.SettingsFolder;
 
         /// <summary>
         /// History folder path
         /// </summary>
-        public static string HistoryFolder => Path.Combine(PersonalFolder, ShareXResources.HistoryFolderName);
+        public static string HistoryFolder => XerahS.Common.PathsManager.HistoryFolder;
+
+        /// <summary>
+        /// Screenshots folder path
+        /// </summary>
+        public static string ScreenshotsFolder => XerahS.Common.PathsManager.ScreenshotsFolder;
+
+        /// <summary>
+        /// Screencasts folder path
+        /// </summary>
+        public static string ScreencastsFolder => XerahS.Common.PathsManager.ScreencastsFolder;
+
+        /// <summary>
+        /// Frame dumps folder path for screen recording debug
+        /// </summary>
+        public static string FrameDumpsFolder => XerahS.Common.PathsManager.FrameDumpsFolder;
 
         /// <summary>
         /// Backup folder path
         /// </summary>
-        public static string BackupFolder => Path.Combine(SettingsFolder, BackupFolderName);
+        public static string BackupFolder => XerahS.Common.PathsManager.BackupFolder;
 
         /// <summary>
         /// History backup folder path
         /// </summary>
-        public static string HistoryBackupFolder => Path.Combine(HistoryFolder, BackupFolderName);
+        public static string HistoryBackupFolder => XerahS.Common.PathsManager.HistoryBackupFolder;
 
         /// <summary>
         /// Application config file path
@@ -144,7 +151,9 @@ namespace XerahS.Core
                     workflowsConfigFolder = FileHelpers.ExpandFolderVariables(Settings.CustomWorkflowsConfigPath);
                 }
 
-                return Path.Combine(workflowsConfigFolder, WorkflowsConfigFileName);
+                string workflowsConfigFileName = GetWorkflowsConfigFileName(workflowsConfigFolder);
+
+                return Path.Combine(workflowsConfigFolder, workflowsConfigFileName);
             }
         }
 
@@ -173,6 +182,12 @@ namespace XerahS.Core
             return WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Job == hotkeyType);
         }
 
+        public static WorkflowSettings? GetWorkflowById(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            return WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Id == id);
+        }
+
         /// <summary>
         /// Retrieve a workflow's task settings by hotkey type, creating a workflow entry if none exists.
         /// </summary>
@@ -196,6 +211,12 @@ namespace XerahS.Core
             }
 
             return workflow.TaskSettings;
+        }
+
+        public static TaskSettings GetWorkflowTaskSettings(string workflowId)
+        {
+            var workflow = GetWorkflowById(workflowId);
+            return workflow?.TaskSettings ?? DefaultTaskSettings;
         }
 
         /// <summary>
@@ -356,6 +377,7 @@ namespace XerahS.Core
 
         #endregion
 
+
         #region Helper Methods
 
         private static string GetUploadersConfigFileName(string destinationFolder)
@@ -401,6 +423,49 @@ namespace XerahS.Core
             return UploadersConfigFileName;
         }
 
+        private static string GetWorkflowsConfigFileName(string destinationFolder)
+        {
+            if (string.IsNullOrEmpty(destinationFolder))
+            {
+                // Fallback if no specific folder is determined yet, but usually not called this way
+                return WorkflowsConfigFileName;
+            }
+
+            if (Settings != null && Settings.UseMachineSpecificWorkflowsConfig)
+            {
+                string sanitizedMachineName = FileHelpers.SanitizeFileName(Environment.MachineName);
+
+                if (!string.IsNullOrEmpty(sanitizedMachineName))
+                {
+                    string machineSpecificFileName = $"{WorkflowsConfigFileNamePrefix}-{sanitizedMachineName}.{WorkflowsConfigFileNameExtension}";
+                    string machineSpecificPath = Path.Combine(destinationFolder, machineSpecificFileName);
+
+                    // If machine specific file doesn't exist, we might want to initialize it from default
+                    if (!File.Exists(machineSpecificPath))
+                    {
+                        string defaultFilePath = Path.Combine(destinationFolder, WorkflowsConfigFileName);
+
+                        // If default exists, copy it to machine specific
+                        if (File.Exists(defaultFilePath))
+                        {
+                            try
+                            {
+                                File.Copy(defaultFilePath, machineSpecificPath, false);
+                            }
+                            catch (IOException)
+                            {
+                                // Ignore
+                            }
+                        }
+                    }
+
+                    return machineSpecificFileName;
+                }
+            }
+
+            return WorkflowsConfigFileName;
+        }
+
         /// <summary>
         /// Reset all settings to defaults
         /// </summary>
@@ -417,38 +482,32 @@ namespace XerahS.Core
             WorkflowsConfig = new WorkflowsConfig();
         }
 
-        /// <summary>
-        /// Ensure required directories exist
-        /// </summary>
+
+
+        public static void LoadAllSettings()
+        {
+            LoadApplicationConfig();
+            LoadUploadersConfig();
+            LoadWorkflowsConfig();
+
+
+            // Initialize PathsManager
+            EnsureDirectoriesExist();
+        }
+
         public static void EnsureDirectoriesExist()
         {
-            if (!string.IsNullOrEmpty(SettingsFolder))
-            {
-                FileHelpers.CreateDirectory(SettingsFolder);
-            }
-
-            if (!string.IsNullOrEmpty(BackupFolder))
-            {
-                FileHelpers.CreateDirectory(BackupFolder);
-            }
-
-            if (!string.IsNullOrEmpty(HistoryFolder))
-            {
-                FileHelpers.CreateDirectory(HistoryFolder);
-            }
-
-            if (!string.IsNullOrEmpty(HistoryBackupFolder))
-            {
-                FileHelpers.CreateDirectory(HistoryBackupFolder);
-            }
+            // Delegate all directory creation to PathsManager
+            XerahS.Common.PathsManager.EnsureDirectoriesExist();
         }
+
 
         /// <summary>
         /// Returns the history file path in the dedicated History folder.
         /// </summary>
         public static string GetHistoryFilePath()
         {
-            var path = Path.Combine(HistoryFolder, ShareXResources.HistoryFileName);
+            var path = Path.Combine(HistoryFolder, AppResources.HistoryFileName);
             DebugHelper.WriteLine($"History file path: {path} (exists={File.Exists(path)})");
             return path;
         }

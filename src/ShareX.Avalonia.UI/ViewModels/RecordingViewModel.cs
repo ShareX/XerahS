@@ -44,10 +44,11 @@ namespace XerahS.UI.ViewModels;
 public partial class RecordingViewModel : ViewModelBase, IDisposable
 {
     private readonly System.Timers.Timer _durationTimer;
-    private WorkflowSettings _workflow;
-    private TaskSettings _taskSettings;
+    private WorkflowSettings _workflow = null!;
+    private TaskSettings _taskSettings = null!;
     private bool _disposed;
     private bool _initialized;
+    private Views.RecordingBorderWindow? _borderWindow;
 
     /// <summary>
     /// Singleton instance for easy access from UI
@@ -151,6 +152,54 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Platform-specific feature description
+    /// </summary>
+    public string FeatureDescription
+    {
+        get
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return "Record your screen to MP4 video using native Windows.Graphics.Capture";
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                return "Record your screen to MP4 video using FFmpeg";
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                return "Record your screen to MP4 video using FFmpeg";
+            }
+            else
+            {
+                return "Record your screen to MP4 video";
+            }
+        }
+    }
+
+    /// <summary>
+    /// Platform-specific usage notes
+    /// </summary>
+    public string UsageNotes
+    {
+        get
+        {
+            if (OperatingSystem.IsWindows() && Environment.OSVersion.Version.Build >= 17134)
+            {
+                return "Note: Recording uses Windows.Graphics.Capture (Windows 10 1803+) with Media Foundation H.264 encoding.";
+            }
+            else if (OperatingSystem.IsWindows())
+            {
+                return "Note: Recording uses FFmpeg for video encoding. Requires Windows 10 1803+ for native Windows.Graphics.Capture support.";
+            }
+            else
+            {
+                return "Note: Recording uses FFmpeg for video encoding. Ensure FFmpeg is installed and accessible in your system PATH.";
+            }
+        }
+    }
+
     public RecordingViewModel()
     {
         Current = this;
@@ -160,6 +209,7 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         // Subscribe to global recording manager events
         ScreenRecordingManager.Instance.StatusChanged += OnStatusChanged;
         ScreenRecordingManager.Instance.ErrorOccurred += OnErrorOccurred;
+        ScreenRecordingManager.Instance.RecordingStarted += OnRecordingStarted;
 
         // Timer to update duration display
         _durationTimer = new System.Timers.Timer(100); // Update every 100ms
@@ -182,6 +232,7 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
                     CanStart = true;
                     CanStop = false;
                     _durationTimer.Stop();
+                    HideBorderWindow();
                     break;
 
                 case RecordingStatus.Initializing:
@@ -238,6 +289,94 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(DurationFormatted));
     }
 
+    private void OnRecordingStarted(object? sender, ScreenCapture.ScreenRecording.RecordingStartedEventArgs e)
+    {
+        // Show border window with appropriate color based on recording technology
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            try
+            {
+                _borderWindow = new Views.RecordingBorderWindow();
+
+                // Set border color: Red for FFmpeg/GDI, Green for Modern Capture
+                string borderColor = e.IsUsingFallback ? "Red" : "Green";
+                _borderWindow.SetBorderColor(borderColor);
+
+                // Determine recording area bounds
+                var bounds = GetRecordingBounds(e.Options);
+                _borderWindow.SetBounds(bounds);
+
+                // Show the border window
+                _borderWindow.Show();
+
+                DebugHelper.WriteLine($"Recording border shown: {borderColor} border for {(e.IsUsingFallback ? "FFmpeg/GDI" : "Modern Capture")} recording");
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to show recording border window");
+            }
+        });
+    }
+
+    private System.Drawing.Rectangle GetRecordingBounds(ScreenCapture.ScreenRecording.RecordingOptions options)
+    {
+        switch (options.Mode)
+        {
+            case ScreenCapture.ScreenRecording.CaptureMode.Region:
+                // Use the specified region
+                return options.Region;
+
+            case ScreenCapture.ScreenRecording.CaptureMode.Window:
+                // Get window bounds
+                if (options.TargetWindowHandle != IntPtr.Zero)
+                {
+                    try
+                    {
+                        return Platform.Abstractions.PlatformServices.Window.GetWindowBounds(options.TargetWindowHandle);
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugHelper.WriteException(ex, "Failed to get window bounds");
+                    }
+                }
+                // Fallthrough to screen mode if window bounds fail
+                goto case ScreenCapture.ScreenRecording.CaptureMode.Screen;
+
+            case ScreenCapture.ScreenRecording.CaptureMode.Screen:
+            default:
+                // Get primary screen bounds
+                var screens = Platform.Abstractions.PlatformServices.Screen.GetAllScreens();
+                var primaryScreen = screens.FirstOrDefault(s => s.IsPrimary);
+                if (primaryScreen != null)
+                {
+                    return new System.Drawing.Rectangle(
+                        primaryScreen.Bounds.Left,
+                        primaryScreen.Bounds.Top,
+                        primaryScreen.Bounds.Width,
+                        primaryScreen.Bounds.Height);
+                }
+                // Default fallback
+                return new System.Drawing.Rectangle(0, 0, 1920, 1080);
+        }
+    }
+
+    private void HideBorderWindow()
+    {
+        if (_borderWindow != null)
+        {
+            try
+            {
+                _borderWindow.Close();
+                _borderWindow = null;
+                DebugHelper.WriteLine("Recording border window hidden");
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to hide recording border window");
+            }
+        }
+    }
+
     /// <summary>
     /// Formatted duration string for display (MM:SS or HH:MM:SS)
     /// </summary>
@@ -267,14 +406,17 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
 
             // Update workflow TaskSettings from UI selections
             SyncSettingsToWorkflow();
-            SettingManager.SaveWorkflowsConfigAsync();
+            SettingsManager.SaveWorkflowsConfigAsync();
 
             DebugHelper.WriteLine($"Starting recording (workflow: {_workflow?.Name ?? "unnamed"}): {Codec} @ {Fps}fps, {BitrateKbps}kbps, Cursor={ShowCursor}, Intent={RecordingIntent}");
             DebugHelper.WriteLine($"  Audio: SystemAudio={CaptureSystemAudio}, Microphone={CaptureMicrophone}");
 
             // Use unified pipeline through TaskHelpers.ExecuteWorkflow
             // This ensures recording goes through the same path as hotkey triggers
-            await Core.Helpers.TaskHelpers.ExecuteWorkflow(_workflow);
+            if (_workflow != null)
+            {
+                await Core.Helpers.TaskHelpers.ExecuteWorkflow(_workflow);
+            }
         }
         catch (Exception ex)
         {
@@ -314,7 +456,7 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
 
     private void InitializeWorkflow()
     {
-        var workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Job == HotkeyType.ScreenRecorder);
+        var workflow = SettingsManager.WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Job == HotkeyType.ScreenRecorder);
         if (workflow == null)
         {
             workflow = new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo())
@@ -322,8 +464,8 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
                 Name = "Screen Recorder (auto)"
             };
 
-            SettingManager.WorkflowsConfig.Hotkeys.Add(workflow);
-            SettingManager.SaveWorkflowsConfigAsync();
+            SettingsManager.WorkflowsConfig.Hotkeys.Add(workflow);
+            SettingsManager.SaveWorkflowsConfigAsync();
         }
 
         _workflow = workflow;
@@ -430,9 +572,13 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         _durationTimer.Stop();
         _durationTimer.Dispose();
 
+        // Clean up border window
+        HideBorderWindow();
+
         // Unsubscribe from global recording manager events (Stage 5)
         ScreenRecordingManager.Instance.StatusChanged -= OnStatusChanged;
         ScreenRecordingManager.Instance.ErrorOccurred -= OnErrorOccurred;
+        ScreenRecordingManager.Instance.RecordingStarted -= OnRecordingStarted;
 
         GC.SuppressFinalize(this);
     }

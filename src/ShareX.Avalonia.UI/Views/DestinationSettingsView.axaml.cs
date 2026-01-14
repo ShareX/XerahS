@@ -31,7 +31,7 @@ namespace XerahS.UI.Views
             // Save uploaders config when navigating away from this view
             Unloaded += (s, e) =>
             {
-                SettingManager.SaveUploadersConfigAsync();
+                SettingsManager.SaveUploadersConfigAsync();
             };
         }
 

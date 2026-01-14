@@ -1,5 +1,5 @@
 using Newtonsoft.Json;
-using ShareX.Editor.ImageEffects;
+// TODO TODO_IMAGE_EFFECTS using ShareX.Editor.ImageEffects;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -16,8 +16,14 @@ public class ImageEffectPreset
 {
     public string Name { get; set; } = "";
 
-    [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto)]
-    public List<ImageEffect> Effects { get; set; } = new();
+    // TODO TODO_IMAGE_EFFECTS [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto)]
+    // TODO TODO_IMAGE_EFFECTS public List<ImageEffect> Effects { get; set; } = new();
+
+    /// <summary>
+    /// Legacy import support: stores mapped effect data from .sxie imports.
+    /// Each entry contains the target effect type name and property values.
+    /// </summary>
+    public List<MappedEffectData> MappedEffects { get; set; } = new();
 
     public static ImageEffectPreset GetDefaultPreset()
     {
@@ -28,6 +34,15 @@ public class ImageEffectPreset
     {
         return Name;
     }
+}
+
+/// <summary>
+/// Stores effect data from legacy imports for later instantiation.
+/// </summary>
+public class MappedEffectData
+{
+    public string TargetTypeName { get; set; } = "";
+    public Dictionary<string, object?> Properties { get; set; } = new();
 }
 
 public class ColorPickerOptions
@@ -258,7 +273,7 @@ public class IndexerSettings
     public bool DisplayPathLimited { get; set; }
 
     [DefaultValue("")]
-    public string CustomCSSFilePath { get; set; }
+    public string CustomCSSFilePath { get; set; } = string.Empty;
 
     [DefaultValue(true)]
     public bool UseAttribute { get; set; }
@@ -362,9 +377,9 @@ public class ImageCombinerOptions
 
 public class VideoConverterOptions
 {
-    public string InputFilePath { get; set; }
-    public string OutputFolderPath { get; set; }
-    public string OutputFileName { get; set; }
+    public string InputFilePath { get; set; } = string.Empty;
+    public string OutputFolderPath { get; set; } = string.Empty;
+    public string OutputFileName { get; set; } = string.Empty;
 
     public ConverterVideoCodecs VideoCodec { get; set; } = ConverterVideoCodecs.x264;
     public int VideoQuality { get; set; } = 23;
@@ -400,7 +415,7 @@ public class VideoThumbnailOptions
 public class BorderlessWindowSettings
 {
     public bool RememberWindowTitle { get; set; } = true;
-    public string WindowTitle { get; set; }
+    public string WindowTitle { get; set; } = string.Empty;
     public bool AutoCloseWindow { get; set; }
     public bool ExcludeTaskbarArea { get; set; }
 }
@@ -408,12 +423,12 @@ public class BorderlessWindowSettings
 public class AIOptions
 {
     public AIProvider Provider { get; set; } = AIProvider.OpenAI;
-    public string OpenAIAPIKey { get; set; }
+    public string OpenAIAPIKey { get; set; } = string.Empty;
     public string OpenAIModel { get; set; } = "gpt-4o-mini";
-    public string OpenAICustomURL { get; set; }
-    public string GeminiAPIKey { get; set; }
+    public string OpenAICustomURL { get; set; } = string.Empty;
+    public string GeminiAPIKey { get; set; } = string.Empty;
     public string GeminiModel { get; set; } = "gemini-1.5-flash-latest";
-    public string OpenRouterAPIKey { get; set; }
+    public string OpenRouterAPIKey { get; set; } = string.Empty;
     public string OpenRouterModel { get; set; } = "google/gemini-flash-1.5";
     public string ReasoningEffort { get; set; } = "minimal";
     public string Verbosity { get; set; } = "medium";

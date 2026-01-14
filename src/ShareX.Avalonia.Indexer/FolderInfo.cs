@@ -33,7 +33,7 @@ namespace XerahS.Indexer
         public long Size { get; private set; }
         public int TotalFileCount { get; private set; }
         public int TotalFolderCount { get; private set; }
-        public FolderInfo Parent { get; set; }
+        public FolderInfo Parent { get; set; } = null!;
 
         public string FolderName
         {

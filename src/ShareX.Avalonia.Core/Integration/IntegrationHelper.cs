@@ -10,9 +10,9 @@ namespace XerahS.Core.Integration;
 public static class IntegrationHelper
 {
     private const string ShellPluginExtensionPath = @"Software\Classes\.sxadp";
-    private static readonly string ShellPluginExtensionValue = $"{SettingManager.AppName}.sxadp";
+    private static readonly string ShellPluginExtensionValue = $"{SettingsManager.AppName}.sxadp";
     private static readonly string ShellPluginAssociatePath = $@"Software\Classes\{ShellPluginExtensionValue}";
-    private static readonly string ShellPluginAssociateValue = $"{SettingManager.AppName} plugin";
+    private static readonly string ShellPluginAssociateValue = $"{SettingsManager.AppName} plugin";
     private static readonly string ShellPluginIconPath = $@"{ShellPluginAssociatePath}\DefaultIcon";
     private static readonly string ShellPluginCommandPath = $@"{ShellPluginAssociatePath}\shell\open\command";
 
@@ -76,7 +76,7 @@ public static class IntegrationHelper
         // Notify Windows shell of file association change
         SHChangeNotify(0x08000000, 0x0000, IntPtr.Zero, IntPtr.Zero);
 
-        DebugHelper.WriteLine($"Registered .sxadp file association for {SettingManager.AppName}");
+        DebugHelper.WriteLine($"Registered .sxadp file association for {SettingsManager.AppName}");
     }
 
     private static void UnregisterPluginExtension()
@@ -84,7 +84,7 @@ public static class IntegrationHelper
         RemoveRegistryKey(ShellPluginExtensionPath);
         RemoveRegistryKey(ShellPluginAssociatePath);
 
-        DebugHelper.WriteLine($"Unregistered .sxadp file association for {SettingManager.AppName}");
+        DebugHelper.WriteLine($"Unregistered .sxadp file association for {SettingsManager.AppName}");
     }
 
     // Registry helper methods

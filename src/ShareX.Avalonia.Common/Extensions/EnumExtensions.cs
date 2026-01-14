@@ -39,7 +39,7 @@ namespace XerahS.Common
 
         public static string GetDescription(this Enum value)
         {
-            FieldInfo fi = value.GetType().GetField(value.ToString());
+            FieldInfo? fi = value.GetType().GetField(value.ToString());
 
             if (fi != null)
             {
@@ -59,9 +59,9 @@ namespace XerahS.Common
             return value.GetLocalizedDescription(Resources.ResourceManager);
         }
 
-        public static string GetLocalizedDescription(this Enum value, ResourceManager resourceManager)
+        public static string GetLocalizedDescription(this Enum value, ResourceManager? resourceManager)
         {
-            string description = null;
+            string? description = null;
 
             if (resourceManager != null)
             {
@@ -76,12 +76,7 @@ namespace XerahS.Common
                 }
             }
 
-            if (string.IsNullOrEmpty(description))
-            {
-                description = EnumExtensions.GetDescription(value);
-            }
-
-            return description;
+            return string.IsNullOrEmpty(description) ? EnumExtensions.GetDescription(value) : description;
         }
 
         public static string GetLocalizedCategory(this Enum value)
@@ -89,13 +84,13 @@ namespace XerahS.Common
             return value.GetLocalizedCategory(Resources.ResourceManager);
         }
 
-        public static string GetLocalizedCategory(this Enum value, ResourceManager resourceManager)
+        public static string GetLocalizedCategory(this Enum value, ResourceManager? resourceManager)
         {
-            string category = null;
+            string? category = null;
 
             if (resourceManager != null)
             {
-                FieldInfo fi = value.GetType().GetField(value.ToString());
+                FieldInfo? fi = value.GetType().GetField(value.ToString());
 
                 if (fi != null)
                 {
@@ -116,7 +111,7 @@ namespace XerahS.Common
                 }
             }
 
-            return category;
+            return category ?? GetDescription(value);
         }
 
         public static int GetIndex(this Enum value)
@@ -168,14 +163,31 @@ namespace XerahS.Common
         {
             Array values = Enum.GetValues(value.GetType());
             int i = Array.IndexOf(values, value) + 1;
-            return i == values.Length ? (T)values.GetValue(0) : (T)values.GetValue(i);
+            return i == values.Length ? (T)values.GetValue(0)! : (T)values.GetValue(i)!;
+        }
+
+        public static string GetHotkeyCategory(this Enum value)
+        {
+            FieldInfo? fi = value.GetType().GetField(value.ToString());
+
+            if (fi != null)
+            {
+                CategoryAttribute[] attributes = (CategoryAttribute[])fi.GetCustomAttributes(typeof(CategoryAttribute), false);
+
+                if (attributes.Length > 0)
+                {
+                    return attributes[0].Category;
+                }
+            }
+
+            return HotkeyType_Category_Other;
         }
 
         public static T Previous<T>(this Enum value)
         {
             Array values = Enum.GetValues(value.GetType());
             int i = Array.IndexOf(values, value) - 1;
-            return i == -1 ? (T)values.GetValue(values.Length - 1) : (T)values.GetValue(i);
+            return i == -1 ? (T)values.GetValue(values.Length - 1)! : (T)values.GetValue(i)!;
         }
     }
 }

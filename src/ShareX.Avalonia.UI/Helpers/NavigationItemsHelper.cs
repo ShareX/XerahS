@@ -49,7 +49,7 @@ namespace XerahS.UI.Helpers
             }
             else
             {
-                workflows = SettingManager.WorkflowsConfig.Hotkeys.Take(3).ToList();
+                workflows = SettingsManager.WorkflowsConfig.Hotkeys.Take(3).ToList();
             }
 
             var result = new List<(string Id, string DisplayName)>();

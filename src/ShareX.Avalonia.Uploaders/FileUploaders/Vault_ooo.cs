@@ -25,6 +25,7 @@
 
 using Newtonsoft.Json;
 using XerahS.Common;
+using System;
 using System.Collections.Specialized;
 using System.Security.Cryptography;
 using System.Text;
@@ -102,10 +103,15 @@ namespace XerahS.Uploaders.FileUploaders
             postRequestJson.Add("chunks", chunks);
             postRequestJson.Add("fileLength", fullUploadSize);
 
-            string postResult = SendRequest(HttpMethod.POST, URLHelpers.CombineURL(APIURL, fullFileName), JsonConvert.SerializeObject(postRequestJson), RequestHelpers.ContentTypeJSON, requestHeaders);
-            Vault_oooMetaInfo metaInfo = JsonConvert.DeserializeObject<Vault_oooMetaInfo>(postResult);
+            string? postResult = SendRequest(HttpMethod.POST, URLHelpers.CombineURL(APIURL, fullFileName), JsonConvert.SerializeObject(postRequestJson), RequestHelpers.ContentTypeJSON, requestHeaders);
+            Vault_oooMetaInfo? metaInfo = null;
+            
+            if (!string.IsNullOrEmpty(postResult))
+            {
+                metaInfo = JsonConvert.DeserializeObject<Vault_oooMetaInfo>(postResult);
+            }
 
-            if (string.IsNullOrEmpty(metaInfo.UrlPathName))
+            if (metaInfo == null || string.IsNullOrEmpty(metaInfo.UrlPathName))
                 throw new InvalidOperationException("No correct metaInfo returned");
 
             #region Upload in chunks
@@ -209,13 +215,14 @@ namespace XerahS.Uploaders.FileUploaders
             RandomNumberGenerator rng = RandomNumberGenerator.Create(); // Cryptographically secure
             rng.GetBytes(salt);
 
-            Rfc2898DeriveBytes rfcDeriver = new Rfc2898DeriveBytes(key, salt, PBKDF2_ITERATIONS, HashAlgorithmName.SHA256);
+            byte[] derivedKey = Rfc2898DeriveBytes.Pbkdf2(key, salt, PBKDF2_ITERATIONS, HashAlgorithmName.SHA256, AES_KEY_SIZE / 8);
+            byte[] derivedIV = Rfc2898DeriveBytes.Pbkdf2(key, salt, PBKDF2_ITERATIONS, HashAlgorithmName.SHA256, AES_BLOCK_SIZE / 8);
 
             return new Vault_oooCryptoData
             {
                 Salt = salt,
-                Key = rfcDeriver.GetBytes(AES_KEY_SIZE / 8), // Derive the bytes from the rfcDeriver; Divide by 8 to input byte count
-                IV = rfcDeriver.GetBytes(AES_BLOCK_SIZE / 8)
+                Key = derivedKey,
+                IV = derivedIV
             };
         }
 
@@ -244,9 +251,9 @@ namespace XerahS.Uploaders.FileUploaders
 
         private class Vault_oooCryptoData
         {
-            public byte[] Salt { get; set; }
-            public byte[] Key { get; set; }
-            public byte[] IV { get; set; }
+            public byte[] Salt { get; set; } = Array.Empty<byte>();
+            public byte[] Key { get; set; } = Array.Empty<byte>();
+            public byte[] IV { get; set; } = Array.Empty<byte>();
         }
 
         #endregion
@@ -254,10 +261,10 @@ namespace XerahS.Uploaders.FileUploaders
         private class Vault_oooMetaInfo
         {
             [JsonProperty("urlPathName")]
-            public string UrlPathName { get; set; }
+            public string UrlPathName { get; set; } = string.Empty;
 
             [JsonProperty("token")]
-            public string Token { get; set; }
+            public string Token { get; set; } = string.Empty;
         }
     }
 }

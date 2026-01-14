@@ -203,7 +203,7 @@ namespace XerahS.Common
             return URLPrefixes.Any(x => url.StartsWith(x, StringComparison.OrdinalIgnoreCase));
         }
 
-        public static string GetPrefix(string url)
+        public static string? GetPrefix(string url)
         {
             return URLPrefixes.FirstOrDefault(x => url.StartsWith(x, StringComparison.OrdinalIgnoreCase));
         }
@@ -244,7 +244,7 @@ namespace XerahS.Common
 
         public static string GetHostName(string url)
         {
-            if (!string.IsNullOrEmpty(url) && Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+            if (!string.IsNullOrEmpty(url) && Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
             {
                 string host = uri.Host;
 
@@ -335,7 +335,7 @@ namespace XerahS.Common
             return url;
         }
 
-        public static NameValueCollection ParseQueryString(string url)
+        public static NameValueCollection? ParseQueryString(string url)
         {
             if (string.IsNullOrEmpty(url)) return null;
 
@@ -357,7 +357,7 @@ namespace XerahS.Common
             return collection;
         }
 
-        public static string BuildUri(string root, string path, string query = null)
+        public static string BuildUri(string root, string path, string? query = null)
         {
             UriBuilder builder = new UriBuilder(root);
             builder.Path = path;
@@ -371,7 +371,7 @@ namespace XerahS.Common
 
             // System.Web.HttpUtility.UrlPathEncode is obsolete and not in .NET Core usually
             // We can emulate it or use WebUtility
-            return Uri.EscapeUriString(url);
+            return Uri.EscapeDataString(url);
         }
 
         public static void OpenURL(string url)
@@ -462,7 +462,7 @@ namespace XerahS.Common
             return url1 + "/" + url2;
         }
 
-        public static string CombineURL(params string[] urls)
+        public static string CombineURL(params string[]? urls)
         {
             if (urls == null || urls.Length == 0)
             {

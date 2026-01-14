@@ -66,12 +66,27 @@ public class WorkflowSettings
     /// <summary>
     /// Optional display name for this hotkey
     /// </summary>
-    public string? Name { get; set; }
+    public string? Name
+    {
+        get => TaskSettings?.Description;
+        set
+        {
+            if (TaskSettings != null)
+            {
+                TaskSettings.Description = value ?? string.Empty;
+            }
+        }
+    }
 
     /// <summary>
     /// Whether this hotkey is enabled
     /// </summary>
     public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// Whether this workflow is pinned to the tray menu
+    /// </summary>
+    public bool PinnedToTray { get; set; }
 
     public WorkflowSettings()
     {
@@ -122,6 +137,12 @@ public class WorkflowSettings
         if (string.IsNullOrEmpty(Id))
         {
             Id = GenerateId();
+        }
+
+        // Sync ID to task settings so it propagates to capture options
+        if (TaskSettings != null)
+        {
+            TaskSettings.WorkflowId = Id;
         }
     }
 }

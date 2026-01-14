@@ -63,7 +63,7 @@ namespace XerahS.Common
             return str;
         }
 
-        public static string Between(this string text, string first, string last, bool isFirstMatchForEnd = false, bool includeFirstAndLast = false)
+        public static string? Between(this string text, string first, string last, bool isFirstMatchForEnd = false, bool includeFirstAndLast = false)
         {
             int start = text.IndexOf(first);
             if (start < 0) return null;
@@ -76,7 +76,7 @@ namespace XerahS.Common
             return text.Remove(end);
         }
 
-        public static string Repeat(this string str, int count)
+        public static string? Repeat(this string str, int count)
         {
             if (!string.IsNullOrEmpty(str) && count > 0)
             {

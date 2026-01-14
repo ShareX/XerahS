@@ -9,7 +9,29 @@
       "Bash(dotnet build:*)",
       "Bash(dotnet remove:*)",
       "Bash(dotnet clean:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(if [ ! -d \"docs/analysis\" ])",
+      "Bash(then mkdir -p docs/analysis)",
+      "Bash(else echo \"docs/analysis directory already exists\")",
+      "Bash(fi)",
+      "Bash(dotnet --version:*)",
+      "Bash(dotnet sln:*)",
+      "Bash(mkdir:*)",
+      "Bash(test:*)",
+      "Bash(nul)",
+      "Bash(git log:*)",
+      "Bash(systeminfo:*)",
+      "Bash(findstr:*)",
+      "Bash(ver:*)",
+      "Bash(cmd.exe /c ver)",
+      "Bash(cmd.exe /c \"echo %USERPROFILE%\")",
+      "Bash(./XerahS.exe list workflows)",
+      "Bash(./XerahS.exe workflow run:*)",
+      "Bash(./XerahS.exe run:*)",
+      "Bash(echo:*)",
+      "Bash(dir /s /b srcShareX.Editor 2)",
+      "Bash(cmd.exe /c \"dir /s /b src 2>nul | findstr /i EditorView\")",
+      "Bash(cmd.exe /c \"dir /s /b . 2>nul | findstr /i \"\"ShareX.Editor\"\"\")"
     ]
   }
 }

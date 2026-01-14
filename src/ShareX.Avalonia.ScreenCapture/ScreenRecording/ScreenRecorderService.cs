@@ -22,9 +22,15 @@
 */
 
 #endregion License Information (GPL v3)
+using System;
 using System.Runtime.InteropServices;
-
+using System.Runtime.Versioning;
 using System.Diagnostics;
+using System.IO;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Linq;
+using XerahS.Common;
 
 namespace XerahS.ScreenCapture.ScreenRecording;
 
@@ -60,6 +66,12 @@ public class ScreenRecorderService : IRecordingService
     /// Set during platform initialization (Stage 4)
     /// </summary>
     public static Func<IRecordingService>? FallbackServiceFactory { get; set; }
+
+    /// <summary>
+    /// Debug: dump the first captured frame to disk for orientation analysis.
+    /// </summary>
+    public static bool DebugDumpFirstFrame { get; set; } = false;
+    private static bool _debugFrameDumped = false;
 
     public event EventHandler<RecordingErrorEventArgs>? ErrorOccurred;
     public event EventHandler<RecordingStatusEventArgs>? StatusChanged;
@@ -97,12 +109,13 @@ public class ScreenRecorderService : IRecordingService
             if (EncoderFactory == null)
             {
                 throw new InvalidOperationException("EncoderFactory not set. Platform initialization missing.");
-            }
+        }
 
             _encoder = EncoderFactory();
 
             // Determine output path
             string outputPath = GetOutputPath(options);
+            DebugHelper.WriteLine($"[ScreenRecorder] Output path resolved: {outputPath}");
 
             // Configure video format
             var videoFormat = new VideoFormat
@@ -152,6 +165,8 @@ public class ScreenRecorderService : IRecordingService
     {
         ICaptureSource? captureSource;
         IVideoEncoder? encoder;
+        string? outputPath;
+        TimeSpan elapsed;
 
         lock (_lock)
         {
@@ -165,7 +180,11 @@ public class ScreenRecorderService : IRecordingService
 
             captureSource = _captureSource;
             encoder = _encoder;
+            outputPath = _currentOptions?.OutputPath;
+            elapsed = _stopwatch.Elapsed;
         }
+
+        DebugHelper.WriteLine($"[ScreenRecorder] StopRecordingAsync invoked. Duration={elapsed.TotalSeconds:F2}s, outputPath={outputPath ?? "(null)"}");
 
         try
         {
@@ -178,8 +197,20 @@ public class ScreenRecorderService : IRecordingService
             }
 
             // Finalize encoder
-            encoder?.Finalize();
+            encoder?.FinalizeEncoding();
             encoder?.Dispose();
+
+            if (!string.IsNullOrEmpty(outputPath))
+            {
+                var info = new FileInfo(outputPath);
+                DebugHelper.WriteLine($"[ScreenRecorder] Output validation: exists={info.Exists}, size={info.Length} bytes");
+
+                // [2026-01-10T14:02:37+08:00] Fail fast on zero-byte recordings observed intermittently; outcome (2026-01-10T14:09:06+08:00) validated mp4 > 0 bytes after guarded finalize.
+                if (!info.Exists || info.Length <= 0)
+                {
+                    throw new InvalidOperationException($"Recording output invalid (exists={info.Exists}, size={info.Length}) for {outputPath}");
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -248,6 +279,8 @@ public class ScreenRecorderService : IRecordingService
     private void OnFrameCaptured(object? sender, FrameArrivedEventArgs e)
     {
         if (_disposed || _status != RecordingStatus.Recording) return;
+        
+        System.Console.WriteLine("SRS: OnFrameCaptured called"); // Low-level trace
 
         FrameData? croppedFrame = null;
         try
@@ -269,10 +302,17 @@ public class ScreenRecorderService : IRecordingService
                 }
             }
 
+            if (OperatingSystem.IsWindows() && DebugDumpFirstFrame && !_debugFrameDumped)
+            {
+                DumpFrame(frameToEncode, "capture");
+                _debugFrameDumped = true;
+            }
+
             _encoder?.WriteFrame(frameToEncode);
         }
         catch (Exception ex)
         {
+            System.Console.WriteLine($"SRS: Error in OnFrameCaptured: {ex.Message}");
             HandleFatalError(ex, true);
         }
         finally
@@ -292,13 +332,11 @@ public class ScreenRecorderService : IRecordingService
             return options.OutputPath;
         }
 
-        // Default pattern: ShareX/Screenshots/yyyy-MM/Date_Time.mp4
-        string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        string shareXPath = Path.Combine(documentsPath, "ShareX", "Screenshots", DateTime.Now.ToString("yyyy-MM"));
-        Directory.CreateDirectory(shareXPath);
+        string screencastsFolder = PathsManager.ScreencastsFolder;
+        Directory.CreateDirectory(screencastsFolder);
 
         string fileName = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4";
-        return Path.Combine(shareXPath, fileName);
+        return Path.Combine(screencastsFolder, fileName);
     }
 
     private int GetCaptureWidth(RecordingOptions options)
@@ -308,7 +346,39 @@ public class ScreenRecorderService : IRecordingService
             return options.Region.Width;
         }
 
-        // Default to primary screen width
+        if (options.Mode == CaptureMode.Window && options.TargetWindowHandle != IntPtr.Zero)
+        {
+            try
+            {
+                var windowBounds = XerahS.Platform.Abstractions.PlatformServices.Window.GetWindowBounds(options.TargetWindowHandle);
+                if (windowBounds.Width > 0)
+                {
+                    DebugHelper.WriteLine($"[ScreenRecorder] Window capture width from handle: {windowBounds.Width}");
+                    return windowBounds.Width;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"[ScreenRecorder] Failed to get window bounds: {ex.Message}");
+            }
+        }
+
+        // Get actual screen width from platform services
+        try
+        {
+            var screens = XerahS.Platform.Abstractions.PlatformServices.Screen.GetAllScreens();
+            var primaryScreen = screens.FirstOrDefault(s => s.IsPrimary);
+            if (primaryScreen != null)
+            {
+                return primaryScreen.Bounds.Width;
+            }
+        }
+        catch
+        {
+            // Fallback if platform services not available
+        }
+
+        // Default fallback
         return 1920;
     }
 
@@ -319,7 +389,39 @@ public class ScreenRecorderService : IRecordingService
             return options.Region.Height;
         }
 
-        // Default to primary screen height
+        if (options.Mode == CaptureMode.Window && options.TargetWindowHandle != IntPtr.Zero)
+        {
+            try
+            {
+                var windowBounds = XerahS.Platform.Abstractions.PlatformServices.Window.GetWindowBounds(options.TargetWindowHandle);
+                if (windowBounds.Height > 0)
+                {
+                    DebugHelper.WriteLine($"[ScreenRecorder] Window capture height from handle: {windowBounds.Height}");
+                    return windowBounds.Height;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"[ScreenRecorder] Failed to get window bounds: {ex.Message}");
+            }
+        }
+
+        // Get actual screen height from platform services
+        try
+        {
+            var screens = XerahS.Platform.Abstractions.PlatformServices.Screen.GetAllScreens();
+            var primaryScreen = screens.FirstOrDefault(s => s.IsPrimary);
+            if (primaryScreen != null)
+            {
+                return primaryScreen.Bounds.Height;
+            }
+        }
+        catch
+        {
+            // Fallback if platform services not available
+        }
+
+        // Default fallback
         return 1080;
     }
 
@@ -391,5 +493,32 @@ public class ScreenRecorderService : IRecordingService
         }
 
         GC.SuppressFinalize(this);
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static void DumpFrame(FrameData frame, string tag)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        try
+        {
+            string dumpDir = PathsManager.FrameDumpsFolder;
+            Directory.CreateDirectory(dumpDir);
+
+            string fileName = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss-fff}_{tag}_{frame.Width}x{frame.Height}.png";
+            string path = Path.Combine(dumpDir, fileName);
+
+            using var bitmap = new Bitmap(frame.Width, frame.Height, frame.Stride, System.Drawing.Imaging.PixelFormat.Format32bppArgb, frame.DataPtr);
+            bitmap.Save(path, ImageFormat.Png);
+
+            DebugHelper.WriteLine($"[ScreenRecorder] Dumped frame to {path}");
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteLine($"[ScreenRecorder] Frame dump failed: {ex.Message}");
+        }
     }
 }

@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using XerahS.UI.Views;
+using XerahS.Platform.Abstractions;
 
 namespace XerahS.UI.ViewModels
 {
@@ -23,7 +24,7 @@ namespace XerahS.UI.ViewModels
         }
 
         public IEnumerable<EImageFormat> ImageFormats => Enum.GetValues(typeof(EImageFormat)).Cast<EImageFormat>();
-        public IEnumerable<System.Drawing.ContentAlignment> ContentAlignments => Enum.GetValues(typeof(System.Drawing.ContentAlignment)).Cast<System.Drawing.ContentAlignment>();
+        public IEnumerable<ContentPlacement> ContentAlignments => Enum.GetValues(typeof(ContentPlacement)).Cast<ContentPlacement>();
         public IEnumerable<ToastClickAction> ToastClickActions => Enum.GetValues(typeof(ToastClickAction)).Cast<ToastClickAction>();
 
         // Expose underlying model if needed
@@ -198,7 +199,17 @@ namespace XerahS.UI.ViewModels
         [RelayCommand]
         private async Task OpenFFmpegOptionsAsync()
         {
-            var taskSettings = SettingManager.GetOrCreateWorkflowTaskSettings(HotkeyType.ScreenRecorder);
+            TaskSettings taskSettings = _settings;
+
+            if (!string.IsNullOrEmpty(_settings.WorkflowId))
+            {
+                var workflow = SettingsManager.GetWorkflowById(_settings.WorkflowId);
+                if (workflow != null)
+                {
+                    taskSettings = workflow.TaskSettings;
+                }
+            }
+            
             var ffmpegOptions = taskSettings.CaptureSettings.FFmpegOptions ?? new FFmpegOptions();
             taskSettings.CaptureSettings.FFmpegOptions = ffmpegOptions;
             var vm = new FFmpegOptionsViewModel(ffmpegOptions);
@@ -575,7 +586,7 @@ namespace XerahS.UI.ViewModels
             }
         }
 
-        public System.Drawing.ContentAlignment ToastWindowPlacement
+        public ContentPlacement ToastWindowPlacement
         {
             get => _settings.GeneralSettings.ToastWindowPlacement;
             set
@@ -595,7 +606,7 @@ namespace XerahS.UI.ViewModels
             {
                 if (_settings.GeneralSettings.ToastWindowSize.Width != value)
                 {
-                    _settings.GeneralSettings.ToastWindowSize = new System.Drawing.Size(value, _settings.GeneralSettings.ToastWindowSize.Height);
+                    _settings.GeneralSettings.ToastWindowSize = new SizeI(value, _settings.GeneralSettings.ToastWindowSize.Height);
                     OnPropertyChanged();
                 }
             }
@@ -608,7 +619,7 @@ namespace XerahS.UI.ViewModels
             {
                 if (_settings.GeneralSettings.ToastWindowSize.Height != value)
                 {
-                    _settings.GeneralSettings.ToastWindowSize = new System.Drawing.Size(_settings.GeneralSettings.ToastWindowSize.Width, value);
+                    _settings.GeneralSettings.ToastWindowSize = new SizeI(_settings.GeneralSettings.ToastWindowSize.Width, value);
                     OnPropertyChanged();
                 }
             }

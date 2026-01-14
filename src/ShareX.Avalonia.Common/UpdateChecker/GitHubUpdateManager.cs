@@ -35,7 +35,6 @@ namespace XerahS.Common
         public bool IsPortable { get; set; } // If current build is portable then download URL will be opened in browser instead of downloading it
         public bool CheckPreReleaseUpdates { get; set; }
 
-        private bool firstUpdateCheck = true;
         private Timer? updateTimer = null;
         private readonly object updateTimerLock = new object();
 
@@ -95,7 +94,7 @@ namespace XerahS.Common
                         // }
                     }
 
-                    firstUpdateCheck = false;
+                    //firstUpdateCheck = false;
                 }
             }
         }

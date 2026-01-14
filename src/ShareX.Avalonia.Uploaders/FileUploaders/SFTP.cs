@@ -38,7 +38,7 @@ namespace XerahS.Uploaders.FileUploaders
 
         public bool IsConnected => client != null && client.IsConnected;
 
-        private SftpClient client;
+        private SftpClient? client;
 
         public SFTP(FTPAccount account)
         {
@@ -146,7 +146,7 @@ namespace XerahS.Uploaders.FileUploaders
 
         public void ChangeDirectory(string path, bool autoCreateDirectory = false)
         {
-            if (Connect())
+            if (Connect() && client != null)
             {
                 try
                 {
@@ -162,7 +162,7 @@ namespace XerahS.Uploaders.FileUploaders
 
         public bool DirectoryExists(string path)
         {
-            if (Connect())
+            if (Connect() && client != null)
             {
                 return client.Exists(path);
             }
@@ -172,7 +172,7 @@ namespace XerahS.Uploaders.FileUploaders
 
         public void CreateDirectory(string path, bool createMultiDirectory = false)
         {
-            if (Connect())
+            if (Connect() && client != null)
             {
                 try
                 {
@@ -210,7 +210,7 @@ namespace XerahS.Uploaders.FileUploaders
 
         private bool UploadStream(Stream stream, string remotePath, bool autoCreateDirectory = false)
         {
-            if (Connect())
+            if (Connect() && client != null)
             {
                 try
                 {

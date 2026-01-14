@@ -164,7 +164,10 @@ public class AmazonS3Uploader : FileUploader
         }
 
         Errors.Add("Upload to Amazon S3 failed.");
-        return null;
+        return new UploadResult
+        {
+            IsSuccess = false
+        };
     }
 
     private string GetRegion()
@@ -269,13 +272,19 @@ public class AmazonS3Uploader : FileUploader
 
     private string CreateCanonicalHeaders(NameValueCollection headers)
     {
-        var sorted = headers.AllKeys.OrderBy(k => k).Select(k => $"{k.ToLowerInvariant()}:{headers[k].Trim()}\n");
+        var sorted = headers.AllKeys
+            .Where(k => k != null)
+            .OrderBy(k => k)
+            .Select(k => $"{k!.ToLowerInvariant()}:{headers[k]?.Trim()}\n");
         return string.Join("", sorted);
     }
 
     private string GetSignedHeaders(NameValueCollection headers)
     {
-        return string.Join(";", headers.AllKeys.OrderBy(k => k).Select(k => k.ToLowerInvariant()));
+        return string.Join(";", headers.AllKeys
+            .Where(k => k != null)
+            .OrderBy(k => k)
+            .Select(k => k!.ToLowerInvariant()));
     }
 
     private string ComputeSHA256Hash(Stream stream)

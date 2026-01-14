@@ -75,7 +75,7 @@ public partial class PluginInstallerViewModel : ViewModelBase
             AllowMultiple = false,
             FileTypeFilter = new[]
             {
-                new FilePickerFileType($"{SettingManager.AppName} Plugin")
+                new FilePickerFileType($"{SettingsManager.AppName} Plugin")
                 {
                     Patterns = new[] { "*.sxadp" }
                 }

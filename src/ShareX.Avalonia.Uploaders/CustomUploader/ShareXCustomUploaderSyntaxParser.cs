@@ -31,9 +31,9 @@ namespace XerahS.Uploaders
     {
         private static IEnumerable<CustomUploaderFunction> Functions = GeneralHelpers.GetInstances<CustomUploaderFunction>();
 
-        public string FileName { get; set; }
-        public string Input { get; set; }
-        public ResponseInfo ResponseInfo { get; set; }
+        public string FileName { get; set; } = string.Empty;
+        public string Input { get; set; } = string.Empty;
+        public ResponseInfo? ResponseInfo { get; set; }
         public bool URLEncode { get; set; } // Only URL encodes file name and input
         public bool UseNameParser { get; set; }
         public NameParserType NameParserType { get; set; } = NameParserType.Text;
@@ -61,7 +61,7 @@ namespace XerahS.Uploaders
             return base.Parse(text);
         }
 
-        protected override string CallFunction(string functionName, string[] parameters = null)
+        protected override string CallFunction(string functionName, string[]? parameters = null)
         {
             if (string.IsNullOrEmpty(functionName))
             {
@@ -78,7 +78,7 @@ namespace XerahS.Uploaders
                         throw new Exception($"Minimum parameter count for function \"{function.Name}\" is {function.MinParameterCount}.");
                     }
 
-                    return function.Call(this, parameters);
+                    return function.Call(this, parameters ?? Array.Empty<string>());
                 }
             }
 

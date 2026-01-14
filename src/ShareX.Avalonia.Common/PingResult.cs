@@ -72,7 +72,12 @@ namespace XerahS.Common
                     switch (pingReply.Status)
                     {
                         case IPStatus.Success:
-                            sb.AppendLine(string.Format("Reply from {0}: bytes={1} time={2}ms TTL={3}", pingReply.Address, pingReply.Buffer.Length, pingReply.RoundtripTime, pingReply.Options.Ttl));
+                            byte[]? buffer = pingReply.Buffer;
+                            PingOptions? options = pingReply.Options;
+                            int bytes = buffer?.Length ?? 0;
+                            int ttl = options?.Ttl ?? 0;
+
+                            sb.AppendLine(string.Format("Reply from {0}: bytes={1} time={2}ms TTL={3}", pingReply.Address, bytes, pingReply.RoundtripTime, ttl));
                             break;
                         case IPStatus.TimedOut:
                             sb.AppendLine("Request timed out.");

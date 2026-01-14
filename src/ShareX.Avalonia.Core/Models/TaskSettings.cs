@@ -23,12 +23,16 @@
 
 #endregion License Information (GPL v3)
 
+using System;
+using System.Linq;
+using System.ComponentModel;
+using System.Drawing;
 using Newtonsoft.Json;
 using XerahS.Common;
 using XerahS.Uploaders;
+using XerahS.Uploaders.PluginSystem;
 using XerahS.ScreenCapture.ScreenRecording;
-using System.ComponentModel;
-using System.Drawing;
+using XerahS.Platform.Abstractions;
 
 namespace XerahS.Core;
 
@@ -49,7 +53,7 @@ public class TaskSettings
     [JsonIgnore]
     public string? WorkflowId { get; set; }
 
-    public string Description = "";
+    public string Description { get; set; } = string.Empty;
 
     public HotkeyType Job = HotkeyType.None;
 
@@ -57,13 +61,14 @@ public class TaskSettings
 
     public AfterUploadTasks AfterUploadJob = AfterUploadTasks.CopyURLToClipboard;
 
-    public ImageDestination ImageDestination = ImageDestination.Imgur;
-    public FileDestination ImageFileDestination = FileDestination.Dropbox;
-    public TextDestination TextDestination = TextDestination.Pastebin;
-    public FileDestination TextFileDestination = FileDestination.Dropbox;
-    public FileDestination FileDestination = FileDestination.Dropbox;
     public UrlShortenerType URLShortenerDestination = UrlShortenerType.BITLY;
     public URLSharingServices URLSharingServiceDestination = URLSharingServices.Email;
+
+    /// <summary>
+    /// Destination instance ID (plugin system).
+    /// </summary>
+    public string? DestinationInstanceId { get; set; }
+    public string? UrlShortenerDestinationInstanceId { get; set; }
 
     public bool OverrideFTP = false;
     public int FTPIndex = 0;
@@ -96,14 +101,123 @@ public class TaskSettings
         return !string.IsNullOrEmpty(Description) ? Description : EnumExtensions.GetDescription(Job);
     }
 
-    public FileDestination GetFileDestinationByDataType(EDataType dataType)
+    /// <summary>
+    /// Gets the instance ID of the destination for the specified job type (empty if not set).
+    /// </summary>
+    public string GetDestination(HotkeyType job)
     {
-        return dataType switch
+        var instanceId = GetDestinationInstanceId(job);
+        if (!string.IsNullOrEmpty(instanceId))
         {
-            EDataType.Image => ImageFileDestination,
-            EDataType.Text => TextFileDestination,
-            _ => FileDestination,
-        };
+            return instanceId;
+        }
+
+        // URL shortener falls back to enum until pluginized
+        if (job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL)
+        {
+            return URLShortenerDestination.ToString();
+        }
+
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// Sets the destination for the specified job type using an instance ID.
+    /// </summary>
+    public bool SetDestination(HotkeyType job, string providerId)
+    {
+        if (IsValidInstanceId(providerId))
+        {
+            if (job != HotkeyType.ShortenURL && job != HotkeyType.UploadURL)
+            {
+                return SetDestinationInstanceId(job, providerId);
+            }
+        }
+
+        // URL shorteners are still enum-based until pluginized
+        if ((job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL) &&
+            Enum.TryParse<UrlShortenerType>(providerId, out var urlDest))
+        {
+            URLShortenerDestination = urlDest;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Returns the destination instance ID for the given job, if configured.
+    /// </summary>
+    public string? GetDestinationInstanceId(HotkeyType job)
+    {
+        if (job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL)
+        {
+            return UrlShortenerDestinationInstanceId;
+        }
+
+        return DestinationInstanceId;
+    }
+
+    /// <summary>
+    /// Sets the destination instance ID for the given job/category.
+    /// </summary>
+    public bool SetDestinationInstanceId(HotkeyType job, string instanceId)
+    {
+        if (string.IsNullOrWhiteSpace(instanceId))
+        {
+            return false;
+        }
+
+        var normalized = NormalizeInstanceId(instanceId);
+
+        if (job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL)
+        {
+            UrlShortenerDestinationInstanceId = normalized;
+            return true;
+        }
+
+        DestinationInstanceId = normalized;
+        return true;
+    }
+
+    /// <summary>
+    /// Returns the destination instance ID for the given category.
+    /// </summary>
+    public string? GetDestinationInstanceIdByCategory(UploaderCategory category)
+    {
+        return category == UploaderCategory.UrlShortener ? UrlShortenerDestinationInstanceId : DestinationInstanceId;
+    }
+
+    /// <summary>
+    /// Returns the destination instance ID for the given data type.
+    /// </summary>
+    public string? GetDestinationInstanceIdForDataType(EDataType dataType)
+    {
+        return dataType == EDataType.URL ? UrlShortenerDestinationInstanceId : DestinationInstanceId;
+    }
+
+    private static string? ResolveInstanceIdByProviderId(string providerId, HotkeyType job)
+    {
+        // Provider keys should NOT be stored as DestinationInstanceId. Reject resolution.
+        return null;
+    }
+
+    private static bool IsValidInstanceId(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var trimmed = value.Trim();
+        bool isSha1 = trimmed.Length == 40 && trimmed.All(Uri.IsHexDigit);
+        bool isGuid = Guid.TryParse(trimmed, out _);
+        return isSha1 || isGuid;
+    }
+
+    private static string NormalizeInstanceId(string value)
+    {
+        return value.Trim().ToLowerInvariant();
     }
 }
 
@@ -120,8 +234,8 @@ public class TaskSettingsGeneral
     public bool ShowToastNotificationAfterTaskCompleted = true;
     public float ToastWindowDuration = 3f;
     public float ToastWindowFadeDuration = 1f;
-    public ContentAlignment ToastWindowPlacement = ContentAlignment.BottomRight;
-    public Size ToastWindowSize = new Size(400, 300);
+    public ContentPlacement ToastWindowPlacement = ContentPlacement.BottomRight;
+    public SizeI ToastWindowSize = new SizeI(400, 300);
     public ToastClickAction ToastWindowLeftClickAction = ToastClickAction.OpenUrl;
     public ToastClickAction ToastWindowRightClickAction = ToastClickAction.CloseNotification;
     public ToastClickAction ToastWindowMiddleClickAction = ToastClickAction.AnnotateImage;

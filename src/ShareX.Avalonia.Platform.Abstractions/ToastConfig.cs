@@ -23,8 +23,6 @@
 
 #endregion License Information (GPL v3)
 
-using System.Drawing;
-
 namespace XerahS.Platform.Abstractions;
 
 /// <summary>
@@ -46,7 +44,7 @@ public class ToastConfig
     /// <summary>
     /// Screen placement for the toast window
     /// </summary>
-    public ContentAlignment Placement { get; set; } = ContentAlignment.BottomRight;
+    public ContentPlacement Placement { get; set; } = ContentPlacement.BottomRight;
 
     /// <summary>
     /// Offset from screen edge in pixels
@@ -56,7 +54,7 @@ public class ToastConfig
     /// <summary>
     /// Size of the toast window
     /// </summary>
-    public Size Size { get; set; } = new Size(400, 300);
+    public SizeI Size { get; set; } = new SizeI(400, 300);
 
     /// <summary>
     /// Path to thumbnail image file (optional). 

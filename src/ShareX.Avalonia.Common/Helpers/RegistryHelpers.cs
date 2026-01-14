@@ -24,9 +24,11 @@
 #endregion License Information (GPL v3)
 
 using Microsoft.Win32;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public static class RegistryHelpers
     {
         public static void CreateRegistry(string path, string value, RegistryHive root = RegistryHive.CurrentUser)
@@ -34,7 +36,7 @@ namespace XerahS.Common
             CreateRegistry(path, null, value, root);
         }
 
-        public static void CreateRegistry(string path, string name, string value, RegistryHive root = RegistryHive.CurrentUser)
+        public static void CreateRegistry(string path, string? name, string value, RegistryHive root = RegistryHive.CurrentUser)
         {
             using (RegistryKey rk = RegistryKey.OpenBaseKey(root, RegistryView.Default).CreateSubKey(path))
             {
@@ -50,7 +52,7 @@ namespace XerahS.Common
             CreateRegistry(path, null, value, root);
         }
 
-        public static void CreateRegistry(string path, string name, int value, RegistryHive root = RegistryHive.CurrentUser)
+        public static void CreateRegistry(string path, string? name, int value, RegistryHive root = RegistryHive.CurrentUser)
         {
             using (RegistryKey rk = RegistryKey.OpenBaseKey(root, RegistryView.Default).CreateSubKey(path))
             {
@@ -72,12 +74,12 @@ namespace XerahS.Common
             }
         }
 
-        public static object GetValue(string path, string name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
+        public static object? GetValue(string path, string? name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
         {
             try
             {
                 using (RegistryKey baseKey = RegistryKey.OpenBaseKey(root, view))
-                using (RegistryKey rk = baseKey.OpenSubKey(path))
+                using (RegistryKey? rk = baseKey.OpenSubKey(path))
                 {
                     if (rk != null)
                     {
@@ -93,24 +95,24 @@ namespace XerahS.Common
             return null;
         }
 
-        public static string GetValueString(string path, string name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
+        public static string? GetValueString(string path, string? name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
         {
             return GetValue(path, name, root, view) as string;
         }
 
-        public static int? GetValueDWord(string path, string name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
+        public static int? GetValueDWord(string path, string? name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
         {
             return (int?)GetValue(path, name, root, view);
         }
 
-        public static bool CheckStringValue(string path, string name = null, string value = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
+        public static bool CheckStringValue(string path, string? name = null, string? value = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
         {
-            string registryValue = GetValueString(path, name, root, view);
+            string? registryValue = GetValueString(path, name, root, view);
 
             return registryValue != null && (value == null || registryValue.Equals(value, StringComparison.OrdinalIgnoreCase));
         }
 
-        public static string SearchProgramPath(string fileName)
+        public static string? SearchProgramPath(string fileName)
         {
             // First method: HKEY_CLASSES_ROOT\Applications\{fileName}\shell\{command}\command
 
@@ -119,7 +121,7 @@ namespace XerahS.Common
             foreach (string command in commands)
             {
                 string path = $@"HKEY_CLASSES_ROOT\Applications\{fileName}\shell\{command}\command";
-                string value = Registry.GetValue(path, null, null) as string;
+                string? value = Registry.GetValue(path, null, null) as string;
 
                 if (!string.IsNullOrEmpty(value))
                 {
@@ -135,7 +137,7 @@ namespace XerahS.Common
 
             // Second method: HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache
 
-            using (RegistryKey programs = Registry.CurrentUser.OpenSubKey(@"Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache"))
+            using (RegistryKey? programs = Registry.CurrentUser.OpenSubKey(@"Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache"))
             {
                 if (programs != null)
                 {

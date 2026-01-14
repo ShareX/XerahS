@@ -57,15 +57,23 @@ namespace XerahS.Platform.Windows
             _fallbackService = new WindowsScreenCaptureService(screenService);
         }
 
+        public Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
+        {
+            // This method should only be called from the UI layer wrapper
+            return Task.FromResult(SKRectI.Empty);
+        }
+
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
             return await CaptureFullScreenAsync(options);
         }
-
         public async Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
         {
-            var fallbackTaskSettings = XerahS.Core.SettingManager.GetOrCreateWorkflowTaskSettings(XerahS.Core.HotkeyType.None);
-            bool useModern = options?.UseModernCapture ?? fallbackTaskSettings.CaptureSettings.UseModernCapture;
+            var captureSettings = options?.WorkflowId != null 
+                ? XerahS.Core.SettingsManager.GetWorkflowTaskSettings(options.WorkflowId)?.CaptureSettings 
+                : XerahS.Core.SettingsManager.DefaultTaskSettings.CaptureSettings;
+
+            bool useModern = options?.UseModernCapture ?? captureSettings?.UseModernCapture ?? false;
 
             if (!IsSupported || !useModern)
             {
@@ -111,8 +119,11 @@ namespace XerahS.Platform.Windows
 
         public async Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
         {
-            var fallbackTaskSettings = XerahS.Core.SettingManager.GetOrCreateWorkflowTaskSettings(XerahS.Core.HotkeyType.None);
-            bool useModern = options?.UseModernCapture ?? fallbackTaskSettings.CaptureSettings.UseModernCapture;
+            var captureSettings = options?.WorkflowId != null 
+                ? XerahS.Core.SettingsManager.GetWorkflowTaskSettings(options.WorkflowId)?.CaptureSettings 
+                : XerahS.Core.SettingsManager.DefaultTaskSettings.CaptureSettings;
+
+            bool useModern = options?.UseModernCapture ?? captureSettings?.UseModernCapture ?? false;
 
             if (!IsSupported || !useModern)
             {

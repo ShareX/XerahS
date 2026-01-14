@@ -30,9 +30,9 @@ namespace XerahS.Uploaders.FileUploaders
 {
     public class FileSonic : FileUploader
     {
-        public string Username { get; set; }
+        public string Username { get; set; } = string.Empty;
 
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         private const string APIURL = "http://api.filesonic.com/upload";
 
@@ -44,7 +44,7 @@ namespace XerahS.Uploaders.FileUploaders
 
         public override UploadResult Upload(Stream stream, string fileName)
         {
-            UploadResult result = null;
+            UploadResult result = new UploadResult();
 
             string url = GetUploadURL();
 
@@ -73,10 +73,15 @@ namespace XerahS.Uploaders.FileUploaders
             args.Add("u", Username);
             args.Add("p", Password);
 
-            string response = SendRequest(HttpMethod.GET, APIURL, args);
+            string? response = SendRequest(HttpMethod.GET, APIURL, args);
+
+            if (string.IsNullOrEmpty(response))
+            {
+                return string.Empty;
+            }
 
             XDocument xd = XDocument.Parse(response);
-            return xd.GetValue("FSApi_Upload/getUploadUrl/response/url");
+            return xd.GetValue("FSApi_Upload/getUploadUrl/response/url") ?? string.Empty;
         }
     }
 }

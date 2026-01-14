@@ -61,7 +61,7 @@ namespace XerahS.UI.ViewModels
         {
             try
             {
-                string logsFolder = System.IO.Path.Combine(SettingManager.PersonalFolder, "Logs");
+                string logsFolder = System.IO.Path.Combine(SettingsManager.PersonalFolder, "Logs");
 
                 if (System.IO.Directory.Exists(logsFolder))
                 {
@@ -88,7 +88,7 @@ namespace XerahS.UI.ViewModels
         {
             try
             {
-                string settingsFolder = SettingManager.SettingsFolder;
+                string settingsFolder = SettingsManager.SettingsFolder;
 
                 if (System.IO.Directory.Exists(settingsFolder))
                 {

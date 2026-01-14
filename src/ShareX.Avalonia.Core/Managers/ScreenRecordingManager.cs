@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using XerahS.Common;
+using XerahS.Core;
 using XerahS.Core.Helpers;
 using XerahS.ScreenCapture.ScreenRecording;
 using System.Runtime.InteropServices;
@@ -43,10 +44,23 @@ public class ScreenRecordingManager
     private readonly object _lock = new();
     private IRecordingService? _currentRecording;
     private RecordingOptions? _currentOptions;
+    private TaskCompletionSource<bool>? _stopSignal;
+
+    /// <summary>
+    /// Task representing platform-specific recording initialization.
+    /// Set by the application startup code and awaited before starting recording.
+    /// </summary>
+    public static System.Threading.Tasks.Task? PlatformInitializationTask { get; set; }
 
     private ScreenRecordingManager()
     {
     }
+
+    /// <summary>
+    /// Factory function for creating the primary recording service.
+    /// MUST be initialized by the application composition root.
+    /// </summary>
+
 
     /// <summary>
     /// Event fired when recording status changes
@@ -64,6 +78,11 @@ public class ScreenRecordingManager
     public event EventHandler<string>? RecordingCompleted;
 
     /// <summary>
+    /// Event fired when recording starts, includes information about the recording method
+    /// </summary>
+    public event EventHandler<RecordingStartedEventArgs>? RecordingStarted;
+
+    /// <summary>
     /// Indicates whether a recording is currently active
     /// </summary>
     public bool IsRecording
@@ -76,6 +95,11 @@ public class ScreenRecordingManager
             }
         }
     }
+
+    /// <summary>
+    /// Indicates whether the current recording is using FFmpeg fallback
+    /// </summary>
+    public bool IsUsingFallback { get; private set; }
 
     /// <summary>
     /// Current recording options (null if not recording)
@@ -92,6 +116,34 @@ public class ScreenRecordingManager
     }
 
     /// <summary>
+    /// Signals the current recording task to stop.
+    /// Used by the hotkey handler to resume the waiting WorkerTask.
+    /// </summary>
+    public void SignalStop()
+    {
+        lock (_lock)
+        {
+            _stopSignal?.TrySetResult(true);
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously waits for the Stop signal.
+    /// Called by the WorkerTask to yield execution while recording.
+    /// </summary>
+    public Task WaitForStopSignalAsync()
+    {
+        lock (_lock)
+        {
+            if (_stopSignal == null || _stopSignal.Task.IsCompleted)
+            {
+                _stopSignal = new TaskCompletionSource<bool>();
+            }
+            return _stopSignal.Task;
+        }
+    }
+
+    /// <summary>
     /// Starts a new recording session
     /// </summary>
     /// <param name="options">Recording configuration</param>
@@ -99,6 +151,21 @@ public class ScreenRecordingManager
     public async Task StartRecordingAsync(RecordingOptions options)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
+
+        // Wait for platform recording initialization to complete if it's still running
+        // This ensures factories are set up before we try to create recording services
+        await EnsureRecordingInitialized();
+
+        if (string.IsNullOrEmpty(options.OutputPath))
+        {
+            string screenCapturesFolder = SettingsManager.ScreencastsFolder;
+            string dateFolderPath = Path.Combine(screenCapturesFolder, DateTime.Now.ToString("yyyy-MM"));
+            Directory.CreateDirectory(dateFolderPath);
+
+            string fileName = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4";
+            options.OutputPath = Path.Combine(dateFolderPath, fileName);
+            DebugHelper.WriteLine($"ScreenRecordingManager: Generated default output path: {options.OutputPath}");
+        }
 
         Exception? lastError = null;
         bool preferFallback = ShouldForceFallback(options);
@@ -111,6 +178,8 @@ public class ScreenRecordingManager
             }
 
             _currentOptions = options;
+            // Reset stop signal for new session
+            _stopSignal = new TaskCompletionSource<bool>();
         }
 
         for (int attempt = 0; attempt < 2; attempt++)
@@ -131,6 +200,11 @@ public class ScreenRecordingManager
             TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Calling recordingService.StartRecordingAsync");
             await recordingService.StartRecordingAsync(options);
             TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Recording started successfully");
+
+            // Track fallback status and notify UI
+            IsUsingFallback = useFallback;
+            RecordingStarted?.Invoke(this, new RecordingStartedEventArgs(useFallback, options));
+
             return;
         }
             catch (Exception ex) when (!useFallback && CanFallbackFrom(ex))
@@ -188,6 +262,9 @@ public class ScreenRecordingManager
         {
             DebugHelper.WriteLine("ScreenRecordingManager: Stopping recording...");
             await recordingService.StopRecordingAsync();
+            
+            // Ensure waiting tasks are signaled
+            SignalStop();
 
             // Notify completion
             if (!string.IsNullOrEmpty(outputPath))
@@ -266,38 +343,45 @@ public class ScreenRecordingManager
         }
     }
 
+    /// <summary>
+    /// Factory function for creating the fallback recording service (e.g. FFmpeg).
+    /// MUST be initialized by the application composition root.
+    /// </summary>
+
+
+    // ... (existing code) ...
+
     private static IRecordingService CreateRecordingService(bool useFallback)
     {
         if (useFallback)
         {
-            if (ScreenRecorderService.FallbackServiceFactory != null)
+            // Direct instantiation of FFmpeg fallback service
+            return new XerahS.ScreenCapture.ScreenRecording.FFmpegRecordingService();
+        }
+
+        // Direct instantiation of Native service
+        return new XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService();
+    }
+
+        private static bool ShouldForceFallback(RecordingOptions options)
+        {
+            var settings = options.Settings;
+
+            if (settings?.ForceFFmpeg == true)
             {
-                return ScreenRecorderService.FallbackServiceFactory();
+                TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "ForceFFmpeg setting is enabled -> using FFmpeg");
+                return true;
             }
 
-            return new FFmpegRecordingService();
+            // Audio capture currently routes through FFmpeg fallback
+            if (settings is not null && (settings.CaptureSystemAudio || settings.CaptureMicrophone))
+            {
+                TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "Audio capture requested -> using FFmpeg");
+                return true;
+            }
+
+            return false;
         }
-
-        return new ScreenRecorderService();
-    }
-
-    private static bool ShouldForceFallback(RecordingOptions options)
-    {
-        var settings = options.Settings;
-
-        if (settings?.ForceFFmpeg == true)
-        {
-            return true;
-        }
-
-        // Audio capture currently routes through FFmpeg fallback
-        if (settings is not null && (settings.CaptureSystemAudio || settings.CaptureMicrophone))
-        {
-            return true;
-        }
-
-        return ScreenRecorderService.CaptureSourceFactory == null || ScreenRecorderService.EncoderFactory == null;
-    }
 
     private static bool CanFallbackFrom(Exception ex)
     {
@@ -348,6 +432,30 @@ public class ScreenRecordingManager
                 _currentRecording = null;
                 _currentOptions = null;
             }
+        }
+    }
+
+    /// <summary>
+    /// Ensures platform recording initialization has completed before starting recording.
+    /// Waits for the async initialization task if it's still running.
+    /// </summary>
+    private static async Task EnsureRecordingInitialized()
+    {
+        try
+        {
+            var initTask = PlatformInitializationTask;
+
+            if (initTask != null && !initTask.IsCompleted)
+            {
+                DebugHelper.WriteLine("ScreenRecordingManager: Waiting for recording initialization to complete...");
+                await initTask;
+                DebugHelper.WriteLine("ScreenRecordingManager: Recording initialization wait completed");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Initialization failed, but we can still continue with fallback
+            DebugHelper.WriteException(ex, "ScreenRecordingManager: Error waiting for recording initialization");
         }
     }
 }

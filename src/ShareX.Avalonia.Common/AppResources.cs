@@ -1,0 +1,63 @@
+#region License Information (GPL v3)
+
+/*
+    ShareX.Ava - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2025 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
+
+using System.Linq;
+using System.Reflection;
+
+namespace XerahS.Common
+{
+    public static class AppResources
+    {
+        public static readonly string AppName = GetProductName();
+        public static readonly string ProductName = AppName;
+        
+        public static readonly string Version = GetVersion();
+        public static readonly string ProductNameWithVersion = ProductName + " " + Version;
+
+        private static string GetProductName()
+        {
+            var assembly = System.Reflection.Assembly.GetEntryAssembly();
+            var productAttribute = assembly?.GetCustomAttributes(typeof(System.Reflection.AssemblyProductAttribute), false)
+                .FirstOrDefault() as System.Reflection.AssemblyProductAttribute;
+            return productAttribute?.Product ?? "XerahS";
+        }
+
+        private static string GetVersion()
+        {
+            var version = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version;
+            return version != null ? $"{version.Major}.{version.Minor}.{version.Build}" : "v0.0.0";
+        }
+        
+        public const string HistoryFolderName = "History";
+        public const string ScreenshotsFolderName = "Screenshots";
+        public const string ScreencastsFolderName = "Screencasts";
+        public const string SettingsFolderName = "Settings";
+        public const string BackupFolderName = "Backup";
+        public const string HistoryFileName = "History.db";
+        public const string PluginsFolderName = "Plugins";
+        
+        public static string UserAgent => AppName;
+    }
+}

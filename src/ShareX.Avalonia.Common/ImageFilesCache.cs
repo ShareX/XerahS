@@ -26,9 +26,11 @@
 using SkiaSharp;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public class ImageFilesCache : IDisposable
     {
         private Dictionary<string, SKBitmap> images = new Dictionary<string, SKBitmap>();

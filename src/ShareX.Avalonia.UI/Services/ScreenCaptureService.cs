@@ -47,6 +47,35 @@ namespace XerahS.UI.Services
             return _platformImpl.CaptureRectAsync(rect, options);
         }
 
+        public async Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
+        {
+            TroubleshootingHelper.Log("RegionSelection", "START", "SelectRegionAsync called");
+            SKRectI selection = SKRectI.Empty;
+
+            try
+            {
+                // Show UI window on UI thread
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    TroubleshootingHelper.Log("RegionSelection", "UI_THREAD", "Creating RegionCaptureWindow");
+                    var window = new RegionCaptureWindow();
+                    window.Show();
+                    TroubleshootingHelper.Log("RegionSelection", "UI_THREAD", "Window shown, waiting for result");
+                    selection = await window.GetResultAsync();
+                    TroubleshootingHelper.Log("RegionSelection", "UI_THREAD", $"GetResultAsync returned: {selection}");
+                });
+
+                TroubleshootingHelper.Log("RegionSelection", "RESULT", $"Region selection returned: {selection} (IsEmpty={selection.IsEmpty}, Width={selection.Width}, Height={selection.Height})");
+            }
+            catch (Exception ex)
+            {
+                TroubleshootingHelper.Log("RegionSelection", "ERROR", $"Exception in SelectRegionAsync: {ex.Message}");
+                TroubleshootingHelper.Log("RegionSelection", "ERROR", $"Stack trace: {ex.StackTrace}");
+            }
+
+            return selection;
+        }
+
         public async Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
         {
             var totalStopwatch = Stopwatch.StartNew();
@@ -72,12 +101,13 @@ namespace XerahS.UI.Services
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
             SKRectI selection = SKRectI.Empty;
+            RegionCaptureWindow? window = null;
             var regionStopwatch = Stopwatch.StartNew();
 
             // Show UI window on UI thread
             await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                var window = new RegionCaptureWindow();
+                window = new RegionCaptureWindow();
 
                 // Window will handle background capture in OnOpened
                 window.Show();
@@ -90,15 +120,21 @@ namespace XerahS.UI.Services
                 return null;
             }
 
-            TroubleshootingHelper.Log("RegionCapture", "SELECTION", $"Received selection: {selection}, Delaying 200ms...");
+            TroubleshootingHelper.Log("RegionCapture", "SELECTION", $"Received selection: {selection}");
+
+            // New backend handles window detection and coordinate conversion only
+            // Actual capture is done by the platform service below
+            TroubleshootingHelper.Log("RegionCapture", "SELECTION", "Delaying 200ms...");
 
             // Small delay to allow window to close fully
-            await Task.Delay(200);
+            await Task.Delay(60);
 
             // Delegate capture to platform implementation
-            var workflowTaskSettings = SettingManager.GetOrCreateWorkflowTaskSettings(HotkeyType.None);
-            bool effectiveModern = options?.UseModernCapture ?? workflowTaskSettings.CaptureSettings.UseModernCapture;
-            TroubleshootingHelper.Log("RegionCapture", "CONFIG", $"Capture Configuration: UseModernCapture={effectiveModern} (Explicit={options?.UseModernCapture.ToString() ?? "null"}), ShowCursor={options?.ShowCursor ?? workflowTaskSettings.CaptureSettings.ShowCursor}");
+            var captureSettings = !string.IsNullOrEmpty(options?.WorkflowId)
+                ? SettingsManager.GetWorkflowTaskSettings(options.WorkflowId)?.CaptureSettings ?? SettingsManager.DefaultTaskSettings.CaptureSettings
+                : SettingsManager.DefaultTaskSettings.CaptureSettings;
+            bool effectiveModern = options?.UseModernCapture ?? captureSettings.UseModernCapture;
+            TroubleshootingHelper.Log("RegionCapture", "CONFIG", $"Capture Configuration: UseModernCapture={effectiveModern} (Explicit={options?.UseModernCapture.ToString() ?? "null"}), ShowCursor={options?.ShowCursor ?? captureSettings.ShowCursor}");
 
             TroubleshootingHelper.Log("RegionCapture", "CAPTURE", "Calling Platform.CaptureRectAsync...");
             var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);

@@ -53,7 +53,7 @@ namespace XerahS.Common
 
         public string? GetFullPath()
         {
-            return FileHelpers.ExpandFolderVariables(Path);
+            return Path == null ? null : FileHelpers.ExpandFolderVariables(Path);
         }
 
         public string? Run(string inputPath)

@@ -119,7 +119,7 @@ public partial class ImgurConfigViewModel : ObservableObject, IUploaderConfigVie
                 AlbumId = _config.SelectedAlbum?.id ?? string.Empty;
                 ThumbnailTypeIndex = (int)_config.ThumbnailType;
                 UseDirectLink = _config.DirectLink;
-                IsLoggedIn = OAuth2Info.CheckOAuth(_config.OAuth2Info);
+                IsLoggedIn = _config.OAuth2Info != null && OAuth2Info.CheckOAuth(_config.OAuth2Info);
             }
         }
         catch

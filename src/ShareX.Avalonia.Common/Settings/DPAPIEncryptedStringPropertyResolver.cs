@@ -23,9 +23,10 @@
 
 #endregion License Information (GPL v3)
 
+using System;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System.Reflection;
 
 namespace XerahS.Common
 {
@@ -37,11 +38,21 @@ namespace XerahS.Common
 
             foreach (JsonProperty prop in props.Where(p => p.PropertyType == typeof(string)))
             {
-                PropertyInfo pi = type.GetProperty(prop.UnderlyingName);
+                string? underlyingName = prop.UnderlyingName;
+
+                if (underlyingName == null)
+                {
+                    continue;
+                }
+
+                PropertyInfo? pi = type.GetProperty(underlyingName);
 
                 if (pi != null && pi.GetCustomAttribute(typeof(JsonEncryptAttribute), true) != null)
                 {
-                    prop.ValueProvider = new DPAPIEncryptedStringValueProvider(pi);
+                    if (OperatingSystem.IsWindows())
+                    {
+                        prop.ValueProvider = new DPAPIEncryptedStringValueProvider(pi);
+                    }
                 }
             }
 

@@ -29,7 +29,7 @@ namespace XerahS.Common
 {
     public class FPSManager
     {
-        public event Action FPSUpdated;
+        public event Action? FPSUpdated;
 
         public int FPS { get; private set; }
         public int FPSLimit { get; set; }

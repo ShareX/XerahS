@@ -30,10 +30,10 @@ namespace XerahS.Uploaders
 {
     public class UploadResult
     {
-        public string URL { get; set; }
-        public string ThumbnailURL { get; set; }
-        public string DeletionURL { get; set; }
-        public string ShortenedURL { get; set; }
+        public string? URL { get; set; }
+        public string? ThumbnailURL { get; set; }
+        public string? DeletionURL { get; set; }
+        public string? ShortenedURL { get; set; }
 
         private bool isSuccess;
 
@@ -41,7 +41,7 @@ namespace XerahS.Uploaders
         {
             get
             {
-                return isSuccess && !string.IsNullOrEmpty(Response);
+                return isSuccess && (!string.IsNullOrEmpty(Response) || !string.IsNullOrEmpty(URL));
             }
             set
             {
@@ -49,7 +49,7 @@ namespace XerahS.Uploaders
             }
         }
 
-        public string Response { get; set; }
+        public string? Response { get; set; }
         public UploaderErrorManager Errors { get; set; }
         public bool IsURLExpected { get; set; }
 
@@ -61,7 +61,7 @@ namespace XerahS.Uploaders
             }
         }
 
-        public ResponseInfo ResponseInfo { get; set; }
+        public ResponseInfo ResponseInfo { get; set; } = new ResponseInfo();
 
         public UploadResult()
         {
@@ -69,7 +69,7 @@ namespace XerahS.Uploaders
             IsURLExpected = true;
         }
 
-        public UploadResult(string source, string url = null) : this()
+        public UploadResult(string source, string? url = null) : this()
         {
             Response = source;
             URL = url;
@@ -77,10 +77,14 @@ namespace XerahS.Uploaders
 
         public void ForceHTTPS()
         {
-            URL = URLHelpers.ForcePrefix(URL);
-            ThumbnailURL = URLHelpers.ForcePrefix(ThumbnailURL);
-            DeletionURL = URLHelpers.ForcePrefix(DeletionURL);
-            ShortenedURL = URLHelpers.ForcePrefix(ShortenedURL);
+            if (!string.IsNullOrEmpty(URL))
+                URL = URLHelpers.ForcePrefix(URL);
+            if (!string.IsNullOrEmpty(ThumbnailURL))
+                ThumbnailURL = URLHelpers.ForcePrefix(ThumbnailURL);
+            if (!string.IsNullOrEmpty(DeletionURL))
+                DeletionURL = URLHelpers.ForcePrefix(DeletionURL);
+            if (!string.IsNullOrEmpty(ShortenedURL))
+                ShortenedURL = URLHelpers.ForcePrefix(ShortenedURL);
         }
 
         public override string ToString()
@@ -105,7 +109,7 @@ namespace XerahS.Uploaders
                 return Errors.ToString();
             }
 
-            return null;
+            return string.Empty;
         }
 
         public string ToSummaryString()

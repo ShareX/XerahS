@@ -29,7 +29,7 @@ namespace XerahS.Common
 {
     public static class DebugHelper
     {
-        public static Logger Logger { get; private set; }
+        public static Logger? Logger { get; private set; }
 
         public static void Init(string logFilePath)
         {

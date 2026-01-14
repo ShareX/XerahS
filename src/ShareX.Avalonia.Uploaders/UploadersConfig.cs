@@ -41,10 +41,10 @@ namespace XerahS.Uploaders
         public bool ImgurDirectLink { get; set; } = true;
         public ImgurThumbnailType ImgurThumbnailType { get; set; } = ImgurThumbnailType.Medium_Thumbnail;
         public bool ImgurUseGIFV { get; set; } = true;
-        public OAuth2Info ImgurOAuth2Info { get; set; } = null;
+        public OAuth2Info? ImgurOAuth2Info { get; set; }
         public bool ImgurUploadSelectedAlbum { get; set; } = false;
-        public ImgurAlbumData ImgurSelectedAlbum { get; set; } = null;
-        public List<ImgurAlbumData> ImgurAlbumList { get; set; } = null;
+        public ImgurAlbumData? ImgurSelectedAlbum { get; set; }
+        public List<ImgurAlbumData>? ImgurAlbumList { get; set; }
 
         #endregion Imgur
 
@@ -56,15 +56,15 @@ namespace XerahS.Uploaders
 
         #region Flickr
 
-        public OAuthInfo FlickrOAuthInfo { get; set; } = null;
+        public OAuthInfo? FlickrOAuthInfo { get; set; }
         public FlickrSettings FlickrSettings { get; set; } = new FlickrSettings();
 
         #endregion Flickr
 
         #region Photobucket
 
-        public OAuthInfo PhotobucketOAuthInfo { get; set; } = null;
-        public PhotobucketAccountInfo PhotobucketAccountInfo { get; set; } = null;
+        public OAuthInfo? PhotobucketOAuthInfo { get; set; }
+        public PhotobucketAccountInfo? PhotobucketAccountInfo { get; set; }
 
         #endregion Photobucket
 
@@ -102,7 +102,7 @@ namespace XerahS.Uploaders
 
         #region Gist
 
-        public OAuth2Info GistOAuth2Info { get; set; } = null;
+        public OAuth2Info? GistOAuth2Info { get; set; }
         public bool GistPublishPublic { get; set; } = false;
         public bool GistRawURL { get; set; } = false;
         public string GistCustomURL { get; set; } = "";
@@ -145,7 +145,7 @@ namespace XerahS.Uploaders
 
         #region Dropbox
 
-        public OAuth2Info DropboxOAuth2Info { get; set; } = null;
+        public OAuth2Info? DropboxOAuth2Info { get; set; }
         public string DropboxUploadPath { get; set; } = "ShareX/%y/%mo";
         public bool DropboxAutoCreateShareableLink { get; set; } = true;
         public bool DropboxUseDirectLink { get; set; } = false;
@@ -163,7 +163,7 @@ namespace XerahS.Uploaders
 
         #region OneDrive
 
-        public OAuth2Info OneDriveV2OAuth2Info { get; set; } = null;
+        public OAuth2Info? OneDriveV2OAuth2Info { get; set; }
         public OneDriveFileInfo OneDriveV2SelectedFolder { get; set; } = OneDrive.RootFolder;
         public bool OneDriveAutoCreateShareableLink { get; set; } = true;
         public bool OneDriveUseDirectLink { get; set; } = false;
@@ -172,8 +172,8 @@ namespace XerahS.Uploaders
 
         #region Google Drive
 
-        public OAuth2Info GoogleDriveOAuth2Info { get; set; } = null;
-        public OAuthUserInfo GoogleDriveUserInfo { get; set; } = null;
+        public OAuth2Info? GoogleDriveOAuth2Info { get; set; }
+        public OAuthUserInfo? GoogleDriveUserInfo { get; set; }
         public bool GoogleDriveIsPublic { get; set; } = true;
         public bool GoogleDriveDirectLink { get; set; } = false;
         public bool GoogleDriveUseFolder { get; set; } = false;
@@ -200,7 +200,7 @@ namespace XerahS.Uploaders
 
         #region Box
 
-        public OAuth2Info BoxOAuth2Info { get; set; } = null;
+        public OAuth2Info? BoxOAuth2Info { get; set; }
         public BoxFileEntry BoxSelectedFolder { get; set; } = Box.RootFolder;
         public bool BoxShare { get; set; } = true;
         public BoxShareAccessLevel BoxShareAccessLevel { get; set; } = BoxShareAccessLevel.Open;
@@ -243,8 +243,8 @@ namespace XerahS.Uploaders
 
         #region Mega
 
-        public MegaAuthInfos MegaAuthInfos { get; set; } = null;
-        public string MegaParentNodeId { get; set; } = null;
+        public MegaAuthInfos? MegaAuthInfos { get; set; }
+        public string? MegaParentNodeId { get; set; }
 
         #endregion Mega
 
@@ -377,8 +377,8 @@ namespace XerahS.Uploaders
 
         #region YouTube
 
-        public OAuth2Info YouTubeOAuth2Info { get; set; } = null;
-        public OAuthUserInfo YouTubeUserInfo { get; set; } = null;
+        public OAuth2Info? YouTubeOAuth2Info { get; set; }
+        public OAuthUserInfo? YouTubeUserInfo { get; set; }
         public YouTubeVideoPrivacy YouTubePrivacyType { get; set; } = YouTubeVideoPrivacy.Public;
         public bool YouTubeUseShortenedLink { get; set; } = false;
         public bool YouTubeShowDialog { get; set; } = false;
@@ -387,8 +387,8 @@ namespace XerahS.Uploaders
 
         #region Google Cloud Storage
 
-        public OAuth2Info GoogleCloudStorageOAuth2Info { get; set; } = null;
-        public OAuthUserInfo GoogleCloudStorageUserInfo { get; set; } = null;
+        public OAuth2Info? GoogleCloudStorageOAuth2Info { get; set; }
+        public OAuthUserInfo? GoogleCloudStorageUserInfo { get; set; }
         public string GoogleCloudStorageBucket { get; set; } = "";
         public string GoogleCloudStorageDomain { get; set; } = "";
         public string GoogleCloudStorageObjectPrefix { get; set; } = "ShareX/%y/%mo";
@@ -405,7 +405,7 @@ namespace XerahS.Uploaders
 
         #region bit.ly
 
-        public OAuth2Info BitlyOAuth2Info { get; set; } = null;
+        public OAuth2Info? BitlyOAuth2Info { get; set; }
         public string BitlyDomain { get; set; } = "";
 
         #endregion bit.ly

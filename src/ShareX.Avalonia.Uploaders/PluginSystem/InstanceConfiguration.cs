@@ -38,5 +38,5 @@ public class InstanceConfiguration
     /// <summary>
     /// Default instance IDs per category
     /// </summary>
-    public Dictionary<UploaderCategory, Guid> DefaultInstances { get; set; } = new();
+    public Dictionary<UploaderCategory, string> DefaultInstances { get; set; } = new();
 }

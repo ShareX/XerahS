@@ -88,13 +88,13 @@ namespace XerahS.UI.ViewModels
             HistoryItems = new ObservableCollection<HistoryItem>();
 
             // Create history manager with centralized path
-            var historyPath = SettingManager.GetHistoryFilePath();
+            var historyPath = SettingsManager.GetHistoryFilePath();
             DebugHelper.WriteLine($"HistoryViewModel - History file path: {historyPath}");
 
             _historyManager = new HistoryManagerSQLite(historyPath);
 
             // Configure backup settings similar to JSON files
-            _historyManager.BackupFolder = SettingManager.HistoryBackupFolder;
+            _historyManager.BackupFolder = SettingsManager.HistoryBackupFolder;
             _historyManager.CreateBackup = true;
             _historyManager.CreateWeeklyBackup = true;
 
@@ -124,7 +124,7 @@ namespace XerahS.UI.ViewModels
 
             try
             {
-                var historyPath = SettingManager.GetHistoryFilePath();
+                var historyPath = SettingsManager.GetHistoryFilePath();
                 DebugHelper.WriteLine($"History.xml location: {historyPath} (exists={File.Exists(historyPath)})");
 
                 // calculating offset
@@ -362,6 +362,21 @@ namespace XerahS.UI.ViewModels
         }
 
         [RelayCommand]
+        private void OpenURL(HistoryItem? item)
+        {
+            if (item == null || string.IsNullOrEmpty(item.URL)) return;
+
+            try
+            {
+                XerahS.Platform.Abstractions.PlatformServices.System.OpenUrl(item.URL);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"Failed to open URL: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
         private async Task DeleteItem(HistoryItem? item)
         {
             if (item == null) return;
@@ -468,7 +483,12 @@ namespace XerahS.UI.ViewModels
             }
             else
             {
-                await confirmDialog.ShowDialog((Avalonia.Controls.Window?)null);
+                // Fallback: show as independent window
+                confirmDialog.Show();
+                // Wait for close via event
+                var closeTcs = new TaskCompletionSource<bool>();
+                confirmDialog.Closed += (s, e) => closeTcs.TrySetResult(true);
+                await closeTcs.Task;
             }
 
             return result;

@@ -29,14 +29,14 @@ namespace XerahS.Uploaders.FileUploaders
 {
     public class PomfUploader
     {
-        public string UploadURL { get; set; }
-        public string ResultURL { get; set; }
+        public string UploadURL { get; set; } = string.Empty;
+        public string? ResultURL { get; set; }
 
         public PomfUploader()
         {
         }
 
-        public PomfUploader(string uploadURL, string resultURL = null)
+        public PomfUploader(string uploadURL, string? resultURL = null)
         {
             UploadURL = uploadURL;
             ResultURL = resultURL;

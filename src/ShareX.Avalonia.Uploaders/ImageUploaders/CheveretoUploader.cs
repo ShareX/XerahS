@@ -29,9 +29,9 @@ namespace XerahS.Uploaders
 {
     public class CheveretoUploader
     {
-        public string UploadURL { get; set; }
+        public string UploadURL { get; set; } = string.Empty;
         [JsonEncrypt]
-        public string APIKey { get; set; }
+        public string APIKey { get; set; } = string.Empty;
 
         public CheveretoUploader()
         {

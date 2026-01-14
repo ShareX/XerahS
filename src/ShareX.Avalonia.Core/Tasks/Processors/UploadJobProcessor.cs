@@ -1,3 +1,4 @@
+using System.IO;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using XerahS.Uploaders;
@@ -26,25 +27,45 @@ namespace XerahS.Core.Tasks.Processors
 
             token.ThrowIfCancellationRequested();
 
-            DebugHelper.WriteLine($"Starting upload for {info.FileName}...");
-            DebugHelper.WriteLine($"Upload data type: {info.DataType}, FilePath: {info.FilePath}");
-            DebugHelper.WriteLine($"Image destination: {info.TaskSettings.ImageDestination}");
-
-            // Wrap legacy synchronous upload in Task.Run
+            DebugHelper.WriteLine($"[UploadTrace {info.CorrelationId}] Starting upload; dataType={info.DataType}, filePath=\"{info.FilePath}\", fileName=\"{info.FileName}\"");
+            // Wrap upload in Task.Run
             result = await Task.Run(() => Upload(info), token);
 
             if (result != null)
             {
                 info.Result = result;
 
-                if (result.IsSuccess)
+                if (result.IsSuccess || (!result.IsError && !string.IsNullOrEmpty(result.URL)))
                 {
-                    DebugHelper.WriteLine($"Upload successful: {result.URL}");
+                    info.Metadata.UploadURL = result.URL;
+                    DebugHelper.WriteLine($"[UploadTrace {info.CorrelationId}] Upload successful: {result.URL}");
                     await HandleAfterUploadTasksAsync(info, result, token);
                 }
                 else
                 {
-                    DebugHelper.WriteLine($"Upload failed: {result.Response}");
+                    var errorMsg = result.Response ?? "Unknown error";
+                    // If URL is present but we fell here, it means IsError is true
+                    if (!string.IsNullOrEmpty(result.URL))
+                    {
+                         DebugHelper.WriteLine($"Upload finished with errors but URL present: {result.URL}. (Error: {errorMsg})");
+                         // If we have a URL, let's treat it as partial success for metadata purposes
+                         info.Metadata.UploadURL = result.URL;
+                    }
+                    else
+                    {
+                        DebugHelper.WriteLine($"Upload failed: {errorMsg}");
+                    
+                        if (PlatformServices.IsInitialized && PlatformServices.Toast != null)
+                        {
+                            PlatformServices.Toast.ShowToast(new Platform.Abstractions.ToastConfig
+                            {
+                                Title = "Upload Failed",
+                                Text = errorMsg,
+                                Duration = 4f,
+                                AutoHide = true
+                            });
+                        }
+                    }
                 }
             }
             else
@@ -57,80 +78,48 @@ namespace XerahS.Core.Tasks.Processors
         {
             try
             {
-                // 1. Determine Data Type and Destination
-                if (info.DataType == EDataType.Image && info.Metadata?.Image != null)
+                return info.DataType switch
                 {
-                    return UploadImage(info);
-                }
-                else if (info.DataType == EDataType.Text)
-                {
-                    // Return UploadText(info);
-                    return null; // TODO implement text
-                }
-                else if (info.DataType == EDataType.File)
-                {
-                    // Return UploadFile(info);
-                    return null; // TODO implement file
-                }
+                    EDataType.Image => UploadWithPluginSystem(info, UploaderCategory.Image),
+                    EDataType.Text => UploadWithPluginSystem(info, UploaderCategory.Text),
+                    EDataType.File => UploadWithPluginSystem(info, UploaderCategory.File),
+                    _ => null
+                };
             }
             catch (Exception ex)
             {
                 DebugHelper.WriteException(ex, "UploadJobProcessor");
                 return new UploadResult { IsSuccess = false, Response = ex.Message };
             }
-
-            return null;
         }
 
-        private UploadResult? UploadImage(TaskInfo info)
-        {
-            var destination = info.TaskSettings.ImageDestination;
-
-            if (UploaderFactory.ImageUploaderServices.TryGetValue(destination, out var service))
-            {
-                // Create TaskReferenceHelper
-                var helper = new TaskReferenceHelper()
-                {
-                    DataType = EDataType.Image,
-                    StopRequested = false, // TODO: Bind to cancellation token?
-                    OverrideFTP = info.TaskSettings.OverrideFTP,
-                    FTPIndex = info.TaskSettings.FTPIndex,
-                    OverrideCustomUploader = info.TaskSettings.OverrideCustomUploader,
-                    CustomUploaderIndex = info.TaskSettings.CustomUploaderIndex
-                };
-
-                var uploader = service.CreateUploader(SettingManager.UploadersConfig, helper);
-
-                if (uploader is GenericUploader genericUploader)
-                {
-                    // Get image stream with correct format/quality settings
-                    using (MemoryStream? ms = TaskHelpers.SaveImageAsStream(info.Metadata.Image, info.TaskSettings.ImageSettings.ImageFormat, info.TaskSettings))
-                    {
-                        if (ms != null)
-                        {
-                            ms.Position = 0;
-                            return genericUploader.Upload(ms, info.FileName);
-                        }
-                    }
-                }
-            }
-
-            DebugHelper.WriteLine($"No legacy uploader service found for destination: {destination}");
-            return UploadImageWithPluginSystem(info) ??
-                new UploadResult { IsSuccess = false, Response = "Uploader service not found or initialization failed." };
-
-        }
-
-        private UploadResult? UploadImageWithPluginSystem(TaskInfo info)
+        private UploadResult? UploadWithPluginSystem(TaskInfo info, UploaderCategory category)
         {
             EnsurePluginsLoaded();
 
             var instanceManager = InstanceManager.Instance;
-            var defaultInstance = instanceManager.GetDefaultInstance(UploaderCategory.Image);
+            var targetInstanceId = info.TaskSettings.GetDestinationInstanceIdForDataType(info.DataType);
+            UploaderInstance? targetInstance = null;
+
+            if (!string.IsNullOrEmpty(targetInstanceId))
+            {
+                targetInstance = instanceManager.GetInstance(targetInstanceId);
+                if (targetInstance == null)
+                {
+                    DebugHelper.WriteLine($"Configured destination instance not found: {targetInstanceId}");
+                }
+                else if (targetInstance.Category != category)
+                {
+                    DebugHelper.WriteLine($"Configured destination category mismatch. Expected {category}, got {targetInstance.Category}. Continuing with configured instance.");
+                }
+            }
+
+            var defaultInstance = targetInstance ?? instanceManager.GetDefaultInstance(category);
             if (defaultInstance == null)
             {
-                DebugHelper.WriteLine("No default image uploader instance configured (plugin system).");
-                return null;
+                var errorMsg = $"No uploader instance configured (plugin system) for category {category}.";
+                DebugHelper.WriteLine(errorMsg);
+                return new UploadResult { IsSuccess = false, Response = errorMsg };
             }
 
             DebugHelper.WriteLine($"Plugin instance selected: {defaultInstance.DisplayName} ({defaultInstance.ProviderId})");

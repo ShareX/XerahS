@@ -29,19 +29,17 @@ namespace XerahS.Common
 {
     public class CLIManager
     {
-        public string[] Arguments { get; private set; }
-        public List<CLICommand> Commands { get; private set; }
-        public List<CLICommandAction> Actions { get; private set; }
+        public string[] Arguments { get; private set; } = Array.Empty<string>();
+        public List<CLICommand> Commands { get; private set; } = new List<CLICommand>();
+        public List<CLICommandAction> Actions { get; private set; } = new List<CLICommandAction>();
 
         public CLIManager()
         {
-            Commands = new List<CLICommand>();
-            Actions = new List<CLICommandAction>();
         }
 
         public CLIManager(string[] arguments) : this()
         {
-            Arguments = arguments;
+            Arguments = arguments ?? Array.Empty<string>();
         }
 
         public CLIManager(string arguments) : this()
@@ -53,7 +51,7 @@ namespace XerahS.Common
         {
             try
             {
-                CLICommand lastCommand = null;
+                CLICommand? lastCommand = null;
 
                 foreach (string argument in Arguments)
                 {
@@ -147,14 +145,14 @@ namespace XerahS.Common
             return false;
         }
 
-        public CLICommand GetCommand(string command)
+        public CLICommand? GetCommand(string command)
         {
             return Commands.Find(x => x.CheckCommand(command));
         }
 
-        public string GetParameter(string command)
+        public string? GetParameter(string command)
         {
-            CLICommand cliCommand = GetCommand(command);
+            CLICommand? cliCommand = GetCommand(command);
 
             if (cliCommand != null)
             {

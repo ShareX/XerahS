@@ -1,8 +1,9 @@
 <Project>
   <PropertyGroup>
     <Version>0.3.0</Version>
-    <Product>ShareX Ava</Product>
+    <Product>XerahS</Product>
     <Authors>ShareX Team</Authors>
     <Company>ShareX Team</Company>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>

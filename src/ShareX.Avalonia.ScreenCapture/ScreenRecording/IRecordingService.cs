@@ -106,7 +106,7 @@ public interface IVideoEncoder : IDisposable
     /// <summary>
     /// Finalize encoding and close the file
     /// </summary>
-    void Finalize();
+    void FinalizeEncoding();
 }
 
 /// <summary>

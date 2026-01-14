@@ -69,7 +69,10 @@ namespace XerahS.Uploaders.TextUploaders
                 arguments.Add("parent", "");
 
                 SendRequestMultiPart("https://paste2.org/", arguments);
-                ur.URL = LastResponseInfo.ResponseURL;
+                if (LastResponseInfo != null)
+                {
+                    ur.URL = LastResponseInfo.ResponseURL;
+                }
             }
 
             return ur;

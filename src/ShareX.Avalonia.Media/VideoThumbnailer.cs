@@ -32,12 +32,12 @@ namespace XerahS.Media
     public class VideoThumbnailer
     {
         public delegate void ProgressChangedEventHandler(int current, int length);
-        public event ProgressChangedEventHandler ProgressChanged;
+        public event ProgressChangedEventHandler? ProgressChanged;
 
         public string FFmpegPath { get; private set; }
         public VideoThumbnailOptions Options { get; private set; }
-        public string MediaPath { get; private set; }
-        public VideoInfo VideoInfo { get; private set; }
+        public string MediaPath { get; private set; } = string.Empty;
+        public VideoInfo? VideoInfo { get; private set; }
 
         public VideoThumbnailer(string ffmpegPath, VideoThumbnailOptions options)
         {
@@ -61,7 +61,7 @@ namespace XerahS.Media
 
             if (VideoInfo == null || VideoInfo.Duration == TimeSpan.Zero)
             {
-                return null;
+                return new List<VideoThumbnailInfo>();
             }
 
             List<VideoThumbnailInfo> tempThumbnails = new List<VideoThumbnailInfo>();
@@ -123,9 +123,10 @@ namespace XerahS.Media
             {
                 if (Options.CombineScreenshots)
                 {
-                    using (SKBitmap img = CombineScreenshots(tempThumbnails))
+                    var img = CombineScreenshots(tempThumbnails);
+                    if (img != null)
                     {
-                        if (img != null)
+                        using (img)
                         {
                             string tempFilePath = Path.Combine(GetOutputDirectory(), Path.GetFileNameWithoutExtension(MediaPath) + Options.FilenameSuffix + "." + EnumExtensions.GetDescription(Options.ImageFormat));
                             ImageHelpers.SaveBitmap(img, tempFilePath);
@@ -159,19 +160,19 @@ namespace XerahS.Media
 
         private string GetOutputDirectory()
         {
-            string directory;
+            string directory = Options.DefaultOutputDirectory ?? string.Empty;
 
             switch (Options.OutputLocation)
             {
                 default:
                 case ThumbnailLocationType.DefaultFolder:
-                    directory = Options.DefaultOutputDirectory;
+                    directory = Options.DefaultOutputDirectory ?? string.Empty;
                     break;
                 case ThumbnailLocationType.ParentFolder:
-                    directory = Path.GetDirectoryName(MediaPath);
+                    directory = Path.GetDirectoryName(MediaPath) ?? string.Empty;
                     break;
                 case ThumbnailLocationType.CustomFolder:
-                    directory = FileHelpers.ExpandFolderVariables(Options.CustomOutputDirectory);
+                    directory = FileHelpers.ExpandFolderVariables(Options.CustomOutputDirectory) ?? string.Empty;
                     break;
             }
 
@@ -182,7 +183,7 @@ namespace XerahS.Media
 
         private int GetTimeSlice(int count)
         {
-            return (int)(VideoInfo.Duration.TotalSeconds / count);
+            return (int)(VideoInfo!.Duration.TotalSeconds / count);
         }
 
         private int GetRandomTimeSlice(int start)
@@ -197,10 +198,10 @@ namespace XerahS.Media
             return (int)((RandomFast.NextDouble() * (mediaSeekTimes[start + 1] - mediaSeekTimes[start])) + mediaSeekTimes[start]);
         }
 
-        private SKBitmap CombineScreenshots(List<VideoThumbnailInfo> thumbnails)
+        private SKBitmap? CombineScreenshots(List<VideoThumbnailInfo> thumbnails)
         {
             List<SKBitmap> images = new List<SKBitmap>();
-            SKBitmap finalImage = null;
+            SKBitmap? finalImage = null;
 
             try
             {
@@ -211,7 +212,7 @@ namespace XerahS.Media
                 {
                     if (Options.AddVideoInfo)
                     {
-                        infoString = VideoInfo.ToString();
+                        infoString = VideoInfo?.ToString() ?? string.Empty;
                         SKRect textBounds = new SKRect();
                         fontPaint.MeasureText(infoString, ref textBounds);
                         infoStringHeight = (int)textBounds.Height + 5; // Add some padding

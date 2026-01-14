@@ -32,5 +32,10 @@ namespace XerahS.Platform.Abstractions
         public bool CaptureTransparent { get; set; } = false;
         public bool CaptureShadow { get; set; } = true;
         public bool CaptureClientArea { get; set; } = false;
+
+        /// <summary>
+        /// ID of the workflow triggering this capture
+        /// </summary>
+        public string? WorkflowId { get; set; }
     }
 }

@@ -31,6 +31,9 @@ using XerahS.Platform.Abstractions;
 using XerahS.ScreenCapture.ScreenRecording;
 using SkiaSharp;
 using System.Diagnostics;
+using XerahS.History;
+using Avalonia.Threading;
+using System.Drawing;
 
 namespace XerahS.Core.Tasks
 {
@@ -42,10 +45,30 @@ namespace XerahS.Core.Tasks
         public bool IsBusy => Status == TaskStatus.InQueue || IsWorking;
         public bool IsWorking => Status == TaskStatus.Preparing || Status == TaskStatus.Working || Status == TaskStatus.Stopping;
 
+        /// <summary>
+        /// Determines if the task completed successfully with a valid result.
+        /// Returns true only if the task is not failed/canceled/stopped AND produced an artifact (Image, File, or URL).
+        /// </summary>
+        public bool IsSuccessful
+        {
+            get
+            {
+                if (Status == TaskStatus.Failed || Status == TaskStatus.Canceled || Status == TaskStatus.Stopped)
+                    return false;
+
+                // Check if we have any valid output
+                bool hasImage = Info.Metadata?.Image != null;
+                bool hasFile = !string.IsNullOrEmpty(Info.FilePath);
+                bool hasUrl = !string.IsNullOrEmpty(Info.Metadata?.UploadURL);
+
+                return hasImage || hasFile || hasUrl;
+            }
+        }
+
         private CancellationTokenSource _cancellationTokenSource;
 
-        public event EventHandler StatusChanged;
-        public event EventHandler TaskCompleted;
+        public event EventHandler StatusChanged = delegate { };
+        public event EventHandler TaskCompleted = delegate { };
 
         /// <summary>
         /// Delegate to show window selector when CustomWindow capture has no target configured.
@@ -106,7 +129,7 @@ namespace XerahS.Core.Tasks
                         Title = $"{Info.TaskSettings.Job} Failed",
                         Text = errorMessage,
                         Duration = 5f,
-                        Size = new System.Drawing.Size(400, 120),
+                        Size = new SizeI(400, 120),
                         AutoHide = true,
                         LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
                     });
@@ -130,32 +153,43 @@ namespace XerahS.Core.Tasks
 
         private async Task DoWorkAsync(CancellationToken token)
         {
-            TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", "DoWorkAsync Entry");
+            // Ensure critical context is not null for the remainder of this task
+            Info.TaskSettings ??= new TaskSettings();
+            Info.Metadata ??= new TaskMetadata();
+
+            var taskSettings = Info.TaskSettings;
+            var metadata = Info.Metadata;
+
+            TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "DoWorkAsync Entry");
             
             Status = TaskStatus.Working;
             OnStatusChanged();
 
             // Perform Capture Phase based on Job Type
             // Only capture if we don't already have an image (e.g. passed from UI)
-            if (Info.Metadata.Image == null && PlatformServices.IsInitialized)
+            if (metadata.Image == null && PlatformServices.IsInitialized)
             {
-                TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "Entering capture phase");
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Entering capture phase");
                 
                 SKBitmap? image = null;
                 var captureStopwatch = Stopwatch.StartNew();
-                DebugHelper.WriteLine($"Capture start: Job={Info.TaskSettings.Job}");
+                DebugHelper.WriteLine($"Capture start: Job={taskSettings.Job}");
 
                 // Create capture options from task settings
+                taskSettings.CaptureSettings ??= new TaskSettingsCapture();
+                var captureSettings = taskSettings.CaptureSettings;
+
                 var captureOptions = new CaptureOptions
                 {
-                    UseModernCapture = Info.TaskSettings.CaptureSettings.UseModernCapture,
-                    ShowCursor = Info.TaskSettings.CaptureSettings.ShowCursor,
-                    CaptureTransparent = Info.TaskSettings.CaptureSettings.CaptureTransparent,
-                    CaptureShadow = Info.TaskSettings.CaptureSettings.CaptureShadow,
-                    CaptureClientArea = Info.TaskSettings.CaptureSettings.CaptureClientArea
+                    UseModernCapture = captureSettings.UseModernCapture,
+                    ShowCursor = captureSettings.ShowCursor,
+                    CaptureTransparent = captureSettings.CaptureTransparent,
+                    CaptureShadow = captureSettings.CaptureShadow,
+                    CaptureClientArea = captureSettings.CaptureClientArea,
+                    WorkflowId = taskSettings.WorkflowId
                 };
 
-                switch (Info.TaskSettings.Job)
+                switch (taskSettings.Job)
                 {
                     case HotkeyType.PrintScreen:
                         image = await PlatformServices.ScreenCapture.CaptureFullScreenAsync(captureOptions);
@@ -176,13 +210,13 @@ namespace XerahS.Core.Tasks
                         if (PlatformServices.Window != null)
                         {
                             TroubleshootingHelper.Log("CustomWindow", "TASK", "Task started for CustomWindow");
-                            TroubleshootingHelper.Log("CustomWindow", "TASK", $"TaskSettings provided: {Info.TaskSettings != null}");
+                            TroubleshootingHelper.Log("CustomWindow", "TASK", $"TaskSettings provided: {taskSettings != null}");
 
-                            string targetWindow = Info.TaskSettings?.CaptureSettings?.CaptureCustomWindow;
+                            string targetWindow = captureSettings.CaptureCustomWindow;
                             TroubleshootingHelper.Log("CustomWindow", "CONFIG", $"Configured target window: '{targetWindow}'");
 
                             // Also inspect global settings as sanity check
-                            TroubleshootingHelper.Log("CustomWindow", "CONFIG", $"Global default target window: '{SettingManager.DefaultTaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
+                            TroubleshootingHelper.Log("CustomWindow", "CONFIG", $"Global default target window: '{SettingsManager.DefaultTaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
 
                             if (string.IsNullOrEmpty(targetWindow))
                             {
@@ -293,8 +327,50 @@ namespace XerahS.Core.Tasks
                     // Stage 5: Screen Recording Integration
                     case HotkeyType.ScreenRecorder:
                     case HotkeyType.StartScreenRecorder:
-                        TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecorder case matched, calling HandleStartRecordingAsync");
-                        await HandleStartRecordingAsync(CaptureMode.Screen);
+                        TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecorder case matched, showing region selector");
+
+                        // Show region selector and get user selection
+                        var regionCaptureOptions = new CaptureOptions
+                        {
+                            UseModernCapture = Info.TaskSettings.CaptureSettings.UseModernCapture,
+                            ShowCursor = Info.TaskSettings.CaptureSettings.ShowCursor,
+                            WorkflowId = Info.TaskSettings.WorkflowId
+                        };
+
+                        SKRectI selection = await PlatformServices.ScreenCapture.SelectRegionAsync(regionCaptureOptions);
+
+                        if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
+                        {
+                            TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "Region selection cancelled, aborting recording");
+                            Status = TaskStatus.Stopped;
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        // Convert SKRectI to System.Drawing.Rectangle for recording options
+                        // H.264 encoder requires even dimensions - round down to nearest even number
+                        int adjustedWidth = selection.Width - (selection.Width % 2);
+                        int adjustedHeight = selection.Height - (selection.Height % 2);
+
+                        // Ensure minimum dimensions (at least 2x2)
+                        if (adjustedWidth < 2 || adjustedHeight < 2)
+                        {
+                            TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region too small after adjustment: {adjustedWidth}x{adjustedHeight}, aborting recording");
+                            Status = TaskStatus.Stopped;
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        var recordingRegion = new Rectangle(selection.Left, selection.Top, adjustedWidth, adjustedHeight);
+
+                        if (adjustedWidth != selection.Width || adjustedHeight != selection.Height)
+                        {
+                            TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region adjusted for encoder: {selection.Width}x{selection.Height} → {adjustedWidth}x{adjustedHeight}");
+                        }
+
+                        TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region selected: {recordingRegion}, calling HandleStartRecordingAsync");
+
+                        await HandleStartRecordingAsync(CaptureMode.Region, region: recordingRegion);
                         TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "HandleStartRecordingAsync completed");
                         return; // Recording tasks don't proceed to image processing
 
@@ -326,12 +402,18 @@ namespace XerahS.Core.Tasks
 
                 if (image != null)
                 {
-                    Info.Metadata.Image = image;
+                    metadata.Image = image;
                     DebugHelper.WriteLine($"Captured image: {image.Width}x{image.Height} in {captureStopwatch.ElapsedMilliseconds}ms");
                 }
                 else
                 {
-                    DebugHelper.WriteLine($"Capture returned null for job type: {Info.TaskSettings.Job} (elapsed {captureStopwatch.ElapsedMilliseconds}ms)");
+                    DebugHelper.WriteLine($"Capture returned null for job type: {taskSettings?.Job} (elapsed {captureStopwatch.ElapsedMilliseconds}ms)");
+                    
+                    // IF capture returned null (e.g. user cancelled region selection), stop the task here.
+                    // This prevents empty tasks from being marked as 'Completed' successfully.
+                    Status = TaskStatus.Stopped;
+                    OnStatusChanged();
+                    return;
                 }
             }
             else if (Info.Metadata.Image == null)
@@ -360,33 +442,46 @@ namespace XerahS.Core.Tasks
 
         #region Recording Handlers (Stage 5)
 
-        private async Task HandleStartRecordingAsync(CaptureMode mode, IntPtr windowHandle = default)
+
+        private async Task HandleStartRecordingAsync(CaptureMode mode, IntPtr windowHandle = default, Rectangle? region = null)
         {
-            TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", $"HandleStartRecordingAsync Entry: mode={mode}");
-            
+            var taskSettings = Info.TaskSettings ?? new TaskSettings();
+            var metadata = Info.Metadata ?? new TaskMetadata();
+
+            TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", $"HandleStartRecordingAsync Entry: mode={mode}, region={region}");
+
             try
             {
-                // Check if already recording
-                if (ScreenRecordingManager.Instance.IsRecording)
-                {
-                    TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", "Already recording, stopping first");
-                    DebugHelper.WriteLine("Recording already in progress, stopping existing recording first...");
-                    await ScreenRecordingManager.Instance.StopRecordingAsync();
-                }
+                // Note: We don't check IsRecording here because App.axaml.cs ensures we only get here if NOT recording.
 
                 // Build recording options from task settings
+                taskSettings.CaptureSettings ??= new TaskSettingsCapture();
+                var captureSettings = taskSettings.CaptureSettings;
+
                 var recordingOptions = new RecordingOptions
                 {
                     Mode = mode,
-                    Settings = Info.TaskSettings.CaptureSettings.ScreenRecordingSettings,
+                    Settings = captureSettings.ScreenRecordingSettings,
                     TargetWindowHandle = windowHandle
                 };
 
-                // Generate output path
-                string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                string recordingsPath = Path.Combine(documentsPath, "ShareX", "Recordings", DateTime.Now.ToString("yyyy-MM"));
-                Directory.CreateDirectory(recordingsPath);
-                recordingOptions.OutputPath = Path.Combine(recordingsPath, $"Recording_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4");
+                // Set region if provided (for Region mode)
+                if (region.HasValue)
+                {
+                    recordingOptions.Region = region.Value;
+                    TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", $"Recording region set: {region.Value}");
+                }
+
+                // [2026-01-10T14:40:00+08:00] Align screen recording output with screenshot naming/destination using TaskHelpers.
+                var recordingMetadata = metadata;
+                string recordingsFolder = TaskHelpers.GetScreenshotsFolder(taskSettings, recordingMetadata);
+                string fileName = TaskHelpers.GetFileName(taskSettings, "mp4", recordingMetadata);
+                Directory.CreateDirectory(recordingsFolder);
+                var resolvedPath = TaskHelpers.HandleExistsFile(recordingsFolder, fileName, taskSettings);
+                recordingOptions.OutputPath = resolvedPath;
+                Info.FilePath = resolvedPath;
+                Info.DataType = EDataType.File;
+                DebugHelper.WriteLine($"[PathTrace {Info.CorrelationId}] ScreenRecorder resolved path: dir=\"{recordingsFolder}\", fileName=\"{fileName}\", fullPath=\"{resolvedPath}\"");
 
                 if (recordingOptions.Settings != null &&
                     (recordingOptions.Settings.CaptureSystemAudio || recordingOptions.Settings.CaptureMicrophone))
@@ -395,66 +490,80 @@ namespace XerahS.Core.Tasks
                     recordingOptions.Settings.ForceFFmpeg = true;
                 }
 
-                TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", "Calling ScreenRecordingManager.StartRecordingAsync");
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Calling ScreenRecordingManager.StartRecordingAsync");
                 DebugHelper.WriteLine($"Starting recording: Mode={mode}, Codec={recordingOptions.Settings?.Codec}, FPS={recordingOptions.Settings?.FPS}");
                 DebugHelper.WriteLine($"Output path: {recordingOptions.OutputPath}");
 
-                // Start recording via manager
+                // 1. Start recording
                 await ScreenRecordingManager.Instance.StartRecordingAsync(recordingOptions);
-                TroubleshootingHelper.Log(Info.TaskSettings?.Job.ToString() ?? "Unknown", "WORKER_TASK", "ScreenRecordingManager.StartRecordingAsync completed");
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex, "Failed to start recording");
-                throw;
-            }
-        }
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecordingManager.StartRecordingAsync completed");
 
-        private async Task HandleStopRecordingAsync()
-        {
-            try
-            {
-                if (!ScreenRecordingManager.Instance.IsRecording)
-                {
-                    DebugHelper.WriteLine("No recording in progress to stop");
-                    return;
-                }
+                // 2. Wait for stop signal (ASYNC WAIT - Yields thread, keeps task alive)
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Waiting for stop signal...");
+                await ScreenRecordingManager.Instance.WaitForStopSignalAsync();
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Stop signal received. Resuming...");
 
+                // 3. Stop recording
                 DebugHelper.WriteLine("Stopping recording...");
                 string? outputPath = await ScreenRecordingManager.Instance.StopRecordingAsync();
 
                 if (!string.IsNullOrEmpty(outputPath))
                 {
                     DebugHelper.WriteLine($"Recording saved to: {outputPath}");
-                    // TODO: Process recording file (upload, after-capture tasks, etc.)
-                    // For now, just log the completion
+                    Info.FilePath = outputPath;
+                    Info.DataType = EDataType.File;
+                    
+                    // Reuse upload pipeline for recordings; flag upload when AfterUpload tasks exist.
+                    if (taskSettings.AfterUploadJob != AfterUploadTasks.None)
+                    {
+                        taskSettings.AfterCaptureJob |= AfterCaptureTasks.UploadImageToHost;
+                    }
+
+                    var uploadProcessor = new UploadJobProcessor();
+                    await uploadProcessor.ProcessAsync(Info, CancellationToken.None);
+
+                    // Add to History
+                    try
+                    {
+                        var historyPath = SettingsManager.GetHistoryFilePath();
+                        using var historyManager = new HistoryManagerSQLite(historyPath);
+                        var historyItem = new HistoryItem
+                        {
+                            FilePath = outputPath,
+                            FileName = Path.GetFileName(outputPath),
+                            DateTime = DateTime.Now,
+                            Type = "Video",
+                            URL = metadata.UploadURL ?? string.Empty // Will be populated if upload succeeded
+                        };
+
+                        DebugHelper.WriteLine($"[HistoryTrace] Preparing to add item. URL='{historyItem.URL}', File='{historyItem.FileName}'");
+
+                        await Task.Run(() => historyManager.AppendHistoryItem(historyItem));
+                        DebugHelper.WriteLine($"Added recording to history: {historyItem.FileName} (URL: {historyItem.URL})");
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugHelper.WriteException(ex, "Failed to add recording to history");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                DebugHelper.WriteException(ex, "Failed to stop recording");
+                DebugHelper.WriteException(ex, "Failed during recording workflow");
                 throw;
             }
         }
 
+        private async Task HandleStopRecordingAsync()
+        {
+             // Legacy handler - mapped to SignalStop in UI now
+             await Task.CompletedTask;
+        }
+
         private async Task HandleAbortRecordingAsync()
         {
-            try
-            {
-                if (!ScreenRecordingManager.Instance.IsRecording)
-                {
-                    DebugHelper.WriteLine("No recording in progress to abort");
-                    return;
-                }
-
-                DebugHelper.WriteLine("Aborting recording...");
-                await ScreenRecordingManager.Instance.AbortRecordingAsync();
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex, "Failed to abort recording");
-                throw;
-            }
+             // Legacy handler
+             await ScreenRecordingManager.Instance.AbortRecordingAsync();
         }
 
         #endregion

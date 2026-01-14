@@ -205,14 +205,26 @@ namespace XerahS.Common
                 }
 
                 // Create yyyy-MM subfolder
+                // Create yyyy-MM subfolder
                 string monthFolder = Path.Combine(BackupFolder, DateTime.Now.ToString("yyyy-MM"));
                 if (!Directory.Exists(monthFolder))
                 {
                     Directory.CreateDirectory(monthFolder);
                 }
 
-                // Create zip file with date stamp: yyyy-MM-dd format
-                string zipFileName = $"backup-{DateTime.Now:yyyy-MM-dd}.zip";
+                string zipFileName;
+
+                if (CreateWeeklyBackup)
+                {
+                    // Create zip file with year and week number: yyyy-Www format
+                    zipFileName = $"backup-{DateTime.Now.Year}-W{FileHelpers.WeekOfYear(DateTime.Now):00}.zip";
+                }
+                else
+                {
+                    // Create zip file with date stamp: yyyy-MM-dd format
+                    zipFileName = $"backup-{DateTime.Now:yyyy-MM-dd}.zip";
+                }
+
                 string zipFilePath = Path.Combine(monthFolder, zipFileName);
 
                 // If a backup for today already exists, delete it (we're updating with latest)
@@ -290,7 +302,7 @@ namespace XerahS.Common
                 setting.BackupFolder = backupFolder;
             }
 
-            return setting;
+            return setting!;
         }
 
         private static T LoadInternal(string filePath, List<string>? fallbackFilePaths = null)
@@ -307,7 +319,7 @@ namespace XerahS.Common
                     {
                         if (fileStream.Length > 0)
                         {
-                            T? settings;
+                            T settings;
 
                             using (StreamReader streamReader = new StreamReader(fileStream))
                             using (JsonTextReader jsonReader = new JsonTextReader(streamReader))
@@ -318,12 +330,7 @@ namespace XerahS.Common
                                 serializer.DateTimeZoneHandling = DateTimeZoneHandling.Local;
                                 serializer.ObjectCreationHandling = ObjectCreationHandling.Replace;
                                 serializer.Error += Serializer_Error;
-                                settings = serializer.Deserialize<T>(jsonReader);
-                            }
-
-                            if (settings == null)
-                            {
-                                throw new Exception($"{typeName} object is null.");
+                                settings = serializer.Deserialize<T>(jsonReader) ?? throw new Exception($"{typeName} object is null.");
                             }
 
                             System.Diagnostics.Debug.WriteLine($"{typeName} load finished: {filePath}");

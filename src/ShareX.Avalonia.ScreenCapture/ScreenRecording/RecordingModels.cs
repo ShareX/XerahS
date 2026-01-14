@@ -232,3 +232,22 @@ public class AudioBufferEventArgs : EventArgs
         Timestamp = timestamp;
     }
 }
+
+/// <summary>
+/// Event arguments for recording started notification
+/// Includes information about the recording method being used
+/// </summary>
+public class RecordingStartedEventArgs : EventArgs
+{
+    /// <summary>True if using FFmpeg fallback, false if using native Modern Capture</summary>
+    public bool IsUsingFallback { get; }
+
+    /// <summary>Recording options being used</summary>
+    public RecordingOptions Options { get; }
+
+    public RecordingStartedEventArgs(bool isUsingFallback, RecordingOptions options)
+    {
+        IsUsingFallback = isUsingFallback;
+        Options = options;
+    }
+}

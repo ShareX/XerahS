@@ -36,7 +36,7 @@ namespace XerahS.Uploaders.SharingServices
             return config.CustomUploadersList != null && config.CustomUploadersList.IsValidIndex(config.CustomURLSharingServiceSelected);
         }
 
-        public override URLSharer CreateSharer(UploadersConfig config, TaskReferenceHelper taskInfo)
+        public override URLSharer? CreateSharer(UploadersConfig config, TaskReferenceHelper taskInfo)
         {
             int index;
 
@@ -49,7 +49,7 @@ namespace XerahS.Uploaders.SharingServices
                 index = config.CustomURLSharingServiceSelected;
             }
 
-            CustomUploaderItem customUploader = config.CustomUploadersList.ReturnIfValidIndex(index);
+            CustomUploaderItem? customUploader = config.CustomUploadersList.ReturnIfValidIndex(index);
 
             if (customUploader != null)
             {

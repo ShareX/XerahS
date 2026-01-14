@@ -32,11 +32,11 @@ namespace XerahS.Uploaders
     public class ResponseInfo
     {
         public HttpStatusCode StatusCode { get; set; }
-        public string StatusDescription { get; set; }
+        public string StatusDescription { get; set; } = string.Empty;
         public bool IsSuccess => WebHelpers.IsSuccessStatusCode(StatusCode);
-        public string ResponseURL { get; set; }
-        public WebHeaderCollection Headers { get; set; }
-        public string ResponseText { get; set; }
+        public string ResponseURL { get; set; } = string.Empty;
+        public WebHeaderCollection Headers { get; set; } = new WebHeaderCollection();
+        public string ResponseText { get; set; } = string.Empty;
 
         public string ToReadableString(bool includeResponseText)
         {

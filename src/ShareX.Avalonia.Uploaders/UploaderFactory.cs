@@ -37,7 +37,7 @@ namespace XerahS.Uploaders
         public static Dictionary<UrlShortenerType, URLShortenerService> URLShortenerServices { get; } = CacheServices<UrlShortenerType, URLShortenerService>();
         public static Dictionary<URLSharingServices, URLSharingService> URLSharingServices { get; } = CacheServices<URLSharingServices, URLSharingService>();
 
-        private static Dictionary<T, T2> CacheServices<T, T2>() where T2 : UploaderService<T>
+        private static Dictionary<T, T2> CacheServices<T, T2>() where T : notnull where T2 : UploaderService<T>
         {
             IEnumerable<T2> instances = GeneralHelpers.GetInstances<T2>();
 

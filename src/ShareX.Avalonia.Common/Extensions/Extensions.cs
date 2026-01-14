@@ -28,12 +28,14 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.Text;
+using System.Runtime.Versioning;
 using DrawingPoint = System.Drawing.Point;
 using DrawingPointF = System.Drawing.PointF;
 using DrawingSize = System.Drawing.Size;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public static class Extensions
     {
         public static void ForEach<T>(this IEnumerable<T> source, Action<T> action)
@@ -63,15 +65,15 @@ namespace XerahS.Common
             return ms;
         }
 
-        public static ImageCodecInfo GetCodecInfo(this ImageFormat format)
+        public static ImageCodecInfo? GetCodecInfo(this ImageFormat format)
         {
             return ImageCodecInfo.GetImageEncoders().FirstOrDefault(info => info.FormatID.Equals(format.Guid));
         }
 
         public static string GetMimeType(this ImageFormat format)
         {
-            ImageCodecInfo codec = format.GetCodecInfo();
-            return codec != null ? codec.MimeType : "image/unknown";
+            ImageCodecInfo? codec = format.GetCodecInfo();
+            return codec?.MimeType ?? "image/unknown";
         }
 
         public static double ToDouble(this Version value)
@@ -207,7 +209,7 @@ namespace XerahS.Common
             return task.ContinueWith(_ => action(), scheduler);
         }
 
-        public static T CloneSafe<T>(this T obj) where T : class, ICloneable
+        public static T? CloneSafe<T>(this T? obj) where T : class, ICloneable
         {
             try
             {

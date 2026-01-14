@@ -27,7 +27,7 @@ namespace XerahS.Uploaders
 {
     public interface IOAuth2Loopback : IOAuth2
     {
-        OAuthUserInfo GetUserInfo();
+        OAuthUserInfo? GetUserInfo();
 
         string RedirectURI { get; set; }
         string State { get; set; }

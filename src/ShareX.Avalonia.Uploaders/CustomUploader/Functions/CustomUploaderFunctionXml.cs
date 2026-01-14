@@ -38,7 +38,8 @@ namespace XerahS.Uploaders
         public override string Call(ShareXCustomUploaderSyntaxParser parser, string[] parameters)
         {
             // https://www.w3schools.com/xml/xpath_syntax.asp
-            string input, xpath;
+            string? input;
+            string xpath;
 
             if (parameters.Length > 1)
             {
@@ -49,7 +50,7 @@ namespace XerahS.Uploaders
             else
             {
                 // {xml:xpath}
-                input = parser.ResponseInfo.ResponseText;
+                input = parser.ResponseInfo?.ResponseText;
                 xpath = parameters[0];
             }
 
@@ -59,7 +60,7 @@ namespace XerahS.Uploaders
                 {
                     XPathDocument doc = new XPathDocument(sr);
                     XPathNavigator nav = doc.CreateNavigator();
-                    XPathNavigator node = nav.SelectSingleNode(xpath);
+                    XPathNavigator? node = nav.SelectSingleNode(xpath);
 
                     if (node != null)
                     {
@@ -68,7 +69,7 @@ namespace XerahS.Uploaders
                 }
             }
 
-            return null;
+            return string.Empty;
         }
     }
 }

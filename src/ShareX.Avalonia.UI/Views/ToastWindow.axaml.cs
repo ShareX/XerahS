@@ -23,15 +23,15 @@
 
 #endregion License Information (GPL v3)
 
+using System.IO;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using XerahS.UI.ViewModels;
-using ContentAlignment = System.Drawing.ContentAlignment;
-using Size = System.Drawing.Size;
 
 namespace XerahS.UI.Views;
 
@@ -82,7 +82,7 @@ public partial class ToastWindow : Window
         _viewModel.OpacityChanged += OnOpacityChanged;
     }
 
-    private void PositionWindow(ContentAlignment placement, int offset, Size size)
+    private void PositionWindow(ContentPlacement placement, int offset, SizeI size)
     {
         // Get primary screen working area
         var screen = Screens.Primary;
@@ -93,47 +93,47 @@ public partial class ToastWindow : Window
 
         switch (placement)
         {
-            case ContentAlignment.TopLeft:
+            case ContentPlacement.TopLeft:
                 x = workingArea.X + offset;
                 y = workingArea.Y + offset;
                 break;
 
-            case ContentAlignment.TopCenter:
+            case ContentPlacement.TopCenter:
                 x = workingArea.X + (workingArea.Width - size.Width) / 2;
                 y = workingArea.Y + offset;
                 break;
 
-            case ContentAlignment.TopRight:
+            case ContentPlacement.TopRight:
                 x = workingArea.X + workingArea.Width - size.Width - offset;
                 y = workingArea.Y + offset;
                 break;
 
-            case ContentAlignment.MiddleLeft:
+            case ContentPlacement.MiddleLeft:
                 x = workingArea.X + offset;
                 y = workingArea.Y + (workingArea.Height - size.Height) / 2;
                 break;
 
-            case ContentAlignment.MiddleCenter:
+            case ContentPlacement.MiddleCenter:
                 x = workingArea.X + (workingArea.Width - size.Width) / 2;
                 y = workingArea.Y + (workingArea.Height - size.Height) / 2;
                 break;
 
-            case ContentAlignment.MiddleRight:
+            case ContentPlacement.MiddleRight:
                 x = workingArea.X + workingArea.Width - size.Width - offset;
                 y = workingArea.Y + (workingArea.Height - size.Height) / 2;
                 break;
 
-            case ContentAlignment.BottomLeft:
+            case ContentPlacement.BottomLeft:
                 x = workingArea.X + offset;
                 y = workingArea.Y + workingArea.Height - size.Height - offset;
                 break;
 
-            case ContentAlignment.BottomCenter:
+            case ContentPlacement.BottomCenter:
                 x = workingArea.X + (workingArea.Width - size.Width) / 2;
                 y = workingArea.Y + workingArea.Height - size.Height - offset;
                 break;
 
-            case ContentAlignment.BottomRight:
+            case ContentPlacement.BottomRight:
             default:
                 x = workingArea.X + workingArea.Width - size.Width - offset;
                 y = workingArea.Y + workingArea.Height - size.Height - offset;
@@ -181,7 +181,7 @@ public partial class ToastWindow : Window
         _isDragging = false;
     }
 
-    private void OnPointerMoved(object? sender, PointerEventArgs e)
+    private async void OnPointerMoved(object? sender, PointerEventArgs e)
     {
         if (!_isDragging || _config == null) return;
 
@@ -195,11 +195,24 @@ public partial class ToastWindow : Window
         {
             _isDragging = false;
 
-            var dataObject = new DataObject();
-            dataObject.Set(DataFormats.Files, new[] { _config.FilePath });
+            var topLevel = TopLevel.GetTopLevel(this);
+            var storageProvider = topLevel?.StorageProvider;
+            if (storageProvider == null)
+            {
+                return;
+            }
+
+            var storageFile = await storageProvider.TryGetFileFromPathAsync(_config.FilePath);
+            if (storageFile == null)
+            {
+                return;
+            }
+
+            var dataTransfer = new DataTransfer();
+            dataTransfer.Add(DataTransferItem.CreateFile(storageFile));
 
             // Start drag operation
-            DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Copy | DragDropEffects.Move);
+            await DragDrop.DoDragDropAsync(e, dataTransfer, DragDropEffects.Copy | DragDropEffects.Move);
         }
     }
 

@@ -39,7 +39,9 @@ namespace XerahS.Uploaders
 
         public override string Call(ShareXCustomUploaderSyntaxParser parser, string[] parameters)
         {
-            string input, pattern, group = "";
+            string? input;
+            string pattern;
+            string group = "";
 
             if (parameters.Length > 2)
             {
@@ -51,7 +53,7 @@ namespace XerahS.Uploaders
             else
             {
                 // {regex:pattern}
-                input = parser.ResponseInfo.ResponseText;
+                input = parser.ResponseInfo?.ResponseText;
                 pattern = parameters[0];
 
                 if (parameters.Length > 1)
@@ -83,7 +85,7 @@ namespace XerahS.Uploaders
                 }
             }
 
-            return null;
+            return string.Empty;
         }
     }
 }

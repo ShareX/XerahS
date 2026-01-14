@@ -29,12 +29,12 @@ namespace XerahS.Common
 {
     public class AppVeyor
     {
-        public string AccountName { get; set; }
-        public string ProjectSlug { get; set; }
+        public string AccountName { get; set; } = string.Empty;
+        public string ProjectSlug { get; set; } = string.Empty;
 
         private const string APIURL = "https://ci.appveyor.com/api";
 
-        public async Task<AppVeyorProject> GetProjectByBranch(string branch = "master")
+        public async Task<AppVeyorProject?> GetProjectByBranch(string branch = "master")
         {
             string url = $"{APIURL}/projects/{AccountName}/{ProjectSlug}/branch/{branch}";
             string response = await WebHelpers.DownloadStringAsync(url);
@@ -47,7 +47,7 @@ namespace XerahS.Common
             return null;
         }
 
-        public async Task<AppVeyorProjectArtifact[]> GetArtifacts(string jobId)
+        public async Task<AppVeyorProjectArtifact[]?> GetArtifacts(string jobId)
         {
             string url = $"{APIURL}/buildjobs/{jobId}/artifacts";
             string response = await WebHelpers.DownloadStringAsync(url);
@@ -68,8 +68,8 @@ namespace XerahS.Common
 
     public class AppVeyorProject
     {
-        public AppVeyorProjectInfo project { get; set; }
-        public AppVeyorProjectBuild build { get; set; }
+        public AppVeyorProjectInfo? project { get; set; }
+        public AppVeyorProjectBuild? build { get; set; }
     }
 
     public class AppVeyorProjectInfo
@@ -78,24 +78,24 @@ namespace XerahS.Common
 
     public class AppVeyorProjectBuild
     {
-        public AppVeyorProjectJob[] jobs { get; set; }
-        public string version { get; set; }
-        public string status { get; set; }
+        public AppVeyorProjectJob[]? jobs { get; set; }
+        public string version { get; set; } = string.Empty;
+        public string status { get; set; } = string.Empty;
     }
 
     public class AppVeyorProjectJob
     {
-        public string jobId { get; set; }
-        public string name { get; set; }
-        public string osType { get; set; }
-        public string status { get; set; }
+        public string jobId { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        public string osType { get; set; } = string.Empty;
+        public string status { get; set; } = string.Empty;
     }
 
     public class AppVeyorProjectArtifact
     {
-        public string fileName { get; set; }
-        public string name { get; set; }
-        public string type { get; set; }
+        public string fileName { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        public string type { get; set; } = string.Empty;
         public long size { get; set; }
     }
 }

@@ -39,9 +39,30 @@ public partial class HotkeyItemViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsHighlighted))]
     [NotifyPropertyChangedFor(nameof(NavLabelVisible))]
+    [NotifyPropertyChangedFor(nameof(TrayLabelVisible))]
+    [NotifyPropertyChangedFor(nameof(CanPinToTray))]
     private bool _isNavWorkflow;
 
     public bool IsHighlighted => IsNavWorkflow;
     
     public bool NavLabelVisible => IsNavWorkflow;
+
+    public bool PinnedToTray
+    {
+        get => Model.PinnedToTray;
+        set
+        {
+            if (Model.PinnedToTray != value)
+            {
+                Model.PinnedToTray = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(TrayLabelVisible));
+                OnPropertyChanged(nameof(CanPinToTray));
+            }
+        }
+    }
+
+    public bool TrayLabelVisible => IsNavWorkflow || PinnedToTray;
+
+    public bool CanPinToTray => !IsNavWorkflow && !PinnedToTray;
 }

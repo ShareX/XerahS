@@ -26,12 +26,14 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common.Helpers
 {
+    [SupportedOSPlatform("windows")]
     public static class ClipboardHelpersEx
     {
-        public static Bitmap ImageFromClipboardDib(byte[] data)
+        public static Bitmap? ImageFromClipboardDib(byte[] data)
         {
             // BITMAPINFOHEADER struct
             // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
@@ -264,12 +266,12 @@ namespace XerahS.Common.Helpers
             return targetImage;
         }
 
-        public static Bitmap DIBV5ToBitmap(byte[] data)
+        public static Bitmap? DIBV5ToBitmap(byte[] data)
         {
             GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
             try
             {
-                BITMAPV5HEADER bmi = (BITMAPV5HEADER)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(BITMAPV5HEADER));
+                var bmi = Marshal.PtrToStructure<BITMAPV5HEADER>(handle.AddrOfPinnedObject());
                 int stride = -(int)(bmi.bV5SizeImage / bmi.bV5Height);
                 long offset = bmi.bV5Size + ((bmi.bV5Height - 1) * (int)(bmi.bV5SizeImage / bmi.bV5Height));
                 if (bmi.bV5Compression == (uint)NativeConstants.BI_BITFIELDS)

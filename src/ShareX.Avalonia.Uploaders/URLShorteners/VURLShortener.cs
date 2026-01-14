@@ -48,7 +48,7 @@ namespace XerahS.Uploaders.URLShorteners
             Dictionary<string, string> args = new Dictionary<string, string>();
             args.Add("url", url);
 
-            string response = SendRequest(HttpMethod.GET, API_ENDPOINT, args);
+            string? response = SendRequest(HttpMethod.GET, API_ENDPOINT, args);
 
             if (!string.IsNullOrEmpty(response) && response != "Invalid URL")
             {

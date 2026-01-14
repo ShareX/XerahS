@@ -26,6 +26,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
@@ -48,9 +49,11 @@ namespace XerahS.Common
         }
     }
 
+    [SupportedOSPlatform("windows")]
     public class KeyboardHook : IDisposable
     {
-        public event KeyEventHandler KeyDown, KeyUp;
+        public event KeyEventHandler? KeyDown;
+        public event KeyEventHandler? KeyUp;
 
         private NativeMethods.HookProc keyboardHookProc;
         private IntPtr keyboardHookHandle = IntPtr.Zero;
@@ -69,9 +72,9 @@ namespace XerahS.Common
         private static IntPtr SetHook(int hookType, NativeMethods.HookProc hookProc)
         {
             using (Process currentProcess = Process.GetCurrentProcess())
-            using (ProcessModule currentModule = currentProcess.MainModule)
+            using (ProcessModule? currentModule = currentProcess.MainModule)
             {
-                IntPtr moduleHandle = NativeMethods.GetModuleHandle(currentModule.ModuleName);
+                IntPtr moduleHandle = NativeMethods.GetModuleHandle(currentModule?.ModuleName);
                 return NativeMethods.SetWindowsHookEx(hookType, hookProc, moduleHandle, 0);
             }
         }

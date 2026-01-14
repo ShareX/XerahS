@@ -18,13 +18,13 @@ XerahS customizes the editor title to display "XerahS Editor" by using a central
 
 #### Application Name Constant
 
-The app name is defined in `ShareXResources.cs`:
+The app name is defined in `AppResources.cs`:
 
 ```csharp
-public static class ShareXResources
+public static class AppResources
 {
-    public const string AppName = "XerahS";
-    public const string ProductName = AppName;
+    public static readonly string AppName = GetProductName();
+    public static readonly string ProductName = AppName;
     // ...
 }
 ```
@@ -35,7 +35,7 @@ Located in `App.axaml.cs`:
 
 ```csharp
 var mainViewModel = new MainViewModel();
-mainViewModel.ApplicationName = ShareXResources.AppName;  // Uses "XerahS"
+mainViewModel.ApplicationName = AppResources.AppName;  // Uses product name from assembly
 
 desktop.MainWindow = new Views.MainWindow
 {
@@ -50,14 +50,14 @@ Located in `AvaloniaUIService.ShowEditorAsync()`:
 ```csharp
 var editorViewModel = new MainViewModel();
 editorViewModel.ShowCaptureToolbar = false;
-editorViewModel.ApplicationName = ShareXResources.AppName;  // Uses "XerahS"
+editorViewModel.ApplicationName = AppResources.AppName;  // Uses product name from assembly
 
 editorWindow.DataContext = editorViewModel;
 ```
 
 ### Why Use a Centralized Constant?
 
-Using `ShareXResources.AppName` ensures:
+Using `AppResources.AppName` ensures:
 - **Consistency**: The app name is defined in one place
 - **Maintainability**: Changing the app name only requires updating one constant
 - **Correctness**: The editor title automatically matches the application name
@@ -114,7 +114,7 @@ editorViewModel.ApplicationName = "ShareX.Avalonia";  // Hardcoded!
 
 ? **Do this instead:**
 ```csharp
-editorViewModel.ApplicationName = ShareXResources.AppName;  // Uses constant
+editorViewModel.ApplicationName = AppResources.AppName;  // Uses centralized product name
 ```
 
 ## Benefits

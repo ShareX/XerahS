@@ -36,6 +36,12 @@ namespace XerahS.Platform.MacOS
     /// </summary>
     public class MacOSScreenshotService : IScreenCaptureService
     {
+        public Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
+        {
+            // This method should only be called from the UI layer wrapper
+            return Task.FromResult(SKRectI.Empty);
+        }
+
         public Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
             return CaptureWithArgumentsAsync("-i -t png");

@@ -45,9 +45,30 @@ public partial class WorkflowItemViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsHighlighted))]
     [NotifyPropertyChangedFor(nameof(NavLabelVisible))]
+    [NotifyPropertyChangedFor(nameof(TrayLabelVisible))]
     private bool _isNavWorkflow;
 
     public bool IsHighlighted => IsNavWorkflow;
     
     public bool NavLabelVisible => IsNavWorkflow;
+
+    public bool PinnedToTray
+    {
+        get => _hotkeySettings.PinnedToTray;
+        set
+        {
+            if (_hotkeySettings.PinnedToTray != value)
+            {
+                _hotkeySettings.PinnedToTray = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(TrayLabelVisible));
+                OnPropertyChanged(nameof(CanPinToTray));
+            }
+        }
+    }
+
+    public bool TrayLabelVisible => IsNavWorkflow || PinnedToTray;
+
+    public bool CanPinToTray => !IsNavWorkflow && !PinnedToTray;
 }
+

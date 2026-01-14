@@ -65,7 +65,7 @@ public class ImgurUploader : ImageUploader, IOAuth2
             ["pin"] = pin
         };
 
-        string response = SendRequestMultiPart("https://api.imgur.com/oauth2/token", args);
+        string? response = SendRequestMultiPart("https://api.imgur.com/oauth2/token", args);
 
         if (!string.IsNullOrEmpty(response))
         {
@@ -94,7 +94,7 @@ public class ImgurUploader : ImageUploader, IOAuth2
                 ["grant_type"] = "refresh_token"
             };
 
-            string response = SendRequestMultiPart("https://api.imgur.com/oauth2/token", args);
+            string? response = SendRequestMultiPart("https://api.imgur.com/oauth2/token", args);
 
             if (!string.IsNullOrEmpty(response))
             {
@@ -153,7 +153,10 @@ public class ImgurUploader : ImageUploader, IOAuth2
                     ["perPage"] = perPage.ToString()
                 };
 
-                string response = SendRequest(XerahS.Uploaders.HttpMethod.GET, "https://api.imgur.com/3/account/me/albums", args, GetAuthHeaders());
+                string? response = SendRequest(XerahS.Uploaders.HttpMethod.GET, "https://api.imgur.com/3/account/me/albums", args, GetAuthHeaders());
+                if (string.IsNullOrEmpty(response))
+                    break;
+
                 var imgurResponse = JsonConvert.DeserializeObject<ImgurResponse>(response);
 
                 if (imgurResponse != null && imgurResponse.success && imgurResponse.status == 200)
@@ -190,7 +193,7 @@ public class ImgurUploader : ImageUploader, IOAuth2
         {
             if (!CheckAuthorization())
             {
-                return null;
+                return new UploadResult { IsSuccess = false };
             }
 
             if (_config.UploadToSelectedAlbum && _config.SelectedAlbum != null && !string.IsNullOrEmpty(_config.SelectedAlbum.id))

@@ -29,4 +29,5 @@ errors.md
 
 # Local packaging output
 dist/
+.claude/
 artifacts/

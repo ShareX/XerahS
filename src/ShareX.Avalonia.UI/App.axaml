@@ -54,19 +54,8 @@
                       ToolTipText="ShareX"
                       IsVisible="{Binding ShowTray, Source={x:Static local:TrayIconHelper.Instance}}"
                       Command="{Binding TrayClickCommand, Source={x:Static local:TrayIconHelper.Instance}}"
+                      Menu="{Binding TrayMenu, Source={x:Static local:TrayIconHelper.Instance}}"
                       Clicked="TrayIcon_Clicked">
-                <TrayIcon.Menu>
-                    <NativeMenu>
-                        <NativeMenuItem Header="{Binding Workflow1Name, Source={x:Static local:TrayIconHelper.Instance}}" Command="{Binding Workflow1Command, Source={x:Static local:TrayIconHelper.Instance}}" IsVisible="{Binding HasWorkflow1, Source={x:Static local:TrayIconHelper.Instance}}"/>
-                        <NativeMenuItem Header="{Binding Workflow2Name, Source={x:Static local:TrayIconHelper.Instance}}" Command="{Binding Workflow2Command, Source={x:Static local:TrayIconHelper.Instance}}" IsVisible="{Binding HasWorkflow2, Source={x:Static local:TrayIconHelper.Instance}}"/>
-                        <NativeMenuItem Header="{Binding Workflow3Name, Source={x:Static local:TrayIconHelper.Instance}}" Command="{Binding Workflow3Command, Source={x:Static local:TrayIconHelper.Instance}}" IsVisible="{Binding HasWorkflow3, Source={x:Static local:TrayIconHelper.Instance}}"/>
-                        <NativeMenuItemSeparator/>
-                        <NativeMenuItem Header="Open Main Window" Command="{Binding OpenMainWindowCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
-                        <NativeMenuItem Header="Settings" Command="{Binding OpenSettingsCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
-                        <NativeMenuItemSeparator/>
-                        <NativeMenuItem Header="Exit" Command="{Binding ExitCommand, Source={x:Static local:TrayIconHelper.Instance}}"/>
-                    </NativeMenu>
-                </TrayIcon.Menu>
             </TrayIcon>
         </TrayIcons>
     </TrayIcon.Icons>

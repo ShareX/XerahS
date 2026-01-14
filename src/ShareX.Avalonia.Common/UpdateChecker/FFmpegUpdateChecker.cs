@@ -48,51 +48,61 @@ namespace XerahS.Common
             Architecture = architecture;
         }
 
-        protected override bool UpdateReleaseInfo(GitHubRelease release, bool isPortable, bool isBrowserDownloadURL)
+        protected override bool UpdateReleaseInfo(GitHubRelease? release, bool isPortable, bool isBrowserDownloadURL)
         {
-            if (release != null && !string.IsNullOrEmpty(release.tag_name) && release.tag_name.Length > 1 && release.tag_name[0] == 'v')
+            if (release != null)
             {
-                if (Version.TryParse(release.tag_name.Substring(1), out Version version))
+                string? tagName = release.tag_name;
+
+                if (!string.IsNullOrEmpty(tagName))
                 {
-                    LatestVersion = version;
-                }
+                    string actualTagName = tagName!;
 
-                if (release.assets != null && release.assets.Length > 0)
-                {
-                    string endsWith;
-
-                    switch (Architecture)
+                    if (actualTagName.Length > 1 && actualTagName.StartsWith("v", StringComparison.Ordinal))
                     {
-                        default:
-                        case FFmpegArchitecture.win64:
-                            endsWith = "win64.zip";
-                            break;
-                        case FFmpegArchitecture.win32:
-                            endsWith = "win32.zip";
-                            break;
-                        case FFmpegArchitecture.macos64:
-                            endsWith = "macos64.zip";
-                            break;
-                    }
-
-                    foreach (GitHubAsset asset in release.assets)
-                    {
-                        if (asset != null && !string.IsNullOrEmpty(asset.name) && asset.name.EndsWith(endsWith, StringComparison.OrdinalIgnoreCase))
+                        if (Version.TryParse(actualTagName.Substring(1), out Version? version))
                         {
-                            FileName = asset.name;
+                            LatestVersion = version;
+                        }
 
-                            if (isBrowserDownloadURL)
+                        if (release.assets != null && release.assets.Length > 0)
+                        {
+                            string endsWith;
+
+                            switch (Architecture)
                             {
-                                DownloadURL = asset.browser_download_url;
+                                default:
+                                case FFmpegArchitecture.win64:
+                                    endsWith = "win64.zip";
+                                    break;
+                                case FFmpegArchitecture.win32:
+                                    endsWith = "win32.zip";
+                                    break;
+                                case FFmpegArchitecture.macos64:
+                                    endsWith = "macos64.zip";
+                                    break;
                             }
-                            else
+
+                            foreach (GitHubAsset asset in release.assets)
                             {
-                                DownloadURL = asset.url;
+                                if (asset != null && !string.IsNullOrEmpty(asset.name) && asset.name.EndsWith(endsWith, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    FileName = asset.name;
+
+                                    if (isBrowserDownloadURL)
+                                    {
+                                        DownloadURL = asset.browser_download_url;
+                                    }
+                                    else
+                                    {
+                                        DownloadURL = asset.url;
+                                    }
+
+                                    IsPreRelease = release.prerelease;
+
+                                    return true;
+                                }
                             }
-
-                            IsPreRelease = release.prerelease;
-
-                            return true;
                         }
                     }
                 }

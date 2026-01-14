@@ -38,7 +38,8 @@ namespace XerahS.Uploaders
         public override string Call(ShareXCustomUploaderSyntaxParser parser, string[] parameters)
         {
             // https://goessner.net/articles/JsonPath/
-            string input, jsonPath;
+            string? input;
+            string jsonPath;
 
             if (parameters.Length > 1)
             {
@@ -49,7 +50,7 @@ namespace XerahS.Uploaders
             else
             {
                 // {json:jsonPath}
-                input = parser.ResponseInfo.ResponseText;
+                input = parser.ResponseInfo?.ResponseText;
                 jsonPath = parameters[0];
             }
 
@@ -60,10 +61,11 @@ namespace XerahS.Uploaders
                     jsonPath = "$." + jsonPath;
                 }
 
-                return (string)JToken.Parse(input).SelectToken(jsonPath);
+                JToken? token = JToken.Parse(input).SelectToken(jsonPath);
+                return token?.ToString() ?? string.Empty;
             }
 
-            return null;
+            return string.Empty;
         }
     }
 }

@@ -39,6 +39,11 @@
                         IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
                         ToolTip.Tip="Remove">
                 </Button>
+
+                <Button Content="{Binding PinButtonText}" Command="{Binding TogglePinCommand}"
+                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        ToolTip.Tip="Toggle pinning this workflow to the tray menu"
+                        MinWidth="120"/>    
                 
                 <ui:CommandBarSeparator />
 

@@ -28,13 +28,13 @@ namespace XerahS.Common
     public class TaskEx<T>
     {
         public delegate void ProgressChangedEventHandler(T progress);
-        public event ProgressChangedEventHandler ProgressChanged;
+        public event ProgressChangedEventHandler? ProgressChanged;
 
         public bool IsRunning { get; private set; }
         public bool IsCanceled { get; private set; }
 
-        private Progress<T> p;
-        private CancellationTokenSource cts;
+        private Progress<T>? p;
+        private CancellationTokenSource? cts;
 
         public async Task Run(Action action)
         {

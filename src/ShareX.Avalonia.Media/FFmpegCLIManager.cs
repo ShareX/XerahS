@@ -50,11 +50,10 @@ namespace XerahS.Media
         public const int mp3_max = 9;
 
         public delegate void EncodeStartedEventHandler();
-        public event EncodeStartedEventHandler EncodeStarted;
+        public event EncodeStartedEventHandler EncodeStarted = delegate { };
 
         public delegate void EncodeProgressChangedEventHandler(float percentage);
-        public event EncodeProgressChangedEventHandler EncodeProgressChanged;
-
+        public event EncodeProgressChangedEventHandler EncodeProgressChanged = percentage => { };
         public string FFmpegPath { get; private set; }
         public StringBuilder Output { get; private set; }
         public bool IsEncoding { get; set; }
@@ -116,7 +115,7 @@ namespace XerahS.Media
         {
             lock (this)
             {
-                string data = e.Data;
+                string? data = e.Data;
 
                 if (!string.IsNullOrEmpty(data))
                 {
@@ -174,7 +173,7 @@ namespace XerahS.Media
             EncodeProgressChanged?.Invoke(percentage);
         }
 
-        public VideoInfo GetVideoInfo(string videoPath)
+        public VideoInfo? GetVideoInfo(string videoPath)
         {
             VideoInfo videoInfo = new VideoInfo();
             videoInfo.FilePath = videoPath;

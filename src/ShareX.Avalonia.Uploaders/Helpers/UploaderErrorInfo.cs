@@ -29,7 +29,7 @@ namespace XerahS.Uploaders
     {
         public string Title { get; set; }
         public string Text { get; set; }
-        public Exception Exception { get; set; }
+        public Exception Exception { get; set; } = null!;
 
         public UploaderErrorInfo(string title, string text)
         {

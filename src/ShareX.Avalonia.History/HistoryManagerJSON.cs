@@ -50,7 +50,7 @@ namespace XerahS.History
                     {
                         json = "[" + json + "]";
 
-                        return JsonConvert.DeserializeObject<List<HistoryItem>>(json);
+                        return JsonConvert.DeserializeObject<List<HistoryItem>>(json) ?? new List<HistoryItem>();
                     }
                 }
             }

@@ -29,8 +29,8 @@ namespace XerahS.Uploaders
     {
         public string Client_ID { get; set; }
         public string Client_Secret { get; set; }
-        public OAuth2Token Token { get; set; }
-        public OAuth2ProofKey Proof { get; set; }
+        public OAuth2Token Token { get; set; } = null!;
+        public OAuth2ProofKey Proof { get; set; } = null!;
 
         public OAuth2Info(string client_id, string client_secret)
         {

@@ -31,7 +31,7 @@ namespace XerahS.Common
     {
         private static readonly object lockObject = new object();
 
-        private static HttpClient client;
+        private static HttpClient? client;
 
         public static HttpClient Create()
         {
@@ -47,7 +47,7 @@ namespace XerahS.Common
                         };
 
                         client = new HttpClient(clientHandler);
-                        client.DefaultRequestHeaders.UserAgent.ParseAdd(ShareXResources.UserAgent);
+                        client.DefaultRequestHeaders.UserAgent.ParseAdd(AppResources.UserAgent);
                         client.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue()
                         {
                             NoCache = true

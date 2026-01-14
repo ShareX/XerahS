@@ -23,16 +23,31 @@
 
 #endregion License Information (GPL v3)
 
-namespace XerahS.Common
+namespace XerahS.Bootstrap
 {
-    public static class ShareXResources
+    /// <summary>
+    /// Result of ShareX bootstrap initialization.
+    /// </summary>
+    public class BootstrapResult
     {
-        public const string AppName = "XerahS";
-        public const string ProductName = AppName;
-        public const string Version = "v0.2.0";
-        public const string ProductNameWithVersion = ProductName + " " + Version;
-        public const string HistoryFolderName = "History";
-        public const string HistoryFileName = "History.db";
-        public static string UserAgent => AppName;
+        /// <summary>
+        /// Platform services were initialized successfully.
+        /// </summary>
+        public bool PlatformServicesInitialized { get; set; }
+
+        /// <summary>
+        /// Configuration files were loaded successfully.
+        /// </summary>
+        public bool ConfigurationLoaded { get; set; }
+
+        /// <summary>
+        /// Recording services were initialized successfully.
+        /// </summary>
+        public bool RecordingInitialized { get; set; }
+
+        /// <summary>
+        /// Overall success (all requested operations completed).
+        /// </summary>
+        public bool Success => PlatformServicesInitialized && ConfigurationLoaded;
     }
 }

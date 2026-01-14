@@ -69,8 +69,18 @@ namespace XerahS.Platform.Windows
         }
 
         /// <summary>
+        /// Shows the region selector UI and returns the selected rectangle.
+        /// This is a platform stub - actual UI is handled by the UI layer.
+        /// </summary>
+        public Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
+        {
+            // This method should only be called from the UI layer wrapper
+            return Task.FromResult(SKRectI.Empty);
+        }
+
+        /// <summary>
         /// Captures a region of the screen.
-        /// On Windows platform layer, this just falls back to fullscreen or throws, 
+        /// On Windows platform layer, this just falls back to fullscreen or throws,
         /// as UI interaction should be handled by the UI layer wrapper.
         /// </summary>
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)

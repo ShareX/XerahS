@@ -30,7 +30,7 @@ namespace XerahS.History
     public abstract class HistoryManager
     {
         public string FilePath { get; private set; }
-        public string BackupFolder { get; set; }
+        public string BackupFolder { get; set; } = null!;
         public bool CreateBackup { get; set; }
         public bool CreateWeeklyBackup { get; set; }
 

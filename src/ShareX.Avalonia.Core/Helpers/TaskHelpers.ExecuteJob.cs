@@ -43,12 +43,10 @@ public static partial class TaskHelpers
         // Use provided ID or get from workflow
         var id = workflowId ?? workflow?.Id ?? "Unknown";
 
-        // Create a user-friendly category combining job type and ID for better identification
-        var logCategory = workflow != null
-            ? $"{workflow.Job}_{id}"
-            : id;
+        // Use job type as category (for folder/file naming), log workflow ID in content
+        var logCategory = workflow?.Job.ToString() ?? "Unknown";
 
-        TroubleshootingHelper.Log(logCategory, "EXECUTE_WORKFLOW", $"Entry: workflow={workflow?.Name ?? "null"}, Job={workflow?.Job.ToString() ?? "null"}, Id={id}");
+        TroubleshootingHelper.Log(logCategory, "EXECUTE_WORKFLOW", $"Entry: workflowId={id}, workflow={workflow?.Name ?? "null"}, Job={workflow?.Job.ToString() ?? "null"}");
 
         if (workflow == null)
         {
@@ -69,12 +67,10 @@ public static partial class TaskHelpers
 
     public static async Task ExecuteJob(HotkeyType job, TaskSettings? taskSettings = null, string? workflowId = null)
     {
-        // Create a user-friendly category combining job type and workflow ID for better identification
-        var logCategory = !string.IsNullOrEmpty(workflowId)
-            ? $"{job}_{workflowId}"
-            : job.ToString();
+        // Use job type as category (for folder/file naming), log workflow ID in content
+        var logCategory = job.ToString();
 
-        TroubleshootingHelper.Log(logCategory, "EXECUTE_JOB", $"Entry: taskSettings={taskSettings != null}, workflowId={workflowId ?? "null"}");
+        TroubleshootingHelper.Log(logCategory, "EXECUTE_JOB", $"Entry: workflowId={workflowId ?? "null"}, taskSettings={taskSettings != null}");
         DebugHelper.WriteLine($"Executing job: {job}");
 
         if (!PlatformServices.IsInitialized)
@@ -109,8 +105,7 @@ public static partial class TaskHelpers
 
         DebugHelper.WriteLine(
             $"Task settings: AfterCaptureJob={taskSettings.AfterCaptureJob}, " +
-            $"UploadImageToHost={taskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost)}, " +
-            $"ImageDestination={taskSettings.ImageDestination}");
+            $"UploadImageToHost={taskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost)}");
 
         try
         {

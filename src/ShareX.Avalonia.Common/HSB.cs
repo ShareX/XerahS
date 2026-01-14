@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-
+using System;
 using System.Drawing;
 
 namespace XerahS.Common
@@ -182,12 +182,12 @@ namespace XerahS.Common
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return HashCode.Combine(Hue, Saturation, Brightness, Alpha);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            return base.Equals(obj);
+            return obj is HSB other && this == other;
         }
     }
 }

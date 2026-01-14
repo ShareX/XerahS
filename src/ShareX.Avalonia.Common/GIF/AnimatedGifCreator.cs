@@ -34,7 +34,7 @@ namespace XerahS.Common.GIF
         public int Repeat { get; private set; }
         public int FrameCount { get; private set; }
 
-        private FileStream stream;
+        private FileStream? stream;
 
         public AnimatedGifCreator(string filePath, int delay, int repeat = 0)
         {

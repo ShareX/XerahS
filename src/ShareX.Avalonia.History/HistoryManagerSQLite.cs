@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using Microsoft.Data.Sqlite;
 using Newtonsoft.Json;
 using XerahS.Common;
@@ -31,7 +32,7 @@ namespace XerahS.History
 {
     public class HistoryManagerSQLite : HistoryManager, IDisposable
     {
-        private SqliteConnection connection;
+        private SqliteConnection? connection;
 
         public HistoryManagerSQLite(string filePath) : base(filePath)
         {
@@ -54,7 +55,7 @@ namespace XerahS.History
 
         private void SetWalMode()
         {
-            using (SqliteCommand cmd = connection.CreateCommand())
+            using (SqliteCommand cmd = EnsureConnection().CreateCommand())
             {
                 cmd.CommandText = "PRAGMA journal_mode=WAL;";
                 cmd.ExecuteNonQuery();
@@ -63,7 +64,7 @@ namespace XerahS.History
 
         private void SetBusyTimeout(int milliseconds)
         {
-            using (SqliteCommand cmd = connection.CreateCommand())
+            using (SqliteCommand cmd = EnsureConnection().CreateCommand())
             {
                 cmd.CommandText = $"PRAGMA busy_timeout = {milliseconds};";
                 cmd.ExecuteNonQuery();
@@ -72,7 +73,7 @@ namespace XerahS.History
 
         private void EnsureDatabase()
         {
-            using (SqliteCommand cmd = connection.CreateCommand())
+            using (SqliteCommand cmd = EnsureConnection().CreateCommand())
             {
                 cmd.CommandText = @"
 CREATE TABLE IF NOT EXISTS History (
@@ -97,24 +98,24 @@ CREATE TABLE IF NOT EXISTS History (
         {
             List<HistoryItem> items = new List<HistoryItem>();
 
-            using (SqliteCommand cmd = new SqliteCommand("SELECT * FROM History;", connection))
+            using (SqliteCommand cmd = new SqliteCommand("SELECT * FROM History;", EnsureConnection()))
             using (SqliteDataReader reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
                 {
                     HistoryItem item = new HistoryItem()
                     {
-                        Id = (long)reader["Id"],
-                        FileName = reader["FileName"].ToString(),
-                        FilePath = reader["FilePath"].ToString(),
-                        DateTime = DateTime.Parse(reader["DateTime"].ToString()),
-                        Type = reader["Type"].ToString(),
-                        Host = reader["Host"].ToString(),
-                        URL = reader["URL"].ToString(),
-                        ThumbnailURL = reader["ThumbnailURL"].ToString(),
-                        DeletionURL = reader["DeletionURL"].ToString(),
-                        ShortenedURL = reader["ShortenedURL"].ToString(),
-                        Tags = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader["Tags"]?.ToString() ?? "{}")
+                        Id = Convert.ToInt64(reader["Id"] ?? 0L),
+                        FileName = reader["FileName"]?.ToString() ?? string.Empty,
+                        FilePath = reader["FilePath"]?.ToString() ?? string.Empty,
+                        DateTime = DateTime.TryParse(reader["DateTime"]?.ToString(), out var dt) ? dt : DateTime.MinValue,
+                        Type = reader["Type"]?.ToString() ?? string.Empty,
+                        Host = reader["Host"]?.ToString() ?? string.Empty,
+                        URL = reader["URL"]?.ToString() ?? string.Empty,
+                        ThumbnailURL = reader["ThumbnailURL"]?.ToString() ?? string.Empty,
+                        DeletionURL = reader["DeletionURL"]?.ToString() ?? string.Empty,
+                        ShortenedURL = reader["ShortenedURL"]?.ToString() ?? string.Empty,
+                        Tags = JsonConvert.DeserializeObject<Dictionary<string, string?>>(reader["Tags"]?.ToString() ?? "{}") ?? new Dictionary<string, string?>()
                     };
 
                     items.Add(item);
@@ -126,7 +127,7 @@ CREATE TABLE IF NOT EXISTS History (
 
         public int GetTotalCount()
         {
-            using (SqliteCommand cmd = new SqliteCommand("SELECT COUNT(*) FROM History;", connection))
+            using (SqliteCommand cmd = new SqliteCommand("SELECT COUNT(*) FROM History;", EnsureConnection()))
             {
                 var result = cmd.ExecuteScalar();
                 return result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
@@ -145,7 +146,7 @@ CREATE TABLE IF NOT EXISTS History (
         {
             List<HistoryItem> items = new List<HistoryItem>();
 
-            using (SqliteCommand cmd = new SqliteCommand("SELECT * FROM History ORDER BY DateTime DESC LIMIT @Limit OFFSET @Offset;", connection))
+            using (SqliteCommand cmd = new SqliteCommand("SELECT * FROM History ORDER BY DateTime DESC LIMIT @Limit OFFSET @Offset;", EnsureConnection()))
             {
                 cmd.Parameters.AddWithValue("@Limit", limit);
                 cmd.Parameters.AddWithValue("@Offset", offset);
@@ -156,17 +157,17 @@ CREATE TABLE IF NOT EXISTS History (
                     {
                         HistoryItem item = new HistoryItem()
                         {
-                            Id = (long)reader["Id"],
-                            FileName = reader["FileName"].ToString(),
-                            FilePath = reader["FilePath"].ToString(),
-                            DateTime = DateTime.Parse(reader["DateTime"].ToString()),
-                            Type = reader["Type"].ToString(),
-                            Host = reader["Host"].ToString(),
-                            URL = reader["URL"].ToString(),
-                            ThumbnailURL = reader["ThumbnailURL"].ToString(),
-                            DeletionURL = reader["DeletionURL"].ToString(),
-                            ShortenedURL = reader["ShortenedURL"].ToString(),
-                            Tags = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader["Tags"]?.ToString() ?? "{}")
+                            Id = Convert.ToInt64(reader["Id"] ?? 0L),
+                            FileName = reader["FileName"]?.ToString() ?? string.Empty,
+                            FilePath = reader["FilePath"]?.ToString() ?? string.Empty,
+                            DateTime = DateTime.TryParse(reader["DateTime"]?.ToString(), out var dt) ? dt : DateTime.MinValue,
+                            Type = reader["Type"]?.ToString() ?? string.Empty,
+                            Host = reader["Host"]?.ToString() ?? string.Empty,
+                            URL = reader["URL"]?.ToString() ?? string.Empty,
+                            ThumbnailURL = reader["ThumbnailURL"]?.ToString() ?? string.Empty,
+                            DeletionURL = reader["DeletionURL"]?.ToString() ?? string.Empty,
+                            ShortenedURL = reader["ShortenedURL"]?.ToString() ?? string.Empty,
+                            Tags = JsonConvert.DeserializeObject<Dictionary<string, string?>>(reader["Tags"]?.ToString() ?? "{}") ?? new Dictionary<string, string?>()
                         };
 
                         items.Add(item);
@@ -184,11 +185,13 @@ CREATE TABLE IF NOT EXISTS History (
 
         protected override bool Append(string dbPath, IEnumerable<HistoryItem> historyItems)
         {
-            using (SqliteTransaction transaction = connection.BeginTransaction())
+            using (SqliteTransaction? transaction = connection?.BeginTransaction())
             {
+                if (transaction == null) return false;
+
                 foreach (HistoryItem item in historyItems)
                 {
-                    using (SqliteCommand cmd = connection.CreateCommand())
+                    using (SqliteCommand cmd = connection!.CreateCommand())
                     {
                         cmd.CommandText = @"
 INSERT INTO History
@@ -205,7 +208,8 @@ SELECT last_insert_rowid();";
                         cmd.Parameters.AddWithValue("@DeletionURL", item.DeletionURL ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@ShortenedURL", item.ShortenedURL ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@Tags", item.Tags != null ? JsonConvert.SerializeObject(item.Tags) : (object)DBNull.Value);
-                        item.Id = (long)cmd.ExecuteScalar();
+                        object? result = cmd.ExecuteScalar();
+                        item.Id = result != null ? (long)result : 0;
                     }
                 }
 
@@ -220,8 +224,8 @@ SELECT last_insert_rowid();";
 
         public void Edit(HistoryItem item)
         {
-            using (SqliteTransaction transaction = connection.BeginTransaction())
-            using (SqliteCommand cmd = connection.CreateCommand())
+            using (SqliteTransaction? transaction = connection?.BeginTransaction())
+            using (SqliteCommand cmd = connection!.CreateCommand())
             {
                 cmd.CommandText = @"
 UPDATE History SET
@@ -249,7 +253,7 @@ WHERE Id = @Id;";
                 cmd.Parameters.AddWithValue("@Id", item.Id);
                 cmd.ExecuteNonQuery();
 
-                transaction.Commit();
+                transaction?.Commit();
             }
         }
 
@@ -257,8 +261,8 @@ WHERE Id = @Id;";
         {
             if (items != null && items.Length > 0)
             {
-                using (SqliteTransaction transaction = connection.BeginTransaction())
-                using (SqliteCommand cmd = connection.CreateCommand())
+                using (SqliteTransaction transaction = EnsureConnection().BeginTransaction())
+                using (SqliteCommand cmd = EnsureConnection().CreateCommand())
                 {
                     cmd.CommandText = "DELETE FROM History WHERE Id = @Id;";
                     SqliteParameter idParam = cmd.CreateParameter();
@@ -289,7 +293,16 @@ WHERE Id = @Id;";
 
         public void Dispose()
         {
-            connection?.Dispose();
+            if (connection != null)
+            {
+                connection.Dispose();
+                connection = null;
+            }
+        }
+
+        private SqliteConnection EnsureConnection()
+        {
+            return connection ?? throw new InvalidOperationException("Database connection is not initialized.");
         }
     }
 }

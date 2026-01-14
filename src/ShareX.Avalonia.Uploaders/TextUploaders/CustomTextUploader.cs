@@ -37,7 +37,7 @@ namespace XerahS.Uploaders.TextUploaders
             return config.CustomUploadersList != null && config.CustomUploadersList.IsValidIndex(config.CustomTextUploaderSelected);
         }
 
-        public override GenericUploader CreateUploader(UploadersConfig config, TaskReferenceHelper taskInfo)
+        public override GenericUploader? CreateUploader(UploadersConfig config, TaskReferenceHelper taskInfo)
         {
             int index;
 
@@ -50,7 +50,7 @@ namespace XerahS.Uploaders.TextUploaders
                 index = config.CustomTextUploaderSelected;
             }
 
-            CustomUploaderItem customUploader = config.CustomUploadersList.ReturnIfValidIndex(index);
+            CustomUploaderItem? customUploader = config.CustomUploadersList.ReturnIfValidIndex(index);
 
             if (customUploader != null)
             {

@@ -31,7 +31,8 @@ namespace XerahS.Common
 {
     public static class ObjectExtensions
     {
-        private static readonly MethodInfo CloneMethod = typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly MethodInfo CloneMethod = typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance)
+            ?? throw new InvalidOperationException("MemberwiseClone not found.");
 
         public static bool IsPrimitive(this Type type)
         {
@@ -39,23 +40,23 @@ namespace XerahS.Common
             return type.IsValueType && type.IsPrimitive;
         }
 
-        public static object Copy(this object originalObject)
+        public static object? Copy(this object? originalObject)
         {
             return InternalCopy(originalObject, new Dictionary<object, object>(new ReferenceEqualityComparer()));
         }
 
-        private static object InternalCopy(object originalObject, IDictionary<object, object> visited)
+        private static object? InternalCopy(object? originalObject, IDictionary<object, object> visited)
         {
             if (originalObject == null) return null;
             Type typeToReflect = originalObject.GetType();
             if (IsPrimitive(typeToReflect)) return originalObject;
             if (visited.ContainsKey(originalObject)) return visited[originalObject];
             if (typeof(Delegate).IsAssignableFrom(typeToReflect)) return null;
-            object cloneObject = CloneMethod.Invoke(originalObject, null);
+            object cloneObject = CloneMethod.Invoke(originalObject, Array.Empty<object>())!;
             if (typeToReflect.IsArray)
             {
-                Type arrayType = typeToReflect.GetElementType();
-                if (IsPrimitive(arrayType) == false)
+                Type? arrayType = typeToReflect.GetElementType();
+                if (arrayType != null && IsPrimitive(arrayType) == false)
                 {
                     Array clonedArray = (Array)cloneObject;
                     clonedArray.ForEach((array, indices) => array.SetValue(InternalCopy(clonedArray.GetValue(indices), visited), indices));
@@ -76,32 +77,32 @@ namespace XerahS.Common
             }
         }
 
-        private static void CopyFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect, BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy, Func<FieldInfo, bool> filter = null)
+        private static void CopyFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect, BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy, Func<FieldInfo, bool>? filter = null)
         {
             foreach (FieldInfo fieldInfo in typeToReflect.GetFields(bindingFlags))
             {
                 if (filter != null && filter(fieldInfo) == false) continue;
                 if (IsPrimitive(fieldInfo.FieldType)) continue;
-                object originalFieldValue = fieldInfo.GetValue(originalObject);
-                object clonedFieldValue = InternalCopy(originalFieldValue, visited);
+                object? originalFieldValue = fieldInfo.GetValue(originalObject);
+                object? clonedFieldValue = InternalCopy(originalFieldValue, visited);
                 fieldInfo.SetValue(cloneObject, clonedFieldValue);
             }
         }
 
-        public static T Copy<T>(this T original)
+        public static T? Copy<T>(this T? original)
         {
-            return (T)Copy((object)original);
+            return (T?)Copy((object?)original);
         }
     }
 
     public class ReferenceEqualityComparer : EqualityComparer<object>
     {
-        public override bool Equals(object x, object y)
+        public override bool Equals(object? x, object? y)
         {
             return ReferenceEquals(x, y);
         }
 
-        public override int GetHashCode(object obj)
+        public override int GetHashCode(object? obj)
         {
             if (obj == null) return 0;
             return obj.GetHashCode();

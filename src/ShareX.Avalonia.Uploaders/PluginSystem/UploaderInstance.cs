@@ -33,7 +33,7 @@ public class UploaderInstance
     /// <summary>
     /// Unique identifier for this instance
     /// </summary>
-    public Guid InstanceId { get; set; }
+    public string InstanceId { get; set; } = string.Empty;
 
     /// <summary>
     /// Provider identifier (e.g., "imgur", "amazons3")
@@ -77,7 +77,6 @@ public class UploaderInstance
 
     public UploaderInstance()
     {
-        InstanceId = Guid.NewGuid();
         CreatedAt = DateTime.UtcNow;
         ModifiedAt = DateTime.UtcNow;
     }

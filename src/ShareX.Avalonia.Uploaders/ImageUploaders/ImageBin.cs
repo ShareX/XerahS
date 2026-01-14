@@ -42,7 +42,7 @@ namespace XerahS.Uploaders.ImageUploaders
 
             UploadResult result = SendRequestFile("http://imagebin.ca/upload.php", stream, fileName, "f", arguments);
 
-            if (result.IsSuccess)
+            if (result.IsSuccess && !string.IsNullOrEmpty(result.Response))
             {
                 Match match = Regex.Match(result.Response, @"(?<=ca/view/).+(?=\.html'>)");
                 if (match != null)

@@ -39,20 +39,22 @@ namespace XerahS.Common
                     ProjectSlug = "sharex"
                 };
 
-                AppVeyorProject project = await appveyor.GetProjectByBranch(Branch);
+                AppVeyorProject? project = await appveyor.GetProjectByBranch(Branch);
 
                 if (project?.build == null)
                 {
                     throw new Exception("Unable to get project build info.");
                 }
 
-                if (!project.build.status.Equals("success", StringComparison.OrdinalIgnoreCase) &&
-                    !project.build.status.Equals("running", StringComparison.OrdinalIgnoreCase))
+                AppVeyorProjectBuild build = project!.build!;
+
+                if (!build.status.Equals("success", StringComparison.OrdinalIgnoreCase) &&
+                    !build.status.Equals("running", StringComparison.OrdinalIgnoreCase))
                 {
                     throw new Exception("Latest project build is not successful.");
                 }
 
-                AppVeyorProjectJob job = project.build.jobs?.FirstOrDefault(x =>
+                AppVeyorProjectJob? job = build.jobs?.FirstOrDefault(x =>
                     x.name.Equals("Configuration: Release", StringComparison.OrdinalIgnoreCase) &&
                     x.osType.Equals("Windows", StringComparison.OrdinalIgnoreCase) &&
                     x.status.Equals("success", StringComparison.OrdinalIgnoreCase));
@@ -62,7 +64,7 @@ namespace XerahS.Common
                     throw new Exception("Unable to find successful release build.");
                 }
 
-                AppVeyorProjectArtifact[] artifacts = await appveyor.GetArtifacts(job.jobId);
+                AppVeyorProjectArtifact[]? artifacts = await appveyor.GetArtifacts(job.jobId);
 
                 string deploymentName;
 
@@ -75,7 +77,7 @@ namespace XerahS.Common
                     deploymentName = "Setup";
                 }
 
-                AppVeyorProjectArtifact artifact = artifacts?.FirstOrDefault(x => x.name.Equals(deploymentName, StringComparison.OrdinalIgnoreCase));
+                AppVeyorProjectArtifact? artifact = artifacts?.FirstOrDefault(x => x.name.Equals(deploymentName, StringComparison.OrdinalIgnoreCase));
 
                 if (artifact == null)
                 {
@@ -84,7 +86,8 @@ namespace XerahS.Common
 
                 FileName = artifact.fileName;
                 DownloadURL = appveyor.GetArtifactDownloadURL(job.jobId, artifact.fileName);
-                if (Version.TryParse(project.build.version, out Version version))
+                string? versionText = build.version;
+                if (!string.IsNullOrEmpty(versionText) && Version.TryParse(versionText, out Version? version))
                 {
                     LatestVersion = version;
                 }

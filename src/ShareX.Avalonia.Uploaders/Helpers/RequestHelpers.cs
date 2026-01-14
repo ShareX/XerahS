@@ -39,16 +39,16 @@ namespace XerahS.Uploaders
         public const string ContentTypeURLEncoded = "application/x-www-form-urlencoded";
         public const string ContentTypeOctetStream = "application/octet-stream";
 
-        public static HttpWebRequest CreateWebRequest(HttpMethod method, string url, NameValueCollection headers = null, CookieCollection cookies = null,
-            string contentType = null, long contentLength = 0)
+        public static HttpWebRequest CreateWebRequest(HttpMethod method, string url, NameValueCollection? headers = null, CookieCollection? cookies = null,
+            string? contentType = null, long contentLength = 0)
         {
 #pragma warning disable SYSLIB0014
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
 #pragma warning restore SYSLIB0014
 
-            string accept = null;
-            string referer = null;
-            string userAgent = ShareXResources.UserAgent;
+            string? accept = null;
+            string? referer = null;
+            string userAgent = AppResources.UserAgent;
 
             if (headers != null)
             {
@@ -76,20 +76,23 @@ namespace XerahS.Uploaders
 
                 if (headers["Cookie"] != null)
                 {
-                    string cookieHeader = headers["Cookie"];
+                    string? cookieHeader = headers["Cookie"];
 
                     if (cookies == null)
                     {
                         cookies = new CookieCollection();
                     }
 
-                    foreach (string cookie in cookieHeader.Split(new string[] { "; " }, StringSplitOptions.RemoveEmptyEntries))
+                    if (!string.IsNullOrEmpty(cookieHeader))
                     {
-                        string[] cookieValues = cookie.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
-
-                        if (cookieValues.Length == 2)
+                        foreach (string cookie in cookieHeader.Split(new string[] { "; " }, StringSplitOptions.RemoveEmptyEntries))
                         {
-                            cookies.Add(new Cookie(cookieValues[0], cookieValues[1], "/", request.Host.Split(':')[0]));
+                            string[] cookieValues = cookie.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
+
+                            if (cookieValues.Length == 2)
+                            {
+                                cookies.Add(new Cookie(cookieValues[0], cookieValues[1], "/", request.Host.Split(':')[0]));
+                            }
                         }
                     }
 
@@ -104,21 +107,21 @@ namespace XerahS.Uploaders
 
                 if (headers["User-Agent"] != null)
                 {
-                    userAgent = headers["User-Agent"];
+                    userAgent = headers["User-Agent"]!;
                     headers.Remove("User-Agent");
                 }
 
                 request.Headers.Add(headers);
             }
 
-            request.Accept = accept;
-            request.ContentType = contentType;
+            request.Accept = accept ?? string.Empty;
+            request.ContentType = contentType ?? string.Empty;
             request.CookieContainer = new CookieContainer();
             if (cookies != null) request.CookieContainer.Add(cookies);
             request.Method = method.ToString();
-            IWebProxy proxy = HelpersOptions.CurrentProxy.GetWebProxy();
+            IWebProxy? proxy = HelpersOptions.CurrentProxy.GetWebProxy();
             if (proxy != null) request.Proxy = proxy;
-            request.Referer = referer;
+            request.Referer = referer ?? string.Empty;
             request.UserAgent = userAgent;
 
             if (contentLength > 0)
@@ -203,7 +206,7 @@ namespace XerahS.Uploaders
             return Encoding.UTF8.GetBytes($"\r\n--{boundary}--\r\n");
         }
 
-        public static string ResponseToString(WebResponse response)
+        public static string? ResponseToString(WebResponse response)
         {
             if (response != null)
             {

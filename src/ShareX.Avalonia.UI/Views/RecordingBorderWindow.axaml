@@ -1,0 +1,24 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="XerahS.UI.Views.RecordingBorderWindow"
+        Title="Recording Border"
+        Width="800"
+        Height="600"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        CanResize="False">
+
+    <!-- Border color indicates recording technology: Red = GDI/FFmpeg, Green = Modern Capture -->
+    <Border x:Name="BorderElement"
+            BorderBrush="#00FF00"
+            BorderThickness="4"
+            Background="Transparent"
+            CornerRadius="0"/>
+
+</Window>

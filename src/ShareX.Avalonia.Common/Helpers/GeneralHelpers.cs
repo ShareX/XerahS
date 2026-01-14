@@ -76,7 +76,7 @@ public static class GeneralHelpers
         return sb.ToString();
     }
 
-    public static T Pick<T>(IList<T> list)
+    public static T? Pick<T>(IList<T> list)
     {
         if (list == null || list.Count == 0) return default;
         return list[random.Next(list.Count)];

@@ -102,6 +102,7 @@ namespace XerahS.Platform.Linux
 
     internal class StubScreenCaptureService : IScreenCaptureService
     {
+        public System.Threading.Tasks.Task<SkiaSharp.SKRectI> SelectRegionAsync(CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult(SkiaSharp.SKRectI.Empty);
         public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
         public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureRectAsync(SkiaSharp.SKRect rect, CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);
         public System.Threading.Tasks.Task<SkiaSharp.SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null) => System.Threading.Tasks.Task.FromResult<SkiaSharp.SKBitmap?>(null);

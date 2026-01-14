@@ -113,7 +113,7 @@ namespace XerahS.Common.GIF
         }
 
         // We add this to store the result palette
-        private List<SKColor> _palette;
+        private List<SKColor> _palette = new List<SKColor>();
         public List<SKColor> ResultPalette => _palette;
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace XerahS.Common.GIF
         {
             public Color32(IntPtr pSourcePixel)
             {
-                this = (Color32)Marshal.PtrToStructure(pSourcePixel, typeof(Color32));
+                this = Marshal.PtrToStructure<Color32>(pSourcePixel);
             }
 
             [FieldOffset(0)]

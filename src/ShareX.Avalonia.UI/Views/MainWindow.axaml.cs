@@ -42,8 +42,12 @@ namespace XerahS.UI.Views
 
         private void OnWindowOpened(object? sender, EventArgs e)
         {
-            // Maximize window and center it on screen
-            this.WindowState = Avalonia.Controls.WindowState.Maximized;
+            // Only maximize if we are NOT in silent run mode
+            if (!SettingsManager.Settings.SilentRun)
+            {
+                // Maximize window and center it on screen
+                this.WindowState = Avalonia.Controls.WindowState.Maximized;
+            }
 
             // Update navigation items after settings are loaded
             var navView = this.FindControl<NavigationView>("NavView");
@@ -65,6 +69,23 @@ namespace XerahS.UI.Views
                     });
                 };
             }
+        }
+
+        protected override void OnClosing(WindowClosingEventArgs e)
+        {
+            // If SilentRun is enabled and we are not explicitly exiting via Tray/Menu,
+            // we should hide the window to tray instead of closing it.
+            bool silentRun = SettingsManager.Settings.SilentRun;
+            
+            if (silentRun && !App.IsExiting)
+            {
+                e.Cancel = true;
+                this.Hide();
+                this.ShowInTaskbar = false;
+                return;
+            }
+
+            base.OnClosing(e);
         }
 
         private void InitializeComponent()
@@ -99,7 +120,7 @@ namespace XerahS.UI.Views
                         // Fallback to SettingManager
                         if (workflow == null)
                         {
-                            workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Id == workflowId);
+                            workflow = SettingsManager.WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Id == workflowId);
                         }
 
                         if (workflow != null)
@@ -340,14 +361,14 @@ namespace XerahS.UI.Views
 
                 if (workflow == null)
                 {
-                    workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(x => x.Id == workflowId);
+                    workflow = SettingsManager.WorkflowsConfig.Hotkeys.FirstOrDefault(x => x.Id == workflowId);
                 }
             }
 
             // Fallback to job type if no ID provided or not found
             if (workflow == null)
             {
-                workflow = SettingManager.WorkflowsConfig.Hotkeys.FirstOrDefault(x => x.Job == jobType);
+                workflow = SettingsManager.WorkflowsConfig.Hotkeys.FirstOrDefault(x => x.Job == jobType);
             }
 
             if (workflow != null && workflow.TaskSettings != null)

@@ -2,7 +2,7 @@
 
 /*
     ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -23,11 +23,14 @@
 
 #endregion License Information (GPL v3)
 
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using SkiaSharp;
+using XerahS.Platform.Abstractions;
 
 namespace XerahS.Media
 {
+    /// <summary>
+    /// Cross-platform image beautifier options using SkiaSharp types.
+    /// </summary>
     public class ImageBeautifierOptions
     {
         public int Margin { get; set; }
@@ -38,14 +41,16 @@ namespace XerahS.Media
         public int ShadowOpacity { get; set; }
         public int ShadowDistance { get; set; }
         public int ShadowAngle { get; set; }
-        public Color ShadowColor { get; set; }
+        public SKColor ShadowColor { get; set; }
         public ImageBeautifierBackgroundType BackgroundType { get; set; }
         public GradientInfo BackgroundGradient { get; set; }
-        public Color BackgroundColor { get; set; }
+        public SKColor BackgroundColor { get; set; }
         public string BackgroundImageFilePath { get; set; }
 
         public ImageBeautifierOptions()
         {
+            BackgroundGradient = new GradientInfo();
+            BackgroundImageFilePath = "";
             ResetOptions();
         }
 
@@ -59,10 +64,13 @@ namespace XerahS.Media
             ShadowOpacity = 80;
             ShadowDistance = 10;
             ShadowAngle = 180;
-            ShadowColor = Color.Black;
+            ShadowColor = SKColors.Black;
             BackgroundType = ImageBeautifierBackgroundType.Gradient;
-            BackgroundGradient = new GradientInfo(LinearGradientMode.ForwardDiagonal, Color.FromArgb(255, 81, 47), Color.FromArgb(221, 36, 118));
-            BackgroundColor = Color.FromArgb(34, 34, 34);
+            BackgroundGradient = new GradientInfo(
+                GradientDirection.ForwardDiagonal, 
+                new SKColor(255, 81, 47, 255),    // #FF512F with full alpha
+                new SKColor(221, 36, 118, 255));  // #DD2476 with full alpha
+            BackgroundColor = new SKColor(34, 34, 34, 255);
             BackgroundImageFilePath = "";
         }
     }

@@ -84,7 +84,7 @@ namespace XerahS.Core.Tasks.Processors
 
             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AnnotateImage))
             {
-                if (info.Metadata.Image != null)
+                if (info.Metadata?.Image != null && PlatformServices.UI != null)
                 {
                     await PlatformServices.UI.ShowEditorAsync(info.Metadata.Image);
                 }
@@ -101,6 +101,41 @@ namespace XerahS.Core.Tasks.Processors
 
             // TODO: Add other tasks
 
+            // TODO: Add other tasks
+
+            // Add to History (after all tasks, including upload, are complete)
+            if (!string.IsNullOrEmpty(info.FilePath))
+            {
+                try
+                {
+                    DebugHelper.WriteLine("Trace: History pipeline - Starting history item creation.");
+
+                    // Use centralized history file path
+                    var historyPath = SettingsManager.GetHistoryFilePath();
+
+                    DebugHelper.WriteLine($"Trace: History pipeline - History file path: {historyPath}");
+
+                    using var historyManager = new HistoryManagerSQLite(historyPath);
+                    var historyItem = new HistoryItem
+                    {
+                        FilePath = info.FilePath,
+                        FileName = Path.GetFileName(info.FilePath),
+                        DateTime = DateTime.Now,
+                        Type = "Image",
+                        URL = info.Metadata?.UploadURL ?? string.Empty
+                    };
+
+                    historyManager.AppendHistoryItem(historyItem);
+                    DebugHelper.WriteLine($"Trace: History pipeline - AppendHistoryItem called for: {historyItem.FileName} (URL: {historyItem.URL})");
+                    DebugHelper.WriteLine($"Added to history: {historyItem.FileName}");
+                }
+                catch (Exception ex)
+                {
+                    DebugHelper.WriteLine($"Failed to add to history: {ex.Message}");
+                    DebugHelper.WriteException(ex);
+                }
+            }
+
             await Task.CompletedTask;
         }
 
@@ -115,40 +150,21 @@ namespace XerahS.Core.Tasks.Processors
             // though here we are already on background thread from WorkerTask.
 
             string? filePath = TaskHelpers.SaveImageAsFile(bmp, info.TaskSettings);
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                var directory = Path.GetDirectoryName(filePath) ?? "";
+                var fileName = Path.GetFileName(filePath);
+                var extension = Path.GetExtension(filePath);
+                DebugHelper.WriteLine($"[PathTrace {info.CorrelationId}] SaveImageToFile: dir=\"{directory}\", fileName=\"{fileName}\", ext=\"{extension}\", fullPath=\"{filePath}\"");
+            }
 
             if (!string.IsNullOrEmpty(filePath))
             {
                 info.FilePath = filePath;
                 DebugHelper.WriteLine($"Image saved: {filePath}");
 
-                // Add to History
-                try
-                {
-                    DebugHelper.WriteLine("Trace: History pipeline - Starting history item creation.");
-
-                    // Use centralized history file path
-                    var historyPath = SettingManager.GetHistoryFilePath();
-
-                    DebugHelper.WriteLine($"Trace: History pipeline - History file path: {historyPath}");
-
-                    using var historyManager = new HistoryManagerSQLite(historyPath);
-                    var historyItem = new HistoryItem
-                    {
-                        FilePath = filePath,
-                        FileName = Path.GetFileName(filePath),
-                        DateTime = DateTime.Now,
-                        Type = "Image"
-                    };
-
-                    historyManager.AppendHistoryItem(historyItem);
-                    DebugHelper.WriteLine($"Trace: History pipeline - AppendHistoryItem called for: {historyItem.FileName}");
-                    DebugHelper.WriteLine($"Added to history: {historyItem.FileName}");
-                }
-                catch (Exception ex)
-                {
-                    DebugHelper.WriteLine($"Failed to add to history: {ex.Message}");
-                    DebugHelper.WriteException(ex);
-                }
+                info.FilePath = filePath;
+                DebugHelper.WriteLine($"Image saved: {filePath}");
             }
             else
             {
@@ -163,7 +179,7 @@ namespace XerahS.Core.Tasks.Processors
         {
             if (string.IsNullOrEmpty(info.FilePath) && info.Metadata?.Image != null)
             {
-                info.FilePath = TaskHelpers.SaveImageAsFile(info.Metadata.Image, info.TaskSettings);
+                info.FilePath = TaskHelpers.SaveImageAsFile(info.Metadata.Image, info.TaskSettings) ?? string.Empty;
             }
 
             if (string.IsNullOrEmpty(info.FilePath))
@@ -173,46 +189,17 @@ namespace XerahS.Core.Tasks.Processors
             }
 
             DebugHelper.WriteLine($"Uploading image: {info.FilePath}");
-            DebugHelper.WriteLine($"Upload destination: {info.TaskSettings.ImageDestination}");
 
             try
             {
-                var destination = info.TaskSettings.ImageDestination;
-                if (!UploaderFactory.ImageUploaderServices.TryGetValue(destination, out var uploaderService))
+                var pluginResult = TryUploadWithPluginSystem(info);
+                if (pluginResult == null)
                 {
-                    DebugHelper.WriteLine($"No uploader found for destination: {destination}");
-                    DebugHelper.WriteLine($"Available legacy image uploaders: {string.Join(", ", UploaderFactory.ImageUploaderServices.Keys)}");
-                    var pluginResult = TryUploadWithPluginSystem(info);
-                    if (pluginResult == null)
-                    {
-                        DebugHelper.WriteLine("Plugin upload did not return a result.");
-                        return;
-                    }
-
-                    HandleUploadResult(info, pluginResult);
+                    DebugHelper.WriteLine("Plugin upload did not return a result.");
                     return;
                 }
 
-                var helper = new TaskReferenceHelper
-                {
-                    DataType = EDataType.Image,
-                    StopRequested = false,
-                    OverrideFTP = info.TaskSettings.OverrideFTP,
-                    FTPIndex = info.TaskSettings.FTPIndex,
-                    OverrideCustomUploader = info.TaskSettings.OverrideCustomUploader,
-                    CustomUploaderIndex = info.TaskSettings.CustomUploaderIndex
-                };
-
-                var uploader = uploaderService.CreateUploader(SettingManager.UploadersConfig, helper);
-
-                UploadResult? result = uploader switch
-                {
-                    FileUploader fileUploader => fileUploader.UploadFile(info.FilePath),
-                    GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
-                    _ => null
-                };
-
-                HandleUploadResult(info, result);
+                HandleUploadResult(info, pluginResult);
             }
             catch (Exception ex)
             {
@@ -249,19 +236,35 @@ namespace XerahS.Core.Tasks.Processors
             EnsurePluginsLoaded();
 
             var instanceManager = InstanceManager.Instance;
-            var defaultInstance = instanceManager.GetDefaultInstance(UploaderCategory.Image);
-            if (defaultInstance == null)
+            var configuredInstanceId = info.TaskSettings.GetDestinationInstanceIdForDataType(EDataType.Image);
+            UploaderInstance? targetInstance = null;
+
+            if (!string.IsNullOrEmpty(configuredInstanceId))
             {
-                DebugHelper.WriteLine("No default image uploader instance configured.");
+                targetInstance = instanceManager.GetInstance(configuredInstanceId);
+                if (targetInstance == null)
+                {
+                    DebugHelper.WriteLine($"Configured image uploader instance not found: {configuredInstanceId}");
+                }
+            }
+
+            if (targetInstance == null)
+            {
+                targetInstance = instanceManager.GetDefaultInstance(UploaderCategory.Image);
+            }
+
+            if (targetInstance == null)
+            {
+                DebugHelper.WriteLine("No image uploader instance configured.");
                 return null;
             }
 
-            DebugHelper.WriteLine($"Plugin instance selected: {defaultInstance.DisplayName} ({defaultInstance.ProviderId})");
+            DebugHelper.WriteLine($"Plugin instance selected: {targetInstance.DisplayName} ({targetInstance.ProviderId})");
 
-            var provider = ProviderCatalog.GetProvider(defaultInstance.ProviderId);
+            var provider = ProviderCatalog.GetProvider(targetInstance.ProviderId);
             if (provider == null)
             {
-                DebugHelper.WriteLine($"Provider not found in catalog: {defaultInstance.ProviderId}");
+                DebugHelper.WriteLine($"Provider not found in catalog: {targetInstance.ProviderId}");
                 return null;
             }
 
@@ -270,7 +273,7 @@ namespace XerahS.Core.Tasks.Processors
             Uploader uploader;
             try
             {
-                uploader = provider.CreateInstance(defaultInstance.SettingsJson);
+                uploader = provider.CreateInstance(targetInstance.SettingsJson);
             }
             catch (Exception ex)
             {
@@ -296,7 +299,7 @@ namespace XerahS.Core.Tasks.Processors
             try
             {
                 ProviderCatalog.InitializeBuiltInProviders();
-                string pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
+                string pluginsPath = PathsManager.PluginsFolder;
                 DebugHelper.WriteLine($"Loading plugins from: {pluginsPath}");
                 ProviderCatalog.LoadPlugins(pluginsPath);
                 DebugHelper.WriteLine($"Plugin providers available: {ProviderCatalog.GetAllProviders().Count}");

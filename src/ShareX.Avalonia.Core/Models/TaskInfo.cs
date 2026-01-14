@@ -23,9 +23,10 @@
 
 #endregion License Information (GPL v3)
 
+using System.Diagnostics;
 using XerahS.Common;
 using XerahS.Uploaders;
-using System.Diagnostics;
+using XerahS.Uploaders.PluginSystem;
 
 namespace XerahS.Core;
 
@@ -72,41 +73,33 @@ public class TaskInfo
     public EDataType DataType { get; set; }
     public TaskMetadata Metadata { get; set; }
 
-    public EDataType UploadDestination
-    {
-        get
-        {
-            if ((DataType == EDataType.Image && TaskSettings.ImageDestination == ImageDestination.FileUploader) ||
-                (DataType == EDataType.Text && TaskSettings.TextDestination == TextDestination.FileUploader))
-            {
-                return EDataType.File;
-            }
-
-            return DataType;
-        }
-    }
-
     public string? UploaderHost
     {
         get
         {
             if (!IsUploadJob) return null;
 
-            return UploadDestination switch
+            var instanceId = TaskSettings.GetDestinationInstanceIdForDataType(DataType);
+            if (!string.IsNullOrEmpty(instanceId))
             {
-                EDataType.Image => EnumExtensions.GetDescription(TaskSettings.ImageDestination),
-                EDataType.Text => EnumExtensions.GetDescription(TaskSettings.TextDestination),
-                EDataType.File => DataType switch
+                var instance = InstanceManager.Instance.GetInstance(instanceId);
+                if (instance != null)
                 {
-                    EDataType.Image => EnumExtensions.GetDescription(TaskSettings.ImageFileDestination),
-                    EDataType.Text => EnumExtensions.GetDescription(TaskSettings.TextFileDestination),
-                    _ => EnumExtensions.GetDescription(TaskSettings.FileDestination)
-                },
-                EDataType.URL => Job == TaskJob.ShareURL
+                    return instance.DisplayName;
+                }
+
+                return instanceId;
+            }
+
+            // URL shortener remains enum-based
+            if (DataType == EDataType.URL)
+            {
+                return Job == TaskJob.ShareURL
                     ? EnumExtensions.GetDescription(TaskSettings.URLSharingServiceDestination)
-                    : EnumExtensions.GetDescription(TaskSettings.URLShortenerDestination),
-                _ => null
-            };
+                    : EnumExtensions.GetDescription(TaskSettings.URLShortenerDestination);
+            }
+
+            return null;
         }
     }
 
@@ -118,6 +111,12 @@ public class TaskInfo
     public Stopwatch? UploadDuration { get; set; }
 
     public UploadResult Result { get; set; }
+
+    /// <summary>
+    /// Correlation identifier for structured logging across capture, save, and upload stages.
+    /// [2026-01-10T14:40:00+08:00]
+    /// </summary>
+    public string CorrelationId { get; set; } = Guid.NewGuid().ToString("N");
 
     public TaskInfo(TaskSettings? taskSettings = null)
     {

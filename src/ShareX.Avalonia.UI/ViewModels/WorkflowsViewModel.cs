@@ -17,6 +17,8 @@ public partial class WorkflowsViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(DuplicateCommand))]
     [NotifyCanExecuteChangedFor(nameof(MoveUpCommand))]
     [NotifyCanExecuteChangedFor(nameof(MoveDownCommand))]
+    [NotifyCanExecuteChangedFor(nameof(TogglePinCommand))]
+    [NotifyPropertyChangedFor(nameof(PinButtonText))]
     private HotkeyItemViewModel? _selectedWorkflow;
 
 
@@ -51,13 +53,18 @@ public partial class WorkflowsViewModel : ViewModelBase
         }
         else
         {
-            source = SettingManager.WorkflowsConfig.Hotkeys;
+            source = SettingsManager.WorkflowsConfig.Hotkeys;
         }
 
         // No sorting - use the stored order
         int index = 0;
         foreach (var hk in source)
         {
+            if (hk.Job == HotkeyType.None)
+            {
+                continue;
+            }
+
             var vm = new HotkeyItemViewModel(hk);
             // Highlight top 3 (0, 1, 2)
             vm.IsNavWorkflow = index < 3;
@@ -70,9 +77,9 @@ public partial class WorkflowsViewModel : ViewModelBase
     {
         if (_manager != null)
         {
-            SettingManager.WorkflowsConfig.Hotkeys = _manager.Workflows;
+            SettingsManager.WorkflowsConfig.Hotkeys = _manager.Workflows;
         }
-        SettingManager.SaveWorkflowsConfig();
+        SettingsManager.SaveWorkflowsConfig();
     }
 
     [RelayCommand]
@@ -92,18 +99,21 @@ public partial class WorkflowsViewModel : ViewModelBase
             var saved = await EditHotkeyRequester(newSettings);
             if (saved)
             {
-                if (_manager != null)
+                if (newSettings.Job != HotkeyType.None)
                 {
-                    _manager.Workflows.Add(newSettings);
-                    _manager.RegisterHotkey(newSettings);
-                }
-                else
-                {
-                    SettingManager.WorkflowsConfig.Hotkeys.Add(newSettings);
-                }
+                    if (_manager != null)
+                    {
+                        _manager.Workflows.Add(newSettings);
+                        _manager.RegisterHotkey(newSettings);
+                    }
+                    else
+                    {
+                        SettingsManager.WorkflowsConfig.Hotkeys.Add(newSettings);
+                    }
 
-                SaveHotkeys();
-                LoadWorkflows();
+                    SaveHotkeys();
+                    LoadWorkflows();
+                }
             }
         }
     }
@@ -143,7 +153,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         }
         else if (SelectedWorkflow != null && _manager == null) // Fallback
         {
-            SettingManager.WorkflowsConfig.Hotkeys.Remove(SelectedWorkflow.Model);
+            SettingsManager.WorkflowsConfig.Hotkeys.Remove(SelectedWorkflow.Model);
             Workflows.Remove(SelectedWorkflow);
             SaveHotkeys();
         }
@@ -161,7 +171,7 @@ public partial class WorkflowsViewModel : ViewModelBase
 
             // Deep copy TaskSettings using JSON
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(SelectedWorkflow.Model.TaskSettings);
-            clone.TaskSettings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json);
+            clone.TaskSettings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json) ?? new TaskSettings();
 
             // Copy additional properties
             clone.Name = SelectedWorkflow.Model.Name;
@@ -184,7 +194,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         var index = Workflows.IndexOf(SelectedWorkflow);
         if (index <= 0) return;
 
-        var hotkeys = _manager?.Workflows ?? SettingManager.WorkflowsConfig.Hotkeys;
+        var hotkeys = _manager?.Workflows ?? SettingsManager.WorkflowsConfig.Hotkeys;
         var model = SelectedWorkflow.Model;
         var modelIndex = hotkeys.IndexOf(model);
 
@@ -220,7 +230,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         var index = Workflows.IndexOf(SelectedWorkflow);
         if (index < 0 || index >= Workflows.Count - 1) return;
 
-        var hotkeys = _manager?.Workflows ?? SettingManager.WorkflowsConfig.Hotkeys;
+        var hotkeys = _manager?.Workflows ?? SettingsManager.WorkflowsConfig.Hotkeys;
         var model = SelectedWorkflow.Model;
         var modelIndex = hotkeys.IndexOf(model);
 
@@ -277,4 +287,23 @@ public partial class WorkflowsViewModel : ViewModelBase
             SaveHotkeys();
         }
     }
+
+    [RelayCommand(CanExecute = nameof(CanTogglePin))]
+    private void TogglePin()
+    {
+        if (SelectedWorkflow != null && !SelectedWorkflow.IsNavWorkflow)
+        {
+            SelectedWorkflow.PinnedToTray = !SelectedWorkflow.PinnedToTray;
+            SaveHotkeys();
+            TrayIconHelper.Instance.RefreshFromSettings();
+            OnPropertyChanged(nameof(PinButtonText));
+        }
+    }
+
+    private bool CanTogglePin()
+    {
+        return SelectedWorkflow != null && !SelectedWorkflow.IsNavWorkflow;
+    }
+
+    public string PinButtonText => SelectedWorkflow?.PinnedToTray == true ? "Unpin from Tray" : "Pin to Tray";
 }

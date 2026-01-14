@@ -50,11 +50,11 @@ namespace XerahS.Uploaders.URLShorteners
             Dictionary<string, string> args = new Dictionary<string, string>();
             args.Add("longurl", url);
 
-            string response = SendRequest(HttpMethod.GET, API_ENDPOINT, args);
+            string? response = SendRequest(HttpMethod.GET, API_ENDPOINT, args);
 
             if (!string.IsNullOrEmpty(response))
             {
-                TwoGPURLShortenerResponse jsonResponse = JsonConvert.DeserializeObject<TwoGPURLShortenerResponse>(response);
+                TwoGPURLShortenerResponse? jsonResponse = JsonConvert.DeserializeObject<TwoGPURLShortenerResponse>(response);
 
                 if (jsonResponse != null)
                 {
@@ -68,11 +68,11 @@ namespace XerahS.Uploaders.URLShorteners
 
     public class TwoGPURLShortenerResponse
     {
-        public string facebook_url { get; set; }
-        public string stat_url { get; set; }
-        public string twitter_url { get; set; }
-        public string url { get; set; }
-        public string target_host { get; set; }
-        public string host { get; set; }
+        public string facebook_url { get; set; } = string.Empty;
+        public string stat_url { get; set; } = string.Empty;
+        public string twitter_url { get; set; } = string.Empty;
+        public string url { get; set; } = string.Empty;
+        public string target_host { get; set; } = string.Empty;
+        public string host { get; set; } = string.Empty;
     }
 }

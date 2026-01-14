@@ -84,7 +84,15 @@ namespace XerahS.Common
 
         public void DownloadUpdate()
         {
-            DebugHelper.WriteLine("Updating ShareX from version {0} to {1}", CurrentVersion, LatestVersion);
+            if (string.IsNullOrEmpty(DownloadURL))
+            {
+                DebugHelper.WriteLine("Download URL not available for update.");
+                return;
+            }
+
+            string fromVersion = CurrentVersion?.ToString() ?? "unknown";
+            string toVersion = LatestVersion?.ToString() ?? "unknown";
+            DebugHelper.WriteLine("Updating ShareX from version {0} to {1}", fromVersion, toVersion);
 
             if (IsPortable)
             {

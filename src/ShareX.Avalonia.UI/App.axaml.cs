@@ -2,19 +2,25 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using ShareX.Editor.ViewModels;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Platform.Abstractions;
 using XerahS.UI.Views;
-using ShareX.Editor.ViewModels;
 
 namespace XerahS.UI;
 
 public partial class App : Application
 {
+    public static bool IsExiting { get; set; } = false;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+
+#if DEBUG
+        this.AttachDeveloperTools();
+#endif
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -22,12 +28,34 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var mainViewModel = new MainViewModel();
-            mainViewModel.ApplicationName = ShareXResources.AppName;
+            mainViewModel.ApplicationName = AppResources.AppName;
+
+            // Prepare for Silent Run
+            bool silentRun = XerahS.Core.SettingsManager.Settings.SilentRun;
+
+            if (silentRun)
+            {
+                // If starting silently, we don't want the last window closing to shut down the app
+                desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            }
 
             desktop.MainWindow = new Views.MainWindow
             {
                 DataContext = mainViewModel,
             };
+
+            // Apply window state based on SilentRun
+            // Note: MainWindow is automatically shown by ApplicationLifetime after this method returns.
+            // Setting it to minimized and hiding from taskbar is the best way to simulate "start hidden".
+            if (silentRun)
+            {
+                desktop.MainWindow.WindowState = Avalonia.Controls.WindowState.Minimized;
+                desktop.MainWindow.ShowInTaskbar = false;
+            }
+            else
+            {
+                desktop.MainWindow.WindowState = Avalonia.Controls.WindowState.Maximized;
+            }
 
             InitializeHotkeys();
 
@@ -92,19 +120,32 @@ public partial class App : Application
 
             desktop.Exit += (sender, args) =>
             {
-                XerahS.Core.SettingManager.SaveAllSettings();
+                XerahS.Core.SettingsManager.SaveAllSettings();
             };
 
             // Subscribe to workflow completion for notification
             Core.Managers.TaskManager.Instance.TaskCompleted += OnWorkflowTaskCompleted;
+
+            // Trigger async recording initialization via callback
+            // This prevents blocking the main window from showing quickly
+            PostUIInitializationCallback?.Invoke();
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
+    /// <summary>
+    /// Callback invoked after UI initialization completes.
+    /// Set by Program.cs to perform platform-specific async initialization.
+    /// </summary>
+    public static Action? PostUIInitializationCallback { get; set; }
+
     private void OnWorkflowTaskCompleted(object? sender, Core.Tasks.WorkerTask task)
     {
         // Check if notification should be shown
+        // [2026-01-11] Fix: Only show toast if the task was actually successful (not cancelled/stopped) and produced a result.
+        if (!task.IsSuccessful) return;
+
         var taskSettings = task.Info?.TaskSettings ?? new TaskSettings();
         if (taskSettings?.GeneralSettings?.ShowToastNotificationAfterTaskCompleted == true)
         {
@@ -155,9 +196,9 @@ public partial class App : Application
                         FadeDuration = generalSettings.ToastWindowFadeDuration,
                         Placement = generalSettings.ToastWindowPlacement,
                         Size = generalSettings.ToastWindowSize,
-                        LeftClickAction = MapToastClickAction(generalSettings.ToastWindowLeftClickAction),
-                        RightClickAction = MapToastClickAction(generalSettings.ToastWindowRightClickAction),
-                        MiddleClickAction = MapToastClickAction(generalSettings.ToastWindowMiddleClickAction),
+                        LeftClickAction = generalSettings.ToastWindowLeftClickAction,
+                        RightClickAction = generalSettings.ToastWindowRightClickAction,
+                        MiddleClickAction = generalSettings.ToastWindowMiddleClickAction,
                         AutoHide = generalSettings.ToastWindowAutoHide
                     };
 
@@ -210,14 +251,14 @@ public partial class App : Application
             WorkflowManager.HotkeyTriggered += HotkeyManager_HotkeyTriggered;
 
             // Load hotkeys from configuration
-            var hotkeys = Core.SettingManager.WorkflowsConfig.Hotkeys;
+            var hotkeys = Core.SettingsManager.WorkflowsConfig.Hotkeys;
 
             // If configuration is empty/null, fallback to defaults
             if (hotkeys == null || hotkeys.Count == 0)
             {
                 hotkeys = Core.Hotkeys.WorkflowManager.GetDefaultWorkflowList();
                 // Update config with defaults so they get saved
-                Core.SettingManager.WorkflowsConfig.Hotkeys = hotkeys;
+                Core.SettingsManager.WorkflowsConfig.Hotkeys = hotkeys;
             }
 
             WorkflowManager.UpdateHotkeys(hotkeys);
@@ -246,6 +287,8 @@ public partial class App : Application
     private async void HotkeyManager_HotkeyTriggered(object? sender, Core.Hotkeys.WorkflowSettings settings)
     {
         DebugHelper.WriteLine($"Hotkey triggered: {settings} (ID: {settings?.Id ?? "null"})");
+
+        if (settings == null) return;
 
         bool isCaptureJob = settings.Job is Core.HotkeyType.PrintScreen
                                           or Core.HotkeyType.ActiveWindow
@@ -283,31 +326,24 @@ public partial class App : Application
                 DebugHelper.WriteLine($"[DEBUG] Hotkey triggered for CustomWindow. Configured title: '{settings.TaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
             }
 
-            // Execute workflow with its ID for troubleshooting
-            await Core.Helpers.TaskHelpers.ExecuteWorkflow(settings, settings.Id);
-        }
-    }
+            // Screen Recorder Toggle Logic (Unified Pipeline)
+            // If we are recording and get a recording-related hotkey, we Signal the existing task to stop.
+            // We do NOT start a new workflow.
+            bool isRecordingHotkey = settings.Job == Core.HotkeyType.ScreenRecorder ||
+                                     settings.Job == Core.HotkeyType.ScreenRecorderActiveWindow ||
+                                     settings.Job == Core.HotkeyType.StopScreenRecording ||
+                                     settings.Job == Core.HotkeyType.StartScreenRecorder;
 
-    /// <summary>
-    /// Maps ToastClickAction from Core namespace to Platform.Abstractions namespace
-    /// </summary>
-    private static Platform.Abstractions.ToastClickAction MapToastClickAction(Core.ToastClickAction coreAction)
-    {
-        return coreAction switch
-        {
-            Core.ToastClickAction.CloseNotification => Platform.Abstractions.ToastClickAction.CloseNotification,
-            Core.ToastClickAction.AnnotateImage => Platform.Abstractions.ToastClickAction.AnnotateImage,
-            Core.ToastClickAction.CopyImageToClipboard => Platform.Abstractions.ToastClickAction.CopyImageToClipboard,
-            Core.ToastClickAction.CopyFile => Platform.Abstractions.ToastClickAction.CopyFile,
-            Core.ToastClickAction.CopyFilePath => Platform.Abstractions.ToastClickAction.CopyFilePath,
-            Core.ToastClickAction.CopyUrl => Platform.Abstractions.ToastClickAction.CopyUrl,
-            Core.ToastClickAction.OpenFile => Platform.Abstractions.ToastClickAction.OpenFile,
-            Core.ToastClickAction.OpenFolder => Platform.Abstractions.ToastClickAction.OpenFolder,
-            Core.ToastClickAction.OpenUrl => Platform.Abstractions.ToastClickAction.OpenUrl,
-            Core.ToastClickAction.Upload => Platform.Abstractions.ToastClickAction.Upload,
-            Core.ToastClickAction.PinToScreen => Platform.Abstractions.ToastClickAction.PinToScreen,
-            Core.ToastClickAction.DeleteFile => Platform.Abstractions.ToastClickAction.DeleteFile,
-            _ => Platform.Abstractions.ToastClickAction.CloseNotification
-        };
+            if (isRecordingHotkey && Core.Managers.ScreenRecordingManager.Instance.IsRecording)
+            {
+                DebugHelper.WriteLine("Screen Recording active - flagging Stop Signal to existing task...");
+                Core.Managers.ScreenRecordingManager.Instance.SignalStop();
+            }
+            else
+            {
+                // Normal workflow execution
+                await Core.Helpers.TaskHelpers.ExecuteWorkflow(settings, settings.Id);
+            }
+        }
     }
 }

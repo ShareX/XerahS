@@ -139,7 +139,7 @@ namespace XerahS.Core.Helpers
 #if DEBUG
             try
             {
-                var folder = GetTroubleshootingFolder(category);
+                var folder = GetTroubleshootingFolder();
                 Directory.CreateDirectory(folder);
 
                 var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss-fff");
@@ -165,9 +165,9 @@ namespace XerahS.Core.Helpers
         /// <summary>
         /// Get the troubleshooting folder path for a category.
         /// </summary>
-        public static string GetTroubleshootingFolder(string category)
+        public static string GetTroubleshootingFolder()
         {
-            return Path.Combine(SettingManager.PersonalFolder, "Troubleshooting", category);
+            return Path.Combine(SettingsManager.PersonalFolder, "Troubleshooting");
         }
 
         #region DPI Troubleshooting Logging
@@ -390,7 +390,7 @@ namespace XerahS.Core.Helpers
 
                 try
                 {
-                    var folder = GetTroubleshootingFolder(category);
+                    var folder = GetTroubleshootingFolder();
                     Directory.CreateDirectory(folder);
 
                     var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss-fff");

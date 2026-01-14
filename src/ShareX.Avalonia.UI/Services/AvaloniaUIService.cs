@@ -47,7 +47,7 @@ namespace XerahS.UI.Services
                 // Create independent ViewModel for this editor instance
                 var editorViewModel = new MainViewModel();
                 editorViewModel.ShowCaptureToolbar = false;
-                editorViewModel.ApplicationName = ShareXResources.AppName;
+                editorViewModel.ApplicationName = AppResources.AppName;
 
                 // Set DataContext BEFORE initializing preview so bindings update correctly
                 editorWindow.DataContext = editorViewModel;

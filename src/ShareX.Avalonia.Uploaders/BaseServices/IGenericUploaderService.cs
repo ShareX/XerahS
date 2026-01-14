@@ -27,6 +27,6 @@ namespace XerahS.Uploaders
 {
     public interface IGenericUploaderService : IUploaderService
     {
-        GenericUploader CreateUploader(UploadersConfig config, TaskReferenceHelper taskInfo);
+        GenericUploader? CreateUploader(UploadersConfig config, TaskReferenceHelper taskInfo);
     }
 }

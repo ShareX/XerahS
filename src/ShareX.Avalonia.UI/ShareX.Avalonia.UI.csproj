@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
     <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -9,6 +9,7 @@
     <PackageReference Include="Avalonia" Version="11.3.10" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.10" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.10" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.1.1" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="FluentAvaloniaUI" Version="2.4.1" />
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
@@ -17,6 +18,9 @@
     <ProjectReference Include="..\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Platform.Abstractions\ShareX.Avalonia.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.Windows\ShareX.Avalonia.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.macOS\ShareX.Avalonia.Platform.macOS.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.Linux\ShareX.Avalonia.Platform.Linux.csproj" Condition="'$(OS)' != 'Windows_NT'" />
     <ProjectReference Include="..\ShareX.Avalonia.Services.Abstractions\ShareX.Avalonia.Services.Abstractions.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.ScreenCapture\ShareX.Avalonia.ScreenCapture.csproj" />
     <ProjectReference Include="..\..\..\ShareX.Editor\src\ShareX.Editor\ShareX.Editor.csproj" />
@@ -25,3 +29,4 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 </Project>
+

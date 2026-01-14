@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using System.Diagnostics;
 using System.Security.Cryptography;
 
@@ -33,18 +34,18 @@ namespace XerahS.Common
         public bool IsWorking { get; private set; }
 
         public delegate void ProgressChanged(float progress);
-        public event ProgressChanged FileCheckProgressChanged;
+        public event ProgressChanged? FileCheckProgressChanged;
 
-        private CancellationTokenSource cts;
+        private CancellationTokenSource? cts;
 
         private void OnProgressChanged(float percentage)
         {
             FileCheckProgressChanged?.Invoke(percentage);
         }
 
-        public async Task<string> Start(string filePath, HashType hashType)
+        public async Task<string?> Start(string filePath, HashType hashType)
         {
-            string result = null;
+            string? result = null;
 
             if (!IsWorking && !string.IsNullOrEmpty(filePath) && File.Exists(filePath))
             {
@@ -79,7 +80,7 @@ namespace XerahS.Common
             cts?.Cancel();
         }
 
-        private string HashCheckThread(string filePath, HashType hashType, IProgress<float> progress, CancellationToken ct)
+        private string? HashCheckThread(string filePath, HashType hashType, IProgress<float> progress, CancellationToken ct)
         {
             using (FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (HashAlgorithm hash = GetHashAlgorithm(hashType))
@@ -113,7 +114,8 @@ namespace XerahS.Common
                 {
                     progress.Report(100);
 
-                    string[] hex = TranslatorHelper.BytesToHexadecimal(hash.Hash);
+                    byte[] hashBytes = hash.Hash ?? Array.Empty<byte>();
+                    string[] hex = TranslatorHelper.BytesToHexadecimal(hashBytes);
                     return string.Concat(hex);
                 }
             }
@@ -139,7 +141,7 @@ namespace XerahS.Common
                     return SHA512.Create();
             }
 
-            return null;
+            throw new ArgumentOutOfRangeException(nameof(hashType), hashType, "Unsupported hash type.");
         }
     }
 }

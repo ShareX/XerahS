@@ -34,6 +34,10 @@
                       Command="{Binding $parent[UserControl].DataContext.CopyURLCommand}"
                       CommandParameter="{Binding}"
                       IsVisible="{Binding URL, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+            <MenuItem Header="🌐 Open URL" 
+                      Command="{Binding $parent[UserControl].DataContext.OpenURLCommand}"
+                      CommandParameter="{Binding}"
+                      IsVisible="{Binding URL, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
             <Separator/>
             <MenuItem Header="🗑️ Delete from History..." 
                       Command="{Binding $parent[UserControl].DataContext.DeleteItemCommand}"

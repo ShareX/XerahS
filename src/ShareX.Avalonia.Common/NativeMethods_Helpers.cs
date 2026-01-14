@@ -26,9 +26,11 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public static partial class NativeMethods
     {
         public static string GetForegroundWindowText()
@@ -61,10 +63,10 @@ namespace XerahS.Common
                 }
             }
 
-            return null;
+            return string.Empty;
         }
 
-        public static Process GetForegroundWindowProcess()
+        public static Process? GetForegroundWindowProcess()
         {
             IntPtr handle = GetForegroundWindow();
             return GetProcessByWindowHandle(handle);
@@ -72,13 +74,14 @@ namespace XerahS.Common
 
         public static string GetForegroundWindowProcessName()
         {
-            using (Process process = GetForegroundWindowProcess())
+            Process? process = GetForegroundWindowProcess();
+            using (process)
             {
-                return process?.ProcessName;
+                return process?.ProcessName ?? string.Empty;
             }
         }
 
-        public static Process GetProcessByWindowHandle(IntPtr hwnd)
+        public static Process? GetProcessByWindowHandle(IntPtr hwnd)
         {
             if (hwnd.ToInt32() > 0)
             {
@@ -112,7 +115,7 @@ namespace XerahS.Common
                 }
             }
 
-            return null;
+            return string.Empty;
         }
 
         public static IntPtr GetClassLongPtrSafe(IntPtr hWnd, int nIndex)
@@ -125,7 +128,7 @@ namespace XerahS.Common
             return new IntPtr(GetClassLong32(hWnd, nIndex));
         }
 
-        private static Icon GetSmallApplicationIcon(IntPtr handle)
+        private static Icon? GetSmallApplicationIcon(IntPtr handle)
         {
             IntPtr iconHandle;
 
@@ -154,7 +157,7 @@ namespace XerahS.Common
             return null;
         }
 
-        private static Icon GetBigApplicationIcon(IntPtr handle)
+        private static Icon? GetBigApplicationIcon(IntPtr handle)
         {
             SendMessageTimeout(handle, (uint)WindowsMessages.GETICON, new IntPtr(NativeConstants.ICON_BIG), IntPtr.Zero, SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, 1000, out IntPtr iconHandle);
 
@@ -171,7 +174,7 @@ namespace XerahS.Common
             return null;
         }
 
-        public static Icon GetApplicationIcon(IntPtr handle)
+        public static Icon? GetApplicationIcon(IntPtr handle)
         {
             return GetSmallApplicationIcon(handle) ?? GetBigApplicationIcon(handle);
         }

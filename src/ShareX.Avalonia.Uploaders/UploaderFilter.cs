@@ -29,7 +29,7 @@ namespace XerahS.Uploaders
 {
     public class UploaderFilter
     {
-        public string Uploader { get; set; }
+        public string Uploader { get; set; } = string.Empty;
         public List<string> Extensions { get; set; } = new List<string>();
         //public long Size { get; set; }
 
@@ -50,7 +50,7 @@ namespace XerahS.Uploaders
             return !string.IsNullOrEmpty(extension) && Extensions.Any(x => x.TrimStart('.').Equals(extension, StringComparison.OrdinalIgnoreCase));
         }
 
-        public IGenericUploaderService GetUploaderService()
+        public IGenericUploaderService? GetUploaderService()
         {
             return UploaderFactory.AllGenericUploaderServices.FirstOrDefault(x => x.ServiceIdentifier.Equals(Uploader, StringComparison.OrdinalIgnoreCase));
         }
@@ -78,5 +78,6 @@ namespace XerahS.Uploaders
         }
     }
 }
+
 
 

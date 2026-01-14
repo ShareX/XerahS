@@ -24,12 +24,14 @@
 #endregion License Information (GPL v3)
 
 using System.Drawing;
+using System.Runtime.Versioning;
 
 namespace XerahS.Common
 {
+    [SupportedOSPlatform("windows")]
     public class FontSafe
     {
-        public string Font { get; set; }
+        public string Font { get; set; } = string.Empty;
 
         public FontSafe()
         {
@@ -42,17 +44,26 @@ namespace XerahS.Common
 
         public void SetFont(Font font)
         {
-            Font = new FontConverter().ConvertToInvariantString(font);
+            string? fontString = new FontConverter().ConvertToInvariantString(font);
+
+            if (!string.IsNullOrEmpty(fontString))
+            {
+                Font = fontString;
+            }
         }
 
         public Font GetFont()
         {
             if (!string.IsNullOrEmpty(Font))
             {
-                return new FontConverter().ConvertFromInvariantString(Font) as Font;
+                FontConverter converter = new FontConverter();
+                if (converter.ConvertFromInvariantString(Font) is Font parsed)
+                {
+                    return parsed;
+                }
             }
 
-            return null;
+            return SystemFonts.DefaultFont;
         }
     }
 }

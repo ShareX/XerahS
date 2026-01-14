@@ -29,21 +29,23 @@ namespace XerahS.App
 {
     internal class Program
     {
+        private static readonly System.Diagnostics.Stopwatch _startupStopwatch = System.Diagnostics.Stopwatch.StartNew();
+
         [STAThread]
         public static void Main(string[] args)
         {
             // Initialize logging with datestamped file in Logs/yyyy-mm folder structure
-            var baseFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), XerahS.Core.SettingManager.AppName);
+            var baseFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), XerahS.Core.SettingsManager.AppName);
             var logsFolder = System.IO.Path.Combine(baseFolder, "Logs", DateTime.Now.ToString("yyyy-MM"));
-            var logPath = System.IO.Path.Combine(logsFolder, $"ShareX-{DateTime.Now:yyyy-MM-dd}.log");
+            var logPath = System.IO.Path.Combine(logsFolder, $"{XerahS.Common.AppResources.AppName}-{DateTime.Now:yyyyMMdd}.log");
             XerahS.Common.DebugHelper.Init(logPath);
 
-            var dh = XerahS.Common.DebugHelper.Logger;
+            var dh = XerahS.Common.DebugHelper.Logger ?? throw new InvalidOperationException("Logger not initialised");
             dh.AsyncWrite = false; // Synchronous for startup
 
             dh.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - ShareX starting.");
 
-            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            var version = XerahS.Common.AppResources.Version;
             dh.WriteLine($"Version: {version} Dev");
 
 #if DEBUG
@@ -62,19 +64,29 @@ namespace XerahS.App
             {
                 using (var identity = System.Security.Principal.WindowsIdentity.GetCurrent())
                 {
-                    var principal = new System.Security.Principal.WindowsPrincipal(identity);
-                    isElevated = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+                    if (identity != null)
+                    {
+                        var principal = new System.Security.Principal.WindowsPrincipal(identity);
+                        isElevated = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+                    }
                 }
             }
             dh.WriteLine($"Running as elevated process: {isElevated}");
-            dh.WriteLine($"Flags: Dev");
+#if DEBUG
+            dh.WriteLine("Flags: Debug");
+#else
+            dh.WriteLine("Flags: Release");
+#endif
 
             dh.AsyncWrite = true; // Switch back to async
 
             InitializePlatformServices();
 
+            // Register callback for post-UI async initialization
+            XerahS.UI.App.PostUIInitializationCallback = InitializeRecordingAsync;
+
             // Initialize settings
-            XerahS.Core.SettingManager.LoadInitialSettings();
+            XerahS.Core.SettingsManager.LoadInitialSettings();
 
             BuildAvaloniaApp()
                 .StartWithClassicDesktopLifetime(args);
@@ -108,7 +120,7 @@ namespace XerahS.App
 
                 // Initialize Windows platform with our UI wrapper
                 XerahS.Platform.Windows.WindowsPlatform.Initialize(uiCaptureService);
-                XerahS.Platform.Windows.WindowsPlatform.InitializeRecording();
+                // NOTE: InitializeRecording() moved to async post-UI initialization in App.axaml.cs
                 return;
             }
 #elif MACOS
@@ -119,14 +131,14 @@ namespace XerahS.App
                 var uiCaptureService = new XerahS.UI.Services.ScreenCaptureService(macCaptureService);
 
                 XerahS.Platform.MacOS.MacOSPlatform.Initialize(uiCaptureService);
-                XerahS.Platform.MacOS.MacOSPlatform.InitializeRecording(); // Stage 7: Cross-platform recording
+                // NOTE: InitializeRecording() moved to async post-UI initialization in App.axaml.cs
                 return;
             }
 #elif LINUX
             if (OperatingSystem.IsLinux())
             {
                 XerahS.Platform.Linux.LinuxPlatform.Initialize();
-                XerahS.Platform.Linux.LinuxPlatform.InitializeRecording(); // Stage 7: Cross-platform recording
+                // NOTE: InitializeRecording() moved to async post-UI initialization in App.axaml.cs
                 return;
             }
 #endif
@@ -135,9 +147,66 @@ namespace XerahS.App
             System.Diagnostics.Debug.WriteLine("Warning: Platform not fully supported, services may not be fully functional.");
         }
 
+        /// <summary>
+        /// Asynchronously initializes platform-specific recording capabilities after the UI is loaded.
+        /// This prevents blocking the main window from appearing during startup.
+        /// Called via PostUIInitializationCallback from App.axaml.cs after OnFrameworkInitializationCompleted.
+        /// </summary>
+        private static void InitializeRecordingAsync()
+        {
+            XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "=== InitializeRecordingAsync() CALLED ===");
+
+            // Capture startup time on main thread before going async (Stopwatch isn't thread-safe)
+            _startupStopwatch.Stop();
+            var startupTimeMs = _startupStopwatch.ElapsedMilliseconds;
+
+            // Run on a background thread to avoid blocking UI and store task in shared location
+            XerahS.Core.Managers.ScreenRecordingManager.PlatformInitializationTask = System.Threading.Tasks.Task.Run(() =>
+            {
+                var asyncStopwatch = System.Diagnostics.Stopwatch.StartNew();
+                try
+                {
+                    XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Background task started");
+                    XerahS.Common.DebugHelper.WriteLine("Starting async recording initialization...");
+#if WINDOWS
+                    if (OperatingSystem.IsWindows())
+                    {
+                        XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Platform is Windows, calling WindowsPlatform.InitializeRecording()");
+                        XerahS.Platform.Windows.WindowsPlatform.InitializeRecording();
+                    }
+#elif MACOS
+                    if (OperatingSystem.IsMacOS())
+                    {
+                        XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Platform is macOS, calling MacOSPlatform.InitializeRecording()");
+                        XerahS.Platform.MacOS.MacOSPlatform.InitializeRecording();
+                    }
+#elif LINUX
+                    if (OperatingSystem.IsLinux())
+                    {
+                        XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Platform is Linux, calling LinuxPlatform.InitializeRecording()");
+                        XerahS.Platform.Linux.LinuxPlatform.InitializeRecording();
+                    }
+#endif
+                    asyncStopwatch.Stop();
+                    XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Background task completed successfully");
+                    XerahS.Common.DebugHelper.WriteLine("Async recording initialization completed successfully");
+                    
+                    // Log startup time (captured on main thread) and async init time
+                    XerahS.Common.DebugHelper.WriteLine($"Startup time: {startupTimeMs} ms (+ {asyncStopwatch.ElapsedMilliseconds} ms async init)");
+                }
+                catch (Exception ex)
+                {
+                    XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", $"✗ Background task EXCEPTION: {ex.GetType().Name}: {ex.Message}");
+                    XerahS.Common.DebugHelper.WriteException(ex, "Failed to initialize recording capabilities");
+                    // Don't rethrow - allow app to continue with fallback
+                }
+            });
+        }
+
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<XerahS.UI.App>()
                 .UsePlatformDetect()
                 .LogToTrace();
     }
 }
+
