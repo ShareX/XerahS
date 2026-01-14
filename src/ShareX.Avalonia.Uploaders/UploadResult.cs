@@ -69,7 +69,7 @@ namespace XerahS.Uploaders
             IsURLExpected = true;
         }
 
-        public UploadResult(string source, string url = null) : this()
+        public UploadResult(string source, string? url = null) : this()
         {
             Response = source;
             URL = url;

@@ -79,7 +79,7 @@ namespace XerahS.Uploaders
                     throw new NotImplementedException("Unsupported signature method");
             }
 
-            string secret = null;
+            string? secret = null;
 
             if (!string.IsNullOrEmpty(oauth.UserToken) && !string.IsNullOrEmpty(oauth.UserSecret))
             {
@@ -127,9 +127,9 @@ namespace XerahS.Uploaders
             return string.Format("{0}?{1}&{2}={3}", normalizedUrl, normalizedParameters, ParameterSignature, URLHelpers.URLEncode(signature));
         }
 
-        public static string GetAuthorizationURL(string requestTokenResponse, OAuthInfo oauth, string authorizeURL, string callback = null)
+        public static string GetAuthorizationURL(string requestTokenResponse, OAuthInfo oauth, string authorizeURL, string? callback = null)
         {
-            string url = null;
+            string? url = null;
 
             NameValueCollection args = HttpUtility.ParseQueryString(requestTokenResponse);
 
@@ -180,7 +180,7 @@ namespace XerahS.Uploaders
             return signatureBase.ToString();
         }
 
-        private static byte[] GenerateSignature(string signatureBase, string consumerSecret, string userSecret = null)
+        private static byte[] GenerateSignature(string signatureBase, string consumerSecret, string? userSecret = null)
         {
             using (HMACSHA1 hmacsha1 = new HMACSHA1())
             {
@@ -233,6 +233,11 @@ namespace XerahS.Uploaders
 
         private static string NormalizeUrl(string url)
         {
+            if (string.IsNullOrEmpty(url))
+            {
+                return url;
+            }
+
             if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
             {
                 string port = "";

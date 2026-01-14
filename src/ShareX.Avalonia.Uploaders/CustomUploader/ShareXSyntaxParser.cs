@@ -102,6 +102,6 @@ namespace XerahS.Uploaders
             return sbOutput.ToString();
         }
 
-        protected abstract string CallFunction(string functionName, string[] parameters = null);
+        protected abstract string CallFunction(string functionName, string[]? parameters = null);
     }
 }

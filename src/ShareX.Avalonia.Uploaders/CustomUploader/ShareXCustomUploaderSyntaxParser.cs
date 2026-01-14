@@ -61,7 +61,7 @@ namespace XerahS.Uploaders
             return base.Parse(text);
         }
 
-        protected override string CallFunction(string functionName, string[] parameters = null)
+        protected override string CallFunction(string functionName, string[]? parameters = null)
         {
             if (string.IsNullOrEmpty(functionName))
             {

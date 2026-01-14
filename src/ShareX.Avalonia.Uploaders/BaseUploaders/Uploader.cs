@@ -97,7 +97,6 @@ namespace XerahS.Uploaders
         {
             return SendRequest(method, url, (Stream?)null, null, args, headers, cookies);
         }
-
         protected internal string? SendRequest(HttpMethod method, string url, Stream? data, string? contentType = null, Dictionary<string, string>? args = null, NameValueCollection? headers = null,
             CookieCollection? cookies = null)
         {
@@ -217,14 +216,13 @@ namespace XerahS.Uploaders
                     result.ResponseInfo = ProcessWebResponse(response) ?? new ResponseInfo();
                     result.Response = result.ResponseInfo?.ResponseText;
                 }
-
                 result.IsSuccess = true;
             }
             catch (Exception e)
             {
                 if (!StopUploadRequested)
                 {
-                    string response = ProcessError(e, url);
+                    string? response = ProcessError(e, url);
 
                     if (ReturnResponseOnError && e is WebException)
                     {
@@ -285,7 +283,6 @@ namespace XerahS.Uploaders
                     result.ResponseInfo = ProcessWebResponse(response) ?? new ResponseInfo();
                     result.Response = result.ResponseInfo?.ResponseText;
                 }
-
                 result.IsSuccess = true;
             }
             catch (Exception e)

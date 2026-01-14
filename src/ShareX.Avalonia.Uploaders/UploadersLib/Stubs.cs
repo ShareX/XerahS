@@ -45,7 +45,7 @@ namespace ShareX.UploadersLib.FileUploaders
         {
         }
 
-        public PomfUploader(string uploadURL, string resultURL = null)
+        public PomfUploader(string uploadURL, string? resultURL = null)
             : base(uploadURL, resultURL)
         {
         }
