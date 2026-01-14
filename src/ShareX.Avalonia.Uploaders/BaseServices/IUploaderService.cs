@@ -2,7 +2,7 @@
 
 /*
     ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using System.Drawing;
+using SkiaSharp;
 
 namespace XerahS.Uploaders
 {
@@ -33,9 +33,15 @@ namespace XerahS.Uploaders
 
         string ServiceName { get; }
 
-        Icon? ServiceIcon { get; }
+        /// <summary>
+        /// Optional service icon as SKBitmap. Returns null if no icon available.
+        /// </summary>
+        SKBitmap? ServiceIcon { get; }
 
-        Image? ServiceImage { get; }
+        /// <summary>
+        /// Optional service image/logo as SKBitmap. Returns null if no image available.
+        /// </summary>
+        SKBitmap? ServiceImage { get; }
 
         bool CheckConfig(UploadersConfig config);
     }

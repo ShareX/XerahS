@@ -2,7 +2,7 @@
 
 /*
     ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -23,30 +23,31 @@
 
 #endregion License Information (GPL v3)
 
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Runtime.Versioning;
+using SkiaSharp;
+using XerahS.Platform.Abstractions;
 
 namespace XerahS.Media
 {
-    [SupportedOSPlatform("windows")]
+    /// <summary>
+    /// Cross-platform gradient information using SkiaSharp types.
+    /// </summary>
     public class GradientInfo
     {
-        public LinearGradientMode Type { get; set; }
+        public GradientDirection Type { get; set; }
         public List<GradientStop> Colors { get; set; }
 
         public GradientInfo()
-            : this(LinearGradientMode.Vertical)
+            : this(GradientDirection.Vertical)
         {
         }
 
-        public GradientInfo(LinearGradientMode type)
+        public GradientInfo(GradientDirection type)
         {
             Type = type;
             Colors = new List<GradientStop>();
         }
 
-        public GradientInfo(LinearGradientMode type, params Color[] colors)
+        public GradientInfo(GradientDirection type, params SKColor[] colors)
             : this(type)
         {
             if (colors == null || colors.Length == 0)
@@ -63,14 +64,15 @@ namespace XerahS.Media
 
     public class GradientStop
     {
-        public Color Color { get; set; }
+        public SKColor Color { get; set; }
         public float Location { get; set; }
 
         public GradientStop()
         {
+            Color = SKColors.Transparent;
         }
 
-        public GradientStop(Color color, float location)
+        public GradientStop(SKColor color, float location)
         {
             Color = color;
             Location = location;

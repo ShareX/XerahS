@@ -129,7 +129,7 @@ namespace XerahS.Core.Tasks
                         Title = $"{Info.TaskSettings.Job} Failed",
                         Text = errorMessage,
                         Duration = 5f,
-                        Size = new System.Drawing.Size(400, 120),
+                        Size = new SizeI(400, 120),
                         AutoHide = true,
                         LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
                     });

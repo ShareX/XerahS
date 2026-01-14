@@ -29,13 +29,15 @@ namespace XerahS.App
 {
     internal class Program
     {
+        private static readonly System.Diagnostics.Stopwatch _startupStopwatch = System.Diagnostics.Stopwatch.StartNew();
+
         [STAThread]
         public static void Main(string[] args)
         {
             // Initialize logging with datestamped file in Logs/yyyy-mm folder structure
             var baseFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), XerahS.Core.SettingsManager.AppName);
             var logsFolder = System.IO.Path.Combine(baseFolder, "Logs", DateTime.Now.ToString("yyyy-MM"));
-            var logPath = System.IO.Path.Combine(logsFolder, $"ShareX-{DateTime.Now:yyyy-MM-dd}.log");
+            var logPath = System.IO.Path.Combine(logsFolder, $"{XerahS.Common.ShareXResources.AppName}-{DateTime.Now:yyyyMMdd}.log");
             XerahS.Common.DebugHelper.Init(logPath);
 
             var dh = XerahS.Common.DebugHelper.Logger;
@@ -175,6 +177,10 @@ namespace XerahS.App
 #endif
                     XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Background task completed successfully");
                     XerahS.Common.DebugHelper.WriteLine("Async recording initialization completed successfully");
+                    
+                    // Log startup time
+                    _startupStopwatch.Stop();
+                    XerahS.Common.DebugHelper.WriteLine($"Startup time: {_startupStopwatch.ElapsedMilliseconds} ms");
                 }
                 catch (Exception ex)
                 {
