@@ -49,7 +49,7 @@ Count Code
 ## Latest rebuild (develop)
 
 - Command: `dotnet build /t:Rebuild /p:TreatWarningsAsErrors=false`
-- Warnings: **391**
+- Warnings: **373**
 - Log: `warnings.log`
 
 ### Current counts by code
@@ -57,12 +57,12 @@ Count Code
 ```
 Count Code
 ----- ----
-  96  CS8600
+  88  CS8600
   76  CS8618
   69  CS8603
   47  CS8602
   38  CS8601
-  27  CS8604
+  25  CS8604
   18  CS8625
    4  CS8605
    4  CS0067

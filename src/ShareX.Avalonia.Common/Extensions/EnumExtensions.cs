@@ -39,7 +39,7 @@ namespace XerahS.Common
 
         public static string GetDescription(this Enum value)
         {
-            FieldInfo fi = value.GetType().GetField(value.ToString());
+            FieldInfo? fi = value.GetType().GetField(value.ToString());
 
             if (fi != null)
             {
@@ -168,7 +168,7 @@ namespace XerahS.Common
 
         public static string GetHotkeyCategory(this Enum value)
         {
-            FieldInfo fi = value.GetType().GetField(value.ToString());
+            FieldInfo? fi = value.GetType().GetField(value.ToString());
 
             if (fi != null)
             {

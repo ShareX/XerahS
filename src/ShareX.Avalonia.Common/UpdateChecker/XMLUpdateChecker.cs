@@ -28,61 +28,46 @@ namespace XerahS.Common
                     {
                         XDocument xd = XDocument.Load(xml);
 
-                        if (xd != null)
+                        string node;
+
+                        switch (ReleaseType)
                         {
-                            string node;
+                            default:
+                            case ReleaseChannelType.Stable:
+                                node = "Stable";
+                                break;
+                            case ReleaseChannelType.Beta:
+                                node = "Beta";
+                                break;
+                            case ReleaseChannelType.Dev:
+                                node = "Dev";
+                                break;
+                        }
 
-                            switch (ReleaseType)
+                        XElement? updateNode = xd.Element("Update");
+                        if (updateNode != null)
+                        {
+                            XElement? appNode = updateNode.Element(ApplicationName);
+                            if (appNode != null)
                             {
-                                default:
-                                case ReleaseChannelType.Stable:
-                                    node = "Stable";
-                                    break;
-                                case ReleaseChannelType.Beta:
-                                    node = "Beta"; // ShareX generic logic was "Beta|Stable" but XML structure usually implies checking one node. Adjust logic if needed.
-                                    // Original: node = "Beta|Stable"; implies path traversal or fallback? 
-                                    // The original GetNode(path) likely handled "Beta|Stable" by trying Beta then Stable? 
-                                    // For now, let's assume direct mapping or implement simple path logic.
-                                    // Actually, if the path implies alternatives, I'll stick to simple "Stable" for MVP or check how GetNode worked.
-                                    // Let's assume standard single node for now. To be safe, I'll use "Stable" or the specific type.
-                                    break;
-                                case ReleaseChannelType.Dev:
-                                    node = "Dev";
-                                    break;
-                            }
+                                XElement? channelNode = appNode.Element(node);
 
-                            // Handling "ApplicationName" and "node" traversal manually since GetNode extension is missing
-                            // Path: Update/{ApplicationName}/{node}
-                            XElement updateNode = xd.Element("Update");
-                            if (updateNode != null)
-                            {
-                                XElement appNode = updateNode.Element(ApplicationName);
-                                if (appNode != null)
+                                if (channelNode == null && ReleaseType == ReleaseChannelType.Beta)
                                 {
-                                    XElement channelNode = appNode.Element(node);
+                                    channelNode = appNode.Element("Stable");
+                                }
 
-                                    // Fallback logic if needed? 
-                                    // If ReleaseType is Beta, and Beta node missing, maybe fallback to Stable?
-                                    // Original code had "Beta|Stable" string, suggesting GetNode parsed pipes. 
-                                    // I will interpret that as "Try Beta, then Stable".
+                                if (channelNode != null)
+                                {
+                                    XElement? versionEl = channelNode.Element("Version");
+                                    XElement? urlEl = channelNode.Element("URL");
 
-                                    if (channelNode == null && ReleaseType == ReleaseChannelType.Beta)
+                                    if (versionEl != null && urlEl != null)
                                     {
-                                        channelNode = appNode.Element("Stable");
-                                    }
-
-                                    if (channelNode != null)
-                                    {
-                                        XElement versionEl = channelNode.Element("Version");
-                                        XElement urlEl = channelNode.Element("URL");
-
-                                        if (versionEl != null && urlEl != null)
-                                        {
-                                            LatestVersion = new Version(versionEl.Value);
-                                            DownloadURL = urlEl.Value;
-                                            RefreshStatus();
-                                            return;
-                                        }
+                                        LatestVersion = new Version(versionEl.Value);
+                                        DownloadURL = urlEl.Value;
+                                        RefreshStatus();
+                                        return;
                                     }
                                 }
                             }
