@@ -135,7 +135,7 @@ namespace XerahS.Uploaders
 
             if (args[ParameterToken] != null)
             {
-                oauth.AuthToken = args[ParameterToken];
+                oauth.AuthToken = args[ParameterToken]!;
                 url = string.Format("{0}?{1}={2}", authorizeURL, ParameterToken, oauth.AuthToken);
 
                 if (!string.IsNullOrEmpty(callback))
@@ -145,24 +145,24 @@ namespace XerahS.Uploaders
 
                 if (args[ParameterTokenSecret] != null)
                 {
-                    oauth.AuthSecret = args[ParameterTokenSecret];
+                    oauth.AuthSecret = args[ParameterTokenSecret]!;
                 }
             }
 
             return url;
         }
 
-        public static NameValueCollection ParseAccessTokenResponse(string accessTokenResponse, OAuthInfo oauth)
+        public static NameValueCollection? ParseAccessTokenResponse(string accessTokenResponse, OAuthInfo oauth)
         {
             NameValueCollection args = HttpUtility.ParseQueryString(accessTokenResponse);
 
             if (args != null && args[ParameterToken] != null)
             {
-                oauth.UserToken = args[ParameterToken];
+                oauth.UserToken = args[ParameterToken]!;
 
                 if (args[ParameterTokenSecret] != null)
                 {
-                    oauth.UserSecret = args[ParameterTokenSecret];
+                    oauth.UserSecret = args[ParameterTokenSecret]!;
 
                     return args;
                 }
