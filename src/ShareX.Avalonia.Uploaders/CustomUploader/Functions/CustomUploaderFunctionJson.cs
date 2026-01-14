@@ -49,7 +49,7 @@ namespace XerahS.Uploaders
             else
             {
                 // {json:jsonPath}
-                input = parser.ResponseInfo.ResponseText;
+                input = parser.ResponseInfo?.ResponseText;
                 jsonPath = parameters[0];
             }
 

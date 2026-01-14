@@ -32,7 +32,7 @@ namespace XerahS.Uploaders.ImageUploaders
         public override UploadResult Upload(Stream stream, string fileName)
         {
             UploadResult result = SendRequestFile("http://imm.io/store/", stream, fileName, "image");
-            if (result.IsSuccess)
+            if (result.IsSuccess && !string.IsNullOrEmpty(result.Response))
             {
                 ImmioResponse? response = JsonConvert.DeserializeObject<ImmioResponse>(result.Response);
                 if (response != null)

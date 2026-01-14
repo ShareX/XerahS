@@ -51,7 +51,7 @@ namespace XerahS.Uploaders
             else
             {
                 // {regex:pattern}
-                input = parser.ResponseInfo.ResponseText;
+                input = parser.ResponseInfo?.ResponseText;
                 pattern = parameters[0];
 
                 if (parameters.Length > 1)

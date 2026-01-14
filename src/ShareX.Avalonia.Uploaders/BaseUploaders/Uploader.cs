@@ -289,7 +289,7 @@ namespace XerahS.Uploaders
             {
                 if (!StopUploadRequested)
                 {
-                    string response = ProcessError(e, url);
+                    string? response = ProcessError(e, url);
 
                     if (ReturnResponseOnError && e is WebException)
                     {
