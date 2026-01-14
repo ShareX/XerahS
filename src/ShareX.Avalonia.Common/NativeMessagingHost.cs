@@ -29,7 +29,7 @@ namespace XerahS.Common
 {
     public class NativeMessagingHost
     {
-        public string Read()
+        public string? Read()
         {
             string? input = null;
 

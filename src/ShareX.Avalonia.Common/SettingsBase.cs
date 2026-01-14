@@ -302,7 +302,7 @@ namespace XerahS.Common
                 setting.BackupFolder = backupFolder;
             }
 
-            return setting;
+            return setting!;
         }
 
         private static T LoadInternal(string filePath, List<string>? fallbackFilePaths = null)
@@ -319,7 +319,7 @@ namespace XerahS.Common
                     {
                         if (fileStream.Length > 0)
                         {
-                            T? settings;
+                            T settings;
 
                             using (StreamReader streamReader = new StreamReader(fileStream))
                             using (JsonTextReader jsonReader = new JsonTextReader(streamReader))
@@ -330,12 +330,7 @@ namespace XerahS.Common
                                 serializer.DateTimeZoneHandling = DateTimeZoneHandling.Local;
                                 serializer.ObjectCreationHandling = ObjectCreationHandling.Replace;
                                 serializer.Error += Serializer_Error;
-                                settings = serializer.Deserialize<T>(jsonReader);
-                            }
-
-                            if (settings == null)
-                            {
-                                throw new Exception($"{typeName} object is null.");
+                                settings = serializer.Deserialize<T>(jsonReader) ?? throw new Exception($"{typeName} object is null.");
                             }
 
                             System.Diagnostics.Debug.WriteLine($"{typeName} load finished: {filePath}");

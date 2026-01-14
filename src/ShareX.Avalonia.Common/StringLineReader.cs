@@ -39,7 +39,7 @@ namespace XerahS.Common
             Length = Text.Length;
         }
 
-        public string ReadLine()
+        public string? ReadLine()
         {
             StringBuilder builder = new StringBuilder();
 
@@ -67,12 +67,12 @@ namespace XerahS.Common
         {
             List<string> lines = new List<string>();
 
-            string line;
+            string? line;
 
             while ((line = ReadLine()) != null)
             {
-                if (autoTrim) line = line.Trim();
-                lines.Add(line);
+                string currentLine = autoTrim ? line.Trim() : line;
+                lines.Add(currentLine);
             }
 
             return lines.ToArray();

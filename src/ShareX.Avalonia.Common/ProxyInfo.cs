@@ -63,7 +63,7 @@ namespace XerahS.Common
             return false;
         }
 
-        public IWebProxy GetWebProxy()
+        public IWebProxy? GetWebProxy()
         {
             try
             {
@@ -82,7 +82,7 @@ namespace XerahS.Common
             return null;
         }
 
-        private WebProxy GetDefaultWebProxy()
+        private WebProxy? GetDefaultWebProxy()
         {
             try
             {

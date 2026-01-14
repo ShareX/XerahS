@@ -74,7 +74,7 @@ namespace XerahS.Common
             }
         }
 
-        public static object GetValue(string path, string? name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
+        public static object? GetValue(string path, string? name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
         {
             try
             {
@@ -112,7 +112,7 @@ namespace XerahS.Common
             return registryValue != null && (value == null || registryValue.Equals(value, StringComparison.OrdinalIgnoreCase));
         }
 
-        public static string SearchProgramPath(string fileName)
+        public static string? SearchProgramPath(string fileName)
         {
             // First method: HKEY_CLASSES_ROOT\Applications\{fileName}\shell\{command}\command
 
