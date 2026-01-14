@@ -215,15 +215,15 @@ namespace XerahS.Uploaders.FileUploaders
             RandomNumberGenerator rng = RandomNumberGenerator.Create(); // Cryptographically secure
             rng.GetBytes(salt);
 
-            using (var deriver = new Rfc2898DeriveBytes(key, salt, PBKDF2_ITERATIONS, HashAlgorithmName.SHA256))
+            byte[] derivedKey = Rfc2898DeriveBytes.Pbkdf2(key, salt, PBKDF2_ITERATIONS, HashAlgorithmName.SHA256, AES_KEY_SIZE / 8);
+            byte[] derivedIV = Rfc2898DeriveBytes.Pbkdf2(key, salt, PBKDF2_ITERATIONS, HashAlgorithmName.SHA256, AES_BLOCK_SIZE / 8);
+
+            return new Vault_oooCryptoData
             {
-                return new Vault_oooCryptoData
-                {
-                    Salt = salt,
-                    Key = deriver.GetBytes(AES_KEY_SIZE / 8), // Derive the bytes from the deriver; Divide by 8 to input byte count
-                    IV = deriver.GetBytes(AES_BLOCK_SIZE / 8)
-                };
-            }
+                Salt = salt,
+                Key = derivedKey,
+                IV = derivedIV
+            };
         }
 
         private static byte[] EncryptBytes(Vault_oooCryptoData crypto, byte[] bytes)
