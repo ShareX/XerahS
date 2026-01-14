@@ -23,9 +23,12 @@
 
 #endregion License Information (GPL v3)
 
+using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using XerahS.Core;
+using XerahS.Core.Hotkeys;
+using XerahS.Platform.Abstractions;
 
 namespace XerahS.UI.ViewModels
 {
@@ -68,7 +71,24 @@ namespace XerahS.UI.ViewModels
 
         public UpdateChannel[] UpdateChannels => (UpdateChannel[])Enum.GetValues(typeof(UpdateChannel));
 
-        private TaskSettings ActiveTaskSettings => SettingsManager.GetOrCreateWorkflowTaskSettings(HotkeyType.None);
+        private TaskSettings ActiveTaskSettings
+        {
+            get
+            {
+                SettingsManager.WorkflowsConfig ??= new WorkflowsConfig();
+                SettingsManager.WorkflowsConfig.Hotkeys ??= new List<WorkflowSettings>();
+
+                var workflow = SettingsManager.GetFirstWorkflow(HotkeyType.None);
+                if (workflow == null)
+                {
+                    workflow = new WorkflowSettings(HotkeyType.None, new HotkeyInfo());
+                    SettingsManager.WorkflowsConfig.Hotkeys.Add(workflow);
+                }
+
+                workflow.TaskSettings ??= new TaskSettings { Job = HotkeyType.None };
+                return workflow.TaskSettings;
+            }
+        }
 
         // Tray Click Actions
         public HotkeyType TrayLeftClickAction
