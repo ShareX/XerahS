@@ -50,12 +50,12 @@ namespace XerahS.Common
 
             if (ProxyMethod == ProxyMethod.Automatic)
             {
-                WebProxy systemProxy = GetDefaultWebProxy();
+                WebProxy? systemProxy = GetDefaultWebProxy();
 
-                if (systemProxy != null && systemProxy.Address != null && !string.IsNullOrEmpty(systemProxy.Address.Host) && systemProxy.Address.Port > 0)
+                if (systemProxy?.Address is Uri address && !string.IsNullOrEmpty(address.Host) && address.Port > 0)
                 {
-                    Host = systemProxy.Address.Host;
-                    Port = systemProxy.Address.Port;
+                    Host = address.Host;
+                    Port = address.Port;
                     return true;
                 }
             }
@@ -87,8 +87,13 @@ namespace XerahS.Common
             try
             {
                 // Need better solution
-                return (WebProxy)typeof(WebProxy).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
-                    null, new Type[] { typeof(bool) }, null).Invoke(new object[] { true });
+                var constructor = typeof(WebProxy).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
+                    null, new Type[] { typeof(bool) }, null);
+
+                if (constructor != null)
+                {
+                    return constructor.Invoke(new object[] { true }) as WebProxy;
+                }
             }
             catch (Exception e)
             {
