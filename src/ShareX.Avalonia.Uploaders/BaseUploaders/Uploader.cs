@@ -95,7 +95,7 @@ namespace XerahS.Uploaders
 
         protected internal string? SendRequest(HttpMethod method, string url, Dictionary<string, string>? args = null, NameValueCollection? headers = null, CookieCollection? cookies = null)
         {
-            return SendRequest(method, url, (Stream)null, null, args, headers, cookies);
+            return SendRequest(method, url, (Stream?)null, null, args, headers, cookies);
         }
 
         protected internal string? SendRequest(HttpMethod method, string url, Stream? data, string? contentType = null, Dictionary<string, string>? args = null, NameValueCollection? headers = null,
@@ -214,7 +214,7 @@ namespace XerahS.Uploaders
 
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                 {
-                    result.ResponseInfo = ProcessWebResponse(response);
+                    result.ResponseInfo = ProcessWebResponse(response) ?? new ResponseInfo();
                     result.Response = result.ResponseInfo?.ResponseText;
                 }
 
@@ -282,7 +282,7 @@ namespace XerahS.Uploaders
 
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                 {
-                    result.ResponseInfo = ProcessWebResponse(response);
+                    result.ResponseInfo = ProcessWebResponse(response) ?? new ResponseInfo();
                     result.Response = result.ResponseInfo?.ResponseText;
                 }
 
@@ -328,7 +328,7 @@ namespace XerahS.Uploaders
 
                 HttpWebRequest request = CreateWebRequest(method, url, headers, cookies, contentType, contentLength);
 
-                if (contentLength > 0)
+                if (contentLength > 0 && data != null)
                 {
                     using (Stream requestStream = request.GetRequestStream())
                     {
@@ -427,7 +427,7 @@ namespace XerahS.Uploaders
                     {
                         using (HttpWebResponse webResponse = (HttpWebResponse)webException.Response)
                         {
-                            ResponseInfo responseInfo = ProcessWebResponse(webResponse);
+                            ResponseInfo responseInfo = ProcessWebResponse(webResponse) ?? new ResponseInfo();
 
                             if (responseInfo != null)
                             {
@@ -529,12 +529,12 @@ namespace XerahS.Uploaders
 
         #region OAuth methods
 
-        protected string GetAuthorizationURL(string requestTokenURL, string authorizeURL, OAuthInfo authInfo,
-            Dictionary<string, string> customParameters = null, HttpMethod httpMethod = HttpMethod.GET)
+        protected string? GetAuthorizationURL(string requestTokenURL, string authorizeURL, OAuthInfo authInfo,
+            Dictionary<string, string>? customParameters = null, HttpMethod httpMethod = HttpMethod.GET)
         {
             string url = OAuthManager.GenerateQuery(requestTokenURL, customParameters, httpMethod, authInfo);
 
-            string response = SendRequest(httpMethod, url);
+            string? response = SendRequest(httpMethod, url);
 
             if (!string.IsNullOrEmpty(response))
             {
