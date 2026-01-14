@@ -446,7 +446,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
             try
             {
                 var iidBytes = typeof(IBufferByteAccess).GUID;
-                if (Marshal.QueryInterface(bufferUnknown, ref iidBytes, out var pByteAccess) != 0)
+                if (Marshal.QueryInterface(bufferUnknown, in iidBytes, out var pByteAccess) != 0)
                 {
                     throw new InvalidCastException("Failed to query IBufferByteAccess");
                 }
@@ -511,7 +511,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
             null,
             Vortice.Direct3D.DriverType.Hardware,
             DeviceCreationFlags.BgraSupport,
-            null,
+            null!,
             out var device,
             out _,
             out _);

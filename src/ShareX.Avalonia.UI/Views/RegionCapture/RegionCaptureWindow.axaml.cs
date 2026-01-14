@@ -299,9 +299,11 @@ namespace XerahS.UI.Views.RegionCapture
                 StartPoint = new Point(0, 0),
                 IsClosed = true
             };
+            fullScreenFigure.Segments ??= new PathSegments();
             fullScreenFigure.Segments.Add(new LineSegment { Point = new Point(Width, 0) });
             fullScreenFigure.Segments.Add(new LineSegment { Point = new Point(Width, Height) });
             fullScreenFigure.Segments.Add(new LineSegment { Point = new Point(0, Height) });
+            darkeningGeometry.Figures ??= new PathFigures();
             darkeningGeometry.Figures.Add(fullScreenFigure);
 
             overlay.Data = darkeningGeometry;
@@ -325,9 +327,11 @@ namespace XerahS.UI.Views.RegionCapture
                 StartPoint = new Point(0, 0),
                 IsClosed = true
             };
+            outerFigure.Segments ??= new PathSegments();
             outerFigure.Segments.Add(new LineSegment { Point = new Point(Width, 0) });
             outerFigure.Segments.Add(new LineSegment { Point = new Point(Width, Height) });
             outerFigure.Segments.Add(new LineSegment { Point = new Point(0, Height) });
+            darkeningGeometry.Figures ??= new PathFigures();
             darkeningGeometry.Figures.Add(outerFigure);
 
             // Inner rectangle: selection area (this creates the "hole")
@@ -336,6 +340,7 @@ namespace XerahS.UI.Views.RegionCapture
                 StartPoint = new Point(selX, selY),
                 IsClosed = true
             };
+            innerFigure.Segments ??= new PathSegments();
             innerFigure.Segments.Add(new LineSegment { Point = new Point(selX + selWidth, selY) });
             innerFigure.Segments.Add(new LineSegment { Point = new Point(selX + selWidth, selY + selHeight) });
             innerFigure.Segments.Add(new LineSegment { Point = new Point(selX, selY + selHeight) });

@@ -36,7 +36,9 @@ namespace XerahS.Core.Tasks;
 /// </summary>
 public class WorkflowTask : IDisposable
 {
+#pragma warning disable CS0067 // Event is never used - kept for future implementation
     public event EventHandler<UploadProgressEventArgs>? UploadProgressChanged;
+#pragma warning restore CS0067
     public event EventHandler? TaskCompleted;
 
     public string FileName { get; set; } = string.Empty;

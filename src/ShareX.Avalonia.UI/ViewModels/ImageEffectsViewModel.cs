@@ -42,7 +42,7 @@ namespace XerahS.UI.ViewModels
         // TODO TODO_IMAGE_EFFECTS     set => SetProperty(ref selectedEffect, value);
         // TODO TODO_IMAGE_EFFECTS }
 
-        public List<EffectCategory> AvailableEffects { get; private set; }
+        public List<EffectCategory> AvailableEffects { get; private set; } = new();
 
         private Bitmap? previewBitmap;
         public Bitmap? PreviewBitmap

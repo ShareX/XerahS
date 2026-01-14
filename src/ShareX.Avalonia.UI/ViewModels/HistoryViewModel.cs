@@ -483,7 +483,12 @@ namespace XerahS.UI.ViewModels
             }
             else
             {
-                await confirmDialog.ShowDialog((Avalonia.Controls.Window?)null);
+                // Fallback: show as independent window
+                confirmDialog.Show();
+                // Wait for close via event
+                var closeTcs = new TaskCompletionSource<bool>();
+                confirmDialog.Closed += (s, e) => closeTcs.TrySetResult(true);
+                await closeTcs.Task;
             }
 
             return result;

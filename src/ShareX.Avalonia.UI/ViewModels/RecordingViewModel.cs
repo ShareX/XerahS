@@ -44,8 +44,8 @@ namespace XerahS.UI.ViewModels;
 public partial class RecordingViewModel : ViewModelBase, IDisposable
 {
     private readonly System.Timers.Timer _durationTimer;
-    private WorkflowSettings _workflow;
-    private TaskSettings _taskSettings;
+    private WorkflowSettings _workflow = null!;
+    private TaskSettings _taskSettings = null!;
     private bool _disposed;
     private bool _initialized;
     private Views.RecordingBorderWindow? _borderWindow;
@@ -413,7 +413,10 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
 
             // Use unified pipeline through TaskHelpers.ExecuteWorkflow
             // This ensures recording goes through the same path as hotkey triggers
-            await Core.Helpers.TaskHelpers.ExecuteWorkflow(_workflow);
+            if (_workflow != null)
+            {
+                await Core.Helpers.TaskHelpers.ExecuteWorkflow(_workflow);
+            }
         }
         catch (Exception ex)
         {

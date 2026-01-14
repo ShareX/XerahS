@@ -407,7 +407,7 @@ namespace XerahS.Core.Tasks
                 }
                 else
                 {
-                    DebugHelper.WriteLine($"Capture returned null for job type: {taskSettings.Job} (elapsed {captureStopwatch.ElapsedMilliseconds}ms)");
+                    DebugHelper.WriteLine($"Capture returned null for job type: {taskSettings?.Job} (elapsed {captureStopwatch.ElapsedMilliseconds}ms)");
                     
                     // IF capture returned null (e.g. user cancelled region selection), stop the task here.
                     // This prevents empty tasks from being marked as 'Completed' successfully.

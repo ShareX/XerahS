@@ -96,7 +96,7 @@ namespace XerahS.CLI.Commands
             {
                 settings.AfterCaptureJob |= AfterCaptureTasks.SaveImageToFile;
                 settings.OverrideScreenshotsFolder = true;
-                settings.ScreenshotsFolder = Path.GetDirectoryName(output);
+                settings.ScreenshotsFolder = Path.GetDirectoryName(output) ?? string.Empty;
                 settings.UploadSettings.NameFormatPattern = Path.GetFileNameWithoutExtension(output);
             }
             

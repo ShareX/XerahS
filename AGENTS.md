@@ -84,6 +84,31 @@ All `.cs` files must include the GPL v3 license header.
 - **Minimalism**: Keep changes minimal and targeted.
 - **Compilation**: **Ensure you can compile (`dotnet build`) before finishing any task.** This is mandatory.
 
+### Nullability Best Practices
+This project uses strict nullable reference types (`<Nullable>enable</Nullable>`). **All new code MUST be null-safe.**
+
+- **Always handle nullable returns**: Use null-conditional (`?.`), null-coalescing (`??`), or explicit null checks.
+- **Nullable dereference errors (CS8602)**: Never dereference a possibly-null reference without a guard.
+- **Null argument errors (CS8604)**: Validate arguments before passing to non-nullable parameters.
+- **Null assignment errors (CS8601)**: Use default values or `null!` only when the value is guaranteed to be non-null.
+- **Collection null properties**: Some Avalonia/framework properties (e.g., `PathFigure.Segments`, `PathGeometry.Figures`) can be `null`. Use `??=` before accessing.
+- **Late-initialized fields**: Use `null!` assertion only for fields guaranteed to be initialized before use (e.g., in constructor).
+- **Chase all errors**: When nullability fixes surface new errors, continue fixing until the build succeeds with 0 errors.
+
+**Example patterns:**
+```csharp
+// Safe access with null-conditional + null-coalescing
+var result = settings?.CaptureSettings?.UseModernCapture ?? false;
+
+// Null-coalescing assignment for collection properties
+outerFigure.Segments ??= new PathSegments();
+outerFigure.Segments.Add(...);
+
+// Non-nullable parameter guard
+if (string.IsNullOrEmpty(workflowId)) return;
+```
+
+
 ---
 
 ## Architecture & Porting Rules

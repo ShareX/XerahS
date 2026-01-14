@@ -84,7 +84,7 @@ namespace XerahS.Core.Tasks.Processors
 
             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AnnotateImage))
             {
-                if (info.Metadata.Image != null)
+                if (info.Metadata?.Image != null && PlatformServices.UI != null)
                 {
                     await PlatformServices.UI.ShowEditorAsync(info.Metadata.Image);
                 }
@@ -122,7 +122,7 @@ namespace XerahS.Core.Tasks.Processors
                         FileName = Path.GetFileName(info.FilePath),
                         DateTime = DateTime.Now,
                         Type = "Image",
-                        URL = info.Metadata?.UploadURL
+                        URL = info.Metadata?.UploadURL ?? string.Empty
                     };
 
                     historyManager.AppendHistoryItem(historyItem);
@@ -179,7 +179,7 @@ namespace XerahS.Core.Tasks.Processors
         {
             if (string.IsNullOrEmpty(info.FilePath) && info.Metadata?.Image != null)
             {
-                info.FilePath = TaskHelpers.SaveImageAsFile(info.Metadata.Image, info.TaskSettings);
+                info.FilePath = TaskHelpers.SaveImageAsFile(info.Metadata.Image, info.TaskSettings) ?? string.Empty;
             }
 
             if (string.IsNullOrEmpty(info.FilePath))

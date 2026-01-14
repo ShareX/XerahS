@@ -113,6 +113,7 @@ namespace XerahS.Bootstrap
             DebugHelper.Init(logPath);
 
             var dh = DebugHelper.Logger;
+            if (dh == null) return;
             dh.AsyncWrite = false; // Synchronous for startup
 
             dh.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - ShareX starting.");

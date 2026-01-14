@@ -171,7 +171,7 @@ public partial class WorkflowsViewModel : ViewModelBase
 
             // Deep copy TaskSettings using JSON
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(SelectedWorkflow.Model.TaskSettings);
-            clone.TaskSettings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json);
+            clone.TaskSettings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json) ?? new TaskSettings();
 
             // Copy additional properties
             clone.Name = SelectedWorkflow.Model.Name;

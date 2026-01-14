@@ -58,6 +58,12 @@ namespace XerahS.CLI.Commands
             runCommand.SetAction((parseResult) =>
             {
                 var workflowId = parseResult.GetValue(workflowIdArg);
+                if (string.IsNullOrEmpty(workflowId))
+                {
+                    Console.Error.WriteLine("Error: workflow-id is required");
+                    Environment.ExitCode = 1;
+                    return;
+                }
                 var duration = parseResult.GetValue(durationOption);
                 var dumpFrame = parseResult.GetValue(dumpFrameOption);
                 var exitOnComplete = parseResult.GetValue(exitOnCompleteOption);

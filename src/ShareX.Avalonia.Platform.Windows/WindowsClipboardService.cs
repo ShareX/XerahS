@@ -265,7 +265,11 @@ namespace XerahS.Platform.Windows
         {
             try
             {
-                return Clipboard.GetData(format);
+                if (Clipboard.TryGetData(format, out object? data))
+                {
+                    return data;
+                }
+                return null;
             }
             catch
             {

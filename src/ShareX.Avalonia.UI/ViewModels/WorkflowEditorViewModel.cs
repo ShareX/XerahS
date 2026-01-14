@@ -188,19 +188,19 @@ public partial class WorkflowEditorViewModel : ViewModelBase
                 break;
         }
 
-        if (showImageUploaders)
+        if (showImageUploaders && _imageCategory != null)
         {
             foreach (var instance in _imageCategory.Instances)
                 AvailableDestinations.Add(instance);
         }
 
-        if (showTextUploaders)
+        if (showTextUploaders && _textCategory != null)
         {
             foreach (var instance in _textCategory.Instances)
                 AvailableDestinations.Add(instance);
         }
 
-        if (showFileUploaders)
+        if (showFileUploaders && _fileCategory != null)
         {
             foreach (var instance in _fileCategory.Instances)
                 AvailableDestinations.Add(instance);

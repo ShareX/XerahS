@@ -13,7 +13,9 @@ public sealed class WindowsRegionCaptureBackend : IRegionCaptureBackend
     private readonly ICaptureStrategy _strategy;
     private bool _disposed;
 
+#pragma warning disable CS0067 // Event is never used - placeholder for future display change notifications
     public event EventHandler<MonitorConfigurationChangedEventArgs>? ConfigurationChanged;
+#pragma warning restore CS0067
 
     public WindowsRegionCaptureBackend()
     {

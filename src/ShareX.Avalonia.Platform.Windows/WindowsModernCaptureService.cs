@@ -73,7 +73,7 @@ namespace XerahS.Platform.Windows
                 ? XerahS.Core.SettingsManager.GetWorkflowTaskSettings(options.WorkflowId)?.CaptureSettings 
                 : XerahS.Core.SettingsManager.DefaultTaskSettings.CaptureSettings;
 
-            bool useModern = options?.UseModernCapture ?? captureSettings.UseModernCapture;
+            bool useModern = options?.UseModernCapture ?? captureSettings?.UseModernCapture ?? false;
 
             if (!IsSupported || !useModern)
             {
@@ -123,7 +123,7 @@ namespace XerahS.Platform.Windows
                 ? XerahS.Core.SettingsManager.GetWorkflowTaskSettings(options.WorkflowId)?.CaptureSettings 
                 : XerahS.Core.SettingsManager.DefaultTaskSettings.CaptureSettings;
 
-            bool useModern = options?.UseModernCapture ?? captureSettings.UseModernCapture;
+            bool useModern = options?.UseModernCapture ?? captureSettings?.UseModernCapture ?? false;
 
             if (!IsSupported || !useModern)
             {

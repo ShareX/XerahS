@@ -288,6 +288,8 @@ public partial class App : Application
     {
         DebugHelper.WriteLine($"Hotkey triggered: {settings} (ID: {settings?.Id ?? "null"})");
 
+        if (settings == null) return;
+
         bool isCaptureJob = settings.Job is Core.HotkeyType.PrintScreen
                                           or Core.HotkeyType.ActiveWindow
                                           or Core.HotkeyType.CustomWindow

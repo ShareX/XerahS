@@ -165,7 +165,7 @@ public sealed class RegionCaptureOrchestrator : IDisposable
                 return ((MonitorInfo, CapturedBitmap, PhysicalRectangle)?)null;
 
             var captured = await _backend.CaptureRegionAsync(intersection.Value, options);
-            return ((MonitorInfo, CapturedBitmap, PhysicalRectangle)?)(monitor, captured, intersection: intersection.Value);
+            return ((MonitorInfo, CapturedBitmap, PhysicalRectangle)?)(monitor, captured, intersection.Value);
         }).ToArray();
 
         var captures = await Task.WhenAll(captureTasks);
