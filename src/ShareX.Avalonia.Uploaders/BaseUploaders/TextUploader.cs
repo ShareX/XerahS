@@ -39,7 +39,7 @@ namespace XerahS.Uploaders
 
         public abstract UploadResult UploadText(string text, string fileName);
 
-        public UploadResult UploadTextFile(string filePath)
+        public UploadResult? UploadTextFile(string filePath)
         {
             if (File.Exists(filePath))
             {

@@ -72,7 +72,7 @@ namespace XerahS.Uploaders.FileUploaders
 
             UploadResult result = SendRequestFile("http://assets.drop.io/upload", stream, fileName, "file", args);
 
-            if (result.IsSuccess)
+            if (result.IsSuccess && !string.IsNullOrEmpty(result.Response))
             {
                 Asset asset = ParseAsset(result.Response);
                 result.URL = string.Format("http://drop.io/{0}/asset/{1}", drop.Name, asset.Name);
@@ -89,7 +89,7 @@ namespace XerahS.Uploaders.FileUploaders
             }
 
             XDocument doc = XDocument.Parse(response);
-            XElement root = doc.Element("asset");
+            XElement? root = doc.Element("asset");
             if (root != null)
             {
                 Asset asset = new Asset();
@@ -118,12 +118,12 @@ namespace XerahS.Uploaders.FileUploaders
             // determines whether guests can delete assets
             args.Add("guests_can_delete", guests_can_delete.ToString());
 
-            string response = SendRequestMultiPart("http://api.drop.io/drops", args);
+            string? response = SendRequestMultiPart("http://api.drop.io/drops", args);
 
             if (!string.IsNullOrEmpty(response))
             {
                 XDocument doc = XDocument.Parse(response);
-                XElement root = doc.Element("drop");
+                XElement? root = doc.Element("drop");
                 if (root != null)
                 {
                     Drop drop = new Drop();
@@ -137,4 +137,3 @@ namespace XerahS.Uploaders.FileUploaders
         }
     }
 }
-

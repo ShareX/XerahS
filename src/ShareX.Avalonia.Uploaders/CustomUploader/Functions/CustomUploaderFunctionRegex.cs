@@ -39,7 +39,9 @@ namespace XerahS.Uploaders
 
         public override string Call(ShareXCustomUploaderSyntaxParser parser, string[] parameters)
         {
-            string input, pattern, group = "";
+            string? input;
+            string pattern;
+            string group = "";
 
             if (parameters.Length > 2)
             {

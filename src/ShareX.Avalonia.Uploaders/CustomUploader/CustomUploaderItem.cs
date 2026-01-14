@@ -322,7 +322,7 @@ namespace XerahS.Uploaders
             }
         }
 
-        public void TryParseResponse(UploadResult result, ResponseInfo responseInfo, UploaderErrorManager errors, CustomUploaderInput input, bool isShortenedURL = false)
+        public void TryParseResponse(UploadResult result, ResponseInfo? responseInfo, UploaderErrorManager errors, CustomUploaderInput input, bool isShortenedURL = false)
         {
             try
             {

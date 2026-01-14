@@ -68,11 +68,11 @@ namespace XerahS.Uploaders
             args.Add("redirect_uri", RedirectURI);
             args.Add("grant_type", "authorization_code");
 
-            string response = GoogleUploader.SendRequestURLEncoded(HttpMethod.POST, TokenEndpoint, args);
+            string? response = GoogleUploader.SendRequestURLEncoded(HttpMethod.POST, TokenEndpoint, args);
 
             if (!string.IsNullOrEmpty(response))
             {
-                OAuth2Token token = JsonConvert.DeserializeObject<OAuth2Token>(response);
+                OAuth2Token? token = JsonConvert.DeserializeObject<OAuth2Token>(response);
 
                 if (token != null && !string.IsNullOrEmpty(token.access_token))
                 {
@@ -95,11 +95,11 @@ namespace XerahS.Uploaders
                 args.Add("client_secret", AuthInfo.Client_Secret);
                 args.Add("grant_type", "refresh_token");
 
-                string response = GoogleUploader.SendRequestURLEncoded(HttpMethod.POST, TokenEndpoint, args);
+                string? response = GoogleUploader.SendRequestURLEncoded(HttpMethod.POST, TokenEndpoint, args);
 
                 if (!string.IsNullOrEmpty(response))
                 {
-                    OAuth2Token token = JsonConvert.DeserializeObject<OAuth2Token>(response);
+                    OAuth2Token? token = JsonConvert.DeserializeObject<OAuth2Token>(response);
 
                     if (token != null && !string.IsNullOrEmpty(token.access_token))
                     {
@@ -141,9 +141,9 @@ namespace XerahS.Uploaders
             return headers;
         }
 
-        public OAuthUserInfo GetUserInfo()
+        public OAuthUserInfo? GetUserInfo()
         {
-            string response = GoogleUploader.SendRequest(HttpMethod.GET, UserInfoEndpoint, null, GetAuthHeaders());
+            string? response = GoogleUploader.SendRequest(HttpMethod.GET, UserInfoEndpoint, null, GetAuthHeaders());
 
             if (!string.IsNullOrEmpty(response))
             {

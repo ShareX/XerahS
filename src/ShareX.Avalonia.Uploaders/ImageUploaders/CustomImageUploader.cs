@@ -49,7 +49,7 @@ namespace XerahS.Uploaders.ImageUploaders
                 index = config.CustomImageUploaderSelected;
             }
 
-            CustomUploaderItem customUploader = config.CustomUploadersList.ReturnIfValidIndex(index);
+            CustomUploaderItem? customUploader = config.CustomUploadersList.ReturnIfValidIndex(index);
 
             if (customUploader != null)
             {
