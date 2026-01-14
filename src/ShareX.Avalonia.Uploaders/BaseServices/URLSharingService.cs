@@ -27,6 +27,6 @@ namespace XerahS.Uploaders
 {
     public abstract class URLSharingService : UploaderService<URLSharingServices>
     {
-        public abstract URLSharer CreateSharer(UploadersConfig config, TaskReferenceHelper taskInfo);
+        public abstract URLSharer? CreateSharer(UploadersConfig config, TaskReferenceHelper taskInfo);
     }
 }

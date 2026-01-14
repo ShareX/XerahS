@@ -101,14 +101,14 @@ namespace XerahS.Uploaders
                 !string.IsNullOrEmpty(oauth.UserToken) && !string.IsNullOrEmpty(oauth.UserSecret);
         }
 
+        object ICloneable.Clone()
+        {
+            return Clone()!;
+        }
+
         public OAuthInfo? Clone()
         {
             return MemberwiseClone() as OAuthInfo;
-        }
-
-        object ICloneable.Clone()
-        {
-            return Clone();
         }
 
         public override string ToString()

@@ -127,7 +127,7 @@ namespace XerahS.Uploaders
             return string.Format("{0}?{1}&{2}={3}", normalizedUrl, normalizedParameters, ParameterSignature, URLHelpers.URLEncode(signature));
         }
 
-        public static string GetAuthorizationURL(string requestTokenResponse, OAuthInfo oauth, string authorizeURL, string? callback = null)
+        public static string? GetAuthorizationURL(string requestTokenResponse, OAuthInfo oauth, string authorizeURL, string? callback = null)
         {
             string? url = null;
 
@@ -238,7 +238,13 @@ namespace XerahS.Uploaders
                 return url ?? string.Empty;
             }
 
-            if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+            Uri? uri = null;
+            if (Uri.TryCreate(url, UriKind.Absolute, out Uri? result))
+            {
+                uri = result;
+            }
+
+            if (uri != null)
             {
                 string port = "";
 

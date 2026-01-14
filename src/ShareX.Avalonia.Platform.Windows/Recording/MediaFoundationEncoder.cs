@@ -142,7 +142,7 @@ public class MediaFoundationEncoder : IVideoEncoder
 
             // Create sink writer
             Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF_ENCODER", $"Calling MFCreateSinkWriterFromURL, outputPath={_outputPath}...");
-            hr = MFCreateSinkWriterFromURL(_outputPath, IntPtr.Zero, attributes, out _sinkWriter);
+            hr = MFCreateSinkWriterFromURL(_outputPath ?? string.Empty, IntPtr.Zero, attributes, out _sinkWriter);
             Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF_ENCODER", $"MFCreateSinkWriterFromURL returned HRESULT: 0x{hr:X8}");
             if (hr != 0 || _sinkWriter == IntPtr.Zero)
             {
@@ -291,7 +291,7 @@ public class MediaFoundationEncoder : IVideoEncoder
         }
     }
 
-    public void Finalize()
+    public void FinalizeEncoding()
     {
         lock (_lock)
         {
@@ -405,7 +405,7 @@ public class MediaFoundationEncoder : IVideoEncoder
         // [2026-01-10T14:02:37+08:00] Guard against duplicate sink finalization when Dispose follows StopRecordingAsync; outcome (2026-01-10T14:09:06+08:00) shows single finalize entry with valid mp4 size. [2026-01-10T14:37:00+08:00] Orientation fix adjusted to vertical-only flip to remove residual mirror.
         if (needsFinalize)
         {
-            Finalize();
+            FinalizeEncoding();
         }
 
         GC.SuppressFinalize(this);

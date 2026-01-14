@@ -27,6 +27,6 @@ namespace XerahS.Uploaders
 {
     public abstract class TextUploaderService : UploaderService<TextDestination>, IGenericUploaderService
     {
-        public abstract GenericUploader CreateUploader(UploadersConfig config, TaskReferenceHelper taskInfo);
+        public abstract GenericUploader? CreateUploader(UploadersConfig config, TaskReferenceHelper taskInfo);
     }
 }

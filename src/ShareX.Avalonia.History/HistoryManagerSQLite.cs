@@ -253,7 +253,7 @@ WHERE Id = @Id;";
                 cmd.Parameters.AddWithValue("@Id", item.Id);
                 cmd.ExecuteNonQuery();
 
-                transaction.Commit();
+                transaction?.Commit();
             }
         }
 

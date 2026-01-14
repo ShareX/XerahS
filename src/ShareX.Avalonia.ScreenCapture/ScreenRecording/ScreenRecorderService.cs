@@ -197,7 +197,7 @@ public class ScreenRecorderService : IRecordingService
             }
 
             // Finalize encoder
-            encoder?.Finalize();
+            encoder?.FinalizeEncoding();
             encoder?.Dispose();
 
             if (!string.IsNullOrEmpty(outputPath))

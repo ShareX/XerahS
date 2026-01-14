@@ -13,7 +13,11 @@ public sealed class MacOSRegionCaptureBackend : IRegionCaptureBackend
     private readonly ICaptureStrategy _strategy;
     private bool _disposed;
 
-    public event EventHandler<MonitorConfigurationChangedEventArgs>? ConfigurationChanged;
+    public event EventHandler<MonitorConfigurationChangedEventArgs>? ConfigurationChanged
+    {
+        add { }
+        remove { }
+    }
 
     public MacOSRegionCaptureBackend()
     {

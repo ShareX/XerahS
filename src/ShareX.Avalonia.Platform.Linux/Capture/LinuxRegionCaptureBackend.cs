@@ -14,7 +14,11 @@ public sealed class LinuxRegionCaptureBackend : IRegionCaptureBackend
     private readonly string _sessionType;
     private bool _disposed;
 
-    public event EventHandler<MonitorConfigurationChangedEventArgs>? ConfigurationChanged;
+    public event EventHandler<MonitorConfigurationChangedEventArgs>? ConfigurationChanged
+    {
+        add { }
+        remove { }
+    }
 
     public LinuxRegionCaptureBackend()
     {

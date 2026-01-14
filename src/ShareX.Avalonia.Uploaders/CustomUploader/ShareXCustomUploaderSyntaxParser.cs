@@ -78,7 +78,7 @@ namespace XerahS.Uploaders
                         throw new Exception($"Minimum parameter count for function \"{function.Name}\" is {function.MinParameterCount}.");
                     }
 
-                    return function.Call(this, parameters);
+                    return function.Call(this, parameters ?? Array.Empty<string>());
                 }
             }
 

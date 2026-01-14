@@ -30,7 +30,7 @@ namespace XerahS.Uploaders.FileUploaders
     public static class SendSpaceManager
     {
         public static string Token = string.Empty;
-        public static string SessionKey = string.Empty;
+        public static string? SessionKey = string.Empty;
         public static DateTime LastSessionKey;
         public static AccountType AccountType;
         public static string Username = string.Empty;
