@@ -33,22 +33,22 @@ namespace XerahS.Uploaders
     public class Uploader
     {
         public delegate void ProgressEventHandler(ProgressManager progress);
-        public event ProgressEventHandler ProgressChanged;
+        public event ProgressEventHandler? ProgressChanged;
 
-        public event Action<string> EarlyURLCopyRequested;
+        public event Action<string>? EarlyURLCopyRequested;
 
         public bool IsUploading { get; protected set; }
         public UploaderErrorManager Errors { get; private set; } = new UploaderErrorManager();
-        public bool IsError => !StopUploadRequested && Errors != null && Errors.Count > 0;
+        public bool IsError => !StopUploadRequested && Errors.Count > 0;
         public int BufferSize { get; set; } = 8192;
 
         protected bool StopUploadRequested { get; set; }
         protected bool AllowReportProgress { get; set; } = true;
         protected bool ReturnResponseOnError { get; set; }
 
-        protected ResponseInfo LastResponseInfo { get; set; }
+        protected ResponseInfo? LastResponseInfo { get; set; }
 
-        private HttpWebRequest currentWebRequest;
+        private HttpWebRequest? currentWebRequest;
 
         protected void OnProgressChanged(ProgressManager progress)
         {
@@ -56,6 +56,12 @@ namespace XerahS.Uploaders
         }
 
         protected void OnEarlyURLCopyRequested(string url)
+        {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            // ...existing code...
+            stopwatch.Stop();
+            Console.WriteLine($"Startup time: {stopwatch.ElapsedMilliseconds} ms");
+        }
         {
             if (EarlyURLCopyRequested != null && !string.IsNullOrEmpty(url))
             {
@@ -93,13 +99,13 @@ namespace XerahS.Uploaders
             }
         }
 
-        protected internal string SendRequest(HttpMethod method, string url, Dictionary<string, string> args = null, NameValueCollection headers = null, CookieCollection cookies = null)
+        protected internal string? SendRequest(HttpMethod method, string url, Dictionary<string, string>? args = null, NameValueCollection? headers = null, CookieCollection? cookies = null)
         {
             return SendRequest(method, url, (Stream)null, null, args, headers, cookies);
         }
 
-        protected internal string SendRequest(HttpMethod method, string url, Stream data, string contentType = null, Dictionary<string, string> args = null, NameValueCollection headers = null,
-            CookieCollection cookies = null)
+        protected internal string? SendRequest(HttpMethod method, string url, Stream? data, string? contentType = null, Dictionary<string, string>? args = null, NameValueCollection? headers = null,
+            CookieCollection? cookies = null)
         {
             using (HttpWebResponse webResponse = GetResponse(method, url, data, contentType, args, headers, cookies))
             {
@@ -107,8 +113,8 @@ namespace XerahS.Uploaders
             }
         }
 
-        protected internal string SendRequest(HttpMethod method, string url, string content, string contentType = null, Dictionary<string, string> args = null, NameValueCollection headers = null,
-            CookieCollection cookies = null)
+        protected internal string? SendRequest(HttpMethod method, string url, string content, string? contentType = null, Dictionary<string, string>? args = null, NameValueCollection? headers = null,
+            CookieCollection? cookies = null)
         {
             byte[] data = Encoding.UTF8.GetBytes(content);
 
@@ -120,15 +126,15 @@ namespace XerahS.Uploaders
             }
         }
 
-        protected internal string SendRequestURLEncoded(HttpMethod method, string url, Dictionary<string, string> args, NameValueCollection headers = null, CookieCollection cookies = null)
+        protected internal string? SendRequestURLEncoded(HttpMethod method, string url, Dictionary<string, string>? args, NameValueCollection? headers = null, CookieCollection? cookies = null)
         {
             string query = URLHelpers.CreateQueryString(args);
 
             return SendRequest(method, url, query, RequestHelpers.ContentTypeURLEncoded, null, headers, cookies);
         }
 
-        protected bool SendRequestDownload(HttpMethod method, string url, Stream downloadStream, Dictionary<string, string> args = null,
-            NameValueCollection headers = null, CookieCollection cookies = null, string contentType = null)
+        protected bool SendRequestDownload(HttpMethod method, string url, Stream downloadStream, Dictionary<string, string>? args = null,
+            NameValueCollection? headers = null, CookieCollection? cookies = null, string? contentType = null)
         {
             using (HttpWebResponse response = GetResponse(method, url, null, contentType, args, headers, cookies))
             {
@@ -146,7 +152,7 @@ namespace XerahS.Uploaders
             return false;
         }
 
-        protected string SendRequestMultiPart(string url, Dictionary<string, string> args, NameValueCollection headers = null, CookieCollection cookies = null,
+        protected string? SendRequestMultiPart(string url, Dictionary<string, string> args, NameValueCollection? headers = null, CookieCollection? cookies = null,
             HttpMethod method = HttpMethod.POST)
         {
             string boundary = RequestHelpers.CreateBoundary();
@@ -164,9 +170,9 @@ namespace XerahS.Uploaders
             }
         }
 
-        protected UploadResult SendRequestFile(string url, Stream data, string fileName, string fileFormName, Dictionary<string, string> args = null,
-            NameValueCollection headers = null, CookieCollection cookies = null, HttpMethod method = HttpMethod.POST, string contentType = RequestHelpers.ContentTypeMultipartFormData,
-            string relatedData = null)
+        protected UploadResult SendRequestFile(string url, Stream data, string fileName, string fileFormName, Dictionary<string, string>? args = null,
+            NameValueCollection? headers = null, CookieCollection? cookies = null, HttpMethod method = HttpMethod.POST, string contentType = RequestHelpers.ContentTypeMultipartFormData,
+            string? relatedData = null)
         {
             UploadResult result = new UploadResult();
 
@@ -234,7 +240,7 @@ namespace XerahS.Uploaders
         }
 
         protected UploadResult SendRequestFileRange(string url, Stream data, string fileName, long contentPosition = 0, long contentLength = -1,
-            Dictionary<string, string> args = null, NameValueCollection headers = null, CookieCollection cookies = null, HttpMethod method = HttpMethod.PUT)
+            Dictionary<string, string>? args = null, NameValueCollection? headers = null, CookieCollection? cookies = null, HttpMethod method = HttpMethod.PUT)
         {
             UploadResult result = new UploadResult();
 
@@ -301,8 +307,8 @@ namespace XerahS.Uploaders
             return result;
         }
 
-        protected HttpWebResponse GetResponse(HttpMethod method, string url, Stream data = null, string contentType = null, Dictionary<string, string> args = null,
-            NameValueCollection headers = null, CookieCollection cookies = null, bool allowNon2xxResponses = false)
+        protected HttpWebResponse? GetResponse(HttpMethod method, string url, Stream? data = null, string? contentType = null, Dictionary<string, string>? args = null,
+            NameValueCollection? headers = null, CookieCollection? cookies = null, bool allowNon2xxResponses = false)
         {
             IsUploading = true;
             StopUploadRequested = false;
@@ -396,9 +402,9 @@ namespace XerahS.Uploaders
             return !StopUploadRequested;
         }
 
-        private string ProcessError(Exception e, string requestURL)
+        private string? ProcessError(Exception e, string requestURL)
         {
-            string responseText = null;
+            string? responseText = null;
 
             if (e != null)
             {
@@ -461,7 +467,6 @@ namespace XerahS.Uploaders
 
                 string errorText = sb.ToString();
 
-                if (Errors == null) Errors = new UploaderErrorManager();
                 Errors.Add(errorText);
 
                 DebugHelper.WriteLine("Error:\r\n" + errorText);

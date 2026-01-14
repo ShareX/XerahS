@@ -39,8 +39,8 @@ namespace XerahS.Uploaders
         public const string ContentTypeURLEncoded = "application/x-www-form-urlencoded";
         public const string ContentTypeOctetStream = "application/octet-stream";
 
-        public static HttpWebRequest CreateWebRequest(HttpMethod method, string url, NameValueCollection headers = null, CookieCollection cookies = null,
-            string contentType = null, long contentLength = 0)
+        public static HttpWebRequest CreateWebRequest(HttpMethod method, string url, NameValueCollection? headers = null, CookieCollection? cookies = null,
+            string? contentType = null, long contentLength = 0)
         {
 #pragma warning disable SYSLIB0014
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
