@@ -196,9 +196,9 @@ public partial class App : Application
                         FadeDuration = generalSettings.ToastWindowFadeDuration,
                         Placement = generalSettings.ToastWindowPlacement,
                         Size = generalSettings.ToastWindowSize,
-                        LeftClickAction = MapToastClickAction(generalSettings.ToastWindowLeftClickAction),
-                        RightClickAction = MapToastClickAction(generalSettings.ToastWindowRightClickAction),
-                        MiddleClickAction = MapToastClickAction(generalSettings.ToastWindowMiddleClickAction),
+                        LeftClickAction = generalSettings.ToastWindowLeftClickAction,
+                        RightClickAction = generalSettings.ToastWindowRightClickAction,
+                        MiddleClickAction = generalSettings.ToastWindowMiddleClickAction,
                         AutoHide = generalSettings.ToastWindowAutoHide
                     };
 
@@ -343,28 +343,5 @@ public partial class App : Application
                 await Core.Helpers.TaskHelpers.ExecuteWorkflow(settings, settings.Id);
             }
         }
-    }
-
-    /// <summary>
-    /// Maps ToastClickAction from Core namespace to Platform.Abstractions namespace
-    /// </summary>
-    private static Platform.Abstractions.ToastClickAction MapToastClickAction(Core.ToastClickAction coreAction)
-    {
-        return coreAction switch
-        {
-            Core.ToastClickAction.CloseNotification => Platform.Abstractions.ToastClickAction.CloseNotification,
-            Core.ToastClickAction.AnnotateImage => Platform.Abstractions.ToastClickAction.AnnotateImage,
-            Core.ToastClickAction.CopyImageToClipboard => Platform.Abstractions.ToastClickAction.CopyImageToClipboard,
-            Core.ToastClickAction.CopyFile => Platform.Abstractions.ToastClickAction.CopyFile,
-            Core.ToastClickAction.CopyFilePath => Platform.Abstractions.ToastClickAction.CopyFilePath,
-            Core.ToastClickAction.CopyUrl => Platform.Abstractions.ToastClickAction.CopyUrl,
-            Core.ToastClickAction.OpenFile => Platform.Abstractions.ToastClickAction.OpenFile,
-            Core.ToastClickAction.OpenFolder => Platform.Abstractions.ToastClickAction.OpenFolder,
-            Core.ToastClickAction.OpenUrl => Platform.Abstractions.ToastClickAction.OpenUrl,
-            Core.ToastClickAction.Upload => Platform.Abstractions.ToastClickAction.Upload,
-            Core.ToastClickAction.PinToScreen => Platform.Abstractions.ToastClickAction.PinToScreen,
-            Core.ToastClickAction.DeleteFile => Platform.Abstractions.ToastClickAction.DeleteFile,
-            _ => Platform.Abstractions.ToastClickAction.CloseNotification
-        };
     }
 }

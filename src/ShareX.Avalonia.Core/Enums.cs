@@ -372,22 +372,6 @@ public enum HotkeyType // Localized
     ExitShareX
 }
 
-public enum ToastClickAction // Localized
-{
-    CloseNotification,
-    AnnotateImage,
-    CopyImageToClipboard,
-    CopyFile,
-    CopyFilePath,
-    CopyUrl,
-    OpenFile,
-    OpenFolder,
-    OpenUrl,
-    Upload,
-    PinToScreen,
-    DeleteFile
-}
-
 public enum ThumbnailViewClickAction // Localized
 {
     Default,

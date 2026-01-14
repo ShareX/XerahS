@@ -32,8 +32,6 @@ using Avalonia.Platform.Storage;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using XerahS.UI.ViewModels;
-using ContentAlignment = System.Drawing.ContentAlignment;
-using Size = System.Drawing.Size;
 
 namespace XerahS.UI.Views;
 
@@ -84,7 +82,7 @@ public partial class ToastWindow : Window
         _viewModel.OpacityChanged += OnOpacityChanged;
     }
 
-    private void PositionWindow(ContentAlignment placement, int offset, Size size)
+    private void PositionWindow(ContentPlacement placement, int offset, SizeI size)
     {
         // Get primary screen working area
         var screen = Screens.Primary;
@@ -95,47 +93,47 @@ public partial class ToastWindow : Window
 
         switch (placement)
         {
-            case ContentAlignment.TopLeft:
+            case ContentPlacement.TopLeft:
                 x = workingArea.X + offset;
                 y = workingArea.Y + offset;
                 break;
 
-            case ContentAlignment.TopCenter:
+            case ContentPlacement.TopCenter:
                 x = workingArea.X + (workingArea.Width - size.Width) / 2;
                 y = workingArea.Y + offset;
                 break;
 
-            case ContentAlignment.TopRight:
+            case ContentPlacement.TopRight:
                 x = workingArea.X + workingArea.Width - size.Width - offset;
                 y = workingArea.Y + offset;
                 break;
 
-            case ContentAlignment.MiddleLeft:
+            case ContentPlacement.MiddleLeft:
                 x = workingArea.X + offset;
                 y = workingArea.Y + (workingArea.Height - size.Height) / 2;
                 break;
 
-            case ContentAlignment.MiddleCenter:
+            case ContentPlacement.MiddleCenter:
                 x = workingArea.X + (workingArea.Width - size.Width) / 2;
                 y = workingArea.Y + (workingArea.Height - size.Height) / 2;
                 break;
 
-            case ContentAlignment.MiddleRight:
+            case ContentPlacement.MiddleRight:
                 x = workingArea.X + workingArea.Width - size.Width - offset;
                 y = workingArea.Y + (workingArea.Height - size.Height) / 2;
                 break;
 
-            case ContentAlignment.BottomLeft:
+            case ContentPlacement.BottomLeft:
                 x = workingArea.X + offset;
                 y = workingArea.Y + workingArea.Height - size.Height - offset;
                 break;
 
-            case ContentAlignment.BottomCenter:
+            case ContentPlacement.BottomCenter:
                 x = workingArea.X + (workingArea.Width - size.Width) / 2;
                 y = workingArea.Y + workingArea.Height - size.Height - offset;
                 break;
 
-            case ContentAlignment.BottomRight:
+            case ContentPlacement.BottomRight:
             default:
                 x = workingArea.X + workingArea.Width - size.Width - offset;
                 y = workingArea.Y + workingArea.Height - size.Height - offset;

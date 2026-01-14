@@ -32,6 +32,7 @@ using XerahS.Common;
 using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
 using XerahS.ScreenCapture.ScreenRecording;
+using XerahS.Platform.Abstractions;
 
 namespace XerahS.Core;
 
@@ -233,8 +234,8 @@ public class TaskSettingsGeneral
     public bool ShowToastNotificationAfterTaskCompleted = true;
     public float ToastWindowDuration = 3f;
     public float ToastWindowFadeDuration = 1f;
-    public ContentAlignment ToastWindowPlacement = ContentAlignment.BottomRight;
-    public Size ToastWindowSize = new Size(400, 300);
+    public ContentPlacement ToastWindowPlacement = ContentPlacement.BottomRight;
+    public SizeI ToastWindowSize = new SizeI(400, 300);
     public ToastClickAction ToastWindowLeftClickAction = ToastClickAction.OpenUrl;
     public ToastClickAction ToastWindowRightClickAction = ToastClickAction.CloseNotification;
     public ToastClickAction ToastWindowMiddleClickAction = ToastClickAction.AnnotateImage;
