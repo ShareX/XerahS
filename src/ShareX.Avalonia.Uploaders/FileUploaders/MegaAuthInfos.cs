@@ -30,11 +30,11 @@ namespace XerahS.Uploaders
 {
     public class MegaAuthInfos
     {
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         [JsonEncrypt]
-        public string Hash { get; set; }
+        public string Hash { get; set; } = string.Empty;
         [JsonEncrypt]
-        public string PasswordAesKey { get; set; }
+        public string PasswordAesKey { get; set; } = string.Empty;
 
         public MegaAuthInfos()
         {

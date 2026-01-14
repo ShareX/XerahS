@@ -27,14 +27,14 @@ namespace XerahS.Common
 {
     public class CLICommandAction
     {
-        public string[] Commands;
-        public Action DefaultAction;
-        public Action<string> TextAction;
-        public Action<int> NumberAction;
+        public string[] Commands { get; }
+        public Action? DefaultAction { get; set; }
+        public Action<string>? TextAction { get; set; }
+        public Action<int>? NumberAction { get; set; }
 
         public CLICommandAction(params string[] commands)
         {
-            Commands = commands;
+            Commands = commands ?? Array.Empty<string>();
         }
 
         public bool CheckCommands(List<CLICommand> commands)
@@ -54,7 +54,7 @@ namespace XerahS.Common
             return false;
         }
 
-        private void ExecuteAction(string parameter)
+        private void ExecuteAction(string? parameter)
         {
             if (DefaultAction != null)
             {
@@ -66,12 +66,9 @@ namespace XerahS.Common
                 {
                     TextAction(parameter);
                 }
-                else if (NumberAction != null)
+                else if (NumberAction != null && int.TryParse(parameter, out int num))
                 {
-                    if (int.TryParse(parameter, out int num))
-                    {
-                        NumberAction(num);
-                    }
+                    NumberAction(num);
                 }
             }
         }

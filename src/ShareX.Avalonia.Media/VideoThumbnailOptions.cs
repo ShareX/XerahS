@@ -85,7 +85,8 @@ namespace XerahS.Media
         [Category("Thumbnails / Combined"), DefaultValue(true), Description("Draw border around thumbnails.")]
         public bool DrawBorder { get; set; }
 
-        public string DefaultOutputDirectory, LastVideoPath;
+        public string DefaultOutputDirectory { get; set; } = string.Empty;
+        public string LastVideoPath { get; set; } = string.Empty;
 
         public VideoThumbnailOptions()
         {

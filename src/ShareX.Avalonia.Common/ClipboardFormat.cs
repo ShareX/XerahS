@@ -27,8 +27,8 @@ namespace XerahS.Common
 {
     public class ClipboardFormat
     {
-        public string Description { get; set; }
-        public string Format { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public string Format { get; set; } = string.Empty;
 
         public ClipboardFormat()
         {

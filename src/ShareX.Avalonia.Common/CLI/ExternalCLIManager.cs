@@ -30,14 +30,14 @@ namespace XerahS.Common
 {
     public abstract class ExternalCLIManager : IDisposable
     {
-        public event DataReceivedEventHandler OutputDataReceived;
-        public event DataReceivedEventHandler ErrorDataReceived;
+        public event DataReceivedEventHandler? OutputDataReceived;
+        public event DataReceivedEventHandler? ErrorDataReceived;
 
         public bool IsProcessRunning { get; private set; }
 
-        protected Process process;
+        protected Process? process;
 
-        public virtual int Open(string path, string args = null)
+        public virtual int Open(string path, string? args = null)
         {
             if (File.Exists(path))
             {

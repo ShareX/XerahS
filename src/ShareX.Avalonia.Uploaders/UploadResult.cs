@@ -30,10 +30,10 @@ namespace XerahS.Uploaders
 {
     public class UploadResult
     {
-        public string URL { get; set; }
-        public string ThumbnailURL { get; set; }
-        public string DeletionURL { get; set; }
-        public string ShortenedURL { get; set; }
+        public string URL { get; set; } = string.Empty;
+        public string ThumbnailURL { get; set; } = string.Empty;
+        public string DeletionURL { get; set; } = string.Empty;
+        public string ShortenedURL { get; set; } = string.Empty;
 
         private bool isSuccess;
 
@@ -49,7 +49,7 @@ namespace XerahS.Uploaders
             }
         }
 
-        public string Response { get; set; }
+        public string Response { get; set; } = string.Empty;
         public UploaderErrorManager Errors { get; set; }
         public bool IsURLExpected { get; set; }
 
@@ -61,7 +61,7 @@ namespace XerahS.Uploaders
             }
         }
 
-        public ResponseInfo ResponseInfo { get; set; }
+        public ResponseInfo ResponseInfo { get; set; } = new ResponseInfo();
 
         public UploadResult()
         {

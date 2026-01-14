@@ -50,7 +50,8 @@ namespace XerahS.Common
 
     public class KeyboardHook : IDisposable
     {
-        public event KeyEventHandler KeyDown, KeyUp;
+        public event KeyEventHandler? KeyDown;
+        public event KeyEventHandler? KeyUp;
 
         private NativeMethods.HookProc keyboardHookProc;
         private IntPtr keyboardHookHandle = IntPtr.Zero;

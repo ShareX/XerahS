@@ -36,39 +36,39 @@ namespace XerahS.Uploaders
             RSA_SHA1
         }
 
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [Browsable(false)]
-        public string OAuthVersion { get; set; }
+        public string OAuthVersion { get; set; } = string.Empty;
 
         [Browsable(false)]
-        public string ConsumerKey { get; set; }
+        public string ConsumerKey { get; set; } = string.Empty;
 
         // Used for HMAC_SHA1 signature
         [Browsable(false)]
-        public string ConsumerSecret { get; set; }
+        public string ConsumerSecret { get; set; } = string.Empty;
 
         // Used for RSA_SHA1 signature
         [Browsable(false)]
-        public string ConsumerPrivateKey { get; set; }
+        public string ConsumerPrivateKey { get; set; } = string.Empty;
 
         [Browsable(false)]
         public OAuthInfoSignatureMethod SignatureMethod { get; set; }
 
         [Browsable(false)]
-        public string AuthToken { get; set; }
+        public string AuthToken { get; set; } = string.Empty;
 
         [Browsable(false), JsonEncrypt]
-        public string AuthSecret { get; set; }
+        public string AuthSecret { get; set; } = string.Empty;
 
         [JsonEncrypt, Description("Verification Code from the Authorization Page")]
-        public string AuthVerifier { get; set; }
+        public string AuthVerifier { get; set; } = string.Empty;
 
         [Browsable(false)]
-        public string UserToken { get; set; }
+        public string UserToken { get; set; } = string.Empty;
 
         [Browsable(false), JsonEncrypt]
-        public string UserSecret { get; set; }
+        public string UserSecret { get; set; } = string.Empty;
 
         public OAuthInfo()
         {
