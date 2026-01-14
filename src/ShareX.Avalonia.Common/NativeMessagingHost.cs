@@ -36,7 +36,7 @@ namespace XerahS.Common
             Stream inputStream = Console.OpenStandardInput();
 
             byte[] bytesLength = new byte[4];
-            int read = inputStream.Read(bytesLength, 0, 4);
+            int read = inputStream.Read(bytesLength);
 
             if (read == 4)
             {
@@ -45,7 +45,7 @@ namespace XerahS.Common
                 if (inputLength > 0)
                 {
                     byte[] bytesInput = new byte[inputLength];
-                    inputStream.Read(bytesInput, 0, inputLength);
+                    inputStream.ReadExactly(bytesInput);
                     input = Encoding.UTF8.GetString(bytesInput);
                 }
             }

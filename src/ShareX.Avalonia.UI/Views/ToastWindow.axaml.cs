@@ -23,10 +23,12 @@
 
 #endregion License Information (GPL v3)
 
+using System.IO;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using XerahS.UI.ViewModels;
@@ -181,7 +183,7 @@ public partial class ToastWindow : Window
         _isDragging = false;
     }
 
-    private void OnPointerMoved(object? sender, PointerEventArgs e)
+    private async void OnPointerMoved(object? sender, PointerEventArgs e)
     {
         if (!_isDragging || _config == null) return;
 
@@ -195,11 +197,24 @@ public partial class ToastWindow : Window
         {
             _isDragging = false;
 
-            var dataObject = new DataObject();
-            dataObject.Set(DataFormats.Files, new[] { _config.FilePath });
+            var topLevel = TopLevel.GetTopLevel(this);
+            var storageProvider = topLevel?.StorageProvider;
+            if (storageProvider == null)
+            {
+                return;
+            }
+
+            var storageFile = await storageProvider.TryGetFileFromPathAsync(_config.FilePath);
+            if (storageFile == null)
+            {
+                return;
+            }
+
+            var dataTransfer = new DataTransfer();
+            dataTransfer.Add(DataTransferItem.CreateFile(storageFile));
 
             // Start drag operation
-            DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Copy | DragDropEffects.Move);
+            await DragDrop.DoDragDropAsync(e, dataTransfer, DragDropEffects.Copy | DragDropEffects.Move);
         }
     }
 
