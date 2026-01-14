@@ -105,7 +105,7 @@ namespace XerahS.Uploaders
                 return Errors.ToString();
             }
 
-            return null;
+            return string.Empty;
         }
 
         public string ToSummaryString()

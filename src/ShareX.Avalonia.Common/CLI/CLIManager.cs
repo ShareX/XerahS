@@ -145,12 +145,12 @@ namespace XerahS.Common
             return false;
         }
 
-        public CLICommand GetCommand(string command)
+        public CLICommand? GetCommand(string command)
         {
             return Commands.Find(x => x.CheckCommand(command));
         }
 
-        public string GetParameter(string command)
+        public string? GetParameter(string command)
         {
             CLICommand cliCommand = GetCommand(command);
 

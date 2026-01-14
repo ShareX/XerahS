@@ -59,12 +59,12 @@ namespace XerahS.Common
             }
         }
 
-        public void WriteElapsedMilliseconds(string text = null)
+        public void WriteElapsedMilliseconds(string? text = null)
         {
             Write(Elapsed.TotalMilliseconds.ToString("0.000", CultureInfo.InvariantCulture) + " milliseconds.", text);
         }
 
-        public void WriteElapsedSeconds(string text = null)
+        public void WriteElapsedSeconds(string? text = null)
         {
             Write(Elapsed.TotalSeconds.ToString("0.000", CultureInfo.InvariantCulture) + " seconds.", text);
         }

@@ -41,7 +41,7 @@ Count Code
 
 - Batch 1 - Nullability initialisation (CS8618) in DTOs/settings/viewmodels: **in progress** (Common/Uploaders/Media/History initialised)
 - Batch 2 - Optional parameter nullability (CS8625/CS8604/CS8601): **in progress** (helpers, crypto, registry, zip)
-- Batch 3 - Null flow returns/dereferences (CS8600/CS8602/CS8603): **todo**
+- Batch 3 - Null flow returns/dereferences (CS8600/CS8602/CS8603): **in progress** (early fixes in Common/Uploaders)
 - Batch 4 - Platform compatibility guards (CA1416): **todo**
 - Batch 5 - Obsolete APIs and analyser warnings (CS0618/SYSLIB*/CA2022/WFDEV005): **todo**
 - Batch 6 - Cleanup remaining small sets (CS0067/CS0649/etc): **todo**
@@ -49,7 +49,7 @@ Count Code
 ## Latest rebuild
 
 - Command: `dotnet build /t:Rebuild`
-- Warnings: 1039
+- Warnings: 1032
 - Log: `warnings.log`
 
 ### Current counts by code (post-batch-1 pass)
@@ -59,13 +59,13 @@ Count Code
 ----- ----
  502  CS8618
  484  CA1416
- 256  CS8603
- 232  CS8625
+ 248  CS8603
+ 228  CS8625
  228  CS8600
   88  CS8602
   76  CS8601
   70  CS8765
-  62  CS8604
+  60  CS8604
   16  CS0618
    8  CS0067
    8  CS8605
