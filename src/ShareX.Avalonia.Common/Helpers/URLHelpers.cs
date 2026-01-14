@@ -371,7 +371,7 @@ namespace XerahS.Common
 
             // System.Web.HttpUtility.UrlPathEncode is obsolete and not in .NET Core usually
             // We can emulate it or use WebUtility
-            return Uri.EscapeUriString(url);
+            return Uri.EscapeDataString(url);
         }
 
         public static void OpenURL(string url)

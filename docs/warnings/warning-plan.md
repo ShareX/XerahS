@@ -1,79 +1,50 @@
 # Warning Reduction Plan
 
-Baseline rebuild: `dotnet build /t:Rebuild` (Debug) produced **1180 warnings**.
+**Status**: Baseline rebuild recorded on `develop`; warnings are treated as errors by the SDK, so every nullability warning reported by the compiler shows up as a build-breaking error.
 
-## Baseline counts by code
+## Baseline rebuild (2026-01-14)
+
+- Command: `dotnet build ShareX.Avalonia.sln`
+- Result: 184 errors (0 warnings) because TreatWarningsAsErrors is enabled for nullable diagnostics.
+- Log: `warnings.log`
+
+### Error counts by code
 
 ```
 Count Code
 ----- ----
- 682  CS8618
- 484  CA1416
- 318  CS8625
- 264  CS8603
- 234  CS8600
-  90  CS8601
-  72  CS8602
-  70  CS8765
-  66  CS8604
-  16  CS0618
-   8  CS0067
-   8  CS8605
-   6  CS0649
-   6  CS0105
-   4  CS8767
-   4  CS8714
-   4  CS0414
-   4  CS0465
-   2  CS0169
-   2  CS0162
-   2  CS9191
-   2  WFDEV005
-   2  CS0108
-   2  CA2022
-   2  SYSLIB0013
-   2  CS8123
-   2  CS0219
-   2  SYSLIB0060
+  62 CS8600
+  62 CS8603
+  24 CS8602
+  16 CS8604
+   6 CS8605
+   6 CS8618
+   2 CS0414
+   2 CS8601
+   2 CS8625
+   2 SYSLIB0013
+```
+
+### Error counts by project
+
+```
+Count Project
+----- -------
+ 184 ShareX.Avalonia.Common (ShareX.Avalonia.Common.csproj)
 ```
 
 ## Batch plan
 
-- Batch 1 - Nullability initialisation (CS8618) in DTOs/settings/viewmodels: **done** (models/settings/viewmodels initialised)
-- Batch 2 - Optional parameter nullability (CS8625/CS8604/CS8601): **done** (helpers, crypto, registry, zip)
-- Batch 3 - Null flow returns/dereferences (CS8600/CS8602/CS8603): **done** (core call sites tightened)
-- Batch 4 - Platform compatibility guards (CA1416): **done** (Windows-only code annotated/guarded)
-- Batch 5 - Obsolete APIs and analyser warnings (CS0618/SYSLIB*/CA2022/WFDEV005): **done** (Avalonia drag-drop/storage + native messaging read)
-- Batch 6 - Cleanup remaining small sets (CS0067/CS0649/etc): **in progress** (common utilities/nullability cleanup)
+1. **CS8618** – ensure all non-nullable fields/properties are initialized (6 errors).
+2. **CS8600** – fix nullable-to-non-nullable conversions (62 errors).
+3. **CS8603** – guard methods that currently return null (62 errors).
+4. **CS8602** – add null checks before dereferencing (24 errors).
+5. **CS8604, CS8605, CS8625, CS8601** – address the remaining null inputs, unboxing, and assignments (12 errors).
+6. **SYSLIB0013** – replace `Uri.EscapeUriString` usage (2 errors).
+7. **CS0414** – remove or use the unused field (2 errors).
 
-## Latest rebuild (develop)
+Update this plan and counts after each commit that reduces the total error tally; include summary of what was fixed and the new totals.
 
-- Command: `dotnet build /t:Rebuild /p:TreatWarningsAsErrors=false`
-- Warnings: **374**
-- Log: `warnings.log`
+## Progress log
 
-### Current counts by code
-
-```
-Count Code
------ ----
-  88  CS8600
-  70  CS8618
-  69  CS8603
-  47  CS8602
-  38  CS8601
-  25  CS8604
-  17  CS8625
-   4  CS8605
-   4  CS0067
-   2  CS0465
-   2  CS8714
-   1  CS0108
-   1  CS0219
-   1  CS0414
-   1  CS8123
-   1  CS9191
-   1  SYSLIB0060
-   1  SYSLIB0013
-   1  WFDEV005
-```
+- 2026-01-14: Baseline recorded (184 errors in ShareX.Avalonia.Common). Next target: CS8618 constructors.
