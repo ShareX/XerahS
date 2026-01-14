@@ -36,7 +36,7 @@ namespace XerahS.Common
 
             if (element != null && !string.IsNullOrEmpty(path))
             {
-                XContainer lastElement = element;
+                XContainer? lastElement = element;
 
                 string[] splitPath = path.Split('/');
 
@@ -48,7 +48,7 @@ namespace XerahS.Common
                         {
                             string[] splitName = name.Split('|');
 
-                            XContainer lastElement2 = null;
+                            XContainer? lastElement2 = null;
 
                             foreach (string name2 in splitName)
                             {
@@ -56,11 +56,11 @@ namespace XerahS.Common
                                 if (lastElement2 != null) break;
                             }
 
-                            lastElement = lastElement2;
+                            lastElement = lastElement2 ?? lastElement;
                         }
                         else
                         {
-                            lastElement = lastElement.Element(name);
+                            lastElement = lastElement?.Element(name);
                         }
 
                         if (lastElement == null) return null;
@@ -86,7 +86,7 @@ namespace XerahS.Common
                     string leftPath = path.Left(index);
                     string lastPath = path.RemoveLeft(index + 1);
 
-                    XElement lastNode = element.GetNode(leftPath);
+                    XElement? lastNode = element.GetNode(leftPath);
 
                     if (lastNode != null)
                     {

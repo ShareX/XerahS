@@ -74,7 +74,7 @@ namespace XerahS.Common.Helpers
         {
             // IClipboardService definition viewed earlier didn't show GetFileDropListAsync, only GetTextAsync.
             // We will check IClipboardService again to be sure, but for now use sync if that's all that is exposed.
-            return Clipboard?.GetFileDropList();
+            return Clipboard?.GetFileDropList() ?? Array.Empty<string>();
         }
 
         public static void SetFileDropList(string[] files)

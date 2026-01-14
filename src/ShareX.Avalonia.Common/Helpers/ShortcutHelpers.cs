@@ -89,7 +89,7 @@ namespace XerahS.Common.Helpers
                             dynamic shortcut = shell.CreateShortcut(shortcutPath);
                             shortcut.TargetPath = targetPath;
                             shortcut.Arguments = arguments;
-                            shortcut.WorkingDirectory = Path.GetDirectoryName(targetPath);
+                            shortcut.WorkingDirectory = Path.GetDirectoryName(targetPath) ?? string.Empty;
                             shortcut.Save();
                             return true;
                         }
@@ -123,7 +123,7 @@ namespace XerahS.Common.Helpers
                     DebugHelper.WriteException(ex);
                 }
             }
-            return null;
+            return string.Empty;
         }
 
         private static bool DeleteShortcut(string shortcutPath)
