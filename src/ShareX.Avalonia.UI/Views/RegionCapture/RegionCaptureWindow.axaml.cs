@@ -165,7 +165,7 @@ namespace XerahS.UI.Views.RegionCapture
         }
 
         // Helper to convert SkiaSharp.SKBitmap to Avalonia Bitmap
-        private Bitmap ConvertToAvaloniaBitmap(SkiaSharp.SKBitmap source)
+        private Bitmap? ConvertToAvaloniaBitmap(SkiaSharp.SKBitmap source)
         {
             if (source == null) return null;
             using var image = source.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);

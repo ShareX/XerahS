@@ -73,7 +73,7 @@ namespace XerahS.Common
         public static string GetMimeType(this ImageFormat format)
         {
             ImageCodecInfo? codec = format.GetCodecInfo();
-            return codec != null ? codec.MimeType : "image/unknown";
+            return codec?.MimeType ?? "image/unknown";
         }
 
         public static double ToDouble(this Version value)

@@ -99,7 +99,7 @@ namespace XerahS.Common
             }
         }
 
-        public static T Deserialize<T>(TextReader textReader, ISerializationBinder? serializationBinder = null)
+        public static T? Deserialize<T>(TextReader textReader, ISerializationBinder? serializationBinder = null)
         {
             if (textReader != null)
             {
@@ -117,7 +117,7 @@ namespace XerahS.Common
             return default;
         }
 
-        public static T DeserializeFromString<T>(string json, ISerializationBinder? serializationBinder = null)
+        public static T? DeserializeFromString<T>(string json, ISerializationBinder? serializationBinder = null)
         {
             if (!string.IsNullOrEmpty(json))
             {
@@ -130,7 +130,7 @@ namespace XerahS.Common
             return default;
         }
 
-        public static T DeserializeFromStream<T>(Stream stream, ISerializationBinder? serializationBinder = null)
+        public static T? DeserializeFromStream<T>(Stream stream, ISerializationBinder? serializationBinder = null)
         {
             if (stream != null)
             {
@@ -143,7 +143,7 @@ namespace XerahS.Common
             return default;
         }
 
-        public static T DeserializeFromFile<T>(string filePath, ISerializationBinder? serializationBinder = null)
+        public static T? DeserializeFromFile<T>(string filePath, ISerializationBinder? serializationBinder = null)
         {
             if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
             {

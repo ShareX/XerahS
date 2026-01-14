@@ -203,7 +203,7 @@ namespace XerahS.Common
             return URLPrefixes.Any(x => url.StartsWith(x, StringComparison.OrdinalIgnoreCase));
         }
 
-        public static string GetPrefix(string url)
+        public static string? GetPrefix(string url)
         {
             return URLPrefixes.FirstOrDefault(x => url.StartsWith(x, StringComparison.OrdinalIgnoreCase));
         }
@@ -335,7 +335,7 @@ namespace XerahS.Common
             return url;
         }
 
-        public static NameValueCollection ParseQueryString(string url)
+        public static NameValueCollection? ParseQueryString(string url)
         {
             if (string.IsNullOrEmpty(url)) return null;
 
