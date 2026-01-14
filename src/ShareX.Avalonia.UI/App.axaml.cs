@@ -28,7 +28,7 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var mainViewModel = new MainViewModel();
-            mainViewModel.ApplicationName = ShareXResources.AppName;
+            mainViewModel.ApplicationName = AppResources.AppName;
 
             // Prepare for Silent Run
             bool silentRun = XerahS.Core.SettingsManager.Settings.SilentRun;

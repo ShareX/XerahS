@@ -89,7 +89,7 @@ using ShareX.Editor.ViewModels;
 using ShareX.Editor.Views;
 
 var editorViewModel = new MainViewModel();
-editorViewModel.ApplicationName = ShareXResources.AppName;
+editorViewModel.ApplicationName = AppResources.AppName;
 editorViewModel.UpdatePreview(image);
 
 var editorWindow = new EditorWindow
@@ -110,7 +110,7 @@ XerahS (the original project where the editor was born) continues to use ShareX.
 ```csharp
 // XerahS customizes the editor window title
 var editorViewModel = new MainViewModel();
-editorViewModel.ApplicationName = "XerahS";  // Shows "XerahS Editor" in window title
+editorViewModel.ApplicationName = AppResources.AppName;  // Shows product-based title
 ```
 
 **Reference**: [EditorCustomization.md](./EditorCustomization.md)

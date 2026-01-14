@@ -29,16 +29,16 @@ namespace XerahS.Uploaders.FileUploaders
 {
     public class AmazonS3Settings
     {
-        public string AccessKeyID { get; set; }
+        public string AccessKeyID { get; set; } = string.Empty;
         [JsonEncrypt]
-        public string SecretAccessKey { get; set; }
-        public string Endpoint { get; set; }
-        public string Region { get; set; }
+        public string SecretAccessKey { get; set; } = string.Empty;
+        public string Endpoint { get; set; } = string.Empty;
+        public string Region { get; set; } = string.Empty;
         public bool UsePathStyle { get; set; }
-        public string Bucket { get; set; }
-        public string ObjectPrefix { get; set; }
+        public string Bucket { get; set; } = string.Empty;
+        public string ObjectPrefix { get; set; } = string.Empty;
         public bool UseCustomCNAME { get; set; }
-        public string CustomDomain { get; set; }
+        public string CustomDomain { get; set; } = string.Empty;
         public AmazonS3StorageClass StorageClass { get; set; }
         public bool SetPublicACL { get; set; } = true;
         public bool SignedPayload { get; set; }

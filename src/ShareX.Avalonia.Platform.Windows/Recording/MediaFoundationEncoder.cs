@@ -24,7 +24,6 @@
 #endregion License Information (GPL v3)
 
 using Vortice.DXGI;
-using XerahS.ScreenCapture.ScreenRecording;
 using System.Runtime.InteropServices;
 using XerahS.ScreenCapture.ScreenRecording;
 

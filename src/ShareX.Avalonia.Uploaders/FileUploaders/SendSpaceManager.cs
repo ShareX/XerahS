@@ -29,15 +29,15 @@ namespace XerahS.Uploaders.FileUploaders
 {
     public static class SendSpaceManager
     {
-        public static string Token;
-        public static string SessionKey;
+        public static string Token = string.Empty;
+        public static string SessionKey = string.Empty;
         public static DateTime LastSessionKey;
         public static AccountType AccountType;
-        public static string Username;
-        public static string Password;
-        public static SendSpace.UploadInfo UploadInfo;
+        public static string Username = string.Empty;
+        public static string Password = string.Empty;
+        public static SendSpace.UploadInfo? UploadInfo;
 
-        public static UploaderErrorManager PrepareUploadInfo(string apiKey, string username = null, string password = null)
+        public static UploaderErrorManager PrepareUploadInfo(string apiKey, string? username = null, string? password = null)
         {
             SendSpace sendSpace = new SendSpace(apiKey);
 

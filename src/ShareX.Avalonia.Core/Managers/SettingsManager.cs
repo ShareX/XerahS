@@ -39,7 +39,7 @@ namespace XerahS.Core
     /// </summary>
     public static class SettingsManager
     {
-        public const string AppName = ShareXResources.AppName;
+        public static readonly string AppName = AppResources.AppName;
 
         #region Constants
 
@@ -507,7 +507,7 @@ namespace XerahS.Core
         /// </summary>
         public static string GetHistoryFilePath()
         {
-            var path = Path.Combine(HistoryFolder, ShareXResources.HistoryFileName);
+            var path = Path.Combine(HistoryFolder, AppResources.HistoryFileName);
             DebugHelper.WriteLine($"History file path: {path} (exists={File.Exists(path)})");
             return path;
         }

@@ -15,7 +15,7 @@ namespace XerahS.Common
                 {
                     _personalFolder = Path.Combine(
                         Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
-                        ShareXResources.AppName);
+                        AppResources.AppName);
                 }
                 return _personalFolder;
             }
@@ -28,22 +28,22 @@ namespace XerahS.Common
             }
         }
 
-        public static string ScreenshotsFolder => Path.Combine(PersonalFolder, ShareXResources.ScreenshotsFolderName);
-        public static string ScreencastsFolder => Path.Combine(PersonalFolder, ShareXResources.ScreencastsFolderName);
+        public static string ScreenshotsFolder => Path.Combine(PersonalFolder, AppResources.ScreenshotsFolderName);
+        public static string ScreencastsFolder => Path.Combine(PersonalFolder, AppResources.ScreencastsFolderName);
         public static string FrameDumpsFolder => Path.Combine(ScreencastsFolder, "FrameDumps");
         
-        public static string SettingsFolder => Path.Combine(PersonalFolder, ShareXResources.SettingsFolderName);
-        public static string HistoryFolder => Path.Combine(PersonalFolder, ShareXResources.HistoryFolderName);
-        public static string BackupFolder => Path.Combine(SettingsFolder, ShareXResources.BackupFolderName);
-        public static string HistoryBackupFolder => Path.Combine(HistoryFolder, ShareXResources.BackupFolderName);
+        public static string SettingsFolder => Path.Combine(PersonalFolder, AppResources.SettingsFolderName);
+        public static string HistoryFolder => Path.Combine(PersonalFolder, AppResources.HistoryFolderName);
+        public static string BackupFolder => Path.Combine(SettingsFolder, AppResources.BackupFolderName);
+        public static string HistoryBackupFolder => Path.Combine(HistoryFolder, AppResources.BackupFolderName);
         public static string PluginsFolder
         {
             get
             {
 #if DEBUG
-                return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ShareXResources.PluginsFolderName);
+                return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppResources.PluginsFolderName);
 #else
-                return Path.Combine(PersonalFolder, ShareXResources.PluginsFolderName);
+                return Path.Combine(PersonalFolder, AppResources.PluginsFolderName);
 #endif
             }
         }

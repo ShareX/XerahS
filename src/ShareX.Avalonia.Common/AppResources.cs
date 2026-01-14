@@ -23,9 +23,12 @@
 
 #endregion License Information (GPL v3)
 
+using System.Linq;
+using System.Reflection;
+
 namespace XerahS.Common
 {
-    public static class ShareXResources
+    public static class AppResources
     {
         public static readonly string AppName = GetProductName();
         public static readonly string ProductName = AppName;

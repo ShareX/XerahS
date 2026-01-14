@@ -48,7 +48,7 @@ namespace XerahS.Uploaders
 
             string accept = null;
             string referer = null;
-            string userAgent = ShareXResources.UserAgent;
+            string userAgent = AppResources.UserAgent;
 
             if (headers != null)
             {

@@ -27,14 +27,15 @@ namespace XerahS.Uploaders.FileUploaders
 {
     public class AmazonS3Endpoint
     {
-        public string Name { get; set; }
-        public string Endpoint { get; set; }
-        public string Region { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Endpoint { get; set; } = string.Empty;
+        public string Region { get; set; } = string.Empty;
 
         public AmazonS3Endpoint(string name, string endpoint)
         {
             Name = name;
             Endpoint = endpoint;
+            Region = string.Empty;
         }
 
         public AmazonS3Endpoint(string name, string endpoint, string region)

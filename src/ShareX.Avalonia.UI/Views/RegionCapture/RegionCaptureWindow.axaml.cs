@@ -60,9 +60,9 @@ namespace XerahS.UI.Views.RegionCapture
         private int _windowLeft = 0;
         private int _windowTop = 0;
         private double _capturedScaling = 1.0; // Captured at window open to ensure consistent coordinate conversion
-        private bool _usePerScreenScalingForLayout;
-        private bool _useWindowPositionForFallback;
-        private bool _useLogicalCoordinatesForCapture;
+        private bool _usePerScreenScalingForLayout = false;
+        private bool _useWindowPositionForFallback = false;
+        private bool _useLogicalCoordinatesForCapture = false;
         // _loggedPointerMoveFallback removed: Unused warning fix
 
         // Result task completion source to return value to caller

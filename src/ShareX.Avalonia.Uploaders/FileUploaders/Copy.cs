@@ -63,10 +63,12 @@ namespace XerahS.Uploaders.FileUploaders
 
         // https://developers.copy.com/documentation#authentication/oauth-handshake
         // https://developers.copy.com/console
-        public string? GetAuthorizationURL()
+        public string GetAuthorizationURL()
         {
-            Dictionary<string, string> args = new Dictionary<string, string>();
-            args.Add("oauth_callback", Links.Callback);
+            Dictionary<string, string> args = new Dictionary<string, string>
+            {
+                { "oauth_callback", Links.Callback }
+            };
 
             return GetAuthorizationURL(URLRequestToken, URLAuthorize, AuthInfo, args);
         }
@@ -160,8 +162,6 @@ namespace XerahS.Uploaders.FileUploaders
         // GET https://api.copy.com/rest/meta/copy
         public CopyContentInfo? GetMetadata(string path)
         {
-            CopyContentInfo? contentInfo = null;
-
             if (OAuthInfo.CheckOAuth(AuthInfo))
             {
                 string url = URLHelpers.CombineURL(URLMetaData, URLHelpers.URLEncode(path, true));
@@ -172,19 +172,17 @@ namespace XerahS.Uploaders.FileUploaders
 
                 if (!string.IsNullOrEmpty(response))
                 {
-                    contentInfo = JsonConvert.DeserializeObject<CopyContentInfo>(response);
+                    return JsonConvert.DeserializeObject<CopyContentInfo>(response);
                 }
             }
 
-            return contentInfo;
+            return null;
         }
 
         #endregion Files and metadata
 
-        public override UploadResult Upload(Stream stream, string fileName)
-        {
-            return UploadFile(stream, UploadPath, fileName)!;
-        }
+        public override UploadResult Upload(Stream stream, string fileName) =>
+            UploadFile(stream, UploadPath, fileName) ?? new UploadResult { IsSuccess = false };
 
         public string GetLinkURL(CopyLinksInfo link, string path, CopyURLType urlType = CopyURLType.Default)
         {

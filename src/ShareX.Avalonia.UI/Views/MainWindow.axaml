@@ -10,7 +10,7 @@
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="650"
         x:Class="XerahS.UI.Views.MainWindow"
         x:DataType="editvm:MainViewModel"
-        Title="{x:Static common:ShareXResources.ProductNameWithVersion}"
+        Title="{x:Static common:AppResources.ProductNameWithVersion}"
         Icon="/Assets/Logo.ico"
         WindowState="Normal"
         WindowStartupLocation="CenterScreen"

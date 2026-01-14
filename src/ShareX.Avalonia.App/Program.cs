@@ -37,7 +37,7 @@ namespace XerahS.App
             // Initialize logging with datestamped file in Logs/yyyy-mm folder structure
             var baseFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), XerahS.Core.SettingsManager.AppName);
             var logsFolder = System.IO.Path.Combine(baseFolder, "Logs", DateTime.Now.ToString("yyyy-MM"));
-            var logPath = System.IO.Path.Combine(logsFolder, $"{XerahS.Common.ShareXResources.AppName}-{DateTime.Now:yyyyMMdd}.log");
+            var logPath = System.IO.Path.Combine(logsFolder, $"{XerahS.Common.AppResources.AppName}-{DateTime.Now:yyyyMMdd}.log");
             XerahS.Common.DebugHelper.Init(logPath);
 
             var dh = XerahS.Common.DebugHelper.Logger;
@@ -45,7 +45,7 @@ namespace XerahS.App
 
             dh.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - ShareX starting.");
 
-            var version = XerahS.Common.ShareXResources.Version;
+            var version = XerahS.Common.AppResources.Version;
             dh.WriteLine($"Version: {version} Dev");
 
 #if DEBUG
@@ -64,12 +64,19 @@ namespace XerahS.App
             {
                 using (var identity = System.Security.Principal.WindowsIdentity.GetCurrent())
                 {
-                    var principal = new System.Security.Principal.WindowsPrincipal(identity);
-                    isElevated = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+                    if (identity != null)
+                    {
+                        var principal = new System.Security.Principal.WindowsPrincipal(identity);
+                        isElevated = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+                    }
                 }
             }
             dh.WriteLine($"Running as elevated process: {isElevated}");
-            dh.WriteLine($"Flags: Dev");
+#if DEBUG
+            dh.WriteLine("Flags: Debug");
+#else
+            dh.WriteLine("Flags: Release");
+#endif
 
             dh.AsyncWrite = true; // Switch back to async
 

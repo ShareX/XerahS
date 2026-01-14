@@ -1,7 +1,7 @@
 #define MyAppName "XerahS"
 #define MyAppExeName "XerahS.exe"
 #define MyAppRootDirectory "..\..\"
-#define MyAppReleaseDirectory MyAppRootDirectory + "ShareX.Avalonia\src\ShareX.Avalonia.App\bin\Release\net10.0-windows10.0.19041.0"
+#define MyAppReleaseDirectory MyAppRootDirectory + "ShareX.Avalonia\src\ShareX.Avalonia.App\bin\Release\net10.0-windows10.0.26100.0"
 #define MyAppPublisher "ShareX Team"
 #define MyAppURL "https://github.com/ShareX/ShareX.Avalonia"
 #define MyAppVersion GetStringFileInfo(MyAppReleaseDirectory + "\" + MyAppExeName, "ProductVersion")

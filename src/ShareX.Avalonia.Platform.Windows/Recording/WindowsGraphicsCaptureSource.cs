@@ -30,7 +30,6 @@ using WD3D = global::Windows.Graphics.DirectX.Direct3D11;
 using XerahS.ScreenCapture.ScreenRecording;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
-using XerahS.ScreenCapture.ScreenRecording;
 
 namespace XerahS.Platform.Windows.Recording;
 

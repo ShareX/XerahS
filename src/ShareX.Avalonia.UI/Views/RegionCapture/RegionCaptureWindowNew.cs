@@ -27,7 +27,7 @@ namespace XerahS.UI.Views.RegionCapture
         private SKBitmap? _capturedBitmap;
 
         // Feature flag to enable new backend
-        private const bool USE_NEW_BACKEND = true; // New backend enabled - platform backends now compile successfully
+        private static readonly bool USE_NEW_BACKEND = true; // New backend enabled - platform backends now compile successfully
 
         // Public property to check if new backend is initialized
         public bool IsNewBackendInitialized => _newCaptureService != null;

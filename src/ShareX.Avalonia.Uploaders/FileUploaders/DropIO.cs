@@ -30,19 +30,19 @@ namespace XerahS.Uploaders.FileUploaders
 {
     public sealed class DropIO : FileUploader
     {
-        public string DropName { get; set; }
-        public string DropDescription { get; set; }
+        public string DropName { get; set; } = string.Empty;
+        public string DropDescription { get; set; } = string.Empty;
 
         public class Asset
         {
-            public string Name { get; set; }
-            public string OriginalFilename { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public string OriginalFilename { get; set; } = string.Empty;
         }
 
         public class Drop
         {
-            public string Name { get; set; }
-            public string AdminToken { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public string AdminToken { get; set; } = string.Empty;
         }
 
         private string APIKey;
@@ -57,6 +57,11 @@ namespace XerahS.Uploaders.FileUploaders
             DropName = "ShareX_" + GeneralHelpers.GetRandomAlphanumericString(10);
             DropDescription = "";
             Drop drop = CreateDrop(DropName, DropDescription, false, false, false);
+
+            if (string.IsNullOrEmpty(drop.AdminToken) || string.IsNullOrEmpty(drop.Name))
+            {
+                return new UploadResult { IsSuccess = false, Errors = Errors };
+            }
 
             Dictionary<string, string> args = new Dictionary<string, string>();
             args.Add("version", "2.0");
@@ -78,6 +83,11 @@ namespace XerahS.Uploaders.FileUploaders
 
         public Asset ParseAsset(string response)
         {
+            if (string.IsNullOrEmpty(response))
+            {
+                return new Asset();
+            }
+
             XDocument doc = XDocument.Parse(response);
             XElement root = doc.Element("asset");
             if (root != null)
@@ -88,7 +98,7 @@ namespace XerahS.Uploaders.FileUploaders
                 return asset;
             }
 
-            return null;
+            return new Asset();
         }
 
         private Drop CreateDrop(string name, string description, bool guests_can_comment, bool guests_can_add, bool guests_can_delete)
@@ -110,17 +120,20 @@ namespace XerahS.Uploaders.FileUploaders
 
             string response = SendRequestMultiPart("http://api.drop.io/drops", args);
 
-            XDocument doc = XDocument.Parse(response);
-            XElement root = doc.Element("drop");
-            if (root != null)
+            if (!string.IsNullOrEmpty(response))
             {
-                Drop drop = new Drop();
-                drop.Name = root.GetElementValue("name");
-                drop.AdminToken = root.GetElementValue("admin_token");
-                return drop;
+                XDocument doc = XDocument.Parse(response);
+                XElement root = doc.Element("drop");
+                if (root != null)
+                {
+                    Drop drop = new Drop();
+                    drop.Name = root.GetElementValue("name");
+                    drop.AdminToken = root.GetElementValue("admin_token");
+                    return drop;
+                }
             }
 
-            return null;
+            return new Drop();
         }
     }
 }

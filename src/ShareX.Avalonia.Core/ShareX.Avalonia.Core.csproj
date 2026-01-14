@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
     <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -20,3 +20,4 @@
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
   </ItemGroup>
 </Project>
+
