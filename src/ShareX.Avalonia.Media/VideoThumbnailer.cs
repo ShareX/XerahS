@@ -61,7 +61,7 @@ namespace XerahS.Media
 
             if (VideoInfo == null || VideoInfo.Duration == TimeSpan.Zero)
             {
-                return null;
+                return new List<VideoThumbnailInfo>();
             }
 
             List<VideoThumbnailInfo> tempThumbnails = new List<VideoThumbnailInfo>();
@@ -123,9 +123,10 @@ namespace XerahS.Media
             {
                 if (Options.CombineScreenshots)
                 {
-                    using (SKBitmap img = CombineScreenshots(tempThumbnails))
+                    var img = CombineScreenshots(tempThumbnails);
+                    if (img != null)
                     {
-                        if (img != null)
+                        using (img)
                         {
                             string tempFilePath = Path.Combine(GetOutputDirectory(), Path.GetFileNameWithoutExtension(MediaPath) + Options.FilenameSuffix + "." + EnumExtensions.GetDescription(Options.ImageFormat));
                             ImageHelpers.SaveBitmap(img, tempFilePath);
@@ -197,10 +198,10 @@ namespace XerahS.Media
             return (int)((RandomFast.NextDouble() * (mediaSeekTimes[start + 1] - mediaSeekTimes[start])) + mediaSeekTimes[start]);
         }
 
-        private SKBitmap CombineScreenshots(List<VideoThumbnailInfo> thumbnails)
+        private SKBitmap? CombineScreenshots(List<VideoThumbnailInfo> thumbnails)
         {
             List<SKBitmap> images = new List<SKBitmap>();
-            SKBitmap finalImage = null;
+            SKBitmap? finalImage = null;
 
             try
             {
