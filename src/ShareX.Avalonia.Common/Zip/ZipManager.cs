@@ -29,7 +29,7 @@ namespace XerahS.Common
 {
     public static class ZipManager
     {
-        public static void Extract(string archivePath, string destination, bool retainDirectoryStructure = true, Func<ZipArchiveEntry, bool> filter = null,
+        public static void Extract(string archivePath, string destination, bool retainDirectoryStructure = true, Func<ZipArchiveEntry, bool>? filter = null,
             long maxUncompressedSize = 0)
         {
             using (ZipArchive archive = ZipFile.OpenRead(archivePath))
@@ -144,7 +144,7 @@ namespace XerahS.Common
             }
         }
 
-        private static ZipArchiveEntry CreateEntry(this ZipArchive archive, ZipEntryInfo entryInfo, CompressionLevel compressionLevel)
+        private static ZipArchiveEntry? CreateEntry(this ZipArchive archive, ZipEntryInfo entryInfo, CompressionLevel compressionLevel)
         {
             if (entryInfo == null)
             {

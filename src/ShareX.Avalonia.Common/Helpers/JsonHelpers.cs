@@ -32,8 +32,8 @@ namespace XerahS.Common
 {
     public static class JsonHelpers
     {
-        public static void Serialize<T>(T obj, TextWriter textWriter, DefaultValueHandling defaultValueHandling = DefaultValueHandling.Include,
-            NullValueHandling nullValueHandling = NullValueHandling.Include, ISerializationBinder serializationBinder = null)
+        public static void Serialize<T>(T obj, TextWriter? textWriter, DefaultValueHandling defaultValueHandling = DefaultValueHandling.Include,
+            NullValueHandling nullValueHandling = NullValueHandling.Include, ISerializationBinder? serializationBinder = null)
         {
             if (textWriter != null)
             {
@@ -53,7 +53,7 @@ namespace XerahS.Common
         }
 
         public static string SerializeToString<T>(T obj, DefaultValueHandling defaultValueHandling = DefaultValueHandling.Include,
-            NullValueHandling nullValueHandling = NullValueHandling.Include, ISerializationBinder serializationBinder = null)
+            NullValueHandling nullValueHandling = NullValueHandling.Include, ISerializationBinder? serializationBinder = null)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -65,8 +65,8 @@ namespace XerahS.Common
             return sb.ToString();
         }
 
-        public static void SerializeToStream<T>(T obj, Stream stream, DefaultValueHandling defaultValueHandling = DefaultValueHandling.Include,
-            NullValueHandling nullValueHandling = NullValueHandling.Include, ISerializationBinder serializationBinder = null)
+        public static void SerializeToStream<T>(T obj, Stream? stream, DefaultValueHandling defaultValueHandling = DefaultValueHandling.Include,
+            NullValueHandling nullValueHandling = NullValueHandling.Include, ISerializationBinder? serializationBinder = null)
         {
             if (stream != null)
             {
@@ -78,7 +78,7 @@ namespace XerahS.Common
         }
 
         public static MemoryStream SerializeToMemoryStream<T>(T obj, DefaultValueHandling defaultValueHandling = DefaultValueHandling.Include,
-            NullValueHandling nullValueHandling = NullValueHandling.Include, ISerializationBinder serializationBinder = null)
+            NullValueHandling nullValueHandling = NullValueHandling.Include, ISerializationBinder? serializationBinder = null)
         {
             MemoryStream memoryStream = new MemoryStream();
             SerializeToStream(obj, memoryStream, defaultValueHandling, nullValueHandling, serializationBinder);
@@ -86,7 +86,7 @@ namespace XerahS.Common
         }
 
         public static void SerializeToFile<T>(T obj, string filePath, DefaultValueHandling defaultValueHandling = DefaultValueHandling.Include,
-            NullValueHandling nullValueHandling = NullValueHandling.Include, ISerializationBinder serializationBinder = null)
+            NullValueHandling nullValueHandling = NullValueHandling.Include, ISerializationBinder? serializationBinder = null)
         {
             if (!string.IsNullOrEmpty(filePath))
             {
@@ -99,7 +99,7 @@ namespace XerahS.Common
             }
         }
 
-        public static T Deserialize<T>(TextReader textReader, ISerializationBinder serializationBinder = null)
+        public static T Deserialize<T>(TextReader textReader, ISerializationBinder? serializationBinder = null)
         {
             if (textReader != null)
             {
@@ -117,7 +117,7 @@ namespace XerahS.Common
             return default;
         }
 
-        public static T DeserializeFromString<T>(string json, ISerializationBinder serializationBinder = null)
+        public static T DeserializeFromString<T>(string json, ISerializationBinder? serializationBinder = null)
         {
             if (!string.IsNullOrEmpty(json))
             {
@@ -130,7 +130,7 @@ namespace XerahS.Common
             return default;
         }
 
-        public static T DeserializeFromStream<T>(Stream stream, ISerializationBinder serializationBinder = null)
+        public static T DeserializeFromStream<T>(Stream stream, ISerializationBinder? serializationBinder = null)
         {
             if (stream != null)
             {
@@ -143,7 +143,7 @@ namespace XerahS.Common
             return default;
         }
 
-        public static T DeserializeFromFile<T>(string filePath, ISerializationBinder serializationBinder = null)
+        public static T DeserializeFromFile<T>(string filePath, ISerializationBinder? serializationBinder = null)
         {
             if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
             {

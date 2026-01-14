@@ -34,7 +34,7 @@ namespace XerahS.Common
             CreateRegistry(path, null, value, root);
         }
 
-        public static void CreateRegistry(string path, string name, string value, RegistryHive root = RegistryHive.CurrentUser)
+        public static void CreateRegistry(string path, string? name, string value, RegistryHive root = RegistryHive.CurrentUser)
         {
             using (RegistryKey rk = RegistryKey.OpenBaseKey(root, RegistryView.Default).CreateSubKey(path))
             {
@@ -50,7 +50,7 @@ namespace XerahS.Common
             CreateRegistry(path, null, value, root);
         }
 
-        public static void CreateRegistry(string path, string name, int value, RegistryHive root = RegistryHive.CurrentUser)
+        public static void CreateRegistry(string path, string? name, int value, RegistryHive root = RegistryHive.CurrentUser)
         {
             using (RegistryKey rk = RegistryKey.OpenBaseKey(root, RegistryView.Default).CreateSubKey(path))
             {
@@ -72,7 +72,7 @@ namespace XerahS.Common
             }
         }
 
-        public static object GetValue(string path, string name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
+        public static object GetValue(string path, string? name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
         {
             try
             {
@@ -93,17 +93,17 @@ namespace XerahS.Common
             return null;
         }
 
-        public static string GetValueString(string path, string name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
+        public static string? GetValueString(string path, string? name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
         {
             return GetValue(path, name, root, view) as string;
         }
 
-        public static int? GetValueDWord(string path, string name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
+        public static int? GetValueDWord(string path, string? name = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
         {
             return (int?)GetValue(path, name, root, view);
         }
 
-        public static bool CheckStringValue(string path, string name = null, string value = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
+        public static bool CheckStringValue(string path, string? name = null, string? value = null, RegistryHive root = RegistryHive.CurrentUser, RegistryView view = RegistryView.Default)
         {
             string registryValue = GetValueString(path, name, root, view);
 

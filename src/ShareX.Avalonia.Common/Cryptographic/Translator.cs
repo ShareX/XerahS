@@ -30,12 +30,12 @@ namespace XerahS.Common
     public class Translator
     {
         // http://en.wikipedia.org/wiki/UTF-8
-        public string Text { get; private set; }
+        public string? Text { get; private set; }
 
         // http://en.wikipedia.org/wiki/Binary_numeral_system
-        public string[] Binary { get; private set; }
+        public string[]? Binary { get; private set; }
 
-        public string BinaryText
+        public string? BinaryText
         {
             get
             {
@@ -49,9 +49,9 @@ namespace XerahS.Common
         }
 
         // http://en.wikipedia.org/wiki/Hexadecimal
-        public string[] Hexadecimal { get; private set; }
+        public string[]? Hexadecimal { get; private set; }
 
-        public string HexadecimalText
+        public string? HexadecimalText
         {
             get
             {
@@ -65,9 +65,9 @@ namespace XerahS.Common
         }
 
         // http://en.wikipedia.org/wiki/ASCII
-        public byte[] ASCII { get; private set; }
+        public byte[]? ASCII { get; private set; }
 
-        public string ASCIIText
+        public string? ASCIIText
         {
             get
             {
@@ -81,21 +81,21 @@ namespace XerahS.Common
         }
 
         // http://en.wikipedia.org/wiki/Base64
-        public string Base64 { get; private set; }
+        public string? Base64 { get; private set; }
 
         // https://en.wikipedia.org/wiki/Cyclic_redundancy_check
-        public string CRC32 { get; private set; }
+        public string? CRC32 { get; private set; }
 
         // http://en.wikipedia.org/wiki/MD5
-        public string MD5 { get; private set; }
+        public string? MD5 { get; private set; }
 
         // http://en.wikipedia.org/wiki/SHA-1
-        public string SHA1 { get; private set; }
+        public string? SHA1 { get; private set; }
 
         // http://en.wikipedia.org/wiki/SHA-2
-        public string SHA256 { get; private set; }
-        public string SHA384 { get; private set; }
-        public string SHA512 { get; private set; }
+        public string? SHA256 { get; private set; }
+        public string? SHA384 { get; private set; }
+        public string? SHA512 { get; private set; }
 
         public void Clear()
         {
