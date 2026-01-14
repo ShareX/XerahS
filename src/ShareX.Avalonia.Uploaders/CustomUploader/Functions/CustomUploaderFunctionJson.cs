@@ -38,7 +38,8 @@ namespace XerahS.Uploaders
         public override string Call(ShareXCustomUploaderSyntaxParser parser, string[] parameters)
         {
             // https://goessner.net/articles/JsonPath/
-            string input, jsonPath;
+            string? input;
+            string jsonPath;
 
             if (parameters.Length > 1)
             {

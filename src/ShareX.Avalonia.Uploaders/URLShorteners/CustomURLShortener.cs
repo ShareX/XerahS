@@ -49,7 +49,7 @@ namespace XerahS.Uploaders.URLShorteners
                 index = config.CustomURLShortenerSelected;
             }
 
-            CustomUploaderItem customUploader = config.CustomUploadersList.ReturnIfValidIndex(index);
+            CustomUploaderItem? customUploader = config.CustomUploadersList.ReturnIfValidIndex(index);
 
             if (customUploader != null)
             {

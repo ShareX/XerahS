@@ -69,7 +69,7 @@ namespace XerahS.Uploaders
                 using (SHA256 sha = SHA256.Create())
                 {
                     sha.ComputeHash(Encoding.UTF8.GetBytes(CodeVerifier));
-                    CodeChallenge = CleanBase64(sha.Hash);
+                    CodeChallenge = CleanBase64(sha.Hash!);
                 }
             }
         }

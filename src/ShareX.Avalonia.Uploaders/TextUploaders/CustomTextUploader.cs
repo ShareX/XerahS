@@ -50,7 +50,7 @@ namespace XerahS.Uploaders.TextUploaders
                 index = config.CustomTextUploaderSelected;
             }
 
-            CustomUploaderItem customUploader = config.CustomUploadersList.ReturnIfValidIndex(index);
+            CustomUploaderItem? customUploader = config.CustomUploadersList.ReturnIfValidIndex(index);
 
             if (customUploader != null)
             {

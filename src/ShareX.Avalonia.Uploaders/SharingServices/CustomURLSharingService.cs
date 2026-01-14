@@ -49,7 +49,7 @@ namespace XerahS.Uploaders.SharingServices
                 index = config.CustomURLSharingServiceSelected;
             }
 
-            CustomUploaderItem customUploader = config.CustomUploadersList.ReturnIfValidIndex(index);
+            CustomUploaderItem? customUploader = config.CustomUploadersList.ReturnIfValidIndex(index);
 
             if (customUploader != null)
             {
