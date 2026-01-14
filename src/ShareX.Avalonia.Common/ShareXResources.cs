@@ -27,11 +27,19 @@ namespace XerahS.Common
 {
     public static class ShareXResources
     {
-        public const string AppName = "XerahS";
-        public const string ProductName = AppName;
+        public static readonly string AppName = GetProductName();
+        public static readonly string ProductName = AppName;
         
         public static readonly string Version = GetVersion();
         public static readonly string ProductNameWithVersion = ProductName + " " + Version;
+
+        private static string GetProductName()
+        {
+            var assembly = System.Reflection.Assembly.GetEntryAssembly();
+            var productAttribute = assembly?.GetCustomAttributes(typeof(System.Reflection.AssemblyProductAttribute), false)
+                .FirstOrDefault() as System.Reflection.AssemblyProductAttribute;
+            return productAttribute?.Product ?? "XerahS";
+        }
 
         private static string GetVersion()
         {

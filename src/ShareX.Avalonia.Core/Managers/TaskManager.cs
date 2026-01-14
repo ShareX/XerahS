@@ -20,11 +20,18 @@ namespace XerahS.Core.Managers
         // Event fired when a task completes with an image
         public event EventHandler<WorkerTask>? TaskCompleted;
 
-        public async Task StartTask(TaskSettings taskSettings, SkiaSharp.SKBitmap? inputImage = null)
+        public async Task StartTask(TaskSettings? taskSettings, SkiaSharp.SKBitmap? inputImage = null)
         {
+            if (taskSettings == null)
+            {
+                DebugHelper.WriteLine("StartTask called with null TaskSettings, skipping.");
+                return;
+            }
+
             TroubleshootingHelper.Log(taskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", $"StartTask Entry: TaskSettings={taskSettings != null}");
             
-            var task = WorkerTask.Create(taskSettings, inputImage);
+            var safeTaskSettings = taskSettings ?? new TaskSettings();
+            var task = WorkerTask.Create(safeTaskSettings, inputImage);
             _tasks.Add(task);
             
             TroubleshootingHelper.Log(task.Info?.TaskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", "Task created");
