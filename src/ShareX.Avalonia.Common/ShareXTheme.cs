@@ -9,7 +9,7 @@ namespace XerahS.Common
 {
     public class ShareXTheme
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [TypeConverter(typeof(MyColorConverter))]
         public Color BackgroundColor { get; set; }
