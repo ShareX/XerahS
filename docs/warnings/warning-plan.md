@@ -44,81 +44,12 @@ Count Code
 - Batch 3 - Null flow returns/dereferences (CS8600/CS8602/CS8603): **done** (core call sites tightened)
 - Batch 4 - Platform compatibility guards (CA1416): **done** (Windows-only code annotated/guarded)
 - Batch 5 - Obsolete APIs and analyser warnings (CS0618/SYSLIB*/CA2022/WFDEV005): **done** (Avalonia drag-drop/storage + native messaging read)
-- Batch 6 - Cleanup remaining small sets (CS0067/CS0649/etc): **in progress** (common utilities nullability cleanup)
+- Batch 6 - Cleanup remaining small sets (CS0067/CS0649/etc): **in progress** (common utilities/nullability cleanup)
 
--## Latest rebuild (develop)
--
+## Latest rebuild (develop)
+
 - Command: `dotnet build /t:Rebuild /p:TreatWarningsAsErrors=false`
-- Warnings: **538**
-- Log: `warnings.log`
--
--### Current counts by code
--
--```
--Count Code
------- ----
-- 292  CS8618
-- 212  CS8600
-- 176  CS8603
-- 104  CS8602
--  86  CS8601
--  82  CS8625
--  62  CS8604
--  10  CS8605
--   8  CS0067
--   6  CS0649
--   6  CS0105
--   4  CS0465
--   4  CS8714
--   4  CS0414
--   2  CS0169
--   2  CS0162
--   2  CS9191
--   2  WFDEV005
--   2  CS0108
--   2  CS8766
--   2  SYSLIB0013
--   2  CS8123
--   2  CS0219
--   2  SYSLIB0060
--```
--
-+## Latest rebuild (develop)
-+
-- Command: `dotnet build /t:Rebuild /p:TreatWarningsAsErrors=false`
-- Warnings: **528**
- - Log: `warnings.log`
-+
-+### Current counts by code
-+
-+```
-+Count Code
-+----- ----
-+ 272  CS8618
-+ 212  CS8600
-+ 176  CS8603
-+ 104  CS8602
-+  86  CS8601
-+  82  CS8625
-+  62  CS8604
-+  10  CS8605
-+   8  CS0067
-+   6  CS0649
-+   6  CS0105
-+   4  CS0465
-+   4  CS8714
-+   4  CS0414
-+   2  CS0169
-+   2  CS0162
-+   2  CS9191
-+   2  WFDEV005
-+   2  CS0108
-+   2  CS8766
-+   2  SYSLIB0013
-+   2  CS8123
-+   2  CS0219
-+   2  SYSLIB0060
-+```
+- Warnings: **480**
 - Log: `warnings.log`
 
 ### Current counts by code
@@ -126,13 +57,13 @@ Count Code
 ```
 Count Code
 ----- ----
- 292  CS8618
- 212  CS8600
- 176  CS8603
- 104  CS8602
-  86  CS8601
-  82  CS8625
-  62  CS8604
+ 252  CS8618
+ 184  CS8600
+ 156  CS8603
+  84  CS8602
+  80  CS8601
+  76  CS8625
+  56  CS8604
   10  CS8605
    8  CS0067
    6  CS0649
