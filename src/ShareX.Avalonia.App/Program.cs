@@ -156,9 +156,14 @@ namespace XerahS.App
         {
             XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "=== InitializeRecordingAsync() CALLED ===");
 
+            // Capture startup time on main thread before going async (Stopwatch isn't thread-safe)
+            _startupStopwatch.Stop();
+            var startupTimeMs = _startupStopwatch.ElapsedMilliseconds;
+
             // Run on a background thread to avoid blocking UI and store task in shared location
             XerahS.Core.Managers.ScreenRecordingManager.PlatformInitializationTask = System.Threading.Tasks.Task.Run(() =>
             {
+                var asyncStopwatch = System.Diagnostics.Stopwatch.StartNew();
                 try
                 {
                     XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Background task started");
@@ -182,12 +187,12 @@ namespace XerahS.App
                         XerahS.Platform.Linux.LinuxPlatform.InitializeRecording();
                     }
 #endif
+                    asyncStopwatch.Stop();
                     XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Background task completed successfully");
                     XerahS.Common.DebugHelper.WriteLine("Async recording initialization completed successfully");
                     
-                    // Log startup time
-                    _startupStopwatch.Stop();
-                    XerahS.Common.DebugHelper.WriteLine($"Startup time: {_startupStopwatch.ElapsedMilliseconds} ms");
+                    // Log startup time (captured on main thread) and async init time
+                    XerahS.Common.DebugHelper.WriteLine($"Startup time: {startupTimeMs} ms (+ {asyncStopwatch.ElapsedMilliseconds} ms async init)");
                 }
                 catch (Exception ex)
                 {
@@ -204,3 +209,4 @@ namespace XerahS.App
                 .LogToTrace();
     }
 }
+
