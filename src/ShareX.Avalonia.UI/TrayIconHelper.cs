@@ -236,7 +236,7 @@ public class TrayIconHelper : INotifyPropertyChanged
         }
     }
 
-    private void OnTrayClick()
+    public void OnTrayClick()
     {
         // Execute the configured left-click action
         var action = SettingsManager.Settings.TrayLeftClickAction;

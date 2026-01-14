@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="using:FluentAvalonia.UI.Controls"
         xmlns:views="using:XerahS.UI.Views"
-        xmlns:common="clr-namespace:XerahS.Common;assembly=ShareX.Avalonia.Common"
+        xmlns:common="clr-namespace:XerahS.Common;assembly=XerahS.Common"
         xmlns:editvm="clr-namespace:ShareX.Editor.ViewModels;assembly=ShareX.Editor"
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="650"
         x:Class="XerahS.UI.Views.MainWindow"

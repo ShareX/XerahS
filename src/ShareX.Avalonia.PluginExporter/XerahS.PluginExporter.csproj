@@ -1,6 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <RootNamespace>XerahS.PluginExporter</RootNamespace>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -8,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShareX.Avalonia.Uploaders\ShareX.Avalonia.Uploaders.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Uploaders\XerahS.Uploaders.csproj" />
   </ItemGroup>
 
 </Project>

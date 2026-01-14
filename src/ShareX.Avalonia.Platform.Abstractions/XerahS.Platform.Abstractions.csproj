@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <RootNamespace>XerahS.Platform.Abstractions</RootNamespace>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -10,6 +11,6 @@
     <PackageReference Include="System.Drawing.Common" Version="10.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ShareX.Avalonia.Services.Abstractions\ShareX.Avalonia.Services.Abstractions.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
   </ItemGroup>
 </Project>

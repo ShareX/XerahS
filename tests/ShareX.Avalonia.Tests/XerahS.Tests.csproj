@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <RootNamespace>XerahS.Tests</RootNamespace>
     <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -23,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj" />
-    <ProjectReference Include="..\..\src\ShareX.Avalonia.Platform.Abstractions\ShareX.Avalonia.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\ShareX.Avalonia.Core\XerahS.Core.csproj" />
+    <ProjectReference Include="..\..\src\ShareX.Avalonia.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

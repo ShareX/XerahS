@@ -1,14 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <RootNamespace>XerahS.ScreenCapture</RootNamespace>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Media\XerahS.Media.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
   </ItemGroup>
 </Project>

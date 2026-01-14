@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <RootNamespace>XerahS.Platform.Windows</RootNamespace>
     <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -10,11 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj" />
-    <ProjectReference Include="..\ShareX.Avalonia.Platform.Abstractions\ShareX.Avalonia.Platform.Abstractions.csproj" />
-    <ProjectReference Include="..\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj" />
-    <ProjectReference Include="..\ShareX.Avalonia.Services.Abstractions\ShareX.Avalonia.Services.Abstractions.csproj" />
-    <ProjectReference Include="..\ShareX.Avalonia.ScreenCapture\ShareX.Avalonia.ScreenCapture.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Core\XerahS.Core.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.ScreenCapture\XerahS.ScreenCapture.csproj" />
   </ItemGroup>
 
   <ItemGroup>

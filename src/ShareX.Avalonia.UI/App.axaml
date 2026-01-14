@@ -7,6 +7,7 @@
              xmlns:uiconverters="clr-namespace:XerahS.UI.Converters"
              xmlns:sty="using:FluentAvalonia.Styling"
              xmlns:core="using:XerahS.Core"
+             xmlns:common="clr-namespace:XerahS.Common;assembly=XerahS.Common"
              x:Class="XerahS.UI.App"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
@@ -50,10 +51,9 @@
 
     <TrayIcon.Icons>
         <TrayIcons>
-            <TrayIcon Icon="avares://ShareX.Avalonia.UI/Assets/ShareX.iconset/icon_16x16.png"
-                      ToolTipText="ShareX"
+            <TrayIcon Icon="avares://XerahS.UI/Assets/ShareX.iconset/icon_16x16.png"
+                      ToolTipText="{x:Static common:AppResources.AppName}"
                       IsVisible="{Binding ShowTray, Source={x:Static local:TrayIconHelper.Instance}}"
-                      Command="{Binding TrayClickCommand, Source={x:Static local:TrayIconHelper.Instance}}"
                       Menu="{Binding TrayMenu, Source={x:Static local:TrayIconHelper.Instance}}"
                       Clicked="TrayIcon_Clicked">
             </TrayIcon>

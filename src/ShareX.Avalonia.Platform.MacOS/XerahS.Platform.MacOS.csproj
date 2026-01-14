@@ -1,6 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <RootNamespace>XerahS.Platform.MacOS</RootNamespace>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -14,10 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj" />
-    <ProjectReference Include="..\ShareX.Avalonia.Platform.Abstractions\ShareX.Avalonia.Platform.Abstractions.csproj" />
-    <ProjectReference Include="..\ShareX.Avalonia.ScreenCapture\ShareX.Avalonia.ScreenCapture.csproj" />
-    <ProjectReference Include="..\ShareX.Avalonia.Media\ShareX.Avalonia.Media.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.ScreenCapture\XerahS.ScreenCapture.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Media\XerahS.Media.csproj" />
   </ItemGroup>
 
 </Project>

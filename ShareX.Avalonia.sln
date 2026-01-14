@@ -5,43 +5,43 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.App", "src\ShareX.Avalonia.App\ShareX.Avalonia.App.csproj", "{C714785B-5C8D-4C76-A9F6-BABB56DC3134}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.App", "src\ShareX.Avalonia.App\XerahS.App.csproj", "{C714785B-5C8D-4C76-A9F6-BABB56DC3134}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.UI", "src\ShareX.Avalonia.UI\ShareX.Avalonia.UI.csproj", "{057F6144-295C-4944-A8F6-B9766DA78499}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.UI", "src\ShareX.Avalonia.UI\XerahS.UI.csproj", "{057F6144-295C-4944-A8F6-B9766DA78499}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Core", "src\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj", "{4C56F5E8-9294-44CD-A07C-FA5B431B2FFD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Core", "src\ShareX.Avalonia.Core\XerahS.Core.csproj", "{4C56F5E8-9294-44CD-A07C-FA5B431B2FFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Common", "src\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj", "{85483A44-F85B-400D-82E5-0087448F8465}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Common", "src\ShareX.Avalonia.Common\XerahS.Common.csproj", "{85483A44-F85B-400D-82E5-0087448F8465}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Platform.Abstractions", "src\ShareX.Avalonia.Platform.Abstractions\ShareX.Avalonia.Platform.Abstractions.csproj", "{2A91F8A0-7FA8-4A01-97D1-4C31F7C8FA11}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Platform.Abstractions", "src\ShareX.Avalonia.Platform.Abstractions\XerahS.Platform.Abstractions.csproj", "{2A91F8A0-7FA8-4A01-97D1-4C31F7C8FA11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Platform.Windows", "src\ShareX.Avalonia.Platform.Windows\ShareX.Avalonia.Platform.Windows.csproj", "{5FD4583A-B0F8-4A3C-A5E7-4656A9D7AA6B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Platform.Windows", "src\ShareX.Avalonia.Platform.Windows\XerahS.Platform.Windows.csproj", "{5FD4583A-B0F8-4A3C-A5E7-4656A9D7AA6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.History", "src\ShareX.Avalonia.History\ShareX.Avalonia.History.csproj", "{4EDCA378-8B9C-4EA7-B483-2F53798375EF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.History", "src\ShareX.Avalonia.History\XerahS.History.csproj", "{4EDCA378-8B9C-4EA7-B483-2F53798375EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Indexer", "src\ShareX.Avalonia.Indexer\ShareX.Avalonia.Indexer.csproj", "{36919F84-0925-49D1-B6B3-35D206F106CC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Indexer", "src\ShareX.Avalonia.Indexer\XerahS.Indexer.csproj", "{36919F84-0925-49D1-B6B3-35D206F106CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Uploaders", "src\ShareX.Avalonia.Uploaders\ShareX.Avalonia.Uploaders.csproj", "{EE2C5D43-DAFA-42A1-AB21-35B0D175CABD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Uploaders", "src\ShareX.Avalonia.Uploaders\XerahS.Uploaders.csproj", "{EE2C5D43-DAFA-42A1-AB21-35B0D175CABD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Media", "src\ShareX.Avalonia.Media\ShareX.Avalonia.Media.csproj", "{AD3064B1-3E03-48CA-BF35-9F0633C53A37}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Media", "src\ShareX.Avalonia.Media\XerahS.Media.csproj", "{AD3064B1-3E03-48CA-BF35-9F0633C53A37}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.ScreenCapture", "src\ShareX.Avalonia.ScreenCapture\ShareX.Avalonia.ScreenCapture.csproj", "{2F46C312-AD99-4EC6-9E18-5D59498FC96F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.ScreenCapture", "src\ShareX.Avalonia.ScreenCapture\XerahS.ScreenCapture.csproj", "{2F46C312-AD99-4EC6-9E18-5D59498FC96F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Services.Abstractions", "src\ShareX.Avalonia.Services.Abstractions\ShareX.Avalonia.Services.Abstractions.csproj", "{EFCD5F4F-9CE6-4516-8DB4-4B7CC2D70560}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Services.Abstractions", "src\ShareX.Avalonia.Services.Abstractions\XerahS.Services.Abstractions.csproj", "{EFCD5F4F-9CE6-4516-8DB4-4B7CC2D70560}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.ViewModels", "src\ShareX.Avalonia.ViewModels\ShareX.Avalonia.ViewModels.csproj", "{1BA75A7B-3F6F-4BC0-A11F-4F95806799E2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.ViewModels", "src\ShareX.Avalonia.ViewModels\XerahS.ViewModels.csproj", "{1BA75A7B-3F6F-4BC0-A11F-4F95806799E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Services", "src\ShareX.Avalonia.Services\ShareX.Avalonia.Services.csproj", "{943A5394-A8E7-4DB8-9E28-081954A9C9AF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Services", "src\ShareX.Avalonia.Services\XerahS.Services.csproj", "{943A5394-A8E7-4DB8-9E28-081954A9C9AF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{58D3A2C3-F96F-5E57-2C6B-ECE59D6A18FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Imgur.Plugin", "src\Plugins\ShareX.Imgur.Plugin\ShareX.Imgur.Plugin.csproj", "{3C6F3C12-78FE-40CD-A300-86F9DEAF047F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Imgur.Plugin", "src\Plugins\ShareX.Imgur.Plugin\XerahS.Imgur.Plugin.csproj", "{3C6F3C12-78FE-40CD-A300-86F9DEAF047F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.AmazonS3.Plugin", "src\Plugins\ShareX.AmazonS3.Plugin\ShareX.AmazonS3.Plugin.csproj", "{21ADE7E5-729D-437E-9337-357875682C52}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.AmazonS3.Plugin", "src\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj", "{21ADE7E5-729D-437E-9337-357875682C52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.PluginExporter", "src\ShareX.Avalonia.PluginExporter\ShareX.Avalonia.PluginExporter.csproj", "{F0A1664B-87CC-42C3-B152-654CC1331525}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.PluginExporter", "src\ShareX.Avalonia.PluginExporter\XerahS.PluginExporter.csproj", "{F0A1664B-87CC-42C3-B152-654CC1331525}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Platform.MacOS", "src\ShareX.Avalonia.Platform.MacOS\ShareX.Avalonia.Platform.MacOS.csproj", "{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Platform.MacOS", "src\ShareX.Avalonia.Platform.MacOS\XerahS.Platform.MacOS.csproj", "{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ShareX.Editor", "ShareX.Editor", "{9CDEF635-2B92-7BC4-7BA3-E0B4A4C557C7}"
 EndProject
@@ -49,9 +49,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E8CB8917-EEB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Editor", "..\ShareX.Editor\src\ShareX.Editor\ShareX.Editor.csproj", "{9E99E9F2-FE0C-485D-9EF4-C54206AB4DCA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Platform.Linux", "src\ShareX.Avalonia.Platform.Linux\ShareX.Avalonia.Platform.Linux.csproj", "{326B5A95-16A2-4E7A-A320-8E253D5970E3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Platform.Linux", "src\ShareX.Avalonia.Platform.Linux\XerahS.Platform.Linux.csproj", "{326B5A95-16A2-4E7A-A320-8E253D5970E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Bootstrap", "src\ShareX.Avalonia.Bootstrap\ShareX.Avalonia.Bootstrap.csproj", "{AF70A291-5C9F-4307-A7DA-CA065FB1A60E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Bootstrap", "src\ShareX.Avalonia.Bootstrap\XerahS.Bootstrap.csproj", "{AF70A291-5C9F-4307-A7DA-CA065FB1A60E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.CLI", "src\XerahS.CLI\XerahS.CLI.csproj", "{A23ABD44-C0EA-4BD9-AE7B-1A3ACF94051D}"
 EndProject

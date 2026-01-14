@@ -230,10 +230,45 @@ public partial class App : Application
         }
     }
 
+    private Avalonia.Threading.DispatcherTimer? _trayClickTimer;
+    private int _trayClickCount = 0;
+    private const int DoubleClickDelayMs = 300;
+
     private void TrayIcon_Clicked(object? sender, EventArgs e)
     {
-        // The TrayIconHelper handles the action based on settings
-        // This is triggered on left-click via the Command binding
+        _trayClickCount++;
+
+        if (_trayClickCount == 1)
+        {
+            // First click - start timer to wait for potential second click
+            _trayClickTimer = new Avalonia.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(DoubleClickDelayMs)
+            };
+            _trayClickTimer.Tick += (s, args) =>
+            {
+                _trayClickTimer?.Stop();
+                _trayClickTimer = null;
+
+                if (_trayClickCount == 1)
+                {
+                    // Single click - execute TrayLeftClickAction
+                    TrayIconHelper.Instance.OnTrayClick();
+                }
+                _trayClickCount = 0;
+            };
+            _trayClickTimer.Start();
+        }
+        else if (_trayClickCount >= 2)
+        {
+            // Double click detected
+            _trayClickTimer?.Stop();
+            _trayClickTimer = null;
+            _trayClickCount = 0;
+
+            // Execute double-click action
+            TrayIconHelper.Instance.OnTrayDoubleClick();
+        }
     }
 
     public Core.Hotkeys.WorkflowManager? WorkflowManager { get; private set; }

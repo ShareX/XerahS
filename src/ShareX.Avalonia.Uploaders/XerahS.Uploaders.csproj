@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <RootNamespace>XerahS.Uploaders</RootNamespace>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Common\XerahS.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FluentFTP" Version="53.0.2" />

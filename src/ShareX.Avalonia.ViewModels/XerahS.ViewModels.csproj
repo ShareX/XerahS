@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\ShareX.Avalonia.Services.Abstractions\ShareX.Avalonia.Services.Abstractions.csproj" />
-    <ProjectReference Include="..\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Common\XerahS.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <RootNamespace>XerahS.ViewModels</RootNamespace>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

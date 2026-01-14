@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <RootNamespace>XerahS.App</RootNamespace>
     <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
     <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
     <OutputType Condition="'$(OS)' == 'Windows_NT'">WinExe</OutputType>
@@ -16,15 +17,16 @@
     <PackageReference Include="Avalonia.Desktop" Version="11.3.10" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ShareX.Avalonia.UI\ShareX.Avalonia.UI.csproj" />
-    <ProjectReference Include="..\ShareX.Avalonia.Core\ShareX.Avalonia.Core.csproj" />
-    <ProjectReference Include="..\ShareX.Avalonia.Platform.Windows\ShareX.Avalonia.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />
-    <ProjectReference Include="..\ShareX.Avalonia.Platform.MacOS\ShareX.Avalonia.Platform.MacOS.csproj" Condition="'$(OS)' != 'Windows_NT'" />
-    <ProjectReference Include="..\ShareX.Avalonia.Platform.Linux\ShareX.Avalonia.Platform.Linux.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+    <ProjectReference Include="..\ShareX.Avalonia.UI\XerahS.UI.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Core\XerahS.Core.csproj" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+    <ProjectReference Include="..\ShareX.Avalonia.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="'$(OS)' != 'Windows_NT'" />
   </ItemGroup>
   <Target Name="CreateMacOSAppBundle" AfterTargets="Publish"
           Condition="'$(OS)' != 'Windows_NT' And ('$(RuntimeIdentifier)' == 'osx-x64' Or '$(RuntimeIdentifier)' == 'osx-arm64')">
     <PropertyGroup>
+    <RootNamespace>XerahS.App</RootNamespace>
       <_MacAppBundle>$(PublishDir)$(AssemblyName).app</_MacAppBundle>
       <_MacContents>$(_MacAppBundle)/Contents</_MacContents>
       <_MacMacOS>$(_MacContents)/MacOS</_MacMacOS>
@@ -66,6 +68,7 @@
   <Target Name="ConfigureMacOSBundleIcon" AfterTargets="CreateMacOSAppBundle"
           Condition="'$(OS)' != 'Windows_NT' And Exists('/usr/libexec/PlistBuddy') And ('$(RuntimeIdentifier)' == 'osx-x64' Or '$(RuntimeIdentifier)' == 'osx-arm64')">
     <PropertyGroup>
+    <RootNamespace>XerahS.App</RootNamespace>
       <_MacAppBundle>$(PublishDir)$(AssemblyName).app</_MacAppBundle>
       <_MacPlist>$(_MacAppBundle)/Contents/Info.plist</_MacPlist>
       <_MacResources>$(_MacAppBundle)/Contents/Resources</_MacResources>

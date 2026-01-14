@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <RootNamespace>XerahS.Imgur.Plugin</RootNamespace>
     <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
     <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
     <OutputType>Library</OutputType>
@@ -11,6 +12,7 @@
 
   <!-- Plugin metadata -->
   <PropertyGroup>
+    <RootNamespace>XerahS.Imgur.Plugin</RootNamespace>
     <PluginId>imgur</PluginId>
     <PluginName>Imgur Uploader</PluginName>
 
@@ -35,11 +37,11 @@
 
   <!-- Reference host assemblies (don't copy, use host's version) -->
   <ItemGroup>
-    <ProjectReference Include="..\..\ShareX.Avalonia.Uploaders\ShareX.Avalonia.Uploaders.csproj">
+    <ProjectReference Include="..\..\ShareX.Avalonia.Uploaders\XerahS.Uploaders.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
-    <ProjectReference Include="..\..\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj">
+    <ProjectReference Include="..\..\ShareX.Avalonia.Common\XerahS.Common.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
@@ -55,6 +57,7 @@
   <!-- Copy plugin to main app's Plugins directory -->
   <Target Name="CopyToPluginsDir" AfterTargets="Build">
     <PropertyGroup>
+    <RootNamespace>XerahS.Imgur.Plugin</RootNamespace>
       <PluginOutputDir>$(MSBuildThisFileDirectory)..\..\ShareX.Avalonia.App\bin\$(Configuration)\$(TargetFramework)\Plugins\$(PluginId)</PluginOutputDir>
     </PropertyGroup>
     <ItemGroup>
