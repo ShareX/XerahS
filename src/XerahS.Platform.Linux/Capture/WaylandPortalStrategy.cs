@@ -42,6 +42,12 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
                 IsPrimary = true,
                 Bounds = new PhysicalRectangle(0, 0, 1920, 1080), // Assumption
                 WorkingArea = new PhysicalRectangle(0, 0, 1920, 1040),
+                // [2026-01-15] ScaleFactor = 1.0 is CORRECT for Wayland Portal
+                // The portal returns pre-scaled screenshots from the compositor.
+                // Wayland compositors handle all DPI scaling internally, so we
+                // receive the final image in physical pixels without needing
+                // additional scale factor adjustments. This is different from
+                // X11 which requires explicit per-monitor DPI calculations.
                 ScaleFactor = 1.0,
                 BitsPerPixel = 32
             }

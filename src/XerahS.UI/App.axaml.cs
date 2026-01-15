@@ -30,6 +30,9 @@ public partial class App : Application
             var mainViewModel = new MainViewModel();
             mainViewModel.ApplicationName = AppResources.AppName;
 
+            // Wire up UploadRequested for embedded editor in MainWindow
+            Services.MainViewModelHelper.WireUploadRequested(mainViewModel);
+
             // Prepare for Silent Run
             bool silentRun = XerahS.Core.SettingsManager.Settings.SilentRun;
 

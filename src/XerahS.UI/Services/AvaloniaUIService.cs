@@ -50,29 +50,7 @@ namespace XerahS.UI.Services
                 editorViewModel.ApplicationName = AppResources.AppName;
 
                 // Wire up UploadRequested to trigger host app upload workflow
-                editorViewModel.UploadRequested += async (bitmap) =>
-                {
-                    try
-                    {
-                        // Convert Avalonia Bitmap to SKBitmap for upload pipeline
-                        using var skBitmap = ShareX.Editor.Helpers.BitmapConversionHelpers.ToSKBitmap(bitmap);
-
-                        // Create task settings with upload enabled and CopyURLToClipboard
-                        var taskSettings = new TaskSettings
-                        {
-                            Job = HotkeyType.None,
-                            AfterCaptureJob = AfterCaptureTasks.UploadImageToHost,
-                            AfterUploadJob = AfterUploadTasks.CopyURLToClipboard
-                        };
-
-                        // Start upload task via TaskManager
-                        await Core.Managers.TaskManager.Instance.StartTask(taskSettings, skBitmap.Copy());
-                    }
-                    catch (Exception ex)
-                    {
-                        DebugHelper.WriteLine($"Editor upload failed: {ex.Message}");
-                    }
-                };
+                MainViewModelHelper.WireUploadRequested(editorViewModel);
 
                 // Set DataContext BEFORE initializing preview so bindings update correctly
                 editorWindow.DataContext = editorViewModel;
