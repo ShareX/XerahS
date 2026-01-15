@@ -139,6 +139,13 @@ namespace XerahS.UI.Views.RegionCapture
             var physicalBounds = _newCaptureService.GetVirtualDesktopBoundsPhysical();
             TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Virtual desktop physical: {physicalBounds}");
 
+            // [2026-01-15] Log window origin for negative coordinate debugging
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Window logical origin: ({logicalBounds.X}, {logicalBounds.Y})");
+            if (logicalBounds.X < 0 || logicalBounds.Y < 0)
+            {
+                TroubleshootingHelper.Log("RegionCapture","WINDOW", "⚠️ NEGATIVE COORDINATES DETECTED - Multi-monitor with secondary left/above primary");
+            }
+
             _newCoordinateMapper = new RegionCaptureCoordinateMapper(
                 _newCaptureService,
                 new LogicalPoint(logicalBounds.X, logicalBounds.Y));
@@ -217,7 +224,19 @@ namespace XerahS.UI.Views.RegionCapture
                         _dragStarted = true;
                     }
                 }
-                UpdateSelectionRectangleNew(logicalPos, currentPhysical);
+
+                // [2026-01-15] FIX: Keep showing window boundary until drag starts
+                // This allows clicking on window boundaries to capture the window
+                if (!_dragStarted)
+                {
+                    // Mouse hasn't moved enough - keep showing window boundary
+                    UpdateWindowSelectionNew(currentPhysical);
+                }
+                else
+                {
+                    // User is dragging - show selection rectangle
+                    UpdateSelectionRectangleNew(logicalPos, currentPhysical);
+                }
             }
             else if (_state == RegionCaptureState.Idle)
             {
@@ -493,6 +512,14 @@ namespace XerahS.UI.Views.RegionCapture
                 var logicalY = logicalTL.Y;
                 var logicalW = Math.Abs(logicalBR.X - logicalTL.X);
                 var logicalH = Math.Abs(logicalBR.Y - logicalTL.Y);
+
+                // [2026-01-15] Diagnostic logging for negative coordinate debugging
+                if (window.Bounds.X < 0 || window.Bounds.Y < 0)
+                {
+                    TroubleshootingHelper.Log("RegionCapture[NEW]", "COORDS",
+                        $"Window with negative coords: Physical=({window.Bounds.X},{window.Bounds.Y}) " +
+                        $"→ WindowLocal=({logicalX:F1},{logicalY:F1})");
+                }
 
                 // Find which monitor contains this window for logging
                 var containingMonitor = _newMonitors.FirstOrDefault(m => m.Bounds.Contains(physicalPoint));
