@@ -23,7 +23,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Indexer", "src\Xerah
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Uploaders", "src\ShareX.Avalonia.Uploaders\XerahS.Uploaders.csproj", "{EE2C5D43-DAFA-42A1-AB21-35B0D175CABD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Media", "src\ShareX.Avalonia.Media\XerahS.Media.csproj", "{AD3064B1-3E03-48CA-BF35-9F0633C53A37}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Media", "src\XerahS.Media\XerahS.Media.csproj", "{AD3064B1-3E03-48CA-BF35-9F0633C53A37}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.ScreenCapture", "src\ShareX.Avalonia.ScreenCapture\XerahS.ScreenCapture.csproj", "{2F46C312-AD99-4EC6-9E18-5D59498FC96F}"
 EndProject
