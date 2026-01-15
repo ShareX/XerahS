@@ -36,7 +36,16 @@
       "Bash(git restore:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(./xerahs.exe verify-region-capture:*)"
+      "Bash(./xerahs.exe verify-region-capture:*)",
+      "Bash(find:*)",
+      "Bash(dotnet test:*)",
+      "Bash(Select-String -Pattern \"error CS\" -Context 0,0)",
+      "Bash(cd:*)",
+      "Bash(xargs cat:*)",
+      "Bash(.xerahs.exe verify-region-capture:*)",
+      "Bash(cmd.exe /c \"xerahs.exe verify-region-capture --help\")",
+      "Bash(powershell -Command:*)",
+      "Bash(grep:*)"
     ]
   }
 }
