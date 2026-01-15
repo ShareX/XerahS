@@ -31,7 +31,11 @@
       "Bash(echo:*)",
       "Bash(dir /s /b srcShareX.Editor 2)",
       "Bash(cmd.exe /c \"dir /s /b src 2>nul | findstr /i EditorView\")",
-      "Bash(cmd.exe /c \"dir /s /b . 2>nul | findstr /i \"\"ShareX.Editor\"\"\")"
+      "Bash(cmd.exe /c \"dir /s /b . 2>nul | findstr /i \"\"ShareX.Editor\"\"\")",
+      "Bash(git add:*)",
+      "Bash(git restore:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
