@@ -22,6 +22,16 @@
                 <ScrollViewer>
                     <StackPanel Margin="20" Spacing="20">
                         <StackPanel Spacing="5">
+                            <TextBlock Text="Workflow ID:" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding WorkflowId}"
+                                     IsReadOnly="True"
+                                     FontFamily="Consolas, Monospace"
+                                     Background="{DynamicResource ControlAltFillColorDefaultBrush}"
+                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                     Padding="6,4,6,4"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
                             <TextBlock Text="Description:" FontWeight="SemiBold"/>
                             <TextBox Text="{Binding Description}" Watermark="Optional description"/>
                         </StackPanel>

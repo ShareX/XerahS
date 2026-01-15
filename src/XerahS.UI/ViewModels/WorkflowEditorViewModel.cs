@@ -19,7 +19,11 @@ public partial class WorkflowEditorViewModel : ViewModelBase
     private bool _isLoadingSelection;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(WorkflowId))]
     private WorkflowSettings _model;
+
+    public string WorkflowId => Model.HotkeyInfo.Id.ToString();
+
 
     [ObservableProperty]
     private Key _selectedKey;
