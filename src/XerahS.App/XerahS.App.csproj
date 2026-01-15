@@ -8,7 +8,7 @@
     <AssemblyName>XerahS</AssemblyName>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>..\ShareX.Avalonia.UI\Assets\Logo.ico</ApplicationIcon>
+    <ApplicationIcon>..\XerahS.UI\Assets\Logo.ico</ApplicationIcon>
     <DefineConstants Condition="'$(OS)' == 'Windows_NT'">$(DefineConstants);WINDOWS</DefineConstants>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(DefineConstants);LINUX</DefineConstants>
@@ -17,7 +17,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="11.3.10" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ShareX.Avalonia.UI\XerahS.UI.csproj" />
+    <ProjectReference Include="..\XerahS.UI\XerahS.UI.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />
     <ProjectReference Include="..\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="'$(OS)' != 'Windows_NT'" />
@@ -73,7 +73,7 @@
       <_MacPlist>$(_MacAppBundle)/Contents/Info.plist</_MacPlist>
       <_MacResources>$(_MacAppBundle)/Contents/Resources</_MacResources>
     </PropertyGroup>
-    <Copy SourceFiles="..\ShareX.Avalonia.UI\Assets\Logo.icns"
+    <Copy SourceFiles="..\XerahS.UI\Assets\Logo.icns"
           DestinationFiles="$(_MacResources)/Logo.icns"
           Condition="Exists('$(_MacAppBundle)')" />
     <Exec Command="/bin/sh -c 'if /usr/libexec/PlistBuddy -c &quot;Print :CFBundleIconFile&quot; &quot;$(_MacPlist)&quot; &gt;/dev/null 2&gt;&amp;1; then /usr/libexec/PlistBuddy -c &quot;Set :CFBundleIconFile Logo&quot; &quot;$(_MacPlist)&quot;; else /usr/libexec/PlistBuddy -c &quot;Add :CFBundleIconFile string Logo&quot; &quot;$(_MacPlist)&quot;; fi'"

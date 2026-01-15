@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.App", "src\XerahS.App\XerahS.App.csproj", "{C714785B-5C8D-4C76-A9F6-BABB56DC3134}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.UI", "src\ShareX.Avalonia.UI\XerahS.UI.csproj", "{057F6144-295C-4944-A8F6-B9766DA78499}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.UI", "src\XerahS.UI\XerahS.UI.csproj", "{057F6144-295C-4944-A8F6-B9766DA78499}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Core", "src\ShareX.Avalonia.Core\XerahS.Core.csproj", "{4C56F5E8-9294-44CD-A07C-FA5B431B2FFD}"
 EndProject
