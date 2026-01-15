@@ -15,7 +15,7 @@
 
     <ProjectReference Include="..\..\..\ShareX.Editor\src\ShareX.Editor\ShareX.Editor.csproj" />
 
-    <ProjectReference Include="..\ShareX.Avalonia.ScreenCapture\XerahS.ScreenCapture.csproj" />
+    <ProjectReference Include="..\XerahS.ScreenCapture\XerahS.ScreenCapture.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
