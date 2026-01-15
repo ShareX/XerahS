@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System.Runtime.InteropServices;
 using XerahS.Platform.Abstractions;
 
 namespace XerahS.Platform.Windows
@@ -32,6 +33,26 @@ namespace XerahS.Platform.Windows
     /// </summary>
     public class WindowsScreenService : IScreenService
     {
+        #region Native Methods for DPI Detection
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+        [DllImport("shcore.dll")]
+        private static extern int GetDpiForMonitor(IntPtr hMonitor, int dpiType, out uint dpiX, out uint dpiY);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        private const uint MONITOR_DEFAULTTONEAREST = 2;
+        private const int MDT_EFFECTIVE_DPI = 0;
+
+        #endregion
+
         public bool UsePerScreenScalingForRegionCaptureLayout => false;
 
         public bool UseWindowPositionForRegionCaptureFallback => false;
@@ -78,8 +99,37 @@ namespace XerahS.Platform.Windows
                 WorkingArea = s.WorkingArea,
                 IsPrimary = s.Primary,
                 DeviceName = s.DeviceName,
-                BitsPerPixel = s.BitsPerPixel
+                BitsPerPixel = s.BitsPerPixel,
+                ScaleFactor = GetScaleFactorForScreen(s)
             }).ToArray();
+        }
+
+        private double GetScaleFactorForScreen(Screen screen)
+        {
+            try
+            {
+                // Get center point of the screen
+                var centerPoint = new POINT
+                {
+                    X = screen.Bounds.Left + screen.Bounds.Width / 2,
+                    Y = screen.Bounds.Top + screen.Bounds.Height / 2
+                };
+
+                var hMonitor = MonitorFromPoint(centerPoint, MONITOR_DEFAULTTONEAREST);
+                if (hMonitor != IntPtr.Zero)
+                {
+                    int result = GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, out uint dpiX, out uint dpiY);
+                    if (result == 0) // S_OK
+                    {
+                        return dpiX / 96.0;
+                    }
+                }
+            }
+            catch
+            {
+                // Fallback to 100% if DPI detection fails
+            }
+            return 1.0;
         }
 
         public ScreenInfo GetScreenFromPoint(Point point)
@@ -91,7 +141,8 @@ namespace XerahS.Platform.Windows
                 WorkingArea = screen.WorkingArea,
                 IsPrimary = screen.Primary,
                 DeviceName = screen.DeviceName,
-                BitsPerPixel = screen.BitsPerPixel
+                BitsPerPixel = screen.BitsPerPixel,
+                ScaleFactor = GetScaleFactorForScreen(screen)
             };
         }
 
@@ -104,7 +155,8 @@ namespace XerahS.Platform.Windows
                 WorkingArea = screen.WorkingArea,
                 IsPrimary = screen.Primary,
                 DeviceName = screen.DeviceName,
-                BitsPerPixel = screen.BitsPerPixel
+                BitsPerPixel = screen.BitsPerPixel,
+                ScaleFactor = GetScaleFactorForScreen(screen)
             };
         }
 

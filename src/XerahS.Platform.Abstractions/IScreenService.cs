@@ -103,5 +103,15 @@ namespace XerahS.Platform.Abstractions
         public bool IsPrimary { get; set; }
         public string DeviceName { get; set; } = string.Empty;
         public int BitsPerPixel { get; set; }
+
+        /// <summary>
+        /// DPI scale factor for this monitor (1.0 = 100%, 1.5 = 150%, 2.0 = 200%, etc.)
+        /// </summary>
+        public double ScaleFactor { get; set; } = 1.0;
+
+        /// <summary>
+        /// Effective DPI (96 * ScaleFactor)
+        /// </summary>
+        public int EffectiveDpi => (int)(96 * ScaleFactor);
     }
 }
