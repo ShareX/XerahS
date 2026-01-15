@@ -347,14 +347,13 @@ namespace XerahS.UI.Views.RegionCapture
         }
 
         /// <summary>
-        /// Helper to update visual elements (existing code can stay the same).
+        /// Helper to update visual elements.
+        /// [2026-01-15] Consolidated from old implementation - properly updates borders and overlay.
         /// </summary>
         private void UpdateSelectionVisuals(double x, double y, double width, double height)
         {
             var selectionBorder = this.FindControl<Avalonia.Controls.Shapes.Rectangle>("SelectionBorder");
             var selectionBorderInner = this.FindControl<Avalonia.Controls.Shapes.Rectangle>("SelectionBorderInner");
-            var darkeningOverlay = this.FindControl<Avalonia.Controls.Shapes.Path>("DarkeningOverlay");
-            var infoText = this.FindControl<Avalonia.Controls.TextBlock>("InfoText");
 
             if (selectionBorder != null)
             {
@@ -374,8 +373,8 @@ namespace XerahS.UI.Views.RegionCapture
                 selectionBorderInner.IsVisible = true;
             }
 
-            // Update darkening overlay (keep existing logic)
-            // Update info text (keep existing logic)
+            // Update darkening overlay to cut out the selection area
+            UpdateDarkeningOverlay(x, y, width, height);
         }
 
         /// <summary>
