@@ -18,60 +18,51 @@
         CanResize="False"
         WindowStartupLocation="Manual">
     
-    <Canvas Name="SelectionCanvas" 
-            HorizontalAlignment="Left" 
-            VerticalAlignment="Top" 
-            Margin="0">
-        <!-- Background screenshots container -->
-        <Canvas Name="BackgroundContainer" />
-        
-        <!-- NEW: SkiaSharp-based drawing canvas -->
+    <Panel Background="Transparent">
+        <!-- SkiaSharp-based drawing canvas -->
         <local:RegionCaptureCanvas Name="CaptureCanvas"
                                    Width="{Binding $parent[Window].Width}"
                                    Height="{Binding $parent[Window].Height}" />
         
-        <!-- Resize Handles (keeping existing implementation for logic, though visual might overlap) 
-             Ideally these should also be drawn by Skia, but for now let's keep them on top unless successful refactor allows removal.
-             Actually, the user wants "use SkiaSharp throughout". 
-             However, the plan was just to "Replace the current XAML-based dashed rectangle and darkening overlay".
-             The handles are less critical for the specific "dashed rectangle" bug, but let's see. 
-             If I hide them here, I break functionality unless I implement hit testing in the Canvas.
-             Let's KEEP them for interaction but ensure they are on top. -->
-        <Canvas Name="ResizeHandlesCanvas" IsVisible="False" IsHitTestVisible="False">
-            <Rectangle Name="HandleTL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleTM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleTR" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleRM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleBR" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleBM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleBL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleLM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+        <!-- Overlay Canvas for UI elements -->
+        <Canvas Name="OverlayCanvas" IsHitTestVisible="False">
+            
+            <!-- Resize Handles -->
+            <Canvas Name="ResizeHandlesCanvas" IsVisible="False">
+                <Rectangle Name="HandleTL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleTM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleTR" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleRM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleBR" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleBM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleBL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleLM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+            </Canvas>
+            
+            <!-- Magnifier HUD -->
+            <StackPanel Name="InfoStack" Orientation="Vertical" IsVisible="False">
+                 <Border Name="MagnifierBorder" 
+                         BorderBrush="White" 
+                         BorderThickness="1" 
+                         Width="120" Height="120"
+                         IsVisible="True" 
+                         Background="Black"
+                         Margin="0,0,0,5">
+                     <Grid>
+                        <Image Name="MagnifierImage" Stretch="None" />
+                         <Line StartPoint="60,0" EndPoint="60,120" Stroke="Cyan" StrokeThickness="1" Opacity="0.5"/>
+                         <Line StartPoint="0,60" EndPoint="120,60" Stroke="Cyan" StrokeThickness="1" Opacity="0.5"/>
+                     </Grid>
+                 </Border>
+            </StackPanel>
+            
+            <!-- Info Text (Floating) -->
+            <TextBlock Name="InfoText" 
+                       Background="#A0000000" 
+                       Padding="5" 
+                       Foreground="White" 
+                       FontSize="11" 
+                       IsVisible="False" />
         </Canvas>
-        
-        <!-- Info HUD (Magnifier + Text) -->
-        <StackPanel Name="InfoStack" Orientation="Vertical" IsVisible="False" IsHitTestVisible="False">
-             <!-- Magnifier: Border with Image inside -->
-             <Border Name="MagnifierBorder" 
-                     BorderBrush="White" 
-                     BorderThickness="1" 
-                     CornerRadius="0"
-                     Width="120" Height="120"
-                     IsVisible="True" 
-                     Background="Black"
-                     Margin="0,0,0,5">
-                 <Grid>
-                    <!-- Magnified Image -->
-                    <Image Name="MagnifierImage" Stretch="None" />
-                    <!-- Crosshair in magnifier -->
-                     <Line StartPoint="60,0" EndPoint="60,120" Stroke="Cyan" StrokeThickness="1" Opacity="0.5"/>
-                     <Line StartPoint="0,60" EndPoint="120,60" Stroke="Cyan" StrokeThickness="1" Opacity="0.5"/>
-                 </Grid>
-             </Border>
-
-             <!-- Text Info -->
-             <Border Background="#A0000000" CornerRadius="2" Padding="5">
-                <TextBlock Name="InfoText" Foreground="White" FontSize="11" />
-             </Border>
-        </StackPanel>
-    </Canvas>
+    </Panel>
 </Window>

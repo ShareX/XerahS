@@ -25,6 +25,7 @@ namespace XerahS.UI.Views.RegionCapture
         private LogicalRectangle _newVirtualDesktopLogical;
         private RegionCaptureCoordinateMapper? _newCoordinateMapper;
         private SKBitmap? _capturedBitmap = null;
+        private SKBitmap? _screenSnapshot = null;
 
         // Feature flag to enable new backend
         private static readonly bool USE_NEW_BACKEND = true; // New backend enabled - platform backends now compile successfully
@@ -153,6 +154,104 @@ namespace XerahS.UI.Views.RegionCapture
             TroubleshootingHelper.Log("RegionCapture","WINDOW", "=== NEW backend positioning complete ===");
         }
 
+        public async System.Threading.Tasks.Task InitializeMagnifierBackend()
+        {
+            if (_newCaptureService == null) return;
+            
+            try 
+            {
+                TroubleshootingHelper.Log("RegionCapture", "MAGNIFIER", "Capturing background for magnifier...");
+                
+                // Temporarily hide window to capture background
+                // We use Opacity instead of IsVisible to maintain layout
+                var oldOpacity = Opacity;
+                Opacity = 0;
+                
+                // Allow UI to update
+                await System.Threading.Tasks.Task.Delay(50);
+                
+                var virtualDesktop = _newCaptureService.GetVirtualDesktopBoundsPhysical();
+                var skRect = new SKRect(virtualDesktop.X, virtualDesktop.Y, virtualDesktop.X + virtualDesktop.Width, virtualDesktop.Y + virtualDesktop.Height);
+                
+                // Capture entire desktop
+                // Note: We use platform capture capable of capturing all screens
+                _screenSnapshot = await XerahS.Platform.Abstractions.PlatformServices.ScreenCapture.CaptureRectAsync(skRect);
+                
+                Opacity = oldOpacity;
+                TroubleshootingHelper.Log("RegionCapture", "MAGNIFIER", $"Background captured: {_screenSnapshot?.Width ?? 0}x{_screenSnapshot?.Height ?? 0}");
+            }
+            catch (Exception ex)
+            {
+                TroubleshootingHelper.Log("RegionCapture", "ERROR", $"Failed to capture background: {ex.Message}");
+                Opacity = 1; // Ensure visible
+            }
+        }
+
+        private void UpdateMagnifierContent(SKPointI physicalCursorPos)
+        {
+            if (_screenSnapshot == null || _magnifierImage == null || _infoStack == null || !_infoStack.IsVisible) return;
+
+            try
+            {
+                // Determine crop size (physical)
+                // Magnifier UI size is approx 120x120 logical? 
+                // Let's assume we want to show a 2x zoom of a 100x100 area.
+                // Or simply show 1:1 area.
+                // Existing XAML has a scaling transform usually.
+                // Or acts as a loupe.
+                // For simplicity: Crop 200x200 physical pixels centered on cursor.
+                
+                int cropSize = 200;
+                int halfSize = cropSize / 2;
+                
+                var cropRect = new SKRectI(
+                    physicalCursorPos.X - halfSize,
+                    physicalCursorPos.Y - halfSize,
+                    physicalCursorPos.X + halfSize,
+                    physicalCursorPos.Y + halfSize);
+                
+                // Clamp to screenshot bounds
+                // Note: _screenSnapshot origin is usually (0,0) relative to its content, 
+                // BUT if we captured a virtual desktop starting at negative coordinates, 
+                // we need to map physical coordinates to bitmap coordinates.
+                // The `CaptureRectAsync` returns a bitmap.
+                // If we captured `skRect`, the bitmap (0,0) corresponds to `skRect.Left, skRect.Top`.
+                
+                var virtualOrigin = _newCaptureService!.GetVirtualDesktopBoundsPhysical();
+                
+                // Map physical cursor to bitmap relative
+                int bitmapX = physicalCursorPos.X - virtualOrigin.X;
+                int bitmapY = physicalCursorPos.Y - virtualOrigin.Y;
+                
+                var srcRect = new SKRectI(
+                    bitmapX - halfSize,
+                    bitmapY - halfSize,
+                    bitmapX + halfSize,
+                    bitmapY + halfSize);
+                    
+                // Create subset
+                using (var subset = new SKBitmap(cropSize, cropSize))
+                {
+                   // _screenSnapshot.ExtractSubset(subset, srcRect) might fail if out of bounds
+                   // Safer to draw into subset
+                   using (var canvas = new SKCanvas(subset))
+                   {
+                       canvas.Clear(SKColors.Black);
+                       // Draw portion of source
+                       canvas.DrawBitmap(_screenSnapshot, 
+                           new SKRect(srcRect.Left, srcRect.Top, srcRect.Right, srcRect.Bottom),
+                           new SKRect(0, 0, cropSize, cropSize));
+                   }
+                   
+                   _magnifierImage.Source = ConvertToAvaloniaBitmap(subset);
+                }
+            }
+            catch
+            {
+                // Ignore update errors
+            }
+        }
+
         /// <summary>
         /// NEW: Convert logical point to physical using new backend.
         /// Replaces ConvertLogicalToScreen.
@@ -214,6 +313,7 @@ namespace XerahS.UI.Views.RegionCapture
             }
 
             UpdateMagnifierPosition(logicalPos);
+            UpdateMagnifierContent(ConvertLogicalToPhysicalNew(logicalPos));
 
             var currentPhysical = ConvertLogicalToPhysicalNew(logicalPos);
 
@@ -344,8 +444,9 @@ namespace XerahS.UI.Views.RegionCapture
             var logicalWidth = Math.Abs(_startPointLogical.X - currentLogical.X);
             var logicalHeight = Math.Abs(_startPointLogical.Y - currentLogical.Y);
 
-            // Update UI elements with logical coordinates
-            UpdateSelectionVisuals(logicalX, logicalY, logicalWidth, logicalHeight);
+            // Update UI elements 
+            UpdateSelectionVisuals(new SKRectI(physX, physY, physX + physWidth, physY + physHeight), 
+                                   new Rect(logicalX, logicalY, logicalWidth, logicalHeight));
             
             // Update HUD with physical stats
             if (_infoText != null)
@@ -373,29 +474,17 @@ namespace XerahS.UI.Views.RegionCapture
 
         /// <summary>
         /// Helper to update visual elements.
-        /// [2026-01-15] Consolidated from old implementation - properly updates borders and overlay.
-        /// [2026-01-16] Updated to use SkiaSharp-based RegionCaptureCanvas
+        /// [2026-01-16] Updated to use SkiaSharp-based RegionCaptureCanvas with Physical coordinates
         /// </summary>
-        private void UpdateSelectionVisuals(double x, double y, double width, double height)
+        private void UpdateSelectionVisuals(SKRectI physicalRect, Rect logicalRect)
         {
             var captureCanvas = this.FindControl<RegionCaptureCanvas>("CaptureCanvas");
-            if (captureCanvas == null) return;
-
-            // Convert logical coordinates back to physical for the canvas IF the canvas expects physical?
-            // No, the canvas draws relative to itself.
-            // But Skia setup in RegionCaptureCanvas uses `_renderTarget` size = `Bounds.Width/Height`.
-            // The `UpdateSelection` method expects `SKRectI`.
-            // If I pass logical coordinates to `UpdateSelection`, and the canvas draws them 1:1, it implies the canvas is 1:1 with logical pixels?
-            // Wait, `RegionCaptureCanvas.Render` creates bitmap of size `Bounds.Width/Height`.
-            // Avalonia `Bounds` are in logical pixels.
-            // So if I pass logical pixels to `UpdateSelection`, Skia will draw logical pixels.
-            // And `context.DrawImage` draws the bitmap (size WxH) into `new Rect(0,0, W, H)`.
-            // Ideally `RegionCaptureCanvas` should handle DPI scaling if we want crisp lines.
-            // But for now, let's match the existing coordinate system: the "Logical" coords we calculated.
-
-            var selectionRect = new SKRectI((int)x, (int)y, (int)(x + width), (int)(y + height));
-            captureCanvas.UpdateSelection(selectionRect, _state == RegionCaptureState.DragSelecting || _state == RegionCaptureState.Selected);
-            captureCanvas.SetDarkening(_useDarkening);
+            if (captureCanvas != null)
+            {
+                // Pass physical coordinates directly to the canvas
+                captureCanvas.UpdateSelection(physicalRect, _state == RegionCaptureState.DragSelecting || _state == RegionCaptureState.Selected);
+                captureCanvas.SetDarkening(_useDarkening);
+            }
         }
 
         /// <summary>
@@ -408,6 +497,11 @@ namespace XerahS.UI.Views.RegionCapture
                 TroubleshootingHelper.Log("RegionCapture","LIFECYCLE", "[NEW] Disposing capture service");
                 _newCaptureService.Dispose();
                 _newCaptureService = null;
+            }
+            if (_screenSnapshot != null)
+            {
+                _screenSnapshot.Dispose();
+                _screenSnapshot = null;
             }
         }
 
@@ -447,7 +541,8 @@ namespace XerahS.UI.Views.RegionCapture
                 var logicalWidth = Math.Abs(br.X - tl.X);
                 var logicalHeight = Math.Abs(br.Y - tl.Y);
 
-                UpdateSelectionVisuals(logicalX, logicalY, logicalWidth, logicalHeight);
+                UpdateSelectionVisuals(new SKRectI(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height),
+                                       new Rect(logicalX, logicalY, logicalWidth, logicalHeight));
                 
                 // Update text
                 if (_infoText != null)
@@ -544,7 +639,8 @@ namespace XerahS.UI.Views.RegionCapture
                     monitorIndex, monitorScale);
 
                 // Update visuals
-                UpdateSelectionVisuals(logicalX, logicalY, logicalW, logicalH);
+                UpdateSelectionVisuals(new SKRectI(window.Bounds.X, window.Bounds.Y, window.Bounds.X + window.Bounds.Width, window.Bounds.Y + window.Bounds.Height),
+                                       new Rect(logicalX, logicalY, logicalW, logicalH));
 
                 if (_infoText != null)
                 {

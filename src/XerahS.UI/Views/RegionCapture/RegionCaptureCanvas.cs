@@ -111,34 +111,35 @@ namespace XerahS.UI.Views.RegionCapture
 
         public override void Render(DrawingContext context)
         {
-            // We can't render if we don't have a size
-            int width = (int)Bounds.Width;
-            int height = (int)Bounds.Height;
-            
-            if (width <= 0 || height <= 0) return;
+            // Get current render scaling (DPI)
+            var scaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
 
-            // Ensure render target matches window size
-            if (_renderTarget == null || _renderTarget.Width != width || _renderTarget.Height != height)
+            // Calculate physical pixel size
+            int pixelWidth = (int)(Bounds.Width * scaling);
+            int pixelHeight = (int)(Bounds.Height * scaling);
+            
+            if (pixelWidth <= 0 || pixelHeight <= 0) return;
+
+            // Ensure render target matches physical window size
+            if (_renderTarget == null || _renderTarget.Width != pixelWidth || _renderTarget.Height != pixelHeight)
             {
                 _renderTarget?.Dispose();
-                _renderTarget = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+                _renderTarget = new SKBitmap(pixelWidth, pixelHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
             }
 
-            // Draw to internal Skia bitmap
+            // Draw to internal Skia bitmap (Physical Pixels)
             using (var canvas = new SKCanvas(_renderTarget))
             {
                 canvas.Clear(SKColors.Transparent);
                 
-                RenderContent(canvas, width, height);
+                RenderContent(canvas, pixelWidth, pixelHeight);
             }
 
             // Blit to Avalonia DrawingContext
-            // Note: This is a bit heavy for every frame, but fine for region capture which doesn't need high FPS
-            // Ideally we would use a WriteableBitmap and lock/unlock
-            
+            // Create WriteableBitmap with matching physical size and DPI
             var writeableBitmap = new WriteableBitmap(
-                new PixelSize(width, height),
-                new Vector(96, 96), // Assuming 96 DPI for the bitmap itself, scaling is handled by bounds
+                new PixelSize(pixelWidth, pixelHeight),
+                new Vector(96 * scaling, 96 * scaling), 
                 PixelFormat.Bgra8888, 
                 AlphaFormat.Premul);
 
@@ -146,17 +147,15 @@ namespace XerahS.UI.Views.RegionCapture
             {
                 var srcPtr = _renderTarget.GetPixels();
                 var dstPtr = frameBuffer.Address;
-                var size = width * height * 4;
+                var size = pixelWidth * pixelHeight * 4;
 
-                // Copy memory
-                // Using a temporary buffer might be safer if strides differ, but usually they match for defaults
-                // For simplicity and matching EditorCanvas pattern:
                 var buffer = new byte[size];
                 Marshal.Copy(srcPtr, buffer, 0, size);
                 Marshal.Copy(buffer, 0, dstPtr, size);
             }
 
-            context.DrawImage(writeableBitmap, new Rect(0, 0, width, height));
+            // Draw bitmap filling the logical bounds
+            context.DrawImage(writeableBitmap, new Rect(0, 0, Bounds.Width, Bounds.Height));
         }
 
         private void RenderContent(SKCanvas canvas, int width, int height)
