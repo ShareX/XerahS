@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:XerahS.UI.Views.RegionCapture"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="XerahS.UI.Views.RegionCapture.RegionCaptureWindow"
         Title="RegionCaptureWindow"
@@ -17,81 +18,51 @@
         CanResize="False"
         WindowStartupLocation="Manual">
     
-    <Canvas Name="SelectionCanvas" 
-            HorizontalAlignment="Left" 
-            VerticalAlignment="Top" 
-            Margin="0">
-        <!-- Background screenshots container -->
-        <Canvas Name="BackgroundContainer" />
+    <Panel Background="Transparent">
+        <!-- SkiaSharp-based drawing canvas -->
+        <local:RegionCaptureCanvas Name="CaptureCanvas"
+                                   Width="{Binding $parent[Window].Width}"
+                                   Height="{Binding $parent[Window].Height}" />
         
-        <!-- Darkening overlay with cutout for selection -->
-        <Path Name="DarkeningOverlay"
-              Fill="#80000000"
-              IsVisible="True" />
-              
-        <!-- Crosshairs -->
-        <Line Name="CrosshairHorizontal" Stroke="White" StrokeThickness="1" IsHitTestVisible="False" Opacity="0.5" IsVisible="False"/>
-        <Line Name="CrosshairVertical" Stroke="White" StrokeThickness="1" IsHitTestVisible="False" Opacity="0.5" IsVisible="False"/>
-        
-        <!-- Selection border with marching ants effect -->
-        <Rectangle Name="SelectionBorder"
-                   StrokeThickness="1"
-                   Fill="Transparent"
-                   IsVisible="False"
-                   IsHitTestVisible="False">
-            <Rectangle.Stroke>
-                <SolidColorBrush Color="White" />
-            </Rectangle.Stroke>
-        </Rectangle>
-        
-        <!-- Inner black dashed border for marching ants effect -->
-        <Rectangle Name="SelectionBorderInner"
-                   StrokeThickness="1"
-                   Fill="Transparent"
-                   IsVisible="False"
-                   IsHitTestVisible="False">
-            <Rectangle.Stroke>
-                <SolidColorBrush Color="Black" />
-            </Rectangle.Stroke>
-            <Rectangle.StrokeDashArray>4,4</Rectangle.StrokeDashArray>
-        </Rectangle>
-        
-        <!-- Resize Handles -->
-        <Canvas Name="ResizeHandlesCanvas" IsVisible="False" IsHitTestVisible="False">
-            <Rectangle Name="HandleTL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleTM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleTR" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleRM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleBR" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleBM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleBL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
-            <Rectangle Name="HandleLM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+        <!-- Overlay Canvas for UI elements -->
+        <Canvas Name="OverlayCanvas" IsHitTestVisible="False">
+            
+            <!-- Resize Handles -->
+            <Canvas Name="ResizeHandlesCanvas" IsVisible="False">
+                <Rectangle Name="HandleTL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleTM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleTR" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleRM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleBR" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleBM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleBL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleLM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+            </Canvas>
+            
+            <!-- Magnifier HUD -->
+            <StackPanel Name="InfoStack" Orientation="Vertical" IsVisible="False">
+                 <Border Name="MagnifierBorder" 
+                         BorderBrush="White" 
+                         BorderThickness="1" 
+                         Width="120" Height="120"
+                         IsVisible="True" 
+                         Background="Black"
+                         Margin="0,0,0,5">
+                     <Grid>
+                        <Image Name="MagnifierImage" Stretch="None" />
+                         <Line StartPoint="60,0" EndPoint="60,120" Stroke="Cyan" StrokeThickness="1" Opacity="0.5"/>
+                         <Line StartPoint="0,60" EndPoint="120,60" Stroke="Cyan" StrokeThickness="1" Opacity="0.5"/>
+                     </Grid>
+                 </Border>
+            </StackPanel>
+            
+            <!-- Info Text (Floating) -->
+            <TextBlock Name="InfoText" 
+                       Background="#A0000000" 
+                       Padding="5" 
+                       Foreground="White" 
+                       FontSize="11" 
+                       IsVisible="False" />
         </Canvas>
-        
-        <!-- Info HUD (Magnifier + Text) -->
-        <StackPanel Name="InfoStack" Orientation="Vertical" IsVisible="False" IsHitTestVisible="False">
-             <!-- Magnifier: Border with Image inside -->
-             <Border Name="MagnifierBorder" 
-                     BorderBrush="White" 
-                     BorderThickness="1" 
-                     CornerRadius="0"
-                     Width="120" Height="120"
-                     IsVisible="True" 
-                     Background="Black"
-                     Margin="0,0,0,5">
-                 <Grid>
-                    <!-- Magnified Image -->
-                    <Image Name="MagnifierImage" Stretch="None" />
-                    <!-- Crosshair in magnifier -->
-                     <Line StartPoint="60,0" EndPoint="60,120" Stroke="Cyan" StrokeThickness="1" Opacity="0.5"/>
-                     <Line StartPoint="0,60" EndPoint="120,60" Stroke="Cyan" StrokeThickness="1" Opacity="0.5"/>
-                 </Grid>
-             </Border>
-
-             <!-- Text Info -->
-             <Border Background="#A0000000" CornerRadius="2" Padding="5">
-                <TextBlock Name="InfoText" Foreground="White" FontSize="11" />
-             </Border>
-        </StackPanel>
-    </Canvas>
+    </Panel>
 </Window>

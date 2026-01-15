@@ -45,8 +45,8 @@ namespace XerahS.UI.Views.RegionCapture
         private RegionCaptureState _state = RegionCaptureState.Idle;
 
         // UI Cache
-        private Avalonia.Controls.Shapes.Line? _crosshairH;
-        private Avalonia.Controls.Shapes.Line? _crosshairV;
+        // private Avalonia.Controls.Shapes.Line? _crosshairH; // Obsolete
+        // private Avalonia.Controls.Shapes.Line? _crosshairV; // Obsolete
         private Canvas? _resizeHandlesCanvas;
         private StackPanel? _infoStack;
         private Image? _magnifierImage;
@@ -226,8 +226,8 @@ namespace XerahS.UI.Views.RegionCapture
             TroubleshootingHelper.Log("RegionCapture", "WINDOW", $"OnOpened state: RenderScaling={RenderScaling}, Position={Position}, Bounds={Bounds}, ClientSize={ClientSize}");
 
             // Cache UI elements
-            _crosshairH = this.FindControl<Avalonia.Controls.Shapes.Line>("CrosshairHorizontal");
-            _crosshairV = this.FindControl<Avalonia.Controls.Shapes.Line>("CrosshairVertical");
+            // _crosshairH = this.FindControl<Avalonia.Controls.Shapes.Line>("CrosshairHorizontal");
+            // _crosshairV = this.FindControl<Avalonia.Controls.Shapes.Line>("CrosshairVertical");
             _resizeHandlesCanvas = this.FindControl<Canvas>("ResizeHandlesCanvas");
             _infoStack = this.FindControl<StackPanel>("InfoStack");
             _magnifierImage = this.FindControl<Image>("MagnifierImage");
@@ -255,6 +255,9 @@ namespace XerahS.UI.Views.RegionCapture
 
             // Use new backend for positioning
             PositionWindowWithNewBackend();
+
+            // Initialize magnifier (captures screen)
+            await InitializeMagnifierBackend();
 
             // Initial pointer move check to highlight window under cursor immediately
             var mousePos = GetGlobalMousePosition();
@@ -333,17 +336,12 @@ namespace XerahS.UI.Views.RegionCapture
 
         private void CancelSelection()
         {
-            // Hide selection borders and info text
-            var border = this.FindControl<Rectangle>("SelectionBorder");
-            if (border != null)
+            // Reset canvas
+            var captureCanvas = this.FindControl<RegionCaptureCanvas>("CaptureCanvas");
+            if (captureCanvas != null)
             {
-                border.IsVisible = false;
-            }
-
-            var borderInner = this.FindControl<Rectangle>("SelectionBorderInner");
-            if (borderInner != null)
-            {
-                borderInner.IsVisible = false;
+                captureCanvas.UpdateSelection(SKRectI.Empty, false);
+                captureCanvas.SetDarkening(_useDarkening);
             }
 
             var infoText = this.FindControl<TextBlock>("InfoText");
@@ -352,12 +350,14 @@ namespace XerahS.UI.Views.RegionCapture
                 infoText.IsVisible = false;
             }
 
-            // Reset to full screen dimming
-            InitializeFullScreenDarkening();
-
             // Reset selection state
             _hoveredWindow = null;
         }
+
+        /* Obsolete: Handled by RegionCaptureCanvas
+        private void InitializeFullScreenDarkening() { ... }
+        private void UpdateDarkeningOverlay(...) { ... }
+        */
 
 
         private void OnPointerPressed(object sender, PointerPressedEventArgs e)
@@ -398,18 +398,9 @@ namespace XerahS.UI.Views.RegionCapture
             DisposeNewBackend();
         }
         
-        private void UpdateCrosshair(Point p)
-        {
-            if (_crosshairH == null || _crosshairV == null) return;
-            
-            _crosshairH.StartPoint = new Point(0, p.Y);
-            _crosshairH.EndPoint = new Point(Width, p.Y);
-            _crosshairH.IsVisible = true;
-
-            _crosshairV.StartPoint = new Point(p.X, 0);
-            _crosshairV.EndPoint = new Point(p.X, Height);
-            _crosshairV.IsVisible = true;
-        }
+        /* Obsolete: Handled by RegionCaptureCanvas
+        private void UpdateCrosshair(Point p) { ... }
+        */
 
         private void UpdateMagnifierPosition(Point p)
         {

@@ -25,6 +25,7 @@ namespace XerahS.UI.Views.RegionCapture
         private LogicalRectangle _newVirtualDesktopLogical;
         private RegionCaptureCoordinateMapper? _newCoordinateMapper;
         private SKBitmap? _capturedBitmap = null;
+        private SKBitmap? _screenSnapshot = null;
 
         // Feature flag to enable new backend
         private static readonly bool USE_NEW_BACKEND = true; // New backend enabled - platform backends now compile successfully
@@ -139,11 +140,116 @@ namespace XerahS.UI.Views.RegionCapture
             var physicalBounds = _newCaptureService.GetVirtualDesktopBoundsPhysical();
             TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Virtual desktop physical: {physicalBounds}");
 
+            // [2026-01-15] Log window origin for negative coordinate debugging
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Window logical origin: ({logicalBounds.X}, {logicalBounds.Y})");
+            if (logicalBounds.X < 0 || logicalBounds.Y < 0)
+            {
+                TroubleshootingHelper.Log("RegionCapture","WINDOW", "⚠️ NEGATIVE COORDINATES DETECTED - Multi-monitor with secondary left/above primary");
+            }
+
             _newCoordinateMapper = new RegionCaptureCoordinateMapper(
                 _newCaptureService,
                 new LogicalPoint(logicalBounds.X, logicalBounds.Y));
 
             TroubleshootingHelper.Log("RegionCapture","WINDOW", "=== NEW backend positioning complete ===");
+        }
+
+        public async System.Threading.Tasks.Task InitializeMagnifierBackend()
+        {
+            if (_newCaptureService == null) return;
+            
+            try 
+            {
+                TroubleshootingHelper.Log("RegionCapture", "MAGNIFIER", "Capturing background for magnifier...");
+                
+                // Temporarily hide window to capture background
+                // We use Opacity instead of IsVisible to maintain layout
+                var oldOpacity = Opacity;
+                Opacity = 0;
+                
+                // Allow UI to update
+                await System.Threading.Tasks.Task.Delay(50);
+                
+                var virtualDesktop = _newCaptureService.GetVirtualDesktopBoundsPhysical();
+                var skRect = new SKRect(virtualDesktop.X, virtualDesktop.Y, virtualDesktop.X + virtualDesktop.Width, virtualDesktop.Y + virtualDesktop.Height);
+                
+                // Capture entire desktop
+                // Note: We use platform capture capable of capturing all screens
+                _screenSnapshot = await XerahS.Platform.Abstractions.PlatformServices.ScreenCapture.CaptureRectAsync(skRect);
+                
+                Opacity = oldOpacity;
+                TroubleshootingHelper.Log("RegionCapture", "MAGNIFIER", $"Background captured: {_screenSnapshot?.Width ?? 0}x{_screenSnapshot?.Height ?? 0}");
+            }
+            catch (Exception ex)
+            {
+                TroubleshootingHelper.Log("RegionCapture", "ERROR", $"Failed to capture background: {ex.Message}");
+                Opacity = 1; // Ensure visible
+            }
+        }
+
+        private void UpdateMagnifierContent(SKPointI physicalCursorPos)
+        {
+            if (_screenSnapshot == null || _magnifierImage == null || _infoStack == null || !_infoStack.IsVisible) return;
+
+            try
+            {
+                // Determine crop size (physical)
+                // Magnifier UI size is approx 120x120 logical? 
+                // Let's assume we want to show a 2x zoom of a 100x100 area.
+                // Or simply show 1:1 area.
+                // Existing XAML has a scaling transform usually.
+                // Or acts as a loupe.
+                // For simplicity: Crop 200x200 physical pixels centered on cursor.
+                
+                int cropSize = 200;
+                int halfSize = cropSize / 2;
+                
+                var cropRect = new SKRectI(
+                    physicalCursorPos.X - halfSize,
+                    physicalCursorPos.Y - halfSize,
+                    physicalCursorPos.X + halfSize,
+                    physicalCursorPos.Y + halfSize);
+                
+                // Clamp to screenshot bounds
+                // Note: _screenSnapshot origin is usually (0,0) relative to its content, 
+                // BUT if we captured a virtual desktop starting at negative coordinates, 
+                // we need to map physical coordinates to bitmap coordinates.
+                // The `CaptureRectAsync` returns a bitmap.
+                // If we captured `skRect`, the bitmap (0,0) corresponds to `skRect.Left, skRect.Top`.
+                
+                var virtualOrigin = _newCaptureService!.GetVirtualDesktopBoundsPhysical();
+                
+                // Map physical cursor to bitmap relative
+                int bitmapX = physicalCursorPos.X - virtualOrigin.X;
+                int bitmapY = physicalCursorPos.Y - virtualOrigin.Y;
+                
+                var srcRect = new SKRectI(
+                    bitmapX - halfSize,
+                    bitmapY - halfSize,
+                    bitmapX + halfSize,
+                    bitmapY + halfSize);
+                    
+                // Create subset
+                using (var subset = new SKBitmap(cropSize, cropSize))
+                {
+                   // _screenSnapshot.ExtractSubset(subset, srcRect) might fail if out of bounds
+                   // Safer to draw into subset
+                   using (var canvas = new SKCanvas(subset))
+                   {
+                       canvas.Clear(SKColors.Black);
+                       // Draw portion of source
+                       canvas.DrawBitmap(_screenSnapshot, 
+                           new SKRect(srcRect.Left, srcRect.Top, srcRect.Right, srcRect.Bottom),
+                           new SKRect(0, 0, cropSize, cropSize));
+                   }
+                   
+                   _magnifierImage.Source = ConvertToAvaloniaBitmap(subset);
+                }
+            }
+            catch
+            {
+                // Ignore update errors
+            }
         }
 
         /// <summary>
@@ -199,8 +305,15 @@ namespace XerahS.UI.Views.RegionCapture
 
             var logicalPos = e.GetPosition(this);
 
-            UpdateCrosshair(logicalPos);
+            var captureCanvas = this.FindControl<RegionCaptureCanvas>("CaptureCanvas");
+            if (captureCanvas != null)
+            {
+                // Correct for Zoom if needed, but here logicalPos is window-relative
+                captureCanvas.UpdateCursor(new SKPoint((float)logicalPos.X, (float)logicalPos.Y));
+            }
+
             UpdateMagnifierPosition(logicalPos);
+            UpdateMagnifierContent(ConvertLogicalToPhysicalNew(logicalPos));
 
             var currentPhysical = ConvertLogicalToPhysicalNew(logicalPos);
 
@@ -217,7 +330,19 @@ namespace XerahS.UI.Views.RegionCapture
                         _dragStarted = true;
                     }
                 }
-                UpdateSelectionRectangleNew(logicalPos, currentPhysical);
+
+                // [2026-01-15] FIX: Keep showing window boundary until drag starts
+                // This allows clicking on window boundaries to capture the window
+                if (!_dragStarted)
+                {
+                    // Mouse hasn't moved enough - keep showing window boundary
+                    UpdateWindowSelectionNew(currentPhysical);
+                }
+                else
+                {
+                    // User is dragging - show selection rectangle
+                    UpdateSelectionRectangleNew(logicalPos, currentPhysical);
+                }
             }
             else if (_state == RegionCaptureState.Idle)
             {
@@ -319,8 +444,9 @@ namespace XerahS.UI.Views.RegionCapture
             var logicalWidth = Math.Abs(_startPointLogical.X - currentLogical.X);
             var logicalHeight = Math.Abs(_startPointLogical.Y - currentLogical.Y);
 
-            // Update UI elements with logical coordinates
-            UpdateSelectionVisuals(logicalX, logicalY, logicalWidth, logicalHeight);
+            // Update UI elements 
+            UpdateSelectionVisuals(new SKRectI(physX, physY, physX + physWidth, physY + physHeight), 
+                                   new Rect(logicalX, logicalY, logicalWidth, logicalHeight));
             
             // Update HUD with physical stats
             if (_infoText != null)
@@ -348,33 +474,17 @@ namespace XerahS.UI.Views.RegionCapture
 
         /// <summary>
         /// Helper to update visual elements.
-        /// [2026-01-15] Consolidated from old implementation - properly updates borders and overlay.
+        /// [2026-01-16] Updated to use SkiaSharp-based RegionCaptureCanvas with Physical coordinates
         /// </summary>
-        private void UpdateSelectionVisuals(double x, double y, double width, double height)
+        private void UpdateSelectionVisuals(SKRectI physicalRect, Rect logicalRect)
         {
-            var selectionBorder = this.FindControl<Avalonia.Controls.Shapes.Rectangle>("SelectionBorder");
-            var selectionBorderInner = this.FindControl<Avalonia.Controls.Shapes.Rectangle>("SelectionBorderInner");
-
-            if (selectionBorder != null)
+            var captureCanvas = this.FindControl<RegionCaptureCanvas>("CaptureCanvas");
+            if (captureCanvas != null)
             {
-                selectionBorder.Width = width;
-                selectionBorder.Height = height;
-                Avalonia.Controls.Canvas.SetLeft(selectionBorder, x);
-                Avalonia.Controls.Canvas.SetTop(selectionBorder, y);
-                selectionBorder.IsVisible = true;
+                // Pass physical coordinates directly to the canvas
+                captureCanvas.UpdateSelection(physicalRect, _state == RegionCaptureState.DragSelecting || _state == RegionCaptureState.Selected);
+                captureCanvas.SetDarkening(_useDarkening);
             }
-
-            if (selectionBorderInner != null)
-            {
-                selectionBorderInner.Width = width;
-                selectionBorderInner.Height = height;
-                Avalonia.Controls.Canvas.SetLeft(selectionBorderInner, x);
-                Avalonia.Controls.Canvas.SetTop(selectionBorderInner, y);
-                selectionBorderInner.IsVisible = true;
-            }
-
-            // Update darkening overlay to cut out the selection area
-            UpdateDarkeningOverlay(x, y, width, height);
         }
 
         /// <summary>
@@ -387,6 +497,11 @@ namespace XerahS.UI.Views.RegionCapture
                 TroubleshootingHelper.Log("RegionCapture","LIFECYCLE", "[NEW] Disposing capture service");
                 _newCaptureService.Dispose();
                 _newCaptureService = null;
+            }
+            if (_screenSnapshot != null)
+            {
+                _screenSnapshot.Dispose();
+                _screenSnapshot = null;
             }
         }
 
@@ -426,7 +541,8 @@ namespace XerahS.UI.Views.RegionCapture
                 var logicalWidth = Math.Abs(br.X - tl.X);
                 var logicalHeight = Math.Abs(br.Y - tl.Y);
 
-                UpdateSelectionVisuals(logicalX, logicalY, logicalWidth, logicalHeight);
+                UpdateSelectionVisuals(new SKRectI(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height),
+                                       new Rect(logicalX, logicalY, logicalWidth, logicalHeight));
                 
                 // Update text
                 if (_infoText != null)
@@ -494,6 +610,14 @@ namespace XerahS.UI.Views.RegionCapture
                 var logicalW = Math.Abs(logicalBR.X - logicalTL.X);
                 var logicalH = Math.Abs(logicalBR.Y - logicalTL.Y);
 
+                // [2026-01-15] Diagnostic logging for negative coordinate debugging
+                if (window.Bounds.X < 0 || window.Bounds.Y < 0)
+                {
+                    TroubleshootingHelper.Log("RegionCapture[NEW]", "COORDS",
+                        $"Window with negative coords: Physical=({window.Bounds.X},{window.Bounds.Y}) " +
+                        $"→ WindowLocal=({logicalX:F1},{logicalY:F1})");
+                }
+
                 // Find which monitor contains this window for logging
                 var containingMonitor = _newMonitors.FirstOrDefault(m => m.Bounds.Contains(physicalPoint));
                 var monitorIndex = containingMonitor != null ? Array.IndexOf(_newMonitors, containingMonitor) : -1;
@@ -515,44 +639,23 @@ namespace XerahS.UI.Views.RegionCapture
                     monitorIndex, monitorScale);
 
                 // Update visuals
-                var border = this.FindControl<Avalonia.Controls.Shapes.Rectangle>("SelectionBorder");
-                var borderInner = this.FindControl<Avalonia.Controls.Shapes.Rectangle>("SelectionBorderInner");
-                var infoText = this.FindControl<Avalonia.Controls.TextBlock>("InfoText");
+                UpdateSelectionVisuals(new SKRectI(window.Bounds.X, window.Bounds.Y, window.Bounds.X + window.Bounds.Width, window.Bounds.Y + window.Bounds.Height),
+                                       new Rect(logicalX, logicalY, logicalW, logicalH));
 
-                if (border != null)
+                if (_infoText != null)
                 {
-                    border.IsVisible = true;
-                    Canvas.SetLeft(border, logicalX);
-                    Canvas.SetTop(border, logicalY);
-                    border.Width = logicalW;
-                    border.Height = logicalH;
-                }
-
-                if (borderInner != null)
-                {
-                    borderInner.IsVisible = true;
-                    Canvas.SetLeft(borderInner, logicalX);
-                    Canvas.SetTop(borderInner, logicalY);
-                    borderInner.Width = logicalW;
-                    borderInner.Height = logicalH;
-                }
-
-                UpdateDarkeningOverlay(logicalX, logicalY, logicalW, logicalH);
-
-                if (infoText != null)
-                {
-                    infoText.IsVisible = true;
+                    _infoText.IsVisible = true;
                     var title = !string.IsNullOrEmpty(window.Title) ? window.Title + "\n" : "";
-                    infoText.Text = $"{title}X: {window.Bounds.X} Y: {window.Bounds.Y} W: {window.Bounds.Width} H: {window.Bounds.Height}";
+                    _infoText.Text = $"{title}X: {window.Bounds.X} Y: {window.Bounds.Y} W: {window.Bounds.Width} H: {window.Bounds.Height}";
 
-                    Canvas.SetLeft(infoText, logicalX);
+                    Canvas.SetLeft(_infoText, logicalX);
 
                     var labelHeight = 45;
                     var topPadding = 5;
                     var labelY = logicalY - labelHeight - topPadding;
                     if (labelY < 5) labelY = 5;
 
-                    Canvas.SetTop(infoText, labelY);
+                    Canvas.SetTop(_infoText, labelY);
                 }
             }
             else if (window == null && _hoveredWindow != null)
