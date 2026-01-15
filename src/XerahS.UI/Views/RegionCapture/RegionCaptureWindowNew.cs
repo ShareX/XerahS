@@ -206,7 +206,13 @@ namespace XerahS.UI.Views.RegionCapture
 
             var logicalPos = e.GetPosition(this);
 
-            UpdateCrosshair(logicalPos);
+            var captureCanvas = this.FindControl<RegionCaptureCanvas>("CaptureCanvas");
+            if (captureCanvas != null)
+            {
+                // Correct for Zoom if needed, but here logicalPos is window-relative
+                captureCanvas.UpdateCursor(new SKPoint((float)logicalPos.X, (float)logicalPos.Y));
+            }
+
             UpdateMagnifierPosition(logicalPos);
 
             var currentPhysical = ConvertLogicalToPhysicalNew(logicalPos);
@@ -368,32 +374,28 @@ namespace XerahS.UI.Views.RegionCapture
         /// <summary>
         /// Helper to update visual elements.
         /// [2026-01-15] Consolidated from old implementation - properly updates borders and overlay.
+        /// [2026-01-16] Updated to use SkiaSharp-based RegionCaptureCanvas
         /// </summary>
         private void UpdateSelectionVisuals(double x, double y, double width, double height)
         {
-            var selectionBorder = this.FindControl<Avalonia.Controls.Shapes.Rectangle>("SelectionBorder");
-            var selectionBorderInner = this.FindControl<Avalonia.Controls.Shapes.Rectangle>("SelectionBorderInner");
+            var captureCanvas = this.FindControl<RegionCaptureCanvas>("CaptureCanvas");
+            if (captureCanvas == null) return;
 
-            if (selectionBorder != null)
-            {
-                selectionBorder.Width = width;
-                selectionBorder.Height = height;
-                Avalonia.Controls.Canvas.SetLeft(selectionBorder, x);
-                Avalonia.Controls.Canvas.SetTop(selectionBorder, y);
-                selectionBorder.IsVisible = true;
-            }
+            // Convert logical coordinates back to physical for the canvas IF the canvas expects physical?
+            // No, the canvas draws relative to itself.
+            // But Skia setup in RegionCaptureCanvas uses `_renderTarget` size = `Bounds.Width/Height`.
+            // The `UpdateSelection` method expects `SKRectI`.
+            // If I pass logical coordinates to `UpdateSelection`, and the canvas draws them 1:1, it implies the canvas is 1:1 with logical pixels?
+            // Wait, `RegionCaptureCanvas.Render` creates bitmap of size `Bounds.Width/Height`.
+            // Avalonia `Bounds` are in logical pixels.
+            // So if I pass logical pixels to `UpdateSelection`, Skia will draw logical pixels.
+            // And `context.DrawImage` draws the bitmap (size WxH) into `new Rect(0,0, W, H)`.
+            // Ideally `RegionCaptureCanvas` should handle DPI scaling if we want crisp lines.
+            // But for now, let's match the existing coordinate system: the "Logical" coords we calculated.
 
-            if (selectionBorderInner != null)
-            {
-                selectionBorderInner.Width = width;
-                selectionBorderInner.Height = height;
-                Avalonia.Controls.Canvas.SetLeft(selectionBorderInner, x);
-                Avalonia.Controls.Canvas.SetTop(selectionBorderInner, y);
-                selectionBorderInner.IsVisible = true;
-            }
-
-            // Update darkening overlay to cut out the selection area
-            UpdateDarkeningOverlay(x, y, width, height);
+            var selectionRect = new SKRectI((int)x, (int)y, (int)(x + width), (int)(y + height));
+            captureCanvas.UpdateSelection(selectionRect, _state == RegionCaptureState.DragSelecting || _state == RegionCaptureState.Selected);
+            captureCanvas.SetDarkening(_useDarkening);
         }
 
         /// <summary>
@@ -542,44 +544,22 @@ namespace XerahS.UI.Views.RegionCapture
                     monitorIndex, monitorScale);
 
                 // Update visuals
-                var border = this.FindControl<Avalonia.Controls.Shapes.Rectangle>("SelectionBorder");
-                var borderInner = this.FindControl<Avalonia.Controls.Shapes.Rectangle>("SelectionBorderInner");
-                var infoText = this.FindControl<Avalonia.Controls.TextBlock>("InfoText");
+                UpdateSelectionVisuals(logicalX, logicalY, logicalW, logicalH);
 
-                if (border != null)
+                if (_infoText != null)
                 {
-                    border.IsVisible = true;
-                    Canvas.SetLeft(border, logicalX);
-                    Canvas.SetTop(border, logicalY);
-                    border.Width = logicalW;
-                    border.Height = logicalH;
-                }
-
-                if (borderInner != null)
-                {
-                    borderInner.IsVisible = true;
-                    Canvas.SetLeft(borderInner, logicalX);
-                    Canvas.SetTop(borderInner, logicalY);
-                    borderInner.Width = logicalW;
-                    borderInner.Height = logicalH;
-                }
-
-                UpdateDarkeningOverlay(logicalX, logicalY, logicalW, logicalH);
-
-                if (infoText != null)
-                {
-                    infoText.IsVisible = true;
+                    _infoText.IsVisible = true;
                     var title = !string.IsNullOrEmpty(window.Title) ? window.Title + "\n" : "";
-                    infoText.Text = $"{title}X: {window.Bounds.X} Y: {window.Bounds.Y} W: {window.Bounds.Width} H: {window.Bounds.Height}";
+                    _infoText.Text = $"{title}X: {window.Bounds.X} Y: {window.Bounds.Y} W: {window.Bounds.Width} H: {window.Bounds.Height}";
 
-                    Canvas.SetLeft(infoText, logicalX);
+                    Canvas.SetLeft(_infoText, logicalX);
 
                     var labelHeight = 45;
                     var topPadding = 5;
                     var labelY = logicalY - labelHeight - topPadding;
                     if (labelY < 5) labelY = 5;
 
-                    Canvas.SetTop(infoText, labelY);
+                    Canvas.SetTop(_infoText, labelY);
                 }
             }
             else if (window == null && _hoveredWindow != null)

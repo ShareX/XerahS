@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:XerahS.UI.Views.RegionCapture"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="XerahS.UI.Views.RegionCapture.RegionCaptureWindow"
         Title="RegionCaptureWindow"
@@ -24,39 +25,18 @@
         <!-- Background screenshots container -->
         <Canvas Name="BackgroundContainer" />
         
-        <!-- Darkening overlay with cutout for selection -->
-        <Path Name="DarkeningOverlay"
-              Fill="#80000000"
-              IsVisible="True" />
-              
-        <!-- Crosshairs -->
-        <Line Name="CrosshairHorizontal" Stroke="White" StrokeThickness="1" IsHitTestVisible="False" Opacity="0.5" IsVisible="False"/>
-        <Line Name="CrosshairVertical" Stroke="White" StrokeThickness="1" IsHitTestVisible="False" Opacity="0.5" IsVisible="False"/>
+        <!-- NEW: SkiaSharp-based drawing canvas -->
+        <local:RegionCaptureCanvas Name="CaptureCanvas"
+                                   Width="{Binding $parent[Window].Width}"
+                                   Height="{Binding $parent[Window].Height}" />
         
-        <!-- Selection border with marching ants effect -->
-        <Rectangle Name="SelectionBorder"
-                   StrokeThickness="1"
-                   Fill="Transparent"
-                   IsVisible="False"
-                   IsHitTestVisible="False">
-            <Rectangle.Stroke>
-                <SolidColorBrush Color="White" />
-            </Rectangle.Stroke>
-        </Rectangle>
-        
-        <!-- Inner black dashed border for marching ants effect -->
-        <Rectangle Name="SelectionBorderInner"
-                   StrokeThickness="1"
-                   Fill="Transparent"
-                   IsVisible="False"
-                   IsHitTestVisible="False">
-            <Rectangle.Stroke>
-                <SolidColorBrush Color="Black" />
-            </Rectangle.Stroke>
-            <Rectangle.StrokeDashArray>4,4</Rectangle.StrokeDashArray>
-        </Rectangle>
-        
-        <!-- Resize Handles -->
+        <!-- Resize Handles (keeping existing implementation for logic, though visual might overlap) 
+             Ideally these should also be drawn by Skia, but for now let's keep them on top unless successful refactor allows removal.
+             Actually, the user wants "use SkiaSharp throughout". 
+             However, the plan was just to "Replace the current XAML-based dashed rectangle and darkening overlay".
+             The handles are less critical for the specific "dashed rectangle" bug, but let's see. 
+             If I hide them here, I break functionality unless I implement hit testing in the Canvas.
+             Let's KEEP them for interaction but ensure they are on top. -->
         <Canvas Name="ResizeHandlesCanvas" IsVisible="False" IsHitTestVisible="False">
             <Rectangle Name="HandleTL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
             <Rectangle Name="HandleTM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />

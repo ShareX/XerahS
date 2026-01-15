@@ -333,17 +333,12 @@ namespace XerahS.UI.Views.RegionCapture
 
         private void CancelSelection()
         {
-            // Hide selection borders and info text
-            var border = this.FindControl<Rectangle>("SelectionBorder");
-            if (border != null)
+            // Reset canvas
+            var captureCanvas = this.FindControl<RegionCaptureCanvas>("CaptureCanvas");
+            if (captureCanvas != null)
             {
-                border.IsVisible = false;
-            }
-
-            var borderInner = this.FindControl<Rectangle>("SelectionBorderInner");
-            if (borderInner != null)
-            {
-                borderInner.IsVisible = false;
+                captureCanvas.UpdateSelection(SKRectI.Empty, false);
+                captureCanvas.SetDarkening(_useDarkening);
             }
 
             var infoText = this.FindControl<TextBlock>("InfoText");
@@ -352,12 +347,14 @@ namespace XerahS.UI.Views.RegionCapture
                 infoText.IsVisible = false;
             }
 
-            // Reset to full screen dimming
-            InitializeFullScreenDarkening();
-
             // Reset selection state
             _hoveredWindow = null;
         }
+
+        /* Obsolete: Handled by RegionCaptureCanvas
+        private void InitializeFullScreenDarkening() { ... }
+        private void UpdateDarkeningOverlay(...) { ... }
+        */
 
 
         private void OnPointerPressed(object sender, PointerPressedEventArgs e)
