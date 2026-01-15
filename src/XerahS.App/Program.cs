@@ -29,7 +29,6 @@ namespace XerahS.App
 {
     internal class Program
     {
-        private static readonly System.Diagnostics.Stopwatch _startupStopwatch = System.Diagnostics.Stopwatch.StartNew();
 
         [STAThread]
         public static void Main(string[] args)
@@ -156,9 +155,18 @@ namespace XerahS.App
         {
             XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "=== InitializeRecordingAsync() CALLED ===");
 
-            // Capture startup time on main thread before going async (Stopwatch isn't thread-safe)
-            _startupStopwatch.Stop();
-            var startupTimeMs = _startupStopwatch.ElapsedMilliseconds;
+            // Capture startup time on main thread
+            double startupTimeMs = 0;
+            try
+            {
+                var process = System.Diagnostics.Process.GetCurrentProcess();
+                startupTimeMs = (DateTime.Now - process.StartTime).TotalMilliseconds;
+            }
+            catch (Exception ex)
+            {
+                // Fallback or ignore if permission denied
+                System.Diagnostics.Debug.WriteLine($"Failed to get process start time: {ex.Message}");
+            }
 
             // Run on a background thread to avoid blocking UI and store task in shared location
             XerahS.Core.Managers.ScreenRecordingManager.PlatformInitializationTask = System.Threading.Tasks.Task.Run(() =>
@@ -192,7 +200,7 @@ namespace XerahS.App
                     XerahS.Common.DebugHelper.WriteLine("Async recording initialization completed successfully");
                     
                     // Log startup time (captured on main thread) and async init time
-                    XerahS.Common.DebugHelper.WriteLine($"Startup time: {startupTimeMs} ms (+ {asyncStopwatch.ElapsedMilliseconds} ms async init)");
+                    XerahS.Common.DebugHelper.WriteLine($"Startup time: {startupTimeMs:F0} ms (+ {asyncStopwatch.ElapsedMilliseconds} ms async init)");
                 }
                 catch (Exception ex)
                 {
