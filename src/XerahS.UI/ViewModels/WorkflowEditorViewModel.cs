@@ -22,7 +22,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(WorkflowId))]
     private WorkflowSettings _model;
 
-    public string WorkflowId => Model.HotkeyInfo.Id.ToString();
+    public string WorkflowId => Model.Id;
 
 
     [ObservableProperty]

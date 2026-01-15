@@ -116,17 +116,11 @@ public class WorkflowSettings
     }
 
     /// <summary>
-    /// Generate a SHA-1 hash for this workflow based on its content
+    /// Generate a new unique identifier (GUID)
     /// </summary>
     public string GenerateId()
     {
-        using var sha1 = System.Security.Cryptography.SHA1.Create();
-
-        // Create a unique string representation of the workflow
-        var workflowString = $"{Name ?? string.Empty}|{Job}|{Enabled}|{TaskSettings?.Job}|{TaskSettings?.Description ?? string.Empty}";
-
-        var hash = sha1.ComputeHash(System.Text.Encoding.UTF8.GetBytes(workflowString));
-        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, 8);
+        return Guid.NewGuid().ToString();
     }
 
     /// <summary>
