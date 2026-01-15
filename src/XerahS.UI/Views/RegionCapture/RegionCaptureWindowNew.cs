@@ -173,9 +173,6 @@ namespace XerahS.UI.Views.RegionCapture
             return logical;
         }
 
-        /// <summary>
-        /// NEW: Handle pointer pressed with new backend.
-        /// </summary>
         private void OnPointerPressedNew(PointerPressedEventArgs e)
         {
             if (_newCaptureService == null) return;
@@ -188,31 +185,27 @@ namespace XerahS.UI.Views.RegionCapture
 
             TroubleshootingHelper.Log("RegionCapture","INPUT", $"[NEW] Pressed: Window-local={logicalPos}, Physical={physical}");
 
-            _isSelecting = true;
+            _state = RegionCaptureState.DragSelecting;
             _dragStarted = false;
 
-            // Detect window under cursor at press time (for single-click window selection)
-            UpdateWindowSelection(physical);
+            if (_resizeHandlesCanvas != null) _resizeHandlesCanvas.IsVisible = false;
 
-            if (_hoveredWindow != null)
-            {
-                TroubleshootingHelper.Log("RegionCapture", "INPUT", $"[NEW] Window detected at press: {_hoveredWindow.Title}");
-            }
+            UpdateWindowSelection(physical);
         }
 
-        /// <summary>
-        /// NEW: Handle pointer moved with new backend.
-        /// </summary>
         private void OnPointerMovedNew(PointerEventArgs e)
         {
             if (_newCaptureService == null) return;
 
             var logicalPos = e.GetPosition(this);
+            
+            UpdateCrosshair(logicalPos);
+            UpdateMagnifierPosition(logicalPos);
+
             var currentPhysical = ConvertLogicalToPhysicalNew(logicalPos);
 
-            if (_isSelecting)
+            if (_state == RegionCaptureState.DragSelecting)
             {
-                // Check drag threshold
                 if (!_dragStarted)
                 {
                     var dragDistance = Math.Sqrt(
@@ -222,93 +215,46 @@ namespace XerahS.UI.Views.RegionCapture
                     if (dragDistance >= DragThreshold)
                     {
                         _dragStarted = true;
-                        TroubleshootingHelper.Log("RegionCapture","INPUT", $"[NEW] Drag started (distance: {dragDistance:F2}px)");
                     }
                 }
-
-                // Update selection rectangle - pass both logical and physical coords
                 UpdateSelectionRectangleNew(logicalPos, currentPhysical);
             }
-            else if (!_dragStarted)
+            else if (_state == RegionCaptureState.Idle)
             {
-                // Window detection (keep existing logic)
                 UpdateWindowSelection(currentPhysical);
             }
         }
 
-        /// <summary>
-        /// NEW: Handle pointer released with new backend.
-        /// </summary>
         private void OnPointerReleasedNew(PointerReleasedEventArgs e)
         {
-            TroubleshootingHelper.Log("RegionCapture","INPUT", $"[NEW] OnPointerReleasedNew called: _isSelecting={_isSelecting}, _newCaptureService={(_newCaptureService != null ? "initialized" : "null")}");
+            if (_newCaptureService == null) return;
 
-            if (_newCaptureService == null)
-            {
-                TroubleshootingHelper.Log("RegionCapture","ERROR", "[NEW] Release event called but service is null");
-                return;
-            }
+            if (_state != RegionCaptureState.DragSelecting) return;
 
-            if (!_isSelecting)
-            {
-                TroubleshootingHelper.Log("RegionCapture","WARNING", "[NEW] Release event called but not selecting - ignoring");
-                return;
-            }
-
-            _isSelecting = false;
-
-            // If we didn't drag and have a hovered window, use that
             if (!_dragStarted && _hoveredWindow != null)
             {
                 var rect = _hoveredWindow.Bounds;
                 TroubleshootingHelper.Log("RegionCapture","RESULT", $"[NEW] Selected window: {rect}");
-
-                // Don't capture here - let ScreenCaptureService use the old platform capture which works reliably
-                // The new backend is only used for coordinate conversion and window detection
-                TroubleshootingHelper.Log("RegionCapture","WINDOW", "[NEW] Window selection complete, closing overlay");
-                _tcs.TrySetResult(new SKRectI(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height));
-                Close();
+                _currentSelectionPhysical = new SKRectI(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height);
+                ConfirmSelection(); // Auto-confirm for single click
                 return;
             }
 
-            // Get final position
+            _state = RegionCaptureState.Selected;
+
             var logicalPos = e.GetPosition(this);
             var currentPhysical = ConvertLogicalToPhysicalNew(logicalPos);
 
-            TroubleshootingHelper.Log("RegionCapture","MOUSE", $"[NEW] Released: Logical={logicalPos}, Physical={currentPhysical}");
+            UpdateSelectionRectangleNew(logicalPos, currentPhysical);
+            
+            if (_resizeHandlesCanvas != null) _resizeHandlesCanvas.IsVisible = true;
 
-            // Calculate selection rectangle
-            var x = Math.Min(_startPointPhysical.X, currentPhysical.X);
-            var y = Math.Min(_startPointPhysical.Y, currentPhysical.Y);
-            var width = Math.Abs(_startPointPhysical.X - currentPhysical.X);
-            var height = Math.Abs(_startPointPhysical.Y - currentPhysical.Y);
-
-            TroubleshootingHelper.Log("RegionCapture","RESULT", $"[NEW] Final selection: X={x}, Y={y}, W={width}, H={height}");
-
-            // Ensure non-zero size
-            if (width <= 0) width = 1;
-            if (height <= 0) height = 1;
-
-            LogSelectionDiagnostics(
-                new LogicalPoint(_startPointLogical.X, _startPointLogical.Y),
-                new LogicalPoint(logicalPos.X, logicalPos.Y),
-                new PhysicalRectangle(x, y, width, height));
-
-            // Don't capture here - let ScreenCaptureService use the old platform capture which works reliably
-            // The new backend is only used for coordinate conversion and window detection
-            var resultRect = new SKRectI(x, y, x + width, y + height);
-            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"[NEW] Region selection complete, closing overlay: {resultRect}");
-            _tcs.TrySetResult(resultRect);
-            Close();
+            TroubleshootingHelper.Log("RegionCapture","STATE", "Entered Selected state");
         }
 
-        private void LogSelectionDiagnostics(
-            LogicalPoint startLogical,
-            LogicalPoint endLogical,
-            PhysicalRectangle physicalRect)
+        private void LogSelectionDiagnostics(LogicalPoint startLogical, LogicalPoint endLogical, PhysicalRectangle physicalRect)
         {
-            if (_newCaptureService == null)
-                return;
+            if (_newCaptureService == null) return;
 
             var virtualPhysical = _newCaptureService.GetVirtualDesktopBoundsPhysical();
             var virtualLogical = _newCaptureService.GetVirtualDesktopBoundsLogical();
@@ -358,10 +304,13 @@ namespace XerahS.UI.Views.RegionCapture
             var physY = Math.Min(_startPointPhysical.Y, currentPhysical.Y);
             var physWidth = Math.Abs(_startPointPhysical.X - currentPhysical.X);
             var physHeight = Math.Abs(_startPointPhysical.Y - currentPhysical.Y);
+            
             var physicalRect = new PhysicalRectangle(physX, physY, physWidth, physHeight);
 
+            // Store current physical selection for Confirmation
+            _currentSelectionPhysical = new SKRectI(physX, physY, physX + physWidth, physY + physHeight);
+            
             // Calculate logical rectangle for visual rendering
-            // Use Avalonia's logical coordinates directly - this ensures perfect alignment with mouse cursor
             var logicalX = Math.Min(_startPointLogical.X, currentLogical.X);
             var logicalY = Math.Min(_startPointLogical.Y, currentLogical.Y);
             var logicalWidth = Math.Abs(_startPointLogical.X - currentLogical.X);
@@ -369,6 +318,15 @@ namespace XerahS.UI.Views.RegionCapture
 
             // Update UI elements with logical coordinates
             UpdateSelectionVisuals(logicalX, logicalY, logicalWidth, logicalHeight);
+            
+            // Update HUD with physical stats
+            if (_infoText != null)
+            {
+                _infoText.Text = $"X: {physX} Y: {physY} W: {physWidth} H: {physHeight}";
+                _infoText.IsVisible = true;
+                Canvas.SetLeft(_infoText, logicalX);
+                Canvas.SetTop(_infoText, logicalY - 30 > 5 ? logicalY - 30 : logicalY + 5);
+            }
 
             // Log for debugging
             var intersectingMonitors = _newMonitors
@@ -428,6 +386,80 @@ namespace XerahS.UI.Views.RegionCapture
                 _newCaptureService.Dispose();
                 _newCaptureService = null;
             }
+        }
+
+        private void ConfirmSelection()
+        {
+            if (_state != RegionCaptureState.Selected) return;
+
+            TroubleshootingHelper.Log("RegionCapture","RESULT", $"Confirmed selection: {_currentSelectionPhysical}");
+            _tcs.TrySetResult(_currentSelectionPhysical);
+            Close();
+        }
+
+        private void SelectMonitor(int index)
+        {
+            if (_newCaptureService == null || index < 0 || index >= _newMonitors.Length) return;
+
+            var monitor = _newMonitors[index];
+            var bounds = monitor.Bounds;
+
+            // Enter Selected State
+            _state = RegionCaptureState.Selected;
+            _dragStarted = false;
+
+            _currentSelectionPhysical = new SKRectI(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height);
+
+            // Convert to logical for visuals
+            if (_newCoordinateMapper != null)
+            {
+                var physicalTL = new PhysicalPoint(bounds.X, bounds.Y);
+                var physicalBR = new PhysicalPoint(bounds.X + bounds.Width, bounds.Y + bounds.Height);
+                
+                var tl = _newCoordinateMapper.PhysicalToWindowLogical(physicalTL);
+                var br = _newCoordinateMapper.PhysicalToWindowLogical(physicalBR);
+
+                var logicalX = tl.X;
+                var logicalY = tl.Y;
+                var logicalWidth = Math.Abs(br.X - tl.X);
+                var logicalHeight = Math.Abs(br.Y - tl.Y);
+
+                UpdateSelectionVisuals(logicalX, logicalY, logicalWidth, logicalHeight);
+                
+                // Update text
+                if (_infoText != null)
+                {
+                    _infoText.Text = $"Monitor {index+1}: {bounds.Width}x{bounds.Height}";
+                    _infoText.IsVisible = true;
+                    Canvas.SetLeft(_infoText, logicalX);
+                    Canvas.SetTop(_infoText, logicalY - 30 > 5 ? logicalY - 30 : logicalY + 5);
+                }
+            }
+
+            // Show handles
+            if (_resizeHandlesCanvas != null) _resizeHandlesCanvas.IsVisible = true;
+
+            TroubleshootingHelper.Log("RegionCapture", "INPUT", $"Monitor {index + 1} selected: {bounds}");
+        }
+
+        private void SelectActiveMonitor()
+        {
+            if (_newCaptureService == null || _newMonitors.Length == 0) return;
+
+            var mouse = GetGlobalMousePosition();
+            var physical = new PhysicalPoint(mouse.X, mouse.Y);
+            
+            for(int i=0; i<_newMonitors.Length; i++)
+            {
+                if (_newMonitors[i].Bounds.Contains(physical))
+                {
+                    SelectMonitor(i);
+                    return;
+                }
+            }
+            
+            // Fallback to primary or 0
+            SelectMonitor(0);
         }
     }
 }

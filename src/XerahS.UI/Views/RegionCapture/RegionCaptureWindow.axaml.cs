@@ -40,6 +40,18 @@ namespace XerahS.UI.Views.RegionCapture
 {
     public partial class RegionCaptureWindow : Window
     {
+        // State Machine
+        public enum RegionCaptureState { Idle, DragSelecting, Selected, Adjusting }
+        private RegionCaptureState _state = RegionCaptureState.Idle;
+
+        // UI Cache
+        private Avalonia.Controls.Shapes.Line? _crosshairH;
+        private Avalonia.Controls.Shapes.Line? _crosshairV;
+        private Canvas? _resizeHandlesCanvas;
+        private StackPanel? _infoStack;
+        private Image? _magnifierImage;
+        private TextBlock? _infoText;
+
         private SKPointI GetGlobalMousePosition()
         {
             if (XerahS.Platform.Abstractions.PlatformServices.IsInitialized)
@@ -54,7 +66,9 @@ namespace XerahS.UI.Views.RegionCapture
         private SKPointI _startPointPhysical;
         // Start point in logical window coordinates (for visual rendering)
         private Point _startPointLogical;
-        private bool _isSelecting;
+
+        // Current physical selection
+        private SKRectI _currentSelectionPhysical;
 
         // Store window position for coordinate conversion
         private int _windowLeft = 0;
@@ -112,27 +126,65 @@ namespace XerahS.UI.Views.RegionCapture
                 TroubleshootingHelper.Log("RegionCapture", "INIT", "Using legacy capture backend");
             }
 
-            // Close on Escape key
-            this.KeyDown += (s, e) =>
-            {
-                if (e.Key == Key.Escape)
-                {
-                    TroubleshootingHelper.Log("RegionCapture", "INPUT", "Escape key pressed - cancelling");
-                    _tcs.TrySetResult(SKRectI.Empty);
-                    Close();
-                }
-            };
+        }
 
-            // Also handle right-click to force close for debugging
-            this.PointerPressed += (s, e) =>
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (e.Key == Key.Escape)
             {
-                if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
-                {
-                    TroubleshootingHelper.Log("RegionCapture", "INPUT", "Right-click detected - force closing for debug");
-                    _tcs.TrySetResult(SKRectI.Empty);
-                    Close();
-                }
-            };
+                OnCancel();
+            }
+            else if (e.Key == Key.Enter)
+            {
+                ConfirmSelection();
+            }
+            else if (e.Key >= Key.D1 && e.Key <= Key.D9)
+            {
+                SelectMonitor(e.Key - Key.D1);
+            }
+            else if (e.Key == Key.D0)
+            {
+                SelectMonitor(9); // 0 = 10th monitor
+            }
+            else if (e.Key == Key.OemTilde)
+            {
+                SelectActiveMonitor();
+            }
+            
+            // Nudge logic can differ based on modifiers
+        }
+
+        private void OnCancel()
+        {
+            TroubleshootingHelper.Log("RegionCapture", "INPUT", "Cancelled via Keyboard/Mouse");
+            _tcs.TrySetResult(SKRectI.Empty);
+            Close();
+        }
+
+        private void OnRightClick()
+        {
+            if (_state == RegionCaptureState.DragSelecting || _state == RegionCaptureState.Selected)
+            {
+                // Reset to Idle
+                _state = RegionCaptureState.Idle;
+                
+                // Clear Visuals
+                if (_resizeHandlesCanvas != null) _resizeHandlesCanvas.IsVisible = false;
+                CancelSelection(); // Existing method clearing border/darkening
+                
+                // Update text
+                if (_infoText != null) _infoText.IsVisible = false;
+                if (_infoStack != null) _infoStack.IsVisible = false; // magnifying glass
+                
+                TroubleshootingHelper.Log("RegionCapture", "STATE", "Right click -> Reset to Idle");
+            }
+            else
+            {
+                // If Idle, exit
+                OnCancel();
+            }
         }
 
         private void DebugLogLayout(string reason)
@@ -179,6 +231,14 @@ namespace XerahS.UI.Views.RegionCapture
 
             TroubleshootingHelper.Log("RegionCapture", "LIFECYCLE", $"OnOpened started (elapsed {_openStopwatch.ElapsedMilliseconds}ms since ctor)");
             TroubleshootingHelper.Log("RegionCapture", "WINDOW", $"OnOpened state: RenderScaling={RenderScaling}, Position={Position}, Bounds={Bounds}, ClientSize={ClientSize}");
+
+            // Cache UI elements
+            _crosshairH = this.FindControl<Avalonia.Controls.Shapes.Line>("CrosshairHorizontal");
+            _crosshairV = this.FindControl<Avalonia.Controls.Shapes.Line>("CrosshairVertical");
+            _resizeHandlesCanvas = this.FindControl<Canvas>("ResizeHandlesCanvas");
+            _infoStack = this.FindControl<StackPanel>("InfoStack");
+            _magnifierImage = this.FindControl<Image>("MagnifierImage");
+            _infoText = this.FindControl<TextBlock>("InfoText");
 
             // Get our own handle to exclude from window detection
             _myHandle = this.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
@@ -374,7 +434,6 @@ namespace XerahS.UI.Views.RegionCapture
             InitializeFullScreenDarkening();
 
             // Reset selection state
-            _isSelecting = false;
             _hoveredWindow = null;
         }
 
@@ -399,6 +458,11 @@ namespace XerahS.UI.Views.RegionCapture
 
         private void OnPointerPressed(object sender, PointerPressedEventArgs e)
         {
+            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                OnRightClick();
+                return;
+            }
             OnPointerPressedNew(e);
         }
 
@@ -641,6 +705,41 @@ namespace XerahS.UI.Views.RegionCapture
 
             // Dispose new backend if initialized
             DisposeNewBackend();
+        }
+        
+        private void UpdateCrosshair(Point p)
+        {
+            if (_crosshairH == null || _crosshairV == null) return;
+            
+            _crosshairH.StartPoint = new Point(0, p.Y);
+            _crosshairH.EndPoint = new Point(Width, p.Y);
+            _crosshairH.IsVisible = true;
+
+            _crosshairV.StartPoint = new Point(p.X, 0);
+            _crosshairV.EndPoint = new Point(p.X, Height);
+            _crosshairV.IsVisible = true;
+        }
+
+        private void UpdateMagnifierPosition(Point p)
+        {
+            if (_infoStack == null) return;
+            
+            _infoStack.IsVisible = true;
+            
+            // Offset from cursor
+            double x = p.X + 25;
+            double y = p.Y + 25;
+
+            // Boundary check
+            if (x + _infoStack.Bounds.Width > Width) x = p.X - _infoStack.Bounds.Width - 25;
+            if (y + _infoStack.Bounds.Height > Height) y = p.Y - _infoStack.Bounds.Height - 25;
+            
+            // Fallback if top/left is negative
+            if (x < 0) x = 0;
+            if (y < 0) y = 0;
+
+            Canvas.SetLeft(_infoStack, x);
+            Canvas.SetTop(_infoStack, y);
         }
     }
 }

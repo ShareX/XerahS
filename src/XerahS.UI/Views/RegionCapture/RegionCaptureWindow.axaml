@@ -24,16 +24,21 @@
         <!-- Background screenshots container -->
         <Canvas Name="BackgroundContainer" />
         
-        <!-- Darkening overlay with cutout for selection - visible by default -->
+        <!-- Darkening overlay with cutout for selection -->
         <Path Name="DarkeningOverlay"
               Fill="#80000000"
               IsVisible="True" />
+              
+        <!-- Crosshairs -->
+        <Line Name="CrosshairHorizontal" Stroke="White" StrokeThickness="1" IsHitTestVisible="False" Opacity="0.5" IsVisible="False"/>
+        <Line Name="CrosshairVertical" Stroke="White" StrokeThickness="1" IsHitTestVisible="False" Opacity="0.5" IsVisible="False"/>
         
         <!-- Selection border with marching ants effect -->
         <Rectangle Name="SelectionBorder"
                    StrokeThickness="1"
                    Fill="Transparent"
-                   IsVisible="False">
+                   IsVisible="False"
+                   IsHitTestVisible="False">
             <Rectangle.Stroke>
                 <SolidColorBrush Color="White" />
             </Rectangle.Stroke>
@@ -43,17 +48,50 @@
         <Rectangle Name="SelectionBorderInner"
                    StrokeThickness="1"
                    Fill="Transparent"
-                   IsVisible="False">
+                   IsVisible="False"
+                   IsHitTestVisible="False">
             <Rectangle.Stroke>
                 <SolidColorBrush Color="Black" />
             </Rectangle.Stroke>
             <Rectangle.StrokeDashArray>4,4</Rectangle.StrokeDashArray>
         </Rectangle>
         
-        <TextBlock Name="InfoText" 
-                   Foreground="White" 
-                   Background="#80000000" 
-                   Padding="5" 
-                   IsVisible="False"/>
+        <!-- Resize Handles -->
+        <Canvas Name="ResizeHandlesCanvas" IsVisible="False" IsHitTestVisible="False">
+            <Rectangle Name="HandleTL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+            <Rectangle Name="HandleTM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+            <Rectangle Name="HandleTR" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+            <Rectangle Name="HandleRM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+            <Rectangle Name="HandleBR" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+            <Rectangle Name="HandleBM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+            <Rectangle Name="HandleBL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+            <Rectangle Name="HandleLM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+        </Canvas>
+        
+        <!-- Info HUD (Magnifier + Text) -->
+        <StackPanel Name="InfoStack" Orientation="Vertical" IsVisible="False" IsHitTestVisible="False">
+             <!-- Magnifier: Border with Image inside -->
+             <Border Name="MagnifierBorder" 
+                     BorderBrush="White" 
+                     BorderThickness="1" 
+                     CornerRadius="0"
+                     Width="120" Height="120"
+                     IsVisible="True" 
+                     Background="Black"
+                     Margin="0,0,0,5">
+                 <Grid>
+                    <!-- Magnified Image -->
+                    <Image Name="MagnifierImage" Stretch="None" />
+                    <!-- Crosshair in magnifier -->
+                     <Line StartPoint="60,0" EndPoint="60,120" Stroke="Cyan" StrokeThickness="1" Opacity="0.5"/>
+                     <Line StartPoint="0,60" EndPoint="120,60" Stroke="Cyan" StrokeThickness="1" Opacity="0.5"/>
+                 </Grid>
+             </Border>
+
+             <!-- Text Info -->
+             <Border Background="#A0000000" CornerRadius="2" Padding="5">
+                <TextBlock Name="InfoText" Foreground="White" FontSize="11" />
+             </Border>
+        </StackPanel>
     </Canvas>
 </Window>
