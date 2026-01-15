@@ -79,8 +79,9 @@ internal sealed class X11GetImageStrategy : ICaptureStrategy
 
                         try
                         {
-                            // Get DPI scaling from Xft.dpi resource
-                            var scaleFactor = GetXftDpi() / 96.0;
+                            // [2026-01-15] Calculate per-monitor DPI for mixed DPI support
+                            // Uses physical dimensions from XRandR + logical DPI preference
+                            var scaleFactor = CalculateMonitorScaleFactor(outInfo, crtc);
 
                             var bounds = new PhysicalRectangle(
                                 crtc->x,
@@ -94,7 +95,7 @@ internal sealed class X11GetImageStrategy : ICaptureStrategy
                             {
                                 Id = output.ToString(),
                                 Name = name,
-                                IsPrimary = i == 0, // First output is typically primary
+                                IsPrimary = IsOutputPrimary(output),
                                 Bounds = bounds,
                                 WorkingArea = bounds, // X11 doesn't expose this uniformly
                                 ScaleFactor = scaleFactor,
@@ -190,10 +191,11 @@ internal sealed class X11GetImageStrategy : ICaptureStrategy
         return new BackendCapabilities
         {
             BackendName = "X11 XGetImage",
-            Version = "X11R6+",
+            Version = "X11R6+ with XRandR 1.2+",
             SupportsHardwareAcceleration = true,
             SupportsCursorCapture = false,
             SupportsHDR = false,
+            // [2026-01-15] Now supports per-monitor DPI via physical dimensions
             SupportsPerMonitorDpi = true,
             SupportsMonitorHotplug = true,
             MaxCaptureResolution = 32767,
@@ -214,6 +216,61 @@ internal sealed class X11GetImageStrategy : ICaptureStrategy
         _initialized = true;
     }
 
+    /// <summary>
+    /// Calculate per-monitor scale factor based on physical dimensions.
+    /// [2026-01-15] Fixes mixed DPI support for multi-monitor X11 setups.
+    /// </summary>
+    private unsafe double CalculateMonitorScaleFactor(XRROutputInfo* outInfo, XRRCrtcInfo* crtc)
+    {
+        // Try to calculate scale factor from physical dimensions
+        if (outInfo->mm_width > 0 && outInfo->mm_height > 0)
+        {
+            // Calculate physical DPI from millimeter dimensions
+            // Formula: (pixels * 25.4) / millimeters = DPI
+            var physicalDpiX = (crtc->width * 25.4) / outInfo->mm_width;
+            var physicalDpiY = (crtc->height * 25.4) / outInfo->mm_height;
+            var physicalDpi = (physicalDpiX + physicalDpiY) / 2.0;
+
+            // Get logical DPI from Xft (user's scaling preference)
+            var logicalDpi = GetXftDpi();
+
+            // Scale factor is ratio of logical to physical
+            // Example: 144 DPI logical / 96 DPI physical = 1.5x scale
+            var scaleFactor = logicalDpi / physicalDpi;
+
+            // Clamp to reasonable range (1.0x to 3.0x)
+            scaleFactor = Math.Max(1.0, Math.Min(scaleFactor, 3.0));
+
+            return scaleFactor;
+        }
+
+        // Fallback: Use global Xft.dpi if physical size unavailable
+        // This happens with some virtual displays (VNC, VMware, etc.)
+        return GetXftDpi() / 96.0;
+    }
+
+    /// <summary>
+    /// Detect if an output is the primary monitor.
+    /// [2026-01-15] Uses XRRGetOutputPrimary instead of assuming first output.
+    /// </summary>
+    private bool IsOutputPrimary(IntPtr output)
+    {
+        try
+        {
+            IntPtr primaryOutput = XRRGetOutputPrimary(_display, _rootWindow);
+            return primaryOutput == output;
+        }
+        catch
+        {
+            // XRRGetOutputPrimary not available on older X11 versions
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Get global logical DPI from Xft.dpi X resource.
+    /// Used as user's scaling preference.
+    /// </summary>
     private double GetXftDpi()
     {
         // Read Xft.dpi from X resources
@@ -342,6 +399,9 @@ internal sealed class X11GetImageStrategy : ICaptureStrategy
 
     [DllImport("libXrandr.so.2")]
     private static extern void XRRFreeCrtcInfo(IntPtr crtcInfo);
+
+    [DllImport("libXrandr.so.2")]
+    private static extern IntPtr XRRGetOutputPrimary(IntPtr display, IntPtr window);
 
     #endregion
 }

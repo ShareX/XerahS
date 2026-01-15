@@ -47,6 +47,10 @@ internal sealed class LinuxCliCaptureStrategy : ICaptureStrategy
                 IsPrimary = true,
                 Bounds = new PhysicalRectangle(0, 0, 1920, 1080),
                 WorkingArea = new PhysicalRectangle(0, 0, 1920, 1040),
+                // [2026-01-15] CLI tools return pre-scaled screenshots
+                // Most CLI tools (gnome-screenshot, spectacle, scrot) respect
+                // system DPI settings and return appropriately scaled images.
+                // ScaleFactor = 1.0 indicates no additional scaling needed.
                 ScaleFactor = 1.0,
                 BitsPerPixel = 32
             }
