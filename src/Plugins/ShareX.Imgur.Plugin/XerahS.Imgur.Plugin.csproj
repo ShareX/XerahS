@@ -58,7 +58,7 @@
   <Target Name="CopyToPluginsDir" AfterTargets="Build">
     <PropertyGroup>
     <RootNamespace>XerahS.Imgur.Plugin</RootNamespace>
-      <PluginOutputDir>$(MSBuildThisFileDirectory)..\..\ShareX.Avalonia.App\bin\$(Configuration)\$(TargetFramework)\Plugins\$(PluginId)</PluginOutputDir>
+      <PluginOutputDir>$(MSBuildThisFileDirectory)..\..\XerahS.App\bin\$(Configuration)\$(TargetFramework)\Plugins\$(PluginId)</PluginOutputDir>
     </PropertyGroup>
     <ItemGroup>
       <PluginFiles Include="$(OutputPath)**\*.*" Exclude="$(OutputPath)**\*.pdb;$(OutputPath)**\*.deps.json" />
