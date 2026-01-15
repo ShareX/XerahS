@@ -88,14 +88,19 @@ namespace XerahS.Platform.Windows
                     using var fullBitmap = CaptureFullScreenDxgi();
                     if (fullBitmap == null) return null;
 
+                    // Get virtual desktop bounds to convert screen coordinates to bitmap coordinates
+                    var virtualBounds = _screenService.GetVirtualScreenBounds();
+
+                    // Convert screen coordinates to bitmap coordinates
+                    // fullBitmap (0,0) corresponds to virtualBounds (Left,Top)
                     var cropRect = new SKRectI(
-                        (int)rect.Left,
-                        (int)rect.Top,
-                        (int)rect.Right,
-                        (int)rect.Bottom
+                        (int)rect.Left - virtualBounds.X,    // Convert screen X to bitmap X
+                        (int)rect.Top - virtualBounds.Y,     // Convert screen Y to bitmap Y
+                        (int)rect.Right - virtualBounds.X,   // Convert screen Right to bitmap Right
+                        (int)rect.Bottom - virtualBounds.Y   // Convert screen Bottom to bitmap Bottom
                     );
 
-                    // Clamp to image bounds
+                    // Clamp to bitmap bounds
                     cropRect.Left = Math.Max(0, cropRect.Left);
                     cropRect.Top = Math.Max(0, cropRect.Top);
                     cropRect.Right = Math.Min(fullBitmap.Width, cropRect.Right);
