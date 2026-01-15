@@ -5,7 +5,7 @@
 **Priority**: High (Cross-platform compatibility)
 
 ## Assessment
-**Completion**: ~50%
+**Completion**: ~60% (Screen Capture & Window Mgmt Complete, others are Stubs)
 **Status**: In Progress / Pending
 
 **Implemented**:
