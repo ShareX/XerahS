@@ -83,6 +83,7 @@ namespace XerahS.Core.Tasks
             if (inputImage != null)
             {
                 Info.Metadata.Image = inputImage;
+                Info.DataType = EDataType.Image;
             }
             _cancellationTokenSource = new CancellationTokenSource();
         }

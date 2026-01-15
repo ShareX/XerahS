@@ -153,7 +153,9 @@ namespace XerahS.Platform.Windows
                     {
                         // Define the expected format in the destination (System.Drawing.Bitmap)
                         // This ensures that if the source SKBitmap is different, ReadPixels will convert it.
-                        var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+                        // Format32bppArgb implies Unpremultiplied alpha. 
+                        // We must request Unpremul so Skia converts the Premul source to Unpremul destination bytes.
+                        var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Unpremul);
                         
                         // Copy pixels directly into the locked bitmap memory
                         var pixmap = image.PeekPixels();
