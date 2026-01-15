@@ -190,7 +190,7 @@ namespace XerahS.UI.Views.RegionCapture
 
             if (_resizeHandlesCanvas != null) _resizeHandlesCanvas.IsVisible = false;
 
-            UpdateWindowSelection(physical);
+            UpdateWindowSelectionNew(physical);
         }
 
         private void OnPointerMovedNew(PointerEventArgs e)
@@ -198,7 +198,7 @@ namespace XerahS.UI.Views.RegionCapture
             if (_newCaptureService == null) return;
 
             var logicalPos = e.GetPosition(this);
-            
+
             UpdateCrosshair(logicalPos);
             UpdateMagnifierPosition(logicalPos);
 
@@ -221,7 +221,7 @@ namespace XerahS.UI.Views.RegionCapture
             }
             else if (_state == RegionCaptureState.Idle)
             {
-                UpdateWindowSelection(currentPhysical);
+                UpdateWindowSelectionNew(currentPhysical);
             }
         }
 
@@ -233,23 +233,26 @@ namespace XerahS.UI.Views.RegionCapture
 
             if (!_dragStarted && _hoveredWindow != null)
             {
+                // Single-click on window: auto-confirm
                 var rect = _hoveredWindow.Bounds;
                 TroubleshootingHelper.Log("RegionCapture","RESULT", $"[NEW] Selected window: {rect}");
                 _currentSelectionPhysical = new SKRectI(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height);
-                ConfirmSelection(); // Auto-confirm for single click
+                ConfirmSelection();
                 return;
             }
 
+            // Drag selection: auto-confirm on mouse release
             _state = RegionCaptureState.Selected;
 
             var logicalPos = e.GetPosition(this);
             var currentPhysical = ConvertLogicalToPhysicalNew(logicalPos);
 
             UpdateSelectionRectangleNew(logicalPos, currentPhysical);
-            
-            if (_resizeHandlesCanvas != null) _resizeHandlesCanvas.IsVisible = true;
 
-            TroubleshootingHelper.Log("RegionCapture","STATE", "Entered Selected state");
+            TroubleshootingHelper.Log("RegionCapture","STATE", "Drag selection complete, auto-confirming");
+
+            // Auto-confirm the selection immediately on mouse release
+            ConfirmSelection();
         }
 
         private void LogSelectionDiagnostics(LogicalPoint startLogical, LogicalPoint endLogical, PhysicalRectangle physicalRect)
@@ -448,7 +451,7 @@ namespace XerahS.UI.Views.RegionCapture
 
             var mouse = GetGlobalMousePosition();
             var physical = new PhysicalPoint(mouse.X, mouse.Y);
-            
+
             for(int i=0; i<_newMonitors.Length; i++)
             {
                 if (_newMonitors[i].Bounds.Contains(physical))
@@ -457,9 +460,108 @@ namespace XerahS.UI.Views.RegionCapture
                     return;
                 }
             }
-            
+
             // Fallback to primary or 0
             SelectMonitor(0);
+        }
+
+        /// <summary>
+        /// NEW: Update window selection using the new coordinate system.
+        /// Properly handles per-monitor DPI scaling.
+        /// </summary>
+        private void UpdateWindowSelectionNew(SKPointI mousePhysical)
+        {
+            if (_windows == null || _newCaptureService == null || _newCoordinateMapper == null) return;
+
+            // Find window under cursor (windows are in physical coordinates)
+            var physicalPoint = new PhysicalPoint(mousePhysical.X, mousePhysical.Y);
+            var window = _windows.FirstOrDefault(w => w.Bounds.Contains(mousePhysical.X, mousePhysical.Y));
+
+            if (window != null && window != _hoveredWindow)
+            {
+                _hoveredWindow = window;
+
+                // Convert window bounds (physical) to window-local logical coordinates
+                var physicalTL = new PhysicalPoint(window.Bounds.X, window.Bounds.Y);
+                var physicalBR = new PhysicalPoint(
+                    window.Bounds.X + window.Bounds.Width,
+                    window.Bounds.Y + window.Bounds.Height);
+
+                var logicalTL = _newCoordinateMapper.PhysicalToWindowLogical(physicalTL);
+                var logicalBR = _newCoordinateMapper.PhysicalToWindowLogical(physicalBR);
+
+                var logicalX = logicalTL.X;
+                var logicalY = logicalTL.Y;
+                var logicalW = Math.Abs(logicalBR.X - logicalTL.X);
+                var logicalH = Math.Abs(logicalBR.Y - logicalTL.Y);
+
+                // Find which monitor contains this window for logging
+                var containingMonitor = _newMonitors.FirstOrDefault(m => m.Bounds.Contains(physicalPoint));
+                var monitorIndex = containingMonitor != null ? Array.IndexOf(_newMonitors, containingMonitor) : -1;
+                var monitorScale = containingMonitor?.ScaleFactor ?? 1.0;
+
+                // Comprehensive logging
+                int processId = 0;
+                if (XerahS.Platform.Abstractions.PlatformServices.IsInitialized)
+                {
+                    try { processId = (int)(XerahS.Platform.Abstractions.PlatformServices.Window?.GetWindowProcessId(window.Handle) ?? 0); }
+                    catch { }
+                }
+                TroubleshootingHelper.LogWindowSelection("RegionCapture[NEW]",
+                    window.Title ?? "",
+                    processId,
+                    new System.Drawing.Rectangle(window.Bounds.X, window.Bounds.Y, window.Bounds.Width, window.Bounds.Height),
+                    RenderScaling,
+                    logicalX, logicalY, logicalW, logicalH,
+                    monitorIndex, monitorScale);
+
+                // Update visuals
+                var border = this.FindControl<Avalonia.Controls.Shapes.Rectangle>("SelectionBorder");
+                var borderInner = this.FindControl<Avalonia.Controls.Shapes.Rectangle>("SelectionBorderInner");
+                var infoText = this.FindControl<Avalonia.Controls.TextBlock>("InfoText");
+
+                if (border != null)
+                {
+                    border.IsVisible = true;
+                    Canvas.SetLeft(border, logicalX);
+                    Canvas.SetTop(border, logicalY);
+                    border.Width = logicalW;
+                    border.Height = logicalH;
+                }
+
+                if (borderInner != null)
+                {
+                    borderInner.IsVisible = true;
+                    Canvas.SetLeft(borderInner, logicalX);
+                    Canvas.SetTop(borderInner, logicalY);
+                    borderInner.Width = logicalW;
+                    borderInner.Height = logicalH;
+                }
+
+                UpdateDarkeningOverlay(logicalX, logicalY, logicalW, logicalH);
+
+                if (infoText != null)
+                {
+                    infoText.IsVisible = true;
+                    var title = !string.IsNullOrEmpty(window.Title) ? window.Title + "\n" : "";
+                    infoText.Text = $"{title}X: {window.Bounds.X} Y: {window.Bounds.Y} W: {window.Bounds.Width} H: {window.Bounds.Height}";
+
+                    Canvas.SetLeft(infoText, logicalX);
+
+                    var labelHeight = 45;
+                    var topPadding = 5;
+                    var labelY = logicalY - labelHeight - topPadding;
+                    if (labelY < 5) labelY = 5;
+
+                    Canvas.SetTop(infoText, labelY);
+                }
+            }
+            else if (window == null && _hoveredWindow != null)
+            {
+                // Lost window hover
+                _hoveredWindow = null;
+                CancelSelection();
+            }
         }
     }
 }

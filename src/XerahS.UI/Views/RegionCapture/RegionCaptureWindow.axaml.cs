@@ -539,27 +539,28 @@ namespace XerahS.UI.Views.RegionCapture
                     var idealW = window.Bounds.Width;
                     var idealH = window.Bounds.Height;
 
-                    // CRITICAL FIX (2026-01-09 22:30):
-                    // Reverted Hybrid Scaling. Now that SelectionCanvas alignment (Top/Left) and sizing (Logical) 
-                    // are fixed, we should go back to using RenderScaling for both Position and Size.
-                    
-                    logicalX = idealX / scaling;
-                    logicalY = idealY / scaling;
-                    logicalW = idealW / scaling;
-                    logicalH = idealH / scaling;
+                    // CRITICAL FIX (2026-01-15):
+                    // Use per-monitor screenScaling instead of global window RenderScaling
+                    // This fixes window boundary rectangles in mixed DPI configurations
 
-                    TroubleshootingHelper.Log("RegionCapture", "SELECTION", $"Counter-scaling (Retry): Ideal=({idealX},{idealY}) {idealW}x{idealH} / Scaling {scaling} -> Logical=({logicalX},{logicalY})");
+                    logicalX = idealX / screenScaling;
+                    logicalY = idealY / screenScaling;
+                    logicalW = idealW / screenScaling;
+                    logicalH = idealH / screenScaling;
+
+                    TroubleshootingHelper.Log("RegionCapture", "SELECTION", $"Counter-scaling (Fixed): Ideal=({idealX},{idealY}) {idealW}x{idealH} / MonitorScale {screenScaling} -> Logical=({logicalX},{logicalY})");
                 }
                 else
                 {
-                    // Fallback
+                    // Fallback - use primary monitor scale
+                    var fallbackScaling = scaling < 0.1 ? 1.0 : scaling;
                     var relativeX = window.Bounds.X - _windowLeft;
                     var relativeY = window.Bounds.Y - _windowTop;
-                    
-                    logicalX = relativeX / scaling;
-                    logicalY = relativeY / scaling;
-                    logicalW = window.Bounds.Width / scaling;
-                    logicalH = window.Bounds.Height / scaling;
+
+                    logicalX = relativeX / fallbackScaling;
+                    logicalY = relativeY / fallbackScaling;
+                    logicalW = window.Bounds.Width / fallbackScaling;
+                    logicalH = window.Bounds.Height / fallbackScaling;
                 }
 
                 // Screen index and scaling already determined above for layout
