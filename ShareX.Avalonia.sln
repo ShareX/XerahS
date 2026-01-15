@@ -27,7 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Media", "src\XerahS.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.ScreenCapture", "src\XerahS.ScreenCapture\XerahS.ScreenCapture.csproj", "{2F46C312-AD99-4EC6-9E18-5D59498FC96F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Services.Abstractions", "src\ShareX.Avalonia.Services.Abstractions\XerahS.Services.Abstractions.csproj", "{EFCD5F4F-9CE6-4516-8DB4-4B7CC2D70560}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Services.Abstractions", "src\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj", "{EFCD5F4F-9CE6-4516-8DB4-4B7CC2D70560}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.ViewModels", "src\XerahS.ViewModels\XerahS.ViewModels.csproj", "{1BA75A7B-3F6F-4BC0-A11F-4F95806799E2}"
 EndProject
