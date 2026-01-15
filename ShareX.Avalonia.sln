@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Platform.Ab
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.Windows", "src\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj", "{5FD4583A-B0F8-4A3C-A5E7-4656A9D7AA6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.History", "src\ShareX.Avalonia.History\XerahS.History.csproj", "{4EDCA378-8B9C-4EA7-B483-2F53798375EF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.History", "src\XerahS.History\XerahS.History.csproj", "{4EDCA378-8B9C-4EA7-B483-2F53798375EF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Indexer", "src\XerahS.Indexer\XerahS.Indexer.csproj", "{36919F84-0925-49D1-B6B3-35D206F106CC}"
 EndProject
