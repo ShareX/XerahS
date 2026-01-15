@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ShareX.Avalonia.Core\XerahS.Core.csproj" />
+    <ProjectReference Include="..\..\src\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\..\src\ShareX.Avalonia.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
   </ItemGroup>
 
