@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Core", "src\XerahS.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Common", "src\ShareX.Avalonia.Common\XerahS.Common.csproj", "{85483A44-F85B-400D-82E5-0087448F8465}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Platform.Abstractions", "src\ShareX.Avalonia.Platform.Abstractions\XerahS.Platform.Abstractions.csproj", "{2A91F8A0-7FA8-4A01-97D1-4C31F7C8FA11}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.Abstractions", "src\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj", "{2A91F8A0-7FA8-4A01-97D1-4C31F7C8FA11}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.Windows", "src\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj", "{5FD4583A-B0F8-4A3C-A5E7-4656A9D7AA6B}"
 EndProject
