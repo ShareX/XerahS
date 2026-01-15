@@ -29,7 +29,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.ScreenCaptu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Services.Abstractions", "src\ShareX.Avalonia.Services.Abstractions\XerahS.Services.Abstractions.csproj", "{EFCD5F4F-9CE6-4516-8DB4-4B7CC2D70560}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.ViewModels", "src\ShareX.Avalonia.ViewModels\XerahS.ViewModels.csproj", "{1BA75A7B-3F6F-4BC0-A11F-4F95806799E2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.ViewModels", "src\XerahS.ViewModels\XerahS.ViewModels.csproj", "{1BA75A7B-3F6F-4BC0-A11F-4F95806799E2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Services", "src\XerahS.Services\XerahS.Services.csproj", "{943A5394-A8E7-4DB8-9E28-081954A9C9AF}"
 EndProject
