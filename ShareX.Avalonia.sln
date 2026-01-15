@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Platform.Wi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.History", "src\ShareX.Avalonia.History\XerahS.History.csproj", "{4EDCA378-8B9C-4EA7-B483-2F53798375EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Indexer", "src\ShareX.Avalonia.Indexer\XerahS.Indexer.csproj", "{36919F84-0925-49D1-B6B3-35D206F106CC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Indexer", "src\XerahS.Indexer\XerahS.Indexer.csproj", "{36919F84-0925-49D1-B6B3-35D206F106CC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Avalonia.Uploaders", "src\ShareX.Avalonia.Uploaders\XerahS.Uploaders.csproj", "{EE2C5D43-DAFA-42A1-AB21-35B0D175CABD}"
 EndProject
