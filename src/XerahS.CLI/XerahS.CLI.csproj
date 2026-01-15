@@ -15,7 +15,7 @@
     <PackageReference Include="System.CommandLine" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ShareX.Avalonia.Bootstrap\XerahS.Bootstrap.csproj" />
+    <ProjectReference Include="..\XerahS.Bootstrap\XerahS.Bootstrap.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.ScreenCapture\XerahS.ScreenCapture.csproj" />
     <ProjectReference Include="..\ShareX.Avalonia.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
