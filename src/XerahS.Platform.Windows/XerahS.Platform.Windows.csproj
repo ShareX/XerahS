@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShareX.Avalonia.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />

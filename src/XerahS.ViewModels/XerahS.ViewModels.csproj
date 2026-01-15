@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
-    <ProjectReference Include="..\ShareX.Avalonia.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
