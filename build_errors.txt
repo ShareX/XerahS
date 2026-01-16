@@ -1,0 +1,35 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  ShareX.Editor -> c:\Users\liveu\source\repos\ShareX Team\ShareX.Editor\src\ShareX.Editor\bin\Debug\net10.0-windows\ShareX.Editor.dll
+  XerahS.Services.Abstractions -> c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.Services.Abstractions\bin\Debug\net10.0\XerahS.Services.Abstractions.dll
+  XerahS.Avalonia.RegionCapture -> c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.Avalonia.RegionCapture\bin\Debug\net10.0-windows10.0.26100.0\XerahS.Avalonia.RegionCapture.dll
+  XerahS.Platform.Abstractions -> c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.Platform.Abstractions\bin\Debug\net10.0\XerahS.Platform.Abstractions.dll
+  XerahS.Common -> c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.Common\bin\Debug\net10.0\XerahS.Common.dll
+  XerahS.Uploaders -> c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.Uploaders\bin\Debug\net10.0\XerahS.Uploaders.dll
+  XerahS.Media -> c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.Media\bin\Debug\net10.0\XerahS.Media.dll
+  XerahS.History -> c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.History\bin\Debug\net10.0\XerahS.History.dll
+  XerahS.ScreenCapture -> c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.ScreenCapture\bin\Debug\net10.0\XerahS.ScreenCapture.dll
+  XerahS.Core -> c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.Core\bin\Debug\net10.0-windows10.0.26100.0\XerahS.Core.dll
+  0 IID calculations/fetches patched
+  XerahS.Platform.Windows -> c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.Platform.Windows\bin\Debug\net10.0-windows10.0.26100.0\XerahS.Platform.Windows.dll
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\App.axaml.cs(236,22): error CS0234: The type or namespace name 'Threading' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\Controls\PropertyGrid.axaml.cs(186,55): error CS0234: The type or namespace name 'Data' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\Controls\PropertyGrid.axaml.cs(219,57): error CS0234: The type or namespace name 'Data' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\Views\Controls\HotkeySelectionControl.axaml.cs(109,67): error CS0234: The type or namespace name 'Input' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\Views\FFmpegOptionsWindow.axaml.cs(22,55): error CS0234: The type or namespace name 'Interactivity' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\Views\FFmpegOptionsWindow.axaml.cs(27,68): error CS0234: The type or namespace name 'Interactivity' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\Views\ToastWindow.axaml.cs(46,22): error CS0234: The type or namespace name 'Point' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+
+Build FAILED.
+
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\App.axaml.cs(236,22): error CS0234: The type or namespace name 'Threading' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\Controls\PropertyGrid.axaml.cs(186,55): error CS0234: The type or namespace name 'Data' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\Controls\PropertyGrid.axaml.cs(219,57): error CS0234: The type or namespace name 'Data' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\Views\Controls\HotkeySelectionControl.axaml.cs(109,67): error CS0234: The type or namespace name 'Input' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\Views\FFmpegOptionsWindow.axaml.cs(22,55): error CS0234: The type or namespace name 'Interactivity' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\Views\FFmpegOptionsWindow.axaml.cs(27,68): error CS0234: The type or namespace name 'Interactivity' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\Views\ToastWindow.axaml.cs(46,22): error CS0234: The type or namespace name 'Point' does not exist in the namespace 'XerahS.Avalonia' (are you missing an assembly reference?) [c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\XerahS.UI\XerahS.UI.csproj]
+    0 Warning(s)
+    7 Error(s)
+
+Time Elapsed 00:00:05.36

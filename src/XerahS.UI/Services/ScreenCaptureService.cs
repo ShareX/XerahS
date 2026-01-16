@@ -27,7 +27,8 @@ using Avalonia.Threading;
 using XerahS.Core;
 using XerahS.Core.Helpers;
 using XerahS.Platform.Abstractions;
-using XerahS.UI.Views.RegionCapture;
+using XerahS.RegionCapture;
+using XerahS.RegionCapture.Models;
 using SkiaSharp;
 using System.Diagnostics;
 
@@ -54,15 +55,23 @@ namespace XerahS.UI.Services
 
             try
             {
-                // Show UI window on UI thread
+                // Use the new XerahS.Avalonia.RegionCapture library
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    TroubleshootingHelper.Log("RegionSelection", "UI_THREAD", "Creating RegionCaptureWindow");
-                    var window = new RegionCaptureWindow();
-                    window.Show();
-                    TroubleshootingHelper.Log("RegionSelection", "UI_THREAD", "Window shown, waiting for result");
-                    selection = await window.GetResultAsync();
-                    TroubleshootingHelper.Log("RegionSelection", "UI_THREAD", $"GetResultAsync returned: {selection}");
+                    TroubleshootingHelper.Log("RegionSelection", "UI_THREAD", "Creating RegionCaptureService");
+                    var captureService = new RegionCaptureService();
+                    var result = await captureService.CaptureRegionAsync();
+
+                    if (result is not null)
+                    {
+                        var r = result.Value;
+                        selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
+                        TroubleshootingHelper.Log("RegionSelection", "UI_THREAD", $"Region selected: {selection}");
+                    }
+                    else
+                    {
+                        TroubleshootingHelper.Log("RegionSelection", "UI_THREAD", "Capture cancelled");
+                    }
                 });
 
                 TroubleshootingHelper.Log("RegionSelection", "RESULT", $"Region selection returned: {selection} (IsEmpty={selection.IsEmpty}, Width={selection.Width}, Height={selection.Height})");
@@ -100,18 +109,22 @@ namespace XerahS.UI.Services
 
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
-            SKRectI selection = SKRectI.Empty;
-            RegionCaptureWindow? window = null;
             var regionStopwatch = Stopwatch.StartNew();
+            SKRectI selection = SKRectI.Empty;
 
-            // Show UI window on UI thread
+            // Use the new XerahS.Avalonia.RegionCapture library
             await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                window = new RegionCaptureWindow();
+                TroubleshootingHelper.Log("RegionCapture", "UI_THREAD", "Creating RegionCaptureService");
+                var captureService = new RegionCaptureService();
+                var result = await captureService.CaptureRegionAsync();
 
-                // Window will handle background capture in OnOpened
-                window.Show();
-                selection = await window.GetResultAsync();
+                if (result is not null)
+                {
+                    var r = result.Value;
+                    selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
+                    TroubleshootingHelper.Log("RegionCapture", "UI_THREAD", $"Region selected: {selection}");
+                }
             });
 
             if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
@@ -122,11 +135,7 @@ namespace XerahS.UI.Services
 
             TroubleshootingHelper.Log("RegionCapture", "SELECTION", $"Received selection: {selection}");
 
-            // New backend handles window detection and coordinate conversion only
-            // Actual capture is done by the platform service below
-            TroubleshootingHelper.Log("RegionCapture", "SELECTION", "Delaying 200ms...");
-
-            // Small delay to allow window to close fully
+            // Small delay to allow overlay windows to close fully
             await Task.Delay(60);
 
             // Delegate capture to platform implementation
