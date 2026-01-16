@@ -58,7 +58,8 @@ namespace XerahS.Platform.MacOS
                 hotkeyService: new MacOSHotkeyService(),
                 inputService: new MacOSInputService(),
                 fontService: new MacOSFontService(),
-                systemService: new MacOSSystemService()
+                systemService: new MacOSSystemService(),
+                notificationService: new MacOSNotificationService()
             );
         }
 
