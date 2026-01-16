@@ -27,6 +27,7 @@ using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using SkiaSharp;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace XerahS.Platform.Linux
 {
@@ -98,6 +99,12 @@ namespace XerahS.Platform.Linux
         {
             DebugHelper.WriteLine("LinuxScreenCaptureService: Attempting screenshot capture...");
 
+            var nativeCapture = await CaptureWithX11Async();
+            if (nativeCapture != null)
+            {
+                return nativeCapture;
+            }
+
             // Try multiple screenshot tools in order of preference
             var result = await CaptureWithGnomeScreenshotAsync();
             if (result != null) return result;
@@ -113,6 +120,157 @@ namespace XerahS.Platform.Linux
 
             DebugHelper.WriteLine("LinuxScreenCaptureService: All capture methods failed");
             return null;
+        }
+
+        private async Task<SKBitmap?> CaptureWithX11Async()
+        {
+            if (IsWayland)
+            {
+                return null;
+            }
+
+            return await Task.Run(() => CaptureWithX11());
+        }
+
+        private SKBitmap? CaptureWithX11()
+        {
+            IntPtr display = NativeMethods.XOpenDisplay(null);
+            if (display == IntPtr.Zero)
+            {
+                DebugHelper.WriteLine("LinuxScreenCaptureService: XOpenDisplay failed.");
+                return null;
+            }
+
+            try
+            {
+                var screen = 0;
+                var root = NativeMethods.XDefaultRootWindow(display);
+                int width = NativeMethods.XDisplayWidth(display, screen);
+                int height = NativeMethods.XDisplayHeight(display, screen);
+                if (width <= 0 || height <= 0)
+                {
+                    return null;
+                }
+
+                IntPtr imagePtr = NativeMethods.XGetImage(display, root, 0, 0, (uint)width, (uint)height, ulong.MaxValue, NativeMethods.ZPixmap);
+                if (imagePtr == IntPtr.Zero)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: XGetImage returned null.");
+                    return null;
+                }
+
+                try
+                {
+                    var ximage = Marshal.PtrToStructure<XImage>(imagePtr);
+                    if (ximage.data == IntPtr.Zero || ximage.bits_per_pixel < 24)
+                    {
+                        return null;
+                    }
+
+                    int bytesPerPixel = Math.Max(1, ximage.bits_per_pixel / 8);
+                    var bitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Opaque);
+
+                    int redShift = GetTrailingZeroCount(ximage.red_mask);
+                    int greenShift = GetTrailingZeroCount(ximage.green_mask);
+                    int blueShift = GetTrailingZeroCount(ximage.blue_mask);
+
+                    int redBits = GetContinuousOnes(ximage.red_mask >> redShift);
+                    int greenBits = GetContinuousOnes(ximage.green_mask >> greenShift);
+                    int blueBits = GetContinuousOnes(ximage.blue_mask >> blueShift);
+
+                    var stride = ximage.bytes_per_line;
+                    var baseAddress = ximage.data;
+                    for (int y = 0; y < height; y++)
+                    {
+                        var rowStart = IntPtr.Add(baseAddress, y * stride);
+                        for (int x = 0; x < width; x++)
+                        {
+                            var pixelPtr = IntPtr.Add(rowStart, x * bytesPerPixel);
+                            uint pixelValue = ReadPixel(pixelPtr, bytesPerPixel);
+
+                            byte r = NormalizeChannel((pixelValue & (uint)ximage.red_mask) >> redShift, redBits);
+                            byte g = NormalizeChannel((pixelValue & (uint)ximage.green_mask) >> greenShift, greenBits);
+                            byte b = NormalizeChannel((pixelValue & (uint)ximage.blue_mask) >> blueShift, blueBits);
+
+                            bitmap.SetPixel(x, y, new SKColor(r, g, b));
+                        }
+                    }
+
+                    return bitmap;
+                }
+                finally
+                {
+                    NativeMethods.XDestroyImage(imagePtr);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "LinuxScreenCaptureService: X11 capture failed.");
+                return null;
+            }
+            finally
+            {
+                NativeMethods.XCloseDisplay(display);
+            }
+        }
+
+        private static uint ReadPixel(IntPtr ptr, int bytesPerPixel)
+        {
+            if (bytesPerPixel >= 4)
+            {
+                return (uint)Marshal.ReadInt32(ptr);
+            }
+
+            uint value = 0;
+            for (int i = 0; i < bytesPerPixel; i++)
+            {
+                value |= (uint)Marshal.ReadByte(ptr, i) << (8 * i);
+            }
+            return value;
+        }
+
+        private static byte NormalizeChannel(uint value, int bits)
+        {
+            if (bits <= 0)
+            {
+                return 0;
+            }
+
+            if (bits >= 8)
+            {
+                return (byte)(value >> (bits - 8));
+            }
+
+            uint max = (1u << bits) - 1;
+            if (max == 0)
+            {
+                return 0;
+            }
+
+            return (byte)((value * 255u) / max);
+        }
+
+        private static int GetTrailingZeroCount(ulong mask)
+        {
+            int shift = 0;
+            while (shift < 64 && (mask & 1) == 0)
+            {
+                mask >>= 1;
+                shift++;
+            }
+
+            return shift;
+        }
+
+        private static int GetContinuousOnes(ulong mask)
+        {
+            int count = 0;
+            while ((mask & 1) == 1)
+            {
+                count++;
+                mask >>= 1;
+            }
+            return count;
         }
 
         public async Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null)

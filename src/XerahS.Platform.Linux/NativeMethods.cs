@@ -43,6 +43,18 @@ namespace XerahS.Platform.Linux
         internal static extern int XIconifyWindow(IntPtr display, IntPtr w, int screen_number);
 
         [DllImport(libX11)]
+        internal static extern IntPtr XGetImage(IntPtr display, IntPtr drawable, int x, int y, uint width, uint height, ulong plane_mask, int format);
+
+        [DllImport(libX11)]
+        internal static extern IntPtr XDestroyImage(IntPtr image);
+
+        [DllImport(libX11)]
+        internal static extern int XDisplayWidth(IntPtr display, int screen_number);
+
+        [DllImport(libX11)]
+        internal static extern int XDisplayHeight(IntPtr display, int screen_number);
+
+        [DllImport(libX11)]
         internal static extern int XGrabKey(IntPtr display, int keycode, uint modifiers, IntPtr grab_window, bool owner_events, int pointer_mode, int keyboard_mode);
 
         [DllImport(libX11)]
@@ -73,6 +85,7 @@ namespace XerahS.Platform.Linux
         internal const int IsUnviewable = 0;
         internal const int IsViewable = 1;
         internal const int IsViewableButNotMapped = 2; // Roughly speaking
+        internal const int ZPixmap = 2;
 
         // Key events
         internal const int KeyPress = 2;
@@ -124,9 +137,31 @@ namespace XerahS.Platform.Linux
         public long all_event_masks;
         public long your_event_mask;
         public long do_not_propagate_mask;
-        public bool override_redirect;
-        public IntPtr screen;
-    }
+    public bool override_redirect;
+    public IntPtr screen;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct XImage
+{
+    public int width;
+    public int height;
+    public int xoffset;
+    public int format;
+    public IntPtr data;
+    public int byte_order;
+    public int bitmap_unit;
+    public int bitmap_bit_order;
+    public int bitmap_pad;
+    public int depth;
+    public int bytes_per_line;
+    public int bits_per_pixel;
+    public ulong red_mask;
+    public ulong green_mask;
+    public ulong blue_mask;
+    public IntPtr obdata;
+    public IntPtr funcs;
+}
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct XKeyEvent
