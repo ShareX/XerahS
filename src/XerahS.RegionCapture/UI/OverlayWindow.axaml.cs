@@ -30,7 +30,7 @@ public partial class OverlayWindow : Window
         InitializeComponent();
     }
 
-    public OverlayWindow(MonitorInfo monitor, TaskCompletionSource<PixelRect?> completionSource)
+    public OverlayWindow(MonitorInfo monitor, TaskCompletionSource<PixelRect?> completionSource, Action<PixelRect>? selectionChanged = null)
     {
         _monitor = monitor;
         _completionSource = completionSource;
@@ -44,6 +44,8 @@ public partial class OverlayWindow : Window
 
         // Create and add the capture control
         _captureControl = new RegionCaptureControl(_monitor);
+        if (selectionChanged is not null)
+            _captureControl.SelectionChanged += selectionChanged;
         _captureControl.RegionSelected += OnRegionSelected;
         _captureControl.Cancelled += OnCancelled;
 

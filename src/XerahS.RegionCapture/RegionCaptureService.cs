@@ -30,8 +30,7 @@ public sealed class RegionCaptureService
     public async Task<PixelRect?> CaptureRegionAsync(Action<PixelRect>? onSelectionChanged)
     {
         using var manager = new OverlayManager();
-        // TODO: Wire up selection change callback
-        return await manager.ShowOverlaysAsync();
+        return await manager.ShowOverlaysAsync(onSelectionChanged);
     }
 }
 

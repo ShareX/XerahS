@@ -52,6 +52,11 @@ public sealed class SelectionStateMachine
     public event Action? SelectionCancelled;
 
     /// <summary>
+    /// Event fired when the selection rectangle changes.
+    /// </summary>
+    public event Action<PixelRect>? SelectionChanged;
+
+    /// <summary>
     /// Event fired when state changes.
     /// </summary>
     public event Action<CaptureState>? StateChanged;
@@ -103,7 +108,7 @@ public sealed class SelectionStateMachine
 
         _startPoint = startPoint;
         _currentPoint = startPoint;
-        _selectionRect = new PixelRect(startPoint.X, startPoint.Y, 0, 0);
+        SetSelectionRect(new PixelRect(startPoint.X, startPoint.Y, 0, 0));
         _aspectRatio = 1.0;
 
         TransitionTo(CaptureState.Dragging);
@@ -117,7 +122,7 @@ public sealed class SelectionStateMachine
         if (_currentState != CaptureState.Dragging)
             return;
 
-        _selectionRect = _selectionRect.Normalize();
+        SetSelectionRect(_selectionRect.Normalize());
 
         // Check if selection is large enough to be considered a drag
         if (_selectionRect.Width > 3 && _selectionRect.Height > 3)
@@ -131,7 +136,7 @@ public sealed class SelectionStateMachine
             // If we were hovering a window, snap to it
             if (_hoveredWindow != null)
             {
-                _selectionRect = _hoveredWindow.SnapBounds;
+                SetSelectionRect(_hoveredWindow.SnapBounds);
                 TransitionTo(CaptureState.Selected);
                 ConfirmSelection();
             }
@@ -139,7 +144,7 @@ public sealed class SelectionStateMachine
             {
                 // No window hovered, just cancel back to hovering state
                 TransitionTo(CaptureState.Hovering);
-                _selectionRect = PixelRect.Empty;
+                SetSelectionRect(PixelRect.Empty);
             }
         }
     }
@@ -152,7 +157,7 @@ public sealed class SelectionStateMachine
         if (_currentState != CaptureState.Hovering || _hoveredWindow is null)
             return;
 
-        _selectionRect = _hoveredWindow.SnapBounds;
+        SetSelectionRect(_hoveredWindow.SnapBounds);
         TransitionTo(CaptureState.Selected);
         ConfirmSelection();
     }
@@ -173,7 +178,7 @@ public sealed class SelectionStateMachine
     {
         if (_currentState == CaptureState.Selected)
         {
-            _selectionRect = _selectionRect.Offset(dx, dy);
+            SetSelectionRect(_selectionRect.Offset(dx, dy));
         }
         else if (_currentState == CaptureState.Dragging)
         {
@@ -193,15 +198,16 @@ public sealed class SelectionStateMachine
         var newWidth = Math.Max(1, _selectionRect.Width + dWidth);
         var newHeight = Math.Max(1, _selectionRect.Height + dHeight);
 
-        _selectionRect = new PixelRect(
+        SetSelectionRect(new PixelRect(
             _selectionRect.X,
             _selectionRect.Y,
             newWidth,
-            newHeight);
+            newHeight));
     }
 
     private void UpdateSelectionRect()
     {
+        PixelRect newRect;
         var endPoint = _currentPoint;
 
         // Apply aspect ratio lock if Shift is held
@@ -216,7 +222,7 @@ public sealed class SelectionStateMachine
             var dx = endPoint.X - _startPoint.X;
             var dy = endPoint.Y - _startPoint.Y;
 
-            _selectionRect = new PixelRect(
+            newRect = new PixelRect(
                 _startPoint.X - dx,
                 _startPoint.Y - dy,
                 dx * 2,
@@ -224,8 +230,10 @@ public sealed class SelectionStateMachine
         }
         else
         {
-            _selectionRect = PixelRect.FromCorners(_startPoint, endPoint);
+            newRect = PixelRect.FromCorners(_startPoint, endPoint);
         }
+
+        SetSelectionRect(newRect);
     }
 
     private static PixelPoint ApplyAspectRatioLock(PixelPoint start, PixelPoint end, double ratio)
@@ -264,5 +272,14 @@ public sealed class SelectionStateMachine
 
         _currentState = newState;
         StateChanged?.Invoke(newState);
+    }
+
+    private void SetSelectionRect(PixelRect rect)
+    {
+        if (rect == _selectionRect)
+            return;
+
+        _selectionRect = rect;
+        SelectionChanged?.Invoke(rect);
     }
 }
