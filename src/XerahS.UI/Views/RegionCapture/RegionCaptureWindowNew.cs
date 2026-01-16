@@ -119,34 +119,33 @@ namespace XerahS.UI.Views.RegionCapture
 
             TroubleshootingHelper.Log("RegionCapture","WINDOW", "=== Using NEW backend for positioning ===");
 
-            // Get virtual desktop bounds in logical coordinates
+            // Get virtual desktop bounds in both coordinate systems
             var logicalBounds = _newVirtualDesktopLogical;
+            var physicalBounds = _newCaptureService.GetVirtualDesktopBoundsPhysical();
+
             TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Virtual desktop logical: {logicalBounds}");
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Virtual desktop physical: {physicalBounds}");
 
-            // Position window (Avalonia uses logical coordinates for Position)
-            Position = new PixelPoint(
-                (int)Math.Round(logicalBounds.X),
-                (int)Math.Round(logicalBounds.Y));
+            // CRITICAL FIX: Window.Position uses PHYSICAL screen coordinates (PixelPoint)
+            // Previously we incorrectly used logical coordinates, causing offset issues
+            Position = new PixelPoint(physicalBounds.X, physicalBounds.Y);
 
-            // Size window (Avalonia uses logical coordinates for Width/Height)
+            // Size window (Avalonia Width/Height are in logical coordinates)
             Width = logicalBounds.Width;
             Height = logicalBounds.Height;
 
-            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Window positioned at: {Position}");
-            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Window size: {Width}x{Height}");
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Window positioned at (physical): {Position}");
+            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Window size (logical): {Width}x{Height}");
             TroubleshootingHelper.Log("RegionCapture","WINDOW", $"RenderScaling: {RenderScaling}");
 
-            // Log physical bounds for comparison
-            var physicalBounds = _newCaptureService.GetVirtualDesktopBoundsPhysical();
-            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Virtual desktop physical: {physicalBounds}");
-
             // [2026-01-15] Log window origin for negative coordinate debugging
-            TroubleshootingHelper.Log("RegionCapture","WINDOW", $"Window logical origin: ({logicalBounds.X}, {logicalBounds.Y})");
-            if (logicalBounds.X < 0 || logicalBounds.Y < 0)
+            if (physicalBounds.X < 0 || physicalBounds.Y < 0)
             {
                 TroubleshootingHelper.Log("RegionCapture","WINDOW", "⚠️ NEGATIVE COORDINATES DETECTED - Multi-monitor with secondary left/above primary");
             }
 
+            // Store the LOGICAL origin for coordinate mapping
+            // This is used to convert window-local coordinates to global logical coordinates
             _newCoordinateMapper = new RegionCaptureCoordinateMapper(
                 _newCaptureService,
                 new LogicalPoint(logicalBounds.X, logicalBounds.Y));
