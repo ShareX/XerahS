@@ -12,6 +12,7 @@
 - [Done] **Project Structure**: `ShareX.Avalonia.Platform.Linux` created.
 - [Done] **Platform Optimization**: `LinuxPlatform.cs` implemented and wiring services.
 - [Done] **Screen Capture**: `LinuxScreenCaptureService` implemented with CLI fallbacks (`gnome-screenshot`, `spectacle`, `scrot`, `import`) and Wayland detection.
+- [Done] **Native X11 Capture**: Added `XGetImage` path + mask decoding for headless capture before falling back to CLI tools.
 - [Done] **Window Management**: `LinuxWindowService` implemented using `libX11` P/Invokes (Get/Set Foreground, Enumerate Windows, specific window bounds).
 - [Done] **Clipboard**: `LinuxClipboardService` implemented using `wl-copy`/`wl-paste` (Wayland) and `xclip` (X11) fallbacks.
 - [Done] **Input**: `LinuxInputService` implemented using `xdotool` (X11) for cursor position.
