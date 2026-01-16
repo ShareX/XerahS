@@ -279,15 +279,24 @@ public sealed class RegionCaptureControl : Control
         // Draw dimmed background with cutout using geometry clipping
         if (clearRect is { } rect && rect.Width > 0 && rect.Height > 0)
         {
-            // Create combined geometry for XOR-style rendering
-            var outerGeometry = new RectangleGeometry(bounds);
-            var innerGeometry = new RectangleGeometry(rect);
-            var combinedGeometry = new CombinedGeometry(
-                GeometryCombineMode.Exclude,
-                outerGeometry,
-                innerGeometry);
+            // Draw dimmed background using 4 rectangles to avoid expensive geometry operations
+            // This is significantly faster than CombinedGeometry
+            
+            // Top
+            if (rect.Top > 0)
+                context.DrawRectangle(DimBrush, null, new Rect(0, 0, bounds.Width, rect.Top));
 
-            context.DrawGeometry(DimBrush, null, combinedGeometry);
+            // Bottom
+            if (rect.Bottom < bounds.Height)
+                context.DrawRectangle(DimBrush, null, new Rect(0, rect.Bottom, bounds.Width, bounds.Height - rect.Bottom));
+
+            // Left (clamped between Top and Bottom)
+            if (rect.Left > 0)
+                context.DrawRectangle(DimBrush, null, new Rect(0, rect.Top, rect.Left, rect.Height));
+
+            // Right (clamped between Top and Bottom)
+            if (rect.Right < bounds.Width)
+                context.DrawRectangle(DimBrush, null, new Rect(rect.Right, rect.Top, bounds.Width - rect.Right, rect.Height));
 
             // Draw the selection/snap border with shadow effect
             if (_state == CaptureState.Dragging || _state == CaptureState.Selected)

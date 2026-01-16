@@ -17,20 +17,59 @@ public sealed class WindowDetectionService
     /// <summary>
     /// Gets the list of visible windows, refreshing if stale.
     /// </summary>
+    private volatile bool _isRefreshing;
+    private readonly object _refreshLock = new();
+
+    /// <summary>
+    /// Gets the list of visible windows, refreshing if stale.
+    /// </summary>
     public IReadOnlyList<WindowInfo> Windows
     {
         get
         {
-            if (DateTime.UtcNow - _lastRefresh > RefreshInterval)
+            var timeSinceLastRefresh = DateTime.UtcNow - _lastRefresh;
+            if (timeSinceLastRefresh > RefreshInterval && !_isRefreshing)
             {
-                RefreshWindows();
+                // Refresh asynchronously to not block the UI thread
+                RefreshWindowsAsync();
             }
             return _windows;
         }
     }
 
+    private void RefreshWindowsAsync()
+    {
+        if (_isRefreshing) return;
+        _isRefreshing = true;
+
+        Task.Run(() =>
+        {
+            try
+            {
+#if WINDOWS
+                var windows = Platform.Windows.NativeWindowService.EnumerateVisibleWindows();
+#else
+                var windows = new List<WindowInfo>();
+#endif
+                lock (_lock)
+                {
+                    _windows = windows;
+                    _lastRefresh = DateTime.UtcNow;
+                }
+            }
+            catch
+            {
+                // Ignore errors during enumeration
+            }
+            finally
+            {
+                _isRefreshing = false;
+            }
+        });
+    }
+
     /// <summary>
-    /// Forces a refresh of the window list.
+    /// Forces a refresh of the window list (synchronous).
     /// </summary>
     public void RefreshWindows()
     {
