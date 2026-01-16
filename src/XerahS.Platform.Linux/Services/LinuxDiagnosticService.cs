@@ -25,30 +25,14 @@
 
 using XerahS.Platform.Abstractions;
 
-namespace XerahS.Core.Helpers
+namespace XerahS.Platform.Linux.Services
 {
-    /// <summary>
-    /// Helper class for generating comprehensive diagnostic logs for Region Capture.
-    /// Delegates to platform-specific service implementation.
-    /// </summary>
-    public static class CaptureDebugHelper
+    public class LinuxDiagnosticService : IDiagnosticService
     {
-        /// <summary>
-        /// Writes a comprehensive diagnostic report for Region Capture troubleshooting.
-        /// </summary>
-        /// <param name="personalFolder">The base folder (PathsManager.PersonalFolder) for output</param>
-        /// <returns>Full path of the written log file, or empty string on failure</returns>
-        public static string WriteRegionCaptureDiagnostics(string personalFolder)
+        public string WriteRegionCaptureDiagnostics(string personalFolder)
         {
-            try
-            {
-                return PlatformServices.Diagnostic.WriteRegionCaptureDiagnostics(personalFolder);
-            }
-            catch
-            {
-                // Core-level fallback if service fails or isn't initialized
-                return string.Empty;
-            }
+            // Not implemented for Linux yet
+            return string.Empty;
         }
     }
 }

@@ -60,7 +60,8 @@ namespace XerahS.Platform.MacOS
                 fontService: new MacOSFontService(),
                 startupService: new UnsupportedStartupService(),
                 systemService: new MacOSSystemService(),
-                notificationService: new MacOSNotificationService()
+                notificationService: new MacOSNotificationService(),
+                diagnosticService: new Services.MacOSDiagnosticService()
             );
         }
 

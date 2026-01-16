@@ -67,7 +67,8 @@ namespace XerahS.Platform.Windows
                 startupService: new UnsupportedStartupService(),
                 systemService: new Services.WindowsSystemService(),
                 shellIntegrationService: new Services.WindowsShellIntegrationService(),
-                notificationService: new WindowsNotificationService()
+                notificationService: new WindowsNotificationService(),
+                diagnosticService: new Services.WindowsDiagnosticService()
             );
 
             // Register AUMID for UWP Toast Notifications

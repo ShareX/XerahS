@@ -28,7 +28,8 @@ namespace XerahS.Platform.Linux
                 fontService: new LinuxFontService(),
                 startupService: new LinuxStartupService(),
                 systemService: new Services.LinuxSystemService(),
-                notificationService: new LinuxNotificationService()
+                notificationService: new LinuxNotificationService(),
+                diagnosticService: new Services.LinuxDiagnosticService()
             );
         }
 

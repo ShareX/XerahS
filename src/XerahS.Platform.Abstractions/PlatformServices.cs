@@ -142,6 +142,15 @@ namespace XerahS.Platform.Abstractions
             set => _systemService = value;
         }
 
+        private static IDiagnosticService? _diagnosticService;
+        public static IDiagnosticService Diagnostic
+        {
+            get => _diagnosticService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
+            set => _diagnosticService = value;
+        }
+
+
+
         /// <summary>
         /// Initializes platform services with provided implementations
         /// </summary>
@@ -156,6 +165,7 @@ namespace XerahS.Platform.Abstractions
             IFontService fontService,
             IStartupService startupService,
             ISystemService systemService,
+            IDiagnosticService diagnosticService,
             IShellIntegrationService? shellIntegrationService = null,
             INotificationService? notificationService = null)
         {
@@ -169,9 +179,11 @@ namespace XerahS.Platform.Abstractions
             _fontService = fontService ?? throw new ArgumentNullException(nameof(fontService));
             _startupService = startupService ?? throw new ArgumentNullException(nameof(startupService));
             _systemService = systemService ?? throw new ArgumentNullException(nameof(systemService));
+            _diagnosticService = diagnosticService ?? throw new ArgumentNullException(nameof(diagnosticService));
             _shellIntegrationService = shellIntegrationService;  // Optional - null means shell integration not available
             _notificationService = notificationService;  // Optional - null means no native notifications
         }
+
 
         public static void RegisterUIService(IUIService uiService)
         {
@@ -203,6 +215,7 @@ namespace XerahS.Platform.Abstractions
             _toastService = null;
             _systemService = null;
             _startupService = null;
+            _diagnosticService = null;
             _shellIntegrationService = null;
         }
     }
