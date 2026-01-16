@@ -57,6 +57,13 @@ public sealed class OverlayManager : IDisposable
             {
                 overlay.Show();
                 overlay.Activate();
+
+#if WINDOWS
+                if (overlay.TryGetPlatformHandle()?.Handle is { } handle)
+                {
+                    Platform.Windows.NativeWindowService.ExcludeHandle(handle);
+                }
+#endif
             }
 
             // Focus the primary monitor's overlay
@@ -83,6 +90,13 @@ public sealed class OverlayManager : IDisposable
     {
         foreach (var overlay in _overlays)
         {
+#if WINDOWS
+            if (overlay.TryGetPlatformHandle()?.Handle is { } handle)
+            {
+                Platform.Windows.NativeWindowService.RemoveExcludedHandle(handle);
+            }
+#endif
+
             try
             {
                 overlay.Close();
