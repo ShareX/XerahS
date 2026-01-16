@@ -42,7 +42,7 @@ namespace XerahS.UI.Views.RegionCapture
     public class RegionCaptureCanvas : Control
     {
         private SKBitmap? _renderTarget;
-        private SKRectI _selection;
+        private SKRect _selection;
         private bool _isSelecting;
         private SKPoint _crosshairPosition;
         
@@ -90,7 +90,7 @@ namespace XerahS.UI.Views.RegionCapture
             };
         }
 
-        public void UpdateSelection(SKRectI selection, bool isSelecting)
+        public void UpdateSelection(SKRect selection, bool isSelecting)
         {
             _selection = selection;
             _isSelecting = isSelecting;
@@ -131,8 +131,9 @@ namespace XerahS.UI.Views.RegionCapture
             using (var canvas = new SKCanvas(_renderTarget))
             {
                 canvas.Clear(SKColors.Transparent);
+                canvas.Scale((float)scaling);
                 
-                RenderContent(canvas, pixelWidth, pixelHeight);
+                RenderContent(canvas, Bounds.Width, Bounds.Height);
             }
 
             // Blit to Avalonia DrawingContext
@@ -158,7 +159,7 @@ namespace XerahS.UI.Views.RegionCapture
             context.DrawImage(writeableBitmap, new Rect(0, 0, Bounds.Width, Bounds.Height));
         }
 
-        private void RenderContent(SKCanvas canvas, int width, int height)
+        private void RenderContent(SKCanvas canvas, double width, double height)
         {
             // 1. Draw Overlay (Darkening)
             if (_useDarkening)
@@ -169,7 +170,7 @@ namespace XerahS.UI.Views.RegionCapture
                     using (var path = new SKPath())
                     {
                         path.FillType = SKPathFillType.EvenOdd;
-                        path.AddRect(new SKRect(0, 0, width, height));
+                        path.AddRect(new SKRect(0, 0, (float)width, (float)height));
                         path.AddRect(_selection);
                         canvas.DrawPath(path, _overlayPaint);
                     }
@@ -177,7 +178,7 @@ namespace XerahS.UI.Views.RegionCapture
                 else
                 {
                     // Full darkening
-                    canvas.DrawRect(0, 0, width, height, _overlayPaint);
+                    canvas.DrawRect(0, 0, (float)width, (float)height, _overlayPaint);
                 }
             }
 
@@ -187,8 +188,8 @@ namespace XerahS.UI.Views.RegionCapture
             // For now, let's draw them if we have a position
             if (_crosshairPosition.X >= 0 && _crosshairPosition.Y >= 0)
             {
-                canvas.DrawLine(0, _crosshairPosition.Y, width, _crosshairPosition.Y, _crosshairPaint);
-                canvas.DrawLine(_crosshairPosition.X, 0, _crosshairPosition.X, height, _crosshairPaint);
+                canvas.DrawLine(0, _crosshairPosition.Y, (float)width, _crosshairPosition.Y, _crosshairPaint);
+                canvas.DrawLine(_crosshairPosition.X, 0, _crosshairPosition.X, (float)height, _crosshairPaint);
             }
 
             // 3. Draw Selection Border

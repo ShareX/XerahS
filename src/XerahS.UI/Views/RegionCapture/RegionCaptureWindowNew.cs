@@ -481,8 +481,9 @@ namespace XerahS.UI.Views.RegionCapture
             var captureCanvas = this.FindControl<RegionCaptureCanvas>("CaptureCanvas");
             if (captureCanvas != null)
             {
-                // Pass physical coordinates directly to the canvas
-                captureCanvas.UpdateSelection(physicalRect, _state == RegionCaptureState.DragSelecting || _state == RegionCaptureState.Selected);
+                // Pass logical coordinates (RegionCaptureCanvas now handles scaling)
+                var skRect = new SKRect((float)logicalRect.X, (float)logicalRect.Y, (float)logicalRect.Right, (float)logicalRect.Bottom);
+                captureCanvas.UpdateSelection(skRect, _state == RegionCaptureState.DragSelecting || _state == RegionCaptureState.Selected);
                 captureCanvas.SetDarkening(_useDarkening);
             }
         }
