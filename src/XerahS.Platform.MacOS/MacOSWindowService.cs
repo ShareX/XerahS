@@ -183,6 +183,14 @@ namespace XerahS.Platform.MacOS
             return SetForegroundWindow(handle);
         }
 
+        public bool SetWindowClickThrough(IntPtr handle)
+        {
+            // Click-through windows on macOS would require NSWindow.ignoresMouseEvents property.
+            // This requires Objective-C interop which is out of scope for the MVP.
+            LogNotImplemented(nameof(SetWindowClickThrough));
+            return false;
+        }
+
         private static void LogNotImplemented(string memberName)
         {
             lock (WarnLock)

@@ -94,5 +94,11 @@ namespace XerahS.UI.Services
             // TODO: Implement using platform-specific APIs
             return false;
         }
+
+        public bool SetWindowClickThrough(IntPtr handle)
+        {
+            // TODO: Implement using platform-specific APIs
+            return false;
+        }
     }
 }

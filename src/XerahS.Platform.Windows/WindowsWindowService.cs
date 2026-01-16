@@ -247,5 +247,31 @@ namespace XerahS.Platform.Windows
 
             return NativeMethods.GetForegroundWindow() == handle;
         }
+
+        public bool SetWindowClickThrough(IntPtr handle)
+        {
+            if (handle == IntPtr.Zero)
+                return false;
+
+            try
+            {
+                const int GWL_EXSTYLE = -20;
+                const int WS_EX_TRANSPARENT = 0x00000020;
+                const int WS_EX_LAYERED = 0x00080000;
+
+                // Get current extended style
+                int extendedStyle = (int)NativeMethods.GetWindowLong(handle, GWL_EXSTYLE);
+
+                // Add WS_EX_TRANSPARENT and WS_EX_LAYERED flags
+                NativeMethods.SetWindowLong(handle, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "SetWindowClickThrough failed");
+                return false;
+            }
+        }
     }
 }

@@ -27,8 +27,12 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using XerahS.Common;
+using NativeMethods = XerahS.Common.NativeMethods;
+using CURSORINFO = XerahS.Common.CURSORINFO;
+using ICONINFO = XerahS.Common.ICONINFO;
 
-namespace XerahS.Common
+namespace XerahS.Platform.Windows
 {
     [SupportedOSPlatform("windows")]
     public class CursorData

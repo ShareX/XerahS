@@ -66,6 +66,7 @@ namespace XerahS.Platform.Windows
                 fontService: new WindowsFontService(),
                 startupService: new UnsupportedStartupService(),
                 systemService: new Services.WindowsSystemService(),
+                shellIntegrationService: new Services.WindowsShellIntegrationService(),
                 notificationService: new WindowsNotificationService()
             );
 

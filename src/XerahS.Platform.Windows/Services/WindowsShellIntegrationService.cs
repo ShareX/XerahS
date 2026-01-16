@@ -1,29 +1,67 @@
-using Microsoft.Win32;
-using XerahS.Common;
-using System.Runtime.InteropServices;
+#region License Information (GPL v3)
 
-namespace XerahS.Core.Integration;
+/*
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
+
+using Microsoft.Win32;
+using System.Runtime.InteropServices;
+using XerahS.Common;
+using XerahS.Platform.Abstractions;
+
+namespace XerahS.Platform.Windows.Services;
 
 /// <summary>
-/// Temporary helper for Windows integration until IIntegrationService is implemented
+/// Windows implementation of shell integration services (file extension registration, etc.)
 /// </summary>
-public static class IntegrationHelper
+public sealed class WindowsShellIntegrationService : IShellIntegrationService
 {
     private const string ShellPluginExtensionPath = @"Software\Classes\.sxadp";
-    private static readonly string ShellPluginExtensionValue = $"{SettingsManager.AppName}.sxadp";
-    private static readonly string ShellPluginAssociatePath = $@"Software\Classes\{ShellPluginExtensionValue}";
-    private static readonly string ShellPluginAssociateValue = $"{SettingsManager.AppName} plugin";
-    private static readonly string ShellPluginIconPath = $@"{ShellPluginAssociatePath}\DefaultIcon";
-    private static readonly string ShellPluginCommandPath = $@"{ShellPluginAssociatePath}\shell\open\command";
+    private readonly string ShellPluginExtensionValue = $"{AppResources.AppName}.sxadp";
+    private readonly string ShellPluginAssociatePath;
+    private readonly string ShellPluginAssociateValue;
+    private readonly string ShellPluginIconPath;
+    private readonly string ShellPluginCommandPath;
 
-    private static readonly string ApplicationPath = $"\"{Environment.ProcessPath}\"";
-    private static readonly string ShellPluginIconValue = $"{ApplicationPath},0"; // Extract icon from .exe
-    private static readonly string ShellPluginCommandValue = $"{ApplicationPath} -InstallPlugin \"%1\"";
+    private readonly string ApplicationPath;
+    private readonly string ShellPluginIconValue;
+    private readonly string ShellPluginCommandValue;
+
+    public WindowsShellIntegrationService()
+    {
+        ShellPluginAssociatePath = $@"Software\Classes\{ShellPluginExtensionValue}";
+        ShellPluginAssociateValue = $"{AppResources.AppName} plugin";
+        ShellPluginIconPath = $@"{ShellPluginAssociatePath}\DefaultIcon";
+        ShellPluginCommandPath = $@"{ShellPluginAssociatePath}\shell\open\command";
+
+        ApplicationPath = $"\"{Environment.ProcessPath}\"";
+        ShellPluginIconValue = $"{ApplicationPath},0"; // Extract icon from .exe
+        ShellPluginCommandValue = $"{ApplicationPath} -InstallPlugin \"%1\"";
+    }
 
     /// <summary>
     /// Check if .sxadp file association is registered
     /// </summary>
-    public static bool IsPluginExtensionRegistered()
+    public bool IsPluginExtensionRegistered()
     {
         if (!OperatingSystem.IsWindows())
             return false;
@@ -43,7 +81,7 @@ public static class IntegrationHelper
     /// <summary>
     /// Register or unregister .sxadp file association
     /// </summary>
-    public static void SetPluginExtensionRegistration(bool register)
+    public void SetPluginExtensionRegistration(bool register)
     {
         if (!OperatingSystem.IsWindows())
             return;
@@ -66,7 +104,7 @@ public static class IntegrationHelper
         }
     }
 
-    private static void RegisterPluginExtension()
+    private void RegisterPluginExtension()
     {
         CreateRegistryKey(ShellPluginExtensionPath, ShellPluginExtensionValue);
         CreateRegistryKey(ShellPluginAssociatePath, ShellPluginAssociateValue);
@@ -76,15 +114,15 @@ public static class IntegrationHelper
         // Notify Windows shell of file association change
         SHChangeNotify(0x08000000, 0x0000, IntPtr.Zero, IntPtr.Zero);
 
-        DebugHelper.WriteLine($"Registered .sxadp file association for {SettingsManager.AppName}");
+        DebugHelper.WriteLine($"Registered .sxadp file association for {AppResources.AppName}");
     }
 
-    private static void UnregisterPluginExtension()
+    private void UnregisterPluginExtension()
     {
         RemoveRegistryKey(ShellPluginExtensionPath);
         RemoveRegistryKey(ShellPluginAssociatePath);
 
-        DebugHelper.WriteLine($"Unregistered .sxadp file association for {SettingsManager.AppName}");
+        DebugHelper.WriteLine($"Unregistered .sxadp file association for {AppResources.AppName}");
     }
 
     // Registry helper methods

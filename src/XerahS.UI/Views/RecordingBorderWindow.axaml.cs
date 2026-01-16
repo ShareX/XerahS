@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -28,6 +28,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
 using System.Drawing;
+using XerahS.Platform.Abstractions;
 
 namespace XerahS.UI.Views;
 
@@ -74,32 +75,17 @@ public partial class RecordingBorderWindow : Window
     {
         base.OnOpened(e);
 
-        // Make window click-through after it's opened
-        if (OperatingSystem.IsWindows())
-        {
-            SetWindowClickThrough();
-        }
-    }
-
-    private void SetWindowClickThrough()
-    {
+        // Make window click-through after it's opened (uses platform service abstraction)
         if (TryGetPlatformHandle()?.Handle is IntPtr hwnd && hwnd != IntPtr.Zero)
         {
-            const int GWL_EXSTYLE = -20;
-            const int WS_EX_TRANSPARENT = 0x00000020;
-            const int WS_EX_LAYERED = 0x00080000;
-
-            // Get current extended style
-            var extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-
-            // Add WS_EX_TRANSPARENT and WS_EX_LAYERED flags
-            SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+            try
+            {
+                PlatformServices.Window.SetWindowClickThrough(hwnd);
+            }
+            catch (InvalidOperationException)
+            {
+                // Platform services not initialized - click-through not available
+            }
         }
     }
-
-    [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
-    private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
-    [System.Runtime.InteropServices.DllImport("user32.dll")]
-    private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 }

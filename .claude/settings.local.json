@@ -48,7 +48,8 @@
       "Bash(grep:*)",
       "Bash(for:*)",
       "Bash(do sed -i 's/namespace XerahS\\.ScreenCapture/namespace XerahS.RegionCapture/g' \"$file\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(Select-String -Pattern \"ShareX.Editor|error\")"
     ]
   }
 }

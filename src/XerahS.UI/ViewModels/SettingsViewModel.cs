@@ -216,7 +216,14 @@ namespace XerahS.UI.ViewModels
         {
             if (_isLoading) return; // Don't trigger during initial load
 
-            XerahS.Core.Integration.IntegrationHelper.SetPluginExtensionRegistration(value);
+            try
+            {
+                PlatformServices.ShellIntegration.SetPluginExtensionRegistration(value);
+            }
+            catch (InvalidOperationException)
+            {
+                // Shell integration not available on this platform
+            }
         }
 
         // OS Integration Settings
@@ -489,7 +496,15 @@ namespace XerahS.UI.ViewModels
 
             // Integration Settings
             SupportsFileAssociations = OperatingSystem.IsWindows();
-            IsPluginExtensionRegistered = XerahS.Core.Integration.IntegrationHelper.IsPluginExtensionRegistered();
+            try
+            {
+                IsPluginExtensionRegistered = PlatformServices.ShellIntegration.IsPluginExtensionRegistered();
+            }
+            catch (InvalidOperationException)
+            {
+                // Shell integration not available on this platform
+                IsPluginExtensionRegistered = false;
+            }
         }
 
         protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
