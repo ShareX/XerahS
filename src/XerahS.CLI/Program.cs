@@ -73,6 +73,7 @@ namespace XerahS.CLI
                 rootCommand.Add(ConfigCommand.Create());
                 rootCommand.Add(BackupSettingsCommand.Create());
                 rootCommand.Add(VerifyRegionCaptureCommand.Create());
+                rootCommand.Add(CompareCaptureCommand.Create());
 
                 // Execute
                 return await rootCommand.Parse(args).InvokeAsync();
