@@ -23,9 +23,10 @@ namespace XerahS.Platform.Linux
                 clipboardService: new LinuxClipboardService(),
                 windowService: new LinuxWindowService(),
                 screenCaptureService: screenCaptureService,
-                hotkeyService: new StubHotkeyService(),
+                hotkeyService: new LinuxHotkeyService(),
                 inputService: new LinuxInputService(),
                 fontService: new LinuxFontService(),
+                startupService: new LinuxStartupService(),
                 systemService: new Services.LinuxSystemService(),
                 notificationService: new LinuxNotificationService()
             );
@@ -64,14 +65,4 @@ namespace XerahS.Platform.Linux
         }
     }
 
-    internal class StubHotkeyService : IHotkeyService
-    {
-        public event EventHandler<HotkeyTriggeredEventArgs>? HotkeyTriggered { add { } remove { } }
-        public bool RegisterHotkey(HotkeyInfo hotkeyInfo) => false;
-        public bool UnregisterHotkey(HotkeyInfo hotkeyInfo) => false;
-        public void UnregisterAll() { }
-        public bool IsRegistered(HotkeyInfo hotkeyInfo) => false;
-        public bool IsSuspended { get; set; }
-        public void Dispose() { }
-    }
 }

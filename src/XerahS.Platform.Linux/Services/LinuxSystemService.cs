@@ -1,5 +1,6 @@
 
 using System.Diagnostics;
+using System.IO;
 using XerahS.Platform.Abstractions;
 
 namespace XerahS.Platform.Linux.Services
@@ -15,6 +16,14 @@ namespace XerahS.Platform.Linux.Services
 
             try
             {
+                if (Uri.TryCreate(filePath, UriKind.Absolute, out var uri))
+                {
+                    if (TryShowItemsViaDbus(uri.AbsoluteUri))
+                    {
+                        return true;
+                    }
+                }
+
                 // Linux selecting file is not standardized. Open parent dir.
                 string? folderPath = Path.GetDirectoryName(filePath);
                 if (!string.IsNullOrEmpty(folderPath))
@@ -47,7 +56,7 @@ namespace XerahS.Platform.Linux.Services
             return false;
         }
 
-        public bool OpenFile(string filePath)
+         public bool OpenFile(string filePath)
         {
              if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) return false;
 
@@ -61,6 +70,41 @@ namespace XerahS.Platform.Linux.Services
                  Debug.WriteLine(ex);
              }
              return false;
+         }
+
+        private static bool TryShowItemsViaDbus(string fileUri)
+        {
+            try
+            {
+                string escaped = fileUri.Replace("\"", "\\\"");
+                string args = $"--session --print-reply --type=method_call --dest=org.freedesktop.FileManager1 /org/freedesktop/FileManager1 org.freedesktop.FileManager1.ShowItems array:string:\"{escaped}\" string:\"\"";
+
+                using var process = Process.Start(new ProcessStartInfo("dbus-send", args)
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                });
+
+                if (process == null)
+                {
+                    return false;
+                }
+
+                if (!process.WaitForExit(2000))
+                {
+                    process.Kill();
+                    process.WaitForExit();
+                }
+
+                return process.ExitCode == 0;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                return false;
+            }
         }
     }
 }

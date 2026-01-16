@@ -42,13 +42,57 @@ namespace XerahS.Platform.Linux
         [DllImport(libX11)]
         internal static extern int XIconifyWindow(IntPtr display, IntPtr w, int screen_number);
 
+        [DllImport(libX11)]
+        internal static extern int XGrabKey(IntPtr display, int keycode, uint modifiers, IntPtr grab_window, bool owner_events, int pointer_mode, int keyboard_mode);
+
+        [DllImport(libX11)]
+        internal static extern int XUngrabKey(IntPtr display, int keycode, uint modifiers, IntPtr grab_window);
+
+        [DllImport(libX11)]
+        internal static extern int XSelectInput(IntPtr display, IntPtr w, long event_mask);
+
+        [DllImport(libX11)]
+        internal static extern int XNextEvent(IntPtr display, out XEvent event_return);
+
+        [DllImport(libX11)]
+        internal static extern int XPending(IntPtr display);
+
+        [DllImport(libX11)]
+        internal static extern IntPtr XStringToKeysym(string keySym);
+
+        [DllImport(libX11)]
+        internal static extern int XKeysymToKeycode(IntPtr display, IntPtr keySym);
+
+        [DllImport(libX11)]
+        internal static extern int XFlush(IntPtr display);
+
+        [DllImport(libX11)]
+        internal static extern int XGetClassHint(IntPtr display, IntPtr w, out XClassHint class_hints_return);
+
         // Window map state
         internal const int IsUnviewable = 0;
         internal const int IsViewable = 1;
         internal const int IsViewableButNotMapped = 2; // Roughly speaking
 
-        [DllImport(libX11)]
-        internal static extern int XGetClassHint(IntPtr display, IntPtr w, out XClassHint class_hints_return);
+        // Key events
+        internal const int KeyPress = 2;
+        internal const int KeyRelease = 3;
+
+        internal const long KeyPressMask = 1L << 0;
+
+        // Modifier masks (from X11/X.h)
+        internal const uint ShiftMask = 1u << 0;
+        internal const uint LockMask = 1u << 1;
+        internal const uint ControlMask = 1u << 2;
+        internal const uint Mod1Mask = 1u << 3;
+        internal const uint Mod2Mask = 1u << 4;
+        internal const uint Mod3Mask = 1u << 5;
+        internal const uint Mod4Mask = 1u << 6;
+        internal const uint Mod5Mask = 1u << 7;
+
+        internal const int GrabModeAsync = 1;
+        internal const int GrabModeSync = 0;
+        internal const int GrabSuccess = 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -82,5 +126,35 @@ namespace XerahS.Platform.Linux
         public long do_not_propagate_mask;
         public bool override_redirect;
         public IntPtr screen;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XKeyEvent
+    {
+        public int type;
+        public uint serial;
+        public bool send_event;
+        public IntPtr display;
+        public IntPtr window;
+        public IntPtr root;
+        public IntPtr subwindow;
+        public uint time;
+        public int x;
+        public int y;
+        public int x_root;
+        public int y_root;
+        public uint state;
+        public uint keycode;
+        public bool same_screen;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct XEvent
+    {
+        [FieldOffset(0)]
+        public int type;
+
+        [FieldOffset(0)]
+        public XKeyEvent key;
     }
 }

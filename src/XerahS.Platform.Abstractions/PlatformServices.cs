@@ -115,12 +115,19 @@ namespace XerahS.Platform.Abstractions
         /// </summary>
         public static bool IsToastServiceInitialized => _toastService != null;
 
+        private static IStartupService? _startupService;
+        public static IStartupService Startup
+        {
+            get => _startupService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
+            set => _startupService = value;
+        }
+
 
         /// <summary>
         /// Checks if platform services have been initialized
         /// </summary>
         public static bool IsInitialized =>
-            _platformInfo != null && _screenService != null && _clipboardService != null && _windowService != null && _screenCaptureService != null && _hotkeyService != null && _inputService != null && _fontService != null;
+            _platformInfo != null && _screenService != null && _clipboardService != null && _windowService != null && _screenCaptureService != null && _hotkeyService != null && _inputService != null && _fontService != null && _startupService != null;
 
         /// <summary>
         /// Initializes platform services with provided implementations
@@ -144,6 +151,7 @@ namespace XerahS.Platform.Abstractions
             IHotkeyService hotkeyService,
             IInputService inputService,
             IFontService fontService,
+            IStartupService startupService,
             ISystemService systemService,
             INotificationService? notificationService = null)
         {
@@ -155,6 +163,7 @@ namespace XerahS.Platform.Abstractions
             _screenCaptureService = screenCaptureService ?? throw new ArgumentNullException(nameof(screenCaptureService));
             _hotkeyService = hotkeyService ?? throw new ArgumentNullException(nameof(hotkeyService));
             _fontService = fontService ?? throw new ArgumentNullException(nameof(fontService));
+            _startupService = startupService ?? throw new ArgumentNullException(nameof(startupService));
             _systemService = systemService ?? throw new ArgumentNullException(nameof(systemService));
             _notificationService = notificationService;  // Optional - null means no native notifications
         }
@@ -189,6 +198,7 @@ namespace XerahS.Platform.Abstractions
             _notificationService = null;
             _toastService = null;
             _systemService = null;
+            _startupService = null;
         }
     }
 }

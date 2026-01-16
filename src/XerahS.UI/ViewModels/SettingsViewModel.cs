@@ -26,6 +26,7 @@
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Hotkeys;
 using XerahS.Platform.Abstractions;
@@ -224,11 +225,19 @@ namespace XerahS.UI.ViewModels
             get => SettingsManager.Settings.RunAtStartup;
             set
             {
-                if (SettingsManager.Settings.RunAtStartup != value)
+                if (SettingsManager.Settings.RunAtStartup == value)
                 {
-                    SettingsManager.Settings.RunAtStartup = value;
-                    OnPropertyChanged();
-                    // TODO: Call platform-specific startup registration service
+                    return;
+                }
+
+                var previousValue = SettingsManager.Settings.RunAtStartup;
+                SettingsManager.Settings.RunAtStartup = value;
+                OnPropertyChanged();
+
+                if (!ApplyStartupPreference(value))
+                {
+                    SettingsManager.Settings.RunAtStartup = previousValue;
+                    OnPropertyChanged(nameof(RunAtStartup));
                 }
             }
         }
@@ -258,6 +267,24 @@ namespace XerahS.UI.ViewModels
                     OnPropertyChanged();
                     // TODO: Call platform-specific Send To registration service
                 }
+            }
+        }
+
+        private static bool ApplyStartupPreference(bool enable)
+        {
+            try
+            {
+                if (!PlatformServices.IsInitialized)
+                {
+                    return false;
+                }
+
+                return PlatformServices.Startup.SetRunAtStartup(enable);
+            }
+            catch (InvalidOperationException ex)
+            {
+                DebugHelper.WriteException(ex, "SettingsViewModel: RunAtStartup platform services not ready.");
+                return false;
             }
         }
 
