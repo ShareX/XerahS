@@ -1,10 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>XerahS.CLI</RootNamespace>
+    <RootNamespace>XerahS.Bootstrap</RootNamespace>
     <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
     <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
-    <OutputType>Exe</OutputType>
-    <AssemblyName>xerahs</AssemblyName>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <DefineConstants Condition="'$(OS)' == 'Windows_NT'">$(DefineConstants);WINDOWS</DefineConstants>
@@ -12,12 +10,8 @@
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(DefineConstants);LINUX</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.CommandLine" Version="2.0.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\XerahS.Bootstrap\XerahS.Bootstrap.csproj" />
+    <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
-    <ProjectReference Include="..\XerahS.ScreenCapture\XerahS.ScreenCapture.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />
     <ProjectReference Include="..\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="'$(OS)' != 'Windows_NT'" />

@@ -1,0 +1,137 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        xmlns:views="using:XerahS.UI.Views"
+        xmlns:converters="using:XerahS.UI.Converters"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="XerahS.UI.Views.WorkflowEditorView"
+        x:DataType="vm:WorkflowEditorViewModel"
+        Title="{Binding WindowTitle}"
+        Width="850" Height="650"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="*,Auto" Margin="10">
+        
+        <!-- Main Tabs -->
+        <TabControl Grid.Row="0" Margin="0,0,0,10">
+            
+            <!-- Tab 1: Task (Trigger & Job) -->
+            <TabItem Header="Task">
+                <ScrollViewer>
+                    <StackPanel Margin="20" Spacing="20">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Workflow ID:" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding WorkflowId}"
+                                     IsReadOnly="True"
+                                     FontFamily="Consolas, Monospace"
+                                     Background="{DynamicResource ControlAltFillColorDefaultBrush}"
+                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                     Padding="6,4,6,4"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Description:" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding Description}" Watermark="Optional description"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Task:" FontWeight="SemiBold"/>
+                            <Grid ColumnDefinitions="*, 10, *">
+                                <ComboBox Grid.Column="0" 
+                                          ItemsSource="{Binding JobCategories}" 
+                                          SelectedItem="{Binding SelectedJobCategory}"
+                                          HorizontalAlignment="Stretch"
+                                          PlaceholderText="Select Category">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                
+                                <ComboBox Grid.Column="2" 
+                                          ItemsSource="{Binding SelectedJobCategory.Jobs}" 
+                                          SelectedItem="{Binding SelectedJobItem}"
+                                          IsEnabled="{Binding SelectedJobCategory, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                          HorizontalAlignment="Stretch"
+                                          PlaceholderText="Select Task">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Description}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Hotkey:" FontWeight="SemiBold"/>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Border Grid.Column="0" 
+                                        Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" 
+                                        CornerRadius="3" 
+                                        MinWidth="150">
+                                    <Button x:Name="HotkeyButton"
+                                            Content="{Binding KeyText}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            FontFamily="Consolas, Monospace"
+                                            FontWeight="Bold"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Padding="10,6"
+                                            HorizontalAlignment="Stretch"
+                                            Focusable="True"
+                                            Cursor="Hand"
+                                            Click="HotkeyButton_Click"/>
+                                </Border>
+                                <Button Grid.Column="1" Content="Clear" Command="{Binding ClearCommand}" Margin="10,0,0,0"/>
+                            </Grid>
+                            <TextBlock Text="Click to record. Press Escape to cancel." 
+                                       FontSize="12" Foreground="Gray" Margin="0,5,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab 2: Settings (The moved panel) -->
+            <TabItem Header="Settings">
+                <!-- We bind the DataContext to the sub-ViewModel -->
+                <views:TaskSettingsPanel DataContext="{Binding TaskSettings}"
+                                         HorizontalAlignment="Stretch" 
+                                         VerticalAlignment="Stretch"/>
+            </TabItem>
+
+            <!-- Tab 3: Destinations -->
+            <TabItem Header="Destinations" IsVisible="{Binding TaskSettings.UploadImageToHost}">
+                <Grid RowDefinitions="Auto, *" Margin="20">
+                    <TextBlock Text="Select Destination" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    
+                    <ComboBox Grid.Row="1" 
+                              ItemsSource="{Binding AvailableDestinations}" 
+                              SelectedItem="{Binding SelectedDestination}"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Top"
+                              PlaceholderText="Select default destination for this workflow">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="vm:UploaderInstanceViewModel">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="{Binding DisplayName}"/>
+                                    <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                 </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- Bottom Buttons -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button Content="OK" Click="OkButton_Click" IsDefault="True" Width="80"/>
+            <Button Content="Cancel" Click="CancelButton_Click" IsCancel="True" Width="80"/>
+        </StackPanel>
+    </Grid>
+</Window>

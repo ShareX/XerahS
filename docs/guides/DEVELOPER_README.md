@@ -232,7 +232,7 @@ ls -l libscreencapturekit_bridge.dylib
 
 ### .NET Solution
 ```bash
-dotnet build ShareX.Avalonia.sln
+dotnet build XerahS.sln
 ```
 
 ## Testing

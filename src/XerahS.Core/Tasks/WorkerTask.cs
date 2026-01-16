@@ -1,0 +1,582 @@
+#region License Information (GPL v3)
+
+/*
+    ShareX.Ava - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2025 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
+
+using XerahS.Common;
+using XerahS.Core.Helpers;
+using XerahS.Core.Managers;
+using XerahS.Core.Tasks.Processors;
+using XerahS.Platform.Abstractions;
+using XerahS.ScreenCapture.ScreenRecording;
+using SkiaSharp;
+using System.Diagnostics;
+using XerahS.History;
+using Avalonia.Threading;
+using System.Drawing;
+
+namespace XerahS.Core.Tasks
+{
+    public class WorkerTask
+    {
+        public TaskInfo Info { get; private set; }
+        public TaskStatus Status { get; private set; }
+        public Exception? Error { get; private set; }
+        public bool IsBusy => Status == TaskStatus.InQueue || IsWorking;
+        public bool IsWorking => Status == TaskStatus.Preparing || Status == TaskStatus.Working || Status == TaskStatus.Stopping;
+
+        /// <summary>
+        /// Determines if the task completed successfully with a valid result.
+        /// Returns true only if the task is not failed/canceled/stopped AND produced an artifact (Image, File, or URL).
+        /// </summary>
+        public bool IsSuccessful
+        {
+            get
+            {
+                if (Status == TaskStatus.Failed || Status == TaskStatus.Canceled || Status == TaskStatus.Stopped)
+                    return false;
+
+                // Check if we have any valid output
+                bool hasImage = Info.Metadata?.Image != null;
+                bool hasFile = !string.IsNullOrEmpty(Info.FilePath);
+                bool hasUrl = !string.IsNullOrEmpty(Info.Metadata?.UploadURL);
+
+                return hasImage || hasFile || hasUrl;
+            }
+        }
+
+        private CancellationTokenSource _cancellationTokenSource;
+
+        public event EventHandler StatusChanged = delegate { };
+        public event EventHandler TaskCompleted = delegate { };
+
+        /// <summary>
+        /// Delegate to show window selector when CustomWindow capture has no target configured.
+        /// Returns selected window or null if cancelled.
+        /// </summary>
+        public static Func<Task<XerahS.Platform.Abstractions.WindowInfo?>>? ShowWindowSelectorCallback { get; set; }
+
+        private WorkerTask(TaskSettings taskSettings, SKBitmap? inputImage = null)
+        {
+            Status = TaskStatus.InQueue;
+            Info = new TaskInfo(taskSettings);
+            if (inputImage != null)
+            {
+                Info.Metadata.Image = inputImage;
+                Info.DataType = EDataType.Image;
+            }
+            _cancellationTokenSource = new CancellationTokenSource();
+        }
+
+        public static WorkerTask Create(TaskSettings taskSettings, SKBitmap? inputImage = null)
+        {
+            return new WorkerTask(taskSettings, inputImage);
+        }
+
+        public async Task StartAsync()
+        {
+            if (Status != TaskStatus.InQueue) return;
+
+            Info.TaskStartTime = DateTime.Now;
+            DebugHelper.WriteLine($"Task started: Job={Info.TaskSettings.Job}");
+            Status = TaskStatus.Preparing;
+            OnStatusChanged();
+
+            try
+            {
+                await Task.Run(async () => await DoWorkAsync(_cancellationTokenSource.Token));
+            }
+            catch (OperationCanceledException)
+            {
+                Status = TaskStatus.Stopped;
+            }
+            catch (Exception ex)
+            {
+                Status = TaskStatus.Failed;
+                Error = ex;
+                DebugHelper.WriteLine($"Task failed: {ex.Message}");
+
+                // Show error toast to user for any task failure
+                try
+                {
+                    var errorMessage = ex.InnerException?.Message ?? ex.Message;
+                    if (errorMessage.Length > 150)
+                    {
+                        errorMessage = errorMessage.Substring(0, 147) + "...";
+                    }
+
+                    PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
+                    {
+                        Title = $"{Info.TaskSettings.Job} Failed",
+                        Text = errorMessage,
+                        Duration = 5f,
+                        Size = new SizeI(400, 120),
+                        AutoHide = true,
+                        LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
+                    });
+                }
+                catch
+                {
+                    // Ignore toast errors
+                }
+            }
+            finally
+            {
+                if (Status != TaskStatus.Failed && Status != TaskStatus.Stopped)
+                {
+                    Status = TaskStatus.Completed;
+                }
+
+                OnTaskCompleted();
+                OnStatusChanged();
+            }
+        }
+
+        private async Task DoWorkAsync(CancellationToken token)
+        {
+            // Ensure critical context is not null for the remainder of this task
+            Info.TaskSettings ??= new TaskSettings();
+            Info.Metadata ??= new TaskMetadata();
+
+            var taskSettings = Info.TaskSettings;
+            var metadata = Info.Metadata;
+
+            TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "DoWorkAsync Entry");
+            
+            Status = TaskStatus.Working;
+            OnStatusChanged();
+
+            // Perform Capture Phase based on Job Type
+            // Only capture if we don't already have an image (e.g. passed from UI)
+            if (metadata.Image == null && PlatformServices.IsInitialized)
+            {
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Entering capture phase");
+                
+                SKBitmap? image = null;
+                var captureStopwatch = Stopwatch.StartNew();
+                DebugHelper.WriteLine($"Capture start: Job={taskSettings.Job}");
+
+                // Create capture options from task settings
+                taskSettings.CaptureSettings ??= new TaskSettingsCapture();
+                var captureSettings = taskSettings.CaptureSettings;
+
+                var captureOptions = new CaptureOptions
+                {
+                    UseModernCapture = captureSettings.UseModernCapture,
+                    ShowCursor = captureSettings.ShowCursor,
+                    CaptureTransparent = captureSettings.CaptureTransparent,
+                    CaptureShadow = captureSettings.CaptureShadow,
+                    CaptureClientArea = captureSettings.CaptureClientArea,
+                    WorkflowId = taskSettings.WorkflowId
+                };
+
+                switch (taskSettings.Job)
+                {
+                    case HotkeyType.PrintScreen:
+                        image = await PlatformServices.ScreenCapture.CaptureFullScreenAsync(captureOptions);
+                        break;
+
+                    case HotkeyType.RectangleRegion:
+                        image = await PlatformServices.ScreenCapture.CaptureRegionAsync(captureOptions);
+                        break;
+
+                    case HotkeyType.ActiveWindow:
+                        if (PlatformServices.Window != null)
+                        {
+                            image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
+                        }
+                        break;
+
+                    case HotkeyType.CustomWindow:
+                        if (PlatformServices.Window != null)
+                        {
+                            TroubleshootingHelper.Log("CustomWindow", "TASK", "Task started for CustomWindow");
+                            TroubleshootingHelper.Log("CustomWindow", "TASK", $"TaskSettings provided: {taskSettings != null}");
+
+                            string targetWindow = captureSettings.CaptureCustomWindow;
+                            TroubleshootingHelper.Log("CustomWindow", "CONFIG", $"Configured target window: '{targetWindow}'");
+
+                            // Also inspect global settings as sanity check
+                            TroubleshootingHelper.Log("CustomWindow", "CONFIG", $"Global default target window: '{SettingsManager.DefaultTaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
+
+                            if (string.IsNullOrEmpty(targetWindow))
+                            {
+                                // No target window configured - show window selector
+                                TroubleshootingHelper.Log("CustomWindow", "UI", "No target window configured. Showing window selector...");
+
+                                if (ShowWindowSelectorCallback != null)
+                                {
+                                    var selectedWindow = await ShowWindowSelectorCallback();
+                                    if (selectedWindow != null)
+                                    {
+                                        TroubleshootingHelper.Log("CustomWindow", "UI", $"User selected window: '{selectedWindow.Title}' (Handle: {selectedWindow.Handle}, PID: {selectedWindow.ProcessId})");
+                                        TroubleshootingHelper.Log("CustomWindow", "UI", $"Window bounds: X={selectedWindow.Bounds.X}, Y={selectedWindow.Bounds.Y}, W={selectedWindow.Bounds.Width}, H={selectedWindow.Bounds.Height}");
+
+                                        // Restore if minimized
+                                        if (PlatformServices.Window.IsWindowMinimized(selectedWindow.Handle))
+                                        {
+                                            TroubleshootingHelper.Log("CustomWindow", "WINDOW", "Window is minimized, restoring...");
+                                            PlatformServices.Window.ShowWindow(selectedWindow.Handle, 9); // SW_RESTORE = 9
+                                            await Task.Delay(250, token);
+                                        }
+
+                                        // Capture using window handle directly (guarantees correct window)
+                                        TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capturing window by handle: {selectedWindow.Handle}");
+
+                                        // Log window info at capture time for verification
+                                        var captureTimeTitle = PlatformServices.Window.GetWindowText(selectedWindow.Handle);
+                                        var captureTimeBounds = PlatformServices.Window.GetWindowBounds(selectedWindow.Handle);
+                                        TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Selected title: '{selectedWindow.Title}'");
+                                        TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Capture-time title: '{captureTimeTitle}'");
+                                        TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Capture-time bounds: X={captureTimeBounds.X}, Y={captureTimeBounds.Y}, W={captureTimeBounds.Width}, H={captureTimeBounds.Height}");
+
+                                        // Always activate the selected window before capture
+                                        TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", "Activating selected window before capture...");
+                                        if (!PlatformServices.Window.ActivateWindow(selectedWindow.Handle))
+                                        {
+                                            TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", "ActivateWindow returned false, but proceeding check...");
+                                        }
+                                        await Task.Delay(250, token); // Increased delay for activation to settle
+
+                                        // Verify foreground is now our target
+                                        var foregroundHandle = PlatformServices.Window.GetForegroundWindow();
+                                        var foregroundTitle = PlatformServices.Window.GetWindowText(foregroundHandle);
+                                        TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", $"After activation - Foreground handle: {foregroundHandle}, Title: '{foregroundTitle}'");
+                                        TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", $"Foreground matches selected: {foregroundHandle == selectedWindow.Handle}");
+
+                                        // Capture active window
+                                        image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
+                                        TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capture active window result: {image != null}");
+                                    }
+                                    else
+                                    {
+                                        TroubleshootingHelper.Log("CustomWindow", "UI", "User cancelled window selection");
+                                        DebugHelper.WriteLine("Custom window capture cancelled by user");
+                                    }
+                                }
+                                else
+                                {
+                                    TroubleshootingHelper.Log("CustomWindow", "ERROR", "Window selector callback not configured");
+                                    DebugHelper.WriteLine("Custom window capture failed: Window selector not available");
+                                }
+                            }
+                            else
+                            {
+                                // Use SearchWindow to find the target window (matches original ShareX behavior)
+                                TroubleshootingHelper.Log("CustomWindow", "SEARCH", $"Searching for window using SearchWindow: '{targetWindow}'");
+                                IntPtr hWnd = PlatformServices.Window.SearchWindow(targetWindow);
+
+                                if (hWnd != IntPtr.Zero)
+                                {
+                                    TroubleshootingHelper.Log("CustomWindow", "SEARCH", $"Window found with handle: {hWnd}");
+
+                                    // Get window bounds for logging and potential restore
+                                    var bounds = PlatformServices.Window.GetWindowBounds(hWnd);
+                                    TroubleshootingHelper.Log("CustomWindow", "WINDOW", $"Window bounds: X={bounds.X}, Y={bounds.Y}, W={bounds.Width}, H={bounds.Height}");
+
+                                    // Restore if minimized (like original ShareX)
+                                    if (PlatformServices.Window.IsWindowMinimized(hWnd))
+                                    {
+                                        TroubleshootingHelper.Log("CustomWindow", "WINDOW", "Window is minimized, restoring...");
+                                        PlatformServices.Window.ShowWindow(hWnd, 9); // SW_RESTORE = 9
+                                        await Task.Delay(250, token);
+                                    }
+
+                                    // Capture using window handle directly (guarantees correct window)
+                                    TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capturing window by handle: {hWnd}");
+
+                                    // Verify window title at capture time matches search term
+                                    var captureTimeTitle = PlatformServices.Window.GetWindowText(hWnd);
+                                    var captureTimeBounds = PlatformServices.Window.GetWindowBounds(hWnd);
+                                    TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Search term: '{targetWindow}'");
+                                    TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Capture-time title: '{captureTimeTitle}'");
+                                    TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Capture-time bounds: X={captureTimeBounds.X}, Y={captureTimeBounds.Y}, W={captureTimeBounds.Width}, H={captureTimeBounds.Height}");
+                                    TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Title contains search term: {captureTimeTitle?.Contains(targetWindow, StringComparison.OrdinalIgnoreCase) ?? false}");
+
+                                    image = await PlatformServices.ScreenCapture.CaptureWindowAsync(hWnd, PlatformServices.Window, captureOptions);
+                                    TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capture window result: {image != null}");
+                                }
+                                else
+                                {
+                                    TroubleshootingHelper.Log("CustomWindow", "ERROR", $"Window with title containing '{targetWindow}' not found via SearchWindow.");
+                                    DebugHelper.WriteLine($"Custom window capture failed: Unable to find window with title '{targetWindow}'.");
+                                }
+                            }
+                        }
+                        break;
+
+                    // Stage 5: Screen Recording Integration
+                    case HotkeyType.ScreenRecorder:
+                    case HotkeyType.StartScreenRecorder:
+                        TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecorder case matched, showing region selector");
+
+                        // Show region selector and get user selection
+                        var regionCaptureOptions = new CaptureOptions
+                        {
+                            UseModernCapture = Info.TaskSettings.CaptureSettings.UseModernCapture,
+                            ShowCursor = Info.TaskSettings.CaptureSettings.ShowCursor,
+                            WorkflowId = Info.TaskSettings.WorkflowId
+                        };
+
+                        SKRectI selection = await PlatformServices.ScreenCapture.SelectRegionAsync(regionCaptureOptions);
+
+                        if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
+                        {
+                            TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "Region selection cancelled, aborting recording");
+                            Status = TaskStatus.Stopped;
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        // Convert SKRectI to System.Drawing.Rectangle for recording options
+                        // H.264 encoder requires even dimensions - round down to nearest even number
+                        int adjustedWidth = selection.Width - (selection.Width % 2);
+                        int adjustedHeight = selection.Height - (selection.Height % 2);
+
+                        // Ensure minimum dimensions (at least 2x2)
+                        if (adjustedWidth < 2 || adjustedHeight < 2)
+                        {
+                            TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region too small after adjustment: {adjustedWidth}x{adjustedHeight}, aborting recording");
+                            Status = TaskStatus.Stopped;
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        var recordingRegion = new Rectangle(selection.Left, selection.Top, adjustedWidth, adjustedHeight);
+
+                        if (adjustedWidth != selection.Width || adjustedHeight != selection.Height)
+                        {
+                            TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region adjusted for encoder: {selection.Width}x{selection.Height} → {adjustedWidth}x{adjustedHeight}");
+                        }
+
+                        TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region selected: {recordingRegion}, calling HandleStartRecordingAsync");
+
+                        await HandleStartRecordingAsync(CaptureMode.Region, region: recordingRegion);
+                        TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "HandleStartRecordingAsync completed");
+                        return; // Recording tasks don't proceed to image processing
+
+                    case HotkeyType.ScreenRecorderActiveWindow:
+                        if (PlatformServices.Window != null)
+                        {
+                            var foregroundWindow = PlatformServices.Window.GetForegroundWindow();
+                            await HandleStartRecordingAsync(CaptureMode.Window, foregroundWindow);
+                        }
+                        return;
+
+                    case HotkeyType.ScreenRecorderCustomRegion:
+                        // TODO: Show region selector UI and get selected region
+                        // For now, just start full screen recording
+                        DebugHelper.WriteLine("ScreenRecorderCustomRegion: Region selector not yet implemented, falling back to full screen");
+                        await HandleStartRecordingAsync(CaptureMode.Screen);
+                        return;
+
+                    case HotkeyType.StopScreenRecording:
+                        await HandleStopRecordingAsync();
+                        return;
+
+                    case HotkeyType.AbortScreenRecording:
+                        await HandleAbortRecordingAsync();
+                        return;
+                }
+
+                captureStopwatch.Stop();
+
+                if (image != null)
+                {
+                    metadata.Image = image;
+                    DebugHelper.WriteLine($"Captured image: {image.Width}x{image.Height} in {captureStopwatch.ElapsedMilliseconds}ms");
+                }
+                else
+                {
+                    DebugHelper.WriteLine($"Capture returned null for job type: {taskSettings?.Job} (elapsed {captureStopwatch.ElapsedMilliseconds}ms)");
+                    
+                    // IF capture returned null (e.g. user cancelled region selection), stop the task here.
+                    // This prevents empty tasks from being marked as 'Completed' successfully.
+                    Status = TaskStatus.Stopped;
+                    OnStatusChanged();
+                    return;
+                }
+            }
+            else if (Info.Metadata.Image == null)
+            {
+                DebugHelper.WriteLine("PlatformServices not initialized - cannot capture");
+            }
+
+            // Execute Capture Job (File Save, Clipboard, etc)
+            var captureProcessor = new CaptureJobProcessor();
+            await captureProcessor.ProcessAsync(Info, token);
+
+            // Execute Upload Job
+            var uploadProcessor = new UploadJobProcessor();
+            await uploadProcessor.ProcessAsync(Info, token);
+        }
+
+        public void Stop()
+        {
+            if (IsWorking)
+            {
+                Status = TaskStatus.Stopping;
+                OnStatusChanged();
+                _cancellationTokenSource.Cancel();
+            }
+        }
+
+        #region Recording Handlers (Stage 5)
+
+
+        private async Task HandleStartRecordingAsync(CaptureMode mode, IntPtr windowHandle = default, Rectangle? region = null)
+        {
+            var taskSettings = Info.TaskSettings ?? new TaskSettings();
+            var metadata = Info.Metadata ?? new TaskMetadata();
+
+            TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", $"HandleStartRecordingAsync Entry: mode={mode}, region={region}");
+
+            try
+            {
+                // Note: We don't check IsRecording here because App.axaml.cs ensures we only get here if NOT recording.
+
+                // Build recording options from task settings
+                taskSettings.CaptureSettings ??= new TaskSettingsCapture();
+                var captureSettings = taskSettings.CaptureSettings;
+
+                var recordingOptions = new RecordingOptions
+                {
+                    Mode = mode,
+                    Settings = captureSettings.ScreenRecordingSettings,
+                    TargetWindowHandle = windowHandle
+                };
+
+                // Set region if provided (for Region mode)
+                if (region.HasValue)
+                {
+                    recordingOptions.Region = region.Value;
+                    TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", $"Recording region set: {region.Value}");
+                }
+
+                // [2026-01-10T14:40:00+08:00] Align screen recording output with screenshot naming/destination using TaskHelpers.
+                var recordingMetadata = metadata;
+                string recordingsFolder = TaskHelpers.GetScreenshotsFolder(taskSettings, recordingMetadata);
+                string fileName = TaskHelpers.GetFileName(taskSettings, "mp4", recordingMetadata);
+                Directory.CreateDirectory(recordingsFolder);
+                var resolvedPath = TaskHelpers.HandleExistsFile(recordingsFolder, fileName, taskSettings);
+                recordingOptions.OutputPath = resolvedPath;
+                Info.FilePath = resolvedPath;
+                Info.DataType = EDataType.File;
+                DebugHelper.WriteLine($"[PathTrace {Info.CorrelationId}] ScreenRecorder resolved path: dir=\"{recordingsFolder}\", fileName=\"{fileName}\", fullPath=\"{resolvedPath}\"");
+
+                if (recordingOptions.Settings != null &&
+                    (recordingOptions.Settings.CaptureSystemAudio || recordingOptions.Settings.CaptureMicrophone))
+                {
+                    // Force FFmpeg path until native audio capture is implemented
+                    recordingOptions.Settings.ForceFFmpeg = true;
+                }
+
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Calling ScreenRecordingManager.StartRecordingAsync");
+                DebugHelper.WriteLine($"Starting recording: Mode={mode}, Codec={recordingOptions.Settings?.Codec}, FPS={recordingOptions.Settings?.FPS}");
+                DebugHelper.WriteLine($"Output path: {recordingOptions.OutputPath}");
+
+                // 1. Start recording
+                await ScreenRecordingManager.Instance.StartRecordingAsync(recordingOptions);
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecordingManager.StartRecordingAsync completed");
+
+                // 2. Wait for stop signal (ASYNC WAIT - Yields thread, keeps task alive)
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Waiting for stop signal...");
+                await ScreenRecordingManager.Instance.WaitForStopSignalAsync();
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Stop signal received. Resuming...");
+
+                // 3. Stop recording
+                DebugHelper.WriteLine("Stopping recording...");
+                string? outputPath = await ScreenRecordingManager.Instance.StopRecordingAsync();
+
+                if (!string.IsNullOrEmpty(outputPath))
+                {
+                    DebugHelper.WriteLine($"Recording saved to: {outputPath}");
+                    Info.FilePath = outputPath;
+                    Info.DataType = EDataType.File;
+                    
+                    // Reuse upload pipeline for recordings; flag upload when AfterUpload tasks exist.
+                    if (taskSettings.AfterUploadJob != AfterUploadTasks.None)
+                    {
+                        taskSettings.AfterCaptureJob |= AfterCaptureTasks.UploadImageToHost;
+                    }
+
+                    var uploadProcessor = new UploadJobProcessor();
+                    await uploadProcessor.ProcessAsync(Info, CancellationToken.None);
+
+                    // Add to History
+                    try
+                    {
+                        var historyPath = SettingsManager.GetHistoryFilePath();
+                        using var historyManager = new HistoryManagerSQLite(historyPath);
+                        var historyItem = new HistoryItem
+                        {
+                            FilePath = outputPath,
+                            FileName = Path.GetFileName(outputPath),
+                            DateTime = DateTime.Now,
+                            Type = "Video",
+                            URL = metadata.UploadURL ?? string.Empty // Will be populated if upload succeeded
+                        };
+
+                        DebugHelper.WriteLine($"[HistoryTrace] Preparing to add item. URL='{historyItem.URL}', File='{historyItem.FileName}'");
+
+                        await Task.Run(() => historyManager.AppendHistoryItem(historyItem));
+                        DebugHelper.WriteLine($"Added recording to history: {historyItem.FileName} (URL: {historyItem.URL})");
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugHelper.WriteException(ex, "Failed to add recording to history");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed during recording workflow");
+                throw;
+            }
+        }
+
+        private async Task HandleStopRecordingAsync()
+        {
+             // Legacy handler - mapped to SignalStop in UI now
+             await Task.CompletedTask;
+        }
+
+        private async Task HandleAbortRecordingAsync()
+        {
+             // Legacy handler
+             await ScreenRecordingManager.Instance.AbortRecordingAsync();
+        }
+
+        #endregion
+
+        protected virtual void OnStatusChanged()
+        {
+            StatusChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected virtual void OnTaskCompleted()
+        {
+            TaskCompleted?.Invoke(this, EventArgs.Empty);
+        }
+    }
+}

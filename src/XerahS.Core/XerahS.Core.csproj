@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>XerahS.Core</RootNamespace>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\XerahS.History\XerahS.History.csproj" />
+    <ProjectReference Include="..\XerahS.History\XerahS.History.csproj" />
+    <ProjectReference Include="..\XerahS.Uploaders\XerahS.Uploaders.csproj" />
+
+    <ProjectReference Include="..\..\..\ShareX.Editor\src\ShareX.Editor\ShareX.Editor.csproj" />
+
+    <ProjectReference Include="..\XerahS.ScreenCapture\XerahS.ScreenCapture.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="2.88.9" />
+  </ItemGroup>
+</Project>
+

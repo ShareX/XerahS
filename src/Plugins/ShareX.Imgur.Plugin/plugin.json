@@ -6,7 +6,7 @@
   "description": "Upload images and videos to Imgur",
   "apiVersion": "1.0",
   "entryPoint": "ShareX.Imgur.Plugin.ImgurProvider",
-  "assemblyFileName": "ShareX.Imgur.Plugin.dll",
+  "assemblyFileName": "XerahS.Imgur.Plugin.dll",
   "supportedCategories": ["Image", "Text"],
   "configViewId": "imgur",
   "dependencies": [],

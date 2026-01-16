@@ -1,0 +1,62 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:XerahS.UI"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             xmlns:views="using:XerahS.UI.Views"
+             xmlns:converters="clr-namespace:ShareX.Editor.Converters;assembly=ShareX.Editor"
+             xmlns:uiconverters="clr-namespace:XerahS.UI.Converters"
+             xmlns:sty="using:FluentAvalonia.Styling"
+             xmlns:core="using:XerahS.Core"
+             xmlns:common="clr-namespace:XerahS.Common;assembly=XerahS.Common"
+             x:Class="XerahS.UI.App"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.Resources>
+        <converters:ActiveToolToBackgroundConverter x:Key="ActiveToolToBackground"/>
+        <converters:SelectedColorToBorderConverter x:Key="SelectedColorToBorder"/>
+        <converters:SelectedWidthToBackgroundConverter x:Key="SelectedWidthToBackground"/>
+        <converters:BoolToActiveBackgroundConverter x:Key="BoolToActiveBackgroundConverter"/>
+        <converters:EqualsConverter x:Key="EqualsConverter"/>
+        <uiconverters:BoolToRecordingColorConverter x:Key="BoolToRecordingColorConverter"/>
+    </Application.Resources>
+
+
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+        
+        <!-- Manual DataTemplate registrations for modal dialogs -->
+        <DataTemplate DataType="vm:ProviderCatalogViewModel">
+            <views:ProviderCatalogView/>
+        </DataTemplate>
+    </Application.DataTemplates>
+  
+    <Application.Styles>
+        <!-- TODO: Re-enable dark theme when ready -->
+        <!-- <StyleInclude Source="avares://ShareX.Avalonia.UI/Themes/Dark/DarkTheme.axaml" /> -->
+        <sty:FluentAvaloniaTheme />
+        <Style Selector="Button.DarkButton">
+            <Setter Property="Background" Value="#25263A"/>
+            <Setter Property="Foreground" Value="#E2E8F0"/>
+            <Setter Property="BorderBrush" Value="#3B3B52"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+        <Style Selector="Button.DarkButton.active">
+            <Setter Property="Background" Value="#8B5CF6"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#8B5CF6"/>
+        </Style>
+    </Application.Styles>
+
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon Icon="avares://XerahS.UI/Assets/ShareX.iconset/icon_16x16.png"
+                      ToolTipText="{x:Static common:AppResources.AppName}"
+                      IsVisible="{Binding ShowTray, Source={x:Static local:TrayIconHelper.Instance}}"
+                      Menu="{Binding TrayMenu, Source={x:Static local:TrayIconHelper.Instance}}"
+                      Clicked="TrayIcon_Clicked">
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
+</Application>

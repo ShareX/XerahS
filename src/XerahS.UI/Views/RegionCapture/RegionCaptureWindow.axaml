@@ -1,0 +1,68 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:XerahS.UI.Views.RegionCapture"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="XerahS.UI.Views.RegionCapture.RegionCaptureWindow"
+        Title="RegionCaptureWindow"
+        TransparencyLevelHint="Transparent"
+        Background="{x:Null}"
+        SystemDecorations="None"
+        Topmost="True"
+        ShowInTaskbar="False"
+        Cursor="Cross"
+        PointerPressed="OnPointerPressed"
+        PointerMoved="OnPointerMoved"
+        PointerReleased="OnPointerReleased"
+        CanResize="False"
+        WindowStartupLocation="Manual">
+    
+    <Panel Background="Transparent">
+        <!-- SkiaSharp-based drawing canvas -->
+        <local:RegionCaptureCanvas Name="CaptureCanvas"
+                                   Width="{Binding $parent[Window].Width}"
+                                   Height="{Binding $parent[Window].Height}" />
+        
+        <!-- Overlay Canvas for UI elements -->
+        <Canvas Name="OverlayCanvas" IsHitTestVisible="False">
+            
+            <!-- Resize Handles -->
+            <Canvas Name="ResizeHandlesCanvas" IsVisible="False">
+                <Rectangle Name="HandleTL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleTM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleTR" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleRM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleBR" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleBM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleBL" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+                <Rectangle Name="HandleLM" Width="6" Height="6" Fill="White" Stroke="Black" StrokeThickness="1" />
+            </Canvas>
+            
+            <!-- Magnifier HUD -->
+            <StackPanel Name="InfoStack" Orientation="Vertical" IsVisible="False">
+                 <Border Name="MagnifierBorder" 
+                         BorderBrush="White" 
+                         BorderThickness="1" 
+                         Width="120" Height="120"
+                         IsVisible="True" 
+                         Background="Black"
+                         Margin="0,0,0,5">
+                     <Grid>
+                        <Image Name="MagnifierImage" Stretch="None" />
+                         <Line StartPoint="60,0" EndPoint="60,120" Stroke="Cyan" StrokeThickness="1" Opacity="0.5"/>
+                         <Line StartPoint="0,60" EndPoint="120,60" Stroke="Cyan" StrokeThickness="1" Opacity="0.5"/>
+                     </Grid>
+                 </Border>
+            </StackPanel>
+            
+            <!-- Info Text (Floating) -->
+            <TextBlock Name="InfoText" 
+                       Background="#A0000000" 
+                       Padding="5" 
+                       Foreground="White" 
+                       FontSize="11" 
+                       IsVisible="False" />
+        </Canvas>
+    </Panel>
+</Window>

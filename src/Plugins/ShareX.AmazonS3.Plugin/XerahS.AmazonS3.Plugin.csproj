@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>XerahS.AmazonS3.Plugin</RootNamespace>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RootNamespace>XerahS.AmazonS3.Plugin</RootNamespace>
+    <PluginId>amazons3</PluginId>
+    <PluginName>Amazon S3 Uploader</PluginName>
+
+  </PropertyGroup>
+
+  <!-- Avalonia packages for UI - use exact versions from main app -->
+  <!-- Mark as ExcludeAssets=runtime so they are NOT copied to plugin output (use host's versions) -->
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.10">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.10">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\XerahS.Uploaders\XerahS.Uploaders.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\XerahS.Common\XerahS.Common.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="plugin.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Copy plugin to main app's Plugins directory -->
+  <Target Name="CopyToPluginsDir" AfterTargets="Build">
+    <PropertyGroup>
+    <RootNamespace>XerahS.AmazonS3.Plugin</RootNamespace>
+      <PluginOutputDir>$(MSBuildThisFileDirectory)..\..\XerahS.App\bin\$(Configuration)\$(TargetFramework)\Plugins\$(PluginId)</PluginOutputDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <PluginFiles Include="$(OutputPath)**\*.*" Exclude="$(OutputPath)**\*.pdb;$(OutputPath)**\*.deps.json" />
+    </ItemGroup>
+    <MakeDir Directories="$(PluginOutputDir)" Condition="!Exists('$(PluginOutputDir)')" />
+    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(PluginOutputDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <Message Importance="High" Text="Copied $(PluginName) plugin to: $(PluginOutputDir)" />
+  </Target>
+
+</Project>
+
