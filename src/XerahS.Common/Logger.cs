@@ -38,6 +38,11 @@ namespace XerahS.Common
         public string MessageFormat { get; set; } = "{0:yyyy-MM-dd HH:mm:ss.fff} - {1}";
         public bool AsyncWrite { get; set; } = true;
         public bool DebugWrite { get; set; } = true;
+#if DEBUG
+        public bool ConsoleWrite { get; set; } = true;
+#else
+        public bool ConsoleWrite { get; set; } = false;
+#endif
         public bool StringWrite { get; set; } = true;
         public bool FileWrite { get; set; } = false;
         public string LogFilePath { get; private set; } = string.Empty;
@@ -125,6 +130,11 @@ namespace XerahS.Common
                     if (DebugWrite)
                     {
                         Debug.Write(message);
+                    }
+
+                    if (ConsoleWrite)
+                    {
+                        Console.Write(message);
                     }
 
                     if (StringWrite && sbMessages != null)

@@ -56,7 +56,11 @@ namespace XerahS.Core.Helpers
                 if (writer != null)
                 {
                     var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
-                    writer.WriteLine($"[{timestamp}] {message}");
+                    var buffer = $"[{timestamp}] {message}";
+                    writer.WriteLine(buffer);
+#if DEBUG
+                    Console.WriteLine(buffer);
+#endif
                 }
             }
             catch
@@ -83,7 +87,11 @@ namespace XerahS.Core.Helpers
                 if (writer != null)
                 {
                     var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
-                    writer.WriteLine($"[{timestamp}] {subCategory,-12} | {message}");
+                    var buffer = $"[{timestamp}] {subCategory,-12} | {message}";
+                    writer.WriteLine(buffer);
+#if DEBUG
+                    Console.WriteLine(buffer);
+#endif
                 }
             }
             catch
