@@ -26,7 +26,7 @@
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using XerahS.Platform.MacOS.Services;
-using XerahS.ScreenCapture.ScreenRecording;
+using XerahS.RegionCapture.ScreenRecording;
 
 namespace XerahS.Platform.MacOS
 {

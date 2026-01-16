@@ -30,7 +30,7 @@ using XerahS.CLI;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Managers;
-using XerahS.ScreenCapture.ScreenRecording;
+using XerahS.RegionCapture.ScreenRecording;
 
 namespace XerahS.CLI.Commands
 {

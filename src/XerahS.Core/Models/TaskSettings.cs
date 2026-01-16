@@ -31,7 +31,7 @@ using Newtonsoft.Json;
 using XerahS.Common;
 using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
-using XerahS.ScreenCapture.ScreenRecording;
+using XerahS.RegionCapture.ScreenRecording;
 using XerahS.Platform.Abstractions;
 
 namespace XerahS.Core;

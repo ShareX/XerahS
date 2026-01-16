@@ -25,7 +25,7 @@
 
 using System.ComponentModel;
 
-namespace XerahS.ScreenCapture
+namespace XerahS.RegionCapture
 {
     public enum ScreenRecordOutput
     {

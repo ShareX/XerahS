@@ -23,28 +23,32 @@
 
 #endregion License Information (GPL v3)
 
-namespace XerahS.ScreenCapture
+namespace XerahS.RegionCapture
 {
-    public class FFmpegCaptureDevice
+    public class StickerPackInfo
     {
-        public string Value { get; set; }
-        public string Title { get; set; }
+        public string FolderPath { get; set; }
+        public string Name { get; set; }
 
-        public FFmpegCaptureDevice(string value, string title)
+        public StickerPackInfo(string folderPath = "", string name = "")
         {
-            Value = value;
-            Title = title;
+            FolderPath = folderPath;
+            Name = name;
         }
-
-        public static FFmpegCaptureDevice None { get; } = new FFmpegCaptureDevice("", "None");
-        public static FFmpegCaptureDevice GDIGrab { get; } = new FFmpegCaptureDevice("gdigrab", "gdigrab (Graphics Device Interface)");
-        public static FFmpegCaptureDevice DDAGrab { get; } = new FFmpegCaptureDevice("ddagrab", "ddagrab (Desktop Duplication API)");
-        public static FFmpegCaptureDevice ScreenCaptureRecorder { get; } = new FFmpegCaptureDevice("screen-capture-recorder", "dshow (screen-capture-recorder)");
-        public static FFmpegCaptureDevice VirtualAudioCapturer { get; } = new FFmpegCaptureDevice("virtual-audio-capturer", "dshow (virtual-audio-capturer)");
 
         public override string ToString()
         {
-            return Title;
+            if (!string.IsNullOrEmpty(Name))
+            {
+                return Name;
+            }
+
+            if (!string.IsNullOrEmpty(FolderPath))
+            {
+                return Path.GetFileName(FolderPath);
+            }
+
+            return "";
         }
     }
 }

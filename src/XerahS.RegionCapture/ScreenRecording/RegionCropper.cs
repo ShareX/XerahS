@@ -25,13 +25,12 @@
 
 using System.Drawing;
 using System.Runtime.InteropServices;
-using XerahS.ScreenCapture.ScreenRecording;
 
-namespace XerahS.ScreenCapture.ScreenRecording;
+namespace XerahS.RegionCapture.ScreenRecording;
 
 /// <summary>
 /// Utility for cropping captured frames to a specific region
-/// Stage 2: Window & Region Parity
+/// Stage 2: Window &amp; Region Parity
 /// </summary>
 public static class RegionCropper
 {

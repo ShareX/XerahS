@@ -5,7 +5,7 @@
 **Priority**: High (Cross-platform compatibility)
 
 ## Assessment
-**Completion**: ~60% (Screen Capture & Window Mgmt Complete, others are Stubs)
+**Completion**: ~70% (Core Services Done; Hotkeys, Startup, & Polish Pending)
 **Status**: In Progress / Pending
 
 **Implemented**:
@@ -13,13 +13,17 @@
 - ✅ **Platform Optimization**: `LinuxPlatform.cs` implemented and wiring services.
 - ✅ **Screen Capture**: `LinuxScreenCaptureService` implemented with CLI fallbacks (`gnome-screenshot`, `spectacle`, `scrot`, `import`) and Wayland detection.
 - ✅ **Window Management**: `LinuxWindowService` implemented using `libX11` P/Invokes (Get/Set Foreground, Enumerate Windows, specific window bounds).
+- ✅ **Clipboard**: `LinuxClipboardService` implemented using `wl-copy`/`wl-paste` (Wayland) and `xclip` (X11) fallbacks.
+- ✅ **Input**: `LinuxInputService` implemented using `xdotool` (X11) for cursor position.
+- ✅ **Basic System Ops**: `LinuxSystemService` implemented (using `xdg-open` for opening URLs/Folders).
 
 **Missing / To Do**:
-- ❌ **Clipboard**: `StubClipboardService` is currently a stub. Needs `xclip`/`wl-copy` or native implementation.
 - ❌ **Hotkeys**: `StubHotkeyService` is a stub. Needs global hotkey handling (XGrabKey / Wayland compositor shortcuts).
-- ❌ **Input**: `StubInputService` is a stub.
+- ❌ **Startup Integration**: Auto-start on login (XDG Autostart standard `~/.config/autostart`).
+- ❌ **Advanced File Manager**: "Show in Folder" currently just opens the folder. Need DBus (`org.freedesktop.FileManager1`) to actually *select* the file.
 - ❌ **Native Screen Capture**: Future optimization using native X11 `XGetImage` instead of CLI tools for better performance.
 - ❌ **Wayland Native**: Screen capture currently uses portal or CLI; explicit Portal API implementation might be needed if CLI fails or is slow.
+- ❌ **Input (Wayland)**: Cursor position currently relies on `xdotool` which may not work on pure Wayland without XWayland or specific compositor protocols.
 
 ---
 
@@ -38,6 +42,9 @@ ShareX.Avalonia targets cross-platform support. Linux support requires a dedicat
 - `LinuxScreenCaptureService`
 - `LinuxWindowService`
 - `LinuxPlatformInfo`
+- `LinuxClipboardService`
+- `LinuxInputService`
+- `LinuxSystemService`
 - [Stubs for others]
 
 ### 2. Screen Capture Service (✅ Partial)
@@ -49,17 +56,28 @@ ShareX.Avalonia targets cross-platform support. Linux support requires a dedicat
 - **Implemented**: X11-based window enumeration and management.
 - **Missing**: True Wayland window management (often restricted by protocol, functionality might be limited on Wayland).
 
-### 4. Clipboard Service (❌ Pending)
-- Need to implement `IClipboardService` using:
-    - `xclip` / `xsel` (CLI)
-    - or Avalonia's `Application.Current.Clipboard` (if sufficient, but usually need lower level control for files/images sometimes).
+### 4. Clipboard Service (✅ Done)
+- Implemented `IClipboardService` using:
+    - Primary: `wl-copy` / `wl-paste` (Wayland CLI)
+    - Fallback: `xclip` (X11 CLI)
+    - Handles Text, Images (PNG), and File Lists.
 
-### 5. Hotkey Service (❌ Pending)
+### 5. Input Service (✅ Partial)
+- **Implemented**: X11 cursor position using `xdotool`.
+- **Missing**: Pure Wayland cursor position (restricted by security model).
+
+### 6. Hotkey Service (❌ Pending)
 - Critical for ShareX.
 - **X11**: `XGrabKey`.
 - **Wayland**: Global shortcuts portal.
 
+### 7. System Integration (✅ Basic / ❌ Partial)
+- **Implemented**: `xdg-open` for URLs and Folders.
+- **Missing**: XDG Autostart (Startup), DBus File Manager Selection.
+
 ## Next Steps
-1.  Implement `LinuxClipboardService`.
-2.  Implement `LinuxHotkeyService`.
-3.  Test on standard distros (Ubuntu 22.04+, Fedora).
+1.  Implement `LinuxHotkeyService` (Critical for complete feature set).
+2.  Implement `Startup` logic (write .desktop file to autostart).
+3.  Improve "Show in Folder" using DBus.
+4.  Test on standard distros (Ubuntu 22.04+, Fedora).
+5.  Investigate native X11 capture performance improvements.

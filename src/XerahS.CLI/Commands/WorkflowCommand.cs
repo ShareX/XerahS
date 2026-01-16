@@ -100,7 +100,7 @@ namespace XerahS.CLI.Commands
                 Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "CLI", $"Workflow run flags: workflowId={workflowId}, duration={duration}s, dumpFrame={dumpFrame}, exitOnComplete={exitOnComplete}, region={region ?? "null"}, started={runStart:O}");
 
                 // [2026-01-10T14:24:00+08:00] Enable first-frame dump when requested to diagnose orientation; disable by default.
-                XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService.DebugDumpFirstFrame = dumpFrame;
+                XerahS.RegionCapture.ScreenRecording.ScreenRecorderService.DebugDumpFirstFrame = dumpFrame;
 
                 Console.WriteLine($"Executing workflow: {workflow.Name} ({workflowId})");
 

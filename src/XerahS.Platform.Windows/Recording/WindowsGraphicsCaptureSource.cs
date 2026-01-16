@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using WGC = global::Windows.Graphics.Capture;
 using WD3D = global::Windows.Graphics.DirectX.Direct3D11;
-using XerahS.ScreenCapture.ScreenRecording;
+using XerahS.RegionCapture.ScreenRecording;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 

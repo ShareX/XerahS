@@ -23,49 +23,44 @@
 
 #endregion License Information (GPL v3)
 
-using XerahS.Common;
+using System.Diagnostics;
 
-namespace XerahS.ScreenCapture
+namespace XerahS.RegionCapture
 {
-    internal class OpacityAnimation : BaseAnimation
+    internal class BaseAnimation
     {
-        private double opacity;
+        public virtual bool IsActive { get; protected set; }
 
-        public double Opacity
+        protected Stopwatch Timer { get; private set; }
+        protected TimeSpan TotalElapsed { get; private set; }
+        protected TimeSpan Elapsed { get; private set; }
+
+        protected TimeSpan previousElapsed;
+
+        public BaseAnimation()
         {
-            get
-            {
-                return opacity;
-            }
-            private set
-            {
-                opacity = value.Clamp(0, 1);
-            }
+            Timer = new Stopwatch();
         }
 
-        public TimeSpan FadeInDuration { get; set; }
-        public TimeSpan Duration { get; set; }
-        public TimeSpan FadeOutDuration { get; set; }
+        public virtual void Start()
+        {
+            IsActive = true;
+            Timer.Restart();
+        }
 
-        public TimeSpan TotalDuration => FadeInDuration + Duration + FadeOutDuration;
+        public virtual void Stop()
+        {
+            Timer.Stop();
+            IsActive = false;
+        }
 
-        public override bool Update()
+        public virtual bool Update()
         {
             if (IsActive)
             {
-                if (Timer.Elapsed < FadeInDuration)
-                {
-                    Opacity = Timer.Elapsed.TotalMilliseconds / FadeInDuration.TotalMilliseconds;
-                }
-                else
-                {
-                    Opacity = 1 - ((Timer.Elapsed - (FadeInDuration + Duration)).TotalMilliseconds / FadeOutDuration.TotalMilliseconds);
-                }
-
-                if (Opacity == 0)
-                {
-                    Timer.Stop();
-                }
+                TotalElapsed = Timer.Elapsed;
+                Elapsed = TotalElapsed - previousElapsed;
+                previousElapsed = TotalElapsed;
             }
 
             return IsActive;

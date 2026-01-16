@@ -15,7 +15,7 @@
     <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
-    <ProjectReference Include="..\XerahS.ScreenCapture\XerahS.ScreenCapture.csproj" />
+    <ProjectReference Include="..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
   </ItemGroup>
 
   <ItemGroup>

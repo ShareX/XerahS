@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace XerahS.ScreenCapture.ScreenRecording;
+namespace XerahS.RegionCapture.ScreenRecording;
 
 /// <summary>
 /// Defines the capture mode for screen recording

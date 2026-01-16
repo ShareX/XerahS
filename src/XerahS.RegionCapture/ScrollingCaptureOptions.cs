@@ -23,17 +23,17 @@
 
 #endregion License Information (GPL v3)
 
-namespace XerahS.ScreenCapture
+namespace XerahS.RegionCapture
 {
-    public class LocationInfo
+    public class ScrollingCaptureOptions
     {
-        public long Location { get; set; }
-        public long Length { get; set; }
-
-        public LocationInfo(long location, long length)
-        {
-            Location = location;
-            Length = length;
-        }
+        public int StartDelay { get; set; } = 300;
+        public bool AutoScrollTop { get; set; } = false;
+        public int ScrollDelay { get; set; } = 300;
+        public ScrollMethod ScrollMethod { get; set; } = ScrollMethod.MouseWheel;
+        public int ScrollAmount { get; set; } = 2;
+        public bool AutoIgnoreBottomEdge { get; set; } = true;
+        public bool AutoUpload { get; set; } = false;
+        public bool ShowRegion { get; set; } = true;
     }
 }

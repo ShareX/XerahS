@@ -25,7 +25,7 @@
 
 using XerahS.Common;
 
-namespace XerahS.ScreenCapture
+namespace XerahS.RegionCapture
 {
     public class FFmpegOptions
     {

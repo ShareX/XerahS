@@ -26,9 +26,8 @@
 using System.Diagnostics;
 using XerahS.Media;
 using XerahS.Common;
-using XerahS.ScreenCapture.ScreenRecording;
 
-namespace XerahS.ScreenCapture.ScreenRecording;
+namespace XerahS.RegionCapture.ScreenRecording;
 
 /// <summary>
 /// FFmpeg-based screen recording service (fallback implementation)

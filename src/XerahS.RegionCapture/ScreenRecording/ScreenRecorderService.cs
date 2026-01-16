@@ -32,7 +32,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using XerahS.Common;
 
-namespace XerahS.ScreenCapture.ScreenRecording;
+namespace XerahS.RegionCapture.ScreenRecording;
 
 /// <summary>
 /// Platform-agnostic screen recording orchestration service

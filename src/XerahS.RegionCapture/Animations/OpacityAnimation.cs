@@ -23,44 +23,49 @@
 
 #endregion License Information (GPL v3)
 
-using System.Diagnostics;
+using XerahS.Common;
 
-namespace XerahS.ScreenCapture
+namespace XerahS.RegionCapture
 {
-    internal class BaseAnimation
+    internal class OpacityAnimation : BaseAnimation
     {
-        public virtual bool IsActive { get; protected set; }
+        private double opacity;
 
-        protected Stopwatch Timer { get; private set; }
-        protected TimeSpan TotalElapsed { get; private set; }
-        protected TimeSpan Elapsed { get; private set; }
-
-        protected TimeSpan previousElapsed;
-
-        public BaseAnimation()
+        public double Opacity
         {
-            Timer = new Stopwatch();
+            get
+            {
+                return opacity;
+            }
+            private set
+            {
+                opacity = value.Clamp(0, 1);
+            }
         }
 
-        public virtual void Start()
-        {
-            IsActive = true;
-            Timer.Restart();
-        }
+        public TimeSpan FadeInDuration { get; set; }
+        public TimeSpan Duration { get; set; }
+        public TimeSpan FadeOutDuration { get; set; }
 
-        public virtual void Stop()
-        {
-            Timer.Stop();
-            IsActive = false;
-        }
+        public TimeSpan TotalDuration => FadeInDuration + Duration + FadeOutDuration;
 
-        public virtual bool Update()
+        public override bool Update()
         {
             if (IsActive)
             {
-                TotalElapsed = Timer.Elapsed;
-                Elapsed = TotalElapsed - previousElapsed;
-                previousElapsed = TotalElapsed;
+                if (Timer.Elapsed < FadeInDuration)
+                {
+                    Opacity = Timer.Elapsed.TotalMilliseconds / FadeInDuration.TotalMilliseconds;
+                }
+                else
+                {
+                    Opacity = 1 - ((Timer.Elapsed - (FadeInDuration + Duration)).TotalMilliseconds / FadeOutDuration.TotalMilliseconds);
+                }
+
+                if (Opacity == 0)
+                {
+                    Timer.Stop();
+                }
             }
 
             return IsActive;

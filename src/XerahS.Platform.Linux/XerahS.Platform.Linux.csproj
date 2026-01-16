@@ -12,7 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
-    <ProjectReference Include="..\XerahS.ScreenCapture\XerahS.ScreenCapture.csproj" />
+    <ProjectReference Include="..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
     <ProjectReference Include="..\XerahS.Media\XerahS.Media.csproj" />
   </ItemGroup>
 

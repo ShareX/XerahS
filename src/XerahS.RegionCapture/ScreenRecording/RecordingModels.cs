@@ -25,7 +25,7 @@
 
 using System.Drawing;
 
-namespace XerahS.ScreenCapture.ScreenRecording;
+namespace XerahS.RegionCapture.ScreenRecording;
 
 /// <summary>
 /// Configuration options for starting a recording session
@@ -89,7 +89,7 @@ public class ScreenRecordingSettings
 
     /// <summary>
     /// Capture mouse cursor in recording
-    /// Stage 2: Window & Region Parity
+    /// Stage 2: Window &amp; Region Parity
     /// </summary>
     public bool ShowCursor { get; set; } = true;
 
