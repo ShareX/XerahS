@@ -50,15 +50,13 @@ namespace XerahS.UI.Services
 
         public async Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
         {
-            TroubleshootingHelper.Log("RegionSelection", "START", "SelectRegionAsync called");
             SKRectI selection = SKRectI.Empty;
 
             try
             {
-                // Use the new XerahS.Avalonia.RegionCapture library
+                // UI interaction must run on the UI thread
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    TroubleshootingHelper.Log("RegionSelection", "UI_THREAD", "Creating RegionCaptureService");
                     var captureService = new RegionCaptureService();
                     var result = await captureService.CaptureRegionAsync();
 
@@ -66,20 +64,12 @@ namespace XerahS.UI.Services
                     {
                         var r = result.Value;
                         selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
-                        TroubleshootingHelper.Log("RegionSelection", "UI_THREAD", $"Region selected: {selection}");
-                    }
-                    else
-                    {
-                        TroubleshootingHelper.Log("RegionSelection", "UI_THREAD", "Capture cancelled");
                     }
                 });
-
-                TroubleshootingHelper.Log("RegionSelection", "RESULT", $"Region selection returned: {selection} (IsEmpty={selection.IsEmpty}, Width={selection.Width}, Height={selection.Height})");
             }
-            catch (Exception ex)
+            catch
             {
-                TroubleshootingHelper.Log("RegionSelection", "ERROR", $"Exception in SelectRegionAsync: {ex.Message}");
-                TroubleshootingHelper.Log("RegionSelection", "ERROR", $"Stack trace: {ex.StackTrace}");
+                // Ignore errors to ensure robustness
             }
 
             return selection;
@@ -88,16 +78,16 @@ namespace XerahS.UI.Services
         public async Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
         {
             var totalStopwatch = Stopwatch.StartNew();
-            TroubleshootingHelper.Log("FullscreenCapture", "INIT", "Fullscreen capture started");
+            // TroubleshootingHelper.Log("FullscreenCapture", "INIT", "Fullscreen capture started");
 
             var captureStopwatch = Stopwatch.StartNew();
             var result = await _platformImpl.CaptureFullScreenAsync(options);
             captureStopwatch.Stop();
 
             var resultText = result == null ? "null" : $"{result.Width}x{result.Height}";
-            TroubleshootingHelper.Log("FullscreenCapture", "CAPTURE", $"Platform capture finished in {captureStopwatch.ElapsedMilliseconds}ms, Result={resultText}");
+            // TroubleshootingHelper.Log("FullscreenCapture", "CAPTURE", $"Platform capture finished in {captureStopwatch.ElapsedMilliseconds}ms, Result={resultText}");
             totalStopwatch.Stop();
-            TroubleshootingHelper.Log("FullscreenCapture", "TOTAL", $"Fullscreen capture total elapsed: {totalStopwatch.ElapsedMilliseconds}ms");
+            // TroubleshootingHelper.Log("FullscreenCapture", "TOTAL", $"Fullscreen capture total elapsed: {totalStopwatch.ElapsedMilliseconds}ms");
 
             return result;
         }
@@ -109,55 +99,20 @@ namespace XerahS.UI.Services
 
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
-            var regionStopwatch = Stopwatch.StartNew();
-            SKRectI selection = SKRectI.Empty;
-
-            // Use the new XerahS.Avalonia.RegionCapture library
-            await Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                TroubleshootingHelper.Log("RegionCapture", "UI_THREAD", "Creating RegionCaptureService");
-                var captureService = new RegionCaptureService();
-                var result = await captureService.CaptureRegionAsync();
-
-                if (result is not null)
-                {
-                    var r = result.Value;
-                    selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
-                    TroubleshootingHelper.Log("RegionCapture", "UI_THREAD", $"Region selected: {selection}");
-                }
-            });
+            // 1. Select Region (UI)
+            var selection = await SelectRegionAsync(options);
 
             if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
             {
-                TroubleshootingHelper.Log("RegionCapture", "CANCEL", "Selection was empty or cancelled. Aborting.");
                 return null;
             }
 
-            TroubleshootingHelper.Log("RegionCapture", "SELECTION", $"Received selection: {selection}");
-
-            // Small delay to allow overlay windows to close fully
+            // 2. Small delay to allow overlay windows to close fully
             await Task.Delay(60);
 
-            // Delegate capture to platform implementation
-            var captureSettings = !string.IsNullOrEmpty(options?.WorkflowId)
-                ? SettingsManager.GetWorkflowTaskSettings(options.WorkflowId)?.CaptureSettings ?? SettingsManager.DefaultTaskSettings.CaptureSettings
-                : SettingsManager.DefaultTaskSettings.CaptureSettings;
-            bool effectiveModern = options?.UseModernCapture ?? captureSettings.UseModernCapture;
-            TroubleshootingHelper.Log("RegionCapture", "CONFIG", $"Capture Configuration: UseModernCapture={effectiveModern} (Explicit={options?.UseModernCapture.ToString() ?? "null"}), ShowCursor={options?.ShowCursor ?? captureSettings.ShowCursor}");
-
-            TroubleshootingHelper.Log("RegionCapture", "CAPTURE", "Calling Platform.CaptureRectAsync...");
+            // 3. Capture Screen (Platform)
             var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
-
-            var captureStopwatch = Stopwatch.StartNew();
-            var result = await _platformImpl.CaptureRectAsync(skRect, options);
-            captureStopwatch.Stop();
-
-            TroubleshootingHelper.Log("RegionCapture", "CAPTURE", $"Platform.CaptureRectAsync returned in {captureStopwatch.ElapsedMilliseconds}ms. Result={(result != null ? "Bitmap" : "Null")}");
-
-            regionStopwatch.Stop();
-            TroubleshootingHelper.Log("RegionCapture", "TOTAL", $"Total region capture workflow time: {regionStopwatch.ElapsedMilliseconds}ms");
-
-            return result;
+            return await _platformImpl.CaptureRectAsync(skRect, options);
         }
 
         public Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)

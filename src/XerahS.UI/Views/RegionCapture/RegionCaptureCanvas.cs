@@ -26,72 +26,45 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
-using SkiaSharp;
-using System;
-using System.Runtime.InteropServices;
-using PixelFormat = Avalonia.Platform.PixelFormat;
+using SkiaSharp; // SKRect, SKPoint used for API compatibility with existing callers
 
 namespace XerahS.UI.Views.RegionCapture
 {
     /// <summary>
-    /// Custom control for high-performance rendering of the region capture overlay using SkiaSharp.
-    /// Replaces XAML shapes to avoid rendering artifacts on transparent windows.
+    /// Custom control for high-performance rendering of the region capture overlay.
+    /// Uses direct Avalonia DrawingContext rendering with CombinedGeometry for XOR-style cutout.
+    /// This approach eliminates per-frame bitmap allocations for smooth mouse tracking.
     /// </summary>
     public class RegionCaptureCanvas : Control
     {
-        private SKBitmap? _renderTarget;
         private SKRect _selection;
         private bool _isSelecting;
         private SKPoint _crosshairPosition;
-        
+
         // Configuration
         private bool _useDarkening = true;
         private const byte DarkenOpacity = 128; // 50% opacity
 
-        // Paints
-        private readonly SKPaint _overlayPaint;
-        private readonly SKPaint _selectionBorderWhite;
-        private readonly SKPaint _selectionBorderBlack;
-        private readonly SKPaint _crosshairPaint;
+        // Static brushes and pens for performance (no allocation per frame)
+        private static readonly IBrush DimBrush = new SolidColorBrush(Color.FromArgb(DarkenOpacity, 0, 0, 0));
+        private static readonly IPen SelectionPenWhite = new Pen(Brushes.White, 1);
+        private static readonly IPen SelectionPenBlack = new Pen(Brushes.Black, 1)
+        {
+            DashStyle = new DashStyle(new double[] { 4, 4 }, 0)
+        };
+        private static readonly IPen CrosshairPen = new Pen(new SolidColorBrush(Color.FromArgb(128, 255, 255, 255)), 1);
 
         public RegionCaptureCanvas()
         {
-            // Initialize paints
-            _overlayPaint = new SKPaint
-            {
-                Color = new SKColor(0, 0, 0, DarkenOpacity),
-                Style = SKPaintStyle.Fill
-            };
-
-            _selectionBorderWhite = new SKPaint
-            {
-                Color = SKColors.White,
-                Style = SKPaintStyle.Stroke,
-                StrokeWidth = 1,
-                IsAntialias = false // Sharp lines
-            };
-
-            _selectionBorderBlack = new SKPaint
-            {
-                Color = SKColors.Black,
-                Style = SKPaintStyle.Stroke,
-                StrokeWidth = 1,
-                PathEffect = SKPathEffect.CreateDash(new float[] { 4, 4 }, 0),
-                IsAntialias = false
-            };
-
-            _crosshairPaint = new SKPaint
-            {
-                Color = new SKColor(255, 255, 255, 128), // White, 50% opacity
-                StrokeWidth = 1,
-                IsAntialias = false
-            };
+            // Control setup - no per-instance allocations needed
+            IsHitTestVisible = false;
         }
 
         public void UpdateSelection(SKRect selection, bool isSelecting)
         {
+            if (_selection == selection && _isSelecting == isSelecting)
+                return; // Avoid redundant invalidation
+
             _selection = selection;
             _isSelecting = isSelecting;
             InvalidateVisual();
@@ -99,114 +72,84 @@ namespace XerahS.UI.Views.RegionCapture
 
         public void UpdateCursor(SKPoint position)
         {
+            if (_crosshairPosition == position)
+                return; // Avoid redundant invalidation
+
             _crosshairPosition = position;
             InvalidateVisual();
         }
-        
+
         public void SetDarkening(bool enable)
         {
+            if (_useDarkening == enable)
+                return; // Avoid redundant invalidation
+
             _useDarkening = enable;
             InvalidateVisual();
         }
 
         public override void Render(DrawingContext context)
         {
-            // Get current render scaling (DPI)
-            var scaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
+            var bounds = new Rect(0, 0, Bounds.Width, Bounds.Height);
 
-            // Calculate physical pixel size
-            int pixelWidth = (int)(Bounds.Width * scaling);
-            int pixelHeight = (int)(Bounds.Height * scaling);
-            
-            if (pixelWidth <= 0 || pixelHeight <= 0) return;
+            if (bounds.Width <= 0 || bounds.Height <= 0)
+                return;
 
-            // Ensure render target matches physical window size
-            if (_renderTarget == null || _renderTarget.Width != pixelWidth || _renderTarget.Height != pixelHeight)
-            {
-                _renderTarget?.Dispose();
-                _renderTarget = new SKBitmap(pixelWidth, pixelHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
-            }
-
-            // Draw to internal Skia bitmap (Physical Pixels)
-            using (var canvas = new SKCanvas(_renderTarget))
-            {
-                canvas.Clear(SKColors.Transparent);
-                canvas.Scale((float)scaling);
-                
-                RenderContent(canvas, Bounds.Width, Bounds.Height);
-            }
-
-            // Blit to Avalonia DrawingContext
-            // Create WriteableBitmap with matching physical size and DPI
-            var writeableBitmap = new WriteableBitmap(
-                new PixelSize(pixelWidth, pixelHeight),
-                new Vector(96 * scaling, 96 * scaling), 
-                PixelFormat.Bgra8888, 
-                AlphaFormat.Premul);
-
-            using (var frameBuffer = writeableBitmap.Lock())
-            {
-                var srcPtr = _renderTarget.GetPixels();
-                var dstPtr = frameBuffer.Address;
-                var size = pixelWidth * pixelHeight * 4;
-
-                var buffer = new byte[size];
-                Marshal.Copy(srcPtr, buffer, 0, size);
-                Marshal.Copy(buffer, 0, dstPtr, size);
-            }
-
-            // Draw bitmap filling the logical bounds
-            context.DrawImage(writeableBitmap, new Rect(0, 0, Bounds.Width, Bounds.Height));
-        }
-
-        private void RenderContent(SKCanvas canvas, double width, double height)
-        {
-            // 1. Draw Overlay (Darkening)
+            // 1. Draw Overlay (Darkening) with XOR-style cutout
             if (_useDarkening)
             {
                 if (_isSelecting && !_selection.IsEmpty)
                 {
-                    // Draw complex path with hole
-                    using (var path = new SKPath())
-                    {
-                        path.FillType = SKPathFillType.EvenOdd;
-                        path.AddRect(new SKRect(0, 0, (float)width, (float)height));
-                        path.AddRect(_selection);
-                        canvas.DrawPath(path, _overlayPaint);
-                    }
+                    // Use CombinedGeometry for efficient XOR-style rendering
+                    // This draws the dim overlay everywhere EXCEPT the selection
+                    var selectionRect = new Rect(_selection.Left, _selection.Top, _selection.Width, _selection.Height);
+
+                    var outerGeometry = new RectangleGeometry(bounds);
+                    var innerGeometry = new RectangleGeometry(selectionRect);
+                    var combinedGeometry = new CombinedGeometry(
+                        GeometryCombineMode.Exclude,
+                        outerGeometry,
+                        innerGeometry);
+
+                    context.DrawGeometry(DimBrush, null, combinedGeometry);
                 }
                 else
                 {
-                    // Full darkening
-                    canvas.DrawRect(0, 0, (float)width, (float)height, _overlayPaint);
+                    // Full darkening - no selection
+                    context.DrawRectangle(DimBrush, null, bounds);
                 }
             }
 
             // 2. Draw Crosshairs
-            // Draw crosshairs unless we have a completed selection (optional, usually crosshairs persist or hide on selection)
-            // Behaves like existing implementation: hide if not selecting (or handle externally)
-            // For now, let's draw them if we have a position
             if (_crosshairPosition.X >= 0 && _crosshairPosition.Y >= 0)
             {
-                canvas.DrawLine(0, _crosshairPosition.Y, (float)width, _crosshairPosition.Y, _crosshairPaint);
-                canvas.DrawLine(_crosshairPosition.X, 0, _crosshairPosition.X, (float)height, _crosshairPaint);
+                // Horizontal line
+                context.DrawLine(CrosshairPen,
+                    new Point(0, _crosshairPosition.Y),
+                    new Point(bounds.Width, _crosshairPosition.Y));
+
+                // Vertical line
+                context.DrawLine(CrosshairPen,
+                    new Point(_crosshairPosition.X, 0),
+                    new Point(_crosshairPosition.X, bounds.Height));
             }
 
             // 3. Draw Selection Border
             if (_isSelecting && !_selection.IsEmpty)
             {
-                // Draw white solid border
-                canvas.DrawRect(_selection, _selectionBorderWhite);
-                
-                // Draw black dashed border
-                canvas.DrawRect(_selection, _selectionBorderBlack);
+                var selectionRect = new Rect(_selection.Left, _selection.Top, _selection.Width, _selection.Height);
+
+                // Draw white solid border first
+                context.DrawRectangle(null, SelectionPenWhite, selectionRect);
+
+                // Draw black dashed border on top
+                context.DrawRectangle(null, SelectionPenBlack, selectionRect);
             }
         }
-        
+
         public void Cleanup()
         {
-             _renderTarget?.Dispose();
-             _renderTarget = null;
+            // No resources to dispose - static brushes are shared
         }
     }
 }

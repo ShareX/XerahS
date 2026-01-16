@@ -17,7 +17,7 @@ namespace XerahS.RegionCapture.UI;
 /// Custom control that handles region capture rendering and interaction.
 /// Uses composited rendering with XOR-style selection cutout.
 /// </summary>
-public sealed class RegionCaptureControl : Control
+public sealed class RegionCaptureControl : UserControl
 {
     private readonly MonitorInfo _monitor;
     private readonly CoordinateTranslationService _coordinateService;
@@ -79,6 +79,11 @@ public sealed class RegionCaptureControl : Control
         Focusable = true;
         ClipToBounds = true;
         Cursor = new Cursor(StandardCursorType.Cross);
+
+        // Fix for hit testing: Ensure the control has a background to capture mouse events
+        // Use a near-transparent color (Alpha=1) instead of fully transparent to ensure
+        // it works correctly with layered windows on Windows.
+        Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0));
     }
 
     public RegionCaptureControl(MonitorInfo monitor) : this(monitor, null)
@@ -97,17 +102,10 @@ public sealed class RegionCaptureControl : Control
 
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
-            if (_state == CaptureState.Hovering && _hoveredWindow is not null)
-            {
-                // Snap to window
-                _stateMachine.SnapToWindow();
-            }
-            else
-            {
-                // Start dragging
-                _stateMachine.BeginDrag(physicalPoint);
-                e.Pointer.Capture(this);
-            }
+            // Always start dragging/interaction
+            // If the user releases immediately (click), EndDrag will handle snapping to the hovered window.
+            _stateMachine.BeginDrag(physicalPoint);
+            e.Pointer.Capture(this);
 
             InvalidateVisual();
         }

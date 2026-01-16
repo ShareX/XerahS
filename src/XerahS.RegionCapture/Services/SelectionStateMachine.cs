@@ -119,7 +119,7 @@ public sealed class SelectionStateMachine
 
         _selectionRect = _selectionRect.Normalize();
 
-        // Minimum selection size of 3x3 pixels
+        // Check if selection is large enough to be considered a drag
         if (_selectionRect.Width > 3 && _selectionRect.Height > 3)
         {
             TransitionTo(CaptureState.Selected);
@@ -127,9 +127,20 @@ public sealed class SelectionStateMachine
         }
         else
         {
-            // Selection too small, go back to hovering
-            TransitionTo(CaptureState.Hovering);
-            _selectionRect = PixelRect.Empty;
+            // Selection too small - interpret as a click
+            // If we were hovering a window, snap to it
+            if (_hoveredWindow != null)
+            {
+                _selectionRect = _hoveredWindow.SnapBounds;
+                TransitionTo(CaptureState.Selected);
+                ConfirmSelection();
+            }
+            else
+            {
+                // No window hovered, just cancel back to hovering state
+                TransitionTo(CaptureState.Hovering);
+                _selectionRect = PixelRect.Empty;
+            }
         }
     }
 
