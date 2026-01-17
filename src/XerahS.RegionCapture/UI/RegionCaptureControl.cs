@@ -45,6 +45,7 @@ public sealed class RegionCaptureControl : UserControl
     private static readonly IBrush InfoBackgroundBrush = new SolidColorBrush(Color.FromArgb(220, 30, 30, 30));
 
     public event Action<PixelRect>? RegionSelected;
+    public event Action<PixelRect>? SelectionChanged;
     public event Action? Cancelled;
 
     // State machine accessors for rendering
@@ -66,6 +67,7 @@ public sealed class RegionCaptureControl : UserControl
         _stateMachine.SelectionConfirmed += OnSelectionConfirmed;
         _stateMachine.SelectionCancelled += OnSelectionCancelled;
         _stateMachine.StateChanged += _ => InvalidateVisual();
+        _stateMachine.SelectionChanged += OnSelectionChanged;
 
         _dimOpacity = options.DimOpacity;
         _enableWindowSnapping = options.EnableWindowSnapping;
@@ -91,6 +93,7 @@ public sealed class RegionCaptureControl : UserControl
     }
 
     private void OnSelectionConfirmed(PixelRect rect) => RegionSelected?.Invoke(rect);
+    private void OnSelectionChanged(PixelRect rect) => SelectionChanged?.Invoke(rect);
     private void OnSelectionCancelled() => Cancelled?.Invoke();
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)

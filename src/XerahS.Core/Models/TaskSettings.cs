@@ -31,7 +31,7 @@ using Newtonsoft.Json;
 using XerahS.Common;
 using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
-using XerahS.ScreenCapture.ScreenRecording;
+using XerahS.RegionCapture.ScreenRecording;
 using XerahS.Platform.Abstractions;
 
 namespace XerahS.Core;
@@ -463,7 +463,9 @@ public class TaskSettingsAdvanced
 
     public TaskSettingsAdvanced()
     {
+#pragma warning disable CA1416 // Validate platform compatibility
         this.ApplyDefaultPropertyValues();
+#pragma warning restore CA1416 // Validate platform compatibility
         ImageExtensions = FileHelpers.ImageFileExtensions.ToList();
         TextExtensions = FileHelpers.TextFileExtensions.ToList();
     }

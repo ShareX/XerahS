@@ -110,6 +110,15 @@ namespace XerahS.Platform.Abstractions
         /// <param name="handle">Window handle to activate</param>
         /// <returns>True if window was successfully activated</returns>
         bool ActivateWindow(IntPtr handle);
+
+        /// <summary>
+        /// Makes a window click-through (transparent to mouse input).
+        /// On Windows, this adds WS_EX_TRANSPARENT and WS_EX_LAYERED extended styles.
+        /// On other platforms, this may be a no-op or use platform-specific mechanisms.
+        /// </summary>
+        /// <param name="handle">Window handle to make click-through</param>
+        /// <returns>True if successful, false otherwise</returns>
+        bool SetWindowClickThrough(IntPtr handle);
     }
 
     /// <summary>

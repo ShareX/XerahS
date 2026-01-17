@@ -26,7 +26,7 @@
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Helpers;
-using XerahS.ScreenCapture.ScreenRecording;
+using XerahS.RegionCapture.ScreenRecording;
 using System.Runtime.InteropServices;
 
 namespace XerahS.Core.Managers;
@@ -356,11 +356,11 @@ public class ScreenRecordingManager
         if (useFallback)
         {
             // Direct instantiation of FFmpeg fallback service
-            return new XerahS.ScreenCapture.ScreenRecording.FFmpegRecordingService();
+            return new XerahS.RegionCapture.ScreenRecording.FFmpegRecordingService();
         }
 
         // Direct instantiation of Native service
-        return new XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService();
+        return new XerahS.RegionCapture.ScreenRecording.ScreenRecorderService();
     }
 
         private static bool ShouldForceFallback(RecordingOptions options)

@@ -25,7 +25,7 @@
 
 using Vortice.DXGI;
 using System.Runtime.InteropServices;
-using XerahS.ScreenCapture.ScreenRecording;
+using XerahS.RegionCapture.ScreenRecording;
 
 namespace XerahS.Platform.Windows.Recording;
 

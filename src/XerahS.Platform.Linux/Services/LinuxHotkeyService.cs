@@ -1,0 +1,401 @@
+using Avalonia.Input;
+using XerahS.Common;
+using XerahS.Platform.Abstractions;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Threading;
+using global::Avalonia.Threading;
+using HotkeyStatus = XerahS.Platform.Abstractions.HotkeyStatus;
+
+namespace XerahS.Platform.Linux.Services;
+
+public sealed class LinuxHotkeyService : IHotkeyService
+{
+    private readonly IntPtr _display;
+    private readonly IntPtr _rootWindow;
+    private readonly Thread? _eventThread;
+    private readonly CancellationTokenSource _cancellation = new();
+    private readonly Dictionary<ushort, HotkeyRegistration> _registrations = new();
+    private readonly object _lock = new();
+    private ushort _nextId = 1;
+    private bool _isDisposed;
+
+    public event EventHandler<HotkeyTriggeredEventArgs>? HotkeyTriggered;
+    public bool IsSuspended { get; set; }
+
+    public LinuxHotkeyService()
+    {
+        _display = NativeMethods.XOpenDisplay(null);
+        if (_display == IntPtr.Zero)
+        {
+            DebugHelper.WriteLine("LinuxHotkeyService: Unable to open X display; hotkeys disabled.");
+            return;
+        }
+
+        _rootWindow = NativeMethods.XDefaultRootWindow(_display);
+        NativeMethods.XSelectInput(_display, _rootWindow, NativeMethods.KeyPressMask);
+
+        _eventThread = new Thread(EventLoop)
+        {
+            IsBackground = true,
+            Name = "LinuxHotkeyEventLoop"
+        };
+        _eventThread.Start();
+    }
+
+    private void EventLoop()
+    {
+        while (!_cancellation.IsCancellationRequested)
+        {
+            if (_display == IntPtr.Zero)
+            {
+                Thread.Sleep(100);
+                continue;
+            }
+
+            if (NativeMethods.XPending(_display) > 0)
+            {
+                _ = NativeMethods.XNextEvent(_display, out var xevent);
+                if (xevent.type == NativeMethods.KeyPress)
+                {
+                    try
+                    {
+                        HandleKeyPress(xevent.key);
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugHelper.WriteException(ex, "LinuxHotkeyService: Exception in event loop");
+                    }
+                }
+                continue;
+            }
+
+            Thread.Sleep(10);
+        }
+    }
+
+    private void HandleKeyPress(XKeyEvent keyEvent)
+    {
+        if (IsSuspended)
+        {
+            return;
+        }
+
+        HotkeyInfo? triggered = null;
+        lock (_lock)
+        {
+            foreach (var registration in _registrations.Values)
+            {
+                if (registration.Keycode != keyEvent.keycode)
+                {
+                    continue;
+                }
+
+                if ((keyEvent.state & registration.BaseModifierMask) == registration.BaseModifierMask)
+                {
+                    triggered = registration.Info;
+                    break;
+                }
+            }
+        }
+
+        if (triggered != null)
+        {
+            var args = new HotkeyTriggeredEventArgs(triggered);
+            Dispatcher.UIThread.Post(() =>
+            {
+                HotkeyTriggered?.Invoke(this, args);
+            });
+        }
+    }
+
+    public bool RegisterHotkey(HotkeyInfo hotkeyInfo)
+    {
+        if (!hotkeyInfo.IsValid)
+        {
+            hotkeyInfo.Status = HotkeyStatus.NotConfigured;
+            return false;
+        }
+
+        if (_display == IntPtr.Zero)
+        {
+            hotkeyInfo.Status = HotkeyStatus.UnsupportedPlatform;
+            return false;
+        }
+
+        lock (_lock)
+        {
+            if (hotkeyInfo.Id == 0)
+            {
+                hotkeyInfo.Id = _nextId++;
+            }
+
+            int keycode = GetKeycode(hotkeyInfo.Key);
+            if (keycode == 0)
+            {
+                hotkeyInfo.Status = HotkeyStatus.Failed;
+                DebugHelper.WriteLine($"LinuxHotkeyService: Unable to map key {hotkeyInfo.Key}");
+                return false;
+            }
+
+            var baseMask = GetModifierMask(hotkeyInfo.Modifiers);
+            var registration = new HotkeyRegistration(hotkeyInfo.Id, keycode, baseMask, hotkeyInfo);
+
+            var (success, message) = TryGrab(registration);
+            if (!success)
+            {
+                hotkeyInfo.Status = HotkeyStatus.Failed;
+                DebugHelper.WriteLine($"LinuxHotkeyService: Failed to grab {hotkeyInfo}. {message}");
+                return false;
+            }
+
+            _registrations[hotkeyInfo.Id] = registration;
+            hotkeyInfo.Status = HotkeyStatus.Registered;
+            return true;
+        }
+    }
+
+    public bool UnregisterHotkey(HotkeyInfo hotkeyInfo)
+    {
+        if (_display == IntPtr.Zero || hotkeyInfo.Id == 0)
+        {
+            hotkeyInfo.Status = HotkeyStatus.NotConfigured;
+            return false;
+        }
+
+        lock (_lock)
+        {
+            if (!_registrations.TryGetValue(hotkeyInfo.Id, out var registration))
+            {
+                hotkeyInfo.Status = HotkeyStatus.NotConfigured;
+                return false;
+            }
+
+            foreach (var mask in registration.GrabMasks)
+            {
+                NativeMethods.XUngrabKey(_display, registration.Keycode, mask, _rootWindow);
+            }
+
+            NativeMethods.XFlush(_display);
+            _registrations.Remove(hotkeyInfo.Id);
+            hotkeyInfo.Status = HotkeyStatus.NotConfigured;
+            return true;
+        }
+    }
+
+    public void UnregisterAll()
+    {
+        if (_display == IntPtr.Zero)
+        {
+            return;
+        }
+
+        lock (_lock)
+        {
+            foreach (var registration in _registrations.Values)
+            {
+                foreach (var mask in registration.GrabMasks)
+                {
+                    NativeMethods.XUngrabKey(_display, registration.Keycode, mask, _rootWindow);
+                }
+            }
+
+            NativeMethods.XFlush(_display);
+            _registrations.Clear();
+        }
+    }
+
+    public bool IsRegistered(HotkeyInfo hotkeyInfo)
+    {
+        lock (_lock)
+        {
+            return hotkeyInfo.Id != 0 && _registrations.ContainsKey(hotkeyInfo.Id);
+        }
+    }
+
+    private (bool success, string? error) TryGrab(HotkeyRegistration registration)
+    {
+        var grabbed = new List<uint>();
+
+        foreach (var mask in registration.GrabMasks)
+        {
+            int result = NativeMethods.XGrabKey(_display, registration.Keycode, mask, _rootWindow, false, NativeMethods.GrabModeAsync, NativeMethods.GrabModeAsync);
+            if (result != NativeMethods.GrabSuccess)
+            {
+                foreach (var rollbackMask in grabbed)
+                {
+                    NativeMethods.XUngrabKey(_display, registration.Keycode, rollbackMask, _rootWindow);
+                }
+                NativeMethods.XFlush(_display);
+                return (false, $"XGrabKey returned {result}");
+            }
+
+            grabbed.Add(mask);
+        }
+
+        NativeMethods.XFlush(_display);
+        return (true, null);
+    }
+
+    private static uint GetModifierMask(KeyModifiers modifiers)
+    {
+        uint mask = 0;
+        if (modifiers.HasFlag(KeyModifiers.Control))
+        {
+            mask |= NativeMethods.ControlMask;
+        }
+
+        if (modifiers.HasFlag(KeyModifiers.Shift))
+        {
+            mask |= NativeMethods.ShiftMask;
+        }
+
+        if (modifiers.HasFlag(KeyModifiers.Alt))
+        {
+            mask |= NativeMethods.Mod1Mask;
+        }
+
+        if (modifiers.HasFlag(KeyModifiers.Meta))
+        {
+            mask |= NativeMethods.Mod4Mask;
+        }
+
+        return mask;
+    }
+
+    private int GetKeycode(Key key)
+    {
+        var keysym = ConvertKeyToKeysym(key);
+        if (keysym == IntPtr.Zero)
+        {
+            return 0;
+        }
+
+        var keycode = NativeMethods.XKeysymToKeycode(_display, keysym);
+        if (keycode == 0)
+        {
+            return 0;
+        }
+
+        return keycode;
+    }
+
+    private static IntPtr ConvertKeyToKeysym(Key key)
+    {
+        if (SpecialKeyNames.TryGetValue(key, out var symbol))
+        {
+            return NativeMethods.XStringToKeysym(symbol);
+        }
+
+        if (key >= Key.A && key <= Key.Z)
+        {
+            return NativeMethods.XStringToKeysym(key.ToString());
+        }
+
+        if (key >= Key.D0 && key <= Key.D9)
+        {
+            return NativeMethods.XStringToKeysym($"{(int)(key - Key.D0)}");
+        }
+
+        if (key >= Key.F1 && key <= Key.F24)
+        {
+            return NativeMethods.XStringToKeysym(key.ToString());
+        }
+
+        if (key >= Key.NumPad0 && key <= Key.NumPad9)
+        {
+            return NativeMethods.XStringToKeysym("KP_" + (int)(key - Key.NumPad0));
+        }
+
+        return IntPtr.Zero;
+    }
+
+    private static readonly Dictionary<Key, string> SpecialKeyNames = new()
+    {
+        { Key.PrintScreen, "Print" },
+        { Key.Scroll, "Scroll_Lock" },
+        { Key.Pause, "Pause" },
+        { Key.CapsLock, "Caps_Lock" },
+        { Key.Space, "space" },
+        { Key.Tab, "Tab" },
+        { Key.Return, "Return" },
+        { Key.Enter, "Return" },
+        { Key.Back, "BackSpace" },
+        { Key.Escape, "Escape" },
+        { Key.Delete, "Delete" },
+        { Key.Insert, "Insert" },
+        { Key.Home, "Home" },
+        { Key.End, "End" },
+        { Key.PageUp, "Page_Up" },
+        { Key.PageDown, "Page_Down" },
+        { Key.Left, "Left" },
+        { Key.Right, "Right" },
+        { Key.Up, "Up" },
+        { Key.Down, "Down" },
+        { Key.NumLock, "Num_Lock" },
+        { Key.OemPlus, "plus" },
+        { Key.OemMinus, "minus" },
+        { Key.OemComma, "comma" },
+        { Key.OemPeriod, "period" },
+        { Key.Oem1, "semicolon" },
+        { Key.Oem2, "slash" },
+        { Key.Oem3, "grave" },
+        { Key.Oem4, "bracketleft" },
+        { Key.Oem5, "backslash" },
+        { Key.Oem6, "bracketright" },
+        { Key.Oem7, "apostrophe" },
+        { Key.Apps, "Menu" },
+        { Key.Divide, "KP_Divide" },
+        { Key.Multiply, "KP_Multiply" },
+        { Key.Add, "KP_Add" },
+        { Key.Subtract, "KP_Subtract" },
+        { Key.Decimal, "KP_Decimal" }
+    };
+
+    private sealed class HotkeyRegistration
+    {
+        public ushort Id { get; }
+        public int Keycode { get; }
+        public uint BaseModifierMask { get; }
+        public IReadOnlyList<uint> GrabMasks { get; }
+        public HotkeyInfo Info { get; }
+
+        public HotkeyRegistration(ushort id, int keycode, uint baseModifierMask, HotkeyInfo info)
+        {
+            Id = id;
+            Keycode = keycode;
+            BaseModifierMask = baseModifierMask;
+            Info = info;
+            GrabMasks = BuildModifierMasks(baseModifierMask);
+        }
+
+        private static IReadOnlyList<uint> BuildModifierMasks(uint baseMask)
+        {
+            var masks = new HashSet<uint> { baseMask };
+            masks.Add(baseMask | NativeMethods.LockMask);
+            masks.Add(baseMask | NativeMethods.Mod2Mask);
+            masks.Add(baseMask | NativeMethods.LockMask | NativeMethods.Mod2Mask);
+            return new List<uint>(masks);
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _cancellation.Cancel();
+        _eventThread?.Join(500);
+        UnregisterAll();
+
+        if (_display != IntPtr.Zero)
+        {
+            NativeMethods.XCloseDisplay(_display);
+        }
+
+        _isDisposed = true;
+        GC.SuppressFinalize(this);
+    }
+}

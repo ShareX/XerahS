@@ -1,3 +1,4 @@
+#pragma warning disable CA1416 // Validate platform compatibility
 using Newtonsoft.Json;
 // TODO TODO_IMAGE_EFFECTS using ShareX.Editor.ImageEffects;
 using System.ComponentModel;

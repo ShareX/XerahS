@@ -202,5 +202,12 @@ namespace XerahS.Platform.Linux
             // Use SetForegroundWindow which does XSetInputFocus + XRaiseWindow
             return SetForegroundWindow(handle);
         }
+
+        public bool SetWindowClickThrough(IntPtr handle)
+        {
+            // Click-through windows are not easily supported on X11/Wayland without compositor extensions.
+            // This is a no-op for Linux; recording borders will still be visible but interactable.
+            return false;
+        }
     }
 }

@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using XerahS.Core;
-using XerahS.ScreenCapture.ScreenRecording;
+using XerahS.RegionCapture.ScreenRecording;
 using CommunityToolkit.Mvvm.Input;
 using Avalonia;
 using Avalonia.Controls;

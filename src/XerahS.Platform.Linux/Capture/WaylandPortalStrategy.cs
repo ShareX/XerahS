@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
+using ShareX.Avalonia.Platform.Abstractions;
 using ShareX.Avalonia.Platform.Abstractions.Capture;
 using SkiaSharp;
+using Tmds.DBus;
+using XerahS.Common;
 
 namespace ShareX.Avalonia.Platform.Linux.Capture;
 
@@ -16,6 +19,9 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
 {
     public string Name => "Wayland Portal";
 
+    private const string PortalBusName = "org.freedesktop.portal.Desktop";
+    private static readonly ObjectPath PortalObjectPath = new("/org/freedesktop/portal/desktop");
+
     public static bool IsSupported()
     {
         var sessionType = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE");
@@ -24,15 +30,12 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
 
     public MonitorInfo[] GetMonitors()
     {
-        // Wayland doesn't expose monitor info easily without portal
-        // Fall back to parsing environment or using X11 compatibility
         var x11Strategy = new X11GetImageStrategy();
         if (X11GetImageStrategy.IsSupported())
         {
             return x11Strategy.GetMonitors();
         }
 
-        // Minimal fallback: single virtual monitor
         return new[]
         {
             new MonitorInfo
@@ -40,33 +43,22 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
                 Id = "0",
                 Name = "Wayland Display",
                 IsPrimary = true,
-                Bounds = new PhysicalRectangle(0, 0, 1920, 1080), // Assumption
+                Bounds = new PhysicalRectangle(0, 0, 1920, 1080),
                 WorkingArea = new PhysicalRectangle(0, 0, 1920, 1040),
-                // [2026-01-15] ScaleFactor = 1.0 is CORRECT for Wayland Portal
-                // The portal returns pre-scaled screenshots from the compositor.
-                // Wayland compositors handle all DPI scaling internally, so we
-                // receive the final image in physical pixels without needing
-                // additional scale factor adjustments. This is different from
-                // X11 which requires explicit per-monitor DPI calculations.
                 ScaleFactor = 1.0,
                 BitsPerPixel = 32
             }
         };
     }
 
-    public async Task<CapturedBitmap> CaptureRegionAsync(
-        PhysicalRectangle physicalRegion,
-        RegionCaptureOptions options)
+    public async Task<CapturedBitmap> CaptureRegionAsync(PhysicalRectangle physicalRegion, RegionCaptureOptions options)
     {
-        // TODO: Implement xdg-desktop-portal D-Bus integration
-        // This requires:
-        // 1. D-Bus connection to org.freedesktop.portal.Desktop
-        // 2. Call Screenshot method with window handle and options
-        // 3. Handle user permission dialog
-        // 4. Retrieve saved screenshot from file URI
-        // 5. Crop to requested region
-        //
-        // For now, fall back to CLI tools
+        var captured = await CaptureWithPortalAsync(physicalRegion);
+        if (captured != null)
+        {
+            return captured;
+        }
+
         var cliStrategy = new LinuxCliCaptureStrategy();
         return await cliStrategy.CaptureRegionAsync(physicalRegion, options);
     }
@@ -83,12 +75,99 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
             SupportsPerMonitorDpi = true,
             SupportsMonitorHotplug = true,
             MaxCaptureResolution = 16384,
-            RequiresPermission = true // User must approve each capture
+            RequiresPermission = true
         };
     }
 
     public void Dispose()
     {
-        // No resources to clean up
+    }
+
+    private static async Task<CapturedBitmap?> CaptureWithPortalAsync(PhysicalRectangle region)
+    {
+        try
+        {
+            using var connection = new Connection(Address.Session);
+            await connection.ConnectAsync();
+
+            var portal = connection.CreateProxy<IScreenshotPortal>(PortalBusName, PortalObjectPath);
+            var requestPath = await portal.ScreenshotAsync(string.Empty, new Dictionary<string, object> { ["modal"] = false });
+
+            var request = connection.CreateProxy<IPortalRequest>(PortalBusName, requestPath);
+            var (response, results) = await request.WaitForResponseAsync();
+
+            if (response != 0)
+            {
+                return null;
+            }
+
+            if (!results.TryGetValue("uri", out var uriValue) || uriValue is not string uriStr)
+            {
+                return null;
+            }
+
+            var uri = new Uri(uriStr);
+            if (!uri.IsFile || string.IsNullOrEmpty(uri.LocalPath) || !File.Exists(uri.LocalPath))
+            {
+                return null;
+            }
+
+            using var stream = File.OpenRead(uri.LocalPath);
+            var bitmap = SKBitmap.Decode(stream);
+            if (bitmap == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                return CropToRegion(bitmap, region);
+            }
+            finally
+            {
+                bitmap.Dispose();
+            }
+        }
+        catch (DBusException ex)
+        {
+            DebugHelper.WriteException(ex, "WaylandPortalStrategy: Portal capture failed");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "WaylandPortalStrategy: Unexpected capture failure");
+            return null;
+        }
+    }
+
+    private static CapturedBitmap? CropToRegion(SKBitmap source, PhysicalRectangle region)
+    {
+        var clamped = ClampRegion(region, source.Width, source.Height);
+        if (clamped.Width <= 0 || clamped.Height <= 0)
+        {
+            return null;
+        }
+
+        var cropped = new SKBitmap(clamped.Width, clamped.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+        using var canvas = new SKCanvas(cropped);
+            canvas.DrawBitmap(source, new SKRectI(clamped.X, clamped.Y, clamped.X + clamped.Width, clamped.Y + clamped.Height), new SKRect(0, 0, clamped.Width, clamped.Height));
+
+            return new CapturedBitmap(cropped, new PhysicalRectangle(clamped.X, clamped.Y, clamped.Width, clamped.Height), 1.0);
+    }
+
+    private static PhysicalRectangle ClampRegion(PhysicalRectangle region, int width, int height)
+    {
+        var left = Math.Max(0, region.X);
+        var top = Math.Max(0, region.Y);
+        var right = Math.Min(width, region.X + region.Width);
+        var bottom = Math.Min(height, region.Y + region.Height);
+
+        return new PhysicalRectangle(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top));
+    }
+
+    [DBusInterface("org.freedesktop.portal.Screenshot")]
+    private interface IScreenshotPortal : IDBusObject
+    {
+        Task<ObjectPath> ScreenshotAsync(string parentWindow, IDictionary<string, object> options);
     }
 }

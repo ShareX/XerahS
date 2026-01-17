@@ -34,7 +34,7 @@ public sealed class OverlayManager : IDisposable
     /// <summary>
     /// Creates and shows overlay windows for all monitors.
     /// </summary>
-    public async Task<PixelRect?> ShowOverlaysAsync()
+    public async Task<PixelRect?> ShowOverlaysAsync(Action<PixelRect>? onSelectionChanged = null)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -48,7 +48,7 @@ public sealed class OverlayManager : IDisposable
             // Create one overlay per monitor
             foreach (var monitor in monitors)
             {
-                var overlay = new OverlayWindow(monitor, _completionSource);
+                var overlay = new OverlayWindow(monitor, _completionSource, onSelectionChanged);
                 _overlays.Add(overlay);
             }
 
@@ -57,6 +57,13 @@ public sealed class OverlayManager : IDisposable
             {
                 overlay.Show();
                 overlay.Activate();
+
+#if WINDOWS
+                if (overlay.TryGetPlatformHandle()?.Handle is { } handle)
+                {
+                    Platform.Windows.NativeWindowService.ExcludeHandle(handle);
+                }
+#endif
             }
 
             // Focus the primary monitor's overlay
@@ -83,6 +90,13 @@ public sealed class OverlayManager : IDisposable
     {
         foreach (var overlay in _overlays)
         {
+#if WINDOWS
+            if (overlay.TryGetPlatformHandle()?.Handle is { } handle)
+            {
+                Platform.Windows.NativeWindowService.RemoveExcludedHandle(handle);
+            }
+#endif
+
             try
             {
                 overlay.Close();

@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -38,6 +38,7 @@ namespace XerahS.Platform.Abstractions
         private static IWindowService? _windowService;
         private static IInputService? _inputService;
         private static IFontService? _fontService;
+        private static IShellIntegrationService? _shellIntegrationService;
 
         public static IPlatformInfo PlatformInfo
         {
@@ -73,6 +74,12 @@ namespace XerahS.Platform.Abstractions
         {
             get => _fontService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
             set => _fontService = value;
+        }
+
+        public static IShellIntegrationService ShellIntegration
+        {
+            get => _shellIntegrationService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
+            set => _shellIntegrationService = value;
         }
 
         private static IHotkeyService? _hotkeyService;
@@ -115,22 +122,34 @@ namespace XerahS.Platform.Abstractions
         /// </summary>
         public static bool IsToastServiceInitialized => _toastService != null;
 
+        private static IStartupService? _startupService;
+        public static IStartupService Startup
+        {
+            get => _startupService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
+            set => _startupService = value;
+        }
 
         /// <summary>
         /// Checks if platform services have been initialized
         /// </summary>
         public static bool IsInitialized =>
-            _platformInfo != null && _screenService != null && _clipboardService != null && _windowService != null && _screenCaptureService != null && _hotkeyService != null && _inputService != null && _fontService != null;
+            _platformInfo != null && _screenService != null && _clipboardService != null && _windowService != null && _screenCaptureService != null && _hotkeyService != null && _inputService != null && _fontService != null && _startupService != null;
 
-        /// <summary>
-        /// Initializes platform services with provided implementations
-        /// </summary>
         private static ISystemService? _systemService;
         public static ISystemService System
         {
             get => _systemService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
             set => _systemService = value;
         }
+
+        private static IDiagnosticService? _diagnosticService;
+        public static IDiagnosticService Diagnostic
+        {
+            get => _diagnosticService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
+            set => _diagnosticService = value;
+        }
+
+
 
         /// <summary>
         /// Initializes platform services with provided implementations
@@ -144,7 +163,10 @@ namespace XerahS.Platform.Abstractions
             IHotkeyService hotkeyService,
             IInputService inputService,
             IFontService fontService,
+            IStartupService startupService,
             ISystemService systemService,
+            IDiagnosticService diagnosticService,
+            IShellIntegrationService? shellIntegrationService = null,
             INotificationService? notificationService = null)
         {
             _platformInfo = platformInfo ?? throw new ArgumentNullException(nameof(platformInfo));
@@ -155,9 +177,13 @@ namespace XerahS.Platform.Abstractions
             _screenCaptureService = screenCaptureService ?? throw new ArgumentNullException(nameof(screenCaptureService));
             _hotkeyService = hotkeyService ?? throw new ArgumentNullException(nameof(hotkeyService));
             _fontService = fontService ?? throw new ArgumentNullException(nameof(fontService));
+            _startupService = startupService ?? throw new ArgumentNullException(nameof(startupService));
             _systemService = systemService ?? throw new ArgumentNullException(nameof(systemService));
+            _diagnosticService = diagnosticService ?? throw new ArgumentNullException(nameof(diagnosticService));
+            _shellIntegrationService = shellIntegrationService;  // Optional - null means shell integration not available
             _notificationService = notificationService;  // Optional - null means no native notifications
         }
+
 
         public static void RegisterUIService(IUIService uiService)
         {
@@ -171,7 +197,6 @@ namespace XerahS.Platform.Abstractions
         {
             _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
         }
-
 
         /// <summary>
         /// Resets all platform services (mainly for testing)
@@ -189,6 +214,9 @@ namespace XerahS.Platform.Abstractions
             _notificationService = null;
             _toastService = null;
             _systemService = null;
+            _startupService = null;
+            _diagnosticService = null;
+            _shellIntegrationService = null;
         }
     }
 }

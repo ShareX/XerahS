@@ -31,7 +31,7 @@ using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Hotkeys;
 using XerahS.Core.Managers;
-using XerahS.ScreenCapture.ScreenRecording;
+using XerahS.RegionCapture.ScreenRecording;
 using HotkeyInfo = XerahS.Platform.Abstractions.HotkeyInfo;
 
 namespace XerahS.UI.ViewModels;
@@ -289,7 +289,7 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(DurationFormatted));
     }
 
-    private void OnRecordingStarted(object? sender, ScreenCapture.ScreenRecording.RecordingStartedEventArgs e)
+    private void OnRecordingStarted(object? sender, RegionCapture.ScreenRecording.RecordingStartedEventArgs e)
     {
         // Show border window with appropriate color based on recording technology
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -318,15 +318,15 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         });
     }
 
-    private System.Drawing.Rectangle GetRecordingBounds(ScreenCapture.ScreenRecording.RecordingOptions options)
+    private System.Drawing.Rectangle GetRecordingBounds(RegionCapture.ScreenRecording.RecordingOptions options)
     {
         switch (options.Mode)
         {
-            case ScreenCapture.ScreenRecording.CaptureMode.Region:
+            case RegionCapture.ScreenRecording.CaptureMode.Region:
                 // Use the specified region
                 return options.Region;
 
-            case ScreenCapture.ScreenRecording.CaptureMode.Window:
+            case RegionCapture.ScreenRecording.CaptureMode.Window:
                 // Get window bounds
                 if (options.TargetWindowHandle != IntPtr.Zero)
                 {
@@ -340,9 +340,9 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
                     }
                 }
                 // Fallthrough to screen mode if window bounds fail
-                goto case ScreenCapture.ScreenRecording.CaptureMode.Screen;
+                goto case RegionCapture.ScreenRecording.CaptureMode.Screen;
 
-            case ScreenCapture.ScreenRecording.CaptureMode.Screen:
+            case RegionCapture.ScreenRecording.CaptureMode.Screen:
             default:
                 // Get primary screen bounds
                 var screens = Platform.Abstractions.PlatformServices.Screen.GetAllScreens();

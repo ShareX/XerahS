@@ -28,7 +28,7 @@ using XerahS.Core.Helpers;
 using XerahS.Core.Managers;
 using XerahS.Core.Tasks.Processors;
 using XerahS.Platform.Abstractions;
-using XerahS.ScreenCapture.ScreenRecording;
+using XerahS.RegionCapture.ScreenRecording;
 using SkiaSharp;
 using System.Diagnostics;
 using XerahS.History;

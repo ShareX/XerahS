@@ -26,7 +26,7 @@
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using XerahS.Platform.MacOS.Services;
-using XerahS.ScreenCapture.ScreenRecording;
+using XerahS.RegionCapture.ScreenRecording;
 
 namespace XerahS.Platform.MacOS
 {
@@ -58,7 +58,10 @@ namespace XerahS.Platform.MacOS
                 hotkeyService: new MacOSHotkeyService(),
                 inputService: new MacOSInputService(),
                 fontService: new MacOSFontService(),
-                systemService: new MacOSSystemService()
+                startupService: new UnsupportedStartupService(),
+                systemService: new MacOSSystemService(),
+                notificationService: new MacOSNotificationService(),
+                diagnosticService: new Services.MacOSDiagnosticService()
             );
         }
 

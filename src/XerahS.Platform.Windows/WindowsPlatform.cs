@@ -64,8 +64,11 @@ namespace XerahS.Platform.Windows
                 hotkeyService: new WindowsHotkeyService(),
                 inputService: new WindowsInputService(),
                 fontService: new WindowsFontService(),
+                startupService: new UnsupportedStartupService(),
                 systemService: new Services.WindowsSystemService(),
-                notificationService: new WindowsNotificationService()
+                shellIntegrationService: new Services.WindowsShellIntegrationService(),
+                notificationService: new WindowsNotificationService(),
+                diagnosticService: new Services.WindowsDiagnosticService()
             );
 
             // Register AUMID for UWP Toast Notifications
@@ -121,11 +124,11 @@ namespace XerahS.Platform.Windows
 
                     // Set up factory functions for native recording
                     Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "Setting CaptureSourceFactory...");
-                    XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService.CaptureSourceFactory =
+                    XerahS.RegionCapture.ScreenRecording.ScreenRecorderService.CaptureSourceFactory =
                         () => new Recording.WindowsGraphicsCaptureSource();
 
                     Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "Setting EncoderFactory...");
-                    XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService.EncoderFactory =
+                    XerahS.RegionCapture.ScreenRecording.ScreenRecorderService.EncoderFactory =
                         () => new Recording.MediaFoundationEncoder();
 
                     Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "✓ Factories registered successfully");
@@ -140,8 +143,8 @@ namespace XerahS.Platform.Windows
 
                     // Set up FFmpeg fallback
                     Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "Setting FallbackServiceFactory (FFmpeg)...");
-                    XerahS.ScreenCapture.ScreenRecording.ScreenRecorderService.FallbackServiceFactory =
-                        () => new XerahS.ScreenCapture.ScreenRecording.FFmpegRecordingService();
+                    XerahS.RegionCapture.ScreenRecording.ScreenRecorderService.FallbackServiceFactory =
+                        () => new XerahS.RegionCapture.ScreenRecording.FFmpegRecordingService();
                 }
 
                 Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "=== WindowsPlatform.InitializeRecording() COMPLETE ===");

@@ -1,4 +1,4 @@
-# ShareX.Avalonia Agent Instructions
+# XerahS (formerly ShareX.Avalonia) Agent Instructions
 
 ## Project Overview
 **XerahS** - The Avalonia UI implementation of ShareX.
@@ -36,6 +36,10 @@ This project uses multiple AI developer agents working in parallel.
 ## Development Environment & Configuration
 
 ### Build Strategy
+- **Strict Build Integrity**:
+  - **NEVER** change `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` to false to build.
+  - Instead, you MUST fix the warnings or errors causing the build failure.
+  - If a warning is platform-specific (e.g., CA1416), use proper guards `OperatingSystem.IsWindows()` or `#if WINDOWS`.
 - **Target Framework**: When configuring projects to target Windows, use the **explicit TFM**: `net10.0-windows10.0.19041.0`.
   - **Do NOT** use `net10.0-windows` with a separate `<TargetPlatformVersion>`. This avoids "Windows Metadata not provided" errors.
 - **SkiaSharp Version**: **MUST use version 2.88.9** (until Avalonia 12 is released). **Do NOT upgrade to 3.x**.
@@ -114,16 +118,17 @@ if (string.IsNullOrEmpty(workflowId)) return;
 ## Architecture & Porting Rules
 
 ### Main Goal
-Build `ShareX.Avalonia` by porting the ShareX backend first, then designing the Avalonia UI.
+Build `XerahS` by porting the ShareX backend first, then designing the Avalonia UI.
 - **Priority**: Backend porting > UI design (until explicitly started).
 - **No WinForms**: Do not reuse WinForms UI code. Only copy non-UI methods and data models.
 
 ### Platform Abstractions
-All platform-specific functionality must be isolated behind interfaces in `ShareX.Avalonia.Platform.Abstractions`.
+All platform-specific functionality must be isolated behind interfaces in `XerahS.Platform.Abstractions`.
 - **Forbidden**: Direct calls to `NativeMethods`, `Win32 P/Invoke`, `System.Windows.Forms`, or Windows handles in Common/Core/Backend projects.
 - **Structure**:
-  - `ShareX.Avalonia.Platform.Windows`: Concrete Windows implementation.
-  - `ShareX.Avalonia.Platform.Linux/MacOS`: Stubs or implementations.
+  - `XerahS.Platform.Windows`: Concrete Windows implementation.
+  - `XerahS.Platform.Linux/MacOS`: Stubs or implementations.
+  - `XerahS.Platform.Abstractions`: Shared interfaces.
 
 ### Porting Logic
 1. **Clean**: If a file has 0 native refs, port directly.
@@ -136,7 +141,8 @@ All platform-specific functionality must be isolated behind interfaces in `Share
 
 ## Versioning & Release
 
-**Current Version**: Managed centrally in `Directory.Build.props` (e.g., `0.1.0`).
+### Current Version
+Managed centrally in `Directory.Build.props` (e.g., `0.1.0`).
 
 ### Rules
 1. **Automated Version Bumping**:
@@ -178,7 +184,7 @@ All platform-specific functionality must be isolated behind interfaces in `Share
   - ⏳ Full Automation Workflow (Path B) - See `automation_workflow_plan.md`.
 
 ### Annotation Subsystem
-- ✅ **Phase 1**: Core Models (Dec 2024) - `ShareX.Avalonia.Annotations` created.
+- ✅ **Phase 1**: Core Models (Dec 2024) - `XerahS.Annotations` created.
 - ⏳ **Phase 2**: Canvas Control (~6-8h) - Replace WinForms/GDI+ with Avalonia/Skia.
 
 ### Native & ARM64
