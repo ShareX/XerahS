@@ -36,6 +36,10 @@ This project uses multiple AI developer agents working in parallel.
 ## Development Environment & Configuration
 
 ### Build Strategy
+- **Strict Build Integrity**:
+  - **NEVER** change `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` to false to build.
+  - Instead, you MUST fix the warnings or errors causing the build failure.
+  - If a warning is platform-specific (e.g., CA1416), use proper guards `OperatingSystem.IsWindows()` or `#if WINDOWS`.
 - **Target Framework**: When configuring projects to target Windows, use the **explicit TFM**: `net10.0-windows10.0.19041.0`.
   - **Do NOT** use `net10.0-windows` with a separate `<TargetPlatformVersion>`. This avoids "Windows Metadata not provided" errors.
 - **SkiaSharp Version**: **MUST use version 2.88.9** (until Avalonia 12 is released). **Do NOT upgrade to 3.x**.

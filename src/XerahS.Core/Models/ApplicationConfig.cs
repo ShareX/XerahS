@@ -47,7 +47,9 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
 
     public ApplicationConfig()
     {
+#pragma warning disable CA1416 // Validate platform compatibility
         this.ApplyDefaultPropertyValues();
+#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     #region Settings - General
@@ -160,7 +162,10 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
     #region Settings - Print
 
     public bool DontShowPrintSettingsDialog = false;
+
+#pragma warning disable CA1416 // Validate platform compatibility
     public PrintSettings PrintSettings = new PrintSettings();
+#pragma warning restore CA1416 // Validate platform compatibility
 
     #endregion Settings - Print
 

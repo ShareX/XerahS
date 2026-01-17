@@ -68,8 +68,10 @@ public class TaskMetadata : IDisposable
     {
         if (windowInfo != null)
         {
+#pragma warning disable CA1416 // Validate platform compatibility
             WindowTitle = windowInfo.Text;
             ProcessName = windowInfo.ProcessName;
+#pragma warning restore CA1416 // Validate platform compatibility
         }
     }
 

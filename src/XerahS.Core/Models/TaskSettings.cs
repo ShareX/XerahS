@@ -463,7 +463,9 @@ public class TaskSettingsAdvanced
 
     public TaskSettingsAdvanced()
     {
+#pragma warning disable CA1416 // Validate platform compatibility
         this.ApplyDefaultPropertyValues();
+#pragma warning restore CA1416 // Validate platform compatibility
         ImageExtensions = FileHelpers.ImageFileExtensions.ToList();
         TextExtensions = FileHelpers.TextFileExtensions.ToList();
     }

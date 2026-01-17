@@ -104,7 +104,9 @@ public class WorkflowTask : IDisposable
     private Stream ConvertImageToStream(Image image)
     {
         var stream = new MemoryStream();
+#pragma warning disable CA1416 // Validate platform compatibility
         image.Save(stream, ImageFormat.Png);
+#pragma warning restore CA1416 // Validate platform compatibility
         stream.Position = 0;
         return stream;
     }
@@ -190,7 +192,9 @@ public class WorkflowTask : IDisposable
         if (_disposed) return;
 
         Data?.Dispose();
+#pragma warning disable CA1416 // Validate platform compatibility
         Image?.Dispose();
+#pragma warning restore CA1416 // Validate platform compatibility
 
         _disposed = true;
         GC.SuppressFinalize(this);
