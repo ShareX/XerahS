@@ -94,7 +94,7 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
             var requestPath = await portal.ScreenshotAsync(string.Empty, new Dictionary<string, object> { ["modal"] = false });
 
             var request = connection.CreateProxy<IPortalRequest>(PortalBusName, requestPath);
-            var (response, results) = await WaitForResponseAsync(request);
+            var (response, results) = await request.WaitForResponseAsync();
 
             if (response != 0)
             {
@@ -165,24 +165,9 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
         return new PhysicalRectangle(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top));
     }
 
-    private static async Task<(uint response, IDictionary<string, object> results)> WaitForResponseAsync(IPortalRequest request)
-    {
-        var tcs = new TaskCompletionSource<(uint, IDictionary<string, object>)>(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var watch = await request.WatchResponseAsync((response, results) => tcs.TrySetResult((response, results)));
-
-        var result = await tcs.Task;
-        return (result.Item1, result.Item2);
-    }
-
     [DBusInterface("org.freedesktop.portal.Screenshot")]
     private interface IScreenshotPortal : IDBusObject
     {
         Task<ObjectPath> ScreenshotAsync(string parentWindow, IDictionary<string, object> options);
-    }
-
-    [DBusInterface("org.freedesktop.portal.Request")]
-    private interface IPortalRequest : IDBusObject
-    {
-        Task<IAsyncDisposable> WatchResponseAsync(Action<uint, IDictionary<string, object>> handler);
     }
 }
