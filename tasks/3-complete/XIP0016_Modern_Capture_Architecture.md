@@ -142,7 +142,7 @@ To ensure stability and user control, the **"Use Modern Capture"** option in Tas
 cd native/macos && make
 
 # Build the .NET solution
-dotnet build ShareX.Avalonia.sln
+dotnet build XerahS.sln
 ```
 
 ### Manual Testing (macOS 12.3+)
@@ -157,3 +157,29 @@ dotnet build ShareX.Avalonia.sln
 3. Verify capture still works (falls back to CLI)
 4. Check debug logs for `[MacOSCapture]` entries indicating CLI fallback
 
+## Latest Implementation Compliance (Updated Jan 2026)
+
+This section confirms the current state of the codebase against the "Modern Capture" requirement.
+
+| Platform | Primary (Modern=True) | Legacy/Fallback (Modern=False) | Implementation File | Status |
+|----------|-----------------------|--------------------------------|---------------------|--------|
+| **Windows** | **DXGI Desktop Duplication** / WGC | GDI+ (`CopyFromScreen`) | `WindowsRegionCaptureBackend.cs` | ✅ Complete |
+| **macOS** | **ScreenCaptureKit** (Native) | `screencapture` CLI | `MacOSScreenCaptureKitService.cs` | ✅ Complete |
+| **Linux** | **Wayland/Portal Tools** (Spectacle/Gnome) | X11 XGetImage | `LinuxScreenCaptureService.cs` | ✅ Complete |
+
+### Detailed Behavior Checks
+
+#### Windows
+- **Codebase**: `WindowsRegionCaptureBackend.cs` correctly prioritizes DXGI when `UseModernCapture` is true.
+- **Fallbacks**: Automatically falls back to GDI+ if DXGI initialization fails or if legacy mode is forced.
+
+#### macOS
+- **Codebase**: `MacOSScreenCaptureKitService.cs` implements the logic defined above.
+- **Logic**: Checks `UseModernCapture` AND `ScreenCaptureKitInterop.IsAvailable()`. If both true, uses native interop. Otherwise, delegates to `_fallbackService` (CLI).
+
+#### Linux
+- **Codebase**: `LinuxScreenCaptureService.cs` implements the logic defined above.
+- **Logic**:
+    - `UseModernCapture = false` -> Forces `CaptureWithX11Async`.
+    - `UseModernCapture = true` -> Tries external tools (Gnome/Spectacle/Scrot) first (Wayland compatible), then falls back to `CaptureWithX11Async`.
+- **Note**: This logic ensures Wayland users get a working capture (via tools) by default, while X11 users get fast X11 capture if tools fail or if they force legacy mode.
