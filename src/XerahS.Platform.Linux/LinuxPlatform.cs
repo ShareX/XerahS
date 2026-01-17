@@ -25,6 +25,10 @@ namespace XerahS.Platform.Linux
                 ? new WaylandPortalInputService()
                 : new LinuxInputService();
 
+            var systemService = LinuxScreenCaptureService.IsWayland
+                ? new WaylandPortalSystemService()
+                : new LinuxSystemService();
+
             PlatformServices.Initialize(
                 platformInfo: new LinuxPlatformInfo(),
                 screenService: new LinuxScreenService(),
@@ -35,7 +39,7 @@ namespace XerahS.Platform.Linux
                 inputService: inputService,
                 fontService: new LinuxFontService(),
                 startupService: new LinuxStartupService(),
-                systemService: new Services.LinuxSystemService(),
+                systemService: systemService,
                 notificationService: new LinuxNotificationService(),
                 diagnosticService: new Services.LinuxDiagnosticService()
             );
