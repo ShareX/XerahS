@@ -97,15 +97,20 @@ namespace XerahS.Platform.Linux
 
         public async Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
         {
-            DebugHelper.WriteLine("LinuxScreenCaptureService: Attempting screenshot capture...");
+            bool useModern = options?.UseModernCapture ?? true;
 
-            var nativeCapture = await CaptureWithX11Async();
-            if (nativeCapture != null)
+            DebugHelper.WriteLine($"LinuxScreenCaptureService: Attempting capture (Modern={useModern})...");
+
+            // If Modern Capture is disabled, force X11 immediately (legacy mode)
+            if (!useModern)
             {
-                return nativeCapture;
+                 DebugHelper.WriteLine("LinuxScreenCaptureService: Legacy mode enabled. Forcing X11 capture.");
+                 return await CaptureWithX11Async();
             }
 
-            // Try multiple screenshot tools in order of preference
+            // Modern Mode: Try Wayland/Tools first, then fallback to X11
+            
+            // 1. Try generic tools (gnome-screenshot, spectacle, etc) which work on both Wayland and X11
             var result = await CaptureWithGnomeScreenshotAsync();
             if (result != null) return result;
 
@@ -118,14 +123,16 @@ namespace XerahS.Platform.Linux
             result = await CaptureWithImportAsync();
             if (result != null) return result;
 
-            DebugHelper.WriteLine("LinuxScreenCaptureService: All capture methods failed");
-            return null;
+            // 2. Fallback to X11 if generic tools failed
+            DebugHelper.WriteLine("LinuxScreenCaptureService: external tools failed. Falling back to X11.");
+            return await CaptureWithX11Async();
         }
 
         private async Task<SKBitmap?> CaptureWithX11Async()
         {
             if (IsWayland)
             {
+                DebugHelper.WriteLine("LinuxScreenCaptureService: X11 capture skipped (Wayland active).");
                 return null;
             }
 

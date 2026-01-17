@@ -25,14 +25,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Tmds.DBus;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
-using XerahS.Platform.Linux.Capture;
+using ShareX.Avalonia.Platform.Linux.Capture;
 
 namespace XerahS.Platform.Linux.Services;
 
@@ -49,7 +48,7 @@ public sealed class WaylandPortalInputService : IInputService
     private IAsyncDisposable? _deactivatedSubscription;
     private IAsyncDisposable? _zonesChangedSubscription;
     private IAsyncDisposable? _disabledSubscription;
-    private Point _lastCursor;
+    private System.Drawing.Point _lastCursor;
     private uint _zoneSet;
     private ObjectPath? _sessionHandle;
     private ISession? _sessionProxy;
@@ -76,7 +75,7 @@ public sealed class WaylandPortalInputService : IInputService
         }
     }
 
-    public Point GetCursorPosition()
+    public System.Drawing.Point GetCursorPosition()
     {
         lock (_cursorLock)
         {
@@ -97,7 +96,8 @@ public sealed class WaylandPortalInputService : IInputService
             return;
         }
 
-        _sessionProxy = _connection?.CreateProxy<ISession>(PortalBusName, _sessionHandle);
+        ObjectPath sessionHandle = (ObjectPath)_sessionHandle!;
+        _sessionProxy = _connection?.CreateProxy<ISession>(PortalBusName, sessionHandle);
 
         _activatedSubscription = await _portal.WatchActivatedAsync(OnActivated).ConfigureAwait(false);
         _deactivatedSubscription = await _portal.WatchDeactivatedAsync(OnDeactivated).ConfigureAwait(false);
@@ -108,7 +108,7 @@ public sealed class WaylandPortalInputService : IInputService
         await EnableAsync().ConfigureAwait(false);
     }
 
-    private static Point? ExtractCursorPosition(IDictionary<string, object> options)
+    private static System.Drawing.Point? ExtractCursorPosition(IDictionary<string, object> options)
     {
         if (!options.TryGetValue("cursor_position", out var value))
         {
@@ -117,12 +117,12 @@ public sealed class WaylandPortalInputService : IInputService
 
         if (value is ValueTuple<double, double> pair)
         {
-            return new Point((int)Math.Round(pair.Item1), (int)Math.Round(pair.Item2));
+            return new System.Drawing.Point((int)Math.Round(pair.Item1), (int)Math.Round(pair.Item2));
         }
 
         if (value is ValueTuple<float, float> floatPair)
         {
-            return new Point((int)Math.Round(floatPair.Item1), (int)Math.Round(floatPair.Item2));
+            return new System.Drawing.Point((int)Math.Round(floatPair.Item1), (int)Math.Round(floatPair.Item2));
         }
 
         if (value is IEnumerable<object> coords)
@@ -130,13 +130,13 @@ public sealed class WaylandPortalInputService : IInputService
             var numbers = coords.Take(2).OfType<double>().ToArray();
             if (numbers.Length == 2)
             {
-                return new Point((int)Math.Round(numbers[0]), (int)Math.Round(numbers[1]));
+                    return new System.Drawing.Point((int)Math.Round(numbers[0]), (int)Math.Round(numbers[1]));
             }
 
             var floats = coords.Take(2).OfType<float>().ToArray();
             if (floats.Length == 2)
             {
-                return new Point((int)Math.Round(floats[0]), (int)Math.Round(floats[1]));
+                    return new System.Drawing.Point((int)Math.Round(floats[0]), (int)Math.Round(floats[1]));
             }
         }
 
@@ -181,10 +181,12 @@ public sealed class WaylandPortalInputService : IInputService
             return;
         }
 
+        ObjectPath sessionHandle = (ObjectPath)_sessionHandle!;
+
         await _refreshLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            var requestPath = await _portal.GetZonesAsync(_sessionHandle, new Dictionary<string, object>()).ConfigureAwait(false);
+            var requestPath = await _portal.GetZonesAsync(sessionHandle, new Dictionary<string, object>()).ConfigureAwait(false);
             var request = _connection!.CreateProxy<IPortalRequest>(PortalBusName, requestPath);
             var (response, results) = await request.WaitForResponseAsync().ConfigureAwait(false);
 
@@ -298,9 +300,10 @@ public sealed class WaylandPortalInputService : IInputService
             return;
         }
 
+        ObjectPath sessionHandle = (ObjectPath)_sessionHandle!;
         var barriers = BuildBarriers(zones);
         var requestPath = await _portal.SetPointerBarriersAsync(
-            _sessionHandle,
+            sessionHandle,
             new Dictionary<string, object>(),
             barriers.ToArray(),
             zoneSet).ConfigureAwait(false);
@@ -366,9 +369,10 @@ public sealed class WaylandPortalInputService : IInputService
             return;
         }
 
+        ObjectPath sessionHandle = (ObjectPath)_sessionHandle!;
         try
         {
-            await _portal.EnableAsync(_sessionHandle, new Dictionary<string, object>()).ConfigureAwait(false);
+            await _portal.EnableAsync(sessionHandle, new Dictionary<string, object>()).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

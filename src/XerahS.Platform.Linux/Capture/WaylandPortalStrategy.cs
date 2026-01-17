@@ -150,17 +150,17 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
 
         var cropped = new SKBitmap(clamped.Width, clamped.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
         using var canvas = new SKCanvas(cropped);
-        canvas.DrawBitmap(source, new SKRectI(clamped.Left, clamped.Top, clamped.Right, clamped.Bottom), new SKRect(0, 0, clamped.Width, clamped.Height));
+            canvas.DrawBitmap(source, new SKRectI(clamped.X, clamped.Y, clamped.X + clamped.Width, clamped.Y + clamped.Height), new SKRect(0, 0, clamped.Width, clamped.Height));
 
-        return new CapturedBitmap(cropped, new PhysicalRectangle(clamped.Left, clamped.Top, clamped.Width, clamped.Height), 1.0);
+            return new CapturedBitmap(cropped, new PhysicalRectangle(clamped.X, clamped.Y, clamped.Width, clamped.Height), 1.0);
     }
 
     private static PhysicalRectangle ClampRegion(PhysicalRectangle region, int width, int height)
     {
-        var left = (int)Math.Max(0, Math.Floor(region.Left));
-        var top = (int)Math.Max(0, Math.Floor(region.Top));
-        var right = (int)Math.Min(width, Math.Ceiling(region.Left + region.Width));
-        var bottom = (int)Math.Min(height, Math.Ceiling(region.Top + region.Height));
+        var left = Math.Max(0, region.X);
+        var top = Math.Max(0, region.Y);
+        var right = Math.Min(width, region.X + region.Width);
+        var bottom = Math.Min(height, region.Y + region.Height);
 
         return new PhysicalRectangle(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top));
     }

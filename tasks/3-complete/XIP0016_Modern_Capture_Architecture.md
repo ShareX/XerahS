@@ -96,6 +96,29 @@ int sck_is_available(); // Returns 1 if macOS 12.3+, 0 otherwise
         *   Fallback: `MacOSScreenshotService` (CLI-based) for macOS < 12.3
 *   The system will auto-detect the OS and version to select the best available provider, falling back to legacy methods (GDI+/CLI) only when modern APIs are unavailable.
 
+## Configuration & Fallback Strategy
+
+To ensure stability and user control, the **"Use Modern Capture"** option in Task Settings must be respected across all platforms, ensuring a predictable fallback chain.
+
+### Windows
+*   **Checkbox ON (Modern)**: Attempt `WindowsModernCaptureService` (DirectX/DXGI).
+    *   *Fallback*: If initialization fails (e.g., unsupported OS, GPU error), automatically fall back to `WindowsScreenCaptureService` (GDI+).
+*   **Checkbox OFF (Legacy)**: Force `WindowsScreenCaptureService` (GDI+).
+    *   *Note*: Useful for compatibility with older apps or specific window types.
+
+### Linux
+*   **Checkbox ON (Modern)**:
+    1.  **Try Wayland/Portal**: Check environment. If Wayland or if explicitly requested, attempt `XDG Desktop Portal` or modern compositors.
+    2.  **Fallback**: If Wayland capture fails or is unavailable, fall back to **X11** (`XGetImage`).
+*   **Checkbox OFF (Legacy)**:
+    *   **Force X11/CLI**: Bypass Wayland checks (if possible) and use `XGetImage` or legacy CLI tools (`scrot`, `import`). Do NOT attempt XDG Portal.
+
+### macOS
+*   **Checkbox ON (Modern)**: Attempt `MacOSScreenCaptureKitService` (Native ScreenCaptureKit).
+    *   *Fallback*: If `ScreenCaptureKit` is unavailable (macOS < 12.3) or fails (permission denied), fall back to `MacOSScreenshotService` (CLI `screencapture`).
+*   **Checkbox OFF (Legacy)**: Force `MacOSScreenshotService` (CLI `screencapture`).
+    *   *Note*: Useful if native capture has specific bugs or color profile issues.
+
 ## Stage 3 Implementation Files
 
 ### Native Library (Objective-C)

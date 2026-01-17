@@ -29,9 +29,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Threading;
+using ShareX.Avalonia.Platform.Linux.Capture;
 using Tmds.DBus;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
+using PlatformHotkeyStatus = XerahS.Platform.Abstractions.HotkeyStatus;
 
 namespace XerahS.Platform.Linux.Services;
 
@@ -78,7 +80,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
     {
         if (_portal == null || !hotkeyInfo.IsValid)
         {
-            hotkeyInfo.Status = _portal == null ? HotkeyStatus.UnsupportedPlatform : HotkeyStatus.NotConfigured;
+            hotkeyInfo.Status = _portal == null ? PlatformHotkeyStatus.UnsupportedPlatform : PlatformHotkeyStatus.NotConfigured;
             return false;
         }
 
@@ -95,13 +97,13 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
         try
         {
             RebindShortcutsAsync().GetAwaiter().GetResult();
-            hotkeyInfo.Status = HotkeyStatus.Registered;
+            hotkeyInfo.Status = PlatformHotkeyStatus.Registered;
             return true;
         }
         catch (Exception ex)
         {
             DebugHelper.WriteException(ex, "WaylandPortalHotkeyService: Failed to register hotkey");
-            hotkeyInfo.Status = HotkeyStatus.Failed;
+            hotkeyInfo.Status = PlatformHotkeyStatus.Failed;
             return false;
         }
     }
@@ -110,7 +112,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
     {
         if (_portal == null || hotkeyInfo.Id == 0)
         {
-            hotkeyInfo.Status = HotkeyStatus.NotConfigured;
+            hotkeyInfo.Status = PlatformHotkeyStatus.NotConfigured;
             return false;
         }
 
@@ -122,20 +124,20 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
 
         if (!removed)
         {
-            hotkeyInfo.Status = HotkeyStatus.NotConfigured;
+            hotkeyInfo.Status = PlatformHotkeyStatus.NotConfigured;
             return false;
         }
 
         try
         {
             RebindShortcutsAsync().GetAwaiter().GetResult();
-            hotkeyInfo.Status = HotkeyStatus.NotConfigured;
+            hotkeyInfo.Status = PlatformHotkeyStatus.NotConfigured;
             return true;
         }
         catch (Exception ex)
         {
             DebugHelper.WriteException(ex, "WaylandPortalHotkeyService: Failed to unregister hotkey");
-            hotkeyInfo.Status = HotkeyStatus.Failed;
+            hotkeyInfo.Status = PlatformHotkeyStatus.Failed;
             return false;
         }
     }
@@ -206,7 +208,8 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
 
             await CloseSessionAsync().ConfigureAwait(false);
             _sessionHandle = await CreateSessionAsync().ConfigureAwait(false);
-            _sessionProxy = _connection!.CreateProxy<ISession>(PortalBusName, _sessionHandle);
+            ObjectPath sessionHandle = (ObjectPath)_sessionHandle!;
+            _sessionProxy = _connection!.CreateProxy<ISession>(PortalBusName, sessionHandle);
             await BindShortcutsAsync(bindings).ConfigureAwait(false);
             _shortcutMap = map;
         }
@@ -271,7 +274,8 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
             throw new InvalidOperationException("WaylandPortalHotkeyService: Session handle is not initialized");
         }
 
-        var requestPath = await _portal!.BindShortcutsAsync(_sessionHandle, bindings, string.Empty, new Dictionary<string, object>()).ConfigureAwait(false);
+        ObjectPath sessionHandle = (ObjectPath)_sessionHandle!;
+        var requestPath = await _portal!.BindShortcutsAsync(sessionHandle, bindings, string.Empty, new Dictionary<string, object>()).ConfigureAwait(false);
         var request = _connection!.CreateProxy<IPortalRequest>(PortalBusName, requestPath);
         var (response, _) = await request.WaitForResponseAsync().ConfigureAwait(false);
 

@@ -17,15 +17,15 @@ namespace XerahS.Platform.Linux
                     : "Linux: Running on X11. Using LinuxScreenCaptureService with CLI fallbacks.");
             }
 
-            var hotkeyService = LinuxScreenCaptureService.IsWayland
+            IHotkeyService hotkeyService = LinuxScreenCaptureService.IsWayland
                 ? new WaylandPortalHotkeyService()
                 : new LinuxHotkeyService();
 
-            var inputService = LinuxScreenCaptureService.IsWayland
+            IInputService inputService = LinuxScreenCaptureService.IsWayland
                 ? new WaylandPortalInputService()
                 : new LinuxInputService();
 
-            var systemService = LinuxScreenCaptureService.IsWayland
+            ISystemService systemService = LinuxScreenCaptureService.IsWayland
                 ? new WaylandPortalSystemService()
                 : new LinuxSystemService();
 

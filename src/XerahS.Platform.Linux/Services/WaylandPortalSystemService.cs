@@ -31,7 +31,7 @@ using Microsoft.Win32.SafeHandles;
 using Tmds.DBus;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
-using XerahS.Platform.Linux.Capture;
+using ShareX.Avalonia.Platform.Linux.Capture;
 
 namespace XerahS.Platform.Linux.Services;
 

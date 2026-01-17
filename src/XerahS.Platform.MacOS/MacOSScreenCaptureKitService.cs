@@ -85,8 +85,13 @@ namespace XerahS.Platform.MacOS
 
         public Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
         {
-            if (!_nativeAvailable)
+            bool useModern = options?.UseModernCapture ?? true;
+
+            if (!_nativeAvailable || !useModern)
             {
+                if (!useModern)
+                    DebugHelper.WriteLine("[ScreenCaptureKit] Modern capture disabled by user, using CLI fallback");
+                
                 return _fallbackService.CaptureRectAsync(rect, options);
             }
 
@@ -95,8 +100,13 @@ namespace XerahS.Platform.MacOS
 
         public Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
         {
-            if (!_nativeAvailable)
+            bool useModern = options?.UseModernCapture ?? true;
+
+            if (!_nativeAvailable || !useModern)
             {
+                 if (!useModern)
+                    DebugHelper.WriteLine("[ScreenCaptureKit] Modern capture disabled by user, using CLI fallback");
+
                 return _fallbackService.CaptureFullScreenAsync(options);
             }
 

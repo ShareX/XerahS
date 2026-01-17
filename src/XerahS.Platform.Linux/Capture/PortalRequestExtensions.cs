@@ -28,7 +28,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Tmds.DBus;
 
-namespace XerahS.Platform.Linux.Capture;
+namespace ShareX.Avalonia.Platform.Linux.Capture;
 
 internal interface IPortalRequest : IDBusObject
 {
@@ -40,7 +40,7 @@ internal static class PortalRequestExtensions
     public static async Task<(uint response, IDictionary<string, object> results)> WaitForResponseAsync(this IPortalRequest request)
     {
         var tcs = new TaskCompletionSource<(uint, IDictionary<string, object>)>(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var watch = await request.WatchResponseAsync((response, results) => tcs.TrySetResult((response, results))).ConfigureAwait(false);
+        await using var watch = await request.WatchResponseAsync((response, results) => tcs.TrySetResult((response, results))).ConfigureAwait(false);
         return await tcs.Task.ConfigureAwait(false);
     }
 }
