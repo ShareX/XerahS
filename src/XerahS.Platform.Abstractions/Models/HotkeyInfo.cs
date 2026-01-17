@@ -89,7 +89,17 @@ public class HotkeyInfo
         if (HasControl) parts.Add("Ctrl");
         if (HasAlt) parts.Add("Alt");
         if (HasShift) parts.Add("Shift");
-        if (HasMeta) parts.Add("Win");
+        if (HasMeta)
+        {
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+            {
+                parts.Add("Cmd");
+            }
+            else
+            {
+                parts.Add("Win");
+            }
+        }
 
         if (!IsOnlyModifiers && Key != Key.None)
         {

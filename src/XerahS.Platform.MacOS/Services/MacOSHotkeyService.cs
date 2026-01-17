@@ -206,8 +206,16 @@ namespace XerahS.Platform.MacOS.Services
 
             try
             {
-                _hook.RunAsync();
+                _hook.RunAsync().ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        DebugHelper.WriteException(t.Exception, "MacOSHotkeyService: SharpHook loop failed unexpectedly.");
+                        _hookRunning = false;
+                    }
+                });
                 _hookRunning = true;
+                DebugHelper.WriteLine("MacOSHotkeyService: SharpHook started.");
             }
             catch (Exception ex)
             {
@@ -296,6 +304,10 @@ namespace XerahS.Platform.MacOS.Services
 
             if (hotkeyInfo == null)
             {
+                if (modifiers.HasFlag(KeyModifiers.Meta))
+                {
+                    DebugHelper.WriteLine($"MacOSHotkeyService: No hotkey match for Key={MapKeyCodeToAvaloniaKey(keyCode)} ({keyCode}), Modifiers={modifiers}. Pressed: {string.Join(", ", _pressedKeys)}");
+                }
                 return;
             }
 
