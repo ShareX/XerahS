@@ -334,41 +334,15 @@ namespace XerahS.Platform.MacOS.Services
                 return _accessibilityEnabled.Value;
             }
 
-            const string script = "tell application \\\"System Events\\\" to get UI elements enabled";
-            var output = RunOsaScriptWithOutput(script);
-            _accessibilityEnabled = string.Equals(output?.Trim(), "true", StringComparison.OrdinalIgnoreCase);
+            // Check and prompt if needed
+            _accessibilityEnabled = Native.Accessibility.IsProcessTrusted(prompt: true);
+
+            if (_accessibilityEnabled == false)
+            {
+                 DebugHelper.WriteLine("MacOSHotkeyService: Accessibility is not enabled. Prompting user...");
+            }
+
             return _accessibilityEnabled.Value;
-        }
-
-        private static string? RunOsaScriptWithOutput(string script)
-        {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "osascript",
-                Arguments = $"-e \"{script}\"",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            try
-            {
-                using var process = Process.Start(startInfo);
-                if (process == null)
-                {
-                    return null;
-                }
-
-                var output = process.StandardOutput.ReadToEnd();
-                process.WaitForExit();
-                return process.ExitCode == 0 ? output : null;
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex, "MacOSHotkeyService.RunOsaScriptWithOutput failed");
-                return null;
-            }
         }
 
         private void LogAccessibilityRequired()
