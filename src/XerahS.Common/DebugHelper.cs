@@ -74,5 +74,14 @@ namespace XerahS.Common
         {
             Logger?.ProcessMessageQueue();
         }
+
+        public static void Shutdown()
+        {
+            if (Logger != null)
+            {
+                Logger.Dispose();
+                Logger = null;
+            }
+        }
     }
 }

@@ -37,7 +37,7 @@ using System.Drawing;
 
 namespace XerahS.Core.Tasks
 {
-    public class WorkerTask
+    public class WorkerTask : IDisposable
     {
         public TaskInfo Info { get; private set; }
         public TaskStatus Status { get; private set; }
@@ -577,6 +577,20 @@ namespace XerahS.Core.Tasks
         protected virtual void OnTaskCompleted()
         {
             TaskCompleted?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _cancellationTokenSource?.Dispose();
+            }
         }
     }
 }
