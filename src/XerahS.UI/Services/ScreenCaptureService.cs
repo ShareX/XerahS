@@ -184,8 +184,8 @@ namespace XerahS.UI.Services
                 return null;
             }
 
-            // 3. Small delay to allow overlay windows to close fully
-            await Task.Delay(60);
+            // 3. Small delay to allow overlay windows to close fully and cursor to hide
+            await Task.Delay(200);
 
             // 4. Capture Screen (Platform) - WITHOUT cursor (we'll draw ghost cursor manually)
             var captureOptions = options != null ? new CaptureOptions
@@ -199,6 +199,8 @@ namespace XerahS.UI.Services
             var bitmap = await _platformImpl.CaptureRectAsync(skRect, captureOptions);
 
             // 5. Draw ghost cursor onto captured bitmap if available
+            // We use the INITIAL ghost cursor (captured at start) to match ShareX behavior ("original location").
+            // The Live cursor is hidden from the DXGI capture by the platform service.
             if (bitmap != null && ghostCursor?.Image != null && options?.ShowCursor == true)
             {
                 try
@@ -209,7 +211,8 @@ namespace XerahS.UI.Services
 
                     // Draw cursor onto bitmap using SkiaSharp
                     using var canvas = new SKCanvas(bitmap);
-                    canvas.DrawBitmap(ghostCursor.Image, cursorX, cursorY);
+                    using var paint = new SKPaint { BlendMode = SKBlendMode.SrcOver };
+                    canvas.DrawBitmap(ghostCursor.Image, cursorX, cursorY, paint);
                 }
                 catch
                 {
