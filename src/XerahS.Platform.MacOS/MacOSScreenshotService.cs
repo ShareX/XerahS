@@ -78,6 +78,11 @@ namespace XerahS.Platform.MacOS
             return CaptureRectAsync(new SKRect(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height), options);
         }
 
+        public Task<CursorInfo?> CaptureCursorAsync()
+        {
+            return Task.FromResult<CursorInfo?>(null);
+        }
+
         private static Task<SKBitmap?> CaptureWithArgumentsAsync(string arguments)
         {
             return Task.Run<SKBitmap?>(() =>

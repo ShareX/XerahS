@@ -352,12 +352,10 @@ public partial class App : Application
 
         if (settings == null) return;
 
-        bool isCaptureJob = settings.Job is Core.HotkeyType.PrintScreen
-                                          or Core.HotkeyType.ActiveWindow
-                                          or Core.HotkeyType.CustomWindow
-                                          or Core.HotkeyType.RectangleRegion
-                                          or Core.HotkeyType.CustomRegion
-                                          or Core.HotkeyType.LastRegion;
+        // Determine request type by category
+        string category = settings.Job.GetHotkeyCategory();
+        bool isCaptureJob = category == EnumExtensions.HotkeyType_Category_ScreenCapture ||
+                            category == EnumExtensions.HotkeyType_Category_ScreenRecord;
 
         // For capture jobs, avoid bringing the main window forward until the capture completes.
         if (!isCaptureJob && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
@@ -372,7 +370,7 @@ public partial class App : Application
             Core.Managers.TaskManager.Instance.TaskCompleted -= HandleTaskCompleted;
             OnTaskCompleted(task, EventArgs.Empty);
 
-            if (isCaptureJob && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            if (isCaptureJob && task.IsSuccessful && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
                 desktop.MainWindow is MainWindow mainWindowAfterCapture)
             {
                 mainWindowAfterCapture.NavigateToEditor();

@@ -54,7 +54,7 @@ public partial class OverlayWindow : Window
         InitializeComponent();
     }
 
-    public OverlayWindow(MonitorInfo monitor, TaskCompletionSource<PixelRect?> completionSource, Action<PixelRect>? selectionChanged = null)
+    public OverlayWindow(MonitorInfo monitor, TaskCompletionSource<PixelRect?> completionSource, Action<PixelRect>? selectionChanged = null, XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
     {
         _monitor = monitor;
         _completionSource = completionSource;
@@ -67,7 +67,7 @@ public partial class OverlayWindow : Window
         Height = monitor.PhysicalBounds.Height / monitor.ScaleFactor;
 
         // Create and add the capture control
-        _captureControl = new RegionCaptureControl(_monitor);
+        _captureControl = new RegionCaptureControl(_monitor, null, initialCursor);
         if (selectionChanged is not null)
             _captureControl.SelectionChanged += selectionChanged;
         _captureControl.RegionSelected += OnRegionSelected;

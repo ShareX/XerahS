@@ -58,7 +58,10 @@ public sealed class OverlayManager : IDisposable
     /// <summary>
     /// Creates and shows overlay windows for all monitors.
     /// </summary>
-    public async Task<PixelRect?> ShowOverlaysAsync(Action<PixelRect>? onSelectionChanged = null)
+    /// <summary>
+    /// Creates and shows overlay windows for all monitors.
+    /// </summary>
+    public async Task<PixelRect?> ShowOverlaysAsync(Action<PixelRect>? onSelectionChanged = null, XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -72,7 +75,7 @@ public sealed class OverlayManager : IDisposable
             // Create one overlay per monitor
             foreach (var monitor in monitors)
             {
-                var overlay = new OverlayWindow(monitor, _completionSource, onSelectionChanged);
+                var overlay = new OverlayWindow(monitor, _completionSource, onSelectionChanged, initialCursor);
                 _overlays.Add(overlay);
             }
 

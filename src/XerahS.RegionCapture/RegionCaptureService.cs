@@ -42,19 +42,23 @@ public sealed class RegionCaptureService
     /// Initiates a region capture operation and returns the selected region in physical pixels.
     /// </summary>
     /// <returns>The captured region, or null if cancelled.</returns>
-    public async Task<PixelRect?> CaptureRegionAsync()
+    /// <summary>
+    /// Initiates a region capture operation and returns the selected region in physical pixels.
+    /// </summary>
+    /// <returns>The captured region, or null if cancelled.</returns>
+    public async Task<PixelRect?> CaptureRegionAsync(XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
     {
         using var manager = new OverlayManager();
-        return await manager.ShowOverlaysAsync();
+        return await manager.ShowOverlaysAsync(null, initialCursor);
     }
 
     /// <summary>
     /// Initiates a region capture with a callback for real-time selection updates.
     /// </summary>
-    public async Task<PixelRect?> CaptureRegionAsync(Action<PixelRect>? onSelectionChanged)
+    public async Task<PixelRect?> CaptureRegionAsync(Action<PixelRect>? onSelectionChanged, XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
     {
         using var manager = new OverlayManager();
-        return await manager.ShowOverlaysAsync(onSelectionChanged);
+        return await manager.ShowOverlaysAsync(onSelectionChanged, initialCursor);
     }
 }
 
@@ -97,4 +101,9 @@ public sealed record RegionCaptureOptions
     /// Color of the window snap highlight.
     /// </summary>
     public uint WindowSnapColor { get; init; } = 0xFF00AEFF; // Blue
+
+    /// <summary>
+    /// Whether to show the mouse cursor during selection. Default: false
+    /// </summary>
+    public bool ShowCursor { get; init; } = false;
 }

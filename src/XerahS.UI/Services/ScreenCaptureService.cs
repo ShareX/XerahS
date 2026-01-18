@@ -57,8 +57,36 @@ namespace XerahS.UI.Services
                 // UI interaction must run on the UI thread
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
+                    // Capture cursor if requested
+                    XerahS.Platform.Abstractions.CursorInfo? cursorInfo = null;
+                    if (options?.ShowCursor == true)
+                    {
+                        try
+                        {
+                            cursorInfo = await _platformImpl.CaptureCursorAsync();
+                        }
+                        catch
+                        {
+                            // Ignore cursor capture errors
+                        }
+                    }
+
                     var captureService = new RegionCaptureService();
-                    var result = await captureService.CaptureRegionAsync();
+                    
+                    // Propagate options
+                    if (options != null)
+                    {
+                        captureService = new RegionCaptureService
+                        {
+                            Options = new XerahS.RegionCapture.RegionCaptureOptions
+                            {
+                                ShowCursor = options.ShowCursor,
+                                // Map other options if needed, but for now we rely on defaults or what RegionCaptureService handles
+                            }
+                        };
+                    }
+
+                    var result = await captureService.CaptureRegionAsync(cursorInfo);
 
                     if (result is not null)
                     {
@@ -97,22 +125,99 @@ namespace XerahS.UI.Services
             return _platformImpl.CaptureActiveWindowAsync(windowService, options);
         }
 
+        public Task<XerahS.Platform.Abstractions.CursorInfo?> CaptureCursorAsync()
+        {
+            return _platformImpl.CaptureCursorAsync();
+        }
+
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
-            // 1. Select Region (UI)
-            var selection = await SelectRegionAsync(options);
+            // 1. Capture cursor BEFORE showing overlay (if ShowCursor is enabled)
+            XerahS.Platform.Abstractions.CursorInfo? ghostCursor = null;
+            if (options?.ShowCursor == true)
+            {
+                try
+                {
+                    ghostCursor = await _platformImpl.CaptureCursorAsync();
+                }
+                catch
+                {
+                    // Ignore cursor capture errors
+                }
+            }
+
+            // 2. Select Region (UI) - pass ghost cursor for overlay display
+            SKRectI selection = SKRectI.Empty;
+            try
+            {
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    var captureService = new RegionCaptureService();
+                    
+                    if (options != null)
+                    {
+                        captureService = new RegionCaptureService
+                        {
+                            Options = new XerahS.RegionCapture.RegionCaptureOptions
+                            {
+                                ShowCursor = options.ShowCursor,
+                            }
+                        };
+                    }
+
+                    var result = await captureService.CaptureRegionAsync(ghostCursor);
+
+                    if (result is not null)
+                    {
+                        var r = result.Value;
+                        selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
+                    }
+                });
+            }
+            catch
+            {
+                // Ignore errors
+            }
 
             if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
             {
                 return null;
             }
 
-            // 2. Small delay to allow overlay windows to close fully
+            // 3. Small delay to allow overlay windows to close fully
             await Task.Delay(60);
 
-            // 3. Capture Screen (Platform)
+            // 4. Capture Screen (Platform) - WITHOUT cursor (we'll draw ghost cursor manually)
+            var captureOptions = options != null ? new CaptureOptions
+            {
+                ShowCursor = false, // Don't draw current cursor position
+                UseModernCapture = options.UseModernCapture,
+                WorkflowId = options.WorkflowId,
+            } : null;
+
             var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
-            return await _platformImpl.CaptureRectAsync(skRect, options);
+            var bitmap = await _platformImpl.CaptureRectAsync(skRect, captureOptions);
+
+            // 5. Draw ghost cursor onto captured bitmap if available
+            if (bitmap != null && ghostCursor?.Image != null && options?.ShowCursor == true)
+            {
+                try
+                {
+                    // Calculate cursor position relative to the captured region
+                    int cursorX = ghostCursor.Position.X - selection.Left - ghostCursor.Hotspot.X;
+                    int cursorY = ghostCursor.Position.Y - selection.Top - ghostCursor.Hotspot.Y;
+
+                    // Draw cursor onto bitmap using SkiaSharp
+                    using var canvas = new SKCanvas(bitmap);
+                    canvas.DrawBitmap(ghostCursor.Image, cursorX, cursorY);
+                }
+                catch
+                {
+                    // Ignore cursor drawing errors
+                }
+            }
+
+            return bitmap;
         }
 
         public Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)

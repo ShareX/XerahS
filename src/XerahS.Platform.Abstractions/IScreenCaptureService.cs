@@ -64,5 +64,11 @@ namespace XerahS.Platform.Abstractions
         /// <param name="options">Capture options</param>
         /// <returns>SKBitmap of the window, or null on failure</returns>
         Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null);
+
+        /// <summary>
+        /// Captures the current mouse cursor.
+        /// </summary>
+        /// <returns>CursorInfo containing image and position, or null on failure</returns>
+        Task<CursorInfo?> CaptureCursorAsync();
     }
 }

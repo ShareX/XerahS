@@ -28,6 +28,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using SkiaSharp;
 using XerahS.RegionCapture.Models;
 using XerahS.RegionCapture.Services;
 using AvPixelRect = Avalonia.PixelRect;
@@ -54,6 +55,8 @@ public sealed class RegionCaptureControl : UserControl
     private readonly double _dimOpacity;
     private readonly bool _enableWindowSnapping;
     private readonly bool _enableMagnifier;
+    private readonly XerahS.Platform.Abstractions.CursorInfo? _ghostCursor;
+    private readonly Bitmap? _ghostCursorBitmap;
 
     // Keyboard state tracking
     private SelectionModifier _activeModifiers = SelectionModifier.None;
@@ -78,11 +81,12 @@ public sealed class RegionCaptureControl : UserControl
     private PixelRect _selectionRect => _stateMachine.SelectionRect;
     private WindowInfo? _hoveredWindow => _stateMachine.HoveredWindow;
 
-    public RegionCaptureControl(MonitorInfo monitor, RegionCaptureOptions? options = null)
+    public RegionCaptureControl(MonitorInfo monitor, RegionCaptureOptions? options = null, XerahS.Platform.Abstractions.CursorInfo? ghostCursor = null)
     {
         options ??= new RegionCaptureOptions();
 
         _monitor = monitor;
+        _ghostCursor = ghostCursor;
         _coordinateService = new CoordinateTranslationService();
         _windowService = new WindowDetectionService();
 
@@ -110,9 +114,26 @@ public sealed class RegionCaptureControl : UserControl
         // Use a near-transparent color (Alpha=1) instead of fully transparent to ensure
         // it works correctly with layered windows on Windows.
         Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0));
+
+        // Cache the ghost cursor Avalonia Bitmap once
+        if (_ghostCursor?.Image != null)
+        {
+            try
+            {
+                using var data = _ghostCursor.Image.Encode(SKEncodedImageFormat.Png, 100);
+                using var stream = new MemoryStream();
+                data.SaveTo(stream);
+                stream.Position = 0;
+                _ghostCursorBitmap = new Bitmap(stream);
+            }
+            catch
+            {
+                _ghostCursorBitmap = null;
+            }
+        }
     }
 
-    public RegionCaptureControl(MonitorInfo monitor) : this(monitor, null)
+    public RegionCaptureControl(MonitorInfo monitor) : this(monitor, null, null)
     {
     }
 
@@ -366,6 +387,35 @@ public sealed class RegionCaptureControl : UserControl
 
         // Draw instructions (top-center, only in hover state)
         DrawInstructions(context);
+
+        // Draw ghost cursor if available and configured
+        DrawGhostCursor(context);
+    }
+
+    private void DrawGhostCursor(DrawingContext context)
+    {
+        if (_ghostCursorBitmap == null || _ghostCursor == null) return;
+
+        // Convert physical position to local logical coordinates
+        var cursorPhysicalPos = new PixelPoint(_ghostCursor.Position.X, _ghostCursor.Position.Y);
+        var cursorLogicalPos = PhysicalToLocal(cursorPhysicalPos);
+
+        // Calculate draw position (offset by hotspot)
+        double scale = 1.0 / _monitor.ScaleFactor;
+        var drawPos = new Point(
+            cursorLogicalPos.X - (_ghostCursor.Hotspot.X * scale),
+            cursorLogicalPos.Y - (_ghostCursor.Hotspot.Y * scale));
+
+        try 
+        {
+            // Draw the cached cursor bitmap
+            var size = new Size(_ghostCursorBitmap.Size.Width * scale, _ghostCursorBitmap.Size.Height * scale);
+            context.DrawImage(_ghostCursorBitmap, new Rect(drawPos, size));
+        }
+        catch
+        {
+            // Ignore drawing errors for ghost cursor
+        }
     }
 
     private void DrawResizeHandles(DrawingContext context, Rect rect)

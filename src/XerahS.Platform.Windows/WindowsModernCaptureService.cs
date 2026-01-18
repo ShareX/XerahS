@@ -170,6 +170,12 @@ namespace XerahS.Platform.Windows
             return await CaptureRectAsync(new SKRect(bounds.X, bounds.Y, bounds.Right, bounds.Bottom), options);
         }
 
+        public Task<CursorInfo?> CaptureCursorAsync()
+        {
+            // Delegate cursor capture to GDI approach
+            return _fallbackService.CaptureCursorAsync();
+        }
+
         /// <summary>
         /// Captures the entire virtual screen using DXGI Output Duplication
         /// </summary>

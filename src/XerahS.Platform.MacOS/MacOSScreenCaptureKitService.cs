@@ -130,6 +130,11 @@ namespace XerahS.Platform.MacOS
             return _fallbackService.CaptureWindowAsync(windowHandle, windowService, options);
         }
 
+        public Task<CursorInfo?> CaptureCursorAsync()
+        {
+            return Task.FromResult<CursorInfo?>(null);
+        }
+
         private SKBitmap? CaptureFullscreenNative()
         {
             var stopwatch = Stopwatch.StartNew();

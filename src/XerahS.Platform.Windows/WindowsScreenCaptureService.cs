@@ -252,6 +252,63 @@ namespace XerahS.Platform.Windows
             });
         }
 
+        /// <summary>
+        /// Captures the current mouse cursor
+        /// </summary>
+        public async Task<CursorInfo?> CaptureCursorAsync()
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    var cursor = new CursorData();
+                    if (!cursor.IsVisible || cursor.Handle == IntPtr.Zero) return null;
+
+                    var position = cursor.Position;
+                    var hotspot = cursor.Hotspot;
+                    int width = cursor.Size.Width > 0 ? cursor.Size.Width : 32;
+                    int height = cursor.Size.Height > 0 ? cursor.Size.Height : 32;
+
+                    // Create a 32-bit ARGB bitmap for proper transparency
+                    using var bitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    using (var g = System.Drawing.Graphics.FromImage(bitmap))
+                    {
+                        // Clear to transparent
+                        g.Clear(System.Drawing.Color.Transparent);
+                        
+                        // Get HDC and draw cursor
+                        IntPtr hdc = g.GetHdc();
+                        try
+                        {
+                            // Draw the cursor icon at (0,0)
+                            DrawIconEx(hdc, 0, 0, cursor.Handle, width, height, 0, IntPtr.Zero, DI_NORMAL);
+                        }
+                        finally
+                        {
+                            g.ReleaseHdc(hdc);
+                        }
+                    }
+
+                    // Convert to SKBitmap
+                    using var stream = new MemoryStream();
+                    bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    var skBitmap = SKBitmap.Decode(stream);
+
+                    return new CursorInfo(skBitmap, position, hotspot);
+                }
+                catch
+                {
+                    return null;
+                }
+            });
+        }
+
+        private const int DI_NORMAL = 0x0003;
+
+        [DllImport("user32.dll")]
+        private static extern bool DrawIconEx(IntPtr hdc, int xLeft, int yTop, IntPtr hIcon, int cxWidth, int cyHeight, int istepIfAniCur, IntPtr hbrFlickerFreeDraw, int diFlags);
+
         private SKBitmap? ToSKBitmap(Bitmap bitmap)
         {
             using (var stream = new MemoryStream())

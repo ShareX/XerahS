@@ -297,6 +297,11 @@ namespace XerahS.Platform.Linux
             return await CaptureRectAsync(new SKRect(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height), options);
         }
 
+        public Task<CursorInfo?> CaptureCursorAsync()
+        {
+            return Task.FromResult<CursorInfo?>(null);
+        }
+
         /// <summary>
         /// Capture using gnome-screenshot (GNOME desktop)
         /// </summary>
