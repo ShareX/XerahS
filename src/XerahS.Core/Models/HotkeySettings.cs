@@ -89,19 +89,25 @@ public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
         wf02.TaskSettings.CaptureSettings.UseModernCapture = true;
         list.Add(wf02);
 
-        // WF03: Record screen using GDI
-        var wf03 = new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift));
-        wf03.TaskSettings.Description = "Record screen using GDI";
-        wf03.TaskSettings.CaptureSettings.UseModernCapture = false;
-        wf03.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingBackend = XerahS.RegionCapture.ScreenRecording.RecordingBackend.GDI;
+        // WF03: Region capture
+        var wf03 = new WorkflowSettings(HotkeyType.RectangleRegion, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control));
+        wf03.TaskSettings.Description = "Region capture";
+        wf03.TaskSettings.CaptureSettings.UseModernCapture = true;
         list.Add(wf03);
 
-        // WF04: Record screen for game
-        var wf04 = new WorkflowSettings(HotkeyType.ScreenRecorderActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift));
-        wf04.TaskSettings.Description = "Record screen for game";
-        wf04.TaskSettings.CaptureSettings.UseModernCapture = true;
-        wf04.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingIntent = XerahS.RegionCapture.ScreenRecording.RecordingIntent.Game;
+        // WF04: Record screen using GDI
+        var wf04 = new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift));
+        wf04.TaskSettings.Description = "Record screen using GDI";
+        wf04.TaskSettings.CaptureSettings.UseModernCapture = false;
+        wf04.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingBackend = XerahS.RegionCapture.ScreenRecording.RecordingBackend.GDI;
         list.Add(wf04);
+
+        // WF05: Record screen for game
+        var wf05 = new WorkflowSettings(HotkeyType.ScreenRecorderActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift));
+        wf05.TaskSettings.Description = "Record screen for game";
+        wf05.TaskSettings.CaptureSettings.UseModernCapture = true;
+        wf05.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingIntent = XerahS.RegionCapture.ScreenRecording.RecordingIntent.Game;
+        list.Add(wf05);
 
         return list;
     }
