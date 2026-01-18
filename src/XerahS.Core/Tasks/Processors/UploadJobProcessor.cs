@@ -167,28 +167,38 @@ namespace XerahS.Core.Tasks.Processors
                 return null;
             }
 
-            if (!string.IsNullOrEmpty(info.FilePath))
+            Uploader.ProgressEventHandler progressHandler = progress => info.ReportUploadProgress(progress);
+            uploader.ProgressChanged += progressHandler;
+
+            try
             {
-                return uploader switch
+                if (!string.IsNullOrEmpty(info.FilePath))
                 {
-                    FileUploader fileUploader => fileUploader.UploadFile(info.FilePath),
-                    GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
-                    _ => null
-                };
-            }
+                    return uploader switch
+                    {
+                        FileUploader fileUploader => fileUploader.UploadFile(info.FilePath),
+                        GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
+                        _ => null
+                    };
+                }
 
-            if (info.Metadata?.Image == null)
-            {
-                return null;
-            }
+                if (info.Metadata?.Image == null)
+                {
+                    return null;
+                }
 
-            using (MemoryStream? ms = TaskHelpers.SaveImageAsStream(info.Metadata.Image, info.TaskSettings.ImageSettings.ImageFormat, info.TaskSettings))
+                using (MemoryStream? ms = TaskHelpers.SaveImageAsStream(info.Metadata.Image, info.TaskSettings.ImageSettings.ImageFormat, info.TaskSettings))
+                {
+                    if (ms == null) return null;
+                    ms.Position = 0;
+                    return uploader is GenericUploader genericUploader
+                        ? genericUploader.Upload(ms, info.FileName)
+                        : null;
+                }
+            }
+            finally
             {
-                if (ms == null) return null;
-                ms.Position = 0;
-                return uploader is GenericUploader genericUploader
-                    ? genericUploader.Upload(ms, info.FileName)
-                    : null;
+                uploader.ProgressChanged -= progressHandler;
             }
         }
 

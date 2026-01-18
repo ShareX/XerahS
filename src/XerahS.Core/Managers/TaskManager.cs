@@ -43,6 +43,7 @@ namespace XerahS.Core.Managers
 
         // Event fired when a task completes with an image
         public event EventHandler<WorkerTask>? TaskCompleted;
+        public event EventHandler<WorkerTask>? TaskStarted;
 
         public async Task StartTask(TaskSettings? taskSettings, SkiaSharp.SKBitmap? inputImage = null)
         {
@@ -66,6 +67,8 @@ namespace XerahS.Core.Managers
                 // Fire event so listeners (like App.axaml.cs) can update UI
                 TaskCompleted?.Invoke(this, task);
             };
+
+            TaskStarted?.Invoke(this, task);
 
             TroubleshootingHelper.Log(task.Info?.TaskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", "Calling task.StartAsync...");
             await task.StartAsync();

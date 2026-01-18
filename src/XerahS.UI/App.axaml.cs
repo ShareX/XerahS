@@ -38,6 +38,9 @@ namespace XerahS.UI;
 public partial class App : Application
 {
     public static bool IsExiting { get; set; } = false;
+    private readonly object _uploadTitleLock = new();
+    private int _activeUploadCount;
+    private string _baseTitle = AppResources.ProductNameWithVersion;
 
     public override void Initialize()
     {
@@ -71,6 +74,7 @@ public partial class App : Application
             {
                 DataContext = mainViewModel,
             };
+            _baseTitle = desktop.MainWindow.Title ?? AppResources.ProductNameWithVersion;
 
             // Apply window state based on SilentRun
             // Note: MainWindow is automatically shown by ApplicationLifetime after this method returns.
@@ -196,6 +200,7 @@ public partial class App : Application
 
             // Subscribe to workflow completion for notification
             Core.Managers.TaskManager.Instance.TaskCompleted += OnWorkflowTaskCompleted;
+            Core.Managers.TaskManager.Instance.TaskStarted += OnWorkflowTaskStarted;
 
             // Trigger async recording initialization via callback
             // This prevents blocking the main window from showing quickly
@@ -299,6 +304,86 @@ public partial class App : Application
                 }
             });
         }
+    }
+
+    private void OnWorkflowTaskStarted(object? sender, Core.Tasks.WorkerTask task)
+    {
+        if (!task.Info.IsUploadJob) return;
+
+        void HandleProgress(XerahS.Uploaders.ProgressManager progress)
+        {
+            UpdateMainWindowTitle(progress.Percentage);
+        }
+
+        void HandleCompleted(object? s, EventArgs e)
+        {
+            task.Info.UploadProgressChanged -= HandleProgress;
+            task.TaskCompleted -= HandleCompleted;
+            DecrementActiveUploads();
+        }
+
+        task.Info.UploadProgressChanged += HandleProgress;
+        task.TaskCompleted += HandleCompleted;
+
+        IncrementActiveUploads();
+        UpdateMainWindowTitle(0);
+    }
+
+    private void IncrementActiveUploads()
+    {
+        lock (_uploadTitleLock)
+        {
+            _activeUploadCount++;
+        }
+    }
+
+    private void DecrementActiveUploads()
+    {
+        bool resetTitle;
+        lock (_uploadTitleLock)
+        {
+            _activeUploadCount = Math.Max(0, _activeUploadCount - 1);
+            resetTitle = _activeUploadCount == 0;
+        }
+
+        if (resetTitle)
+        {
+            ResetMainWindowTitle();
+        }
+    }
+
+    private void UpdateMainWindowTitle(double percentage)
+    {
+        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow == null) return;
+
+        if (double.IsNaN(percentage) || double.IsInfinity(percentage))
+        {
+            percentage = 0;
+        }
+
+        double clamped = Math.Clamp(percentage, 0, 100);
+        string title = $"{_baseTitle} - Upload {clamped:0}%";
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            if (desktop.MainWindow != null)
+            {
+                desktop.MainWindow.Title = title;
+            }
+        });
+    }
+
+    private void ResetMainWindowTitle()
+    {
+        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow == null) return;
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            if (desktop.MainWindow != null)
+            {
+                desktop.MainWindow.Title = _baseTitle;
+            }
+        });
     }
 
     private Avalonia.Threading.DispatcherTimer? _trayClickTimer;
