@@ -26,6 +26,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.Input;
 using ShareX.Editor.Extensions;
 using ShareX.Editor.ImageEffects;
@@ -57,6 +58,7 @@ namespace XerahS.UI.ViewModels
                 {
                     UpdateEffectsList();
                     UpdatePreview();
+                    UpdateSelectedPresetIndex();
                 }
             }
         }
@@ -232,6 +234,7 @@ namespace XerahS.UI.ViewModels
                 Presets.Remove(preset);
                 settings.ImageEffectPresets.Remove(preset);
                 SelectedPreset = Presets[Math.Clamp(index, 0, Presets.Count - 1)];
+                UpdateSelectedPresetIndex();
             }
         }
 
@@ -266,10 +269,7 @@ namespace XerahS.UI.ViewModels
             if (SelectedPreset == null)
                 return;
 
-            var topLevel = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                ? desktop.MainWindow
-                : null;
-
+            var topLevel = GetMainWindow();
             if (topLevel?.StorageProvider == null)
             {
                 DebugHelper.WriteLine("[ImageEffects] Unable to open save picker (no window).");
@@ -327,53 +327,39 @@ namespace XerahS.UI.ViewModels
         [RelayCommand]
         public async Task LoadPresetAsync()
         {
-            var topLevel = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                ? desktop.MainWindow
-                : null;
-
-            if (topLevel?.StorageProvider == null)
-            {
-                DebugHelper.WriteLine("[ImageEffects] Unable to open file picker (no window).");
-                return;
-            }
-
-            var options = new FilePickerOpenOptions
-            {
-                Title = "Load Image Effects Preset",
-                AllowMultiple = false,
-                FileTypeFilter = new[]
-                {
-                    new FilePickerFileType("Image Effects Preset") { Patterns = new[] { "*.xsie", "*.sxie" } }
-                }
-            };
-
-            var files = await topLevel.StorageProvider.OpenFilePickerAsync(options);
-            if (files.Count == 0)
+            var preset = await LoadPresetFromPickerAsync("Load Image Effects Preset");
+            if (preset == null)
                 return;
 
-            var filePath = files[0].Path.LocalPath;
-            if (string.IsNullOrWhiteSpace(filePath))
+            AddPreset(preset);
+            SelectedPreset = preset;
+            UpdatePreview();
+        }
+
+        [RelayCommand]
+        public async Task ImportEffectsAsync()
+        {
+            var preset = await LoadPresetFromPickerAsync("Import Image Effects");
+            if (preset == null)
                 return;
 
-            var extension = Path.GetExtension(filePath).ToLowerInvariant();
-
-            try
+            if (SelectedPreset == null)
             {
-                ImageEffectPreset? preset = extension == ".sxie"
-                    ? LoadLegacyPreset(filePath)
-                    : ImageEffectPresetSerializer.LoadXsieFile(filePath);
-
-                if (preset == null)
-                    return;
-
                 AddPreset(preset);
                 SelectedPreset = preset;
                 UpdatePreview();
+                return;
             }
-            catch (Exception ex)
+
+            SelectedPreset.Name = preset.Name;
+            SelectedPreset.Effects.Clear();
+            foreach (var effect in preset.Effects)
             {
-                DebugHelper.WriteException(ex, "Failed to load image effects preset.");
+                SelectedPreset.Effects.Add(effect);
             }
+
+            UpdateEffectsList();
+            UpdatePreview();
         }
 
         private ImageEffectPreset? LoadLegacyPreset(string filePath)
@@ -405,6 +391,55 @@ namespace XerahS.UI.ViewModels
             }
 
             return preset;
+        }
+
+        private async Task<ImageEffectPreset?> LoadPresetFromPickerAsync(string title)
+        {
+            var topLevel = GetMainWindow();
+            if (topLevel?.StorageProvider == null)
+            {
+                DebugHelper.WriteLine("[ImageEffects] Unable to open file picker (no window).");
+                return null;
+            }
+
+            var options = new FilePickerOpenOptions
+            {
+                Title = title,
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    new FilePickerFileType("Image Effects Preset") { Patterns = new[] { "*.xsie", "*.sxie" } }
+                }
+            };
+
+            var files = await topLevel.StorageProvider.OpenFilePickerAsync(options);
+            if (files.Count == 0)
+                return null;
+
+            var filePath = files[0].Path.LocalPath;
+            if (string.IsNullOrWhiteSpace(filePath))
+                return null;
+
+            var extension = Path.GetExtension(filePath).ToLowerInvariant();
+
+            try
+            {
+                return extension == ".sxie"
+                    ? LoadLegacyPreset(filePath)
+                    : ImageEffectPresetSerializer.LoadXsieFile(filePath);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to load image effects preset.");
+                return null;
+            }
+        }
+
+        private static Window? GetMainWindow()
+        {
+            return Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null;
         }
 
         private static ImageEffect? CreateEffectFromMapped(MappedEffect mapped)
@@ -523,6 +558,14 @@ namespace XerahS.UI.ViewModels
             settings.ImageEffectPresets.Add(preset);
         }
 
+        private void UpdateSelectedPresetIndex()
+        {
+            if (SelectedPreset == null)
+                return;
+
+            settings.SelectedImageEffectPreset = Math.Max(0, Presets.IndexOf(SelectedPreset));
+        }
+
         // TODO: Move logic, rename, duplicate, etc.
     }
 
@@ -546,7 +589,7 @@ namespace XerahS.UI.ViewModels
         public EffectType(Type type)
         {
             Type = type;
-            Name = type.GetDescription() ?? type.Name;
+            Name = ShareX.Editor.Extensions.TypeExtensions.GetDescription(type) ?? type.Name;
         }
     }
 }

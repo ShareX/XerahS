@@ -45,6 +45,7 @@ namespace XerahS.UI.ViewModels
         {
             _settings = settings;
             ImageEffects = new ImageEffectsViewModel(Model.ImageSettings);
+            ImageEffects.UpdatePreview();
         }
 
         public IEnumerable<EImageFormat> ImageFormats => Enum.GetValues(typeof(EImageFormat)).Cast<EImageFormat>();

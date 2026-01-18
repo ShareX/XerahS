@@ -221,6 +221,7 @@
                                 <Button Command="{Binding ImageEffects.RemovePresetCommand}" Content="Remove"/>
                                 <Button Command="{Binding ImageEffects.SavePresetCommand}" Content="Save Preset"/>
                                 <Button Command="{Binding ImageEffects.LoadPresetCommand}" Content="Load Preset"/>
+                                <Button Command="{Binding ImageEffects.ImportEffectsCommand}" Content="Import Effects"/>
                             </StackPanel>
                             <ListBox ItemsSource="{Binding ImageEffects.Presets}" SelectedItem="{Binding ImageEffects.SelectedPreset}" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
                         </DockPanel>
