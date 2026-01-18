@@ -46,22 +46,7 @@ namespace XerahS.UI.ViewModels
         private SKBitmap? sourcePreviewBitmap;
         private const int PreviewSize = 256;
 
-        public ObservableCollection<ImageEffectPreset> Presets { get; private set; }
-
-        private ImageEffectPreset? selectedPreset;
-        public ImageEffectPreset? SelectedPreset
-        {
-            get => selectedPreset;
-            set
-            {
-                if (SetProperty(ref selectedPreset, value))
-                {
-                    UpdateEffectsList();
-                    UpdatePreview();
-                    UpdateSelectedPresetIndex();
-                }
-            }
-        }
+        public string Name { get; set; } = "New preset";
 
         public ObservableCollection<ImageEffect> Effects { get; private set; } = new ObservableCollection<ImageEffect>();
 
@@ -84,21 +69,20 @@ namespace XerahS.UI.ViewModels
         public ImageEffectsViewModel(TaskSettingsImage settings)
         {
             this.settings = settings;
-            Presets = new ObservableCollection<ImageEffectPreset>(settings.ImageEffectPresets);
 
-            foreach (var preset in Presets)
+            if (settings.ImageEffectPresets != null && settings.ImageEffectPresets.Count > 0)
             {
-                preset.Effects ??= new List<ImageEffect>();
-            }
-
-            if (Presets.Count > 0)
-            {
-                int index = Math.Clamp(settings.SelectedImageEffectPreset, 0, Presets.Count - 1);
-                SelectedPreset = Presets[index];
-            }
-            else
-            {
-                AddPreset();
+               var firstPreset = settings.ImageEffectPresets[0];
+               if (!string.IsNullOrEmpty(firstPreset.Name))
+                   Name = firstPreset.Name;
+               
+               if (firstPreset.Effects != null)
+               {
+                   foreach(var effect in firstPreset.Effects)
+                   {
+                       Effects.Add(effect);
+                   }
+               }
             }
 
             InitializeAvailableEffects();
@@ -136,28 +120,41 @@ namespace XerahS.UI.ViewModels
             }
             catch
             {
-                // Fallback to a simple generated image if logo fails to load
+                // Fallback to a simple generated image if logo fails to load (Asymmetric F shape for testing rotation)
                 sourcePreviewBitmap = new SKBitmap(PreviewSize, PreviewSize);
                 using var canvas = new SKCanvas(sourcePreviewBitmap);
 
-                using var gradientPaint = new SKPaint();
-                var colors = new SKColor[] { new SKColor(70, 130, 180), new SKColor(135, 206, 235) };
-                gradientPaint.Shader = SKShader.CreateLinearGradient(
-                    new SKPoint(0, 0),
-                    new SKPoint(PreviewSize, PreviewSize),
-                    colors,
-                    null,
-                    SKShaderTileMode.Clamp);
-                canvas.DrawRect(0, 0, PreviewSize, PreviewSize, gradientPaint);
+                using var bgPaint = new SKPaint { Color = SKColors.White };
+                canvas.DrawRect(0, 0, PreviewSize, PreviewSize, bgPaint);
+
+                using var paint = new SKPaint
+                {
+                    Color = new SKColor(70, 130, 180),
+                    IsAntialias = true,
+                    Style = SKPaintStyle.Fill
+                };
+
+                // Draw an 'F' shape or similar asymmetric pattern
+                float padding = PreviewSize * 0.2f;
+                float width = PreviewSize * 0.6f;
+                float height = PreviewSize * 0.6f;
+                float thickness = width * 0.25f;
+
+                // Vertical bar
+                canvas.DrawRect(padding, padding, thickness, height, paint);
+                // Top horizontal bar
+                canvas.DrawRect(padding, padding, width, thickness, paint);
+                // Middle horizontal bar
+                canvas.DrawRect(padding, padding + height * 0.4f, width * 0.7f, thickness, paint);
 
                 using var textPaint = new SKPaint
                 {
-                    Color = SKColors.White,
-                    TextSize = 24,
+                    Color = SKColors.Black,
+                    TextSize = 20,
                     IsAntialias = true,
-                    TextAlign = SKTextAlign.Center
+                    TextAlign = SKTextAlign.Left
                 };
-                canvas.DrawText("Preview", PreviewSize / 2, PreviewSize / 2, textPaint);
+                canvas.DrawText("Preview", padding, PreviewSize - padding / 2, textPaint);
             }
         }
 
@@ -169,16 +166,13 @@ namespace XerahS.UI.ViewModels
 
             try
             {
-                if (SelectedPreset != null)
+                foreach (var effect in Effects)
                 {
-                    foreach (var effect in SelectedPreset.Effects)
+                    var processed = effect.Apply(result);
+                    if (processed != result)
                     {
-                        var processed = effect.Apply(result);
-                        if (processed != result)
-                        {
-                            result.Dispose();
-                            result = processed;
-                        }
+                        result.Dispose();
+                        result = processed;
                     }
                 }
 
@@ -201,49 +195,13 @@ namespace XerahS.UI.ViewModels
             UpdatePreview();
         }
 
-        private void UpdateEffectsList()
-        {
-            Effects.Clear();
-            if (SelectedPreset != null)
-            {
-                SelectedPreset.Effects ??= new List<ImageEffect>();
-                foreach (var effect in SelectedPreset.Effects)
-                {
-                    Effects.Add(effect);
-                }
-            }
 
-            SelectedEffect = Effects.FirstOrDefault();
-        }
-
-        [RelayCommand]
-        public void AddPreset()
-        {
-            var preset = new ImageEffectPreset { Name = "New preset" };
-            AddPreset(preset);
-            SelectedPreset = preset;
-        }
-
-        [RelayCommand]
-        public void RemovePreset()
-        {
-            if (SelectedPreset != null && Presets.Count > 1)
-            {
-                var preset = SelectedPreset;
-                int index = Presets.IndexOf(preset);
-                Presets.Remove(preset);
-                settings.ImageEffectPresets.Remove(preset);
-                SelectedPreset = Presets[Math.Clamp(index, 0, Presets.Count - 1)];
-                UpdateSelectedPresetIndex();
-            }
-        }
 
         [RelayCommand]
         public void AddEffect(Type effectType)
         {
-            if (SelectedPreset != null && Activator.CreateInstance(effectType) is ImageEffect effect)
+            if (Activator.CreateInstance(effectType) is ImageEffect effect)
             {
-                SelectedPreset.Effects.Add(effect);
                 Effects.Add(effect);
                 SelectedEffect = effect;
                 UpdatePreview();
@@ -253,10 +211,9 @@ namespace XerahS.UI.ViewModels
         [RelayCommand]
         public void RemoveEffect()
         {
-            if (SelectedPreset != null && SelectedEffect != null)
+            if (SelectedEffect != null)
             {
                 var effect = SelectedEffect;
-                SelectedPreset.Effects.Remove(effect);
                 Effects.Remove(effect);
                 SelectedEffect = Effects.FirstOrDefault();
                 UpdatePreview();
@@ -266,7 +223,7 @@ namespace XerahS.UI.ViewModels
         [RelayCommand]
         public async Task SavePresetAsync()
         {
-            if (SelectedPreset == null)
+            if (Effects == null)
                 return;
 
             var topLevel = GetMainWindow();
@@ -279,7 +236,7 @@ namespace XerahS.UI.ViewModels
             var options = new FilePickerSaveOptions
             {
                 Title = "Save Image Effects Preset",
-                SuggestedFileName = string.IsNullOrWhiteSpace(SelectedPreset.Name) ? "Preset.xsie" : $"{SelectedPreset.Name}.xsie",
+                SuggestedFileName = string.IsNullOrWhiteSpace(Name) ? "Preset.xsie" : $"{Name}.xsie",
                 DefaultExtension = "xsie",
                 FileTypeChoices = new[]
                 {
@@ -298,11 +255,17 @@ namespace XerahS.UI.ViewModels
 
             var extension = Path.GetExtension(filePath).ToLowerInvariant();
 
+            var presetToSave = new ImageEffectPreset
+            {
+                Name = Name,
+                Effects = Effects.ToList()
+            };
+
             try
             {
                 if (extension == ".sxie")
                 {
-                    var result = LegacyImageEffectExporter.ExportSxieFile(filePath, SelectedPreset.Name, SelectedPreset.Effects);
+                    var result = LegacyImageEffectExporter.ExportSxieFile(filePath, presetToSave.Name, presetToSave.Effects);
                     if (!result.Success)
                     {
                         DebugHelper.WriteLine($"[ImageEffects] Legacy export failed: {result.ErrorMessage}");
@@ -315,7 +278,7 @@ namespace XerahS.UI.ViewModels
                         filePath = $"{filePath}.xsie";
                     }
 
-                    ImageEffectPresetSerializer.SaveXsieFile(filePath, SelectedPreset);
+                    ImageEffectPresetSerializer.SaveXsieFile(filePath, presetToSave);
                 }
             }
             catch (Exception ex)
@@ -325,40 +288,22 @@ namespace XerahS.UI.ViewModels
         }
 
         [RelayCommand]
-        public async Task LoadPresetAsync()
-        {
-            var preset = await LoadPresetFromPickerAsync("Load Image Effects Preset");
-            if (preset == null)
-                return;
-
-            AddPreset(preset);
-            SelectedPreset = preset;
-            UpdatePreview();
-        }
-
-        [RelayCommand]
         public async Task ImportEffectsAsync()
         {
             var preset = await LoadPresetFromPickerAsync("Import Image Effects");
             if (preset == null)
                 return;
 
-            if (SelectedPreset == null)
+            Name = preset.Name;
+            Effects.Clear();
+            if (preset.Effects != null)
             {
-                AddPreset(preset);
-                SelectedPreset = preset;
-                UpdatePreview();
-                return;
+                foreach (var effect in preset.Effects)
+                {
+                    Effects.Add(effect);
+                }
             }
 
-            SelectedPreset.Name = preset.Name;
-            SelectedPreset.Effects.Clear();
-            foreach (var effect in preset.Effects)
-            {
-                SelectedPreset.Effects.Add(effect);
-            }
-
-            UpdateEffectsList();
             UpdatePreview();
         }
 
@@ -424,9 +369,16 @@ namespace XerahS.UI.ViewModels
 
             try
             {
-                return extension == ".sxie"
+                var preset = extension == ".sxie"
                     ? LoadLegacyPreset(filePath)
                     : ImageEffectPresetSerializer.LoadXsieFile(filePath);
+                
+                if (preset != null)
+                {
+                    preset.Name = Path.GetFileNameWithoutExtension(filePath);
+                }
+
+                return preset;
             }
             catch (Exception ex)
             {
@@ -551,20 +503,7 @@ namespace XerahS.UI.ViewModels
             return Convert.ToInt32(value);
         }
 
-        private void AddPreset(ImageEffectPreset preset)
-        {
-            preset.Effects ??= new List<ImageEffect>();
-            Presets.Add(preset);
-            settings.ImageEffectPresets.Add(preset);
-        }
 
-        private void UpdateSelectedPresetIndex()
-        {
-            if (SelectedPreset == null)
-                return;
-
-            settings.SelectedImageEffectPreset = Math.Max(0, Presets.IndexOf(SelectedPreset));
-        }
 
         // TODO: Move logic, rename, duplicate, etc.
     }

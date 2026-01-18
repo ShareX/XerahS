@@ -214,17 +214,14 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <Grid Grid.Row="1" ColumnDefinitions="*, *, 1.5*, *" Margin="10">
-                        <!-- Presets -->
+                    <Grid Grid.Row="1" ColumnDefinitions="*, *, 1.5*, 2*" Margin="10">
+                        <!-- Preset -->
                         <DockPanel Grid.Column="0" Margin="0,0,5,0">
-                            <TextBlock Text="Presets:" DockPanel.Dock="Top" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding ImageEffects.Name, StringFormat='Preset: {0}'}" DockPanel.Dock="Top" Margin="0,0,0,5" TextTrimming="CharacterEllipsis"/>
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="5" Margin="0,0,0,5">
-                                <Button Command="{Binding ImageEffects.AddPresetCommand}" Content="Add"/>
-                                <Button Command="{Binding ImageEffects.RemovePresetCommand}" Content="Remove"/>
-                                <Button Command="{Binding ImageEffects.ImportEffectsCommand}" Content="Import Effects"/>
-                                <Button Command="{Binding ImageEffects.SavePresetCommand}" Content="Export Effects"/>
+                                <Button Command="{Binding ImageEffects.ImportEffectsCommand}" Content="Import..."/>
+                                <Button Command="{Binding ImageEffects.SavePresetCommand}" Content="Export..."/>
                             </StackPanel>
-                            <ListBox ItemsSource="{Binding ImageEffects.Presets}" SelectedItem="{Binding ImageEffects.SelectedPreset}" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
                         </DockPanel>
 
                         <!-- Effects List -->
