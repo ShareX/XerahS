@@ -24,7 +24,7 @@
 #endregion License Information (GPL v3)
 #pragma warning disable CA1416 // Validate platform compatibility
 using Newtonsoft.Json;
-// TODO TODO_IMAGE_EFFECTS using ShareX.Editor.ImageEffects;
+using ShareX.Editor.ImageEffects;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -41,8 +41,8 @@ public class ImageEffectPreset
 {
     public string Name { get; set; } = "";
 
-    // TODO TODO_IMAGE_EFFECTS [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto)]
-    // TODO TODO_IMAGE_EFFECTS public List<ImageEffect> Effects { get; set; } = new();
+    [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto)]
+    public List<ImageEffect> Effects { get; set; } = new();
 
     /// <summary>
     /// Legacy import support: stores mapped effect data from .sxie imports.

@@ -219,6 +219,8 @@
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="5" Margin="0,0,0,5">
                                 <Button Command="{Binding ImageEffects.AddPresetCommand}" Content="Add"/>
                                 <Button Command="{Binding ImageEffects.RemovePresetCommand}" Content="Remove"/>
+                                <Button Command="{Binding ImageEffects.SavePresetCommand}" Content="Save Preset"/>
+                                <Button Command="{Binding ImageEffects.LoadPresetCommand}" Content="Load Preset"/>
                             </StackPanel>
                             <ListBox ItemsSource="{Binding ImageEffects.Presets}" SelectedItem="{Binding ImageEffects.SelectedPreset}" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
                         </DockPanel>
