@@ -46,8 +46,28 @@ Use `SkiaSharp` for **editing, processing, and saving** images.
 
 ---
 
+### Why do workflows have unique settings instead of inheriting from a Default?
+
+**Q: Why are there no "Default Settings" for workflows like in ShareX?**
+
+**A:** XerahS adopts a "Zero Inheritance" policy for workflows to reduce cognitive load and configuration errors.
+
+*   **Simplicity:** Each workflow is a self-contained unit. You never need to look elsewhere to understand what a specific hotkey or task will do.
+*   **No "Inheritance" Confusion:** In the legacy model, users often struggled to remember which setting was inherited from "Default," which was overridden by a "Profile," and which was specific to a "Task."
+*   **Explicit Configuration:** All settings are unique to the workflow. Changing a setting in one workflow is guaranteed to never affect another workflow.
+
+---
+
 ### macOS: Why don't global hotkeys work?
 
 **Q: Hotkeys never fire on macOS. What should I check?**
 
 **A:** macOS requires Accessibility permission for global key monitoring. Open `System Settings` → `Privacy & Security` → `Accessibility` and allow the ShareX Ava app (bundle or `dotnet run`). Restart the app after granting permission. Hotkeys are powered by SharpHook; without Accessibility, it cannot receive events.
+
+---
+
+### How to pronounce XerahS?
+
+**Q: How to pronounce XerahS?**
+
+**A:** XerahS is pronounced **zeh raks** with *xe* as in Xerox and *rax* as in the ending sound of relax.
