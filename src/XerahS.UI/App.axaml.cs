@@ -358,10 +358,19 @@ public partial class App : Application
                             category == EnumExtensions.HotkeyType_Category_ScreenRecord;
 
         // For capture jobs, avoid bringing the main window forward until the capture completes.
+        // For non-capture jobs, only navigate if the window is already visible (not minimized to tray).
         if (!isCaptureJob && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
             desktop.MainWindow is MainWindow immediateMainWindow)
         {
-            immediateMainWindow.NavigateToEditor();
+            // Only activate if the window is visible (not minimized or hidden)
+            bool isWindowVisible = immediateMainWindow.IsVisible &&
+                                   immediateMainWindow.WindowState != Avalonia.Controls.WindowState.Minimized &&
+                                   immediateMainWindow.ShowInTaskbar;
+            
+            if (isWindowVisible)
+            {
+                immediateMainWindow.NavigateToEditor();
+            }
         }
 
         // Subscribe once to task completion so we can update preview (and show the window for capture jobs).
@@ -373,7 +382,15 @@ public partial class App : Application
             if (isCaptureJob && task.IsSuccessful && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
                 desktop.MainWindow is MainWindow mainWindowAfterCapture)
             {
-                mainWindowAfterCapture.NavigateToEditor();
+                // Only navigate to editor if window is visible, not when minimized to tray
+                bool isWindowVisible = mainWindowAfterCapture.IsVisible &&
+                                       mainWindowAfterCapture.WindowState != Avalonia.Controls.WindowState.Minimized &&
+                                       mainWindowAfterCapture.ShowInTaskbar;
+                
+                if (isWindowVisible)
+                {
+                    mainWindowAfterCapture.NavigateToEditor();
+                }
             }
         }
 

@@ -94,6 +94,29 @@ namespace XerahS.Core.Tasks.Processors
                             info.Metadata.Image.Dispose();
                         }
                         info.Metadata.Image = editedImage;
+
+                        // Re-save the annotated image to the same file path
+                        if (!string.IsNullOrEmpty(info.FilePath))
+                        {
+                            try
+                            {
+                                using var stream = File.Create(info.FilePath);
+                                var format = SkiaSharp.SKEncodedImageFormat.Png;
+                                var ext = Path.GetExtension(info.FilePath).ToLowerInvariant();
+                                if (ext == ".jpg" || ext == ".jpeg")
+                                    format = SkiaSharp.SKEncodedImageFormat.Jpeg;
+                                else if (ext == ".webp")
+                                    format = SkiaSharp.SKEncodedImageFormat.Webp;
+
+                                using var data = editedImage.Encode(format, 100);
+                                data.SaveTo(stream);
+                                DebugHelper.WriteLine($"Annotated image saved: {info.FilePath}");
+                            }
+                            catch (Exception ex)
+                            {
+                                DebugHelper.WriteException(ex, "Failed to save annotated image");
+                            }
+                        }
                     }
                 }
             }
