@@ -26,6 +26,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using ShareX.Editor.ViewModels;
 using XerahS.Common;
 using XerahS.Core;
@@ -138,6 +139,49 @@ public partial class App : Application
                     catch (Exception ex)
                     {
                         Common.DebugHelper.WriteException(ex, "Failed to show window selector");
+                        tcs.TrySetResult(null);
+                    }
+                });
+
+                return await tcs.Task;
+            };
+
+            // Setup OpenFileDialog callback for FileUpload hotkey
+            Core.Tasks.WorkerTask.ShowOpenFileDialogCallback = async () =>
+            {
+                var tcs = new TaskCompletionSource<string?>();
+
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    try
+                    {
+                        var topLevel = TopLevel.GetTopLevel(desktop.MainWindow);
+                        if (topLevel == null)
+                        {
+                            tcs.TrySetResult(null);
+                            return;
+                        }
+
+                        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+                        {
+                            Title = "Select File to Upload",
+                            AllowMultiple = false
+                        });
+
+                        if (files.Count >= 1)
+                        {
+                            // Get local path if possible
+                            var path = files[0].TryGetLocalPath();
+                            tcs.TrySetResult(path);
+                        }
+                        else
+                        {
+                            tcs.TrySetResult(null);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Common.DebugHelper.WriteException(ex, "Failed to show open file dialog");
                         tcs.TrySetResult(null);
                     }
                 });

@@ -76,6 +76,12 @@ namespace XerahS.Core.Tasks
         /// </summary>
         public static Func<Task<XerahS.Platform.Abstractions.WindowInfo?>>? ShowWindowSelectorCallback { get; set; }
 
+        /// <summary>
+        /// Delegate to show open file dialog for FileUpload jobs.
+        /// Returns selected file path or null if cancelled.
+        /// </summary>
+        public static Func<Task<string?>>? ShowOpenFileDialogCallback { get; set; }
+
         private WorkerTask(TaskSettings taskSettings, SKBitmap? inputImage = null)
         {
             Status = TaskStatus.InQueue;
@@ -204,6 +210,47 @@ namespace XerahS.Core.Tasks
                         if (PlatformServices.Window != null)
                         {
                             image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
+                        }
+                        break;
+
+                    case HotkeyType.FileUpload:
+                        // If file path is not already set (e.g. via args), ask user
+                        if (string.IsNullOrEmpty(Info.FilePath) && ShowOpenFileDialogCallback != null)
+                        {
+                            TroubleshootingHelper.Log(taskSettings.Job.ToString(), "UI", "Requesting file from user via dialog...");
+                            var selectedFile = await ShowOpenFileDialogCallback();
+                            
+                            if (!string.IsNullOrEmpty(selectedFile))
+                            {
+                                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "UI", $"User selected file: {selectedFile}");
+                                Info.FilePath = selectedFile;
+                                Info.DataType = EDataType.File;
+                                
+                                // Set filename in metadata for convenience
+                                // Info.FileName is set automatically by property setter of FilePath
+                            }
+                            else
+                            {
+                                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "UI", "User cancelled file selection");
+                                Status = TaskStatus.Stopped;
+                                OnStatusChanged();
+                                return;
+                            }
+                        }
+                        else if (!string.IsNullOrEmpty(Info.FilePath))
+                        {
+                             // File path already provided (drag/drop or args)
+                             Info.DataType = EDataType.File;
+                             // Info.FileName is set automatically by property setter of FilePath
+                        }
+                        else
+                        {
+                             // No file and no callback
+                             DebugHelper.WriteLine("FileUpload job started but no file provided and no dialog callback available.");
+                             Status = TaskStatus.Failed;
+                             Error = new Exception("No file selected and dialog unavailable");
+                             OnStatusChanged(); // Will trigger failure toast in finally
+                             return;
                         }
                         break;
 
@@ -405,6 +452,10 @@ namespace XerahS.Core.Tasks
                 {
                     metadata.Image = image;
                     DebugHelper.WriteLine($"Captured image: {image.Width}x{image.Height} in {captureStopwatch.ElapsedMilliseconds}ms");
+                }
+                else if (taskSettings?.Job == HotkeyType.FileUpload && !string.IsNullOrEmpty(Info.FilePath))
+                {
+                    DebugHelper.WriteLine($"FileUpload selected file: {Info.FilePath}");
                 }
                 else
                 {
