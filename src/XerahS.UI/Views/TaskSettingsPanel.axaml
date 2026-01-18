@@ -160,6 +160,8 @@
                                     <CheckBox IsChecked="{Binding UploadImageToHost}" 
                                               Content="Upload image to host"
                                               FontWeight="SemiBold"/>
+                                    <CheckBox IsChecked="{Binding ApplyImageEffects}"
+                                              Content="Apply image effects"/>
                                     <CheckBox IsChecked="{Binding AnnotateImage}" 
                                               Content="Annotate image"/>
                                     <CheckBox IsChecked="{Binding ShowAfterCaptureWindow}" 
@@ -219,9 +221,8 @@
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="5" Margin="0,0,0,5">
                                 <Button Command="{Binding ImageEffects.AddPresetCommand}" Content="Add"/>
                                 <Button Command="{Binding ImageEffects.RemovePresetCommand}" Content="Remove"/>
-                                <Button Command="{Binding ImageEffects.SavePresetCommand}" Content="Save Preset"/>
-                                <Button Command="{Binding ImageEffects.LoadPresetCommand}" Content="Load Preset"/>
                                 <Button Command="{Binding ImageEffects.ImportEffectsCommand}" Content="Import Effects"/>
+                                <Button Command="{Binding ImageEffects.SavePresetCommand}" Content="Export Effects"/>
                             </StackPanel>
                             <ListBox ItemsSource="{Binding ImageEffects.Presets}" SelectedItem="{Binding ImageEffects.SelectedPreset}" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
                         </DockPanel>
@@ -251,7 +252,13 @@
                                 </Button>
                                 <Button Command="{Binding ImageEffects.RemoveEffectCommand}" Content="Remove"/>
                             </StackPanel>
-                            <ListBox ItemsSource="{Binding ImageEffects.Effects}" SelectedItem="{Binding ImageEffects.SelectedEffect}" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
+                            <ListBox ItemsSource="{Binding ImageEffects.Effects}" SelectedItem="{Binding ImageEffects.SelectedEffect}" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
                         </DockPanel>
 
                         <!-- Property Grid -->

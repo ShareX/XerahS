@@ -10,7 +10,7 @@
 `develop`
 
 ## Status
-Complete - Verified on 2026-01-18
+Complete - Updated on 2026-01-19
 
 ## Assessment
 The current Image Effects web editor (and desktop port) allows applying effects, but not saving/loading them as presets. ShareX supports `.sxie` files (ZIP containing `Config.json`). XerahS should support a native format (`.xsie`) which uses the same ZIP container structure but with modern JSON schema, and the legacy ShareX format (`.sxie`) for compatibility.
@@ -66,5 +66,7 @@ A direct JSON serialization of the `ObservableCollection<ImageEffect>`.
 ## Deliverables
 *   [x] `LegacyImageEffectExporter` implemented and tested.
 *   [x] UI updated with Save/Load buttons.
+*   [x] Save/Load buttons placed in ShareX.Editor bottom bar; Import/Export remain in TaskSettings.
 *   [x] "Save As" dialog integrated with format selection.
 *   [x] Verification: `.xsie` and `.sxie` round-trip validated via automated tests.
+*   [x] Workflow pipeline applies image effects when `AfterCaptureTasks.AddImageEffects` is set.

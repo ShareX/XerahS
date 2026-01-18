@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Editor.ImageEffects;
 using XerahS.Common;
 
 namespace XerahS.Core;
@@ -462,6 +463,63 @@ public static partial class TaskHelpers
 
         ImageHelpers.SaveBitmap(bmp, filePath);
         return filePath;
+    }
+
+    /// <summary>
+    /// Apply configured image effects to the bitmap.
+    /// </summary>
+    public static SkiaSharp.SKBitmap? ApplyImageEffects(SkiaSharp.SKBitmap? bmp, TaskSettingsImage taskSettingsImage)
+    {
+        if (bmp == null)
+        {
+            return null;
+        }
+
+        if (taskSettingsImage == null)
+        {
+            return bmp;
+        }
+
+        var presets = taskSettingsImage.ImageEffectPresets;
+        if (presets == null || presets.Count == 0)
+        {
+            return bmp;
+        }
+
+        ImageEffectPreset? preset = null;
+        if (taskSettingsImage.UseRandomImageEffect)
+        {
+            preset = RandomFast.Pick(presets);
+        }
+        else if (presets.IsValidIndex(taskSettingsImage.SelectedImageEffectPreset))
+        {
+            preset = presets[taskSettingsImage.SelectedImageEffectPreset];
+        }
+
+        if (preset == null || preset.Effects == null || preset.Effects.Count == 0)
+        {
+            return bmp;
+        }
+
+        var result = bmp;
+        var usingOriginal = true;
+
+        foreach (var effect in preset.Effects)
+        {
+            var processed = effect.Apply(result);
+            if (!ReferenceEquals(processed, result))
+            {
+                if (!usingOriginal)
+                {
+                    result.Dispose();
+                }
+
+                result = processed;
+                usingOriginal = false;
+            }
+        }
+
+        return result;
     }
 
     /// <summary>

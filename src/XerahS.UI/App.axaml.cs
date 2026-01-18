@@ -379,7 +379,10 @@ public partial class App : Application
             Core.Managers.TaskManager.Instance.TaskCompleted -= HandleTaskCompleted;
             OnTaskCompleted(task, EventArgs.Empty);
 
-            if (isCaptureJob && task.IsSuccessful && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            // [2026-01-18] Fix: Do not open editor for screen recording jobs (video), only for image captures
+            bool isScreenRecord = category == EnumExtensions.HotkeyType_Category_ScreenRecord;
+
+            if (isCaptureJob && !isScreenRecord && task.IsSuccessful && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
                 desktop.MainWindow is MainWindow mainWindowAfterCapture)
             {
                 // Only navigate to editor if window is visible, not when minimized to tray

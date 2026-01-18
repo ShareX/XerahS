@@ -431,6 +431,19 @@ namespace XerahS.UI.ViewModels
             }
         }
 
+        public bool ApplyImageEffects
+        {
+            get => _settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AddImageEffects);
+            set
+            {
+                if (ApplyImageEffects != value)
+                {
+                    UpdateAfterCaptureTask(AfterCaptureTasks.AddImageEffects, value);
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public bool ShowAfterCaptureWindow
         {
             get => _settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.ShowAfterCaptureWindow);

@@ -69,6 +69,27 @@ namespace XerahS.Core.Tasks.Processors
             }
 
             // Annotation should happen BEFORE save, so the saved file includes annotations
+            if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AddImageEffects))
+            {
+                if (info.Metadata?.Image != null)
+                {
+                    var processed = TaskHelpers.ApplyImageEffects(info.Metadata.Image, settings.ImageSettings);
+                    if (processed == null)
+                    {
+                        DebugHelper.WriteLine("Error: Applying image effects resulted in null image.");
+                        return;
+                    }
+
+                    if (!ReferenceEquals(processed, info.Metadata.Image))
+                    {
+                        info.Metadata.Image.Dispose();
+                    }
+
+                    info.Metadata.Image = processed;
+                }
+            }
+
+            // Annotation should happen BEFORE save, so the saved file includes annotations
             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AnnotateImage))
             {
                 if (info.Metadata?.Image != null && PlatformServices.UI != null)
