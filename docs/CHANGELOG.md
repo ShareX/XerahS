@@ -9,6 +9,8 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
+## v0.4.0 - Image Effects & Upload Improvements
+
 ### Features & Improvements
 - Add FAQ entries for workflow settings and pronunciation (`ee3e5bd`)
 - Update default workflow hotkey assignments (`1fbc122`)
@@ -17,12 +19,14 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - Add image effects application to capture workflow (`5c89ebc`)
 
 ### Bug Fixes
+- Fix startup log to use AppName resource (`348847d`)
 - Fix 2 HIGH priority Platform.Windows resource leaks (`c2e8b65`)
 - Reorder annotation to occur before saving image (`617f41e`)
 - Improve image saving and window navigation logic (`122a3b1`)
 - Improve cursor hiding during DXGI screen capture (`c262bc7`)
 
 ### Documentation & Maintenance
+- Documentation updates: Modernize README, CHANGELOG (`e6d87a8`, `36eed19`)
 - Documentation updates: macOS/Linux/Editor extraction/Integration (`5e1184e`, `6394dc7`, `17a319e`, `2e7e29c`, `090d9e9`, `cabd8c3`, `fc4851f`)
 
 ## v0.3.1 - Bug Fixes
