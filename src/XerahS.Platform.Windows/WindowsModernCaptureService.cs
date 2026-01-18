@@ -28,6 +28,7 @@ using SkiaSharp;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
+using System.Runtime.InteropServices;
 
 namespace XerahS.Platform.Windows
 {
@@ -40,6 +41,10 @@ namespace XerahS.Platform.Windows
     {
         private readonly IScreenService _screenService;
         private readonly WindowsScreenCaptureService _fallbackService;
+
+        // P/Invoke for hiding cursor during DXGI capture (DWM renders cursor as part of desktop)
+        [DllImport("user32.dll")]
+        private static extern int ShowCursor(bool bShow);
 
         /// <summary>
         /// Minimum Windows version for DXGI 1.2 OutputDuplication (Windows 8+)
@@ -84,8 +89,9 @@ namespace XerahS.Platform.Windows
             {
                 try
                 {
-                    // For rect capture, we capture fullscreen then crop
-                    using var fullBitmap = CaptureFullScreenDxgi();
+                    // DXGI captures the raw desktop without cursor
+                    // We pass ShowCursor option to control cursor drawing
+                    using var fullBitmap = CaptureFullScreenDxgi(options?.ShowCursor == true);
                     if (fullBitmap == null) return null;
 
                     // Get virtual desktop bounds to convert screen coordinates to bitmap coordinates
@@ -94,9 +100,9 @@ namespace XerahS.Platform.Windows
                     // Convert screen coordinates to bitmap coordinates
                     // fullBitmap (0,0) corresponds to virtualBounds (Left,Top)
                     var cropRect = new SKRectI(
-                        (int)rect.Left - virtualBounds.X,    // Convert screen X to bitmap X
-                        (int)rect.Top - virtualBounds.Y,     // Convert screen Y to bitmap Y
-                        (int)rect.Right - virtualBounds.X,   // Convert screen Right to bitmap Right
+                        (int)rect.Left - virtualBounds.X,   // Convert screen Left to bitmap Left
+                        (int)rect.Top - virtualBounds.Y,    // Convert screen Top to bitmap Top
+                        (int)rect.Right - virtualBounds.X,  // Convert screen Right to bitmap Right
                         (int)rect.Bottom - virtualBounds.Y   // Convert screen Bottom to bitmap Bottom
                     );
 
@@ -139,7 +145,7 @@ namespace XerahS.Platform.Windows
             {
                 try
                 {
-                    return CaptureFullScreenDxgi();
+                    return CaptureFullScreenDxgi(options?.ShowCursor == true);
                 }
                 catch (Exception)
                 {
@@ -179,11 +185,25 @@ namespace XerahS.Platform.Windows
         /// <summary>
         /// Captures the entire virtual screen using DXGI Output Duplication
         /// </summary>
-        private SKBitmap? CaptureFullScreenDxgi()
+        private SKBitmap? CaptureFullScreenDxgi(bool drawCursor = false)
         {
-            // Create DXGI factory
-            using var factory = DXGI.CreateDXGIFactory1<IDXGIFactory1>();
-            if (factory == null) return null;
+            // Hide cursor during capture if we don't want it (DWM renders cursor as part of desktop)
+            // ShowCursor uses a display counter - we need to hide until counter goes negative
+            bool cursorWasHidden = false;
+            if (!drawCursor)
+            {
+                // Hide cursor by decrementing display counter until it goes negative
+                int count = ShowCursor(false);
+                cursorWasHidden = true;
+                // Wait briefly for DWM to process cursor hide
+                Thread.Sleep(10);
+            }
+
+            try
+            {
+                // Create DXGI factory
+                using var factory = DXGI.CreateDXGIFactory1<IDXGIFactory1>();
+                if (factory == null) return null;
 
             // Enumerate adapters and outputs
             var outputs = EnumerateOutputs(factory);
@@ -335,7 +355,56 @@ namespace XerahS.Platform.Windows
                 }
             }
 
+            // Draw cursor if requested (after DXGI capture which doesn't include cursor)
+            if (drawCursor)
+            {
+                try
+                {
+                    // Get virtual desktop offset for cursor position calculation
+                    var virtualBounds = _screenService.GetVirtualScreenBounds();
+                    
+                    // CursorData draws the cursor onto a GDI DC, so we use GDI
+                    using var tempBitmap = new System.Drawing.Bitmap(combinedBitmap.Width, combinedBitmap.Height);
+                    using var g = System.Drawing.Graphics.FromImage(tempBitmap);
+                    IntPtr hdc = g.GetHdc();
+                    try
+                    {
+                        var cursor = new CursorData();
+                        cursor.DrawCursor(hdc, new System.Drawing.Point(virtualBounds.X, virtualBounds.Y));
+                    }
+                    finally
+                    {
+                        g.ReleaseHdc(hdc);
+                    }
+                    
+                    // Copy cursor overlay to SKBitmap using alpha blend
+                    using var cursorStream = new MemoryStream();
+                    tempBitmap.Save(cursorStream, System.Drawing.Imaging.ImageFormat.Png);
+                    cursorStream.Seek(0, SeekOrigin.Begin);
+                    using var cursorBitmap = SKBitmap.Decode(cursorStream);
+                    
+                    // Draw only the cursor (non-black pixels) onto combined bitmap
+                    // Note: CursorData only draws the cursor, so tempBitmap should have cursor on transparent/black
+                    using var cursorCanvas = new SKCanvas(combinedBitmap);
+                    using var paint = new SKPaint { BlendMode = SKBlendMode.SrcOver };
+                    cursorCanvas.DrawBitmap(cursorBitmap, 0, 0, paint);
+                }
+                catch
+                {
+                    // Ignore cursor drawing errors
+                }
+            }
+
             return combinedBitmap;
+            }
+            finally
+            {
+                // Restore cursor if we hid it
+                if (cursorWasHidden)
+                {
+                    ShowCursor(true);
+                }
+            }
         }
 
         private void DrawMappedTextureToCanvas(MappedSubresource dataBox, int width, int height, int destX, int destY, SKCanvas canvas)

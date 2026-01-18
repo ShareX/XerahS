@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using SkiaSharp;
 using System.Runtime.InteropServices;
@@ -60,18 +61,30 @@ namespace XerahS.Platform.Windows
 
                     // Get screen DC (entire virtual desktop)
                     IntPtr screenDC = GetDC(IntPtr.Zero);
-                    if (screenDC == IntPtr.Zero) return null;
+                    if (screenDC == IntPtr.Zero)
+                    {
+                        DebugHelper.WriteLine("WindowsScreenCaptureService: Failed to get screen DC");
+                        return null;
+                    }
 
                     try
                     {
                         // Create compatible DC and bitmap
                         IntPtr memDC = CreateCompatibleDC(screenDC);
-                        if (memDC == IntPtr.Zero) return null;
+                        if (memDC == IntPtr.Zero)
+                        {
+                            DebugHelper.WriteLine("WindowsScreenCaptureService: Failed to create compatible DC");
+                            return null;
+                        }
 
                         try
                         {
                             IntPtr hBitmap = CreateCompatibleBitmap(screenDC, width, height);
-                            if (hBitmap == IntPtr.Zero) return null;
+                            if (hBitmap == IntPtr.Zero)
+                            {
+                                DebugHelper.WriteLine("WindowsScreenCaptureService: Failed to create compatible bitmap");
+                                return null;
+                            }
 
                             try
                             {
@@ -81,7 +94,11 @@ namespace XerahS.Platform.Windows
                                 // BitBlt from screen to memory DC (physical pixels)
                                 bool success = BitBlt(memDC, 0, 0, width, height, screenDC, x, y, SRCCOPY);
 
-                                if (!success) return null;
+                                if (!success)
+                                {
+                                    DebugHelper.WriteLine("WindowsScreenCaptureService: BitBlt failed");
+                                    return null;
+                                }
 
                                 if (options?.ShowCursor == true)
                                 {
@@ -115,8 +132,9 @@ namespace XerahS.Platform.Windows
                         ReleaseDC(IntPtr.Zero, screenDC);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    DebugHelper.WriteException(ex, "WindowsScreenCaptureService: Capture failed");
                     return null;
                 }
             });
