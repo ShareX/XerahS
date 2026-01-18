@@ -1,9 +1,9 @@
 #define MyAppName "XerahS"
 #define MyAppExeName "XerahS.exe"
 #define MyAppRootDirectory "..\..\"
-#define MyAppReleaseDirectory MyAppRootDirectory + "ShareX.Avalonia\src\ShareX.Avalonia.App\bin\Release\net10.0-windows10.0.26100.0"
+#define MyAppReleaseDirectory MyAppRootDirectory + "XerahS\src\XerahS.App\bin\Release\net10.0-windows10.0.26100.0"
 #define MyAppPublisher "ShareX Team"
-#define MyAppURL "https://github.com/ShareX/ShareX.Avalonia"
+#define MyAppURL "https://github.com/ShareX/XerahS"
 #define MyAppVersion GetStringFileInfo(MyAppReleaseDirectory + "\" + MyAppExeName, "ProductVersion")
 #define MyAppFileVersion GetStringFileInfo(MyAppReleaseDirectory + "\" + MyAppExeName, "FileVersion")
 #define MyAppShortVersion Copy(MyAppFileVersion, 1, RPos(".", MyAppFileVersion) - 1)
@@ -23,7 +23,7 @@ ArchitecturesInstallIn64BitMode=x64 arm64
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile={#MyAppRootDirectory}\ShareX.Avalonia\LICENSE.txt
+LicenseFile={#MyAppRootDirectory}\XerahS\LICENSE.txt
 MinVersion=10.0.17763
 OutputBaseFilename={#MyAppName}-{#MyAppShortVersion}-setup
 OutputDir={#MyAppRootDirectory}\Output

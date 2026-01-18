@@ -50,7 +50,9 @@
       "Bash(do sed -i 's/namespace XerahS\\.ScreenCapture/namespace XerahS.RegionCapture/g' \"$file\")",
       "Bash(done)",
       "Bash(Select-String -Pattern \"ShareX.Editor|error\")",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(if not exist \"docs\\audits\" mkdir \"docs\\audits\")",
+      "Bash(if not exist \"docs\\architecture\" mkdir \"docs\\architecture\")"
     ]
   }
 }

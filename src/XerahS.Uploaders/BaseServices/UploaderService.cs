@@ -1,7 +1,7 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
+    XerahS - The Avalonia UI implementation of ShareX
     Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
