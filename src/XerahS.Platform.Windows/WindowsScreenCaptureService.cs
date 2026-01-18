@@ -83,6 +83,12 @@ namespace XerahS.Platform.Windows
 
                                 if (!success) return null;
 
+                                if (options?.ShowCursor == true)
+                                {
+                                    var cursor = new CursorData();
+                                    cursor.DrawCursor(memDC, new System.Drawing.Point(x, y));
+                                }
+
                                 // Convert to SKBitmap
                                 using var bitmap = System.Drawing.Image.FromHbitmap(hBitmap);
                                 using var stream = new MemoryStream();
@@ -152,6 +158,12 @@ namespace XerahS.Platform.Windows
                         using (var graphics = Graphics.FromImage(bitmap))
                         {
                             graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
+
+                            if (options?.ShowCursor == true)
+                            {
+                                var cursor = new CursorData();
+                                cursor.DrawCursor(bitmap, new System.Drawing.Point(bounds.X, bounds.Y));
+                            }
                         }
 
                         return ToSKBitmap(bitmap);
@@ -186,6 +198,12 @@ namespace XerahS.Platform.Windows
                             graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
                         }
 
+                        if (options?.ShowCursor == true)
+                        {
+                            var cursor = new CursorData();
+                            cursor.DrawCursor(bitmap, new System.Drawing.Point(bounds.X, bounds.Y));
+                        }
+
                         return ToSKBitmap(bitmap);
                     }
                 }
@@ -216,6 +234,12 @@ namespace XerahS.Platform.Windows
                         using (var graphics = Graphics.FromImage(bitmap))
                         {
                             graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
+                        }
+
+                        if (options?.ShowCursor == true)
+                        {
+                            var cursor = new CursorData();
+                            cursor.DrawCursor(bitmap, new System.Drawing.Point(bounds.X, bounds.Y));
                         }
 
                         return ToSKBitmap(bitmap);

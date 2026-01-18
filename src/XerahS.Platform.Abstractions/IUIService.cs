@@ -35,9 +35,9 @@ namespace XerahS.Platform.Abstractions
     public interface IUIService
     {
         /// <summary>
-        /// Shows the image editor with the provided image
+        /// Shows the image editor with the provided image and returns the edited image
         /// </summary>
-        Task ShowEditorAsync(SKBitmap image);
+        Task<SKBitmap?> ShowEditorAsync(SKBitmap image);
 
         /// <summary>
         /// Shows the After Capture window and returns selected tasks.

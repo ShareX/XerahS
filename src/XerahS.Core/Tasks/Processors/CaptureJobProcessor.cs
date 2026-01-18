@@ -86,7 +86,15 @@ namespace XerahS.Core.Tasks.Processors
             {
                 if (info.Metadata?.Image != null && PlatformServices.UI != null)
                 {
-                    await PlatformServices.UI.ShowEditorAsync(info.Metadata.Image);
+                    var editedImage = await PlatformServices.UI.ShowEditorAsync(info.Metadata.Image);
+                    if (editedImage != null)
+                    {
+                        if (info.Metadata.Image != editedImage)
+                        {
+                            info.Metadata.Image.Dispose();
+                        }
+                        info.Metadata.Image = editedImage;
+                    }
                 }
             }
 
