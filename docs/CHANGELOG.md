@@ -9,6 +9,20 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
+### Features & Improvements
+- Add FAQ entries for workflow settings and pronunciation (`ee3e5bd`)
+- Update default workflow hotkey assignments (`1fbc122`)
+- Show upload progress in window title during uploads (`549f315`)
+- Add file upload dialog support for FileUpload jobs (`3259cc5`)
+- Add image effects application to capture workflow (`5c89ebc`)
+
+### Bug Fixes
+- Fix 2 HIGH priority Platform.Windows resource leaks (`c2e8b65`)
+- Reorder annotation to occur before saving image (`617f41e`)
+- Improve image saving and window navigation logic (`122a3b1`)
+- Improve cursor hiding during DXGI screen capture (`c262bc7`)
+
+### Documentation & Maintenance
 - Documentation updates: macOS/Linux/Editor extraction/Integration (`5e1184e`, `6394dc7`, `17a319e`, `2e7e29c`, `090d9e9`, `cabd8c3`, `fc4851f`)
 
 ## v0.3.1 - Bug Fixes
