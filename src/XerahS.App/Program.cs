@@ -42,7 +42,7 @@ namespace XerahS.App
             var dh = XerahS.Common.DebugHelper.Logger ?? throw new InvalidOperationException("Logger not initialised");
             dh.AsyncWrite = false; // Synchronous for startup
 
-            dh.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - ShareX starting.");
+            dh.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - {XerahS.Common.AppResources.AppName} starting.");
 
             var version = XerahS.Common.AppResources.Version;
             dh.WriteLine($"Version: {version} Dev");
