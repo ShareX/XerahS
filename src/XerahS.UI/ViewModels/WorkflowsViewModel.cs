@@ -27,6 +27,7 @@ using CommunityToolkit.Mvvm.Input;
 using XerahS.Core;
 using XerahS.Core.Hotkeys;
 using XerahS.Platform.Abstractions;
+using System;
 using System.Collections.ObjectModel;
 
 namespace XerahS.UI.ViewModels;
@@ -194,8 +195,16 @@ public partial class WorkflowsViewModel : ViewModelBase
                     SelectedWorkflow.Model.HotkeyInfo.Modifiers));
 
             // Deep copy TaskSettings using JSON
-            string json = Newtonsoft.Json.JsonConvert.SerializeObject(SelectedWorkflow.Model.TaskSettings);
-            clone.TaskSettings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json) ?? new TaskSettings();
+            var jsonSettings = new Newtonsoft.Json.JsonSerializerSettings
+            {
+                TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto,
+                ObjectCreationHandling = Newtonsoft.Json.ObjectCreationHandling.Replace
+            };
+            var effectCount = SelectedWorkflow.Model.TaskSettings?.ImageSettings?.ImageEffectsPreset?.Effects?.Count ?? 0;
+            var presetName = SelectedWorkflow.Model.TaskSettings?.ImageSettings?.ImageEffectsPreset?.Name ?? "(null)";
+            Console.WriteLine($"[Workflows] Duplicate workflow. Preset='{presetName}', Effects={effectCount}");
+            string json = Newtonsoft.Json.JsonConvert.SerializeObject(SelectedWorkflow.Model.TaskSettings, jsonSettings);
+            clone.TaskSettings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json, jsonSettings) ?? new TaskSettings();
 
             // Copy additional properties
             clone.Name = SelectedWorkflow.Model.Name;

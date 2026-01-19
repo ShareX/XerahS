@@ -29,6 +29,7 @@ using FluentAvalonia.UI.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
+using System;
 using XerahS.Core;
 using XerahS.UI.ViewModels;
 using XerahS.Core.Hotkeys;
@@ -398,8 +399,16 @@ namespace XerahS.UI.Views
             if (workflow != null && workflow.TaskSettings != null)
             {
                 // Clone workflow settings to avoid modifying the original instance during execution
-                var json = Newtonsoft.Json.JsonConvert.SerializeObject(workflow.TaskSettings);
-                settings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json)!;
+                var jsonSettings = new Newtonsoft.Json.JsonSerializerSettings
+                {
+                    TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto,
+                    ObjectCreationHandling = Newtonsoft.Json.ObjectCreationHandling.Replace
+                };
+                var effectCount = workflow.TaskSettings?.ImageSettings?.ImageEffectsPreset?.Effects?.Count ?? 0;
+                var presetName = workflow.TaskSettings?.ImageSettings?.ImageEffectsPreset?.Name ?? "(null)";
+                Console.WriteLine($"[MainWindow] Clone workflow settings. Preset='{presetName}', Effects={effectCount}");
+                var json = Newtonsoft.Json.JsonConvert.SerializeObject(workflow.TaskSettings, jsonSettings);
+                settings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json, jsonSettings)!;
 
                 // Store the workflow ID in the task settings for troubleshooting
                 settings.WorkflowId = workflow.Id;

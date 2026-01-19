@@ -32,6 +32,7 @@ using ShareX.Editor.Extensions;
 using ShareX.Editor.ImageEffects;
 using ShareX.Editor.ImageEffects.Manipulations;
 using SkiaSharp;
+using System;
 using System.Collections.ObjectModel;
 using XerahS.Common;
 using XerahS.Common.Helpers;
@@ -153,17 +154,10 @@ namespace XerahS.UI.ViewModels
         private void GeneratePreviewImage()
         {
             sourcePreviewBitmap?.Dispose();
+            sourcePreviewBitmap = null;
 
-            // Try to load Logo2.png from assets
-            try
+            try 
             {
-                var uri = new Uri("avares://ShareX.Avalonia.UI/Assets/Logo2.png");
-                using var stream = Avalonia.Platform.AssetLoader.Open(uri);
-                sourcePreviewBitmap = SKBitmap.Decode(stream);
-            }
-            catch
-            {
-                // Fallback to a simple generated image if logo fails to load (Asymmetric F shape for testing rotation)
                 sourcePreviewBitmap = new SKBitmap(PreviewSize, PreviewSize);
                 using var canvas = new SKCanvas(sourcePreviewBitmap);
 
@@ -198,6 +192,10 @@ namespace XerahS.UI.ViewModels
                     TextAlign = SKTextAlign.Left
                 };
                 canvas.DrawText("Preview", padding, PreviewSize - padding / 2, textPaint);
+            }
+            catch
+            {
+                // Ignore errors
             }
         }
 

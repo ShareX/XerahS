@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using System;
 using XerahS.UI.Controls;
 using XerahS.UI.ViewModels;
 
@@ -46,6 +47,21 @@ namespace XerahS.UI.Views
                         vm.ImageEffects.UpdatePreview();
                     }
                 };
+            }
+        }
+
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            base.OnDataContextChanged(e);
+
+            if (DataContext is TaskSettingsViewModel vm)
+            {
+                Console.WriteLine($"[TaskSettingsPanel] DataContext set. Preset='{vm.ImageEffects.Name}', Effects={vm.ImageEffects.Effects.Count}");
+                vm.ImageEffects.UpdatePreview();
+            }
+            else
+            {
+                Console.WriteLine("[TaskSettingsPanel] DataContext set to non-TaskSettingsViewModel.");
             }
         }
 
