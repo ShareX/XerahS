@@ -444,6 +444,15 @@ namespace XerahS.Platform.Windows
         private const uint SPI_SETCURSORS = 0x0057;
         private const uint IDC_ARROW = 32512;
         private const uint IDC_IBEAM = 32513;
+        private const uint IDC_WAIT = 32514;
+        private const uint IDC_CROSS = 32515;
+        private const uint IDC_UPARROW = 32516;
+        private const uint IDC_SIZENWSE = 32642;
+        private const uint IDC_SIZENESW = 32643;
+        private const uint IDC_SIZEWE = 32644;
+        private const uint IDC_SIZENS = 32645;
+        private const uint IDC_SIZEALL = 32646;
+        private const uint IDC_NO = 32648;
         private const uint IDC_HAND = 32649;
         private const uint IDC_APPSTARTING = 32650;
 
@@ -453,6 +462,15 @@ namespace XerahS.Platform.Windows
             {
                 SetSystemCursor(IntPtr.Zero, IDC_ARROW);
                 SetSystemCursor(IntPtr.Zero, IDC_IBEAM);
+                SetSystemCursor(IntPtr.Zero, IDC_WAIT);
+                SetSystemCursor(IntPtr.Zero, IDC_CROSS);
+                SetSystemCursor(IntPtr.Zero, IDC_UPARROW);
+                SetSystemCursor(IntPtr.Zero, IDC_SIZENWSE);
+                SetSystemCursor(IntPtr.Zero, IDC_SIZENESW);
+                SetSystemCursor(IntPtr.Zero, IDC_SIZEWE);
+                SetSystemCursor(IntPtr.Zero, IDC_SIZENS);
+                SetSystemCursor(IntPtr.Zero, IDC_SIZEALL);
+                SetSystemCursor(IntPtr.Zero, IDC_NO);
                 SetSystemCursor(IntPtr.Zero, IDC_HAND);
                 SetSystemCursor(IntPtr.Zero, IDC_APPSTARTING);
                 return true;

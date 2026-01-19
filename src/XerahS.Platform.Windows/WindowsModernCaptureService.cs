@@ -57,6 +57,18 @@ namespace XerahS.Platform.Windows
 
         private const uint SPI_SETCURSORS = 0x0057;
         private const int IDC_ARROW = 32512;
+        private const int IDC_IBEAM = 32513;
+        private const int IDC_WAIT = 32514;
+        private const int IDC_CROSS = 32515;
+        private const int IDC_UPARROW = 32516;
+        private const int IDC_SIZENWSE = 32642;
+        private const int IDC_SIZENESW = 32643;
+        private const int IDC_SIZEWE = 32644;
+        private const int IDC_SIZENS = 32645;
+        private const int IDC_SIZEALL = 32646;
+        private const int IDC_NO = 32648;
+        private const int IDC_HAND = 32649;
+        private const int IDC_APPSTARTING = 32650;
 
         /// <summary>
         /// Minimum Windows version for DXGI 1.2 OutputDuplication (Windows 8+)
@@ -210,10 +222,19 @@ namespace XerahS.Platform.Windows
                 {
                     // Hide common cursors by setting them to NULL (removes from screen)
                     // We target Arrow, IBeam, Hand, and AppStarting as the most likely suspects during capture.
-                    SetSystemCursor(IntPtr.Zero, 32512); // IDC_ARROW
-                    SetSystemCursor(IntPtr.Zero, 32513); // IDC_IBEAM
-                    SetSystemCursor(IntPtr.Zero, 32649); // IDC_HAND
-                    SetSystemCursor(IntPtr.Zero, 32650); // IDC_APPSTARTING
+                    SetSystemCursor(IntPtr.Zero, IDC_ARROW);
+                    SetSystemCursor(IntPtr.Zero, IDC_IBEAM);
+                    SetSystemCursor(IntPtr.Zero, IDC_WAIT);
+                    SetSystemCursor(IntPtr.Zero, IDC_CROSS);
+                    SetSystemCursor(IntPtr.Zero, IDC_UPARROW);
+                    SetSystemCursor(IntPtr.Zero, IDC_SIZENWSE);
+                    SetSystemCursor(IntPtr.Zero, IDC_SIZENESW);
+                    SetSystemCursor(IntPtr.Zero, IDC_SIZEWE);
+                    SetSystemCursor(IntPtr.Zero, IDC_SIZENS);
+                    SetSystemCursor(IntPtr.Zero, IDC_SIZEALL);
+                    SetSystemCursor(IntPtr.Zero, IDC_NO);
+                    SetSystemCursor(IntPtr.Zero, IDC_HAND);
+                    SetSystemCursor(IntPtr.Zero, IDC_APPSTARTING);
                     
                     cursorHidden = true;
                     
