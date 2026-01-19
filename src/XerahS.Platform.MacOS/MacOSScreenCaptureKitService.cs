@@ -91,7 +91,6 @@ namespace XerahS.Platform.MacOS
         public Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
         {
             bool useModern = options?.UseModernCapture ?? true;
-            DebugHelper.WriteLine($"[ScreenCaptureKit] CaptureRectAsync called. NativeAvailable: {_nativeAvailable}, UseModern: {useModern}");
 
             if (!_nativeAvailable || !useModern)
             {
