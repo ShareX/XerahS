@@ -102,5 +102,73 @@ namespace XerahS.Common
             if (!Directory.Exists(ToolsFolder))
                 Directory.CreateDirectory(ToolsFolder);
         }
+        public static string GetFFmpegPath()
+        {
+            // 1. Check Personal Tools Folder (Prioritized)
+            string toolsFFmpeg = Path.Combine(ToolsFolder, OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg");
+            DebugHelper.WriteLine($"[FFmpeg] Checking common path: {toolsFFmpeg}");
+            if (File.Exists(toolsFFmpeg))
+            {
+                DebugHelper.WriteLine($"[FFmpeg] Found FFmpeg at: {toolsFFmpeg}");
+                return toolsFFmpeg;
+            }
+
+            // Check without extension on macOS/Linux if strict naming is used
+            if (!OperatingSystem.IsWindows())
+            {
+                string toolsFFmpegNoExt = Path.Combine(ToolsFolder, "ffmpeg");
+                if (toolsFFmpeg != toolsFFmpegNoExt)
+                {
+                    DebugHelper.WriteLine($"[FFmpeg] Checking common path: {toolsFFmpegNoExt}");
+                    if (File.Exists(toolsFFmpegNoExt))
+                    {
+                        DebugHelper.WriteLine($"[FFmpeg] Found FFmpeg at: {toolsFFmpegNoExt}");
+                        return toolsFFmpegNoExt;
+                    }
+                }
+            }
+
+            // 2. Check Common System Locations
+            string[] commonPaths = new[]
+            {
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Tools", "ffmpeg.exe"),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "FFmpeg", "bin", "ffmpeg.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "FFmpeg", "bin", "ffmpeg.exe"),
+                "/opt/homebrew/bin/ffmpeg",
+                "/usr/local/bin/ffmpeg",
+                "/usr/bin/ffmpeg"
+            };
+
+            foreach (var path in commonPaths)
+            {
+                DebugHelper.WriteLine($"[FFmpeg] Checking common path: {path}");
+                if (File.Exists(path))
+                {
+                    DebugHelper.WriteLine($"[FFmpeg] Found FFmpeg at: {path}");
+                    return path;
+                }
+            }
+
+            // 3. Check PATH Environment Variable
+            DebugHelper.WriteLine("[FFmpeg] Searching PATH environment variable...");
+            var pathEnv = Environment.GetEnvironmentVariable("PATH");
+            if (pathEnv != null)
+            {
+                foreach (var dir in pathEnv.Split(Path.PathSeparator))
+                {
+                    var ffmpegExecutable = OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg";
+                    var ffmpegPath = Path.Combine(dir, ffmpegExecutable);
+                    if (File.Exists(ffmpegPath))
+                    {
+                        DebugHelper.WriteLine($"[FFmpeg] Found FFmpeg in PATH at: {ffmpegPath}");
+                        return ffmpegPath;
+                    }
+                }
+            }
+
+            DebugHelper.WriteLine("[FFmpeg] FFmpeg not found in any standard location.");
+            return string.Empty;
+        }
     }
 }

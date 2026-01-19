@@ -206,49 +206,8 @@ public class FFmpegRecordingService : IRecordingService
             DebugHelper.WriteLine($"[FFmpeg] FFmpeg not found at Options.CLIPath.");
         }
 
-        // 3. Check common locations
-        string[] commonPaths = new[]
-        {
-            Path.Combine(PathsManager.ToolsFolder, "ffmpeg.exe"),
-            Path.Combine(PathsManager.ToolsFolder, "ffmpeg"),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Tools", "ffmpeg.exe"),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg"), // Also check without extension on macOS/Linux or just local bin
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "FFmpeg", "bin", "ffmpeg.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "FFmpeg", "bin", "ffmpeg.exe"),
-            "/opt/homebrew/bin/ffmpeg", // Common macOS Homebrew path
-            "/usr/local/bin/ffmpeg",    // Common macOS/Linux path
-            "/usr/bin/ffmpeg"           // Common Linux path
-        };
-
-        foreach (var path in commonPaths)
-        {
-            DebugHelper.WriteLine($"[FFmpeg] Checking common path: {path}");
-            if (File.Exists(path))
-            {
-                DebugHelper.WriteLine($"[FFmpeg] Found FFmpeg at: {path}");
-                return path;
-            }
-        }
-
-        // 4. Check PATH environment variable
-        DebugHelper.WriteLine("[FFmpeg] Searching PATH environment variable...");
-        var pathEnv = Environment.GetEnvironmentVariable("PATH");
-        if (pathEnv != null)
-        {
-            foreach (var dir in pathEnv.Split(Path.PathSeparator))
-            {
-                var ffmpegExecutable = OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg";
-                var ffmpegPath = Path.Combine(dir, ffmpegExecutable);
-                if (File.Exists(ffmpegPath))
-                {
-                    DebugHelper.WriteLine($"[FFmpeg] Found FFmpeg in PATH at: {ffmpegPath}");
-                    return ffmpegPath;
-                }
-            }
-        }
-        
-        DebugHelper.WriteLine("[FFmpeg] FFmpeg not found in any standard location.");
-        return string.Empty;
+        // 3. Use Centralized PathsManager
+        return PathsManager.GetFFmpegPath();
     }
 
     private string BuildFFmpegArguments(RecordingOptions options)
