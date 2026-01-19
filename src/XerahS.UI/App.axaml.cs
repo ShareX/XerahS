@@ -494,7 +494,8 @@ public partial class App : Application
             // Only activate if the window is visible (not minimized or hidden)
             bool isWindowVisible = immediateMainWindow.IsVisible &&
                                    immediateMainWindow.WindowState != Avalonia.Controls.WindowState.Minimized &&
-                                   immediateMainWindow.ShowInTaskbar;
+                                   immediateMainWindow.ShowInTaskbar &&
+                                   !SettingsManager.Settings.SilentRun;
             
             if (isWindowVisible)
             {
@@ -517,7 +518,8 @@ public partial class App : Application
                 // Only navigate to editor if window is visible, not when minimized to tray
                 bool isWindowVisible = mainWindowAfterCapture.IsVisible &&
                                        mainWindowAfterCapture.WindowState != Avalonia.Controls.WindowState.Minimized &&
-                                       mainWindowAfterCapture.ShowInTaskbar;
+                                       mainWindowAfterCapture.ShowInTaskbar &&
+                                       !SettingsManager.Settings.SilentRun;
                 
                 if (isWindowVisible)
                 {

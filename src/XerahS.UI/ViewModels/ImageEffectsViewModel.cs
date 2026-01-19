@@ -528,7 +528,20 @@ namespace XerahS.UI.ViewModels
         public EffectType(Type type)
         {
             Type = type;
-            Name = ShareX.Editor.Extensions.TypeExtensions.GetDescription(type) ?? type.Name;
+            
+            string? name = null;
+            try
+            {
+                if (Activator.CreateInstance(type) is ShareX.Editor.ImageEffects.ImageEffect effect)
+                {
+                    name = effect.Name;
+                }
+            }
+            catch
+            {
+            }
+
+            Name = name ?? ShareX.Editor.Extensions.TypeExtensions.GetDescription(type) ?? type.Name;
         }
     }
 }

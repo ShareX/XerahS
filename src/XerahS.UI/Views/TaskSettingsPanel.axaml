@@ -214,65 +214,80 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <Grid Grid.Row="1" ColumnDefinitions="*, *, 1.5*, 2*" Margin="10">
-                        <!-- Preset -->
-                        <DockPanel Grid.Column="0" Margin="0,0,5,0">
-                            <TextBlock Text="{Binding ImageEffects.Name, StringFormat='Preset: {0}'}" DockPanel.Dock="Top" Margin="0,0,0,5" TextTrimming="CharacterEllipsis"/>
-                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="5" Margin="0,0,0,5">
-                                <Button Command="{Binding ImageEffects.ImportEffectsCommand}" Content="Import..."/>
-                                <Button Command="{Binding ImageEffects.SavePresetCommand}" Content="Export..."/>
-                            </StackPanel>
-                        </DockPanel>
 
-                        <!-- Effects List -->
-                        <DockPanel Grid.Column="1" Margin="5,0,5,0">
-                            <TextBlock Text="Effects:" DockPanel.Dock="Top" Margin="0,0,0,5"/>
-                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="5" Margin="0,0,0,5">
-                                <Button Content="Add...">
-                                    <Button.Flyout>
-                                        <Flyout Placement="BottomEdgeAlignedLeft" ShowMode="Standard">
-                                            <Menu ItemsSource="{Binding ImageEffects.AvailableEffects}">
-                                                <Menu.Styles>
-                                                    <Style Selector="MenuItem" x:DataType="vm:EffectCategory">
-                                                        <Setter Property="Header" Value="{Binding Name}"/>
-                                                        <Setter Property="ItemsSource" Value="{Binding Effects}"/>
-                                                    </Style>
-                                                    <Style Selector="MenuItem" x:DataType="vm:EffectType">
-                                                        <Setter Property="Header" Value="{Binding Name}"/>
-                                                        <Setter Property="Command" Value="{Binding $parent[UserControl].DataContext.ImageEffects.AddEffectCommand}"/>
-                                                        <Setter Property="CommandParameter" Value="{Binding Type}"/>
-                                                    </Style>
-                                                </Menu.Styles>
-                                            </Menu>
-                                        </Flyout>
-                                    </Button.Flyout>
-                                </Button>
-                                <Button Command="{Binding ImageEffects.RemoveEffectCommand}" Content="Remove"/>
-                            </StackPanel>
-                            <ListBox ItemsSource="{Binding ImageEffects.Effects}" SelectedItem="{Binding ImageEffects.SelectedEffect}" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}"/>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                        </DockPanel>
+                </Grid>
+            </TabItem>
 
-                        <!-- Property Grid -->
-                        <DockPanel Grid.Column="2" Margin="5,0,5,0">
-                            <TextBlock Text="Properties:" DockPanel.Dock="Top" Margin="0,0,0,5"/>
-                            <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-                                <controls:PropertyGrid x:Name="EffectPropertyGrid" SelectedObject="{Binding ImageEffects.SelectedEffect}" Margin="5"/>
-                            </Border>
-                        </DockPanel>
+            <!-- Effects Tab -->
+            <TabItem Header="Effects">
+                <Grid RowDefinitions="Auto, *" Margin="20">
+                    <!-- Top Toolbar -->
+                    <Border Grid.Row="0" Margin="0,0,0,10" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="4" Padding="10">
+                         <Grid ColumnDefinitions="*, Auto">
+                              <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                  <TextBlock Text="Preset:" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                  <TextBlock Text="{Binding ImageEffects.Name}" VerticalAlignment="Center"/>
+                              </StackPanel>
+                              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                                  <Button Command="{Binding ImageEffects.ImportEffectsCommand}" Content="Import..."/>
+                                  <Button Command="{Binding ImageEffects.SavePresetCommand}" Content="Export..."/>
+                              </StackPanel>
+                         </Grid>
+                    </Border>
 
-                        <!-- Preview Panel -->
-                        <DockPanel Grid.Column="3" Margin="5,0,0,0">
-                            <TextBlock Text="Preview:" DockPanel.Dock="Top" Margin="0,0,0,5"/>
-                            <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-                                <Image Source="{Binding ImageEffects.PreviewBitmap}" Stretch="Uniform" Margin="5"/>
-                            </Border>
-                        </DockPanel>
+                    <!-- Main Content -->
+                    <Grid Grid.Row="1" ColumnDefinitions="250, 10, 300, 10, *">
+                         <!-- Effects List -->
+                         <Grid Grid.Column="0" RowDefinitions="Auto, *, Auto">
+                             <TextBlock Grid.Row="0" Text="Active Effects" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                             <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" CornerRadius="4">
+                                 <ListBox ItemsSource="{Binding ImageEffects.Effects}" SelectedItem="{Binding ImageEffects.SelectedEffect}" Background="Transparent" BorderThickness="0">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                 </ListBox>
+                             </Border>
+                             <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="5" Margin="0,5,0,0">
+                                  <Button Content="Add Effect">
+                                      <Button.Flyout>
+                                          <Flyout Placement="BottomEdgeAlignedLeft" ShowMode="Standard">
+                                              <Menu ItemsSource="{Binding ImageEffects.AvailableEffects}">
+                                                  <Menu.Styles>
+                                                      <Style Selector="MenuItem" x:DataType="vm:EffectCategory">
+                                                          <Setter Property="Header" Value="{Binding Name}"/>
+                                                          <Setter Property="ItemsSource" Value="{Binding Effects}"/>
+                                                      </Style>
+                                                      <Style Selector="MenuItem" x:DataType="vm:EffectType">
+                                                          <Setter Property="Header" Value="{Binding Name}"/>
+                                                          <Setter Property="Command" Value="{Binding $parent[UserControl].DataContext.ImageEffects.AddEffectCommand}"/>
+                                                          <Setter Property="CommandParameter" Value="{Binding Type}"/>
+                                                      </Style>
+                                                  </Menu.Styles>
+                                              </Menu>
+                                          </Flyout>
+                                      </Button.Flyout>
+                                  </Button>
+                                  <Button Command="{Binding ImageEffects.RemoveEffectCommand}" Content="Remove"/>
+                             </StackPanel>
+                         </Grid>
+
+                         <!-- Properties -->
+                         <Grid Grid.Column="2" RowDefinitions="Auto, *">
+                             <TextBlock Grid.Row="0" Text="Properties" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                             <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" CornerRadius="4" Padding="5">
+                                  <controls:PropertyGrid x:Name="EffectPropertyGrid" SelectedObject="{Binding ImageEffects.SelectedEffect}"/>
+                             </Border>
+                         </Grid>
+
+                         <!-- Preview -->
+                         <Grid Grid.Column="4" RowDefinitions="Auto, *">
+                             <TextBlock Grid.Row="0" Text="Preview" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                             <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" CornerRadius="4">
+                                  <Image Source="{Binding ImageEffects.PreviewBitmap}" Stretch="Uniform" Margin="10"/>
+                             </Border>
+                         </Grid>
                     </Grid>
                 </Grid>
             </TabItem>
