@@ -174,9 +174,24 @@ namespace XerahS.CLI.Commands
                 await manager.StartRecordingAsync(recordingOptions);
 
                 Console.WriteLine($"Recording started. Output: {recordingOptions.OutputPath}");
-                Console.WriteLine("Use 'xerahs record stop' to finish recording.");
+                Console.WriteLine("Press ENTER to stop recording...");
 
-                return 0;
+                // Block and wait for user input to stop
+                Console.ReadLine();
+
+                Console.WriteLine("Stopping recording...");
+                var finalPath = await manager.StopRecordingAsync();
+                
+                if (!string.IsNullOrEmpty(finalPath))
+                {
+                    Console.WriteLine($"Recording saved: {finalPath}");
+                    return 0;
+                }
+                else
+                {
+                    Console.Error.WriteLine("Recording stopped but output path not available.");
+                    return 1;
+                }
             }
             catch (Exception ex)
             {

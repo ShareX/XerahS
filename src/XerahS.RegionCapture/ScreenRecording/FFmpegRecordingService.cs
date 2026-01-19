@@ -216,50 +216,78 @@ public class FFmpegRecordingService : IRecordingService
         var args = new List<string>();
 
         // Input source based on capture mode
-        switch (options.Mode)
+        // Input source based on capture mode
+        if (OperatingSystem.IsWindows())
         {
-            case CaptureMode.Screen:
-                // Use gdigrab for screen capture on Windows
-                args.Add("-f gdigrab");
-                args.Add("-framerate " + settings.FPS);
-                // Stage 2: Cursor capture support
-                if (settings.ShowCursor)
-                {
-                    args.Add("-draw_mouse 1");
-                }
-                // Red border will be shown by RecordingBorderWindow
-                args.Add("-i desktop");
-                break;
+            switch (options.Mode)
+            {
+                case CaptureMode.Screen:
+                case CaptureMode.Window: // Fallback to region/screen for now
+                case CaptureMode.Region:
+                    // Use gdigrab for screen capture on Windows
+                    args.Add("-f gdigrab");
+                    args.Add("-framerate " + settings.FPS);
+                    if (settings.ShowCursor)
+                    {
+                        args.Add("-draw_mouse 1");
+                    }
+                    else
+                    {
+                         args.Add("-draw_mouse 0");
+                    }
 
-            case CaptureMode.Window:
-                // Window capture would need window title - defer to region for now
-                args.Add("-f gdigrab");
-                args.Add("-framerate " + settings.FPS);
-                if (settings.ShowCursor)
-                {
-                    args.Add("-draw_mouse 1");
-                }
-                // Red border will be shown by RecordingBorderWindow
-                args.Add("-i desktop");
-                break;
+                    if (options.Mode == CaptureMode.Region && options.Region.Width > 0 && options.Region.Height > 0)
+                    {
+                        args.Add($"-offset_x {options.Region.X}");
+                        args.Add($"-offset_y {options.Region.Y}");
+                        args.Add($"-video_size {options.Region.Width}x{options.Region.Height}");
+                    }
+                    
+                    args.Add("-i desktop");
+                    break;
+            }
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+             // macOS uses avfoundation
+             args.Add("-f avfoundation");
+             args.Add("-framerate " + settings.FPS);
+             
+             if (settings.ShowCursor)
+             {
+                 args.Add("-capture_cursor 1");
+             }
+             else 
+             {
+                 args.Add("-capture_cursor 0");
+             }
 
-            case CaptureMode.Region:
-                // Region capture with gdigrab
-                args.Add("-f gdigrab");
-                args.Add("-framerate " + settings.FPS);
-                if (settings.ShowCursor)
-                {
-                    args.Add("-draw_mouse 1");
-                }
-                if (options.Region.Width > 0 && options.Region.Height > 0)
-                {
-                    args.Add($"-offset_x {options.Region.X}");
-                    args.Add($"-offset_y {options.Region.Y}");
-                    args.Add($"-video_size {options.Region.Width}x{options.Region.Height}");
-                }
-                // Red border will be shown by RecordingBorderWindow
-                args.Add("-i desktop");
-                break;
+             // Mouse clicks visualization optional
+             // args.Add("-capture_mouse_clicks 1");
+
+             // For now default to screen 1. 
+             // Ideally we would enumerate screens or look at options.Region to determine screen index.
+             // But for MVP/Fix, "1" or "1:" is usually main screen.
+             // Using "1" as video input. 
+             // Note: avfoundation input format is "video_device:audio_device" or just "video_device"
+             args.Add("-i \"1\""); 
+             
+             // Region capture in avfoundation is not directly supported via offset/size args like gdigrab
+             // It usually requires a complex filter chain (crop).
+             if (options.Mode == CaptureMode.Region && options.Region.Width > 0 && options.Region.Height > 0)
+             {
+                 // Add crop filter: crop=w:h:x:y
+                 args.Add($"-vf \"crop={options.Region.Width}:{options.Region.Height}:{options.Region.X}:{options.Region.Y}\"");
+             }
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+             // basic Linux fallback (x11grab)
+             args.Add("-f x11grab");
+             args.Add("-framerate " + settings.FPS);
+             args.Add($"-video_size {options.Region.Width}x{options.Region.Height}");
+             args.Add($"-i :0.0+{options.Region.X},{options.Region.Y}");
+             if (settings.ShowCursor) args.Add("-draw_mouse 1");
         }
 
         // Video codec settings
