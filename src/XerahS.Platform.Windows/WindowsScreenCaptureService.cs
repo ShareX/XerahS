@@ -27,6 +27,7 @@ using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using SkiaSharp;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace XerahS.Platform.Windows
 {
@@ -50,6 +51,7 @@ namespace XerahS.Platform.Windows
         {
             return await Task.Run(() =>
             {
+                bool cursorHidden = false;
                 try
                 {
                     int x = (int)rect.Left;
@@ -58,6 +60,15 @@ namespace XerahS.Platform.Windows
                     int height = (int)rect.Height;
 
                     if (width <= 0 || height <= 0) return null;
+
+                    if (options?.ShowCursor == false)
+                    {
+                        cursorHidden = HideSystemCursors();
+                        if (cursorHidden)
+                        {
+                            Thread.Sleep(50);
+                        }
+                    }
 
                     // Get screen DC (entire virtual desktop)
                     IntPtr screenDC = GetDC(IntPtr.Zero);
@@ -137,6 +148,13 @@ namespace XerahS.Platform.Windows
                     DebugHelper.WriteException(ex, "WindowsScreenCaptureService: Capture failed");
                     return null;
                 }
+                finally
+                {
+                    if (cursorHidden)
+                    {
+                        RestoreSystemCursors();
+                    }
+                }
             });
         }
 
@@ -168,9 +186,19 @@ namespace XerahS.Platform.Windows
         {
             return await Task.Run(() =>
             {
+                bool cursorHidden = false;
                 try
                 {
                     var bounds = _screenService.GetVirtualScreenBounds();
+                    if (options?.ShowCursor == false)
+                    {
+                        cursorHidden = HideSystemCursors();
+                        if (cursorHidden)
+                        {
+                            Thread.Sleep(50);
+                        }
+                    }
+
                     using (var bitmap = new Bitmap(bounds.Width, bounds.Height))
                     {
                         using (var graphics = Graphics.FromImage(bitmap))
@@ -191,6 +219,13 @@ namespace XerahS.Platform.Windows
                 {
                     return null;
                 }
+                finally
+                {
+                    if (cursorHidden)
+                    {
+                        RestoreSystemCursors();
+                    }
+                }
             });
         }
 
@@ -201,6 +236,7 @@ namespace XerahS.Platform.Windows
         {
             return await Task.Run(() =>
             {
+                bool cursorHidden = false;
                 try
                 {
                     var hwnd = windowService.GetForegroundWindow();
@@ -208,6 +244,15 @@ namespace XerahS.Platform.Windows
 
                     var bounds = windowService.GetWindowBounds(hwnd);
                     if (bounds.Width <= 0 || bounds.Height <= 0) return null;
+
+                    if (options?.ShowCursor == false)
+                    {
+                        cursorHidden = HideSystemCursors();
+                        if (cursorHidden)
+                        {
+                            Thread.Sleep(50);
+                        }
+                    }
 
                     using (var bitmap = new Bitmap(bounds.Width, bounds.Height))
                     {
@@ -228,6 +273,13 @@ namespace XerahS.Platform.Windows
                 catch (Exception)
                 {
                     return null;
+                }
+                finally
+                {
+                    if (cursorHidden)
+                    {
+                        RestoreSystemCursors();
+                    }
                 }
             });
         }
@@ -239,6 +291,7 @@ namespace XerahS.Platform.Windows
         {
             return await Task.Run(() =>
             {
+                bool cursorHidden = false;
                 try
                 {
                     if (windowHandle == IntPtr.Zero) return null;
@@ -246,6 +299,15 @@ namespace XerahS.Platform.Windows
                     // Get current window bounds (fresh, not stale)
                     var bounds = windowService.GetWindowBounds(windowHandle);
                     if (bounds.Width <= 0 || bounds.Height <= 0) return null;
+
+                    if (options?.ShowCursor == false)
+                    {
+                        cursorHidden = HideSystemCursors();
+                        if (cursorHidden)
+                        {
+                            Thread.Sleep(50);
+                        }
+                    }
 
                     using (var bitmap = new Bitmap(bounds.Width, bounds.Height))
                     {
@@ -266,6 +328,13 @@ namespace XerahS.Platform.Windows
                 catch (Exception)
                 {
                     return null;
+                }
+                finally
+                {
+                    if (cursorHidden)
+                    {
+                        RestoreSystemCursors();
+                    }
                 }
             });
         }
@@ -365,6 +434,46 @@ namespace XerahS.Platform.Windows
         private static extern bool DeleteObject(IntPtr hObject);
 
         private const int SRCCOPY = 0x00CC0020;
+
+        [DllImport("user32.dll")]
+        private static extern bool SetSystemCursor(IntPtr hcur, uint id);
+
+        [DllImport("user32.dll")]
+        private static extern bool SystemParametersInfo(uint uiAction, uint uiParam, IntPtr pvParam, uint fWinIni);
+
+        private const uint SPI_SETCURSORS = 0x0057;
+        private const uint IDC_ARROW = 32512;
+        private const uint IDC_IBEAM = 32513;
+        private const uint IDC_HAND = 32649;
+        private const uint IDC_APPSTARTING = 32650;
+
+        private static bool HideSystemCursors()
+        {
+            try
+            {
+                SetSystemCursor(IntPtr.Zero, IDC_ARROW);
+                SetSystemCursor(IntPtr.Zero, IDC_IBEAM);
+                SetSystemCursor(IntPtr.Zero, IDC_HAND);
+                SetSystemCursor(IntPtr.Zero, IDC_APPSTARTING);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static void RestoreSystemCursors()
+        {
+            try
+            {
+                SystemParametersInfo(SPI_SETCURSORS, 0, IntPtr.Zero, 0);
+            }
+            catch
+            {
+                // Ignore cursor restore errors
+            }
+        }
 
         #endregion
     }
