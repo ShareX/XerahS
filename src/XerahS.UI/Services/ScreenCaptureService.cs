@@ -90,7 +90,7 @@ namespace XerahS.UI.Services
 
                     if (result is not null)
                     {
-                        var r = result.Value;
+                        var r = result.Value.Region;
                         selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
                     }
                 });
@@ -148,6 +148,7 @@ namespace XerahS.UI.Services
 
             // 2. Select Region (UI) - pass ghost cursor for overlay display
             SKRectI selection = SKRectI.Empty;
+            var cursorAtSelection = new XerahS.RegionCapture.Models.PixelPoint();
             try
             {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
@@ -169,8 +170,9 @@ namespace XerahS.UI.Services
 
                     if (result is not null)
                     {
-                        var r = result.Value;
+                        var r = result.Value.Region;
                         selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
+                        cursorAtSelection = result.Value.CursorPosition;
                     }
                 });
             }
@@ -184,13 +186,17 @@ namespace XerahS.UI.Services
                 return null;
             }
 
+            var selectionRect = new XerahS.RegionCapture.Models.PixelRect(selection.Left, selection.Top, selection.Width, selection.Height);
+            bool showCursor = options?.ShowCursor == true;
+            bool hideLiveCursor = showCursor && selectionRect.Contains(cursorAtSelection);
+
             // 3. Small delay to allow overlay windows to close fully and cursor to hide
             await Task.Delay(200);
 
             // 4. Capture Screen (Platform) - WITHOUT cursor (we'll draw ghost cursor manually)
             var captureOptions = options != null ? new CaptureOptions
             {
-                ShowCursor = false, // Don't draw current cursor position
+                ShowCursor = showCursor && !hideLiveCursor,
                 UseModernCapture = options.UseModernCapture,
                 WorkflowId = options.WorkflowId,
             } : null;
@@ -201,7 +207,7 @@ namespace XerahS.UI.Services
             // 5. Draw ghost cursor onto captured bitmap if available
             // We use the INITIAL ghost cursor (captured at start) to match ShareX behavior ("original location").
             // The Live cursor is hidden from the DXGI capture by the platform service.
-            if (bitmap != null && ghostCursor?.Image != null && options?.ShowCursor == true)
+            if (bitmap != null && ghostCursor?.Image != null && showCursor)
             {
                 try
                 {

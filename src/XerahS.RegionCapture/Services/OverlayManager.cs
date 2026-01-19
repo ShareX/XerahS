@@ -35,13 +35,13 @@ namespace XerahS.RegionCapture.Services;
 public sealed class OverlayManager : IDisposable
 {
     private readonly List<OverlayWindow> _overlays = [];
-    private readonly TaskCompletionSource<PixelRect?> _completionSource;
+    private readonly TaskCompletionSource<RegionSelectionResult?> _completionSource;
     private readonly CoordinateTranslationService _coordinateService;
     private bool _disposed;
 
     public OverlayManager()
     {
-        _completionSource = new TaskCompletionSource<PixelRect?>();
+        _completionSource = new TaskCompletionSource<RegionSelectionResult?>();
         _coordinateService = new CoordinateTranslationService();
     }
 
@@ -61,7 +61,7 @@ public sealed class OverlayManager : IDisposable
     /// <summary>
     /// Creates and shows overlay windows for all monitors.
     /// </summary>
-    public async Task<PixelRect?> ShowOverlaysAsync(Action<PixelRect>? onSelectionChanged = null, XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
+    public async Task<RegionSelectionResult?> ShowOverlaysAsync(Action<PixelRect>? onSelectionChanged = null, XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 

@@ -41,7 +41,7 @@ namespace XerahS.RegionCapture.UI;
 public partial class OverlayWindow : Window
 {
     private readonly MonitorInfo _monitor;
-    private readonly TaskCompletionSource<PixelRect?> _completionSource;
+    private readonly TaskCompletionSource<RegionSelectionResult?> _completionSource;
     private readonly RegionCaptureControl _captureControl;
 
     public OverlayWindow()
@@ -49,12 +49,12 @@ public partial class OverlayWindow : Window
         // Design-time constructor
         _monitor = new MonitorInfo("Design", new PixelRect(0, 0, 1920, 1080),
             new PixelRect(0, 0, 1920, 1040), 1.0, true);
-        _completionSource = new TaskCompletionSource<PixelRect?>();
+        _completionSource = new TaskCompletionSource<RegionSelectionResult?>();
         _captureControl = new RegionCaptureControl(_monitor);
         InitializeComponent();
     }
 
-    public OverlayWindow(MonitorInfo monitor, TaskCompletionSource<PixelRect?> completionSource, Action<PixelRect>? selectionChanged = null, XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
+    public OverlayWindow(MonitorInfo monitor, TaskCompletionSource<RegionSelectionResult?> completionSource, Action<PixelRect>? selectionChanged = null, XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
     {
         _monitor = monitor;
         _completionSource = completionSource;
@@ -93,9 +93,9 @@ public partial class OverlayWindow : Window
         }
     }
 
-    private void OnRegionSelected(PixelRect region)
+    private void OnRegionSelected(RegionSelectionResult result)
     {
-        _completionSource.TrySetResult(region);
+        _completionSource.TrySetResult(result);
     }
 
     private void OnCancelled()
