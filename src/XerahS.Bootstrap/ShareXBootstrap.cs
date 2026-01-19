@@ -230,8 +230,8 @@ namespace XerahS.Bootstrap
             }
             else
             {
-                DebugHelper.WriteLine("macOS: Using MacOSScreenshotService (screencapture CLI)");
-                captureService = new Platform.MacOS.MacOSScreenshotService();
+                DebugHelper.WriteLine("macOS: Using MacOSScreenCaptureKitService (native)");
+                captureService = new Platform.MacOS.MacOSScreenCaptureKitService();
             }
 
             Platform.MacOS.MacOSPlatform.Initialize(captureService);

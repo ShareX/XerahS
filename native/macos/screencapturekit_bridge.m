@@ -160,8 +160,8 @@ int sck_capture_rect(float x, float y, float w, float h, uint8_t** out_data, int
             SCContentFilter *filter = [[SCContentFilter alloc] initWithDisplay:mainDisplay excludingWindows:@[]];
             
             SCStreamConfiguration *config = [[SCStreamConfiguration alloc] init];
-            config.width = mainDisplay.width;
-            config.height = mainDisplay.height;
+            config.width = (size_t)w;
+            config.height = (size_t)h;
             config.pixelFormat = kCVPixelFormatType_32BGRA;
             config.showsCursor = YES;
             config.sourceRect = CGRectMake(x, y, w, h);

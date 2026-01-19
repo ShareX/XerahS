@@ -84,8 +84,12 @@ public class FFmpegRecordingService : IRecordingService
             string ffmpegPath = FindFFmpegPath();
             if (string.IsNullOrEmpty(ffmpegPath) || !File.Exists(ffmpegPath))
             {
-                throw new FileNotFoundException("ffmpeg.exe not found. Please install FFmpeg or set FFmpegPath property.");
+                string searched = $"Path not found. Checked: PATH, {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Tools", "ffmpeg.exe")}, {Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "FFmpeg", "bin", "ffmpeg.exe")}";
+                DebugHelper.WriteLine($"[FFmpeg] {searched}");
+                throw new FileNotFoundException($"ffmpeg.exe not found. {searched}");
             }
+
+            DebugHelper.WriteLine($"[FFmpeg] Resolved executable path: {ffmpegPath}");
 
             // Build ffmpeg arguments
             string args = BuildFFmpegArguments(options);

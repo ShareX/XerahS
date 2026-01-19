@@ -61,7 +61,12 @@ namespace XerahS.Platform.MacOS
         {
             try
             {
-                return ScreenCaptureKitInterop.TryLoad() && ScreenCaptureKitInterop.IsAvailable() == 1;
+                // Log expected library name for diagnostics
+                // LibraryImport uses standard dlopen rules (checking @rpath, local directory, etc.)
+                DebugHelper.WriteLine($"[ScreenCaptureKit] Checking for availability of native library: {ScreenCaptureKitInterop.LibraryName}.dylib");
+                var available = ScreenCaptureKitInterop.TryLoad() && ScreenCaptureKitInterop.IsAvailable() == 1;
+                DebugHelper.WriteLine($"[ScreenCaptureKit] Native library available: {available}");
+                return available;
             }
             catch (Exception ex)
             {
@@ -86,6 +91,7 @@ namespace XerahS.Platform.MacOS
         public Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
         {
             bool useModern = options?.UseModernCapture ?? true;
+            DebugHelper.WriteLine($"[ScreenCaptureKit] CaptureRectAsync called. NativeAvailable: {_nativeAvailable}, UseModern: {useModern}");
 
             if (!_nativeAvailable || !useModern)
             {

@@ -32,7 +32,7 @@ namespace XerahS.Platform.MacOS.Native
     /// </summary>
     internal static partial class ScreenCaptureKitInterop
     {
-        private const string LibraryName = "libscreencapturekit_bridge";
+        internal const string LibraryName = "libscreencapturekit_bridge";
 
         // Error codes from native library
         public const int SUCCESS = 0;

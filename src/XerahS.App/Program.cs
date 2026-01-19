@@ -125,8 +125,8 @@ namespace XerahS.App
 #elif MACOS
             if (OperatingSystem.IsMacOS())
             {
-                XerahS.Common.DebugHelper.WriteLine("macOS: Using MacOSScreenshotService (screencapture CLI)");
-                var macCaptureService = new XerahS.Platform.MacOS.MacOSScreenshotService();
+                XerahS.Common.DebugHelper.WriteLine("macOS: Using MacOSScreenCaptureKitService (native)");
+                var macCaptureService = new XerahS.Platform.MacOS.MacOSScreenCaptureKitService();
                 var uiCaptureService = new XerahS.UI.Services.ScreenCaptureService(macCaptureService);
 
                 XerahS.Platform.MacOS.MacOSPlatform.Initialize(uiCaptureService);

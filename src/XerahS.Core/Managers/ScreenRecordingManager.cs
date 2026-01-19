@@ -388,6 +388,13 @@ public class ScreenRecordingManager
                 return true;
             }
 
+            // If native capture factory is not configured (e.g. macOS), must use fallback
+            if (ScreenRecorderService.CaptureSourceFactory == null)
+            {
+                TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "Native CaptureSourceFactory not set -> forcing FFmpeg fallback");
+                return true;
+            }
+
             return false;
         }
 
