@@ -68,7 +68,7 @@ public sealed class SelectionStateMachine
     /// <summary>
     /// Event fired when selection is confirmed.
     /// </summary>
-    public event Action<PixelRect>? SelectionConfirmed;
+    public event Action<RegionSelectionResult>? SelectionConfirmed;
 
     /// <summary>
     /// Event fired when selection is cancelled.
@@ -286,7 +286,7 @@ public sealed class SelectionStateMachine
     private void ConfirmSelection()
     {
         TransitionTo(CaptureState.Confirmed);
-        SelectionConfirmed?.Invoke(_selectionRect);
+        SelectionConfirmed?.Invoke(new RegionSelectionResult(_selectionRect, _currentPoint));
     }
 
     private void TransitionTo(CaptureState newState)

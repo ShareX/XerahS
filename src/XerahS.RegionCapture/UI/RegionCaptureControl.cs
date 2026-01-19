@@ -71,7 +71,7 @@ public sealed class RegionCaptureControl : UserControl
     private static readonly IPen WindowSnapShadowPen = new Pen(new SolidColorBrush(Color.FromArgb(80, 0, 174, 255)), 6);
     private static readonly IBrush InfoBackgroundBrush = new SolidColorBrush(Color.FromArgb(220, 30, 30, 30));
 
-    public event Action<PixelRect>? RegionSelected;
+    public event Action<RegionSelectionResult>? RegionSelected;
     public event Action<PixelRect>? SelectionChanged;
     public event Action? Cancelled;
 
@@ -137,7 +137,7 @@ public sealed class RegionCaptureControl : UserControl
     {
     }
 
-    private void OnSelectionConfirmed(PixelRect rect) => RegionSelected?.Invoke(rect);
+    private void OnSelectionConfirmed(RegionSelectionResult result) => RegionSelected?.Invoke(result);
     private void OnSelectionChanged(PixelRect rect) => SelectionChanged?.Invoke(rect);
     private void OnSelectionCancelled() => Cancelled?.Invoke();
 
@@ -187,6 +187,9 @@ public sealed class RegionCaptureControl : UserControl
 
         if (_state == CaptureState.Dragging)
         {
+            var point = e.GetPosition(this);
+            var physicalPoint = LocalToPhysical(point);
+            _stateMachine.UpdateCursorPosition(physicalPoint);
             e.Pointer.Capture(null);
             _stateMachine.EndDrag();
             InvalidateVisual();
