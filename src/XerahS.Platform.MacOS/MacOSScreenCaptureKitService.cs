@@ -62,8 +62,21 @@ namespace XerahS.Platform.MacOS
             try
             {
                 // Log expected library name for diagnostics
+                string libraryFileName = ScreenCaptureKitInterop.LibraryName + ".dylib";
+                string expectedPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, libraryFileName);
+                
+                DebugHelper.WriteLine($"[ScreenCaptureKit] Checking for availability of native library: {libraryFileName}");
+                
+                if (File.Exists(expectedPath))
+                {
+                    DebugHelper.WriteLine($"[ScreenCaptureKit] Found native library at: {expectedPath}");
+                }
+                else
+                {
+                    DebugHelper.WriteLine($"[ScreenCaptureKit] Native library not found at: {expectedPath}");
+                }
+
                 // LibraryImport uses standard dlopen rules (checking @rpath, local directory, etc.)
-                DebugHelper.WriteLine($"[ScreenCaptureKit] Checking for availability of native library: {ScreenCaptureKitInterop.LibraryName}.dylib");
                 var available = ScreenCaptureKitInterop.TryLoad() && ScreenCaptureKitInterop.IsAvailable() == 1;
                 DebugHelper.WriteLine($"[ScreenCaptureKit] Native library available: {available}");
                 return available;
@@ -175,6 +188,11 @@ namespace XerahS.Platform.MacOS
                 stopwatch.Stop();
                 DebugHelper.WriteLine($"[ScreenCaptureKit] Fullscreen capture completed in {stopwatch.ElapsedMilliseconds}ms, size={bitmap?.Width}x{bitmap?.Height}");
 
+                if (bitmap != null)
+                {
+                    Console.WriteLine($"SUCCESS: Native macOS ScreenCaptureKit method used for fullscreen capture. ({bitmap.Width}x{bitmap.Height})");
+                }
+
                 return bitmap;
             }
             catch (Exception ex)
@@ -219,6 +237,11 @@ namespace XerahS.Platform.MacOS
                 var bitmap = DecodePngFromPointer(dataPtr, length);
                 stopwatch.Stop();
                 DebugHelper.WriteLine($"[ScreenCaptureKit] Rect capture completed in {stopwatch.ElapsedMilliseconds}ms, size={bitmap?.Width}x{bitmap?.Height}");
+
+                if (bitmap != null)
+                {
+                    Console.WriteLine($"SUCCESS: Native macOS ScreenCaptureKit method used for region capture. ({bitmap.Width}x{bitmap.Height})");
+                }
 
                 return bitmap;
             }

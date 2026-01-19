@@ -60,6 +60,7 @@ namespace XerahS.Common
         public static string HistoryFolder => Path.Combine(PersonalFolder, AppResources.HistoryFolderName);
         public static string BackupFolder => Path.Combine(SettingsFolder, AppResources.BackupFolderName);
         public static string HistoryBackupFolder => Path.Combine(HistoryFolder, AppResources.BackupFolderName);
+        public static string ToolsFolder => Path.Combine(PersonalFolder, "Tools");
         public static string PluginsFolder
         {
             get
@@ -97,6 +98,9 @@ namespace XerahS.Common
             
             if (!Directory.Exists(PluginsFolder))
                 Directory.CreateDirectory(PluginsFolder);
+
+            if (!Directory.Exists(ToolsFolder))
+                Directory.CreateDirectory(ToolsFolder);
         }
     }
 }
