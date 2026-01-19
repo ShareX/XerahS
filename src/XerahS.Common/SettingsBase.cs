@@ -266,6 +266,7 @@ namespace XerahS.Common
                 // if (supportDPAPIEncryption) ...
 
                 serializer.Converters.Add(new StringEnumConverter());
+                serializer.TypeNameHandling = TypeNameHandling.Auto;
                 serializer.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
                 serializer.Formatting = Formatting.Indented;
                 serializer.Serialize(jsonWriter, this);
@@ -327,6 +328,7 @@ namespace XerahS.Common
                                 JsonSerializer serializer = new JsonSerializer();
                                 // serializer.ContractResolver = ...
                                 serializer.Converters.Add(new StringEnumConverter());
+                                serializer.TypeNameHandling = TypeNameHandling.Auto;
                                 serializer.DateTimeZoneHandling = DateTimeZoneHandling.Local;
                                 serializer.ObjectCreationHandling = ObjectCreationHandling.Replace;
                                 serializer.Error += Serializer_Error;

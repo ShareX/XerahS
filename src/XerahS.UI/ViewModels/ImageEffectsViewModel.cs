@@ -45,8 +45,20 @@ namespace XerahS.UI.ViewModels
         private TaskSettingsImage settings;
         private SKBitmap? sourcePreviewBitmap;
         private const int PreviewSize = 256;
+        private bool isSyncSuspended;
 
-        public string Name { get; set; } = "New preset";
+        private string name = "New preset";
+        public string Name
+        {
+            get => name;
+            set
+            {
+                if (SetProperty(ref name, value))
+                {
+                    SyncToSettings();
+                }
+            }
+        }
 
         public ObservableCollection<ImageEffect> Effects { get; private set; } = new ObservableCollection<ImageEffect>();
 
@@ -70,24 +82,55 @@ namespace XerahS.UI.ViewModels
         {
             this.settings = settings;
 
-            if (settings.ImageEffectPresets != null && settings.ImageEffectPresets.Count > 0)
-            {
-               var firstPreset = settings.ImageEffectPresets[0];
-               if (!string.IsNullOrEmpty(firstPreset.Name))
-                   Name = firstPreset.Name;
-               
-               if (firstPreset.Effects != null)
-               {
-                   foreach(var effect in firstPreset.Effects)
-                   {
-                       Effects.Add(effect);
-                   }
-               }
-            }
-
             InitializeAvailableEffects();
             GeneratePreviewImage();
-            UpdatePreview();
+            ApplyPreset(settings.ImageEffectsPreset ?? ImageEffectPreset.GetDefaultPreset(), updatePreview: true);
+            
+            Effects.CollectionChanged += (s, e) => SyncToSettings();
+        }
+
+        private void SyncToSettings()
+        {
+            if (isSyncSuspended)
+                return;
+
+            if (settings.ImageEffectsPreset == null)
+            {
+                settings.ImageEffectsPreset = new ImageEffectPreset();
+            }
+
+            var preset = settings.ImageEffectsPreset;
+            preset.Name = Name;
+            preset.Effects = Effects.ToList();
+        }
+
+        private void ApplyPreset(ImageEffectPreset preset, bool updatePreview)
+        {
+            isSyncSuspended = true;
+            try
+            {
+                Name = string.IsNullOrWhiteSpace(preset.Name) ? "Preset" : preset.Name;
+                Effects.Clear();
+                if (preset.Effects != null)
+                {
+                    foreach (var effect in preset.Effects)
+                    {
+                        Effects.Add(effect);
+                    }
+                }
+
+                SelectedEffect = Effects.FirstOrDefault();
+            }
+            finally
+            {
+                isSyncSuspended = false;
+                SyncToSettings();
+            }
+
+            if (updatePreview)
+            {
+                UpdatePreview();
+            }
         }
 
         private void InitializeAvailableEffects()
@@ -294,17 +337,7 @@ namespace XerahS.UI.ViewModels
             if (preset == null)
                 return;
 
-            Name = preset.Name;
-            Effects.Clear();
-            if (preset.Effects != null)
-            {
-                foreach (var effect in preset.Effects)
-                {
-                    Effects.Add(effect);
-                }
-            }
-
-            UpdatePreview();
+            ApplyPreset(preset, updatePreview: true);
         }
 
         private ImageEffectPreset? LoadLegacyPreset(string filePath)
@@ -545,4 +578,3 @@ namespace XerahS.UI.ViewModels
         }
     }
 }
-

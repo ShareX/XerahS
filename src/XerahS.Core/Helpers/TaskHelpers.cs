@@ -480,22 +480,8 @@ public static partial class TaskHelpers
             return bmp;
         }
 
-        var presets = taskSettingsImage.ImageEffectPresets;
-        if (presets == null || presets.Count == 0)
-        {
-            return bmp;
-        }
-
-        ImageEffectPreset? preset = null;
-        if (taskSettingsImage.UseRandomImageEffect)
-        {
-            preset = RandomFast.Pick(presets);
-        }
-        else if (presets.IsValidIndex(taskSettingsImage.SelectedImageEffectPreset))
-        {
-            preset = presets[taskSettingsImage.SelectedImageEffectPreset];
-        }
-
+        var preset = taskSettingsImage.ImageEffectsPreset;
+        
         if (preset == null || preset.Effects == null || preset.Effects.Count == 0)
         {
             return bmp;
