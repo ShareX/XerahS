@@ -198,7 +198,12 @@ public partial class WorkflowsViewModel : ViewModelBase
             var jsonSettings = new Newtonsoft.Json.JsonSerializerSettings
             {
                 TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto,
-                ObjectCreationHandling = Newtonsoft.Json.ObjectCreationHandling.Replace
+                ObjectCreationHandling = Newtonsoft.Json.ObjectCreationHandling.Replace,
+                Converters = new List<Newtonsoft.Json.JsonConverter>
+                {
+                    new Newtonsoft.Json.Converters.StringEnumConverter(),
+                    new XerahS.Common.Converters.SkColorJsonConverter()
+                }
             };
             var effectCount = SelectedWorkflow.Model.TaskSettings?.ImageSettings?.ImageEffectsPreset?.Effects?.Count ?? 0;
             var presetName = SelectedWorkflow.Model.TaskSettings?.ImageSettings?.ImageEffectsPreset?.Name ?? "(null)";
