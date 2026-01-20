@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             mc:Ignorable="d"
+             x:Class="XerahS.UI.Views.IndexFolderView"
+             x:DataType="vm:IndexFolderViewModel"
+             d:DesignWidth="1100" d:DesignHeight="650">
+
+    <Design.DataContext>
+        <vm:IndexFolderViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*" Margin="20">
+        <StackPanel Grid.Row="0" Spacing="6">
+            <TextBlock Text="Index Folder" FontSize="26" FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1" ColumnDefinitions="360,20,*" Margin="0,20,0,0">
+            <ScrollViewer Grid.Column="0">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Folder" FontWeight="SemiBold"/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Grid.Column="0" Text="{Binding FolderPath}" Watermark="Folder to index"/>
+                            <Button Grid.Column="1" Content="Browse..." Command="{Binding BrowseFolderCommand}" Margin="10,0,0,0"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Output" FontWeight="SemiBold"/>
+                        <ComboBox ItemsSource="{Binding IndexerOutputs}" SelectedItem="{Binding Output}" Width="160"/>
+                        <Grid ColumnDefinitions="Auto,10,*">
+                            <TextBlock Grid.Column="0" Text="Max depth:" VerticalAlignment="Center"/>
+                            <NumericUpDown Grid.Column="2" Value="{Binding MaxDepthLevel}" Minimum="0" Maximum="50" Width="120"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <CheckBox IsChecked="{Binding SkipHiddenFolders}" Content="Skip hidden folders"/>
+                        <CheckBox IsChecked="{Binding SkipHiddenFiles}" Content="Skip hidden files"/>
+                        <CheckBox IsChecked="{Binding SkipFiles}" Content="Skip files"/>
+                        <CheckBox IsChecked="{Binding ShowSizeInfo}" Content="Show size info"/>
+                        <CheckBox IsChecked="{Binding AddFooter}" Content="Add footer"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Text options" FontWeight="SemiBold"/>
+                        <Grid ColumnDefinitions="Auto,10,*">
+                            <TextBlock Grid.Column="0" Text="Indentation:" VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="2" Text="{Binding IndentationText}" Width="160"/>
+                        </Grid>
+                        <CheckBox IsChecked="{Binding AddEmptyLineAfterFolders}" Content="Add empty line after folders"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="HTML options" FontWeight="SemiBold"/>
+                        <CheckBox IsChecked="{Binding UseCustomCssFile}" Content="Use custom CSS file"/>
+                        <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding UseCustomCssFile}">
+                            <TextBox Grid.Column="0" Text="{Binding CustomCssFilePath}" Watermark="Path to CSS file"/>
+                            <Button Grid.Column="1" Content="Browse..." Command="{Binding BrowseCssCommand}" Margin="10,0,0,0"/>
+                        </Grid>
+                        <CheckBox IsChecked="{Binding DisplayPath}" Content="Display path for subfolders"/>
+                        <CheckBox IsChecked="{Binding DisplayPathLimited}" Content="Limit display path to root folder" IsEnabled="{Binding DisplayPath}"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="XML / JSON options" FontWeight="SemiBold"/>
+                        <CheckBox IsChecked="{Binding UseAttribute}" Content="Write info as attribute (XML)"/>
+                        <CheckBox IsChecked="{Binding CreateParseableJson}" Content="Create parseable JSON"/>
+                        <CheckBox IsChecked="{Binding BinaryUnits}" Content="Use binary units for size"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Index Folder" Command="{Binding IndexFolderCommand}" IsEnabled="{Binding IsNotBusy}"/>
+                        <Button Content="Upload" Command="{Binding UploadCommand}" IsEnabled="{Binding CanUpload}"/>
+                        <Button Content="Save As" Command="{Binding SaveAsCommand}" IsEnabled="{Binding CanSave}"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Border Grid.Column="2" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="6" Padding="10">
+                <Grid RowDefinitions="Auto,Auto,*">
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Preview" FontWeight="SemiBold"/>
+                        <Button Content="Copy" Command="{Binding CopyOutputCommand}" IsEnabled="{Binding HasOutput}"/>
+                    </StackPanel>
+
+                    <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="4" Margin="0,8,0,8" IsVisible="{Binding IsBusy}"/>
+
+                    <TextBox Grid.Row="2"
+                             Text="{Binding OutputText}"
+                             IsReadOnly="True"
+                             TextWrapping="NoWrap"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                             FontFamily="Consolas"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

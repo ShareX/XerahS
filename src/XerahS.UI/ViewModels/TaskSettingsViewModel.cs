@@ -30,6 +30,7 @@ using CommunityToolkit.Mvvm.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 using XerahS.UI.Views;
 using XerahS.Platform.Abstractions;
 
@@ -51,9 +52,26 @@ namespace XerahS.UI.ViewModels
         public IEnumerable<EImageFormat> ImageFormats => Enum.GetValues(typeof(EImageFormat)).Cast<EImageFormat>();
         public IEnumerable<ContentPlacement> ContentAlignments => Enum.GetValues(typeof(ContentPlacement)).Cast<ContentPlacement>();
         public IEnumerable<ToastClickAction> ToastClickActions => Enum.GetValues(typeof(ToastClickAction)).Cast<ToastClickAction>();
+        public IEnumerable<IndexerOutput> IndexerOutputs => Enum.GetValues(typeof(IndexerOutput)).Cast<IndexerOutput>();
 
         // Expose underlying model if needed
         public TaskSettings Model => _settings;
+
+        public WorkflowType Job
+        {
+            get => _settings.Job;
+            set
+            {
+                if (_settings.Job != value)
+                {
+                    _settings.Job = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsIndexFolderJob));
+                }
+            }
+        }
+
+        public bool IsIndexFolderJob => _settings.Job == WorkflowType.IndexFolder;
 
         #region Capture Settings
 
@@ -717,6 +735,63 @@ namespace XerahS.UI.ViewModels
 
         #endregion
 
+        #region Index Folder Commands
+
+        [RelayCommand]
+        private async Task BrowseIndexerFolderAsync()
+        {
+            var window = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null;
+
+            if (window?.StorageProvider == null)
+            {
+                return;
+            }
+
+            var folders = await window.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = "Select Folder to Index",
+                AllowMultiple = false
+            });
+
+            if (folders.Count > 0)
+            {
+                IndexerFolderPath = folders[0].Path.LocalPath;
+            }
+        }
+
+        [RelayCommand]
+        private async Task BrowseIndexerCssFileAsync()
+        {
+            var window = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null;
+
+            if (window?.StorageProvider == null)
+            {
+                return;
+            }
+
+            var files = await window.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Select Custom CSS File",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    new FilePickerFileType("CSS Files") { Patterns = new[] { "*.css" } },
+                    new FilePickerFileType("All Files") { Patterns = new[] { "*.*" } }
+                }
+            });
+
+            if (files.Count > 0)
+            {
+                IndexerCustomCssFilePath = files[0].Path.LocalPath;
+            }
+        }
+
+        #endregion
+
         #region Image Settings
 
         public EImageFormat ImageFormat
@@ -792,6 +867,231 @@ namespace XerahS.UI.ViewModels
                 if (_settings.ImageSettings.ThumbnailCheckSize != value)
                 {
                     _settings.ImageSettings.ThumbnailCheckSize = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        #endregion
+
+        #region Index Folder Settings
+
+        public string IndexerFolderPath
+        {
+            get => _settings.ToolsSettings.IndexerFolderPath;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerFolderPath != value)
+                {
+                    _settings.ToolsSettings.IndexerFolderPath = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public IndexerOutput IndexerOutput
+        {
+            get => _settings.ToolsSettings.IndexerSettings.Output;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.Output != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.Output = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndexerSkipHiddenFolders
+        {
+            get => _settings.ToolsSettings.IndexerSettings.SkipHiddenFolders;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.SkipHiddenFolders != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.SkipHiddenFolders = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndexerSkipHiddenFiles
+        {
+            get => _settings.ToolsSettings.IndexerSettings.SkipHiddenFiles;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.SkipHiddenFiles != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.SkipHiddenFiles = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndexerSkipFiles
+        {
+            get => _settings.ToolsSettings.IndexerSettings.SkipFiles;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.SkipFiles != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.SkipFiles = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int IndexerMaxDepthLevel
+        {
+            get => _settings.ToolsSettings.IndexerSettings.MaxDepthLevel;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.MaxDepthLevel != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.MaxDepthLevel = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndexerShowSizeInfo
+        {
+            get => _settings.ToolsSettings.IndexerSettings.ShowSizeInfo;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.ShowSizeInfo != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.ShowSizeInfo = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndexerAddFooter
+        {
+            get => _settings.ToolsSettings.IndexerSettings.AddFooter;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.AddFooter != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.AddFooter = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string IndexerIndentationText
+        {
+            get => _settings.ToolsSettings.IndexerSettings.IndentationText;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.IndentationText != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.IndentationText = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndexerAddEmptyLineAfterFolders
+        {
+            get => _settings.ToolsSettings.IndexerSettings.AddEmptyLineAfterFolders;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.AddEmptyLineAfterFolders != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.AddEmptyLineAfterFolders = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndexerUseCustomCssFile
+        {
+            get => _settings.ToolsSettings.IndexerSettings.UseCustomCSSFile;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.UseCustomCSSFile != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.UseCustomCSSFile = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndexerDisplayPath
+        {
+            get => _settings.ToolsSettings.IndexerSettings.DisplayPath;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.DisplayPath != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.DisplayPath = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndexerDisplayPathLimited
+        {
+            get => _settings.ToolsSettings.IndexerSettings.DisplayPathLimited;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.DisplayPathLimited != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.DisplayPathLimited = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string IndexerCustomCssFilePath
+        {
+            get => _settings.ToolsSettings.IndexerSettings.CustomCSSFilePath;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.CustomCSSFilePath != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.CustomCSSFilePath = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndexerUseAttribute
+        {
+            get => _settings.ToolsSettings.IndexerSettings.UseAttribute;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.UseAttribute != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.UseAttribute = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndexerCreateParseableJson
+        {
+            get => _settings.ToolsSettings.IndexerSettings.CreateParseableJson;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.CreateParseableJson != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.CreateParseableJson = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndexerBinaryUnits
+        {
+            get => _settings.ToolsSettings.IndexerSettings.BinaryUnits;
+            set
+            {
+                if (_settings.ToolsSettings.IndexerSettings.BinaryUnits != value)
+                {
+                    _settings.ToolsSettings.IndexerSettings.BinaryUnits = value;
                     OnPropertyChanged();
                 }
             }

@@ -68,6 +68,14 @@
                         <ui:SymbolIconSource Symbol="List"/>
                     </ui:NavigationViewItem.IconSource>
                 </ui:NavigationViewItem>
+                <ui:NavigationViewItem Content="Tools" Tag="Tools" SelectsOnInvoked="True" IsExpanded="True">
+                    <ui:NavigationViewItem.IconSource>
+                        <ui:SymbolIconSource Symbol="Folder"/>
+                    </ui:NavigationViewItem.IconSource>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem Content="Index Folder..." Tag="Tools_IndexFolder" />
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="Settings" Tag="Settings" SelectsOnInvoked="True" IsExpanded="True">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Settings"/>

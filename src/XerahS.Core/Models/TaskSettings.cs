@@ -380,6 +380,7 @@ public class TaskSettingsTools
 
     public PinToScreenOptions PinToScreenOptions = new PinToScreenOptions();
     public IndexerSettings IndexerSettings = new IndexerSettings();
+    public string IndexerFolderPath = "";
     public ImageBeautifierOptions ImageBeautifierOptions = new ImageBeautifierOptions();
     public ImageCombinerOptions ImageCombinerOptions = new ImageCombinerOptions();
     public VideoConverterOptions VideoConverterOptions = new VideoConverterOptions();

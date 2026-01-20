@@ -171,6 +171,12 @@ namespace XerahS.UI.Views
                     case "Workflows":
                         contentFrame.Content = new WorkflowsView();
                         break;
+                    case "Tools":
+                        contentFrame.Content = new IndexFolderView();
+                        break;
+                    case "Tools_IndexFolder":
+                        contentFrame.Content = new IndexFolderView();
+                        break;
                     case "Settings":
                         contentFrame.Content = new SettingsView();
                         break;

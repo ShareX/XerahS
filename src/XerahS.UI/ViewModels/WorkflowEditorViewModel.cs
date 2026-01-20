@@ -164,6 +164,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
     partial void OnSelectedJobChanged(WorkflowType value)
     {
         _isLoadingSelection = true;
+        TaskSettings.Job = value;
         UpdateDestinations();
         LoadSelectedDestination();
         _isLoadingSelection = false;

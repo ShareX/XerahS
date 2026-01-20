@@ -95,6 +95,7 @@ namespace XerahS.Core.Managers
             var task = WorkerTask.Create(safeTaskSettings);
             task.Info.FilePath = filePath;
             task.Info.DataType = EDataType.File;
+            task.Info.Job = TaskJob.FileUpload;
             _tasks.Add(task);
 
             task.StatusChanged += (s, e) => DebugHelper.WriteLine($"Task Status: {task.Status}");

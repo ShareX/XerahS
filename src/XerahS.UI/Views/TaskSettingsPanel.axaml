@@ -386,6 +386,61 @@
                                 </StackPanel>
                             </Border>
                         </StackPanel>
+
+                        <StackPanel Spacing="10" IsVisible="{Binding IsIndexFolderJob}">
+                            <TextBlock Text="Index folder" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <StackPanel Spacing="10">
+                                    <Grid ColumnDefinitions="Auto, 10, *, Auto">
+                                        <TextBlock Grid.Column="0" Text="Folder:" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Text="{Binding IndexerFolderPath}" Watermark="Folder to index"/>
+                                        <Button Grid.Column="3" Content="Browse..." Command="{Binding BrowseIndexerFolderCommand}" Margin="10,0,0,0"/>
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="Auto, 10, *">
+                                        <TextBlock Grid.Column="0" Text="Output:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Column="2" ItemsSource="{Binding IndexerOutputs}" SelectedItem="{Binding IndexerOutput}" Width="160"/>
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="Auto, 10, *">
+                                        <TextBlock Grid.Column="0" Text="Max depth:" VerticalAlignment="Center"/>
+                                        <NumericUpDown Grid.Column="2" Value="{Binding IndexerMaxDepthLevel}" Minimum="0" Maximum="50" Width="120"/>
+                                    </Grid>
+
+                                    <CheckBox IsChecked="{Binding IndexerSkipHiddenFolders}" Content="Skip hidden folders"/>
+                                    <CheckBox IsChecked="{Binding IndexerSkipHiddenFiles}" Content="Skip hidden files"/>
+                                    <CheckBox IsChecked="{Binding IndexerSkipFiles}" Content="Skip files"/>
+                                    <CheckBox IsChecked="{Binding IndexerShowSizeInfo}" Content="Show size info"/>
+                                    <CheckBox IsChecked="{Binding IndexerAddFooter}" Content="Add footer"/>
+
+                                    <Grid ColumnDefinitions="Auto, 10, *">
+                                        <TextBlock Grid.Column="0" Text="Indentation:" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Text="{Binding IndexerIndentationText}" Width="160"/>
+                                    </Grid>
+
+                                    <CheckBox IsChecked="{Binding IndexerAddEmptyLineAfterFolders}" Content="Add empty line after folders"/>
+
+                                    <Separator Margin="0,5"/>
+                                    <TextBlock Text="HTML options" FontWeight="SemiBold" FontSize="12"/>
+                                    <CheckBox IsChecked="{Binding IndexerUseCustomCssFile}" Content="Use custom CSS file"/>
+                                    <Grid ColumnDefinitions="Auto, 10, *, Auto" IsEnabled="{Binding IndexerUseCustomCssFile}">
+                                        <TextBlock Grid.Column="0" Text="CSS path:" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Text="{Binding IndexerCustomCssFilePath}"/>
+                                        <Button Grid.Column="3" Content="Browse..." Command="{Binding BrowseIndexerCssFileCommand}" Margin="10,0,0,0"/>
+                                    </Grid>
+                                    <CheckBox IsChecked="{Binding IndexerDisplayPath}" Content="Display path for subfolders"/>
+                                    <CheckBox IsChecked="{Binding IndexerDisplayPathLimited}"
+                                              Content="Limit display path to root folder"
+                                              IsEnabled="{Binding IndexerDisplayPath}"/>
+
+                                    <Separator Margin="0,5"/>
+                                    <TextBlock Text="XML / JSON options" FontWeight="SemiBold" FontSize="12"/>
+                                    <CheckBox IsChecked="{Binding IndexerUseAttribute}" Content="Write file info as attribute (XML)"/>
+                                    <CheckBox IsChecked="{Binding IndexerCreateParseableJson}" Content="Create parseable JSON"/>
+                                    <CheckBox IsChecked="{Binding IndexerBinaryUnits}" Content="Use binary units for size"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

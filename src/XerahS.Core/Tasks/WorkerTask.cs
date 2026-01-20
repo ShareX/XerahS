@@ -246,12 +246,27 @@ namespace XerahS.Core.Tasks
                         else
                         {
                              // No file and no callback
-                             DebugHelper.WriteLine("FileUpload job started but no file provided and no dialog callback available.");
-                             Status = TaskStatus.Failed;
-                             Error = new Exception("No file selected and dialog unavailable");
-                             OnStatusChanged(); // Will trigger failure toast in finally
-                             return;
+                            DebugHelper.WriteLine("FileUpload job started but no file provided and no dialog callback available.");
+                            Status = TaskStatus.Failed;
+                            Error = new Exception("No file selected and dialog unavailable");
+                            OnStatusChanged(); // Will trigger failure toast in finally
+                            return;
                         }
+                        Info.Job = TaskJob.FileUpload;
+                        break;
+
+                    case WorkflowType.IndexFolder:
+                        if (!TryIndexFolder(taskSettings, out string? indexPath))
+                        {
+                            Status = TaskStatus.Failed;
+                            Error = new Exception("Index folder path is invalid or indexing failed.");
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        Info.FilePath = indexPath ?? "";
+                        Info.DataType = EDataType.File;
+                        Info.Job = TaskJob.FileUpload;
                         break;
 
                     case WorkflowType.CustomWindow:
@@ -453,7 +468,8 @@ namespace XerahS.Core.Tasks
                     metadata.Image = image;
                     DebugHelper.WriteLine($"Captured image: {image.Width}x{image.Height} in {captureStopwatch.ElapsedMilliseconds}ms");
                 }
-                else if (taskSettings?.Job == WorkflowType.FileUpload && !string.IsNullOrEmpty(Info.FilePath))
+                else if ((taskSettings?.Job == WorkflowType.FileUpload || taskSettings?.Job == WorkflowType.IndexFolder) &&
+                         !string.IsNullOrEmpty(Info.FilePath))
                 {
                     DebugHelper.WriteLine($"FileUpload selected file: {Info.FilePath}");
                 }
@@ -480,6 +496,88 @@ namespace XerahS.Core.Tasks
             // Execute Upload Job
             var uploadProcessor = new UploadJobProcessor();
             await uploadProcessor.ProcessAsync(Info, token);
+        }
+
+        private bool TryIndexFolder(TaskSettings taskSettings, out string? outputPath)
+        {
+            outputPath = null;
+
+            if (taskSettings?.ToolsSettings == null)
+            {
+                DebugHelper.WriteLine("IndexFolder: ToolsSettings missing.");
+                return false;
+            }
+
+            string folderPath = taskSettings.ToolsSettings.IndexerFolderPath;
+            if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
+            {
+                DebugHelper.WriteLine($"IndexFolder: Folder path invalid: '{folderPath}'");
+                return false;
+            }
+
+            try
+            {
+                var coreSettings = taskSettings.ToolsSettings.IndexerSettings ?? new IndexerSettings();
+                var indexerSettings = BuildIndexerSettings(coreSettings);
+
+                string output = XerahS.Indexer.Indexer.Index(folderPath, indexerSettings);
+                outputPath = WriteIndexOutput(taskSettings, folderPath, output, coreSettings.Output);
+                return !string.IsNullOrEmpty(outputPath);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "IndexFolder: indexing failed");
+                return false;
+            }
+        }
+
+        private static XerahS.Indexer.IndexerSettings BuildIndexerSettings(IndexerSettings settings)
+        {
+            var indexerSettings = new XerahS.Indexer.IndexerSettings
+            {
+                Output = (XerahS.Indexer.IndexerOutput)settings.Output,
+                SkipHiddenFolders = settings.SkipHiddenFolders,
+                SkipHiddenFiles = settings.SkipHiddenFiles,
+                SkipFiles = settings.SkipFiles,
+                MaxDepthLevel = settings.MaxDepthLevel,
+                ShowSizeInfo = settings.ShowSizeInfo,
+                AddFooter = settings.AddFooter,
+                IndentationText = settings.IndentationText,
+                AddEmptyLineAfterFolders = settings.AddEmptyLineAfterFolders,
+                UseCustomCSSFile = settings.UseCustomCSSFile,
+                DisplayPath = settings.DisplayPath,
+                DisplayPathLimited = settings.DisplayPathLimited,
+                CustomCSSFilePath = settings.CustomCSSFilePath,
+                UseAttribute = settings.UseAttribute,
+                CreateParseableJson = settings.CreateParseableJson
+            };
+
+            indexerSettings.BinaryUnits = settings.BinaryUnits;
+            return indexerSettings;
+        }
+
+        private static string WriteIndexOutput(TaskSettings taskSettings, string folderPath, string output, IndexerOutput outputType)
+        {
+            string extension = GetIndexFolderExtension(outputType);
+            string screenshotsFolder = TaskHelpers.GetScreenshotsFolder(taskSettings);
+            Directory.CreateDirectory(screenshotsFolder);
+
+            string fileName = TaskHelpers.GetFileName(taskSettings, extension);
+            string resolvedPath = TaskHelpers.HandleExistsFile(screenshotsFolder, fileName, taskSettings);
+            File.WriteAllText(resolvedPath, output);
+            return resolvedPath;
+        }
+
+        private static string GetIndexFolderExtension(IndexerOutput outputType)
+        {
+            return outputType switch
+            {
+                IndexerOutput.Html => "html",
+                IndexerOutput.Txt => "txt",
+                IndexerOutput.Xml => "xml",
+                IndexerOutput.Json => "json",
+                _ => "txt"
+            };
         }
 
         public void Stop()
