@@ -339,7 +339,7 @@ public partial class IndexFolderViewModel : ViewModelBase
 
     public bool ShowSave => !IsWorkflowConfigMode;
 
-    public string PrimaryActionLabel => IsWorkflowConfigMode ? "Test Index" : "Index Folder";
+    public string PrimaryActionLabel => IsWorkflowConfigMode ? "Test Index" : "Index";
 
     public bool ShowHtmlPreview => IsHtmlPreviewEnabled && IsWebViewAvailable && IsHtmlOutput && !string.IsNullOrEmpty(HtmlPreviewPath);
 

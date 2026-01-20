@@ -107,8 +107,7 @@ public partial class IndexFolderView : UserControl
 
     private static Type? FindWebViewType()
     {
-        var type = Type.GetType("WebView.Avalonia.WebView, WebView.Avalonia")
-            ?? Type.GetType("WebView.Avalonia.Controls.WebView, WebView.Avalonia");
+        var type = Type.GetType("Avalonia.Controls.WebView, Avalonia.WebView");
 
         if (type != null)
         {
@@ -117,8 +116,12 @@ public partial class IndexFolderView : UserControl
 
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
-            type = assembly.GetType("WebView.Avalonia.WebView")
-                ?? assembly.GetType("WebView.Avalonia.Controls.WebView");
+            if (!string.Equals(assembly.GetName().Name, "Avalonia.WebView", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            type = assembly.GetType("Avalonia.Controls.WebView");
             if (type != null)
             {
                 return type;
