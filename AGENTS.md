@@ -1,4 +1,4 @@
-# XerahS (formerly XerahS) Agent Instructions
+# XerahS (formerly ShareX.Avalonia) Agent Instructions
 
 **XerahS** - The Avalonia UI implementation of ShareX.
 **Copyright (c) 2007-2026 ShareX Team.**
