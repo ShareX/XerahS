@@ -68,6 +68,13 @@ public class ScreenRecorderService : IRecordingService
     public static Func<IRecordingService>? FallbackServiceFactory { get; set; }
 
     /// <summary>
+    /// Factory for creating native platform-specific recording service.
+    /// This is a complete IRecordingService (not capture+encoder pattern).
+    /// On macOS, this creates MacOSNativeRecordingService using ScreenCaptureKit.
+    /// </summary>
+    public static Func<IRecordingService>? NativeRecordingServiceFactory { get; set; }
+
+    /// <summary>
     /// Debug: dump the first captured frame to disk for orientation analysis.
     /// </summary>
     public static bool DebugDumpFirstFrame { get; set; } = false;

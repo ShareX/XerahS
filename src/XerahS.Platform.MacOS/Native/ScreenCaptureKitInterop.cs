@@ -106,5 +106,53 @@ namespace XerahS.Platform.MacOS.Native
                 _ => $"Unknown error: {resultCode}"
             };
         }
+
+        // ============================================================
+        // VIDEO RECORDING API
+        // ============================================================
+
+        /// <summary>
+        /// Start recording the screen to a video file.
+        /// </summary>
+        /// <param name="outputPath">Path to output file (.mp4)</param>
+        /// <param name="x">Left coordinate of region (0 for fullscreen)</param>
+        /// <param name="y">Top coordinate of region (0 for fullscreen)</param>
+        /// <param name="w">Width of region (0 for fullscreen)</param>
+        /// <param name="h">Height of region (0 for fullscreen)</param>
+        /// <param name="fps">Target frames per second</param>
+        /// <param name="showCursor">1 to show cursor, 0 to hide</param>
+        /// <param name="outSession">Receives the session handle on success</param>
+        /// <returns>0 on success, negative error code on failure</returns>
+        [LibraryImport(LibraryName, EntryPoint = "sck_start_recording", StringMarshalling = StringMarshalling.Utf8)]
+        public static partial int StartRecording(
+            string outputPath,
+            float x, float y, float w, float h,
+            int fps,
+            int showCursor,
+            out IntPtr outSession);
+
+        /// <summary>
+        /// Stop recording and finalize the video file.
+        /// </summary>
+        /// <param name="session">Session handle from StartRecording</param>
+        /// <returns>0 on success, negative error code on failure</returns>
+        [LibraryImport(LibraryName, EntryPoint = "sck_stop_recording")]
+        public static partial int StopRecording(IntPtr session);
+
+        /// <summary>
+        /// Abort recording without saving the file.
+        /// </summary>
+        /// <param name="session">Session handle from StartRecording</param>
+        /// <returns>0 on success, negative error code on failure</returns>
+        [LibraryImport(LibraryName, EntryPoint = "sck_abort_recording")]
+        public static partial int AbortRecording(IntPtr session);
+
+        /// <summary>
+        /// Check if a recording session is currently active.
+        /// </summary>
+        /// <param name="session">Session handle</param>
+        /// <returns>1 if recording, 0 otherwise</returns>
+        [LibraryImport(LibraryName, EntryPoint = "sck_is_recording")]
+        public static partial int IsRecordingActive(IntPtr session);
     }
 }
