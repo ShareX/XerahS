@@ -483,8 +483,8 @@ public partial class App : Application
 
         // Determine request type by category
         string category = settings.Job.GetHotkeyCategory();
-        bool isCaptureJob = category == EnumExtensions.HotkeyType_Category_ScreenCapture ||
-                            category == EnumExtensions.HotkeyType_Category_ScreenRecord;
+        bool isCaptureJob = category == EnumExtensions.WorkflowType_Category_ScreenCapture ||
+                            category == EnumExtensions.WorkflowType_Category_ScreenRecord;
 
         // For capture jobs, avoid bringing the main window forward until the capture completes.
         // For non-capture jobs, only navigate if the window is already visible (not minimized to tray).
@@ -510,7 +510,7 @@ public partial class App : Application
             OnTaskCompleted(task, EventArgs.Empty);
 
             // [2026-01-18] Fix: Do not open editor for screen recording jobs (video), only for image captures
-            bool isScreenRecord = category == EnumExtensions.HotkeyType_Category_ScreenRecord;
+            bool isScreenRecord = category == EnumExtensions.WorkflowType_Category_ScreenRecord;
 
             if (isCaptureJob && !isScreenRecord && task.IsSuccessful && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
                 desktop.MainWindow is MainWindow mainWindowAfterCapture)
@@ -532,7 +532,7 @@ public partial class App : Application
 
         if (settings != null)
         {
-            if (settings.Job == Core.HotkeyType.CustomWindow)
+            if (settings.Job == Core.WorkflowType.CustomWindow)
             {
                 DebugHelper.WriteLine($"[DEBUG] Hotkey triggered for CustomWindow. Configured title: '{settings.TaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
             }
@@ -540,10 +540,10 @@ public partial class App : Application
             // Screen Recorder Toggle Logic (Unified Pipeline)
             // If we are recording and get a recording-related hotkey, we Signal the existing task to stop.
             // We do NOT start a new workflow.
-            bool isRecordingHotkey = settings.Job == Core.HotkeyType.ScreenRecorder ||
-                                     settings.Job == Core.HotkeyType.ScreenRecorderActiveWindow ||
-                                     settings.Job == Core.HotkeyType.StopScreenRecording ||
-                                     settings.Job == Core.HotkeyType.StartScreenRecorder;
+            bool isRecordingHotkey = settings.Job == Core.WorkflowType.ScreenRecorder ||
+                                     settings.Job == Core.WorkflowType.ScreenRecorderActiveWindow ||
+                                     settings.Job == Core.WorkflowType.StopScreenRecording ||
+                                     settings.Job == Core.WorkflowType.StartScreenRecorder;
 
             if (isRecordingHotkey && Core.Managers.ScreenRecordingManager.Instance.IsRecording)
             {

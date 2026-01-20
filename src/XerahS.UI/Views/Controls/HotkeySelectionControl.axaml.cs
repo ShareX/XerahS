@@ -443,19 +443,19 @@ public partial class HotkeySelectionControl : UserControl
 
         TaskContextMenu.Items.Clear();
 
-        var hotkeyTypes = Enum.GetValues(typeof(HotkeyType)).Cast<HotkeyType>();
+        var hotkeyTypes = Enum.GetValues(typeof(WorkflowType)).Cast<WorkflowType>();
 
-        foreach (var hotkeyType in hotkeyTypes)
+        foreach (var workflowType in hotkeyTypes)
         {
             var menuItem = new MenuItem
             {
-                Header = EnumExtensions.GetDescription(hotkeyType),
-                Tag = hotkeyType
+                Header = EnumExtensions.GetDescription(workflowType),
+                Tag = workflowType
             };
 
             menuItem.Click += (s, e) =>
             {
-                if (_viewModel != null && s is MenuItem mi && mi.Tag is HotkeyType type)
+                if (_viewModel != null && s is MenuItem mi && mi.Tag is WorkflowType type)
                 {
                     _viewModel.Model.Job = type;
                     _viewModel.Refresh();

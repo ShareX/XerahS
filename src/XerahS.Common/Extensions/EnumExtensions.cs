@@ -31,11 +31,11 @@ namespace XerahS.Common
 {
     public static class EnumExtensions
     {
-        public const string HotkeyType_Category_Upload = "Upload";
-        public const string HotkeyType_Category_ScreenCapture = "ScreenCapture";
-        public const string HotkeyType_Category_ScreenRecord = "ScreenRecord";
-        public const string HotkeyType_Category_Tools = "Tools";
-        public const string HotkeyType_Category_Other = "Other";
+        public const string WorkflowType_Category_Upload = "Upload";
+        public const string WorkflowType_Category_ScreenCapture = "ScreenCapture";
+        public const string WorkflowType_Category_ScreenRecord = "ScreenRecord";
+        public const string WorkflowType_Category_Tools = "Tools";
+        public const string WorkflowType_Category_Other = "Other";
 
         public static string GetDescription(this Enum value)
         {
@@ -180,7 +180,7 @@ namespace XerahS.Common
                 }
             }
 
-            return HotkeyType_Category_Other;
+            return WorkflowType_Category_Other;
         }
 
         public static T Previous<T>(this Enum value)

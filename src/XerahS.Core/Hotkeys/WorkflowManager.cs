@@ -119,7 +119,7 @@ public class WorkflowManager : IDisposable
             // Debug.WriteLine($"HotkeyManager: Registered {settings}");
             XerahS.Common.DebugHelper.WriteLine($"Hotkey registered: {settings}");
 
-            if (settings.Job == HotkeyType.CustomWindow)
+            if (settings.Job == WorkflowType.CustomWindow)
             {
                 XerahS.Common.DebugHelper.WriteLine($"[DEBUG] Registering CustomWindow hotkey. Title='{settings.TaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
             }

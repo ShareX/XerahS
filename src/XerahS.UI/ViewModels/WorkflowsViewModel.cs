@@ -85,7 +85,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         int index = 0;
         foreach (var hk in source)
         {
-            if (hk.Job == HotkeyType.None)
+            if (hk.Job == WorkflowType.None)
             {
                 continue;
             }
@@ -113,7 +113,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         // Create new blank workflow with defaults
         var newSettings = new XerahS.Core.Hotkeys.WorkflowSettings();
         // Maybe default job?
-        newSettings.Job = XerahS.Core.HotkeyType.RectangleRegion;
+        newSettings.Job = XerahS.Core.WorkflowType.RectangleRegion;
         newSettings.TaskSettings = new TaskSettings();
 
         // Ensure the new workflow has an ID
@@ -124,7 +124,7 @@ public partial class WorkflowsViewModel : ViewModelBase
             var saved = await EditHotkeyRequester(newSettings);
             if (saved)
             {
-                if (newSettings.Job != HotkeyType.None)
+                if (newSettings.Job != WorkflowType.None)
                 {
                     if (_manager != null)
                     {

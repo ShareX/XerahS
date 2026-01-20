@@ -55,7 +55,7 @@ public class TaskSettings
 
     public string Description { get; set; } = string.Empty;
 
-    public HotkeyType Job = HotkeyType.None;
+    public WorkflowType Job = WorkflowType.None;
 
     public AfterCaptureTasks AfterCaptureJob = AfterCaptureTasks.CopyImageToClipboard | AfterCaptureTasks.SaveImageToFile;
 
@@ -104,7 +104,7 @@ public class TaskSettings
     /// <summary>
     /// Gets the instance ID of the destination for the specified job type (empty if not set).
     /// </summary>
-    public string GetDestination(HotkeyType job)
+    public string GetDestination(WorkflowType job)
     {
         var instanceId = GetDestinationInstanceId(job);
         if (!string.IsNullOrEmpty(instanceId))
@@ -113,7 +113,7 @@ public class TaskSettings
         }
 
         // URL shortener falls back to enum until pluginized
-        if (job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL)
+        if (job == WorkflowType.ShortenURL || job == WorkflowType.UploadURL)
         {
             return URLShortenerDestination.ToString();
         }
@@ -124,18 +124,18 @@ public class TaskSettings
     /// <summary>
     /// Sets the destination for the specified job type using an instance ID.
     /// </summary>
-    public bool SetDestination(HotkeyType job, string providerId)
+    public bool SetDestination(WorkflowType job, string providerId)
     {
         if (IsValidInstanceId(providerId))
         {
-            if (job != HotkeyType.ShortenURL && job != HotkeyType.UploadURL)
+            if (job != WorkflowType.ShortenURL && job != WorkflowType.UploadURL)
             {
                 return SetDestinationInstanceId(job, providerId);
             }
         }
 
         // URL shorteners are still enum-based until pluginized
-        if ((job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL) &&
+        if ((job == WorkflowType.ShortenURL || job == WorkflowType.UploadURL) &&
             Enum.TryParse<UrlShortenerType>(providerId, out var urlDest))
         {
             URLShortenerDestination = urlDest;
@@ -148,9 +148,9 @@ public class TaskSettings
     /// <summary>
     /// Returns the destination instance ID for the given job, if configured.
     /// </summary>
-    public string? GetDestinationInstanceId(HotkeyType job)
+    public string? GetDestinationInstanceId(WorkflowType job)
     {
-        if (job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL)
+        if (job == WorkflowType.ShortenURL || job == WorkflowType.UploadURL)
         {
             return UrlShortenerDestinationInstanceId;
         }
@@ -161,7 +161,7 @@ public class TaskSettings
     /// <summary>
     /// Sets the destination instance ID for the given job/category.
     /// </summary>
-    public bool SetDestinationInstanceId(HotkeyType job, string instanceId)
+    public bool SetDestinationInstanceId(WorkflowType job, string instanceId)
     {
         if (string.IsNullOrWhiteSpace(instanceId))
         {
@@ -170,7 +170,7 @@ public class TaskSettings
 
         var normalized = NormalizeInstanceId(instanceId);
 
-        if (job == HotkeyType.ShortenURL || job == HotkeyType.UploadURL)
+        if (job == WorkflowType.ShortenURL || job == WorkflowType.UploadURL)
         {
             UrlShortenerDestinationInstanceId = normalized;
             return true;
@@ -196,7 +196,7 @@ public class TaskSettings
         return dataType == EDataType.URL ? UrlShortenerDestinationInstanceId : DestinationInstanceId;
     }
 
-    private static string? ResolveInstanceIdByProviderId(string providerId, HotkeyType job)
+    private static string? ResolveInstanceIdByProviderId(string providerId, WorkflowType job)
     {
         // Provider keys should NOT be stored as DestinationInstanceId. Reject resolution.
         return null;

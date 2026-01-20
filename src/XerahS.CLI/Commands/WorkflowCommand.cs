@@ -118,7 +118,7 @@ namespace XerahS.CLI.Commands
                         (expectedTaskId == null && task.Info.TaskSettings.WorkflowId == workflowId))
                     {
                         // Check if it's a recording task and handle duration
-                        if (task.Info.TaskSettings.Job == HotkeyType.ScreenRecorderActiveWindow && duration > 0)
+                        if (task.Info.TaskSettings.Job == WorkflowType.ScreenRecorderActiveWindow && duration > 0)
                         {
                             Console.WriteLine($"Recording started. Waiting for {duration} seconds...");
                             await Task.Delay(duration * 1000);

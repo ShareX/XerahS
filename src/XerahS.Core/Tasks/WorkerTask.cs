@@ -198,22 +198,22 @@ namespace XerahS.Core.Tasks
 
                 switch (taskSettings.Job)
                 {
-                    case HotkeyType.PrintScreen:
+                    case WorkflowType.PrintScreen:
                         image = await PlatformServices.ScreenCapture.CaptureFullScreenAsync(captureOptions);
                         break;
 
-                    case HotkeyType.RectangleRegion:
+                    case WorkflowType.RectangleRegion:
                         image = await PlatformServices.ScreenCapture.CaptureRegionAsync(captureOptions);
                         break;
 
-                    case HotkeyType.ActiveWindow:
+                    case WorkflowType.ActiveWindow:
                         if (PlatformServices.Window != null)
                         {
                             image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
                         }
                         break;
 
-                    case HotkeyType.FileUpload:
+                    case WorkflowType.FileUpload:
                         // If file path is not already set (e.g. via args), ask user
                         if (string.IsNullOrEmpty(Info.FilePath) && ShowOpenFileDialogCallback != null)
                         {
@@ -254,7 +254,7 @@ namespace XerahS.Core.Tasks
                         }
                         break;
 
-                    case HotkeyType.CustomWindow:
+                    case WorkflowType.CustomWindow:
                         if (PlatformServices.Window != null)
                         {
                             TroubleshootingHelper.Log("CustomWindow", "TASK", "Task started for CustomWindow");
@@ -373,8 +373,8 @@ namespace XerahS.Core.Tasks
                         break;
 
                     // Stage 5: Screen Recording Integration
-                    case HotkeyType.ScreenRecorder:
-                    case HotkeyType.StartScreenRecorder:
+                    case WorkflowType.ScreenRecorder:
+                    case WorkflowType.StartScreenRecorder:
                         TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecorder case matched, showing region selector");
 
                         // Show region selector and get user selection
@@ -422,7 +422,7 @@ namespace XerahS.Core.Tasks
                         TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "HandleStartRecordingAsync completed");
                         return; // Recording tasks don't proceed to image processing
 
-                    case HotkeyType.ScreenRecorderActiveWindow:
+                    case WorkflowType.ScreenRecorderActiveWindow:
                         if (PlatformServices.Window != null)
                         {
                             var foregroundWindow = PlatformServices.Window.GetForegroundWindow();
@@ -430,18 +430,18 @@ namespace XerahS.Core.Tasks
                         }
                         return;
 
-                    case HotkeyType.ScreenRecorderCustomRegion:
+                    case WorkflowType.ScreenRecorderCustomRegion:
                         // TODO: Show region selector UI and get selected region
                         // For now, just start full screen recording
                         DebugHelper.WriteLine("ScreenRecorderCustomRegion: Region selector not yet implemented, falling back to full screen");
                         await HandleStartRecordingAsync(CaptureMode.Screen);
                         return;
 
-                    case HotkeyType.StopScreenRecording:
+                    case WorkflowType.StopScreenRecording:
                         await HandleStopRecordingAsync();
                         return;
 
-                    case HotkeyType.AbortScreenRecording:
+                    case WorkflowType.AbortScreenRecording:
                         await HandleAbortRecordingAsync();
                         return;
                 }
@@ -453,7 +453,7 @@ namespace XerahS.Core.Tasks
                     metadata.Image = image;
                     DebugHelper.WriteLine($"Captured image: {image.Width}x{image.Height} in {captureStopwatch.ElapsedMilliseconds}ms");
                 }
-                else if (taskSettings?.Job == HotkeyType.FileUpload && !string.IsNullOrEmpty(Info.FilePath))
+                else if (taskSettings?.Job == WorkflowType.FileUpload && !string.IsNullOrEmpty(Info.FilePath))
                 {
                     DebugHelper.WriteLine($"FileUpload selected file: {Info.FilePath}");
                 }

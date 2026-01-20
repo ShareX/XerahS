@@ -34,7 +34,7 @@ public class JobCategoryViewModel
     public string Name { get; }
     public ObservableCollection<HotkeyItemViewModel> Jobs { get; }
 
-    public JobCategoryViewModel(string name, IEnumerable<HotkeyType> jobs)
+    public JobCategoryViewModel(string name, IEnumerable<WorkflowType> jobs)
     {
         Name = name;
         Jobs = new ObservableCollection<HotkeyItemViewModel>(

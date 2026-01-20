@@ -56,7 +56,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
     private KeyModifiers _selectedModifiers;
 
     [ObservableProperty]
-    private HotkeyType _selectedJob;
+    private WorkflowType _selectedJob;
 
 
 
@@ -161,7 +161,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
         _urlCategory.LoadInstances();
     }
 
-    partial void OnSelectedJobChanged(HotkeyType value)
+    partial void OnSelectedJobChanged(WorkflowType value)
     {
         _isLoadingSelection = true;
         UpdateDestinations();
@@ -187,19 +187,19 @@ public partial class WorkflowEditorViewModel : ViewModelBase
 
         switch (category)
         {
-            case EnumExtensions.HotkeyType_Category_ScreenCapture:
-            case EnumExtensions.HotkeyType_Category_ScreenRecord:
+            case EnumExtensions.WorkflowType_Category_ScreenCapture:
+            case EnumExtensions.WorkflowType_Category_ScreenRecord:
                 showImageUploaders = true;
                 showFileUploaders = true;
                 break;
 
-            case EnumExtensions.HotkeyType_Category_Upload:
-                if (SelectedJob == HotkeyType.UploadText)
+            case EnumExtensions.WorkflowType_Category_Upload:
+                if (SelectedJob == WorkflowType.UploadText)
                 {
                     showTextUploaders = true;
                     showFileUploaders = true;
                 }
-                else if (SelectedJob == HotkeyType.FileUpload || SelectedJob == HotkeyType.FolderUpload)
+                else if (SelectedJob == WorkflowType.FileUpload || SelectedJob == WorkflowType.FolderUpload)
                 {
                     showFileUploaders = true;
                 }
@@ -210,7 +210,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
                 }
                 break;
 
-            case EnumExtensions.HotkeyType_Category_Tools:
+            case EnumExtensions.WorkflowType_Category_Tools:
                 showImageUploaders = true;
                 showFileUploaders = true;
                 break;
@@ -394,9 +394,9 @@ public partial class WorkflowEditorViewModel : ViewModelBase
 
     private void LoadJobCategories()
     {
-        // Group HotkeyTypes by their Category attribute
-        var allTypes = Enum.GetValues(typeof(HotkeyType)).Cast<HotkeyType>()
-            .Where(t => t != HotkeyType.None);
+        // Group WorkflowTypes by their Category attribute
+        var allTypes = Enum.GetValues(typeof(WorkflowType)).Cast<WorkflowType>()
+            .Where(t => t != WorkflowType.None);
 
         var grouped = allTypes.GroupBy(t => t.GetHotkeyCategory())
             .Where(g => !string.IsNullOrEmpty(g.Key))
@@ -409,7 +409,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
         }
     }
 
-    private void SelectJobInCategories(HotkeyType job)
+    private void SelectJobInCategories(WorkflowType job)
     {
         foreach (var category in JobCategories)
         {
@@ -436,11 +436,11 @@ public partial class WorkflowEditorViewModel : ViewModelBase
     {
         return category switch
         {
-            EnumExtensions.HotkeyType_Category_Upload => "Upload",
-            EnumExtensions.HotkeyType_Category_ScreenCapture => "Screen Capture",
-            EnumExtensions.HotkeyType_Category_ScreenRecord => "Screen Record",
-            EnumExtensions.HotkeyType_Category_Tools => "Tools",
-            EnumExtensions.HotkeyType_Category_Other => "Other",
+            EnumExtensions.WorkflowType_Category_Upload => "Upload",
+            EnumExtensions.WorkflowType_Category_ScreenCapture => "Screen Capture",
+            EnumExtensions.WorkflowType_Category_ScreenRecord => "Screen Record",
+            EnumExtensions.WorkflowType_Category_Tools => "Tools",
+            EnumExtensions.WorkflowType_Category_Other => "Other",
             _ => category
         };
     }
@@ -449,11 +449,11 @@ public partial class WorkflowEditorViewModel : ViewModelBase
     {
         return category switch
         {
-            EnumExtensions.HotkeyType_Category_ScreenCapture => 0,
-            EnumExtensions.HotkeyType_Category_ScreenRecord => 1,
-            EnumExtensions.HotkeyType_Category_Upload => 2,
-            EnumExtensions.HotkeyType_Category_Tools => 3,
-            EnumExtensions.HotkeyType_Category_Other => 4,
+            EnumExtensions.WorkflowType_Category_ScreenCapture => 0,
+            EnumExtensions.WorkflowType_Category_ScreenRecord => 1,
+            EnumExtensions.WorkflowType_Category_Upload => 2,
+            EnumExtensions.WorkflowType_Category_Tools => 3,
+            EnumExtensions.WorkflowType_Category_Other => 4,
             _ => 99
         };
     }

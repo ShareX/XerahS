@@ -197,7 +197,7 @@ namespace XerahS.CLI.Commands
             {
                 Console.WriteLine("Capturing full screen...");
                 var taskSettings = new TaskSettings();
-                taskSettings.Job = HotkeyType.PrintScreen;
+                taskSettings.Job = WorkflowType.PrintScreen;
                 ConfigureTask(taskSettings, output, upload);
                 return await RunTask(taskSettings);
             }
@@ -215,7 +215,7 @@ namespace XerahS.CLI.Commands
             {
                 Console.WriteLine("Capturing active window...");
                 var taskSettings = new TaskSettings();
-                taskSettings.Job = HotkeyType.ActiveWindow;
+                taskSettings.Job = WorkflowType.ActiveWindow;
                 ConfigureTask(taskSettings, output, upload);
                 return await RunTask(taskSettings);
             }
@@ -251,7 +251,7 @@ namespace XerahS.CLI.Commands
                 }
                 
                 var taskSettings = new TaskSettings();
-                taskSettings.Job = HotkeyType.RectangleRegion;
+                taskSettings.Job = WorkflowType.RectangleRegion;
                 ConfigureTask(taskSettings, output, upload);
                 
                 return await RunTask(taskSettings, image);

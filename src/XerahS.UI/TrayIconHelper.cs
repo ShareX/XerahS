@@ -258,11 +258,11 @@ public class TrayIconHelper : INotifyPropertyChanged
         ExecuteTrayAction(action);
     }
 
-    private async void ExecuteTrayAction(HotkeyType action)
+    private async void ExecuteTrayAction(WorkflowType action)
     {
         switch (action)
         {
-            case HotkeyType.OpenMainWindow:
+            case WorkflowType.OpenMainWindow:
                 OpenMainWindow();
                 break;
             default:

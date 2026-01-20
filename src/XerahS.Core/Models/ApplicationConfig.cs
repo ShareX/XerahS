@@ -65,9 +65,9 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
     public bool RememberMainFormSize = false;
     public Size MainFormSize = Size.Empty;
 
-    public HotkeyType TrayLeftClickAction = HotkeyType.RectangleRegion;
-    public HotkeyType TrayLeftDoubleClickAction = HotkeyType.OpenMainWindow;
-    public HotkeyType TrayMiddleClickAction = HotkeyType.ClipboardUploadWithContentViewer;
+    public WorkflowType TrayLeftClickAction = WorkflowType.RectangleRegion;
+    public WorkflowType TrayLeftDoubleClickAction = WorkflowType.OpenMainWindow;
+    public WorkflowType TrayMiddleClickAction = WorkflowType.ClipboardUploadWithContentViewer;
 
     public bool AutoCheckUpdate = true;
     public UpdateChannel UpdateChannel = UpdateChannel.Release;
@@ -294,14 +294,14 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
 
     #region Actions toolbar
 
-    public List<HotkeyType> ActionsToolbarList = new List<HotkeyType>()
+    public List<WorkflowType> ActionsToolbarList = new List<WorkflowType>()
     {
-        HotkeyType.RectangleRegion,
-        HotkeyType.PrintScreen,
-        HotkeyType.ScreenRecorder,
-        HotkeyType.None,
-        HotkeyType.FileUpload,
-        HotkeyType.ClipboardUploadWithContentViewer
+        WorkflowType.RectangleRegion,
+        WorkflowType.PrintScreen,
+        WorkflowType.ScreenRecorder,
+        WorkflowType.None,
+        WorkflowType.FileUpload,
+        WorkflowType.ClipboardUploadWithContentViewer
     };
 
     public bool ActionsToolbarRunAtStartup = false;

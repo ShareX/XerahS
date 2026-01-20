@@ -55,7 +55,7 @@ public partial class WorkflowItemViewModel : ObservableObject
         }
     }
 
-    public HotkeyType Job => _hotkeySettings.Job;
+    public WorkflowType Job => _hotkeySettings.Job;
 
     public string HotkeyText => _hotkeySettings.HotkeyInfo.ToString();
 

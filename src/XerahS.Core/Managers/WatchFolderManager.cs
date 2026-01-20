@@ -48,7 +48,7 @@ namespace XerahS.Core.Managers
             StopWatchers();
 
             // TaskSettings access via SettingManager would be needed here
-            var settings = SettingsManager.GetFirstWorkflow(HotkeyType.None)?.TaskSettings;
+            var settings = SettingsManager.GetFirstWorkflow(WorkflowType.None)?.TaskSettings;
 
             if (settings != null && settings.WatchFolderEnabled)
             {
@@ -155,7 +155,7 @@ namespace XerahS.Core.Managers
             }
 
             var clonedSettings = CloneTaskSettings(workflow.TaskSettings);
-            clonedSettings.Job = HotkeyType.FileUpload;
+            clonedSettings.Job = WorkflowType.FileUpload;
 
             string fileToProcess = fullPath;
             if (settings.MoveFilesToScreenshotsFolder)

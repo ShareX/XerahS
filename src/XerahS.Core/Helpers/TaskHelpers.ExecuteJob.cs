@@ -34,7 +34,7 @@ public static partial class TaskHelpers
 {
     /// <summary>
     /// Execute a workflow using its complete settings.
-    /// This is the preferred method - avoids ambiguity with HotkeyType lookup.
+    /// This is the preferred method - avoids ambiguity with WorkflowType lookup.
     /// </summary>
     /// <param name="workflow">The workflow to execute</param>
     /// <param name="workflowId">Optional workflow ID for troubleshooting (uses workflow.Id if not provided)</param>
@@ -65,7 +65,7 @@ public static partial class TaskHelpers
         await ExecuteJob(workflow.Job, workflow.TaskSettings, id);
     }
 
-    public static async Task ExecuteJob(HotkeyType job, TaskSettings? taskSettings = null, string? workflowId = null)
+    public static async Task ExecuteJob(WorkflowType job, TaskSettings? taskSettings = null, string? workflowId = null)
     {
         // Use job type as category (for folder/file naming), log workflow ID in content
         var logCategory = job.ToString();
@@ -86,7 +86,7 @@ public static partial class TaskHelpers
             taskSettings = new TaskSettings();
 
             // Apply job-specific defaults if needed
-            if (taskSettings.Job == HotkeyType.None)
+            if (taskSettings.Job == WorkflowType.None)
             {
                 taskSettings.Job = job;
             }
@@ -98,7 +98,7 @@ public static partial class TaskHelpers
             taskSettings.WorkflowId = workflowId;
         }
 
-        if (taskSettings.Job != job && job != HotkeyType.None)
+        if (taskSettings.Job != job && job != WorkflowType.None)
         {
             taskSettings.Job = job;
         }

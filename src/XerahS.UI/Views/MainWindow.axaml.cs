@@ -369,7 +369,7 @@ namespace XerahS.UI.Views
             this.Focus();
         }
 
-        private async Task ExecuteCaptureAsync(HotkeyType jobType, string? workflowId = null, AfterCaptureTasks afterCapture = AfterCaptureTasks.SaveImageToFile, SkiaSharp.SKBitmap? image = null)
+        private async Task ExecuteCaptureAsync(WorkflowType jobType, string? workflowId = null, AfterCaptureTasks afterCapture = AfterCaptureTasks.SaveImageToFile, SkiaSharp.SKBitmap? image = null)
         {
             TaskSettings settings;
 

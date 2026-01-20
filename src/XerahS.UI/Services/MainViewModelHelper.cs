@@ -75,7 +75,7 @@ public static class MainViewModelHelper
                 // Create task settings with upload enabled and CopyURLToClipboard
                 var taskSettings = new TaskSettings
                 {
-                    Job = HotkeyType.None,
+                    Job = WorkflowType.None,
                     AfterCaptureJob = AfterCaptureTasks.UploadImageToHost,
                     AfterUploadJob = AfterUploadTasks.CopyURLToClipboard,
                     DestinationInstanceId = destinationInstanceId

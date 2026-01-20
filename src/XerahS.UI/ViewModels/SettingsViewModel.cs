@@ -99,20 +99,20 @@ namespace XerahS.UI.ViewModels
                 SettingsManager.WorkflowsConfig ??= new WorkflowsConfig();
                 SettingsManager.WorkflowsConfig.Hotkeys ??= new List<WorkflowSettings>();
 
-                var workflow = SettingsManager.GetFirstWorkflow(HotkeyType.None);
+                var workflow = SettingsManager.GetFirstWorkflow(WorkflowType.None);
                 if (workflow == null)
                 {
-                    workflow = new WorkflowSettings(HotkeyType.None, new HotkeyInfo());
+                    workflow = new WorkflowSettings(WorkflowType.None, new HotkeyInfo());
                     SettingsManager.WorkflowsConfig.Hotkeys.Add(workflow);
                 }
 
-                workflow.TaskSettings ??= new TaskSettings { Job = HotkeyType.None };
+                workflow.TaskSettings ??= new TaskSettings { Job = WorkflowType.None };
                 return workflow.TaskSettings;
             }
         }
 
         // Tray Click Actions
-        public HotkeyType TrayLeftClickAction
+        public WorkflowType TrayLeftClickAction
         {
             get => SettingsManager.Settings.TrayLeftClickAction;
             set
@@ -125,7 +125,7 @@ namespace XerahS.UI.ViewModels
             }
         }
 
-        public HotkeyType TrayLeftDoubleClickAction
+        public WorkflowType TrayLeftDoubleClickAction
         {
             get => SettingsManager.Settings.TrayLeftDoubleClickAction;
             set
@@ -138,7 +138,7 @@ namespace XerahS.UI.ViewModels
             }
         }
 
-        public HotkeyType TrayMiddleClickAction
+        public WorkflowType TrayMiddleClickAction
         {
             get => SettingsManager.Settings.TrayMiddleClickAction;
             set
@@ -151,7 +151,7 @@ namespace XerahS.UI.ViewModels
             }
         }
 
-        public HotkeyType[] TrayClickActions => (HotkeyType[])Enum.GetValues(typeof(HotkeyType));
+        public WorkflowType[] TrayClickActions => (WorkflowType[])Enum.GetValues(typeof(WorkflowType));
 
         // History Settings
         public bool HistorySaveTasks
@@ -761,7 +761,7 @@ namespace XerahS.UI.ViewModels
                 return;
             }
 
-            foreach (var workflow in workflows.Where(w => w.Job != HotkeyType.None))
+            foreach (var workflow in workflows.Where(w => w.Job != WorkflowType.None))
             {
                 WatchFolderWorkflows.Add(new WorkflowOptionViewModel(workflow.Id, GetWorkflowName(workflow)));
             }
@@ -778,7 +778,7 @@ namespace XerahS.UI.ViewModels
             if (string.IsNullOrWhiteSpace(preferredWorkflowId))
             {
                 preferredWorkflowId = SettingsManager.WorkflowsConfig?.Hotkeys
-                    ?.FirstOrDefault(w => w.Job == HotkeyType.FileUpload)
+                    ?.FirstOrDefault(w => w.Job == WorkflowType.FileUpload)
                     ?.Id;
             }
 
