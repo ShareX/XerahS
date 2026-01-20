@@ -774,7 +774,15 @@ namespace XerahS.UI.ViewModels
                 editVm.Workflows.Add(workflow);
             }
 
-            editVm.SelectedWorkflow = editVm.Workflows.FirstOrDefault(w => w.Id == workflowId)
+            string? preferredWorkflowId = workflowId;
+            if (string.IsNullOrWhiteSpace(preferredWorkflowId))
+            {
+                preferredWorkflowId = SettingsManager.WorkflowsConfig?.Hotkeys
+                    ?.FirstOrDefault(w => w.Job == HotkeyType.FileUpload)
+                    ?.Id;
+            }
+
+            editVm.SelectedWorkflow = editVm.Workflows.FirstOrDefault(w => w.Id == preferredWorkflowId)
                                       ?? editVm.Workflows.FirstOrDefault();
         }
 

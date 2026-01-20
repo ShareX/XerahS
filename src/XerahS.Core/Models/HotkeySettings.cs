@@ -109,6 +109,11 @@ public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
         wf05.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingIntent = XerahS.RegionCapture.ScreenRecording.RecordingIntent.Game;
         list.Add(wf05);
 
+        // WF06: File upload
+        var wf06 = new WorkflowSettings(HotkeyType.FileUpload, new HotkeyInfo());
+        wf06.TaskSettings.Description = "File upload";
+        list.Add(wf06);
+
         return list;
     }
 }
