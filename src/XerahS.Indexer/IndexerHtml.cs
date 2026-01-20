@@ -140,6 +140,8 @@ footer {
 }";
         protected StringBuilder sbContent = new StringBuilder();
         protected int prePathTrim = 0;
+        private const int IndentSize = 2;
+        private const int ContentBaseIndent = 3;
 
         public IndexerHtml(IndexerSettings indexerSettings) : base(indexerSettings)
         {
@@ -147,18 +149,19 @@ footer {
 
         public override string Index(string folderPath)
         {
+            sbContent.Clear();
             StringBuilder sbHtmlIndex = new StringBuilder();
-            sbHtmlIndex.AppendLine("<!DOCTYPE html>");
-            sbHtmlIndex.AppendLine(HtmlHelper.StartTag("html", "", "lang=\"en\""));
-            sbHtmlIndex.AppendLine(HtmlHelper.StartTag("head"));
-            sbHtmlIndex.AppendLine("<meta charset=\"UTF-8\">");
-            sbHtmlIndex.AppendLine("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">");
-            sbHtmlIndex.AppendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-            sbHtmlIndex.AppendLine(HtmlHelper.Tag("title", "Index for " + Path.GetFileName(folderPath)));
-            sbHtmlIndex.AppendLine(GetCssStyle());
-            sbHtmlIndex.AppendLine(HtmlHelper.EndTag("head"));
-            sbHtmlIndex.AppendLine(HtmlHelper.StartTag("body"));
-            sbHtmlIndex.AppendLine(HtmlHelper.StartTag("div", "", "class=\"container\""));
+            AppendHtmlLine(sbHtmlIndex, 0, "<!DOCTYPE html>");
+            AppendHtmlLine(sbHtmlIndex, 0, HtmlHelper.StartTag("html", "", "lang=\"en\""));
+            AppendHtmlLine(sbHtmlIndex, 1, HtmlHelper.StartTag("head"));
+            AppendHtmlLine(sbHtmlIndex, 2, "<meta charset=\"UTF-8\">");
+            AppendHtmlLine(sbHtmlIndex, 2, "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">");
+            AppendHtmlLine(sbHtmlIndex, 2, "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+            AppendHtmlLine(sbHtmlIndex, 2, HtmlHelper.Tag("title", "Index for " + Path.GetFileName(folderPath)));
+            AppendHtmlBlock(sbHtmlIndex, 2, GetCssStyle());
+            AppendHtmlLine(sbHtmlIndex, 1, HtmlHelper.EndTag("head"));
+            AppendHtmlLine(sbHtmlIndex, 1, HtmlHelper.StartTag("body"));
+            AppendHtmlLine(sbHtmlIndex, 2, HtmlHelper.StartTag("div", "", "class=\"container\""));
 
             folderPath = Path.GetFullPath(folderPath).TrimEnd('\\');
             prePathTrim = folderPath.LastIndexOf(@"\") + 1;
@@ -167,37 +170,37 @@ footer {
             folderInfo.Update();
 
             IndexFolder(folderInfo);
-            string index = sbContent.ToString().Trim();
-
-            sbHtmlIndex.AppendLine(index);
+            string index = sbContent.ToString().TrimEnd();
+            AppendHtmlBlock(sbHtmlIndex, 0, index);
             if (settings.AddFooter)
             {
-                sbHtmlIndex.AppendLine(HtmlHelper.StartTag("footer") + GetFooter() + HtmlHelper.EndTag("footer"));
+                AppendHtmlLine(sbHtmlIndex, ContentBaseIndent, HtmlHelper.StartTag("footer") + GetFooter() + HtmlHelper.EndTag("footer"));
             }
 
-            sbHtmlIndex.AppendLine(HtmlHelper.EndTag("div"));
-            sbHtmlIndex.AppendLine(HtmlHelper.EndTag("body"));
-            sbHtmlIndex.AppendLine(HtmlHelper.EndTag("html"));
+            AppendHtmlLine(sbHtmlIndex, 2, HtmlHelper.EndTag("div"));
+            AppendHtmlLine(sbHtmlIndex, 1, HtmlHelper.EndTag("body"));
+            AppendHtmlLine(sbHtmlIndex, 0, HtmlHelper.EndTag("html"));
             return sbHtmlIndex.ToString().Trim();
         }
 
         protected override void IndexFolder(FolderInfo dir, int level = 0)
         {
-            sbContent.AppendLine(GetFolderNameRow(dir, level));
+            int blockIndent = ContentBaseIndent + (level * 2);
+            AppendHtmlLine(sbContent, blockIndent, GetFolderNameRow(dir, level));
 
             string divClass = level > 0 ? "FolderBorder" : "MainFolderBorder";
-            sbContent.AppendLine(HtmlHelper.StartTag("div", "", $"class=\"{divClass}\""));
+            AppendHtmlLine(sbContent, blockIndent, HtmlHelper.StartTag("div", "", $"class=\"{divClass}\""));
 
             if (dir.Files.Count > 0)
             {
-                sbContent.AppendLine(HtmlHelper.StartTag("ul"));
+                AppendHtmlLine(sbContent, blockIndent + 1, HtmlHelper.StartTag("ul"));
 
                 foreach (FileInfo fi in dir.Files)
                 {
-                    sbContent.AppendLine(GetFileNameRow(fi));
+                    AppendHtmlLine(sbContent, blockIndent + 2, GetFileNameRow(fi));
                 }
 
-                sbContent.AppendLine(HtmlHelper.EndTag("ul"));
+                AppendHtmlLine(sbContent, blockIndent + 1, HtmlHelper.EndTag("ul"));
             }
 
             foreach (FolderInfo subdir in dir.Folders)
@@ -205,7 +208,7 @@ footer {
                 IndexFolder(subdir, level + 1);
             }
 
-            sbContent.AppendLine(HtmlHelper.EndTag("div"));
+            AppendHtmlLine(sbContent, blockIndent, HtmlHelper.EndTag("div"));
         }
 
         private string GetFolderNameRow(FolderInfo dir, int level)
@@ -289,6 +292,27 @@ footer {
             }
 
             return $"<style type=\"text/css\">\r\n{css}\r\n</style>";
+        }
+
+        private static void AppendHtmlLine(StringBuilder builder, int indentLevel, string line)
+        {
+            builder.Append(new string(' ', indentLevel * IndentSize));
+            builder.AppendLine(line);
+        }
+
+        private static void AppendHtmlBlock(StringBuilder builder, int indentLevel, string content)
+        {
+            if (string.IsNullOrEmpty(content))
+            {
+                AppendHtmlLine(builder, indentLevel, string.Empty);
+                return;
+            }
+
+            string[] lines = content.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            foreach (string line in lines)
+            {
+                AppendHtmlLine(builder, indentLevel, line);
+            }
         }
     }
 }
