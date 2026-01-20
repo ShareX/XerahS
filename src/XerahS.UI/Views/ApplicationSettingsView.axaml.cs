@@ -55,6 +55,21 @@ namespace XerahS.UI.Views
                 return false;
             };
 
+            vm.EditWatchFolderRequester = async (editVm) =>
+            {
+                var dialog = new WatchFolderDialog
+                {
+                    DataContext = editVm
+                };
+
+                if (VisualRoot is Window window)
+                {
+                    return await dialog.ShowDialog<bool>(window);
+                }
+
+                return false;
+            };
+
             // Find debug TextBox and connect it to the HotkeySelectionControl's static debug log
             Loaded += (s, e) =>
             {

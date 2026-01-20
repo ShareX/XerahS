@@ -24,11 +24,14 @@
 #endregion License Information (GPL v3)
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Hotkeys;
+using XerahS.Core.Managers;
 using XerahS.Platform.Abstractions;
 
 namespace XerahS.UI.ViewModels
@@ -71,6 +74,21 @@ namespace XerahS.UI.ViewModels
         private UpdateChannel _updateChannel;
 
         public UpdateChannel[] UpdateChannels => (UpdateChannel[])Enum.GetValues(typeof(UpdateChannel));
+
+        [ObservableProperty]
+        private bool _watchFolderEnabled;
+
+        public ObservableCollection<WatchFolderSettingsViewModel> WatchFolders { get; } = new();
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(EditWatchFolderCommand))]
+        [NotifyCanExecuteChangedFor(nameof(RemoveWatchFolderCommand))]
+        private WatchFolderSettingsViewModel? _selectedWatchFolder;
+
+        [ObservableProperty]
+        private bool _hasWatchFolders;
+
+        public Func<WatchFolderEditViewModel, Task<bool>>? EditWatchFolderRequester { get; set; }
 
         private TaskSettings ActiveTaskSettings
         {
@@ -452,8 +470,23 @@ namespace XerahS.UI.ViewModels
         public SettingsViewModel()
         {
             HotkeySettings = new HotkeySettingsViewModel();
+            WatchFolders.CollectionChanged += (_, _) =>
+            {
+                HasWatchFolders = WatchFolders.Count > 0;
+                RefreshWatchFolderStatuses();
+            };
             LoadSettings();
             _isLoading = false;
+        }
+
+        partial void OnWatchFolderEnabledChanged(bool value)
+        {
+            if (_isLoading)
+            {
+                return;
+            }
+
+            RefreshWatchFolderStatuses();
         }
 
         private void LoadSettings()
@@ -494,6 +527,16 @@ namespace XerahS.UI.ViewModels
             URLRegexReplacePattern = taskSettings.UploadSettings.URLRegexReplacePattern;
             URLRegexReplaceReplacement = taskSettings.UploadSettings.URLRegexReplaceReplacement;
 
+            WatchFolderEnabled = taskSettings.WatchFolderEnabled;
+            WatchFolders.Clear();
+            foreach (var folder in taskSettings.WatchFolderList)
+            {
+                WatchFolders.Add(WatchFolderSettingsViewModel.FromSettings(folder));
+            }
+            HasWatchFolders = WatchFolders.Count > 0;
+            RefreshWatchFolderStatuses();
+            WatchFolderManager.Instance.UpdateWatchers();
+
             // Integration Settings
             SupportsFileAssociations = OperatingSystem.IsWindows();
             try
@@ -512,7 +555,10 @@ namespace XerahS.UI.ViewModels
             base.OnPropertyChanged(e);
 
             // Auto-save when any property changes (after initial load)
-            if (!_isLoading && e.PropertyName != nameof(HotkeySettings))
+            if (!_isLoading &&
+                e.PropertyName != nameof(HotkeySettings) &&
+                e.PropertyName != nameof(SelectedWatchFolder) &&
+                e.PropertyName != nameof(HasWatchFolders))
             {
                 SaveSettings();
             }
@@ -554,7 +600,11 @@ namespace XerahS.UI.ViewModels
             taskSettings.UploadSettings.URLRegexReplacePattern = URLRegexReplacePattern;
             taskSettings.UploadSettings.URLRegexReplaceReplacement = URLRegexReplaceReplacement;
 
+            taskSettings.WatchFolderEnabled = WatchFolderEnabled;
+            taskSettings.WatchFolderList = WatchFolders.Select(item => item.ToSettings()).ToList();
+
             SettingsManager.SaveApplicationConfig();
+            WatchFolderManager.Instance.UpdateWatchers();
         }
 
         [RelayCommand]
@@ -572,6 +622,97 @@ namespace XerahS.UI.ViewModels
             ShowTray = true;
             SilentRun = false;
             SelectedTheme = 0;
+        }
+
+        [RelayCommand]
+        private async Task AddWatchFolder()
+        {
+            if (EditWatchFolderRequester == null)
+            {
+                return;
+            }
+
+            var editVm = new WatchFolderEditViewModel
+            {
+                Title = "Add Watch Folder",
+                Filter = "*.*"
+            };
+
+            var saved = await EditWatchFolderRequester(editVm);
+            if (!saved)
+            {
+                return;
+            }
+
+            var item = new WatchFolderSettingsViewModel
+            {
+                FolderPath = editVm.FolderPath,
+                Filter = string.IsNullOrWhiteSpace(editVm.Filter) ? "*.*" : editVm.Filter,
+                IncludeSubdirectories = editVm.IncludeSubdirectories,
+                MoveFilesToScreenshotsFolder = editVm.MoveFilesToScreenshotsFolder
+            };
+
+            WatchFolders.Add(item);
+            RefreshWatchFolderStatuses();
+            SaveSettings();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanEditWatchFolder))]
+        private async Task EditWatchFolder()
+        {
+            if (SelectedWatchFolder == null || EditWatchFolderRequester == null)
+            {
+                return;
+            }
+
+            var editVm = new WatchFolderEditViewModel
+            {
+                Title = "Edit Watch Folder",
+                FolderPath = SelectedWatchFolder.FolderPath,
+                Filter = SelectedWatchFolder.Filter,
+                IncludeSubdirectories = SelectedWatchFolder.IncludeSubdirectories,
+                MoveFilesToScreenshotsFolder = SelectedWatchFolder.MoveFilesToScreenshotsFolder
+            };
+
+            var saved = await EditWatchFolderRequester(editVm);
+            if (!saved)
+            {
+                return;
+            }
+
+            SelectedWatchFolder.FolderPath = editVm.FolderPath;
+            SelectedWatchFolder.Filter = string.IsNullOrWhiteSpace(editVm.Filter) ? "*.*" : editVm.Filter;
+            SelectedWatchFolder.IncludeSubdirectories = editVm.IncludeSubdirectories;
+            SelectedWatchFolder.MoveFilesToScreenshotsFolder = editVm.MoveFilesToScreenshotsFolder;
+            RefreshWatchFolderStatuses();
+            SaveSettings();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanEditWatchFolder))]
+        private void RemoveWatchFolder()
+        {
+            if (SelectedWatchFolder == null)
+            {
+                return;
+            }
+
+            WatchFolders.Remove(SelectedWatchFolder);
+            SelectedWatchFolder = null;
+            RefreshWatchFolderStatuses();
+            SaveSettings();
+        }
+
+        private bool CanEditWatchFolder()
+        {
+            return SelectedWatchFolder != null;
+        }
+
+        private void RefreshWatchFolderStatuses()
+        {
+            foreach (var folder in WatchFolders)
+            {
+                folder.UpdateStatus(WatchFolderEnabled);
+            }
         }
     }
 }

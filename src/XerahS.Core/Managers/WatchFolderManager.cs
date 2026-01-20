@@ -23,6 +23,10 @@
 
 #endregion License Information (GPL v3)
 using XerahS.Common;
+using XerahS.Core.Helpers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System.Collections.Concurrent;
 
 namespace XerahS.Core.Managers
 {
@@ -32,6 +36,7 @@ namespace XerahS.Core.Managers
         public static WatchFolderManager Instance => _lazy.Value;
 
         private readonly List<FileSystemWatcher> _watchers = new();
+        private readonly ConcurrentDictionary<string, byte> _inFlight = new(StringComparer.OrdinalIgnoreCase);
         private bool _isDisposed;
 
         private WatchFolderManager()
@@ -51,36 +56,225 @@ namespace XerahS.Core.Managers
                 {
                     if (Directory.Exists(folder.FolderPath))
                     {
-                        AddWatcher(folder);
+                        AddWatchers(folder);
                     }
                 }
             }
         }
 
-        private void AddWatcher(WatchFolderSettings settings)
+        private void AddWatchers(WatchFolderSettings settings)
         {
-            try
+            foreach (var filter in ParseFilters(settings.Filter))
             {
-                var watcher = new FileSystemWatcher(settings.FolderPath);
-                watcher.Filter = settings.Filter;
-                watcher.IncludeSubdirectories = settings.IncludeSubdirectories;
-                watcher.EnableRaisingEvents = true;
-                watcher.Created += Watcher_Created;
-                _watchers.Add(watcher);
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteLine($"Failed to watch folder {settings.FolderPath}: {ex.Message}");
+                try
+                {
+                    var watcher = new FileSystemWatcher(settings.FolderPath)
+                    {
+                        Filter = filter,
+                        IncludeSubdirectories = settings.IncludeSubdirectories,
+                        NotifyFilter = NotifyFilters.FileName | NotifyFilters.Size | NotifyFilters.LastWrite
+                    };
+
+                    watcher.Created += (sender, e) => OnFileDetected(settings, e.FullPath);
+                    watcher.Renamed += (sender, e) => OnFileDetected(settings, e.FullPath);
+                    watcher.EnableRaisingEvents = true;
+                    _watchers.Add(watcher);
+                }
+                catch (Exception ex)
+                {
+                    DebugHelper.WriteLine($"Failed to watch folder {settings.FolderPath}: {ex.Message}");
+                }
             }
         }
 
-        private void Watcher_Created(object sender, FileSystemEventArgs e)
+        private void OnFileDetected(WatchFolderSettings settings, string fullPath)
         {
-            // TODO: Trigger Task execution for the new file
-            DebugHelper.WriteLine($"New file detected: {e.FullPath}");
+            if (string.IsNullOrWhiteSpace(fullPath))
+            {
+                return;
+            }
 
-            // Logic to create a WorkerTask from the file would go here.
-            // Since we are decoupling, we might fire an event or call TaskManager directly.
+            if (!_inFlight.TryAdd(fullPath, 0))
+            {
+                return;
+            }
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await ProcessFileAsync(settings, fullPath);
+                }
+                finally
+                {
+                    _inFlight.TryRemove(fullPath, out _);
+                }
+            });
+        }
+
+        private async Task ProcessFileAsync(WatchFolderSettings settings, string fullPath)
+        {
+            if (!File.Exists(fullPath))
+            {
+                return;
+            }
+
+            try
+            {
+                var attributes = File.GetAttributes(fullPath);
+                if (attributes.HasFlag(FileAttributes.Directory))
+                {
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"Failed to read attributes for {fullPath}: {ex.Message}");
+                return;
+            }
+
+            if (!await WaitForFileReadyAsync(fullPath))
+            {
+                DebugHelper.WriteLine($"WatchFolder: file not ready in time: {fullPath}");
+                return;
+            }
+
+            var taskSettings = SettingsManager.GetFirstWorkflow(HotkeyType.None)?.TaskSettings;
+            if (taskSettings == null)
+            {
+                return;
+            }
+
+            var clonedSettings = CloneTaskSettings(taskSettings);
+            clonedSettings.Job = HotkeyType.FileUpload;
+
+            string fileToProcess = fullPath;
+            if (settings.MoveFilesToScreenshotsFolder)
+            {
+                fileToProcess = MoveToScreenshotsFolder(fullPath, clonedSettings);
+            }
+
+            await TaskManager.Instance.StartFileTask(clonedSettings, fileToProcess);
+        }
+
+        private static string MoveToScreenshotsFolder(string sourcePath, TaskSettings taskSettings)
+        {
+            try
+            {
+                string screenshotsFolder = TaskHelpers.GetScreenshotsFolder(taskSettings);
+                Directory.CreateDirectory(screenshotsFolder);
+
+                string fileName = Path.GetFileName(sourcePath);
+                string targetPath = Path.Combine(screenshotsFolder, fileName);
+                targetPath = TaskHelpers.HandleExistsFile(targetPath, taskSettings);
+
+                File.Move(sourcePath, targetPath);
+                return targetPath;
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"Failed to move file to screenshots folder: {ex.Message}");
+                return sourcePath;
+            }
+        }
+
+        private static async Task<bool> WaitForFileReadyAsync(string fullPath, int timeoutMs = 15000, int pollMs = 300)
+        {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            long lastSize = -1;
+            int stableCount = 0;
+
+            while (stopwatch.ElapsedMilliseconds < timeoutMs)
+            {
+                if (!File.Exists(fullPath))
+                {
+                    return false;
+                }
+
+                long size;
+                try
+                {
+                    size = new FileInfo(fullPath).Length;
+                }
+                catch
+                {
+                    size = -1;
+                }
+
+                if (size == lastSize && size > 0 && !IsFileLocked(fullPath))
+                {
+                    stableCount++;
+                    if (stableCount >= 2)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    stableCount = 0;
+                }
+
+                lastSize = size;
+                await Task.Delay(pollMs);
+            }
+
+            return false;
+        }
+
+        private static bool IsFileLocked(string fullPath)
+        {
+            try
+            {
+                using var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.None);
+                return false;
+            }
+            catch (IOException)
+            {
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static IEnumerable<string> ParseFilters(string? filter)
+        {
+            if (string.IsNullOrWhiteSpace(filter))
+            {
+                yield return "*.*";
+                yield break;
+            }
+
+            var separators = new[] { ';', '|', ',' };
+            var filters = filter.Split(separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (filters.Length == 0)
+            {
+                yield return "*.*";
+                yield break;
+            }
+
+            foreach (var item in filters)
+            {
+                yield return string.IsNullOrWhiteSpace(item) ? "*.*" : item;
+            }
+        }
+
+        private static TaskSettings CloneTaskSettings(TaskSettings source)
+        {
+            var jsonSettings = new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto,
+                ObjectCreationHandling = ObjectCreationHandling.Replace,
+                Converters = new List<JsonConverter>
+                {
+                    new StringEnumConverter(),
+                    new XerahS.Common.Converters.SkColorJsonConverter()
+                }
+            };
+
+            string json = JsonConvert.SerializeObject(source, jsonSettings);
+            return JsonConvert.DeserializeObject<TaskSettings>(json, jsonSettings) ?? new TaskSettings();
         }
 
         private void StopWatchers()

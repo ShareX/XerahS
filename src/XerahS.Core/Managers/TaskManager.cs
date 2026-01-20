@@ -75,6 +75,39 @@ namespace XerahS.Core.Managers
             TroubleshootingHelper.Log(task.Info?.TaskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", "task.StartAsync completed");
         }
 
+        public async Task StartFileTask(TaskSettings? taskSettings, string filePath)
+        {
+            if (taskSettings == null)
+            {
+                DebugHelper.WriteLine("StartFileTask called with null TaskSettings, skipping.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                DebugHelper.WriteLine("StartFileTask called with empty file path, skipping.");
+                return;
+            }
+
+            TroubleshootingHelper.Log(taskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", $"StartFileTask Entry: FilePath={filePath}");
+
+            var safeTaskSettings = taskSettings ?? new TaskSettings();
+            var task = WorkerTask.Create(safeTaskSettings);
+            task.Info.FilePath = filePath;
+            task.Info.DataType = EDataType.File;
+            _tasks.Add(task);
+
+            task.StatusChanged += (s, e) => DebugHelper.WriteLine($"Task Status: {task.Status}");
+            task.TaskCompleted += (s, e) =>
+            {
+                TaskCompleted?.Invoke(this, task);
+            };
+
+            TaskStarted?.Invoke(this, task);
+
+            await task.StartAsync();
+        }
+
         public void StopAllTasks()
         {
             foreach (var task in _tasks.Where(t => t.IsWorking))
