@@ -56,7 +56,10 @@ namespace XerahS.Core.Managers
                 {
                     if (Directory.Exists(folder.FolderPath))
                     {
-                        AddWatchers(folder);
+                        if (IsWorkflowValid(folder))
+                        {
+                            AddWatchers(folder);
+                        }
                     }
                 }
             }
@@ -139,13 +142,14 @@ namespace XerahS.Core.Managers
                 return;
             }
 
-            var taskSettings = SettingsManager.GetFirstWorkflow(HotkeyType.None)?.TaskSettings;
-            if (taskSettings == null)
+            var workflow = SettingsManager.GetWorkflowById(settings.WorkflowId);
+            if (workflow?.TaskSettings == null)
             {
+                DebugHelper.WriteLine($"WatchFolder: workflow not found for file {fullPath}");
                 return;
             }
 
-            var clonedSettings = CloneTaskSettings(taskSettings);
+            var clonedSettings = CloneTaskSettings(workflow.TaskSettings);
             clonedSettings.Job = HotkeyType.FileUpload;
 
             string fileToProcess = fullPath;
@@ -275,6 +279,16 @@ namespace XerahS.Core.Managers
 
             string json = JsonConvert.SerializeObject(source, jsonSettings);
             return JsonConvert.DeserializeObject<TaskSettings>(json, jsonSettings) ?? new TaskSettings();
+        }
+
+        private static bool IsWorkflowValid(WatchFolderSettings settings)
+        {
+            if (string.IsNullOrWhiteSpace(settings.WorkflowId))
+            {
+                return false;
+            }
+
+            return SettingsManager.GetWorkflowById(settings.WorkflowId) != null;
         }
 
         private void StopWatchers()

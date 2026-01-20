@@ -478,4 +478,5 @@ public class WatchFolderSettings
     public string Filter { get; set; } = "*.*";
     public bool IncludeSubdirectories { get; set; } = false;
     public bool MoveFilesToScreenshotsFolder { get; set; } = false;
+    public string WorkflowId { get; set; } = "";
 }

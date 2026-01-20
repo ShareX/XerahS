@@ -28,6 +28,7 @@ using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -59,9 +60,21 @@ public partial class WatchFolderEditViewModel : ViewModelBase, INotifyDataErrorI
     [ObservableProperty]
     private string _filterError = string.Empty;
 
+    [ObservableProperty]
+    private string _workflowError = string.Empty;
+
+    [ObservableProperty]
+    private WorkflowOptionViewModel? _selectedWorkflow;
+
+    public ObservableCollection<WorkflowOptionViewModel> Workflows { get; } = new();
+
+    public string SelectedWorkflowId => SelectedWorkflow?.Id ?? string.Empty;
+
     public bool HasFolderPathError => !string.IsNullOrWhiteSpace(FolderPathError);
 
     public bool HasFilterError => !string.IsNullOrWhiteSpace(FilterError);
+
+    public bool HasWorkflowError => !string.IsNullOrWhiteSpace(WorkflowError);
 
     public bool HasErrors => _errors.Count > 0;
 
@@ -91,6 +104,11 @@ public partial class WatchFolderEditViewModel : ViewModelBase, INotifyDataErrorI
     partial void OnFilterChanged(string value)
     {
         ValidateFilter();
+    }
+
+    partial void OnSelectedWorkflowChanged(WorkflowOptionViewModel? value)
+    {
+        ValidateWorkflow();
     }
 
     [RelayCommand]
@@ -130,6 +148,7 @@ public partial class WatchFolderEditViewModel : ViewModelBase, INotifyDataErrorI
     {
         ValidateFolderPath();
         ValidateFilter();
+        ValidateWorkflow();
     }
 
     private void ValidateFolderPath()
@@ -174,6 +193,21 @@ public partial class WatchFolderEditViewModel : ViewModelBase, INotifyDataErrorI
 
         FilterError = GetFirstError(nameof(Filter));
         OnPropertyChanged(nameof(HasFilterError));
+        OnPropertyChanged(nameof(CanSave));
+    }
+
+    private void ValidateWorkflow()
+    {
+        ClearErrors(nameof(SelectedWorkflow));
+        WorkflowError = string.Empty;
+
+        if (SelectedWorkflow == null)
+        {
+            AddError(nameof(SelectedWorkflow), "Select a workflow.");
+        }
+
+        WorkflowError = GetFirstError(nameof(SelectedWorkflow));
+        OnPropertyChanged(nameof(HasWorkflowError));
         OnPropertyChanged(nameof(CanSave));
     }
 

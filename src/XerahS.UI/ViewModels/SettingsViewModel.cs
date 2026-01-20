@@ -80,6 +80,8 @@ namespace XerahS.UI.ViewModels
 
         public ObservableCollection<WatchFolderSettingsViewModel> WatchFolders { get; } = new();
 
+        public ObservableCollection<WorkflowOptionViewModel> WatchFolderWorkflows { get; } = new();
+
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(EditWatchFolderCommand))]
         [NotifyCanExecuteChangedFor(nameof(RemoveWatchFolderCommand))]
@@ -529,9 +531,13 @@ namespace XerahS.UI.ViewModels
 
             WatchFolderEnabled = taskSettings.WatchFolderEnabled;
             WatchFolders.Clear();
+            WatchFolderWorkflows.Clear();
+            LoadWatchFolderWorkflows();
             foreach (var folder in taskSettings.WatchFolderList)
             {
-                WatchFolders.Add(WatchFolderSettingsViewModel.FromSettings(folder));
+                var vm = WatchFolderSettingsViewModel.FromSettings(folder);
+                vm.WorkflowName = GetWorkflowName(folder.WorkflowId);
+                WatchFolders.Add(vm);
             }
             HasWatchFolders = WatchFolders.Count > 0;
             RefreshWatchFolderStatuses();
@@ -637,6 +643,7 @@ namespace XerahS.UI.ViewModels
                 Title = "Add Watch Folder",
                 Filter = "*.*"
             };
+            PopulateEditViewModel(editVm, null);
 
             var saved = await EditWatchFolderRequester(editVm);
             if (!saved)
@@ -649,7 +656,9 @@ namespace XerahS.UI.ViewModels
                 FolderPath = editVm.FolderPath,
                 Filter = string.IsNullOrWhiteSpace(editVm.Filter) ? "*.*" : editVm.Filter,
                 IncludeSubdirectories = editVm.IncludeSubdirectories,
-                MoveFilesToScreenshotsFolder = editVm.MoveFilesToScreenshotsFolder
+                MoveFilesToScreenshotsFolder = editVm.MoveFilesToScreenshotsFolder,
+                WorkflowId = editVm.SelectedWorkflowId,
+                WorkflowName = editVm.SelectedWorkflow?.Name ?? "Unassigned"
             };
 
             WatchFolders.Add(item);
@@ -673,6 +682,7 @@ namespace XerahS.UI.ViewModels
                 IncludeSubdirectories = SelectedWatchFolder.IncludeSubdirectories,
                 MoveFilesToScreenshotsFolder = SelectedWatchFolder.MoveFilesToScreenshotsFolder
             };
+            PopulateEditViewModel(editVm, SelectedWatchFolder.WorkflowId);
 
             var saved = await EditWatchFolderRequester(editVm);
             if (!saved)
@@ -684,6 +694,8 @@ namespace XerahS.UI.ViewModels
             SelectedWatchFolder.Filter = string.IsNullOrWhiteSpace(editVm.Filter) ? "*.*" : editVm.Filter;
             SelectedWatchFolder.IncludeSubdirectories = editVm.IncludeSubdirectories;
             SelectedWatchFolder.MoveFilesToScreenshotsFolder = editVm.MoveFilesToScreenshotsFolder;
+            SelectedWatchFolder.WorkflowId = editVm.SelectedWorkflowId;
+            SelectedWatchFolder.WorkflowName = editVm.SelectedWorkflow?.Name ?? "Unassigned";
             RefreshWatchFolderStatuses();
             SaveSettings();
         }
@@ -709,10 +721,53 @@ namespace XerahS.UI.ViewModels
 
         private void RefreshWatchFolderStatuses()
         {
+            var workflows = SettingsManager.WorkflowsConfig?.Hotkeys;
             foreach (var folder in WatchFolders)
             {
-                folder.UpdateStatus(WatchFolderEnabled);
+                bool workflowValid = workflows?.Any(w => w.Id == folder.WorkflowId) == true;
+                folder.UpdateStatus(WatchFolderEnabled, workflowValid);
             }
+        }
+
+        private void LoadWatchFolderWorkflows()
+        {
+            var workflows = SettingsManager.WorkflowsConfig?.Hotkeys;
+            if (workflows == null)
+            {
+                return;
+            }
+
+            foreach (var workflow in workflows.Where(w => w.Job != HotkeyType.None))
+            {
+                WatchFolderWorkflows.Add(new WorkflowOptionViewModel(workflow.Id, GetWorkflowName(workflow)));
+            }
+        }
+
+        private void PopulateEditViewModel(WatchFolderEditViewModel editVm, string? workflowId)
+        {
+            foreach (var workflow in WatchFolderWorkflows)
+            {
+                editVm.Workflows.Add(workflow);
+            }
+
+            editVm.SelectedWorkflow = editVm.Workflows.FirstOrDefault(w => w.Id == workflowId)
+                                      ?? editVm.Workflows.FirstOrDefault();
+        }
+
+        private static string GetWorkflowName(string workflowId)
+        {
+            var workflow = SettingsManager.GetWorkflowById(workflowId);
+            return workflow != null ? GetWorkflowName(workflow) : "Unknown workflow";
+        }
+
+        private static string GetWorkflowName(WorkflowSettings workflow)
+        {
+            if (!string.IsNullOrEmpty(workflow.TaskSettings?.Description))
+            {
+                return workflow.TaskSettings.Description;
+            }
+
+            return EnumExtensions.GetDescription(workflow.Job);
         }
     }
 }

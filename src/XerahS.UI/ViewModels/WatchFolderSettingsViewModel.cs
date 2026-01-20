@@ -49,6 +49,12 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _statusDetail = "Watch folders are disabled.";
 
+    [ObservableProperty]
+    private string _workflowId = string.Empty;
+
+    [ObservableProperty]
+    private string _workflowName = "Unassigned";
+
     public string IncludeSubdirectoriesText => IncludeSubdirectories ? "Yes" : "No";
 
     public string MoveFilesToScreenshotsFolderText => MoveFilesToScreenshotsFolder ? "Yes" : "No";
@@ -63,12 +69,19 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(MoveFilesToScreenshotsFolderText));
     }
 
-    public void UpdateStatus(bool isEnabled)
+    public void UpdateStatus(bool isEnabled, bool workflowValid)
     {
         if (!isEnabled)
         {
             StatusText = "Disabled";
             StatusDetail = "Watch folders are disabled.";
+            return;
+        }
+
+        if (!workflowValid)
+        {
+            StatusText = "Error";
+            StatusDetail = "Workflow not found.";
             return;
         }
 
@@ -97,7 +110,8 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
             FolderPath = settings.FolderPath,
             Filter = string.IsNullOrWhiteSpace(settings.Filter) ? "*.*" : settings.Filter,
             IncludeSubdirectories = settings.IncludeSubdirectories,
-            MoveFilesToScreenshotsFolder = settings.MoveFilesToScreenshotsFolder
+            MoveFilesToScreenshotsFolder = settings.MoveFilesToScreenshotsFolder,
+            WorkflowId = settings.WorkflowId
         };
     }
 
@@ -108,7 +122,8 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
             FolderPath = FolderPath,
             Filter = string.IsNullOrWhiteSpace(Filter) ? "*.*" : Filter,
             IncludeSubdirectories = IncludeSubdirectories,
-            MoveFilesToScreenshotsFolder = MoveFilesToScreenshotsFolder
+            MoveFilesToScreenshotsFolder = MoveFilesToScreenshotsFolder,
+            WorkflowId = WorkflowId
         };
     }
 }

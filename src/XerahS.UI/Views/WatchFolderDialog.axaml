@@ -49,6 +49,18 @@
         </StackPanel>
 
         <StackPanel Spacing="6">
+            <TextBlock Text="Workflow" FontWeight="SemiBold"/>
+            <ComboBox ItemsSource="{Binding Workflows}"
+                      SelectedItem="{Binding SelectedWorkflow}"
+                      DisplayMemberBinding="{Binding Name}"
+                      HorizontalAlignment="Stretch"/>
+            <TextBlock Text="{Binding WorkflowError}"
+                       Foreground="Tomato"
+                       FontSize="12"
+                       IsVisible="{Binding HasWorkflowError}"/>
+        </StackPanel>
+
+        <StackPanel Spacing="6">
             <CheckBox IsChecked="{Binding IncludeSubdirectories}" Content="Include subfolders"/>
             <CheckBox IsChecked="{Binding MoveFilesToScreenshotsFolder}" Content="Move files to screenshots folder after processing"/>
         </StackPanel>
