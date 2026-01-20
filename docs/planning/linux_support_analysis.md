@@ -1,7 +1,7 @@
 # Linux Support Analysis
 
 ## Overview
-This document summarizes the current state of Linux support in `ShareX.Avalonia`. The implementation is located primarily in the `ShareX.Avalonia.Platform.Linux` project, with abstraction layers allowing for cross-platform compatibility in the core application.
+This document summarizes the current state of Linux support in `XerahS`. The implementation is located primarily in the `XerahS.Platform.Linux` project, with abstraction layers allowing for cross-platform compatibility in the core application.
 
 **Current Status**: Partial / In-Progress
 **Architecture**: Platform-specific implementation via `XerahS.Platform.Linux` namespace, injected at runtime.

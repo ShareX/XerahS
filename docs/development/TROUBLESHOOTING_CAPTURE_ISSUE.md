@@ -86,7 +86,7 @@ public async Task<SKBitmap?> CaptureRegionWithUIAsync(CaptureOptions? options = 
     if (RegionCaptureWindow.HasNewBackend) // Would need to add this property
     {
         using var backend = CreatePlatformBackend();
-        using var service = new ShareX.Avalonia.UI.Services.RegionCaptureService(backend);
+        using var service = new XerahS.UI.Services.RegionCaptureService(backend);
 
         var physicalRect = new PhysicalRectangle(
             selection.Left, selection.Top,

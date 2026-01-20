@@ -2,7 +2,7 @@
 
 ## Modified Files
 
-### 1. `src\ShareX.Avalonia.UI\Services\ScreenService.cs`
+### 1. `src\XerahS.UI\Services\ScreenService.cs`
 
 **Change Type**: Stub to Delegating Wrapper
 
@@ -45,7 +45,7 @@ public class ScreenService : IScreenService
 
 ---
 
-### 2. `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml`
+### 2. `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml`
 
 **Change Type**: Background configuration
 
@@ -75,7 +75,7 @@ public class ScreenService : IScreenService
 
 ---
 
-### 3. `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
+### 3. `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
 
 **Change Type**: Complete coordinate system rewrite
 

@@ -5,8 +5,8 @@ Create a `.sxadp` plugin package from a plugin project folder.
 ## Usage
 
 ```bash
-dotnet run --project src/ShareX.Avalonia.PluginExporter -- <pluginDirectory> [outputPath]
-dotnet run --project src/ShareX.Avalonia.PluginExporter -- <pluginDirectory> -o <outputPath>
+dotnet run --project src/XerahS.PluginExporter -- <pluginDirectory> [outputPath]
+dotnet run --project src/XerahS.PluginExporter -- <pluginDirectory> -o <outputPath>
 ```
 
 ## Arguments
@@ -20,15 +20,15 @@ dotnet run --project src/ShareX.Avalonia.PluginExporter -- <pluginDirectory> -o 
 ## Examples
 
 ```bash
-dotnet run --project src/ShareX.Avalonia.PluginExporter -- "C:\Path\To\ShareX.AmazonS3.Plugin"
+dotnet run --project src/XerahS.PluginExporter -- "C:\Path\To\ShareX.AmazonS3.Plugin"
 ```
 
 ```bash
-dotnet run --project src/ShareX.Avalonia.PluginExporter -- "C:\Path\To\ShareX.AmazonS3.Plugin" -o "C:\Output\ShareX.AmazonS3.Plugin.sxadp"
+dotnet run --project src/XerahS.PluginExporter -- "C:\Path\To\ShareX.AmazonS3.Plugin" -o "C:\Output\ShareX.AmazonS3.Plugin.sxadp"
 ```
 
 ```bash
-dotnet run --project src/ShareX.Avalonia.PluginExporter -- "C:\Path\To\ShareX.AmazonS3.Plugin" -o "C:\Output"
+dotnet run --project src/XerahS.PluginExporter -- "C:\Path\To\ShareX.AmazonS3.Plugin" -o "C:\Output"
 ```
 
 ## Notes

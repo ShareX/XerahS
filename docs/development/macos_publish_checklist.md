@@ -1,7 +1,7 @@
 # macOS Publish & Entitlements Checklist (osx-arm64)
 
 1. Build/Publish
-   - `dotnet publish -c Release -r osx-arm64 --self-contained true src/ShareX.Avalonia.App/ShareX.Avalonia.App.csproj`
+   - `dotnet publish -c Release -r osx-arm64 --self-contained true src/XerahS.App/XerahS.App.csproj`
    - Confirm output `.app` exists under `bin/Release/net10.0/osx-arm64/publish/`
 
 2. Permissions

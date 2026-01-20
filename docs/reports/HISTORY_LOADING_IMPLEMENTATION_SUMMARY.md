@@ -9,7 +9,7 @@ Successfully implemented **asynchronous, progressive loading** for the History p
 ## What Was Changed
 
 ### 1. HistoryViewModel.cs (Primary Changes)
-**Location**: `src\ShareX.Avalonia.UI\ViewModels\HistoryViewModel.cs`
+**Location**: `src\XerahS.UI\ViewModels\HistoryViewModel.cs`
 
 #### New Features:
 - ? **IsLoadingThumbnails** property - tracks thumbnail pre-loading state
@@ -25,7 +25,7 @@ Successfully implemented **asynchronous, progressive loading** for the History p
 - Full exception handling with debug logging
 
 ### 2. HistoryView.axaml (UI Updates)
-**Location**: `src\ShareX.Avalonia.UI\Views\HistoryView.axaml`
+**Location**: `src\XerahS.UI\Views\HistoryView.axaml`
 
 #### New UI Elements:
 - ? Toolbar indicator showing "loading thumbnails..." status
@@ -245,7 +245,7 @@ return Bitmap.DecodeToWidth(stream, 180);  ? Thumbnail width
 ## Files Modified
 
 ```
-? MODIFIED: src/ShareX.Avalonia.UI/ViewModels/HistoryViewModel.cs
+? MODIFIED: src/XerahS.UI/ViewModels/HistoryViewModel.cs
    ??? Added: IsLoadingThumbnails property
    ??? Added: BeginHistoryLoadAsync() method
    ??? Added: LoadThumbnailsInBackgroundAsync() method
@@ -254,7 +254,7 @@ return Bitmap.DecodeToWidth(stream, 180);  ? Thumbnail width
    ??? Modified: Dispose (cleanup token)
    ??? Total: ~150 lines added/modified
 
-? MODIFIED: src/ShareX.Avalonia.UI/Views/HistoryView.axaml
+? MODIFIED: src/XerahS.UI/Views/HistoryView.axaml
    ??? Added: Loading indicator for thumbnails
    ??? Updated: Toolbar status display
    ??? Total: ~5 lines added

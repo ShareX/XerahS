@@ -1,6 +1,6 @@
-# ShareX.Avalonia Project Status
+# XerahS Project Status
 
-This document tracks the current implementation status, backend porting checklist, pending tasks, and future enhancements for ShareX.Avalonia.
+This document tracks the current implementation status, backend porting checklist, pending tasks, and future enhancements for XerahS.
 
 ## Uploader Plugin System - Implementation Status
 
@@ -26,7 +26,7 @@ This document tracks the current implementation status, backend porting checklis
 - ViewModels: UploaderInstanceViewModel, CategoryViewModel, ProviderCatalogViewModel, ProviderViewModel
 - Views: DestinationSettingsView (updated), ProviderCatalogDialog
 
-**Persistence:** `%AppData%/ShareX.Avalonia/uploader-instances.json`
+**Persistence:** `%AppData%/XerahS/uploader-instances.json`
 
 ### ✅ Completed: Dynamic Plugin System (Jan 2025)
 
@@ -47,7 +47,7 @@ This document tracks the current implementation status, backend porting checklis
 - `ShareX.AmazonS3.Plugin`: S3 bucket uploads (Image/Text/File).
 
 **Status:**
-- [x] Extract common abstractions into `ShareX.Avalonia.Uploaders`.
+- [x] Extract common abstractions into `XerahS.Uploaders`.
 - [x] Implement `PluginLoadContext` and loading logic.
 - [x] Implement `plugin.json` manifest system.
 - [x] Create Imgur and S3 plugins as standalone DLLs.
@@ -160,7 +160,7 @@ This document tracks the current implementation status, backend porting checklis
 
 ### ✅ Phase 1 Complete: Core Annotation Models (Dec 2024)
 
-**New project:** `ShareX.Avalonia.Annotations`
+**New project:** `XerahS.Annotations`
 **Files created:** 10 files (~800 LOC)
 
 **Annotation types implemented:**
@@ -482,7 +482,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 
 ### Goal
 
-Ensure ShareX.Avalonia runs natively on Windows ARM64 and remains portable to Linux ARM64 and macOS ARM64 where feasible.
+Ensure XerahS runs natively on Windows ARM64 and remains portable to Linux ARM64 and macOS ARM64 where feasible.
 
 ### Build Targets
 

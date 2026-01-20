@@ -12,7 +12,7 @@ The editor window title can be customized by setting the `ApplicationName` prope
 
 By default, the editor window title is "ShareX Editor" (using the default `ApplicationName = "ShareX"`).
 
-### Customization in XerahS (ShareX.Avalonia Fork)
+### Customization in XerahS (XerahS Fork)
 
 XerahS customizes the editor title to display "XerahS Editor" by using a centralized application name constant.
 
@@ -109,7 +109,7 @@ This ensures the window title updates automatically when `ApplicationName` chang
 
 ? **Don't do this:**
 ```csharp
-editorViewModel.ApplicationName = "ShareX.Avalonia";  // Hardcoded!
+editorViewModel.ApplicationName = "XerahS";  // Hardcoded!
 ```
 
 ? **Do this instead:**
@@ -126,11 +126,11 @@ editorViewModel.ApplicationName = AppResources.AppName;  // Uses centralized pro
 
 ## Related Files
 
-- `ShareX.Avalonia.Common/ShareXResources.cs`: Centralized app name constant
+- `XerahS.Common/ShareXResources.cs`: Centralized app name constant
 - `ShareX.Editor/ViewModels/MainViewModel.cs`: Contains the `ApplicationName` and `EditorTitle` properties
-- `ShareX.Avalonia.UI/Views/EditorWindow.axaml`: Window definition with title binding
-- `ShareX.Avalonia.UI/App.axaml.cs`: Main window initialization
-- `ShareX.Avalonia.UI/Services/AvaloniaUIService.cs`: Standalone editor window creation
+- `XerahS.UI/Views/EditorWindow.axaml`: Window definition with title binding
+- `XerahS.UI/App.axaml.cs`: Main window initialization
+- `XerahS.UI/Services/AvaloniaUIService.cs`: Standalone editor window creation
 
 ## Future Enhancements
 

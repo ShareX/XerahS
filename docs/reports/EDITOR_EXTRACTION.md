@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The image editor component was successfully extracted from XerhaS (ShareX.Avalonia) into a standalone project called **ShareX.Editor**. This architectural change enables the editor to be shared across XerahS, and the original ShareX (WinForms.
+The image editor component was successfully extracted from XerhaS (XerahS) into a standalone project called **ShareX.Editor**. This architectural change enables the editor to be shared across XerahS, and the original ShareX (WinForms.
 
 ## Background
 
@@ -17,7 +17,7 @@ The extraction was driven by the need to:
 1. **Enable WinForms Integration**: Allow the original ShareX (WinForms) application to utilize the modern Avalonia-based editor
 2. **Reduce Code Duplication**: Create a single, shared codebase for editor functionality
 3. **Improve Maintainability**: Centralize editor development and bug fixes in one location
-4. **Support Multiple Consumers**: Enable XerahS, ShareX.Avalonia, and ShareX WinForms to all use the same editor
+4. **Support Multiple Consumers**: Enable XerahS, XerahS, and ShareX WinForms to all use the same editor
 
 ## Project Structure
 
@@ -61,10 +61,10 @@ ShareX.Editor/
 
 The following projects were removed after migration:
 
-- `src/ShareX.Avalonia.Annotations/` → Consolidated into ShareX.Editor
-- `src/ShareX.Avalonia.ImageEffects/` → Consolidated into ShareX.Editor
-- `src/ShareX.Avalonia.UI/ViewModels/MainViewModel.cs` → Moved to ShareX.Editor
-- `src/ShareX.Avalonia.UI/Views/EditorView.axaml*` → Moved to ShareX.Editor
+- `src/XerahS.Annotations/` → Consolidated into ShareX.Editor
+- `src/XerahS.ImageEffects/` → Consolidated into ShareX.Editor
+- `src/XerahS.UI/ViewModels/MainViewModel.cs` → Moved to ShareX.Editor
+- `src/XerahS.UI/Views/EditorView.axaml*` → Moved to ShareX.Editor
 
 ## Namespace Changes
 
@@ -84,7 +84,7 @@ All code was reorganized under the `ShareX.Editor` namespace:
 XerahS now references ShareX.Editor as an external dependency:
 
 ```csharp
-// ShareX.Avalonia.UI/Views/EditorWindow.axaml.cs
+// XerahS.UI/Views/EditorWindow.axaml.cs
 using ShareX.Editor.ViewModels;
 using ShareX.Editor.Views;
 
@@ -99,9 +99,9 @@ var editorWindow = new EditorWindow
 ```
 
 **Key Files**:
-- [ShareX.Avalonia.UI/Views/EditorWindow.axaml](../../src/ShareX.Avalonia.UI/Views/EditorWindow.axaml) - Window host
-- [ShareX.Avalonia.UI/Services/AvaloniaUIService.cs](../../src/ShareX.Avalonia.UI/Services/AvaloniaUIService.cs) - Editor launch service
-- [ShareX.Avalonia.UI/Services/EditorClipboardAdapter.cs](../../src/ShareX.Avalonia.UI/Services/EditorClipboardAdapter.cs) - Clipboard integration
+- [XerahS.UI/Views/EditorWindow.axaml](../../src/XerahS.UI/Views/EditorWindow.axaml) - Window host
+- [XerahS.UI/Services/AvaloniaUIService.cs](../../src/XerahS.UI/Services/AvaloniaUIService.cs) - Editor launch service
+- [XerahS.UI/Services/EditorClipboardAdapter.cs](../../src/XerahS.UI/Services/EditorClipboardAdapter.cs) - Clipboard integration
 
 ### XerahS Integration
 
@@ -188,14 +188,14 @@ The editor extraction was completed through the following commits:
 
 ## Current Users
 
-1. **XerahS** ✅ - Using via ShareX.Avalonia
+1. **XerahS** ✅ - Using via XerahS
 2. **ShareX (WinForms)** ⏸️ - Planned integration
 
 ## Related Documentation
 
 - [EditorCustomization.md](./EditorCustomization.md) - How to customize editor branding
 - [ShareX.Editor README](../../../ShareX.Editor/README.md) - Editor project overview
-- [ShareX.Avalonia README](../../README.md) - Main project documentation
+- [XerahS README](../../README.md) - Main project documentation
 
 ## Technical Decisions
 
@@ -239,7 +239,7 @@ SkiaSharp provides:
 ### Challenges
 - Managing clipboard integration across different frameworks
 - Ensuring consistent behavior between old and new implementations
-- Updating all references in ShareX.Avalonia
+- Updating all references in XerahS
 
 ### Best Practices Established
 - Centralized application name via `ApplicationName` property

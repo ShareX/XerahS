@@ -111,7 +111,7 @@ Generate a compliance report listing:
 - **Action**: Replace existing header with authoritative version
 - **Cases**:
   - Old copyright year (e.g., 2025 → 2026)
-  - Wrong project name (e.g., "ShareX.Avalonia" → "XerahS")
+  - Wrong project name (e.g., "XerahS" → "XerahS")
   - Truncated or modified text
 
 ### For Misplaced Headers
@@ -127,7 +127,7 @@ Generate a compliance report listing:
 - Copyright years: **2007-2026**
 
 ### Previous Versions (Historical)
-- Project name: "ShareX.Avalonia" (superseded)
+- Project name: "XerahS" (superseded)
 - Copyright years: 2007-2025 (superseded)
 
 **Note**: All files MUST use the current 2026 version regardless of original file date.

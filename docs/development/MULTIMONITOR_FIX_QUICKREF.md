@@ -12,19 +12,19 @@
 
 ## Key Changes
 
-### File 1: `src\ShareX.Avalonia.UI\Services\ScreenService.cs`
+### File 1: `src\XerahS.UI\Services\ScreenService.cs`
 ```csharp
 // Before: Hardcoded 1920x1080 at (0,0)
 // After: Delegates to WindowsScreenService for actual bounds
 ```
 
-### File 2: `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml`
+### File 2: `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml`
 ```xml
 <!-- Before: Background="{x:Null}" -->
 <!-- After: Background="Transparent" -->
 ```
 
-### File 3: `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
+### File 3: `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
 
 **New Member Variables**:
 ```csharp

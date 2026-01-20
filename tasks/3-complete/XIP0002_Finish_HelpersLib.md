@@ -27,8 +27,8 @@ Complete the porting of `HelpersLib` utilities that were missed or partially imp
 The following files were part of CX01 but appear missing or incomplete:
 | Missing File | Target Location | Notes |
 |--------------|-----------------|-------|
-| `ImageHelpers.cs` | `src/ShareX.Avalonia.Common/Helpers/` | Resize, Crop, Rotate, Metadata removal. Use SkiaSharp. |
-| `FileHelpers.cs` | `src/ShareX.Avalonia.Common/Helpers/` | `GetUniqueFilePath`, `IsFilenameValid`, Path sanitization. |
+| `ImageHelpers.cs` | `src/XerahS.Common/Helpers/` | Resize, Crop, Rotate, Metadata removal. Use SkiaSharp. |
+| `FileHelpers.cs` | `src/XerahS.Common/Helpers/` | `GetUniqueFilePath`, `IsFilenameValid`, Path sanitization. |
 
 ### 2. Tier 2: Image Processing (Color/Convolution)
 Port the following classes for image effects:
@@ -38,7 +38,7 @@ Port the following classes for image effects:
 
 ### 3. Consistency Check
 - Review `GeneralHelpers.cs` and ensure it doesn't duplicate `FileHelpers` logic.
-- Ensure all ported code uses `ShareX.Avalonia.Common` namespace.
+- Ensure all ported code uses `XerahS.Common` namespace.
 
 ## Guidelines
 - **No WinForms**: Use `SkiaSharp` or `Avalonia.Media` types.

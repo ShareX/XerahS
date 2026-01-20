@@ -68,11 +68,11 @@ User on Monitor 2 (100% DPI):
 
 ```
 Monitor 1 (125% DPI):
-Physical 2000 ? Logical 1600 (÷1.25) ? Correct
+Physical 2000 ? Logical 1600 (Ã·1.25) ? Correct
 
 Monitor 2 (100% DPI):
-Physical 2000 ? Should stay 2000 (÷1.0)
-              ? But got 1600 (÷1.25) ? Wrong!
+Physical 2000 ? Should stay 2000 (Ã·1.0)
+              ? But got 1600 (Ã·1.25) ? Wrong!
 ```
 
 ## Solution: Canvas Transform Approach
@@ -242,7 +242,7 @@ The transform creates an **inverse mapping**:
 Physical ? Canvas ? Logical ? Physical
   2000   ? 2000   ? 1600    ? 2000 ?
    ?        ?        ?         ?
-   OS     No div   ÷1.25    *1.25 (OS)
+1. **`src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`**
          (our code) (transform)
 ```
 

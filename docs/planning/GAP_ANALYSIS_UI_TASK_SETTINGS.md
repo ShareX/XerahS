@@ -2,8 +2,8 @@
 
 **Source:** `ShareX\Forms\TaskSettingsForm.cs` (WinForms)
 **Target:** 
-1. `src\ShareX.Avalonia.UI\Views\WorkflowEditorView.axaml` (Container / Task & Destinations)
-2. `src\ShareX.Avalonia.UI\Views\TaskSettingsPanel.axaml` (Inner Settings Panel)
+1. `src\XerahS.UI\Views\WorkflowEditorView.axaml` (Container / Task & Destinations)
+2. `src\XerahS.UI\Views\TaskSettingsPanel.axaml` (Inner Settings Panel)
 
 ## Executive Summary
 The Avalonia implementation splits the functionality of the single WinForms `TaskSettingsForm` into two views: `WorkflowEditorView` (acting as the container/wizard) and `TaskSettingsPanel` (embedded within the "Settings" tab of the editor). 

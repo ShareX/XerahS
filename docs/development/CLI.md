@@ -4,7 +4,7 @@ Command-line interface for ShareX workflow automation.
 
 ## Overview
 
-XerahS CLI provides headless access to the same workflow pipeline used by the ShareX.Avalonia UI application. It allows you to execute workflows, capture screenshots, and record screen activity from the command line or automation scripts.
+XerahS CLI provides headless access to the same workflow pipeline used by the XerahS UI application. It allows you to execute workflows, capture screenshots, and record screen activity from the command line or automation scripts.
 
 **Platform Support:** Windows, macOS, and Linux - as long as .NET 10 is installed, the CLI can run on any supported platform.
 
@@ -12,7 +12,7 @@ XerahS CLI provides headless access to the same workflow pipeline used by the Sh
 
 ### Shared Components
 
-XerahS CLI shares the following components with ShareX.Avalonia.UI:
+XerahS CLI shares the following components with XerahS.UI:
 
 - **Configuration Files**: Same JSON files in `Documents/ShareX/Settings/`
   - `ApplicationConfig.json` - General application settings
@@ -245,7 +245,7 @@ Backup Folder:
 
 ## Configuration Parity
 
-XerahS CLI loads the exact same configuration files as ShareX.Avalonia.UI:
+XerahS CLI loads the exact same configuration files as XerahS.UI:
 
 1. **Application Settings** (`ApplicationConfig.json`):
    - Theme settings
@@ -397,7 +397,7 @@ public static class MyCommand
 
 ### Shared Bootstrap
 
-Both UI and CLI use `ShareXBootstrap.InitializeAsync()` from the `ShareX.Avalonia.Bootstrap` project:
+Both UI and CLI use `ShareXBootstrap.InitializeAsync()` from the `XerahS.Bootstrap` project:
 
 **UI Bootstrap:**
 ```csharp
@@ -427,12 +427,12 @@ await ShareXBootstrap.InitializeAsync(options);
 
 XerahS CLI meets the following validation criteria:
 
-- ✅ Loads the same JSON files as ShareX.Avalonia.UI
+- ✅ Loads the same JSON files as XerahS.UI
 - ✅ Uses the same workflow pipeline (no duplicated implementation)
 - ✅ ScreenRecorder job can be executed through shared pipeline
 - ✅ Runs headless without UI rendering
 - ✅ Returns non-zero exit codes on failure
-- ✅ ShareX.Avalonia.UI behavior unchanged
+- ✅ XerahS.UI behavior unchanged
 
 ## Future Enhancements
 

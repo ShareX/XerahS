@@ -5,7 +5,7 @@ description: Semantic versioning, commit message standards, multi-agent coordina
 
 ## Semantic Versioning Automation
 
-**Product Name**: ShareX Ava (Project files/UI should reflect this, code namespace remains `ShareX.Avalonia`)
+**Product Name**: ShareX Ava (Project files/UI should reflect this, code namespace remains `XerahS`)
 
 **Current Version**: 0.1.0 (Managed centrally in `Directory.Build.props`)
 

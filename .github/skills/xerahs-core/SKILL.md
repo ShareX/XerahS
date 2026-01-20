@@ -1,6 +1,6 @@
 ---
 name: ShareX Core Standards
-description: License headers, build configuration rules, SkiaSharp version constraints, and general coding standards for ShareX.Avalonia
+description: License headers, build configuration rules, SkiaSharp version constraints, and general coding standards for XerahS
 ---
 
 ## License Header Requirement
@@ -51,7 +51,7 @@ This is required to avoid "Windows Metadata not provided" errors during full sol
 
 - When adding SkiaSharp to a new project: `<PackageReference Include="SkiaSharp" Version="2.88.9" />`
 - If you encounter version conflicts, always downgrade to 2.88.9.
-- This constraint applies to all projects including `ShareX.Avalonia.*` and `ShareX.Editor`.
+- This constraint applies to all projects including `XerahS.*` and `ShareX.Editor`.
 
 ## General Coding Rules
 

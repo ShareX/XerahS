@@ -13,7 +13,7 @@ The new backend is handling UI selection perfectly, but when it comes to actuall
 
 ## Quick Fix: Disable New Backend Temporarily
 
-**File:** `src/ShareX.Avalonia.UI/Views/RegionCapture/RegionCaptureWindowNew.cs`
+**File:** `src/XerahS.UI/Views/RegionCapture/RegionCaptureWindowNew.cs`
 **Line:** 27
 
 ```csharp
@@ -27,7 +27,7 @@ This will make everything use the old (working) code path.
 To actually use the new backend's hardware-accelerated capture, add this method to `ScreenCaptureService.cs`:
 
 ```csharp
-// File: src/ShareX.Avalonia.UI/Services/ScreenCaptureService.cs
+// File: src/XerahS.UI/Services/ScreenCaptureService.cs
 // Add after line 114
 
 private async Task<SKBitmap?> CaptureWithNewBackend(SKRectI selection, CaptureOptions? options)
@@ -40,17 +40,17 @@ private async Task<SKBitmap?> CaptureWithNewBackend(SKRectI selection, CaptureOp
 #if WINDOWS
         if (OperatingSystem.IsWindows())
         {
-            backend = new ShareX.Avalonia.Platform.Windows.Capture.WindowsRegionCaptureBackend();
+            backend = new XerahS.Platform.Windows.Capture.WindowsRegionCaptureBackend();
         }
 #elif MACOS || MACCATALYST
         if (OperatingSystem.IsMacOS())
         {
-            backend = new ShareX.Avalonia.Platform.macOS.Capture.MacOSRegionCaptureBackend();
+            backend = new XerahS.Platform.macOS.Capture.MacOSRegionCaptureBackend();
         }
 #elif LINUX
         if (OperatingSystem.IsLinux())
         {
-            backend = new ShareX.Avalonia.Platform.Linux.Capture.LinuxRegionCaptureBackend();
+            backend = new XerahS.Platform.Linux.Capture.LinuxRegionCaptureBackend();
         }
 #endif
 
@@ -62,7 +62,7 @@ private async Task<SKBitmap?> CaptureWithNewBackend(SKRectI selection, CaptureOp
 
         using (backend)
         {
-            using var service = new ShareX.Avalonia.UI.Services.RegionCaptureService(backend);
+            using var service = new XerahS.UI.Services.RegionCaptureService(backend);
 
             var physicalRect = new PhysicalRectangle(
                 selection.Left, selection.Top,

@@ -34,18 +34,18 @@ HKEY_CURRENT_USER\Software\Classes\ShareX.sxie\shell\open\command
 
 ---
 
-## 2. ShareX.Avalonia Implementation
+## 2. XerahS Implementation
 
 ### A. IntegrationHelpers (NEW FILE)
 
-**Location**: `src/ShareX.Avalonia.Core/Integration/IntegrationHelpers.cs`
+**Location**: `src/XerahS.Core/Integration/IntegrationHelpers.cs`
 
 ```csharp
 using Microsoft.Win32;
-using ShareX.Avalonia.Common;
+using XerahS.Common;
 using System.Runtime.InteropServices;
 
-namespace ShareX.Avalonia.Core.Integration;
+namespace XerahS.Core.Integration;
 
 /// <summary>
 /// Handles Windows integration (file associations, registry)
@@ -57,7 +57,7 @@ public static class IntegrationHelpers
     
     // .sxadp (ShareX Avalonia Destination Plugin) file association
     private static readonly string ShellPluginExtensionPath = @"Software\Classes\.sxadp";
-    private static readonly string ShellPluginExtensionValue = "ShareX.Avalonia.sxadp";
+    private static readonly string ShellPluginExtensionValue = "XerahS.sxadp";
     private static readonly string ShellPluginAssociatePath = $@"Software\Classes\{ShellPluginExtensionValue}";
     private static readonly string ShellPluginAssociateValue = "ShareX Avalonia plugin";
     private static readonly string ShellPluginIconPath = $@"{ShellPluginAssociatePath}\DefaultIcon";
@@ -138,13 +138,13 @@ public static class IntegrationHelpers
 
 ### B. RegistryHelpers (NEW FILE)
 
-**Location**: `src/ShareX.Avalonia.Core/Integration/RegistryHelpers.cs`
+**Location**: `src/XerahS.Core/Integration/RegistryHelpers.cs`
 
 ```csharp
 using Microsoft.Win32;
-using ShareX.Avalonia.Common;
+using XerahS.Common;
 
-namespace ShareX.Avalonia.Core.Integration;
+namespace XerahS.Core.Integration;
 
 /// <summary>
 /// Helper methods for Windows Registry operations
@@ -211,7 +211,7 @@ public static class RegistryHelpers
 
 ### C. CLI Manager Integration
 
-**Location**: `src/ShareX.Avalonia.App/Program.cs`
+**Location**: `src/XerahS.App/Program.cs`
 
 Add command-line argument handling:
 
@@ -292,12 +292,12 @@ private static async Task InstallPluginFromCommandLine(string packagePath)
 
 ### D. Settings UI Integration
 
-**Location**: `src/ShareX.Avalonia.UI/Views/ApplicationSettingsView.axaml`
+**Location**: `src/XerahS.UI/Views/ApplicationSettingsView.axaml`
 
 Add checkbox to Integration/Advanced settings tab:
 
 ```xml
-<CheckBox Content="Associate .sxadp files with ShareX.Avalonia"
+<CheckBox Content="Associate .sxadp files with XerahS"
           IsChecked="{Binding IsPluginExtensionRegistered}"
           Command="{Binding TogglePluginExtensionCommand}"
           ToolTip.Tip="Allows double-clicking .sxadp files to install plugins"/>
@@ -335,7 +335,7 @@ private void LoadIntegrationSettings()
 **XAML Update**: Show/hide checkbox based on platform support
 
 ```xml
-<CheckBox Content="Associate .sxadp files with ShareX.Avalonia"
+<CheckBox Content="Associate .sxadp files with XerahS"
           IsChecked="{Binding IsPluginExtensionRegistered}"
           IsVisible="{Binding SupportsFileAssociations}"
           ToolTip.Tip="Allows double-clicking .sxadp files to install plugins"/>
@@ -347,14 +347,14 @@ private void LoadIntegrationSettings()
 
 ### Scenario 1: First-Time Setup
 1. User opens Settings → Integration
-2. Checks "Associate .sxadp files with ShareX.Avalonia"
+2. Checks "Associate .sxadp files with XerahS"
 3. Registry keys are created
 4. `.sxadp` files now show ShareX icon in Explorer
 
 ### Scenario 2: Installing Plugin
 1. User downloads `ImgurUploader.sxadp`
 2. Double-clicks the file
-3. ShareX.Avalonia launches with `-InstallPlugin "C:\...\ImgurUploader.sxadp"`
+3. XerahS launches with `-InstallPlugin "C:\...\ImgurUploader.sxadp"`
 4. `PluginInstallerDialog` opens with package pre-loaded
 5. User reviews metadata and clicks "Install"
 6. Plugin is extracted to `Plugins/imgur/`
@@ -420,7 +420,7 @@ private void LoadIntegrationSettings()
 1. **Build and run app**
    ```bash
    dotnet build
-   dotnet run --project src/ShareX.Avalonia.App
+   dotnet run --project src/XerahS.App
    ```
 
 2. **Register file association**
@@ -431,7 +431,7 @@ private void LoadIntegrationSettings()
 3. **Verify registry keys**
    ```powershell
    reg query "HKCU\Software\Classes\.sxadp"
-   reg query "HKCU\Software\Classes\ShareX.Avalonia.sxadp\shell\open\command"
+   reg query "HKCU\Software\Classes\XerahS.sxadp\shell\open\command"
    ```
 
 4. **Create test package**
@@ -441,7 +441,7 @@ private void LoadIntegrationSettings()
 
 5. **Test double-click**
    - Double-click `test.sxadp` in Explorer
-   - Verify ShareX.Avalonia launches
+   - Verify XerahS launches
    - Verify PluginInstallerDialog opens
    - Verify package metadata displays
    - Click "Install"
@@ -490,7 +490,7 @@ if (args.Length > 0 && args[0].EndsWith(".sxadp"))
 ```
 
 Then user can:
-- Right-click `.sxadp` → Open With → ShareX.Avalonia
+- Right-click `.sxadp` → Open With → XerahS
 - Or manually register association via Windows Settings
 
 ---
@@ -509,7 +509,7 @@ Then user can:
 ## 10. Success Criteria
 
 ✅ User can check "Associate .sxadp files" in Settings  
-✅ Double-clicking `.sxadp` file launches ShareX.Avalonia  
+✅ Double-clicking `.sxadp` file launches XerahS  
 ✅ PluginInstallerDialog opens with package pre-loaded  
 ✅ Plugin installs successfully  
 ✅ Registry keys are created/removed correctly  

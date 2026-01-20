@@ -2,7 +2,7 @@
 
 ## 📚 Documentation Index
 
-Welcome to the XerahS (ShareX.Avalonia) region capture backend documentation. This is your starting point for understanding, implementing, and maintaining the new cross-platform capture system.
+Welcome to the XerahS (XerahS) region capture backend documentation. This is your starting point for understanding, implementing, and maintaining the new cross-platform capture system.
 
 ---
 
@@ -63,25 +63,25 @@ If you're adding new features or fixing bugs:
 
 1. **Read architecture**: [Architecture Overview](./REGION_CAPTURE_ARCHITECTURE.md)
 2. **Check status**: [Implementation Summary](./IMPLEMENTATION_SUMMARY.md)
-3. **Run tests**: `dotnet test tests/ShareX.Avalonia.Tests`
-4. **Add tests**: See [CoordinateTransformTests.cs](../tests/ShareX.Avalonia.Tests/Services/CoordinateTransformTests.cs)
+3. **Run tests**: `dotnet test tests/XerahS.Tests`
+4. **Add tests**: See [CoordinateTransformTests.cs](../tests/XerahS.Tests/Services/CoordinateTransformTests.cs)
 
 ### For Platform Maintainers
 
 If you're completing platform-specific APIs:
 
 **Windows** (WinRT Graphics Capture):
-- File: `src/ShareX.Avalonia.Platform.Windows/Capture/WinRTCaptureStrategy.cs`
+- File: `src/XerahS.Platform.Windows/Capture/WinRTCaptureStrategy.cs`
 - Status: Stub implementation
 - Requirements: Windows.Graphics.Capture API integration
 
 **macOS** (ScreenCaptureKit):
-- File: `src/ShareX.Avalonia.Platform.macOS/Capture/ScreenCaptureKitStrategy.cs`
+- File: `src/XerahS.Platform.macOS/Capture/ScreenCaptureKitStrategy.cs`
 - Status: Stub implementation
 - Requirements: Objective-C bridge (`libscreencapturekit_bridge.dylib`)
 
 **Linux** (Wayland Portal):
-- File: `src/ShareX.Avalonia.Platform.Linux/Capture/WaylandPortalStrategy.cs`
+- File: `src/XerahS.Platform.Linux/Capture/WaylandPortalStrategy.cs`
 - Status: Stub implementation
 - Requirements: D-Bus library integration
 
@@ -207,7 +207,7 @@ foreach (var monitor in monitors)
 
 Run coordinate transform tests:
 ```bash
-cd tests/ShareX.Avalonia.Tests
+cd tests/XerahS.Tests
 dotnet test --filter "CoordinateTransform"
 ```
 
@@ -313,15 +313,15 @@ When reporting capture issues, include:
 - [Implementation Summary](./IMPLEMENTATION_SUMMARY.md)
 
 ### Source Files
-- [IRegionCaptureBackend](../src/ShareX.Avalonia.Platform.Abstractions/Capture/IRegionCaptureBackend.cs)
-- [CoordinateTransform](../src/ShareX.Avalonia.Core/Services/CoordinateTransform.cs)
-- [RegionCaptureOrchestrator](../src/ShareX.Avalonia.Core/Services/RegionCaptureOrchestrator.cs)
-- [Windows Backend](../src/ShareX.Avalonia.Platform.Windows/Capture/WindowsRegionCaptureBackend.cs)
-- [macOS Backend](../src/ShareX.Avalonia.Platform.macOS/Capture/MacOSRegionCaptureBackend.cs)
-- [Linux Backend](../src/ShareX.Avalonia.Platform.Linux/Capture/LinuxRegionCaptureBackend.cs)
+- [IRegionCaptureBackend](../src/XerahS.Platform.Abstractions/Capture/IRegionCaptureBackend.cs)
+- [CoordinateTransform](../src/XerahS.Core/Services/CoordinateTransform.cs)
+- [RegionCaptureOrchestrator](../src/XerahS.Core/Services/RegionCaptureOrchestrator.cs)
+- [Windows Backend](../src/XerahS.Platform.Windows/Capture/WindowsRegionCaptureBackend.cs)
+- [macOS Backend](../src/XerahS.Platform.macOS/Capture/MacOSRegionCaptureBackend.cs)
+- [Linux Backend](../src/XerahS.Platform.Linux/Capture/LinuxRegionCaptureBackend.cs)
 
 ### Test Files
-- [Coordinate Tests](../tests/ShareX.Avalonia.Tests/Services/CoordinateTransformTests.cs)
+- [Coordinate Tests](../tests/XerahS.Tests/Services/CoordinateTransformTests.cs)
 
 ### External References
 - [DXGI Desktop Duplication](https://docs.microsoft.com/en-us/windows/win32/direct3ddxgi/desktop-dup-api)
@@ -333,7 +333,7 @@ When reporting capture issues, include:
 
 ## License
 
-Part of ShareX.Avalonia (XerahS) project.
+Part of XerahS (XerahS) project.
 Licensed under GPL v3.
 
 ---

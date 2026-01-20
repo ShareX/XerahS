@@ -1,19 +1,19 @@
-# ShareX.Avalonia Developer Guide
+# XerahS Developer Guide
 
 ## Architecture Overview
 
 This project follows the **MVVM (Model-View-ViewModel)** pattern using the `CommunityToolkit.Mvvm` library.
 
 ### Key Projects
-*   **ShareX.Avalonia.App**: Main application entry point
-*   **ShareX.Avalonia.UI**: UI layer using Avalonia. Contains Views, ViewModels, and shared UI resources
-*   **ShareX.Avalonia.Core**: Core application logic, task management (`WorkerTask`), and business models
-*   **ShareX.Avalonia.Annotations**: Annotation system with 16+ annotation types and serialization support
-*   **ShareX.Avalonia.ImageEffects**: 50+ image effects (filters, adjustments, manipulations) using SkiaSharp
-*   **ShareX.Avalonia.Platform.***: Platform-specific implementations (e.g., `WindowsScreenCaptureService`, `MacOSScreenshotService`, macOS SharpHook hotkeys)
-*   **ShareX.Avalonia.ScreenCapture**: Screen capture logic and region selection
-*   **ShareX.Avalonia.Uploaders**: Upload providers (Imgur, Amazon S3, etc.)
-*   **ShareX.Avalonia.History**: Capture history management
+*   **XerahS.App**: Main application entry point
+*   **XerahS.UI**: UI layer using Avalonia. Contains Views, ViewModels, and shared UI resources
+*   **XerahS.Core**: Core application logic, task management (`WorkerTask`), and business models
+*   **XerahS.Annotations**: Annotation system with 16+ annotation types and serialization support
+*   **XerahS.ImageEffects**: 50+ image effects (filters, adjustments, manipulations) using SkiaSharp
+*   **XerahS.Platform.***: Platform-specific implementations (e.g., `WindowsScreenCaptureService`, `MacOSScreenshotService`, macOS SharpHook hotkeys)
+*   **XerahS.ScreenCapture**: Screen capture logic and region selection
+*   **XerahS.Uploaders**: Upload providers (Imgur, Amazon S3, etc.)
+*   **XerahS.History**: Capture history management
 
 ### Services & Dependency Injection
 Services are initialized in `Program.cs` and `App.axaml.cs`. We use a Service Locator pattern via `PlatformServices` static class for easy access in ViewModels (though Constructor Injection is preferred where possible).
@@ -71,7 +71,7 @@ When using `ContextFlyout` or `ContextMenu` inside a `DataTemplate`, bindings to
 
 ### Annotation System
 The annotation system is built on a polymorphic model architecture with UI integration via `EditorView`:
-*   **Models**: Located in `ShareX.Avalonia.Annotations/Models/`, inheriting from base `Annotation` class
+*   **Models**: Located in `XerahS.Annotations/Models/`, inheriting from base `Annotation` class
 *   **Types**: 17 annotation types including Rectangle, Ellipse, Arrow, Line, Text, Number, Blur, Pixelate, Magnify, Highlight, Freehand, SpeechBalloon, Image, Spotlight, SmartEraser, Crop, plus BaseEffectAnnotation
 *   **Drawing**: Handled in `EditorView.axaml.cs` for performance and direct pointer manipulation
 *   **State**: `MainViewModel` manages tool state (`ActiveTool`, `SelectedColor`, `StrokeWidth`, etc.)
@@ -80,7 +80,7 @@ The annotation system is built on a polymorphic model architecture with UI integ
 *   **Keyboard Shortcuts**: V(Select), R(Rectangle), E(Ellipse), A(Arrow), L(Line), P(Pen), H(Highlighter), T(Text), B(Balloon), N(Number), C(Crop), M(Magnify), S(Spotlight), F(Effects Panel)
 
 ### Image Effects System
-*   **Auto-Discovery**: Effects are discovered via reflection from `ShareX.Avalonia.ImageEffects` assembly
+*   **Auto-Discovery**: Effects are discovered via reflection from `XerahS.ImageEffects` assembly
 *   **Effect Count**: 40+ effects (13 Adjustments, 17 Filters, 10 Manipulations, 6 Drawings)
 *   **Categories**: Filters, Adjustments, Manipulations, Drawings
 *   **Parameter Binding**: Dynamic UI generation for effect parameters
@@ -198,7 +198,7 @@ Located in `Views/RegionCapture/`:
 ```
 Plugins/myplugin/
 ├── ShareX.MyPlugin.Plugin.dll
-├── ShareX.Avalonia.Platform.Abstractions.dll (if needed)
+├── XerahS.Platform.Abstractions.dll (if needed)
 ├── plugin.json
 ├── ShareX.MyPlugin.Plugin.runtimeconfig.json
 └── runtimes/ (platform-specific natives only)

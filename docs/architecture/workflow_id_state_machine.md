@@ -56,7 +56,7 @@ stateDiagram-v2
 
 ## Code Reference
 
-**File:** `src\ShareX.Avalonia.Core\Hotkeys\HotkeySettings.cs`
+**File:** `src\XerahS.Core\Hotkeys\HotkeySettings.cs`
 
 ```csharp
 public string GenerateId()

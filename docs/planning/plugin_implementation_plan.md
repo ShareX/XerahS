@@ -1,10 +1,10 @@
 # Plugin System Implementation Plan
 
 **Status**: ✅ Implemented (Pure Dynamic Loading)
-**Namespace**: `ShareX.Avalonia.Uploaders.PluginSystem`
+**Namespace**: `XerahS.Uploaders.PluginSystem`
 
 ## 1. Objective
-Create a modular, extensible plugin system for ShareX.Avalonia that allows adding new uploader providers (and potentially other components) without modifying the core application. The system must support dynamic loading, versioning, and isolation of dependencies using **pure dynamic loading** with no compile-time coupling to plugin assemblies.
+Create a modular, extensible plugin system for XerahS that allows adding new uploader providers (and potentially other components) without modifying the core application. The system must support dynamic loading, versioning, and isolation of dependencies using **pure dynamic loading** with no compile-time coupling to plugin assemblies.
 
 ## 2. Architecture Overview
 
@@ -12,15 +12,15 @@ Create a modular, extensible plugin system for ShareX.Avalonia that allows addin
 
 ```
 ┌─────────────────────────────────────────┐
-│ ShareX.Avalonia.App                     │
-│  ├─ References: ShareX.Avalonia.UI      │
+│ XerahS.App                     │
+│  ├─ References: XerahS.UI      │
 │  └─ NO plugin references                │
 └─────────────────────────────────────────┘
               │
               ▼
 ┌─────────────────────────────────────────┐
-│ ShareX.Avalonia.UI                      │
-│  ├─ References: ShareX.Avalonia.Uploaders│
+│ XerahS.UI                      │
+│  ├─ References: XerahS.Uploaders│
 │  └─ NO plugin references                │
 │  ├─ ProviderCatalog.LoadPlugins()       │
 │  └─ Uses plugins via IUploaderProvider  │
@@ -28,7 +28,7 @@ Create a modular, extensible plugin system for ShareX.Avalonia that allows addin
               │
               ▼
 ┌─────────────────────────────────────────┐
-│ ShareX.Avalonia.Uploaders (Contracts)   │
+│ XerahS.Uploaders (Contracts)   │
 │  ├─ IUploaderProvider interface         │
 │  ├─ UploaderInstance                    │
 │  └─ PluginLoadContext                   │
@@ -121,7 +121,7 @@ A valid plugin consists of a folder containing at least two files:
 ```
 
 ### 2. **`ShareX.Imgur.Plugin.dll`** (Assembly)
-*   Must reference `ShareX.Avalonia.Uploaders` (for interfaces) with `<Private>false</Private>`.
+*   Must reference `XerahS.Uploaders` (for interfaces) with `<Private>false</Private>`.
 *   Must contain a class implementing `IUploaderProvider` matching the `entryPoint`.
 *   Can include dependencies (other DLLs) which are copied via post-build.
 
@@ -136,7 +136,7 @@ Plugins use special `.csproj` settings to enable dynamic loading:
 </PropertyGroup>
 
 <!-- Shared dependencies from host - don't copy -->
-<ProjectReference Include="..\..\ShareX.Avalonia.Uploaders\...">
+<ProjectReference Include="..\..\XerahS.Uploaders\...">
   <Private>false</Private>
   <ExcludeAssets>runtime</ExcludeAssets>
 </ProjectReference>
@@ -144,7 +144,7 @@ Plugins use special `.csproj` settings to enable dynamic loading:
 <!-- Post-build copy to Plugins directory -->
 <Target Name="CopyToPluginsDir" AfterTargets="Build">
   <PropertyGroup>
-    <PluginOutputDir>$(MSBuildThisFileDirectory)..\..\ShareX.Avalonia.App\bin\$(Configuration)\net10.0-windows\Plugins\$(PluginId)</PluginOutputDir>
+    <PluginOutputDir>$(MSBuildThisFileDirectory)..\..\XerahS.App\bin\$(Configuration)\net10.0-windows\Plugins\$(PluginId)</PluginOutputDir>
   </PropertyGroup>
   <ItemGroup>
     <PluginFiles Include="$(OutputPath)**\*.*" Exclude="$(OutputPath)**\*.pdb;$(OutputPath)**\*.deps.json" />
@@ -209,7 +209,7 @@ After experiencing issues with hybrid approaches (mixing direct references and d
 
 ### Manual Testing Steps
 1. Build plugins: `dotnet build src/Plugins/ShareX.Imgur.Plugin`
-2. Verify files copied to: `ShareX.Avalonia.App/bin/Debug/.../Plugins/imgur/`
+2. Verify files copied to: `XerahS.App/bin/Debug/.../Plugins/imgur/`
 3. Launch app and open Destination Settings
 4. Verify plugins appear in "Add from Catalog" dialog
 5. Click on a provider to select it

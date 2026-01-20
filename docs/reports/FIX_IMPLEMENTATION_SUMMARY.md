@@ -25,12 +25,12 @@ When using region capture hotkey on multi-monitor setups, the captured area was 
 ## Root Cause Analysis
 
 ### Root Cause #1: Hardcoded Screen Bounds
-**File**: `src\ShareX.Avalonia.UI\Services\ScreenService.cs`
+**File**: `src\XerahS.UI\Services\ScreenService.cs`
 
 The stub implementation returned hardcoded `1920x1080 @ (0,0)` instead of actual screen configuration. When capturing the fullscreen background screenshot, it used wrong bounds.
 
 ### Root Cause #2: Negative Coordinate Handling
-**File**: `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
+**File**: `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
 
 Virtual screen bounds initialized with `minX = 0, minY = 0` instead of `int.MaxValue`. On setups where the leftmost monitor is at negative X (e.g., `-1920`), the calculation would start from `0`, completely breaking coordinate space.
 
@@ -95,17 +95,17 @@ Height = virtualHeight / RenderScaling;  // 1080 / 1.25 = 864 logical
 
 ### Changed Files
 
-#### 1. `src\ShareX.Avalonia.UI\Services\ScreenService.cs`
+#### 1. `src\XerahS.UI\Services\ScreenService.cs`
 - **Type**: Stub to Delegating Wrapper
 - **Lines Changed**: ~25 lines
 - **Impact**: Now uses actual platform implementation for screen bounds
 
-#### 2. `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml`
+#### 2. `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml`
 - **Type**: Configuration Update
 - **Lines Changed**: 2 lines
 - **Impact**: Removes background ambiguity
 
-#### 3. `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
+#### 3. `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
 - **Type**: Complete Rewrite
 - **Lines Changed**: ~250 lines
 - **Impact**: Implements 3-level coordinate system
@@ -304,8 +304,8 @@ Compilation Warnings: 0
 Projects Built: 18
 
 Key Projects Modified:
-- ShareX.Avalonia.UI (Contains RegionCaptureWindow)
-- ShareX.Avalonia.Platform.Abstractions (Uses IScreenService)
+- XerahS.UI (Contains RegionCaptureWindow)
+- XerahS.Platform.Abstractions (Uses IScreenService)
 ```
 
 ---

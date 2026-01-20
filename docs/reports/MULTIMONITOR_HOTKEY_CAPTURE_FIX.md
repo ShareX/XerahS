@@ -17,7 +17,7 @@ All issues **only occurred on multi-monitor setups**, not on single-monitor syst
 ## Root Causes & Solutions
 
 ### 1. **Stub ScreenService Implementation** (Primary Issue - FIXED)
-**File**: `src\ShareX.Avalonia.UI\Services\ScreenService.cs`
+**File**: `src\XerahS.UI\Services\ScreenService.cs`
 
 **Problem**: 
 - Returned hardcoded `1920x1080` at `(0,0)` instead of actual screen bounds
@@ -30,7 +30,7 @@ All issues **only occurred on multi-monitor setups**, not on single-monitor syst
 ---
 
 ### 2. **Incorrect Virtual Screen Bounds Calculation** (Secondary Issue - FIXED)
-**File**: `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
+**File**: `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
 
 **Problems (Multiple)**:
 
@@ -48,7 +48,7 @@ All issues **only occurred on multi-monitor setups**, not on single-monitor syst
 - **Problem**: Different monitors with different DPI caused window to exceed virtual screen bounds
 - **Fix**: 
   ```csharp
-  Width = _virtualScreenWidth / RenderScaling;   // Physical ÷ Scale = Logical
+**File**: `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
   Height = _virtualScreenHeight / RenderScaling;
   ```
 
@@ -190,14 +190,14 @@ logical = (2000 - 0) / 1.25 = 1600  // Still correct
 
 ## Files Modified
 
-### 1. `src\ShareX.Avalonia.UI\Services\ScreenService.cs`
+### 1. `src\XerahS.UI\Services\ScreenService.cs`
 - Replaced hardcoded stub with delegating wrapper
 
-### 2. `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml`
+### 2. `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml`
 - Changed `Background="{x:Null}"` to `Background="Transparent"`
 - Added explicit transparent background to Canvas
 
-### 3. `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
+### 3. `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
 **Major Changes**:
 - Store virtual screen bounds: `_virtualScreenX`, `_virtualScreenY`, `_virtualScreenWidth`, `_virtualScreenHeight`
 - Initialize min/max values correctly for negative coordinates

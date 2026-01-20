@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-Successfully implemented the core components for modern screen recording using Windows.Graphics.Capture and Media Foundation as specified in SIP0017. All critical interfaces, platform implementations, and orchestration services have been created following existing ShareX.Avalonia architectural patterns.
+Successfully implemented the core components for modern screen recording using Windows.Graphics.Capture and Media Foundation as specified in SIP0017. All critical interfaces, platform implementations, and orchestration services have been created following existing XerahS architectural patterns.
 
 **What Was Delivered:**
 - ✅ Core recording interfaces (`IRecordingService`, `ICaptureSource`, `IVideoEncoder`, `IAudioCapture`)
@@ -26,28 +26,28 @@ Successfully implemented the core components for modern screen recording using W
 
 ### 1. Files Created
 
-#### ShareX.Avalonia.ScreenCapture Project
+#### XerahS.ScreenCapture Project
 
-**`/src/ShareX.Avalonia.ScreenCapture/Recording/Models/RecordingEnums.cs`**
+**`/src/XerahS.ScreenCapture/Recording/Models/RecordingEnums.cs`**
 - Defines `CaptureMode` (Screen, Window, Region)
 - Defines `RecordingStatus` (Idle, Initializing, Recording, Paused, Finalizing, Error)
 - Defines `VideoCodec` (H264, HEVC, VP9, AV1) - Stage 1 uses H264 only
 - Defines `PixelFormat` (Bgra32, Nv12, Rgba32, Unknown)
 
-**`/src/ShareX.Avalonia.ScreenCapture/Recording/Models/RecordingModels.cs`**
+**`/src/XerahS.ScreenCapture/Recording/Models/RecordingModels.cs`**
 - `RecordingOptions` - Configuration for starting recording (mode, region, path, settings)
 - `ScreenRecordingSettings` - Persistent settings (codec, FPS, bitrate, audio flags, ForceFFmpeg)
 - `FrameData` - Raw frame data structure (pointer, stride, dimensions, timestamp, format)
 - `VideoFormat` - Encoder configuration (width, height, FPS, bitrate, codec)
 - Event args: `RecordingErrorEventArgs`, `RecordingStatusEventArgs`, `FrameArrivedEventArgs`, `AudioBufferEventArgs`
 
-**`/src/ShareX.Avalonia.ScreenCapture/Recording/IRecordingService.cs`**
+**`/src/XerahS.ScreenCapture/Recording/IRecordingService.cs`**
 - `IRecordingService` - Main recording interface (StartRecordingAsync, StopRecordingAsync, events)
 - `ICaptureSource` - Platform capture abstraction (StartCaptureAsync, StopCaptureAsync, FrameArrived event)
 - `IVideoEncoder` - Encoder abstraction (Initialize, WriteFrame, Finalize)
 - `IAudioCapture` - Audio capture interface (Stage 6)
 
-**`/src/ShareX.Avalonia.ScreenCapture/Recording/ScreenRecorderService.cs`**
+**`/src/XerahS.ScreenCapture/Recording/ScreenRecorderService.cs`**
 - Platform-agnostic orchestration service
 - Coordinates ICaptureSource and IVideoEncoder
 - Uses factory pattern for platform-specific implementations
@@ -55,9 +55,9 @@ Successfully implemented the core components for modern screen recording using W
 - Automatic output path generation (ShareX/Screenshots/yyyy-MM/Date_Time.mp4)
 - Frame capture pipeline with error handling
 
-#### ShareX.Avalonia.Platform.Windows Project
+#### XerahS.Platform.Windows Project
 
-**`/src/ShareX.Avalonia.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs`**
+**`/src/XerahS.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs`**
 - Implements `ICaptureSource` using Windows.Graphics.Capture API
 - Requires Windows 10 version 1803+ (build 17134)
 - Static `IsSupported` property for version detection
@@ -69,7 +69,7 @@ Successfully implemented the core components for modern screen recording using W
 - COM interop for Direct3D surface access
 - Proper resource disposal and thread safety
 
-**`/src/ShareX.Avalonia.Platform.Windows/Recording/MediaFoundationEncoder.cs`**
+**`/src/XerahS.Platform.Windows/Recording/MediaFoundationEncoder.cs`**
 - Implements `IVideoEncoder` using Media Foundation IMFSinkWriter
 - H.264 codec in MP4 container
 - Hardware encoding hint enabled (MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS)
@@ -97,7 +97,7 @@ Successfully implemented the core components for modern screen recording using W
 ### 3. Factory Pattern for Platform Abstraction
 **Gap Identified:** How ScreenRecorderService stays platform-agnostic
 **Decision:** Static factory properties (`CaptureSourceFactory`, `EncoderFactory`)
-**Rationale:** Matches existing ShareX.Avalonia patterns (PlatformServices static locator), simple to initialize
+**Rationale:** Matches existing XerahS patterns (PlatformServices static locator), simple to initialize
 
 ### 4. Threading Model
 **Gap Identified:** Which thread raises FrameArrived event
@@ -126,15 +126,15 @@ Successfully implemented the core components for modern screen recording using W
 
 ### Step 1: Add Project References
 
-**ShareX.Avalonia.ScreenCapture.csproj** needs reference to:
+**XerahS.ScreenCapture.csproj** needs reference to:
 ```xml
 <!-- Already has these -->
-<ProjectReference Include="..\ShareX.Avalonia.Common\..." />
+<ProjectReference Include="..\XerahS.Common\..." />
 ```
 
-**ShareX.Avalonia.Platform.Windows.csproj** needs reference to:
+**XerahS.Platform.Windows.csproj** needs reference to:
 ```xml
-<ProjectReference Include="..\ShareX.Avalonia.ScreenCapture\ShareX.Avalonia.ScreenCapture.csproj" />
+<ProjectReference Include="..\XerahS.ScreenCapture\XerahS.ScreenCapture.csproj" />
 ```
 
 Add NuGet package for Windows.Graphics.Capture:
@@ -144,7 +144,7 @@ Add NuGet package for Windows.Graphics.Capture:
 
 ### Step 2: Extend TaskSettingsCapture
 
-**File:** `src/ShareX.Avalonia.Core/Models/TaskSettings.cs`
+**File:** `src/XerahS.Core/Models/TaskSettings.cs`
 
 Add property to `TaskSettingsCapture` class (after line 212):
 ```csharp
@@ -153,7 +153,7 @@ public XerahS.ScreenCapture.Recording.ScreenRecordingSettings NativeRecordingSet
 
 ### Step 3: Initialize Platform Factories
 
-**File:** `src/ShareX.Avalonia.Platform.Windows/WindowsPlatform.cs`
+**File:** `src/XerahS.Platform.Windows/WindowsPlatform.cs`
 
 Add to initialization method:
 ```csharp
@@ -186,7 +186,7 @@ WindowsPlatform.InitializeRecording(); // Add this line
 
 **Option A:** Add to PlatformServices (recommended for consistency)
 
-**File:** `src/ShareX.Avalonia.Platform.Abstractions/PlatformServices.cs`
+**File:** `src/XerahS.Platform.Abstractions/PlatformServices.cs`
 
 ```csharp
 public static class PlatformServices
@@ -209,7 +209,7 @@ using var recorder = new ScreenRecorderService();
 
 ### Step 5: Wire Up UI Commands (Example)
 
-**File:** `src/ShareX.Avalonia.UI/ViewModels/MainViewModel.cs` or relevant ViewModel
+**File:** `src/XerahS.UI/ViewModels/MainViewModel.cs` or relevant ViewModel
 
 ```csharp
 using XerahS.ScreenCapture.Recording;
@@ -279,7 +279,7 @@ The SIP specifies three fallback triggers:
 
 ### Implementation Approach
 
-**File:** `src/ShareX.Avalonia.ScreenCapture/Recording/FFmpegRecordingService.cs` (to be created)
+**File:** `src/XerahS.ScreenCapture/Recording/FFmpegRecordingService.cs` (to be created)
 
 ```csharp
 public class FFmpegRecordingService : IRecordingService
@@ -332,8 +332,8 @@ else
 ### Automated Build Test
 
 ```bash
-cd "c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia"
-dotnet build ShareX.Avalonia.sln
+cd "c:\Users\liveu\source\repos\ShareX Team\XerahS"
+dotnet build XerahS.sln
 ```
 
 Expected: No compilation errors
@@ -439,18 +439,18 @@ None - all new files created. Integration requires manual edits to:
 ### Add Required NuGet Package
 
 ```bash
-cd "src/ShareX.Avalonia.Platform.Windows"
+cd "src/XerahS.Platform.Windows"
 dotnet add package Microsoft.Windows.SDK.Contracts --version 10.0.22621.48
 ```
 
 ### Build
 
 ```bash
-cd "c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia"
+cd "c:\Users\liveu\source\repos\ShareX Team\XerahS"
 dotnet restore
-dotnet build src/ShareX.Avalonia.ScreenCapture/ShareX.Avalonia.ScreenCapture.csproj
-dotnet build src/ShareX.Avalonia.Platform.Windows/ShareX.Avalonia.Platform.Windows.csproj
-dotnet build ShareX.Avalonia.sln
+dotnet build src/XerahS.ScreenCapture/XerahS.ScreenCapture.csproj
+dotnet build src/XerahS.Platform.Windows/XerahS.Platform.Windows.csproj
+dotnet build XerahS.sln
 ```
 
 Expected output: Build succeeded, 0 errors
@@ -458,7 +458,7 @@ Expected output: Build succeeded, 0 errors
 ### Run
 
 ```bash
-dotnet run --project src/ShareX.Avalonia.App/ShareX.Avalonia.App.csproj
+dotnet run --project src/XerahS.App/XerahS.App.csproj
 ```
 
 ---

@@ -1,6 +1,6 @@
 # Plugin Development Guide
 
-This guide explains how to create a new uploader plugin for ShareX.Avalonia.
+This guide explains how to create a new uploader plugin for XerahS.
 
 ## Prerequisites
 
@@ -13,7 +13,7 @@ Create a new Class Library project (`.NET 10.0`) for your plugin. The naming con
 
 ### Dependencies
 
-Your plugin needs to reference the ShareX contracts. Add a reference to the `ShareX.Avalonia.Uploaders` project (or DLL).
+Your plugin needs to reference the ShareX contracts. Add a reference to the `XerahS.Uploaders` project (or DLL).
 
 **Important**: You must mark shared dependencies as `<Private>false</Private>` so they are *not* copied to your plugin output directory. These assemblies are provided by the host application.
 
@@ -56,11 +56,11 @@ Use the following configuration in your `.csproj` file to ensure correct build o
   <ItemGroup>
     <!-- Core Contracts (Shared Dependencies) -->
     <!-- Adjust path if referenced as project, or use NuGet package if available -->
-    <ProjectReference Include="..\..\ShareX.Avalonia.Uploaders\ShareX.Avalonia.Uploaders.csproj">
+    <ProjectReference Include="..\..\XerahS.Uploaders\XerahS.Uploaders.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
-     <ProjectReference Include="..\..\ShareX.Avalonia.Common\ShareX.Avalonia.Common.csproj">
+     <ProjectReference Include="..\..\XerahS.Common\XerahS.Common.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
@@ -75,7 +75,7 @@ Use the following configuration in your `.csproj` file to ensure correct build o
   <!-- Post-build step to copy plugin to the app's Plugins folder for testing -->
   <Target Name="CopyToPluginsDir" AfterTargets="Build">
     <PropertyGroup>
-      <PluginOutputDir>$(MSBuildThisFileDirectory)..\..\ShareX.Avalonia.App\bin\$(Configuration)\net10.0-windows\Plugins\$(PluginId)</PluginOutputDir>
+      <PluginOutputDir>$(MSBuildThisFileDirectory)..\..\XerahS.App\bin\$(Configuration)\net10.0-windows\Plugins\$(PluginId)</PluginOutputDir>
     </PropertyGroup>
     <ItemGroup>
       <PluginFiles Include="$(OutputPath)**\*.*" Exclude="$(OutputPath)**\*.pdb;$(OutputPath)**\*.deps.json" />
@@ -242,8 +242,8 @@ public partial class MyConfigViewModel : ObservableObject, IUploaderConfigViewMo
 ## 7. Build and Test
 
 1.  Build your project.
-2.  If you used the post-build event, the plugin will be copied to `ShareX.Avalonia.App/bin/Debug/net10.0-windows/Plugins/myplugin`.
-3.  Run ShareX.Avalonia.
+2.  If you used the post-build event, the plugin will be copied to `XerahS.App/bin/Debug/net10.0-windows/Plugins/myplugin`.
+3.  Run XerahS.
 4.  Go to **Destinations -> Destination Settings**.
 5.  Click **Add from Catalog**.
 6.  Your plugin should appear in the list.

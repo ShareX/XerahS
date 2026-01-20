@@ -4,7 +4,7 @@
 
 ## Baseline rebuild (2026-01-14)
 
-- Command: `dotnet build ShareX.Avalonia.sln`
+- Command: `dotnet build XerahS.sln`
 - Result: 184 errors (0 warnings) because TreatWarningsAsErrors is enabled for nullable diagnostics.
 - Log: `warnings.log`
 
@@ -30,18 +30,18 @@ Count Code
 ```
 Count Project
 ----- -------
- 184 ShareX.Avalonia.Common (ShareX.Avalonia.Common.csproj)
+ 184 XerahS.Common (XerahS.Common.csproj)
 ```
 
 ## Batch plan
 
-1. **CS8618** – ensure all non-nullable fields/properties are initialized (6 errors).
-2. **CS8600** – fix nullable-to-non-nullable conversions (62 errors).
-3. **CS8603** – guard methods that currently return null (62 errors).
-4. **CS8602** – add null checks before dereferencing (24 errors).
-5. **CS8604, CS8605, CS8625, CS8601** – address the remaining null inputs, unboxing, and assignments (12 errors).
-6. **SYSLIB0013** – replace `Uri.EscapeUriString` usage (2 errors).
-7. **CS0414** – remove or use the unused field (2 errors).
+- 2026-01-14: Baseline recorded (184 errors in XerahS.Common). Next target: CS8618 constructors.
+2. **CS8600** â€“ fix nullable-to-non-nullable conversions (62 errors).
+3. **CS8603** â€“ guard methods that currently return null (62 errors).
+4. **CS8602** â€“ add null checks before dereferencing (24 errors).
+5. **CS8604, CS8605, CS8625, CS8601** â€“ address the remaining null inputs, unboxing, and assignments (12 errors).
+6. **SYSLIB0013** â€“ replace `Uri.EscapeUriString` usage (2 errors).
+7. **CS0414** â€“ remove or use the unused field (2 errors).
 
 Update this plan and counts after each commit that reduces the total error tally; include summary of what was fixed and the new totals.
 

@@ -28,7 +28,7 @@ git checkout -b feature/history-settings
 Implement the History tab in Application Settings to allow users to configure history saving behavior and recent tasks display options.
 
 ## Background
-ShareX.Avalonia has a placeholder "History" tab in `ApplicationSettingsView.axaml` (line 92-94) that currently just shows "History settings placeholder". The `ApplicationConfig.cs` already has the necessary settings properties, but there's no UI to configure them.
+XerahS has a placeholder "History" tab in `ApplicationSettingsView.axaml` (line 92-94) that currently just shows "History settings placeholder". The `ApplicationConfig.cs` already has the necessary settings properties, but there's no UI to configure them.
 
 **Reference**: ShareX `ApplicationSettingsForm.cs` lines 1022-1059 contains the History settings region.
 
@@ -36,7 +36,7 @@ ShareX.Avalonia has a placeholder "History" tab in `ApplicationSettingsView.axam
 
 ### 1. Update History Tab in ApplicationSettingsView
 
-**File**: `src/ShareX.Avalonia.UI/Views/ApplicationSettingsView.axaml`
+**File**: `src/XerahS.UI/Views/ApplicationSettingsView.axaml`
 
 Replace the placeholder with the actual settings UI:
 
@@ -89,7 +89,7 @@ Replace the placeholder with the actual settings UI:
 
 ### 2. Add Properties to SettingsViewModel
 
-**File**: `src/ShareX.Avalonia.UI/ViewModels/SettingsViewModel.cs`
+**File**: `src/XerahS.UI/ViewModels/SettingsViewModel.cs`
 
 Add these properties that bind to `ApplicationConfig`:
 
@@ -169,7 +169,7 @@ public bool RecentTasksTrayMenuMostRecentFirst
 
 ### 3. Ensure ApplicationConfig Has HistoryCheckURL
 
-**File**: `src/ShareX.Avalonia.Core/Models/ApplicationConfig.cs`
+**File**: `src/XerahS.Core/Models/ApplicationConfig.cs`
 
 Verify/add this property (may already exist):
 

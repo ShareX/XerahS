@@ -106,7 +106,7 @@ These files have a license header, but it doesn't match the required format. Com
 
 **Most Common Issues:**
 1. **Wrong Year:** Uses "2007-2025" instead of "2007-2026"
-2. **Wrong Project Name:** Uses "ShareX - A program..." or "ShareX.Avalonia" instead of "XerahS - The Avalonia UI implementation of ShareX"
+2. **Wrong Project Name:** Uses "ShareX - A program..." or "XerahS" instead of "XerahS - The Avalonia UI implementation of ShareX"
 
 **Examples:**
 
@@ -115,7 +115,7 @@ These files have a license header, but it doesn't match the required format. Com
 - `src/Plugins/ShareX.AmazonS3.Plugin/AmazonS3Uploader.cs`
 - `src/Plugins/ShareX.AmazonS3.Plugin/S3ConfigModel.cs`
 
-**Files with "ShareX.Avalonia - The Avalonia UI implementation...":**
+**Files with "XerahS - The Avalonia UI implementation...":**
 - Most files in `XerahS.Common`
 - Most files in `XerahS.Core`
 - Most files in `XerahS.Uploaders`
@@ -140,7 +140,7 @@ These files have the license header, but code appears before it:
 
 2. **`src/XerahS.Uploaders/PluginSystem/PluginConfigurationVerifier.cs`**
    - Issue: `#nullable disable` appears before the license header
-   - Current header uses "ShareX.Avalonia" and "2025"
+   - Current header uses "XerahS" and "2025"
 
 **Note:** The `#nullable disable` directive should be moved AFTER the license header.
 
@@ -220,7 +220,7 @@ This is the most common pattern, affecting the majority of the 430 incorrect fil
 #region License Information (GPL v3)
 
 /*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX  // WRONG: Should be "XerahS -"
+    XerahS - The Avalonia UI implementation of ShareX  // WRONG: Should be "XerahS -"
     Copyright (c) 2007-2025 ShareX Team                         // WRONG: Should be 2026
 
     [rest of GPL v3 text...]
@@ -236,7 +236,7 @@ This is the most common pattern, affecting the majority of the 430 incorrect fil
 ### Immediate Actions Required
 
 1. **Bulk Update for Incorrect Headers (430 files)**
-   - Replace "ShareX.Avalonia - The Avalonia UI implementation of ShareX" with "XerahS - The Avalonia UI implementation of ShareX"
+   - Replace "XerahS - The Avalonia UI implementation of ShareX" with "XerahS - The Avalonia UI implementation of ShareX"
    - Replace "ShareX - A program that allows you to take screenshots and share any file type" with "XerahS - The Avalonia UI implementation of ShareX"
    - Replace "ShareX.Ava - The Avalonia UI implementation of ShareX" with "XerahS - The Avalonia UI implementation of ShareX"
    - Replace "2007-2025" with "2007-2026"
@@ -262,7 +262,7 @@ This is the most common pattern, affecting the majority of the 430 incorrect fil
   - Find: `Copyright (c) 2007-2025 ShareX Team`
   - Replace: `Copyright (c) 2007-2026 ShareX Team`
 
-  - Find: `ShareX.Avalonia - The Avalonia UI implementation of ShareX`
+  - Find: `XerahS - The Avalonia UI implementation of ShareX`
   - Replace: `XerahS - The Avalonia UI implementation of ShareX`
 
   - Find: `ShareX - A program that allows you to take screenshots and share any file type`
@@ -283,7 +283,7 @@ After making corrections:
 ## Testing Coverage
 
 **Test Files Audited:** 1 file
-- `tests/ShareX.Avalonia.Tests/Services/CoordinateTransformTests.cs`
+- `tests/XerahS.Tests/Services/CoordinateTransformTests.cs`
 
 **Status:** This file requires audit inclusion in the detailed report (not shown in preview sections above).
 

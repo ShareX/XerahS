@@ -1,6 +1,6 @@
-# ShareX.Avalonia Lessons Learnt
+# XerahS Lessons Learnt
 
-This document serves as a centralized knowledge base for technical challenges, architectural decisions, and platform-specific quirks encountered during the development of ShareX.Avalonia.
+This document serves as a centralized knowledge base for technical challenges, architectural decisions, and platform-specific quirks encountered during the development of XerahS.
 
 ## table of Contents
 

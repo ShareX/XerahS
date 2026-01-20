@@ -194,7 +194,7 @@
 ### High-Priority Items (Independent of Review)
 1. **Add test project to solution**:
    ```bash
-   dotnet sln add tests\ShareX.Avalonia.Tests\XerahS.Tests.csproj
+   dotnet sln add tests\XerahS.Tests\XerahS.Tests.csproj
    dotnet test XerahS.sln
    ```
 

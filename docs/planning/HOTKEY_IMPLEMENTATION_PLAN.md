@@ -1,4 +1,4 @@
-# ShareX.Avalonia Hotkey System Implementation Plan
+# XerahS Hotkey System Implementation Plan
 
 **Created**: 2025-12-31  
 **Status**: In progress (Windows complete, macOS implemented via SharpHook pending validation)  
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This document analyzes the ShareX hotkey system and provides a comprehensive implementation plan for ShareX.Avalonia. The goal is to enable global hotkey registration and execution that integrates with the existing WorkflowTask automation.
+This document analyzes the ShareX hotkey system and provides a comprehensive implementation plan for XerahS. The goal is to enable global hotkey registration and execution that integrates with the existing WorkflowTask automation.
 
 ---
 
@@ -113,11 +113,11 @@ static List<HotkeySettings> GetDefaultHotkeyList()
 
 ---
 
-## Part 2: ShareX.Avalonia Implementation Plan
+## Part 2: XerahS Implementation Plan
 
 ### Architecture Differences
 
-| Aspect | ShareX (WinForms) | ShareX.Avalonia |
+| Aspect | ShareX (WinForms) | XerahS |
 |--------|-------------------|-----------------|
 | UI Framework | WinForms | Avalonia |
 | Message Loop | Form.WndProc | Platform-specific service |
@@ -153,7 +153,7 @@ flowchart TD
 **Create interface in Platform.Abstractions**:
 
 ```csharp
-// File: ShareX.Avalonia.Platform.Abstractions/Services/IHotkeyService.cs
+// File: XerahS.Platform.Abstractions/Services/IHotkeyService.cs
 public interface IHotkeyService
 {
     event EventHandler<HotkeyTriggeredEventArgs> HotkeyTriggered;
@@ -182,7 +182,7 @@ public class HotkeyTriggeredEventArgs : EventArgs
 **P/Invoke wrapper for Windows hotkey API**:
 
 ```csharp
-// File: ShareX.Avalonia.Platform.Windows/WindowsHotkeyService.cs
+// File: XerahS.Platform.Windows/WindowsHotkeyService.cs
 public class WindowsHotkeyService : IHotkeyService, IDisposable
 {
     private readonly HwndSource _hwndSource;
@@ -220,7 +220,7 @@ public class WindowsHotkeyService : IHotkeyService, IDisposable
 **Port HotkeyManager to Core**:
 
 ```csharp
-// File: ShareX.Avalonia.Core/Hotkeys/HotkeyManager.cs
+// File: XerahS.Core/Hotkeys/HotkeyManager.cs
 public class HotkeyManager
 {
     private readonly IHotkeyService _hotkeyService;
@@ -234,7 +234,7 @@ public class HotkeyManager
     public static List<HotkeySettings> GetDefaultHotkeyList() { }
 }
 
-// File: ShareX.Avalonia.Core/Hotkeys/HotkeySettings.cs
+// File: XerahS.Core/Hotkeys/HotkeySettings.cs
 public class HotkeySettings
 {
     public HotkeyInfo HotkeyInfo { get; set; }
@@ -242,7 +242,7 @@ public class HotkeySettings
     public TaskSettings TaskSettings { get; set; }
 }
 
-// File: ShareX.Avalonia.Core/Hotkeys/HotkeyType.cs (enum)
+// File: XerahS.Core/Hotkeys/HotkeyType.cs (enum)
 public enum HotkeyType
 {
     None,
@@ -265,7 +265,7 @@ public enum HotkeyType
 **Port ExecuteJob with reduced scope**:
 
 ```csharp
-// File: ShareX.Avalonia.Core/Helpers/TaskHelpers.ExecuteJob.cs
+// File: XerahS.Core/Helpers/TaskHelpers.ExecuteJob.cs
 public static partial class TaskHelpers
 {
     public static async Task ExecuteJob(HotkeyType job, TaskSettings taskSettings)

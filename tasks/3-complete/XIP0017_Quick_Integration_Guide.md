@@ -1,14 +1,14 @@
 # SIP0017 Quick Integration Guide
 ## 5-Minute Setup for Native Screen Recording
 
-This guide provides the minimal steps needed to integrate the Stage 1 implementation into ShareX.Avalonia.
+This guide provides the minimal steps needed to integrate the Stage 1 implementation into XerahS.
 
 ---
 
 ## 1. Add NuGet Package (30 seconds)
 
 ```bash
-cd "c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Platform.Windows"
+cd "c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.Platform.Windows"
 dotnet add package Microsoft.Windows.SDK.Contracts --version 10.0.22621.48
 ```
 
@@ -16,12 +16,12 @@ dotnet add package Microsoft.Windows.SDK.Contracts --version 10.0.22621.48
 
 ## 2. Add Project Reference (30 seconds)
 
-Edit `src\ShareX.Avalonia.Platform.Windows\ShareX.Avalonia.Platform.Windows.csproj`:
+Edit `src\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj`:
 
 ```xml
 <ItemGroup>
   <!-- Add this line -->
-  <ProjectReference Include="..\ShareX.Avalonia.ScreenCapture\ShareX.Avalonia.ScreenCapture.csproj" />
+  <ProjectReference Include="..\XerahS.ScreenCapture\XerahS.ScreenCapture.csproj" />
 </ItemGroup>
 ```
 
@@ -29,7 +29,7 @@ Edit `src\ShareX.Avalonia.Platform.Windows\ShareX.Avalonia.Platform.Windows.cspr
 
 ## 3. Extend TaskSettingsCapture (1 minute)
 
-Edit `src\ShareX.Avalonia.Core\Models\TaskSettings.cs`:
+Edit `src\XerahS.Core\Models\TaskSettings.cs`:
 
 Find the `TaskSettingsCapture` class (around line 176), locate this section:
 ```csharp
@@ -57,7 +57,7 @@ public ScrollingCaptureOptions ScrollingCaptureOptions = new ScrollingCaptureOpt
 
 ### Option A: Add to WindowsPlatform.cs
 
-Edit `src\ShareX.Avalonia.Platform.Windows\WindowsPlatform.cs`:
+Edit `src\XerahS.Platform.Windows\WindowsPlatform.cs`:
 
 Add using statements at the top:
 ```csharp
@@ -79,7 +79,7 @@ public static void InitializeRecording()
 }
 ```
 
-Edit `src\ShareX.Avalonia.App\Program.cs`, find the platform initialization and add call:
+Edit `src\XerahS.App\Program.cs`, find the platform initialization and add call:
 ```csharp
 WindowsPlatform.Initialize(screenService, uiCaptureService, ...);
 WindowsPlatform.InitializeRecording(); // Add this line
@@ -90,7 +90,7 @@ WindowsPlatform.InitializeRecording(); // Add this line
 ## 5. Test Build (1 minute)
 
 ```bash
-cd "c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia"
+cd "c:\Users\liveu\source\repos\ShareX Team\XerahS"
 dotnet build
 ```
 

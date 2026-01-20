@@ -1,4 +1,4 @@
-# ShareX.Avalonia - Full Automation Implementation Plan
+# XerahS - Full Automation Implementation Plan
 
 **Date**: 2025-12-31  
 **Goal**: Implement full automation from hotkey → screenshot → annotate → upload → URL to clipboard
@@ -109,7 +109,7 @@ ClipboardHelpers.CopyText(txt);
 
 ---
 
-## What's Missing in ShareX.Avalonia
+## What's Missing in XerahS
 
 ### ❌ Not Implemented
 
@@ -138,7 +138,7 @@ ClipboardHelpers.CopyText(txt);
 
 ### Phase 1: Core Task System (Foundation)
 
-#### A. Create `ShareX.Avalonia.Core.Tasks` Namespace
+#### A. Create `XerahS.Core.Tasks` Namespace
 
 **Files to create**:
 
@@ -301,7 +301,7 @@ private async Task DoUploadJobAsync()
 
 #### B. Add `UploadResult` Model
 
-**Create `ShareX.Avalonia.Uploaders.Models\UploadResult.cs`**:
+**Create `XerahS.Uploaders.Models\UploadResult.cs`**:
 ```csharp
 public class UploadResult
 {
@@ -373,7 +373,7 @@ private async Task DoAfterUploadJobsAsync()
 
 #### B. Add `UploadInfoParser`
 
-**Create `ShareX.Avalonia.Core.Helpers\UploadInfoParser.cs`**:
+**Create `XerahS.Core.Helpers\UploadInfoParser.cs`**:
 ```csharp
 public class UploadInfoParser
 {
@@ -474,7 +474,7 @@ public void OnTaskProgressChanged(object? sender, UploadProgressEventArgs e)
 
 #### B. Add Notification Service
 
-**Create `ShareX.Avalonia.UI.Services\NotificationService.cs`**:
+**Create `XerahS.UI.Services\NotificationService.cs`**:
 ```csharp
 public class NotificationService
 {
@@ -498,7 +498,7 @@ public class NotificationService
 ## File Structure
 
 ```
-ShareX.Avalonia.Core/
+XerahS.Core/
 ├── Tasks/
 │   ├── WorkflowTask.cs          (NEW - 500 LOC)
 │   ├── TaskInfo.cs              (NEW - 100 LOC)
@@ -511,14 +511,14 @@ ShareX.Avalonia.Core/
 └── Settings/
     └── TaskSettings.cs          (EXTEND - add AfterCapture/AfterUpload flags)
 
-ShareX.Avalonia.Uploaders/
+XerahS.Uploaders/
 ├── Models/
 │   ├── UploadResult.cs          (NEW - 60 LOC)
 │   └── UploaderErrorManager.cs  (NEW - 40 LOC)
 └── Abstractions/
     └── IUploaderProvider.cs     (EXTEND - add UploadAsync)
 
-ShareX.Avalonia.UI/
+XerahS.UI/
 ├── Services/
 │   └── NotificationService.cs   (NEW - 100 LOC)
 └── ViewModels/
@@ -595,6 +595,6 @@ ShareX's automation is highly sophisticated with:
 - Progress tracking
 - History persistence
   
-ShareX.Avalonia needs **~1,200 LOC** across 12 new files to achieve feature parity.
+XerahS needs **~1,200 LOC** across 12 new files to achieve feature parity.
 
 **Recommended**: Start with Phase 1 (Core Task System) to establish foundation, then incrementally add upload and after-upload automation.
