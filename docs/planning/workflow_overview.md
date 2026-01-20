@@ -1,6 +1,6 @@
 # Workflow Overview
 
-This document outlines the planned structure and makeup of workflows in ShareX.Avalonia. A "Workflow" essentially corresponds to a configured `TaskSettings` object which defines the behavior of a capture or upload job.
+This document outlines the planned structure and makeup of workflows in XerahS. A "Workflow" essentially corresponds to a configured `TaskSettings` object which defines the behavior of a capture or upload job.
 
 ## Workflow Makeup
 

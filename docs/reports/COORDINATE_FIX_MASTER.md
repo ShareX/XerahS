@@ -190,7 +190,7 @@ infoText.Text = $"X: {globalX} Y: {globalY} W: {globalWidth} H: {globalHeight} |
 
 ## Files Modified
 
-1. **`src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`**
+1. **`src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`**
    - Added Windows API interop for `GetCursorPos()`
    - Added `GetGlobalMousePosition()` helper
    - Store window position in `_windowLeft`, `_windowTop`

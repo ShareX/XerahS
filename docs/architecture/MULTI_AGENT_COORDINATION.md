@@ -2,7 +2,7 @@
 
 ## Context
 
-This document defines the coordination rules for parallel development on ShareX.Avalonia using three AI developer agents.
+This document defines the coordination rules for parallel development on XerahS using three AI developer agents.
 
 ---
 
@@ -37,23 +37,23 @@ This document defines the coordination rules for parallel development on ShareX.
 ## Recommended Task Split
 
 ### Codex (Backend)
-- ✅ ShareX.Avalonia.Core (logic only, not Models exposed to UI)
-- ✅ ShareX.Avalonia.Common (Helpers, utilities) - **Priority: Port Gaps**
-- ✅ ShareX.Avalonia.Media (encoding, FFmpeg)
-- ✅ ShareX.Avalonia.History (persistence, managers)
-- ✅ ShareX.Avalonia.Annotations (Logic/Models - Phase 2)
+- ✅ XerahS.Core (logic only, not Models exposed to UI)
+- ✅ XerahS.Common (Helpers, utilities) - **Priority: Port Gaps**
+- ✅ XerahS.Media (encoding, FFmpeg)
+- ✅ XerahS.History (persistence, managers)
+- ✅ XerahS.Annotations (Logic/Models - Phase 2)
 - ❌ NO Avalonia UI projects or XAML
 
 ### Copilot (UI)
-- ✅ ShareX.Avalonia.UI/ViewModels/*
-- ✅ ShareX.Avalonia.UI/Views/*
-- ✅ ShareX.Avalonia.UI/Controls/AnnotationCanvas - **Priority: Phase 2**
+- ✅ XerahS.UI/ViewModels/*
+- ✅ XerahS.UI/Views/*
+- ✅ XerahS.UI/Controls/AnnotationCanvas - **Priority: Phase 2**
 - ✅ UI wiring and MVVM bindings
 - ❌ NO Core logic or backend processing (unless directed)
 
 ### Antigravity (Architecture)
-- ✅ ShareX.Avalonia.Platform.Abstractions
-- ✅ ShareX.Avalonia.Platform.Windows/Linux/macOS
+- ✅ XerahS.Platform.Abstractions
+- ✅ XerahS.Platform.Windows/Linux/macOS
 - ✅ Project structure and solution files
 - ✅ Merge Review & Documentation
 
@@ -176,7 +176,7 @@ This section outlines the specific missing features compared to ShareX (WinForms
 - Advanced image manipulators (ColorMatrix, ConvolutionMatrix).
 - System integration helpers (verified platform agnostic).
 - **Assignment**: **Codex** (`feature/backend-gaps`)
-  - *Goal*: Port remaining non-UI helpers to `ShareX.Avalonia.Common`.
+  - *Goal*: Port remaining non-UI helpers to `XerahS.Common`.
 
 ### 2. `ShareX.ScreenCaptureLib` (Capture Engine)
 **Status**: Region/Fullscreen implemented.
@@ -194,7 +194,7 @@ This section outlines the specific missing features compared to ShareX (WinForms
 - Image Combiner.
 - Video Converter (UI & Logic).
 - GIF Encoding optimization.
-- **Assignment**: **Codex** - Port core logic to `ShareX.Avalonia.Media`.
+- **Assignment**: **Codex** - Port core logic to `XerahS.Media`.
 
 ### 4. `ShareX` (Application Tools)
 **Status**: Main Window & Settings done.
@@ -205,7 +205,7 @@ This section outlines the specific missing features compared to ShareX (WinForms
 - QR Code Generator/Decoder.
 - DNS Changer / Hash Check (Low priority).
 - **Assignment**: **Copilot** (`feature/tools-ui`)
-  - *Goal*: Create `ShareX.Avalonia.UI/Tools/*`.
+  - *Goal*: Create `XerahS.UI/Tools/*`.
 
 ### 5. `ShareX.HistoryLib` (Persistence)
 **Status**: Basic Manager exists.

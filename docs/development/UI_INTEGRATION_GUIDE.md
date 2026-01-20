@@ -22,8 +22,8 @@ private bool _useLogicalCoordinatesForCapture;
 
 **ADD**:
 ```csharp
-using ShareX.Avalonia.UI.Services;
-using ShareX.Avalonia.Platform.Abstractions.Capture;
+using XerahS.UI.Services;
+using XerahS.Platform.Abstractions.Capture;
 
 private readonly RegionCaptureService? _captureService;
 private MonitorInfo[] _monitors = Array.Empty<MonitorInfo>();
@@ -50,11 +50,11 @@ public RegionCaptureWindow()
         // Create platform backend (this should be provided via DI in production)
         IRegionCaptureBackend backend;
         if (OperatingSystem.IsWindows())
-            backend = new ShareX.Avalonia.Platform.Windows.Capture.WindowsRegionCaptureBackend();
+            backend = new XerahS.Platform.Windows.Capture.WindowsRegionCaptureBackend();
         else if (OperatingSystem.IsMacOS())
-            backend = new ShareX.Avalonia.Platform.macOS.Capture.MacOSRegionCaptureBackend();
+            backend = new XerahS.Platform.macOS.Capture.MacOSRegionCaptureBackend();
         else if (OperatingSystem.IsLinux())
-            backend = new ShareX.Avalonia.Platform.Linux.Capture.LinuxRegionCaptureBackend();
+            backend = new XerahS.Platform.Linux.Capture.LinuxRegionCaptureBackend();
         else
             throw new PlatformNotSupportedException();
 

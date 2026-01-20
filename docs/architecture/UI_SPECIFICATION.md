@@ -1,4 +1,4 @@
-# ShareX.Avalonia Reimagined UI Specification
+# XerahS Reimagined UI Specification
 
 ## Full Application Structure
 

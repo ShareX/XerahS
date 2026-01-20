@@ -1,7 +1,7 @@
 # XerahS CLI Migration: System.CommandLine 2.0.1
 
 **Date:** 2026-01-12
-**Component:** XerahS.CLI (ShareX.Avalonia)
+**Component:** XerahS.CLI (XerahS)
 **Target:** System.CommandLine 2.0.1 (Stable)
 
 ## Overview

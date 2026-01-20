@@ -32,14 +32,14 @@ Reference: `docs/plugin_packaging_system.md` (comprehensive implementation plan)
 
 ### Phase 1: PluginPackager Backend
 
-**File**: `src/ShareX.Avalonia.Uploaders/PluginSystem/PluginPackager.cs` (NEW)
+**File**: `src/XerahS.Uploaders/PluginSystem/PluginPackager.cs` (NEW)
 
 ```csharp
 using System.IO.Compression;
 using Newtonsoft.Json;
-using ShareX.Avalonia.Common;
+using XerahS.Common;
 
-namespace ShareX.Avalonia.Uploaders.PluginSystem;
+namespace XerahS.Uploaders.PluginSystem;
 
 /// <summary>
 /// Handles packaging and installation of .sxadp plugin files
@@ -179,13 +179,13 @@ public static class PluginPackager
 
 ### Phase 2: PluginInstallerDialog UI
 
-**File 1**: `src/ShareX.Avalonia.UI/Views/PluginInstallerDialog.axaml` (NEW)
+**File 1**: `src/XerahS.UI/Views/PluginInstallerDialog.axaml` (NEW)
 
 ```xml
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:ShareX.Avalonia.UI.ViewModels"
-        x:Class="ShareX.Avalonia.UI.Views.PluginInstallerDialog"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        x:Class="XerahS.UI.Views.PluginInstallerDialog"
         x:DataType="vm:PluginInstallerViewModel"
         Title="Install Plugin"
         Width="500" Height="400"
@@ -266,15 +266,15 @@ public static class PluginPackager
 </Window>
 ```
 
-**File 2**: `src/ShareX.Avalonia.UI/ViewModels/PluginInstallerViewModel.cs` (NEW)
+**File 2**: `src/XerahS.UI/ViewModels/PluginInstallerViewModel.cs` (NEW)
 
 ```csharp
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.Avalonia.Uploaders.PluginSystem;
+using XerahS.Uploaders.PluginSystem;
 using Avalonia.Platform.Storage;
 
-namespace ShareX.Avalonia.UI.ViewModels;
+namespace XerahS.UI.ViewModels;
 
 public partial class PluginInstallerViewModel : ViewModelBase
 {
@@ -393,13 +393,13 @@ public partial class PluginInstallerViewModel : ViewModelBase
 }
 ```
 
-**File 3**: `src/ShareX.Avalonia.UI/Views/PluginInstallerDialog.axaml.cs` (NEW)
+**File 3**: `src/XerahS.UI/Views/PluginInstallerDialog.axaml.cs` (NEW)
 
 ```csharp
 using Avalonia.Controls;
-using ShareX.Avalonia.UI.ViewModels;
+using XerahS.UI.ViewModels;
 
-namespace ShareX.Avalonia.UI.Views;
+namespace XerahS.UI.Views;
 
 public partial class PluginInstallerDialog : Window
 {
@@ -427,7 +427,7 @@ public partial class PluginInstallerDialog : Window
 
 ### Phase 3: Integration with Settings UI
 
-**File**: `src/ShareX.Avalonia.UI/ViewModels/ApplicationSettingsViewModel.cs`
+**File**: `src/XerahS.UI/ViewModels/ApplicationSettingsViewModel.cs`
 
 Add command to open installer dialog:
 
@@ -446,7 +446,7 @@ private async Task OpenPluginInstaller()
 }
 ```
 
-**File**: `src/ShareX.Avalonia.UI/Views/ApplicationSettingsView.axaml`
+**File**: `src/XerahS.UI/Views/ApplicationSettingsView.axaml`
 
 Add button to Uploaders tab (find the appropriate location):
 

@@ -34,7 +34,7 @@ Currently, only 3/21 AfterCaptureTasks work:
 
 ### 1. Implement Upload Handler in CaptureJobProcessor
 
-**File**: `src/ShareX.Avalonia.Core/Tasks/Processors/CaptureJobProcessor.cs`
+**File**: `src/XerahS.Core/Tasks/Processors/CaptureJobProcessor.cs`
 
 Add after line 46 (after AnnotateImage handling):
 
@@ -82,7 +82,7 @@ private async Task UploadImageAsync(TaskInfo info)
 
 ### 3. Update TaskMetadata (Optional)
 
-**File**: `src/ShareX.Avalonia.Core/Models/TaskMetadata.cs`
+**File**: `src/XerahS.Core/Models/TaskMetadata.cs`
 
 Add property to store upload URL:
 
@@ -91,7 +91,7 @@ public string? UploadURL { get; set; }
 ```
 
 ## Guidelines
-- **Use existing UploadManager API** (check `ShareX.Avalonia.Uploaders` for reference)
+- **Use existing UploadManager API** (check `XerahS.Uploaders` for reference)
 - **Ensure image is saved before upload** (uploaders need file paths)
 - **Add debug logging** for upload start/complete/failure
 - **Handle upload errors gracefully** - don't crash if upload fails

@@ -1,4 +1,4 @@
-﻿# ShareX.Avalonia
+﻿# XerahS
 
 A cross-platform port of the popular **ShareX** screen capture and file sharing tool, built with **Avalonia UI** and .NET 10.
 
@@ -45,8 +45,8 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 ### Building and Running
 ```bash
 # Clone the repository
-git clone https://github.com/ShareX/ShareX.Avalonia.git
-cd ShareX.Avalonia
+git clone https://github.com/ShareX/XerahS.git
+cd XerahS
 
 # Build the solution
 dotnet build
@@ -58,13 +58,13 @@ dotnet run --project src/XerahS.App/XerahS.App.csproj
 ### macOS Permissions (Screen Recording)
 Screen capture on macOS requires Screen Recording permission:
 1. Open **System Settings** > **Privacy & Security** > **Screen Recording**.
-2. Enable ShareX.Avalonia for screen capture access.
+2. Enable XerahS for screen capture access.
 3. Restart the app after granting permission.
 
 ### macOS Permissions (Global Hotkeys)
 Global hotkeys use SharpHook and need Accessibility permission:
 1. Open **System Settings** > **Privacy & Security** > **Accessibility**.
-2. Enable ShareX.Avalonia (or the published app bundle) for accessibility access.
+2. Enable XerahS (or the published app bundle) for accessibility access.
 3. Restart the app and retest hotkeys.
 
 ## 🛠️ Developer Information

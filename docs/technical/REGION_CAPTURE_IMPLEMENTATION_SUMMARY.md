@@ -11,7 +11,7 @@
 
 ## Executive Summary
 
-The ShareX.Avalonia (XerahS) region capture backend has been **completely redesigned** to provide pixel-perfect, cross-platform screen capture with proper DPI handling across Windows, macOS, and Linux.
+The XerahS (XerahS) region capture backend has been **completely redesigned** to provide pixel-perfect, cross-platform screen capture with proper DPI handling across Windows, macOS, and Linux.
 
 ### Key Achievements
 
@@ -36,9 +36,9 @@ The ShareX.Avalonia (XerahS) region capture backend has been **completely redesi
 - **20 unit tests**: All passing, covering edge cases
 
 **Files**:
-- `src/ShareX.Avalonia.Platform.Abstractions/Capture/CoordinateTypes.cs`
-- `src/ShareX.Avalonia.Core/Services/CoordinateTransform.cs`
-- `tests/ShareX.Avalonia.Tests/Services/CoordinateTransformTests.cs`
+- `src/XerahS.Platform.Abstractions/Capture/CoordinateTypes.cs`
+- `src/XerahS.Core/Services/CoordinateTransform.cs`
+- `tests/XerahS.Tests/Services/CoordinateTransformTests.cs`
 
 #### Platform Abstraction
 - **IRegionCaptureBackend**: Clean interface for platform implementations
@@ -46,11 +46,11 @@ The ShareX.Avalonia (XerahS) region capture backend has been **completely redesi
 - **BackendCapabilities**: Feature detection and version reporting
 
 **Files**:
-- `src/ShareX.Avalonia.Platform.Abstractions/Capture/IRegionCaptureBackend.cs`
-- `src/ShareX.Avalonia.Platform.Abstractions/Capture/MonitorInfo.cs`
-- `src/ShareX.Avalonia.Platform.Abstractions/Capture/BackendCapabilities.cs`
-- `src/ShareX.Avalonia.Platform.Abstractions/Capture/CapturedBitmap.cs`
-- `src/ShareX.Avalonia.Platform.Abstractions/Capture/RegionCaptureOptions.cs`
+- `src/XerahS.Platform.Abstractions/Capture/IRegionCaptureBackend.cs`
+- `src/XerahS.Platform.Abstractions/Capture/MonitorInfo.cs`
+- `src/XerahS.Platform.Abstractions/Capture/BackendCapabilities.cs`
+- `src/XerahS.Platform.Abstractions/Capture/CapturedBitmap.cs`
+- `src/XerahS.Platform.Abstractions/Capture/RegionCaptureOptions.cs`
 
 ### 2. Windows Backend (90% Complete)
 
@@ -258,7 +258,7 @@ var bitmap = await orchestrator.CaptureRegionAsync(region);
 ### Unit Test Results ✅
 
 ```
-Test run for ShareX.Avalonia.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for XerahS.Tests.dll (.NETCoreApp,Version=v10.0)
 VSTest version 18.0.1 (x64)
 
 Starting test execution, please wait...
@@ -456,7 +456,7 @@ This implementation provides a **production-ready foundation** for pixel-perfect
 ## Contributors
 
 **Architecture & Implementation**: Claude Sonnet 4.5 (AI Assistant)
-**Project**: ShareX.Avalonia (XerahS)
+**Project**: XerahS (XerahS)
 **Date**: January 10, 2026
 
 ---
@@ -465,8 +465,8 @@ This implementation provides a **production-ready foundation** for pixel-perfect
 
 - [Architecture Documentation](./REGION_CAPTURE_ARCHITECTURE.md)
 - [Migration Guide](./MIGRATION_GUIDE.md)
-- [Coordinate Transform Unit Tests](../tests/ShareX.Avalonia.Tests/Services/CoordinateTransformTests.cs)
-- [IRegionCaptureBackend Interface](../src/ShareX.Avalonia.Platform.Abstractions/Capture/IRegionCaptureBackend.cs)
+- [Coordinate Transform Unit Tests](../tests/XerahS.Tests/Services/CoordinateTransformTests.cs)
+- [IRegionCaptureBackend Interface](../src/XerahS.Platform.Abstractions/Capture/IRegionCaptureBackend.cs)
 
 ---
 

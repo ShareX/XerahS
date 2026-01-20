@@ -1,4 +1,4 @@
-# ShareX.Avalonia FAQ
+# XerahS FAQ
 
 ## Architectural Decisions
 
@@ -6,7 +6,7 @@
 
 **Q: Why are we using SkiaSharp? The original ShareX didn't need it.**
 
-**A:** ShareX (WinForms) and ShareX.Avalonia represent two different eras of .NET development. The decision to use **SkiaSharp** is driven by cross-platform compatibility, performance, and maintainability.
+**A:** ShareX (WinForms) and XerahS represent two different eras of .NET development. The decision to use **SkiaSharp** is driven by cross-platform compatibility, performance, and maintainability.
 
 #### 1. The "Old Way" (Legacy ShareX)
 
@@ -18,9 +18,9 @@ To achieve performance, it often bypasses GDI+ limitations by using **Unsafe Cod
 *   **Maintenance Burden:** This requires maintaining thousands of lines of low-level C# math that is hard to debug and optimize.
 *   **Platform Limit:** `System.Drawing` is Windows-only (GDI+).
 
-#### 2. The "New Way" (ShareX.Avalonia)
+#### 2. The "New Way" (XerahS)
 
-ShareX.Avalonia is a cross-platform application (Windows, Linux, macOS) running on .NET 8+.
+XerahS is a cross-platform application (Windows, Linux, macOS) running on .NET 8+.
 We use **SkiaSharp**, which is a .NET binding for Google's Skia graphics engine (the same engine used by Chrome, Android, and Flutter).
 
 *   **Hardware Acceleration:** Skia automatically utilizes SIMD (AVX2/Neon) and GPU acceleration where possible.
@@ -36,7 +36,7 @@ Use `SkiaSharp` for **editing, processing, and saving** images.
 
 **Q: "Is rendering used for the image editor hardware accelerated? I had issues with image editors struggling to keep stable 60FPS on high res monitors."**
 
-**A:** Yes, ShareX.Avalonia uses **Avalonia UI**, which is fully hardware-accelerated via Skia/Direct2D/Metal depending on your OS.
+**A:** Yes, XerahS uses **Avalonia UI**, which is fully hardware-accelerated via Skia/Direct2D/Metal depending on your OS.
 
 *   **No more GDI+ Bottlenecks:** We do not use legacy Windows GDI rendering.
 *   **Optimized Pipeline:** As of January 2026, we have refactored the image pipeline to use direct memory copies (`memcpy`) instead of expensive stream-based encoding.

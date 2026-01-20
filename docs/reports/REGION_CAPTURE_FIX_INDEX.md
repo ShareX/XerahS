@@ -30,17 +30,17 @@
 
 ## Files Modified
 
-### 1. `src\ShareX.Avalonia.UI\Services\ScreenService.cs`
+### 1. `src\XerahS.UI\Services\ScreenService.cs`
 - **Change**: Stub ? Delegating wrapper
 - **Impact**: Uses actual screen bounds instead of hardcoded values
 - **Lines**: ~25 changed
 
-### 2. `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml`
+### 2. `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml`
 - **Change**: Background configuration fix
 - **Impact**: Removes rendering ambiguity
 - **Lines**: 2 changed
 
-### 3. `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
+### 3. `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
 - **Change**: Complete coordinate system redesign
 - **Impact**: Fixes all 5 offset issues
 - **Lines**: ~250 changed

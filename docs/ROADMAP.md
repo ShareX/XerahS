@@ -1,4 +1,4 @@
-# ShareX.Avalonia - Project Status & Next Steps
+# XerahS - Project Status & Next Steps
 
 ## Current Status (Updated 2025-12-31)
 
@@ -29,7 +29,7 @@ We have successfully implemented the Reimagined UI, Multi-monitor Region Capture
     - Continuing to port non-UI utilities (Gap Report)
     - Enforcing platform abstraction rules
 - **macOS Platform Layer (CX07)**:
-    - MVP `ShareX.Avalonia.Platform.MacOS` project created
+    - MVP `XerahS.Platform.MacOS` project created
     - `screencapture` screenshot service implemented
     - SharpHook global hotkeys implemented (needs on-device validation)
     - Clipboard/text/image/files implemented via `pbcopy`/`osascript` (needs verification)

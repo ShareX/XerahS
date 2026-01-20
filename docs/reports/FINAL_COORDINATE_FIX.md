@@ -62,7 +62,7 @@ When you set `Width = 3840` on a window:
 **Avalonia handles it internally**:
 - Canvas elements are positioned in "logical pixels"
 - But when `Window.Width = physical_pixels`, logical units = physical units
-- On mixed-DPI: Avalonia does the right thing™ by default
+- On mixed-DPI: Avalonia does the right thingâ„¢ by default
 - **We don't need to do anything special!**
 
 ## Code Changes
@@ -155,7 +155,7 @@ Height = totalHeight;
 ## Implementation
 
 ### Files Modified
-1. `src\ShareX.Avalonia.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
+1. `src\XerahS.UI\Views\RegionCapture\RegionCaptureWindow.axaml.cs`
    - Set `Width = totalWidth` (no division)
    - Set `Height = totalHeight` (no division)
    - Removed all RenderScaling divisions

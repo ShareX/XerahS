@@ -2,7 +2,7 @@
 
 ## Overview
 
-The XerahS (ShareX.Avalonia) region capture backend has been completely redesigned to provide **pixel-perfect, platform-agnostic screen capture** across Windows, macOS, and Linux with full support for:
+The XerahS (XerahS) region capture backend has been completely redesigned to provide **pixel-perfect, platform-agnostic screen capture** across Windows, macOS, and Linux with full support for:
 
 - ✅ **Multi-monitor setups** with arbitrary DPI scaling
 - ✅ **Negative virtual desktop origins** (monitors left/above primary)
@@ -419,9 +419,9 @@ Console.WriteLine($"Mouse Physical {mousePhysical} → Logical {mouseLogical}");
 ## Files Structure
 
 ```
-ShareX.Avalonia/
+XerahS/
 ├── src/
-│   ├── ShareX.Avalonia.Platform.Abstractions/
+│   ├── XerahS.Platform.Abstractions/
 │   │   └── Capture/
 │   │       ├── IRegionCaptureBackend.cs
 │   │       ├── MonitorInfo.cs
@@ -430,12 +430,12 @@ ShareX.Avalonia/
 │   │       ├── RegionCaptureOptions.cs
 │   │       └── BackendCapabilities.cs
 │   │
-│   ├── ShareX.Avalonia.Core/
+│   ├── XerahS.Core/
 │   │   └── Services/
 │   │       ├── CoordinateTransform.cs
 │   │       └── RegionCaptureOrchestrator.cs
 │   │
-│   ├── ShareX.Avalonia.Platform.Windows/
+│   ├── XerahS.Platform.Windows/
 │   │   └── Capture/
 │   │       ├── WindowsRegionCaptureBackend.cs
 │   │       ├── ICaptureStrategy.cs
@@ -444,7 +444,7 @@ ShareX.Avalonia/
 │   │       ├── GdiCaptureStrategy.cs
 │   │       └── NativeMethods.cs
 │   │
-│   ├── ShareX.Avalonia.Platform.macOS/
+│   ├── XerahS.Platform.macOS/
 │   │   └── Capture/
 │   │       ├── MacOSRegionCaptureBackend.cs
 │   │       ├── ICaptureStrategy.cs
@@ -452,7 +452,7 @@ ShareX.Avalonia/
 │   │       ├── QuartzCaptureStrategy.cs
 │   │       └── CliCaptureStrategy.cs
 │   │
-│   └── ShareX.Avalonia.Platform.Linux/
+│   └── XerahS.Platform.Linux/
 │       └── Capture/
 │           ├── LinuxRegionCaptureBackend.cs
 │           ├── ICaptureStrategy.cs
@@ -461,7 +461,7 @@ ShareX.Avalonia/
 │           └── LinuxCliCaptureStrategy.cs
 │
 └── tests/
-    └── ShareX.Avalonia.Tests/
+    └── XerahS.Tests/
         └── Services/
             └── CoordinateTransformTests.cs (20 tests passing)
 ```
@@ -482,7 +482,7 @@ When extending the capture backend:
 
 ## License
 
-Part of ShareX.Avalonia (XerahS) project.
+Part of XerahS (XerahS) project.
 
 ---
 

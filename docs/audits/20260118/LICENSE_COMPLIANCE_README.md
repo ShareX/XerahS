@@ -32,7 +32,7 @@
 
 **Common Issues:**
 - Uses "ShareX - A program that..." instead of "XerahS - The Avalonia UI implementation..."
-- Uses "ShareX.Avalonia" instead of "XerahS"
+- Uses "XerahS" instead of "XerahS"
 - Uses "ShareX.Ava" instead of "XerahS"
 - Uses "2007-2025" instead of "2007-2026"
 
@@ -111,7 +111,7 @@
    - Find: `ShareX - A program that allows you to take screenshots and share any file type`
    - Replace: `XerahS - The Avalonia UI implementation of ShareX`
 
-   - Find: `ShareX.Avalonia - The Avalonia UI implementation of ShareX`
+   - Find: `XerahS - The Avalonia UI implementation of ShareX`
    - Replace: `XerahS - The Avalonia UI implementation of ShareX`
 
    - Find: `ShareX.Ava - The Avalonia UI implementation of ShareX`

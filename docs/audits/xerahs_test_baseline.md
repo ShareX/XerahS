@@ -10,7 +10,7 @@
 ## Executive Summary
 
 ⚠️ **Test Project Status**: EXISTS BUT NOT IN SOLUTION
-- Test project location: `tests\ShareX.Avalonia.Tests\XerahS.Tests.csproj`
+- Test project location: `tests\XerahS.Tests\XerahS.Tests.csproj`
 - Test files found: 1
 - Solution integration: **NOT INCLUDED**
 
@@ -20,7 +20,7 @@
 
 ### Project Configuration
 - **Name**: XerahS.Tests
-- **Location**: `tests\ShareX.Avalonia.Tests\XerahS.Tests.csproj`
+- **Location**: `tests\XerahS.Tests\XerahS.Tests.csproj`
 - **Target Framework**: `net10.0-windows10.0.26100.0`
 - **Test Framework**: NUnit 4.2.2
 - **Test Adapter**: NUnit3TestAdapter 4.6.0
@@ -39,7 +39,7 @@
 ## Test Files Inventory
 
 ### 1. CoordinateTransformTests.cs
-- **Location**: `tests\ShareX.Avalonia.Tests\Services\CoordinateTransformTests.cs`
+- **Location**: `tests\XerahS.Tests\Services\CoordinateTransformTests.cs`
 - **Purpose**: Testing coordinate transformation logic
 - **Status**: Unknown (not executed - project not in solution)
 
@@ -107,7 +107,7 @@ Based on file discovery:
 ### High Priority
 1. **Add test project to solution**
    ```bash
-   dotnet sln XerahS.sln add tests\ShareX.Avalonia.Tests\XerahS.Tests.csproj
+   dotnet sln XerahS.sln add tests\XerahS.Tests\XerahS.Tests.csproj
    ```
 
 2. **Execute baseline test run** after adding to solution

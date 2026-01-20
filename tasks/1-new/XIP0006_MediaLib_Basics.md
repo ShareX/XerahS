@@ -13,13 +13,13 @@
 New - Verified on 2026-01-08
 
 ## Assessment
-0% Complete. `ImageCombiner.cs` and `GifHelpers.cs` not found in `src/ShareX.Avalonia.Media`.
+0% Complete. `ImageCombiner.cs` and `GifHelpers.cs` not found in `src/XerahS.Media`.
 
 ## Instructions
 **CRITICAL**: Ensure you're on the `feature/backend-gaps` branch before starting. You should already be on this branch from CX02.
 
 ## Objective
-Port core media processing utilities from `ShareX.MediaLib` to `ShareX.Avalonia.Media`. Focus on image combining and basic video/GIF utilities.
+Port core media processing utilities from `ShareX.MediaLib` to `XerahS.Media`. Focus on image combining and basic video/GIF utilities.
 
 Ref: `ShareX.MediaLib` (original WinForms project)
 
@@ -33,7 +33,7 @@ Port image combining/stitching functionality:
 - **Background color** for gaps
 - Use **SkiaSharp** for rendering (consistent with CX02)
 
-**Target Location**: `src/ShareX.Avalonia.Media/ImageCombiner.cs`
+**Target Location**: `src/XerahS.Media/ImageCombiner.cs`
 
 ### 2. GIF Utilities (Basic)
 Port basic GIF handling:
@@ -41,7 +41,7 @@ Port basic GIF handling:
 - **Metadata reading** (frame count, dimensions, delays)
 - **Quality detection** (check if GIF is optimized)
 
-**Target Location**: `src/ShareX.Avalonia.Media/GifHelpers.cs`
+**Target Location**: `src/XerahS.Media/GifHelpers.cs`
 
 ### 3. Video Info Reader
 Port video metadata reading:
@@ -49,7 +49,7 @@ Port video metadata reading:
 - **Thumbnail extraction** from video
 - Use **System.Diagnostics.Process** for FFprobe
 
-**Target Location**: `src/ShareX.Avalonia.Media/VideoHelpers.cs`
+**Target Location**: `src/XerahS.Media/VideoHelpers.cs`
 
 **Note**: For now, just read video info - actual video encoding/conversion can be CX04.
 

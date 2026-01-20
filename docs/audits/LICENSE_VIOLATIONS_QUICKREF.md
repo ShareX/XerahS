@@ -23,7 +23,7 @@
 
 **Common Patterns:**
 - `ShareX - A program that...` → `XerahS - The Avalonia UI implementation...`
-- `ShareX.Avalonia - The Avalonia...` → `XerahS - The Avalonia...`
+- `XerahS - The Avalonia...` → `XerahS - The Avalonia...`
 - `ShareX.Ava - The Avalonia...` → `XerahS - The Avalonia...`
 - `2007-2025` → `2007-2026`
 
@@ -73,7 +73,7 @@ Scope:   Entire Solution
 ```
 
 ```
-Find:    ShareX.Avalonia - The Avalonia UI implementation of ShareX
+Find:    XerahS - The Avalonia UI implementation of ShareX
 Replace: XerahS - The Avalonia UI implementation of ShareX
 Scope:   Entire Solution
 ```
@@ -203,12 +203,12 @@ Manually open and verify 5-10 random files.
 ## Project-Specific Notes
 
 ### XerahS.Uploaders (134 violations)
-- All files use "ShareX.Avalonia" → Systematic bulk fix needed
+- All files use "XerahS" → Systematic bulk fix needed
 - All files use "2025" → Systematic bulk fix needed
 - 1 file has misplaced header (PluginConfigurationVerifier.cs)
 
 ### XerahS.Common (140 violations)
-- Mix of "ShareX.Ava" and "ShareX.Avalonia"
+- Mix of "ShareX.Ava" and "XerahS"
 - 16 files completely missing headers
 - Focus area: Colors/, Native/, UITypeEditors/ subdirectories
 

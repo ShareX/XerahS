@@ -364,7 +364,7 @@ This task builds upon the existing Imgur plugin infrastructure. Key dependencies
 3. **Test OAuth refresh** - verify token persistence
 4. **Test with multiple instances** - verify instance isolation
 
-## Comparison: ShareX WinForms vs ShareX.Avalonia Plugin
+## Comparison: ShareX WinForms vs XerahS Plugin
 
 | Feature | WinForms (`UploadersConfigForm`) | Avalonia Plugin (Current) | After AG04 |
 |---------|----------------------------------|---------------------------|------------|

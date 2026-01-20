@@ -21,7 +21,7 @@ ShareX relies heavily on the `FFmpegCLIManager` and `ScreenRecorder` classes to 
 
 ## 2. Modern Capture Methods Research (Windows)
 
-For ShareX.Avalonia, the primary recording path on Windows should utilize **Windows.Graphics.Capture (WGC)** and **Media Foundation**.
+For XerahS, the primary recording path on Windows should utilize **Windows.Graphics.Capture (WGC)** and **Media Foundation**.
 
 **Primary API: Windows.Graphics.Capture (WGC)**
 - **Availability**: Windows 10 (1803)+.
@@ -35,7 +35,7 @@ For ShareX.Avalonia, the primary recording path on Windows should utilize **Wind
 - **Benefits**: No external dependency (FFmpeg.exe), lower latency, consistent with OS behavior.
 
 **Constraints:**
-- **Windows Versions**: WGC requires Win10 1803+. Fallbacks needed for older OS (though ShareX.Avalonia likely targets 10+).
+- **Windows Versions**: WGC requires Win10 1803+. Fallbacks needed for older OS (though XerahS likely targets 10+).
 - **Audio**: WASAPI Loopback for system audio. `IAudioClient` for microphone.
 
 ## 3. Cross-Platform Recording Architecture
@@ -45,7 +45,7 @@ We propose a modular interface-based architecture to support modern native captu
 ### Services & Interfaces
 
 ```csharp
-namespace ShareX.Avalonia.ScreenCapture.Recording;
+namespace XerahS.ScreenCapture.Recording;
 
 public interface IRecordingService
 {

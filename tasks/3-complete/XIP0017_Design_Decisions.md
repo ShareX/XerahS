@@ -13,11 +13,11 @@ This document records all design decisions made during implementation to resolve
 
 **Gap:** No namespace/project organization specified
 **Decision:**
-- Interfaces and models in `ShareX.Avalonia.ScreenCapture/Recording/`
-- Platform implementations in `ShareX.Avalonia.Platform.Windows/Recording/`
+- Interfaces and models in `XerahS.ScreenCapture/Recording/`
+- Platform implementations in `XerahS.Platform.Windows/Recording/`
 - Followed existing project organization pattern
 
-**Rationale:** Matches existing ShareX.Avalonia architecture with Platform.Abstractions pattern
+**Rationale:** Matches existing XerahS architecture with Platform.Abstractions pattern
 
 ---
 
@@ -148,7 +148,7 @@ ScreenRecorderService.EncoderFactory = () => new MediaFoundationEncoder();
 ```
 
 **Rationale:**
-- Matches existing ShareX.Avalonia pattern (PlatformServices static locator)
+- Matches existing XerahS pattern (PlatformServices static locator)
 - No DI container overhead
 - Simple to initialize
 - Testable (factories can be mocked)
@@ -523,7 +523,7 @@ private async Task InitializeCaptureSource(RecordingOptions options)
 
 **Implementation Quality:** Production-ready for Stage 1 MVP
 
-All design decisions documented, all critical gaps resolved, code follows existing ShareX.Avalonia patterns and conventions.
+All design decisions documented, all critical gaps resolved, code follows existing XerahS patterns and conventions.
 
 ---
 

@@ -43,7 +43,7 @@
 **Common Variants Found**:
 - **Project Name Issues**:
   - "ShareX - A program that allows you to take screenshots..." (legacy ShareX header)
-  - "ShareX.Avalonia - The Avalonia UI implementation..." (old project name)
+  - "XerahS - The Avalonia UI implementation..." (old project name)
   - "ShareX.Ava - The Avalonia UI implementation..." (abbreviated old name)
 
 - **Copyright Year Issues**:
@@ -93,7 +93,7 @@
 1. Project name fixes:
    ```
    "ShareX - A program that..." → "XerahS - The Avalonia UI implementation of ShareX"
-   "ShareX.Avalonia - The Avalonia..." → "XerahS - The Avalonia..."
+   "XerahS - The Avalonia..." → "XerahS - The Avalonia..."
    "ShareX.Ava - The Avalonia..." → "XerahS - The Avalonia..."
    ```
 

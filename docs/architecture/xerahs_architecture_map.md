@@ -524,7 +524,7 @@ Located in [XerahS.UI/Services](../../src/XerahS.UI/Services/)
 - **Input Validation**: Settings validators for configuration integrity
 
 ### 9.4 Testing
-- **Test Project**: [XerahS.Tests](../../tests/ShareX.Avalonia.Tests/) (NUnit 4.2.2)
+- **Test Project**: [XerahS.Tests](../../tests/XerahS.Tests/) (NUnit 4.2.2)
 - **Coverage**: Partial (focused on critical workflows)
 - **Note**: Test project exists but not in solution file (requires integration)
 

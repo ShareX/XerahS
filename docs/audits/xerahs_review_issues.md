@@ -2794,7 +2794,7 @@ Keep as-is (best practice) but acknowledge it's not strictly necessary. SqliteCo
 
 **Current Code**:
 ```csharp
-namespace ShareX.Avalonia.Platform.Windows.Capture;
+namespace XerahS.Platform.Windows.Capture;
 
 internal static class NativeMethods
 ```
@@ -2815,7 +2815,7 @@ Either:
 
 For consistency, use traditional syntax:
 ```csharp
-namespace ShareX.Avalonia.Platform.Windows.Capture
+namespace XerahS.Platform.Windows.Capture
 {
     internal static class NativeMethods
     {

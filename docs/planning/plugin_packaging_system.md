@@ -27,7 +27,7 @@ MyEffect.sxie (ZIP archive)
 - Extraction validates file types (images only)
 - 100MB size limit for security
 
-### ShareX.Avalonia Current Plugin System
+### XerahS Current Plugin System
 **Discovery**: `PluginDiscovery` scans `Plugins/` directory for subdirectories containing `plugin.json`  
 **Loading**: `PluginLoader` uses `AssemblyLoadContext` for isolation  
 **Registration**: `ProviderCatalog` maintains registry of loaded providers
@@ -43,7 +43,7 @@ MyEffect.sxie (ZIP archive)
 
 **Rationale**:
 - Follows ShareX naming convention (`.sxie` for Image Effects)
-- Clear association with ShareX.Avalonia
+- Clear association with XerahS
 - Short, memorable, unique extension
 - Avoids conflicts with existing formats
 
@@ -79,7 +79,7 @@ ImgurUploader.sxadp (ZIP archive)
   "entryPoint": "ShareX.Uploader.Imgur.ImgurProvider",
   "assemblyFileName": "ShareX.Uploader.Imgur.dll",
   "supportedCategories": ["Image"],
-  "homepageUrl": "https://github.com/ShareX/ShareX.Avalonia",
+  "homepageUrl": "https://github.com/ShareX/XerahS",
   "dependencies": []
 }
 ```
@@ -90,7 +90,7 @@ ImgurUploader.sxadp (ZIP archive)
 
 ### A. PluginPackager (Packaging Tool)
 
-**Location**: `ShareX.Avalonia.Uploaders/PluginSystem/PluginPackager.cs`
+**Location**: `XerahS.Uploaders/PluginSystem/PluginPackager.cs`
 
 ```csharp
 public static class PluginPackager
@@ -175,7 +175,7 @@ public static class PluginPackager
 
 ### B. PluginInstaller UI
 
-**Location**: `ShareX.Avalonia.UI/Views/PluginInstallerDialog.axaml`
+**Location**: `XerahS.UI/Views/PluginInstallerDialog.axaml`
 
 **Features**:
 - File picker for `.sxadp` files
@@ -290,12 +290,12 @@ private async void OnDrop(object? sender, DragEventArgs e)
 
 ```csharp
 private static readonly string ShellPluginExtensionPath = @"Software\Classes\.sxadp";
-private static readonly string ShellPluginExtensionValue = "ShareX.Avalonia.sxadp";
+private static readonly string ShellPluginExtensionValue = "XerahS.sxadp";
 
 public static void RegistersxadpExtension()
 {
     // Register .sxadp extension
-    // Associate with ShareX.Avalonia.exe
+    // Associate with XerahS.exe
     // Add "Install Plugin" context menu
 }
 ```
@@ -378,14 +378,14 @@ sxadp-pack --input ./ImgurUploader --output ImgurUploader.sxadp
 ## 8. File Locations
 
 ```
-ShareX.Avalonia/
+XerahS/
 ├── src/
-│   ├── ShareX.Avalonia.Uploaders/
+│   ├── XerahS.Uploaders/
 │   │   └── PluginSystem/
 │   │       ├── PluginPackager.cs          (NEW)
 │   │       ├── PluginInstaller.cs         (NEW)
 │   │       └── PluginManifest.cs          (EXISTING)
-│   └── ShareX.Avalonia.UI/
+│   └── XerahS.UI/
 │       ├── Views/
 │       │   └── PluginInstallerDialog.axaml (NEW)
 │       └── ViewModels/
@@ -400,7 +400,7 @@ ShareX.Avalonia/
 
 ### End User Workflow
 1. Download `ImgurUploader.sxadp` from plugin repository
-2. Open ShareX.Avalonia → Settings → Uploaders
+2. Open XerahS → Settings → Uploaders
 3. Click "Install Plugin..." button
 4. Select `ImgurUploader.sxadp` file
 5. Review plugin details
@@ -408,7 +408,7 @@ ShareX.Avalonia/
 7. Plugin appears in Uploaders list
 
 ### Alternative: Drag & Drop
-1. Drag `ImgurUploader.sxadp` onto ShareX.Avalonia window
+1. Drag `ImgurUploader.sxadp` onto XerahS window
 2. Confirm installation prompt
 3. Plugin installed automatically
 
@@ -427,7 +427,7 @@ ShareX.Avalonia/
 
 ## 11. Comparison with ShareX
 
-| Feature | ShareX (.sxie) | ShareX.Avalonia (.sxadp) |
+| Feature | ShareX (.sxie) | XerahS (.sxadp) |
 |---------|----------------|-------------------------|
 | Format | ZIP archive | ZIP archive |
 | Manifest | Config.json (ImageEffectPreset) | plugin.json (PluginManifest) |

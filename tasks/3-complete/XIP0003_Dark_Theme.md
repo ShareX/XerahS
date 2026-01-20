@@ -24,8 +24,8 @@ Implement a dedicated Dark Theme for the application, matching the specific colo
 ## Scope
 
 ### 1. Theme Resources
-- Create directory: `src/App/Themes/Dark/` (Adjust path to actual UI project location, likely `src/ShareX.Avalonia.UI/Themes/Dark/` or similar).
-  * *Note*: If `App.axaml` is in `ShareX.Avalonia`, put themes there or in UI project. Verify `App.axaml` location first.
+- Create directory: `src/App/Themes/Dark/` (Adjust path to actual UI project location, likely `src/XerahS.UI/Themes/Dark/` or similar).
+  * *Note*: If `App.axaml` is in `XerahS`, put themes there or in UI project. Verify `App.axaml` location first.
 - Create `DarkTheme.axaml` (ResourceDictionary).
 - Define these **Color** and **SolidColorBrush** resources:
   - `BackgroundColor`: `#272727`

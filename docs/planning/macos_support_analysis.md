@@ -1,7 +1,7 @@
 # MacOS Support Analysis
 
 ## Overview
-This document summarizes the current state of macOS support in `ShareX.Avalonia`. The implementation is located primarily in the `ShareX.Avalonia.Platform.MacOS` project. Unlike the Linux implementation, macOS support is considered **feature-complete** (MVP level) with robust fallbacks.
+This document summarizes the current state of macOS support in `XerahS`. The implementation is located primarily in the `XerahS.Platform.MacOS` project. Unlike the Linux implementation, macOS support is considered **feature-complete** (MVP level) with robust fallbacks.
 
 **Current Status**: Complete (MVP)
 **Architecture**: Platform-specific implementation via `XerahS.Platform.MacOS` namespace.

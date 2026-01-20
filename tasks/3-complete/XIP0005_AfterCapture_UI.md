@@ -22,7 +22,7 @@ git checkout -b feature/after-capture-ui
 Design and implement UI in Task Settings for users to configure AfterCapture tasks (checkboxes for SaveImageToFile, CopyToClipboard, UploadImageToHost, etc.).
 
 ## Background
-ShareX.Avalonia has 21 defined AfterCaptureTasks in the enum, but no UI to configure them. Currently, users cannot enable/disable tasks like "Upload image to host" without editing code.
+XerahS has 21 defined AfterCaptureTasks in the enum, but no UI to configure them. Currently, users cannot enable/disable tasks like "Upload image to host" without editing code.
 
 **Your job**: Build the UI so users can check/uncheck tasks in Settings → Task Settings.
 
@@ -30,7 +30,7 @@ ShareX.Avalonia has 21 defined AfterCaptureTasks in the enum, but no UI to confi
 
 ### 1. Add "After Capture" Section to TaskSettingsView
 
-**File**: `src/ShareX.Avalonia.UI/Views/TaskSettingsView.axaml`
+**File**: `src/XerahS.UI/Views/TaskSettingsView.axaml`
 
 Add a new section after the "File Naming" section:
 
@@ -74,7 +74,7 @@ Add a new section after the "File Naming" section:
 
 ### 2. Add Properties to SettingsViewModel
 
-**File**: `src/ShareX.Avalonia.UI/ViewModels/SettingsViewModel.cs`
+**File**: `src/XerahS.UI/ViewModels/SettingsViewModel.cs`
 
 Add bool properties for each checkbox that map to `AfterCaptureTasks` flags:
 
@@ -122,7 +122,7 @@ public bool UploadImageToHost
 ```
 
 ## Guidelines
-- **Follow ShareX.Avalonia UI patterns** (dark theme, rounded corners, spacing)
+- **Follow XerahS UI patterns** (dark theme, rounded corners, spacing)
 - **Make "Upload image to host" prominent** (it's the main feature)
 - **Use icons if available** (💾 for save, 📋 for clipboard, ⬆️ for upload)
 - **Ensure settings persist** via SettingManager.Settings.DefaultTaskSettings

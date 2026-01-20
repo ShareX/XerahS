@@ -54,12 +54,12 @@ Program.Main()
 ```
 
 **Root Causes:**
-1. **Media Foundation Initialization** ([MediaFoundationEncoder.cs:50-70](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Platform.Windows\Recording\MediaFoundationEncoder.cs#L50-L70))
+1. **Media Foundation Initialization** ([MediaFoundationEncoder.cs:50-70](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.Platform.Windows\Recording\MediaFoundationEncoder.cs#L50-L70))
    - `MFStartup()` initializes Media Foundation COM components
    - This can take 5-7 seconds on first run due to codec enumeration
    - Unnecessarily blocks UI thread during startup
 
-2. **Synchronous Execution** ([Program.cs:111](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.App\Program.cs#L111))
+2. **Synchronous Execution** ([Program.cs:111](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.App\Program.cs#L111))
    - Called directly in `InitializePlatformServices()` before Avalonia starts
    - Blocks main thread before UI framework initialization
 
@@ -72,23 +72,23 @@ Program.Main()
 **Good News:** The codebase follows proper platform abstraction patterns. All Windows-specific code is already isolated in the correct projects:
 
 #### Properly Abstracted (No Violations Found)
-1. **Windows-specific implementations** in `ShareX.Avalonia.Platform.Windows` project:
-   - [WindowsGraphicsCaptureSource.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Platform.Windows\Recording\WindowsGraphicsCaptureSource.cs) - Uses `Windows.Graphics.Capture` APIs
-   - [MediaFoundationEncoder.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Platform.Windows\Recording\MediaFoundationEncoder.cs) - Uses Media Foundation COM APIs
-   - [WindowsPlatform.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Platform.Windows\WindowsPlatform.cs) - Platform initialization
+1. **Windows-specific implementations** in `XerahS.Platform.Windows` project:
+   - [WindowsGraphicsCaptureSource.cs](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.Platform.Windows\Recording\WindowsGraphicsCaptureSource.cs) - Uses `Windows.Graphics.Capture` APIs
+   - [MediaFoundationEncoder.cs](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.Platform.Windows\Recording\MediaFoundationEncoder.cs) - Uses Media Foundation COM APIs
+   - [WindowsPlatform.cs](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.Platform.Windows\WindowsPlatform.cs) - Platform initialization
 
 2. **Platform detection** uses proper compile-time and runtime guards:
    - Compile-time: `#if WINDOWS`, `#elif MACOS`, `#elif LINUX`
    - Runtime: `OperatingSystem.IsWindows()`, `OperatingSystem.IsMacOS()`, `OperatingSystem.IsLinux()`
 
-3. **Shared abstractions** in `ShareX.Avalonia.Platform.Abstractions`:
+3. **Shared abstractions** in `XerahS.Platform.Abstractions`:
    - `ICaptureSource` - Platform-agnostic capture interface
    - `IVideoEncoder` - Platform-agnostic encoder interface
    - Factory pattern used in `ScreenRecorderService` for platform-specific instantiation
 
 #### Minor Issues Found
 
-1. **RecordingView.axaml** ([lines 22-23, 203-206](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\Views\RecordingView.axaml))
+1. **RecordingView.axaml** ([lines 22-23, 203-206](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.UI\Views\RecordingView.axaml))
    - Hardcoded Windows-specific UI text
    - Not a technical violation but user-facing text should be platform-aware
    - **Fixed:** Added platform-specific properties to ViewModel
@@ -103,7 +103,7 @@ The RecordingView contained hardcoded Windows-specific text:
 - "Note: Recording uses Windows.Graphics.Capture (Windows 10 1803+) with Media Foundation H.264 encoding."
 
 ### Fix Applied
-Added three platform-aware properties to [RecordingViewModel.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\ViewModels\RecordingViewModel.cs):
+Added three platform-aware properties to [RecordingViewModel.cs](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.UI\ViewModels\RecordingViewModel.cs):
 
 1. **`FeatureDescription`** - Platform-specific feature description
    - Windows: "Record your screen to MP4 video using native Windows.Graphics.Capture"
@@ -116,7 +116,7 @@ Added three platform-aware properties to [RecordingViewModel.cs](c:\Users\liveu\
 
 3. **`EncoderInfo`** - Already existed, provides encoder detection info
 
-Updated [RecordingView.axaml](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\Views\RecordingView.axaml) to bind these properties instead of hardcoded strings.
+Updated [RecordingView.axaml](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.UI\Views\RecordingView.axaml) to bind these properties instead of hardcoded strings.
 
 ---
 
@@ -124,7 +124,7 @@ Updated [RecordingView.axaml](c:\Users\liveu\source\repos\ShareX Team\ShareX.Ava
 
 ### 1. Async Recording Initialization
 
-**File:** [src/ShareX.Avalonia.App/Program.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.App\Program.cs)
+**File:** [src/XerahS.App/Program.cs](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.App\Program.cs)
 
 **Changes:**
 - Removed `WindowsPlatform.InitializeRecording()` call from synchronous startup (line 111)
@@ -146,7 +146,7 @@ XerahS.Platform.Windows.WindowsPlatform.Initialize(uiCaptureService);
 
 ### 2. Post-UI Async Initialization
 
-**File:** [src/ShareX.Avalonia.UI/App.axaml.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\App.axaml.cs)
+**File:** [src/XerahS.UI/App.axaml.cs](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.UI\App.axaml.cs)
 
 **Changes:**
 - Added `InitializeRecordingAsync()` method (lines 109-142)
@@ -209,14 +209,14 @@ Program.Main()
 
 ### 3. Platform-Aware UI Text
 
-**File:** [src/ShareX.Avalonia.UI/ViewModels/RecordingViewModel.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\ViewModels\RecordingViewModel.cs)
+**File:** [src/XerahS.UI/ViewModels/RecordingViewModel.cs](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.UI\ViewModels\RecordingViewModel.cs)
 
 **Changes:**
 - Added `FeatureDescription` property (lines 154-178)
 - Added `UsageNotes` property (lines 180-200)
 - Both use `OperatingSystem` runtime checks
 
-**File:** [src/ShareX.Avalonia.UI/Views/RecordingView.axaml](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\Views\RecordingView.axaml)
+**File:** [src/XerahS.UI/Views/RecordingView.axaml](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.UI\Views\RecordingView.axaml)
 
 **Changes:**
 - Line 22: Changed to `Text="{Binding FeatureDescription}"`
@@ -297,32 +297,32 @@ Program.Main()
 
 ### Modified Files
 
-1. **[src/ShareX.Avalonia.App/Program.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.App\Program.cs)**
+1. **[src/XerahS.App/Program.cs](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.App\Program.cs)**
    - Removed synchronous `InitializeRecording()` calls (lines 111, 122, 129)
    - Added `InitializeRecordingAsync()` method (lines 146-178)
    - Sets `ScreenRecordingManager.PlatformInitializationTask` for race condition handling
    - Added comments documenting async initialization
 
-2. **[src/ShareX.Avalonia.UI/App.axaml.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\App.axaml.cs)**
+2. **[src/XerahS.UI/App.axaml.cs](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.UI\App.axaml.cs)**
    - Added `PostUIInitializationCallback` property (line 113)
    - Invoked callback from `OnFrameworkInitializationCompleted()` (line 103)
 
-3. **[src/ShareX.Avalonia.Core/Managers/ScreenRecordingManager.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Managers\ScreenRecordingManager.cs)**
+3. **[src/XerahS.Core/Managers/ScreenRecordingManager.cs](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.Core\Managers\ScreenRecordingManager.cs)**
    - Added `PlatformInitializationTask` property (line 51) for race condition handling
    - Added `EnsureRecordingInitialized()` method (lines 368-386)
    - Updated `StartRecordingAsync()` to await initialization (line 105)
 
-4. **[src/ShareX.Avalonia.UI/ViewModels/RecordingViewModel.cs](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\ViewModels\RecordingViewModel.cs)**
+4. **[src/XerahS.UI/ViewModels/RecordingViewModel.cs](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.UI\ViewModels\RecordingViewModel.cs)**
    - Added `FeatureDescription` property (lines 157-178)
    - Added `UsageNotes` property (lines 183-200)
 
-5. **[src/ShareX.Avalonia.UI/Views/RecordingView.axaml](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.UI\Views\RecordingView.axaml)**
+5. **[src/XerahS.UI/Views/RecordingView.axaml](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.UI\Views\RecordingView.axaml)**
    - Updated header text binding (line 22)
    - Updated usage notes binding (line 203)
 
 ### New Files
 
-1. **[docs/analysis/SIP0017_platform_abstraction_recording_review.md](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\docs\analysis\SIP0017_platform_abstraction_recording_review.md)**
+1. **[docs/analysis/SIP0017_platform_abstraction_recording_review.md](c:\Users\liveu\source\repos\ShareX Team\XerahS\docs\analysis\SIP0017_platform_abstraction_recording_review.md)**
    - This comprehensive analysis report
 
 ---
@@ -377,7 +377,7 @@ After implementing the async initialization, a **race condition** was discovered
 4. `CaptureSourceFactory` and `EncoderFactory` are still `null`
 5. Recording fails with "Platform initialization missing" error
 
-Looking at [ScreenRecorderService.cs:86-88](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.ScreenCapture\ScreenRecording\ScreenRecorderService.cs#L86-L88):
+Looking at [ScreenRecorderService.cs:86-88](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.ScreenCapture\ScreenRecording\ScreenRecorderService.cs#L86-L88):
 ```csharp
 if (CaptureSourceFactory == null)
 {
@@ -385,13 +385,13 @@ if (CaptureSourceFactory == null)
 }
 ```
 
-[ScreenRecordingManager.cs:299](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Managers\ScreenRecordingManager.cs#L299) has fallback logic, but both native and fallback paths can fail if clicked too early.
+[ScreenRecordingManager.cs:299](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.Core\Managers\ScreenRecordingManager.cs#L299) has fallback logic, but both native and fallback paths can fail if clicked too early.
 
 ### Solution Implemented
 
 Added **awaitable initialization** with automatic waiting:
 
-**1. Added PlatformInitializationTask property** in [ScreenRecordingManager.cs:51](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Managers\ScreenRecordingManager.cs#L51):
+**1. Added PlatformInitializationTask property** in [ScreenRecordingManager.cs:51](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.Core\Managers\ScreenRecordingManager.cs#L51):
 ```csharp
 /// <summary>
 /// Task representing platform-specific recording initialization.
@@ -400,7 +400,7 @@ Added **awaitable initialization** with automatic waiting:
 public static System.Threading.Tasks.Task? PlatformInitializationTask { get; set; }
 ```
 
-**2. Updated Program.cs** ([line 149](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.App\Program.cs#L149)) to set the shared task:
+**2. Updated Program.cs** ([line 149](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.App\Program.cs#L149)) to set the shared task:
 ```csharp
 XerahS.Core.Managers.ScreenRecordingManager.PlatformInitializationTask = System.Threading.Tasks.Task.Run(() =>
 {
@@ -408,7 +408,7 @@ XerahS.Core.Managers.ScreenRecordingManager.PlatformInitializationTask = System.
 });
 ```
 
-**3. Added EnsureRecordingInitialized()** ([ScreenRecordingManager.cs:368-386](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Managers\ScreenRecordingManager.cs#L368-L386)):
+**3. Added EnsureRecordingInitialized()** ([ScreenRecordingManager.cs:368-386](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.Core\Managers\ScreenRecordingManager.cs#L368-L386)):
 ```csharp
 private static async Task EnsureRecordingInitialized()
 {
@@ -423,7 +423,7 @@ private static async Task EnsureRecordingInitialized()
 }
 ```
 
-**4. Updated StartRecordingAsync()** ([line 105](c:\Users\liveu\source\repos\ShareX Team\ShareX.Avalonia\src\ShareX.Avalonia.Core\Managers\ScreenRecordingManager.cs#L105)) to await initialization:
+**4. Updated StartRecordingAsync()** ([line 105](c:\Users\liveu\source\repos\ShareX Team\XerahS\src\XerahS.Core\Managers\ScreenRecordingManager.cs#L105)) to await initialization:
 ```csharp
 public async Task StartRecordingAsync(RecordingOptions options)
 {
