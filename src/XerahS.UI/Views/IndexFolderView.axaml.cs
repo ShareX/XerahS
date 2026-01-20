@@ -27,6 +27,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using System;
 using System.ComponentModel;
+
 using System.Linq;
 using System.Reflection;
 using XerahS.UI.ViewModels;
@@ -90,14 +91,31 @@ public partial class IndexFolderView : UserControl
         }
 
         var webViewType = FindWebViewType();
-        if (webViewType == null || !typeof(Control).IsAssignableFrom(webViewType))
+        if (webViewType == null) 
         {
+            Console.WriteLine("IndexFolderView: webViewType is null - WebView type found");
+            return;
+        }
+        
+        if (!typeof(Control).IsAssignableFrom(webViewType))
+        {
+            Console.WriteLine($"IndexFolderView: webViewType {webViewType.FullName} is not assignable to Control");
             return;
         }
 
-        _webViewControl = (Control?)Activator.CreateInstance(webViewType);
-        _webViewSourceProperty = webViewType.GetProperty("Source") ?? webViewType.GetProperty("Url");
+        try 
+        {
+             Console.WriteLine($"IndexFolderView: Attempting to instantiate {webViewType.FullName}");
+            _webViewControl = (Control?)Activator.CreateInstance(webViewType);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"IndexFolderView: Failed to instantiate WebView: {ex}");
+            return;
+        }
 
+        _webViewSourceProperty = webViewType.GetProperty("Source") ?? webViewType.GetProperty("Url");
+        
         if (_webViewControl != null)
         {
             _htmlPreviewHost.Content = _webViewControl;
@@ -106,28 +124,30 @@ public partial class IndexFolderView : UserControl
 
     private static Type? FindWebViewType()
     {
-        var type = Type.GetType("Avalonia.Controls.WebView, Avalonia.WebView");
-
-        if (type != null)
+        // Debug: Log all WebView-related types in loaded assemblies
+        Console.WriteLine("IndexFolderView: Searching for WebView types in loaded assemblies...");
+        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GetName().Name?.Contains("WebView") == true))
         {
-            return type;
+            Console.WriteLine($"  Assembly: {asm.GetName().Name}");
+            try
+            {
+                foreach (var t in asm.GetTypes().Where(t => t.Name.Contains("WebView") && t.IsPublic && !t.IsAbstract))
+                {
+                    Console.WriteLine($"    Type: {t.FullName}, IsControl: {typeof(Avalonia.Controls.Control).IsAssignableFrom(t)}");
+                }
+            }
+            catch (Exception ex) { Console.WriteLine($"    Error: {ex.Message}"); }
         }
 
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            if (!string.Equals(assembly.GetName().Name, "Avalonia.WebView", StringComparison.Ordinal))
-            {
-                continue;
-            }
+        // Try expected types
+        var type = Type.GetType("WebView.Avalonia.WebView, WebView.Avalonia");
+        if (type != null) { Console.WriteLine($"  Found via Type.GetType: {type.FullName}"); return type; }
+        
+        type = Type.GetType("Avalonia.Controls.WebView, Avalonia.WebView");
+        if (type != null) { Console.WriteLine($"  Found via Type.GetType: {type.FullName}"); return type; }
 
-            type = assembly.GetType("Avalonia.Controls.WebView");
-            if (type != null)
-            {
-                return type;
-            }
-        }
-
-        return AppDomain.CurrentDomain.GetAssemblies()
+        // Fallback: scan all assemblies
+        var foundType = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(assembly =>
             {
                 try
@@ -139,7 +159,14 @@ public partial class IndexFolderView : UserControl
                     return ex.Types.Where(t => t != null)!;
                 }
             })
-            .FirstOrDefault(t => t?.Name == "WebView" && t.Namespace == "Avalonia.Controls");
+            .FirstOrDefault(t => t?.Name == "WebView" && typeof(Avalonia.Controls.Control).IsAssignableFrom(t));
+            
+        if (foundType != null)
+            Console.WriteLine($"  Found via scan: {foundType.FullName}");
+        else
+            Console.WriteLine("  No WebView type found");
+            
+        return foundType;
     }
 
     private void UpdateWebViewSource(string? htmlPath)
@@ -163,9 +190,9 @@ public partial class IndexFolderView : UserControl
 
             _webViewSourceProperty.SetValue(_webViewControl, value);
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore failures to keep preview optional.
+             Console.WriteLine($"IndexFolderView: Error in UpdateWebViewSource: {ex}");
         }
     }
 }

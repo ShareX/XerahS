@@ -17,9 +17,6 @@
    - **Commit Format**: `[vX.Y.Z] [Type] Use concise description`.
    - **Autonomous Execution**: If build passes, **EXECUTE** without asking for permission.
 
-3. **Multi-Agent Coordination**:
-   - Coordinate with other agents using [Relationship & Roles](docs/architecture/MULTI_AGENT_COORDINATION.md).
-
 ## 📂 Documentation Index
 
 ### Development

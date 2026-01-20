@@ -40,6 +40,7 @@ using ShareX.Editor.Annotations;
 using ShareX.Editor.ViewModels;
 using ShareX.Editor.Views;
 using XerahS.UI.Helpers;
+using XerahS.UI.Services;
 
 namespace XerahS.UI.Views
 {
@@ -177,6 +178,15 @@ namespace XerahS.UI.Views
                     case "Tools_IndexFolder":
                         contentFrame.Content = new IndexFolderView();
                         break;
+                    case "Tools_QrGenerator":
+                        _ = QrCodeToolService.HandleWorkflowAsync(WorkflowType.QRCode, this);
+                        return;
+                    case "Tools_QrScanScreen":
+                        _ = QrCodeToolService.HandleWorkflowAsync(WorkflowType.QRCodeDecodeFromScreen, this);
+                        return;
+                    case "Tools_QrScanRegion":
+                        _ = QrCodeToolService.HandleWorkflowAsync(WorkflowType.QRCodeScanRegion, this);
+                        return;
                     case "Settings":
                         contentFrame.Content = new SettingsView();
                         break;

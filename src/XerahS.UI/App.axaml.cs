@@ -31,6 +31,7 @@ using ShareX.Editor.ViewModels;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Platform.Abstractions;
+using XerahS.UI.Services;
 using XerahS.UI.Views;
 
 namespace XerahS.UI;
@@ -480,6 +481,23 @@ public partial class App : Application
         DebugHelper.WriteLine($"Hotkey triggered: {settings} (ID: {settings?.Id ?? "null"})");
 
         if (settings == null) return;
+
+        bool isQrJob = settings.Job == WorkflowType.QRCode ||
+                       settings.Job == WorkflowType.QRCodeDecodeFromScreen ||
+                       settings.Job == WorkflowType.QRCodeScanRegion;
+
+        if (isQrJob)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                var owner = ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+
+                _ = QrCodeToolService.HandleWorkflowAsync(settings.Job, owner);
+            });
+            return;
+        }
 
         // Determine request type by category
         string category = settings.Job.GetHotkeyCategory();

@@ -74,6 +74,13 @@
                     </ui:NavigationViewItem.IconSource>
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem Content="Index Folder..." Tag="Tools_IndexFolder" />
+                        <ui:NavigationViewItem Content="QR Code">
+                            <ui:NavigationViewItem.MenuItems>
+                                <ui:NavigationViewItem Content="Generator..." Tag="Tools_QrGenerator" />
+                                <ui:NavigationViewItem Content="Scan from screen" Tag="Tools_QrScanScreen" />
+                                <ui:NavigationViewItem Content="Scan from region" Tag="Tools_QrScanRegion" />
+                            </ui:NavigationViewItem.MenuItems>
+                        </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="Settings" Tag="Settings" SelectsOnInvoked="True" IsExpanded="True">

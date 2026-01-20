@@ -76,10 +76,6 @@
                         <CheckBox IsChecked="{Binding CreateParseableJson}" Content="Create parseable JSON"/>
                         <CheckBox IsChecked="{Binding BinaryUnits}" Content="Use binary units for size"/>
                     </StackPanel>
-
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Content="Save As" Command="{Binding SaveAsCommand}" IsEnabled="{Binding CanSave}" IsVisible="{Binding ShowSave}"/>
-                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
 
@@ -93,6 +89,7 @@
                                     Command="{Binding RenderHtmlPreviewCommand}"
                                     IsEnabled="{Binding CanRenderHtml}"/>
                             <Button Content="Copy" Command="{Binding CopyOutputCommand}" IsEnabled="{Binding HasOutput}"/>
+                            <Button Content="Save As" Command="{Binding SaveAsCommand}" IsEnabled="{Binding CanSave}" IsVisible="{Binding ShowSave}"/>
                             <Button Content="Upload" Command="{Binding UploadCommand}" IsEnabled="{Binding CanUpload}" IsVisible="{Binding ShowUpload}"/>
                         </StackPanel>
                     </Grid>

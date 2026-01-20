@@ -325,7 +325,7 @@ public partial class IndexFolderViewModel : ViewModelBase
 
     public bool CanSave => HasOutput && !IsBusy;
 
-    public bool CanRenderHtml => IsHtmlOutput;
+    public bool CanRenderHtml => IsHtmlOutput && HasOutput;
 
     public bool IsNotBusy => !IsBusy;
 
