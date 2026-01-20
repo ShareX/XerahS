@@ -319,6 +319,7 @@ public class IndexerSettings
         AddFooter = true;
         UseAttribute = true;
         CreateParseableJson = true;
+        BinaryUnits = true;
     }
 }
 

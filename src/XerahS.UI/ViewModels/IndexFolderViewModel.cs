@@ -54,6 +54,7 @@ public partial class IndexFolderViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(UploadCommand))]
     [NotifyCanExecuteChangedFor(nameof(SaveAsCommand))]
     [NotifyCanExecuteChangedFor(nameof(CopyOutputCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RenderHtmlPreviewCommand))]
     private string _outputText = string.Empty;
 
     [ObservableProperty]
@@ -69,10 +70,16 @@ public partial class IndexFolderViewModel : ViewModelBase
     private string _generatedFilePath = string.Empty;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RenderHtmlPreviewCommand))]
     private bool _isWebViewAvailable;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RenderHtmlPreviewCommand))]
     private bool _isHtmlOutput;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RenderHtmlPreviewCommand))]
+    private bool _isHtmlPreviewEnabled;
 
     [ObservableProperty]
     private string _htmlPreviewPath = string.Empty;
@@ -322,6 +329,8 @@ public partial class IndexFolderViewModel : ViewModelBase
 
     public bool CanSave => HasOutput && !IsBusy;
 
+    public bool CanRenderHtml => IsWebViewAvailable && IsHtmlOutput && HasOutput;
+
     public bool IsNotBusy => !IsBusy;
 
     public bool IsWorkflowConfigMode => _isWorkflowConfigMode;
@@ -332,7 +341,7 @@ public partial class IndexFolderViewModel : ViewModelBase
 
     public string PrimaryActionLabel => IsWorkflowConfigMode ? "Test Index" : "Index Folder";
 
-    public bool ShowHtmlPreview => IsWebViewAvailable && IsHtmlOutput && !string.IsNullOrEmpty(HtmlPreviewPath);
+    public bool ShowHtmlPreview => IsHtmlPreviewEnabled && IsWebViewAvailable && IsHtmlOutput && !string.IsNullOrEmpty(HtmlPreviewPath);
 
     public bool HasFolderPathError => !string.IsNullOrWhiteSpace(FolderPathError);
 
@@ -460,12 +469,22 @@ public partial class IndexFolderViewModel : ViewModelBase
     private void OnOutputChanged(IndexerOutput value)
     {
         IsHtmlOutput = value == IndexerOutput.Html;
+        if (!IsHtmlOutput)
+        {
+            IsHtmlPreviewEnabled = false;
+        }
+
         UpdateHtmlPreview(OutputText);
         OnPropertyChanged(nameof(ShowHtmlPreview));
     }
 
     partial void OnIsWebViewAvailableChanged(bool value)
     {
+        if (!value)
+        {
+            IsHtmlPreviewEnabled = false;
+        }
+
         OnPropertyChanged(nameof(ShowHtmlPreview));
     }
 
@@ -531,6 +550,18 @@ public partial class IndexFolderViewModel : ViewModelBase
 
         await PlatformServices.Clipboard.SetTextAsync(OutputText);
         StatusMessage = "Output copied to clipboard.";
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRenderHtml))]
+    private void RenderHtmlPreview()
+    {
+        if (!CanRenderHtml)
+        {
+            return;
+        }
+
+        IsHtmlPreviewEnabled = true;
+        OnPropertyChanged(nameof(ShowHtmlPreview));
     }
 
     private static XerahS.Indexer.IndexerSettings BuildIndexerSettings(XerahS.Core.IndexerSettings settings)

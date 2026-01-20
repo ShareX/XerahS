@@ -95,7 +95,7 @@ namespace XerahS.Indexer
             CustomCSSFilePath = "";
             UseAttribute = true;
             CreateParseableJson = true;
-            BinaryUnits = false;
+            BinaryUnits = true;
         }
     }
 }

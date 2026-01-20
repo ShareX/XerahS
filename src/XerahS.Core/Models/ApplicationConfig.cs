@@ -171,7 +171,7 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
 
     #region Settings - Advanced
 
-    [Category("Application"), DefaultValue(false), Description("Calculate and show file sizes in binary units (KiB, MiB etc.)")]
+    [Category("Application"), DefaultValue(true), Description("Calculate and show file sizes in binary units (KiB, MiB etc.)")]
     public bool BinaryUnits { get; set; }
 
 

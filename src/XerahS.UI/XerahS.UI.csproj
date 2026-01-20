@@ -15,6 +15,9 @@
     <PackageReference Include="FluentAvaloniaUI" Version="2.4.1" />
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
   </ItemGroup>
+  <ItemGroup Condition="'$(EnableWebView)' == 'true'">
+    <PackageReference Include="Avalonia.Controls.WebView" Version="11.3.11" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
