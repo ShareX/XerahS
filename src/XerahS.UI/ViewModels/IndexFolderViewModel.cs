@@ -44,6 +44,8 @@ namespace XerahS.UI.ViewModels;
 public partial class IndexFolderViewModel : ViewModelBase
 {
     private readonly TaskSettings _taskSettings;
+    private readonly bool _isWorkflowConfigMode;
+    private readonly string _tempHtmlPath;
 
     [ObservableProperty]
     private string _folderPath = string.Empty;
@@ -66,17 +68,41 @@ public partial class IndexFolderViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(UploadCommand))]
     private string _generatedFilePath = string.Empty;
 
+    [ObservableProperty]
+    private bool _isWebViewAvailable;
+
+    [ObservableProperty]
+    private bool _isHtmlOutput;
+
+    [ObservableProperty]
+    private string _htmlPreviewPath = string.Empty;
+
+    [ObservableProperty]
+    private string _folderPathError = string.Empty;
+
     public IndexFolderViewModel()
+        : this(null, false)
+    {
+    }
+
+    public IndexFolderViewModel(TaskSettings? taskSettings, bool isWorkflowConfigMode)
     {
         var workflow = SettingsManager.GetFirstWorkflow(WorkflowType.IndexFolder);
-        _taskSettings = workflow?.TaskSettings ?? new TaskSettings { Job = WorkflowType.IndexFolder };
+        _taskSettings = taskSettings ?? workflow?.TaskSettings ?? new TaskSettings { Job = WorkflowType.IndexFolder };
+        _isWorkflowConfigMode = isWorkflowConfigMode;
+        _tempHtmlPath = Path.Combine(Path.GetTempPath(), $"xerahs_index_{Guid.NewGuid():N}.html");
 
         FolderPath = _taskSettings.ToolsSettings.IndexerFolderPath;
+        IsHtmlOutput = _taskSettings.ToolsSettings.IndexerSettings.Output == IndexerOutput.Html;
     }
 
     partial void OnFolderPathChanged(string value)
     {
         _taskSettings.ToolsSettings.IndexerFolderPath = value;
+        if (!string.IsNullOrWhiteSpace(FolderPathError))
+        {
+            FolderPathError = string.Empty;
+        }
     }
 
     public IEnumerable<IndexerOutput> IndexerOutputs => Enum.GetValues(typeof(IndexerOutput)).Cast<IndexerOutput>();
@@ -90,6 +116,7 @@ public partial class IndexFolderViewModel : ViewModelBase
             {
                 _taskSettings.ToolsSettings.IndexerSettings.Output = value;
                 OnPropertyChanged();
+                OnOutputChanged(value);
             }
         }
     }
@@ -297,6 +324,18 @@ public partial class IndexFolderViewModel : ViewModelBase
 
     public bool IsNotBusy => !IsBusy;
 
+    public bool IsWorkflowConfigMode => _isWorkflowConfigMode;
+
+    public bool ShowUpload => !IsWorkflowConfigMode;
+
+    public bool ShowSave => !IsWorkflowConfigMode;
+
+    public string PrimaryActionLabel => IsWorkflowConfigMode ? "Test Index" : "Index Folder";
+
+    public bool ShowHtmlPreview => IsWebViewAvailable && IsHtmlOutput && !string.IsNullOrEmpty(HtmlPreviewPath);
+
+    public bool HasFolderPathError => !string.IsNullOrWhiteSpace(FolderPathError);
+
     [RelayCommand]
     private async Task BrowseFolderAsync()
     {
@@ -356,9 +395,11 @@ public partial class IndexFolderViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(FolderPath) || !Directory.Exists(FolderPath))
         {
             StatusMessage = "Select a valid folder to index.";
+            FolderPathError = "Folder does not exist.";
             return;
         }
 
+        FolderPathError = string.Empty;
         IsBusy = true;
         StatusMessage = "Indexing folder...";
         OutputText = string.Empty;
@@ -403,15 +444,29 @@ public partial class IndexFolderViewModel : ViewModelBase
 
     partial void OnOutputTextChanged(string value)
     {
+        UpdateHtmlPreview(value);
         OnPropertyChanged(nameof(HasOutput));
         OnPropertyChanged(nameof(CanUpload));
         OnPropertyChanged(nameof(CanSave));
+        OnPropertyChanged(nameof(ShowHtmlPreview));
     }
 
     partial void OnGeneratedFilePathChanged(string value)
     {
         OnPropertyChanged(nameof(CanUpload));
         OnPropertyChanged(nameof(CanSave));
+    }
+
+    private void OnOutputChanged(IndexerOutput value)
+    {
+        IsHtmlOutput = value == IndexerOutput.Html;
+        UpdateHtmlPreview(OutputText);
+        OnPropertyChanged(nameof(ShowHtmlPreview));
+    }
+
+    partial void OnIsWebViewAvailableChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowHtmlPreview));
     }
 
     [RelayCommand(CanExecute = nameof(CanUpload))]
@@ -422,8 +477,8 @@ public partial class IndexFolderViewModel : ViewModelBase
             return;
         }
 
-        var settings = CloneTaskSettings(_taskSettings);
-        settings.Job = WorkflowType.IndexFolder;
+        var settings = GetUploadTaskSettings();
+        settings.Job = WorkflowType.FileUpload;
 
         await TaskManager.Instance.StartFileTask(settings, GeneratedFilePath);
     }
@@ -565,5 +620,38 @@ public partial class IndexFolderViewModel : ViewModelBase
         {
             SettingsManager.SaveWorkflowsConfig();
         }
+    }
+
+    private void UpdateHtmlPreview(string output)
+    {
+        if (!IsHtmlOutput || string.IsNullOrWhiteSpace(output))
+        {
+            HtmlPreviewPath = string.Empty;
+            return;
+        }
+
+        try
+        {
+            File.WriteAllText(_tempHtmlPath, output);
+            HtmlPreviewPath = _tempHtmlPath;
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "IndexFolder: HTML preview write failed");
+            HtmlPreviewPath = string.Empty;
+        }
+    }
+
+    private TaskSettings GetUploadTaskSettings()
+    {
+        var uploadWorkflow = SettingsManager.GetFirstWorkflow(WorkflowType.FileUpload);
+        if (uploadWorkflow?.TaskSettings != null)
+        {
+            var settings = CloneTaskSettings(uploadWorkflow.TaskSettings);
+            settings.WorkflowId = uploadWorkflow.Id;
+            return settings;
+        }
+
+        return CloneTaskSettings(_taskSettings);
     }
 }

@@ -118,6 +118,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
 
     // Sub-ViewModels
     public TaskSettingsViewModel TaskSettings { get; private set; }
+    public IndexFolderViewModel IndexFolderConfig { get; }
 
     public WorkflowEditorViewModel(WorkflowSettings model)
     {
@@ -131,8 +132,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
             model.TaskSettings = new TaskSettings();
 
         TaskSettings = new TaskSettingsViewModel(model.TaskSettings);
-
-        TaskSettings = new TaskSettingsViewModel(model.TaskSettings);
+        IndexFolderConfig = new IndexFolderViewModel(model.TaskSettings, true);
 
         LoadJobCategories();
 

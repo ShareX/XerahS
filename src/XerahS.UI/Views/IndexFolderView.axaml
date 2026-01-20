@@ -27,6 +27,10 @@
                             <TextBox Grid.Column="0" Text="{Binding FolderPath}" Watermark="Folder to index"/>
                             <Button Grid.Column="1" Content="Browse..." Command="{Binding BrowseFolderCommand}" Margin="10,0,0,0"/>
                         </Grid>
+                        <TextBlock Text="{Binding FolderPathError}"
+                                   Foreground="Tomato"
+                                   FontSize="12"
+                                   IsVisible="{Binding HasFolderPathError}"/>
                     </StackPanel>
 
                     <StackPanel Spacing="8">
@@ -74,29 +78,43 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Content="Index Folder" Command="{Binding IndexFolderCommand}" IsEnabled="{Binding IsNotBusy}"/>
-                        <Button Content="Upload" Command="{Binding UploadCommand}" IsEnabled="{Binding CanUpload}"/>
-                        <Button Content="Save As" Command="{Binding SaveAsCommand}" IsEnabled="{Binding CanSave}"/>
+                        <Button Content="{Binding PrimaryActionLabel}" Command="{Binding IndexFolderCommand}" IsEnabled="{Binding IsNotBusy}"/>
+                        <Button Content="Upload" Command="{Binding UploadCommand}" IsEnabled="{Binding CanUpload}" IsVisible="{Binding ShowUpload}"/>
+                        <Button Content="Save As" Command="{Binding SaveAsCommand}" IsEnabled="{Binding CanSave}" IsVisible="{Binding ShowSave}"/>
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>
 
             <Border Grid.Column="2" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="6" Padding="10">
-                <Grid RowDefinitions="Auto,Auto,*">
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="Preview" FontWeight="SemiBold"/>
-                        <Button Content="Copy" Command="{Binding CopyOutputCommand}" IsEnabled="{Binding HasOutput}"/>
-                    </StackPanel>
+                <Grid RowDefinitions="Auto,Auto,Auto,*">
+                    <TextBlock Grid.Row="0" Text="Preview" FontWeight="SemiBold"/>
 
                     <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="4" Margin="0,8,0,8" IsVisible="{Binding IsBusy}"/>
 
-                    <TextBox Grid.Row="2"
-                             Text="{Binding OutputText}"
-                             IsReadOnly="True"
-                             TextWrapping="NoWrap"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                             FontFamily="Consolas"/>
+                    <Border Grid.Row="2"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="6"
+                            Height="240"
+                            Margin="0,0,0,10"
+                            IsVisible="{Binding ShowHtmlPreview}">
+                        <ContentControl x:Name="HtmlPreviewHost" />
+                    </Border>
+
+                    <Grid Grid.Row="3" RowDefinitions="Auto,*">
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Copy" Command="{Binding CopyOutputCommand}" IsEnabled="{Binding HasOutput}"/>
+                        </StackPanel>
+
+                        <TextBox Grid.Row="1"
+                                 Text="{Binding OutputText}"
+                                 IsReadOnly="True"
+                                 TextWrapping="NoWrap"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                 FontFamily="Consolas"/>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>

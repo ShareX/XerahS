@@ -104,6 +104,11 @@
                                          VerticalAlignment="Stretch"/>
             </TabItem>
 
+            <!-- Tab 3: Index Folder -->
+            <TabItem Header="Index Folder" IsVisible="{Binding TaskSettings.IsIndexFolderJob}">
+                <views:IndexFolderView DataContext="{Binding IndexFolderConfig}"/>
+            </TabItem>
+
             <!-- Tab 3: Destinations -->
             <TabItem Header="Destinations" IsVisible="{Binding TaskSettings.UploadImageToHost}">
                 <Grid RowDefinitions="Auto, *" Margin="20">
