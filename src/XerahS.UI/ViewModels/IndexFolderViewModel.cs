@@ -71,10 +71,6 @@ public partial class IndexFolderViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RenderHtmlPreviewCommand))]
-    private bool _isWebViewAvailable;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(RenderHtmlPreviewCommand))]
     private bool _isHtmlOutput;
 
     [ObservableProperty]
@@ -329,7 +325,7 @@ public partial class IndexFolderViewModel : ViewModelBase
 
     public bool CanSave => HasOutput && !IsBusy;
 
-    public bool CanRenderHtml => IsWebViewAvailable && IsHtmlOutput && HasOutput;
+    public bool CanRenderHtml => IsHtmlOutput && HasOutput;
 
     public bool IsNotBusy => !IsBusy;
 
@@ -341,7 +337,7 @@ public partial class IndexFolderViewModel : ViewModelBase
 
     public string PrimaryActionLabel => IsWorkflowConfigMode ? "Test Index" : "Index";
 
-    public bool ShowHtmlPreview => IsHtmlPreviewEnabled && IsWebViewAvailable && IsHtmlOutput && !string.IsNullOrEmpty(HtmlPreviewPath);
+    public bool ShowHtmlPreview => IsHtmlPreviewEnabled && IsHtmlOutput && !string.IsNullOrEmpty(HtmlPreviewPath);
 
     public bool HasFolderPathError => !string.IsNullOrWhiteSpace(FolderPathError);
 
@@ -478,15 +474,6 @@ public partial class IndexFolderViewModel : ViewModelBase
         OnPropertyChanged(nameof(ShowHtmlPreview));
     }
 
-    partial void OnIsWebViewAvailableChanged(bool value)
-    {
-        if (!value)
-        {
-            IsHtmlPreviewEnabled = false;
-        }
-
-        OnPropertyChanged(nameof(ShowHtmlPreview));
-    }
 
     [RelayCommand(CanExecute = nameof(CanUpload))]
     private async Task UploadAsync()

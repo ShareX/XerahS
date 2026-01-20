@@ -69,7 +69,6 @@ public partial class IndexFolderView : UserControl
 
         if (_viewModel != null)
         {
-            _viewModel.IsWebViewAvailable = _webViewControl != null;
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
             UpdateWebViewSource(_viewModel.HtmlPreviewPath);
         }
