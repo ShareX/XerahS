@@ -56,7 +56,7 @@ namespace XerahS.Core.Managers
                 {
                     if (Directory.Exists(folder.FolderPath))
                     {
-                        if (IsWorkflowValid(folder))
+                        if (folder.Enabled && IsWorkflowValid(folder))
                         {
                             AddWatchers(folder);
                         }
@@ -117,6 +117,11 @@ namespace XerahS.Core.Managers
 
         private async Task ProcessFileAsync(WatchFolderSettings settings, string fullPath)
         {
+            if (!settings.Enabled)
+            {
+                return;
+            }
+
             if (!File.Exists(fullPath))
             {
                 return;

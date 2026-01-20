@@ -159,13 +159,12 @@
                             <TextBlock Text="Watch folders" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
                                 <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding WatchFolderEnabled}" Content="Enable watch folders"/>
                                     <TextBlock Text="Monitor folders for new files and run file upload workflows automatically."
                                                FontSize="12"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
-                                    <StackPanel Spacing="8" IsEnabled="{Binding WatchFolderEnabled}">
+                                    <StackPanel Spacing="8">
                                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
                                             <TextBlock Grid.Column="0" Text="Configured folders" FontWeight="SemiBold"/>
                                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
@@ -176,13 +175,14 @@
                                         </Grid>
 
                                         <StackPanel Spacing="6">
-                                            <Grid ColumnDefinitions="90,*,150,120,120,180" Margin="4,0,4,0">
-                                                <TextBlock Grid.Column="0" Text="Status" FontWeight="SemiBold" FontSize="12"/>
-                                                <TextBlock Grid.Column="1" Text="Folder" FontWeight="SemiBold" FontSize="12"/>
-                                                <TextBlock Grid.Column="2" Text="Workflow" FontWeight="SemiBold" FontSize="12"/>
-                                                <TextBlock Grid.Column="3" Text="Filter" FontWeight="SemiBold" FontSize="12"/>
-                                                <TextBlock Grid.Column="4" Text="Subfolders" FontWeight="SemiBold" FontSize="12"/>
-                                                <TextBlock Grid.Column="5" Text="Move to Screenshots" FontWeight="SemiBold" FontSize="12"/>
+                                            <Grid ColumnDefinitions="80,90,*,150,120,120,180" Margin="4,0,4,0">
+                                                <TextBlock Grid.Column="0" Text="Enabled" FontWeight="SemiBold" FontSize="12"/>
+                                                <TextBlock Grid.Column="1" Text="Status" FontWeight="SemiBold" FontSize="12"/>
+                                                <TextBlock Grid.Column="2" Text="Folder" FontWeight="SemiBold" FontSize="12"/>
+                                                <TextBlock Grid.Column="3" Text="Workflow" FontWeight="SemiBold" FontSize="12"/>
+                                                <TextBlock Grid.Column="4" Text="Filter" FontWeight="SemiBold" FontSize="12"/>
+                                                <TextBlock Grid.Column="5" Text="Subfolders" FontWeight="SemiBold" FontSize="12"/>
+                                                <TextBlock Grid.Column="6" Text="Move to Screenshots" FontWeight="SemiBold" FontSize="12"/>
                                             </Grid>
 
                                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4">
@@ -191,13 +191,14 @@
                                                          MinHeight="140">
                                                     <ListBox.ItemTemplate>
                                                         <DataTemplate x:DataType="vm:WatchFolderSettingsViewModel">
-                                                            <Grid ColumnDefinitions="90,*,150,120,120,180" Margin="6">
-                                                                <TextBlock Grid.Column="0" Text="{Binding StatusText}" FontSize="12" ToolTip.Tip="{Binding StatusDetail}"/>
-                                                                <TextBlock Grid.Column="1" Text="{Binding FolderPath}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding FolderPath}"/>
-                                                                <TextBlock Grid.Column="2" Text="{Binding WorkflowName}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding WorkflowName}"/>
-                                                                <TextBlock Grid.Column="3" Text="{Binding Filter}"/>
-                                                                <TextBlock Grid.Column="4" Text="{Binding IncludeSubdirectoriesText}"/>
-                                                                <TextBlock Grid.Column="5" Text="{Binding MoveFilesToScreenshotsFolderText}"/>
+                                                            <Grid ColumnDefinitions="80,90,*,150,120,120,180" Margin="6">
+                                                                <CheckBox Grid.Column="0" IsChecked="{Binding Enabled}"/>
+                                                                <TextBlock Grid.Column="1" Text="{Binding StatusText}" FontSize="12" ToolTip.Tip="{Binding StatusDetail}"/>
+                                                                <TextBlock Grid.Column="2" Text="{Binding FolderPath}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding FolderPath}"/>
+                                                                <TextBlock Grid.Column="3" Text="{Binding WorkflowName}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding WorkflowName}"/>
+                                                                <TextBlock Grid.Column="4" Text="{Binding Filter}"/>
+                                                                <TextBlock Grid.Column="5" Text="{Binding IncludeSubdirectoriesText}"/>
+                                                                <TextBlock Grid.Column="6" Text="{Binding MoveFilesToScreenshotsFolderText}"/>
                                                             </Grid>
                                                         </DataTemplate>
                                                     </ListBox.ItemTemplate>

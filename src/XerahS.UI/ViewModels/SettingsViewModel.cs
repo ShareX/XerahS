@@ -538,8 +538,10 @@ namespace XerahS.UI.ViewModels
                 var vm = WatchFolderSettingsViewModel.FromSettings(folder);
                 vm.WorkflowName = GetWorkflowName(folder.WorkflowId);
                 WatchFolders.Add(vm);
+                AttachWatchFolder(vm);
             }
             HasWatchFolders = WatchFolders.Count > 0;
+            WatchFolderEnabled = WatchFolders.Any(folder => folder.Enabled);
             RefreshWatchFolderStatuses();
             WatchFolderManager.Instance.UpdateWatchers();
 
@@ -606,6 +608,7 @@ namespace XerahS.UI.ViewModels
             taskSettings.UploadSettings.URLRegexReplacePattern = URLRegexReplacePattern;
             taskSettings.UploadSettings.URLRegexReplaceReplacement = URLRegexReplaceReplacement;
 
+            WatchFolderEnabled = WatchFolders.Any(folder => folder.Enabled);
             taskSettings.WatchFolderEnabled = WatchFolderEnabled;
             taskSettings.WatchFolderList = WatchFolders.Select(item => item.ToSettings()).ToList();
 
@@ -657,11 +660,13 @@ namespace XerahS.UI.ViewModels
                 Filter = string.IsNullOrWhiteSpace(editVm.Filter) ? "*.*" : editVm.Filter,
                 IncludeSubdirectories = editVm.IncludeSubdirectories,
                 MoveFilesToScreenshotsFolder = editVm.MoveFilesToScreenshotsFolder,
+                Enabled = editVm.Enabled,
                 WorkflowId = editVm.SelectedWorkflowId,
                 WorkflowName = editVm.SelectedWorkflow?.Name ?? "Unassigned"
             };
 
             WatchFolders.Add(item);
+            AttachWatchFolder(item);
             RefreshWatchFolderStatuses();
             SaveSettings();
         }
@@ -680,7 +685,8 @@ namespace XerahS.UI.ViewModels
                 FolderPath = SelectedWatchFolder.FolderPath,
                 Filter = SelectedWatchFolder.Filter,
                 IncludeSubdirectories = SelectedWatchFolder.IncludeSubdirectories,
-                MoveFilesToScreenshotsFolder = SelectedWatchFolder.MoveFilesToScreenshotsFolder
+                MoveFilesToScreenshotsFolder = SelectedWatchFolder.MoveFilesToScreenshotsFolder,
+                Enabled = SelectedWatchFolder.Enabled
             };
             PopulateEditViewModel(editVm, SelectedWatchFolder.WorkflowId);
 
@@ -694,6 +700,7 @@ namespace XerahS.UI.ViewModels
             SelectedWatchFolder.Filter = string.IsNullOrWhiteSpace(editVm.Filter) ? "*.*" : editVm.Filter;
             SelectedWatchFolder.IncludeSubdirectories = editVm.IncludeSubdirectories;
             SelectedWatchFolder.MoveFilesToScreenshotsFolder = editVm.MoveFilesToScreenshotsFolder;
+            SelectedWatchFolder.Enabled = editVm.Enabled;
             SelectedWatchFolder.WorkflowId = editVm.SelectedWorkflowId;
             SelectedWatchFolder.WorkflowName = editVm.SelectedWorkflow?.Name ?? "Unassigned";
             RefreshWatchFolderStatuses();
@@ -727,6 +734,23 @@ namespace XerahS.UI.ViewModels
                 bool workflowValid = workflows?.Any(w => w.Id == folder.WorkflowId) == true;
                 folder.UpdateStatus(WatchFolderEnabled, workflowValid);
             }
+        }
+
+        private void AttachWatchFolder(WatchFolderSettingsViewModel folder)
+        {
+            folder.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(WatchFolderSettingsViewModel.FolderPath) ||
+                    e.PropertyName == nameof(WatchFolderSettingsViewModel.Filter) ||
+                    e.PropertyName == nameof(WatchFolderSettingsViewModel.IncludeSubdirectories) ||
+                    e.PropertyName == nameof(WatchFolderSettingsViewModel.MoveFilesToScreenshotsFolder) ||
+                    e.PropertyName == nameof(WatchFolderSettingsViewModel.WorkflowId) ||
+                    e.PropertyName == nameof(WatchFolderSettingsViewModel.Enabled))
+                {
+                    RefreshWatchFolderStatuses();
+                    SaveSettings();
+                }
+            };
         }
 
         private void LoadWatchFolderWorkflows()

@@ -63,6 +63,7 @@
         <StackPanel Spacing="6">
             <CheckBox IsChecked="{Binding IncludeSubdirectories}" Content="Include subfolders"/>
             <CheckBox IsChecked="{Binding MoveFilesToScreenshotsFolder}" Content="Move files to screenshots folder after processing"/>
+            <CheckBox IsChecked="{Binding Enabled}" Content="Enable this watch folder"/>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">

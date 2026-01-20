@@ -55,6 +55,9 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _workflowName = "Unassigned";
 
+    [ObservableProperty]
+    private bool _enabled = true;
+
     public string IncludeSubdirectoriesText => IncludeSubdirectories ? "Yes" : "No";
 
     public string MoveFilesToScreenshotsFolderText => MoveFilesToScreenshotsFolder ? "Yes" : "No";
@@ -69,12 +72,20 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(MoveFilesToScreenshotsFolderText));
     }
 
+
     public void UpdateStatus(bool isEnabled, bool workflowValid)
     {
         if (!isEnabled)
         {
             StatusText = "Disabled";
             StatusDetail = "Watch folders are disabled.";
+            return;
+        }
+
+        if (!Enabled)
+        {
+            StatusText = "Disabled";
+            StatusDetail = "Watch folder is disabled.";
             return;
         }
 
@@ -111,7 +122,8 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
             Filter = string.IsNullOrWhiteSpace(settings.Filter) ? "*.*" : settings.Filter,
             IncludeSubdirectories = settings.IncludeSubdirectories,
             MoveFilesToScreenshotsFolder = settings.MoveFilesToScreenshotsFolder,
-            WorkflowId = settings.WorkflowId
+            WorkflowId = settings.WorkflowId,
+            Enabled = settings.Enabled
         };
     }
 
@@ -123,7 +135,8 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
             Filter = string.IsNullOrWhiteSpace(Filter) ? "*.*" : Filter,
             IncludeSubdirectories = IncludeSubdirectories,
             MoveFilesToScreenshotsFolder = MoveFilesToScreenshotsFolder,
-            WorkflowId = WorkflowId
+            WorkflowId = WorkflowId,
+            Enabled = Enabled
         };
     }
 }
