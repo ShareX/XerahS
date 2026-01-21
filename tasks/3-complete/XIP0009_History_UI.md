@@ -25,10 +25,10 @@ git checkout -b feature/history-ui
 ```
 
 ## Objective
-Replicate the ShareX History UI controls in ShareX.Avalonia, providing feature parity for browsing, searching, filtering, and managing capture history.
+Replicate the ShareX History UI controls in XerahS, providing feature parity for browsing, searching, filtering, and managing capture history.
 
 ## Background
-ShareX.Avalonia has a basic History view (`HistoryView.axaml`) with:
+XerahS has a basic History view (`HistoryView.axaml`) with:
 - Refresh button
 - Grid/List view toggle
 - Basic item count display
@@ -47,7 +47,7 @@ The original ShareX `HistoryForm` provides comprehensive functionality including
 
 ### 1. Enhanced Toolbar Section
 
-**File**: `src/ShareX.Avalonia.UI/Views/HistoryView.axaml`
+**File**: `src/XerahS.UI/Views/HistoryView.axaml`
 
 Replace the basic toolbar with a comprehensive toolbar:
 
@@ -238,7 +238,7 @@ Update the context menu with full ShareX functionality:
 
 ### 5. Add ViewModel Properties and Commands
 
-**File**: `src/ShareX.Avalonia.UI/ViewModels/HistoryViewModel.cs`
+**File**: `src/XerahS.UI/ViewModels/HistoryViewModel.cs`
 
 Add these properties and commands:
 
@@ -321,8 +321,8 @@ public string StatusText => $"Total: {_allHistoryItems?.Count ?? 0:N0} - Filtere
 | Advanced filters | TextBox, DateTimePicker, ComboBox | TextBox, DatePicker, ComboBox |
 
 ## Guidelines
-- **Follow ShareX.Avalonia UI patterns** (dark theme, rounded corners, spacing)
-- **Use existing HistoryManager** from `ShareX.Avalonia.History` project
+- **Follow XerahS UI patterns** (dark theme, rounded corners, spacing)
+- **Use existing HistoryManager** from `XerahS.History` project
 - **Apply filters reactively** - filter as user types or changes filter options
 - **Virtual scrolling** for large history lists (if possible with ItemsControl)
 - **Keyboard shortcuts** - F5 (refresh), Enter (open), Ctrl+C (copy URL), Delete (delete item)
@@ -330,7 +330,7 @@ public string StatusText => $"Total: {_allHistoryItems?.Count ?? 0:N0} - Filtere
 
 ## Integration Notes
 
-This task focuses on the **UI layer only**. The `ShareX.Avalonia.History` project already contains:
+This task focuses on the **UI layer only**. The `XerahS.History` project already contains:
 - `HistoryItem`, `HistoryFilter`, `HistorySettings`
 - `HistoryManager`, `HistoryManagerXML`, `HistoryManagerSQLite`
 - `HistoryHelpers` for statistics

@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -73,6 +73,15 @@ namespace XerahS.Common
         public static void Flush()
         {
             Logger?.ProcessMessageQueue();
+        }
+
+        public static void Shutdown()
+        {
+            if (Logger != null)
+            {
+                Logger.Dispose();
+                Logger = null;
+            }
         }
     }
 }

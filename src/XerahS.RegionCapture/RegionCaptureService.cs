@@ -1,3 +1,27 @@
+#region License Information (GPL v3)
+
+/*
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
 using XerahS.RegionCapture.Models;
 using XerahS.RegionCapture.Services;
 
@@ -18,19 +42,23 @@ public sealed class RegionCaptureService
     /// Initiates a region capture operation and returns the selected region in physical pixels.
     /// </summary>
     /// <returns>The captured region, or null if cancelled.</returns>
-    public async Task<PixelRect?> CaptureRegionAsync()
+    /// <summary>
+    /// Initiates a region capture operation and returns the selected region in physical pixels.
+    /// </summary>
+    /// <returns>The captured region, or null if cancelled.</returns>
+    public async Task<RegionSelectionResult?> CaptureRegionAsync(XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
     {
         using var manager = new OverlayManager();
-        return await manager.ShowOverlaysAsync();
+        return await manager.ShowOverlaysAsync(null, initialCursor, Options);
     }
 
     /// <summary>
     /// Initiates a region capture with a callback for real-time selection updates.
     /// </summary>
-    public async Task<PixelRect?> CaptureRegionAsync(Action<PixelRect>? onSelectionChanged)
+    public async Task<RegionSelectionResult?> CaptureRegionAsync(Action<PixelRect>? onSelectionChanged, XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
     {
         using var manager = new OverlayManager();
-        return await manager.ShowOverlaysAsync(onSelectionChanged);
+        return await manager.ShowOverlaysAsync(onSelectionChanged, initialCursor, Options);
     }
 }
 
@@ -39,6 +67,11 @@ public sealed class RegionCaptureService
 /// </summary>
 public sealed record RegionCaptureOptions
 {
+    /// <summary>
+    /// Sets the capture mode (e.g., ScreenColorPicker).
+    /// </summary>
+    public RegionCaptureMode Mode { get; init; } = RegionCaptureMode.Default;
+
     /// <summary>
     /// Enable window snapping on hover. Default: true
     /// </summary>
@@ -73,4 +106,9 @@ public sealed record RegionCaptureOptions
     /// Color of the window snap highlight.
     /// </summary>
     public uint WindowSnapColor { get; init; } = 0xFF00AEFF; // Blue
+
+    /// <summary>
+    /// Whether to show the mouse cursor during selection. Default: false
+    /// </summary>
+    public bool ShowCursor { get; init; } = false;
 }

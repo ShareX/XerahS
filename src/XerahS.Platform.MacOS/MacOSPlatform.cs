@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -66,35 +66,56 @@ namespace XerahS.Platform.MacOS
         }
 
         /// <summary>
-        /// Initialize screen recording for macOS using FFmpeg-based recording
-        /// Stage 7: Cross-platform recording support
-        ///
-        /// Note: This uses FFmpegRecordingService as the primary recording method.
-        /// Future enhancement: Implement native ScreenCaptureKit capture source
-        /// with AVFoundation encoder for hardware-accelerated recording.
+        /// Initialize screen recording for macOS.
+        /// Uses native ScreenCaptureKit when available (macOS 12.3+), with FFmpeg fallback.
         /// </summary>
         public static void InitializeRecording()
         {
             try
             {
-                // macOS uses FFmpegRecordingService as the primary recording method
-                // FFmpeg supports avfoundation input for screen capture on macOS
-                DebugHelper.WriteLine("macOS: Initializing screen recording with FFmpeg backend");
-
-                // Register FFmpegRecordingService factory
-                // Note: FFmpegRecordingService is a complete recording service (not just capture/encoder)
-                // so we don't use CaptureSourceFactory/EncoderFactory pattern here
-                ScreenRecorderService.FallbackServiceFactory = () => new FFmpegRecordingService();
-
-                DebugHelper.WriteLine("macOS: Screen recording initialized successfully");
-                DebugHelper.WriteLine("  - Recording backend: FFmpeg (avfoundation)");
-                DebugHelper.WriteLine("  - Supported modes: Screen, Window, Region");
-                DebugHelper.WriteLine("  - Codecs: H.264, HEVC, VP9, AV1 (depends on FFmpeg build)");
-                DebugHelper.WriteLine("  - Note: Native ScreenCaptureKit integration planned for future release");
+                // Check if native ScreenCaptureKit recording is available
+                if (MacOSNativeRecordingService.IsAvailable())
+                {
+                    DebugHelper.WriteLine("macOS: Native ScreenCaptureKit recording available");
+                    
+                    // Set up factories for ScreenRecordingManager to create native recording service
+                    // The manager will use this as the primary option
+                    ScreenRecorderService.CaptureSourceFactory = null; // Not using capture/encoder pattern
+                    ScreenRecorderService.EncoderFactory = null;
+                    
+                    // Register native service factory (this is the key change!)
+                    ScreenRecorderService.NativeRecordingServiceFactory = () => new MacOSNativeRecordingService();
+                    
+                    // Also register FFmpeg as fallback
+                    ScreenRecorderService.FallbackServiceFactory = () => new FFmpegRecordingService();
+                    
+                    DebugHelper.WriteLine("macOS: Screen recording initialized successfully");
+                    DebugHelper.WriteLine("  - Primary: Native ScreenCaptureKit (AVAssetWriter)");
+                    DebugHelper.WriteLine("  - Fallback: FFmpeg (avfoundation)");
+                    DebugHelper.WriteLine("  - Output format: MP4 (H.264)");
+                    DebugHelper.WriteLine("  - Supported modes: Screen, Region");
+                    
+                    Console.WriteLine("[MacOSPlatform] Native ScreenCaptureKit recording initialized");
+                }
+                else
+                {
+                    // Fallback to FFmpeg-only
+                    DebugHelper.WriteLine("macOS: Native ScreenCaptureKit not available, using FFmpeg");
+                    
+                    ScreenRecorderService.FallbackServiceFactory = () => new FFmpegRecordingService();
+                    
+                    DebugHelper.WriteLine("macOS: Screen recording initialized with FFmpeg backend");
+                    DebugHelper.WriteLine("  - Recording backend: FFmpeg (avfoundation)");
+                    DebugHelper.WriteLine("  - Supported modes: Screen, Window, Region");
+                    DebugHelper.WriteLine("  - Codecs: H.264, HEVC, VP9, AV1");
+                    
+                    Console.WriteLine("[MacOSPlatform] FFmpeg recording initialized (native unavailable)");
+                }
             }
             catch (Exception ex)
             {
                 DebugHelper.WriteException(ex, "Failed to initialize macOS screen recording");
+                Console.WriteLine($"[MacOSPlatform] Recording init failed: {ex.Message}");
             }
         }
     }

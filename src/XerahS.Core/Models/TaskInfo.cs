@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -55,6 +55,7 @@ public class TaskInfo
     }
 
     public ProgressManager? Progress { get; set; }
+    public event Action<ProgressManager>? UploadProgressChanged;
 
     private string filePath = "";
 
@@ -123,6 +124,12 @@ public class TaskInfo
         TaskSettings = taskSettings ?? new TaskSettings();
         Metadata = new TaskMetadata();
         Result = new UploadResult();
+    }
+
+    public void ReportUploadProgress(ProgressManager progress)
+    {
+        Progress = progress;
+        UploadProgressChanged?.Invoke(progress);
     }
 
     public Dictionary<string, string>? GetTags()

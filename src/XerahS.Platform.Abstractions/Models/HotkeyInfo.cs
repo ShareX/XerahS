@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -89,7 +89,17 @@ public class HotkeyInfo
         if (HasControl) parts.Add("Ctrl");
         if (HasAlt) parts.Add("Alt");
         if (HasShift) parts.Add("Shift");
-        if (HasMeta) parts.Add("Win");
+        if (HasMeta)
+        {
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+            {
+                parts.Add("Cmd");
+            }
+            else
+            {
+                parts.Add("Win");
+            }
+        }
 
         if (!IsOnlyModifiers && Key != Key.None)
         {

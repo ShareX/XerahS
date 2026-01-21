@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -64,6 +64,7 @@ public class FFmpegRecordingService : IRecordingService
 
     public Task StartRecordingAsync(RecordingOptions options)
     {
+        Console.WriteLine("[FFmpegRecordingService] StartRecordingAsync called");
         if (options == null) throw new ArgumentNullException(nameof(options));
 
         lock (_lock)
@@ -82,19 +83,27 @@ public class FFmpegRecordingService : IRecordingService
         {
             // Locate ffmpeg.exe
             string ffmpegPath = FindFFmpegPath();
+            Console.WriteLine($"[FFmpegRecordingService] FFmpeg Path resolved to: {ffmpegPath}");
+            
             if (string.IsNullOrEmpty(ffmpegPath) || !File.Exists(ffmpegPath))
             {
-                throw new FileNotFoundException("ffmpeg.exe not found. Please install FFmpeg or set FFmpegPath property.");
+                string searched = $"Path not found. Checked: PATH, {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Tools", "ffmpeg.exe")}, {Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "FFmpeg", "bin", "ffmpeg.exe")}";
+                Console.WriteLine($"[FFmpegRecordingService] Critical Error: {searched}");
+                DebugHelper.WriteLine($"[FFmpeg] {searched}");
+                throw new FileNotFoundException($"ffmpeg.exe not found. {searched}");
             }
 
             // Build ffmpeg arguments
             string args = BuildFFmpegArguments(options);
+            Console.WriteLine($"[FFmpegRecordingService] FFmpeg Arguments: {args}");
 
             // Create and start FFmpeg process
             _ffmpeg = new FFmpegCLIManager(ffmpegPath);
             _ffmpeg.ShowError = true;
             _ffmpeg.TrackEncodeProgress = true;
 
+            Console.WriteLine("[FFmpegRecordingService] Starting FFmpeg process...");
+            
             // Start FFmpeg in background
             Task.Run(() =>
             {
@@ -105,16 +114,22 @@ public class FFmpegRecordingService : IRecordingService
                         _stopwatch.Restart();
                         UpdateStatus(RecordingStatus.Recording);
                     }
+                    
+                    Console.WriteLine("[FFmpegRecordingService] FFmpeg process running...");
 
                     bool success = _ffmpeg.Run(args);
+                    
+                    Console.WriteLine($"[FFmpegRecordingService] FFmpeg process finished. Success: {success}");
 
                     if (!success && !_ffmpeg.StopRequested)
                     {
+                        Console.WriteLine($"[FFmpegRecordingService] FFmpeg process failed. Output: {_ffmpeg.Output}");
                         HandleFatalError(new Exception($"FFmpeg process failed.\nOutput: {_ffmpeg.Output}"), true);
                     }
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine($"[FFmpegRecordingService] Exception in background task: {ex}");
                     HandleFatalError(ex, true);
                 }
             });
@@ -130,12 +145,14 @@ public class FFmpegRecordingService : IRecordingService
 
     public Task StopRecordingAsync()
     {
+        Console.WriteLine("[FFmpegRecordingService] StopRecordingAsync called");
         FFmpegCLIManager? ffmpeg;
 
         lock (_lock)
         {
             if (_status != RecordingStatus.Recording)
             {
+                Console.WriteLine("[FFmpegRecordingService] StopRecordingAsync: Not recording (Status != Recording). Returning.");
                 return Task.CompletedTask; // Already stopped or never started
             }
 
@@ -147,15 +164,21 @@ public class FFmpegRecordingService : IRecordingService
 
         try
         {
+            Console.WriteLine("[FFmpegRecordingService] Sending 'q' to FFmpeg process...");
             // Send 'q' to FFmpeg to stop gracefully
             ffmpeg?.WriteInput("q");
-
+            
             // Wait for process to finish (with timeout)
             Task.Delay(5000).ContinueWith(_ =>
             {
                 if (ffmpeg?.IsProcessRunning == true)
                 {
+                    Console.WriteLine("[FFmpegRecordingService] FFmpeg process still running after 5s timeout. Closing forcefully.");
                     ffmpeg.Close();
+                }
+                else 
+                {
+                     Console.WriteLine("[FFmpegRecordingService] FFmpeg process exited gracefully before timeout.");
                 }
             });
         }
@@ -173,54 +196,38 @@ public class FFmpegRecordingService : IRecordingService
             }
         }
 
+        Console.WriteLine("[FFmpegRecordingService] StopRecordingAsync completed.");
         return Task.CompletedTask;
     }
 
     private string FindFFmpegPath()
     {
         // 1. Check if explicitly set
-        if (!string.IsNullOrEmpty(_ffmpegPath) && File.Exists(_ffmpegPath))
+        if (!string.IsNullOrEmpty(_ffmpegPath))
         {
-            return _ffmpegPath;
+            DebugHelper.WriteLine($"[FFmpeg] Checking explicitly set path: {_ffmpegPath}");
+            if (File.Exists(_ffmpegPath))
+            {
+                DebugHelper.WriteLine($"[FFmpeg] Found FFmpeg at explicitly set path: {_ffmpegPath}");
+                return _ffmpegPath;
+            }
+            DebugHelper.WriteLine($"[FFmpeg] FFmpeg not found at explicitly set path.");
         }
 
         // 2. Check if Options has path override
-        if (Options?.OverrideCLIPath == true && !string.IsNullOrEmpty(Options.CLIPath) && File.Exists(Options.CLIPath))
+        if (Options?.OverrideCLIPath == true && !string.IsNullOrEmpty(Options.CLIPath))
         {
-            return Options.CLIPath;
-        }
-
-        // 3. Check common locations
-        string[] commonPaths = new[]
-        {
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Tools", "ffmpeg.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "FFmpeg", "bin", "ffmpeg.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "FFmpeg", "bin", "ffmpeg.exe"),
-        };
-
-        foreach (var path in commonPaths)
-        {
-            if (File.Exists(path))
+            DebugHelper.WriteLine($"[FFmpeg] Checking Options.CLIPath: {Options.CLIPath}");
+            if (File.Exists(Options.CLIPath))
             {
-                return path;
+                DebugHelper.WriteLine($"[FFmpeg] Found FFmpeg at Options.CLIPath: {Options.CLIPath}");
+                return Options.CLIPath;
             }
+            DebugHelper.WriteLine($"[FFmpeg] FFmpeg not found at Options.CLIPath.");
         }
 
-        // 4. Check PATH environment variable
-        var pathEnv = Environment.GetEnvironmentVariable("PATH");
-        if (pathEnv != null)
-        {
-            foreach (var dir in pathEnv.Split(Path.PathSeparator))
-            {
-                var ffmpegPath = Path.Combine(dir, "ffmpeg.exe");
-                if (File.Exists(ffmpegPath))
-                {
-                    return ffmpegPath;
-                }
-            }
-        }
-
-        return string.Empty;
+        // 3. Use Centralized PathsManager
+        return PathsManager.GetFFmpegPath();
     }
 
     private string BuildFFmpegArguments(RecordingOptions options)
@@ -229,50 +236,78 @@ public class FFmpegRecordingService : IRecordingService
         var args = new List<string>();
 
         // Input source based on capture mode
-        switch (options.Mode)
+        // Input source based on capture mode
+        if (OperatingSystem.IsWindows())
         {
-            case CaptureMode.Screen:
-                // Use gdigrab for screen capture on Windows
-                args.Add("-f gdigrab");
-                args.Add("-framerate " + settings.FPS);
-                // Stage 2: Cursor capture support
-                if (settings.ShowCursor)
-                {
-                    args.Add("-draw_mouse 1");
-                }
-                // Red border will be shown by RecordingBorderWindow
-                args.Add("-i desktop");
-                break;
+            switch (options.Mode)
+            {
+                case CaptureMode.Screen:
+                case CaptureMode.Window: // Fallback to region/screen for now
+                case CaptureMode.Region:
+                    // Use gdigrab for screen capture on Windows
+                    args.Add("-f gdigrab");
+                    args.Add("-framerate " + settings.FPS);
+                    if (settings.ShowCursor)
+                    {
+                        args.Add("-draw_mouse 1");
+                    }
+                    else
+                    {
+                         args.Add("-draw_mouse 0");
+                    }
 
-            case CaptureMode.Window:
-                // Window capture would need window title - defer to region for now
-                args.Add("-f gdigrab");
-                args.Add("-framerate " + settings.FPS);
-                if (settings.ShowCursor)
-                {
-                    args.Add("-draw_mouse 1");
-                }
-                // Red border will be shown by RecordingBorderWindow
-                args.Add("-i desktop");
-                break;
+                    if (options.Mode == CaptureMode.Region && options.Region.Width > 0 && options.Region.Height > 0)
+                    {
+                        args.Add($"-offset_x {options.Region.X}");
+                        args.Add($"-offset_y {options.Region.Y}");
+                        args.Add($"-video_size {options.Region.Width}x{options.Region.Height}");
+                    }
+                    
+                    args.Add("-i desktop");
+                    break;
+            }
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+             // macOS uses avfoundation
+             args.Add("-f avfoundation");
+             args.Add("-framerate " + settings.FPS);
+             
+             if (settings.ShowCursor)
+             {
+                 args.Add("-capture_cursor 1");
+             }
+             else 
+             {
+                 args.Add("-capture_cursor 0");
+             }
 
-            case CaptureMode.Region:
-                // Region capture with gdigrab
-                args.Add("-f gdigrab");
-                args.Add("-framerate " + settings.FPS);
-                if (settings.ShowCursor)
-                {
-                    args.Add("-draw_mouse 1");
-                }
-                if (options.Region.Width > 0 && options.Region.Height > 0)
-                {
-                    args.Add($"-offset_x {options.Region.X}");
-                    args.Add($"-offset_y {options.Region.Y}");
-                    args.Add($"-video_size {options.Region.Width}x{options.Region.Height}");
-                }
-                // Red border will be shown by RecordingBorderWindow
-                args.Add("-i desktop");
-                break;
+             // Mouse clicks visualization optional
+             // args.Add("-capture_mouse_clicks 1");
+
+             // For now default to screen 1. 
+             // Ideally we would enumerate screens or look at options.Region to determine screen index.
+             // But for MVP/Fix, "1" or "1:" is usually main screen.
+             // Using "1" as video input. 
+             // Note: avfoundation input format is "video_device:audio_device" or just "video_device"
+             args.Add("-i \"1\""); 
+             
+             // Region capture in avfoundation is not directly supported via offset/size args like gdigrab
+             // It usually requires a complex filter chain (crop).
+             if (options.Mode == CaptureMode.Region && options.Region.Width > 0 && options.Region.Height > 0)
+             {
+                 // Add crop filter: crop=w:h:x:y
+                 args.Add($"-vf \"crop={options.Region.Width}:{options.Region.Height}:{options.Region.X}:{options.Region.Y}\"");
+             }
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+             // basic Linux fallback (x11grab)
+             args.Add("-f x11grab");
+             args.Add("-framerate " + settings.FPS);
+             args.Add($"-video_size {options.Region.Width}x{options.Region.Height}");
+             args.Add($"-i :0.0+{options.Region.X},{options.Region.Y}");
+             if (settings.ShowCursor) args.Add("-draw_mouse 1");
         }
 
         // Video codec settings

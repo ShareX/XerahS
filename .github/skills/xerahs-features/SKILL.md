@@ -21,7 +21,7 @@ description: Detailed specifications for Uploader Plugin System and Annotation S
 - `ImgurProvider`: Supports Image + Text categories
 - `AmazonS3Provider`: Supports Image + Text + File categories
 
-**Persistence:** `%AppData%/ShareX.Avalonia/uploader-instances.json`
+**Persistence:** `%AppData%/XerahS/uploader-instances.json`
 
 ### Dynamic Plugin System
 
@@ -143,7 +143,7 @@ description: Detailed specifications for Uploader Plugin System and Annotation S
 
 ### Phase 1: Core Annotation Models (Completed)
 
-**Project:** `ShareX.Avalonia.Annotations`
+**Project:** `XerahS.Annotations`
 **Files created:** 10 files (~800 LOC)
 
 **Annotation types implemented:**
@@ -161,11 +161,11 @@ description: Detailed specifications for Uploader Plugin System and Annotation S
 
 ### Phase 2: Canvas Control and Full Feature Set
 
-**Implement the annotation subsystem for ShareX.Avalonia, replacing WinForms and System.Drawing with Avalonia and Skia. All features listed in the ShapeType enum must be available.**
+**Implement the annotation subsystem for XerahS, replacing WinForms and System.Drawing with Avalonia and Skia. All features listed in the ShapeType enum must be available.**
 
 #### Design Core Abstractions
 
-- Define a BaseShape in ShareX.Avalonia with properties for position, size, colour, border thickness and hit-testing.
+- Define a BaseShape in XerahS with properties for position, size, colour, border thickness and hit-testing.
 - Create Avalonia equivalents for all ShapeType values (RegionRectangle, RegionEllipse, RegionFreehand, DrawingRectangle, DrawingEllipse, DrawingFreehand, DrawingFreehandArrow, DrawingLine, DrawingArrow, DrawingTextOutline, DrawingTextBackground, DrawingSpeechBalloon, DrawingStep, DrawingMagnify, DrawingImage, DrawingImageScreen, DrawingSticker, DrawingCursor, DrawingSmartEraser, EffectBlur, EffectPixelate, EffectHighlight, ToolSpotlight, ToolCrop, ToolCutOut). Each must subclass BaseShape and implement custom rendering logic.
 - Expose shape-specific properties such as arrow-head direction, blur radius, pixel size and highlight colour with appropriate defaults.
 

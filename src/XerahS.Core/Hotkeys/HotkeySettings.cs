@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -52,7 +52,7 @@ public class WorkflowSettings
     /// Proxies to TaskSettings.Job.
     /// </summary>
     [Newtonsoft.Json.JsonIgnore]
-    public HotkeyType Job
+    public WorkflowType Job
     {
         get => TaskSettings.Job;
         set => TaskSettings.Job = value;
@@ -94,7 +94,7 @@ public class WorkflowSettings
         TaskSettings = new TaskSettings();
     }
 
-    public WorkflowSettings(HotkeyType job, HotkeyInfo hotkeyInfo) : this()
+    public WorkflowSettings(WorkflowType job, HotkeyInfo hotkeyInfo) : this()
     {
         TaskSettings.Job = job;
         HotkeyInfo = hotkeyInfo;
@@ -102,7 +102,7 @@ public class WorkflowSettings
         EnsureId();
     }
 
-    public WorkflowSettings(HotkeyType job, Key key) : this()
+    public WorkflowSettings(WorkflowType job, Key key) : this()
     {
         TaskSettings.Job = job;
         HotkeyInfo = new HotkeyInfo(key);

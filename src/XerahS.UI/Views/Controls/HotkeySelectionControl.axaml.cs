@@ -1,3 +1,27 @@
+#region License Information (GPL v3)
+
+/*
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -419,19 +443,19 @@ public partial class HotkeySelectionControl : UserControl
 
         TaskContextMenu.Items.Clear();
 
-        var hotkeyTypes = Enum.GetValues(typeof(HotkeyType)).Cast<HotkeyType>();
+        var hotkeyTypes = Enum.GetValues(typeof(WorkflowType)).Cast<WorkflowType>();
 
-        foreach (var hotkeyType in hotkeyTypes)
+        foreach (var workflowType in hotkeyTypes)
         {
             var menuItem = new MenuItem
             {
-                Header = EnumExtensions.GetDescription(hotkeyType),
-                Tag = hotkeyType
+                Header = EnumExtensions.GetDescription(workflowType),
+                Tag = workflowType
             };
 
             menuItem.Click += (s, e) =>
             {
-                if (_viewModel != null && s is MenuItem mi && mi.Tag is HotkeyType type)
+                if (_viewModel != null && s is MenuItem mi && mi.Tag is WorkflowType type)
                 {
                     _viewModel.Model.Job = type;
                     _viewModel.Refresh();

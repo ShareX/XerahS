@@ -9,7 +9,7 @@
 **Status**: Completed (Linux implementation milestones met)
 
 **Implemented**:
-- [Done] **Project Structure**: `ShareX.Avalonia.Platform.Linux` created.
+- [Done] **Project Structure**: `XerahS.Platform.Linux` created.
 - [Done] **Platform Optimization**: `LinuxPlatform.cs` implemented and wiring services.
 - [Done] **Screen Capture**: `LinuxScreenCaptureService` implemented with CLI fallbacks (`gnome-screenshot`, `spectacle`, `scrot`, `import`) and Wayland detection.
 - [Done] **Native X11 Capture**: Added `XGetImage` path + mask decoding for headless capture before falling back to CLI tools.
@@ -27,12 +27,12 @@
 ---
 
 ## Executive Summary
-`ShareX.Avalonia` targets cross-platform support. Linux support requires a dedicated platform implementation layer to isolate OS-specific dependencies. The Core and UI projects are platform-agnostic, while `ShareX.Avalonia.Platform.Linux` provides the bridge.
+`XerahS` targets cross-platform support. Linux support requires a dedicated platform implementation layer to isolate OS-specific dependencies. The Core and UI projects are platform-agnostic, while `XerahS.Platform.Linux` provides the bridge.
 
 ## Architecture
-- **Project**: `ShareX.Avalonia.Platform.Linux`
+- **Project**: `XerahS.Platform.Linux`
 - **Namespace**: `XerahS.Platform.Linux`
-- **Dependencies**: `ShareX.Avalonia.Platform.Abstractions`, `Mono.Posix` (maybe), `SkiaSharp`.
+- **Dependencies**: `XerahS.Platform.Abstractions`, `Mono.Posix` (maybe), `SkiaSharp`.
 
 ## Component Status
 

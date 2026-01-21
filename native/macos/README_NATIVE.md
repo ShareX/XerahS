@@ -1,6 +1,6 @@
-# Native ScreenCaptureKit Bridge for ShareX.Avalonia
+# Native ScreenCaptureKit Bridge for XerahS
 
-This directory contains the native macOS library used by ShareX.Avalonia to interface with the `ScreenCaptureKit` framework. This allows for high-performance screen recording and capture on macOS 12.3+.
+This directory contains the native macOS library used by XerahS to interface with the `ScreenCaptureKit` framework. This allows for high-performance screen recording and capture on macOS 12.3+.
 
 ## Contents
 
@@ -26,7 +26,7 @@ This will produce `libscreencapturekit_bridge.dylib` in the current directory.
 
 ### Development Build
 
-If you are developing primarily on macOS and want to copy the built library directly to the ShareX.Avalonia build output directories (Debug/Release):
+If you are developing primarily on macOS and want to copy the built library directly to the XerahS build output directories (Debug/Release):
 
 ```bash
 make dev
@@ -42,7 +42,7 @@ sudo make install
 
 ## Usage in C#
 
-The library functions are exposed via `[DllImport]` in `ShareX.Avalonia.Platform.MacOS`:
+The library functions are exposed via `[DllImport]` in `XerahS.Platform.MacOS`:
 
 ```csharp
 [DllImport("libscreencapturekit_bridge.dylib")]

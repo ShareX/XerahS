@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -119,7 +119,7 @@ public class WorkflowManager : IDisposable
             // Debug.WriteLine($"HotkeyManager: Registered {settings}");
             XerahS.Common.DebugHelper.WriteLine($"Hotkey registered: {settings}");
 
-            if (settings.Job == HotkeyType.CustomWindow)
+            if (settings.Job == WorkflowType.CustomWindow)
             {
                 XerahS.Common.DebugHelper.WriteLine($"[DEBUG] Registering CustomWindow hotkey. Title='{settings.TaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
             }

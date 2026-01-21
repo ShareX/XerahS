@@ -15,7 +15,7 @@ Successfully implemented **all core components** for modern screen recording as 
 ✅ Windows.Graphics.Capture source implementation
 ✅ Media Foundation H.264 encoder implementation
 ✅ Platform-agnostic orchestration service
-✅ Integration with existing ShareX.Avalonia architecture
+✅ Integration with existing XerahS architecture
 
 **Current Status:** Implementation is complete but requires Windows SDK setup for final build.
 
@@ -25,7 +25,7 @@ Successfully implemented **all core components** for modern screen recording as 
 
 ### 1. Core Files Created
 
-**ShareX.Avalonia.ScreenCapture/ScreenRecording/**
+**XerahS.ScreenCapture/ScreenRecording/**
 - `RecordingEnums.cs` - CaptureMode, RecordingStatus, VideoCodec, PixelFormat
 - `RecordingModels.cs` - RecordingOptions, ScreenRecordingSettings, FrameData, VideoFormat, Event Args
 - `IRecordingService.cs` - IRecordingService, ICaptureSource, IVideoEncoder, IAudioCapture interfaces
@@ -33,21 +33,21 @@ Successfully implemented **all core components** for modern screen recording as 
 - `FFmpegOptions.cs` - Existing FFmpeg configuration (unchanged)
 - `FFmpegCaptureDevice.cs` - Existing FFmpeg devices (unchanged)
 
-**ShareX.Avalonia.Platform.Windows/Recording/**
+**XerahS.Platform.Windows/Recording/**
 - `WindowsGraphicsCaptureSource.cs` - Windows.Graphics.Capture API implementation
 - `MediaFoundationEncoder.cs` - Media Foundation H.264 encoder with COM interop
 
 ### 2. Integration Changes
 
-**ShareX.Avalonia.Platform.Windows/WindowsPlatform.cs**
+**XerahS.Platform.Windows/WindowsPlatform.cs**
 - Added `InitializeRecording()` method
 - Sets up factory functions for native recording
 - Includes fallback detection for unsupported systems
 
-**ShareX.Avalonia.App/Program.cs**
+**XerahS.App/Program.cs**
 - Added call to `WindowsPlatform.InitializeRecording()` after platform initialization
 
-**ShareX.Avalonia.Platform.Windows.csproj**
+**XerahS.Platform.Windows.csproj**
 - Added ScreenCapture project reference
 
 ### 3. Folder Consolidation
@@ -101,7 +101,7 @@ And adding `using WinRT;` to WindowsGraphicsCaptureSource.cs
 ### Code Standards
 ✅ All files have GPL v3 license headers
 ✅ XML documentation on all public APIs
-✅ Follows ShareX.Avalonia namespace conventions (XerahS)
+✅ Follows XerahS namespace conventions (XerahS)
 ✅ Thread-safe disposal patterns
 ✅ Event-based async patterns
 ✅ Comprehensive error handling
@@ -156,7 +156,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
 }
 ```
 
-3. Build with: `dotnet build ShareX.Avalonia.sln`
+3. Build with: `dotnet build XerahS.sln`
 
 ### Option 2: Use CsWinRT with Proper Setup
 
@@ -185,13 +185,13 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
 ## Files Modified
 
 **Modified:**
-- `src/ShareX.Avalonia.Platform.Windows/WindowsPlatform.cs` - Added InitializeRecording()
-- `src/ShareX.Avalonia.App/Program.cs` - Added InitializeRecording() call
-- `src/ShareX.Avalonia.Platform.Windows/ShareX.Avalonia.Platform.Windows.csproj` - Added ScreenCapture reference
+- `src/XerahS.Platform.Windows/WindowsPlatform.cs` - Added InitializeRecording()
+- `src/XerahS.App/Program.cs` - Added InitializeRecording() call
+- `src/XerahS.Platform.Windows/XerahS.Platform.Windows.csproj` - Added ScreenCapture reference
 
 **Created:**
-- 6 new files in `ShareX.Avalonia.ScreenCapture/ScreenRecording/`
-- 2 new files in `ShareX.Avalonia.Platform.Windows/Recording/`
+- 6 new files in `XerahS.ScreenCapture/ScreenRecording/`
+- 2 new files in `XerahS.Platform.Windows/Recording/`
 
 **Folders:**
 - ❌ Removed duplicate `Recording/` folder

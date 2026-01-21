@@ -1,3 +1,27 @@
+#region License Information (GPL v3)
+
+/*
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
 using System.IO;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
@@ -143,28 +167,38 @@ namespace XerahS.Core.Tasks.Processors
                 return null;
             }
 
-            if (!string.IsNullOrEmpty(info.FilePath))
+            Uploader.ProgressEventHandler progressHandler = progress => info.ReportUploadProgress(progress);
+            uploader.ProgressChanged += progressHandler;
+
+            try
             {
-                return uploader switch
+                if (!string.IsNullOrEmpty(info.FilePath))
                 {
-                    FileUploader fileUploader => fileUploader.UploadFile(info.FilePath),
-                    GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
-                    _ => null
-                };
-            }
+                    return uploader switch
+                    {
+                        FileUploader fileUploader => fileUploader.UploadFile(info.FilePath),
+                        GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
+                        _ => null
+                    };
+                }
 
-            if (info.Metadata?.Image == null)
-            {
-                return null;
-            }
+                if (info.Metadata?.Image == null)
+                {
+                    return null;
+                }
 
-            using (MemoryStream? ms = TaskHelpers.SaveImageAsStream(info.Metadata.Image, info.TaskSettings.ImageSettings.ImageFormat, info.TaskSettings))
+                using (MemoryStream? ms = TaskHelpers.SaveImageAsStream(info.Metadata.Image, info.TaskSettings.ImageSettings.ImageFormat, info.TaskSettings))
+                {
+                    if (ms == null) return null;
+                    ms.Position = 0;
+                    return uploader is GenericUploader genericUploader
+                        ? genericUploader.Upload(ms, info.FileName)
+                        : null;
+                }
+            }
+            finally
             {
-                if (ms == null) return null;
-                ms.Position = 0;
-                return uploader is GenericUploader genericUploader
-                    ? genericUploader.Upload(ms, info.FileName)
-                    : null;
+                uploader.ProgressChanged -= progressHandler;
             }
         }
 

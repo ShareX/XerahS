@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -30,6 +30,7 @@ using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture;
 using XerahS.RegionCapture.Models;
 using SkiaSharp;
+using System;
 using System.Diagnostics;
 
 namespace XerahS.UI.Services
@@ -57,12 +58,40 @@ namespace XerahS.UI.Services
                 // UI interaction must run on the UI thread
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
+                    // Capture cursor if requested
+                    XerahS.Platform.Abstractions.CursorInfo? cursorInfo = null;
+                    if (options?.ShowCursor == true)
+                    {
+                        try
+                        {
+                            cursorInfo = await _platformImpl.CaptureCursorAsync();
+                        }
+                        catch
+                        {
+                            // Ignore cursor capture errors
+                        }
+                    }
+
                     var captureService = new RegionCaptureService();
-                    var result = await captureService.CaptureRegionAsync();
+                    
+                    // Propagate options
+                    if (options != null)
+                    {
+                        captureService = new RegionCaptureService
+                        {
+                            Options = new XerahS.RegionCapture.RegionCaptureOptions
+                            {
+                                ShowCursor = options.ShowCursor,
+                                // Map other options if needed, but for now we rely on defaults or what RegionCaptureService handles
+                            }
+                        };
+                    }
+
+                    var result = await captureService.CaptureRegionAsync(cursorInfo);
 
                     if (result is not null)
                     {
-                        var r = result.Value;
+                        var r = result.Value.Region;
                         selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
                     }
                 });
@@ -97,22 +126,129 @@ namespace XerahS.UI.Services
             return _platformImpl.CaptureActiveWindowAsync(windowService, options);
         }
 
+        public Task<XerahS.Platform.Abstractions.CursorInfo?> CaptureCursorAsync()
+        {
+            return _platformImpl.CaptureCursorAsync();
+        }
+
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
-            // 1. Select Region (UI)
-            var selection = await SelectRegionAsync(options);
+            // 1. Capture cursor BEFORE showing overlay (if ShowCursor is enabled)
+            XerahS.Platform.Abstractions.CursorInfo? ghostCursor = null;
+            if (options?.ShowCursor == true)
+            {
+                try
+                {
+                    ghostCursor = await _platformImpl.CaptureCursorAsync();
+                }
+                catch
+                {
+                    // Ignore cursor capture errors
+                }
+            }
+
+            // 2. Select Region (UI) - pass ghost cursor for overlay display
+            SKRectI selection = SKRectI.Empty;
+            var cursorAtSelection = new XerahS.RegionCapture.Models.PixelPoint();
+            try
+            {
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    var captureService = new RegionCaptureService();
+                    
+                    if (options != null)
+                    {
+                        captureService = new RegionCaptureService
+                        {
+                            Options = new XerahS.RegionCapture.RegionCaptureOptions
+                            {
+                                ShowCursor = options.ShowCursor,
+                            }
+                        };
+                    }
+
+                    var result = await captureService.CaptureRegionAsync(ghostCursor);
+
+                    if (result is not null)
+                    {
+                        var r = result.Value.Region;
+                        selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
+                        cursorAtSelection = result.Value.CursorPosition;
+                    }
+                });
+            }
+            catch
+            {
+                // Ignore errors
+            }
 
             if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
             {
                 return null;
             }
 
-            // 2. Small delay to allow overlay windows to close fully
-            await Task.Delay(60);
+            var selectionRect = new XerahS.RegionCapture.Models.PixelRect(selection.Left, selection.Top, selection.Width, selection.Height);
+            bool showCursor = options?.ShowCursor == true;
+            bool hideLiveCursor = showCursor && selectionRect.Contains(cursorAtSelection);
 
-            // 3. Capture Screen (Platform)
+            // 3. Optional delay before capture starts (cancellable)
+            if (options?.CaptureStartDelaySeconds > 0)
+            {
+                var delayMs = (int)Math.Round(options.CaptureStartDelaySeconds * 1000, MidpointRounding.AwayFromZero);
+                var workflowId = string.IsNullOrWhiteSpace(options.WorkflowId) ? "none" : options.WorkflowId;
+                var workflowCategory = string.IsNullOrWhiteSpace(options.WorkflowCategory) ? "Unknown" : options.WorkflowCategory;
+                TroubleshootingHelper.Log("CaptureDelay", "REGION", $"WorkflowId={workflowId}, Category={workflowCategory}, DelaySeconds={options.CaptureStartDelaySeconds:F3}, DelayMs={delayMs}");
+
+                try
+                {
+                    await Task.Delay(delayMs, options.CaptureStartDelayCancellationToken);
+                    TroubleshootingHelper.Log("CaptureDelay", "REGION", $"WorkflowId={workflowId}, Category={workflowCategory}, DelayCompleted=true");
+                }
+                catch (OperationCanceledException)
+                {
+                    TroubleshootingHelper.Log("CaptureDelay", "REGION", $"WorkflowId={workflowId}, Category={workflowCategory}, DelayCancelled=true");
+                    return null;
+                }
+            }
+
+            // 4. Small delay to allow overlay windows to close fully and cursor to hide
+            await Task.Delay(200);
+
+            // 5. Capture Screen (Platform) - WITHOUT cursor (we'll draw ghost cursor manually)
+            var captureOptions = options != null ? new CaptureOptions
+            {
+                ShowCursor = showCursor && !hideLiveCursor,
+                UseModernCapture = options.UseModernCapture,
+                WorkflowId = options.WorkflowId,
+                WorkflowCategory = options.WorkflowCategory
+            } : null;
+
             var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
-            return await _platformImpl.CaptureRectAsync(skRect, options);
+            var bitmap = await _platformImpl.CaptureRectAsync(skRect, captureOptions);
+
+            // 6. Draw ghost cursor onto captured bitmap if available
+            // We use the INITIAL ghost cursor (captured at start) to match ShareX behavior ("original location").
+            // The Live cursor is hidden from the DXGI capture by the platform service.
+            if (bitmap != null && ghostCursor?.Image != null && showCursor)
+            {
+                try
+                {
+                    // Calculate cursor position relative to the captured region
+                    int cursorX = ghostCursor.Position.X - selection.Left - ghostCursor.Hotspot.X;
+                    int cursorY = ghostCursor.Position.Y - selection.Top - ghostCursor.Hotspot.Y;
+
+                    // Draw cursor onto bitmap using SkiaSharp
+                    using var canvas = new SKCanvas(bitmap);
+                    using var paint = new SKPaint { BlendMode = SKBlendMode.SrcOver };
+                    canvas.DrawBitmap(ghostCursor.Image, cursorX, cursorY, paint);
+                }
+                catch
+                {
+                    // Ignore cursor drawing errors
+                }
+            }
+
+            return bitmap;
         }
 
         public Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)

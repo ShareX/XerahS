@@ -32,7 +32,7 @@ This guide explains how to migrate from the existing region capture implementati
 
 ### Step 1: Update PlatformServices
 
-**File**: `src/ShareX.Avalonia.Core/Services/PlatformServices.cs`
+**File**: `src/XerahS.Core/Services/PlatformServices.cs`
 
 Add the new region capture backend to the service registry:
 
@@ -76,13 +76,13 @@ public static class PlatformServices
 
 ### Step 2: Create RegionCaptureService Wrapper
 
-**File**: `src/ShareX.Avalonia.UI/Services/RegionCaptureService.cs`
+**File**: `src/XerahS.UI/Services/RegionCaptureService.cs`
 
 Update or create a UI-layer service that uses the orchestrator:
 
 ```csharp
-using ShareX.Avalonia.Core.Services;
-using ShareX.Avalonia.Platform.Abstractions.Capture;
+using XerahS.Core.Services;
+using XerahS.Platform.Abstractions.Capture;
 
 public class RegionCaptureService
 {
@@ -140,7 +140,7 @@ public class RegionCaptureService
 
 ### Step 3: Update RegionCaptureWindow
 
-**File**: `src/ShareX.Avalonia.UI/Views/RegionCapture/RegionCaptureWindow.axaml.cs`
+**File**: `src/XerahS.UI/Views/RegionCapture/RegionCaptureWindow.axaml.cs`
 
 Refactor the window to use the new backend:
 
@@ -291,7 +291,7 @@ Once the new backend is integrated and tested, remove the old implementation:
 ### Files to Remove
 
 1. **Old Screen Services**:
-   - `src/ShareX.Avalonia.Platform.Abstractions/IScreenService.cs` (old)
+   - `src/XerahS.Platform.Abstractions/IScreenService.cs` (old)
    - Platform-specific `ScreenService` implementations
    - DPI flag properties
 

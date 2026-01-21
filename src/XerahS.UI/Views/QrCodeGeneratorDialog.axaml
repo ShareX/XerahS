@@ -1,0 +1,78 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        mc:Ignorable="d"
+        x:Class="XerahS.UI.Views.QrCodeGeneratorDialog"
+        x:DataType="vm:QrCodeGeneratorViewModel"
+        Width="860"
+        MinWidth="640"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        Title="QR Code Generator">
+
+    <Design.DataContext>
+        <vm:QrCodeGeneratorViewModel />
+    </Design.DataContext>
+
+    <Grid Margin="20" ColumnDefinitions="2*,*" RowDefinitions="Auto,*">
+        <StackPanel Grid.Column="0" Spacing="12">
+            <TextBlock Text="QR Code Generator" FontSize="22" FontWeight="SemiBold"/>
+            <TextBlock Text="Enter text or paste from clipboard to generate a QR code."
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       TextWrapping="Wrap"/>
+
+            <StackPanel Spacing="6">
+                <TextBlock Text="Content" FontWeight="SemiBold"/>
+                <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MinHeight="120"
+                         Watermark="Type or paste text to encode..."/>
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding CharacterCountText}"
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                        <Button Content="Paste from clipboard"
+                                Command="{Binding PasteFromClipboardCommand}"/>
+                        <Button Content="Generate"
+                                Command="{Binding GenerateCommand}"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Copy image" Command="{Binding CopyImageCommand}"/>
+                <Button Content="Save to file" Command="{Binding SaveImageCommand}"/>
+            </StackPanel>
+
+            <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                    BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="10">
+                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
+            </Border>
+        </StackPanel>
+
+        <Border Grid.Column="1"
+                Margin="16,0,0,0"
+                Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12">
+            <Grid>
+                <TextBlock Text="Preview"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                <Image Source="{Binding PreviewImage}"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

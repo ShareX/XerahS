@@ -1,8 +1,8 @@
-﻿# ShareX.Avalonia
+﻿# XerahS
 
 A cross-platform port of the popular **ShareX** screen capture and file sharing tool, built with **Avalonia UI** and .NET 10.
 
-![ShareX Avalonia](https://getsharex.com/img/ShareX_Logo.png)
+![ShareX Avalonia](https://getsharex.com/img/XerahS_Logo.png)
 *(Note: Project is in active development)*
 
 ## ✨ Key Features
@@ -23,13 +23,19 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
     - **Object-based** selection, moving, resizing, and deletion
     - **Full Undo/Redo** support
     - **Keyboard Shortcuts**: V(Select), R(Rectangle), E(Ellipse), A(Arrow), L(Line), P(Pen), H(Highlighter), T(Text), B(Balloon), N(Number), C(Crop), M(Magnify), S(Spotlight), F(Effects)
-- **Image Effects**:
-    - **40+ Effects**: Auto-discovered from ImageEffects library (13 Adjustments, 17 Filters, 10 Manipulations, 6 Drawings)
-    - **Categories**: Filters, Adjustments, Manipulations, Drawings
-    - **Real-time Preview**: Apply effects with instant feedback
-    - **Parameter Control**: Adjustable effect parameters via dynamic UI
-- **Serialization**: Save and load annotations with full type support
-- **Task Workflow**: Configurable after-capture tasks (Save, Copy, Upload)
+- **Workflows (Zero Inheritance)**:
+    - **Unique Settings**: Each workflow is fully independent with its own hotkeys and tasks.
+    - **No "Default" Inheritance**: Reduces configuration errors by avoiding complex inheritance chains.
+    - **Task Workflow**: Configurable after-capture tasks (Save, Copy, Upload, Image Effects)
+- **Modern Capture Architecture**:
+    - **Windows**: Uses fast `Desktop Duplication API` (DXGI) for high-performance capture.
+    - **macOS**: Leverages native `ScreenCaptureKit` for performant, permission-compliant recording.
+    - **Linux**: X11 and Wayland support.
+- **Image Editor**:
+    - **Hardware Accelerated**: Fully GPU-accelerated rendering using Skia/Metal/Direct2D. renders 4K+ images at 60FPS.
+    - **40+ Effects**: Organized into Adjustments, Filters, Manipulations, and Drawings.
+    - **Real-time Preview**: Apply effects with instant visual feedback.
+    - **Serialization**: Save and load annotations with full type support.
 
 ## 🚀 Getting Started
 
@@ -39,26 +45,26 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 ### Building and Running
 ```bash
 # Clone the repository
-git clone https://github.com/ShareX/ShareX.Avalonia.git
-cd ShareX.Avalonia
+git clone https://github.com/ShareX/XerahS.git
+cd XerahS
 
 # Build the solution
 dotnet build
 
 # Run the application
-dotnet run --project src/ShareX.Avalonia.App/ShareX.Avalonia.App.csproj
+dotnet run --project src/XerahS.App/XerahS.App.csproj
 ```
 
 ### macOS Permissions (Screen Recording)
 Screen capture on macOS requires Screen Recording permission:
 1. Open **System Settings** > **Privacy & Security** > **Screen Recording**.
-2. Enable ShareX.Avalonia for screen capture access.
+2. Enable XerahS for screen capture access.
 3. Restart the app after granting permission.
 
 ### macOS Permissions (Global Hotkeys)
 Global hotkeys use SharpHook and need Accessibility permission:
 1. Open **System Settings** > **Privacy & Security** > **Accessibility**.
-2. Enable ShareX.Avalonia (or the published app bundle) for accessibility access.
+2. Enable XerahS (or the published app bundle) for accessibility access.
 3. Restart the app and retest hotkeys.
 
 ## 🛠️ Developer Information

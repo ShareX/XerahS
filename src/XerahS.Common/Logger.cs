@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -29,7 +29,7 @@ using System.Text;
 
 namespace XerahS.Common
 {
-    public class Logger
+    public class Logger : IDisposable
     {
         public delegate void MessageAddedEventHandler(string message);
 
@@ -52,6 +52,7 @@ namespace XerahS.Common
         private ConcurrentQueue<string> messageQueue = new ConcurrentQueue<string>();
         private StringBuilder sbMessages = new StringBuilder();
         private string _currentDate = DateTime.Now.ToString("yyyy-MM-dd");
+        private bool _disposed = false;
 
         public Logger()
         {
@@ -232,6 +233,43 @@ namespace XerahS.Common
 
                 return string.Empty;
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // Flush remaining messages before disposal
+                try
+                {
+                    // Disable async writes to ensure synchronous flush
+                    bool wasAsync = AsyncWrite;
+                    AsyncWrite = false;
+
+                    // Process any remaining queued messages
+                    ProcessMessageQueue();
+
+                    AsyncWrite = wasAsync;
+                }
+                catch (Exception ex)
+                {
+                    // Log disposal errors to Debug output as fallback
+                    Debug.WriteLine($"Logger disposal error: {ex.Message}");
+                }
+            }
+
+            _disposed = true;
         }
     }
 }

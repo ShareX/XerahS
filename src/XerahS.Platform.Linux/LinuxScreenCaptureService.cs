@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -295,6 +295,11 @@ namespace XerahS.Platform.Linux
             var bounds = windowService.GetWindowBounds(windowHandle);
             if (bounds.Width <= 0 || bounds.Height <= 0) return null;
             return await CaptureRectAsync(new SKRect(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height), options);
+        }
+
+        public Task<CursorInfo?> CaptureCursorAsync()
+        {
+            return Task.FromResult<CursorInfo?>(null);
         }
 
         /// <summary>

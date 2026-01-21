@@ -1,6 +1,6 @@
-# ShareX.Avalonia Project Status
+# XerahS Project Status
 
-This document tracks the current implementation status, backend porting checklist, pending tasks, and future enhancements for ShareX.Avalonia.
+This document tracks the current implementation status, backend porting checklist, pending tasks, and future enhancements for XerahS.
 
 ## Uploader Plugin System - Implementation Status
 
@@ -26,7 +26,7 @@ This document tracks the current implementation status, backend porting checklis
 - ViewModels: UploaderInstanceViewModel, CategoryViewModel, ProviderCatalogViewModel, ProviderViewModel
 - Views: DestinationSettingsView (updated), ProviderCatalogDialog
 
-**Persistence:** `%AppData%/ShareX.Avalonia/uploader-instances.json`
+**Persistence:** `%AppData%/XerahS/uploader-instances.json`
 
 ### ✅ Completed: Dynamic Plugin System (Jan 2025)
 
@@ -47,11 +47,28 @@ This document tracks the current implementation status, backend porting checklis
 - `ShareX.AmazonS3.Plugin`: S3 bucket uploads (Image/Text/File).
 
 **Status:**
-- [x] Extract common abstractions into `ShareX.Avalonia.Uploaders`.
+- [x] Extract common abstractions into `XerahS.Uploaders`.
 - [x] Implement `PluginLoadContext` and loading logic.
 - [x] Implement `plugin.json` manifest system.
 - [x] Create Imgur and S3 plugins as standalone DLLs.
 - [x] Integrate with UI (Catalog & Settings).
+
+### ✅ Completed: Core Features & UX Enhancements (Jan 2025)
+
+**Capture Engine Improvements:**
+- **Capture Start Delay**: Configurable delay for Screen Capture and Screen Recording (TaskSettings driven).
+- **Global Cursor Hiding**: Robust system cursor hiding during capture across platforms.
+- **Capture Offset Fix**: Fixed region selection rectangle and crosshair alignment issues.
+- **Modern Capture Integration**: 
+    - Windows: Direct3D11 Capture
+    - macOS: ScreenCaptureKit
+    - Linux: XDG Desktop Portal
+
+**UX / UI Polish:**
+- **Modeless Tools**: Color Picker and QR Code dialogs are now non-blocking (Show instead of ShowDialog).
+- **Control Spacing**: Improved visibility for TaskSettings numeric controls.
+- **Hotkey Visibility**: Fixed main window visibility logic when "minimize to tray" is enabled.
+
 
 ### 🔄 Next: File-Type Routing (Planned)
 
@@ -160,7 +177,7 @@ This document tracks the current implementation status, backend porting checklis
 
 ### ✅ Phase 1 Complete: Core Annotation Models (Dec 2024)
 
-**New project:** `ShareX.Avalonia.Annotations`
+**New project:** `XerahS.Annotations`
 **Files created:** 10 files (~800 LOC)
 
 **Annotation types implemented:**
@@ -324,25 +341,25 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 
 ### ShareX.ImageEffectsLib
 
-- [ ] CanvasMargin.cs
-- [ ] ColorBgra.cs
-- [ ] ColorMatrixManager.cs
-- [ ] ConvolutionMatrixManager.cs
-- [ ] DrawingExtensions.cs
+- [ ] CanvasMargin.cs (Replaced by BorderImageEffect)
+- [x] ColorBgra.cs (Moved to XerahS.Common)
+- [x] ColorMatrixManager.cs (Replaced by SkiaSharp)
+- [x] ConvolutionMatrixManager.cs (Moved to XerahS.Common)
+- [x] DrawingExtensions.cs (Replaced by SkiaSharp)
 - [ ] DrawParticles.cs
-- [ ] DrawTextEx.cs
-- [ ] GradientInfo.cs
-- [ ] GradientStop.cs
-- [ ] ImageEffectPackager.cs
-- [ ] ImageEffectPreset.cs
-- [ ] ImageEffectPropertyExtensions.cs
-- [ ] ImageEffectsProcessing.cs
-- [ ] ImageEffectsSerializationBinder.cs
-- [ ] ReplaceColor.cs
-- [ ] SelectiveColor.cs
+- [x] DrawTextEx.cs (Replaced by TextAnnotation rendering)
+- [x] GradientInfo.cs (Moved to XerahS.Common)
+- [x] GradientStop.cs (Moved to XerahS.Common)
+- [x] ImageEffectPackager.cs (ShareX.Editor)
+- [x] ImageEffectPreset.cs (ShareX.Editor)
+- [x] ImageEffectPropertyExtensions.cs (ShareX.Editor)
+- [x] ImageEffectsProcessing.cs (ShareX.Editor)
+- [x] ImageEffectsSerializationBinder.cs (ShareX.Editor)
+- [x] ReplaceColor.cs (ShareX.Editor)
+- [x] SelectiveColor.cs (ShareX.Editor)
 - [ ] ShareX.ImageEffectsLib.AssemblyInfo.cs
 - [ ] ShareX.ImageEffectsLib.resources.cs
-- [ ] UnsafeBitmap.cs
+- [x] UnsafeBitmap.cs (Moved to XerahS.Common)
 - [ ] WatermarkConfig.cs
 - [ ] WatermarkHelpers.cs
 
@@ -365,84 +382,84 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 
 ### ShareX.ScreenCaptureLib
 
-- [ ] AnnotationOptions.cs
-- [ ] ArrowDrawingShape.cs
-- [ ] BaseDrawingShape.cs
-- [ ] BaseEffectShape.cs
-- [ ] BaseRegionShape.cs
-- [ ] BaseShape.cs
-- [ ] BaseTool.cs
-- [ ] BlurEffectShape.cs
+- [x] AnnotationOptions.cs (ShareX.Editor)
+- [x] ArrowDrawingShape.cs (ShareX.Editor/Annotations)
+- [x] BaseDrawingShape.cs (ShareX.Editor/Annotations)
+- [x] BaseEffectShape.cs (ShareX.Editor/Annotations)
+- [x] BaseRegionShape.cs (ShareX.Editor/Annotations)
+- [x] BaseShape.cs (ShareX.Editor/Annotations)
+- [x] BaseTool.cs (ShareX.Editor/Annotations)
+- [x] BlurEffectShape.cs (ShareX.Editor/Annotations)
 - [ ] ColorBlinkAnimation.cs
-- [ ] CropTool.cs
+- [x] CropTool.cs (ShareX.Editor/Annotations)
 - [ ] CursorDrawingShape.cs
-- [ ] CutOutTool.cs
-- [ ] EllipseDrawingShape.cs
+- [x] CutOutTool.cs (ShareX.Editor/Annotations)
+- [x] EllipseDrawingShape.cs (ShareX.Editor/Annotations)
 - [ ] EllipseRegionShape.cs
-- [ ] FreehandArrowDrawingShape.cs
-- [ ] FreehandDrawingShape.cs
+- [x] FreehandArrowDrawingShape.cs (ShareX.Editor/Annotations)
+- [x] FreehandDrawingShape.cs (ShareX.Editor/Annotations)
 - [ ] FreehandRegionShape.cs
 - [ ] HardDiskCache.cs
-- [ ] HighlightEffectShape.cs
+- [x] HighlightEffectShape.cs (ShareX.Editor/Annotations)
 - [ ] ImageCache.cs
-- [ ] ImageDrawingShape.cs
-- [ ] ImageFileDrawingShape.cs
-- [ ] ImageScreenDrawingShape.cs
-- [ ] InputManager.cs
-- [ ] LineDrawingShape.cs
-- [ ] MagnifyDrawingShape.cs
-- [ ] MouseState.cs
-- [ ] PixelateEffectShape.cs
+- [x] ImageDrawingShape.cs (ShareX.Editor/Annotations)
+- [x] ImageFileDrawingShape.cs (ShareX.Editor/Annotations)
+- [x] ImageScreenDrawingShape.cs (ShareX.Editor/Annotations)
+- [x] InputManager.cs (ShareX.Editor)
+- [x] LineDrawingShape.cs (ShareX.Editor/Annotations)
+- [x] MagnifyDrawingShape.cs (ShareX.Editor/Annotations)
+- [x] MouseState.cs (ShareX.Editor)
+- [x] PixelateEffectShape.cs (ShareX.Editor/Annotations)
 - [ ] PointAnimation.cs
 - [ ] RectangleAnimation.cs
-- [ ] RectangleDrawingShape.cs
+- [x] RectangleDrawingShape.cs (ShareX.Editor/Annotations)
 - [ ] RectangleRegionShape.cs
-- [ ] RegionCaptureOptions.cs
-- [ ] RegionCaptureTasks.cs
-- [ ] ResizeNode.cs
-- [ ] ScreenRecorder.cs
-- [ ] ScreenRecordingOptions.cs
-- [ ] Screenshot.cs
-- [ ] Screenshot_Transparent.cs
+- [x] RegionCaptureOptions.cs (XerahS.RegionCapture)
+- [x] RegionCaptureTasks.cs (XerahS.RegionCapture)
+- [x] ResizeNode.cs (ShareX.Editor)
+- [x] ScreenRecorder.cs (XerahS.RegionCapture)
+- [x] ScreenRecordingOptions.cs (XerahS.RegionCapture)
+- [x] Screenshot.cs (XerahS.RegionCapture)
+- [x] Screenshot_Transparent.cs (XerahS.RegionCapture)
 - [ ] ScrollbarManager.cs
 - [ ] ScrollingCaptureManager.cs
 - [ ] ShapeManager.cs
 - [ ] ShareX.ScreenCaptureLib.AssemblyInfo.cs
 - [ ] ShareX.ScreenCaptureLib.resources.cs
-- [ ] SmartEraserDrawingShape.cs
+- [x] SmartEraserDrawingShape.cs (ShareX.Editor/Annotations)
 - [ ] SnapSize.cs
-- [ ] SpeechBalloonDrawingShape.cs
-- [ ] SpotlightTool.cs
-- [ ] StepDrawingShape.cs
+- [x] SpeechBalloonDrawingShape.cs (ShareX.Editor/Annotations)
+- [x] SpotlightTool.cs (ShareX.Editor/Annotations)
+- [x] StepDrawingShape.cs (Replaced by NumberAnnotation in ShareX.Editor)
 - [ ] StickerDrawingShape.cs
 - [ ] TextAnimation.cs
-- [ ] TextDrawingOptions.cs
-- [ ] TextDrawingShape.cs
+- [x] TextDrawingOptions.cs (ShareX.Editor)
+- [x] TextDrawingShape.cs (ShareX.Editor/Annotations)
 - [ ] TextOutlineDrawingShape.cs
 
 ### ShareX.UploadersLib
 
-- [ ] AmazonS3.cs
-- [ ] AmazonS3StorageClass.cs
+- [x] AmazonS3.cs (Implemented as Plugin)
+- [x] AmazonS3StorageClass.cs (XerahS.Uploaders)
 - [ ] AzureStorage.cs
 - [ ] BackblazeB2.cs
 - [ ] BitlyURLShortener.cs
 - [ ] Box.cs
-- [ ] Chevereto.cs
-- [ ] CustomFileUploader.cs
+- [x] Chevereto.cs (XerahS.Uploaders)
+- [x] CustomFileUploader.cs (XerahS.Uploaders/CustomUploader)
 - [ ] Dropbox.cs
 - [ ] Email.cs
 - [ ] EmailSharingService.cs
 - [ ] FirebaseDynamicLinksURLShortener.cs
 - [ ] FlickrUploader.cs
-- [ ] FTP.cs
+- [x] FTP.cs (XerahS.Uploaders)
 - [ ] GitHubGist.cs
 - [ ] GoogleCloudStorage.cs
 - [ ] GoogleDrive.cs
 - [ ] Hastebin.cs
 - [ ] Hostr.cs
 - [ ] ImageShackUploader.cs
-- [ ] Imgur.cs
+- [x] Imgur.cs (Implemented as Plugin)
 - [ ] JiraUpload.cs
 - [ ] KuttURLShortener.cs
 - [ ] Lambda.cs
@@ -482,7 +499,7 @@ Gap report derived from comparing the ShareX libraries against the Avalonia proj
 
 ### Goal
 
-Ensure ShareX.Avalonia runs natively on Windows ARM64 and remains portable to Linux ARM64 and macOS ARM64 where feasible.
+Ensure XerahS runs natively on Windows ARM64 and remains portable to Linux ARM64 and macOS ARM64 where feasible.
 
 ### Build Targets
 

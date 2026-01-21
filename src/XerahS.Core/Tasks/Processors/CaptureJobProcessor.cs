@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -68,6 +68,44 @@ namespace XerahS.Core.Tasks.Processors
                 }
             }
 
+            // Annotation should happen BEFORE save, so the saved file includes annotations
+            if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AddImageEffects))
+            {
+                if (info.Metadata?.Image != null)
+                {
+                    var processed = TaskHelpers.ApplyImageEffects(info.Metadata.Image, settings.ImageSettings);
+                    if (processed == null)
+                    {
+                        DebugHelper.WriteLine("Error: Applying image effects resulted in null image.");
+                        return;
+                    }
+
+                    if (!ReferenceEquals(processed, info.Metadata.Image))
+                    {
+                        info.Metadata.Image.Dispose();
+                    }
+
+                    info.Metadata.Image = processed;
+                }
+            }
+
+            // Annotation should happen BEFORE save, so the saved file includes annotations
+            if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AnnotateImage))
+            {
+                if (info.Metadata?.Image != null && PlatformServices.UI != null)
+                {
+                    var editedImage = await PlatformServices.UI.ShowEditorAsync(info.Metadata.Image);
+                    if (editedImage != null)
+                    {
+                        if (info.Metadata.Image != editedImage)
+                        {
+                            info.Metadata.Image.Dispose();
+                        }
+                        info.Metadata.Image = editedImage;
+                    }
+                }
+            }
+
             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.SaveImageToFile))
             {
                 await SaveImageToFileAsync(info);
@@ -79,14 +117,6 @@ namespace XerahS.Core.Tasks.Processors
                 {
                     PlatformServices.Clipboard.SetImage(info.Metadata.Image);
                     DebugHelper.WriteLine("Image copied to clipboard.");
-                }
-            }
-
-            if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.AnnotateImage))
-            {
-                if (info.Metadata?.Image != null && PlatformServices.UI != null)
-                {
-                    await PlatformServices.UI.ShowEditorAsync(info.Metadata.Image);
                 }
             }
 

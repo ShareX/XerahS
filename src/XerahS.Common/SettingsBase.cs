@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -266,6 +266,8 @@ namespace XerahS.Common
                 // if (supportDPAPIEncryption) ...
 
                 serializer.Converters.Add(new StringEnumConverter());
+                serializer.Converters.Add(new XerahS.Common.Converters.SkColorJsonConverter());
+                serializer.TypeNameHandling = TypeNameHandling.Auto;
                 serializer.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
                 serializer.Formatting = Formatting.Indented;
                 serializer.Serialize(jsonWriter, this);
@@ -327,6 +329,8 @@ namespace XerahS.Common
                                 JsonSerializer serializer = new JsonSerializer();
                                 // serializer.ContractResolver = ...
                                 serializer.Converters.Add(new StringEnumConverter());
+                                serializer.Converters.Add(new XerahS.Common.Converters.SkColorJsonConverter());
+                                serializer.TypeNameHandling = TypeNameHandling.Auto;
                                 serializer.DateTimeZoneHandling = DateTimeZoneHandling.Local;
                                 serializer.ObjectCreationHandling = ObjectCreationHandling.Replace;
                                 serializer.Error += Serializer_Error;

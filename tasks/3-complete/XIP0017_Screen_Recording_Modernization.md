@@ -91,8 +91,8 @@
 
 ### ✅ Aligned
 
-1. **Interface-based architecture**: All core interfaces defined in `ShareX.Avalonia.ScreenCapture.ScreenRecording`.
-2. **Platform abstraction**: Windows implementations in `ShareX.Avalonia.Platform.Windows.Recording`.
+1. **Interface-based architecture**: All core interfaces defined in `XerahS.ScreenCapture.ScreenRecording`.
+2. **Platform abstraction**: Windows implementations in `XerahS.Platform.Windows.Recording`.
 3. **Factory pattern**: `CaptureSourceFactory` and `EncoderFactory` in ScreenRecorderService.
 4. **Modern native APIs**: Windows.Graphics.Capture + Media Foundation as primary path.
 5. **FFmpeg as fallback only**: FFmpegRecordingService defined but not primary.
@@ -124,15 +124,15 @@
 
 **Files created/modified:**
 
-1. **[NEW]** `src/ShareX.Avalonia.UI/ViewModels/RecordingViewModel.cs`
+1. **[NEW]** `src/XerahS.UI/ViewModels/RecordingViewModel.cs`
    - Manages recording state
    - Exposes `StartRecordingCommand`, `StopRecordingCommand`
    - Binds to `ScreenRecorderService`
 
-2. **[MODIFY]** `src/ShareX.Avalonia.UI/ViewModels/MainViewModel.cs`
+2. **[MODIFY]** `src/XerahS.UI/ViewModels/MainViewModel.cs`
    - Add recording commands or reference to RecordingViewModel
 
-3. **[NEW]** `src/ShareX.Avalonia.UI/Views/RecordingToolbarView.axaml`
+3. **[NEW]** `src/XerahS.UI/Views/RecordingToolbarView.axaml`
    - Floating toolbar with Start/Stop button
    - Timer display during recording
    - Status indicator
@@ -141,22 +141,22 @@
 
 **Files modified:**
 
-1. **[MODIFY]** `src/ShareX.Avalonia.Core/Settings/TaskSettings.cs`
+1. **[MODIFY]** `src/XerahS.Core/Settings/TaskSettings.cs`
    - ✅ Add `ScreenRecordingSettings` property
 
-2. **[MODIFY]** `src/ShareX.Avalonia.Core/SettingManager.cs`
+2. **[MODIFY]** `src/XerahS.Core/SettingManager.cs`
    - ✅ Ensure ScreenRecordingSettings serializes with WorkflowsConfig.json
 
 ### 🚀 Active: Stage 4 FFmpeg Fallback
 
 **Files to create:**
 
-1. **[NEW]** `src/ShareX.Avalonia.ScreenCapture/ScreenRecording/FFmpegRecordingService.cs`
+1. **[NEW]** `src/XerahS.ScreenCapture/ScreenRecording/FFmpegRecordingService.cs`
    - Implements `IRecordingService`
    - Uses `FFmpegCLIManager` pattern
    - Wraps existing `FFmpegOptions`
 
-2. **[MODIFY]** `src/ShareX.Avalonia.Platform.Windows/WindowsPlatform.cs`
+2. **[MODIFY]** `src/XerahS.Platform.Windows/WindowsPlatform.cs`
    - Uncomment and complete `FallbackServiceFactory` registration
 
 ---
@@ -165,7 +165,7 @@
 
 ### Automated Build
 ```bash
-dotnet build ShareX.Avalonia.sln
+dotnet build XerahS.sln
 ```
 
 ### Manual Testing (Stage 1 MVP)
@@ -218,26 +218,26 @@ dotnet build ShareX.Avalonia.sln
 
 **Files modified:**
 
-1. ✅ **[NEW]** `src/ShareX.Avalonia.Core/Managers/ScreenRecordingManager.cs`
+1. ✅ **[NEW]** `src/XerahS.Core/Managers/ScreenRecordingManager.cs`
    - Global singleton manager for recording state
    - Manages single recording session across UI and workflows
    - Thread-safe implementation using locks
    - Provides StartRecordingAsync/StopRecordingAsync/AbortRecordingAsync
    - Exposes events: StatusChanged, ErrorOccurred, RecordingCompleted
 
-2. ✅ **[MODIFY]** `src/ShareX.Avalonia.Core/Tasks/WorkerTask.cs`
+2. ✅ **[MODIFY]** `src/XerahS.Core/Tasks/WorkerTask.cs`
    - **CRITICAL GAP FIXED**: Added recording support to workflow pipeline
    - Added cases for `HotkeyType.ScreenRecorder`, `StartScreenRecorder`, `ScreenRecorderActiveWindow`, `ScreenRecorderCustomRegion`, `StopScreenRecording`, `AbortScreenRecording`
    - Recording tasks return early (no image processing) since they produce video files
    - Builds `RecordingOptions` from `TaskSettings.CaptureSettings.ScreenRecordingSettings`
    - Added helper methods: `HandleStartRecordingAsync`, `HandleStopRecordingAsync`, `HandleAbortRecordingAsync`
 
-3. ✅ **[MODIFY]** `src/ShareX.Avalonia.UI/ViewModels/RecordingViewModel.cs`
+3. ✅ **[MODIFY]** `src/XerahS.UI/ViewModels/RecordingViewModel.cs`
    - Refactored to use `ScreenRecordingManager.Instance` instead of private `ScreenRecorderService`
    - Ensures UI and workflow recording use same state
    - Single source of truth for recording status
 
-4. ✅ **[MODIFY]** `src/ShareX.Avalonia.ScreenCapture/ScreenRecording/IRecordingService.cs`
+4. ✅ **[MODIFY]** `src/XerahS.ScreenCapture/ScreenRecording/IRecordingService.cs`
    - Added `IDisposable` inheritance for proper resource cleanup
 
 5. ✅ **Existing Default Workflows** (in `HotkeySettings.cs`) now functional:
@@ -276,7 +276,7 @@ dotnet build ShareX.Avalonia.sln
   - Caller must free using `RegionCropper.FreeCroppedFrame()`
   - `ScreenRecorderService` uses try/finally to ensure cleanup
 
-- Unsafe code enabled in `ShareX.Avalonia.ScreenCapture.csproj`
+- Unsafe code enabled in `XerahS.ScreenCapture.csproj`
 
 **Build Status:** ✅ All projects compile successfully
 
@@ -297,7 +297,7 @@ dotnet build ShareX.Avalonia.sln
    - Seamless switching based on system capabilities
 
 **Dependencies:**
-- Added ShareX.Avalonia.Media reference to ScreenCapture project
+- Added XerahS.Media reference to ScreenCapture project
 - Uses existing `FFmpegCLIManager` for process management
 
 ### Stage 3: Advanced Native Encoding UI - COMPLETED
@@ -390,9 +390,9 @@ This provides immediate cross-platform support with the option to add native imp
    - All codecs available: H.264, HEVC, VP9, AV1 (depends on FFmpeg build)
    - Detailed logging of recording capabilities
 
-2. **ShareX.Avalonia.Platform.Linux.csproj** - Added project references
-   - Added reference to `ShareX.Avalonia.ScreenCapture`
-   - Added reference to `ShareX.Avalonia.Media` (for FFmpeg CLI manager)
+2. **XerahS.Platform.Linux.csproj** - Added project references
+   - Added reference to `XerahS.ScreenCapture`
+   - Added reference to `XerahS.Media` (for FFmpeg CLI manager)
 
 **macOS Platform Integration:**
 1. **MacOSPlatform.cs** - Added `InitializeRecording()` method
@@ -401,9 +401,9 @@ This provides immediate cross-platform support with the option to add native imp
    - All codecs available: H.264, HEVC, VP9, AV1 (depends on FFmpeg build)
    - Documents future ScreenCaptureKit enhancement
 
-2. **ShareX.Avalonia.Platform.MacOS.csproj** - Added project references
-   - Added reference to `ShareX.Avalonia.ScreenCapture`
-   - Added reference to `ShareX.Avalonia.Media` (for FFmpeg CLI manager)
+2. **XerahS.Platform.MacOS.csproj** - Added project references
+   - Added reference to `XerahS.ScreenCapture`
+   - Added reference to `XerahS.Media` (for FFmpeg CLI manager)
 
 **Application Bootstrap:**
 - **Program.cs** - Added recording initialization for all platforms

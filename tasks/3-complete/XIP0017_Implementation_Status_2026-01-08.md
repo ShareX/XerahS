@@ -25,32 +25,32 @@ SIP0017 Stage 1 (MVP Silent Recording) is **fully implemented and operational**.
 
 | Component | Status | Location |
 |-----------|--------|----------|
-| **Interfaces** | ✅ Complete | [src/ShareX.Avalonia.ScreenCapture/ScreenRecording/IRecordingService.cs](../src/ShareX.Avalonia.ScreenCapture/ScreenRecording/IRecordingService.cs) |
-| **Models & Enums** | ✅ Complete | [src/ShareX.Avalonia.ScreenCapture/ScreenRecording/RecordingModels.cs](../src/ShareX.Avalonia.ScreenCapture/ScreenRecording/RecordingModels.cs)<br>[src/ShareX.Avalonia.ScreenCapture/ScreenRecording/RecordingEnums.cs](../src/ShareX.Avalonia.ScreenCapture/ScreenRecording/RecordingEnums.cs) |
-| **Orchestrator** | ✅ Complete | [src/ShareX.Avalonia.ScreenCapture/ScreenRecording/ScreenRecorderService.cs](../src/ShareX.Avalonia.ScreenCapture/ScreenRecording/ScreenRecorderService.cs) |
+| **Interfaces** | ✅ Complete | [src/XerahS.ScreenCapture/ScreenRecording/IRecordingService.cs](../src/XerahS.ScreenCapture/ScreenRecording/IRecordingService.cs) |
+| **Models & Enums** | ✅ Complete | [src/XerahS.ScreenCapture/ScreenRecording/RecordingModels.cs](../src/XerahS.ScreenCapture/ScreenRecording/RecordingModels.cs)<br>[src/XerahS.ScreenCapture/ScreenRecording/RecordingEnums.cs](../src/XerahS.ScreenCapture/ScreenRecording/RecordingEnums.cs) |
+| **Orchestrator** | ✅ Complete | [src/XerahS.ScreenCapture/ScreenRecording/ScreenRecorderService.cs](../src/XerahS.ScreenCapture/ScreenRecording/ScreenRecorderService.cs) |
 
 ### Platform-Specific Implementations (100% Complete)
 
 #### Windows Modern Path
 | Component | Status | Location |
 |-----------|--------|----------|
-| **Windows.Graphics.Capture** | ✅ Complete | [src/ShareX.Avalonia.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs](../src/ShareX.Avalonia.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs) |
-| **Media Foundation Encoder** | ✅ Complete | [src/ShareX.Avalonia.Platform.Windows/Recording/MediaFoundationEncoder.cs](../src/ShareX.Avalonia.Platform.Windows/Recording/MediaFoundationEncoder.cs) |
-| **Platform Registration** | ✅ Complete | [src/ShareX.Avalonia.Platform.Windows/WindowsPlatform.cs](../src/ShareX.Avalonia.Platform.Windows/WindowsPlatform.cs):95-123 |
+| **Windows.Graphics.Capture** | ✅ Complete | [src/XerahS.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs](../src/XerahS.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs) |
+| **Media Foundation Encoder** | ✅ Complete | [src/XerahS.Platform.Windows/Recording/MediaFoundationEncoder.cs](../src/XerahS.Platform.Windows/Recording/MediaFoundationEncoder.cs) |
+| **Platform Registration** | ✅ Complete | [src/XerahS.Platform.Windows/WindowsPlatform.cs](../src/XerahS.Platform.Windows/WindowsPlatform.cs):95-123 |
 
 #### FFmpeg Fallback Path
 | Component | Status | Location |
 |-----------|--------|----------|
-| **FFmpegRecordingService** | ✅ Complete | [src/ShareX.Avalonia.ScreenCapture/ScreenRecording/FFmpegRecordingService.cs](../src/ShareX.Avalonia.ScreenCapture/ScreenRecording/FFmpegRecordingService.cs) |
-| **FFmpegCLIManager** | ✅ Existing | [src/ShareX.Avalonia.Media/FFmpegCLIManager.cs](../src/ShareX.Avalonia.Media/FFmpegCLIManager.cs) |
-| **FFmpeg Options** | ✅ Existing | [src/ShareX.Avalonia.ScreenCapture/ScreenRecording/FFmpegOptions.cs](../src/ShareX.Avalonia.ScreenCapture/ScreenRecording/FFmpegOptions.cs) |
+| **FFmpegRecordingService** | ✅ Complete | [src/XerahS.ScreenCapture/ScreenRecording/FFmpegRecordingService.cs](../src/XerahS.ScreenCapture/ScreenRecording/FFmpegRecordingService.cs) |
+| **FFmpegCLIManager** | ✅ Existing | [src/XerahS.Media/FFmpegCLIManager.cs](../src/XerahS.Media/FFmpegCLIManager.cs) |
+| **FFmpeg Options** | ✅ Existing | [src/XerahS.ScreenCapture/ScreenRecording/FFmpegOptions.cs](../src/XerahS.ScreenCapture/ScreenRecording/FFmpegOptions.cs) |
 
 ### UI Integration (100% Complete)
 
 | Component | Status | Location |
 |-----------|--------|----------|
-| **RecordingViewModel** | ✅ Complete | [src/ShareX.Avalonia.UI/ViewModels/RecordingViewModel.cs](../src/ShareX.Avalonia.UI/ViewModels/RecordingViewModel.cs) |
-| **Hotkey Definitions** | ✅ Complete | [src/ShareX.Avalonia.Core/Enums.cs](../src/ShareX.Avalonia.Core/Enums.cs):220-241 |
+| **RecordingViewModel** | ✅ Complete | [src/XerahS.UI/ViewModels/RecordingViewModel.cs](../src/XerahS.UI/ViewModels/RecordingViewModel.cs) |
+| **Hotkey Definitions** | ✅ Complete | [src/XerahS.Core/Enums.cs](../src/XerahS.Core/Enums.cs):220-241 |
 | **Start/Stop Commands** | ✅ Complete | RecordingViewModel:173-224 |
 
 ---
@@ -282,13 +282,13 @@ These are intentional limitations for Stage 1 MVP:
 
 ```bash
 # Restore dependencies
-dotnet restore ShareX.Avalonia.sln
+dotnet restore XerahS.sln
 
 # Build solution
-dotnet build ShareX.Avalonia.sln --configuration Release
+dotnet build XerahS.sln --configuration Release
 
 # Run application
-dotnet run --project src/ShareX.Avalonia.App/ShareX.Avalonia.App.csproj
+dotnet run --project src/XerahS.App/XerahS.App.csproj
 ```
 
 ### Known Build Issues
@@ -324,7 +324,7 @@ If you see `error CS0234: The type or namespace name 'Graphics' does not exist i
 
 ### New Files Created
 ```
-src/ShareX.Avalonia.ScreenCapture/ScreenRecording/
+src/XerahS.ScreenCapture/ScreenRecording/
 ├── FFmpegRecordingService.cs          [NEW] FFmpeg fallback implementation
 ├── IRecordingService.cs               [EXISTING] Interfaces
 ├── RecordingModels.cs                 [EXISTING] Models and event args
@@ -333,23 +333,23 @@ src/ShareX.Avalonia.ScreenCapture/ScreenRecording/
 ├── FFmpegOptions.cs                   [EXISTING] FFmpeg configuration
 └── FFmpegCaptureDevice.cs             [EXISTING] Capture device definitions
 
-src/ShareX.Avalonia.Platform.Windows/Recording/
+src/XerahS.Platform.Windows/Recording/
 ├── WindowsGraphicsCaptureSource.cs    [EXISTING] WGC implementation
 └── MediaFoundationEncoder.cs          [EXISTING] Media Foundation encoder
 
-src/ShareX.Avalonia.UI/ViewModels/
+src/XerahS.UI/ViewModels/
 └── RecordingViewModel.cs              [EXISTING] UI ViewModel
 ```
 
 ### Modified Files
 ```
-src/ShareX.Avalonia.Platform.Windows/
+src/XerahS.Platform.Windows/
 └── WindowsPlatform.cs                 [MODIFIED] Added FallbackServiceFactory
 
-src/ShareX.Avalonia.ScreenCapture/
-└── ShareX.Avalonia.ScreenCapture.csproj [MODIFIED] Added Media project reference
+src/XerahS.ScreenCapture/
+└── XerahS.ScreenCapture.csproj [MODIFIED] Added Media project reference
 
-src/ShareX.Avalonia.App/
+src/XerahS.App/
 └── Program.cs                         [EXISTING] Already calls InitializeRecording()
 ```
 

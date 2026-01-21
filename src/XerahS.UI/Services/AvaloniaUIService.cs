@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -37,8 +37,10 @@ namespace XerahS.UI.Services
 {
     public class AvaloniaUIService : IUIService
     {
-        public async Task ShowEditorAsync(SKBitmap image)
+        public async Task<SKBitmap?> ShowEditorAsync(SKBitmap image)
         {
+            var tcs = new TaskCompletionSource<SKBitmap?>();
+
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 // Create independent Editor Window
@@ -58,9 +60,34 @@ namespace XerahS.UI.Services
                 // Initialize the preview image
                 editorViewModel.UpdatePreview(image);
 
+                // Handle window closing to capture result
+                editorWindow.Closing += (s, e) =>
+                {
+                    try
+                    {
+                        var editorView = editorWindow.FindControl<ShareX.Editor.Views.EditorView>("EditorViewControl");
+                        if (editorView != null)
+                        {
+                            var snapshot = editorView.GetSnapshot();
+                            tcs.TrySetResult(snapshot);
+                        }
+                        else
+                        {
+                            tcs.TrySetResult(null);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugHelper.WriteException(ex, "Failed to get editor snapshot");
+                        tcs.TrySetResult(null);
+                    }
+                };
+
                 // Show the window
                 editorWindow.Show();
             });
+
+            return await tcs.Task;
         }
 
         public async Task<(AfterCaptureTasks Capture, AfterUploadTasks Upload, bool Cancel)> ShowAfterCaptureWindowAsync(

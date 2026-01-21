@@ -1,9 +1,8 @@
-#nullable disable
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -24,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+#nullable disable
 using Avalonia.Input;
 using XerahS.Common;
 using XerahS.Core.Hotkeys;
@@ -78,30 +78,41 @@ public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
         var list = new List<WorkflowSettings>();
 
         // WF01: Full screen capture
-        var wf01 = new WorkflowSettings(HotkeyType.PrintScreen, new HotkeyInfo(Key.PrintScreen));
+        var wf01 = new WorkflowSettings(WorkflowType.PrintScreen, new HotkeyInfo(Key.PrintScreen));
         wf01.TaskSettings.Description = "Full screen capture";
         wf01.TaskSettings.CaptureSettings.UseModernCapture = true;
         list.Add(wf01);
 
         // WF02: Active window capture
-        var wf02 = new WorkflowSettings(HotkeyType.ActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Alt));
+        var wf02 = new WorkflowSettings(WorkflowType.ActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Alt));
         wf02.TaskSettings.Description = "Active window capture";
         wf02.TaskSettings.CaptureSettings.UseModernCapture = true;
         list.Add(wf02);
 
-        // WF03: Record screen using GDI
-        var wf03 = new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift));
-        wf03.TaskSettings.Description = "Record screen using GDI";
-        wf03.TaskSettings.CaptureSettings.UseModernCapture = false;
-        wf03.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingBackend = XerahS.RegionCapture.ScreenRecording.RecordingBackend.GDI;
+        // WF03: Region capture
+        var wf03 = new WorkflowSettings(WorkflowType.RectangleRegion, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control));
+        wf03.TaskSettings.Description = "Region capture";
+        wf03.TaskSettings.CaptureSettings.UseModernCapture = true;
         list.Add(wf03);
 
-        // WF04: Record screen for game
-        var wf04 = new WorkflowSettings(HotkeyType.ScreenRecorderActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift));
-        wf04.TaskSettings.Description = "Record screen for game";
-        wf04.TaskSettings.CaptureSettings.UseModernCapture = true;
-        wf04.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingIntent = XerahS.RegionCapture.ScreenRecording.RecordingIntent.Game;
+        // WF04: Record screen using GDI
+        var wf04 = new WorkflowSettings(WorkflowType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift));
+        wf04.TaskSettings.Description = "Record screen using GDI";
+        wf04.TaskSettings.CaptureSettings.UseModernCapture = false;
+        wf04.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingBackend = XerahS.RegionCapture.ScreenRecording.RecordingBackend.GDI;
         list.Add(wf04);
+
+        // WF05: Record screen for game
+        var wf05 = new WorkflowSettings(WorkflowType.ScreenRecorderActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift));
+        wf05.TaskSettings.Description = "Record screen for game";
+        wf05.TaskSettings.CaptureSettings.UseModernCapture = true;
+        wf05.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingIntent = XerahS.RegionCapture.ScreenRecording.RecordingIntent.Game;
+        list.Add(wf05);
+
+        // WF06: File upload
+        var wf06 = new WorkflowSettings(WorkflowType.FileUpload, new HotkeyInfo());
+        wf06.TaskSettings.Description = "File upload";
+        list.Add(wf06);
 
         return list;
     }

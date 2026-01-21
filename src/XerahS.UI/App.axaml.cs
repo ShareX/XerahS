@@ -1,11 +1,37 @@
+#region License Information (GPL v3)
+
+/*
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using ShareX.Editor.ViewModels;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Platform.Abstractions;
+using XerahS.UI.Services;
 using XerahS.UI.Views;
 
 namespace XerahS.UI;
@@ -13,6 +39,9 @@ namespace XerahS.UI;
 public partial class App : Application
 {
     public static bool IsExiting { get; set; } = false;
+    private readonly object _uploadTitleLock = new();
+    private int _activeUploadCount;
+    private string _baseTitle = AppResources.ProductNameWithVersion;
 
     public override void Initialize()
     {
@@ -46,6 +75,7 @@ public partial class App : Application
             {
                 DataContext = mainViewModel,
             };
+            _baseTitle = desktop.MainWindow.Title ?? AppResources.ProductNameWithVersion;
 
             // Apply window state based on SilentRun
             // Note: MainWindow is automatically shown by ApplicationLifetime after this method returns.
@@ -121,6 +151,49 @@ public partial class App : Application
                 return await tcs.Task;
             };
 
+            // Setup OpenFileDialog callback for FileUpload hotkey
+            Core.Tasks.WorkerTask.ShowOpenFileDialogCallback = async () =>
+            {
+                var tcs = new TaskCompletionSource<string?>();
+
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    try
+                    {
+                        var topLevel = TopLevel.GetTopLevel(desktop.MainWindow);
+                        if (topLevel == null)
+                        {
+                            tcs.TrySetResult(null);
+                            return;
+                        }
+
+                        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+                        {
+                            Title = "Select File to Upload",
+                            AllowMultiple = false
+                        });
+
+                        if (files.Count >= 1)
+                        {
+                            // Get local path if possible
+                            var path = files[0].TryGetLocalPath();
+                            tcs.TrySetResult(path);
+                        }
+                        else
+                        {
+                            tcs.TrySetResult(null);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Common.DebugHelper.WriteException(ex, "Failed to show open file dialog");
+                        tcs.TrySetResult(null);
+                    }
+                });
+
+                return await tcs.Task;
+            };
+
             desktop.Exit += (sender, args) =>
             {
                 XerahS.Core.SettingsManager.SaveAllSettings();
@@ -128,6 +201,7 @@ public partial class App : Application
 
             // Subscribe to workflow completion for notification
             Core.Managers.TaskManager.Instance.TaskCompleted += OnWorkflowTaskCompleted;
+            Core.Managers.TaskManager.Instance.TaskStarted += OnWorkflowTaskStarted;
 
             // Trigger async recording initialization via callback
             // This prevents blocking the main window from showing quickly
@@ -233,6 +307,86 @@ public partial class App : Application
         }
     }
 
+    private void OnWorkflowTaskStarted(object? sender, Core.Tasks.WorkerTask task)
+    {
+        if (!task.Info.IsUploadJob) return;
+
+        void HandleProgress(XerahS.Uploaders.ProgressManager progress)
+        {
+            UpdateMainWindowTitle(progress.Percentage);
+        }
+
+        void HandleCompleted(object? s, EventArgs e)
+        {
+            task.Info.UploadProgressChanged -= HandleProgress;
+            task.TaskCompleted -= HandleCompleted;
+            DecrementActiveUploads();
+        }
+
+        task.Info.UploadProgressChanged += HandleProgress;
+        task.TaskCompleted += HandleCompleted;
+
+        IncrementActiveUploads();
+        UpdateMainWindowTitle(0);
+    }
+
+    private void IncrementActiveUploads()
+    {
+        lock (_uploadTitleLock)
+        {
+            _activeUploadCount++;
+        }
+    }
+
+    private void DecrementActiveUploads()
+    {
+        bool resetTitle;
+        lock (_uploadTitleLock)
+        {
+            _activeUploadCount = Math.Max(0, _activeUploadCount - 1);
+            resetTitle = _activeUploadCount == 0;
+        }
+
+        if (resetTitle)
+        {
+            ResetMainWindowTitle();
+        }
+    }
+
+    private void UpdateMainWindowTitle(double percentage)
+    {
+        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow == null) return;
+
+        if (double.IsNaN(percentage) || double.IsInfinity(percentage))
+        {
+            percentage = 0;
+        }
+
+        double clamped = Math.Clamp(percentage, 0, 100);
+        string title = $"{_baseTitle} - Upload {clamped:0}%";
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            if (desktop.MainWindow != null)
+            {
+                desktop.MainWindow.Title = title;
+            }
+        });
+    }
+
+    private void ResetMainWindowTitle()
+    {
+        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow == null) return;
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            if (desktop.MainWindow != null)
+            {
+                desktop.MainWindow.Title = _baseTitle;
+            }
+        });
+    }
+
     private Avalonia.Threading.DispatcherTimer? _trayClickTimer;
     private int _trayClickCount = 0;
     private const int DoubleClickDelayMs = 300;
@@ -328,18 +482,59 @@ public partial class App : Application
 
         if (settings == null) return;
 
-        bool isCaptureJob = settings.Job is Core.HotkeyType.PrintScreen
-                                          or Core.HotkeyType.ActiveWindow
-                                          or Core.HotkeyType.CustomWindow
-                                          or Core.HotkeyType.RectangleRegion
-                                          or Core.HotkeyType.CustomRegion
-                                          or Core.HotkeyType.LastRegion;
+        bool isColorPickerJob = settings.Job == WorkflowType.ColorPicker ||
+                                settings.Job == WorkflowType.ScreenColorPicker;
+
+        if (isColorPickerJob)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                var owner = ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+
+                _ = ColorPickerToolService.HandleWorkflowAsync(settings.Job, owner);
+            });
+            return;
+        }
+
+        bool isQrJob = settings.Job == WorkflowType.QRCode ||
+                       settings.Job == WorkflowType.QRCodeDecodeFromScreen ||
+                       settings.Job == WorkflowType.QRCodeScanRegion;
+
+        if (isQrJob)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                var owner = ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+
+                _ = QrCodeToolService.HandleWorkflowAsync(settings.Job, owner);
+            });
+            return;
+        }
+
+        // Determine request type by category
+        string category = settings.Job.GetHotkeyCategory();
+        bool isCaptureJob = category == EnumExtensions.WorkflowType_Category_ScreenCapture ||
+                            category == EnumExtensions.WorkflowType_Category_ScreenRecord;
 
         // For capture jobs, avoid bringing the main window forward until the capture completes.
+        // For non-capture jobs, only navigate if the window is already visible (not minimized to tray).
         if (!isCaptureJob && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
             desktop.MainWindow is MainWindow immediateMainWindow)
         {
-            immediateMainWindow.NavigateToEditor();
+            // Only activate if the window is visible (not minimized or hidden)
+            bool isWindowVisible = immediateMainWindow.IsVisible &&
+                                   immediateMainWindow.WindowState != Avalonia.Controls.WindowState.Minimized &&
+                                   immediateMainWindow.ShowInTaskbar &&
+                                   !SettingsManager.Settings.SilentRun;
+            
+            if (isWindowVisible)
+            {
+                immediateMainWindow.NavigateToEditor();
+            }
         }
 
         // Subscribe once to task completion so we can update preview (and show the window for capture jobs).
@@ -348,10 +543,22 @@ public partial class App : Application
             Core.Managers.TaskManager.Instance.TaskCompleted -= HandleTaskCompleted;
             OnTaskCompleted(task, EventArgs.Empty);
 
-            if (isCaptureJob && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            // [2026-01-18] Fix: Do not open editor for screen recording jobs (video), only for image captures
+            bool isScreenRecord = category == EnumExtensions.WorkflowType_Category_ScreenRecord;
+
+            if (isCaptureJob && !isScreenRecord && task.IsSuccessful && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
                 desktop.MainWindow is MainWindow mainWindowAfterCapture)
             {
-                mainWindowAfterCapture.NavigateToEditor();
+                // Only navigate to editor if window is visible, not when minimized to tray
+                bool isWindowVisible = mainWindowAfterCapture.IsVisible &&
+                                       mainWindowAfterCapture.WindowState != Avalonia.Controls.WindowState.Minimized &&
+                                       mainWindowAfterCapture.ShowInTaskbar &&
+                                       !SettingsManager.Settings.SilentRun;
+                
+                if (isWindowVisible)
+                {
+                    mainWindowAfterCapture.NavigateToEditor();
+                }
             }
         }
 
@@ -359,7 +566,7 @@ public partial class App : Application
 
         if (settings != null)
         {
-            if (settings.Job == Core.HotkeyType.CustomWindow)
+            if (settings.Job == Core.WorkflowType.CustomWindow)
             {
                 DebugHelper.WriteLine($"[DEBUG] Hotkey triggered for CustomWindow. Configured title: '{settings.TaskSettings?.CaptureSettings?.CaptureCustomWindow}'");
             }
@@ -367,10 +574,10 @@ public partial class App : Application
             // Screen Recorder Toggle Logic (Unified Pipeline)
             // If we are recording and get a recording-related hotkey, we Signal the existing task to stop.
             // We do NOT start a new workflow.
-            bool isRecordingHotkey = settings.Job == Core.HotkeyType.ScreenRecorder ||
-                                     settings.Job == Core.HotkeyType.ScreenRecorderActiveWindow ||
-                                     settings.Job == Core.HotkeyType.StopScreenRecording ||
-                                     settings.Job == Core.HotkeyType.StartScreenRecorder;
+            bool isRecordingHotkey = settings.Job == Core.WorkflowType.ScreenRecorder ||
+                                     settings.Job == Core.WorkflowType.ScreenRecorderActiveWindow ||
+                                     settings.Job == Core.WorkflowType.StopScreenRecording ||
+                                     settings.Job == Core.WorkflowType.StartScreenRecorder;
 
             if (isRecordingHotkey && Core.Managers.ScreenRecordingManager.Instance.IsRecording)
             {

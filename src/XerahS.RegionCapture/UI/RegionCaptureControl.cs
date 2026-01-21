@@ -1,9 +1,34 @@
+#region License Information (GPL v3)
+
+/*
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using SkiaSharp;
 using XerahS.RegionCapture.Models;
 using XerahS.RegionCapture.Services;
 using AvPixelRect = Avalonia.PixelRect;
@@ -25,11 +50,14 @@ public sealed class RegionCaptureControl : UserControl
     private readonly SelectionStateMachine _stateMachine;
     private readonly MagnifierControl _magnifier;
     private readonly bool _enableKeyboardNudge;
+    private readonly RegionCaptureMode _mode;
 
     // Rendering configuration
     private readonly double _dimOpacity;
     private readonly bool _enableWindowSnapping;
     private readonly bool _enableMagnifier;
+    private readonly XerahS.Platform.Abstractions.CursorInfo? _ghostCursor;
+    private readonly Bitmap? _ghostCursorBitmap;
 
     // Keyboard state tracking
     private SelectionModifier _activeModifiers = SelectionModifier.None;
@@ -44,7 +72,7 @@ public sealed class RegionCaptureControl : UserControl
     private static readonly IPen WindowSnapShadowPen = new Pen(new SolidColorBrush(Color.FromArgb(80, 0, 174, 255)), 6);
     private static readonly IBrush InfoBackgroundBrush = new SolidColorBrush(Color.FromArgb(220, 30, 30, 30));
 
-    public event Action<PixelRect>? RegionSelected;
+    public event Action<RegionSelectionResult>? RegionSelected;
     public event Action<PixelRect>? SelectionChanged;
     public event Action? Cancelled;
 
@@ -54,11 +82,12 @@ public sealed class RegionCaptureControl : UserControl
     private PixelRect _selectionRect => _stateMachine.SelectionRect;
     private WindowInfo? _hoveredWindow => _stateMachine.HoveredWindow;
 
-    public RegionCaptureControl(MonitorInfo monitor, RegionCaptureOptions? options = null)
+    public RegionCaptureControl(MonitorInfo monitor, RegionCaptureOptions? options = null, XerahS.Platform.Abstractions.CursorInfo? ghostCursor = null)
     {
         options ??= new RegionCaptureOptions();
 
         _monitor = monitor;
+        _ghostCursor = ghostCursor;
         _coordinateService = new CoordinateTranslationService();
         _windowService = new WindowDetectionService();
 
@@ -70,7 +99,8 @@ public sealed class RegionCaptureControl : UserControl
         _stateMachine.SelectionChanged += OnSelectionChanged;
 
         _dimOpacity = options.DimOpacity;
-        _enableWindowSnapping = options.EnableWindowSnapping;
+        _mode = options.Mode;
+        _enableWindowSnapping = options.EnableWindowSnapping && _mode != RegionCaptureMode.ScreenColorPicker;
         _enableMagnifier = options.EnableMagnifier;
         _enableKeyboardNudge = options.EnableKeyboardNudge;
 
@@ -86,13 +116,30 @@ public sealed class RegionCaptureControl : UserControl
         // Use a near-transparent color (Alpha=1) instead of fully transparent to ensure
         // it works correctly with layered windows on Windows.
         Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0));
+
+        // Cache the ghost cursor Avalonia Bitmap once
+        if (_ghostCursor?.Image != null)
+        {
+            try
+            {
+                using var data = _ghostCursor.Image.Encode(SKEncodedImageFormat.Png, 100);
+                using var stream = new MemoryStream();
+                data.SaveTo(stream);
+                stream.Position = 0;
+                _ghostCursorBitmap = new Bitmap(stream);
+            }
+            catch
+            {
+                _ghostCursorBitmap = null;
+            }
+        }
     }
 
-    public RegionCaptureControl(MonitorInfo monitor) : this(monitor, null)
+    public RegionCaptureControl(MonitorInfo monitor) : this(monitor, null, null)
     {
     }
 
-    private void OnSelectionConfirmed(PixelRect rect) => RegionSelected?.Invoke(rect);
+    private void OnSelectionConfirmed(RegionSelectionResult result) => RegionSelected?.Invoke(result);
     private void OnSelectionChanged(PixelRect rect) => SelectionChanged?.Invoke(rect);
     private void OnSelectionCancelled() => Cancelled?.Invoke();
 
@@ -105,6 +152,13 @@ public sealed class RegionCaptureControl : UserControl
 
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
+            if (_mode == RegionCaptureMode.ScreenColorPicker)
+            {
+                _stateMachine.ConfirmPoint(physicalPoint);
+                e.Handled = true;
+                return;
+            }
+
             // Always start dragging/interaction
             // If the user releases immediately (click), EndDrag will handle snapping to the hovered window.
             _stateMachine.BeginDrag(physicalPoint);
@@ -140,8 +194,11 @@ public sealed class RegionCaptureControl : UserControl
     {
         base.OnPointerReleased(e);
 
-        if (_state == CaptureState.Dragging)
+        if (_state == CaptureState.Dragging && _mode != RegionCaptureMode.ScreenColorPicker)
         {
+            var point = e.GetPosition(this);
+            var physicalPoint = LocalToPhysical(point);
+            _stateMachine.UpdateCursorPosition(physicalPoint);
             e.Pointer.Capture(null);
             _stateMachine.EndDrag();
             InvalidateVisual();
@@ -342,6 +399,35 @@ public sealed class RegionCaptureControl : UserControl
 
         // Draw instructions (top-center, only in hover state)
         DrawInstructions(context);
+
+        // Draw ghost cursor if available and configured
+        DrawGhostCursor(context);
+    }
+
+    private void DrawGhostCursor(DrawingContext context)
+    {
+        if (_ghostCursorBitmap == null || _ghostCursor == null) return;
+
+        // Convert physical position to local logical coordinates
+        var cursorPhysicalPos = new PixelPoint(_ghostCursor.Position.X, _ghostCursor.Position.Y);
+        var cursorLogicalPos = PhysicalToLocal(cursorPhysicalPos);
+
+        // Calculate draw position (offset by hotspot)
+        double scale = 1.0 / _monitor.ScaleFactor;
+        var drawPos = new Point(
+            cursorLogicalPos.X - (_ghostCursor.Hotspot.X * scale),
+            cursorLogicalPos.Y - (_ghostCursor.Hotspot.Y * scale));
+
+        try 
+        {
+            // Draw the cached cursor bitmap
+            var size = new Size(_ghostCursorBitmap.Size.Width * scale, _ghostCursorBitmap.Size.Height * scale);
+            context.DrawImage(_ghostCursorBitmap, new Rect(drawPos, size));
+        }
+        catch
+        {
+            // Ignore drawing errors for ghost cursor
+        }
     }
 
     private void DrawResizeHandles(DrawingContext context, Rect rect)
@@ -560,6 +646,10 @@ public sealed class RegionCaptureControl : UserControl
             return;
 
         var instructions = "Click and drag to select a region | Click a window to snap | Esc to cancel";
+        if (_mode == RegionCaptureMode.ScreenColorPicker)
+        {
+            instructions = "Click to pick a color | Esc to cancel";
+        }
         var formatted = new FormattedText(
             instructions,
             System.Globalization.CultureInfo.CurrentCulture,

@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -31,11 +31,11 @@ namespace XerahS.Common
 {
     public static class EnumExtensions
     {
-        public const string HotkeyType_Category_Upload = "Upload";
-        public const string HotkeyType_Category_ScreenCapture = "ScreenCapture";
-        public const string HotkeyType_Category_ScreenRecord = "ScreenRecord";
-        public const string HotkeyType_Category_Tools = "Tools";
-        public const string HotkeyType_Category_Other = "Other";
+        public const string WorkflowType_Category_Upload = "Upload";
+        public const string WorkflowType_Category_ScreenCapture = "ScreenCapture";
+        public const string WorkflowType_Category_ScreenRecord = "ScreenRecord";
+        public const string WorkflowType_Category_Tools = "Tools";
+        public const string WorkflowType_Category_Other = "Other";
 
         public static string GetDescription(this Enum value)
         {
@@ -180,7 +180,7 @@ namespace XerahS.Common
                 }
             }
 
-            return HotkeyType_Category_Other;
+            return WorkflowType_Category_Other;
         }
 
         public static T Previous<T>(this Enum value)

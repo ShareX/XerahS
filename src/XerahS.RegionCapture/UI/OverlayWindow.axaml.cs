@@ -1,8 +1,33 @@
+#region License Information (GPL v3)
+
+/*
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using XerahS.RegionCapture.Models;
+using XerahS.RegionCapture;
 using AvPixelRect = Avalonia.PixelRect;
 using AvPixelPoint = Avalonia.PixelPoint;
 using PixelRect = XerahS.RegionCapture.Models.PixelRect;
@@ -17,7 +42,7 @@ namespace XerahS.RegionCapture.UI;
 public partial class OverlayWindow : Window
 {
     private readonly MonitorInfo _monitor;
-    private readonly TaskCompletionSource<PixelRect?> _completionSource;
+    private readonly TaskCompletionSource<RegionSelectionResult?> _completionSource;
     private readonly RegionCaptureControl _captureControl;
 
     public OverlayWindow()
@@ -25,12 +50,17 @@ public partial class OverlayWindow : Window
         // Design-time constructor
         _monitor = new MonitorInfo("Design", new PixelRect(0, 0, 1920, 1080),
             new PixelRect(0, 0, 1920, 1040), 1.0, true);
-        _completionSource = new TaskCompletionSource<PixelRect?>();
+        _completionSource = new TaskCompletionSource<RegionSelectionResult?>();
         _captureControl = new RegionCaptureControl(_monitor);
         InitializeComponent();
     }
 
-    public OverlayWindow(MonitorInfo monitor, TaskCompletionSource<PixelRect?> completionSource, Action<PixelRect>? selectionChanged = null)
+    public OverlayWindow(
+        MonitorInfo monitor,
+        TaskCompletionSource<RegionSelectionResult?> completionSource,
+        Action<PixelRect>? selectionChanged = null,
+        XerahS.Platform.Abstractions.CursorInfo? initialCursor = null,
+        RegionCaptureOptions? options = null)
     {
         _monitor = monitor;
         _completionSource = completionSource;
@@ -43,7 +73,7 @@ public partial class OverlayWindow : Window
         Height = monitor.PhysicalBounds.Height / monitor.ScaleFactor;
 
         // Create and add the capture control
-        _captureControl = new RegionCaptureControl(_monitor);
+        _captureControl = new RegionCaptureControl(_monitor, options, initialCursor);
         if (selectionChanged is not null)
             _captureControl.SelectionChanged += selectionChanged;
         _captureControl.RegionSelected += OnRegionSelected;
@@ -69,9 +99,9 @@ public partial class OverlayWindow : Window
         }
     }
 
-    private void OnRegionSelected(PixelRect region)
+    private void OnRegionSelected(RegionSelectionResult result)
     {
-        _completionSource.TrySetResult(region);
+        _completionSource.TrySetResult(result);
     }
 
     private void OnCancelled()

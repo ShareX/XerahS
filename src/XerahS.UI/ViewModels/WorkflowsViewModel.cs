@@ -1,8 +1,33 @@
+#region License Information (GPL v3)
+
+/*
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using XerahS.Core;
 using XerahS.Core.Hotkeys;
 using XerahS.Platform.Abstractions;
+using System;
 using System.Collections.ObjectModel;
 
 namespace XerahS.UI.ViewModels;
@@ -60,7 +85,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         int index = 0;
         foreach (var hk in source)
         {
-            if (hk.Job == HotkeyType.None)
+            if (hk.Job == WorkflowType.None)
             {
                 continue;
             }
@@ -88,7 +113,7 @@ public partial class WorkflowsViewModel : ViewModelBase
         // Create new blank workflow with defaults
         var newSettings = new XerahS.Core.Hotkeys.WorkflowSettings();
         // Maybe default job?
-        newSettings.Job = XerahS.Core.HotkeyType.RectangleRegion;
+        newSettings.Job = XerahS.Core.WorkflowType.RectangleRegion;
         newSettings.TaskSettings = new TaskSettings();
 
         // Ensure the new workflow has an ID
@@ -99,7 +124,7 @@ public partial class WorkflowsViewModel : ViewModelBase
             var saved = await EditHotkeyRequester(newSettings);
             if (saved)
             {
-                if (newSettings.Job != HotkeyType.None)
+                if (newSettings.Job != WorkflowType.None)
                 {
                     if (_manager != null)
                     {
@@ -170,8 +195,21 @@ public partial class WorkflowsViewModel : ViewModelBase
                     SelectedWorkflow.Model.HotkeyInfo.Modifiers));
 
             // Deep copy TaskSettings using JSON
-            string json = Newtonsoft.Json.JsonConvert.SerializeObject(SelectedWorkflow.Model.TaskSettings);
-            clone.TaskSettings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json) ?? new TaskSettings();
+            var jsonSettings = new Newtonsoft.Json.JsonSerializerSettings
+            {
+                TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto,
+                ObjectCreationHandling = Newtonsoft.Json.ObjectCreationHandling.Replace,
+                Converters = new List<Newtonsoft.Json.JsonConverter>
+                {
+                    new Newtonsoft.Json.Converters.StringEnumConverter(),
+                    new XerahS.Common.Converters.SkColorJsonConverter()
+                }
+            };
+            var effectCount = SelectedWorkflow.Model.TaskSettings?.ImageSettings?.ImageEffectsPreset?.Effects?.Count ?? 0;
+            var presetName = SelectedWorkflow.Model.TaskSettings?.ImageSettings?.ImageEffectsPreset?.Name ?? "(null)";
+            Console.WriteLine($"[Workflows] Duplicate workflow. Preset='{presetName}', Effects={effectCount}");
+            string json = Newtonsoft.Json.JsonConvert.SerializeObject(SelectedWorkflow.Model.TaskSettings, jsonSettings);
+            clone.TaskSettings = Newtonsoft.Json.JsonConvert.DeserializeObject<TaskSettings>(json, jsonSettings) ?? new TaskSettings();
 
             // Copy additional properties
             clone.Name = SelectedWorkflow.Model.Name;

@@ -50,7 +50,7 @@ Jaex has implemented:
 - `EditorTool` enum for tool selection
 - Color management and rendering helpers
 
-**Location**: `src/ShareX.Avalonia.Annotations/Models/`
+**Location**: `src/XerahS.Annotations/Models/`
 
 ### 2. UI Canvas Control (NEW FOCUS)
 Create the Avalonia UI control to host and interact with annotations:
@@ -72,7 +72,7 @@ Create the Avalonia UI control to host and interact with annotations:
 - Command bindings for tool selection, undo/redo, delete
 
 ## Guidelines
-- **Reuse Models**: Use the existing `ShareX.Avalonia.Annotations` models, don't recreate them
+- **Reuse Models**: Use the existing `XerahS.Annotations` models, don't recreate them
 - **Performance**: Use `InvalidateVisual()` only when needed to minimize redraws
 - **MVVM**: Keep business logic in ViewModel, canvas handles rendering and input
 - **Portability**: Design `EditorView` as a standalone, reusable component that can be instantiated in different contexts (new screenshots, history editing)

@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Editor.ImageEffects;
+using System;
 using XerahS.Common;
 
 namespace XerahS.Core;
@@ -50,19 +52,19 @@ public static partial class TaskHelpers
     }
 
     /// <summary>
-    /// Get the media type for a given HotkeyType job based on its category
+    /// Get the media type for a given WorkflowType job based on its category
     /// </summary>
-    public static JobMediaType GetJobMediaType(HotkeyType job)
+    public static JobMediaType GetJobMediaType(WorkflowType job)
     {
         string category = job.GetHotkeyCategory();
 
         return category switch
         {
-            EnumExtensions.HotkeyType_Category_ScreenCapture => GetMediaTypeForScreenCapture(job),
-            EnumExtensions.HotkeyType_Category_ScreenRecord => JobMediaType.Video,
-            EnumExtensions.HotkeyType_Category_Upload => GetMediaTypeForUpload(job),
-            EnumExtensions.HotkeyType_Category_Tools => GetMediaTypeForTools(job),
-            EnumExtensions.HotkeyType_Category_Other => JobMediaType.System,
+            EnumExtensions.WorkflowType_Category_ScreenCapture => GetMediaTypeForScreenCapture(job),
+            EnumExtensions.WorkflowType_Category_ScreenRecord => JobMediaType.Video,
+            EnumExtensions.WorkflowType_Category_Upload => GetMediaTypeForUpload(job),
+            EnumExtensions.WorkflowType_Category_Tools => GetMediaTypeForTools(job),
+            EnumExtensions.WorkflowType_Category_Other => JobMediaType.System,
             _ => JobMediaType.None
         };
     }
@@ -70,7 +72,7 @@ public static partial class TaskHelpers
     /// <summary>
     /// Determine media type for screen capture jobs
     /// </summary>
-    private static JobMediaType GetMediaTypeForScreenCapture(HotkeyType job)
+    private static JobMediaType GetMediaTypeForScreenCapture(WorkflowType job)
     {
         // All screen capture jobs produce images
         return JobMediaType.Image;
@@ -79,19 +81,19 @@ public static partial class TaskHelpers
     /// <summary>
     /// Determine media type for upload jobs
     /// </summary>
-    private static JobMediaType GetMediaTypeForUpload(HotkeyType job)
+    private static JobMediaType GetMediaTypeForUpload(WorkflowType job)
     {
         return job switch
         {
-            HotkeyType.UploadText => JobMediaType.Text,
-            HotkeyType.FileUpload or
-            HotkeyType.FolderUpload or
-            HotkeyType.ClipboardUpload or
-            HotkeyType.ClipboardUploadWithContentViewer or
-            HotkeyType.DragDropUpload => JobMediaType.File,
-            HotkeyType.ShortenURL or
-            HotkeyType.UploadURL or
-            HotkeyType.StopUploads => JobMediaType.System,
+            WorkflowType.UploadText => JobMediaType.Text,
+            WorkflowType.FileUpload or
+            WorkflowType.FolderUpload or
+            WorkflowType.ClipboardUpload or
+            WorkflowType.ClipboardUploadWithContentViewer or
+            WorkflowType.DragDropUpload => JobMediaType.File,
+            WorkflowType.ShortenURL or
+            WorkflowType.UploadURL or
+            WorkflowType.StopUploads => JobMediaType.System,
             _ => JobMediaType.None
         };
     }
@@ -99,26 +101,26 @@ public static partial class TaskHelpers
     /// <summary>
     /// Determine media type for tool jobs
     /// </summary>
-    private static JobMediaType GetMediaTypeForTools(HotkeyType job)
+    private static JobMediaType GetMediaTypeForTools(WorkflowType job)
     {
         return job switch
         {
             // Image-specific tools
-            HotkeyType.ImageEditor or
-            HotkeyType.ImageBeautifier or
-            HotkeyType.ImageEffects or
-            HotkeyType.ImageViewer or
-            HotkeyType.ImageCombiner or
-            HotkeyType.ImageSplitter or
-            HotkeyType.ImageThumbnailer or
-            HotkeyType.AnalyzeImage => JobMediaType.Image,
+            WorkflowType.ImageEditor or
+            WorkflowType.ImageBeautifier or
+            WorkflowType.ImageEffects or
+            WorkflowType.ImageViewer or
+            WorkflowType.ImageCombiner or
+            WorkflowType.ImageSplitter or
+            WorkflowType.ImageThumbnailer or
+            WorkflowType.AnalyzeImage => JobMediaType.Image,
 
             // Video-specific tools
-            HotkeyType.VideoConverter or
-            HotkeyType.VideoThumbnailer => JobMediaType.Video,
+            WorkflowType.VideoConverter or
+            WorkflowType.VideoThumbnailer => JobMediaType.Video,
 
             // Text-specific tools
-            HotkeyType.OCR => JobMediaType.Text,
+            WorkflowType.OCR => JobMediaType.Text,
 
             // All other tools are utility tools
             _ => JobMediaType.Tool
@@ -134,9 +136,77 @@ public static partial class TaskHelpers
     }
 
     /// <summary>
+    /// Determine if a screen capture workflow should delay before capturing.
+    /// </summary>
+    public static bool IsScreenCaptureStartJob(WorkflowType job)
+    {
+        return job switch
+        {
+            WorkflowType.PrintScreen or
+            WorkflowType.ActiveWindow or
+            WorkflowType.CustomWindow or
+            WorkflowType.ActiveMonitor or
+            WorkflowType.RectangleRegion or
+            WorkflowType.RectangleLight or
+            WorkflowType.RectangleTransparent or
+            WorkflowType.CustomRegion or
+            WorkflowType.LastRegion or
+            WorkflowType.ScrollingCapture or
+            WorkflowType.AutoCapture or
+            WorkflowType.StartAutoCapture => true,
+            _ => false
+        };
+    }
+
+    /// <summary>
+    /// Determine if a screen recording workflow should delay before recording starts.
+    /// </summary>
+    public static bool IsScreenRecordStartJob(WorkflowType job)
+    {
+        return job switch
+        {
+            WorkflowType.ScreenRecorder or
+            WorkflowType.StartScreenRecorder or
+            WorkflowType.ScreenRecorderActiveWindow or
+            WorkflowType.ScreenRecorderCustomRegion or
+            WorkflowType.ScreenRecorderGIF or
+            WorkflowType.ScreenRecorderGIFActiveWindow or
+            WorkflowType.ScreenRecorderGIFCustomRegion or
+            WorkflowType.StartScreenRecorderGIF => true,
+            _ => false
+        };
+    }
+
+    /// <summary>
+    /// Resolve the capture start delay (in seconds) for a task and return the workflow category.
+    /// </summary>
+    public static double GetCaptureStartDelaySeconds(TaskSettings taskSettings, out string category)
+    {
+        if (taskSettings == null)
+        {
+            throw new ArgumentNullException(nameof(taskSettings));
+        }
+
+        category = taskSettings.Job.GetHotkeyCategory();
+        var captureSettings = taskSettings.CaptureSettings ?? new TaskSettingsCapture();
+
+        if (category == EnumExtensions.WorkflowType_Category_ScreenCapture && IsScreenCaptureStartJob(taskSettings.Job))
+        {
+            return (double)captureSettings.ScreenshotDelay;
+        }
+
+        if (category == EnumExtensions.WorkflowType_Category_ScreenRecord && IsScreenRecordStartJob(taskSettings.Job))
+        {
+            return captureSettings.ScreenRecordStartDelay;
+        }
+
+        return 0;
+    }
+
+    /// <summary>
     /// Check if a job is image-related
     /// </summary>
-    public static bool IsImageJob(HotkeyType job)
+    public static bool IsImageJob(WorkflowType job)
     {
         return GetJobMediaType(job) == JobMediaType.Image;
     }
@@ -144,7 +214,7 @@ public static partial class TaskHelpers
     /// <summary>
     /// Check if a job is video-related
     /// </summary>
-    public static bool IsVideoJob(HotkeyType job)
+    public static bool IsVideoJob(WorkflowType job)
     {
         return GetJobMediaType(job) == JobMediaType.Video;
     }
@@ -152,7 +222,7 @@ public static partial class TaskHelpers
     /// <summary>
     /// Check if a job is text-related
     /// </summary>
-    public static bool IsTextJob(HotkeyType job)
+    public static bool IsTextJob(WorkflowType job)
     {
         return GetJobMediaType(job) == JobMediaType.Text;
     }
@@ -160,7 +230,7 @@ public static partial class TaskHelpers
     /// <summary>
     /// Check if a job is file-related (mixed content)
     /// </summary>
-    public static bool IsFileJob(HotkeyType job)
+    public static bool IsFileJob(WorkflowType job)
     {
         return GetJobMediaType(job) == JobMediaType.File;
     }
@@ -168,7 +238,7 @@ public static partial class TaskHelpers
     /// <summary>
     /// Check if a job is a tool
     /// </summary>
-    public static bool IsToolJob(HotkeyType job)
+    public static bool IsToolJob(WorkflowType job)
     {
         return GetJobMediaType(job) == JobMediaType.Tool;
     }
@@ -176,7 +246,7 @@ public static partial class TaskHelpers
     /// <summary>
     /// Check if a job is a system/control action
     /// </summary>
-    public static bool IsSystemJob(HotkeyType job)
+    public static bool IsSystemJob(WorkflowType job)
     {
         return GetJobMediaType(job) == JobMediaType.System;
     }
@@ -184,7 +254,7 @@ public static partial class TaskHelpers
     /// <summary>
     /// Check if a job produces media output (image or video)
     /// </summary>
-    public static bool IsMediaProducingJob(HotkeyType job)
+    public static bool IsMediaProducingJob(WorkflowType job)
     {
         var mediaType = GetJobMediaType(job);
         return mediaType == JobMediaType.Image || mediaType == JobMediaType.Video;
@@ -341,7 +411,7 @@ public static partial class TaskHelpers
         if (taskSettings != null)
         {
             string category = taskSettings.Job.GetHotkeyCategory();
-            if (category == EnumExtensions.HotkeyType_Category_ScreenRecord)
+            if (category == EnumExtensions.WorkflowType_Category_ScreenRecord)
             {
                 return XerahS.Common.PathsManager.ScreencastsFolder;
             }
@@ -462,6 +532,49 @@ public static partial class TaskHelpers
 
         ImageHelpers.SaveBitmap(bmp, filePath);
         return filePath;
+    }
+
+    /// <summary>
+    /// Apply configured image effects to the bitmap.
+    /// </summary>
+    public static SkiaSharp.SKBitmap? ApplyImageEffects(SkiaSharp.SKBitmap? bmp, TaskSettingsImage taskSettingsImage)
+    {
+        if (bmp == null)
+        {
+            return null;
+        }
+
+        if (taskSettingsImage == null)
+        {
+            return bmp;
+        }
+
+        var preset = taskSettingsImage.ImageEffectsPreset;
+        
+        if (preset == null || preset.Effects == null || preset.Effects.Count == 0)
+        {
+            return bmp;
+        }
+
+        var result = bmp;
+        var usingOriginal = true;
+
+        foreach (var effect in preset.Effects)
+        {
+            var processed = effect.Apply(result);
+            if (!ReferenceEquals(processed, result))
+            {
+                if (!usingOriginal)
+                {
+                    result.Dispose();
+                }
+
+                result = processed;
+                usingOriginal = false;
+            }
+        }
+
+        return result;
     }
 
     /// <summary>

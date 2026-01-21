@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -37,7 +37,7 @@ using System.Drawing;
 
 namespace XerahS.Core.Tasks
 {
-    public class WorkerTask
+    public class WorkerTask : IDisposable
     {
         public TaskInfo Info { get; private set; }
         public TaskStatus Status { get; private set; }
@@ -75,6 +75,12 @@ namespace XerahS.Core.Tasks
         /// Returns selected window or null if cancelled.
         /// </summary>
         public static Func<Task<XerahS.Platform.Abstractions.WindowInfo?>>? ShowWindowSelectorCallback { get; set; }
+
+        /// <summary>
+        /// Delegate to show open file dialog for FileUpload jobs.
+        /// Returns selected file path or null if cancelled.
+        /// </summary>
+        public static Func<Task<string?>>? ShowOpenFileDialogCallback { get; set; }
 
         private WorkerTask(TaskSettings taskSettings, SKBitmap? inputImage = null)
         {
@@ -158,8 +164,10 @@ namespace XerahS.Core.Tasks
             Info.TaskSettings ??= new TaskSettings();
             Info.Metadata ??= new TaskMetadata();
 
-            var taskSettings = Info.TaskSettings;
-            var metadata = Info.Metadata;
+            TaskSettings taskSettings = Info.TaskSettings ?? new TaskSettings();
+            TaskMetadata metadata = Info.Metadata ?? new TaskMetadata();
+            Info.TaskSettings = taskSettings;
+            Info.Metadata = metadata;
 
             TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "DoWorkAsync Entry");
             
@@ -180,6 +188,10 @@ namespace XerahS.Core.Tasks
                 taskSettings.CaptureSettings ??= new TaskSettingsCapture();
                 var captureSettings = taskSettings.CaptureSettings;
 
+                var captureDelaySeconds = TaskHelpers.GetCaptureStartDelaySeconds(taskSettings, out var workflowCategory);
+                var isScreenCaptureDelay = workflowCategory == EnumExtensions.WorkflowType_Category_ScreenCapture && captureDelaySeconds > 0;
+                var isScreenRecordDelay = workflowCategory == EnumExtensions.WorkflowType_Category_ScreenRecord && captureDelaySeconds > 0;
+
                 var captureOptions = new CaptureOptions
                 {
                     UseModernCapture = captureSettings.UseModernCapture,
@@ -187,27 +199,97 @@ namespace XerahS.Core.Tasks
                     CaptureTransparent = captureSettings.CaptureTransparent,
                     CaptureShadow = captureSettings.CaptureShadow,
                     CaptureClientArea = captureSettings.CaptureClientArea,
-                    WorkflowId = taskSettings.WorkflowId
+                    WorkflowId = taskSettings.WorkflowId,
+                    WorkflowCategory = workflowCategory
                 };
 
                 switch (taskSettings.Job)
                 {
-                    case HotkeyType.PrintScreen:
+                    case WorkflowType.PrintScreen:
+                        if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
                         image = await PlatformServices.ScreenCapture.CaptureFullScreenAsync(captureOptions);
                         break;
 
-                    case HotkeyType.RectangleRegion:
+                    case WorkflowType.RectangleRegion:
+                        if (isScreenCaptureDelay)
+                        {
+                            captureOptions.CaptureStartDelaySeconds = captureDelaySeconds;
+                            captureOptions.CaptureStartDelayCancellationToken = token;
+                        }
                         image = await PlatformServices.ScreenCapture.CaptureRegionAsync(captureOptions);
                         break;
 
-                    case HotkeyType.ActiveWindow:
+                    case WorkflowType.ActiveWindow:
+                        if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
                         if (PlatformServices.Window != null)
                         {
                             image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
                         }
                         break;
 
-                    case HotkeyType.CustomWindow:
+                    case WorkflowType.FileUpload:
+                        // If file path is not already set (e.g. via args), ask user
+                        if (string.IsNullOrEmpty(Info.FilePath) && ShowOpenFileDialogCallback != null)
+                        {
+                            TroubleshootingHelper.Log(taskSettings.Job.ToString(), "UI", "Requesting file from user via dialog...");
+                            var selectedFile = await ShowOpenFileDialogCallback();
+                            
+                            if (!string.IsNullOrEmpty(selectedFile))
+                            {
+                                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "UI", $"User selected file: {selectedFile}");
+                                Info.FilePath = selectedFile;
+                                Info.DataType = EDataType.File;
+                                
+                                // Set filename in metadata for convenience
+                                // Info.FileName is set automatically by property setter of FilePath
+                            }
+                            else
+                            {
+                                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "UI", "User cancelled file selection");
+                                Status = TaskStatus.Stopped;
+                                OnStatusChanged();
+                                return;
+                            }
+                        }
+                        else if (!string.IsNullOrEmpty(Info.FilePath))
+                        {
+                             // File path already provided (drag/drop or args)
+                             Info.DataType = EDataType.File;
+                             // Info.FileName is set automatically by property setter of FilePath
+                        }
+                        else
+                        {
+                             // No file and no callback
+                            DebugHelper.WriteLine("FileUpload job started but no file provided and no dialog callback available.");
+                            Status = TaskStatus.Failed;
+                            Error = new Exception("No file selected and dialog unavailable");
+                            OnStatusChanged(); // Will trigger failure toast in finally
+                            return;
+                        }
+                        Info.Job = TaskJob.FileUpload;
+                        break;
+
+                    case WorkflowType.IndexFolder:
+                        if (!TryIndexFolder(taskSettings, out string? indexPath))
+                        {
+                            Status = TaskStatus.Failed;
+                            Error = new Exception("Index folder path is invalid or indexing failed.");
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        Info.FilePath = indexPath ?? "";
+                        Info.DataType = EDataType.File;
+                        Info.Job = TaskJob.FileUpload;
+                        break;
+
+                    case WorkflowType.CustomWindow:
                         if (PlatformServices.Window != null)
                         {
                             TroubleshootingHelper.Log("CustomWindow", "TASK", "Task started for CustomWindow");
@@ -264,6 +346,11 @@ namespace XerahS.Core.Tasks
                                         TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", $"After activation - Foreground handle: {foregroundHandle}, Title: '{foregroundTitle}'");
                                         TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", $"Foreground matches selected: {foregroundHandle == selectedWindow.Handle}");
 
+                                        if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings!, workflowCategory, captureDelaySeconds, token))
+                                        {
+                                            return;
+                                        }
+
                                         // Capture active window
                                         image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
                                         TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capture active window result: {image != null}");
@@ -313,6 +400,11 @@ namespace XerahS.Core.Tasks
                                     TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Capture-time bounds: X={captureTimeBounds.X}, Y={captureTimeBounds.Y}, W={captureTimeBounds.Width}, H={captureTimeBounds.Height}");
                                     TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Title contains search term: {captureTimeTitle?.Contains(targetWindow, StringComparison.OrdinalIgnoreCase) ?? false}");
 
+                                    if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings!, workflowCategory, captureDelaySeconds, token))
+                                    {
+                                        return;
+                                    }
+
                                     image = await PlatformServices.ScreenCapture.CaptureWindowAsync(hWnd, PlatformServices.Window, captureOptions);
                                     TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capture window result: {image != null}");
                                 }
@@ -326,8 +418,8 @@ namespace XerahS.Core.Tasks
                         break;
 
                     // Stage 5: Screen Recording Integration
-                    case HotkeyType.ScreenRecorder:
-                    case HotkeyType.StartScreenRecorder:
+                    case WorkflowType.ScreenRecorder:
+                    case WorkflowType.StartScreenRecorder:
                         TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecorder case matched, showing region selector");
 
                         // Show region selector and get user selection
@@ -371,30 +463,43 @@ namespace XerahS.Core.Tasks
 
                         TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region selected: {recordingRegion}, calling HandleStartRecordingAsync");
 
+                        if (isScreenRecordDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
+
                         await HandleStartRecordingAsync(CaptureMode.Region, region: recordingRegion);
                         TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "HandleStartRecordingAsync completed");
                         return; // Recording tasks don't proceed to image processing
 
-                    case HotkeyType.ScreenRecorderActiveWindow:
+                    case WorkflowType.ScreenRecorderActiveWindow:
                         if (PlatformServices.Window != null)
                         {
                             var foregroundWindow = PlatformServices.Window.GetForegroundWindow();
+                            if (isScreenRecordDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
+                            {
+                                return;
+                            }
                             await HandleStartRecordingAsync(CaptureMode.Window, foregroundWindow);
                         }
                         return;
 
-                    case HotkeyType.ScreenRecorderCustomRegion:
+                    case WorkflowType.ScreenRecorderCustomRegion:
                         // TODO: Show region selector UI and get selected region
                         // For now, just start full screen recording
                         DebugHelper.WriteLine("ScreenRecorderCustomRegion: Region selector not yet implemented, falling back to full screen");
+                        if (isScreenRecordDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
                         await HandleStartRecordingAsync(CaptureMode.Screen);
                         return;
 
-                    case HotkeyType.StopScreenRecording:
+                    case WorkflowType.StopScreenRecording:
                         await HandleStopRecordingAsync();
                         return;
 
-                    case HotkeyType.AbortScreenRecording:
+                    case WorkflowType.AbortScreenRecording:
                         await HandleAbortRecordingAsync();
                         return;
                 }
@@ -405,6 +510,11 @@ namespace XerahS.Core.Tasks
                 {
                     metadata.Image = image;
                     DebugHelper.WriteLine($"Captured image: {image.Width}x{image.Height} in {captureStopwatch.ElapsedMilliseconds}ms");
+                }
+                else if ((taskSettings?.Job == WorkflowType.FileUpload || taskSettings?.Job == WorkflowType.IndexFolder) &&
+                         !string.IsNullOrEmpty(Info.FilePath))
+                {
+                    DebugHelper.WriteLine($"FileUpload selected file: {Info.FilePath}");
                 }
                 else
                 {
@@ -431,6 +541,88 @@ namespace XerahS.Core.Tasks
             await uploadProcessor.ProcessAsync(Info, token);
         }
 
+        private bool TryIndexFolder(TaskSettings taskSettings, out string? outputPath)
+        {
+            outputPath = null;
+
+            if (taskSettings?.ToolsSettings == null)
+            {
+                DebugHelper.WriteLine("IndexFolder: ToolsSettings missing.");
+                return false;
+            }
+
+            string folderPath = taskSettings.ToolsSettings.IndexerFolderPath;
+            if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
+            {
+                DebugHelper.WriteLine($"IndexFolder: Folder path invalid: '{folderPath}'");
+                return false;
+            }
+
+            try
+            {
+                var coreSettings = taskSettings.ToolsSettings.IndexerSettings ?? new IndexerSettings();
+                var indexerSettings = BuildIndexerSettings(coreSettings);
+
+                string output = XerahS.Indexer.Indexer.Index(folderPath, indexerSettings);
+                outputPath = WriteIndexOutput(taskSettings, folderPath, output, coreSettings.Output);
+                return !string.IsNullOrEmpty(outputPath);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "IndexFolder: indexing failed");
+                return false;
+            }
+        }
+
+        private static XerahS.Indexer.IndexerSettings BuildIndexerSettings(IndexerSettings settings)
+        {
+            var indexerSettings = new XerahS.Indexer.IndexerSettings
+            {
+                Output = (XerahS.Indexer.IndexerOutput)settings.Output,
+                SkipHiddenFolders = settings.SkipHiddenFolders,
+                SkipHiddenFiles = settings.SkipHiddenFiles,
+                SkipFiles = settings.SkipFiles,
+                MaxDepthLevel = settings.MaxDepthLevel,
+                ShowSizeInfo = settings.ShowSizeInfo,
+                AddFooter = settings.AddFooter,
+                IndentationText = settings.IndentationText,
+                AddEmptyLineAfterFolders = settings.AddEmptyLineAfterFolders,
+                UseCustomCSSFile = settings.UseCustomCSSFile,
+                DisplayPath = settings.DisplayPath,
+                DisplayPathLimited = settings.DisplayPathLimited,
+                CustomCSSFilePath = settings.CustomCSSFilePath,
+                UseAttribute = settings.UseAttribute,
+                CreateParseableJson = settings.CreateParseableJson
+            };
+
+            indexerSettings.BinaryUnits = settings.BinaryUnits;
+            return indexerSettings;
+        }
+
+        private static string WriteIndexOutput(TaskSettings taskSettings, string folderPath, string output, IndexerOutput outputType)
+        {
+            string extension = GetIndexFolderExtension(outputType);
+            string screenshotsFolder = TaskHelpers.GetScreenshotsFolder(taskSettings);
+            Directory.CreateDirectory(screenshotsFolder);
+
+            string fileName = TaskHelpers.GetFileName(taskSettings, extension);
+            string resolvedPath = TaskHelpers.HandleExistsFile(screenshotsFolder, fileName, taskSettings);
+            File.WriteAllText(resolvedPath, output);
+            return resolvedPath;
+        }
+
+        private static string GetIndexFolderExtension(IndexerOutput outputType)
+        {
+            return outputType switch
+            {
+                IndexerOutput.Html => "html",
+                IndexerOutput.Txt => "txt",
+                IndexerOutput.Xml => "xml",
+                IndexerOutput.Json => "json",
+                _ => "txt"
+            };
+        }
+
         public void Stop()
         {
             if (IsWorking)
@@ -438,6 +630,32 @@ namespace XerahS.Core.Tasks
                 Status = TaskStatus.Stopping;
                 OnStatusChanged();
                 _cancellationTokenSource.Cancel();
+            }
+        }
+
+        private async Task<bool> ApplyCaptureStartDelayAsync(TaskSettings taskSettings, string category, double delaySeconds, CancellationToken token)
+        {
+            if (delaySeconds <= 0)
+            {
+                return true;
+            }
+
+            var delayMs = (int)Math.Round(delaySeconds * 1000, MidpointRounding.AwayFromZero);
+            var workflowId = string.IsNullOrWhiteSpace(taskSettings.WorkflowId) ? "none" : taskSettings.WorkflowId;
+            TroubleshootingHelper.Log(taskSettings.Job.ToString(), "CAPTURE_DELAY", $"WorkflowId={workflowId}, Category={category}, DelaySeconds={delaySeconds:F3}, DelayMs={delayMs}");
+
+            try
+            {
+                await Task.Delay(delayMs, token);
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "CAPTURE_DELAY", $"WorkflowId={workflowId}, Category={category}, DelayCompleted=true");
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "CAPTURE_DELAY", $"WorkflowId={workflowId}, Category={category}, DelayCancelled=true");
+                Status = TaskStatus.Stopped;
+                OnStatusChanged();
+                return false;
             }
         }
 
@@ -577,6 +795,20 @@ namespace XerahS.Core.Tasks
         protected virtual void OnTaskCompleted()
         {
             TaskCompleted?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _cancellationTokenSource?.Dispose();
+            }
         }
     }
 }

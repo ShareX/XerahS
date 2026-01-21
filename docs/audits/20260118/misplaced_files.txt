@@ -1,0 +1,2 @@
+c:\Users\liveu\source\repos\ShareX Team\XerahS\src/XerahS.Core/Models/HotkeySettings.cs
+c:\Users\liveu\source\repos\ShareX Team\XerahS\src/XerahS.Uploaders/PluginSystem/PluginConfigurationVerifier.cs

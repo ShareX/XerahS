@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -168,20 +168,36 @@ namespace XerahS.Platform.Windows
             if (hWnd == IntPtr.Zero)
             {
                 // Fallback: iterate through all processes and find one with matching main window title
-                foreach (var process in System.Diagnostics.Process.GetProcesses())
+                var processes = System.Diagnostics.Process.GetProcesses();
+                try
                 {
-                    try
+                    foreach (var process in processes)
                     {
-                        if (process.MainWindowTitle.Contains(windowTitle, StringComparison.OrdinalIgnoreCase))
+                        try
                         {
-                            return process.MainWindowHandle;
+                            if (process.MainWindowTitle.Contains(windowTitle, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return process.MainWindowHandle;
+                            }
+                        }
+                        catch (System.ComponentModel.Win32Exception)
+                        {
+                            // Expected for system/elevated processes
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // Process exited between enumeration and access
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugHelper.WriteLine($"WindowsWindowService: Unexpected error checking process {process.Id}: {ex.Message}");
                         }
                     }
-                    catch
-                    {
-                        // Ignore access denied exceptions for system processes
-                    }
-                    finally
+                }
+                finally
+                {
+                    // Dispose all processes even on early return
+                    foreach (var process in processes)
                     {
                         process.Dispose();
                     }

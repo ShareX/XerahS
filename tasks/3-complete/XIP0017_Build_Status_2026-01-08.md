@@ -15,7 +15,7 @@ All **Stage 1 core components** for SIP0017 have been successfully implemented:
 ✅ Windows.Graphics.Capture source implementation (`WindowsGraphicsCaptureSource.cs`)
 ✅ Media Foundation H.264 encoder implementation (`MediaFoundationEncoder.cs`)
 ✅ Platform-agnostic orchestration service (`ScreenRecorderService.cs`)
-✅ Integration with existing ShareX.Avalonia architecture
+✅ Integration with existing XerahS architecture
 ✅ Folder consolidation (merged Recording/ → ScreenRecording/)
 ✅ WindowsPlatform.InitializeRecording() integration
 
@@ -117,7 +117,7 @@ The user's system does not have:
 
 3. Build solution:
    ```bash
-   dotnet build ShareX.Avalonia.sln
+   dotnet build XerahS.sln
    ```
 
 **Pros:**
@@ -198,7 +198,7 @@ The user's system does not have:
 
 All code files are **complete and production-ready** - they just need WinRT type resolution:
 
-### ShareX.Avalonia.ScreenCapture/ScreenRecording/
+### XerahS.ScreenCapture/ScreenRecording/
 - ✅ `RecordingEnums.cs` - All enums defined
 - ✅ `RecordingModels.cs` - All DTOs and event args
 - ✅ `IRecordingService.cs` - Complete interface definitions
@@ -206,14 +206,14 @@ All code files are **complete and production-ready** - they just need WinRT type
 - ✅ `FFmpegOptions.cs` - Existing (unchanged)
 - ✅ `FFmpegCaptureDevice.cs` - Existing (unchanged)
 
-### ShareX.Avalonia.Platform.Windows/Recording/
+### XerahS.Platform.Windows/Recording/
 - ⚠️ `WindowsGraphicsCaptureSource.cs` - **Blocks on WinRT types**
 - ⚠️ `MediaFoundationEncoder.cs` - Builds OK (uses COM, not WinRT)
 
 ### Integration Files Modified:
 - ✅ `WindowsPlatform.cs` - InitializeRecording() added
 - ✅ `Program.cs` - InitializeRecording() called
-- ✅ `ShareX.Avalonia.Platform.Windows.csproj` - Project references added
+- ✅ `XerahS.Platform.Windows.csproj` - Project references added
 
 ---
 

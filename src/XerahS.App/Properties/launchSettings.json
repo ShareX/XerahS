@@ -1,8 +1,7 @@
 {
   "profiles": {
-    "ShareX.Avalonia.App": {
+    "XerahS.App": {
       "commandName": "Project",
-      "commandLineArgs": "",
       "workingDirectory": "."
     }
   }

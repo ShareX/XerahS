@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -206,8 +206,16 @@ namespace XerahS.Platform.MacOS.Services
 
             try
             {
-                _hook.RunAsync();
+                _hook.RunAsync().ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        DebugHelper.WriteException(t.Exception, "MacOSHotkeyService: SharpHook loop failed unexpectedly.");
+                        _hookRunning = false;
+                    }
+                });
                 _hookRunning = true;
+                DebugHelper.WriteLine("MacOSHotkeyService: SharpHook started.");
             }
             catch (Exception ex)
             {
@@ -296,6 +304,10 @@ namespace XerahS.Platform.MacOS.Services
 
             if (hotkeyInfo == null)
             {
+                if (modifiers.HasFlag(KeyModifiers.Meta))
+                {
+                    DebugHelper.WriteLine($"MacOSHotkeyService: No hotkey match for Key={MapKeyCodeToAvaloniaKey(keyCode)} ({keyCode}), Modifiers={modifiers}. Pressed: {string.Join(", ", _pressedKeys)}");
+                }
                 return;
             }
 
@@ -322,41 +334,15 @@ namespace XerahS.Platform.MacOS.Services
                 return _accessibilityEnabled.Value;
             }
 
-            const string script = "tell application \\\"System Events\\\" to get UI elements enabled";
-            var output = RunOsaScriptWithOutput(script);
-            _accessibilityEnabled = string.Equals(output?.Trim(), "true", StringComparison.OrdinalIgnoreCase);
+            // Check and prompt if needed
+            _accessibilityEnabled = Native.Accessibility.IsProcessTrusted(prompt: true);
+
+            if (_accessibilityEnabled == false)
+            {
+                 DebugHelper.WriteLine("MacOSHotkeyService: Accessibility is not enabled. Prompting user...");
+            }
+
             return _accessibilityEnabled.Value;
-        }
-
-        private static string? RunOsaScriptWithOutput(string script)
-        {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "osascript",
-                Arguments = $"-e \"{script}\"",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            try
-            {
-                using var process = Process.Start(startInfo);
-                if (process == null)
-                {
-                    return null;
-                }
-
-                var output = process.StandardOutput.ReadToEnd();
-                process.WaitForExit();
-                return process.ExitCode == 0 ? output : null;
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex, "MacOSHotkeyService.RunOsaScriptWithOutput failed");
-                return null;
-            }
         }
 
         private void LogAccessibilityRequired()

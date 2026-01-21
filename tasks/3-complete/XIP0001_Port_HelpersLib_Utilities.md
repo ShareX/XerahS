@@ -18,7 +18,7 @@ Complete - Verified on 2026-01-08
 
 
 ## Objective
-Port remaining non-UI helpers from `ShareX.HelpersLib` to `ShareX.Avalonia.Common` to achieve feature parity for core utility functions.
+Port remaining non-UI helpers from `ShareX.HelpersLib` to `XerahS.Common` to achieve feature parity for core utility functions.
 
 ---
 
@@ -83,7 +83,7 @@ Port remaining non-UI helpers from `ShareX.HelpersLib` to `ShareX.Avalonia.Commo
 ## Work Report: Codex
 
 ### Files Modified
-- `src/ShareX.Avalonia.Common/Helpers/ClipboardHelpers.cs` (NEW)
+- `src/XerahS.Common/Helpers/ClipboardHelpers.cs` (NEW)
 - ...
 
 ### New Types
@@ -111,12 +111,12 @@ Port remaining non-UI helpers from `ShareX.HelpersLib` to `ShareX.Avalonia.Commo
 ## Work Report: Codex
 
 ### Files Modified
-- `src/ShareX.Avalonia.Common/Helpers/ClipboardHelpers.cs` (Refactored to Async)
-- `src/ShareX.Avalonia.Common/Helpers/ImageHelpers.cs` (Ported to SkiaSharp)
-- `src/ShareX.Avalonia.Common/GIF/*` (Quantizers & GifClass ported to SkiaSharp)
-- `src/ShareX.Avalonia.Common/ImageFilesCache.cs` (Updated to SkiaSharp)
-- `src/ShareX.Avalonia.Common/Colors/GradientInfo.cs` (Patched for compatibility)
-- `src/ShareX.Avalonia.Common/UnsafeBitmap.cs` (Deleted)
+- `src/XerahS.Common/Helpers/ClipboardHelpers.cs` (Refactored to Async)
+- `src/XerahS.Common/Helpers/ImageHelpers.cs` (Ported to SkiaSharp)
+- `src/XerahS.Common/GIF/*` (Quantizers & GifClass ported to SkiaSharp)
+- `src/XerahS.Common/ImageFilesCache.cs` (Updated to SkiaSharp)
+- `src/XerahS.Common/Colors/GradientInfo.cs` (Patched for compatibility)
+- `src/XerahS.Common/UnsafeBitmap.cs` (Deleted)
 
 ### New Types
 - `ClipboardHelpers` - Async wrapper for `IClipboardService`

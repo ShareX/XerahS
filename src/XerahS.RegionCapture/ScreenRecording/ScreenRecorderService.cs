@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -66,6 +66,13 @@ public class ScreenRecorderService : IRecordingService
     /// Set during platform initialization (Stage 4)
     /// </summary>
     public static Func<IRecordingService>? FallbackServiceFactory { get; set; }
+
+    /// <summary>
+    /// Factory for creating native platform-specific recording service.
+    /// This is a complete IRecordingService (not capture+encoder pattern).
+    /// On macOS, this creates MacOSNativeRecordingService using ScreenCaptureKit.
+    /// </summary>
+    public static Func<IRecordingService>? NativeRecordingServiceFactory { get; set; }
 
     /// <summary>
     /// Debug: dump the first captured frame to disk for orientation analysis.

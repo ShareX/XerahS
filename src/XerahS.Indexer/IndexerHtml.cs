@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -31,96 +31,117 @@ namespace XerahS.Indexer
 {
     public class IndexerHtml : Indexer
     {
-        private const string DefaultCss = @"body {
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: #F2F2F2;
+        private const string DefaultCss = @":root {
+    color-scheme: light;
 }
 
-img {
-    border-style: none;
+* {
+    box-sizing: border-box;
 }
 
-a:link, a:visited {
-    color: #0066FF;
+body {
+    margin: 0;
+    font-family: ""Segoe UI"", ""Helvetica Neue"", Arial, sans-serif;
+    background-color: #f6f7f9;
+    color: #1f2328;
+}
+
+a {
+    color: #0969da;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px;
 }
 
 ul {
-    margin: 0px 0px 8px 0px;
+    margin: 0 0 12px 0;
     list-style-type: none;
-    padding-left: 10px;
+    padding-left: 12px;
 }
 
 li {
-    margin-bottom: 2px;
+    margin-bottom: 4px;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    border: 1px solid #000000;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    padding: 4px 0px 4px 10px;
-    margin: 0px 10px -10px 10px;
-    color: #FFFFFF;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: large;
-    font-weight: normal;
-    text-shadow: 0px 1px 1px #000000;
+    margin: 0;
+    padding: 8px 12px;
+    border-radius: 8px 8px 0 0;
+    background-color: #0f4c81;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 h1 {
-    background-color: #336699;
-    margin: 0px 0px -10px 0px;
-    font-size: x-large;
+    font-size: 22px;
+    margin-bottom: 6px;
 }
 
 h2 {
-    background-color: #3D7AAD;
+    background-color: #1f6fb2;
 }
 
 h3 {
-    background-color: #478FC2;
+    background-color: #3380bd;
 }
 
 h4 {
-    background-color: #52A3D6;
+    background-color: #4a95c9;
 }
 
 h5 {
-    background-color: #5CB8EB;
+    background-color: #5ea9d4;
 }
 
 h6 {
-    background-color: #66CCFF;
+    background-color: #72bedf;
 }
 
 .MainFolderBorder, .FolderBorder {
-    border-style: solid;
-    border-width: 0px 1px 1px 1px;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    padding: 20px 0px 0px 0px;
+    border: 1px solid #d0d7de;
+    border-top: none;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    padding: 16px 12px 10px 12px;
+    background-color: #ffffff;
 }
 
 .MainFolderBorder {
-    margin: 0px 0px 10px 0px;
+    margin: 0 0 14px 0;
 }
 
 .FolderBorder {
-    margin: 0px 10px 10px 10px;
+    margin: 0 0 12px 0;
 }
 
 .FolderInfo {
-    color: #FFFFFF;
+    color: #f0f6fc;
     float: right;
-    margin-right: 10px;
-    display: block;
+    margin-left: 12px;
 }
 
 .FileSize {
-    color: #3D7AAD;
+    color: #57606a;
+}
+
+footer {
+    margin-top: 24px;
+    color: #57606a;
+    font-size: 12px;
 }";
         protected StringBuilder sbContent = new StringBuilder();
         protected int prePathTrim = 0;
+        private const int IndentSize = 2;
+        private const int ContentBaseIndent = 3;
 
         public IndexerHtml(IndexerSettings indexerSettings) : base(indexerSettings)
         {
@@ -128,16 +149,19 @@ h6 {
 
         public override string Index(string folderPath)
         {
+            sbContent.Clear();
             StringBuilder sbHtmlIndex = new StringBuilder();
-            sbHtmlIndex.AppendLine("<!DOCTYPE html>");
-            sbHtmlIndex.AppendLine(HtmlHelper.StartTag("html"));
-            sbHtmlIndex.AppendLine(HtmlHelper.StartTag("head"));
-            sbHtmlIndex.AppendLine("<meta charset=\"UTF-8\">");
-            sbHtmlIndex.AppendLine("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">");
-            sbHtmlIndex.AppendLine(HtmlHelper.Tag("title", "Index for " + Path.GetFileName(folderPath)));
-            sbHtmlIndex.AppendLine(GetCssStyle());
-            sbHtmlIndex.AppendLine(HtmlHelper.EndTag("head"));
-            sbHtmlIndex.AppendLine(HtmlHelper.StartTag("body"));
+            AppendHtmlLine(sbHtmlIndex, 0, "<!DOCTYPE html>");
+            AppendHtmlLine(sbHtmlIndex, 0, HtmlHelper.StartTag("html", "", "lang=\"en\""));
+            AppendHtmlLine(sbHtmlIndex, 1, HtmlHelper.StartTag("head"));
+            AppendHtmlLine(sbHtmlIndex, 2, "<meta charset=\"UTF-8\">");
+            AppendHtmlLine(sbHtmlIndex, 2, "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">");
+            AppendHtmlLine(sbHtmlIndex, 2, "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+            AppendHtmlLine(sbHtmlIndex, 2, HtmlHelper.Tag("title", "Index for " + Path.GetFileName(folderPath)));
+            AppendHtmlBlock(sbHtmlIndex, 2, GetCssStyle());
+            AppendHtmlLine(sbHtmlIndex, 1, HtmlHelper.EndTag("head"));
+            AppendHtmlLine(sbHtmlIndex, 1, HtmlHelper.StartTag("body"));
+            AppendHtmlLine(sbHtmlIndex, 2, HtmlHelper.StartTag("div", "", "class=\"container\""));
 
             folderPath = Path.GetFullPath(folderPath).TrimEnd('\\');
             prePathTrim = folderPath.LastIndexOf(@"\") + 1;
@@ -146,32 +170,37 @@ h6 {
             folderInfo.Update();
 
             IndexFolder(folderInfo);
-            string index = sbContent.ToString().Trim();
+            string index = sbContent.ToString().TrimEnd();
+            AppendHtmlBlock(sbHtmlIndex, 0, index);
+            if (settings.AddFooter)
+            {
+                AppendHtmlLine(sbHtmlIndex, ContentBaseIndent, HtmlHelper.StartTag("footer") + GetFooter() + HtmlHelper.EndTag("footer"));
+            }
 
-            sbHtmlIndex.AppendLine(index);
-            if (settings.AddFooter) sbHtmlIndex.AppendLine(HtmlHelper.StartTag("div") + GetFooter() + HtmlHelper.EndTag("div"));
-            sbHtmlIndex.AppendLine(HtmlHelper.EndTag("body"));
-            sbHtmlIndex.AppendLine(HtmlHelper.EndTag("html"));
+            AppendHtmlLine(sbHtmlIndex, 2, HtmlHelper.EndTag("div"));
+            AppendHtmlLine(sbHtmlIndex, 1, HtmlHelper.EndTag("body"));
+            AppendHtmlLine(sbHtmlIndex, 0, HtmlHelper.EndTag("html"));
             return sbHtmlIndex.ToString().Trim();
         }
 
         protected override void IndexFolder(FolderInfo dir, int level = 0)
         {
-            sbContent.AppendLine(GetFolderNameRow(dir, level));
+            int blockIndent = ContentBaseIndent + (level * 2);
+            AppendHtmlLine(sbContent, blockIndent, GetFolderNameRow(dir, level));
 
             string divClass = level > 0 ? "FolderBorder" : "MainFolderBorder";
-            sbContent.AppendLine(HtmlHelper.StartTag("div", "", $"class=\"{divClass}\""));
+            AppendHtmlLine(sbContent, blockIndent, HtmlHelper.StartTag("div", "", $"class=\"{divClass}\""));
 
             if (dir.Files.Count > 0)
             {
-                sbContent.AppendLine(HtmlHelper.StartTag("ul"));
+                AppendHtmlLine(sbContent, blockIndent + 1, HtmlHelper.StartTag("ul"));
 
                 foreach (FileInfo fi in dir.Files)
                 {
-                    sbContent.AppendLine(GetFileNameRow(fi));
+                    AppendHtmlLine(sbContent, blockIndent + 2, GetFileNameRow(fi));
                 }
 
-                sbContent.AppendLine(HtmlHelper.EndTag("ul"));
+                AppendHtmlLine(sbContent, blockIndent + 1, HtmlHelper.EndTag("ul"));
             }
 
             foreach (FolderInfo subdir in dir.Folders)
@@ -179,7 +208,7 @@ h6 {
                 IndexFolder(subdir, level + 1);
             }
 
-            sbContent.AppendLine(HtmlHelper.EndTag("div"));
+            AppendHtmlLine(sbContent, blockIndent, HtmlHelper.EndTag("div"));
         }
 
         private string GetFolderNameRow(FolderInfo dir, int level)
@@ -246,7 +275,7 @@ h6 {
 
         private string GetFooter()
         {
-            return $"Generated by <a href=\"{Links.Website}\">ShareX Directory Indexer</a> on {DateTime.UtcNow:yyyy-MM-dd 'at' HH:mm:ss 'UTC'}";
+            return $"Generated by <a href=\"{Links.Website}\">{AppResources.AppName} Directory Indexer</a> on {DateTime.UtcNow:yyyy-MM-dd 'at' HH:mm:ss 'UTC'}";
         }
 
         private string GetCssStyle()
@@ -263,6 +292,27 @@ h6 {
             }
 
             return $"<style type=\"text/css\">\r\n{css}\r\n</style>";
+        }
+
+        private static void AppendHtmlLine(StringBuilder builder, int indentLevel, string line)
+        {
+            builder.Append(new string(' ', indentLevel * IndentSize));
+            builder.AppendLine(line);
+        }
+
+        private static void AppendHtmlBlock(StringBuilder builder, int indentLevel, string content)
+        {
+            if (string.IsNullOrEmpty(content))
+            {
+                AppendHtmlLine(builder, indentLevel, string.Empty);
+                return;
+            }
+
+            string[] lines = content.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            foreach (string line in lines)
+            {
+                AppendHtmlLine(builder, indentLevel, line);
+            }
         }
     }
 }

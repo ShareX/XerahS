@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -118,7 +118,7 @@ namespace XerahS.CLI.Commands
                         (expectedTaskId == null && task.Info.TaskSettings.WorkflowId == workflowId))
                     {
                         // Check if it's a recording task and handle duration
-                        if (task.Info.TaskSettings.Job == HotkeyType.ScreenRecorderActiveWindow && duration > 0)
+                        if (task.Info.TaskSettings.Job == WorkflowType.ScreenRecorderActiveWindow && duration > 0)
                         {
                             Console.WriteLine($"Recording started. Waiting for {duration} seconds...");
                             await Task.Delay(duration * 1000);

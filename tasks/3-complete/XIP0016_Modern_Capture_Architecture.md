@@ -1,7 +1,7 @@
 # SIP0016: Modern Cross-Platform Capture Architecture
 
 ## Goal
-Upgrade the `ShareX.Avalonia` screen capture subsystem to utilize modern, high-performance, and OS-native APIs. The current implementations (GDI+ for Windows, CLI tools for macOS) are performance bottlenecks and lack support for modern display servers (like Wayland) or hardware acceleration. This proposal outlines a staged approach to implement robust capture providers for Windows, Linux, and macOS.
+Upgrade the `XerahS` screen capture subsystem to utilize modern, high-performance, and OS-native APIs. The current implementations (GDI+ for Windows, CLI tools for macOS) are performance bottlenecks and lack support for modern display servers (like Wayland) or hardware acceleration. This proposal outlines a staged approach to implement robust capture providers for Windows, Linux, and macOS.
 
 > [!IMPORTANT]
 > **Branching Strategy**:
@@ -30,7 +30,7 @@ The implementation will be executed in three distinct stages, prioritizing the W
     *   "Yellow Border" privacy indicator support (optional/configurable).
 
 ### Stage 2: Linux - XDG Portals & Wayland Support
-**Objective**: Replace the current `StubScreenCaptureService` in `ShareX.Avalonia.Platform.Linux` with a functional implementation using XDG Desktop Portals.
+**Objective**: Replace the current `StubScreenCaptureService` in `XerahS.Platform.Linux` with a functional implementation using XDG Desktop Portals.
 
 **Current Implementation Status**: ✅ Complete
 - `LinuxScreenCaptureService` implemented with robust fallback chain.
@@ -87,7 +87,7 @@ int sck_is_available(); // Returns 1 if macOS 12.3+, 0 otherwise
 *   **Xcode Command Line Tools**: Required for building native library
 
 ## Architectural Changes
-*   The `IScreenCaptureService` interface already exists in `ShareX.Avalonia.Platform.Abstractions`.
+*   The `IScreenCaptureService` interface already exists in `XerahS.Platform.Abstractions`.
 *   Each stage will implement/replace a concrete service:
     *   **Stage 1**: `WindowsModernCaptureService` ✅ Complete
     *   **Stage 2**: `LinuxScreenCaptureService` ✅ Complete
@@ -127,9 +127,9 @@ To ensure stability and user control, the **"Use Modern Capture"** option in Tas
 - **[NEW]** `native/macos/Makefile` - Build script for dylib
 
 ### C# Service
-- **[NEW]** `src/ShareX.Avalonia.Platform.MacOS/Native/ScreenCaptureKitInterop.cs` - P/Invoke declarations
-- **[NEW]** `src/ShareX.Avalonia.Platform.MacOS/MacOSScreenCaptureKitService.cs` - Native capture service
-- **[MODIFY]** `src/ShareX.Avalonia.Platform.MacOS/MacOSPlatform.cs` - Register new service with fallback logic
+- **[NEW]** `src/XerahS.Platform.MacOS/Native/ScreenCaptureKitInterop.cs` - P/Invoke declarations
+- **[NEW]** `src/XerahS.Platform.MacOS/MacOSScreenCaptureKitService.cs` - Native capture service
+- **[MODIFY]** `src/XerahS.Platform.MacOS/MacOSPlatform.cs` - Register new service with fallback logic
 
 ### CI/CD
 - **[NEW]** `.github/workflows/macos-build.yml` - Automated build for native library and solution
@@ -142,7 +142,7 @@ To ensure stability and user control, the **"Use Modern Capture"** option in Tas
 cd native/macos && make
 
 # Build the .NET solution
-dotnet build ShareX.Avalonia.sln
+dotnet build XerahS.sln
 ```
 
 ### Manual Testing (macOS 12.3+)
@@ -157,3 +157,29 @@ dotnet build ShareX.Avalonia.sln
 3. Verify capture still works (falls back to CLI)
 4. Check debug logs for `[MacOSCapture]` entries indicating CLI fallback
 
+## Latest Implementation Compliance (Updated Jan 2026)
+
+This section confirms the current state of the codebase against the "Modern Capture" requirement.
+
+| Platform | Primary (Modern=True) | Legacy/Fallback (Modern=False) | Implementation File | Status |
+|----------|-----------------------|--------------------------------|---------------------|--------|
+| **Windows** | **DXGI Desktop Duplication** / WGC | GDI+ (`CopyFromScreen`) | `WindowsRegionCaptureBackend.cs` | ✅ Complete |
+| **macOS** | **ScreenCaptureKit** (Native) | `screencapture` CLI | `MacOSScreenCaptureKitService.cs` | ✅ Complete |
+| **Linux** | **Wayland/Portal Tools** (Spectacle/Gnome) | X11 XGetImage | `LinuxScreenCaptureService.cs` | ✅ Complete |
+
+### Detailed Behavior Checks
+
+#### Windows
+- **Codebase**: `WindowsRegionCaptureBackend.cs` correctly prioritizes DXGI when `UseModernCapture` is true.
+- **Fallbacks**: Automatically falls back to GDI+ if DXGI initialization fails or if legacy mode is forced.
+
+#### macOS
+- **Codebase**: `MacOSScreenCaptureKitService.cs` implements the logic defined above.
+- **Logic**: Checks `UseModernCapture` AND `ScreenCaptureKitInterop.IsAvailable()`. If both true, uses native interop. Otherwise, delegates to `_fallbackService` (CLI).
+
+#### Linux
+- **Codebase**: `LinuxScreenCaptureService.cs` implements the logic defined above.
+- **Logic**:
+    - `UseModernCapture = false` -> Forces `CaptureWithX11Async`.
+    - `UseModernCapture = true` -> Tries external tools (Gnome/Spectacle/Scrot) first (Wayland compatible), then falls back to `CaptureWithX11Async`.
+- **Note**: This logic ensures Wayland users get a working capture (via tools) by default, while X11 users get fast X11 capture if tools fail or if they force legacy mode.

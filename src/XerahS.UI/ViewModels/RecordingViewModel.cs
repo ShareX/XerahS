@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Ava - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -456,10 +456,10 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
 
     private void InitializeWorkflow()
     {
-        var workflow = SettingsManager.WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Job == HotkeyType.ScreenRecorder);
+        var workflow = SettingsManager.WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Job == WorkflowType.ScreenRecorder);
         if (workflow == null)
         {
-            workflow = new WorkflowSettings(HotkeyType.ScreenRecorder, new HotkeyInfo())
+            workflow = new WorkflowSettings(WorkflowType.ScreenRecorder, new HotkeyInfo())
             {
                 Name = "Screen Recorder (auto)"
             };
@@ -504,8 +504,8 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
     {
         return _workflow.Job switch
         {
-            HotkeyType.ScreenRecorderActiveWindow => CaptureMode.Window,
-            HotkeyType.ScreenRecorderCustomRegion => CaptureMode.Region,
+            WorkflowType.ScreenRecorderActiveWindow => CaptureMode.Window,
+            WorkflowType.ScreenRecorderCustomRegion => CaptureMode.Region,
             _ => CaptureMode.Screen
         };
     }

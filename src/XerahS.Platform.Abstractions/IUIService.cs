@@ -1,8 +1,8 @@
 #region License Information (GPL v3)
 
 /*
-    ShareX.Avalonia - The Avalonia UI implementation of ShareX
-    Copyright (c) 2007-2025 ShareX Team
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -35,9 +35,9 @@ namespace XerahS.Platform.Abstractions
     public interface IUIService
     {
         /// <summary>
-        /// Shows the image editor with the provided image
+        /// Shows the image editor with the provided image and returns the edited image
         /// </summary>
-        Task ShowEditorAsync(SKBitmap image);
+        Task<SKBitmap?> ShowEditorAsync(SKBitmap image);
 
         /// <summary>
         /// Shows the After Capture window and returns selected tasks.
