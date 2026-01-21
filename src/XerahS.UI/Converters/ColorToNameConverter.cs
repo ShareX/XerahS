@@ -24,6 +24,8 @@
 #endregion License Information (GPL v3)
 
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using Avalonia.Data.Converters;
 using XerahS.Common;
@@ -33,6 +35,42 @@ namespace XerahS.UI.Converters
 {
     public sealed class ColorToNameConverter : IValueConverter
     {
+        private static readonly Dictionary<string, string> StandardColorNames = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["000000"] = "Black",
+            ["404040"] = "Dark Gray",
+            ["FF0000"] = "Red",
+            ["FF6A00"] = "Orange",
+            ["FFD800"] = "Yellow",
+            ["B6FF00"] = "Lime",
+            ["4CFF00"] = "Green",
+            ["00FF21"] = "Bright Green",
+            ["00FF90"] = "Spring Green",
+            ["00FFFF"] = "Cyan",
+            ["0094FF"] = "Sky Blue",
+            ["0026FF"] = "Blue",
+            ["4800FF"] = "Indigo",
+            ["B200FF"] = "Violet",
+            ["FF00DC"] = "Magenta",
+            ["FF006E"] = "Hot Pink",
+            ["FFFFFF"] = "White",
+            ["808080"] = "Gray",
+            ["7F0000"] = "Dark Red",
+            ["7F3300"] = "Brown",
+            ["7F6A00"] = "Olive",
+            ["5B7F00"] = "Olive Green",
+            ["267F00"] = "Dark Green",
+            ["007F0E"] = "Forest Green",
+            ["007F46"] = "Teal",
+            ["007F7F"] = "Dark Cyan",
+            ["004A7F"] = "Steel Blue",
+            ["00137F"] = "Navy",
+            ["21007F"] = "Deep Blue",
+            ["57007F"] = "Deep Purple",
+            ["7F006E"] = "Plum",
+            ["7F0037"] = "Deep Pink"
+        };
+
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is not Avalonia.Media.Color color)
@@ -41,7 +79,18 @@ namespace XerahS.UI.Converters
             }
 
             var drawing = ColorConversion.ToDrawingColor(color);
-            return ColorHelpers.GetColorName(drawing);
+            if (drawing.IsNamedColor && !string.IsNullOrEmpty(drawing.Name))
+            {
+                return drawing.Name;
+            }
+
+            var hex = ColorHelpers.ColorToHex(drawing);
+            if (StandardColorNames.TryGetValue(hex, out var name))
+            {
+                return name;
+            }
+
+            return "Custom color";
         }
 
         public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
