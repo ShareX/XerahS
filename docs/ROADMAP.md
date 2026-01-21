@@ -1,12 +1,17 @@
 # XerahS - Project Status & Next Steps
 
-## Current Status (Updated 2025-12-31)
+## Current Status (Updated 2026-01-21)
 
-**Progress: ~97% of Core Editor Features Complete**
+**Progress: ~98% of Core Editor Features Complete**
 
 We have successfully implemented the Reimagined UI, Multi-monitor Region Capture, comprehensive Annotation System with 17 annotation types, and Image Effects integration with 40+ effects.
 
 ### ✅ Recently Completed
+- **Capture Engine Polish**:
+    - ✅ **Capture Start Delay**: Configurable timer for screens/recordings
+    - ✅ **Modeless Tools**: Color Picker and QR Code tools no longer block UI
+    - ✅ **Global Cursor Hiding**: Improved cursor visibility control
+    - ✅ **Visual Accuracy**: Fixed selection rectangle offsets
 - **Plugin Architecture (Phase 3 - 100%)**:
     - ✅ **Pure Dynamic Loading**: Zero compile-time coupling
     - ✅ **Manifest System**: `plugin.json` discovery
