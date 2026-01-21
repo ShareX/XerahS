@@ -97,9 +97,9 @@
                                 <StackPanel Spacing="10">
                                     <CheckBox IsChecked="{Binding UseModernCapture}" Content="Use modern screen capture (Direct3D11)"/>
                                     <CheckBox IsChecked="{Binding ShowCursor}" Content="Show cursor in screenshots"/>
-                                    <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto">
+                                    <Grid ColumnDefinitions="Auto, 15, 120, 15, Auto">
                                          <TextBlock Grid.Column="0" Text="Screenshot delay:" VerticalAlignment="Center"/>
-                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenshotDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" Width="100"/>
+                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenshotDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" MinWidth="120"/>
                                          <TextBlock Grid.Column="4" Text="seconds" VerticalAlignment="Center"/>
                                     </Grid>
                                     <CheckBox IsChecked="{Binding CaptureTransparent}" Content="Capture transparency"/>
@@ -118,18 +118,18 @@
                             <TextBlock Text="Screen recorder" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
                                 <StackPanel Spacing="10">
-                                    <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto">
+                                    <Grid ColumnDefinitions="Auto, 15, 120, 15, Auto">
                                          <TextBlock Grid.Column="0" Text="FPS:" VerticalAlignment="Center"/>
-                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenRecordFPS}" Minimum="1" Maximum="144" Increment="1" Width="100"/>
+                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenRecordFPS}" Minimum="1" Maximum="144" Increment="1" MinWidth="120"/>
                                     </Grid>
-                                    <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto">
+                                    <Grid ColumnDefinitions="Auto, 15, 120, 15, Auto">
                                          <TextBlock Grid.Column="0" Text="Duration:" VerticalAlignment="Center"/>
-                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenRecordDuration}" Minimum="0" Maximum="3600" Increment="1" Width="100"/>
+                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenRecordDuration}" Minimum="0" Maximum="3600" Increment="1" MinWidth="120"/>
                                          <TextBlock Grid.Column="4" Text="seconds (0 to disable)" VerticalAlignment="Center"/>
                                     </Grid>
-                                    <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto">
+                                    <Grid ColumnDefinitions="Auto, 15, 120, 15, Auto">
                                          <TextBlock Grid.Column="0" Text="Start delay:" VerticalAlignment="Center"/>
-                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenRecordStartDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" Width="100"/>
+                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenRecordStartDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" MinWidth="120"/>
                                          <TextBlock Grid.Column="4" Text="seconds" VerticalAlignment="Center"/>
                                     </Grid>
                                     <Grid ColumnDefinitions="Auto, 10, *">

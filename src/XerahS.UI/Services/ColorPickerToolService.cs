@@ -180,15 +180,18 @@ public static class ColorPickerToolService
         }
     }
 
-    private static async Task ShowDialogAsync(Window dialog, Window? owner)
+    private static Task ShowDialogAsync(Window dialog, Window? owner)
     {
         if (owner != null)
         {
-            await dialog.ShowDialog(owner);
-            return;
+            dialog.Show(owner);
+        }
+        else
+        {
+            dialog.Show();
         }
 
-        dialog.Show();
+        return Task.CompletedTask;
     }
 
     private static void ShowToast(string title, string text)

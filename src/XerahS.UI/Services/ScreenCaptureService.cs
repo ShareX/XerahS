@@ -30,6 +30,7 @@ using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture;
 using XerahS.RegionCapture.Models;
 using SkiaSharp;
+using System;
 using System.Diagnostics;
 
 namespace XerahS.UI.Services
@@ -190,21 +191,42 @@ namespace XerahS.UI.Services
             bool showCursor = options?.ShowCursor == true;
             bool hideLiveCursor = showCursor && selectionRect.Contains(cursorAtSelection);
 
-            // 3. Small delay to allow overlay windows to close fully and cursor to hide
+            // 3. Optional delay before capture starts (cancellable)
+            if (options?.CaptureStartDelaySeconds > 0)
+            {
+                var delayMs = (int)Math.Round(options.CaptureStartDelaySeconds * 1000, MidpointRounding.AwayFromZero);
+                var workflowId = string.IsNullOrWhiteSpace(options.WorkflowId) ? "none" : options.WorkflowId;
+                var workflowCategory = string.IsNullOrWhiteSpace(options.WorkflowCategory) ? "Unknown" : options.WorkflowCategory;
+                TroubleshootingHelper.Log("CaptureDelay", "REGION", $"WorkflowId={workflowId}, Category={workflowCategory}, DelaySeconds={options.CaptureStartDelaySeconds:F3}, DelayMs={delayMs}");
+
+                try
+                {
+                    await Task.Delay(delayMs, options.CaptureStartDelayCancellationToken);
+                    TroubleshootingHelper.Log("CaptureDelay", "REGION", $"WorkflowId={workflowId}, Category={workflowCategory}, DelayCompleted=true");
+                }
+                catch (OperationCanceledException)
+                {
+                    TroubleshootingHelper.Log("CaptureDelay", "REGION", $"WorkflowId={workflowId}, Category={workflowCategory}, DelayCancelled=true");
+                    return null;
+                }
+            }
+
+            // 4. Small delay to allow overlay windows to close fully and cursor to hide
             await Task.Delay(200);
 
-            // 4. Capture Screen (Platform) - WITHOUT cursor (we'll draw ghost cursor manually)
+            // 5. Capture Screen (Platform) - WITHOUT cursor (we'll draw ghost cursor manually)
             var captureOptions = options != null ? new CaptureOptions
             {
                 ShowCursor = showCursor && !hideLiveCursor,
                 UseModernCapture = options.UseModernCapture,
                 WorkflowId = options.WorkflowId,
+                WorkflowCategory = options.WorkflowCategory
             } : null;
 
             var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
             var bitmap = await _platformImpl.CaptureRectAsync(skRect, captureOptions);
 
-            // 5. Draw ghost cursor onto captured bitmap if available
+            // 6. Draw ghost cursor onto captured bitmap if available
             // We use the INITIAL ghost cursor (captured at start) to match ShareX behavior ("original location").
             // The Live cursor is hidden from the DXGI capture by the platform service.
             if (bitmap != null && ghostCursor?.Image != null && showCursor)

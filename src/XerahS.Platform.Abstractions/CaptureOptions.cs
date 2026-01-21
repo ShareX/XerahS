@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using System.Threading;
+
 namespace XerahS.Platform.Abstractions
 {
     public class CaptureOptions
@@ -37,5 +39,20 @@ namespace XerahS.Platform.Abstractions
         /// ID of the workflow triggering this capture
         /// </summary>
         public string? WorkflowId { get; set; }
+
+        /// <summary>
+        /// Workflow category (ScreenCapture, ScreenRecord, etc.) used for logging.
+        /// </summary>
+        public string? WorkflowCategory { get; set; }
+
+        /// <summary>
+        /// Optional delay (in seconds) before capture starts.
+        /// </summary>
+        public double CaptureStartDelaySeconds { get; set; } = 0;
+
+        /// <summary>
+        /// Cancellation token used during capture start delay.
+        /// </summary>
+        public CancellationToken CaptureStartDelayCancellationToken { get; set; } = CancellationToken.None;
     }
 }

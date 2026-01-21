@@ -164,8 +164,10 @@ namespace XerahS.Core.Tasks
             Info.TaskSettings ??= new TaskSettings();
             Info.Metadata ??= new TaskMetadata();
 
-            var taskSettings = Info.TaskSettings;
-            var metadata = Info.Metadata;
+            TaskSettings taskSettings = Info.TaskSettings ?? new TaskSettings();
+            TaskMetadata metadata = Info.Metadata ?? new TaskMetadata();
+            Info.TaskSettings = taskSettings;
+            Info.Metadata = metadata;
 
             TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "DoWorkAsync Entry");
             
@@ -186,6 +188,10 @@ namespace XerahS.Core.Tasks
                 taskSettings.CaptureSettings ??= new TaskSettingsCapture();
                 var captureSettings = taskSettings.CaptureSettings;
 
+                var captureDelaySeconds = TaskHelpers.GetCaptureStartDelaySeconds(taskSettings, out var workflowCategory);
+                var isScreenCaptureDelay = workflowCategory == EnumExtensions.WorkflowType_Category_ScreenCapture && captureDelaySeconds > 0;
+                var isScreenRecordDelay = workflowCategory == EnumExtensions.WorkflowType_Category_ScreenRecord && captureDelaySeconds > 0;
+
                 var captureOptions = new CaptureOptions
                 {
                     UseModernCapture = captureSettings.UseModernCapture,
@@ -193,20 +199,34 @@ namespace XerahS.Core.Tasks
                     CaptureTransparent = captureSettings.CaptureTransparent,
                     CaptureShadow = captureSettings.CaptureShadow,
                     CaptureClientArea = captureSettings.CaptureClientArea,
-                    WorkflowId = taskSettings.WorkflowId
+                    WorkflowId = taskSettings.WorkflowId,
+                    WorkflowCategory = workflowCategory
                 };
 
                 switch (taskSettings.Job)
                 {
                     case WorkflowType.PrintScreen:
+                        if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
                         image = await PlatformServices.ScreenCapture.CaptureFullScreenAsync(captureOptions);
                         break;
 
                     case WorkflowType.RectangleRegion:
+                        if (isScreenCaptureDelay)
+                        {
+                            captureOptions.CaptureStartDelaySeconds = captureDelaySeconds;
+                            captureOptions.CaptureStartDelayCancellationToken = token;
+                        }
                         image = await PlatformServices.ScreenCapture.CaptureRegionAsync(captureOptions);
                         break;
 
                     case WorkflowType.ActiveWindow:
+                        if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
                         if (PlatformServices.Window != null)
                         {
                             image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
@@ -326,6 +346,11 @@ namespace XerahS.Core.Tasks
                                         TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", $"After activation - Foreground handle: {foregroundHandle}, Title: '{foregroundTitle}'");
                                         TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", $"Foreground matches selected: {foregroundHandle == selectedWindow.Handle}");
 
+                                        if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings!, workflowCategory, captureDelaySeconds, token))
+                                        {
+                                            return;
+                                        }
+
                                         // Capture active window
                                         image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
                                         TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capture active window result: {image != null}");
@@ -374,6 +399,11 @@ namespace XerahS.Core.Tasks
                                     TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Capture-time title: '{captureTimeTitle}'");
                                     TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Capture-time bounds: X={captureTimeBounds.X}, Y={captureTimeBounds.Y}, W={captureTimeBounds.Width}, H={captureTimeBounds.Height}");
                                     TroubleshootingHelper.Log("CustomWindow", "VERIFY", $"Title contains search term: {captureTimeTitle?.Contains(targetWindow, StringComparison.OrdinalIgnoreCase) ?? false}");
+
+                                    if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings!, workflowCategory, captureDelaySeconds, token))
+                                    {
+                                        return;
+                                    }
 
                                     image = await PlatformServices.ScreenCapture.CaptureWindowAsync(hWnd, PlatformServices.Window, captureOptions);
                                     TroubleshootingHelper.Log("CustomWindow", "CAPTURE", $"Capture window result: {image != null}");
@@ -433,6 +463,11 @@ namespace XerahS.Core.Tasks
 
                         TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region selected: {recordingRegion}, calling HandleStartRecordingAsync");
 
+                        if (isScreenRecordDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
+
                         await HandleStartRecordingAsync(CaptureMode.Region, region: recordingRegion);
                         TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "HandleStartRecordingAsync completed");
                         return; // Recording tasks don't proceed to image processing
@@ -441,6 +476,10 @@ namespace XerahS.Core.Tasks
                         if (PlatformServices.Window != null)
                         {
                             var foregroundWindow = PlatformServices.Window.GetForegroundWindow();
+                            if (isScreenRecordDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
+                            {
+                                return;
+                            }
                             await HandleStartRecordingAsync(CaptureMode.Window, foregroundWindow);
                         }
                         return;
@@ -449,6 +488,10 @@ namespace XerahS.Core.Tasks
                         // TODO: Show region selector UI and get selected region
                         // For now, just start full screen recording
                         DebugHelper.WriteLine("ScreenRecorderCustomRegion: Region selector not yet implemented, falling back to full screen");
+                        if (isScreenRecordDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
                         await HandleStartRecordingAsync(CaptureMode.Screen);
                         return;
 
@@ -587,6 +630,32 @@ namespace XerahS.Core.Tasks
                 Status = TaskStatus.Stopping;
                 OnStatusChanged();
                 _cancellationTokenSource.Cancel();
+            }
+        }
+
+        private async Task<bool> ApplyCaptureStartDelayAsync(TaskSettings taskSettings, string category, double delaySeconds, CancellationToken token)
+        {
+            if (delaySeconds <= 0)
+            {
+                return true;
+            }
+
+            var delayMs = (int)Math.Round(delaySeconds * 1000, MidpointRounding.AwayFromZero);
+            var workflowId = string.IsNullOrWhiteSpace(taskSettings.WorkflowId) ? "none" : taskSettings.WorkflowId;
+            TroubleshootingHelper.Log(taskSettings.Job.ToString(), "CAPTURE_DELAY", $"WorkflowId={workflowId}, Category={category}, DelaySeconds={delaySeconds:F3}, DelayMs={delayMs}");
+
+            try
+            {
+                await Task.Delay(delayMs, token);
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "CAPTURE_DELAY", $"WorkflowId={workflowId}, Category={category}, DelayCompleted=true");
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "CAPTURE_DELAY", $"WorkflowId={workflowId}, Category={category}, DelayCancelled=true");
+                Status = TaskStatus.Stopped;
+                OnStatusChanged();
+                return false;
             }
         }
 

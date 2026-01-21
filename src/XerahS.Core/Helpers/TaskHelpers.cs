@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using ShareX.Editor.ImageEffects;
+using System;
 using XerahS.Common;
 
 namespace XerahS.Core;
@@ -132,6 +133,74 @@ public static partial class TaskHelpers
     public static JobMediaType GetJobMediaType(TaskSettings taskSettings)
     {
         return GetJobMediaType(taskSettings.Job);
+    }
+
+    /// <summary>
+    /// Determine if a screen capture workflow should delay before capturing.
+    /// </summary>
+    public static bool IsScreenCaptureStartJob(WorkflowType job)
+    {
+        return job switch
+        {
+            WorkflowType.PrintScreen or
+            WorkflowType.ActiveWindow or
+            WorkflowType.CustomWindow or
+            WorkflowType.ActiveMonitor or
+            WorkflowType.RectangleRegion or
+            WorkflowType.RectangleLight or
+            WorkflowType.RectangleTransparent or
+            WorkflowType.CustomRegion or
+            WorkflowType.LastRegion or
+            WorkflowType.ScrollingCapture or
+            WorkflowType.AutoCapture or
+            WorkflowType.StartAutoCapture => true,
+            _ => false
+        };
+    }
+
+    /// <summary>
+    /// Determine if a screen recording workflow should delay before recording starts.
+    /// </summary>
+    public static bool IsScreenRecordStartJob(WorkflowType job)
+    {
+        return job switch
+        {
+            WorkflowType.ScreenRecorder or
+            WorkflowType.StartScreenRecorder or
+            WorkflowType.ScreenRecorderActiveWindow or
+            WorkflowType.ScreenRecorderCustomRegion or
+            WorkflowType.ScreenRecorderGIF or
+            WorkflowType.ScreenRecorderGIFActiveWindow or
+            WorkflowType.ScreenRecorderGIFCustomRegion or
+            WorkflowType.StartScreenRecorderGIF => true,
+            _ => false
+        };
+    }
+
+    /// <summary>
+    /// Resolve the capture start delay (in seconds) for a task and return the workflow category.
+    /// </summary>
+    public static double GetCaptureStartDelaySeconds(TaskSettings taskSettings, out string category)
+    {
+        if (taskSettings == null)
+        {
+            throw new ArgumentNullException(nameof(taskSettings));
+        }
+
+        category = taskSettings.Job.GetHotkeyCategory();
+        var captureSettings = taskSettings.CaptureSettings ?? new TaskSettingsCapture();
+
+        if (category == EnumExtensions.WorkflowType_Category_ScreenCapture && IsScreenCaptureStartJob(taskSettings.Job))
+        {
+            return (double)captureSettings.ScreenshotDelay;
+        }
+
+        if (category == EnumExtensions.WorkflowType_Category_ScreenRecord && IsScreenRecordStartJob(taskSettings.Job))
+        {
+            return captureSettings.ScreenRecordStartDelay;
+        }
+
+        return 0;
     }
 
     /// <summary>
