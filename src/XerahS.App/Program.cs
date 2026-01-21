@@ -30,10 +30,27 @@ namespace XerahS.App
 {
     internal class Program
     {
+        private static XerahS.Common.SingleInstanceManager? _singleInstanceManager;
+
+        private const string MutexName = "XerahS-82E6AC09-0FFC-4992-B793-3F79E1F71E70";
+        private const string PipeName = "XerahS-Pipe-1F42DA49-7B2A-4E6F-8A3C-D56F09E0C481";
 
         [STAThread]
         public static void Main(string[] args)
         {
+            // Single instance enforcement
+            _singleInstanceManager = new XerahS.Common.SingleInstanceManager(MutexName, PipeName, args);
+
+            if (!_singleInstanceManager.IsFirstInstance)
+            {
+                // Arguments have been passed to the first instance, exit this instance
+                _singleInstanceManager.Dispose();
+                return;
+            }
+
+            // Subscribe to receive arguments from subsequent instances
+            _singleInstanceManager.ArgumentsReceived += OnArgumentsReceived;
+
             // Initialize logging with datestamped file in Logs/yyyy-mm folder structure
             var baseFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), XerahS.Core.SettingsManager.AppName);
             var logsFolder = System.IO.Path.Combine(baseFolder, "Logs", DateTime.Now.ToString("yyyy-MM"));
@@ -44,6 +61,7 @@ namespace XerahS.App
             dh.AsyncWrite = false; // Synchronous for startup
 
             dh.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - {XerahS.Common.AppResources.AppName} starting.");
+            dh.WriteLine("Running as first instance (single instance mode enabled).");
 
             var version = XerahS.Common.AppResources.Version;
             dh.WriteLine($"Version: {version} Dev");
@@ -217,6 +235,54 @@ namespace XerahS.App
                 .UsePlatformDetect()
                 .UseDesktopWebView()
                 .LogToTrace();
+
+        /// <summary>
+        /// Handles arguments received from subsequent application instances.
+        /// This is called when another instance of the application is launched and passes its arguments here.
+        /// </summary>
+        private static void OnArgumentsReceived(string[] args)
+        {
+            XerahS.Common.DebugHelper.WriteLine($"Arguments received from another instance: {string.Join(" ", args)}");
+
+            // Process the arguments on the UI thread to handle any UI-related actions
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    // Bring the main window to the foreground
+                    if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop &&
+                        desktop.MainWindow != null)
+                    {
+                        var mainWindow = desktop.MainWindow;
+                        
+                        // Restore if minimized
+                        if (mainWindow.WindowState == Avalonia.Controls.WindowState.Minimized)
+                        {
+                            mainWindow.WindowState = Avalonia.Controls.WindowState.Normal;
+                        }
+                        
+                        // Show in taskbar and bring to front
+                        mainWindow.ShowInTaskbar = true;
+                        mainWindow.Show();
+                        mainWindow.Activate();
+                        mainWindow.Topmost = true;
+                        mainWindow.Topmost = false;
+                    }
+
+                    // TODO: Process arguments if needed (e.g., file paths to open, commands to execute)
+                    // For now, just activating the window is the primary behavior
+                    if (args.Length > 0)
+                    {
+                        XerahS.Common.DebugHelper.WriteLine($"Processing {args.Length} argument(s) from secondary instance");
+                        // Future: Handle specific arguments like file paths for upload, capture commands, etc.
+                    }
+                }
+                catch (Exception ex)
+                {
+                    XerahS.Common.DebugHelper.WriteException(ex, "Failed to handle arguments from secondary instance");
+                }
+            });
+        }
     }
 }
 
