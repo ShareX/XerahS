@@ -19,6 +19,7 @@
         <converters:BoolToActiveBackgroundConverter x:Key="BoolToActiveBackgroundConverter"/>
         <converters:EqualsConverter x:Key="EqualsConverter"/>
         <uiconverters:BoolToRecordingColorConverter x:Key="BoolToRecordingColorConverter"/>
+        <uiconverters:ColorToNameConverter x:Key="ColorToNameConverter"/>
     </Application.Resources>
 
 
