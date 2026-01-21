@@ -74,7 +74,10 @@
                                         HorizontalContentAlignment="Stretch"
                                         VerticalContentAlignment="Stretch"
                                         Margin="0,0,6,6"
-                                        ToolTip.Tip="{Binding Converter={StaticResource ColorToNameConverter}}">
+                                        ToolTip.Tip="{Binding Converter={StaticResource ColorToNameConverter}}"
+                                        ToolTip.Placement="Top"
+                                        ToolTip.HorizontalOffset="0"
+                                        ToolTip.VerticalOffset="-6">
                                     <Border CornerRadius="4"
                                             BorderBrush="#30000000"
                                             BorderThickness="1"
@@ -112,7 +115,10 @@
                                         HorizontalContentAlignment="Stretch"
                                         VerticalContentAlignment="Stretch"
                                         Margin="0,0,6,6"
-                                        ToolTip.Tip="{Binding Converter={StaticResource ColorToNameConverter}}">
+                                        ToolTip.Tip="{Binding Converter={StaticResource ColorToNameConverter}}"
+                                        ToolTip.Placement="Top"
+                                        ToolTip.HorizontalOffset="0"
+                                        ToolTip.VerticalOffset="-6">
                                     <Border CornerRadius="4"
                                             BorderBrush="#30000000"
                                             BorderThickness="1"
