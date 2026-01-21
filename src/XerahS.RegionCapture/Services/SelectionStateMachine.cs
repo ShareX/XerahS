@@ -139,6 +139,17 @@ public sealed class SelectionStateMachine
     }
 
     /// <summary>
+    /// Immediately confirms a single-point selection.
+    /// </summary>
+    public void ConfirmPoint(PixelPoint point)
+    {
+        _currentPoint = point;
+        SetSelectionRect(new PixelRect(point.X, point.Y, 1, 1));
+        TransitionTo(CaptureState.Confirmed);
+        SelectionConfirmed?.Invoke(new RegionSelectionResult(_selectionRect, _currentPoint));
+    }
+
+    /// <summary>
     /// Ends the current drag operation.
     /// </summary>
     public void EndDrag()

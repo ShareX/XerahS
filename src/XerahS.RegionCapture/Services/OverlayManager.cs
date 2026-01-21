@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 using XerahS.RegionCapture.Models;
+using XerahS.RegionCapture;
 using XerahS.RegionCapture.UI;
 
 namespace XerahS.RegionCapture.Services;
@@ -61,7 +62,10 @@ public sealed class OverlayManager : IDisposable
     /// <summary>
     /// Creates and shows overlay windows for all monitors.
     /// </summary>
-    public async Task<RegionSelectionResult?> ShowOverlaysAsync(Action<PixelRect>? onSelectionChanged = null, XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
+    public async Task<RegionSelectionResult?> ShowOverlaysAsync(
+        Action<PixelRect>? onSelectionChanged = null,
+        XerahS.Platform.Abstractions.CursorInfo? initialCursor = null,
+        RegionCaptureOptions? options = null)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -75,7 +79,7 @@ public sealed class OverlayManager : IDisposable
             // Create one overlay per monitor
             foreach (var monitor in monitors)
             {
-                var overlay = new OverlayWindow(monitor, _completionSource, onSelectionChanged, initialCursor);
+                var overlay = new OverlayWindow(monitor, _completionSource, onSelectionChanged, initialCursor, options);
                 _overlays.Add(overlay);
             }
 

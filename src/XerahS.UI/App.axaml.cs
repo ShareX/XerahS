@@ -482,6 +482,22 @@ public partial class App : Application
 
         if (settings == null) return;
 
+        bool isColorPickerJob = settings.Job == WorkflowType.ColorPicker ||
+                                settings.Job == WorkflowType.ScreenColorPicker;
+
+        if (isColorPickerJob)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                var owner = ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+
+                _ = ColorPickerToolService.HandleWorkflowAsync(settings.Job, owner);
+            });
+            return;
+        }
+
         bool isQrJob = settings.Job == WorkflowType.QRCode ||
                        settings.Job == WorkflowType.QRCodeDecodeFromScreen ||
                        settings.Job == WorkflowType.QRCodeScanRegion;

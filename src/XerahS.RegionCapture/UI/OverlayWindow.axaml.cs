@@ -27,6 +27,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using XerahS.RegionCapture.Models;
+using XerahS.RegionCapture;
 using AvPixelRect = Avalonia.PixelRect;
 using AvPixelPoint = Avalonia.PixelPoint;
 using PixelRect = XerahS.RegionCapture.Models.PixelRect;
@@ -54,7 +55,12 @@ public partial class OverlayWindow : Window
         InitializeComponent();
     }
 
-    public OverlayWindow(MonitorInfo monitor, TaskCompletionSource<RegionSelectionResult?> completionSource, Action<PixelRect>? selectionChanged = null, XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
+    public OverlayWindow(
+        MonitorInfo monitor,
+        TaskCompletionSource<RegionSelectionResult?> completionSource,
+        Action<PixelRect>? selectionChanged = null,
+        XerahS.Platform.Abstractions.CursorInfo? initialCursor = null,
+        RegionCaptureOptions? options = null)
     {
         _monitor = monitor;
         _completionSource = completionSource;
@@ -67,7 +73,7 @@ public partial class OverlayWindow : Window
         Height = monitor.PhysicalBounds.Height / monitor.ScaleFactor;
 
         // Create and add the capture control
-        _captureControl = new RegionCaptureControl(_monitor, null, initialCursor);
+        _captureControl = new RegionCaptureControl(_monitor, options, initialCursor);
         if (selectionChanged is not null)
             _captureControl.SelectionChanged += selectionChanged;
         _captureControl.RegionSelected += OnRegionSelected;

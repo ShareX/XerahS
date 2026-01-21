@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.10" />
+    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.3.10" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.10" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.10" />
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.1.1" />

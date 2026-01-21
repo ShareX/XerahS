@@ -178,6 +178,12 @@ namespace XerahS.UI.Views
                     case "Tools_IndexFolder":
                         contentFrame.Content = new IndexFolderView();
                         break;
+                    case "Tools_ColorPicker":
+                        _ = ColorPickerToolService.HandleWorkflowAsync(WorkflowType.ColorPicker, this);
+                        return;
+                    case "Tools_ScreenColorPicker":
+                        _ = ColorPickerToolService.HandleWorkflowAsync(WorkflowType.ScreenColorPicker, this);
+                        return;
                     case "Tools_QrGenerator":
                         _ = QrCodeToolService.HandleWorkflowAsync(WorkflowType.QRCode, this);
                         return;

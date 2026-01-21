@@ -35,6 +35,7 @@
         <!-- TODO: Re-enable dark theme when ready -->
         <!-- <StyleInclude Source="avares://ShareX.Avalonia.UI/Themes/Dark/DarkTheme.axaml" /> -->
         <sty:FluentAvaloniaTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
         <Style Selector="Button.DarkButton">
             <Setter Property="Background" Value="#25263A"/>
             <Setter Property="Foreground" Value="#E2E8F0"/>

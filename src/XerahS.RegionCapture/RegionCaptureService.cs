@@ -49,7 +49,7 @@ public sealed class RegionCaptureService
     public async Task<RegionSelectionResult?> CaptureRegionAsync(XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
     {
         using var manager = new OverlayManager();
-        return await manager.ShowOverlaysAsync(null, initialCursor);
+        return await manager.ShowOverlaysAsync(null, initialCursor, Options);
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ public sealed class RegionCaptureService
     public async Task<RegionSelectionResult?> CaptureRegionAsync(Action<PixelRect>? onSelectionChanged, XerahS.Platform.Abstractions.CursorInfo? initialCursor = null)
     {
         using var manager = new OverlayManager();
-        return await manager.ShowOverlaysAsync(onSelectionChanged, initialCursor);
+        return await manager.ShowOverlaysAsync(onSelectionChanged, initialCursor, Options);
     }
 }
 
@@ -67,6 +67,11 @@ public sealed class RegionCaptureService
 /// </summary>
 public sealed record RegionCaptureOptions
 {
+    /// <summary>
+    /// Sets the capture mode (e.g., ScreenColorPicker).
+    /// </summary>
+    public RegionCaptureMode Mode { get; init; } = RegionCaptureMode.Default;
+
     /// <summary>
     /// Enable window snapping on hover. Default: true
     /// </summary>

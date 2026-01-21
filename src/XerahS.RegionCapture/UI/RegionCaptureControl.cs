@@ -50,6 +50,7 @@ public sealed class RegionCaptureControl : UserControl
     private readonly SelectionStateMachine _stateMachine;
     private readonly MagnifierControl _magnifier;
     private readonly bool _enableKeyboardNudge;
+    private readonly RegionCaptureMode _mode;
 
     // Rendering configuration
     private readonly double _dimOpacity;
@@ -98,7 +99,8 @@ public sealed class RegionCaptureControl : UserControl
         _stateMachine.SelectionChanged += OnSelectionChanged;
 
         _dimOpacity = options.DimOpacity;
-        _enableWindowSnapping = options.EnableWindowSnapping;
+        _mode = options.Mode;
+        _enableWindowSnapping = options.EnableWindowSnapping && _mode != RegionCaptureMode.ScreenColorPicker;
         _enableMagnifier = options.EnableMagnifier;
         _enableKeyboardNudge = options.EnableKeyboardNudge;
 
@@ -150,6 +152,13 @@ public sealed class RegionCaptureControl : UserControl
 
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
+            if (_mode == RegionCaptureMode.ScreenColorPicker)
+            {
+                _stateMachine.ConfirmPoint(physicalPoint);
+                e.Handled = true;
+                return;
+            }
+
             // Always start dragging/interaction
             // If the user releases immediately (click), EndDrag will handle snapping to the hovered window.
             _stateMachine.BeginDrag(physicalPoint);
@@ -185,7 +194,7 @@ public sealed class RegionCaptureControl : UserControl
     {
         base.OnPointerReleased(e);
 
-        if (_state == CaptureState.Dragging)
+        if (_state == CaptureState.Dragging && _mode != RegionCaptureMode.ScreenColorPicker)
         {
             var point = e.GetPosition(this);
             var physicalPoint = LocalToPhysical(point);
@@ -637,6 +646,10 @@ public sealed class RegionCaptureControl : UserControl
             return;
 
         var instructions = "Click and drag to select a region | Click a window to snap | Esc to cancel";
+        if (_mode == RegionCaptureMode.ScreenColorPicker)
+        {
+            instructions = "Click to pick a color | Esc to cancel";
+        }
         var formatted = new FormattedText(
             instructions,
             System.Globalization.CultureInfo.CurrentCulture,
