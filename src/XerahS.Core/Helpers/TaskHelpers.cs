@@ -298,8 +298,8 @@ public static partial class TaskHelpers
         string pattern;
 
         // Use window-specific pattern if available
-        if (!string.IsNullOrEmpty(settings.SaveImageSubFolderPatternWindow) &&
-            !string.IsNullOrEmpty(metadata?.WindowTitle))
+        if (!string.IsNullOrWhiteSpace(settings.SaveImageSubFolderPatternWindow) &&
+            !string.IsNullOrWhiteSpace(metadata?.WindowTitle))
         {
             pattern = taskSettings.UploadSettings.NameFormatPatternActiveWindow;
         }
@@ -377,8 +377,8 @@ public static partial class TaskHelpers
         {
             string subFolderPattern;
 
-            if (!string.IsNullOrEmpty(settings.SaveImageSubFolderPatternWindow) &&
-                !string.IsNullOrEmpty(nameParser.WindowText))
+            if (!string.IsNullOrWhiteSpace(settings.SaveImageSubFolderPatternWindow) &&
+                !string.IsNullOrWhiteSpace(nameParser.WindowText))
             {
                 subFolderPattern = settings.SaveImageSubFolderPatternWindow;
             }

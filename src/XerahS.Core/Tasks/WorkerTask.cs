@@ -45,6 +45,21 @@ namespace XerahS.Core.Tasks
         /// </summary>
         private const int WindowActivationDelayMs = 250;
 
+        /// <summary>
+        /// H.264/H.265 video encoders require dimensions divisible by this value.
+        /// </summary>
+        private const int VideoDimensionAlignment = 2;
+
+        /// <summary>
+        /// Minimum video width in pixels for recording.
+        /// </summary>
+        private const int MinVideoWidth = 2;
+
+        /// <summary>
+        /// Minimum video height in pixels for recording.
+        /// </summary>
+        private const int MinVideoHeight = 2;
+
         public TaskInfo Info { get; private set; }
         public TaskStatus Status { get; private set; }
         public Exception? Error { get; private set; }
@@ -457,12 +472,12 @@ namespace XerahS.Core.Tasks
                         }
 
                         // Convert SKRectI to System.Drawing.Rectangle for recording options
-                        // H.264 encoder requires even dimensions - round down to nearest even number
-                        int adjustedWidth = selection.Width - (selection.Width % 2);
-                        int adjustedHeight = selection.Height - (selection.Height % 2);
+                        // Video encoders require dimensions divisible by VideoDimensionAlignment
+                        int adjustedWidth = selection.Width - (selection.Width % VideoDimensionAlignment);
+                        int adjustedHeight = selection.Height - (selection.Height % VideoDimensionAlignment);
 
-                        // Ensure minimum dimensions (at least 2x2)
-                        if (adjustedWidth < 2 || adjustedHeight < 2)
+                        // Ensure minimum dimensions for video encoding
+                        if (adjustedWidth < MinVideoWidth || adjustedHeight < MinVideoHeight)
                         {
                             TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region too small after adjustment: {adjustedWidth}x{adjustedHeight}, aborting recording");
                             Status = TaskStatus.Stopped;

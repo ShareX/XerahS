@@ -389,106 +389,84 @@ namespace XerahS.Core
 
         #region Helper Methods
 
-        private static string GetUploadersConfigFileName(string destinationFolder)
+        /// <summary>
+        /// Gets machine-specific config filename, initializing from default if needed.
+        /// </summary>
+        /// <param name="destinationFolder">Folder where config files are stored</param>
+        /// <param name="configPrefix">Config filename prefix (e.g., "UploadersConfig")</param>
+        /// <param name="configExtension">Config filename extension (e.g., "json")</param>
+        /// <param name="defaultFileName">Default filename without machine-specific suffix</param>
+        /// <param name="useMachineSpecific">Whether to use machine-specific config</param>
+        /// <returns>The appropriate config filename</returns>
+        private static string GetMachineSpecificConfigFileName(
+            string destinationFolder,
+            string configPrefix,
+            string configExtension,
+            string defaultFileName,
+            bool useMachineSpecific)
         {
             if (string.IsNullOrEmpty(destinationFolder))
             {
-                // Fallback if no specific folder is determined yet, but usually not called this way
-                return UploadersConfigFileName;
+                return defaultFileName;
             }
 
-            if (Settings != null && Settings.UseMachineSpecificUploadersConfig)
+            if (!useMachineSpecific)
             {
-                string sanitizedMachineName = FileHelpers.SanitizeFileName(Environment.MachineName);
+                return defaultFileName;
+            }
 
-                if (!string.IsNullOrEmpty(sanitizedMachineName))
+            string sanitizedMachineName = FileHelpers.SanitizeFileName(Environment.MachineName);
+            if (string.IsNullOrEmpty(sanitizedMachineName))
+            {
+                return defaultFileName;
+            }
+
+            string machineSpecificFileName = $"{configPrefix}-{sanitizedMachineName}.{configExtension}";
+            string machineSpecificPath = Path.Combine(destinationFolder, machineSpecificFileName);
+
+            // If machine specific file doesn't exist, initialize from default
+            if (!File.Exists(machineSpecificPath))
+            {
+                string defaultFilePath = Path.Combine(destinationFolder, defaultFileName);
+
+                if (File.Exists(defaultFilePath))
                 {
-                    string machineSpecificFileName = $"{UploadersConfigFileNamePrefix}-{sanitizedMachineName}.{UploadersConfigFileNameExtension}";
-                    string machineSpecificPath = Path.Combine(destinationFolder, machineSpecificFileName);
-
-                    // If machine specific file doesn't exist, we might want to initialize it from default
-                    if (!File.Exists(machineSpecificPath))
+                    try
                     {
-                        string defaultFilePath = Path.Combine(destinationFolder, UploadersConfigFileName);
-
-                        // If default exists, copy it to machine specific
-                        if (File.Exists(defaultFilePath))
-                        {
-                            try
-                            {
-                                // overwrite: false means throw if file exists
-                                File.Copy(defaultFilePath, machineSpecificPath, overwrite: false);
-                            }
-                            catch (IOException) when (File.Exists(machineSpecificPath))
-                            {
-                                // File was created by another process/thread between check and copy
-                                // This is expected in concurrent scenarios, safe to ignore
-                            }
-                            catch (IOException ex)
-                            {
-                                // Unexpected IO error (disk full, access denied, etc.)
-                                DebugHelper.WriteException(ex, $"Failed to initialize machine-specific uploaders config: {machineSpecificPath}");
-                                // Continue with default config name
-                            }
-                        }
+                        File.Copy(defaultFilePath, machineSpecificPath, overwrite: false);
                     }
-
-                    return machineSpecificFileName;
+                    catch (IOException) when (File.Exists(machineSpecificPath))
+                    {
+                        // File was created by another process/thread - safe to ignore
+                    }
+                    catch (IOException ex)
+                    {
+                        DebugHelper.WriteException(ex, $"Failed to initialize machine-specific config: {machineSpecificPath}");
+                    }
                 }
             }
 
-            return UploadersConfigFileName;
+            return machineSpecificFileName;
+        }
+
+        private static string GetUploadersConfigFileName(string destinationFolder)
+        {
+            return GetMachineSpecificConfigFileName(
+                destinationFolder,
+                UploadersConfigFileNamePrefix,
+                UploadersConfigFileNameExtension,
+                UploadersConfigFileName,
+                Settings?.UseMachineSpecificUploadersConfig ?? false);
         }
 
         private static string GetWorkflowsConfigFileName(string destinationFolder)
         {
-            if (string.IsNullOrEmpty(destinationFolder))
-            {
-                // Fallback if no specific folder is determined yet, but usually not called this way
-                return WorkflowsConfigFileName;
-            }
-
-            if (Settings != null && Settings.UseMachineSpecificWorkflowsConfig)
-            {
-                string sanitizedMachineName = FileHelpers.SanitizeFileName(Environment.MachineName);
-
-                if (!string.IsNullOrEmpty(sanitizedMachineName))
-                {
-                    string machineSpecificFileName = $"{WorkflowsConfigFileNamePrefix}-{sanitizedMachineName}.{WorkflowsConfigFileNameExtension}";
-                    string machineSpecificPath = Path.Combine(destinationFolder, machineSpecificFileName);
-
-                    // If machine specific file doesn't exist, we might want to initialize it from default
-                    if (!File.Exists(machineSpecificPath))
-                    {
-                        string defaultFilePath = Path.Combine(destinationFolder, WorkflowsConfigFileName);
-
-                        // If default exists, copy it to machine specific
-                        if (File.Exists(defaultFilePath))
-                        {
-                            try
-                            {
-                                // overwrite: false means throw if file exists
-                                File.Copy(defaultFilePath, machineSpecificPath, overwrite: false);
-                            }
-                            catch (IOException) when (File.Exists(machineSpecificPath))
-                            {
-                                // File was created by another process/thread between check and copy
-                                // This is expected in concurrent scenarios, safe to ignore
-                            }
-                            catch (IOException ex)
-                            {
-                                // Unexpected IO error (disk full, access denied, etc.)
-                                DebugHelper.WriteException(ex, $"Failed to initialize machine-specific workflows config: {machineSpecificPath}");
-                                // Continue with default config name
-                            }
-                        }
-                    }
-
-                    return machineSpecificFileName;
-                }
-            }
-
-            return WorkflowsConfigFileName;
+            return GetMachineSpecificConfigFileName(
+                destinationFolder,
+                WorkflowsConfigFileNamePrefix,
+                WorkflowsConfigFileNameExtension,
+                WorkflowsConfigFileName,
+                Settings?.UseMachineSpecificWorkflowsConfig ?? false);
         }
 
         /// <summary>

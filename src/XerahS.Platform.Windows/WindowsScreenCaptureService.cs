@@ -413,7 +413,16 @@ namespace XerahS.Platform.Windows
             {
                 bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                 stream.Seek(0, SeekOrigin.Begin);
-                return SKBitmap.Decode(stream);
+
+                // SKBitmap.Decode creates a copy of pixel data, safe to dispose stream after
+                var skBitmap = SKBitmap.Decode(stream);
+
+                if (skBitmap == null)
+                {
+                    DebugHelper.WriteLine("Failed to decode bitmap to SKBitmap");
+                }
+
+                return skBitmap;
             }
         }
 
