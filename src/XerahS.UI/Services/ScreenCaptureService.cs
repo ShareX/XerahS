@@ -72,20 +72,22 @@ namespace XerahS.UI.Services
                         }
                     }
 
-                    var captureService = new RegionCaptureService();
-                    
-                    // Propagate options
-                    if (options != null)
+                    // Capture background for magnifier
+                    SkiaSharp.SKBitmap? backgroundForMagnifier = null;
+                    try
                     {
-                        captureService = new RegionCaptureService
-                        {
-                            Options = new XerahS.RegionCapture.RegionCaptureOptions
-                            {
-                                ShowCursor = options.ShowCursor,
-                                // Map other options if needed, but for now we rely on defaults or what RegionCaptureService handles
-                            }
-                        };
+                        backgroundForMagnifier = await _platformImpl.CaptureFullScreenAsync(new CaptureOptions { ShowCursor = false });
                     }
+                    catch { /* Ignore */ }
+
+                    var captureService = new RegionCaptureService
+                    {
+                        Options = new XerahS.RegionCapture.RegionCaptureOptions
+                        {
+                            ShowCursor = options?.ShowCursor ?? false,
+                            BackgroundImage = backgroundForMagnifier,
+                        }
+                    };
 
                     var result = await captureService.CaptureRegionAsync(cursorInfo);
 
@@ -165,19 +167,14 @@ namespace XerahS.UI.Services
             {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    var captureService = new RegionCaptureService();
-                    
-                    if (options != null)
+                    var captureService = new RegionCaptureService
                     {
-                        captureService = new RegionCaptureService
+                        Options = new XerahS.RegionCapture.RegionCaptureOptions
                         {
-                            Options = new XerahS.RegionCapture.RegionCaptureOptions
-                            {
-                                ShowCursor = options.ShowCursor,
-                                BackgroundImage = backgroundForMagnifier,
-                            }
-                        };
-                    }
+                            ShowCursor = options?.ShowCursor ?? false,
+                            BackgroundImage = backgroundForMagnifier,
+                        }
+                    };
 
                     var result = await captureService.CaptureRegionAsync(ghostCursor);
 
