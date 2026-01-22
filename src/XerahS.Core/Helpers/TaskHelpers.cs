@@ -478,8 +478,22 @@ public static partial class TaskHelpers
     }
 
     /// <summary>
-    /// Save image to stream
+    /// Save image to a new MemoryStream with specified format.
     /// </summary>
+    /// <param name="bmp">The bitmap to encode</param>
+    /// <param name="imageFormat">The image format to use</param>
+    /// <param name="pngBitDepth">PNG bit depth (when using PNG format)</param>
+    /// <param name="jpegQuality">JPEG quality 0-100 (when using JPEG format)</param>
+    /// <param name="gifQuality">GIF quality setting (when using GIF format)</param>
+    /// <returns>
+    /// A new MemoryStream containing the encoded image, positioned at the start and ready for reading.
+    /// Returns null if encoding fails or bmp is null.
+    /// IMPORTANT: Caller MUST dispose the returned MemoryStream to prevent memory leaks.
+    /// </returns>
+    /// <remarks>
+    /// The returned stream is owned by the caller and must be disposed when no longer needed.
+    /// Consider using 'using' statement or calling Dispose() explicitly.
+    /// </remarks>
     public static MemoryStream? SaveImageAsStream(SkiaSharp.SKBitmap bmp, EImageFormat imageFormat,
         PNGBitDepth pngBitDepth = PNGBitDepth.Default,
         int jpegQuality = 90,
@@ -505,8 +519,9 @@ public static partial class TaskHelpers
             ms.Position = 0;
             return ms;
         }
-        catch
+        catch (Exception ex)
         {
+            DebugHelper.WriteException(ex, $"Failed to encode image as {imageFormat}");
             ms.Dispose();
             return null;
         }

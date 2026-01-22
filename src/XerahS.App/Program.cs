@@ -225,6 +225,24 @@ namespace XerahS.App
                 {
                     XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", $"✗ Background task EXCEPTION: {ex.GetType().Name}: {ex.Message}");
                     XerahS.Common.DebugHelper.WriteException(ex, "Failed to initialize recording capabilities");
+
+                    // Notify user that recording may not be available
+                    try
+                    {
+                        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                        {
+                            XerahS.Platform.Abstractions.PlatformServices.Toast?.ShowToast(new XerahS.Platform.Abstractions.ToastConfig
+                            {
+                                Title = "Recording Initialization Warning",
+                                Text = "Screen recording initialization failed. Recording may not be available. Check logs for details.",
+                                Duration = 6f
+                            });
+                        });
+                    }
+                    catch
+                    {
+                        // Ignore toast failure (UI may not be ready yet)
+                    }
                     // Don't rethrow - allow app to continue with fallback
                 }
             });

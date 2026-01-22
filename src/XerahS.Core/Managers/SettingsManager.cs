@@ -182,6 +182,15 @@ namespace XerahS.Core
             return WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Job == workflowType);
         }
 
+        /// <summary>
+        /// Get the first workflow matching the specified WorkflowType, or create a default workflow if none exists.
+        /// Use this method when you need guaranteed non-null workflow for a hotkey type.
+        /// </summary>
+        public static WorkflowSettings GetFirstWorkflowOrDefault(WorkflowType workflowType)
+        {
+            return GetFirstWorkflow(workflowType) ?? new WorkflowSettings(workflowType, new HotkeyInfo());
+        }
+
         public static WorkflowSettings? GetWorkflowById(string id)
         {
             if (string.IsNullOrEmpty(id)) return null;
@@ -407,11 +416,19 @@ namespace XerahS.Core
                         {
                             try
                             {
-                                File.Copy(defaultFilePath, machineSpecificPath, false);
+                                // overwrite: false means throw if file exists
+                                File.Copy(defaultFilePath, machineSpecificPath, overwrite: false);
                             }
-                            catch (IOException)
+                            catch (IOException) when (File.Exists(machineSpecificPath))
                             {
-                                // Ignore
+                                // File was created by another process/thread between check and copy
+                                // This is expected in concurrent scenarios, safe to ignore
+                            }
+                            catch (IOException ex)
+                            {
+                                // Unexpected IO error (disk full, access denied, etc.)
+                                DebugHelper.WriteException(ex, $"Failed to initialize machine-specific uploaders config: {machineSpecificPath}");
+                                // Continue with default config name
                             }
                         }
                     }
@@ -450,11 +467,19 @@ namespace XerahS.Core
                         {
                             try
                             {
-                                File.Copy(defaultFilePath, machineSpecificPath, false);
+                                // overwrite: false means throw if file exists
+                                File.Copy(defaultFilePath, machineSpecificPath, overwrite: false);
                             }
-                            catch (IOException)
+                            catch (IOException) when (File.Exists(machineSpecificPath))
                             {
-                                // Ignore
+                                // File was created by another process/thread between check and copy
+                                // This is expected in concurrent scenarios, safe to ignore
+                            }
+                            catch (IOException ex)
+                            {
+                                // Unexpected IO error (disk full, access denied, etc.)
+                                DebugHelper.WriteException(ex, $"Failed to initialize machine-specific workflows config: {machineSpecificPath}");
+                                // Continue with default config name
                             }
                         }
                     }

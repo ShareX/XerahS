@@ -422,6 +422,13 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.StartScreenRecorder:
                         TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecorder case matched, showing region selector");
 
+                        // Clear any previous image (recording doesn't produce image, only video)
+                        if (Info.Metadata.Image != null)
+                        {
+                            Info.Metadata.Image.Dispose();
+                            Info.Metadata.Image = null;
+                        }
+
                         // Show region selector and get user selection
                         var regionCaptureOptions = new CaptureOptions
                         {
@@ -473,6 +480,13 @@ namespace XerahS.Core.Tasks
                         return; // Recording tasks don't proceed to image processing
 
                     case WorkflowType.ScreenRecorderActiveWindow:
+                        // Clear any previous image (recording doesn't produce image, only video)
+                        if (Info.Metadata.Image != null)
+                        {
+                            Info.Metadata.Image.Dispose();
+                            Info.Metadata.Image = null;
+                        }
+
                         if (PlatformServices.Window != null)
                         {
                             var foregroundWindow = PlatformServices.Window.GetForegroundWindow();
@@ -485,6 +499,13 @@ namespace XerahS.Core.Tasks
                         return;
 
                     case WorkflowType.ScreenRecorderCustomRegion:
+                        // Clear any previous image (recording doesn't produce image, only video)
+                        if (Info.Metadata.Image != null)
+                        {
+                            Info.Metadata.Image.Dispose();
+                            Info.Metadata.Image = null;
+                        }
+
                         // TODO: Show region selector UI and get selected region
                         // For now, just start full screen recording
                         DebugHelper.WriteLine("ScreenRecorderCustomRegion: Region selector not yet implemented, falling back to full screen");

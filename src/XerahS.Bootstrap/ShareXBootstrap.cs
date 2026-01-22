@@ -109,7 +109,13 @@ namespace XerahS.Bootstrap
                 logPath = Path.Combine(logsFolder, $"ShareX-{DateTime.Now:yyyy-MM-dd}.log");
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
+            string? logDirectory = Path.GetDirectoryName(logPath);
+            if (string.IsNullOrEmpty(logDirectory))
+            {
+                throw new ArgumentException($"Invalid log path: {logPath}", nameof(logPath));
+            }
+
+            Directory.CreateDirectory(logDirectory);
             DebugHelper.Init(logPath);
 
             var dh = DebugHelper.Logger;
@@ -141,9 +147,10 @@ namespace XerahS.Bootstrap
                     var principal = new System.Security.Principal.WindowsPrincipal(identity);
                     isElevated = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore if unable to determine elevation status
+                    DebugHelper.WriteLine($"Failed to check elevation status: {ex.Message}");
+                    // isElevated remains false
                 }
             }
             dh.WriteLine($"Running as elevated process: {isElevated}");
