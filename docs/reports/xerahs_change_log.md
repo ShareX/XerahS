@@ -304,3 +304,175 @@ Windows Task Manager or Process Explorer:
 ---
 
 *This change log will be updated as additional batches are implemented.*
+
+---
+
+## Batch 2 Continued: Core Orchestration & Error Handling (2026-01-18)
+
+### Overview
+Fixed 4 HIGH severity issues in core task management, error handling, and thread safety.
+
+**Status**: ✅ COMPLETE  
+**Build Status**: ✅ SUCCESS (0 errors, 0 warnings)
+**Files Modified**: 3
+**Lines Changed**: ~120 insertions, ~15 deletions
+
+---
+
+### Issue CORE-004: Silent History Save Failures (HIGH)
+
+**File**: [WorkerTask.cs](../../src/XerahS.Core/Tasks/WorkerTask.cs)
+
+**Problem**:
+Database save failures were silently caught with only log messages. User never notified when recording completed successfully but history record failed to save due to disk full, database corruption, or SQLite BUSY errors.
+
+**Fix Applied**:
+1. Added retry logic for transient SQLite BUSY errors (max 3 attempts)
+2. Exponential backoff delay (100ms, 200ms, 300ms)  
+3. Toast notification on final failure with actionable message
+4. Warning log if history not saved
+
+**Impact**:
+- ✅ Transient database lock errors now auto-retry
+- ✅ User notified of persistent failures via toast
+- ✅ Clear diagnostic logging
+
+---
+
+### Issue COMMON-002: Logger MessageFormat Thread Safety (HIGH)
+
+**File**: [Logger.cs](../../src/XerahS.Common/Logger.cs)
+
+**Problem**:
+`MessageFormat` property could be changed by one thread while `string.Format()` was executing on another thread, causing FormatException and lost log messages.
+
+**Fix Applied**:
+1. Capture `MessageFormat` to local variable before formatting (defensive copy)
+2. Add try-catch around `string.Format()` call
+3. Fallback to hardcoded format on FormatException
+4. Log format errors to Debug output
+
+**Impact**:
+- ✅ No more crashes from concurrent MessageFormat changes
+- ✅ Graceful fallback preserves log messages
+- ✅ Format errors diagnosed via Debug output
+
+---
+
+### Issue CORE-005: Unbounded Task Collection Growth (HIGH)
+
+**File**: [TaskManager.cs](../../src/XerahS.Core/Managers/TaskManager.cs)
+
+**Problem**:
+`ConcurrentBag<WorkerTask>` grew unbounded - tasks added but never removed. After 10,000 captures, 10,000 WorkerTask objects remained in memory, each potentially holding SKBitmap references preventing garbage collection.
+
+**Fix Applied**:
+1. Changed `ConcurrentBag` to `ConcurrentQueue` for FIFO cleanup
+2. Added `_maxHistoricalTasks = 100` limit
+3. Enqueue new tasks, dequeue and dispose oldest when limit exceeded
+4. Applied to both `StartTask` and `StartFileTask` methods
+5. Added lock for thread-safe enumeration
+
+**Code Changes**:
+```csharp
+// Before: Unbounded bag
+private readonly ConcurrentBag<WorkerTask> _tasks = new();
+_tasks.Add(task); // Never removed!
+
+// After: Bounded queue with automatic cleanup
+private readonly ConcurrentQueue<WorkerTask> _tasks = new();
+private readonly int _maxHistoricalTasks = 100;
+
+lock (_tasksLock)
+{
+    _tasks.Enqueue(task);
+    while (_tasks.Count > _maxHistoricalTasks)
+    {
+        if (_tasks.TryDequeue(out var oldTask))
+        {
+            oldTask.Dispose();
+        }
+    }
+}
+```
+
+**Impact**:
+- ✅ Memory bounded to ~100 recent tasks
+- ✅ Old tasks properly disposed (CTS cleanup)
+- ✅ No more unbounded growth leading to OOM
+
+---
+
+### Issue CORE-006: Platform Services Null Check (HIGH)
+
+**File**: [WorkerTask.cs](../../src/XerahS.Core/Tasks/WorkerTask.cs)
+
+**Problem**:
+When PlatformServices not initialized (e.g., hotkey pressed during app startup), task marked as "Stopped" with no user feedback. Silent failure left users confused about why capture didn't work.
+
+**Fix Applied**:
+1. Explicit check for platform services readiness
+2. Toast notification when platform not ready
+3. Set Status = TaskStatus.Failed (not Stopped)
+4. Create descriptive exception for error tracking
+
+**Code Changes**:
+```csharp
+// Before: Silent log message only
+else if (Info.Metadata.Image == null)
+{
+    DebugHelper.WriteLine("PlatformServices not initialized - cannot capture");
+}
+
+// After: User notification and proper error state
+else if (Info.Metadata.Image == null)
+{
+    DebugHelper.WriteLine("PlatformServices not initialized - cannot capture");
+    PlatformServices.Toast?.ShowToast(new ToastConfig
+    {
+        Title = "Capture Failed",
+        Text = "Platform services not ready. Please wait a moment and try again.",
+        Duration = 4f
+    });
+    Status = TaskStatus.Failed;
+    Error = new InvalidOperationException("Platform services not initialized");
+    return;
+}
+```
+
+**Impact**:
+- ✅ Clear user feedback when platform not ready
+- ✅ Proper error state (Failed vs Stopped)
+- ✅ Actionable message ("wait and try again")
+
+---
+
+## Cumulative Progress Update
+
+### Fixes Completed (9 issues total)
+
+**Batch 1 BLOCKER** (3 issues): ✅ COMPLETE
+- COMMON-001: Logger disposal
+- CORE-002: WorkerTask CTS disposal  
+- CORE-001: ScreenRecordingManager race condition
+
+**Batch 2 Platform.Windows** (2 issues): ✅ COMPLETE
+- PLATFORM-001: GDI handle leak
+- PLATFORM-002: Process handle leak
+
+**Batch 2 Core/Common** (4 issues): ✅ COMPLETE
+- CORE-004: Silent history failures → Retry + toast notification
+- COMMON-002: Logger thread safety → Defensive copy + fallback
+- CORE-005: Unbounded tasks → Bounded queue (100 max)
+- CORE-006: Platform null check → User notification
+
+---
+
+**Last Updated**: 2026-01-18 (Batch 2 Complete)
+**Build**: ✅ Core project compiled successfully
+**Progress**: 9/42 issues fixed (21%)
+**Status**: Ready for testing and validation
+
+---
+
+*End of Batch 2 - Ready for validation testing and commit*

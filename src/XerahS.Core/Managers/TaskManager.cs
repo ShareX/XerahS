@@ -34,8 +34,20 @@ namespace XerahS.Core.Managers
         private static readonly Lazy<TaskManager> _lazy = new(() => new TaskManager());
         public static TaskManager Instance => _lazy.Value;
 
-        private readonly ConcurrentBag<WorkerTask> _tasks = new();
-        public IEnumerable<WorkerTask> Tasks => _tasks;
+        private readonly ConcurrentQueue<WorkerTask> _tasks = new();
+        private readonly int _maxHistoricalTasks = 100;
+        private readonly object _tasksLock = new();
+
+        public IEnumerable<WorkerTask> Tasks
+        {
+            get
+            {
+                lock (_tasksLock)
+                {
+                    return _tasks.ToArray();
+                }
+            }
+        }
 
         private TaskManager()
         {
@@ -54,11 +66,32 @@ namespace XerahS.Core.Managers
             }
 
             TroubleshootingHelper.Log(taskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", $"StartTask Entry: TaskSettings={taskSettings != null}");
-            
+
             var safeTaskSettings = taskSettings ?? new TaskSettings();
             var task = WorkerTask.Create(safeTaskSettings, inputImage);
-            _tasks.Add(task);
-            
+
+            // Add task and cleanup old tasks to prevent unbounded growth
+            lock (_tasksLock)
+            {
+                _tasks.Enqueue(task);
+
+                // Remove and dispose old tasks when limit exceeded
+                while (_tasks.Count > _maxHistoricalTasks)
+                {
+                    if (_tasks.TryDequeue(out var oldTask))
+                    {
+                        try
+                        {
+                            oldTask.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugHelper.WriteLine($"Error disposing old task: {ex.Message}");
+                        }
+                    }
+                }
+            }
+
             TroubleshootingHelper.Log(task.Info?.TaskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", "Task created");
 
             task.StatusChanged += (s, e) => DebugHelper.WriteLine($"Task Status: {task.Status}");
@@ -96,7 +129,28 @@ namespace XerahS.Core.Managers
             task.Info.FilePath = filePath;
             task.Info.DataType = EDataType.File;
             task.Info.Job = TaskJob.FileUpload;
-            _tasks.Add(task);
+
+            // Add task and cleanup old tasks to prevent unbounded growth
+            lock (_tasksLock)
+            {
+                _tasks.Enqueue(task);
+
+                // Remove and dispose old tasks when limit exceeded
+                while (_tasks.Count > _maxHistoricalTasks)
+                {
+                    if (_tasks.TryDequeue(out var oldTask))
+                    {
+                        try
+                        {
+                            oldTask.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugHelper.WriteLine($"Error disposing old task: {ex.Message}");
+                        }
+                    }
+                }
+            }
 
             task.StatusChanged += (s, e) => DebugHelper.WriteLine($"Task Status: {task.Status}");
             task.TaskCompleted += (s, e) =>

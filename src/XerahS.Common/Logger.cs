@@ -172,7 +172,19 @@ namespace XerahS.Common
         {
             if (message != null)
             {
-                message = string.Format(MessageFormat, DateTime.Now, message);
+                // Capture format once to avoid race condition if MessageFormat changes
+                string format = MessageFormat;
+                try
+                {
+                    message = string.Format(format, DateTime.Now, message);
+                }
+                catch (FormatException ex)
+                {
+                    // Fallback if format string is invalid or changed concurrently
+                    message = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - {message}";
+                    Debug.WriteLine($"Logger format error: {ex.Message}");
+                }
+
                 messageQueue.Enqueue(message);
 
                 if (AsyncWrite)

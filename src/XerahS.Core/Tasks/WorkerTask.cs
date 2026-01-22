@@ -529,7 +529,30 @@ namespace XerahS.Core.Tasks
             }
             else if (Info.Metadata.Image == null)
             {
+                // Platform services not ready - fail with clear error
                 DebugHelper.WriteLine("PlatformServices not initialized - cannot capture");
+
+                try
+                {
+                    PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
+                    {
+                        Title = "Capture Failed",
+                        Text = "Platform services not ready. Please wait a moment and try again.",
+                        Duration = 4f,
+                        Size = new SizeI(400, 120),
+                        AutoHide = true,
+                        LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
+                    });
+                }
+                catch
+                {
+                    // Ignore toast errors if platform not ready
+                }
+
+                Status = TaskStatus.Failed;
+                Error = new InvalidOperationException("Platform services not initialized");
+                OnStatusChanged();
+                return;
             }
 
             // Execute Capture Job (File Save, Clipboard, etc)
@@ -741,28 +764,69 @@ namespace XerahS.Core.Tasks
                     var uploadProcessor = new UploadJobProcessor();
                     await uploadProcessor.ProcessAsync(Info, CancellationToken.None);
 
-                    // Add to History
-                    try
+                    // Add to History with retry logic for transient failures
+                    const int MaxRetries = 3;
+                    bool historySaved = false;
+
+                    for (int retry = 0; retry < MaxRetries; retry++)
                     {
-                        var historyPath = SettingsManager.GetHistoryFilePath();
-                        using var historyManager = new HistoryManagerSQLite(historyPath);
-                        var historyItem = new HistoryItem
+                        try
                         {
-                            FilePath = outputPath,
-                            FileName = Path.GetFileName(outputPath),
-                            DateTime = DateTime.Now,
-                            Type = "Video",
-                            URL = metadata.UploadURL ?? string.Empty // Will be populated if upload succeeded
-                        };
+                            var historyPath = SettingsManager.GetHistoryFilePath();
+                            using var historyManager = new HistoryManagerSQLite(historyPath);
+                            var historyItem = new HistoryItem
+                            {
+                                FilePath = outputPath,
+                                FileName = Path.GetFileName(outputPath),
+                                DateTime = DateTime.Now,
+                                Type = "Video",
+                                URL = metadata.UploadURL ?? string.Empty // Will be populated if upload succeeded
+                            };
 
-                        DebugHelper.WriteLine($"[HistoryTrace] Preparing to add item. URL='{historyItem.URL}', File='{historyItem.FileName}'");
+                            DebugHelper.WriteLine($"[HistoryTrace] Preparing to add item. URL='{historyItem.URL}', File='{historyItem.FileName}'");
 
-                        await Task.Run(() => historyManager.AppendHistoryItem(historyItem));
-                        DebugHelper.WriteLine($"Added recording to history: {historyItem.FileName} (URL: {historyItem.URL})");
+                            await Task.Run(() => historyManager.AppendHistoryItem(historyItem));
+                            DebugHelper.WriteLine($"Added recording to history: {historyItem.FileName} (URL: {historyItem.URL})");
+                            historySaved = true;
+                            break; // Success - exit retry loop
+                        }
+                        catch (Microsoft.Data.Sqlite.SqliteException ex) when (ex.SqliteErrorCode == 5 && retry < MaxRetries - 1)
+                        {
+                            // SQLITE_BUSY - database locked, retry after delay
+                            DebugHelper.WriteLine($"History database busy, retry {retry + 1}/{MaxRetries}");
+                            await Task.Delay(100 * (retry + 1));
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugHelper.WriteException(ex, "Failed to add recording to history");
+
+                            // Notify user on final failure
+                            if (retry == MaxRetries - 1)
+                            {
+                                try
+                                {
+                                    PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
+                                    {
+                                        Title = "History Save Failed",
+                                        Text = "Recording completed but could not be added to history. Check disk space and logs.",
+                                        Duration = 5f,
+                                        Size = new SizeI(400, 120),
+                                        AutoHide = true,
+                                        LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
+                                    });
+                                }
+                                catch
+                                {
+                                    // Ignore toast errors
+                                }
+                            }
+                            break;
+                        }
                     }
-                    catch (Exception ex)
+
+                    if (!historySaved)
                     {
-                        DebugHelper.WriteException(ex, "Failed to add recording to history");
+                        DebugHelper.WriteLine("WARNING: Recording completed successfully but history record was not saved.");
                     }
                 }
             }
