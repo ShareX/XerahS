@@ -110,7 +110,9 @@ public sealed class RegionCaptureControl : UserControl
 
         Focusable = true;
         ClipToBounds = true;
-        Cursor = new Cursor(StandardCursorType.Cross);
+        // Hide system cursor when ghost cursor is active (the crosshair is drawn manually via DrawCrosshair)
+        // This ensures only the initial ghost cursor appears in the final image
+        Cursor = _ghostCursor != null ? new Cursor(StandardCursorType.None) : new Cursor(StandardCursorType.Cross);
 
         // Fix for hit testing: Ensure the control has a background to capture mouse events
         // Use a near-transparent color (Alpha=1) instead of fully transparent to ensure
