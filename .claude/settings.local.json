@@ -54,7 +54,9 @@
       "Bash(if not exist \"docs\\audits\" mkdir \"docs\\audits\")",
       "Bash(if not exist \"docs\\architecture\" mkdir \"docs\\architecture\")",
       "Bash(\"docs\\reports\\xerahs_change_log.md\")",
-      "Bash(del batch3_changelog.txt)"
+      "Bash(del batch3_changelog.txt)",
+      "Bash(Select-String -Pattern \"error|Build FAILED|Build succeeded\" -Context 0,2)",
+      "Bash(git stash:*)"
     ]
   }
 }

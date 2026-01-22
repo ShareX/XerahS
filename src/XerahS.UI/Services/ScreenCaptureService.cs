@@ -28,7 +28,6 @@ using XerahS.Core;
 using XerahS.Core.Helpers;
 using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture;
-using XerahS.RegionCapture.Models;
 using SkiaSharp;
 using System;
 using System.Diagnostics;
@@ -162,7 +161,6 @@ namespace XerahS.UI.Services
 
             // 3. Select Region (UI) - pass ghost cursor for overlay display
             SKRectI selection = SKRectI.Empty;
-            var cursorAtSelection = new XerahS.RegionCapture.Models.PixelPoint();
             try
             {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
@@ -182,7 +180,6 @@ namespace XerahS.UI.Services
                     {
                         var r = result.Value.Region;
                         selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
-                        cursorAtSelection = result.Value.CursorPosition;
                     }
                 });
             }
@@ -201,9 +198,7 @@ namespace XerahS.UI.Services
                 return null;
             }
 
-            var selectionRect = new XerahS.RegionCapture.Models.PixelRect(selection.Left, selection.Top, selection.Width, selection.Height);
             bool showCursor = options?.ShowCursor == true;
-            bool hideLiveCursor = showCursor && selectionRect.Contains(cursorAtSelection);
 
             // 3. Optional delay before capture starts (cancellable)
             if (options?.CaptureStartDelaySeconds > 0)
@@ -228,14 +223,17 @@ namespace XerahS.UI.Services
             // 4. Small delay to allow overlay windows to close fully and cursor to hide
             await Task.Delay(200);
 
-            // 5. Capture Screen (Platform) - WITHOUT cursor (we'll draw ghost cursor manually)
-            var captureOptions = options != null ? new CaptureOptions
+            // 5. Capture Screen (Platform) - ALWAYS without cursor.
+            // The ghost cursor (captured at workflow start) is drawn manually in step 6.
+            // Never let the platform draw the live cursor, as it may have moved into the
+            // captured region during the delay between overlay close and bitmap acquisition.
+            var captureOptions = new CaptureOptions
             {
-                ShowCursor = showCursor && !hideLiveCursor,
-                UseModernCapture = options.UseModernCapture,
-                WorkflowId = options.WorkflowId,
-                WorkflowCategory = options.WorkflowCategory
-            } : null;
+                ShowCursor = false,
+                UseModernCapture = options?.UseModernCapture ?? false,
+                WorkflowId = options?.WorkflowId,
+                WorkflowCategory = options?.WorkflowCategory
+            };
 
             var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
             var bitmap = await _platformImpl.CaptureRectAsync(skRect, captureOptions);
