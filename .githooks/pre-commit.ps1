@@ -9,8 +9,9 @@
 $ErrorActionPreference = "Stop"
 
 # Expected header components
+$CURRENT_YEAR = (Get-Date).Year
 $EXPECTED_PROJECT = "XerahS - The Avalonia UI implementation of ShareX"
-$EXPECTED_COPYRIGHT = "Copyright (c) 2007-2026 ShareX Team"
+$EXPECTED_COPYRIGHT = "Copyright (c) 2007-$CURRENT_YEAR ShareX Team"
 $EXPECTED_GPL_START = "This program is free software"
 
 # Get list of staged C# files
@@ -42,7 +43,7 @@ foreach ($FILE in $STAGED_CS_FILES) {
     }
 
     if ($HEADER -notmatch [regex]::Escape($EXPECTED_COPYRIGHT)) {
-        $MISSING += "copyright year 2026"
+        $MISSING += "copyright year $CURRENT_YEAR"
     }
 
     if ($HEADER -notmatch [regex]::Escape($EXPECTED_GPL_START)) {
