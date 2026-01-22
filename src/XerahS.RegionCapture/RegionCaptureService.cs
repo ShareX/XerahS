@@ -111,4 +111,11 @@ public sealed record RegionCaptureOptions
     /// Whether to show the mouse cursor during selection. Default: false
     /// </summary>
     public bool ShowCursor { get; init; } = false;
+
+    /// <summary>
+    /// Background image for magnifier pixel sampling. When provided, the magnifier 
+    /// will display actual pixel data instead of placeholder content.
+    /// This should be captured before the overlay is displayed.
+    /// </summary>
+    public SkiaSharp.SKBitmap? BackgroundImage { get; init; } = null;
 }

@@ -58,6 +58,7 @@ public sealed class RegionCaptureControl : UserControl
     private readonly bool _enableMagnifier;
     private readonly XerahS.Platform.Abstractions.CursorInfo? _ghostCursor;
     private readonly Bitmap? _ghostCursorBitmap;
+    private readonly SkiaSharp.SKBitmap? _backgroundBitmap;
 
     // Keyboard state tracking
     private SelectionModifier _activeModifiers = SelectionModifier.None;
@@ -103,6 +104,7 @@ public sealed class RegionCaptureControl : UserControl
         _enableWindowSnapping = options.EnableWindowSnapping && _mode != RegionCaptureMode.ScreenColorPicker;
         _enableMagnifier = options.EnableMagnifier;
         _enableKeyboardNudge = options.EnableKeyboardNudge;
+        _backgroundBitmap = options.BackgroundImage;
 
         // Create magnifier if enabled
         _magnifier = new MagnifierControl(options.MagnifierZoom);
@@ -507,27 +509,83 @@ public sealed class RegionCaptureControl : UserControl
         // Draw magnifier background
         context.DrawRectangle(InfoBackgroundBrush, new Pen(Brushes.White, 2), rect, 4, 4);
 
-        // Draw crosshair pattern in center
         var centerX = rect.X + rect.Width / 2;
         var centerY = rect.Y + (rect.Height - 25) / 2;
-
         var gridPen = new Pen(new SolidColorBrush(Color.FromArgb(60, 255, 255, 255)), 0.5);
         var highlightPen = new Pen(Brushes.Red, 1.5);
-
-        // Grid lines
-        for (int i = 0; i < 15; i++)
+        
+        const int pixelGridCount = 15; // Number of pixels to show in grid
+        const int halfGrid = pixelGridCount / 2;
+        double pixelSize = (rect.Width - 8) / pixelGridCount; // Size of each magnified pixel
+        
+        // Draw actual pixels from background bitmap if available
+        if (_backgroundBitmap != null)
         {
-            var offset = (i - 7) * 7;
-            context.DrawLine(gridPen,
-                new Point(rect.X + 4, centerY + offset),
-                new Point(rect.X + rect.Width - 4, centerY + offset));
-            context.DrawLine(gridPen,
-                new Point(centerX + offset, rect.Y + 4),
-                new Point(centerX + offset, rect.Y + rect.Height - 29));
+            // Calculate the virtual screen bounds to map cursor to bitmap coordinates
+            var virtualBounds = _coordinateService.GetVirtualScreenBounds();
+            
+            // Get pixel coordinates in the background bitmap
+            int bitmapX = (int)(_currentPoint.X - virtualBounds.X);
+            int bitmapY = (int)(_currentPoint.Y - virtualBounds.Y);
+            
+            // Draw each pixel in the grid
+            for (int dy = -halfGrid; dy <= halfGrid; dy++)
+            {
+                for (int dx = -halfGrid; dx <= halfGrid; dx++)
+                {
+                    int srcX = bitmapX + dx;
+                    int srcY = bitmapY + dy;
+                    
+                    // Check bounds
+                    if (srcX >= 0 && srcX < _backgroundBitmap.Width && 
+                        srcY >= 0 && srcY < _backgroundBitmap.Height)
+                    {
+                        var skColor = _backgroundBitmap.GetPixel(srcX, srcY);
+                        var avColor = Color.FromArgb(skColor.Alpha, skColor.Red, skColor.Green, skColor.Blue);
+                        var brush = new SolidColorBrush(avColor);
+                        
+                        var pixelRect = new Rect(
+                            rect.X + 4 + (dx + halfGrid) * pixelSize,
+                            rect.Y + 4 + (dy + halfGrid) * pixelSize,
+                            pixelSize,
+                            pixelSize);
+                        
+                        context.DrawRectangle(brush, null, pixelRect);
+                    }
+                }
+            }
+            
+            // Draw grid lines on top of pixels
+            for (int i = 0; i <= pixelGridCount; i++)
+            {
+                var gridX = rect.X + 4 + i * pixelSize;
+                var gridY = rect.Y + 4 + i * pixelSize;
+                context.DrawLine(gridPen, new Point(gridX, rect.Y + 4), new Point(gridX, rect.Y + rect.Height - 29));
+                context.DrawLine(gridPen, new Point(rect.X + 4, gridY), new Point(rect.X + rect.Width - 4, gridY));
+            }
+        }
+        else
+        {
+            // Fallback: draw placeholder grid when no background image
+            for (int i = 0; i < pixelGridCount; i++)
+            {
+                var offset = (i - halfGrid) * 7;
+                context.DrawLine(gridPen,
+                    new Point(rect.X + 4, centerY + offset),
+                    new Point(rect.X + rect.Width - 4, centerY + offset));
+                context.DrawLine(gridPen,
+                    new Point(centerX + offset, rect.Y + 4),
+                    new Point(centerX + offset, rect.Y + rect.Height - 29));
+            }
         }
 
-        // Center highlight
-        context.DrawRectangle(null, highlightPen, new Rect(centerX - 3.5, centerY - 3.5, 7, 7));
+        // Center highlight (crosshair on center pixel)
+        var centerPixelRect = new Rect(
+            rect.X + 4 + halfGrid * pixelSize,
+            rect.Y + 4 + halfGrid * pixelSize,
+            pixelSize,
+            pixelSize);
+        context.DrawRectangle(null, highlightPen, centerPixelRect);
 
         // Draw coordinates text
         var coordText = $"({_currentPoint.X:F0}, {_currentPoint.Y:F0})";

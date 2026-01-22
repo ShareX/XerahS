@@ -147,7 +147,18 @@ namespace XerahS.UI.Services
                 }
             }
 
-            // 2. Select Region (UI) - pass ghost cursor for overlay display
+            // 2. Capture background for magnifier BEFORE showing overlay
+            SKBitmap? backgroundForMagnifier = null;
+            try
+            {
+                backgroundForMagnifier = await _platformImpl.CaptureFullScreenAsync(new CaptureOptions { ShowCursor = false });
+            }
+            catch
+            {
+                // Ignore - magnifier will use placeholder
+            }
+
+            // 3. Select Region (UI) - pass ghost cursor for overlay display
             SKRectI selection = SKRectI.Empty;
             var cursorAtSelection = new XerahS.RegionCapture.Models.PixelPoint();
             try
@@ -163,6 +174,7 @@ namespace XerahS.UI.Services
                             Options = new XerahS.RegionCapture.RegionCaptureOptions
                             {
                                 ShowCursor = options.ShowCursor,
+                                BackgroundImage = backgroundForMagnifier,
                             }
                         };
                     }
@@ -180,6 +192,11 @@ namespace XerahS.UI.Services
             catch
             {
                 // Ignore errors
+            }
+            finally
+            {
+                // Dispose background bitmap after overlay closes
+                backgroundForMagnifier?.Dispose();
             }
 
             if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
