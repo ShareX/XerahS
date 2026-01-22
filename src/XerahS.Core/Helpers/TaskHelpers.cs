@@ -453,8 +453,12 @@ public static partial class TaskHelpers
                     return "";
 
                 case FileExistAction.Ask:
+                    // Ask requires UI interaction - return empty to signal caller
+                    DebugHelper.WriteLine($"File exists, action is Ask: {filePath}");
+                    return string.Empty;
+
                 default:
-                    // For now, default to unique name (UI will handle Ask)
+                    DebugHelper.WriteLine($"Unknown FileExistAction, using unique name for: {filePath}");
                     return FileHelpers.GetUniqueFilePath(filePath);
             }
         }

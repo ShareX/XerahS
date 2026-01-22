@@ -470,19 +470,53 @@ namespace XerahS.Core
         }
 
         /// <summary>
-        /// Reset all settings to defaults
+        /// Reset all settings to defaults. Creates a backup before deleting.
         /// </summary>
-        public static void ResetSettings()
+        /// <returns>True if reset succeeded, false if an error occurred</returns>
+        public static bool ResetSettings()
         {
-            // Delete files? Or just re-instantiate? Original returns to defaults.
-            if (File.Exists(ApplicationConfigFilePath)) File.Delete(ApplicationConfigFilePath);
-            Settings = new ApplicationConfig();
+            try
+            {
+                // Create timestamped backup folder
+                var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+                var backupFolder = Path.Combine(BackupFolder, $"Reset_{timestamp}");
+                Directory.CreateDirectory(backupFolder);
 
-            if (File.Exists(UploadersConfigFilePath)) File.Delete(UploadersConfigFilePath);
-            UploadersConfig = new UploadersConfig();
+                // Backup and delete ApplicationConfig
+                if (File.Exists(ApplicationConfigFilePath))
+                {
+                    File.Copy(ApplicationConfigFilePath,
+                        Path.Combine(backupFolder, ApplicationConfigFileName), overwrite: true);
+                    File.Delete(ApplicationConfigFilePath);
+                }
+                Settings = new ApplicationConfig();
 
-            if (File.Exists(WorkflowsConfigFilePath)) File.Delete(WorkflowsConfigFilePath);
-            WorkflowsConfig = new WorkflowsConfig();
+                // Backup and delete UploadersConfig
+                if (File.Exists(UploadersConfigFilePath))
+                {
+                    File.Copy(UploadersConfigFilePath,
+                        Path.Combine(backupFolder, UploadersConfigFileName), overwrite: true);
+                    File.Delete(UploadersConfigFilePath);
+                }
+                UploadersConfig = new UploadersConfig();
+
+                // Backup and delete WorkflowsConfig
+                if (File.Exists(WorkflowsConfigFilePath))
+                {
+                    File.Copy(WorkflowsConfigFilePath,
+                        Path.Combine(backupFolder, WorkflowsConfigFileName), overwrite: true);
+                    File.Delete(WorkflowsConfigFilePath);
+                }
+                WorkflowsConfig = new WorkflowsConfig();
+
+                DebugHelper.WriteLine($"Settings reset successfully. Backup created: {backupFolder}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to reset settings");
+                return false;
+            }
         }
 
 
