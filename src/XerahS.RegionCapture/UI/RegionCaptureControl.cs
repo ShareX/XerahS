@@ -466,16 +466,42 @@ public sealed class RegionCaptureControl : UserControl
         if (!bounds.Contains(cursorLocal))
             return;
 
-        var crosshairPen = new Pen(new SolidColorBrush(Color.FromArgb(150, 255, 255, 255)), 1);
+        const double crosshairLength = 32; // Length of the colored crosshair portion
+        
+        // Regular line pen (semi-transparent white for full-screen lines)
+        var linePen = new Pen(new SolidColorBrush(Color.FromArgb(100, 255, 255, 255)), 1);
+        
+        // Crosshair colored pen (brighter, more visible near cursor)
+        var crosshairPen = new Pen(new SolidColorBrush(Color.FromArgb(220, 0, 200, 255)), 1.5); // Cyan
 
-        // Vertical line
-        context.DrawLine(crosshairPen,
+        // Vertical line - top portion (regular)
+        context.DrawLine(linePen,
             new Point(cursorLocal.X, 0),
+            new Point(cursorLocal.X, Math.Max(0, cursorLocal.Y - crosshairLength)));
+
+        // Vertical line - crosshair portion (colored, 32px centered on cursor)
+        context.DrawLine(crosshairPen,
+            new Point(cursorLocal.X, Math.Max(0, cursorLocal.Y - crosshairLength)),
+            new Point(cursorLocal.X, Math.Min(bounds.Height, cursorLocal.Y + crosshairLength)));
+
+        // Vertical line - bottom portion (regular)
+        context.DrawLine(linePen,
+            new Point(cursorLocal.X, Math.Min(bounds.Height, cursorLocal.Y + crosshairLength)),
             new Point(cursorLocal.X, bounds.Height));
 
-        // Horizontal line
-        context.DrawLine(crosshairPen,
+        // Horizontal line - left portion (regular)
+        context.DrawLine(linePen,
             new Point(0, cursorLocal.Y),
+            new Point(Math.Max(0, cursorLocal.X - crosshairLength), cursorLocal.Y));
+
+        // Horizontal line - crosshair portion (colored, 32px centered on cursor)
+        context.DrawLine(crosshairPen,
+            new Point(Math.Max(0, cursorLocal.X - crosshairLength), cursorLocal.Y),
+            new Point(Math.Min(bounds.Width, cursorLocal.X + crosshairLength), cursorLocal.Y));
+
+        // Horizontal line - right portion (regular)
+        context.DrawLine(linePen,
+            new Point(Math.Min(bounds.Width, cursorLocal.X + crosshairLength), cursorLocal.Y),
             new Point(bounds.Width, cursorLocal.Y));
     }
 
