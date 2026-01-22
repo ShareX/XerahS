@@ -102,11 +102,12 @@ namespace XerahS.Bootstrap
             }
             else
             {
+                var now = DateTime.Now;
                 var baseFolder = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     SettingsManager.AppName);
-                var logsFolder = Path.Combine(baseFolder, "Logs", DateTime.Now.ToString("yyyy-MM"));
-                logPath = Path.Combine(logsFolder, $"ShareX-{DateTime.Now:yyyy-MM-dd}.log");
+                var logsFolder = Path.Combine(baseFolder, "Logs", now.ToString("yyyy-MM"));
+                logPath = Path.Combine(logsFolder, $"ShareX-{now:yyyy-MM-dd}.log");
             }
 
             string? logDirectory = Path.GetDirectoryName(logPath);

@@ -134,7 +134,10 @@ namespace XerahS.Core.Tasks
                     var errorMessage = ex.InnerException?.Message ?? ex.Message;
                     if (errorMessage.Length > 150)
                     {
-                        errorMessage = errorMessage.Substring(0, 147) + "...";
+                        // Truncate at word boundary to avoid cutting mid-word
+                        int cutoff = errorMessage.LastIndexOf(' ', 147);
+                        if (cutoff <= 0) cutoff = 147; // Fallback if no space found
+                        errorMessage = errorMessage.Substring(0, cutoff) + "...";
                     }
 
                     PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig

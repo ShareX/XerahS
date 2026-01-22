@@ -105,8 +105,8 @@ CREATE TABLE IF NOT EXISTS History (
                 {
                     HistoryItem item = new HistoryItem()
                     {
-                        Id = Convert.ToInt64(reader["Id"] ?? 0L),
-                        FileName = reader["FileName"]?.ToString() ?? string.Empty,
+                        Id = reader["Id"] == DBNull.Value ? 0L : Convert.ToInt64(reader["Id"]),
+                        FileName = reader["FileName"] == DBNull.Value ? string.Empty : reader["FileName"]?.ToString() ?? string.Empty,
                         FilePath = reader["FilePath"]?.ToString() ?? string.Empty,
                         DateTime = DateTime.TryParse(reader["DateTime"]?.ToString(), out var dt) ? dt : DateTime.MinValue,
                         Type = reader["Type"]?.ToString() ?? string.Empty,
@@ -157,8 +157,8 @@ CREATE TABLE IF NOT EXISTS History (
                     {
                         HistoryItem item = new HistoryItem()
                         {
-                            Id = Convert.ToInt64(reader["Id"] ?? 0L),
-                            FileName = reader["FileName"]?.ToString() ?? string.Empty,
+                            Id = reader["Id"] == DBNull.Value ? 0L : Convert.ToInt64(reader["Id"]),
+                            FileName = reader["FileName"] == DBNull.Value ? string.Empty : reader["FileName"]?.ToString() ?? string.Empty,
                             FilePath = reader["FilePath"]?.ToString() ?? string.Empty,
                             DateTime = DateTime.TryParse(reader["DateTime"]?.ToString(), out var dt) ? dt : DateTime.MinValue,
                             Type = reader["Type"]?.ToString() ?? string.Empty,

@@ -53,6 +53,8 @@ namespace XerahS.Common
         private StringBuilder sbMessages = new StringBuilder();
         private string _currentDate = DateTime.Now.ToString("yyyy-MM-dd");
         private bool _disposed = false;
+        private int _consecutiveFileWriteFailures = 0;
+        private const int MaxFileWriteFailures = 5;
 
         public Logger()
         {
@@ -156,10 +158,18 @@ namespace XerahS.Common
                             }
 
                             File.AppendAllText(currentLogPath, message, Encoding.UTF8);
+                            _consecutiveFileWriteFailures = 0; // Reset on success
                         }
                         catch (Exception e)
                         {
-                            Debug.WriteLine(e);
+                            _consecutiveFileWriteFailures++;
+                            Debug.WriteLine($"Logger file write failed ({_consecutiveFileWriteFailures}/{MaxFileWriteFailures}): {e.Message}");
+
+                            if (_consecutiveFileWriteFailures >= MaxFileWriteFailures)
+                            {
+                                FileWrite = false;
+                                Debug.WriteLine($"Logger: Disabled file writing after {MaxFileWriteFailures} consecutive failures");
+                            }
                         }
                     }
 
