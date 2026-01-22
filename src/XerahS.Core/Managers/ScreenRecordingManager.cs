@@ -484,11 +484,20 @@ public class ScreenRecordingManager
         {
             var initTask = PlatformInitializationTask;
 
-            if (initTask != null && !initTask.IsCompleted)
+            if (initTask != null)
             {
-                DebugHelper.WriteLine("ScreenRecordingManager: Waiting for recording initialization to complete...");
-                await initTask;
-                DebugHelper.WriteLine("ScreenRecordingManager: Recording initialization wait completed");
+                if (!initTask.IsCompleted)
+                {
+                    DebugHelper.WriteLine("ScreenRecordingManager: Waiting for recording initialization to complete...");
+                    await initTask;
+                }
+
+                if (initTask.IsFaulted)
+                {
+                    throw new InvalidOperationException("Recording initialization failed", initTask.Exception);
+                }
+
+                DebugHelper.WriteLine("ScreenRecordingManager: Recording initialization completed successfully");
             }
         }
         catch (Exception ex)

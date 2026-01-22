@@ -59,14 +59,25 @@ namespace XerahS.Platform.Windows
                     int width = (int)rect.Width;
                     int height = (int)rect.Height;
 
-                    if (width <= 0 || height <= 0) return null;
+                    // Validate and clamp capture region to screen bounds
+                    var screenBounds = _screenService.GetVirtualScreenBounds();
+                    x = Math.Max(x, screenBounds.X);
+                    y = Math.Max(y, screenBounds.Y);
+                    width = Math.Min(width, screenBounds.Right - x);
+                    height = Math.Min(height, screenBounds.Bottom - y);
+
+                    if (width <= 0 || height <= 0)
+                    {
+                        DebugHelper.WriteLine("Capture region outside screen bounds");
+                        return null;
+                    }
 
                     if (options?.ShowCursor == false)
                     {
                         cursorHidden = HideSystemCursors();
                         if (cursorHidden)
                         {
-                            Thread.Sleep(50);
+                            Thread.Sleep(150);
                         }
                     }
 
@@ -195,7 +206,7 @@ namespace XerahS.Platform.Windows
                         cursorHidden = HideSystemCursors();
                         if (cursorHidden)
                         {
-                            Thread.Sleep(50);
+                            Thread.Sleep(150);
                         }
                     }
 
@@ -250,7 +261,7 @@ namespace XerahS.Platform.Windows
                         cursorHidden = HideSystemCursors();
                         if (cursorHidden)
                         {
-                            Thread.Sleep(50);
+                            Thread.Sleep(150);
                         }
                     }
 
@@ -305,7 +316,7 @@ namespace XerahS.Platform.Windows
                         cursorHidden = HideSystemCursors();
                         if (cursorHidden)
                         {
-                            Thread.Sleep(50);
+                            Thread.Sleep(150);
                         }
                     }
 

@@ -39,6 +39,12 @@ namespace XerahS.Core.Tasks
 {
     public class WorkerTask : IDisposable
     {
+        /// <summary>
+        /// Default delay in milliseconds after window activation before capture.
+        /// Allows the window to settle after restore/activation operations.
+        /// </summary>
+        private const int WindowActivationDelayMs = 250;
+
         public TaskInfo Info { get; private set; }
         public TaskStatus Status { get; private set; }
         public Exception? Error { get; private set; }
@@ -110,7 +116,7 @@ namespace XerahS.Core.Tasks
 
             try
             {
-                await Task.Run(async () => await DoWorkAsync(_cancellationTokenSource.Token));
+                await Task.Run(() => DoWorkAsync(_cancellationTokenSource.Token));
             }
             catch (OperationCanceledException)
             {
@@ -319,7 +325,7 @@ namespace XerahS.Core.Tasks
                                         {
                                             TroubleshootingHelper.Log("CustomWindow", "WINDOW", "Window is minimized, restoring...");
                                             PlatformServices.Window.ShowWindow(selectedWindow.Handle, 9); // SW_RESTORE = 9
-                                            await Task.Delay(250, token);
+                                            await Task.Delay(WindowActivationDelayMs, token);
                                         }
 
                                         // Capture using window handle directly (guarantees correct window)
@@ -338,7 +344,7 @@ namespace XerahS.Core.Tasks
                                         {
                                             TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", "ActivateWindow returned false, but proceeding check...");
                                         }
-                                        await Task.Delay(250, token); // Increased delay for activation to settle
+                                        await Task.Delay(WindowActivationDelayMs, token); // Increased delay for activation to settle
 
                                         // Verify foreground is now our target
                                         var foregroundHandle = PlatformServices.Window.GetForegroundWindow();
@@ -386,7 +392,7 @@ namespace XerahS.Core.Tasks
                                     {
                                         TroubleshootingHelper.Log("CustomWindow", "WINDOW", "Window is minimized, restoring...");
                                         PlatformServices.Window.ShowWindow(hWnd, 9); // SW_RESTORE = 9
-                                        await Task.Delay(250, token);
+                                        await Task.Delay(WindowActivationDelayMs, token);
                                     }
 
                                     // Capture using window handle directly (guarantees correct window)
@@ -783,7 +789,7 @@ namespace XerahS.Core.Tasks
                     }
 
                     var uploadProcessor = new UploadJobProcessor();
-                    await uploadProcessor.ProcessAsync(Info, CancellationToken.None);
+                    await uploadProcessor.ProcessAsync(Info, _cancellationTokenSource.Token);
 
                     // Add to History with retry logic for transient failures
                     const int MaxRetries = 3;
