@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using ShareX.Editor;
 using XerahS.Core;
 using XerahS.RegionCapture.ScreenRecording;
 using CommunityToolkit.Mvvm.Input;
@@ -39,13 +40,17 @@ namespace XerahS.UI.ViewModels
     public partial class TaskSettingsViewModel : ObservableObject
     {
         private TaskSettings _settings;
+        private EditorCore _effectsEditorCore;
 
         public ImageEffectsViewModel ImageEffects { get; private set; }
 
-        public TaskSettingsViewModel(TaskSettings settings)
+        public TaskSettingsViewModel(TaskSettings settings) : this(settings, null) { }
+
+        public TaskSettingsViewModel(TaskSettings settings, EditorCore? editorCore)
         {
             _settings = settings;
-            ImageEffects = new ImageEffectsViewModel(Model.ImageSettings);
+            _effectsEditorCore = editorCore ?? new EditorCore();
+            ImageEffects = new ImageEffectsViewModel(Model.ImageSettings, _effectsEditorCore);
             ImageEffects.UpdatePreview();
         }
 
