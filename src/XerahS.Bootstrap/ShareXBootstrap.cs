@@ -269,6 +269,8 @@ namespace XerahS.Bootstrap
                 Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "BOOTSTRAP", "Starting recording initialization");
                 DebugHelper.WriteLine("Starting recording initialization...");
 
+                // InitializeRecording performs CPU-bound work (COM initialization, DirectX setup)
+                // so Task.Run is used to avoid blocking the caller's synchronization context
 #if WINDOWS
                 if (OperatingSystem.IsWindows())
                 {

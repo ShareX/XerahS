@@ -197,6 +197,7 @@ public partial class App : Application
             desktop.Exit += (sender, args) =>
             {
                 XerahS.Core.SettingsManager.SaveAllSettings();
+                DebugHelper.Shutdown();
             };
 
             // Subscribe to workflow completion for notification

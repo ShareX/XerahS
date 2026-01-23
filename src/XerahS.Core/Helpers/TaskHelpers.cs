@@ -602,11 +602,23 @@ public static partial class TaskHelpers
     public static SkiaSharp.SKBitmap? CreateThumbnail(SkiaSharp.SKBitmap bmp, int width, int height)
     {
         if (bmp == null) return null;
+        if (width <= 0 && height <= 0) return null;
 
-        // Calculate dimensions maintaining aspect ratio
-        double ratioX = width > 0 ? (double)width / bmp.Width : 0;
-        double ratioY = height > 0 ? (double)height / bmp.Height : 0;
-        double ratio = Math.Min(ratioX > 0 ? ratioX : ratioY, ratioY > 0 ? ratioY : ratioX);
+        // Calculate scale ratio maintaining aspect ratio
+        double ratio;
+        if (width > 0 && height > 0)
+        {
+            // Both dimensions specified - fit within bounds
+            ratio = Math.Min((double)width / bmp.Width, (double)height / bmp.Height);
+        }
+        else if (width > 0)
+        {
+            ratio = (double)width / bmp.Width;
+        }
+        else
+        {
+            ratio = (double)height / bmp.Height;
+        }
 
         if (ratio <= 0 || ratio >= 1) return null;
 
@@ -623,7 +635,7 @@ public static partial class TaskHelpers
     {
         if (!taskSettings.ImageSettings.ImageAutoUseJPEG) return false;
 
-        long imageSize = (long)bmp.Width * bmp.Height;
+        long imageSize = (long)bmp.Width * (long)bmp.Height;
         long threshold = (long)taskSettings.ImageSettings.ImageAutoUseJPEGSize * 1024;
 
         return imageSize > threshold;

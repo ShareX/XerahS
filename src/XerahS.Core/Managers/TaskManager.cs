@@ -65,10 +65,9 @@ namespace XerahS.Core.Managers
                 return;
             }
 
-            TroubleshootingHelper.Log(taskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", $"StartTask Entry: TaskSettings={taskSettings != null}");
+            TroubleshootingHelper.Log(taskSettings.Job.ToString(), "TASK_MANAGER", "StartTask Entry");
 
-            var safeTaskSettings = taskSettings ?? new TaskSettings();
-            var task = WorkerTask.Create(safeTaskSettings, inputImage);
+            var task = WorkerTask.Create(taskSettings, inputImage);
 
             // Add task and cleanup old tasks to prevent unbounded growth
             lock (_tasksLock)

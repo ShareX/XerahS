@@ -235,7 +235,19 @@ public class ScreenRecordingManager
             {
                 Console.WriteLine($"[ScreenRecordingManager] Recording failed with unrecoverable error: {ex.Message}");
                 TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Recording failed with unrecoverable error: {ex.Message}");
-                CleanupCurrentRecording(recordingService);
+
+                if (recordingService != null)
+                {
+                    try
+                    {
+                        CleanupCurrentRecording(recordingService);
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        DebugHelper.WriteException(cleanupEx, "ScreenRecordingManager: Error during recording cleanup");
+                    }
+                }
+
                 lock (_lock)
                 {
                     _currentOptions = null;

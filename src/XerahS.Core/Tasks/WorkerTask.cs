@@ -88,8 +88,8 @@ namespace XerahS.Core.Tasks
 
         private CancellationTokenSource _cancellationTokenSource;
 
-        public event EventHandler StatusChanged = delegate { };
-        public event EventHandler TaskCompleted = delegate { };
+        public event EventHandler? StatusChanged;
+        public event EventHandler? TaskCompleted;
 
         /// <summary>
         /// Delegate to show window selector when CustomWindow capture has no target configured.

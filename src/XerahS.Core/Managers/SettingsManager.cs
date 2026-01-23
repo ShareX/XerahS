@@ -160,7 +160,7 @@ namespace XerahS.Core
         /// <summary>
         /// Main application settings
         /// </summary>
-        public static ApplicationConfig Settings { get; set; } = new ApplicationConfig();
+        public static ApplicationConfig Settings { get; private set; } = new ApplicationConfig();
 
         /// <summary>
         /// Uploaders configuration
@@ -195,31 +195,6 @@ namespace XerahS.Core
         {
             if (string.IsNullOrEmpty(id)) return null;
             return WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Id == id);
-        }
-
-        /// <summary>
-        /// Retrieve a workflow's task settings by hotkey type, creating a workflow entry if none exists.
-        /// </summary>
-        [Obsolete("Use GetFirstWorkflow() to get the full WorkflowSettings, or pass TaskSettings explicitly. " +
-                  "Looking up by WorkflowType is ambiguous when multiple workflows share the same type.")]
-        public static TaskSettings GetOrCreateWorkflowTaskSettings(WorkflowType workflowType)
-        {
-            WorkflowsConfig ??= new WorkflowsConfig();
-            WorkflowsConfig.Hotkeys ??= new List<WorkflowSettings>();
-
-            var workflow = WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Job == workflowType);
-            if (workflow == null)
-            {
-                workflow = new WorkflowSettings(workflowType, new HotkeyInfo());
-                WorkflowsConfig.Hotkeys.Add(workflow);
-            }
-
-            if (workflow.TaskSettings == null)
-            {
-                workflow.TaskSettings = new TaskSettings();
-            }
-
-            return workflow.TaskSettings;
         }
 
         public static TaskSettings GetWorkflowTaskSettings(string workflowId)
