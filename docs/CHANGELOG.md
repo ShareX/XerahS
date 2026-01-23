@@ -9,6 +9,12 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
+## v0.5.0 - Core Capture & Editor Improvements
+
+### Features & Improvements
+- Fix double cursor visibility by setting RegionCaptureControl cursor to None (`fe35424`)
+- Project status and roadmap updates reflecting completed features (`12a1b7a`)
+
 ## v0.4.0 - Image Effects & Upload Improvements
 
 ### Features & Improvements
