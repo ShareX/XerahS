@@ -235,11 +235,11 @@ namespace XerahS.UI.Views
                 switch (e.Key)
                 {
                     case Key.Z:
-                        if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-                            vm.RedoCommand.Execute(null);
-                        else
+                        if (!e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+                        {
                             vm.UndoCommand.Execute(null);
-                        e.Handled = true;
+                            e.Handled = true;
+                        }
                         return;
                     case Key.Y:
                         vm.RedoCommand.Execute(null);

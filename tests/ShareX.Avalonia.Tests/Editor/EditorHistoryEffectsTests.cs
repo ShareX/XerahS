@@ -398,4 +398,288 @@ public class EditorHistoryEffectsTests
     }
 
     #endregion
+
+    #region Scenario: InvalidateRequested fires on effect mutations (bug fix verification)
+
+    [Test]
+    public void InvalidateRequested_FiresOnAddEffect()
+    {
+        int invalidateCount = 0;
+        _core.InvalidateRequested += () => invalidateCount++;
+
+        _core.AddEffect(new BrightnessImageEffect { Amount = 10 });
+        Assert.That(invalidateCount, Is.GreaterThanOrEqualTo(1), "InvalidateRequested should fire when effect is added");
+    }
+
+    [Test]
+    public void InvalidateRequested_FiresOnRemoveEffect()
+    {
+        var effect = new BrightnessImageEffect { Amount = 10 };
+        _core.AddEffect(effect);
+
+        int invalidateCount = 0;
+        _core.InvalidateRequested += () => invalidateCount++;
+
+        _core.RemoveEffect(effect);
+        Assert.That(invalidateCount, Is.GreaterThanOrEqualTo(1), "InvalidateRequested should fire when effect is removed");
+    }
+
+    [Test]
+    public void InvalidateRequested_FiresOnToggleEffect()
+    {
+        var effect = new BrightnessImageEffect { Amount = 10 };
+        _core.AddEffect(effect);
+
+        int invalidateCount = 0;
+        _core.InvalidateRequested += () => invalidateCount++;
+
+        _core.ToggleEffect(effect);
+        Assert.That(invalidateCount, Is.GreaterThanOrEqualTo(1), "InvalidateRequested should fire when effect is toggled");
+    }
+
+    [Test]
+    public void InvalidateRequested_FiresOnUndoRedoEffects()
+    {
+        _core.AddEffect(new BrightnessImageEffect { Amount = 10 });
+
+        int invalidateCount = 0;
+        _core.InvalidateRequested += () => invalidateCount++;
+
+        _core.Undo();
+        Assert.That(invalidateCount, Is.GreaterThanOrEqualTo(1), "InvalidateRequested should fire on undo");
+
+        invalidateCount = 0;
+        _core.Redo();
+        Assert.That(invalidateCount, Is.GreaterThanOrEqualTo(1), "InvalidateRequested should fire on redo");
+    }
+
+    #endregion
+
+    #region Scenario 7: Crop + Effects interaction
+
+    [Test]
+    public void Scenario7_CropPreservesEffects()
+    {
+        // Load a test image
+        var bitmap = new SKBitmap(200, 200);
+        using (var canvas = new SKCanvas(bitmap))
+        {
+            canvas.Clear(SKColors.White);
+        }
+        _core.LoadImage(bitmap);
+
+        // Add an effect
+        var effect = new BrightnessImageEffect { Amount = 30 };
+        _core.AddEffect(effect);
+        Assert.That(_core.Effects.Count, Is.EqualTo(1));
+
+        // Add crop annotation
+        var crop = new CropAnnotation
+        {
+            StartPoint = new SKPoint(10, 10),
+            EndPoint = new SKPoint(100, 100)
+        };
+        _core.AddAnnotation(crop);
+
+        // Perform crop
+        _core.PerformCrop();
+
+        // Effects should be preserved after crop
+        Assert.That(_core.Effects.Count, Is.EqualTo(1));
+        Assert.That(((BrightnessImageEffect)_core.Effects[0]).Amount, Is.EqualTo(30));
+        // Source image should be cropped
+        Assert.That(_core.SourceImage!.Width, Is.EqualTo(90));
+        Assert.That(_core.SourceImage!.Height, Is.EqualTo(90));
+    }
+
+    [Test]
+    public void Scenario7_UndoCropRestoresEffectsAndImage()
+    {
+        // Load a test image
+        var bitmap = new SKBitmap(200, 200);
+        using (var canvas = new SKCanvas(bitmap))
+        {
+            canvas.Clear(SKColors.Blue);
+        }
+        _core.LoadImage(bitmap);
+
+        // Add effect before crop
+        _core.AddEffect(new BrightnessImageEffect { Amount = 25 });
+
+        // Add crop annotation and crop
+        var crop = new CropAnnotation
+        {
+            StartPoint = new SKPoint(20, 20),
+            EndPoint = new SKPoint(120, 120)
+        };
+        _core.AddAnnotation(crop);
+        _core.PerformCrop();
+
+        Assert.That(_core.SourceImage!.Width, Is.EqualTo(100));
+        Assert.That(_core.Effects.Count, Is.EqualTo(1));
+
+        // Undo crop
+        _core.Undo();
+
+        // Original image and effects should be restored
+        Assert.That(_core.SourceImage!.Width, Is.EqualTo(200));
+        Assert.That(_core.SourceImage!.Height, Is.EqualTo(200));
+        Assert.That(_core.Effects.Count, Is.EqualTo(1));
+        Assert.That(((BrightnessImageEffect)_core.Effects[0]).Amount, Is.EqualTo(25));
+    }
+
+    [Test]
+    public void Scenario7_AddEffectAfterCrop_UndoEffect_UndoCrop()
+    {
+        // Load a test image
+        var bitmap = new SKBitmap(300, 300);
+        using (var canvas = new SKCanvas(bitmap))
+        {
+            canvas.Clear(SKColors.Red);
+        }
+        _core.LoadImage(bitmap);
+
+        // Add effect before crop
+        _core.AddEffect(new BrightnessImageEffect { Amount = 10 });
+
+        // Crop
+        var crop = new CropAnnotation
+        {
+            StartPoint = new SKPoint(0, 0),
+            EndPoint = new SKPoint(150, 150)
+        };
+        _core.AddAnnotation(crop);
+        _core.PerformCrop();
+
+        // Add another effect after crop
+        _core.AddEffect(new GrayscaleImageEffect());
+        Assert.That(_core.Effects.Count, Is.EqualTo(2));
+
+        // Undo effect added after crop
+        _core.Undo();
+        Assert.That(_core.Effects.Count, Is.EqualTo(1));
+        Assert.That(_core.SourceImage!.Width, Is.EqualTo(150), "Image should still be cropped");
+
+        // Undo crop
+        _core.Undo();
+        Assert.That(_core.SourceImage!.Width, Is.EqualTo(300), "Image should be restored to original");
+        Assert.That(_core.Effects.Count, Is.EqualTo(1), "Effect before crop should still be present");
+
+        // Redo crop
+        _core.Redo();
+        Assert.That(_core.SourceImage!.Width, Is.EqualTo(150));
+        Assert.That(_core.Effects.Count, Is.EqualTo(1));
+
+        // Redo effect after crop
+        _core.Redo();
+        Assert.That(_core.Effects.Count, Is.EqualTo(2));
+    }
+
+    #endregion
+
+    #region Scenario 8: Preview effect (non-destructive real-time preview)
+
+    [Test]
+    public void Scenario8_SetPreviewEffect_DoesNotAffectEffectsList()
+    {
+        _core.AddEffect(new BrightnessImageEffect { Amount = 10 });
+        Assert.That(_core.Effects.Count, Is.EqualTo(1));
+
+        _core.SetPreviewEffect(new GrayscaleImageEffect());
+
+        // Preview effect should NOT appear in the effects list
+        Assert.That(_core.Effects.Count, Is.EqualTo(1));
+        // But InvalidateRequested should have fired
+    }
+
+    [Test]
+    public void Scenario8_SetPreviewEffect_DoesNotCreateUndoEntry()
+    {
+        _core.AddEffect(new BrightnessImageEffect { Amount = 10 });
+        Assert.That(_core.CanUndo, Is.True);
+
+        // Undo the add
+        _core.Undo();
+        Assert.That(_core.Effects.Count, Is.EqualTo(0));
+        Assert.That(_core.CanUndo, Is.False);
+
+        // Set preview — should NOT create undo entry
+        _core.SetPreviewEffect(new GrayscaleImageEffect());
+        Assert.That(_core.CanUndo, Is.False, "Preview should not create an undo entry");
+    }
+
+    [Test]
+    public void Scenario8_ClearPreviewEffect_RestoresOriginalState()
+    {
+        _core.AddEffect(new BrightnessImageEffect { Amount = 10 });
+
+        _core.SetPreviewEffect(new GrayscaleImageEffect());
+        _core.ClearPreviewEffect();
+
+        // Effects list unchanged
+        Assert.That(_core.Effects.Count, Is.EqualTo(1));
+        Assert.That(_core.Effects[0], Is.TypeOf<BrightnessImageEffect>());
+    }
+
+    [Test]
+    public void Scenario8_CommitPreviewEffect_AddsToEffectsListWithUndo()
+    {
+        _core.AddEffect(new BrightnessImageEffect { Amount = 10 });
+
+        var preview = new GrayscaleImageEffect();
+        _core.SetPreviewEffect(preview);
+
+        // Commit the preview
+        _core.CommitPreviewEffect();
+
+        // Effect should now be in the list
+        Assert.That(_core.Effects.Count, Is.EqualTo(2));
+        Assert.That(_core.Effects[1], Is.TypeOf<GrayscaleImageEffect>());
+
+        // Should be undoable
+        _core.Undo();
+        Assert.That(_core.Effects.Count, Is.EqualTo(1));
+        Assert.That(_core.Effects[0], Is.TypeOf<BrightnessImageEffect>());
+    }
+
+    [Test]
+    public void Scenario8_PreviewDoesNotAffectAnnotations()
+    {
+        var ann = new RectangleAnnotation
+        {
+            StartPoint = new SKPoint(10, 10),
+            EndPoint = new SKPoint(50, 50)
+        };
+        _core.AddAnnotation(ann);
+        Assert.That(_core.Annotations.Count, Is.EqualTo(1));
+
+        // Set and clear preview
+        _core.SetPreviewEffect(new BrightnessImageEffect { Amount = 50 });
+        Assert.That(_core.Annotations.Count, Is.EqualTo(1), "Annotations preserved during preview");
+
+        _core.ClearPreviewEffect();
+        Assert.That(_core.Annotations.Count, Is.EqualTo(1), "Annotations preserved after cancel");
+
+        // Set and commit preview
+        _core.SetPreviewEffect(new GrayscaleImageEffect());
+        _core.CommitPreviewEffect();
+        Assert.That(_core.Annotations.Count, Is.EqualTo(1), "Annotations preserved after commit");
+    }
+
+    [Test]
+    public void Scenario8_SetPreviewEffectFromFunc_FiresInvalidateRequested()
+    {
+        int invalidateCount = 0;
+        _core.InvalidateRequested += () => invalidateCount++;
+
+        _core.SetPreviewEffect(source => source.Copy());
+
+        Assert.That(invalidateCount, Is.GreaterThanOrEqualTo(1), "Func preview should fire InvalidateRequested");
+
+        invalidateCount = 0;
+        _core.ClearPreviewEffect();
+        Assert.That(invalidateCount, Is.GreaterThanOrEqualTo(1), "ClearPreviewEffect should fire InvalidateRequested");
+    }
+
+    #endregion
 }
