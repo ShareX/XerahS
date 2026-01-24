@@ -167,11 +167,14 @@ public partial class App : Application
                             return;
                         }
 
-                        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+                        var options = new Avalonia.Platform.Storage.FilePickerOpenOptions
                         {
                             Title = "Select File to Upload",
-                            AllowMultiple = false
-                        });
+                            AllowMultiple = false,
+                            SuggestedStartLocation = await topLevel.StorageProvider.TryGetWellKnownFolderAsync(Avalonia.Platform.Storage.WellKnownFolder.Desktop)
+                        };
+
+                        var files = await topLevel.StorageProvider.OpenFilePickerAsync(options);
 
                         if (files.Count >= 1)
                         {
