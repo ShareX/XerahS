@@ -342,6 +342,38 @@ public static partial class TaskHelpers
         return fileName;
     }
 
+    /// <summary>
+    /// Resolve a safe history file name using known file info or URL.
+    /// </summary>
+    public static string GetHistoryFileName(string fileName, string? filePath, string? url)
+    {
+        if (!string.IsNullOrWhiteSpace(fileName))
+        {
+            return fileName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(filePath))
+        {
+            return Path.GetFileName(filePath);
+        }
+
+        if (!string.IsNullOrWhiteSpace(url) && Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            var segment = Path.GetFileName(uri.AbsolutePath);
+            if (!string.IsNullOrWhiteSpace(segment))
+            {
+                return segment;
+            }
+
+            if (!string.IsNullOrWhiteSpace(uri.Host))
+            {
+                return uri.Host;
+            }
+        }
+
+        return "URL";
+    }
+
     #endregion
 
     #region Screenshots Folder

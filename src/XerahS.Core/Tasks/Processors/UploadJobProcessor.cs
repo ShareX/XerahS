@@ -24,6 +24,9 @@
 #endregion License Information (GPL v3)
 using System.IO;
 using XerahS.Common;
+using XerahS.Core;
+using XerahS.Core.Managers;
+using XerahS.History;
 using XerahS.Platform.Abstractions;
 using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
@@ -91,6 +94,8 @@ namespace XerahS.Core.Tasks.Processors
                         }
                     }
                 }
+
+                TryAppendHistoryItem(info);
             }
             else
             {
@@ -227,6 +232,67 @@ namespace XerahS.Core.Tasks.Processors
             {
                 DebugHelper.WriteException(ex, "Failed to load plugins");
             }
+        }
+
+        private static void TryAppendHistoryItem(TaskInfo info)
+        {
+            var url = info.Metadata?.UploadURL;
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return;
+            }
+
+            var category = info.TaskSettings.Job.GetHotkeyCategory();
+            if (category == EnumExtensions.WorkflowType_Category_ScreenCapture ||
+                category == EnumExtensions.WorkflowType_Category_ScreenRecord)
+            {
+                return;
+            }
+
+            try
+            {
+                var historyPath = SettingsManager.GetHistoryFilePath();
+                using var historyManager = new HistoryManagerSQLite(historyPath);
+
+                var historyItem = new HistoryItem
+                {
+                    FilePath = info.FilePath ?? string.Empty,
+                    FileName = TaskHelpers.GetHistoryFileName(info.FileName, info.FilePath, url),
+                    DateTime = DateTime.Now,
+                    Type = GetHistoryType(info),
+                    Host = info.UploaderHost ?? string.Empty,
+                    URL = url ?? string.Empty
+                };
+
+                var tags = info.GetTags();
+                if (tags != null)
+                {
+                    historyItem.Tags = new Dictionary<string, string?>(tags.Count);
+                    foreach (var pair in tags)
+                    {
+                        historyItem.Tags[pair.Key] = pair.Value;
+                    }
+                }
+
+                historyManager.AppendHistoryItem(historyItem);
+                DebugHelper.WriteLine($"Added upload to history: {historyItem.FileName} (URL: {historyItem.URL})");
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to add upload history item");
+            }
+        }
+
+        private static string GetHistoryType(TaskInfo info)
+        {
+            return info.DataType switch
+            {
+                EDataType.Image => "Image",
+                EDataType.Text => "Text",
+                EDataType.File => "File",
+                EDataType.URL => "URL",
+                _ => "Unknown"
+            };
         }
 
         private async Task HandleAfterUploadTasksAsync(TaskInfo info, UploadResult result, CancellationToken token)

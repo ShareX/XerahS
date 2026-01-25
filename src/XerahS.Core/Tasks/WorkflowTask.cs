@@ -23,6 +23,9 @@
 
 #endregion License Information (GPL v3)
 using XerahS.Platform.Abstractions;
+using XerahS.Core;
+using XerahS.Core.Managers;
+using XerahS.History;
 using XerahS.Uploaders; // For GenericUploader and UploadResult
 using XerahS.Uploaders.PluginSystem;
 using System.Drawing;
@@ -88,6 +91,11 @@ public class WorkflowTask : IDisposable
             {
                 CopyURLToClipboard(Result.ToString());
             }
+
+            if (!string.IsNullOrEmpty(Result?.URL))
+            {
+                TryAppendHistoryItem(Result.URL);
+            }
         }
         catch (Exception ex)
         {
@@ -98,6 +106,29 @@ public class WorkflowTask : IDisposable
         {
             IsCompleted = true;
             TaskCompleted?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private void TryAppendHistoryItem(string url)
+    {
+        try
+        {
+            var historyPath = SettingsManager.GetHistoryFilePath();
+            using var historyManager = new HistoryManagerSQLite(historyPath);
+            var historyItem = new HistoryItem
+            {
+                FilePath = FilePath ?? string.Empty,
+                FileName = TaskHelpers.GetHistoryFileName(FileName, FilePath, url),
+                DateTime = DateTime.Now,
+                Type = "Image",
+                URL = url
+            };
+
+            historyManager.AppendHistoryItem(historyItem);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to add history item: {ex.Message}");
         }
     }
 
