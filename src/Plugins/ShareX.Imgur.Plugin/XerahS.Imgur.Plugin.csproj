@@ -21,10 +21,10 @@
   <!-- Avalonia packages for UI - use exact versions from main app -->
   <!-- Mark as ExcludeAssets=runtime so they are NOT copied to plugin output (use host's versions) -->
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.11">
+    <PackageReference Include="Avalonia" Version="11.3.9">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11">
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.9">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0">
