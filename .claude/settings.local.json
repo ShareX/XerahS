@@ -56,7 +56,15 @@
       "Bash(\"docs\\reports\\xerahs_change_log.md\")",
       "Bash(del batch3_changelog.txt)",
       "Bash(Select-String -Pattern \"error|Build FAILED|Build succeeded\" -Context 0,2)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(dir:*)",
+      "Bash(cmd /c \"gh issue list --state open --limit 5 --json number,title,createdAt,body\")",
+      "Bash(where:*)",
+      "Bash(cmd /c \"where gh\")",
+      "Bash(export PATH=\"$PATH:/c/Program Files/GitHub CLI\")",
+      "Bash(gh:*)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh\" auth status)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh\" issue close 7 --repo ShareX/ShareX.Editor --comment \"Fixed in commit ab2ce24. Annotations now transform with the image during rotate/flip operations instead of being cleared. The fix uses SKMatrix transforms matching the bitmap rotation/flip, preserving annotation positions through undo/redo cycles. 11 regression tests added in XerahS.\")"
     ]
   }
 }
