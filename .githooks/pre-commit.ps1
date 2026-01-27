@@ -18,7 +18,7 @@ $EXPECTED_GPL_START = "This program is free software"
 $STAGED_CS_FILES = git diff --cached --name-only --diff-filter=ACM | Where-Object { $_ -match '\.cs$' }
 
 if (-not $STAGED_CS_FILES) {
-    Write-Host "✓ No C# files to check" -ForegroundColor Green
+    Write-Host "OK: No C# files to check" -ForegroundColor Green
     exit 0
 }
 
@@ -33,7 +33,7 @@ foreach ($FILE in $STAGED_CS_FILES) {
     }
 
     # Read first 30 lines (header should be within this)
-    $HEADER = Get-Content $FILE -TotalCount 30 -Raw
+    $HEADER = (Get-Content $FILE -TotalCount 30) -join [Environment]::NewLine
 
     # Check for required components
     $MISSING = @()
@@ -58,20 +58,20 @@ foreach ($FILE in $STAGED_CS_FILES) {
     if ($MISSING.Count -gt 0) {
         $VIOLATIONS++
         $VIOLATION_FILES += $FILE
-        Write-Host "✗ $FILE" -ForegroundColor Red
+        Write-Host "FAIL: $FILE" -ForegroundColor Red
         Write-Host "  Missing: $($MISSING -join ', ')" -ForegroundColor Yellow
     }
 }
 
 if ($VIOLATIONS -gt 0) {
     Write-Host ""
-    Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Red
+    Write-Host "==============================================================" -ForegroundColor Red
     Write-Host "  LICENSE HEADER VALIDATION FAILED" -ForegroundColor Red
-    Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Red
+    Write-Host "==============================================================" -ForegroundColor Red
     Write-Host ""
     Write-Host "$VIOLATIONS file(s) have incorrect or missing license headers:" -ForegroundColor Yellow
     foreach ($FILE in $VIOLATION_FILES) {
-        Write-Host "  → $FILE" -ForegroundColor Yellow
+        Write-Host "  -> $FILE" -ForegroundColor Yellow
     }
     Write-Host ""
     Write-Host "Expected header format:" -ForegroundColor Yellow
@@ -98,5 +98,5 @@ if ($VIOLATIONS -gt 0) {
 }
 
 $fileCount = ($STAGED_CS_FILES | Measure-Object).Count
-Write-Host "✓ All staged C# files have valid license headers ($fileCount files checked)" -ForegroundColor Green
+Write-Host "OK: All staged C# files have valid license headers ($fileCount files checked)" -ForegroundColor Green
 exit 0

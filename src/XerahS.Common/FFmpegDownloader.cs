@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using System.IO;
 
 namespace XerahS.Common
@@ -50,12 +51,12 @@ namespace XerahS.Common
         public const string DefaultOwner = "BtbN";
         public const string DefaultRepo = "FFmpeg-Builds";
 
-        public static Task<FFmpegDownloadResult> DownloadLatestToToolsAsync(CancellationToken cancellationToken = default)
+        public static Task<FFmpegDownloadResult> DownloadLatestToToolsAsync(IProgress<double>? progress = null, CancellationToken cancellationToken = default)
         {
-            return DownloadLatestAsync(PathsManager.ToolsFolder, cancellationToken);
+            return DownloadLatestAsync(PathsManager.ToolsFolder, progress, cancellationToken);
         }
 
-        public static async Task<FFmpegDownloadResult> DownloadLatestAsync(string destinationFolder, CancellationToken cancellationToken = default)
+        public static async Task<FFmpegDownloadResult> DownloadLatestAsync(string destinationFolder, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(destinationFolder))
             {
@@ -65,6 +66,8 @@ namespace XerahS.Common
             Directory.CreateDirectory(destinationFolder);
 
             string? downloadedArchive = null;
+            FileDownloader? downloader = null;
+            Action? detachProgressHandlers = null;
 
             try
             {
@@ -79,15 +82,17 @@ namespace XerahS.Common
                 string fileName = updateChecker.FileName ?? $"ffmpeg-{updateChecker.Architecture}.zip";
                 downloadedArchive = Path.Combine(Path.GetTempPath(), fileName);
 
-                FileDownloader downloader = new FileDownloader(downloadUrl, downloadedArchive);
+                downloader = new FileDownloader(downloadUrl, downloadedArchive);
+                detachProgressHandlers = AttachProgressHandlers(downloader, progress);
                 bool downloadSuccess = await downloader.StartDownload();
+                progress?.Report(100);
 
                 if (!downloadSuccess || !File.Exists(downloadedArchive))
                 {
                     return FFmpegDownloadResult.CreateFailure("FFmpeg download failed.");
                 }
 
-                ExtractFFmpegBinary(downloadedArchive, destinationFolder);
+                ExtractFFmpegBinaries(downloadedArchive, destinationFolder);
 
                 string ffmpegPath = PathsManager.GetFFmpegPath();
 
@@ -105,6 +110,8 @@ namespace XerahS.Common
             }
             finally
             {
+                detachProgressHandlers?.Invoke();
+
                 if (!string.IsNullOrWhiteSpace(downloadedArchive) && File.Exists(downloadedArchive))
                 {
                     try
@@ -123,21 +130,30 @@ namespace XerahS.Common
             }
         }
 
-        private static void ExtractFFmpegBinary(string archivePath, string destinationFolder)
+        private static void ExtractFFmpegBinaries(string archivePath, string destinationFolder)
         {
-            string binaryName = OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg";
+            string ffmpegBinary = OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg";
+            string ffprobeBinary = OperatingSystem.IsWindows() ? "ffprobe.exe" : "ffprobe";
 
             ZipManager.Extract(
                 archivePath,
                 destinationFolder,
                 retainDirectoryStructure: false,
-                filter: entry => entry.Name.Equals(binaryName, StringComparison.OrdinalIgnoreCase));
+                filter: entry =>
+                    entry.Name.Equals(ffmpegBinary, StringComparison.OrdinalIgnoreCase) ||
+                    entry.Name.Equals(ffprobeBinary, StringComparison.OrdinalIgnoreCase));
 
-            string extractedPath = Path.Combine(destinationFolder, binaryName);
+            string extractedFFmpegPath = Path.Combine(destinationFolder, ffmpegBinary);
+            string extractedFFprobePath = Path.Combine(destinationFolder, ffprobeBinary);
 
-            if (File.Exists(extractedPath))
+            if (File.Exists(extractedFFmpegPath))
             {
-                EnsureExecutable(extractedPath);
+                EnsureExecutable(extractedFFmpegPath);
+            }
+
+            if (File.Exists(extractedFFprobePath))
+            {
+                EnsureExecutable(extractedFFprobePath);
             }
         }
 
@@ -158,6 +174,31 @@ namespace XerahS.Common
             {
                 DebugHelper.WriteException(ex, "Failed to set FFmpeg executable permissions.");
             }
+        }
+
+        private static Action? AttachProgressHandlers(FileDownloader downloader, IProgress<double>? progress)
+        {
+            if (progress == null)
+            {
+                return null;
+            }
+
+            void ReportProgress()
+            {
+                if (downloader.FileSize > 0)
+                {
+                    progress.Report(Math.Clamp(downloader.DownloadPercentage, 0, 100));
+                }
+            }
+
+            downloader.FileSizeReceived += ReportProgress;
+            downloader.ProgressChanged += ReportProgress;
+
+            return () =>
+            {
+                downloader.FileSizeReceived -= ReportProgress;
+                downloader.ProgressChanged -= ReportProgress;
+            };
         }
     }
 }

@@ -249,6 +249,7 @@ namespace XerahS.UI.ViewModels
         private string _ffmpegStatusText = "Missing.";
         private string _detectedFFmpegPath = string.Empty;
         private bool _isDownloadingFFmpeg;
+        private double _ffmpegDownloadProgress;
 
         public string FFmpegStatusText
         {
@@ -297,6 +298,22 @@ namespace XerahS.UI.ViewModels
             }
         }
 
+        public double FFmpegDownloadProgress
+        {
+            get => _ffmpegDownloadProgress;
+            private set
+            {
+                if (Math.Abs(_ffmpegDownloadProgress - value) > 0.001)
+                {
+                    _ffmpegDownloadProgress = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(FFmpegDownloadProgressText));
+                }
+            }
+        }
+
+        public string FFmpegDownloadProgressText => $"{FFmpegDownloadProgress:0}%";
+
         public bool CanDownloadFFmpeg => IsFFmpegMissing && !IsDownloadingFFmpeg;
         public bool ShowDownloadFFmpeg => IsFFmpegMissing;
 
@@ -344,11 +361,18 @@ namespace XerahS.UI.ViewModels
             }
 
             IsDownloadingFFmpeg = true;
+            FFmpegDownloadProgress = 0;
             FFmpegStatusText = "Downloading FFmpeg...";
 
             try
             {
-                Common.FFmpegDownloadResult result = await Common.FFmpegDownloader.DownloadLatestToToolsAsync();
+                IProgress<double> progress = new Progress<double>(value =>
+                {
+                    FFmpegDownloadProgress = value;
+                    FFmpegStatusText = $"Downloading FFmpeg... {FFmpegDownloadProgressText}";
+                });
+
+                Common.FFmpegDownloadResult result = await Common.FFmpegDownloader.DownloadLatestToToolsAsync(progress);
 
                 IsDownloadingFFmpeg = false;
 
@@ -380,7 +404,7 @@ namespace XerahS.UI.ViewModels
         {
             if (IsDownloadingFFmpeg)
             {
-                return "Downloading FFmpeg...";
+                return $"Downloading FFmpeg... {FFmpegDownloadProgressText}";
             }
 
             FFmpegOptions? options = _settings.CaptureSettings.FFmpegOptions;

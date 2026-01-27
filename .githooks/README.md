@@ -15,8 +15,8 @@ Validates GPL v3 license headers in all staged C# files before allowing a commit
 - GPL v3 license text
 
 **Supported platforms:**
-- Linux/macOS: Uses bash script (`pre-commit`)
-- Windows: Uses PowerShell script (`pre-commit.ps1`)
+- Linux/macOS: Uses bash script (`pre-commit.bash`) via launcher (`pre-commit`)
+- Windows: Uses PowerShell script (`pre-commit.ps1`) via launcher (`pre-commit`)
 
 ## Installation
 
@@ -171,8 +171,9 @@ To test the pre-commit hook without actually committing:
 git add src/SomeFile.cs
 
 # Run the hook directly
-.githooks/pre-commit       # Linux/macOS
-pwsh .githooks/pre-commit.ps1  # Windows
+.githooks/pre-commit          # All platforms (launcher)
+pwsh .githooks/pre-commit.ps1 # Windows (PowerShell)
+.githooks/pre-commit.bash     # Linux/macOS (bash)
 
 # Unstage files
 git reset HEAD

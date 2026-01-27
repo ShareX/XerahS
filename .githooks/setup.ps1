@@ -13,22 +13,22 @@ $ErrorActionPreference = "Stop"
 
 function Write-Success {
     param([string]$Message)
-    Write-Host "✓ $Message" -ForegroundColor Green
+    Write-Host "OK: $Message" -ForegroundColor Green
 }
 
 function Write-Info {
     param([string]$Message)
-    Write-Host "ℹ $Message" -ForegroundColor Cyan
+    Write-Host "INFO: $Message" -ForegroundColor Cyan
 }
 
 function Write-Warning {
     param([string]$Message)
-    Write-Host "⚠ $Message" -ForegroundColor Yellow
+    Write-Host "WARN: $Message" -ForegroundColor Yellow
 }
 
 function Write-Error {
     param([string]$Message)
-    Write-Host "✗ $Message" -ForegroundColor Red
+    Write-Host "FAIL: $Message" -ForegroundColor Red
 }
 
 # Check if we're in a git repository
@@ -91,6 +91,7 @@ try {
 # Verify hooks exist
 $hookFiles = @(
     ".githooks/pre-commit",
+    ".githooks/pre-commit.bash",
     ".githooks/pre-commit.ps1"
 )
 
@@ -104,7 +105,7 @@ foreach ($hook in $hookFiles) {
 if ($missingHooks.Count -gt 0) {
     Write-Warning "Some hook files are missing:"
     foreach ($hook in $missingHooks) {
-        Write-Host "  → $hook" -ForegroundColor Yellow
+        Write-Host "  -> $hook" -ForegroundColor Yellow
     }
 }
 
@@ -112,6 +113,7 @@ if ($missingHooks.Count -gt 0) {
 if ($IsLinux -or $IsMacOS) {
     try {
         chmod +x .githooks/pre-commit
+        chmod +x .githooks/pre-commit.bash
         Write-Success "Made pre-commit hook executable"
     } catch {
         Write-Warning "Could not set execute permission on pre-commit hook"
@@ -132,7 +134,7 @@ Write-Host ""
 Write-Success "Git hooks setup complete!"
 Write-Host ""
 Write-Info "Active hooks:"
-Write-Host "  • pre-commit - Validates GPL v3 license headers in C# files"
+Write-Host "  * pre-commit - Validates GPL v3 license headers in C# files"
 Write-Host ""
 Write-Info "To test the hooks:"
 Write-Host "  1. Stage a C# file: git add src/SomeFile.cs"

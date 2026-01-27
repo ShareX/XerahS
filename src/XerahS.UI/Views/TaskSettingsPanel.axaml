@@ -389,6 +389,10 @@
                                                 IsVisible="{Binding ShowDownloadFFmpeg}"
                                                 IsEnabled="{Binding CanDownloadFFmpeg}"
                                                 HorizontalAlignment="Left"/>
+                                        <TextBlock Text="{Binding FFmpegDownloadProgressText}"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="{Binding IsDownloadingFFmpeg}"/>
                                         <Button Content="Configure FFmpeg..."
                                                 Command="{Binding OpenFFmpegOptionsCommand}"
                                                 HorizontalAlignment="Left"/>
