@@ -749,7 +749,8 @@ namespace XerahS.Core.Tasks
                 {
                     Mode = mode,
                     Settings = captureSettings.ScreenRecordingSettings,
-                    TargetWindowHandle = windowHandle
+                    TargetWindowHandle = windowHandle,
+                    UseModernCapture = captureSettings.UseModernCapture
                 };
 
                 // Set region if provided (for Region mode)

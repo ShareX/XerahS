@@ -380,9 +380,19 @@
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                FontSize="12"
                                                TextWrapping="Wrap"/>
-                                    <Button Content="Configure FFmpeg..."
-                                            Command="{Binding OpenFFmpegOptionsCommand}"
-                                            HorizontalAlignment="Left"/>
+                                    <TextBlock Text="{Binding FFmpegStatusText}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               FontSize="12"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Content="Download FFmpeg..."
+                                                Command="{Binding DownloadFFmpegCommand}"
+                                                IsVisible="{Binding ShowDownloadFFmpeg}"
+                                                IsEnabled="{Binding CanDownloadFFmpeg}"
+                                                HorizontalAlignment="Left"/>
+                                        <Button Content="Configure FFmpeg..."
+                                                Command="{Binding OpenFFmpegOptionsCommand}"
+                                                HorizontalAlignment="Left"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

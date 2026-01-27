@@ -404,6 +404,13 @@ public class ScreenRecordingManager
         {
             var settings = options.Settings;
 
+            // Check UseModernCapture override: if false, force FFmpeg fallback
+            if (!options.UseModernCapture)
+            {
+                TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "UseModernCapture is disabled -> forcing FFmpeg fallback");
+                return true;
+            }
+
             if (settings?.ForceFFmpeg == true)
             {
                 TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "ForceFFmpeg setting is enabled -> using FFmpeg");

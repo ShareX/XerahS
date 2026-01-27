@@ -78,7 +78,15 @@ public class ScreenRecorderService : IRecordingService
     /// Debug: dump the first captured frame to disk for orientation analysis.
     /// </summary>
     public static bool DebugDumpFirstFrame { get; set; } = false;
+    public static int DebugDumpFirstFrameCount { get; set; } = 0;
+    public static int DebugDumpEveryNthFrame { get; set; } = 0;
+    public static int DebugDumpMaxFrames { get; set; } = 0;
+    public static bool DebugDumpRawFrame { get; set; } = false;
     private static bool _debugFrameDumped = false;
+    private static int _debugFrameIndex = 0;
+    private static int _debugFramesDumped = 0;
+    private static readonly object DebugConfigLock = new();
+    private static bool _debugConfigInitialized = false;
 
     public event EventHandler<RecordingErrorEventArgs>? ErrorOccurred;
     public event EventHandler<RecordingStatusEventArgs>? StatusChanged;
@@ -86,6 +94,9 @@ public class ScreenRecorderService : IRecordingService
     public async Task StartRecordingAsync(RecordingOptions options)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
+
+        EnsureDebugConfigInitialized();
+        ResetDebugFrameCounters();
 
         lock (_lock)
         {
@@ -290,6 +301,7 @@ public class ScreenRecorderService : IRecordingService
         System.Console.WriteLine("SRS: OnFrameCaptured called"); // Low-level trace
 
         FrameData? croppedFrame = null;
+        int frameIndex = System.Threading.Interlocked.Increment(ref _debugFrameIndex);
         try
         {
             FrameData frameToEncode = e.Frame;
@@ -299,6 +311,11 @@ public class ScreenRecorderService : IRecordingService
             {
                 try
                 {
+                    if (OperatingSystem.IsWindows() && DebugDumpRawFrame)
+                    {
+                        TryDumpDebugFrame(e.Frame, $"raw_f{frameIndex:000000}");
+                    }
+
                     croppedFrame = RegionCropper.CropFrame(e.Frame, _currentOptions.Region);
                     frameToEncode = croppedFrame.Value;
                 }
@@ -309,10 +326,20 @@ public class ScreenRecorderService : IRecordingService
                 }
             }
 
-            if (OperatingSystem.IsWindows() && DebugDumpFirstFrame && !_debugFrameDumped)
+            if (OperatingSystem.IsWindows())
             {
-                DumpFrame(frameToEncode, "capture");
-                _debugFrameDumped = true;
+                bool dumpFirst = DebugDumpFirstFrame && !_debugFrameDumped;
+                bool dumpFirstCount = DebugDumpFirstFrameCount > 0 && frameIndex <= DebugDumpFirstFrameCount;
+                bool dumpEvery = DebugDumpEveryNthFrame > 0 && frameIndex % DebugDumpEveryNthFrame == 0;
+
+                if ((dumpFirst || dumpFirstCount || dumpEvery) && ShouldDumpMoreFrames())
+                {
+                    TryDumpDebugFrame(frameToEncode, $"capture_f{frameIndex:000000}");
+                    if (dumpFirst)
+                    {
+                        _debugFrameDumped = true;
+                    }
+                }
             }
 
             _encoder?.WriteFrame(frameToEncode);
@@ -526,6 +553,122 @@ public class ScreenRecorderService : IRecordingService
         catch (Exception ex)
         {
             DebugHelper.WriteLine($"[ScreenRecorder] Frame dump failed: {ex.Message}");
+        }
+    }
+
+    private static void EnsureDebugConfigInitialized()
+    {
+        lock (DebugConfigLock)
+        {
+            if (_debugConfigInitialized)
+            {
+                return;
+            }
+
+            _debugConfigInitialized = true;
+            ApplyDebugFrameDumpOverridesFromEnvironment();
+        }
+    }
+
+    private static void ApplyDebugFrameDumpOverridesFromEnvironment()
+    {
+        var dumpFirst = Environment.GetEnvironmentVariable("XERAHS_RECORDING_DUMP_FIRST_FRAME");
+        if (TryParseBool(dumpFirst, out var dumpFirstValue))
+        {
+            DebugDumpFirstFrame = dumpFirstValue;
+        }
+
+        var dumpFirstCount = Environment.GetEnvironmentVariable("XERAHS_RECORDING_DUMP_FIRST_COUNT");
+        if (TryParseInt(dumpFirstCount, out var dumpFirstCountValue))
+        {
+            DebugDumpFirstFrameCount = Math.Max(0, dumpFirstCountValue);
+        }
+
+        var dumpEvery = Environment.GetEnvironmentVariable("XERAHS_RECORDING_DUMP_EVERY");
+        if (TryParseInt(dumpEvery, out var dumpEveryValue))
+        {
+            DebugDumpEveryNthFrame = Math.Max(0, dumpEveryValue);
+        }
+
+        var dumpMax = Environment.GetEnvironmentVariable("XERAHS_RECORDING_DUMP_MAX");
+        if (TryParseInt(dumpMax, out var dumpMaxValue))
+        {
+            DebugDumpMaxFrames = Math.Max(0, dumpMaxValue);
+        }
+
+        var dumpRaw = Environment.GetEnvironmentVariable("XERAHS_RECORDING_DUMP_RAW");
+        if (TryParseBool(dumpRaw, out var dumpRawValue))
+        {
+            DebugDumpRawFrame = dumpRawValue;
+        }
+
+        if (DebugDumpFirstFrame || DebugDumpFirstFrameCount > 0 || DebugDumpEveryNthFrame > 0)
+        {
+            DebugHelper.WriteLine($"[ScreenRecorder] Frame dump debug enabled: first={DebugDumpFirstFrame}, firstCount={DebugDumpFirstFrameCount}, every={DebugDumpEveryNthFrame}, max={DebugDumpMaxFrames}, raw={DebugDumpRawFrame}");
+        }
+    }
+
+    private static bool TryParseBool(string? value, out bool result)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            result = false;
+            return false;
+        }
+
+        if (bool.TryParse(value, out result))
+        {
+            return true;
+        }
+
+        if (int.TryParse(value, out var numeric))
+        {
+            result = numeric != 0;
+            return true;
+        }
+
+        result = false;
+        return false;
+    }
+
+    private static bool TryParseInt(string? value, out int result)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            result = 0;
+            return false;
+        }
+
+        return int.TryParse(value, out result);
+    }
+
+    private static void ResetDebugFrameCounters()
+    {
+        _debugFrameDumped = false;
+        _debugFrameIndex = 0;
+        _debugFramesDumped = 0;
+    }
+
+    private static bool ShouldDumpMoreFrames()
+    {
+        if (DebugDumpMaxFrames > 0 && _debugFramesDumped >= DebugDumpMaxFrames)
+        {
+            return false;
+        }
+
+        System.Threading.Interlocked.Increment(ref _debugFramesDumped);
+        return true;
+    }
+
+    private static void TryDumpDebugFrame(FrameData frame, string tag)
+    {
+        try
+        {
+            DumpFrame(frame, tag);
+        }
+        catch
+        {
+            // DumpFrame already logs failures; avoid cascading
         }
     }
 }

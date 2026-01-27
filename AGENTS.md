@@ -32,6 +32,7 @@ When a bug or feature is identified or provided by user, follow this process:
      - Use case / benefit (for features)
      - Bolded affected **ClassName**, **FilePath**, **Component**
      - Any logs / errors
+   - **Formatting**: pass a real multi-line body to `gh` (PowerShell here-string or file) — do **not** embed `\n` escape sequences in the body string.
    - Command example: `gh issue create --title "[BUG] ..." --body "..." --label bug`
 5. **Report**:
    - The exact gh command ran

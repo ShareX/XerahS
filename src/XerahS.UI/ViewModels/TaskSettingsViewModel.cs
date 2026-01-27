@@ -25,6 +25,7 @@
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ShareX.Editor;
+using Common = XerahS.Common;
 using XerahS.Core;
 using XerahS.RegionCapture.ScreenRecording;
 using CommunityToolkit.Mvvm.Input;
@@ -52,6 +53,7 @@ namespace XerahS.UI.ViewModels
             _effectsEditorCore = editorCore ?? new EditorCore();
             ImageEffects = new ImageEffectsViewModel(Model.ImageSettings, _effectsEditorCore);
             ImageEffects.UpdatePreview();
+            RefreshFFmpegState();
         }
 
         public IEnumerable<EImageFormat> ImageFormats => Enum.GetValues(typeof(EImageFormat)).Cast<EImageFormat>();
@@ -244,6 +246,60 @@ namespace XerahS.UI.ViewModels
 
         #region FFmpeg Options
 
+        private string _ffmpegStatusText = "Missing.";
+        private string _detectedFFmpegPath = string.Empty;
+        private bool _isDownloadingFFmpeg;
+
+        public string FFmpegStatusText
+        {
+            get => _ffmpegStatusText;
+            private set
+            {
+                if (_ffmpegStatusText != value)
+                {
+                    _ffmpegStatusText = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string DetectedFFmpegPath
+        {
+            get => _detectedFFmpegPath;
+            private set
+            {
+                if (_detectedFFmpegPath != value)
+                {
+                    _detectedFFmpegPath = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsFFmpegDetected));
+                    OnPropertyChanged(nameof(IsFFmpegMissing));
+                    OnPropertyChanged(nameof(CanDownloadFFmpeg));
+                    OnPropertyChanged(nameof(ShowDownloadFFmpeg));
+                }
+            }
+        }
+
+        public bool IsFFmpegDetected => !string.IsNullOrWhiteSpace(_detectedFFmpegPath);
+        public bool IsFFmpegMissing => string.IsNullOrWhiteSpace(_detectedFFmpegPath);
+
+        public bool IsDownloadingFFmpeg
+        {
+            get => _isDownloadingFFmpeg;
+            private set
+            {
+                if (_isDownloadingFFmpeg != value)
+                {
+                    _isDownloadingFFmpeg = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(CanDownloadFFmpeg));
+                }
+            }
+        }
+
+        public bool CanDownloadFFmpeg => IsFFmpegMissing && !IsDownloadingFFmpeg;
+        public bool ShowDownloadFFmpeg => IsFFmpegMissing;
+
         [RelayCommand]
         private async Task OpenFFmpegOptionsAsync()
         {
@@ -270,10 +326,111 @@ namespace XerahS.UI.ViewModels
                 desktop.MainWindow != null)
             {
                 await window.ShowDialog(desktop.MainWindow);
+                RefreshFFmpegState();
             }
             else
             {
+                window.Closed += (_, _) => RefreshFFmpegState();
                 window.Show();
+            }
+        }
+
+        [RelayCommand]
+        private async Task DownloadFFmpegAsync()
+        {
+            if (IsDownloadingFFmpeg || IsFFmpegDetected)
+            {
+                return;
+            }
+
+            IsDownloadingFFmpeg = true;
+            FFmpegStatusText = "Downloading FFmpeg...";
+
+            try
+            {
+                Common.FFmpegDownloadResult result = await Common.FFmpegDownloader.DownloadLatestToToolsAsync();
+
+                IsDownloadingFFmpeg = false;
+
+                if (result.Success)
+                {
+                    RefreshFFmpegState();
+                    RefreshOpenFFmpegOptionsWindows();
+                }
+                else
+                {
+                    FFmpegStatusText = result.ErrorMessage ?? "FFmpeg download failed.";
+                }
+            }
+            catch (Exception ex)
+            {
+                IsDownloadingFFmpeg = false;
+                Common.DebugHelper.WriteException(ex, "FFmpeg download failed.");
+                FFmpegStatusText = "FFmpeg download failed.";
+            }
+        }
+
+        private void RefreshFFmpegState()
+        {
+            DetectedFFmpegPath = Common.PathsManager.GetFFmpegPath();
+            FFmpegStatusText = BuildFFmpegStatusText();
+        }
+
+        private string BuildFFmpegStatusText()
+        {
+            if (IsDownloadingFFmpeg)
+            {
+                return "Downloading FFmpeg...";
+            }
+
+            FFmpegOptions? options = _settings.CaptureSettings.FFmpegOptions;
+
+            if (options?.OverrideCLIPath == true && !string.IsNullOrWhiteSpace(options.CLIPath))
+            {
+                return "Configured manually.";
+            }
+
+            if (!string.IsNullOrWhiteSpace(_detectedFFmpegPath))
+            {
+                return IsInToolsFolder(_detectedFFmpegPath) ? "Downloaded automatically." : "Configured manually.";
+            }
+
+            return "Missing.";
+        }
+
+        private static bool IsInToolsFolder(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return false;
+            }
+
+            string toolsFolder = Path.GetFullPath(Common.PathsManager.ToolsFolder);
+
+            if (!toolsFolder.EndsWith(Path.DirectorySeparatorChar))
+            {
+                toolsFolder += Path.DirectorySeparatorChar;
+            }
+
+            string fullPath = Path.GetFullPath(path);
+            StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+            return fullPath.StartsWith(toolsFolder, comparison);
+        }
+
+        private void RefreshOpenFFmpegOptionsWindows()
+        {
+            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                return;
+            }
+
+            foreach (var window in desktop.Windows.OfType<FFmpegOptionsWindow>())
+            {
+                if (window.DataContext is FFmpegOptionsViewModel vm)
+                {
+                    vm.RefreshDetectedPath();
+                }
             }
         }
 

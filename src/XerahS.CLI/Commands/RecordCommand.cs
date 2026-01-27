@@ -151,6 +151,7 @@ namespace XerahS.CLI.Commands
                     Mode = captureMode,
                     Region = regionRect ?? Rectangle.Empty,
                     OutputPath = outputPath,
+                    UseModernCapture = true, // Default to modern capture in CLI
                     Settings = new ScreenRecordingSettings
                     {
                         FPS = fps,

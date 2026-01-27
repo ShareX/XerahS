@@ -33,14 +33,7 @@ namespace XerahS.Common
 
         public FFmpegUpdateChecker(string owner, string repo) : base(owner, repo)
         {
-            if (RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64)
-            {
-                Architecture = FFmpegArchitecture.win64;
-            }
-            else
-            {
-                Architecture = FFmpegArchitecture.win32;
-            }
+            Architecture = ResolveArchitecture();
         }
 
         public FFmpegUpdateChecker(string owner, string repo, FFmpegArchitecture architecture) : base(owner, repo)
@@ -67,27 +60,35 @@ namespace XerahS.Common
 
                         if (release.assets != null && release.assets.Length > 0)
                         {
-                            string endsWith;
-
-                            switch (Architecture)
-                            {
-                                default:
-                                case FFmpegArchitecture.win64:
-                                    endsWith = "win64.zip";
-                                    break;
-                                case FFmpegArchitecture.win32:
-                                    endsWith = "win32.zip";
-                                    break;
-                                case FFmpegArchitecture.macos64:
-                                    endsWith = "macos64.zip";
-                                    break;
-                            }
+                            string architectureToken = GetArchitectureToken(Architecture);
 
                             foreach (GitHubAsset asset in release.assets)
                             {
-                                if (asset != null && !string.IsNullOrEmpty(asset.name) && asset.name.EndsWith(endsWith, StringComparison.OrdinalIgnoreCase))
+                                if (asset == null || string.IsNullOrEmpty(asset.name))
                                 {
-                                    FileName = asset.name;
+                                    continue;
+                                }
+
+                                string assetName = asset.name;
+
+                                if (!assetName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+
+                                if (!assetName.Contains("ffmpeg", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+
+                                if (!assetName.Contains(architectureToken, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+
+                                if (!string.IsNullOrEmpty(assetName))
+                                {
+                                    FileName = assetName;
 
                                     if (isBrowserDownloadURL)
                                     {
@@ -109,6 +110,40 @@ namespace XerahS.Common
             }
 
             return false;
+        }
+
+        public static FFmpegArchitecture ResolveArchitecture()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64
+                    ? FFmpegArchitecture.win64
+                    : FFmpegArchitecture.win32;
+            }
+
+            if (OperatingSystem.IsMacOS())
+            {
+                return FFmpegArchitecture.macos64;
+            }
+
+            if (OperatingSystem.IsLinux())
+            {
+                return FFmpegArchitecture.linux64;
+            }
+
+            return FFmpegArchitecture.win64;
+        }
+
+        private static string GetArchitectureToken(FFmpegArchitecture architecture)
+        {
+            return architecture switch
+            {
+                FFmpegArchitecture.win64 => "win64",
+                FFmpegArchitecture.win32 => "win32",
+                FFmpegArchitecture.macos64 => "macos64",
+                FFmpegArchitecture.linux64 => "linux64",
+                _ => "win64"
+            };
         }
     }
 }

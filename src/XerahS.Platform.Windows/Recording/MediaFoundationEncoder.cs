@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 
 /*
     XerahS - The Avalonia UI implementation of ShareX
@@ -68,21 +68,21 @@ public class MediaFoundationEncoder : IVideoEncoder
 
                 if (hr == 0)
                 {
-                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", "✓ MFStartup succeeded (S_OK)");
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", "[OK] MFStartup succeeded (S_OK)");
                     Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", "Calling MFShutdown()...");
                     MFShutdown();
-                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", "✓ Media Foundation is available");
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", "[OK] Media Foundation is available");
                     return true;
                 }
                 else
                 {
-                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", $"✗ MFStartup failed with HRESULT 0x{hr:X8}");
+                    Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", $"[Error] MFStartup failed with HRESULT 0x{hr:X8}");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", $"✗ EXCEPTION checking MF availability: {ex.GetType().Name}: {ex.Message}");
+                Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", $"[Error] EXCEPTION checking MF availability: {ex.GetType().Name}: {ex.Message}");
                 Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF", $"Stack trace: {ex.StackTrace}");
                 return false;
             }
@@ -138,7 +138,7 @@ public class MediaFoundationEncoder : IVideoEncoder
             Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF_ENCODER", "Calling attributes.SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS)...");
             var key = MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS;
             ComFunctions.SetUINT32(attributes, key, 1);
-            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF_ENCODER", "✓ SetUINT32 succeeded");
+            Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF_ENCODER", "[OK] SetUINT32 succeeded");
 
             // Create sink writer
             Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "MF_ENCODER", $"Calling MFCreateSinkWriterFromURL, outputPath={_outputPath}...");
@@ -226,8 +226,11 @@ public class MediaFoundationEncoder : IVideoEncoder
                     System.Console.WriteLine($"MF_ENCODER: WriteFrame[{_frameCount}] calling.");
                 }
 
+                int bytesPerRow = frame.Width * 4;
+                int bufferSize = bytesPerRow * frame.Height;
+
                 // Create media buffer from frame data
-                var hr = MFCreateMemoryBuffer(frame.Stride * frame.Height, out var buffer);
+                var hr = MFCreateMemoryBuffer(bufferSize, out var buffer);
                 if (hr != 0) throw new COMException("Failed to create media buffer", hr);
 
                 try
@@ -238,7 +241,7 @@ public class MediaFoundationEncoder : IVideoEncoder
 
             try
             {
-                CopyFrame(frame, bufferPtr);
+                CopyFrame(frame, bufferPtr, bytesPerRow);
             }
             finally
             {
@@ -246,7 +249,7 @@ public class MediaFoundationEncoder : IVideoEncoder
                     }
 
                     // Set length
-                    hr = ComFunctions.SetCurrentLength(buffer, frame.Stride * frame.Height);
+                    hr = ComFunctions.SetCurrentLength(buffer, bufferSize);
                     if (hr != 0) throw new COMException("Failed to set buffer length", hr);
 
                     // Create sample
@@ -344,27 +347,42 @@ public class MediaFoundationEncoder : IVideoEncoder
         }
     }
 
-    private unsafe void CopyFrame(FrameData frame, IntPtr bufferPtr)
+    private unsafe void CopyFrame(FrameData frame, IntPtr bufferPtr, int destStride)
     {
+        int bytesPerRow = frame.Width * 4;
+        int srcStride = frame.Stride;
+
         if (_applyVerticalFlip)
         {
-            // [2026-01-10T14:37:00+08:00] Apply vertical flip only; prior 180° rotation fixed upside-down but left horizontal mirror.
+            // [2026-01-10T14:37:00+08:00] Apply vertical flip only; prior 180Â° rotation fixed upside-down but left horizontal mirror.
             byte* srcBase = (byte*)frame.DataPtr.ToPointer();
             byte* dstBase = (byte*)bufferPtr.ToPointer();
-            int width = frame.Width;
             int height = frame.Height;
-            int stride = frame.Stride;
 
             for (int y = 0; y < height; y++)
             {
-                byte* srcRow = srcBase + (height - 1 - y) * stride;
-                byte* dstRow = dstBase + y * stride;
-                Buffer.MemoryCopy(srcRow, dstRow, stride, stride);
+                byte* srcRow = srcBase + (height - 1 - y) * srcStride;
+                byte* dstRow = dstBase + y * destStride;
+                Buffer.MemoryCopy(srcRow, dstRow, destStride, bytesPerRow);
             }
         }
         else
         {
-            Buffer.MemoryCopy(frame.DataPtr.ToPointer(), bufferPtr.ToPointer(), frame.Stride * frame.Height, frame.Stride * frame.Height);
+            if (srcStride == destStride)
+            {
+                Buffer.MemoryCopy(frame.DataPtr.ToPointer(), bufferPtr.ToPointer(), destStride * frame.Height, destStride * frame.Height);
+                return;
+            }
+
+            byte* srcBase = (byte*)frame.DataPtr.ToPointer();
+            byte* dstBase = (byte*)bufferPtr.ToPointer();
+
+            for (int y = 0; y < frame.Height; y++)
+            {
+                byte* srcRow = srcBase + y * srcStride;
+                byte* dstRow = dstBase + y * destStride;
+                Buffer.MemoryCopy(srcRow, dstRow, destStride, bytesPerRow);
+            }
         }
     }
 
@@ -580,3 +598,5 @@ public class MediaFoundationEncoder : IVideoEncoder
 
     #endregion
 }
+
+
