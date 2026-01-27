@@ -51,8 +51,9 @@ namespace XerahS.RegionCapture
         public FFmpegNVENCTune NVENC_Tune { get; set; } = FFmpegNVENCTune.ll;
         public int NVENC_Bitrate { get; set; } = 3000; // kbps
         public FFmpegPaletteGenStatsMode GIFStatsMode { get; set; } = FFmpegPaletteGenStatsMode.full;
-        public FFmpegPaletteUseDither GIFDither { get; set; } = FFmpegPaletteUseDither.sierra2_4a;
+        public FFmpegPaletteUseDither GIFDither { get; set; } = FFmpegPaletteUseDither.bayer;
         public int GIFBayerScale { get; set; } = 2;
+        public int GIFMaxWidth { get; set; } = 0;
         public FFmpegAMFUsage AMF_Usage { get; set; } = FFmpegAMFUsage.lowlatency;
         public FFmpegAMFQuality AMF_Quality { get; set; } = FFmpegAMFQuality.speed;
         public int AMF_Bitrate { get; set; } = 3000; // kbps
