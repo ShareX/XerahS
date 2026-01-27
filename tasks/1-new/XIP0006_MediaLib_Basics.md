@@ -3,20 +3,11 @@
 ## Priority
 **MEDIUM** - Builds on CX02 foundation
 
-## Assignee
-**Codex** (Surface Laptop 5, VS Code)
-
-## Branch
-`feature/backend-gaps` (continue on same branch as CX02)
-
 ## Status
 New - Verified on 2026-01-08
 
 ## Assessment
 0% Complete. `ImageCombiner.cs` and `GifHelpers.cs` not found in `src/XerahS.Media`.
-
-## Instructions
-**CRITICAL**: Ensure you're on the `feature/backend-gaps` branch before starting. You should already be on this branch from CX02.
 
 ## Objective
 Port core media processing utilities from `ShareX.MediaLib` to `XerahS.Media`. Focus on image combining and basic video/GIF utilities.

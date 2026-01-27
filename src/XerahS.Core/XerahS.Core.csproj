@@ -17,6 +17,7 @@
     <ProjectReference Include="..\..\..\ShareX.Editor\src\ShareX.Editor\ShareX.Editor.csproj" />
 
     <ProjectReference Include="..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
+    <ProjectReference Include="..\XerahS.Media\XerahS.Media.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NETStandard.Library" Version="2.0.0" />

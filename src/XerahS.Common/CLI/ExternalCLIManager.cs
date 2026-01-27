@@ -106,6 +106,7 @@ namespace XerahS.Common
             if (IsProcessRunning && process != null && process.StartInfo != null && process.StartInfo.RedirectStandardInput)
             {
                 process.StandardInput.WriteLine(input);
+                process.StandardInput.Flush();
             }
         }
 

@@ -34,6 +34,7 @@ using System.Diagnostics;
 using XerahS.History;
 using Avalonia.Threading;
 using System.Drawing;
+using XerahS.Media;
 
 namespace XerahS.Core.Tasks
 {
@@ -444,6 +445,8 @@ namespace XerahS.Core.Tasks
                     // Stage 5: Screen Recording Integration
                     case WorkflowType.ScreenRecorder:
                     case WorkflowType.StartScreenRecorder:
+                    case WorkflowType.ScreenRecorderGIF:
+                    case WorkflowType.StartScreenRecorderGIF:
                         TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecorder case matched, showing region selector");
 
                         // Clear any previous image (recording doesn't produce image, only video)
@@ -504,6 +507,7 @@ namespace XerahS.Core.Tasks
                         return; // Recording tasks don't proceed to image processing
 
                     case WorkflowType.ScreenRecorderActiveWindow:
+                    case WorkflowType.ScreenRecorderGIFActiveWindow:
                         // Clear any previous image (recording doesn't produce image, only video)
                         if (Info.Metadata.Image != null)
                         {
@@ -523,6 +527,7 @@ namespace XerahS.Core.Tasks
                         return;
 
                     case WorkflowType.ScreenRecorderCustomRegion:
+                    case WorkflowType.ScreenRecorderGIFCustomRegion:
                         // Clear any previous image (recording doesn't produce image, only video)
                         if (Info.Metadata.Image != null)
                         {
@@ -800,6 +805,52 @@ namespace XerahS.Core.Tasks
                     DebugHelper.WriteLine($"Recording saved to: {outputPath}");
                     Info.FilePath = outputPath;
                     Info.DataType = EDataType.File;
+
+                    bool isGifJob = taskSettings.Job == WorkflowType.ScreenRecorderGIF ||
+                                    taskSettings.Job == WorkflowType.ScreenRecorderGIFActiveWindow ||
+                                    taskSettings.Job == WorkflowType.ScreenRecorderGIFCustomRegion ||
+                                    taskSettings.Job == WorkflowType.StartScreenRecorderGIF;
+
+                    if (isGifJob && !string.IsNullOrEmpty(outputPath) && File.Exists(outputPath))
+                    {
+                         TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Converting video to GIF...");
+                         string gifPath = Path.ChangeExtension(outputPath, ".gif");
+                         var videoHelpers = new VideoHelpers();
+                         int gifFps = taskSettings.CaptureSettings?.GIFFPS > 0
+                             ? taskSettings.CaptureSettings.GIFFPS
+                             : taskSettings.CaptureSettings?.ScreenRecordingSettings?.FPS ?? 15;
+                         var ffmpegOptions = taskSettings.CaptureSettings?.FFmpegOptions;
+                         string? statsMode = ffmpegOptions?.GIFStatsMode.ToString();
+                         string? dither = ffmpegOptions?.GIFDither.ToString();
+                         int bayerScale = ffmpegOptions?.GIFBayerScale ?? 2;
+                         int maxWidth = ffmpegOptions?.GIFMaxWidth > 0 ? ffmpegOptions.GIFMaxWidth : -1;
+                         bool paletteNew = ffmpegOptions != null &&
+                             ffmpegOptions.GIFStatsMode == XerahS.Core.FFmpegPaletteGenStatsMode.single;
+                         bool success = await videoHelpers.ConvertToGifAsync(
+                             outputPath,
+                             gifPath,
+                             gifFps,
+                             maxWidth,
+                             statsMode,
+                             dither,
+                             bayerScale,
+                             paletteNew);
+                         
+                         if (success)
+                         {
+                             TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Conversion successful. Switching result to GIF.");
+                             
+                             // Delete original MP4 if conversion succeeded
+                             try { File.Delete(outputPath); } catch { }
+                             
+                             outputPath = gifPath;
+                             Info.FilePath = outputPath;
+                         }
+                         else
+                         {
+                             TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Conversion failed. Keeping MP4.");
+                         }
+                    }
                     
                     // Reuse upload pipeline for recordings; flag upload when AfterUpload tasks exist.
                     if (taskSettings.AfterUploadJob != AfterUploadTasks.None)
