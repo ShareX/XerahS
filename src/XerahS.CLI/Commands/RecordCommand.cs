@@ -142,8 +142,7 @@ namespace XerahS.CLI.Commands
                     }
                 }
 
-                // Generate default output path if not provided
-                // Manager will handle it if null
+                // Generate default output path if not provided (match app naming conventions)
                 string? outputPath = output;
 
                 var recordingOptions = new RecordingOptions
@@ -171,8 +170,18 @@ namespace XerahS.CLI.Commands
             
             // Initialize Settings
             SettingsManager.LoadAllSettings();
-                var manager = ScreenRecordingManager.Instance;
-                await manager.StartRecordingAsync(recordingOptions);
+
+            if (string.IsNullOrWhiteSpace(outputPath))
+            {
+                outputPath = GetDefaultRecordingPath(captureMode);
+                if (string.IsNullOrWhiteSpace(outputPath))
+                {
+                    Console.Error.WriteLine("Recording output path could not be resolved.");
+                    return 1;
+                }
+            }
+            var manager = ScreenRecordingManager.Instance;
+            await manager.StartRecordingAsync(recordingOptions);
 
                 Console.WriteLine($"Recording started. Output: {recordingOptions.OutputPath}");
                 Console.WriteLine("Press ENTER to stop recording...");
@@ -260,6 +269,28 @@ namespace XerahS.CLI.Commands
                 DebugHelper.WriteException(ex);
                 return 1;
             }
+        }
+
+        private static string? GetDefaultRecordingPath(CaptureMode captureMode)
+        {
+            WorkflowType workflowType = captureMode switch
+            {
+                CaptureMode.Window => WorkflowType.ScreenRecorderActiveWindow,
+                CaptureMode.Region => WorkflowType.ScreenRecorderCustomRegion,
+                _ => WorkflowType.ScreenRecorder
+            };
+
+            var workflow = SettingsManager.GetFirstWorkflowOrDefault(workflowType);
+            TaskSettings taskSettings = workflow?.TaskSettings ?? SettingsManager.DefaultTaskSettings;
+
+            string folder = TaskHelpers.GetScreenshotsFolder(taskSettings);
+            FileHelpers.CreateDirectory(folder);
+
+            string fileName = TaskHelpers.GetFileName(taskSettings, "mp4");
+            string filePath = Path.Combine(folder, fileName);
+
+            filePath = TaskHelpers.HandleExistsFile(filePath, taskSettings);
+            return string.IsNullOrWhiteSpace(filePath) ? null : filePath;
         }
 
 

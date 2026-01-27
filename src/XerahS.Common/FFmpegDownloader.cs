@@ -33,27 +33,30 @@ namespace XerahS.Common
         public bool Success { get; }
         public string? FFmpegPath { get; }
         public string? ErrorMessage { get; }
+        public string? ExpectedDownloadUrl { get; }
 
-        private FFmpegDownloadResult(bool success, string? ffmpegPath, string? errorMessage)
+        private FFmpegDownloadResult(bool success, string? ffmpegPath, string? errorMessage, string? expectedDownloadUrl)
         {
             Success = success;
             FFmpegPath = ffmpegPath;
             ErrorMessage = errorMessage;
+            ExpectedDownloadUrl = expectedDownloadUrl;
         }
 
-        public static FFmpegDownloadResult CreateSuccess(string ffmpegPath) => new FFmpegDownloadResult(true, ffmpegPath, null);
+        public static FFmpegDownloadResult CreateSuccess(string ffmpegPath) => new FFmpegDownloadResult(true, ffmpegPath, null, null);
 
-        public static FFmpegDownloadResult CreateFailure(string errorMessage) => new FFmpegDownloadResult(false, null, errorMessage);
+        public static FFmpegDownloadResult CreateFailure(string errorMessage, string? expectedDownloadUrl = null)
+            => new FFmpegDownloadResult(false, null, errorMessage, expectedDownloadUrl);
     }
 
     public static class FFmpegDownloader
     {
-        public const string DefaultOwner = "BtbN";
-        public const string DefaultRepo = "FFmpeg-Builds";
+        public const string DefaultOwner = "ShareX";
+        public const string DefaultRepo = "FFmpeg";
 
         public static Task<FFmpegDownloadResult> DownloadLatestToToolsAsync(IProgress<double>? progress = null, CancellationToken cancellationToken = default)
         {
-            return DownloadLatestAsync(PathsManager.ToolsFolder, progress, cancellationToken);
+            return DownloadLatestAsync(PathsManager.ToolsArchitectureFolder, progress, cancellationToken);
         }
 
         public static async Task<FFmpegDownloadResult> DownloadLatestAsync(string destinationFolder, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
@@ -76,10 +79,12 @@ namespace XerahS.Common
 
                 if (string.IsNullOrWhiteSpace(downloadUrl))
                 {
-                    return FFmpegDownloadResult.CreateFailure("FFmpeg download URL could not be resolved.");
+                    string expectedUrl = BuildExpectedDownloadUrl(updateChecker);
+                    return FFmpegDownloadResult.CreateFailure("FFmpeg download URL could not be resolved.", expectedUrl);
                 }
 
-                string fileName = updateChecker.FileName ?? $"ffmpeg-{updateChecker.Architecture}.zip";
+                string versionToken = updateChecker.LatestVersion != null ? updateChecker.LatestVersion.ToString() : "latest";
+                string fileName = updateChecker.FileName ?? $"ffmpeg-{versionToken}-{updateChecker.GetExpectedAssetSuffix()}";
                 downloadedArchive = Path.Combine(Path.GetTempPath(), fileName);
 
                 downloader = new FileDownloader(downloadUrl, downloadedArchive);
@@ -199,6 +204,14 @@ namespace XerahS.Common
                 downloader.FileSizeReceived -= ReportProgress;
                 downloader.ProgressChanged -= ReportProgress;
             };
+        }
+
+        private static string BuildExpectedDownloadUrl(FFmpegUpdateChecker updateChecker)
+        {
+            string versionToken = updateChecker.LatestVersion != null ? updateChecker.LatestVersion.ToString() : "{version}";
+            string suffix = updateChecker.GetExpectedAssetSuffix();
+            string fileName = $"ffmpeg-{versionToken}-{suffix}";
+            return $"https://github.com/{updateChecker.Owner}/{updateChecker.Repo}/releases/download/v{versionToken}/{fileName}";
         }
     }
 }

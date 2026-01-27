@@ -60,35 +60,14 @@ namespace XerahS.Common
 
                         if (release.assets != null && release.assets.Length > 0)
                         {
-                            string architectureToken = GetArchitectureToken(Architecture);
+                            string endsWith = GetExpectedAssetSuffix();
 
                             foreach (GitHubAsset asset in release.assets)
                             {
-                                if (asset == null || string.IsNullOrEmpty(asset.name))
+                                if (asset != null && !string.IsNullOrEmpty(asset.name) &&
+                                    asset.name.EndsWith(endsWith, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    continue;
-                                }
-
-                                string assetName = asset.name;
-
-                                if (!assetName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    continue;
-                                }
-
-                                if (!assetName.Contains("ffmpeg", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    continue;
-                                }
-
-                                if (!assetName.Contains(architectureToken, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    continue;
-                                }
-
-                                if (!string.IsNullOrEmpty(assetName))
-                                {
-                                    FileName = assetName;
+                                    FileName = asset.name;
 
                                     if (isBrowserDownloadURL)
                                     {
@@ -116,9 +95,12 @@ namespace XerahS.Common
         {
             if (OperatingSystem.IsWindows())
             {
-                return RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64
-                    ? FFmpegArchitecture.win64
-                    : FFmpegArchitecture.win32;
+                return RuntimeInformation.OSArchitecture switch
+                {
+                    System.Runtime.InteropServices.Architecture.Arm64 => FFmpegArchitecture.winArm64,
+                    System.Runtime.InteropServices.Architecture.X64 => FFmpegArchitecture.win64,
+                    _ => FFmpegArchitecture.win32
+                };
             }
 
             if (OperatingSystem.IsMacOS())
@@ -134,15 +116,16 @@ namespace XerahS.Common
             return FFmpegArchitecture.win64;
         }
 
-        private static string GetArchitectureToken(FFmpegArchitecture architecture)
+        public string GetExpectedAssetSuffix()
         {
-            return architecture switch
+            return Architecture switch
             {
-                FFmpegArchitecture.win64 => "win64",
-                FFmpegArchitecture.win32 => "win32",
-                FFmpegArchitecture.macos64 => "macos64",
-                FFmpegArchitecture.linux64 => "linux64",
-                _ => "win64"
+                FFmpegArchitecture.win64 => "win-x64.zip",
+                FFmpegArchitecture.win32 => "win-x86.zip",
+                FFmpegArchitecture.winArm64 => "win-arm64.zip",
+                FFmpegArchitecture.macos64 => "macos64.zip",
+                FFmpegArchitecture.linux64 => "linux64.zip",
+                _ => "win-x64.zip"
             };
         }
     }

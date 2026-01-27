@@ -195,6 +195,7 @@ namespace XerahS.Common
     {
         win64,
         win32,
+        winArm64,
         macos64,
         linux64
     }

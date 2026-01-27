@@ -397,6 +397,11 @@
                                                 Command="{Binding OpenFFmpegOptionsCommand}"
                                                 HorizontalAlignment="Left"/>
                                     </StackPanel>
+                                    <TextBox Text="{Binding ExpectedFFmpegDownloadUrl}"
+                                             IsReadOnly="True"
+                                             TextWrapping="Wrap"
+                                             MinWidth="360"
+                                             IsVisible="{Binding ShowExpectedFFmpegDownloadUrl}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

@@ -250,6 +250,7 @@ namespace XerahS.UI.ViewModels
         private string _detectedFFmpegPath = string.Empty;
         private bool _isDownloadingFFmpeg;
         private double _ffmpegDownloadProgress;
+        private string _expectedFFmpegDownloadUrl = string.Empty;
 
         public string FFmpegStatusText
         {
@@ -317,6 +318,22 @@ namespace XerahS.UI.ViewModels
         public bool CanDownloadFFmpeg => IsFFmpegMissing && !IsDownloadingFFmpeg;
         public bool ShowDownloadFFmpeg => IsFFmpegMissing;
 
+        public string ExpectedFFmpegDownloadUrl
+        {
+            get => _expectedFFmpegDownloadUrl;
+            private set
+            {
+                if (_expectedFFmpegDownloadUrl != value)
+                {
+                    _expectedFFmpegDownloadUrl = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(ShowExpectedFFmpegDownloadUrl));
+                }
+            }
+        }
+
+        public bool ShowExpectedFFmpegDownloadUrl => !string.IsNullOrWhiteSpace(_expectedFFmpegDownloadUrl);
+
         [RelayCommand]
         private async Task OpenFFmpegOptionsAsync()
         {
@@ -363,6 +380,7 @@ namespace XerahS.UI.ViewModels
             IsDownloadingFFmpeg = true;
             FFmpegDownloadProgress = 0;
             FFmpegStatusText = "Downloading FFmpeg...";
+            ExpectedFFmpegDownloadUrl = string.Empty;
 
             try
             {
@@ -380,10 +398,15 @@ namespace XerahS.UI.ViewModels
                 {
                     RefreshFFmpegState();
                     RefreshOpenFFmpegOptionsWindows();
+                    ExpectedFFmpegDownloadUrl = string.Empty;
                 }
                 else
                 {
                     FFmpegStatusText = result.ErrorMessage ?? "FFmpeg download failed.";
+                    if (!string.IsNullOrWhiteSpace(result.ExpectedDownloadUrl))
+                    {
+                        ExpectedFFmpegDownloadUrl = result.ExpectedDownloadUrl;
+                    }
                 }
             }
             catch (Exception ex)
@@ -391,6 +414,7 @@ namespace XerahS.UI.ViewModels
                 IsDownloadingFFmpeg = false;
                 Common.DebugHelper.WriteException(ex, "FFmpeg download failed.");
                 FFmpegStatusText = "FFmpeg download failed.";
+                ExpectedFFmpegDownloadUrl = string.Empty;
             }
         }
 
