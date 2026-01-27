@@ -12,7 +12,12 @@
    - **Target Framework**: `net10.0-windows10.0.19041.0` (Do NOT use `net10.0-windows` alone).
    - **SkiaSharp**: Must use **2.88.9** (Do NOT upgrade to 3.x).
 
-2. **Git Workflow**:
+2. **Shell Best Practices**:
+   - **No `&&` Chaining**: The agent's PowerShell environment does not support `&&`.
+   - **Correct**: Use `;` (unconditional) or `if ($?) { ... }` (conditional).
+   - **Example**: `git add .; if ($?) { git commit -m "..." }`
+
+3. **Git Workflow**:
    - **Steps**: Stage (`git add .`) -> Commit -> Push.
    - **Commit Format**: `[vX.Y.Z] [Type] Use concise description`.
    - **Autonomous Execution**: If build passes, **EXECUTE** without asking for permission.
