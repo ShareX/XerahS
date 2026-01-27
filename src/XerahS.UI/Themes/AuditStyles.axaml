@@ -1,0 +1,10 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:audit="clr-namespace:XerahS.UI.Auditing;assembly=XerahS.UI">
+    
+    <!-- Visual Indicator for Unwired Controls (Debug Only) -->
+    <!-- Sets Foreground to DarkRed when UiAudit.IsUnwired is True -->
+    <Style Selector="TemplatedControl[(audit|UiAudit.IsUnwired)=True]">
+        <Setter Property="Foreground" Value="DarkRed"/>
+    </Style>
+</Styles>

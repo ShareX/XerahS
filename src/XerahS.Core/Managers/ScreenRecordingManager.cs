@@ -315,6 +315,11 @@ public class ScreenRecordingManager
             RecordingCompleted?.Invoke(this, finalPath);
         }
 
+        if (string.IsNullOrEmpty(finalPath) && !string.IsNullOrEmpty(_finalOutputPath) && File.Exists(_finalOutputPath))
+        {
+            finalPath = _finalOutputPath;
+        }
+
         if (wasPaused)
         {
             StatusChanged?.Invoke(this, new RecordingStatusEventArgs(RecordingStatus.Idle, _lastDuration));
@@ -633,6 +638,7 @@ public class ScreenRecordingManager
     {
         IRecordingService? recordingService;
         string? outputPath;
+        string? fallbackSegmentPath;
 
         lock (_lock)
         {
@@ -648,6 +654,7 @@ public class ScreenRecordingManager
 
             recordingService = _currentRecording;
             outputPath = _currentOptions?.OutputPath;
+            fallbackSegmentPath = GetLastSegmentPath();
         }
 
         try
@@ -660,9 +667,29 @@ public class ScreenRecordingManager
                 SignalStop();
             }
 
-            if (!string.IsNullOrEmpty(outputPath) && File.Exists(outputPath))
+            string? resolvedOutput = outputPath;
+            if (string.IsNullOrEmpty(resolvedOutput) && !string.IsNullOrEmpty(fallbackSegmentPath))
             {
-                _segments.Add(outputPath);
+                resolvedOutput = fallbackSegmentPath;
+            }
+
+            if (!string.IsNullOrEmpty(resolvedOutput))
+            {
+                if (!File.Exists(resolvedOutput))
+                {
+                    DebugHelper.WriteLine($"ScreenRecordingManager: Output not found yet, waiting: {resolvedOutput}");
+                    bool appeared = await WaitForFileAsync(resolvedOutput, TimeSpan.FromSeconds(2));
+                    DebugHelper.WriteLine($"ScreenRecordingManager: Output wait completed. Found={appeared} Path={resolvedOutput}");
+                }
+
+                if (File.Exists(resolvedOutput))
+                {
+                    _segments.Add(resolvedOutput);
+                }
+                else
+                {
+                    DebugHelper.WriteLine($"ScreenRecordingManager: Output missing after stop: {resolvedOutput}");
+                }
             }
         }
         catch (Exception ex)
@@ -795,12 +822,39 @@ public class ScreenRecordingManager
         return Path.Combine(directory, segmentFileName);
     }
 
+    private string? GetLastSegmentPath()
+    {
+        if (string.IsNullOrEmpty(_finalOutputPath))
+        {
+            return null;
+        }
+
+        int lastIndex = Math.Max(0, _segmentIndex - 1);
+        return BuildSegmentPath(_finalOutputPath, lastIndex);
+    }
+
     private void ResetSegmentState()
     {
         _resumeOptions = null;
         _finalOutputPath = null;
         _segmentIndex = 0;
         _isPaused = false;
+    }
+
+    private static async Task<bool> WaitForFileAsync(string path, TimeSpan timeout)
+    {
+        var start = DateTime.UtcNow;
+        while (DateTime.UtcNow - start < timeout)
+        {
+            if (File.Exists(path))
+            {
+                return true;
+            }
+
+            await Task.Delay(100);
+        }
+
+        return File.Exists(path);
     }
 
     /// <summary>

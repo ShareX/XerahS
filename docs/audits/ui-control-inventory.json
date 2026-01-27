@@ -1,0 +1,1674 @@
+[
+  {
+    "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
+    "Line": 80,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
+    "Line": 108,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
+    "Line": 112,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
+    "Line": 116,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
+    "Line": 117,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
+    "Line": 118,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/Plugins/ShareX.Imgur.Plugin/Views/ImgurConfigView.axaml",
+    "Line": 48,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/Plugins/ShareX.Imgur.Plugin/Views/ImgurConfigView.axaml",
+    "Line": 58,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/Plugins/ShareX.Imgur.Plugin/Views/ImgurConfigView.axaml",
+    "Line": 66,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/Plugins/ShareX.Imgur.Plugin/Views/ImgurConfigView.axaml",
+    "Line": 97,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Controls/FileTypeSelectorControl.axaml",
+    "Line": 9,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Controls/FileTypeSelectorControl.axaml",
+    "Line": 37,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
+    "Line": 42,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
+    "Line": 44,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
+    "Line": 46,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
+    "Line": 48,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
+    "Line": 62,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
+    "Line": 64,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
+    "Line": 66,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
+    "Line": 80,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
+    "Line": 83,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 28,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 29,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 39,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 61,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 94,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 131,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 134,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 171,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 172,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 173,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 195,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 225,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 227,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 230,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 237,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 263,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 264,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 274,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 287,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 288,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 289,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ApplicationSettingsView.axaml",
+    "Line": 312,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ColorPickerDialog.axaml",
+    "Line": 67,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ColorPickerDialog.axaml",
+    "Line": 108,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ColorPickerDialog.axaml",
+    "Line": 166,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ColorPickerDialog.axaml",
+    "Line": 217,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ColorPickerDialog.axaml",
+    "Line": 218,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ColorPickerDialog.axaml",
+    "Line": 219,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ColorPickerDialog.axaml",
+    "Line": 220,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/Controls/HotkeySelectionControl.axaml",
+    "Line": 60,
+    "Type": "Button",
+    "Name": "TaskButton",
+    "Status": "WIRED",
+    "Wiring": "Event"
+  },
+  {
+    "File": "src/XerahS.UI/Views/Controls/HotkeySelectionControl.axaml",
+    "Line": 85,
+    "Type": "Button",
+    "Name": "HotkeyButton",
+    "Status": "WIRED",
+    "Wiring": "Event"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DebugView.axaml",
+    "Line": 18,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DebugView.axaml",
+    "Line": 19,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DebugView.axaml",
+    "Line": 20,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DebugView.axaml",
+    "Line": 21,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DebugView.axaml",
+    "Line": 22,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DestinationSettingsView.axaml",
+    "Line": 37,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DestinationSettingsView.axaml",
+    "Line": 40,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DestinationSettingsView.axaml",
+    "Line": 43,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DestinationSettingsView.axaml",
+    "Line": 75,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "UNWIRED",
+    "Wiring": "None"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DestinationSettingsView.axaml",
+    "Line": 78,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DestinationSettingsView.axaml",
+    "Line": 81,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DestinationSettingsView.axaml",
+    "Line": 85,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DestinationSettingsView.axaml",
+    "Line": 184,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/DestinationSettingsView.axaml",
+    "Line": 195,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/FFmpegOptionsWindow.axaml",
+    "Line": 36,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/FFmpegOptionsWindow.axaml",
+    "Line": 41,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Event"
+  },
+  {
+    "File": "src/XerahS.UI/Views/FFmpegOptionsWindow.axaml",
+    "Line": 80,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/FFmpegOptionsWindow.axaml",
+    "Line": 116,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/FFmpegOptionsWindow.axaml",
+    "Line": 225,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Event"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HistoryView.axaml",
+    "Line": 20,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HistoryView.axaml",
+    "Line": 23,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HistoryView.axaml",
+    "Line": 26,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HistoryView.axaml",
+    "Line": 30,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HistoryView.axaml",
+    "Line": 33,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HistoryView.axaml",
+    "Line": 37,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HistoryView.axaml",
+    "Line": 42,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HistoryView.axaml",
+    "Line": 52,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HistoryView.axaml",
+    "Line": 54,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HistoryView.axaml",
+    "Line": 159,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HistoryView.axaml",
+    "Line": 165,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HotkeySettingsView.axaml",
+    "Line": 21,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HotkeySettingsView.axaml",
+    "Line": 22,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HotkeySettingsView.axaml",
+    "Line": 23,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HotkeySettingsView.axaml",
+    "Line": 24,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HotkeySettingsView.axaml",
+    "Line": 25,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HotkeySettingsView.axaml",
+    "Line": 26,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/HotkeySettingsView.axaml",
+    "Line": 42,
+    "Type": "CheckBox",
+    "Name": "ShowDebugCheckBox",
+    "Status": "UNWIRED",
+    "Wiring": "None"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 28,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 46,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 47,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 48,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 49,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 50,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 59,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 64,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 67,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 69,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 70,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 75,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 76,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 77,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 87,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 88,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 91,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 92,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/IndexFolderView.axaml",
+    "Line": 93,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/PluginInstallerDialog.axaml",
+    "Line": 22,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/PluginInstallerDialog.axaml",
+    "Line": 74,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/PluginInstallerDialog.axaml",
+    "Line": 78,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ProviderCatalogDialog.axaml",
+    "Line": 44,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ProviderCatalogDialog.axaml",
+    "Line": 45,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ProviderCatalogView.axaml",
+    "Line": 115,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ProviderCatalogView.axaml",
+    "Line": 118,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/QrCodeDecodeResultsDialog.axaml",
+    "Line": 33,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/QrCodeDecodeResultsDialog.axaml",
+    "Line": 34,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/QrCodeDecodeResultsDialog.axaml",
+    "Line": 35,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/QrCodeGeneratorDialog.axaml",
+    "Line": 37,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/QrCodeGeneratorDialog.axaml",
+    "Line": 39,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/QrCodeGeneratorDialog.axaml",
+    "Line": 46,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/QrCodeGeneratorDialog.axaml",
+    "Line": 47,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/RecordingToolbarView.axaml",
+    "Line": 67,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/RecordingToolbarView.axaml",
+    "Line": 77,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/RecordingToolbarView.axaml",
+    "Line": 88,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/RecordingToolbarView.axaml",
+    "Line": 98,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/RecordingToolbarView.axaml",
+    "Line": 108,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/RecordingView.axaml",
+    "Line": 122,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/RecordingView.axaml",
+    "Line": 132,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/RecordingView.axaml",
+    "Line": 141,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 25,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 26,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 27,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 28,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 42,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 77,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 98,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 99,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 105,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 106,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 107,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 108,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 156,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 158,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 160,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 163,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 165,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 167,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 211,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 232,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 233,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 253,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "UNWIRED",
+    "Wiring": "None"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 272,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 311,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 312,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 313,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 330,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 331,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 347,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 350,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 352,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 387,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 396,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 416,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 429,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 430,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 431,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 432,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 433,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 440,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 444,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 448,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 450,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 451,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 457,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 458,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/TaskSettingsPanel.axaml",
+    "Line": 459,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ThemeShowcaseView.axaml",
+    "Line": 29,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "UNWIRED",
+    "Wiring": "None"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ThemeShowcaseView.axaml",
+    "Line": 30,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "UNWIRED",
+    "Wiring": "None"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ThemeShowcaseView.axaml",
+    "Line": 31,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "UNWIRED",
+    "Wiring": "None"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ThemeShowcaseView.axaml",
+    "Line": 32,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "UNWIRED",
+    "Wiring": "None"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ThemeShowcaseView.axaml",
+    "Line": 34,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "UNWIRED",
+    "Wiring": "None"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ThemeShowcaseView.axaml",
+    "Line": 35,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "UNWIRED",
+    "Wiring": "None"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ThemeShowcaseView.axaml",
+    "Line": 36,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "UNWIRED",
+    "Wiring": "None"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ToastWindow.axaml",
+    "Line": 76,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ToastWindow.axaml",
+    "Line": 77,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ToastWindow.axaml",
+    "Line": 78,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/ToastWindow.axaml",
+    "Line": 79,
+    "Type": "MenuItem",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WatchFolderDialog.axaml",
+    "Line": 27,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WatchFolderDialog.axaml",
+    "Line": 64,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WatchFolderDialog.axaml",
+    "Line": 65,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WatchFolderDialog.axaml",
+    "Line": 66,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WatchFolderDialog.axaml",
+    "Line": 70,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WatchFolderDialog.axaml",
+    "Line": 71,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WindowSelectorDialog.axaml",
+    "Line": 30,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WindowSelectorDialog.axaml",
+    "Line": 31,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WindowSelectorDialog.axaml",
+    "Line": 32,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WorkflowEditorView.axaml",
+    "Line": 76,
+    "Type": "Button",
+    "Name": "HotkeyButton",
+    "Status": "WIRED",
+    "Wiring": "Event"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WorkflowEditorView.axaml",
+    "Line": 90,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WorkflowEditorView.axaml",
+    "Line": 138,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Event"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WorkflowEditorView.axaml",
+    "Line": 139,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Event"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WorkflowsView.axaml",
+    "Line": 21,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WorkflowsView.axaml",
+    "Line": 30,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WorkflowsView.axaml",
+    "Line": 34,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WorkflowsView.axaml",
+    "Line": 38,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WorkflowsView.axaml",
+    "Line": 43,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WorkflowsView.axaml",
+    "Line": 50,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WorkflowsView.axaml",
+    "Line": 55,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/XerahS.UI/Views/WorkflowsView.axaml",
+    "Line": 62,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  }
+]

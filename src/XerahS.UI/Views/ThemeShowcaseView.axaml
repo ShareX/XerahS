@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:audit="clr-namespace:XerahS.UI.Auditing;assembly=XerahS.UI"
              mc:Ignorable="d"
              x:Class="XerahS.UI.Views.ThemeShowcaseView">
   <Border Padding="16" Background="{DynamicResource BackgroundBrush}">
@@ -25,14 +26,14 @@
       <HyperlinkButton Content="Hyperlink sample" NavigateUri="https://example.com" />
 
       <Menu>
-        <MenuItem Header="File">
-          <MenuItem Header="New" />
-          <MenuItem Header="Open" />
-          <MenuItem Header="Exit" />
+        <MenuItem Header="File" audit:UiAudit.IsWiredManual="True">
+          <MenuItem Header="New" audit:UiAudit.IsWiredManual="True"/>
+          <MenuItem Header="Open" audit:UiAudit.IsWiredManual="True"/>
+          <MenuItem Header="Exit" audit:UiAudit.IsWiredManual="True"/>
         </MenuItem>
-        <MenuItem Header="Edit">
-          <MenuItem Header="Undo" />
-          <MenuItem Header="Redo" />
+        <MenuItem Header="Edit" audit:UiAudit.IsWiredManual="True">
+          <MenuItem Header="Undo" audit:UiAudit.IsWiredManual="True"/>
+          <MenuItem Header="Redo" audit:UiAudit.IsWiredManual="True"/>
         </MenuItem>
       </Menu>
 

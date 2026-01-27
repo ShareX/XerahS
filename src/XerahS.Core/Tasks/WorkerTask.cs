@@ -803,6 +803,7 @@ namespace XerahS.Core.Tasks
                 // 3. Stop recording
                 DebugHelper.WriteLine("Stopping recording...");
                 string? outputPath = await ScreenRecordingManager.Instance.StopRecordingAsync();
+                DebugHelper.WriteLine($"[GIF] StopRecordingAsync returned: {(string.IsNullOrEmpty(outputPath) ? "(null)" : outputPath)} (exists={(!string.IsNullOrEmpty(outputPath) && File.Exists(outputPath))})");
 
                 if (!string.IsNullOrEmpty(outputPath))
                 {
@@ -814,22 +815,48 @@ namespace XerahS.Core.Tasks
                                     taskSettings.Job == WorkflowType.ScreenRecorderGIFActiveWindow ||
                                     taskSettings.Job == WorkflowType.ScreenRecorderGIFCustomRegion ||
                                     taskSettings.Job == WorkflowType.StartScreenRecorderGIF;
+                    DebugHelper.WriteLine($"[GIF] isGifJob={isGifJob}, Job={taskSettings.Job}");
 
                     if (isGifJob && !string.IsNullOrEmpty(outputPath) && File.Exists(outputPath))
                     {
                          TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Converting video to GIF...");
+                         DebugHelper.WriteLine($"[GIF] Conversion requested. Job={taskSettings.Job}, Source={outputPath}");
                          string gifPath = Path.ChangeExtension(outputPath, ".gif");
-                         var videoHelpers = new VideoHelpers();
                          int gifFps = taskSettings.CaptureSettings?.GIFFPS > 0
                              ? taskSettings.CaptureSettings.GIFFPS
                              : taskSettings.CaptureSettings?.ScreenRecordingSettings?.FPS ?? 15;
                          var ffmpegOptions = taskSettings.CaptureSettings?.FFmpegOptions;
+                         string? ffmpegPath = ResolveGifFFmpegPath(ffmpegOptions);
+                         DebugHelper.WriteLine($"[GIF] FFmpegPath={(string.IsNullOrWhiteSpace(ffmpegPath) ? "(missing)" : ffmpegPath)}");
+                         if (string.IsNullOrWhiteSpace(ffmpegPath))
+                         {
+                             TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "FFmpeg not found. GIF conversion skipped.");
+                             DebugHelper.WriteLine("FFmpeg not found. GIF conversion skipped.");
+                             try
+                             {
+                                 PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
+                                 {
+                                     Title = "GIF Conversion Skipped",
+                                     Text = "FFmpeg not found. Configure or download FFmpeg to enable GIF output.",
+                                     Duration = 5f,
+                                     Size = new SizeI(420, 120),
+                                     AutoHide = true,
+                                     LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
+                                 });
+                             }
+                             catch
+                             {
+                                 // Ignore toast errors
+                             }
+                         }
+                         var videoHelpers = new VideoHelpers(ffmpegPath);
                          string? statsMode = ffmpegOptions?.GIFStatsMode.ToString();
                          string? dither = ffmpegOptions?.GIFDither.ToString();
                          int bayerScale = ffmpegOptions?.GIFBayerScale ?? 2;
                          int maxWidth = ffmpegOptions?.GIFMaxWidth > 0 ? ffmpegOptions.GIFMaxWidth : -1;
                          bool paletteNew = ffmpegOptions != null &&
                              ffmpegOptions.GIFStatsMode == XerahS.Core.FFmpegPaletteGenStatsMode.single;
+                         DebugHelper.WriteLine($"[GIF] Settings: fps={gifFps}, maxWidth={maxWidth}, statsMode={statsMode}, dither={dither}, bayerScale={bayerScale}, paletteNew={paletteNew}");
                          bool success = await videoHelpers.ConvertToGifAsync(
                              outputPath,
                              gifPath,
@@ -839,6 +866,7 @@ namespace XerahS.Core.Tasks
                              dither,
                              bayerScale,
                              paletteNew);
+                         DebugHelper.WriteLine($"[GIF] Conversion result: success={success}, output={(File.Exists(gifPath) ? gifPath : "(missing)")}");
                          
                          if (success)
                          {
@@ -953,6 +981,17 @@ namespace XerahS.Core.Tasks
         private async Task HandlePauseRecordingAsync()
         {
              await ScreenRecordingManager.Instance.TogglePauseResumeAsync();
+        }
+
+        private static string? ResolveGifFFmpegPath(FFmpegOptions? ffmpegOptions)
+        {
+            if (ffmpegOptions != null && !string.IsNullOrWhiteSpace(ffmpegOptions.CLIPath))
+            {
+                return ffmpegOptions.CLIPath;
+            }
+
+            string detectedPath = PathsManager.GetFFmpegPath();
+            return string.IsNullOrWhiteSpace(detectedPath) ? null : detectedPath;
         }
 
         #endregion

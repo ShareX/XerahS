@@ -1,0 +1,37 @@
+name: UI Control Inventory Audit
+
+on:
+  push:
+    branches: [ master, main, develop ]
+    paths:
+      - 'src/**/*.axaml'
+      - 'docs/audits/**'
+  pull_request:
+    branches: [ master, main, develop ]
+    paths:
+      - 'src/**/*.axaml'
+      - 'docs/audits/**'
+
+jobs:
+  audit:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x' 
+
+    - name: Build Audit Tool
+      run: dotnet build src/XerahS.Audits.Tool/XerahS.Audits.Tool.csproj -c Release
+
+    - name: Run Audit Tool
+      # Runs from repo root.
+      # If exits with 1, it means regressions (Unwired controls) found.
+      run: dotnet run --project src/XerahS.Audits.Tool/XerahS.Audits.Tool.csproj -c Release -- .
+      
+    - name: Verify Documentation Sync
+      if: success()
+      run: |
+        git diff --exit-code docs/audits
