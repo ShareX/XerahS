@@ -678,8 +678,32 @@ public class ScreenRecordingManager
                 if (!File.Exists(resolvedOutput))
                 {
                     DebugHelper.WriteLine($"ScreenRecordingManager: Output not found yet, waiting: {resolvedOutput}");
-                    bool appeared = await WaitForFileAsync(resolvedOutput, TimeSpan.FromSeconds(2));
+                    bool appeared = await WaitForFileAsync(resolvedOutput, TimeSpan.FromSeconds(5)); // Increased from 2s to 5s
                     DebugHelper.WriteLine($"ScreenRecordingManager: Output wait completed. Found={appeared} Path={resolvedOutput}");
+
+                    if (!appeared)
+                    {
+                        // Debugging: List files in the directory to see what's actually there
+                        try
+                        {
+                            string? dir = Path.GetDirectoryName(resolvedOutput);
+                            if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir))
+                            {
+                                var files = Directory.GetFiles(dir, "*.mp4");
+                                DebugHelper.WriteLine($"ScreenRecordingManager: Files in {dir}: {string.Join(", ", files.Select(Path.GetFileName))}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugHelper.WriteException(ex, "ScreenRecordingManager: Error listing directory");
+                        }
+                    }
+                }
+
+                if (!File.Exists(resolvedOutput) && !string.IsNullOrEmpty(fallbackSegmentPath) && File.Exists(fallbackSegmentPath))
+                {
+                    DebugHelper.WriteLine($"ScreenRecordingManager: Using fallback segment path: {fallbackSegmentPath}");
+                    resolvedOutput = fallbackSegmentPath;
                 }
 
                 if (File.Exists(resolvedOutput))

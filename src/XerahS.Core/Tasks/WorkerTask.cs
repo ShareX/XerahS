@@ -805,6 +805,12 @@ namespace XerahS.Core.Tasks
                 string? outputPath = await ScreenRecordingManager.Instance.StopRecordingAsync();
                 DebugHelper.WriteLine($"[GIF] StopRecordingAsync returned: {(string.IsNullOrEmpty(outputPath) ? "(null)" : outputPath)} (exists={(!string.IsNullOrEmpty(outputPath) && File.Exists(outputPath))})");
 
+                if (string.IsNullOrEmpty(outputPath) && !string.IsNullOrEmpty(Info.FilePath) && File.Exists(Info.FilePath))
+                {
+                    DebugHelper.WriteLine($"[GIF] StopRecordingAsync returned null but Info.FilePath exists. Recovering path: {Info.FilePath}");
+                    outputPath = Info.FilePath;
+                }
+
                 if (!string.IsNullOrEmpty(outputPath))
                 {
                     DebugHelper.WriteLine($"Recording saved to: {outputPath}");
@@ -881,6 +887,24 @@ namespace XerahS.Core.Tasks
                          else
                          {
                              TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Conversion failed. Keeping MP4.");
+                         }
+                    }
+                    
+                    // Handle After Capture tasks for recordings (manual handling since CaptureJobProcessor is for images)
+                    if (taskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyImageToClipboard))
+                    {
+                         if (PlatformServices.IsInitialized && !string.IsNullOrEmpty(outputPath))
+                         {
+                             try
+                             {
+                                 // For files/recordings, "Copy Image" implies copying file to clipboard
+                                 PlatformServices.Clipboard.SetFileDropList(new[] { outputPath });
+                                 DebugHelper.WriteLine($"[GIF] Copied recording to clipboard: {outputPath}");
+                             }
+                             catch (Exception ex)
+                             {
+                                 DebugHelper.WriteException(ex, "Failed to copy recording to clipboard");
+                             }
                          }
                     }
                     
