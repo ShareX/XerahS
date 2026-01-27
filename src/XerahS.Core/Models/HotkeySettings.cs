@@ -109,6 +109,16 @@ public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
         wf05.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingIntent = XerahS.RegionCapture.ScreenRecording.RecordingIntent.Game;
         list.Add(wf05);
 
+        // WF05b: Pause screen recording
+        var wf05b = new WorkflowSettings(WorkflowType.PauseScreenRecording, new HotkeyInfo());
+        wf05b.TaskSettings.Description = "Pause screen recording";
+        list.Add(wf05b);
+
+        // WF05c: Abort screen recording
+        var wf05c = new WorkflowSettings(WorkflowType.AbortScreenRecording, new HotkeyInfo());
+        wf05c.TaskSettings.Description = "Abort screen recording";
+        list.Add(wf05c);
+
         // WF06: File upload
         var wf06 = new WorkflowSettings(WorkflowType.FileUpload, new HotkeyInfo());
         wf06.TaskSettings.Description = "File upload";

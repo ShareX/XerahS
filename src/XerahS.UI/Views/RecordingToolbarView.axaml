@@ -65,7 +65,7 @@
             
             <!-- Start Button -->
             <Button Command="{Binding StartRecordingCommand}"
-                    IsVisible="{Binding !IsRecording}"
+                    IsVisible="{Binding !IsRecordingOrPaused}"
                     ToolTip.Tip="Start Recording">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <ui:SymbolIcon Symbol="Play" FontSize="16"/>
@@ -75,12 +75,42 @@
             
             <!-- Stop Button -->
             <Button Command="{Binding StopRecordingCommand}"
-                    IsVisible="{Binding IsRecording}"
+                    IsVisible="{Binding IsRecordingOrPaused}"
                     Classes="accent"
                     ToolTip.Tip="Stop Recording">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <ui:SymbolIcon Symbol="Stop" FontSize="16"/>
                     <TextBlock Text="Stop" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Pause Button -->
+            <Button Command="{Binding PauseResumeCommand}"
+                    IsVisible="{Binding IsRecording}"
+                    ToolTip.Tip="Pause Recording">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ui:SymbolIcon Symbol="Pause" FontSize="16"/>
+                    <TextBlock Text="Pause" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Resume Button -->
+            <Button Command="{Binding PauseResumeCommand}"
+                    IsVisible="{Binding IsPaused}"
+                    ToolTip.Tip="Resume Recording">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ui:SymbolIcon Symbol="Play" FontSize="16"/>
+                    <TextBlock Text="Resume" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Abort Button -->
+            <Button Command="{Binding AbortRecordingCommand}"
+                    IsVisible="{Binding IsRecordingOrPaused}"
+                    ToolTip.Tip="Abort Recording">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ui:SymbolIcon Symbol="Cancel" FontSize="16"/>
+                    <TextBlock Text="Abort" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
             

@@ -549,6 +549,10 @@ namespace XerahS.Core.Tasks
                         await HandleStopRecordingAsync();
                         return;
 
+                    case WorkflowType.PauseScreenRecording:
+                        await HandlePauseRecordingAsync();
+                        return;
+
                     case WorkflowType.AbortScreenRecording:
                         await HandleAbortRecordingAsync();
                         return;
@@ -944,6 +948,11 @@ namespace XerahS.Core.Tasks
         {
              // Legacy handler
              await ScreenRecordingManager.Instance.AbortRecordingAsync();
+        }
+
+        private async Task HandlePauseRecordingAsync()
+        {
+             await ScreenRecordingManager.Instance.TogglePauseResumeAsync();
         }
 
         #endregion
