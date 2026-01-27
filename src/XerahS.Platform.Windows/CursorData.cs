@@ -28,9 +28,8 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using XerahS.Common;
-using NativeMethods = XerahS.Common.NativeMethods;
-using CURSORINFO = XerahS.Common.CURSORINFO;
-using ICONINFO = XerahS.Common.ICONINFO;
+// NativeMethods is now in this namespace (XerahS.Platform.Windows)
+// Structs CURSORINFO, ICONINFO are now in XerahS.Platform.Windows namespace
 
 namespace XerahS.Platform.Windows
 {

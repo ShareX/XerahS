@@ -25,7 +25,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace XerahS.Common
+namespace XerahS.Platform.Windows
 {
     public class TimerResolutionManager : IDisposable
     {

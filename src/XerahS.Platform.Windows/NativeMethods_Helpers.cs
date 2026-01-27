@@ -28,7 +28,7 @@ using System.Drawing;
 using System.Text;
 using System.Runtime.Versioning;
 
-namespace XerahS.Common
+namespace XerahS.Platform.Windows
 {
     [SupportedOSPlatform("windows")]
     public static partial class NativeMethods

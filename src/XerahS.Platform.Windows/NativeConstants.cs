@@ -22,7 +22,7 @@
 */
 
 #endregion License Information (GPL v3)
-namespace XerahS.Common
+namespace XerahS.Platform.Windows
 {
     public static class NativeConstants
     {

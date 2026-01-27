@@ -27,7 +27,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.Versioning;
 
-namespace XerahS.Common
+namespace XerahS.Platform.Windows
 {
     [SupportedOSPlatform("windows")]
     public static class GraphicsPathExtensions

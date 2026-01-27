@@ -28,7 +28,7 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
-namespace XerahS.Common.Helpers
+namespace XerahS.Platform.Windows
 {
     [SupportedOSPlatform("windows")]
     public static class ClipboardHelpersEx

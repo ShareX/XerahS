@@ -24,8 +24,9 @@
 #endregion License Information (GPL v3)
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using XerahS.Common;
 
-namespace XerahS.Common.Native
+namespace XerahS.Platform.Windows
 {
     public enum TaskbarProgressBarStatus
     {

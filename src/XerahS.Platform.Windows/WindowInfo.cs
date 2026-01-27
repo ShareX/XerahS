@@ -26,8 +26,9 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.Versioning;
+using XerahS.Common;
 
-namespace XerahS.Common
+namespace XerahS.Platform.Windows
 {
     [SupportedOSPlatform("windows")]
     public class WindowInfo

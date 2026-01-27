@@ -23,8 +23,9 @@
 
 #endregion License Information (GPL v3)
 using System.Runtime.Versioning;
+using XerahS.Common;
 
-namespace XerahS.Common
+namespace XerahS.Platform.Windows
 {
     [SupportedOSPlatform("windows")]
     public static class DesktopIconManager

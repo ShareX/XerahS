@@ -25,8 +25,9 @@
 
 using System.Runtime.InteropServices;
 using System.Text;
+using XerahS.Common;
 
-namespace XerahS.Common
+namespace XerahS.Platform.Windows
 {
     public class InputManager
     {
@@ -117,30 +118,30 @@ namespace XerahS.Common
             }
         }
 
-        private void AddMouseInput(MouseButtons button, bool isMouseUp)
+        private void AddMouseInput(XerahS.Platform.Windows.MouseButtons button, bool isMouseUp)
         {
             INPUT input = new INPUT();
             input.Type = InputType.InputMouse;
             input.Data.Mouse = new MOUSEINPUT();
 
-            if (button == MouseButtons.Left)
+            if (button == XerahS.Platform.Windows.MouseButtons.Left)
             {
                 input.Data.Mouse.dwFlags = isMouseUp ? MouseEventFlags.MOUSEEVENTF_LEFTUP : MouseEventFlags.MOUSEEVENTF_LEFTDOWN;
             }
-            else if (button == MouseButtons.Right)
+            else if (button == XerahS.Platform.Windows.MouseButtons.Right)
             {
                 input.Data.Mouse.dwFlags = isMouseUp ? MouseEventFlags.MOUSEEVENTF_RIGHTUP : MouseEventFlags.MOUSEEVENTF_RIGHTDOWN;
             }
-            else if (button == MouseButtons.Middle)
+            else if (button == XerahS.Platform.Windows.MouseButtons.Middle)
             {
                 input.Data.Mouse.dwFlags = isMouseUp ? MouseEventFlags.MOUSEEVENTF_MIDDLEUP : MouseEventFlags.MOUSEEVENTF_MIDDLEDOWN;
             }
-            else if (button == MouseButtons.XButton1)
+            else if (button == XerahS.Platform.Windows.MouseButtons.XButton1)
             {
                 input.Data.Mouse.mouseData = (uint)MouseEventDataXButtons.XBUTTON1;
                 input.Data.Mouse.dwFlags = isMouseUp ? MouseEventFlags.MOUSEEVENTF_XUP : MouseEventFlags.MOUSEEVENTF_XDOWN;
             }
-            else if (button == MouseButtons.XButton2)
+            else if (button == XerahS.Platform.Windows.MouseButtons.XButton2)
             {
                 input.Data.Mouse.mouseData = (uint)MouseEventDataXButtons.XBUTTON2;
                 input.Data.Mouse.dwFlags = isMouseUp ? MouseEventFlags.MOUSEEVENTF_XUP : MouseEventFlags.MOUSEEVENTF_XDOWN;
@@ -149,29 +150,29 @@ namespace XerahS.Common
             InputList.Add(input);
         }
 
-        public void AddMouseDown(MouseButtons button = MouseButtons.Left)
+        public void AddMouseDown(XerahS.Platform.Windows.MouseButtons button = XerahS.Platform.Windows.MouseButtons.Left)
         {
             AddMouseInput(button, false);
         }
 
-        public void AddMouseUp(MouseButtons button = MouseButtons.Left)
+        public void AddMouseUp(XerahS.Platform.Windows.MouseButtons button = XerahS.Platform.Windows.MouseButtons.Left)
         {
             AddMouseInput(button, true);
         }
 
-        public void AddMouseClick(MouseButtons button = MouseButtons.Left)
+        public void AddMouseClick(XerahS.Platform.Windows.MouseButtons button = XerahS.Platform.Windows.MouseButtons.Left)
         {
             AddMouseDown(button);
             AddMouseUp(button);
         }
 
-        public void AddMouseClick(int x, int y, MouseButtons button = MouseButtons.Left)
+        public void AddMouseClick(int x, int y, XerahS.Platform.Windows.MouseButtons button = XerahS.Platform.Windows.MouseButtons.Left)
         {
             AddMouseMove(x, y);
             AddMouseClick(button);
         }
 
-        public void AddMouseClick(System.Drawing.Point position, MouseButtons button = MouseButtons.Left)
+        public void AddMouseClick(System.Drawing.Point position, XerahS.Platform.Windows.MouseButtons button = XerahS.Platform.Windows.MouseButtons.Left)
         {
             AddMouseMove(position);
             AddMouseClick(button);

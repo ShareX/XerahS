@@ -24,8 +24,12 @@
 #endregion License Information (GPL v3)
 using System.Drawing;
 using System.Runtime.Versioning;
+using XerahS.Common;
+using XerahS.Common.Helpers;
+using Point = System.Drawing.Point;
+using PointF = XerahS.Common.PointF;
 
-namespace XerahS.Common.Helpers
+namespace XerahS.Platform.Windows
 {
     [SupportedOSPlatform("windows")]
     public static class CaptureHelpers

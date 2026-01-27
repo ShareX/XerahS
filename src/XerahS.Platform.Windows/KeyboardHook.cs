@@ -27,8 +27,9 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using XerahS.Common;
 
-namespace XerahS.Common
+namespace XerahS.Platform.Windows
 {
     public delegate void KeyEventHandler(object sender, KeyEventArgs e);
 

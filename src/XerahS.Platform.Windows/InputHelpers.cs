@@ -23,7 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-namespace XerahS.Common
+using XerahS.Common;
+
+namespace XerahS.Platform.Windows
 {
     public static class InputHelpers
     {
@@ -62,35 +64,35 @@ namespace XerahS.Common
             return inputManager.SendInputs();
         }
 
-        public static bool SendMouseDown(MouseButtons button = MouseButtons.Left)
+        public static bool SendMouseDown(XerahS.Platform.Windows.MouseButtons button = XerahS.Platform.Windows.MouseButtons.Left)
         {
             InputManager inputManager = new InputManager();
             inputManager.AddMouseDown(button);
             return inputManager.SendInputs();
         }
 
-        public static bool SendMouseUp(MouseButtons button = MouseButtons.Left)
+        public static bool SendMouseUp(XerahS.Platform.Windows.MouseButtons button = XerahS.Platform.Windows.MouseButtons.Left)
         {
             InputManager inputManager = new InputManager();
             inputManager.AddMouseUp(button);
             return inputManager.SendInputs();
         }
 
-        public static bool SendMouseClick(MouseButtons button = MouseButtons.Left)
+        public static bool SendMouseClick(XerahS.Platform.Windows.MouseButtons button = XerahS.Platform.Windows.MouseButtons.Left)
         {
             InputManager inputManager = new InputManager();
             inputManager.AddMouseClick(button);
             return inputManager.SendInputs();
         }
 
-        public static bool SendMouseClick(int x, int y, MouseButtons button = MouseButtons.Left)
+        public static bool SendMouseClick(int x, int y, XerahS.Platform.Windows.MouseButtons button = XerahS.Platform.Windows.MouseButtons.Left)
         {
             InputManager inputManager = new InputManager();
             inputManager.AddMouseClick(x, y, button);
             return inputManager.SendInputs();
         }
 
-        public static bool SendMouseClick(System.Drawing.Point position, MouseButtons button = MouseButtons.Left)
+        public static bool SendMouseClick(System.Drawing.Point position, XerahS.Platform.Windows.MouseButtons button = XerahS.Platform.Windows.MouseButtons.Left)
         {
             return SendMouseClick(position.X, position.Y, button);
         }
