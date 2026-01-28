@@ -14,13 +14,15 @@
         TransparencyLevelHint="Transparent"
         Background="Transparent"
         WindowStartupLocation="Manual"
-        Cursor="Hand">
+        Cursor="Hand"
+        AutomationProperties.Name="Notification Toast">
     
-    <Border Background="#CC323232"
-            BorderBrush="#282828"
+    <Border Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
             BorderThickness="1"
             CornerRadius="6"
-            Padding="1">
+            Padding="1"
+            BoxShadow="0 4 12 0 #40000000">
         
         <Grid>
             <!-- Image display (when available) -->
@@ -28,27 +30,27 @@
                    IsVisible="{Binding HasImage}"
                    Stretch="Uniform"
                    HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+                   VerticalAlignment="Center"
+                   AutomationProperties.Name="Notification Image"/>
             
             <!-- Text display (when no image or as overlay) -->
             <StackPanel VerticalAlignment="Top"
                         HorizontalAlignment="Stretch"
                         IsVisible="{Binding !HasImage}"
-                        Margin="10">
+                        Margin="12">
                 
                 <!-- Title -->
                 <TextBlock Text="{Binding Title}"
                            IsVisible="{Binding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                           FontWeight="Bold"
-                           FontSize="14"
-                           Foreground="#F0F0F0"
+                           Theme="{StaticResource SubtitleTextBlockStyle}"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                            TextWrapping="Wrap"
                            Margin="0,0,0,4"/>
                 
                 <!-- Main text -->
                 <TextBlock Text="{Binding Text}"
-                           FontSize="12"
-                           Foreground="#D2D2D2"
+                           Theme="{StaticResource BodyTextBlockStyle}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            TextWrapping="Wrap"
                            TextTrimming="CharacterEllipsis"
                            MaxHeight="200"/>
@@ -65,7 +67,7 @@
                 <TextBlock Text="{Binding Url}"
                            Foreground="White"
                            FontSize="11"
-                           Margin="8,0"
+                           Margin="12,0"
                            VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis"/>
             </Border>
@@ -73,10 +75,19 @@
         
         <Border.ContextFlyout>
             <MenuFlyout Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
-                <MenuItem Header="Copy image to clipboard" Command="{Binding CopyImageToClipboardCommand}"/>
-                <MenuItem Header="Open file" Command="{Binding OpenFileCommand}"/>
-                <MenuItem Header="Copy file path" Command="{Binding CopyFilePathCommand}"/>
-                <MenuItem Header="Copy URL" Command="{Binding CopyUrlCommand}" IsVisible="{Binding HasUrl}"/>
+                <MenuItem Header="Copy image to clipboard" 
+                          Command="{Binding CopyImageToClipboardCommand}"
+                          AutomationProperties.Name="Copy Image"/>
+                <MenuItem Header="Open file" 
+                          Command="{Binding OpenFileCommand}"
+                          AutomationProperties.Name="Open File"/>
+                <MenuItem Header="Copy file path" 
+                          Command="{Binding CopyFilePathCommand}"
+                          AutomationProperties.Name="Copy File Path"/>
+                <MenuItem Header="Copy URL" 
+                          Command="{Binding CopyUrlCommand}" 
+                          IsVisible="{Binding HasUrl}"
+                          AutomationProperties.Name="Copy URL"/>
             </MenuFlyout>
         </Border.ContextFlyout>
     </Border>
