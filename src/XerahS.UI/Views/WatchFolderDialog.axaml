@@ -15,60 +15,69 @@
         <vm:WatchFolderEditViewModel />
     </Design.DataContext>
 
-    <StackPanel Margin="20" Spacing="14">
-        <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold"/>
+    <StackPanel Margin="24" Spacing="24">
+        <TextBlock Text="{Binding Title}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
 
-        <StackPanel Spacing="6">
-            <TextBlock Text="Folder path" FontWeight="SemiBold"/>
-            <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="8">
+            <TextBlock Text="Folder path" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                 <TextBox Grid.Column="0"
                          Text="{Binding FolderPath, UpdateSourceTrigger=PropertyChanged}"
-                         Watermark="C:\Path\To\Folder"/>
+                         Watermark="C:\Path\To\Folder"
+                         AutomationProperties.Name="Folder Path Input"/>
                 <Button Grid.Column="1"
                         Content="Browse..."
                         Command="{Binding BrowseFolderCommand}"
-                        Margin="8,0,0,0"/>
+                        AutomationProperties.Name="Browse Folder"/>
             </Grid>
             <TextBlock Text="{Binding FolderPathError}"
-                       Foreground="Tomato"
-                       FontSize="12"
+                       Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                       Theme="{StaticResource CaptionTextBlockStyle}"
                        IsVisible="{Binding HasFolderPathError}"/>
         </StackPanel>
 
-        <StackPanel Spacing="6">
-            <TextBlock Text="Filter pattern" FontWeight="SemiBold"/>
+        <StackPanel Spacing="8">
+            <TextBlock Text="Filter Pattern" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
             <TextBox Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}"
-                     Watermark="*.png;*.jpg"/>
+                     Watermark="*.png;*.jpg"
+                     AutomationProperties.Name="Filter Pattern Input"/>
             <TextBlock Text="Separate multiple patterns with ';' (example: *.png;*.jpg)."
-                       FontSize="11"
-                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                       Theme="{StaticResource CaptionTextBlockStyle}"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
             <TextBlock Text="{Binding FilterError}"
-                       Foreground="Tomato"
-                       FontSize="12"
+                       Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                       Theme="{StaticResource CaptionTextBlockStyle}"
                        IsVisible="{Binding HasFilterError}"/>
         </StackPanel>
 
-        <StackPanel Spacing="6">
-            <TextBlock Text="Workflow" FontWeight="SemiBold"/>
+        <StackPanel Spacing="8">
+            <TextBlock Text="Workflow" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
             <ComboBox ItemsSource="{Binding Workflows}"
                       SelectedItem="{Binding SelectedWorkflow}"
                       DisplayMemberBinding="{Binding Name}"
-                      HorizontalAlignment="Stretch"/>
+                      HorizontalAlignment="Stretch"
+                      AutomationProperties.Name="Workflow Selection"/>
             <TextBlock Text="{Binding WorkflowError}"
-                       Foreground="Tomato"
-                       FontSize="12"
+                       Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                       Theme="{StaticResource CaptionTextBlockStyle}"
                        IsVisible="{Binding HasWorkflowError}"/>
         </StackPanel>
 
-        <StackPanel Spacing="6">
-            <CheckBox IsChecked="{Binding IncludeSubdirectories}" Content="Include subfolders"/>
-            <CheckBox IsChecked="{Binding MoveFilesToScreenshotsFolder}" Content="Move files to screenshots folder after processing"/>
-            <CheckBox IsChecked="{Binding Enabled}" Content="Enable this watch folder"/>
+        <StackPanel Spacing="8">
+            <CheckBox IsChecked="{Binding IncludeSubdirectories}" 
+                      Content="Include subfolders"
+                      AutomationProperties.Name="Include Subfolders Checkbox"/>
+            <CheckBox IsChecked="{Binding MoveFilesToScreenshotsFolder}" 
+                      Content="Move files to screenshots folder after processing"
+                      AutomationProperties.Name="Move Files Checkbox"/>
+            <CheckBox IsChecked="{Binding Enabled}" 
+                      Content="Enable this watch folder"
+                      AutomationProperties.Name="Enable Watch Folder Checkbox"/>
         </StackPanel>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-            <Button Content="Cancel" Command="{Binding CancelCommand}"/>
-            <Button Content="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding CanSave}"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+            <Button Content="Cancel" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel"/>
+            <Button Content="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding CanSave}" Classes="accent" AutomationProperties.Name="Save"/>
         </StackPanel>
     </StackPanel>
 </Window>
