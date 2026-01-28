@@ -12,7 +12,9 @@
         Background="Transparent"
         Topmost="True"
         ShowInTaskbar="False"
-        CanResize="False">
+        CanResize="False"
+        AutomationProperties.Name="Recording Region Overlay"
+        AutomationProperties.HelpText="Indicates the area currently being recorded.">
 
     <!-- Border color indicates recording technology: Red = GDI/FFmpeg, Green = Modern Capture -->
     <Border x:Name="BorderElement"
