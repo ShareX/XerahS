@@ -64,6 +64,28 @@ This document serves as a centralized knowledge base for technical challenges, a
 - `CommandParameter="{Binding}"` passes the current data item (the DataTemplate's DataContext).
 - For shared flyouts, define them in `UserControl.Resources` and reference via `{StaticResource}`.
 
+### WebView Helper
+
+**Context**: Rendering HTML content within the application (e.g., for Indexer previews).
+
+**Issue**: The standard `WebView.Avalonia` package is insufficient on its own for desktop applications. It provides the controls but may lack the necessary desktop-specific native bindings or initialization logic required for Windows/Linux/macOS.
+
+**Solution**: You must reference **`WebView.Avalonia.Desktop`** in addition to the base package.
+
+**❌ Incorrect**:
+```xml
+<PackageReference Include="WebView.Avalonia" Version="11.0.0.1" />
+```
+
+**✅ Correct**:
+```xml
+<PackageReference Include="WebView.Avalonia" Version="11.0.0.1" />
+<PackageReference Include="WebView.Avalonia.Desktop" Version="11.0.0.1" />
+```
+
+Without the `.Desktop` package, the `WebView` control may fail to initialize or render, often silently or with generic "type not found" errors when using reflection to locate it.
+
+
 ---
 
 ## Build & Configuration
