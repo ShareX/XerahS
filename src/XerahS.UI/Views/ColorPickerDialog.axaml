@@ -80,6 +80,8 @@
                                         CommandParameter="{Binding}"
                                         Padding="0" Width="26" Height="26"
                                         Background="Transparent" BorderThickness="0"
+                                        HorizontalContentAlignment="Stretch"
+                                        VerticalContentAlignment="Stretch"
                                         Margin="0,0,6,6"
                                         ToolTip.Tip="{Binding Converter={StaticResource ColorToNameConverter}}"
                                         AutomationProperties.Name="{Binding Converter={StaticResource ColorToNameConverter}}">
@@ -112,6 +114,8 @@
                                         CommandParameter="{Binding}"
                                         Padding="0" Width="26" Height="26"
                                         Background="Transparent" BorderThickness="0"
+                                        HorizontalContentAlignment="Stretch"
+                                        VerticalContentAlignment="Stretch"
                                         Margin="0,0,6,6"
                                         ToolTip.Tip="{Binding Converter={StaticResource ColorToNameConverter}}"
                                         AutomationProperties.Name="{Binding Converter={StaticResource ColorToNameConverter}}">
