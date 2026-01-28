@@ -8,81 +8,97 @@
         x:DataType="vm:AfterCaptureViewModel"
         Title="After Capture Tasks"
         Icon="/Assets/Logo.ico"
-        Width="900"
-        Height="600"
+        Width="900" Height="600"
         WindowStartupLocation="CenterOwner">
 
-    <Grid ColumnDefinitions="2*,*"
-          RowDefinitions="*,Auto"
-          Margin="20">
-        <Border Grid.Column="0"
-                Grid.Row="0"
-                Margin="0,0,15,0"
-                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                BorderThickness="1"
-                CornerRadius="4">
-            <ScrollViewer>
-                <Image Source="{Binding PreviewImage}"
-                       Stretch="Uniform"
-                       Margin="10"/>
-            </ScrollViewer>
-        </Border>
+  <Design.DataContext>
+    <vm:AfterCaptureViewModel/>
+  </Design.DataContext>
 
-        <ScrollViewer Grid.Column="1"
-                      Grid.Row="0">
-            <StackPanel Spacing="12">
-                <TextBlock Text="After Capture"
-                           FontWeight="SemiBold"
-                           FontSize="16"/>
-                <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        Padding="10">
-                    <StackPanel Spacing="8">
-                        <CheckBox Content="Save image to file"
-                                  IsChecked="{Binding SaveImageToFile}"/>
-                        <CheckBox Content="Copy image to clipboard"
-                                  IsChecked="{Binding CopyImageToClipboard}"/>
-                        <CheckBox Content="Annotate image"
-                                  IsChecked="{Binding AnnotateImage}"/>
-                        <CheckBox Content="Upload image to host"
-                                  IsChecked="{Binding UploadImageToHost}"/>
-                    </StackPanel>
-                </Border>
+  <Grid ColumnDefinitions="2*, 24, *" RowDefinitions="*, 24, Auto" Margin="24">
+    
+    <!-- Preview Section -->
+    <Border Grid.Column="0" Grid.Row="0"
+            BorderThickness="1"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            CornerRadius="4"
+            Padding="16">
+      <ScrollViewer>
+        <Image Source="{Binding PreviewImage}"
+               Stretch="Uniform"
+               AutomationProperties.Name="Capture Preview"/>
+      </ScrollViewer>
+    </Border>
 
-                <TextBlock Text="After Upload"
-                           FontWeight="SemiBold"
-                           FontSize="16"
-                           Margin="0,10,0,0"/>
-                <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        Padding="10">
-                    <StackPanel Spacing="8">
-                        <CheckBox Content="Copy URL to clipboard"
-                                  IsChecked="{Binding CopyURLToClipboard}"/>
-                        <CheckBox Content="Use URL shortener"
-                                  IsChecked="{Binding UseURLShortener}"/>
-                        <CheckBox Content="Share URL"
-                                  IsChecked="{Binding ShareURL}"/>
-                    </StackPanel>
-                </Border>
+    <!-- Settings Section -->
+    <ScrollViewer Grid.Column="2" Grid.Row="0">
+      <StackPanel Spacing="24">
+        
+        <!-- After Capture Tasks -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="After Capture" FontWeight="SemiBold" FontSize="16"/>
+          <Border BorderThickness="1"
+                  BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                  Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                  CornerRadius="4"
+                  Padding="16">
+            <StackPanel Spacing="16">
+              <CheckBox Content="Save image to file" 
+                        IsChecked="{Binding SaveImageToFile}"
+                        AutomationProperties.Name="Save Image to File"/>
+              <CheckBox Content="Copy image to clipboard" 
+                        IsChecked="{Binding CopyImageToClipboard}"
+                        AutomationProperties.Name="Copy Image to Clipboard"/>
+              <CheckBox Content="Annotate image" 
+                        IsChecked="{Binding AnnotateImage}"
+                        AutomationProperties.Name="Annotate Image"/>
+              <CheckBox Content="Upload image to host" 
+                        IsChecked="{Binding UploadImageToHost}"
+                        AutomationProperties.Name="Upload Image to Host"/>
             </StackPanel>
-        </ScrollViewer>
-
-        <StackPanel Grid.Row="1"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Spacing="10"
-                    Margin="0,15,0,0">
-            <Button Content="Cancel"
-                    Command="{Binding CancelCommand}"
-                    MinWidth="90"/>
-            <Button Content="Continue"
-                    Command="{Binding ContinueCommand}"
-                    MinWidth="90"/>
+          </Border>
         </StackPanel>
-    </Grid>
+
+        <!-- After Upload Tasks -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="After Upload" FontWeight="SemiBold" FontSize="16"/>
+          <Border BorderThickness="1"
+                  BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                  Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                  CornerRadius="4"
+                  Padding="16">
+            <StackPanel Spacing="16">
+              <CheckBox Content="Copy URL to clipboard" 
+                        IsChecked="{Binding CopyURLToClipboard}"
+                        AutomationProperties.Name="Copy URL to Clipboard"/>
+              <CheckBox Content="Use URL shortener" 
+                        IsChecked="{Binding UseURLShortener}"
+                        AutomationProperties.Name="Use URL Shortener"/>
+              <CheckBox Content="Share URL" 
+                        IsChecked="{Binding ShareURL}"
+                        AutomationProperties.Name="Share URL"/>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Dialog Buttons -->
+    <StackPanel Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                Spacing="16">
+      <Button Content="Cancel"
+              Command="{Binding CancelCommand}"
+              MinWidth="90"
+              AutomationProperties.Name="Cancel"/>
+      <Button Content="Continue"
+              Command="{Binding ContinueCommand}"
+              MinWidth="90"
+              Classes="accent"
+              AutomationProperties.Name="Continue"/>
+    </StackPanel>
+    
+  </Grid>
 </Window>
