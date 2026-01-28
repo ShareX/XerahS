@@ -152,10 +152,12 @@ namespace XerahS.Audits.Tool
             bool hasCommand = el.Attributes().Any(a => a.Name.LocalName == "Command");
             bool hasClick = el.Attributes().Any(a => a.Name.LocalName == "Click" || a.Name.LocalName == "Tapped");
             bool hasIsChecked = el.Attributes().Any(a => a.Name.LocalName == "IsChecked"); // Binding or Value
-            
+            bool hasFlyout = el.Elements().Any(e => e.Name.LocalName.EndsWith("Flyout"));
+
             // Check suppression (UiAudit.IsWiredManual)
-            // We look for attribute ending in "IsWiredManual" or checking xmlns
-            bool isSuppressed = el.Attributes().Any(a => a.Name.LocalName == "IsWiredManual" && a.Value == "True");
+            // Fix: Check for EndsWith to handle namespace prefixes (e.g. audit:UiAudit.IsWiredManual -> LocalName might be IsWiredManual or UiAudit.IsWiredManual)
+            // XDocument LocalName usually handles namespace well, but to be safe we allow partial match.
+            bool isSuppressed = el.Attributes().Any(a => a.Name.LocalName.EndsWith("IsWiredManual") && a.Value == "True");
 
             if (isSuppressed)
             {
@@ -175,6 +177,11 @@ namespace XerahS.Audits.Tool
             else if (hasIsChecked)
             {
                  entry.Wiring = "DataBinding";
+                 entry.Status = "WIRED";
+            }
+            else if (hasFlyout)
+            {
+                 entry.Wiring = "Flyout";
                  entry.Status = "WIRED";
             }
             else
