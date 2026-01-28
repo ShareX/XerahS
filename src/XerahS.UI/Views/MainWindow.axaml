@@ -14,7 +14,6 @@
         Icon="/Assets/Logo.ico"
         WindowState="Normal"
         WindowStartupLocation="CenterScreen"
-
         Opened="OnWindowOpened">
 
     <Window.DataTemplates>
@@ -37,66 +36,71 @@
                            PaneDisplayMode="Left" 
                            IsPaneOpen="True"
                            IsSettingsVisible="False"
-                           SelectionChanged="OnNavSelectionChanged">
-            <!-- ... existing content ... -->
+                           SelectionChanged="OnNavSelectionChanged"
+                           AutomationProperties.Name="Main Navigation">
             <ui:NavigationView.MenuItems>
                 <!-- Capture Section - Items populated dynamically from first 3 workflows -->
-                <ui:NavigationViewItem Content="Capture" Tag="Capture" SelectsOnInvoked="False" IsExpanded="True" Name="CaptureNavItem">
+                <ui:NavigationViewItem Content="Capture" Tag="Capture" SelectsOnInvoked="False" IsExpanded="True" Name="CaptureNavItem"
+                                       AutomationProperties.Name="Capture Menu">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Camera"/>
                     </ui:NavigationViewItem.IconSource>
                 </ui:NavigationViewItem>
                 
-                <ui:NavigationViewItem Content="Recording" Tag="Recording">
+                <ui:NavigationViewItem Content="Recording" Tag="Recording" AutomationProperties.Name="Recording View">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Video"/>
                     </ui:NavigationViewItem.IconSource>
                 </ui:NavigationViewItem>
                 
-                <ui:NavigationViewItem Content="Editor" Tag="Editor" IsSelected="True">
+                <ui:NavigationViewItem Content="Editor" Tag="Editor" IsSelected="True" AutomationProperties.Name="Editor View">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Edit"/>
                     </ui:NavigationViewItem.IconSource>
                 </ui:NavigationViewItem>
-                <ui:NavigationViewItem Content="History" Tag="History">
+                
+                <ui:NavigationViewItem Content="History" Tag="History" AutomationProperties.Name="History View">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Clock"/>
                     </ui:NavigationViewItem.IconSource>
                 </ui:NavigationViewItem>
-                <ui:NavigationViewItem Content="Workflows" Tag="Workflows">
+                
+                <ui:NavigationViewItem Content="Workflows" Tag="Workflows" AutomationProperties.Name="Workflows View">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="List"/>
                     </ui:NavigationViewItem.IconSource>
                 </ui:NavigationViewItem>
-                <ui:NavigationViewItem Content="Tools" Tag="Tools" SelectsOnInvoked="True" IsExpanded="True">
+                
+                <ui:NavigationViewItem Content="Tools" Tag="Tools" SelectsOnInvoked="True" IsExpanded="True" AutomationProperties.Name="Tools Menu">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Folder"/>
                     </ui:NavigationViewItem.IconSource>
                     <ui:NavigationViewItem.MenuItems>
-                        <ui:NavigationViewItem Content="Color Picker..." Tag="Tools_ColorPicker" />
-                        <ui:NavigationViewItem Content="Pick From Screen" Tag="Tools_ScreenColorPicker" />
-                        <ui:NavigationViewItem Content="Index Folder..." Tag="Tools_IndexFolder" />
-                        <ui:NavigationViewItem Content="QR Code">
+                        <ui:NavigationViewItem Content="Color Picker..." Tag="Tools_ColorPicker" AutomationProperties.Name="Color Picker Tool"/>
+                        <ui:NavigationViewItem Content="Pick From Screen" Tag="Tools_ScreenColorPicker" AutomationProperties.Name="Screen Color Picker Tool"/>
+                        <ui:NavigationViewItem Content="Index Folder..." Tag="Tools_IndexFolder" AutomationProperties.Name="Index Folder Tool"/>
+                        <ui:NavigationViewItem Content="QR Code" AutomationProperties.Name="QR Code Tools">
                             <ui:NavigationViewItem.MenuItems>
-                                <ui:NavigationViewItem Content="Generator..." Tag="Tools_QrGenerator" />
-                                <ui:NavigationViewItem Content="Scan from screen" Tag="Tools_QrScanScreen" />
-                                <ui:NavigationViewItem Content="Scan from region" Tag="Tools_QrScanRegion" />
+                                <ui:NavigationViewItem Content="Generator..." Tag="Tools_QrGenerator" AutomationProperties.Name="QR Code Generator"/>
+                                <ui:NavigationViewItem Content="Scan from screen" Tag="Tools_QrScanScreen" AutomationProperties.Name="Scan QR from Screen"/>
+                                <ui:NavigationViewItem Content="Scan from region" Tag="Tools_QrScanRegion" AutomationProperties.Name="Scan QR from Region"/>
                             </ui:NavigationViewItem.MenuItems>
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
-                <ui:NavigationViewItem Content="Settings" Tag="Settings" SelectsOnInvoked="True" IsExpanded="True">
+                
+                <ui:NavigationViewItem Content="Settings" Tag="Settings" SelectsOnInvoked="True" IsExpanded="True" AutomationProperties.Name="Settings Menu">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Settings"/>
                     </ui:NavigationViewItem.IconSource>
                     <ui:NavigationViewItem.MenuItems>
-                        <ui:NavigationViewItem Content="Application Settings" Tag="Settings_App" />
-
-
-                        <ui:NavigationViewItem Content="Destination Settings" Tag="Settings_Dest" />
+                        <ui:NavigationViewItem Content="Application Settings" Tag="Settings_App" AutomationProperties.Name="Application Settings"/>
+                        <ui:NavigationViewItem Content="Destination Settings" Tag="Settings_Dest" AutomationProperties.Name="Destination Settings"/>
                     </ui:NavigationViewItem.MenuItems>
                  </ui:NavigationViewItem>
-                 <ui:NavigationViewItem Content="Debug" Tag="Debug">
+                 
+                 <ui:NavigationViewItem Content="Debug" Tag="Debug" AutomationProperties.Name="Debug View"
+                                        AutomationProperties.HelpText="Opens developer debug tools">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Code"/>
                     </ui:NavigationViewItem.IconSource>
@@ -113,7 +117,9 @@
               IsVisible="{Binding IsModalOpen}"
               ZIndex="1000">
             <!-- Backdrop -->
-            <Border Background="#80000000" PointerPressed="OnBackdropPointerPressed"/>
+            <Border Background="{DynamicResource SolidBackgroundFillColorBaseBrush}" 
+                    Opacity="0.8"
+                    PointerPressed="OnBackdropPointerPressed"/>
             
             <!-- Modal Content Wrapper (Scrollable if needed) -->
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
