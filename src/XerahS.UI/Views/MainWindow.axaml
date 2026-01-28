@@ -71,7 +71,7 @@
                     </ui:NavigationViewItem.IconSource>
                 </ui:NavigationViewItem>
                 
-                <ui:NavigationViewItem Content="Tools" Tag="Tools" SelectsOnInvoked="True" IsExpanded="True" AutomationProperties.Name="Tools Menu">
+                <ui:NavigationViewItem Content="Tools" Tag="Tools" SelectsOnInvoked="True" IsExpanded="False" AutomationProperties.Name="Tools Menu">
                     <ui:NavigationViewItem.IconSource>
                         <ui:SymbolIconSource Symbol="Folder"/>
                     </ui:NavigationViewItem.IconSource>
