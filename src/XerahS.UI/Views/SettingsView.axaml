@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:XerahS.UI.ViewModels"
              xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:common="clr-namespace:XerahS.Common;assembly=XerahS.Common"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="XerahS.UI.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
@@ -17,7 +18,7 @@
             <ui:SymbolIcon Symbol="Settings" FontSize="64" Foreground="{DynamicResource AccentFillColorDefaultBrush}"/>
             
             <StackPanel Spacing="8">
-                <TextBlock Text="ShareX Settings" 
+                <TextBlock Text="{Binding Source={x:Static common:AppResources.AppName}, StringFormat='{}{0} Settings'}" 
                            Theme="{StaticResource TitleTextBlockStyle}" 
                            HorizontalAlignment="Center"/>
                 <TextBlock Text="Select a category from the menu to configure settings." 

@@ -81,9 +81,10 @@
                     Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" 
                     CornerRadius="3" 
                     Margin="10,0"
-                    MinWidth="150">
+                    MinWidth="100">
                 <Button x:Name="HotkeyButton"
                         Content="{Binding KeyString}"
+                        MinWidth="300"
                         Background="Transparent"
                         BorderThickness="0"
                         FontFamily="Consolas, Monospace"

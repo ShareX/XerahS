@@ -63,6 +63,7 @@ namespace XerahS.UI.ViewModels
 
         // Expose underlying model if needed
         public TaskSettings Model => _settings;
+        public TaskSettingsAdvanced AdvancedSettings => _settings.AdvancedSettings;
 
         public WorkflowType Job
         {

@@ -173,7 +173,7 @@ namespace XerahS.UI.Views
                         contentFrame.Content = new WorkflowsView();
                         break;
                     case "Tools":
-                        contentFrame.Content = new IndexFolderView();
+                        contentFrame.Content = new ToolsView();
                         break;
                     case "Tools_IndexFolder":
                         contentFrame.Content = new IndexFolderView();
