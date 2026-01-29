@@ -332,9 +332,13 @@ namespace XerahS.Core.Tasks.Processors
                         PreviewImage = info.Metadata?.Image
                     };
 
-                    _ = PlatformServices.UI.ShowAfterUploadWindowAsync(windowInfo).ContinueWith(
-                        task => DebugHelper.WriteException(task.Exception, "AfterUpload: Failed to show window"),
-                        TaskContinuationOptions.OnlyOnFaulted);
+                    _ = PlatformServices.UI.ShowAfterUploadWindowAsync(windowInfo).ContinueWith(task =>
+                    {
+                        if (task.Exception != null)
+                        {
+                            DebugHelper.WriteException(task.Exception, "AfterUpload: Failed to show window");
+                        }
+                    }, TaskContinuationOptions.OnlyOnFaulted);
                 }
                 else
                 {
