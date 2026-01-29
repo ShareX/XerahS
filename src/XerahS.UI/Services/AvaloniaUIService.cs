@@ -140,12 +140,15 @@ namespace XerahS.UI.Services
                 viewModel.RequestClose += () => window.Close();
                 window.Closed += (_, _) => viewModel.Dispose();
 
-                if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+                    desktop.MainWindow != null)
                 {
-                    window.Owner = desktop.MainWindow;
+                    window.Show(desktop.MainWindow);
                 }
-
-                window.Show();
+                else
+                {
+                    window.Show();
+                }
             });
         }
     }

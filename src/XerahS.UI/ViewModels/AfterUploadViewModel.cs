@@ -34,6 +34,7 @@ using SkiaSharp;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using XerahS.Core;
+using DebugHelper = XerahS.Common.DebugHelper;
 
 namespace XerahS.UI.ViewModels;
 
@@ -121,7 +122,7 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
         PrimaryUrl = ShortenedUrl ?? RawUrl ?? string.Empty;
         FilePath = string.IsNullOrWhiteSpace(info.FilePath) ? null : info.FilePath;
         FileName = string.IsNullOrWhiteSpace(info.FileName) ? "Upload" : info.FileName;
-        FileSizeText = HasLocalFile ? FileHelpers.GetFileSizeReadable(info.FilePath) : null;
+        FileSizeText = HasLocalFile ? FileHelpers.GetFileSizeReadable(FilePath!) : null;
         UploaderHost = info.UploaderHost;
         DataType = info.DataType;
 
