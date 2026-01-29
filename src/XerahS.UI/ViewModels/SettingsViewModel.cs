@@ -430,6 +430,19 @@ namespace XerahS.UI.ViewModels
         }
 
         // Task Settings - After Upload
+        public bool ShowAfterUploadWindow
+        {
+            get => ActiveTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.ShowAfterUploadWindow);
+            set
+            {
+                if (value)
+                    ActiveTaskSettings.AfterUploadJob |= AfterUploadTasks.ShowAfterUploadWindow;
+                else
+                    ActiveTaskSettings.AfterUploadJob &= ~AfterUploadTasks.ShowAfterUploadWindow;
+                OnPropertyChanged();
+            }
+        }
+
         public bool CopyURLToClipboard
         {
             get => ActiveTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.CopyURLToClipboard);

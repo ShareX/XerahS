@@ -105,6 +105,16 @@ public partial class AfterCaptureViewModel : ViewModelBase
         }
     }
 
+    public bool ShowAfterUploadWindow
+    {
+        get => AfterUploadTasks.HasFlag(AfterUploadTasks.ShowAfterUploadWindow);
+        set
+        {
+            SetAfterUploadFlag(AfterUploadTasks.ShowAfterUploadWindow, value);
+            OnPropertyChanged();
+        }
+    }
+
     public bool UseURLShortener
     {
         get => AfterUploadTasks.HasFlag(AfterUploadTasks.UseURLShortener);
@@ -150,6 +160,7 @@ public partial class AfterCaptureViewModel : ViewModelBase
     partial void OnAfterUploadTasksChanged(AfterUploadTasks value)
     {
         OnPropertyChanged(nameof(CopyURLToClipboard));
+        OnPropertyChanged(nameof(ShowAfterUploadWindow));
         OnPropertyChanged(nameof(UseURLShortener));
         OnPropertyChanged(nameof(ShareURL));
     }

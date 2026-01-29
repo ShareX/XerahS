@@ -69,6 +69,9 @@
                   CornerRadius="4"
                   Padding="16">
             <StackPanel Spacing="16">
+              <CheckBox Content="Show after upload window"
+                        IsChecked="{Binding ShowAfterUploadWindow}"
+                        AutomationProperties.Name="Show After Upload Window"/>
               <CheckBox Content="Copy URL to clipboard" 
                         IsChecked="{Binding CopyURLToClipboard}"
                         AutomationProperties.Name="Copy URL to Clipboard"/>

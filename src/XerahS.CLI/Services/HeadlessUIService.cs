@@ -51,5 +51,11 @@ namespace XerahS.CLI.Services
             Console.WriteLine("[INFO] After-capture window not available in CLI mode. Using configured defaults.");
             return Task.FromResult((afterCapture, afterUpload, false));
         }
+
+        public Task ShowAfterUploadWindowAsync(AfterUploadWindowInfo info)
+        {
+            Console.WriteLine("[INFO] After-upload window not available in CLI mode.");
+            return Task.CompletedTask;
+        }
     }
 }

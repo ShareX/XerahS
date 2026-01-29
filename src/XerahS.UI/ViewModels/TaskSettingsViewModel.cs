@@ -697,6 +697,19 @@ namespace XerahS.UI.ViewModels
 
         #region After Upload Tasks
 
+        public bool ShowAfterUploadWindow
+        {
+            get => _settings.AfterUploadJob.HasFlag(AfterUploadTasks.ShowAfterUploadWindow);
+            set
+            {
+                if (ShowAfterUploadWindow != value)
+                {
+                    UpdateAfterUploadTask(AfterUploadTasks.ShowAfterUploadWindow, value);
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public bool CopyURLToClipboard
         {
             get => _settings.AfterUploadJob.HasFlag(AfterUploadTasks.CopyURLToClipboard);

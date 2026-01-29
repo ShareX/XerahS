@@ -355,6 +355,9 @@
                                                FontSize="12" 
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
                                                Margin="0,0,0,4"/>
+                                    <CheckBox IsChecked="{Binding ShowAfterUploadWindow}" 
+                                              Content="Show after upload window"
+                                              AutomationProperties.Name="Show After Upload Window"/>
                                     <CheckBox IsChecked="{Binding CopyURLToClipboard}" 
                                               Content="Copy URL to clipboard"/>
                                     <CheckBox IsChecked="{Binding UseURLShortener}" 
