@@ -105,6 +105,12 @@
                         <ui:SymbolIconSource Symbol="Code"/>
                     </ui:NavigationViewItem.IconSource>
                  </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem Content="About" Tag="About" AutomationProperties.Name="About View">
+                    <ui:NavigationViewItem.IconSource>
+                        <ui:SymbolIconSource Symbol="Important"/>
+                    </ui:NavigationViewItem.IconSource>
+                </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
             
             <ui:NavigationView.Content>

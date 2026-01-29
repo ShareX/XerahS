@@ -199,13 +199,14 @@ namespace XerahS.UI.Views
                     case "Settings_App":
                         contentFrame.Content = new ApplicationSettingsView();
                         break;
-
-
                     case "Settings_Dest":
                         contentFrame.Content = new DestinationSettingsView();
                         break;
                     case "Debug":
                         contentFrame.Content = new DebugView();
+                        break;
+                    case "About":
+                        contentFrame.Content = new AboutView();
                         break;
                 }
             }
