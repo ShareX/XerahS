@@ -12,25 +12,9 @@
         Height="640"
         MinWidth="760"
         MinHeight="520"
-        FontFamily="Segoe UI Variable"
         WindowStartupLocation="CenterOwner">
 
-  <Window.Resources>
-    <LinearGradientBrush x:Key="AfterUploadBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
-      <GradientStop Color="#F4F6FA" Offset="0"/>
-      <GradientStop Color="#E9EEF6" Offset="1"/>
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="AfterUploadPaneBrush" StartPoint="0,0" EndPoint="0,1">
-      <GradientStop Color="#FFFFFF" Offset="0"/>
-      <GradientStop Color="#F2F5FA" Offset="1"/>
-    </LinearGradientBrush>
-    <SolidColorBrush x:Key="AfterUploadAccentBrush" Color="#1F6F63"/>
-  </Window.Resources>
-
   <Window.Styles>
-    <Style Selector="Window">
-      <Setter Property="Background" Value="{StaticResource AfterUploadBackgroundBrush}"/>
-    </Style>
     <Style Selector="TextBlock.section-header">
       <Setter Property="FontSize" Value="16"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
@@ -42,7 +26,7 @@
     <Style Selector="TextBox.readonly">
       <Setter Property="IsReadOnly" Value="True"/>
       <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
-      <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
       <Setter Property="BorderThickness" Value="1"/>
       <Setter Property="CornerRadius" Value="6"/>
     </Style>
@@ -54,9 +38,9 @@
 
   <Grid RowDefinitions="Auto, *, Auto" Margin="24" RowSpacing="20">
     <Border Grid.Row="0"
-            Background="{StaticResource AfterUploadPaneBrush}"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
             CornerRadius="12"
-            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
             BorderThickness="1"
             Padding="16">
       <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto, Auto" RowSpacing="6">
@@ -75,7 +59,7 @@
                    Grid.Column="1"
                    Text="{Binding AutoCloseText}"
                    IsVisible="{Binding IsAutoCloseEnabled}"
-                   Foreground="{StaticResource AfterUploadAccentBrush}"
+                   Foreground="{DynamicResource AccentFillColorDefaultBrush}"
                    FontWeight="SemiBold"
                    AutomationProperties.Name="Auto Close Countdown"/>
         <TextBox Grid.Row="2"
@@ -98,8 +82,8 @@
         </StackPanel>
 
         <Border Grid.Row="1"
-                Background="{StaticResource AfterUploadPaneBrush}"
-                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="10"
                 Padding="8">
@@ -147,8 +131,8 @@
         </StackPanel>
 
         <Border Grid.Row="1"
-                Background="{StaticResource AfterUploadPaneBrush}"
-                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="10"
                 Padding="12">
@@ -198,8 +182,8 @@
 
     <!-- Action Bar -->
     <Border Grid.Row="2"
-            Background="{StaticResource AfterUploadPaneBrush}"
-            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
             BorderThickness="1"
             CornerRadius="10"
             Padding="12">
