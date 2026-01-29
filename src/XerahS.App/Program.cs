@@ -64,7 +64,7 @@ namespace XerahS.App
             dh.WriteLine("Running as first instance (single instance mode enabled).");
 
             var version = XerahS.Common.AppResources.Version;
-            dh.WriteLine($"Version: {version} Dev");
+            dh.WriteLine($"Version: {version}");
 
 #if DEBUG
             dh.WriteLine("Build: Debug");

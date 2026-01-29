@@ -34,7 +34,8 @@ namespace XerahS.Common
         public static readonly string ProductName = AppName;
         
         public static readonly string Version = GetVersion();
-        public static readonly string ProductNameWithVersion = ProductName + " " + Version;
+        public static bool Dev { get; } = true;
+        public static readonly string ProductNameWithVersion = ProductName + " " + Version + (Dev ? " Preview" : "");
 
         private static string GetProductName()
         {
