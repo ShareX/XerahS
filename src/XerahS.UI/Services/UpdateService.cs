@@ -77,7 +77,7 @@ public class UpdateService : IDisposable
 
         var settings = SettingsManager.Settings;
 
-        _updateManager = new GitHubUpdateManager("ShareX", "ShareX")
+        _updateManager = new GitHubUpdateManager("ShareX", "XerahS")
         {
             IsPortable = IsPortableBuild(),
             CheckPreReleaseUpdates = settings.CheckPreReleaseUpdates ||
