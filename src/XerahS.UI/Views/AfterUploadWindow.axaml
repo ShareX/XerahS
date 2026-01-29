@@ -24,11 +24,12 @@
     </Style>
     <Style Selector="TextBlock.caption">
       <Setter Property="FontSize" Value="12"/>
-      <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
     </Style>
     <Style Selector="TextBox.readonly">
       <Setter Property="IsReadOnly" Value="True"/>
       <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
       <Setter Property="BorderThickness" Value="1"/>
       <Setter Property="CornerRadius" Value="6"/>
@@ -102,13 +103,15 @@
                              IsVisible="{Binding IsHeader}"
                              FontSize="13"
                              FontWeight="SemiBold"
-                             Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                   <StackPanel IsVisible="{Binding IsSelectable}" Spacing="2">
-                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Label}"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     <TextBlock Text="{Binding Value}"
                                FontSize="12"
                                TextTrimming="CharacterEllipsis"
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                   </StackPanel>
                 </StackPanel>
               </DataTemplate>
