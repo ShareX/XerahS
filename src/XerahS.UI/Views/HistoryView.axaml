@@ -23,8 +23,7 @@
                       InputGesture="Enter"/>
             <MenuItem Header="Open File" 
                       Command="{Binding $parent[UserControl].DataContext.OpenFileCommand}"
-                      CommandParameter="{Binding}"
-                      InputGesture="Ctrl+Click"/>
+                      CommandParameter="{Binding}"/>
             <MenuItem Header="Show in Explorer" 
                       Command="{Binding $parent[UserControl].DataContext.OpenFolderCommand}"
                       CommandParameter="{Binding}"/>

@@ -57,3 +57,4 @@ if (string.IsNullOrEmpty(workflowId)) return;
 - **Patterns**: Follow existing patterns in each project area.
 - **Comments**: Add small comments only when necessary to explain non-obvious logic.
 - **Minimalism**: Keep changes minimal and targeted.
+- **Encoding**: Preserve intended Unicode characters in user-facing strings; prefer C# Unicode escape sequences (e.g., `\u26A0\uFE0F`, `\u2713`) to avoid mojibake, and keep files UTF-8.
