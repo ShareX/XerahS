@@ -75,6 +75,8 @@ namespace XerahS.UI.ViewModels
 
         public UpdateChannel[] UpdateChannels => (UpdateChannel[])Enum.GetValues(typeof(UpdateChannel));
 
+        public ApplicationConfig ApplicationConfig => SettingsManager.Settings;
+
         [ObservableProperty]
         private bool _watchFolderEnabled;
 

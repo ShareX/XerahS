@@ -5,6 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              xmlns:vm="using:XerahS.UI.ViewModels"
              xmlns:views="using:XerahS.UI.Views.Controls"
+             xmlns:controls="using:XerahS.UI.Controls"
              x:Class="XerahS.UI.Views.ApplicationSettingsView"
              x:DataType="vm:SettingsViewModel">
 
@@ -352,6 +353,18 @@
                                 <StackPanel Spacing="16">
                                     <CheckBox IsChecked="{Binding UseModernCapture}" Content="Use Modern Screen Capture (Direct3D11)" AutomationProperties.Name="Use Modern Capture"/>
                                 </StackPanel>
+                            </Border>
+                        </StackPanel>
+                        
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Application Configuration" FontWeight="SemiBold"/>
+                            <Border BorderThickness="1"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    CornerRadius="4" Padding="16">
+                                <controls:PropertyGrid x:Name="ApplicationConfigPropertyGrid"
+                                                       SelectedObject="{Binding ApplicationConfig}"
+                                                       AutomationProperties.Name="Application Config Properties"/>
                             </Border>
                         </StackPanel>
                     </StackPanel>
