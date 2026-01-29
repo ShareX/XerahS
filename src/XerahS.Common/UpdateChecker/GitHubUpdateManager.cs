@@ -35,6 +35,12 @@ namespace XerahS.Common
         public bool IsPortable { get; set; } // If current build is portable then download URL will be opened in browser instead of downloading it
         public bool CheckPreReleaseUpdates { get; set; }
 
+        /// <summary>
+        /// Callback invoked when an update is available. Returns true if user accepted the update.
+        /// Set this callback to integrate with UI for showing update dialogs.
+        /// </summary>
+        public Func<UpdateChecker, Task<bool>>? ShowUpdateDialogCallback { get; set; }
+
         private Timer? updateTimer = null;
         private readonly object updateTimerLock = new object();
 
@@ -78,23 +84,22 @@ namespace XerahS.Common
         {
             if (AutoUpdateEnabled)
             {
-                // TODO: Check if update dialog is already open (requires Avalonia UI implementation)
-                // if (!UpdateMessageBox.IsOpen) 
+                UpdateChecker updateChecker = CreateUpdateChecker();
+                await updateChecker.CheckUpdateAsync();
+
+                if (updateChecker.Status == UpdateStatus.UpdateAvailable)
                 {
-                    UpdateChecker updateChecker = CreateUpdateChecker();
-                    await updateChecker.CheckUpdateAsync();
+                    DebugHelper.WriteLine($"Update available: {updateChecker.LatestVersion}");
 
-                    // TODO: Implement UpdateMessageBox using Avalonia UI
-                    if (updateChecker.Status == UpdateStatus.UpdateAvailable)
+                    if (ShowUpdateDialogCallback != null)
                     {
-                        DebugHelper.WriteLine($"Update available: {updateChecker.LatestVersion}");
-                        // if (UpdateMessageBox.Start(updateChecker, firstUpdateCheck) == DialogResult.No)
-                        // {
-                        //     AutoUpdateEnabled = false;
-                        // }
+                        bool userAccepted = await ShowUpdateDialogCallback(updateChecker);
+                        if (!userAccepted)
+                        {
+                            // User declined - disable auto-update for this session
+                            AutoUpdateEnabled = false;
+                        }
                     }
-
-                    //firstUpdateCheck = false;
                 }
             }
         }
