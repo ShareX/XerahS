@@ -69,8 +69,11 @@ class Program
 
             // Create zip containing the .app folder
             ZipFile.CreateFromDirectory(appBundlePath, zipPath, CompressionLevel.Optimal, true);
-            
             Console.WriteLine($"Created macOS application archive: {zipName}");
+
+            // Package Plugins if they exist
+            PackagePlugins(publishDir, outputDir, version, arch);
+
             return; // Skip tarball/deb for macOS app bundle
         }
 
@@ -140,6 +143,33 @@ class Program
             Console.WriteLine($"Error reading version from {propsPath}: {ex.Message}");
         }
         return null;
+    }
+
+    static void PackagePlugins(string publishDir, string outputDir, string version, string arch)
+    {
+        string pluginsDir = Path.Combine(publishDir, "Plugins");
+        if (!Directory.Exists(pluginsDir)) return;
+
+        Console.WriteLine("Found Plugins folder, packaging plugins...");
+        foreach (var pluginPath in Directory.GetDirectories(pluginsDir))
+        {
+            try 
+            {
+                string pluginId = Path.GetFileName(pluginPath); // e.g. amazons3
+                string zipName = $"{pluginId}-{version}-{arch}.zip";
+                string zipPath = Path.Combine(outputDir, zipName);
+
+                if (File.Exists(zipPath)) File.Delete(zipPath);
+
+                // Zip the plugin folder (e.g. zip content will be amazons3/...)
+                ZipFile.CreateFromDirectory(pluginPath, zipPath, CompressionLevel.Optimal, true);
+                Console.WriteLine($"Created plugin archive: {zipName}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to package plugin {pluginPath}: {ex.Message}");
+            }
+        }
     }
 
     static void CreateTarball(string sourceDir, string outputPath)

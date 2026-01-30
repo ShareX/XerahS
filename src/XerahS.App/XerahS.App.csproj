@@ -52,7 +52,7 @@
     </PropertyGroup>
     <MakeDir Directories="$(_MacMacOS);$(_MacResources)" />
     <ItemGroup>
-      <_MacPublishFiles Include="$(PublishDir)**" Exclude="$(PublishDir)*.app/**;$(PublishDir)*.pdb;$(PublishDir)*.xml" />
+      <_MacPublishFiles Include="$(PublishDir)**" Exclude="$(PublishDir)*.app/**;$(PublishDir)*.pdb;$(PublishDir)*.xml;$(PublishDir)Plugins/**" />
     </ItemGroup>
     <Copy SourceFiles="@(_MacPublishFiles)"
           DestinationFolder="$(_MacMacOS)/%(_MacPublishFiles.RecursiveDir)"
@@ -97,6 +97,19 @@
           Condition="Exists('$(_MacPlist)')" />
     <Exec Command="/bin/sh -c 'if /usr/libexec/PlistBuddy -c &quot;Print :CFBundleIconName&quot; &quot;$(_MacPlist)&quot; &gt;/dev/null 2&gt;&amp;1; then /usr/libexec/PlistBuddy -c &quot;Set :CFBundleIconName Logo&quot; &quot;$(_MacPlist)&quot;; else /usr/libexec/PlistBuddy -c &quot;Add :CFBundleIconName string Logo&quot; &quot;$(_MacPlist)&quot;; fi'"
           Condition="Exists('$(_MacPlist)')" />
+  </Target>
+
+  <!-- Bundle Default Plugins -->
+  <ItemGroup>
+    <_DefaultPlugins Include="..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" PluginId="amazons3" />
+    <_DefaultPlugins Include="..\Plugins\ShareX.Imgur.Plugin\XerahS.Imgur.Plugin.csproj" PluginId="imgur" />
+  </ItemGroup>
+
+  <Target Name="BundlePlugins" AfterTargets="Publish">
+    <Message Text="Bundling default plugin: %(_DefaultPlugins.PluginId)" Importance="High" />
+    <MSBuild Projects="%(_DefaultPlugins.Identity)"
+             Targets="Restore;Publish"
+             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=false;PublishDir=$(MSBuildProjectDirectory)/$(PublishDir)Plugins/%(_DefaultPlugins.PluginId)/" />
   </Target>
 </Project>
 
