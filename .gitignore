@@ -34,3 +34,4 @@ artifacts/
 *.deb
 *.gz
 *.zip
+*.exe

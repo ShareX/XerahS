@@ -14,91 +14,105 @@ if (!(Test-Path $isccPath)) {
     Write-Error "Inno Setup Compiler (ISCC.exe) not found at: $isccPath"
 }
 
-# Get Version (Optional, ISCC extracts it from file, but good for logging)
-# $version = dotnet msbuild $project -getProperty:Version
+$version = ""
+# Try to detect version from Directory.Build.props
+$propsFile = Join-Path $root "Directory.Build.props"
+if (Test-Path $propsFile) {
+    $xml = [xml](Get-Content $propsFile)
+    if ($xml.Project.PropertyGroup.Version) {
+        $version = $xml.Project.PropertyGroup.Version
+    }
+}
 
-Write-Host "Building XerahS for Windows..."
+if ([string]::IsNullOrEmpty($version)) {
+    # Fallback to msbuild
+    $version = dotnet msbuild $project -getProperty:Version
+    $version = $version.Trim()
+}
 
-# 1. Publish
-# Note: The .iss expects the output in src\XerahS.App\bin\Release\net10.0-windows10.0.26100.0 without "publish" folder appended?
-# Checking .iss line 4: MyAppReleaseDirectory ... "src\XerahS.App\bin\Release\net10.0-windows10.0.26100.0"
-# dotnet publish usually puts it in bin\Release\target\publish. 
-# But the .iss seems to point to the build output directory, not publish directory?
-# "bin\Release\net10.0-windows..." 
-# Let's check if we should publish to that specific directory or just build.
-# Usually for an installer you want 'publish' output to get all dependencies.
-# If the .iss points to the build output, it might miss dependencies if not self-contained or if they are not copied to output.
-# However, the user said "automatically build the RELEASE version".
-# Let's try to stick to what the .iss expects. If it points to `bin\Release\net...`, a `dotnet build -c Release` should populate that.
-# IF we want self-contained or single-file, we usually use publish. 
-# The .iss file at line 4: ... "src\XerahS.App\bin\Release\net10.0-windows10.0.26100.0". 
-# This looks like standard build output.
-# I will run `dotnet publish` but output to that directory to ensure we have a clean full set of files, 
-# OR just run `dotnet build -c Release`.
-# Given the user wants "AUTOMATICALLY BUILD", `dotnet publish` is safer for distribution to ensure all deps are present.
-# But if I publish to `.../publish` and the .iss looks in `.../`, it won't see the published files.
-# AND the .iss copies `*.dll` etc.
-# I will use `dotnet publish` and force the output path to match what the .iss expects, ensuring a self-contained/ready-to-deploy folder.
-# BUT wait, the .iss defines MyAppReleaseDirectory. 
-# I shouldn't change the .iss if I can avoid it.
-# I will run `dotnet publish` and use `-o` to output exactly where the .iss looks for files.
+Write-Host "Building XerahS version $version for Windows..."
 
-$publishOutput = Join-Path $root "src\XerahS.App\bin\Release\net10.0-windows10.0.26100.0"
-Write-Host "Publishing to $publishOutput..."
-# Ensure clean
-if (Test-Path $publishOutput) { Remove-Item -Recurse -Force $publishOutput }
+$archs = @("win-x64", "win-arm64")
 
-dotnet publish $project -c Release -p:OS=Windows_NT -r win-x64 --self-contained true -o $publishOutput
+foreach ($arch in $archs) {
+    Write-Host "`n-------------------------------------------"
+    Write-Host "Building for $arch..."
+    Write-Host "-------------------------------------------"
 
-# 1.5 Publish Plugins
-Write-Host "Publishing Plugins..."
-$pluginsDir = Join-Path $publishOutput "Plugins"
-if (!(Test-Path $pluginsDir)) { New-Item -ItemType Directory -Force -Path $pluginsDir | Out-Null }
+    # 1. Publish
+    $publishOutput = Join-Path $root "build\publish-temp-$arch"
+    Write-Host "Publishing to $publishOutput..."
+    # Ensure clean
+    if (Test-Path $publishOutput) { Remove-Item -Recurse -Force $publishOutput }
 
-$pluginProjects = Get-ChildItem -Path (Join-Path $root "src\Plugins") -Filter "*.csproj" -Recurse
-foreach ($plugin in $pluginProjects) {
-    Write-Host "Publishing Plugin: $($plugin.Name)"
-    
-    # Try to determine plugin ID from plugin.json
-    $pluginId = $plugin.BaseName
-    $pluginJsonPath = Join-Path $plugin.Directory.FullName "plugin.json"
-    if (Test-Path $pluginJsonPath) {
-        try {
-            $jsonContent = Get-Content $pluginJsonPath -Raw | ConvertFrom-Json
-            if ($jsonContent.pluginId) {
-                $pluginId = $jsonContent.pluginId
-                Write-Host "  Found Plugin ID: $pluginId"
+    # Enable PublishSingleFile=false to ensure DLLs are present for ISCC *.dll match
+    # Pass SkipBundlePlugins=true to avoid path resolution bugs in custom MSBuild targets
+    # Disable nodeReuse to avoid file locking issues
+    dotnet publish $project -c Release -p:OS=Windows_NT -r $arch -p:PublishSingleFile=false -p:SkipBundlePlugins=true -p:nodeReuse=false --self-contained true -o $publishOutput
+
+    # 1.5 Publish Plugins
+    Write-Host "Publishing Plugins..."
+    $pluginsDir = Join-Path $publishOutput "Plugins"
+    if (!(Test-Path $pluginsDir)) { New-Item -ItemType Directory -Force -Path $pluginsDir | Out-Null }
+
+    $pluginProjects = Get-ChildItem -Path (Join-Path $root "src\Plugins") -Filter "*.csproj" -Recurse
+    foreach ($plugin in $pluginProjects) {
+        Write-Host "Publishing Plugin: $($plugin.Name)"
+        
+        # Try to determine plugin ID from plugin.json
+        $pluginId = $plugin.BaseName
+        $pluginJsonPath = Join-Path $plugin.Directory.FullName "plugin.json"
+        if (Test-Path $pluginJsonPath) {
+            try {
+                $jsonContent = Get-Content $pluginJsonPath -Raw | ConvertFrom-Json
+                if ($jsonContent.pluginId) {
+                    $pluginId = $jsonContent.pluginId
+                    Write-Host "  Found Plugin ID: $pluginId"
+                }
+            } catch {
+                Write-Warning "  Failed to read plugin.json for $($plugin.Name)"
             }
-        } catch {
-            Write-Warning "  Failed to read plugin.json for $($plugin.Name)"
         }
+
+        $pluginOutput = Join-Path $pluginsDir $pluginId
+        dotnet publish $plugin.FullName -c Release -p:OS=Windows_NT -r $arch -p:nodeReuse=false --self-contained false -o $pluginOutput
+
+        # Note: Deduplication removed to prevent intermittent file locking issues during build loop
     }
 
-    $pluginOutput = Join-Path $pluginsDir $pluginId
-    dotnet publish $plugin.FullName -c Release -p:OS=Windows_NT -r win-x64 --self-contained true -o $pluginOutput
-
-    # Cleanup: Remove files that already exist in the main app directory (deduplication)
-    $pluginFiles = Get-ChildItem -Path $pluginOutput
-    foreach ($file in $pluginFiles) {
-        $mainAppFile = Join-Path $publishOutput $file.Name
-        if (Test-Path $mainAppFile) {
-            # Write-Host "Removing duplicate: $($file.Name)"
-            Remove-Item $file.FullName
-        }
+    # 2. Compile Installer
+    Write-Host "Compiling Installer with Inno Setup..."
+    $setupBaseName = "XerahS-$version-$arch"
+    $setupExe = "$setupBaseName.exe"
+    
+    # We override OutputDir to point directly to our dist folder and OutputBaseFilename for the requested naming.
+    # We also override MyAppReleaseDirectory to ensure the compiler looks in the exact publish folder we just created.
+    $archLog = "iscc_log_$arch.txt"
+    & $isccPath "/d""MyAppReleaseDirectory=$publishOutput""" "/d""OutputBaseFilename=$setupBaseName""" "/d""OutputDir=$outputDir""" $issScript | Out-File -FilePath $archLog -Encoding UTF8
+    
+    if ($LASTEXITCODE -ne 0) {
+        throw "ISCC Compiler failed with exit code $LASTEXITCODE. See $archLog for details."
     }
+
+    $compiledSetup = Join-Path $outputDir $setupExe
+    if (Test-Path $compiledSetup) {
+        Write-Host "Success: Generated $setupExe in dist."
+    } else {
+         # Fallback search in case OutputDir override didn't behave as expected in this ISCC version
+         $fallbackSearchDir = Join-Path $root "Output"
+         $setupFiles = Get-ChildItem -Path $fallbackSearchDir -Filter "$setupBaseName.exe" -ErrorAction SilentlyContinue
+         if ($setupFiles) {
+            foreach ($file in $setupFiles) {
+                Write-Host "Moving $($file.Name) from Output to dist..."
+                Move-Item -Path $file.FullName -Destination $outputDir -Force
+            }
+         } else {
+            throw "Failed to locate generated installer $setupExe"
+         }
+    }
+
+    # Cleanup temp publish folder
+    Remove-Item -Recurse -Force $publishOutput
 }
 
-# 2. Compile Installer
-Write-Host "Compiling Installer with Inno Setup..."
-& $isccPath $issScript
-
-# 3. Move Output
-# .iss defines OutputDir={#MyAppRootDirectory}\Output
-# We want to move the generated setup file to dist/
-$setupFiles = Get-ChildItem -Path $innoOutputDir -Filter "*-setup.exe"
-foreach ($file in $setupFiles) {
-    Write-Host "Moving $($file.Name) to dist..."
-    Move-Item -Path $file.FullName -Destination $outputDir -Force
-}
-
-Write-Host "Done! Installer in $outputDir"
+Write-Host "`nAll builds complete! Installers in $outputDir"

@@ -105,18 +105,18 @@
     <_DefaultPlugins Include="..\Plugins\ShareX.Imgur.Plugin\XerahS.Imgur.Plugin.csproj" PluginId="imgur" />
   </ItemGroup>
 
-  <Target Name="BundlePlugins" AfterTargets="Publish">
+  <Target Name="BundlePlugins" AfterTargets="Publish" Condition="'$(SkipBundlePlugins)' != 'true'">
     <Message Text="Bundling default plugin: %(_DefaultPlugins.PluginId)" Importance="High" />
     <MSBuild Projects="%(_DefaultPlugins.Identity)"
              Targets="Restore;Publish"
-             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=false;PublishDir=$(MSBuildProjectDirectory)/$(PublishDir)Plugins/%(_DefaultPlugins.PluginId)/" />
+             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=false;PublishDir=$(PublishDir)Plugins/%(_DefaultPlugins.PluginId)/" />
   </Target>
 
-  <Target Name="BuildPlugins" AfterTargets="Build">
+  <Target Name="BuildPlugins" AfterTargets="Build" Condition="'$(SkipBundlePlugins)' != 'true'">
     <Message Text="Building default plugin for dev: %(_DefaultPlugins.PluginId)" Importance="High" />
     <MSBuild Projects="%(_DefaultPlugins.Identity)"
              Targets="Restore;Build"
-             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);OutputPath=$(MSBuildProjectDirectory)\$(OutDir)Plugins\%(_DefaultPlugins.PluginId)\" />
+             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);OutputPath=$(OutDir)Plugins\%(_DefaultPlugins.PluginId)\" />
   </Target>
 </Project>
 
