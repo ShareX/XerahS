@@ -13,12 +13,21 @@
     <DefineConstants Condition="'$(OS)' == 'Windows_NT'">$(DefineConstants);WINDOWS</DefineConstants>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(DefineConstants);LINUX</DefineConstants>
+    <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
+    <SelfContained Condition="'$(Configuration)' == 'Release'">true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) OR $(RuntimeIdentifier.StartsWith('osx'))">
-    <Content Include="libscreencapturekit_bridge.dylib" Condition="Exists('libscreencapturekit_bridge.dylib')">
+    <Content Include="..\..\native\macos\libscreencapturekit_bridge.dylib">
+      <Link>libscreencapturekit_bridge.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <Target Name="BuildNativeMacOS" BeforeTargets="BeforeBuild" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <Message Text="Building native macOS library..." Importance="high" />
+    <Exec Command="make -C ../../native/macos" />
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" Version="11.3.9" />
@@ -43,7 +52,7 @@
     </PropertyGroup>
     <MakeDir Directories="$(_MacMacOS);$(_MacResources)" />
     <ItemGroup>
-      <_MacPublishFiles Include="$(PublishDir)**" />
+      <_MacPublishFiles Include="$(PublishDir)**" Exclude="$(PublishDir)*.app/**;$(PublishDir)*.pdb;$(PublishDir)*.xml" />
     </ItemGroup>
     <Copy SourceFiles="@(_MacPublishFiles)"
           DestinationFolder="$(_MacMacOS)/%(_MacPublishFiles.RecursiveDir)"

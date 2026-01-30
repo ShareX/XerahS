@@ -3,8 +3,8 @@
 # Requires: Xcode Command Line Tools, macOS 12.3+
 
 CC = clang
-FRAMEWORKS = -framework ScreenCaptureKit -framework Foundation -framework CoreGraphics -framework AppKit
-CFLAGS = -fobjc-arc -O2
+FRAMEWORKS = -framework ScreenCaptureKit -framework Foundation -framework CoreGraphics -framework AppKit -framework AVFoundation -framework CoreMedia -framework CoreVideo
+CFLAGS = -fobjc-arc -O2 -arch x86_64 -arch arm64
 OUTPUT = libscreencapturekit_bridge.dylib
 SOURCE = screencapturekit_bridge.m
 
@@ -25,13 +25,3 @@ install: $(OUTPUT)
 	cp $(OUTPUT) /usr/local/lib/
 	@echo "Done. You may need to run: install_name_tool -id @rpath/$(OUTPUT) /usr/local/lib/$(OUTPUT)"
 
-# For development: copy to project output
-dev: $(OUTPUT)
-	@if [ -d "../../src/ShareX.Avalonia/bin/Debug/net10.0" ]; then \
-		cp $(OUTPUT) ../../src/ShareX.Avalonia/bin/Debug/net10.0/; \
-		echo "Copied to Debug output"; \
-	fi
-	@if [ -d "../../src/ShareX.Avalonia/bin/Release/net10.0" ]; then \
-		cp $(OUTPUT) ../../src/ShareX.Avalonia/bin/Release/net10.0/; \
-		echo "Copied to Release output"; \
-	fi

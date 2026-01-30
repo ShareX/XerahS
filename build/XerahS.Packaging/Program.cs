@@ -41,6 +41,12 @@ class Program
         string publishDir = Path.GetFullPath(args[0]);
         string outputDir = Path.GetFullPath(args[1]);
         string version = args[2];
+        if (version.Equals("auto", StringComparison.OrdinalIgnoreCase))
+        {
+            version = DetectVersionFromProps(publishDir) ?? "1.0.0";
+            Console.WriteLine($"Auto-detected version: {version}");
+        }
+
         string arch = args[3]; // e.g. amd64 for deb, linux-x64 for filename
         string debArch = arch == "linux-x64" ? "amd64" : arch; // map linux-x64 to debian amd64
 
@@ -49,6 +55,24 @@ class Program
         Console.WriteLine($"Output: {outputDir}");
 
         Directory.CreateDirectory(outputDir);
+
+        // Check for macOS App Bundle
+        string appBundlePath = Path.Combine(publishDir, "XerahS.app");
+        if (Directory.Exists(appBundlePath))
+        {
+            Console.WriteLine("Found XerahS.app, creating macOS zip bundle...");
+            string zipName = $"XerahS-{version}-{arch}.zip";
+            string zipPath = Path.Combine(outputDir, zipName);
+            
+            // Delete existing to avoid error
+            if (File.Exists(zipPath)) File.Delete(zipPath);
+
+            // Create zip containing the .app folder
+            ZipFile.CreateFromDirectory(appBundlePath, zipPath, CompressionLevel.Optimal, true);
+            
+            Console.WriteLine($"Created macOS application archive: {zipName}");
+            return; // Skip tarball/deb for macOS app bundle
+        }
 
         // 1. Create .tar.gz (Portable)
         string tarballName = $"XerahS-{version}-{arch}.tar.gz";
@@ -61,6 +85,61 @@ class Program
         string debPath = Path.Combine(outputDir, debName);
         CreateDeb(publishDir, debPath, version, debArch);
         Console.WriteLine($"Created Debian package: {debName}");
+    }
+
+    static string? DetectVersionFromProps(string searchStartPath)
+    {
+        // Try to find Directory.Build.props by walking up from publishDir or current dir
+        // Usually build/XerahS.Packaging is run from repo root, so let's check repo root first
+        
+        string[] candidates = {
+            "Directory.Build.props",
+            "../Directory.Build.props",
+            "../../Directory.Build.props"
+        };
+
+        foreach (var candidate in candidates)
+        {
+            if (File.Exists(candidate))
+            {
+                return ParseVersion(candidate);
+            }
+        }
+
+        // Search recursively up from searchStartPath
+        DirectoryInfo? dir = new DirectoryInfo(searchStartPath);
+        while (dir != null)
+        {
+            string path = Path.Combine(dir.FullName, "Directory.Build.props");
+            if (File.Exists(path))
+            {
+                return ParseVersion(path);
+            }
+            dir = dir.Parent;
+        }
+
+        Console.WriteLine("Warning: Could not locate Directory.Build.props for version detection.");
+        return null;
+    }
+
+    static string? ParseVersion(string propsPath)
+    {
+        try 
+        {
+            string content = File.ReadAllText(propsPath);
+            // Simple string parsing to avoid XML dependency overhead if possible, but Regex is safer
+            // <Version>0.6.1</Version>
+            var match = System.Text.RegularExpressions.Regex.Match(content, @"<Version>(.+?)</Version>");
+            if (match.Success)
+            {
+                return match.Groups[1].Value.Trim();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reading version from {propsPath}: {ex.Message}");
+        }
+        return null;
     }
 
     static void CreateTarball(string sourceDir, string outputPath)
