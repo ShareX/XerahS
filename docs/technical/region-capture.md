@@ -4,7 +4,7 @@ This document outlines the technical differences and implementation details of t
 
 ## Overview
 
-XerahS supports two distinct approaches to region capture, determined by the `WorkflowType` and the underlying `RegionCaptureOptions.CaptureTransparent` property.
+XerahS supports two distinct approaches to region capture, determined by the `WorkflowType` and the underlying `RegionCaptureOptions.UseTransparentOverlay` property.
 
 | Feature | RectangleTransparent | Standard Region Capture |
 | :--- | :--- | :--- |
@@ -30,7 +30,7 @@ This flag is then passed into the `CaptureOptions` object:
 var captureOptions = new CaptureOptions
 {
     // ...
-    CaptureTransparent = useTransparentOverlay,
+    UseTransparentOverlay = useTransparentOverlay,
     // ...
 };
 ```
@@ -46,17 +46,17 @@ var captureService = new RegionCaptureService
     Options = new XerahS.RegionCapture.RegionCaptureOptions
     {
         // ...
-        CaptureTransparent = options?.CaptureTransparent ?? false,
+        UseTransparentOverlay = options?.UseTransparentOverlay ?? false,
     }
 };
 ```
 
 ### 3. Region Capture Logic (`RegionCaptureService.cs`)
 
-The `RegionCaptureService` uses the `CaptureTransparent` property to determine how to render the overlay using `OverlayManager`.
+The `RegionCaptureService` uses the `UseTransparentOverlay` property to determine how to render the overlay using `OverlayManager`.
 
--   **`CaptureTransparent = true`**: The overlay window is created with a transparent background. No initial screenshot is taken. The user sees the live desktop through the overlay.
--   **`CaptureTransparent = false`** (Default): A full-screen screenshot is captured *before* the overlay is shown. This screenshot is rendered as the background of the overlay window, creating a "frozen" effect.
+-   **`UseTransparentOverlay = true`**: The overlay window is created with a transparent background. No initial screenshot is taken. The user sees the live desktop through the overlay.
+-   **`UseTransparentOverlay = false`** (Default): A full-screen screenshot is captured *before* the overlay is shown. This screenshot is rendered as the background of the overlay window, creating a "frozen" effect.
 
 ### Key Files
 
