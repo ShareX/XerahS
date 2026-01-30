@@ -46,5 +46,10 @@ namespace XerahS.Platform.Abstractions
             SKBitmap image,
             AfterCaptureTasks afterCapture,
             AfterUploadTasks afterUpload);
+
+        /// <summary>
+        /// Shows the After Upload window with upload results and actions.
+        /// </summary>
+        Task ShowAfterUploadWindowAsync(AfterUploadWindowInfo info);
     }
 }

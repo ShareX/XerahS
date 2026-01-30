@@ -126,5 +126,30 @@ namespace XerahS.UI.Services
                 return (viewModel.AfterCaptureTasks, viewModel.AfterUploadTasks, viewModel.Cancelled);
             });
         }
+
+        public async Task ShowAfterUploadWindowAsync(AfterUploadWindowInfo info)
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                var viewModel = new AfterUploadViewModel(info);
+                var window = new Views.AfterUploadWindow
+                {
+                    DataContext = viewModel
+                };
+
+                viewModel.RequestClose += () => window.Close();
+                window.Closed += (_, _) => viewModel.Dispose();
+
+                if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+                    desktop.MainWindow != null)
+                {
+                    window.Show(desktop.MainWindow);
+                }
+                else
+                {
+                    window.Show();
+                }
+            });
+        }
     }
 }

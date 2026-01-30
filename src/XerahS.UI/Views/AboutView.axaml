@@ -1,0 +1,96 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:common="using:XerahS.Common"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="XerahS.UI.Views.AboutView">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="24" MaxWidth="800" HorizontalAlignment="Center">
+            
+            <!-- Header -->
+            <StackPanel Spacing="16" HorizontalAlignment="Center" Margin="0,32,0,32">
+                <Image Source="/Assets/Logo.png" Height="128" Width="128" />
+                <TextBlock Text="{x:Static common:AppResources.ProductNameWithVersion}" 
+                           Theme="{StaticResource TitleTextBlockStyle}" 
+                           HorizontalAlignment="Center" />
+                 <TextBlock Text="Copyright (c) 2007-2026 ShareX Team" 
+                            Theme="{StaticResource CaptionTextBlockStyle}" 
+                            HorizontalAlignment="Center" Opacity="0.6"/>
+            </StackPanel>
+
+            <ui:SettingsExpander Header="Links" IsExpanded="True" IconSource="Link">
+                 <ui:SettingsExpander.Items>
+                     <ui:SettingsExpanderItem Content="Website" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Website}">
+                         <ui:SettingsExpanderItem.ActionIconSource>
+                             <ui:SymbolIconSource Symbol="Link"/>
+                         </ui:SettingsExpanderItem.ActionIconSource>
+                     </ui:SettingsExpanderItem>
+                     <ui:SettingsExpanderItem Content="GitHub Project" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.GitHub}">
+                         <ui:SettingsExpanderItem.ActionIconSource>
+                             <ui:SymbolIconSource Symbol="Link"/>
+                         </ui:SettingsExpanderItem.ActionIconSource>
+                     </ui:SettingsExpanderItem>
+                     <ui:SettingsExpanderItem Content="Contributors" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Contributors}">
+                         <ui:SettingsExpanderItem.ActionIconSource>
+                             <ui:SymbolIconSource Symbol="Link"/>
+                         </ui:SettingsExpanderItem.ActionIconSource>
+                     </ui:SettingsExpanderItem>
+                     <ui:SettingsExpanderItem Content="Changelog" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Changelog}">
+                         <ui:SettingsExpanderItem.ActionIconSource>
+                             <ui:SymbolIconSource Symbol="Link"/>
+                         </ui:SettingsExpanderItem.ActionIconSource>
+                     </ui:SettingsExpanderItem>
+                     <ui:SettingsExpanderItem Content="Privacy Policy" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.PrivacyPolicy}">
+                         <ui:SettingsExpanderItem.ActionIconSource>
+                             <ui:SymbolIconSource Symbol="Link"/>
+                         </ui:SettingsExpanderItem.ActionIconSource>
+                     </ui:SettingsExpanderItem>
+                     <ui:SettingsExpanderItem Content="Donate" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Donate}">
+                         <ui:SettingsExpanderItem.ActionIconSource>
+                             <ui:SymbolIconSource Symbol="Link"/>
+                         </ui:SettingsExpanderItem.ActionIconSource>
+                     </ui:SettingsExpanderItem>
+                 </ui:SettingsExpander.Items>
+            </ui:SettingsExpander>
+
+            <ui:SettingsExpander Header="Social" IsExpanded="True" IconSource="People">
+                 <ui:SettingsExpander.Items>
+                     <ui:SettingsExpanderItem Content="X" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.X}">
+                         <ui:SettingsExpanderItem.ActionIconSource>
+                             <ui:SymbolIconSource Symbol="Link"/>
+                         </ui:SettingsExpanderItem.ActionIconSource>
+                     </ui:SettingsExpanderItem>
+                     <ui:SettingsExpanderItem Content="Discord" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Discord}">
+                         <ui:SettingsExpanderItem.ActionIconSource>
+                             <ui:SymbolIconSource Symbol="Link"/>
+                         </ui:SettingsExpanderItem.ActionIconSource>
+                     </ui:SettingsExpanderItem>
+                     <ui:SettingsExpanderItem Content="Reddit" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Reddit}">
+                         <ui:SettingsExpanderItem.ActionIconSource>
+                             <ui:SymbolIconSource Symbol="Link"/>
+                         </ui:SettingsExpanderItem.ActionIconSource>
+                     </ui:SettingsExpanderItem>
+                 </ui:SettingsExpander.Items>
+            </ui:SettingsExpander>
+
+            <ui:SettingsExpander Header="Team" IsExpanded="True" IconSource="Contact">
+                 <ui:SettingsExpander.Items>
+                     <ui:SettingsExpanderItem Content="Jaex" Description="Co-Founder" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Jaex}">
+                         <ui:SettingsExpanderItem.ActionIconSource>
+                             <ui:SymbolIconSource Symbol="Link"/>
+                         </ui:SettingsExpanderItem.ActionIconSource>
+                     </ui:SettingsExpanderItem>
+                     <ui:SettingsExpanderItem Content="McoreD" Description="Co-Founder" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.McoreD}">
+                         <ui:SettingsExpanderItem.ActionIconSource>
+                             <ui:SymbolIconSource Symbol="Link"/>
+                         </ui:SettingsExpanderItem.ActionIconSource>
+                     </ui:SettingsExpanderItem>
+                 </ui:SettingsExpander.Items>
+            </ui:SettingsExpander>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

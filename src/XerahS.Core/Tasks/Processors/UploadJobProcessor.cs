@@ -306,6 +306,46 @@ namespace XerahS.Core.Tasks.Processors
                 // TODO: Implement URL Shortening logic using UploaderFactory
             }
 
+            // Show After Upload window (non-blocking)
+            if (info.TaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.ShowAfterUploadWindow))
+            {
+                if (!PlatformServices.IsInitialized || PlatformServices.UI == null)
+                {
+                    DebugHelper.WriteLine("AfterUpload: ShowAfterUploadWindow requested but UI service is not initialized.");
+                }
+                else if (!string.IsNullOrEmpty(result.URL) && !result.IsError)
+                {
+                    var advancedSettings = info.TaskSettings.AdvancedSettings;
+                    var windowInfo = new Platform.Abstractions.AfterUploadWindowInfo
+                    {
+                        Url = result.URL ?? string.Empty,
+                        ShortenedUrl = result.ShortenedURL,
+                        ThumbnailUrl = result.ThumbnailURL,
+                        DeletionUrl = result.DeletionURL,
+                        FilePath = info.FilePath,
+                        FileName = info.FileName,
+                        DataType = info.DataType.ToString(),
+                        UploaderHost = info.UploaderHost,
+                        ClipboardContentFormat = advancedSettings?.ClipboardContentFormat,
+                        OpenUrlFormat = advancedSettings?.OpenURLFormat,
+                        AutoCloseAfterUploadForm = advancedSettings?.AutoCloseAfterUploadForm ?? false,
+                        PreviewImage = info.Metadata?.Image
+                    };
+
+                    _ = PlatformServices.UI.ShowAfterUploadWindowAsync(windowInfo).ContinueWith(task =>
+                    {
+                        if (task.Exception != null)
+                        {
+                            DebugHelper.WriteException(task.Exception, "AfterUpload: Failed to show window");
+                        }
+                    }, TaskContinuationOptions.OnlyOnFaulted);
+                }
+                else
+                {
+                    DebugHelper.WriteLine("AfterUpload: ShowAfterUploadWindow skipped (URL empty or result error).");
+                }
+            }
+
             // Handle Clipboard Copy
             if (info.TaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.CopyURLToClipboard))
             {

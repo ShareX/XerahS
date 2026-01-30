@@ -12,38 +12,40 @@
         Width="850" Height="650"
         WindowStartupLocation="CenterOwner">
 
-    <Grid RowDefinitions="*,Auto" Margin="10">
+    <Grid RowDefinitions="*,Auto" Margin="12">
         
         <!-- Main Tabs -->
-        <TabControl Grid.Row="0" Margin="0,0,0,10">
+        <TabControl Grid.Row="0" Margin="0,0,0,12">
             
             <!-- Tab 1: Task (Trigger & Job) -->
             <TabItem Header="Task">
                 <ScrollViewer>
-                    <StackPanel Margin="20" Spacing="20">
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="Workflow ID:" FontWeight="SemiBold"/>
+                    <StackPanel Margin="24" Spacing="24">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Workflow ID" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
                             <TextBox Text="{Binding WorkflowId}"
                                      IsReadOnly="True"
                                      FontFamily="Consolas, Monospace"
-                                     Background="{DynamicResource ControlAltFillColorDefaultBrush}"
-                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                     Padding="6,4,6,4"/>
+                                     Theme="{StaticResource SimpleTextBoxStyle}"
+                                     AutomationProperties.Name="Workflow ID (ReadOnly)"/>
                         </StackPanel>
 
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="Description:" FontWeight="SemiBold"/>
-                            <TextBox Text="{Binding Description}" Watermark="Optional description"/>
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Description" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+                            <TextBox Text="{Binding Description}" 
+                                     Watermark="Optional description"
+                                     AutomationProperties.Name="Workflow Description"/>
                         </StackPanel>
 
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="Task:" FontWeight="SemiBold"/>
-                            <Grid ColumnDefinitions="*, 10, *">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Task" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+                            <Grid ColumnDefinitions="*, 12, *">
                                 <ComboBox Grid.Column="0" 
                                           ItemsSource="{Binding JobCategories}" 
                                           SelectedItem="{Binding SelectedJobCategory}"
                                           HorizontalAlignment="Stretch"
-                                          PlaceholderText="Select Category">
+                                          PlaceholderText="Select Category"
+                                          AutomationProperties.Name="Job Category Selection">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Name}"/>
@@ -56,7 +58,8 @@
                                           SelectedItem="{Binding SelectedJobItem}"
                                           IsEnabled="{Binding SelectedJobCategory, Converter={x:Static ObjectConverters.IsNotNull}}"
                                           HorizontalAlignment="Stretch"
-                                          PlaceholderText="Select Task">
+                                          PlaceholderText="Select Task"
+                                          AutomationProperties.Name="Job Task Selection">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Description}"/>
@@ -66,39 +69,45 @@
                             </Grid>
                         </StackPanel>
 
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="Hotkey:" FontWeight="SemiBold"/>
-                            <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Hotkey" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                                 <Border Grid.Column="0" 
-                                        Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" 
-                                        CornerRadius="3" 
+                                        Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4" 
                                         MinWidth="150">
                                     <Button x:Name="HotkeyButton"
                                             Content="{Binding KeyText}"
                                             Background="Transparent"
                                             BorderThickness="0"
                                             FontFamily="Consolas, Monospace"
-                                            FontWeight="Bold"
                                             HorizontalContentAlignment="Center"
                                             VerticalContentAlignment="Center"
                                             Padding="10,6"
                                             HorizontalAlignment="Stretch"
                                             Focusable="True"
                                             Cursor="Hand"
-                                            Click="HotkeyButton_Click"/>
+                                            Click="HotkeyButton_Click"
+                                            AutomationProperties.Name="Hotkey Recorder Button"/>
                                 </Border>
-                                <Button Grid.Column="1" Content="Clear" Command="{Binding ClearCommand}" Margin="10,0,0,0"/>
+                                <Button Grid.Column="1" 
+                                        Content="Clear" 
+                                        Command="{Binding ClearCommand}" 
+                                        AutomationProperties.Name="Clear Hotkey"/>
                             </Grid>
                             <TextBlock Text="Click to record. Press Escape to cancel." 
-                                       FontSize="12" Foreground="Gray" Margin="0,5,0,0"/>
+                                       Theme="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                       Margin="0,4,0,0"/>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
-
-            <!-- Tab 2: Settings (The moved panel) -->
+            
+            <!-- Tab 2: Settings -->
             <TabItem Header="Settings">
-                <!-- We bind the DataContext to the sub-ViewModel -->
                 <views:TaskSettingsPanel DataContext="{Binding TaskSettings}"
                                          HorizontalAlignment="Stretch" 
                                          VerticalAlignment="Stretch"/>
@@ -109,22 +118,25 @@
                 <views:IndexFolderView DataContext="{Binding IndexFolderConfig}"/>
             </TabItem>
 
-            <!-- Tab 3: Destinations -->
+            <!-- Tab 4: Destinations -->
             <TabItem Header="Destinations" IsVisible="{Binding TaskSettings.UploadImageToHost}">
-                <Grid RowDefinitions="Auto, *" Margin="20">
-                    <TextBlock Text="Select Destination" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                <Grid RowDefinitions="Auto, *" Margin="24">
+                    <TextBlock Text="Select Destination" Theme="{StaticResource SubtitleTextBlockStyle}" Margin="0,0,0,16"/>
                     
                     <ComboBox Grid.Row="1" 
                               ItemsSource="{Binding AvailableDestinations}" 
                               SelectedItem="{Binding SelectedDestination}"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Top"
-                              PlaceholderText="Select default destination for this workflow">
+                              PlaceholderText="Select default destination for this workflow"
+                              AutomationProperties.Name="Destination Selection">
                         <ComboBox.ItemTemplate>
                             <DataTemplate DataType="vm:UploaderInstanceViewModel">
                                 <StackPanel Spacing="2">
                                     <TextBlock Text="{Binding DisplayName}"/>
-                                    <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    <TextBlock Text="{Binding Category}" 
+                                               Theme="{StaticResource CaptionTextBlockStyle}" 
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
@@ -134,9 +146,9 @@
         </TabControl>
 
         <!-- Bottom Buttons -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-            <Button Content="OK" Click="OkButton_Click" IsDefault="True" Width="80"/>
-            <Button Content="Cancel" Click="CancelButton_Click" IsCancel="True" Width="80"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+            <Button Content="OK" Click="OkButton_Click" IsDefault="True" Width="80" Classes="accent" AutomationProperties.Name="OK"/>
+            <Button Content="Cancel" Click="CancelButton_Click" IsCancel="True" Width="80" AutomationProperties.Name="Cancel"/>
         </StackPanel>
     </Grid>
 </Window>

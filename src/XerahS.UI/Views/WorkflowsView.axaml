@@ -3,10 +3,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:XerahS.UI.ViewModels"
-             xmlns:views="using:XerahS.UI.Views"
              xmlns:controls="using:XerahS.UI.Views.Controls"
              xmlns:ui="using:FluentAvalonia.UI.Controls"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
              x:Class="XerahS.UI.Views.WorkflowsView"
              x:DataType="vm:WorkflowsViewModel">
 
@@ -15,12 +14,12 @@
         <Grid RowDefinitions="Auto, *">
             
             <!-- Toolbar -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="20">
-                <TextBlock Text="Workflows" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,20,0"/>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" Margin="24">
+                <TextBlock Text="Workflows" Theme="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center" Margin="0,0,12,0"/>
                 
-                <Button Command="{Binding AddWorkflowCommand}" ToolTip.Tip="Add New Workflow">
+                <Button Command="{Binding AddWorkflowCommand}" ToolTip.Tip="Add New Workflow" AutomationProperties.Name="Add New Workflow">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <ui:SymbolIcon Symbol="Add"/>
+                        <ui:SymbolIcon Symbol="Add" FontSize="16"/>
                         <TextBlock Text="Add New"/>
                     </StackPanel>
                 </Button>
@@ -29,49 +28,61 @@
                 
                 <Button Content="Edit" Command="{Binding EditWorkflowCommand}" 
                         IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Edit Selected Workflow"/>
+                        ToolTip.Tip="Edit Selected Workflow"
+                        AutomationProperties.Name="Edit Workflow"/>
 
                 <Button Content="Duplicate" Command="{Binding DuplicateCommand}" 
                         IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Duplicate"/>
+                        ToolTip.Tip="Duplicate"
+                        AutomationProperties.Name="Duplicate Workflow"/>
 
                 <Button Content="Remove" Command="{Binding RemoveWorkflowCommand}" 
                         IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Remove">
+                        ToolTip.Tip="Remove"
+                        AutomationProperties.Name="Remove Workflow">
                 </Button>
 
                 <Button Content="{Binding PinButtonText}" Command="{Binding TogglePinCommand}"
                         IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
                         ToolTip.Tip="Toggle pinning this workflow to the tray menu"
-                        MinWidth="120"/>    
+                        MinWidth="120"
+                        AutomationProperties.Name="Toggle Pin"/>    
                 
                 <ui:CommandBarSeparator />
 
                 <Button Command="{Binding MoveUpCommand}" ToolTip.Tip="Move Up"
-                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <ui:SymbolIcon Symbol="ChevronUp"/>
+                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        AutomationProperties.Name="Move Up">
+                    <ui:SymbolIcon Symbol="ChevronUp" FontSize="16"/>
                 </Button>
 
                 <Button Command="{Binding MoveDownCommand}" ToolTip.Tip="Move Down"
-                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <ui:SymbolIcon Symbol="ChevronDown"/>
+                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        AutomationProperties.Name="Move Down">
+                    <ui:SymbolIcon Symbol="ChevronDown" FontSize="16"/>
                 </Button>
                 
                 <ui:CommandBarSeparator />
 
-                <Button Command="{Binding ResetCommand}" ToolTip.Tip="Reset to Defaults" Content="Reset..." />
+                <Button Command="{Binding ResetCommand}" 
+                        ToolTip.Tip="Reset to Defaults" 
+                        Content="Reset..."
+                        AutomationProperties.Name="Reset Workflows"/>
             </StackPanel>
 
             <!-- List -->
-            <ListBox Grid.Row="1" ItemsSource="{Binding Workflows}" SelectedItem="{Binding SelectedWorkflow}" Margin="20,0,20,20">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <controls:HotkeySelectionControl Margin="0,5"/>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <Border Grid.Row="1" Theme="{StaticResource CardBorderTheme}" Margin="24,0,24,24">
+                <ListBox ItemsSource="{Binding Workflows}" 
+                         SelectedItem="{Binding SelectedWorkflow}" 
+                         Background="Transparent"
+                         AutomationProperties.Name="Workflows List">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <controls:HotkeySelectionControl Margin="0,4"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
         </Grid>
-
-
     </Grid>
 </UserControl>

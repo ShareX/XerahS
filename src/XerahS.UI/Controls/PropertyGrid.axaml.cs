@@ -74,19 +74,29 @@ namespace XerahS.UI.Controls
                 {
                     var attr = p.GetCustomAttribute<BrowsableAttribute>();
                     return attr == null || attr.Browsable;
-                })
-                .OrderBy(p =>
-                {
-                    // Basic ordering, maybe by MetadataToken or Category later
-                    return p.Name;
                 });
 
-            foreach (var prop in properties)
+            var grouped = properties
+                .GroupBy(GetCategory)
+                .OrderBy(group => group.Key, StringComparer.CurrentCultureIgnoreCase);
+
+            foreach (var group in grouped)
             {
-                var row = CreatePropertyRow(obj, prop);
-                if (row != null)
+                var header = new TextBlock
                 {
-                    PropertiesPanel.Children.Add(row);
+                    Text = group.Key,
+                    FontWeight = FontWeight.SemiBold,
+                    Margin = new Thickness(0, 8, 0, 4)
+                };
+                PropertiesPanel.Children.Add(header);
+
+                foreach (var prop in group.OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase))
+                {
+                    var row = CreatePropertyRow(obj, prop);
+                    if (row != null)
+                    {
+                        PropertiesPanel.Children.Add(row);
+                    }
                 }
             }
         }
@@ -95,7 +105,7 @@ namespace XerahS.UI.Controls
         {
             var grid = new Grid
             {
-                ColumnDefinitions = new ColumnDefinitions("140, *"),
+                ColumnDefinitions = new ColumnDefinitions("300, *"),
                 Classes = { "propertyRow" }
             };
 
@@ -205,6 +215,12 @@ namespace XerahS.UI.Controls
         {
             var attr = prop.GetCustomAttribute<DescriptionAttribute>();
             return attr?.Description ?? "";
+        }
+
+        private string GetCategory(PropertyInfo prop)
+        {
+            var attr = prop.GetCustomAttribute<CategoryAttribute>();
+            return string.IsNullOrWhiteSpace(attr?.Category) ? "Miscellaneous" : attr.Category;
         }
 
         private class ColorStringConverter : Avalonia.Data.Converters.IValueConverter

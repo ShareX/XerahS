@@ -49,17 +49,34 @@ namespace XerahS.Common
         {
             try
             {
+                string url = IncludePreRelease ? ReleasesURL : LatestReleaseURL;
+                DebugHelper.WriteLine($"Checking for updates at: {url}");
+
                 GitHubRelease? latestRelease = await GetLatestRelease(IncludePreRelease);
+
+                if (latestRelease == null)
+                {
+                    DebugHelper.WriteLine($"No release found for {Owner}/{Repo}");
+                    Status = UpdateStatus.UpdateCheckFailed;
+                    return;
+                }
+
+                DebugHelper.WriteLine($"Found release: {latestRelease.tag_name?.TrimStart('v')} (prerelease: {latestRelease.prerelease})");
 
                 if (UpdateReleaseInfo(latestRelease, IsPortable, IsPortable))
                 {
                     RefreshStatus();
+                    DebugHelper.WriteLine($"Current: {CurrentVersion?.ToString(3)}, Latest: {LatestVersion?.ToString(3)}, Status: {Status}");
                     return;
+                }
+                else
+                {
+                    DebugHelper.WriteLine($"Failed to update release info. Tag: {latestRelease.tag_name}, Assets: {latestRelease.assets?.Length ?? 0}");
                 }
             }
             catch (Exception e)
             {
-                DebugHelper.WriteException(e, "GitHub update check failed.");
+                DebugHelper.WriteException(e, $"GitHub update check failed for {Owner}/{Repo}.");
             }
 
             Status = UpdateStatus.UpdateCheckFailed;
@@ -107,11 +124,19 @@ namespace XerahS.Common
         {
             GitHubRelease? latestRelease = null;
 
-            string response = await WebHelpers.DownloadStringAsync(LatestReleaseURL);
-
-            if (!string.IsNullOrEmpty(response))
+            try
             {
-                latestRelease = JsonConvert.DeserializeObject<GitHubRelease>(response);
+                string response = await WebHelpers.DownloadStringAsync(LatestReleaseURL);
+
+                if (!string.IsNullOrEmpty(response))
+                {
+                    latestRelease = JsonConvert.DeserializeObject<GitHubRelease>(response);
+                }
+            }
+            catch (HttpRequestException ex) when (ex.Message.Contains("404"))
+            {
+                DebugHelper.WriteLine($"No releases found at {LatestReleaseURL}. The repository may not have any releases yet.");
+                throw;
             }
 
             return latestRelease;

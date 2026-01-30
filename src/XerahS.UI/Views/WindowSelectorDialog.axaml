@@ -7,29 +7,34 @@
              x:Class="XerahS.UI.Views.WindowSelectorDialog"
              x:DataType="vm:WindowSelectorViewModel">
 
-    <Grid RowDefinitions="Auto,*,Auto" Margin="20">
-        <TextBlock Text="Select Window" Theme="{StaticResource SubtitleTextBlockStyle}" Margin="0,0,0,15"/>
+    <Grid RowDefinitions="Auto,*,Auto" Margin="24">
+        <TextBlock Text="Select Window" Theme="{StaticResource SubtitleTextBlockStyle}" Margin="0,0,0,16"/>
 
-        <Border Grid.Row="1" BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4">
+        <Border Grid.Row="1" Theme="{StaticResource CardBorderTheme}">
             <ListBox ItemsSource="{Binding Windows}" 
                      SelectedItem="{Binding SelectedWindow}"
                      SelectionMode="Single" 
-                     Background="Transparent">
+                     Background="Transparent"
+                     AutomationProperties.Name="Window List">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid ColumnDefinitions="Auto,*" Margin="0,4">
-                            <!-- Icon place holder: <Image Source="..." Width="16" Height="16" Margin="0,0,10,0"/> -->
-                            <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                            <!-- Icon placeholder if needed later -->
+                            <TextBlock Grid.Column="1" 
+                                       Text="{Binding Title}" 
+                                       VerticalAlignment="Center" 
+                                       TextTrimming="CharacterEllipsis"
+                                       Theme="{StaticResource BodyTextBlockStyle}"/>
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
         </Border>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,15,0,0">
-            <Button Content="Refresh" Command="{Binding RefreshWindowsCommand}" />
-            <Button Content="Cancel" Command="{Binding CancelCommand}" />
-            <Button Content="Capture" Command="{Binding ConfirmCommand}" Classes="accent" IsDefault="True"/>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,24,0,0">
+            <Button Content="Refresh" Command="{Binding RefreshWindowsCommand}" AutomationProperties.Name="Refresh Windows"/>
+            <Button Content="Cancel" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel"/>
+            <Button Content="Capture" Command="{Binding ConfirmCommand}" Classes="accent" IsDefault="True" AutomationProperties.Name="Capture Selected Window"/>
         </StackPanel>
     </Grid>
 </UserControl>

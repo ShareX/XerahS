@@ -50,6 +50,13 @@ public class ScreenRecorderService : IRecordingService
     private bool _disposed;
 
     /// <summary>
+    /// Window handle for tracking bounds during Window capture mode.
+    /// When set, frames are captured from the full monitor and cropped to this window's current bounds.
+    /// This ensures menus, dialogs, and popups (which are separate HWNDs) are captured.
+    /// </summary>
+    private IntPtr _windowTrackingHandle = IntPtr.Zero;
+
+    /// <summary>
     /// Factory function for creating platform-specific capture sources
     /// Set by PlatformManager during initialization
     /// </summary>
@@ -241,6 +248,7 @@ public class ScreenRecorderService : IRecordingService
                 _captureSource = null;
                 _encoder = null;
                 _currentOptions = null;
+                _windowTrackingHandle = IntPtr.Zero;
                 UpdateStatus(RecordingStatus.Idle);
             }
         }
@@ -278,7 +286,12 @@ public class ScreenRecorderService : IRecordingService
                 {
                     throw new ArgumentException("TargetWindowHandle must be specified for Window mode");
                 }
-                source.InitializeForWindow(options.TargetWindowHandle);
+                // Store window handle for dynamic bounds tracking during frame capture.
+                // We use monitor capture + cropping instead of direct window capture so that
+                // menus, dialogs, and other popup windows (separate HWNDs) are included.
+                _windowTrackingHandle = options.TargetWindowHandle;
+                source.InitializeForPrimaryMonitor();
+                DebugHelper.WriteLine($"[ScreenRecorder] Window mode: using monitor capture with dynamic cropping for hwnd 0x{options.TargetWindowHandle:X}");
                 break;
 
             case CaptureMode.Region:
@@ -306,8 +319,43 @@ public class ScreenRecorderService : IRecordingService
         {
             FrameData frameToEncode = e.Frame;
 
+            // Crop frame if in Window mode (dynamic window bounds tracking)
+            // This captures menus, dialogs, and popups that are separate HWNDs
+            if (_windowTrackingHandle != IntPtr.Zero)
+            {
+                try
+                {
+                    var windowBounds = XerahS.Platform.Abstractions.PlatformServices.Window.GetWindowBounds(_windowTrackingHandle);
+                    if (windowBounds.Width > 0 && windowBounds.Height > 0)
+                    {
+                        // Clamp window bounds to frame bounds (window may be partially offscreen)
+                        // Ensure even dimensions for Media Foundation H.264 encoder compatibility
+                        var clampedRegion = new Rectangle(
+                            Math.Max(0, windowBounds.X),
+                            Math.Max(0, windowBounds.Y),
+                            Math.Min(windowBounds.Width, e.Frame.Width - Math.Max(0, windowBounds.X)) & ~1,
+                            Math.Min(windowBounds.Height, e.Frame.Height - Math.Max(0, windowBounds.Y)) & ~1);
+
+                        if (clampedRegion.Width > 0 && clampedRegion.Height > 0)
+                        {
+                            if (OperatingSystem.IsWindows() && DebugDumpRawFrame)
+                            {
+                                TryDumpDebugFrame(e.Frame, $"raw_win_f{frameIndex:000000}");
+                            }
+
+                            croppedFrame = RegionCropper.CropFrame(e.Frame, clampedRegion);
+                            frameToEncode = croppedFrame.Value;
+                        }
+                    }
+                }
+                catch (Exception windowEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to get window bounds or crop frame: {windowEx.Message}");
+                    // Fall back to uncropped frame if window bounds unavailable
+                }
+            }
             // Stage 2: Crop frame if in Region mode
-            if (_currentOptions?.Mode == CaptureMode.Region && _currentOptions.Region.Width > 0 && _currentOptions.Region.Height > 0)
+            else if (_currentOptions?.Mode == CaptureMode.Region && _currentOptions.Region.Width > 0 && _currentOptions.Region.Height > 0)
             {
                 try
                 {
@@ -375,12 +423,13 @@ public class ScreenRecorderService : IRecordingService
 
     private int GetCaptureWidth(RecordingOptions options)
     {
+        int width;
+
         if (options.Mode == CaptureMode.Region && options.Region.Width > 0)
         {
-            return options.Region.Width;
+            width = options.Region.Width;
         }
-
-        if (options.Mode == CaptureMode.Window && options.TargetWindowHandle != IntPtr.Zero)
+        else if (options.Mode == CaptureMode.Window && options.TargetWindowHandle != IntPtr.Zero)
         {
             try
             {
@@ -388,16 +437,68 @@ public class ScreenRecorderService : IRecordingService
                 if (windowBounds.Width > 0)
                 {
                     DebugHelper.WriteLine($"[ScreenRecorder] Window capture width from handle: {windowBounds.Width}");
-                    return windowBounds.Width;
+                    width = windowBounds.Width;
+                }
+                else
+                {
+                    width = GetPrimaryScreenWidth();
                 }
             }
             catch (Exception ex)
             {
                 DebugHelper.WriteLine($"[ScreenRecorder] Failed to get window bounds: {ex.Message}");
+                width = GetPrimaryScreenWidth();
             }
         }
+        else
+        {
+            width = GetPrimaryScreenWidth();
+        }
 
-        // Get actual screen width from platform services
+        // Ensure even dimension for Media Foundation H.264 encoder
+        return width & ~1;
+    }
+
+    private int GetCaptureHeight(RecordingOptions options)
+    {
+        int height;
+
+        if (options.Mode == CaptureMode.Region && options.Region.Height > 0)
+        {
+            height = options.Region.Height;
+        }
+        else if (options.Mode == CaptureMode.Window && options.TargetWindowHandle != IntPtr.Zero)
+        {
+            try
+            {
+                var windowBounds = XerahS.Platform.Abstractions.PlatformServices.Window.GetWindowBounds(options.TargetWindowHandle);
+                if (windowBounds.Height > 0)
+                {
+                    DebugHelper.WriteLine($"[ScreenRecorder] Window capture height from handle: {windowBounds.Height}");
+                    height = windowBounds.Height;
+                }
+                else
+                {
+                    height = GetPrimaryScreenHeight();
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"[ScreenRecorder] Failed to get window bounds: {ex.Message}");
+                height = GetPrimaryScreenHeight();
+            }
+        }
+        else
+        {
+            height = GetPrimaryScreenHeight();
+        }
+
+        // Ensure even dimension for Media Foundation H.264 encoder
+        return height & ~1;
+    }
+
+    private static int GetPrimaryScreenWidth()
+    {
         try
         {
             var screens = XerahS.Platform.Abstractions.PlatformServices.Screen.GetAllScreens();
@@ -411,36 +512,11 @@ public class ScreenRecorderService : IRecordingService
         {
             // Fallback if platform services not available
         }
-
-        // Default fallback
         return 1920;
     }
 
-    private int GetCaptureHeight(RecordingOptions options)
+    private static int GetPrimaryScreenHeight()
     {
-        if (options.Mode == CaptureMode.Region && options.Region.Height > 0)
-        {
-            return options.Region.Height;
-        }
-
-        if (options.Mode == CaptureMode.Window && options.TargetWindowHandle != IntPtr.Zero)
-        {
-            try
-            {
-                var windowBounds = XerahS.Platform.Abstractions.PlatformServices.Window.GetWindowBounds(options.TargetWindowHandle);
-                if (windowBounds.Height > 0)
-                {
-                    DebugHelper.WriteLine($"[ScreenRecorder] Window capture height from handle: {windowBounds.Height}");
-                    return windowBounds.Height;
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteLine($"[ScreenRecorder] Failed to get window bounds: {ex.Message}");
-            }
-        }
-
-        // Get actual screen height from platform services
         try
         {
             var screens = XerahS.Platform.Abstractions.PlatformServices.Screen.GetAllScreens();
@@ -454,8 +530,6 @@ public class ScreenRecorderService : IRecordingService
         {
             // Fallback if platform services not available
         }
-
-        // Default fallback
         return 1080;
     }
 
@@ -499,6 +573,7 @@ public class ScreenRecorderService : IRecordingService
 
             _captureSource = null;
             _encoder = null;
+            _windowTrackingHandle = IntPtr.Zero;
         }
     }
 

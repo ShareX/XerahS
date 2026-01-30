@@ -1,0 +1,75 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        x:Class="XerahS.UI.Views.UpdateMessageBox"
+        x:DataType="vm:UpdateMessageBoxViewModel"
+        Title="Update Available"
+        Icon="/Assets/Logo.ico"
+        Width="420" Height="280"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="24" RowDefinitions="Auto, *, Auto">
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   Text="{Binding TitleText}"
+                   Theme="{StaticResource TitleTextBlockStyle}"
+                   Margin="0,0,0,24"/>
+
+        <!-- Main Content -->
+        <StackPanel Grid.Row="1" Spacing="16">
+
+            <!-- Version Information Card -->
+            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding CurrentVersionText}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="{Binding LatestVersionText}"
+                               FontWeight="SemiBold"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Pre-release Warning -->
+            <Border Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
+                    BorderBrush="{DynamicResource SystemFillColorCautionBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="12"
+                    IsVisible="{Binding IsPreRelease}">
+                <TextBlock Text="This is a pre-release version. It may contain bugs or incomplete features."
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+            </Border>
+
+            <!-- Message -->
+            <TextBlock Text="{Binding PortableNotice}"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+
+        </StackPanel>
+
+        <!-- Footer Actions -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="12"
+                    Margin="0,24,0,0">
+            <Button Content="Yes"
+                    Command="{Binding YesCommand}"
+                    Classes="accent"
+                    MinWidth="80"
+                    AutomationProperties.Name="Yes, download update"/>
+            <Button Content="No"
+                    Command="{Binding NoCommand}"
+                    MinWidth="80"
+                    AutomationProperties.Name="No, skip this update"/>
+        </StackPanel>
+
+    </Grid>
+</Window>

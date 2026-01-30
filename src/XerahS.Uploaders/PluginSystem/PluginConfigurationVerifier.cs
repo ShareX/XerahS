@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 
 /*
     XerahS - The Avalonia UI implementation of ShareX
@@ -34,17 +34,17 @@ namespace XerahS.Uploaders.PluginSystem;
 public enum PluginVerificationStatus
 {
     /// <summary>
-    /// Plugin is properly configured (4-6 files in folder)
+    /// Plugin is properly configured (7-11 files in folder)
     /// </summary>
     Valid,
 
     /// <summary>
-    /// Plugin may have minor configuration issues (7-15 files)
+    /// Plugin may have minor configuration issues (any file count outside 7-11)
     /// </summary>
     Warning,
 
     /// <summary>
-    /// Plugin has critical configuration errors (16+ files, duplicate framework DLLs)
+    /// Plugin has critical configuration errors (duplicate framework DLLs)
     /// </summary>
     Error
 }
@@ -114,32 +114,25 @@ public static class PluginConfigurationVerifier
         if (result.ProblematicFiles.Count > 0)
         {
             result.Status = PluginVerificationStatus.Error;
-            result.Message = $"⚠️ Config view may not load - {result.ProblematicFiles.Count} duplicate framework DLL(s) detected";
+            result.Message = $"\u26A0\uFE0F Config view may not load - {result.ProblematicFiles.Count} duplicate framework DLL(s) detected";
             result.Issues.Add($"Found {result.ProblematicFiles.Count} duplicate framework assemblies in the plugin folder:");
             result.Issues.AddRange(result.ProblematicFiles);
             result.Issues.Add("");
             result.Issues.Add("Fix: Delete these duplicate DLLs from the plugin folder, then restart the app.");
         }
-        else if (result.FileCount >= 16)
+        else if (result.FileCount >= 7 && result.FileCount <= 11)
         {
-            result.Status = PluginVerificationStatus.Warning;
-            result.Message = $"⚠️ Plugin folder has {result.FileCount} files (expected 4-6)";
-            result.Issues.Add("Plugin folder contains more files than expected.");
-            result.Issues.Add("This may indicate dependency configuration issues.");
-        }
-        else if (result.FileCount >= 7 && result.FileCount <= 15)
-        {
-            result.Status = PluginVerificationStatus.Warning;
-            result.Message = $"Plugin has {result.FileCount} files (expected 4-6)";
-            result.Issues.Add("Plugin folder has slightly more files than expected.");
-            result.Issues.Add("Verify that only plugin-specific dependencies are included.");
+            result.Status = PluginVerificationStatus.Valid;
+            result.Message = $"\u2713 Plugin properly configured ({result.FileCount} files)";
+            result.Issues.Add("Plugin folder contains the expected number of files.");
+            result.Issues.Add("No duplicate framework assemblies detected.");
         }
         else
         {
-            result.Status = PluginVerificationStatus.Valid;
-            result.Message = $"✓ Plugin properly configured ({result.FileCount} files)";
-            result.Issues.Add("Plugin folder contains the expected number of files.");
-            result.Issues.Add("No duplicate framework assemblies detected.");
+            result.Status = PluginVerificationStatus.Warning;
+            result.Message = $"\u26A0\uFE0F Plugin folder has {result.FileCount} files (expected 7-11)";
+            result.Issues.Add("Plugin folder contains an unexpected number of files.");
+            result.Issues.Add("Verify that only plugin-specific dependencies are included.");
         }
 
         return result;
@@ -211,3 +204,4 @@ public static class PluginConfigurationVerifier
         return deletedCount;
     }
 }
+

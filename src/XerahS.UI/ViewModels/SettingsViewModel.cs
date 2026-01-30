@@ -75,6 +75,8 @@ namespace XerahS.UI.ViewModels
 
         public UpdateChannel[] UpdateChannels => (UpdateChannel[])Enum.GetValues(typeof(UpdateChannel));
 
+        public ApplicationConfig ApplicationConfig => SettingsManager.Settings;
+
         [ObservableProperty]
         private bool _watchFolderEnabled;
 
@@ -430,6 +432,19 @@ namespace XerahS.UI.ViewModels
         }
 
         // Task Settings - After Upload
+        public bool ShowAfterUploadWindow
+        {
+            get => ActiveTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.ShowAfterUploadWindow);
+            set
+            {
+                if (value)
+                    ActiveTaskSettings.AfterUploadJob |= AfterUploadTasks.ShowAfterUploadWindow;
+                else
+                    ActiveTaskSettings.AfterUploadJob &= ~AfterUploadTasks.ShowAfterUploadWindow;
+                OnPropertyChanged();
+            }
+        }
+
         public bool CopyURLToClipboard
         {
             get => ActiveTaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.CopyURLToClipboard);

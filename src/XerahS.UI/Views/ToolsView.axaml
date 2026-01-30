@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:common="clr-namespace:XerahS.Common;assembly=XerahS.Common"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="XerahS.UI.Views.ToolsView">
+
+    <Grid>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="24">
+            <ui:SymbolIcon Symbol="Folder" FontSize="64" Foreground="{DynamicResource AccentFillColorDefaultBrush}"/>
+
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding Source={x:Static common:AppResources.AppName}, StringFormat='{}{0} Tools'}"
+                           Theme="{StaticResource TitleTextBlockStyle}"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Select a tool from the menu to get started."
+                           Theme="{StaticResource BodyTextBlockStyle}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

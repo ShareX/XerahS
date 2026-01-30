@@ -63,6 +63,7 @@ namespace XerahS.UI.ViewModels
 
         // Expose underlying model if needed
         public TaskSettings Model => _settings;
+        public TaskSettingsAdvanced AdvancedSettings => _settings.AdvancedSettings;
 
         public WorkflowType Job
         {
@@ -696,6 +697,19 @@ namespace XerahS.UI.ViewModels
         #endregion
 
         #region After Upload Tasks
+
+        public bool ShowAfterUploadWindow
+        {
+            get => _settings.AfterUploadJob.HasFlag(AfterUploadTasks.ShowAfterUploadWindow);
+            set
+            {
+                if (ShowAfterUploadWindow != value)
+                {
+                    UpdateAfterUploadTask(AfterUploadTasks.ShowAfterUploadWindow, value);
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public bool CopyURLToClipboard
         {

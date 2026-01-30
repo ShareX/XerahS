@@ -2,9 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              xmlns:vm="using:XerahS.UI.ViewModels"
              xmlns:views="using:XerahS.UI.Views.Controls"
+             xmlns:controls="using:XerahS.UI.Controls"
              x:Class="XerahS.UI.Views.ApplicationSettingsView"
              x:DataType="vm:SettingsViewModel">
 
@@ -12,87 +13,100 @@
         <vm:SettingsViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*" Margin="20">
-        <TextBlock Grid.Row="0" Text="Application Settings" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,20"/>
-
+    <Grid RowDefinitions="Auto, *" Margin="0">
         <TabControl Grid.Row="1">
             <!-- General Tab -->
             <TabItem Header="General">
-                <ScrollViewer>
-                    <StackPanel Margin="20" Spacing="20">
+                <ScrollViewer Padding="24">
+                    <StackPanel Spacing="24">
+                        
                         <!-- System -->
-                        <StackPanel Spacing="10">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="System" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding ShowTray}" Content="Show tray icon"/>
-                                    <CheckBox IsChecked="{Binding SilentRun}" Content="Start minimized to tray" IsEnabled="{Binding ShowTray}"/>
+                            <Border BorderThickness="1" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <CheckBox IsChecked="{Binding ShowTray}" Content="Show tray icon" AutomationProperties.Name="Show Tray Icon"/>
+                                    <CheckBox IsChecked="{Binding SilentRun}" Content="Start minimized to tray" 
+                                              IsEnabled="{Binding ShowTray}" AutomationProperties.Name="Start Minimized"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
                         <!-- Updates -->
-                        <StackPanel Spacing="10">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Updates" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding AutoCheckUpdate}" Content="Automatically check for updates"/>
-                                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto">
-                                         <TextBlock Grid.Column="0" 
-                                                   Text="Update channel:" 
-                                                   VerticalAlignment="Center" 
-                                                   Margin="0,0,10,0"/>
-                                         <ComboBox Grid.Column="1" 
+                            <Border BorderThickness="1" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <CheckBox IsChecked="{Binding AutoCheckUpdate}" Content="Automatically check for updates" AutomationProperties.Name="Auto Check Update"/>
+                                    
+                                    <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto">
+                                        <TextBlock Grid.Column="0" Text="Update channel:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Column="2" 
                                                   ItemsSource="{Binding UpdateChannels}"
                                                   SelectedItem="{Binding UpdateChannel}"
                                                   IsEnabled="{Binding AutoCheckUpdate}"
-                                                  HorizontalAlignment="Left"
-                                                  Width="150"/>
+                                                  HorizontalAlignment="Left" Width="200"
+                                                  AutomationProperties.Name="Update Channel"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
                         <!-- Tray Icon -->
-                        <StackPanel Spacing="10">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Tray Icon" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding TrayIconProgressEnabled}" Content="Show progress on tray icon"/>
+                            <Border BorderThickness="1" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <CheckBox IsChecked="{Binding TrayIconProgressEnabled}" Content="Show progress on tray icon" AutomationProperties.Name="Show Tray Progress"/>
                                     
-                                    <Separator Margin="0,5"/>
-                                    <TextBlock Text="Click Actions" FontWeight="SemiBold" FontSize="12"/>
+                                    <TextBlock Text="Click Actions" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
 
-                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" Margin="0,5,0,0">
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Left click:" VerticalAlignment="Center" Margin="0,0,10,5"/>
-                                        <ComboBox Grid.Row="0" Grid.Column="1" 
+                                    <Grid ColumnDefinitions="120, 16, *" RowDefinitions="Auto, 16, Auto, 16, Auto">
+                                        <!-- Row 0: Left Click -->
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Left click:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Row="0" Grid.Column="2" 
                                                   ItemsSource="{Binding TrayClickActions}"
                                                   SelectedItem="{Binding TrayLeftClickAction}"
-                                                  HorizontalAlignment="Stretch" Margin="0,0,0,5"/>
+                                                  HorizontalAlignment="Stretch"
+                                                  AutomationProperties.Name="Tray Left Click Action"/>
 
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Double click:" VerticalAlignment="Center" Margin="0,0,10,5"/>
-                                        <ComboBox Grid.Row="1" Grid.Column="1" 
+                                        <!-- Row 2: Double Click -->
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Double click:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Row="2" Grid.Column="2" 
                                                   ItemsSource="{Binding TrayClickActions}"
                                                   SelectedItem="{Binding TrayLeftDoubleClickAction}"
-                                                  HorizontalAlignment="Stretch" Margin="0,0,0,5"/>
+                                                  HorizontalAlignment="Stretch"
+                                                  AutomationProperties.Name="Tray Double Click Action"/>
 
-                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Middle click:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                        <ComboBox Grid.Row="2" Grid.Column="1" 
+                                        <!-- Row 4: Middle Click -->
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Middle click:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Row="4" Grid.Column="2" 
                                                   ItemsSource="{Binding TrayClickActions}"
                                                   SelectedItem="{Binding TrayMiddleClickAction}"
-                                                  HorizontalAlignment="Stretch"/>
+                                                  HorizontalAlignment="Stretch"
+                                                  AutomationProperties.Name="Tray Middle Click Action"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
                         <!-- Taskbar -->
-                        <StackPanel Spacing="10">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Taskbar" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding TaskbarProgressEnabled}" Content="Show progress on taskbar"/>
-                                </StackPanel>
+                            <Border BorderThickness="1" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="4" Padding="16">
+                                <CheckBox IsChecked="{Binding TaskbarProgressEnabled}" Content="Show progress on taskbar" AutomationProperties.Name="Show Taskbar Progress"/>
                             </Border>
                         </StackPanel>
                     </StackPanel>
@@ -101,17 +115,22 @@
 
             <!-- Theme Tab -->
             <TabItem Header="Theme">
-                 <ScrollViewer>
-                    <StackPanel Margin="20" Spacing="20">
-                         <StackPanel Spacing="10">
+                 <ScrollViewer Padding="24">
+                     <StackPanel Spacing="24">
+                         <StackPanel Spacing="8">
                             <TextBlock Text="Theme" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <TextBlock Text="Select Application Theme:"/>
-                                    <ComboBox SelectedIndex="{Binding SelectedTheme}" Width="200" HorizontalAlignment="Left">
-                                        <ComboBoxItem Content="Default"/>
-                                        <ComboBoxItem Content="Dark"/>
-                                    </ComboBox>
+                            <Border BorderThickness="1" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
+                                        <TextBlock Grid.Column="0" Text="Application Theme:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Column="2" SelectedIndex="{Binding SelectedTheme}" Width="200" HorizontalAlignment="Left" AutomationProperties.Name="Application Theme">
+                                            <ComboBoxItem Content="Default"/>
+                                            <ComboBoxItem Content="Dark"/>
+                                        </ComboBox>
+                                    </Grid>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -121,28 +140,37 @@
 
             <!-- Paths Tab -->
             <TabItem Header="Paths">
-                <ScrollViewer>
-                    <StackPanel Margin="20" Spacing="20">
+                <ScrollViewer Padding="24">
+                    <StackPanel Spacing="24">
                          <!-- Screenshots Folder -->
-                        <StackPanel Spacing="10">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Screenshots Folder" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding UseCustomScreenshotsPath}" Content="Use custom screenshots path"/>
-                                    <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding UseCustomScreenshotsPath}">
-                                        <TextBox Grid.Column="0" Text="{Binding ScreenshotsFolder}" Watermark="Path to screenshots folder"/>
-                                        <Button Grid.Column="1" Content="Browse..." Command="{Binding BrowseFolderCommand}" Margin="10,0,0,0"/>
+                            <Border BorderThickness="1" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <CheckBox IsChecked="{Binding UseCustomScreenshotsPath}" Content="Use custom screenshots path" AutomationProperties.Name="Use Custom Screenshots Path"/>
+                                    <Grid ColumnDefinitions="*, 16, Auto" IsEnabled="{Binding UseCustomScreenshotsPath}">
+                                        <TextBox Grid.Column="0" Text="{Binding ScreenshotsFolder}" Watermark="Path to screenshots folder" AutomationProperties.Name="Screenshots Folder Path"/>
+                                        <Button Grid.Column="2" Content="Browse..." Command="{Binding BrowseFolderCommand}" AutomationProperties.Name="Browse Screenshots Folder"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
                         <!-- Subfolder Pattern -->
-                        <StackPanel Spacing="10">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Subfolder Pattern" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <TextBox Text="{Binding SaveImageSubFolderPattern}" Watermark="%y-%mo"/>
+                            <Border BorderThickness="1" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
+                                        <TextBlock Grid.Column="0" Text="Pattern:" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Text="{Binding SaveImageSubFolderPattern}" Watermark="%y-%mo" AutomationProperties.Name="Subfolder Pattern"/>
+                                    </Grid>
                                     <TextBlock Text="Example: 2025-01" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                                 </StackPanel>
                             </Border>
@@ -153,59 +181,59 @@
 
             <!-- Watch Folders Tab -->
             <TabItem Header="Watch Folders">
-                <ScrollViewer>
-                    <StackPanel Margin="20" Spacing="20">
-                        <StackPanel Spacing="10">
+                <ScrollViewer Padding="24">
+                    <StackPanel Spacing="24">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Watch folders" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
+                            <Border BorderThickness="1" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
                                     <TextBlock Text="Monitor folders for new files and run file upload workflows automatically."
-                                               FontSize="12"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
-                                    <StackPanel Spacing="8">
-                                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
-                                            <TextBlock Grid.Column="0" Text="Configured folders" FontWeight="SemiBold"/>
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                                                <Button Content="Add" Command="{Binding AddWatchFolderCommand}"/>
-                                                <Button Content="Edit" Command="{Binding EditWatchFolderCommand}"/>
-                                                <Button Content="Remove" Command="{Binding RemoveWatchFolderCommand}"/>
-                                            </StackPanel>
-                                        </Grid>
-
-                                        <StackPanel Spacing="6">
-                                            <Grid ColumnDefinitions="80,90,*,150,120,120,180" Margin="4,0,4,0">
-                                                <TextBlock Grid.Column="0" Text="Enabled" FontWeight="SemiBold" FontSize="12"/>
-                                                <TextBlock Grid.Column="1" Text="Status" FontWeight="SemiBold" FontSize="12"/>
-                                                <TextBlock Grid.Column="2" Text="Folder" FontWeight="SemiBold" FontSize="12"/>
-                                                <TextBlock Grid.Column="3" Text="Workflow" FontWeight="SemiBold" FontSize="12"/>
-                                                <TextBlock Grid.Column="4" Text="Filter" FontWeight="SemiBold" FontSize="12"/>
-                                                <TextBlock Grid.Column="5" Text="Subfolders" FontWeight="SemiBold" FontSize="12"/>
-                                                <TextBlock Grid.Column="6" Text="Move to Screenshots" FontWeight="SemiBold" FontSize="12"/>
-                                            </Grid>
-
-                                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4">
-                                                <ListBox ItemsSource="{Binding WatchFolders}"
-                                                         SelectedItem="{Binding SelectedWatchFolder}"
-                                                         MinHeight="140">
-                                                    <ListBox.ItemTemplate>
-                                                        <DataTemplate x:DataType="vm:WatchFolderSettingsViewModel">
-                                                            <Grid ColumnDefinitions="80,90,*,150,120,120,180" Margin="6">
-                                                                <CheckBox Grid.Column="0" IsChecked="{Binding Enabled}"/>
-                                                                <TextBlock Grid.Column="1" Text="{Binding StatusText}" FontSize="12" ToolTip.Tip="{Binding StatusDetail}"/>
-                                                                <TextBlock Grid.Column="2" Text="{Binding FolderPath}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding FolderPath}"/>
-                                                                <TextBlock Grid.Column="3" Text="{Binding WorkflowName}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding WorkflowName}"/>
-                                                                <TextBlock Grid.Column="4" Text="{Binding Filter}"/>
-                                                                <TextBlock Grid.Column="5" Text="{Binding IncludeSubdirectoriesText}"/>
-                                                                <TextBlock Grid.Column="6" Text="{Binding MoveFilesToScreenshotsFolderText}"/>
-                                                            </Grid>
-                                                        </DataTemplate>
-                                                    </ListBox.ItemTemplate>
-                                                </ListBox>
-                                            </Border>
+                                    <Grid ColumnDefinitions="*, 16, Auto">
+                                        <TextBlock Grid.Column="0" Text="Configured folders" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                                            <Button Content="Add" Command="{Binding AddWatchFolderCommand}" AutomationProperties.Name="Add Watch Folder"/>
+                                            <Button Content="Edit" Command="{Binding EditWatchFolderCommand}" AutomationProperties.Name="Edit Watch Folder"/>
+                                            <Button Content="Remove" Command="{Binding RemoveWatchFolderCommand}" AutomationProperties.Name="Remove Watch Folder"/>
                                         </StackPanel>
-                                    </StackPanel>
+                                    </Grid>
+
+                                    <!-- Watch Folder List Header -->
+                                    <Grid ColumnDefinitions="80, 90, 2*, 150, 120, 120, 150" Margin="4,0,4,0">
+                                        <TextBlock Grid.Column="0" Text="Enabled" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="1" Text="Status" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="2" Text="Folder" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="3" Text="Workflow" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="4" Text="Filter" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="5" Text="Subfolders" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="6" Text="Move to Screenshots" FontWeight="SemiBold" FontSize="12"/>
+                                    </Grid>
+
+                                    <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" CornerRadius="4">
+                                        <ListBox ItemsSource="{Binding WatchFolders}"
+                                                 SelectedItem="{Binding SelectedWatchFolder}"
+                                                 MinHeight="140"
+                                                 AutomationProperties.Name="Watch Folders List">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:WatchFolderSettingsViewModel">
+                                                    <Grid ColumnDefinitions="80, 90, 2*, 150, 120, 120, 150" Margin="6">
+                                                        <CheckBox Grid.Column="0" IsChecked="{Binding Enabled}" AutomationProperties.Name="Enable Watch Folder"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding StatusText}" VerticalAlignment="Center" ToolTip.Tip="{Binding StatusDetail}"/>
+                                                        <TextBlock Grid.Column="2" Text="{Binding FolderPath}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding FolderPath}"/>
+                                                        <TextBlock Grid.Column="3" Text="{Binding WorkflowName}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding WorkflowName}"/>
+                                                        <TextBlock Grid.Column="4" Text="{Binding Filter}" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="5" Text="{Binding IncludeSubdirectoriesText}" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="6" Text="{Binding MoveFilesToScreenshotsFolderText}" VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </Border>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -215,29 +243,34 @@
             
             <!-- Integration Tab -->
             <TabItem Header="Integration">
-                <ScrollViewer>
-                    <StackPanel Margin="20" Spacing="20">
+                <ScrollViewer Padding="24">
+                    <StackPanel Spacing="24">
                         <!-- OS Integration -->
-                        <StackPanel Spacing="10">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="System Integration" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
+                            <Border BorderThickness="1" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
                                     <CheckBox IsChecked="{Binding RunAtStartup}" 
-                                              Content="Run at system startup"/>
+                                              Content="Run at system startup" AutomationProperties.Name="Run at Startup"/>
                                     <CheckBox IsChecked="{Binding EnableContextMenuIntegration}" 
                                               Content="Add 'Upload with ShareX' to context menu"
-                                              ToolTip.Tip="Adds an option to upload files from the right-click context menu"/>
+                                              ToolTip.Tip="Adds an option to upload files from the right-click context menu"
+                                              AutomationProperties.Name="Enable Context Menu Integration"/>
                                     <CheckBox IsChecked="{Binding EnableSendToIntegration}" 
                                               Content="Add to 'Send To' menu"
-                                              ToolTip.Tip="Adds ShareX to the 'Send To' menu for quick file access"/>
+                                              ToolTip.Tip="Adds ShareX to the 'Send To' menu for quick file access"
+                                              AutomationProperties.Name="Enable Send To Integration"/>
                                               
-                                    <Separator Margin="0,5"/>
-                                    <TextBlock Text="File Associations" FontWeight="SemiBold" FontSize="12"/>
+                                    <TextBlock Text="File Associations" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
                                     
                                     <CheckBox Content="Associate .xsdp files with this application"
                                               IsChecked="{Binding IsPluginExtensionRegistered}"
                                               IsVisible="{Binding SupportsFileAssociations}"
-                                              ToolTip.Tip="Allows double-clicking .xsdp plugin packages to install them"/>
+                                              ToolTip.Tip="Allows double-clicking .xsdp plugin packages to install them"
+                                              AutomationProperties.Name="Associate XSDP Files"/>
                                     
                                     <TextBlock Text="Note: Some integration features require platform-specific support and may not be available on all systems."
                                                FontSize="11"
@@ -250,45 +283,51 @@
                 </ScrollViewer>
             </TabItem>
 
-
             <!-- History Tab -->
             <TabItem Header="History">
-                <ScrollViewer>
-                    <StackPanel Margin="20" Spacing="20">
+                <ScrollViewer Padding="24">
+                    <StackPanel Spacing="24">
                         <!-- History Settings -->
-                        <StackPanel Spacing="10">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="History" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding HistorySaveTasks}" Content="Save captured/uploaded items to history"/>
-                                    <CheckBox IsChecked="{Binding HistoryCheckURL}" Content="Only save items with URL"/>
+                            <Border BorderThickness="1" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <CheckBox IsChecked="{Binding HistorySaveTasks}" Content="Save captured/uploaded items to history" AutomationProperties.Name="Save Tasks to History"/>
+                                    <CheckBox IsChecked="{Binding HistoryCheckURL}" Content="Only save items with URL" AutomationProperties.Name="Only Save Tasks with URL"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
                         <!-- Recent Tasks Settings -->
-                        <StackPanel Spacing="10">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Recent Tasks" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding RecentTasksSave}" Content="Save recent tasks"/>
+                            <Border BorderThickness="1" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <CheckBox IsChecked="{Binding RecentTasksSave}" Content="Save recent tasks" AutomationProperties.Name="Save Recent Tasks"/>
                                     
-                                    <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto">
+                                    <Grid ColumnDefinitions="Auto, 16, Auto">
                                         <TextBlock Grid.Column="0" Text="Maximum recent tasks:" VerticalAlignment="Center"/>
-                                        <NumericUpDown Grid.Column="1" 
+                                        <NumericUpDown Grid.Column="2" 
                                                        Value="{Binding RecentTasksMaxCount}" 
                                                        Minimum="1" Maximum="100" 
-                                                       Width="100" Margin="10,0,0,0"/>
+                                                       Width="120" HorizontalAlignment="Left"
+                                                       AutomationProperties.Name="Max Recent Tasks"/>
                                     </Grid>
                                     
-                                    <Separator Margin="0,5"/>
-                                    <TextBlock Text="Display Options" FontWeight="SemiBold" FontSize="12"/>
+                                    <TextBlock Text="Display Options" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
                                     
-                                    <CheckBox IsChecked="{Binding RecentTasksShowInMainWindow}" Content="Show recent tasks in main window"/>
-                                    <CheckBox IsChecked="{Binding RecentTasksShowInTrayMenu}" Content="Show recent tasks in tray menu"/>
+                                    <CheckBox IsChecked="{Binding RecentTasksShowInMainWindow}" Content="Show recent tasks in main window" AutomationProperties.Name="Show Recent Tasks in Main Window"/>
+                                    <CheckBox IsChecked="{Binding RecentTasksShowInTrayMenu}" Content="Show recent tasks in tray menu" AutomationProperties.Name="Show Recent Tasks in Tray Menu"/>
                                     <CheckBox IsChecked="{Binding RecentTasksTrayMenuMostRecentFirst}" 
                                               Content="Show most recent first in tray menu" 
-                                              IsEnabled="{Binding RecentTasksShowInTrayMenu}"/>
+                                              IsEnabled="{Binding RecentTasksShowInTrayMenu}"
+                                              AutomationProperties.Name="Show Recent Tasks First"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -298,26 +337,39 @@
 
              <!-- Proxy Tab -->
             <TabItem Header="Proxy">
-                <TextBlock Text="Proxy settings placeholder" Margin="20" Foreground="Gray"/>
+                <TextBlock Text="Proxy settings placeholder" Margin="24" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </TabItem>
 
              <!-- Advanced Tab -->
              <TabItem Header="Advanced">
-                <ScrollViewer>
-                    <StackPanel Margin="20" Spacing="20">
-                        <StackPanel Spacing="10">
+                <ScrollViewer Padding="24">
+                    <StackPanel Spacing="24">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Capture Engine" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding UseModernCapture}" Content="Use Modern Screen Capture (Direct3D11)"/>
+                            <Border BorderThickness="1" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <CheckBox IsChecked="{Binding UseModernCapture}" Content="Use Modern Screen Capture (Direct3D11)" AutomationProperties.Name="Use Modern Capture"/>
                                 </StackPanel>
+                            </Border>
+                        </StackPanel>
+                        
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Application Configuration" FontWeight="SemiBold"/>
+                            <Border BorderThickness="1"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    CornerRadius="4" Padding="16">
+                                <controls:PropertyGrid x:Name="ApplicationConfigPropertyGrid"
+                                                       SelectedObject="{Binding ApplicationConfig}"
+                                                       AutomationProperties.Name="Application Config Properties"/>
                             </Border>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
         </TabControl>
-        
-        <!-- Bottom Action Buttons (Save/Reset) could go here or remain global, but typically per-page saving isn't needed if using immediate binding or main window save -->
     </Grid>
 </UserControl>

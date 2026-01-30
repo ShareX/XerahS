@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:XerahS.UI.ViewModels"
              xmlns:views="using:XerahS.UI.Views.Controls"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:audit="clr-namespace:XerahS.UI.Auditing;assembly=XerahS.UI"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="XerahS.UI.Views.HotkeySettingsView"
              x:DataType="vm:HotkeySettingsViewModel">
 
@@ -12,61 +13,72 @@
         <vm:HotkeySettingsViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="20">
-        <TextBlock Grid.Row="0" Text="Hotkey Settings" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,20"/>
+    <Grid RowDefinitions="Auto,*,Auto" Margin="24">
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Text="Hotkey Settings" Theme="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,24"/>
 
+        <!-- Main Content -->
         <Grid Grid.Row="1" RowDefinitions="Auto,*">
-            <!-- Action Buttons moved to top -->
-            <WrapPanel Grid.Row="0" Margin="0,0,0,10">
-                <Button Content="Add" Command="{Binding AddCommand}" MinWidth="90" Margin="0,0,10,10"/>
-                <Button Content="Remove" Command="{Binding RemoveCommand}" MinWidth="90" Margin="0,0,10,10"/>
-                <Button Content="Duplicate" Command="{Binding DuplicateCommand}" MinWidth="90" Margin="0,0,10,10"/>
-                <Button Content="Move Up" Command="{Binding MoveUpCommand}" MinWidth="90" Margin="0,0,10,10"/>
-                <Button Content="Move Down" Command="{Binding MoveDownCommand}" MinWidth="90" Margin="0,0,10,10"/>
-                <Button Content="Reset" Command="{Binding ResetCommand}" MinWidth="90" Margin="0,0,10,10"/>
-            </WrapPanel>
+            <!-- Toolbar -->
+            <Border Grid.Row="0" Padding="16" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,16">
+                <StackPanel Spacing="8" Orientation="Horizontal">
+                    <Button Content="Add" Command="{Binding AddCommand}" AutomationProperties.Name="Add Hotkey"/>
+                    <Button Content="Remove" Command="{Binding RemoveCommand}" AutomationProperties.Name="Remove Hotkey"/>
+                    <Button Content="Duplicate" Command="{Binding DuplicateCommand}" AutomationProperties.Name="Duplicate Hotkey"/>
+                    <Separator Classes="vertical" Height="20"/>
+                    <Button Content="Move Up" Command="{Binding MoveUpCommand}" AutomationProperties.Name="Move Hotkey Up"/>
+                    <Button Content="Move Down" Command="{Binding MoveDownCommand}" AutomationProperties.Name="Move Hotkey Down"/>
+                    <Separator Classes="vertical" Height="20"/>
+                    <Button Content="Reset" Command="{Binding ResetCommand}" AutomationProperties.Name="Reset Hotkeys"/>
+                </StackPanel>
+            </Border>
 
-            <!-- Hotkey List using HotkeySelectionControl -->
+            <!-- Hotkey List -->
             <ScrollViewer Grid.Row="1">
                 <ItemsControl ItemsSource="{Binding Hotkeys}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <views:HotkeySelectionControl Margin="0,0,0,5"/>
+                            <views:HotkeySelectionControl Margin="0,0,0,8"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
         </Grid>
         
-        <!-- Debug Info Toggle -->
-        <CheckBox Grid.Row="2" 
-                  x:Name="ShowDebugCheckBox"
-                  Content="View Debug Info" 
-                  Margin="0,10,0,5"/>
-        
-        <!-- DEBUG: Event Log TextBox (collapsible) -->
-        <Border Grid.Row="3" 
-                BorderBrush="Orange" 
-                BorderThickness="2" 
-                CornerRadius="4"
-                Height="300"
-                IsVisible="{Binding #ShowDebugCheckBox.IsChecked}">
-            <Grid RowDefinitions="Auto,*">
-                <TextBlock Grid.Row="0" 
-                           Text="DEBUG LOG (copy and paste this):" 
-                           Foreground="Orange" 
-                           FontWeight="Bold" 
-                           Margin="5"/>
-                <TextBox Grid.Row="1" 
-                         x:Name="DebugLogTextBox"
-                         AcceptsReturn="True" 
-                         IsReadOnly="True"
-                         TextWrapping="Wrap"
-                         FontFamily="Consolas"
-                         FontSize="11"
-                         Foreground="Lime"
-                         Background="#1E1E1E"/>
-            </Grid>
-        </Border>
+        <!-- Debug Section -->
+        <StackPanel Grid.Row="2" Margin="0,16,0,0">
+             <CheckBox x:Name="ShowDebugCheckBox"
+                       Content="View Debug Info" 
+                       Margin="0,0,0,8"
+                       audit:UiAudit.IsWiredManual="True"
+                       AutomationProperties.Name="Show Debug Info"/>
+             
+             <Border BorderBrush="{DynamicResource SystemFillColorCautionBrush}" 
+                     BorderThickness="1" 
+                     CornerRadius="4"
+                     Height="200"
+                     IsVisible="{Binding #ShowDebugCheckBox.IsChecked}"
+                     Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Grid.Row="0" 
+                               Text="DEBUG LOG" 
+                               Foreground="{DynamicResource SystemFillColorCautionBrush}" 
+                               FontWeight="SemiBold" 
+                               Margin="8"/>
+                    <TextBox Grid.Row="1" 
+                             x:Name="DebugLogTextBox"
+                             AcceptsReturn="True" 
+                             IsReadOnly="True"
+                             TextWrapping="Wrap"
+                             FontFamily="Consolas"
+                             FontSize="12"
+                             BorderThickness="0"
+                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                             Background="Transparent"
+                             Padding="8"/>
+                </Grid>
+            </Border>
+        </StackPanel>
     </Grid>
 </UserControl>

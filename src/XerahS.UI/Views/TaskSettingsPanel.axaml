@@ -355,6 +355,9 @@
                                                FontSize="12" 
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
                                                Margin="0,0,0,4"/>
+                                    <CheckBox IsChecked="{Binding ShowAfterUploadWindow}" 
+                                              Content="Show after upload window"
+                                              AutomationProperties.Name="Show After Upload Window"/>
                                     <CheckBox IsChecked="{Binding CopyURLToClipboard}" 
                                               Content="Copy URL to clipboard"/>
                                     <CheckBox IsChecked="{Binding UseURLShortener}" 
@@ -373,9 +376,22 @@
                  <TextBlock Text="Actions actions placeholder" Margin="20" Foreground="Gray"/>
             </TabItem>
 
-             <!-- Advanced Tab -->
+            <!-- Advanced Tab -->
             <TabItem Header="Advanced">
-                 <TextBlock Text="Advanced settings placeholder" Margin="20" Foreground="Gray"/>
+                <Grid Margin="24" RowDefinitions="Auto, *">
+                    <TextBlock Grid.Row="0"
+                               Text="Advanced Properties"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,12"/>
+                    <Border Grid.Row="1"
+                            BorderThickness="1"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                            CornerRadius="4"
+                            Padding="8">
+                        <controls:PropertyGrid SelectedObject="{Binding AdvancedSettings}"
+                                               AutomationProperties.Name="Advanced Task Settings"/>
+                    </Border>
+                </Grid>
             </TabItem>
 
             <!-- Tools Tab -->

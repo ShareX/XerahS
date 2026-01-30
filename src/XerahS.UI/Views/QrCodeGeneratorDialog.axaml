@@ -7,8 +7,8 @@
         x:Class="XerahS.UI.Views.QrCodeGeneratorDialog"
         x:DataType="vm:QrCodeGeneratorViewModel"
         Width="860"
+        Height="550"
         MinWidth="640"
-        SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         Title="QR Code Generator">
 
@@ -16,63 +16,80 @@
         <vm:QrCodeGeneratorViewModel />
     </Design.DataContext>
 
-    <Grid Margin="20" ColumnDefinitions="2*,*" RowDefinitions="Auto,*">
-        <StackPanel Grid.Column="0" Spacing="12">
-            <TextBlock Text="QR Code Generator" FontSize="22" FontWeight="SemiBold"/>
+    <Grid Margin="24" ColumnDefinitions="2*,12,*" RowDefinitions="Auto,*">
+        
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Spacing="4" Margin="0,0,0,24">
+            <TextBlock Text="QR Code Generator" Theme="{StaticResource TitleTextBlockStyle}"/>
             <TextBlock Text="Enter text or paste from clipboard to generate a QR code."
-                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       Theme="{StaticResource CaptionTextBlockStyle}"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        TextWrapping="Wrap"/>
-
-            <StackPanel Spacing="6">
-                <TextBlock Text="Content" FontWeight="SemiBold"/>
-                <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         MinHeight="120"
-                         Watermark="Type or paste text to encode..."/>
-                <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Text="{Binding CharacterCountText}"
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                        <Button Content="Paste from clipboard"
-                                Command="{Binding PasteFromClipboardCommand}"/>
-                        <Button Content="Generate"
-                                Command="{Binding GenerateCommand}"/>
-                    </StackPanel>
-                </Grid>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="Copy image" Command="{Binding CopyImageCommand}"/>
-                <Button Content="Save to file" Command="{Binding SaveImageCommand}"/>
-            </StackPanel>
-
-            <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
-                    BorderThickness="1"
-                    CornerRadius="6"
-                    Padding="10">
-                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
-            </Border>
         </StackPanel>
 
-        <Border Grid.Column="1"
-                Margin="16,0,0,0"
-                Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="12">
+        <!-- Input Area -->
+        <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto, Auto, *, Auto">
+            
+            <TextBlock Grid.Row="0" Text="Content" Theme="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,0,8"/>
+            
+            <TextBox Grid.Row="1" 
+                     Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     MinHeight="150"
+                     Watermark="Type or paste text to encode..."
+                     AutomationProperties.Name="QR Code Content Input"/>
+
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,8,0,0" VerticalAlignment="Top">
+                <TextBlock Text="{Binding CharacterCountText}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <Button Content="Paste from Clipboard"
+                            Command="{Binding PasteFromClipboardCommand}"
+                            AutomationProperties.Name="Paste from Clipboard"/>
+                    <Button Content="Generate"
+                            Command="{Binding GenerateCommand}"
+                            Classes="accent"
+                            AutomationProperties.Name="Generate QR Code"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Status & Actions -->
+            <StackPanel Grid.Row="3" Spacing="12" Margin="0,24,0,0">
+                <Border Theme="{StaticResource CardBorderTheme}" 
+                        Padding="12"
+                        IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
+                </Border>
+
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Button Content="Copy Image" 
+                            Command="{Binding CopyImageCommand}"
+                            AutomationProperties.Name="Copy QR Image"/>
+                    <Button Content="Save to File..." 
+                            Command="{Binding SaveImageCommand}"
+                            AutomationProperties.Name="Save QR Image"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <!-- Preview Image -->
+        <Border Grid.Row="1" Grid.Column="2" Theme="{StaticResource CardBorderTheme}" Padding="24">
             <Grid>
-                <TextBlock Text="Preview"
+                 <TextBlock Text="Preview"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
-                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                           IsVisible="{Binding PreviewImage, Converter={x:Static ObjectConverters.IsNull}}"/>
+
                 <Image Source="{Binding PreviewImage}"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
+                       VerticalAlignment="Center"
+                       AutomationProperties.Name="QR Code Preview"/>
             </Grid>
         </Border>
+
     </Grid>
 </Window>

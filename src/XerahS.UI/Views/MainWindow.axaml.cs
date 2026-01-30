@@ -173,7 +173,7 @@ namespace XerahS.UI.Views
                         contentFrame.Content = new WorkflowsView();
                         break;
                     case "Tools":
-                        contentFrame.Content = new IndexFolderView();
+                        contentFrame.Content = new ToolsView();
                         break;
                     case "Tools_IndexFolder":
                         contentFrame.Content = new IndexFolderView();
@@ -199,13 +199,14 @@ namespace XerahS.UI.Views
                     case "Settings_App":
                         contentFrame.Content = new ApplicationSettingsView();
                         break;
-
-
                     case "Settings_Dest":
                         contentFrame.Content = new DestinationSettingsView();
                         break;
                     case "Debug":
                         contentFrame.Content = new DebugView();
+                        break;
+                    case "About":
+                        contentFrame.Content = new AboutView();
                         break;
                 }
             }

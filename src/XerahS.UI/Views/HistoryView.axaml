@@ -4,7 +4,7 @@
              xmlns:history="using:XerahS.History"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="XerahS.UI.Views.HistoryView"
              x:DataType="vm:HistoryViewModel"
              x:Name="Root"
@@ -17,72 +17,85 @@
     <UserControl.Resources>
         <!-- Shared MenuFlyout Resource -->
         <MenuFlyout x:Key="HistoryItemMenuFlyout">
-            <MenuItem Header="✏️ Open in Editor..." 
+            <MenuItem Header="Edit..." 
                       Command="{Binding $parent[UserControl].DataContext.EditImageCommand}"
-                      CommandParameter="{Binding}"/>
-            <MenuItem Header="📄 Open File (Ctrl+Click)" 
+                      CommandParameter="{Binding}"
+                      InputGesture="Enter"/>
+            <MenuItem Header="Open File" 
                       Command="{Binding $parent[UserControl].DataContext.OpenFileCommand}"
                       CommandParameter="{Binding}"/>
-            <MenuItem Header="📂 Show in File Explorer..." 
+            <MenuItem Header="Show in Explorer" 
                       Command="{Binding $parent[UserControl].DataContext.OpenFolderCommand}"
                       CommandParameter="{Binding}"/>
             <Separator/>
-            <MenuItem Header="📋 Copy File Path" 
+            <MenuItem Header="Copy Path" 
                       Command="{Binding $parent[UserControl].DataContext.CopyFilePathCommand}"
                       CommandParameter="{Binding}"/>
-            <MenuItem Header="🔗 Copy URL" 
+            <MenuItem Header="Copy URL" 
                       Command="{Binding $parent[UserControl].DataContext.CopyURLCommand}"
                       CommandParameter="{Binding}"
                       IsVisible="{Binding URL, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-            <MenuItem Header="🌐 Open URL" 
+            <MenuItem Header="Open URL" 
                       Command="{Binding $parent[UserControl].DataContext.OpenURLCommand}"
                       CommandParameter="{Binding}"
                       IsVisible="{Binding URL, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
             <Separator/>
-            <MenuItem Header="🗑️ Delete from History..." 
+            <MenuItem Header="Delete" 
                       Command="{Binding $parent[UserControl].DataContext.DeleteItemCommand}"
-                      CommandParameter="{Binding}"/>
+                      CommandParameter="{Binding}"
+                      InputGesture="Delete"/>
         </MenuFlyout>
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto">
+    <Grid RowDefinitions="Auto, Auto, *, Auto">
         <!-- Toolbar -->
-        <Border Grid.Row="0" Padding="12,8">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <Button Content="🔄 Refresh" Command="{Binding RefreshHistoryCommand}" 
-                        Padding="12,8" CornerRadius="8" IsEnabled="{Binding !IsLoading}"/>
+        <Border Grid.Row="0" Padding="16" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <Button Content="Refresh" Command="{Binding RefreshHistoryCommand}" 
+                        IsEnabled="{Binding !IsLoading}"
+                        AutomationProperties.Name="Refresh History"/>
                 <Button Content="{Binding IsGridView, Converter={x:Static vm:HistoryViewModel.ViewToggleConverter}}" 
                         Command="{Binding ToggleViewCommand}"
-                        Padding="12,8" CornerRadius="8" IsEnabled="{Binding !IsLoading}"/>
-                <TextBlock Text="{Binding HistoryItems.Count, StringFormat='📁 {0} items'}" 
-                           VerticalAlignment="Center" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" Margin="10,0,0,0"/>
-                <TextBlock Text="{Binding IsLoadingThumbnails, StringFormat=' (loading thumbnails...)'}" 
-                           VerticalAlignment="Center" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                           IsVisible="{Binding IsLoadingThumbnails}" FontSize="12" Margin="5,0,0,0"/>
+                        IsEnabled="{Binding !IsLoading}"
+                        AutomationProperties.Name="Toggle View Mode"/>
+                
+                <Separator Classes="vertical" Height="20"/>
+
+                <TextBlock Text="{Binding HistoryItems.Count, StringFormat='{}{0} items'}" 
+                           VerticalAlignment="Center" 
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                
+                <ProgressBar IsIndeterminate="True" 
+                             Width="100" Height="2" 
+                             IsVisible="{Binding IsLoadingThumbnails}"
+                             VerticalAlignment="Center"
+                             AutomationProperties.Name="Loading Thumbnails"/>
             </StackPanel>
         </Border>
         
-        <!-- Loading Indicator (full history load) -->
-        <Border Grid.Row="1" Padding="20" Background="#1a1a2e" IsVisible="{Binding IsLoading}">
+        <!-- Loading State -->
+        <Border Grid.Row="2" IsVisible="{Binding IsLoading}" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
             <StackPanel Spacing="16" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="Loading history..." FontSize="16" Foreground="White" HorizontalAlignment="Center"/>
-                <ProgressBar IsIndeterminate="True" Width="200" Height="4" CornerRadius="2"/>
+                <ProgressBar IsIndeterminate="True" Width="200"/>
+                <TextBlock Text="Loading history..." HorizontalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
             </StackPanel>
         </Border>
         
-        <!-- List View Header (only visible in list mode) -->
-        <Border Grid.Row="1" Padding="12,4" Background="#1a1a2e" IsVisible="{Binding !IsGridView}" IsEnabled="{Binding !IsLoading}">
-            <Grid ColumnDefinitions="50,*,150,200">
-                <TextBlock Grid.Column="0" Text="" Foreground="#9CA3AF" FontSize="11" FontWeight="SemiBold"/>
-                <TextBlock Grid.Column="1" Text="Filename" Foreground="#9CA3AF" FontSize="11" FontWeight="SemiBold" Margin="8,0"/>
-                <TextBlock Grid.Column="2" Text="Type / Host" Foreground="#9CA3AF" FontSize="11" FontWeight="SemiBold"/>
-                <TextBlock Grid.Column="3" Text="Date &amp; Time" Foreground="#9CA3AF" FontSize="11" FontWeight="SemiBold"/>
+        <!-- List View Header -->
+        <Border Grid.Row="1" Padding="16,8" Background="{DynamicResource LayerFillColorDefaultBrush}" 
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1"
+                IsVisible="{Binding !IsGridView}" IsEnabled="{Binding !IsLoading}">
+            <Grid ColumnDefinitions="48, *, 160, 220">
+                <TextBlock Grid.Column="1" Text="Filename" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Grid.Column="2" Text="Type / Host" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Grid.Column="3" Text="Date" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
             </Grid>
         </Border>
 
         <!-- Grid View -->
-        <ScrollViewer Grid.Row="2" IsVisible="{Binding IsGridView}" IsEnabled="{Binding !IsLoading}">
-            <ItemsControl ItemsSource="{Binding HistoryItems}" Margin="12">
+        <ScrollViewer Grid.Row="2" IsVisible="{Binding IsGridView}" IsEnabled="{Binding !IsLoading}" Padding="16">
+            <ItemsControl ItemsSource="{Binding HistoryItems}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel Orientation="Horizontal"/>
@@ -90,23 +103,29 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="history:HistoryItem">
-                        <Border Margin="6" Background="#252535" CornerRadius="8" 
-                                Width="180" Padding="8" Cursor="Hand"
+                        <Border Margin="8" Width="200"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4" 
+                                Padding="12"
+                                Cursor="Hand"
                                 Tag="{Binding #Root.DataContext}"
                                 PointerPressed="OnItemPointerPressed"
-                                ContextFlyout="{StaticResource HistoryItemMenuFlyout}">
-                            <StackPanel Spacing="8">
+                                ContextFlyout="{StaticResource HistoryItemMenuFlyout}"
+                                AutomationProperties.Name="{Binding FileName, StringFormat='History Item: {0}'}">
+                            <StackPanel Spacing="12">
                                 <!-- Thumbnail -->
-                                <Border Height="120" Background="#1a1a2e" CornerRadius="6" ClipToBounds="True">
+                                <Border Height="140" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}" CornerRadius="4" ClipToBounds="True">
                                     <Image Source="{Binding FilePath, Converter={x:Static vm:HistoryViewModel.ThumbnailConverter}}" 
-                                           Stretch="UniformToFill"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                           Stretch="Uniform"/>
                                 </Border>
                                 <!-- Info -->
-                                <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" Foreground="White"
-                                           TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding FileName}"/>
-                                <TextBlock Text="{Binding DateTime, StringFormat='yyyy-MM-dd HH:mm'}" 
-                                           FontSize="11" Foreground="#6B7280"/>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding DateTime, StringFormat='yyyy-MM-dd HH:mm'}" 
+                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
@@ -115,55 +134,65 @@
         </ScrollViewer>
         
         <!-- List View -->
-        <ScrollViewer Grid.Row="2" IsVisible="{Binding !IsGridView}" IsEnabled="{Binding !IsLoading}">
-            <ItemsControl ItemsSource="{Binding HistoryItems}" Margin="12,4">
+        <ScrollViewer Grid.Row="2" IsVisible="{Binding !IsGridView}" IsEnabled="{Binding !IsLoading}" Padding="0,8">
+            <ItemsControl ItemsSource="{Binding HistoryItems}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel/>
+                        <StackPanel Spacing="2"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="history:HistoryItem">
-                        <Border Margin="2" Background="#252535" CornerRadius="4" Padding="8" Cursor="Hand"
+                        <Border Padding="16,8" Background="Transparent" Cursor="Hand"
                                 Tag="{Binding #Root.DataContext}"
                                 PointerPressed="OnItemPointerPressed"
-                                ContextFlyout="{StaticResource HistoryItemMenuFlyout}">
-                            <Grid ColumnDefinitions="50,*,150,200">
+                                ContextFlyout="{StaticResource HistoryItemMenuFlyout}"
+                                AutomationProperties.Name="{Binding FileName, StringFormat='History Item: {0}'}">
+                            <Border.Styles>
+                                <Style Selector="Border:pointerover">
+                                    <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                                </Style>
+                            </Border.Styles>
+                            <Grid ColumnDefinitions="48, *, 160, 220">
                                 <!-- Thumbnail -->
-                                <Border Grid.Column="0" Width="40" Height="40" Background="#1a1a2e" CornerRadius="4" ClipToBounds="True">
+                                <Border Grid.Column="0" Width="36" Height="36" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}" CornerRadius="4" ClipToBounds="True">
                                     <Image Source="{Binding FilePath, Converter={x:Static vm:HistoryViewModel.ThumbnailConverter}}" 
                                            Stretch="UniformToFill"/>
                                 </Border>
                                 <!-- Filename -->
                                 <TextBlock Grid.Column="1" Text="{Binding FileName}" 
-                                           Foreground="White" VerticalAlignment="Center" Margin="8,0"
-                                           TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding FilePath}"/>
+                                           VerticalAlignment="Center" Margin="16,0"
+                                           TextTrimming="CharacterEllipsis"/>
                                 <!-- Type/Host -->
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-                                    <TextBlock Text="{Binding Type}" Foreground="#9CA3AF" FontSize="12"/>
-                                    <TextBlock Text="{Binding Host}" Foreground="#6B7280" FontSize="12"
+                                    <TextBlock Text="{Binding Type}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding Host}" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                IsVisible="{Binding Host, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
                                 </StackPanel>
                                 <!-- DateTime -->
                                 <TextBlock Grid.Column="3" Text="{Binding DateTime, StringFormat='yyyy-MM-dd HH:mm:ss'}" 
-                                           Foreground="#6B7280" VerticalAlignment="Center" FontSize="12"/>
+                                           VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </Grid>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+
         <!-- Pagination Footer -->
-        <Border Grid.Row="3" Padding="12" Background="#1a1a2e" BorderBrush="#374151" BorderThickness="0,1,0,0">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
-                <Button Content="◀ Previous" Command="{Binding PreviousPageCommand}" 
-                        IsEnabled="{Binding CanGoPrevious}" Padding="16,8"/>
+        <Border Grid.Row="3" Padding="16" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}" 
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="24">
+                <Button Content="Previous" Command="{Binding PreviousPageCommand}" 
+                        IsEnabled="{Binding CanGoPrevious}"
+                        AutomationProperties.Name="Previous Page"/>
                 
                 <TextBlock Text="{Binding PageInfo}" VerticalAlignment="Center" 
-                           Foreground="#9CA3AF" FontWeight="SemiBold"/>
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 
-                <Button Content="Next ▶" Command="{Binding NextPageCommand}" 
-                        IsEnabled="{Binding CanGoNext}" Padding="16,8"/>
+                <Button Content="Next" Command="{Binding NextPageCommand}" 
+                        IsEnabled="{Binding CanGoNext}"
+                        AutomationProperties.Name="Next Page"/>
             </StackPanel>
         </Border>
     </Grid>

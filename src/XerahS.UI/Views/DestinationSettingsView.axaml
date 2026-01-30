@@ -4,75 +4,89 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:XerahS.UI.ViewModels"
              xmlns:controls="using:XerahS.UI.Controls"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
              x:Class="XerahS.UI.Views.DestinationSettingsView"
              x:DataType="vm:DestinationSettingsViewModel">
 
-    <Grid ColumnDefinitions="200,*">
+    <Grid ColumnDefinitions="240, *">
         <!-- Category Sidebar -->
         <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,0,1,0"
-                Padding="10">
-            <StackPanel Spacing="5">
-                <TextBlock Text="Categories" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                Padding="16">
+            <StackPanel Spacing="16">
+                <TextBlock Text="Categories" FontWeight="SemiBold"/>
                 <ListBox ItemsSource="{Binding Categories}"
-                         SelectedItem="{Binding SelectedCategory}">
+                         SelectedItem="{Binding SelectedCategory}"
+                         Background="Transparent"
+                         AutomationProperties.Name="Destination Categories">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Name}"/>
+                            <TextBlock Text="{Binding Name}" Margin="0,4"/>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
             </StackPanel>
         </Border>
 
-        <!-- Instance List and Details -->
-        <Grid Grid.Column="1" RowDefinitions="Auto,*" Margin="20">
-            <!-- Header with Import and Add Buttons -->
-            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,15">
+        <!-- Main Content -->
+        <Grid Grid.Column="1" RowDefinitions="Auto, *" Margin="24">
+            
+            <!-- Header -->
+            <Grid Grid.Row="0" ColumnDefinitions="*, 16, Auto" Margin="0,0,0,24">
                 <TextBlock Grid.Column="0" Text="{Binding SelectedCategory.Name}" 
-                           FontSize="20" FontWeight="SemiBold"/>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                    <Button Content="Import ShareX UploadersConfig"
+                           FontSize="26" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <Button Content="Import Config"
                             Command="{Binding ImportShareXConfigCommand}"
-                            ToolTip.Tip="Import uploader settings from ShareX (WinForms) UploadersConfig.json"/>
-                    <Button Content="Open Plugins Folder..."
+                            ToolTip.Tip="Import uploader settings from ShareX"
+                            AutomationProperties.Name="Import ShareX Config"/>
+                    <Button Content="Plugins Folder"
                             Command="{Binding OpenPluginsFolderCommand}"
-                            ToolTip.Tip="Open the plugins folder to add or inspect plugin files"/>
-                    <Button Content="+ Add from Catalog" 
-                            Command="{Binding SelectedCategory.AddFromCatalogCommand}"/>
+                            ToolTip.Tip="Open the plugins folder"
+                            AutomationProperties.Name="Open Plugins Folder"/>
+                    <Button Content="Add from Catalog" 
+                            Command="{Binding SelectedCategory.AddFromCatalogCommand}"
+                            Classes="accent"
+                            AutomationProperties.Name="Add Destination from Catalog"/>
                 </StackPanel>
             </Grid>
 
-            <!-- Instance List and Provider Configuration (Side-by-Side) -->
-            <Grid Grid.Row="1" ColumnDefinitions="0.3*,Auto,0.7*">
-                <!-- Instance List (Left Column) -->
-                <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            <!-- Content Area -->
+            <Grid Grid.Row="1" ColumnDefinitions="260, 16, *">
+                
+                <!-- Instance List -->
+                <Border Grid.Column="0" 
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                         BorderThickness="1"
                         CornerRadius="4"
-                        Padding="10"
-                        MinWidth="160"
-                        Margin="0,0,10,0">
+                        Padding="0">
                     <ListBox ItemsSource="{Binding SelectedCategory.Instances}"
-                             SelectedItem="{Binding SelectedCategory.SelectedInstance}">
+                             SelectedItem="{Binding SelectedCategory.SelectedInstance}"
+                             Background="Transparent"
+                             AutomationProperties.Name="Destination Instances">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Grid ColumnDefinitions="Auto, 12, *, 8, Auto" Margin="4">
                                     <Path Grid.Column="0" 
                                           Data="M12,0A12,12,0,1,0,24,12,12,12,0,0,0,12,0ZM10.8,18.6L4.2,12l1.68-1.68L10.8,15.24l7.32-7.32L19.8,9.6Z"
                                           Fill="{DynamicResource AccentFillColorDefaultBrush}"
-                                          Width="16" Height="16"
-                                          Margin="0,0,8,0"
-                                          IsVisible="{Binding IsDefault}"/>
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                        <TextBlock Text="{Binding DisplayName}" FontWeight="Medium"/>
+                                          Width="12" Height="12"
+                                          IsVisible="{Binding IsDefault}"
+                                          VerticalAlignment="Center"/>
+                                          
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock Text="{Binding DisplayName}" FontWeight="Medium" TextTrimming="CharacterEllipsis"/>
                                         <TextBlock Text="{Binding FileTypeScopeDisplay}" 
                                                    FontSize="11"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
-                                    <Button Grid.Column="2" Content="⋮" Padding="8,4" Margin="4,0,0,0">
+
+                                    <Button Grid.Column="4" Content="⋮" Padding="8,4" Background="Transparent" BorderThickness="0"
+                                            AutomationProperties.Name="Instance Options">
                                         <Button.Flyout>
                                             <MenuFlyout>
                                                 <MenuItem Header="Set as Default" 
@@ -94,151 +108,77 @@
                     </ListBox>
                 </Border>
 
-                <GridSplitter Grid.Column="1" 
-                              Width="10" 
-                              Background="Transparent"
-                              ResizeDirection="Columns"/>
-
-                <!-- Provider Configuration Panel (Right Column) -->
+                <!-- Configuration Panel -->
                 <Border Grid.Column="2" 
                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                         BorderThickness="1"
                         CornerRadius="4"
-                        Padding="15"
-                        Margin="10,0,0,0"
+                        Padding="24"
                         IsVisible="{Binding SelectedCategory.SelectedInstance, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <ScrollViewer>
-                        <StackPanel Spacing="10">
-                            <!-- Plugin Verification Status Banner -->
-                            <Border Background="{DynamicResource SystemFillColorSuccessBackground}"
-                                    BorderBrush="{DynamicResource SystemAccentColor}"
-                                    BorderThickness="1"
-                                    CornerRadius="4"
-                                    Padding="12"
-                                    IsVisible="{Binding !SelectedCategory.SelectedInstance.HasVerificationWarning}"
-                                    Margin="0,0,0,10">
-                                <StackPanel Spacing="5">
-                                    <TextBlock Text="{Binding SelectedCategory.SelectedInstance.VerificationMessage}"
-                                               FontWeight="Medium"
-                                               Foreground="{DynamicResource SystemFillColorSuccessForeground}"/>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Background="{DynamicResource SystemFillColorCautionBackground}"
-                                    BorderBrush="#FFA500"
-                                    BorderThickness="1"
-                                    CornerRadius="4"
-                                    Padding="12"
-                                    IsVisible="{Binding SelectedCategory.SelectedInstance.HasVerificationWarning}"
-                                    Margin="0,0,0,10">
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="{Binding SelectedCategory.SelectedInstance.VerificationMessage}"
-                                               FontWeight="Medium"
-                                               Foreground="#FFA500"/>
-                                    <Expander Header="Details" IsExpanded="False">
-                                        <ItemsControl ItemsSource="{Binding SelectedCategory.SelectedInstance.VerificationIssues}"
-                                                      Margin="10,5,0,0">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding}" 
-                                                               FontSize="11"
-                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                               TextWrapping="Wrap"
-                                                               Margin="0,2"/>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </Expander>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Background="{DynamicResource SystemFillColorCriticalBackground}"
-                                    BorderBrush="#DC3545"
-                                    BorderThickness="2"
-                                    CornerRadius="4"
-                                    Padding="12"
-                                    IsVisible="{Binding SelectedCategory.SelectedInstance.HasVerificationError}"
-                                    Margin="0,0,0,10">
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="{Binding SelectedCategory.SelectedInstance.VerificationMessage}"
-                                               FontWeight="SemiBold"
-                                               Foreground="#DC3545"/>
-                                    <Expander Header="Show Fix Instructions" IsExpanded="True">
-                                        <ItemsControl ItemsSource="{Binding SelectedCategory.SelectedInstance.VerificationIssues}"
-                                                      Margin="10,5,0,0">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding}" 
-                                                               FontSize="11"
-                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                               TextWrapping="Wrap"
-                                                               Margin="0,2"/>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </Expander>
-                                    
-                                    <!-- Clean Duplicates Button -->
-                                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,8,0,0">
-                                        <Button Content="🗑️ Clean Duplicate Files"
-                                                Command="{Binding SelectedCategory.SelectedInstance.CleanDuplicatesCommand}"
-                                                HorizontalAlignment="Left"
-                                                Background="{DynamicResource AccentButtonBackground}"
-                                                Foreground="White">
-                                            <ToolTip.Tip>
-                                                <TextBlock Text="Automatically delete duplicate framework DLLs from the plugin folder"
-                                                           TextWrapping="Wrap"
-                                                           MaxWidth="300"/>
-                                            </ToolTip.Tip>
-                                        </Button>
-                                        <Button Content="📂 Open Plugins Folder"
-                                                Command="{Binding SelectedCategory.SelectedInstance.OpenPluginsFolderCommand}"
-                                                HorizontalAlignment="Left">
-                                            <ToolTip.Tip>
-                                                <TextBlock Text="Open this provider's plugin folder in Explorer"
-                                                           TextWrapping="Wrap"
-                                                           MaxWidth="260"/>
-                                            </ToolTip.Tip>
-                                        </Button>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Show stable SHA1 instance ID for reference -->
-                            <StackPanel Spacing="3">
-                                <TextBlock Text="Instance ID" FontWeight="SemiBold"/>
-                                <TextBox Text="{Binding SelectedCategory.SelectedInstance.InstanceId}"
-                                         IsReadOnly="True"
-                                         FontFamily="Consolas, Monospace"
-                                         Background="{DynamicResource ControlAltFillColorDefaultBrush}"
-                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                         Padding="6,4,6,4"/>
-                            </StackPanel>
-
-                            <TextBlock Text="Instance Settings" FontWeight="SemiBold" FontSize="16"/>
+                    <ScrollViewer Padding="0,0,16,0">
+                        <StackPanel Spacing="24">
                             
-                            <StackPanel Spacing="5">
-                                <TextBlock Text="Display Name:" FontWeight="SemiBold"/>
-                                <TextBox Text="{Binding SelectedCategory.SelectedInstance.DisplayName}" 
-                                         Watermark="Enter display name..."/>
+                            <!-- Verification Status -->
+                            <StackPanel Spacing="16" IsVisible="{Binding SelectedCategory.SelectedInstance.HasVerificationWarning}">
+                                <Border Background="{DynamicResource SystemFillColorCautionBackground}"
+                                        BorderBrush="#FFA500" BorderThickness="1" CornerRadius="4" Padding="12"
+                                        IsVisible="{Binding SelectedCategory.SelectedInstance.HasVerificationWarning}">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="{Binding SelectedCategory.SelectedInstance.VerificationMessage}"
+                                                   FontWeight="Medium" Foreground="#FFA500"/>
+                                        <Expander Header="Details">
+                                            <ItemsControl ItemsSource="{Binding SelectedCategory.SelectedInstance.VerificationIssues}"/>
+                                        </Expander>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
 
-                            <StackPanel Spacing="5">
-                                <TextBlock Text="Provider:" FontWeight="SemiBold"/>
-                                <TextBlock Text="{Binding SelectedCategory.SelectedInstance.ProviderId}" 
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                             <!-- Error Status -->
+                            <StackPanel Spacing="16" IsVisible="{Binding SelectedCategory.SelectedInstance.HasVerificationError}">
+                                <Border Background="{DynamicResource SystemFillColorCriticalBackground}"
+                                        BorderBrush="#DC3545" BorderThickness="1" CornerRadius="4" Padding="12">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="{Binding SelectedCategory.SelectedInstance.VerificationMessage}"
+                                                   FontWeight="SemiBold" Foreground="#DC3545"/>
+                                        <Expander Header="Fix Instructions" IsExpanded="True">
+                                            <ItemsControl ItemsSource="{Binding SelectedCategory.SelectedInstance.VerificationIssues}"/>
+                                        </Expander>
+                                        <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+                                            <Button Content="Clean Duplicates" 
+                                                    Command="{Binding SelectedCategory.SelectedInstance.CleanDuplicatesCommand}"
+                                                    AutomationProperties.Name="Clean Duplicate Files"/>
+                                            <Button Content="Open Folder" 
+                                                    Command="{Binding SelectedCategory.SelectedInstance.OpenPluginsFolderCommand}"
+                                                    AutomationProperties.Name="Open Provider Folder"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
 
-                            <StackPanel Spacing="5">
-                                <TextBlock Text="Category:" FontWeight="SemiBold"/>
-                                <TextBlock Text="{Binding SelectedCategory.SelectedInstance.Category}" 
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <!-- Identity -->
+                            <StackPanel Spacing="16">
+                                <TextBlock Text="Identity" FontWeight="SemiBold" FontSize="16"/>
+                                <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, 16, Auto, 16, Auto">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding SelectedCategory.SelectedInstance.DisplayName}" 
+                                             Watermark="Display Name" AutomationProperties.Name="Display Name"/>
+                                    
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Provider:" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding SelectedCategory.SelectedInstance.ProviderId}" 
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Instance ID:" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding SelectedCategory.SelectedInstance.InstanceId}"
+                                             IsReadOnly="True" FontFamily="Consolas, Monospace" 
+                                             Background="{DynamicResource ControlAltFillColorDefaultBrush}"
+                                             AutomationProperties.Name="Instance ID"/>
+                                </Grid>
                             </StackPanel>
 
-                            <!-- File Type Configuration -->
-                            <StackPanel Spacing="5" Margin="0,10,0,0">
-                                <TextBlock Text="File Type Configuration" FontSize="14" FontWeight="SemiBold"/>
+                            <!-- File Type Scope -->
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="File Type Configuration" FontWeight="SemiBold" FontSize="16"/>
                                 <ContentControl Content="{Binding SelectedCategory.SelectedInstance}">
                                     <ContentControl.ContentTemplate>
                                         <DataTemplate>
@@ -248,29 +188,31 @@
                                 </ContentControl>
                             </StackPanel>
 
-                            <!-- Provider-specific settings -->
-                            <StackPanel Spacing="5" Margin="0,10,0,0">
-                                <TextBlock Text="Provider Configuration" FontSize="14" FontWeight="SemiBold"/>
+                            <!-- Custom Config -->
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Provider Settings" FontWeight="SemiBold" FontSize="16"/>
                                 <ContentControl Content="{Binding SelectedCategory.SelectedInstance.ConfigView}"/>
                             </StackPanel>
+
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
 
-                <!-- Empty State (Right Column) -->
+                <!-- Empty State -->
                 <StackPanel Grid.Column="2" 
                             HorizontalAlignment="Center" 
                             VerticalAlignment="Center"
-                            Spacing="10"
+                            Spacing="16"
                             IsVisible="{Binding SelectedCategory.SelectedInstance, Converter={x:Static ObjectConverters.IsNull}}">
                     <TextBlock Text="No instance selected" 
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                               HorizontalAlignment="Center"/>
-                    <TextBlock Text="Select an instance from the list or add a new one" 
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                               FontSize="18" FontWeight="SemiBold"
                                HorizontalAlignment="Center"
-                               FontSize="12"/>
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                    <TextBlock Text="Select an instance or add a new one to configure." 
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                 </StackPanel>
+
             </Grid>
         </Grid>
     </Grid>

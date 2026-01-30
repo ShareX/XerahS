@@ -219,6 +219,12 @@ public partial class App : Application
             // Trigger async recording initialization via callback
             // This prevents blocking the main window from showing quickly
             PostUIInitializationCallback?.Invoke();
+
+            // Initialize auto-update service if enabled
+            if (SettingsManager.Settings.AutoCheckUpdate)
+            {
+                Services.UpdateService.Instance.Initialize();
+            }
         }
 
         base.OnFrameworkInitializationCompleted();

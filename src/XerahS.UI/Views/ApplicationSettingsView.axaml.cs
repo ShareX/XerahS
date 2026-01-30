@@ -25,6 +25,8 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using XerahS.Core;
+using XerahS.UI.Controls;
 
 namespace XerahS.UI.Views
 {
@@ -37,6 +39,12 @@ namespace XerahS.UI.Views
             InitializeComponent();
             var vm = new ViewModels.SettingsViewModel();
             DataContext = vm;
+
+            var propertyGrid = this.FindControl<PropertyGrid>("ApplicationConfigPropertyGrid");
+            if (propertyGrid != null)
+            {
+                propertyGrid.PropertyValueChanged += (_, _) => SettingsManager.SaveApplicationConfig();
+            }
 
             // Wire up the edit requester
             vm.HotkeySettings.EditHotkeyRequester = async (settings) =>
