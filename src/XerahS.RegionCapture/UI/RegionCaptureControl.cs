@@ -56,9 +56,11 @@ public sealed class RegionCaptureControl : UserControl
     private readonly double _dimOpacity;
     private readonly bool _enableWindowSnapping;
     private readonly bool _enableMagnifier;
+    private readonly bool _captureTransparent;
     private readonly XerahS.Platform.Abstractions.CursorInfo? _ghostCursor;
     private readonly Bitmap? _ghostCursorBitmap;
     private readonly SkiaSharp.SKBitmap? _backgroundBitmap;
+    private readonly Bitmap? _backgroundAvBitmap;
 
     // Keyboard state tracking
     private SelectionModifier _activeModifiers = SelectionModifier.None;
@@ -105,6 +107,24 @@ public sealed class RegionCaptureControl : UserControl
         _enableMagnifier = options.EnableMagnifier;
         _enableKeyboardNudge = options.EnableKeyboardNudge;
         _backgroundBitmap = options.BackgroundImage;
+        _captureTransparent = options.CaptureTransparent;
+
+        // Convert background bitmap to Avalonia Bitmap for rendering when not transparent
+        if (!_captureTransparent && _backgroundBitmap != null)
+        {
+            try
+            {
+                using var data = _backgroundBitmap.Encode(SKEncodedImageFormat.Png, 100);
+                using var stream = new MemoryStream();
+                data.SaveTo(stream);
+                stream.Position = 0;
+                _backgroundAvBitmap = new Bitmap(stream);
+            }
+            catch
+            {
+                _backgroundAvBitmap = null;
+            }
+        }
 
         // Create magnifier if enabled
         _magnifier = new MagnifierControl(options.MagnifierZoom);
@@ -321,6 +341,13 @@ public sealed class RegionCaptureControl : UserControl
         base.Render(context);
 
         var bounds = new Rect(0, 0, Bounds.Width, Bounds.Height);
+
+        // Draw frozen background when not in transparent mode
+        if (!_captureTransparent && _backgroundAvBitmap != null)
+        {
+            DrawFrozenBackground(context, bounds);
+        }
+
         Rect? clearRect = null;
 
         // Determine the clear rect (selection or window snap area)
@@ -420,7 +447,7 @@ public sealed class RegionCaptureControl : UserControl
             cursorLogicalPos.X - (_ghostCursor.Hotspot.X * scale),
             cursorLogicalPos.Y - (_ghostCursor.Hotspot.Y * scale));
 
-        try 
+        try
         {
             // Draw the cached cursor bitmap
             var size = new Size(_ghostCursorBitmap.Size.Width * scale, _ghostCursorBitmap.Size.Height * scale);
@@ -430,6 +457,28 @@ public sealed class RegionCaptureControl : UserControl
         {
             // Ignore drawing errors for ghost cursor
         }
+    }
+
+    private void DrawFrozenBackground(DrawingContext context, Rect bounds)
+    {
+        if (_backgroundAvBitmap == null) return;
+
+        // Calculate the portion of the background bitmap that corresponds to this monitor
+        var virtualBounds = _coordinateService.GetVirtualScreenBounds();
+
+        // Monitor's position relative to virtual screen origin
+        var srcX = _monitor.PhysicalBounds.X - virtualBounds.X;
+        var srcY = _monitor.PhysicalBounds.Y - virtualBounds.Y;
+
+        // Source rect in the full screenshot (physical pixels)
+        var sourceRect = new Rect(
+            srcX,
+            srcY,
+            _monitor.PhysicalBounds.Width,
+            _monitor.PhysicalBounds.Height);
+
+        // Destination rect is the full control bounds (logical coordinates)
+        context.DrawImage(_backgroundAvBitmap, sourceRect, bounds);
     }
 
     private void DrawResizeHandles(DrawingContext context, Rect rect)
