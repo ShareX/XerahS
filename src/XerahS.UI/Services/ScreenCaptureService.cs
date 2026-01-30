@@ -85,6 +85,7 @@ namespace XerahS.UI.Services
                         {
                             ShowCursor = options?.ShowCursor ?? false,
                             BackgroundImage = backgroundForMagnifier,
+                            CaptureTransparent = options?.CaptureTransparent ?? false,
                         }
                     };
 
@@ -171,6 +172,7 @@ namespace XerahS.UI.Services
                         {
                             ShowCursor = options?.ShowCursor ?? false,
                             BackgroundImage = backgroundForMagnifier,
+                            CaptureTransparent = options?.CaptureTransparent ?? false,
                         }
                     };
 
