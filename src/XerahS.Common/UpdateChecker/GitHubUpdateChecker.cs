@@ -171,8 +171,48 @@ namespace XerahS.Common
 
                 if (release.assets != null && release.assets.Length > 0)
                 {
-                    string endsWith;
+                    string endsWith = "";
+                    string arch = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64 ? "arm64" : "x64";
+                    
+                    if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+                    {
+                         endsWith = isPortable ? $"-win-{arch}.zip" : $"-win-{arch}.exe";
+                    }
+                    else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+                    {
+                         endsWith = isPortable ? $"-osx-{arch}.zip" : $"-osx-{arch}.dmg";
+                    }
+                    else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
+                    {
+                         // Linux naming: XerahS-0.6.2-linux-arm64.tar.gz or .deb
+                         endsWith = isPortable ? $"-linux-{arch}.tar.gz" : $"-linux-{arch}.deb";
+                    }
 
+                    if (!string.IsNullOrEmpty(endsWith))
+                    {
+                        foreach (GitHubAsset? asset in release.assets)
+                        {
+                            if (asset != null && !string.IsNullOrEmpty(asset.name) && asset.name.EndsWith(endsWith, StringComparison.OrdinalIgnoreCase))
+                            {
+                                FileName = asset.name;
+
+                                if (isBrowserDownloadURL)
+                                {
+                                    DownloadURL = asset.browser_download_url;
+                                }
+                                else
+                                {
+                                    DownloadURL = asset.url;
+                                }
+
+                                IsPreRelease = release.prerelease;
+
+                                return true;
+                            }
+                        }
+                    }
+
+                    // Fallback to legacy naming for backward compatibility if new naming scheme not found
                     if (isPortable)
                     {
                         endsWith = "portable.zip";

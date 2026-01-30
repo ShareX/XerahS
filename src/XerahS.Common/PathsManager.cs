@@ -107,6 +107,27 @@ namespace XerahS.Common
             if (!Directory.Exists(ToolsArchitectureFolder))
                 Directory.CreateDirectory(ToolsArchitectureFolder);
         }
+
+        public static System.Collections.Generic.IEnumerable<string> GetPluginDirectories()
+        {
+            var paths = new System.Collections.Generic.List<string>();
+
+            // 1. App-bundled plugins (BaseDirectory/Plugins)
+            string appPluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppResources.PluginsFolderName);
+            paths.Add(appPluginsPath);
+
+            // 2. User-installed plugins (PluginsFolder -> PersonalFolder/Plugins)
+            string userPluginsPath = PluginsFolder;
+            
+            // Avoid duplicate if they are the same
+            if (!string.Equals(appPluginsPath, userPluginsPath, StringComparison.OrdinalIgnoreCase))
+            {
+                paths.Add(userPluginsPath);
+            }
+
+            return paths;
+        }
+
         public static string GetFFmpegPath()
         {
             // 1. Check Personal Tools Architecture Folder (Prioritized)

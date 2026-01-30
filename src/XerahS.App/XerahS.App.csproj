@@ -13,12 +13,21 @@
     <DefineConstants Condition="'$(OS)' == 'Windows_NT'">$(DefineConstants);WINDOWS</DefineConstants>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(DefineConstants);LINUX</DefineConstants>
+    <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
+    <SelfContained Condition="'$(Configuration)' == 'Release'">true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) OR $(RuntimeIdentifier.StartsWith('osx'))">
-    <Content Include="libscreencapturekit_bridge.dylib" Condition="Exists('libscreencapturekit_bridge.dylib')">
+    <Content Include="..\..\native\macos\libscreencapturekit_bridge.dylib">
+      <Link>libscreencapturekit_bridge.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <Target Name="BuildNativeMacOS" BeforeTargets="BeforeBuild" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <Message Text="Building native macOS library..." Importance="high" />
+    <Exec Command="make -C ../../native/macos" />
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" Version="11.3.9" />
@@ -43,7 +52,7 @@
     </PropertyGroup>
     <MakeDir Directories="$(_MacMacOS);$(_MacResources)" />
     <ItemGroup>
-      <_MacPublishFiles Include="$(PublishDir)**" />
+      <_MacPublishFiles Include="$(PublishDir)**" Exclude="$(PublishDir)*.app/**;$(PublishDir)*.pdb;$(PublishDir)*.xml;$(PublishDir)Plugins/**" />
     </ItemGroup>
     <Copy SourceFiles="@(_MacPublishFiles)"
           DestinationFolder="$(_MacMacOS)/%(_MacPublishFiles.RecursiveDir)"
@@ -88,6 +97,26 @@
           Condition="Exists('$(_MacPlist)')" />
     <Exec Command="/bin/sh -c 'if /usr/libexec/PlistBuddy -c &quot;Print :CFBundleIconName&quot; &quot;$(_MacPlist)&quot; &gt;/dev/null 2&gt;&amp;1; then /usr/libexec/PlistBuddy -c &quot;Set :CFBundleIconName Logo&quot; &quot;$(_MacPlist)&quot;; else /usr/libexec/PlistBuddy -c &quot;Add :CFBundleIconName string Logo&quot; &quot;$(_MacPlist)&quot;; fi'"
           Condition="Exists('$(_MacPlist)')" />
+  </Target>
+
+  <!-- Bundle Default Plugins -->
+  <ItemGroup>
+    <_DefaultPlugins Include="..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" PluginId="amazons3" />
+    <_DefaultPlugins Include="..\Plugins\ShareX.Imgur.Plugin\XerahS.Imgur.Plugin.csproj" PluginId="imgur" />
+  </ItemGroup>
+
+  <Target Name="BundlePlugins" AfterTargets="Publish" Condition="'$(SkipBundlePlugins)' != 'true'">
+    <Message Text="Bundling default plugin: %(_DefaultPlugins.PluginId)" Importance="High" />
+    <MSBuild Projects="%(_DefaultPlugins.Identity)"
+             Targets="Restore;Publish"
+             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=false;PublishDir=$(PublishDir)Plugins/%(_DefaultPlugins.PluginId)/" />
+  </Target>
+
+  <Target Name="BuildPlugins" AfterTargets="Build" Condition="'$(SkipBundlePlugins)' != 'true'">
+    <Message Text="Building default plugin for dev: %(_DefaultPlugins.PluginId)" Importance="High" />
+    <MSBuild Projects="%(_DefaultPlugins.Identity)"
+             Targets="Restore;Build"
+             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);OutputPath=$(OutDir)Plugins\%(_DefaultPlugins.PluginId)\" />
   </Target>
 </Project>
 

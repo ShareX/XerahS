@@ -113,9 +113,16 @@ public sealed record RegionCaptureOptions
     public bool ShowCursor { get; init; } = false;
 
     /// <summary>
-    /// Background image for magnifier pixel sampling. When provided, the magnifier 
+    /// Background image for magnifier pixel sampling. When provided, the magnifier
     /// will display actual pixel data instead of placeholder content.
     /// This should be captured before the overlay is displayed.
     /// </summary>
     public SkiaSharp.SKBitmap? BackgroundImage { get; init; } = null;
+
+    /// <summary>
+    /// When true, the overlay is transparent showing the live desktop behind it.
+    /// When false, the overlay displays a frozen screenshot background (like original ShareX).
+    /// Default: false (frozen screenshot background).
+    /// </summary>
+    public bool CaptureTransparent { get; init; } = false;
 }

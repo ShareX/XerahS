@@ -217,11 +217,15 @@ namespace XerahS.Core.Tasks
                 var isScreenCaptureDelay = workflowCategory == EnumExtensions.WorkflowType_Category_ScreenCapture && captureDelaySeconds > 0;
                 var isScreenRecordDelay = workflowCategory == EnumExtensions.WorkflowType_Category_ScreenRecord && captureDelaySeconds > 0;
 
+                // CaptureTransparent is true only for RectangleTransparent workflow
+                // All other region capture workflows use frozen screenshot background
+                var useTransparentOverlay = taskSettings.Job == WorkflowType.RectangleTransparent;
+
                 var captureOptions = new CaptureOptions
                 {
                     UseModernCapture = captureSettings.UseModernCapture,
                     ShowCursor = captureSettings.ShowCursor,
-                    CaptureTransparent = captureSettings.CaptureTransparent,
+                    CaptureTransparent = useTransparentOverlay,
                     CaptureShadow = captureSettings.CaptureShadow,
                     CaptureClientArea = captureSettings.CaptureClientArea,
                     WorkflowId = taskSettings.WorkflowId,
@@ -238,6 +242,7 @@ namespace XerahS.Core.Tasks
                         image = await PlatformServices.ScreenCapture.CaptureFullScreenAsync(captureOptions);
                         break;
 
+                    case WorkflowType.RectangleTransparent:
                     case WorkflowType.RectangleRegion:
                         if (isScreenCaptureDelay)
                         {

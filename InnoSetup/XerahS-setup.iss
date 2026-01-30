@@ -1,13 +1,41 @@
 #define MyAppName "XerahS"
 #define MyAppExeName "XerahS.exe"
 #define MyAppRootDirectory "..\..\"
+#ifndef MyAppReleaseDirectory
 #define MyAppReleaseDirectory MyAppRootDirectory + "XerahS\src\XerahS.App\bin\Release\net10.0-windows10.0.26100.0"
+#endif
+
+#ifndef MyAppPublisher
 #define MyAppPublisher "ShareX Team"
+#endif
+
+#ifndef MyAppURL
 #define MyAppURL "https://github.com/ShareX/XerahS"
+#endif
+
+#ifndef MyAppVersion
 #define MyAppVersion GetStringFileInfo(MyAppReleaseDirectory + "\" + MyAppExeName, "ProductVersion")
+#endif
+
+#ifndef MyAppFileVersion
 #define MyAppFileVersion GetStringFileInfo(MyAppReleaseDirectory + "\" + MyAppExeName, "FileVersion")
+#endif
+
+#ifndef MyAppShortVersion
 #define MyAppShortVersion Copy(MyAppFileVersion, 1, RPos(".", MyAppFileVersion) - 1)
+#endif
+
+#ifndef MyAppId
 #define MyAppId "7B28B84B-3D6B-4198-8424-95C4F6298517"
+#endif
+
+#ifndef OutputBaseFilename
+#define OutputBaseFilename MyAppName + "-" + MyAppShortVersion + "-setup"
+#endif
+
+#ifndef OutputDir
+#define OutputDir MyAppRootDirectory + "Output"
+#endif
 
 [Setup]
 AppCopyright=Copyright (c) 2007-2026 ShareX Team
@@ -25,8 +53,8 @@ DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile={#MyAppRootDirectory}\XerahS\LICENSE.txt
 MinVersion=10.0.17763
-OutputBaseFilename={#MyAppName}-{#MyAppShortVersion}-setup
-OutputDir={#MyAppRootDirectory}\Output
+OutputBaseFilename={#OutputBaseFilename}
+OutputDir={#OutputDir}
 PrivilegesRequired=lowest
 SolidCompression=yes
 UninstallDisplayIcon={app}\{#MyAppExeName}

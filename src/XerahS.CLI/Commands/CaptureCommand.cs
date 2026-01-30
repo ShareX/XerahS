@@ -83,9 +83,21 @@ namespace XerahS.CLI.Commands
                 Environment.ExitCode = CaptureRegionAsync(region!, output, upload).GetAwaiter().GetResult();
             });
 
+            // Transparent region capture subcommand
+            var transparentCommand = new Command("transparent", "Capture transparent region");
+            transparentCommand.Add(outputOption);
+            transparentCommand.Add(uploadOption);
+            transparentCommand.SetAction((parseResult) =>
+            {
+                var output = parseResult.GetValue(outputOption);
+                var upload = parseResult.GetValue(uploadOption);
+                Environment.ExitCode = CaptureTransparentAsync(output, upload).GetAwaiter().GetResult();
+            });
+
             captureCommand.Add(screenCommand);
             captureCommand.Add(windowCommand);
             captureCommand.Add(regionCommand);
+            captureCommand.Add(transparentCommand);
 
             return captureCommand;
         }
@@ -259,6 +271,24 @@ namespace XerahS.CLI.Commands
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Failed to capture region: {ex.Message}");
+                DebugHelper.WriteException(ex);
+                return 1;
+            }
+        }
+
+        private static async Task<int> CaptureTransparentAsync(string? output, bool upload)
+        {
+            try
+            {
+                Console.WriteLine("Starting transparent region capture...");
+                var taskSettings = new TaskSettings();
+                taskSettings.Job = WorkflowType.RectangleTransparent;
+                ConfigureTask(taskSettings, output, upload);
+                return await RunTask(taskSettings);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to capture transparent region: {ex.Message}");
                 DebugHelper.WriteException(ex);
                 return 1;
             }
