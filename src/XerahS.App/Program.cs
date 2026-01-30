@@ -103,7 +103,7 @@ namespace XerahS.App
             InitializePlatformServices();
 
             // Register callback for post-UI async initialization
-            XerahS.UI.App.PostUIInitializationCallback = InitializeRecordingAsync;
+            XerahS.UI.App.PostUIInitializationCallback = InitializeBackgroundServicesAsync;
 
             // Initialize settings
             XerahS.Core.SettingsManager.LoadInitialSettings();
@@ -176,13 +176,13 @@ namespace XerahS.App
         }
 
         /// <summary>
-        /// Asynchronously initializes platform-specific recording capabilities after the UI is loaded.
+        /// Asynchronously initializes platform-specific services (recording, plugins) after the UI is loaded.
         /// This prevents blocking the main window from appearing during startup.
         /// Called via PostUIInitializationCallback from App.axaml.cs after OnFrameworkInitializationCompleted.
         /// </summary>
-        private static void InitializeRecordingAsync()
+        private static void InitializeBackgroundServicesAsync()
         {
-            XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "=== InitializeRecordingAsync() CALLED ===");
+            XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "=== InitializeBackgroundServicesAsync() CALLED ===");
 
             // Capture startup time on main thread
             double startupTimeMs = 0;
@@ -204,7 +204,28 @@ namespace XerahS.App
                 try
                 {
                     XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Background task started");
-                    XerahS.Common.DebugHelper.WriteLine("Starting async recording initialization...");
+                    XerahS.Common.DebugHelper.WriteLine("Starting async services initialization...");
+                    
+                    // 1. Initialize Plugins (ProviderCatalog)
+                    try
+                    {
+                        XerahS.Common.DebugHelper.WriteLine("Initializing Plugins...");
+                        XerahS.Uploaders.PluginSystem.ProviderCatalog.InitializeBuiltInProviders(); // Ensure built-ins
+                        
+                        var pluginPaths = XerahS.Common.PathsManager.GetPluginDirectories();
+                        XerahS.Common.DebugHelper.WriteLine($"Scanning for plugins in: {string.Join(", ", pluginPaths)}");
+                        
+                        XerahS.Uploaders.PluginSystem.ProviderCatalog.LoadPlugins(pluginPaths);
+                        
+                        int pluginCount = XerahS.Uploaders.PluginSystem.ProviderCatalog.GetAllProviders().Count;
+                        XerahS.Common.DebugHelper.WriteLine($"Plugins initialized. Total providers: {pluginCount}");
+                    }
+                    catch (Exception ex)
+                    {
+                        XerahS.Common.DebugHelper.WriteException(ex, "Failed to initialize plugins");
+                    }
+
+                    // 2. Initialize Recording Platform Services
 #if WINDOWS
                     if (OperatingSystem.IsWindows())
                     {
@@ -226,7 +247,7 @@ namespace XerahS.App
 #endif
                     asyncStopwatch.Stop();
                     XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Background task completed successfully");
-                    XerahS.Common.DebugHelper.WriteLine("Async recording initialization completed successfully");
+                    XerahS.Common.DebugHelper.WriteLine("Async services initialization completed successfully");
                     
                     // Log startup time (captured on main thread) and async init time
                     XerahS.Common.DebugHelper.WriteLine($"Startup time: {startupTimeMs:F0} ms (+ {asyncStopwatch.ElapsedMilliseconds} ms async init)");
@@ -234,17 +255,17 @@ namespace XerahS.App
                 catch (Exception ex)
                 {
                     XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", $"✗ Background task EXCEPTION: {ex.GetType().Name}: {ex.Message}");
-                    XerahS.Common.DebugHelper.WriteException(ex, "Failed to initialize recording capabilities");
+                    XerahS.Common.DebugHelper.WriteException(ex, "Failed to initialize background services");
 
-                    // Notify user that recording may not be available
+                    // Notify user that recording/services may not be available
                     try
                     {
                         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                         {
                             XerahS.Platform.Abstractions.PlatformServices.Toast?.ShowToast(new XerahS.Platform.Abstractions.ToastConfig
                             {
-                                Title = "Recording Initialization Warning",
-                                Text = "Screen recording initialization failed. Recording may not be available. Check logs for details.",
+                                Title = "Initialization Warning",
+                                Text = "Background services initialization failed. Check logs for details.",
                                 Duration = 6f
                             });
                         });
