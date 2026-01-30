@@ -10,7 +10,21 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome">
 
-    <Panel x:Name="RootPanel">
-        <!-- Custom rendering control -->
-    </Panel>
+    <!-- XIP-0023: Layout prepared for AnnotationToolbar integration -->
+    <!-- Once ShareX.Editor supports cross-platform builds (net10.0), the AnnotationToolbar
+         can be added here at VerticalAlignment="Top" with Margin="0,50,0,0" -->
+    <Grid>
+        <!-- Region Capture Control Layer -->
+        <Panel x:Name="RootPanel" IsHitTestVisible="True">
+            <!-- Custom rendering control added in code-behind -->
+        </Panel>
+
+        <!-- XIP-0023: Future annotation toolbar placeholder
+        <controls:AnnotationToolbar x:Name="AnnotationToolbarControl"
+                                    VerticalAlignment="Top"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,50,0,0"
+                                    IsVisible="False"/>
+        -->
+    </Grid>
 </Window>

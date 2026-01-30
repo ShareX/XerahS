@@ -38,6 +38,8 @@ namespace XerahS.RegionCapture.UI;
 /// <summary>
 /// A transparent overlay window for a single monitor.
 /// Each monitor gets its own overlay to avoid mixed-DPI scaling issues.
+/// XIP-0023: Layout prepared for AnnotationToolbar integration when ShareX.Editor
+/// supports cross-platform builds.
 /// </summary>
 public partial class OverlayWindow : Window
 {
@@ -97,6 +99,8 @@ public partial class OverlayWindow : Window
             OnCancelled();
             e.Handled = true;
         }
+        // XIP-0023: Tab key reserved for future annotation toolbar toggle
+        // else if (e.Key == Key.Tab) { ToggleAnnotationToolbar(); e.Handled = true; }
     }
 
     private void OnRegionSelected(RegionSelectionResult result)
