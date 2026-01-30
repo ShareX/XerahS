@@ -113,6 +113,18 @@ public sealed record RegionCaptureOptions
     public bool ShowCursor { get; init; } = false;
 
     /// <summary>
+    /// Color of the crosshair (near cursor, 32px). Default: Cyan (0xFF00C8FF)
+    /// Format: ARGB (Alpha, Red, Green, Blue)
+    /// </summary>
+    public uint CrosshairColor { get; init; } = 0xDC00C8FF; // Semi-transparent cyan
+
+    /// <summary>
+    /// Color of the full-screen crosshair lines. Default: High-visibility yellow (0xC8FFFF00)
+    /// Format: ARGB (Alpha, Red, Green, Blue)
+    /// </summary>
+    public uint CrosshairLineColor { get; init; } = 0xC8FFFF00; // Semi-transparent yellow
+
+    /// <summary>
     /// Background image for magnifier pixel sampling. When provided, the magnifier
     /// will display actual pixel data instead of placeholder content.
     /// This should be captured before the overlay is displayed.

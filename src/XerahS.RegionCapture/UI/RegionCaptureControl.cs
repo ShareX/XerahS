@@ -54,6 +54,8 @@ public sealed class RegionCaptureControl : UserControl
 
     // Rendering configuration
     private readonly double _dimOpacity;
+    private readonly uint _crosshairColor;
+    private readonly uint _crosshairLineColor;
     private readonly bool _enableWindowSnapping;
     private readonly bool _enableMagnifier;
     private readonly bool _useTransparentOverlay;
@@ -108,6 +110,8 @@ public sealed class RegionCaptureControl : UserControl
         _enableKeyboardNudge = options.EnableKeyboardNudge;
         _backgroundBitmap = options.BackgroundImage;
         _useTransparentOverlay = options.UseTransparentOverlay;
+        _crosshairColor = options.CrosshairColor;
+        _crosshairLineColor = options.CrosshairLineColor;
 
         // Convert background bitmap to Avalonia Bitmap for rendering when not transparent
         // PERFORMANCE: Use direct pixel copy instead of slow PNG encoding (~1-2s saved for 4K screens)
@@ -566,11 +570,13 @@ public sealed class RegionCaptureControl : UserControl
 
         const double crosshairLength = 32; // Length of the colored crosshair portion
         
-        // Regular line pen (semi-transparent white for full-screen lines)
-        var linePen = new Pen(new SolidColorBrush(Color.FromArgb(100, 255, 255, 255)), 1);
+        // Regular line pen (configurable color for full-screen lines)
+        var lineColor = Color.FromUInt32(_crosshairLineColor);
+        var linePen = new Pen(new SolidColorBrush(lineColor), 1);
         
-        // Crosshair colored pen (brighter, more visible near cursor)
-        var crosshairPen = new Pen(new SolidColorBrush(Color.FromArgb(220, 0, 200, 255)), 1.5); // Cyan
+        // Crosshair colored pen (configurable color, more visible near cursor)
+        var crosshairColor = Color.FromUInt32(_crosshairColor);
+        var crosshairPen = new Pen(new SolidColorBrush(crosshairColor), 1.5);
 
         // Vertical line - top portion (regular)
         context.DrawLine(linePen,
