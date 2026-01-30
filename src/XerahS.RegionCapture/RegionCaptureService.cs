@@ -120,9 +120,10 @@ public sealed record RegionCaptureOptions
     public SkiaSharp.SKBitmap? BackgroundImage { get; init; } = null;
 
     /// <summary>
-    /// When true, the overlay is transparent showing the live desktop behind it.
+    /// When true, the overlay is transparent showing the live desktop behind it (RectangleTransparent workflow).
     /// When false, the overlay displays a frozen screenshot background (like original ShareX).
     /// Default: false (frozen screenshot background).
+    /// Note: This is different from CaptureTransparent in CaptureOptions, which controls window capture transparency.
     /// </summary>
-    public bool CaptureTransparent { get; init; } = false;
+    public bool UseTransparentOverlay { get; init; } = false;
 }

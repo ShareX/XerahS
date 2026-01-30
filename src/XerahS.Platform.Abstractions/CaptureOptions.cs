@@ -31,7 +31,18 @@ namespace XerahS.Platform.Abstractions
     {
         public bool UseModernCapture { get; set; } = true;
         public bool ShowCursor { get; set; } = true;
+        /// <summary>
+        /// For window captures: capture transparent regions of the window.
+        /// This is the original ShareX CaptureTransparent setting.
+        /// </summary>
         public bool CaptureTransparent { get; set; } = false;
+
+        /// <summary>
+        /// For region captures: use transparent overlay (live desktop visible) vs frozen screenshot background.
+        /// True for RectangleTransparent workflow, false for other region capture workflows.
+        /// </summary>
+        public bool UseTransparentOverlay { get; set; } = false;
+
         public bool CaptureShadow { get; set; } = true;
         public bool CaptureClientArea { get; set; } = false;
 

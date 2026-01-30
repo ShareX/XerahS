@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using Avalonia.Threading;
+using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Helpers;
 using XerahS.Platform.Abstractions;
@@ -85,7 +86,7 @@ namespace XerahS.UI.Services
                         {
                             ShowCursor = options?.ShowCursor ?? false,
                             BackgroundImage = backgroundForMagnifier,
-                            CaptureTransparent = options?.CaptureTransparent ?? false,
+                            UseTransparentOverlay = options?.UseTransparentOverlay ?? false,
                         }
                     };
 
@@ -149,6 +150,20 @@ namespace XerahS.UI.Services
                 }
             }
 
+            SKBitmap? fullScreenBitmap = null;
+            try
+            {
+                fullScreenBitmap = await _platformImpl.CaptureFullScreenAsync(new CaptureOptions
+                {
+                    ShowCursor = false,
+                    UseModernCapture = options?.UseModernCapture ?? false
+                });
+            }
+            catch
+            {
+                // Ignore - full screen capture is optional for fallback
+            }
+
             // 2. Capture background for magnifier BEFORE showing overlay
             SKBitmap? backgroundForMagnifier = null;
             try
@@ -172,7 +187,7 @@ namespace XerahS.UI.Services
                         {
                             ShowCursor = options?.ShowCursor ?? false,
                             BackgroundImage = backgroundForMagnifier,
-                            CaptureTransparent = options?.CaptureTransparent ?? false,
+                            UseTransparentOverlay = options?.UseTransparentOverlay ?? false,
                         }
                     };
 
@@ -237,8 +252,36 @@ namespace XerahS.UI.Services
                 WorkflowCategory = options?.WorkflowCategory
             };
 
-            var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
-            var bitmap = await _platformImpl.CaptureRectAsync(skRect, captureOptions);
+            SKBitmap? bitmap = null;
+            try
+            {
+                if (fullScreenBitmap != null)
+                {
+                    SKBitmap cropped = ImageHelpers.Crop(fullScreenBitmap, selection);
+                    if (cropped.Width > 0 && cropped.Height > 0)
+                    {
+                        bitmap = cropped;
+                    }
+                    else
+                    {
+                        cropped.Dispose();
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore crop errors and fall back to live capture
+            }
+            finally
+            {
+                fullScreenBitmap?.Dispose();
+            }
+
+            if (bitmap == null)
+            {
+                var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
+                bitmap = await _platformImpl.CaptureRectAsync(skRect, captureOptions);
+            }
 
             // 6. Draw ghost cursor onto captured bitmap if available
             // We use the INITIAL ghost cursor (captured at start) to match ShareX behavior ("original location").
