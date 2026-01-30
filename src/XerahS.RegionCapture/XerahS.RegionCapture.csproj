@@ -32,8 +32,8 @@
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\XerahS.Media\XerahS.Media.csproj" />
-    <!-- XIP-0023: TODO - ShareX.Editor integration deferred until cross-platform support is available -->
-    <!-- The AnnotationToolbar and annotation infrastructure will be added when ShareX.Editor targets net10.0 -->
+    <!-- XIP-0023: ShareX.Editor reference for AnnotationToolbar in Region Capture Overlay -->
+    <ProjectReference Include="..\..\..\ShareX.Editor\src\ShareX.Editor\ShareX.Editor.csproj" />
   </ItemGroup>
 
 </Project>

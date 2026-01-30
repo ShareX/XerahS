@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:ShareX.Editor.Views.Controls;assembly=ShareX.Editor"
         x:Class="XerahS.RegionCapture.UI.OverlayWindow"
         SystemDecorations="None"
         TransparencyLevelHint="Transparent"
@@ -10,21 +11,19 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome">
 
-    <!-- XIP-0023: Layout prepared for AnnotationToolbar integration -->
-    <!-- Once ShareX.Editor supports cross-platform builds (net10.0), the AnnotationToolbar
-         can be added here at VerticalAlignment="Top" with Margin="0,50,0,0" -->
     <Grid>
         <!-- Region Capture Control Layer -->
         <Panel x:Name="RootPanel" IsHitTestVisible="True">
             <!-- Custom rendering control added in code-behind -->
         </Panel>
 
-        <!-- XIP-0023: Future annotation toolbar placeholder
+        <!-- XIP-0023: Annotation Toolbar for Overlay mode -->
+        <!-- Positioned below the instruction text (50px margin from top) -->
+        <!-- Press Tab to toggle visibility -->
         <controls:AnnotationToolbar x:Name="AnnotationToolbarControl"
                                     VerticalAlignment="Top"
                                     HorizontalAlignment="Center"
                                     Margin="0,50,0,0"
                                     IsVisible="False"/>
-        -->
     </Grid>
 </Window>

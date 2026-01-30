@@ -28,6 +28,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using XerahS.RegionCapture.Models;
 using XerahS.RegionCapture;
+using ShareX.Editor.Views.Controls;
 using AvPixelRect = Avalonia.PixelRect;
 using AvPixelPoint = Avalonia.PixelPoint;
 using PixelRect = XerahS.RegionCapture.Models.PixelRect;
@@ -38,8 +39,7 @@ namespace XerahS.RegionCapture.UI;
 /// <summary>
 /// A transparent overlay window for a single monitor.
 /// Each monitor gets its own overlay to avoid mixed-DPI scaling issues.
-/// XIP-0023: Layout prepared for AnnotationToolbar integration when ShareX.Editor
-/// supports cross-platform builds.
+/// XIP-0023: Includes AnnotationToolbar for annotating during capture.
 /// </summary>
 public partial class OverlayWindow : Window
 {
@@ -99,8 +99,48 @@ public partial class OverlayWindow : Window
             OnCancelled();
             e.Handled = true;
         }
-        // XIP-0023: Tab key reserved for future annotation toolbar toggle
-        // else if (e.Key == Key.Tab) { ToggleAnnotationToolbar(); e.Handled = true; }
+        else if (e.Key == Key.Tab)
+        {
+            // XIP-0023: Toggle annotation toolbar visibility
+            ToggleAnnotationToolbar();
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>
+    /// XIP-0023: Toggles the visibility of the annotation toolbar in the overlay.
+    /// </summary>
+    private void ToggleAnnotationToolbar()
+    {
+        var toolbar = this.FindControl<AnnotationToolbar>("AnnotationToolbarControl");
+        if (toolbar != null)
+        {
+            toolbar.IsVisible = !toolbar.IsVisible;
+        }
+    }
+
+    /// <summary>
+    /// XIP-0023: Shows the annotation toolbar.
+    /// </summary>
+    public void ShowAnnotationToolbar()
+    {
+        var toolbar = this.FindControl<AnnotationToolbar>("AnnotationToolbarControl");
+        if (toolbar != null)
+        {
+            toolbar.IsVisible = true;
+        }
+    }
+
+    /// <summary>
+    /// XIP-0023: Hides the annotation toolbar.
+    /// </summary>
+    public void HideAnnotationToolbar()
+    {
+        var toolbar = this.FindControl<AnnotationToolbar>("AnnotationToolbarControl");
+        if (toolbar != null)
+        {
+            toolbar.IsVisible = false;
+        }
     }
 
     private void OnRegionSelected(RegionSelectionResult result)
