@@ -111,5 +111,12 @@
              Targets="Restore;Publish"
              Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=false;PublishDir=$(MSBuildProjectDirectory)/$(PublishDir)Plugins/%(_DefaultPlugins.PluginId)/" />
   </Target>
+
+  <Target Name="BuildPlugins" AfterTargets="Build">
+    <Message Text="Building default plugin for dev: %(_DefaultPlugins.PluginId)" Importance="High" />
+    <MSBuild Projects="%(_DefaultPlugins.Identity)"
+             Targets="Restore;Build"
+             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);OutputPath=$(MSBuildProjectDirectory)\$(OutDir)Plugins\%(_DefaultPlugins.PluginId)\" />
+  </Target>
 </Project>
 
