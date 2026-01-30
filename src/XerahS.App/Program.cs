@@ -38,7 +38,9 @@ namespace XerahS.App
         [STAThread]
         public static void Main(string[] args)
         {
-            // Single instance enforcement
+            try
+            {
+                // Single instance enforcement
             _singleInstanceManager = new XerahS.Common.SingleInstanceManager(MutexName, PipeName, args);
 
             if (!_singleInstanceManager.IsFirstInstance)
@@ -108,6 +110,14 @@ namespace XerahS.App
 
             BuildAvaloniaApp()
                 .StartWithClassicDesktopLifetime(args);
+            }
+            catch (Exception ex)
+            {
+                XerahS.Common.DebugHelper.WriteException(ex, "Critical application startup failure");
+#if DEBUG
+                throw;
+#endif
+            }
         }
 
         private static void InitializePlatformServices()
