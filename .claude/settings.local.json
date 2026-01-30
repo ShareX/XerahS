@@ -64,7 +64,9 @@
       "Bash(export PATH=\"$PATH:/c/Program Files/GitHub CLI\")",
       "Bash(gh:*)",
       "Bash(\"/c/Program Files/GitHub CLI/gh\" auth status)",
-      "Bash(\"/c/Program Files/GitHub CLI/gh\" issue close 7 --repo ShareX/ShareX.Editor --comment \"Fixed in commit ab2ce24. Annotations now transform with the image during rotate/flip operations instead of being cleared. The fix uses SKMatrix transforms matching the bitmap rotation/flip, preserving annotation positions through undo/redo cycles. 11 regression tests added in XerahS.\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(toolbar\\): Refactor annotation toolbar into reusable controls \\(XIP-0023\\)\n\nCreate AnnotationToolbar and EditorToolsPanel controls for separation:\n- AnnotationToolbar: Contains all annotation drawing tools, property\n  controls \\(color, width, font size, strength, shadow\\), and actions\n  \\(undo, redo, delete, clear\\). Includes ExtensionContent slot for\n  injecting additional controls.\n- EditorToolsPanel: Contains Editor-specific tools \\(Crop, CutOut,\n  Background, Effects\\) excluded from Region Capture Overlay.\n- EditorView: Updated to use new controls with slot composition,\n  injecting EditorToolsPanel into AnnotationToolbar''s ExtensionContent.\n\nThis enables future reuse of AnnotationToolbar in the Region Capture\nOverlay for annotating screenshots during capture.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(\"/c/Program Files/GitHub CLI/gh\" issue close 7 --repo ShareX/ShareX.Editor --comment \"Fixed in commit ab2ce24. Annotations now transform with the image during rotate/flip operations instead of being cleared. The fix uses SKMatrix transforms matching the bitmap rotation/flip, preserving annotation positions through undo/redo cycles. 11 regression tests added in XerahS.\")",
+      "Bash(cd \"c:\\\\Users\\\\liveu\\\\source\\\\repos\\\\ShareX Team\\\\XerahS\\\\src\\\\XerahS.RegionCapture\"\" && find . -type f -name \"*.cs \")"
     ]
   }
 }

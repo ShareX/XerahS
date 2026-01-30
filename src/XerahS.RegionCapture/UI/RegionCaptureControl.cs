@@ -56,7 +56,7 @@ public sealed class RegionCaptureControl : UserControl
     private readonly double _dimOpacity;
     private readonly bool _enableWindowSnapping;
     private readonly bool _enableMagnifier;
-    private readonly bool _captureTransparent;
+    private readonly bool _useTransparentOverlay;
     private readonly XerahS.Platform.Abstractions.CursorInfo? _ghostCursor;
     private readonly Bitmap? _ghostCursorBitmap;
     private readonly SkiaSharp.SKBitmap? _backgroundBitmap;
@@ -107,10 +107,10 @@ public sealed class RegionCaptureControl : UserControl
         _enableMagnifier = options.EnableMagnifier;
         _enableKeyboardNudge = options.EnableKeyboardNudge;
         _backgroundBitmap = options.BackgroundImage;
-        _captureTransparent = options.CaptureTransparent;
+        _useTransparentOverlay = options.UseTransparentOverlay;
 
         // Convert background bitmap to Avalonia Bitmap for rendering when not transparent
-        if (!_captureTransparent && _backgroundBitmap != null)
+        if (!_useTransparentOverlay && _backgroundBitmap != null)
         {
             try
             {
@@ -343,7 +343,7 @@ public sealed class RegionCaptureControl : UserControl
         var bounds = new Rect(0, 0, Bounds.Width, Bounds.Height);
 
         // Draw frozen background when not in transparent mode
-        if (!_captureTransparent && _backgroundAvBitmap != null)
+        if (!_useTransparentOverlay && _backgroundAvBitmap != null)
         {
             DrawFrozenBackground(context, bounds);
         }
