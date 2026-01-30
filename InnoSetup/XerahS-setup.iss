@@ -43,8 +43,8 @@ Name: "CreateStartupIcon"; Description: "Run {#MyAppName} when Windows starts"; 
 Source: "{#MyAppReleaseDirectory}\{#MyAppExeName}"; DestDir: {app}; Flags: ignoreversion
 Source: "{#MyAppReleaseDirectory}\*.dll"; DestDir: {app}; Flags: ignoreversion
 Source: "{#MyAppReleaseDirectory}\*.json"; DestDir: {app}; Flags: ignoreversion
-Source: "{#MyAppReleaseDirectory}\runtimes\win-x64\*"; DestDir: "{app}\runtimes\win-x64"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#MyAppReleaseDirectory}\runtimes\win-arm64\*"; DestDir: "{app}\runtimes\win-arm64"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyAppReleaseDirectory}\runtimes\win-x64\*"; DestDir: "{app}\runtimes\win-x64"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
+Source: "{#MyAppReleaseDirectory}\runtimes\win-arm64\*"; DestDir: "{app}\runtimes\win-arm64"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 Source: "{#MyAppReleaseDirectory}\Plugins\*"; DestDir: "{userdocs}\{#MyAppName}\Plugins"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
