@@ -150,6 +150,8 @@ namespace XerahS.UI.Services
                 }
             }
 
+            // 2. Capture background for frozen overlay and magnifier BEFORE showing overlay
+            // Single capture serves both purposes - avoids duplicate DXGI capture (~200ms saved)
             SKBitmap? fullScreenBitmap = null;
             try
             {
@@ -164,16 +166,8 @@ namespace XerahS.UI.Services
                 // Ignore - full screen capture is optional for fallback
             }
 
-            // 2. Capture background for magnifier BEFORE showing overlay
-            SKBitmap? backgroundForMagnifier = null;
-            try
-            {
-                backgroundForMagnifier = await _platformImpl.CaptureFullScreenAsync(new CaptureOptions { ShowCursor = false });
-            }
-            catch
-            {
-                // Ignore - magnifier will use placeholder
-            }
+            // Reuse the same bitmap for magnifier/overlay (no duplicate capture)
+            // Note: We must NOT dispose this until after cropping, so removed the dispose in finally block below
 
             // 3. Select Region (UI) - pass ghost cursor for overlay display
             SKRectI selection = SKRectI.Empty;
@@ -186,7 +180,7 @@ namespace XerahS.UI.Services
                         Options = new XerahS.RegionCapture.RegionCaptureOptions
                         {
                             ShowCursor = options?.ShowCursor ?? false,
-                            BackgroundImage = backgroundForMagnifier,
+                            BackgroundImage = fullScreenBitmap, // Reuse same bitmap for overlay background
                             UseTransparentOverlay = options?.UseTransparentOverlay ?? false,
                         }
                     };
@@ -204,11 +198,7 @@ namespace XerahS.UI.Services
             {
                 // Ignore errors
             }
-            finally
-            {
-                // Dispose background bitmap after overlay closes
-                backgroundForMagnifier?.Dispose();
-            }
+            // Note: fullScreenBitmap is disposed later after cropping (line ~277)
 
             if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
             {

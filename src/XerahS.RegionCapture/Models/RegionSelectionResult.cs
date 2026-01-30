@@ -23,9 +23,15 @@
 
 #endregion License Information (GPL v3)
 
+using SkiaSharp;
+
 namespace XerahS.RegionCapture.Models;
 
 /// <summary>
 /// Represents a completed region selection with the cursor position at confirmation time.
+/// Optionally includes an annotation layer to be composited onto the captured image.
 /// </summary>
-public readonly record struct RegionSelectionResult(PixelRect Region, PixelPoint CursorPosition);
+public readonly record struct RegionSelectionResult(
+    PixelRect Region,
+    PixelPoint CursorPosition,
+    SKBitmap? AnnotationLayer = null);

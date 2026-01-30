@@ -17,13 +17,19 @@
             <!-- Custom rendering control added in code-behind -->
         </Panel>
 
+        <!-- XIP-0023: Annotation Canvas Layer for drawing shapes -->
+        <!-- IsHitTestVisible is set dynamically based on active tool (false for Select, true for drawing tools) -->
+        <Canvas x:Name="AnnotationCanvas"
+                Background="Transparent"
+                IsHitTestVisible="False"/>
+
         <!-- XIP-0023: Annotation Toolbar for Overlay mode -->
         <!-- Positioned below the instruction text (50px margin from top) -->
-        <!-- Press Tab to toggle visibility -->
+        <!-- Press Tab to toggle visibility, ENTER to confirm capture -->
         <controls:AnnotationToolbar x:Name="AnnotationToolbarControl"
                                     VerticalAlignment="Top"
                                     HorizontalAlignment="Center"
                                     Margin="0,50,0,0"
-                                    IsVisible="False"/>
+                                    IsVisible="True"/>
     </Grid>
 </Window>
