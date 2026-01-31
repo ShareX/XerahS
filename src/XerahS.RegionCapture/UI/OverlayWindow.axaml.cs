@@ -157,11 +157,16 @@ public partial class OverlayWindow : Window
     {
         if (_annotationCanvas == null) return;
 
-        // Enable hit testing only when:
+        // Annotation mode is active when:
         // 1. A drawing tool is selected (not Select)
         // 2. CTRL is NOT pressed (CTRL allows region selection even with drawing tool)
-        _annotationCanvas.IsHitTestVisible =
-            _viewModel.ActiveTool != EditorTool.Select && !_ctrlPressed;
+        bool isAnnotationMode = _viewModel.ActiveTool != EditorTool.Select && !_ctrlPressed;
+
+        _annotationCanvas.IsHitTestVisible = isAnnotationMode;
+
+        // Update the capture control's mode indicator
+        _captureControl.IsAnnotationMode = isAnnotationMode;
+        _captureControl.InvalidateVisual();
     }
 
     private void InitializeComponent()
