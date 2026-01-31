@@ -80,7 +80,7 @@ If you see a message saying **"XerahS is damaged and can't be opened"**, it is d
 
 ## 🛠️ Developer Information
 
-See [DEVELOPER_README.md](docs/guides/DEVELOPER_README.md) for architecture details and contribution guidelines.
+See [DEVELOPER_README.md](docs/development/DEVELOPER_README.md) for architecture details and contribution guidelines.
 
 ## 📄 [License](LICENSE.txt)
 

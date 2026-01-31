@@ -211,7 +211,7 @@ Plugins/myplugin/
 2. Enable debug logging in `UploaderInstanceViewModel.InitializeConfigViewModel()`
 3. Look for `ConfigView created: null` or type loading errors
 
-See also: `docs/plugin_development_guide.md` for complete plugin setup instructions.
+See also: [Plugin Development Guide](plugin_development_guide.md) for complete plugin setup instructions.
 
 ## Contribution
 1.  Review project documentation and existing code patterns
