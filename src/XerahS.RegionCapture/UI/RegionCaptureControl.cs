@@ -81,6 +81,22 @@ public sealed class RegionCaptureControl : UserControl
     public event Action<PixelRect>? SelectionChanged;
     public event Action? Cancelled;
 
+    /// <summary>
+    /// Indicates whether annotation mode is active (vs region selection mode).
+    /// When true, drawing tools are active. When false (CTRL held), region selection is active.
+    /// </summary>
+    public bool IsAnnotationMode { get; set; }
+
+    /// <summary>
+    /// Indicates whether annotations have been drawn during this capture session.
+    /// </summary>
+    public bool HasAnnotations { get; set; }
+
+    /// <summary>
+    /// Indicates whether a region has been selected but not yet finalized (waiting for Enter).
+    /// </summary>
+    public bool HasPendingSelection { get; set; }
+
     // State machine accessors for rendering
     private CaptureState _state => _stateMachine.CurrentState;
     private PixelPoint _currentPoint => _stateMachine.CurrentPoint;
@@ -828,29 +844,78 @@ public sealed class RegionCaptureControl : UserControl
         context.DrawText(formattedHint, new Point(x, y));
     }
 
+    private static readonly IBrush AnnotateModeBrush = new SolidColorBrush(Color.FromArgb(220, 255, 140, 0)); // Orange
+    private static readonly IBrush RegionModeBrush = new SolidColorBrush(Color.FromArgb(220, 0, 174, 255));   // Blue
+    private static readonly IBrush ReminderBrush = new SolidColorBrush(Color.FromArgb(220, 50, 205, 50));     // Green
+
     private void DrawInstructions(DrawingContext context)
     {
-        if (_state != CaptureState.Hovering)
-            return;
+        var yOffset = 12.0;
 
-        var instructions = "Click and drag to select a region | Click a window to snap | Esc to cancel";
-        if (_mode == RegionCaptureMode.ScreenColorPicker)
+        // Only show mode indicator and instructions when hovering (not during selection)
+        if (_state == CaptureState.Hovering)
         {
-            instructions = "Click to pick a color | Esc to cancel";
+            // Draw mode indicator pill
+            if (_mode != RegionCaptureMode.ScreenColorPicker)
+            {
+                var modeText = IsAnnotationMode ? "Annotate Mode" : "Region Capture Mode";
+                var modeBrush = IsAnnotationMode ? AnnotateModeBrush : RegionModeBrush;
+
+                var modeFormatted = new FormattedText(
+                    modeText,
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight,
+                    new Typeface("Segoe UI", FontStyle.Normal, FontWeight.SemiBold),
+                    13,
+                    Brushes.White);
+
+                var modeX = (Bounds.Width - modeFormatted.Width) / 2;
+                var modeBgRect = new Rect(modeX - 14, yOffset - 4, modeFormatted.Width + 28, modeFormatted.Height + 8);
+                context.DrawRectangle(modeBrush, null, modeBgRect, 12, 12);
+                context.DrawText(modeFormatted, new Point(modeX, yOffset));
+
+                yOffset += modeFormatted.Height + 16;
+            }
+
+            // Draw instructions
+            var instructions = "Drag to select region | Click to snap window | Ctrl: toggle mode | Enter: finish | Esc: cancel";
+            if (_mode == RegionCaptureMode.ScreenColorPicker)
+            {
+                instructions = "Click to pick a color | Esc to cancel";
+            }
+            var formatted = new FormattedText(
+                instructions,
+                System.Globalization.CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface("Segoe UI", FontStyle.Normal, FontWeight.Normal),
+                12,
+                new SolidColorBrush(Color.FromRgb(180, 180, 180)));
+
+            var x = (Bounds.Width - formatted.Width) / 2;
+
+            var bgRect = new Rect(x - 12, yOffset - 4, formatted.Width + 24, formatted.Height + 8);
+            context.DrawRectangle(InfoBackgroundBrush, null, bgRect, 4, 4);
+            context.DrawText(formatted, new Point(x, yOffset));
+
+            yOffset += formatted.Height + 16;
         }
-        var formatted = new FormattedText(
-            instructions,
-            System.Globalization.CultureInfo.CurrentCulture,
-            FlowDirection.LeftToRight,
-            new Typeface("Segoe UI", FontStyle.Normal, FontWeight.Normal),
-            12,
-            new SolidColorBrush(Color.FromRgb(180, 180, 180)));
 
-        var x = (Bounds.Width - formatted.Width) / 2;
-        var y = 12;
+        // Draw "Press Enter to finish" reminder when annotations exist and region is selected
+        // This is shown regardless of state so user always sees it after selecting a region
+        if (HasAnnotations && HasPendingSelection)
+        {
+            var reminderFormatted = new FormattedText(
+                "Press Enter to finish capture",
+                System.Globalization.CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface("Segoe UI", FontStyle.Normal, FontWeight.SemiBold),
+                14,
+                Brushes.White);
 
-        var bgRect = new Rect(x - 12, y - 4, formatted.Width + 24, formatted.Height + 8);
-        context.DrawRectangle(InfoBackgroundBrush, null, bgRect, 4, 4);
-        context.DrawText(formatted, new Point(x, y));
+            var reminderX = (Bounds.Width - reminderFormatted.Width) / 2;
+            var reminderBgRect = new Rect(reminderX - 14, yOffset - 4, reminderFormatted.Width + 28, reminderFormatted.Height + 8);
+            context.DrawRectangle(ReminderBrush, null, reminderBgRect, 12, 12);
+            context.DrawText(reminderFormatted, new Point(reminderX, yOffset));
+        }
     }
 }

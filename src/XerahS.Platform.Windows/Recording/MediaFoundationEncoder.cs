@@ -239,12 +239,12 @@ public class MediaFoundationEncoder : IVideoEncoder
                     hr = ComFunctions.Lock(buffer, out var bufferPtr, out var maxLen, out var curLen);
                     if (hr != 0) throw new COMException("Failed to lock buffer", hr);
 
-            try
-            {
-                CopyFrame(frame, bufferPtr, bytesPerRow);
-            }
-            finally
-            {
+                    try
+                    {
+                        CopyFrame(frame, bufferPtr, bytesPerRow);
+                    }
+                    finally
+                    {
                         ComFunctions.Unlock(buffer);
                     }
 
@@ -598,5 +598,3 @@ public class MediaFoundationEncoder : IVideoEncoder
 
     #endregion
 }
-
-
