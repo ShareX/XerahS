@@ -4,7 +4,6 @@ $root = Resolve-Path "$PSScriptRoot\.."
 $project = Join-Path $root "src\XerahS.App\XerahS.App.csproj"
 $issScript = Join-Path $root "InnoSetup\XerahS-setup.iss"
 $outputDir = Join-Path $root "dist"
-$innoOutputDir = Join-Path $root "..\Output" # Output dir is ..\..\ from InnoSetup folder, which means ..\ from Project Root
 
 if (!(Test-Path $outputDir)) { New-Item -ItemType Directory -Force -Path $outputDir | Out-Null }
 

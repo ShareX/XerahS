@@ -6,8 +6,9 @@ $uiProject = Join-Path $root "src\XerahS.UI\XerahS.UI.csproj"
 $outputDir = Join-Path $root "dist"
 if (!(Test-Path $outputDir)) { New-Item -ItemType Directory -Force -Path $outputDir | Out-Null }
 
-# Get Version
-$version = dotnet msbuild $uiProject -getProperty:Version
+# Get Version from Directory.Build.props
+$buildPropsPath = Join-Path $root "Directory.Build.props"
+$version = dotnet msbuild $buildPropsPath -getProperty:Version
 $version = $version.Trim()
 Write-Host "Building XerahS version $version for Linux..."
 

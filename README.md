@@ -67,6 +67,17 @@ Global hotkeys use SharpHook and need Accessibility permission:
 2. Enable XerahS (or the published app bundle) for accessibility access.
 3. Restart the app and retest hotkeys.
 
+### macOS Troubleshooting ("App is damaged")
+If you see a message saying **"XerahS is damaged and can't be opened"**, it is due to macOS security (Gatekeeper) on quarantined downloads. To fix it:
+
+1. Open **Terminal**.
+2. Type the following command (do not hit Enter yet):
+   ```bash
+   xattr -cr 
+   ```
+3. Drag the **XerahS.app** file from Finder into the Terminal window (this pastes the full path).
+4. Only now, press **Enter**.
+
 ## 🛠️ Developer Information
 
 See [DEVELOPER_README.md](docs/guides/DEVELOPER_README.md) for architecture details and contribution guidelines.

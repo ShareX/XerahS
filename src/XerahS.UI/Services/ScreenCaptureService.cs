@@ -166,9 +166,6 @@ namespace XerahS.UI.Services
                 // Ignore - full screen capture is optional for fallback
             }
 
-            // Reuse the same bitmap for magnifier/overlay (no duplicate capture)
-            // Note: We must NOT dispose this until after cropping, so removed the dispose in finally block below
-
             // 3. Select Region (UI) - pass ghost cursor for overlay display
             SKRectI selection = SKRectI.Empty;
             SKBitmap? annotationLayer = null;
@@ -181,7 +178,7 @@ namespace XerahS.UI.Services
                         Options = new XerahS.RegionCapture.RegionCaptureOptions
                         {
                             ShowCursor = options?.ShowCursor ?? false,
-                            BackgroundImage = fullScreenBitmap, // Reuse same bitmap for overlay background
+                            BackgroundImage = fullScreenBitmap,
                             UseTransparentOverlay = options?.UseTransparentOverlay ?? false,
                         }
                     };
