@@ -10,8 +10,8 @@ DIST_DIR="$ROOT/dist"
 
 mkdir -p "$DIST_DIR"
 
-# extract version
-VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" "$UI_PROJECT")
+# extract version from Directory.Build.props
+VERSION=$(grep '<Version>' "$ROOT/Directory.Build.props" | sed -n 's/.*<Version>\(.*\)<\/Version>.*/\1/p' | tr -d '[:space:]')
 echo "Building XerahS version $VERSION for macOS..."
 
 publish_and_package() {
@@ -25,7 +25,7 @@ publish_and_package() {
     rm -rf "$PUBLISH_DIR"
     
     # 1. Publish (triggers CreateMacOSAppBundle target in csproj)
-    dotnet publish "$PROJECT" -c Release -r "$RID" -p:PublishSingleFile=true --self-contained true
+    dotnet publish "$PROJECT" -c Release -r "$RID" -p:PublishSingleFile=false --self-contained true
 
     APP_BUNDLE_PATH="$PUBLISH_DIR/XerahS.app"
     if [ ! -d "$APP_BUNDLE_PATH" ]; then
@@ -56,7 +56,7 @@ publish_and_package() {
         
         echo "  Publishing $PLUGIN_NAME ($PLUGIN_ID)..."
         PLUGIN_OUT="$PLUGINS_DIR/$PLUGIN_ID"
-        dotnet publish "$PLUGIN_PROJECT" -c Release -r "$RID" -p:PublishSingleFile=true --self-contained true -o "$PLUGIN_OUT" > /dev/null
+        dotnet publish "$PLUGIN_PROJECT" -c Release -r "$RID" --self-contained true -o "$PLUGIN_OUT" > /dev/null
 
         # Deduplication
         # Main app files are in Contents/MacOS
