@@ -299,6 +299,10 @@ public partial class OverlayWindow : Window
             annotation.EndPoint = new SKPoint((float)endPoint.X, (float)endPoint.Y);
             _viewModel.EditorCore.AddAnnotation(annotation);
             _viewModel.HasAnnotations = true;
+
+            // Update capture control's annotation state
+            _captureControl.HasAnnotations = true;
+            _captureControl.InvalidateVisual();
         }
 
         _currentShape = null;
@@ -579,6 +583,11 @@ public partial class OverlayWindow : Window
         {
             // Store the selection result for later use when ENTER is pressed
             _pendingSelectionResult = result;
+
+            // Update capture control to show the reminder
+            _captureControl.HasPendingSelection = true;
+            _captureControl.HasAnnotations = true;
+            _captureControl.InvalidateVisual();
             return;
         }
 

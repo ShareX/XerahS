@@ -87,6 +87,16 @@ public sealed class RegionCaptureControl : UserControl
     /// </summary>
     public bool IsAnnotationMode { get; set; }
 
+    /// <summary>
+    /// Indicates whether annotations have been drawn during this capture session.
+    /// </summary>
+    public bool HasAnnotations { get; set; }
+
+    /// <summary>
+    /// Indicates whether a region has been selected but not yet finalized (waiting for Enter).
+    /// </summary>
+    public bool HasPendingSelection { get; set; }
+
     // State machine accessors for rendering
     private CaptureState _state => _stateMachine.CurrentState;
     private PixelPoint _currentPoint => _stateMachine.CurrentPoint;
@@ -836,6 +846,7 @@ public sealed class RegionCaptureControl : UserControl
 
     private static readonly IBrush AnnotateModeBrush = new SolidColorBrush(Color.FromArgb(220, 255, 140, 0)); // Orange
     private static readonly IBrush RegionModeBrush = new SolidColorBrush(Color.FromArgb(220, 0, 174, 255));   // Blue
+    private static readonly IBrush ReminderBrush = new SolidColorBrush(Color.FromArgb(220, 50, 205, 50));     // Green
 
     private void DrawInstructions(DrawingContext context)
     {
@@ -885,5 +896,24 @@ public sealed class RegionCaptureControl : UserControl
         var bgRect = new Rect(x - 12, yOffset - 4, formatted.Width + 24, formatted.Height + 8);
         context.DrawRectangle(InfoBackgroundBrush, null, bgRect, 4, 4);
         context.DrawText(formatted, new Point(x, yOffset));
+
+        // Draw "Press Enter to finish" reminder when annotations exist and region is selected
+        if (HasAnnotations && HasPendingSelection)
+        {
+            yOffset += formatted.Height + 16;
+
+            var reminderFormatted = new FormattedText(
+                "Press Enter to finish capture",
+                System.Globalization.CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface("Segoe UI", FontStyle.Normal, FontWeight.SemiBold),
+                14,
+                Brushes.White);
+
+            var reminderX = (Bounds.Width - reminderFormatted.Width) / 2;
+            var reminderBgRect = new Rect(reminderX - 14, yOffset - 4, reminderFormatted.Width + 28, reminderFormatted.Height + 8);
+            context.DrawRectangle(ReminderBrush, null, reminderBgRect, 12, 12);
+            context.DrawText(reminderFormatted, new Point(reminderX, yOffset));
+        }
     }
 }
