@@ -26,7 +26,14 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\..\src\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\XerahS.Uploaders\XerahS.Uploaders.csproj" />
     <ProjectReference Include="..\..\..\ShareX.Editor\src\ShareX.Editor\ShareX.Editor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="CustomUploader\SampleUploaders\*.sxcu">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
