@@ -607,7 +607,14 @@ public partial class OverlayWindow : Window
 
         // Render annotations to a transparent bitmap
         var annotationLayer = RenderAnnotationLayer();
-        return new RegionSelectionResult(baseResult.Region, baseResult.CursorPosition, annotationLayer);
+
+        // Pass the monitor origin so the compositing code can adjust coordinates
+        // (selection is in absolute screen coords, but annotation layer is monitor-relative)
+        var monitorOrigin = new PixelPoint(
+            (int)_monitor.PhysicalBounds.X,
+            (int)_monitor.PhysicalBounds.Y);
+
+        return new RegionSelectionResult(baseResult.Region, baseResult.CursorPosition, annotationLayer, monitorOrigin);
     }
 
     /// <summary>

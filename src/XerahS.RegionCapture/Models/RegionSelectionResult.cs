@@ -34,4 +34,5 @@ namespace XerahS.RegionCapture.Models;
 public readonly record struct RegionSelectionResult(
     PixelRect Region,
     PixelPoint CursorPosition,
-    SKBitmap? AnnotationLayer = null);
+    SKBitmap? AnnotationLayer = null,
+    PixelPoint MonitorOrigin = default);

@@ -169,6 +169,7 @@ namespace XerahS.UI.Services
             // 3. Select Region (UI) - pass ghost cursor for overlay display
             SKRectI selection = SKRectI.Empty;
             SKBitmap? annotationLayer = null;
+            XerahS.RegionCapture.Models.PixelPoint annotationMonitorOrigin = default;
             try
             {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
@@ -190,6 +191,7 @@ namespace XerahS.UI.Services
                         var r = result.Value.Region;
                         selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
                         annotationLayer = result.Value.AnnotationLayer;
+                        annotationMonitorOrigin = result.Value.MonitorOrigin;
                     }
                 });
             }
@@ -303,9 +305,13 @@ namespace XerahS.UI.Services
                     using var canvas = new SKCanvas(bitmap);
                     using var paint = new SKPaint { BlendMode = SKBlendMode.SrcOver };
 
-                    // The annotation layer is full-screen sized, so we need to crop the portion
-                    // that corresponds to the selected region
-                    var srcRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
+                    // The annotation layer is monitor-sized, but selection is in absolute screen coords.
+                    // Subtract the monitor origin to get coordinates relative to the annotation layer.
+                    var srcRect = new SKRect(
+                        selection.Left - (float)annotationMonitorOrigin.X,
+                        selection.Top - (float)annotationMonitorOrigin.Y,
+                        selection.Right - (float)annotationMonitorOrigin.X,
+                        selection.Bottom - (float)annotationMonitorOrigin.Y);
                     var dstRect = new SKRect(0, 0, bitmap.Width, bitmap.Height);
 
                     canvas.DrawBitmap(annotationLayer, srcRect, dstRect, paint);
