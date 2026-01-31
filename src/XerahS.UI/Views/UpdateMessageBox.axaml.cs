@@ -42,8 +42,8 @@ public partial class UpdateMessageBox : Window
     {
         var vm = new UpdateMessageBoxViewModel
         {
-            CurrentVersion = updateChecker.CurrentVersion?.ToString() ?? "Unknown",
-            LatestVersion = updateChecker.LatestVersion?.ToString() ?? "Unknown",
+            CurrentVersion = FormatVersion(updateChecker.CurrentVersion),
+            LatestVersion = FormatVersion(updateChecker.LatestVersion),
             IsPreRelease = (updateChecker as GitHubUpdateChecker)?.IsPreRelease ?? false,
             IsPortable = updateChecker.IsPortable,
             IsDev = updateChecker.IsDev
@@ -54,6 +54,12 @@ public partial class UpdateMessageBox : Window
         {
             Dispatcher.UIThread.Post(() => Close(result ?? false));
         };
+    }
+
+    private static string FormatVersion(Version? version)
+    {
+        if (version == null) return "Unknown";
+        return version.Build == -1 ? version.ToString(2) : version.ToString(3);
     }
 
     private void InitializeComponent()
