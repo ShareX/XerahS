@@ -196,28 +196,15 @@ namespace XerahS.Core.Helpers
                 int index = 0;
                 foreach (var screen in screens)
                 {
-                    // Get Win32 DPI for comparison
-                    if (OperatingSystem.IsWindows())
-                    {
-                        var centerX = screen.Bounds.X + screen.Bounds.Width / 2;
-                        var centerY = screen.Bounds.Y + screen.Bounds.Height / 2;
-                        XerahS.Common.NativeMethods.TryGetMonitorDpi(centerX, centerY, out uint dpiX, out uint dpiY);
-                        double win32Scale = dpiX / 96.0;
+                    // Get DPI info from screeen abstraction
+                    double win32Scale = screen.Scaling;
+                    int dpiX = (int)(96 * screen.Scaling);
 
-                        Log(category, "MONITORS", $"Screen {index}: " +
-                            $"Bounds=({screen.Bounds.X},{screen.Bounds.Y}) {screen.Bounds.Width}x{screen.Bounds.Height}, " +
-                            $"IsPrimary={screen.IsPrimary}, " +
-                            $"Avalonia.Scaling={screen.Scaling:F3}, " +
-                            $"Win32.DPI={dpiX}x{dpiY} (Scale={win32Scale:F3})");
-                    }
-                    else
-                    {
-                         Log(category, "MONITORS", $"Screen {index}: " +
-                            $"Bounds=({screen.Bounds.X},{screen.Bounds.Y}) {screen.Bounds.Width}x{screen.Bounds.Height}, " +
-                            $"IsPrimary={screen.IsPrimary}, " +
-                            $"Avalonia.Scaling={screen.Scaling:F3}, " +
-                            $"Win32.DPI=N/A (Non-Windows)");
-                    }
+                    Log(category, "MONITORS", $"Screen {index}: " +
+                        $"Bounds=({screen.Bounds.X},{screen.Bounds.Y}) {screen.Bounds.Width}x{screen.Bounds.Height}, " +
+                        $"IsPrimary={screen.IsPrimary}, " +
+                        $"Avalonia.Scaling={screen.Scaling:F3}, " +
+                        $"DPI={dpiX}x{dpiX} (Scale={win32Scale:F3})");
                     index++;
                 }
                 Log(category, "MONITORS", $"Total monitors: {index}");
@@ -256,12 +243,7 @@ namespace XerahS.Core.Helpers
                 // Get per-monitor DPI at window center for comparison
                 var centerX = physicalBounds.X + physicalBounds.Width / 2;
                 var centerY = physicalBounds.Y + physicalBounds.Height / 2;
-                double perMonitorScale = 0;
-
-                if (OperatingSystem.IsWindows())
-                {
-                    perMonitorScale = XerahS.Common.NativeMethods.GetMonitorScaleFactorFromPoint(centerX, centerY);
-                }
+                double perMonitorScale = screenScaling; // Use provided screen scaling as fallback
 
                 // Calculate what the logical coords would be using per-monitor DPI
                 double altLogicalX = perMonitorScale > 0 ? (physicalBounds.X - (logicalX * overlayScaling)) / perMonitorScale : 0;

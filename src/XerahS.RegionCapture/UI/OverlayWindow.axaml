@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:ShareX.Editor.Views.Controls;assembly=ShareX.Editor"
         x:Class="XerahS.RegionCapture.UI.OverlayWindow"
         SystemDecorations="None"
         TransparencyLevelHint="Transparent"
@@ -10,7 +11,25 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome">
 
-    <Panel x:Name="RootPanel">
-        <!-- Custom rendering control -->
-    </Panel>
+    <Grid>
+        <!-- Region Capture Control Layer -->
+        <Panel x:Name="RootPanel" IsHitTestVisible="True">
+            <!-- Custom rendering control added in code-behind -->
+        </Panel>
+
+        <!-- XIP-0023: Annotation Canvas Layer for drawing shapes -->
+        <!-- IsHitTestVisible is set dynamically based on active tool (false for Select, true for drawing tools) -->
+        <Canvas x:Name="AnnotationCanvas"
+                Background="Transparent"
+                IsHitTestVisible="False"/>
+
+        <!-- XIP-0023: Annotation Toolbar for Overlay mode -->
+        <!-- Positioned below the instruction text (50px margin from top) -->
+        <!-- Press Tab to toggle visibility, ENTER to confirm capture -->
+        <controls:AnnotationToolbar x:Name="AnnotationToolbarControl"
+                                    VerticalAlignment="Top"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,50,0,0"
+                                    IsVisible="True"/>
+    </Grid>
 </Window>

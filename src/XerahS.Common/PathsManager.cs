@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace XerahS.Common
 {
@@ -61,6 +62,7 @@ namespace XerahS.Common
         public static string BackupFolder => Path.Combine(SettingsFolder, AppResources.BackupFolderName);
         public static string HistoryBackupFolder => Path.Combine(HistoryFolder, AppResources.BackupFolderName);
         public static string ToolsFolder => Path.Combine(PersonalFolder, "Tools");
+        public static string ToolsArchitectureFolder => Path.Combine(ToolsFolder, GetArchitectureFolderName());
         public static string PluginsFolder
         {
             get
@@ -101,12 +103,36 @@ namespace XerahS.Common
 
             if (!Directory.Exists(ToolsFolder))
                 Directory.CreateDirectory(ToolsFolder);
+
+            if (!Directory.Exists(ToolsArchitectureFolder))
+                Directory.CreateDirectory(ToolsArchitectureFolder);
         }
+
+        public static System.Collections.Generic.IEnumerable<string> GetPluginDirectories()
+        {
+            var paths = new System.Collections.Generic.List<string>();
+
+            // 1. App-bundled plugins (BaseDirectory/Plugins)
+            string appPluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppResources.PluginsFolderName);
+            paths.Add(appPluginsPath);
+
+            // 2. User-installed plugins (PluginsFolder -> PersonalFolder/Plugins)
+            string userPluginsPath = PluginsFolder;
+            
+            // Avoid duplicate if they are the same
+            if (!string.Equals(appPluginsPath, userPluginsPath, StringComparison.OrdinalIgnoreCase))
+            {
+                paths.Add(userPluginsPath);
+            }
+
+            return paths;
+        }
+
         public static string GetFFmpegPath()
         {
-            // 1. Check Personal Tools Folder (Prioritized)
-            string toolsFFmpeg = Path.Combine(ToolsFolder, OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg");
-            DebugHelper.WriteLine($"[FFmpeg] Checking common path: {toolsFFmpeg}");
+            // 1. Check Personal Tools Architecture Folder (Prioritized)
+            string toolsFFmpeg = Path.Combine(ToolsArchitectureFolder, OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg");
+            DebugHelper.WriteLine($"[FFmpeg] Checking architecture tools path: {toolsFFmpeg}");
             if (File.Exists(toolsFFmpeg))
             {
                 DebugHelper.WriteLine($"[FFmpeg] Found FFmpeg at: {toolsFFmpeg}");
@@ -116,14 +142,37 @@ namespace XerahS.Common
             // Check without extension on macOS/Linux if strict naming is used
             if (!OperatingSystem.IsWindows())
             {
-                string toolsFFmpegNoExt = Path.Combine(ToolsFolder, "ffmpeg");
+                string toolsFFmpegNoExt = Path.Combine(ToolsArchitectureFolder, "ffmpeg");
                 if (toolsFFmpeg != toolsFFmpegNoExt)
                 {
-                    DebugHelper.WriteLine($"[FFmpeg] Checking common path: {toolsFFmpegNoExt}");
+                    DebugHelper.WriteLine($"[FFmpeg] Checking architecture tools path: {toolsFFmpegNoExt}");
                     if (File.Exists(toolsFFmpegNoExt))
                     {
                         DebugHelper.WriteLine($"[FFmpeg] Found FFmpeg at: {toolsFFmpegNoExt}");
                         return toolsFFmpegNoExt;
+                    }
+                }
+            }
+
+            // 1b. Check legacy Personal Tools Folder
+            string legacyToolsFFmpeg = Path.Combine(ToolsFolder, OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg");
+            DebugHelper.WriteLine($"[FFmpeg] Checking legacy tools path: {legacyToolsFFmpeg}");
+            if (File.Exists(legacyToolsFFmpeg))
+            {
+                DebugHelper.WriteLine($"[FFmpeg] Found FFmpeg at: {legacyToolsFFmpeg}");
+                return legacyToolsFFmpeg;
+            }
+
+            if (!OperatingSystem.IsWindows())
+            {
+                string legacyToolsFFmpegNoExt = Path.Combine(ToolsFolder, "ffmpeg");
+                if (legacyToolsFFmpeg != legacyToolsFFmpegNoExt)
+                {
+                    DebugHelper.WriteLine($"[FFmpeg] Checking legacy tools path: {legacyToolsFFmpegNoExt}");
+                    if (File.Exists(legacyToolsFFmpegNoExt))
+                    {
+                        DebugHelper.WriteLine($"[FFmpeg] Found FFmpeg at: {legacyToolsFFmpegNoExt}");
+                        return legacyToolsFFmpegNoExt;
                     }
                 }
             }
@@ -169,6 +218,31 @@ namespace XerahS.Common
 
             DebugHelper.WriteLine("[FFmpeg] FFmpeg not found in any standard location.");
             return string.Empty;
+        }
+
+        private static string GetArchitectureFolderName()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return RuntimeInformation.OSArchitecture switch
+                {
+                    Architecture.Arm64 => "win-arm64",
+                    Architecture.X64 => "win-x64",
+                    _ => "win-x86"
+                };
+            }
+
+            if (OperatingSystem.IsMacOS())
+            {
+                return "macos64";
+            }
+
+            if (OperatingSystem.IsLinux())
+            {
+                return "linux64";
+            }
+
+            return "win-x64";
         }
     }
 }

@@ -34,11 +34,33 @@ using System.Diagnostics;
 using XerahS.History;
 using Avalonia.Threading;
 using System.Drawing;
+using XerahS.Media;
 
 namespace XerahS.Core.Tasks
 {
     public class WorkerTask : IDisposable
     {
+        /// <summary>
+        /// Default delay in milliseconds after window activation before capture.
+        /// Allows the window to settle after restore/activation operations.
+        /// </summary>
+        private const int WindowActivationDelayMs = 250;
+
+        /// <summary>
+        /// H.264/H.265 video encoders require dimensions divisible by this value.
+        /// </summary>
+        private const int VideoDimensionAlignment = 2;
+
+        /// <summary>
+        /// Minimum video width in pixels for recording.
+        /// </summary>
+        private const int MinVideoWidth = 2;
+
+        /// <summary>
+        /// Minimum video height in pixels for recording.
+        /// </summary>
+        private const int MinVideoHeight = 2;
+
         public TaskInfo Info { get; private set; }
         public TaskStatus Status { get; private set; }
         public Exception? Error { get; private set; }
@@ -67,8 +89,8 @@ namespace XerahS.Core.Tasks
 
         private CancellationTokenSource _cancellationTokenSource;
 
-        public event EventHandler StatusChanged = delegate { };
-        public event EventHandler TaskCompleted = delegate { };
+        public event EventHandler? StatusChanged;
+        public event EventHandler? TaskCompleted;
 
         /// <summary>
         /// Delegate to show window selector when CustomWindow capture has no target configured.
@@ -110,7 +132,7 @@ namespace XerahS.Core.Tasks
 
             try
             {
-                await Task.Run(async () => await DoWorkAsync(_cancellationTokenSource.Token));
+                await Task.Run(() => DoWorkAsync(_cancellationTokenSource.Token));
             }
             catch (OperationCanceledException)
             {
@@ -128,7 +150,10 @@ namespace XerahS.Core.Tasks
                     var errorMessage = ex.InnerException?.Message ?? ex.Message;
                     if (errorMessage.Length > 150)
                     {
-                        errorMessage = errorMessage.Substring(0, 147) + "...";
+                        // Truncate at word boundary to avoid cutting mid-word
+                        int cutoff = errorMessage.LastIndexOf(' ', 147);
+                        if (cutoff <= 0) cutoff = 147; // Fallback if no space found
+                        errorMessage = errorMessage.Substring(0, cutoff) + "...";
                     }
 
                     PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
@@ -192,11 +217,15 @@ namespace XerahS.Core.Tasks
                 var isScreenCaptureDelay = workflowCategory == EnumExtensions.WorkflowType_Category_ScreenCapture && captureDelaySeconds > 0;
                 var isScreenRecordDelay = workflowCategory == EnumExtensions.WorkflowType_Category_ScreenRecord && captureDelaySeconds > 0;
 
+                // UseTransparentOverlay is true only for RectangleTransparent workflow
+                // All other region capture workflows use frozen screenshot background
+                var useTransparentOverlay = taskSettings.Job == WorkflowType.RectangleTransparent;
+
                 var captureOptions = new CaptureOptions
                 {
                     UseModernCapture = captureSettings.UseModernCapture,
                     ShowCursor = captureSettings.ShowCursor,
-                    CaptureTransparent = captureSettings.CaptureTransparent,
+                    UseTransparentOverlay = useTransparentOverlay,
                     CaptureShadow = captureSettings.CaptureShadow,
                     CaptureClientArea = captureSettings.CaptureClientArea,
                     WorkflowId = taskSettings.WorkflowId,
@@ -213,6 +242,7 @@ namespace XerahS.Core.Tasks
                         image = await PlatformServices.ScreenCapture.CaptureFullScreenAsync(captureOptions);
                         break;
 
+                    case WorkflowType.RectangleTransparent:
                     case WorkflowType.RectangleRegion:
                         if (isScreenCaptureDelay)
                         {
@@ -319,7 +349,7 @@ namespace XerahS.Core.Tasks
                                         {
                                             TroubleshootingHelper.Log("CustomWindow", "WINDOW", "Window is minimized, restoring...");
                                             PlatformServices.Window.ShowWindow(selectedWindow.Handle, 9); // SW_RESTORE = 9
-                                            await Task.Delay(250, token);
+                                            await Task.Delay(WindowActivationDelayMs, token);
                                         }
 
                                         // Capture using window handle directly (guarantees correct window)
@@ -338,7 +368,7 @@ namespace XerahS.Core.Tasks
                                         {
                                             TroubleshootingHelper.Log("CustomWindow", "ACTIVATE", "ActivateWindow returned false, but proceeding check...");
                                         }
-                                        await Task.Delay(250, token); // Increased delay for activation to settle
+                                        await Task.Delay(WindowActivationDelayMs, token); // Increased delay for activation to settle
 
                                         // Verify foreground is now our target
                                         var foregroundHandle = PlatformServices.Window.GetForegroundWindow();
@@ -386,7 +416,7 @@ namespace XerahS.Core.Tasks
                                     {
                                         TroubleshootingHelper.Log("CustomWindow", "WINDOW", "Window is minimized, restoring...");
                                         PlatformServices.Window.ShowWindow(hWnd, 9); // SW_RESTORE = 9
-                                        await Task.Delay(250, token);
+                                        await Task.Delay(WindowActivationDelayMs, token);
                                     }
 
                                     // Capture using window handle directly (guarantees correct window)
@@ -420,7 +450,16 @@ namespace XerahS.Core.Tasks
                     // Stage 5: Screen Recording Integration
                     case WorkflowType.ScreenRecorder:
                     case WorkflowType.StartScreenRecorder:
+                    case WorkflowType.ScreenRecorderGIF:
+                    case WorkflowType.StartScreenRecorderGIF:
                         TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecorder case matched, showing region selector");
+
+                        // Clear any previous image (recording doesn't produce image, only video)
+                        if (Info.Metadata.Image != null)
+                        {
+                            Info.Metadata.Image.Dispose();
+                            Info.Metadata.Image = null;
+                        }
 
                         // Show region selector and get user selection
                         var regionCaptureOptions = new CaptureOptions
@@ -441,12 +480,12 @@ namespace XerahS.Core.Tasks
                         }
 
                         // Convert SKRectI to System.Drawing.Rectangle for recording options
-                        // H.264 encoder requires even dimensions - round down to nearest even number
-                        int adjustedWidth = selection.Width - (selection.Width % 2);
-                        int adjustedHeight = selection.Height - (selection.Height % 2);
+                        // Video encoders require dimensions divisible by VideoDimensionAlignment
+                        int adjustedWidth = selection.Width - (selection.Width % VideoDimensionAlignment);
+                        int adjustedHeight = selection.Height - (selection.Height % VideoDimensionAlignment);
 
-                        // Ensure minimum dimensions (at least 2x2)
-                        if (adjustedWidth < 2 || adjustedHeight < 2)
+                        // Ensure minimum dimensions for video encoding
+                        if (adjustedWidth < MinVideoWidth || adjustedHeight < MinVideoHeight)
                         {
                             TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", $"Region too small after adjustment: {adjustedWidth}x{adjustedHeight}, aborting recording");
                             Status = TaskStatus.Stopped;
@@ -473,6 +512,14 @@ namespace XerahS.Core.Tasks
                         return; // Recording tasks don't proceed to image processing
 
                     case WorkflowType.ScreenRecorderActiveWindow:
+                    case WorkflowType.ScreenRecorderGIFActiveWindow:
+                        // Clear any previous image (recording doesn't produce image, only video)
+                        if (Info.Metadata.Image != null)
+                        {
+                            Info.Metadata.Image.Dispose();
+                            Info.Metadata.Image = null;
+                        }
+
                         if (PlatformServices.Window != null)
                         {
                             var foregroundWindow = PlatformServices.Window.GetForegroundWindow();
@@ -485,6 +532,14 @@ namespace XerahS.Core.Tasks
                         return;
 
                     case WorkflowType.ScreenRecorderCustomRegion:
+                    case WorkflowType.ScreenRecorderGIFCustomRegion:
+                        // Clear any previous image (recording doesn't produce image, only video)
+                        if (Info.Metadata.Image != null)
+                        {
+                            Info.Metadata.Image.Dispose();
+                            Info.Metadata.Image = null;
+                        }
+
                         // TODO: Show region selector UI and get selected region
                         // For now, just start full screen recording
                         DebugHelper.WriteLine("ScreenRecorderCustomRegion: Region selector not yet implemented, falling back to full screen");
@@ -497,6 +552,10 @@ namespace XerahS.Core.Tasks
 
                     case WorkflowType.StopScreenRecording:
                         await HandleStopRecordingAsync();
+                        return;
+
+                    case WorkflowType.PauseScreenRecording:
+                        await HandlePauseRecordingAsync();
                         return;
 
                     case WorkflowType.AbortScreenRecording:
@@ -529,7 +588,30 @@ namespace XerahS.Core.Tasks
             }
             else if (Info.Metadata.Image == null)
             {
+                // Platform services not ready - fail with clear error
                 DebugHelper.WriteLine("PlatformServices not initialized - cannot capture");
+
+                try
+                {
+                    PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
+                    {
+                        Title = "Capture Failed",
+                        Text = "Platform services not ready. Please wait a moment and try again.",
+                        Duration = 4f,
+                        Size = new SizeI(400, 120),
+                        AutoHide = true,
+                        LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
+                    });
+                }
+                catch
+                {
+                    // Ignore toast errors if platform not ready
+                }
+
+                Status = TaskStatus.Failed;
+                Error = new InvalidOperationException("Platform services not initialized");
+                OnStatusChanged();
+                return;
             }
 
             // Execute Capture Job (File Save, Clipboard, etc)
@@ -681,7 +763,8 @@ namespace XerahS.Core.Tasks
                 {
                     Mode = mode,
                     Settings = captureSettings.ScreenRecordingSettings,
-                    TargetWindowHandle = windowHandle
+                    TargetWindowHandle = windowHandle,
+                    UseModernCapture = captureSettings.UseModernCapture
                 };
 
                 // Set region if provided (for Region mode)
@@ -725,12 +808,110 @@ namespace XerahS.Core.Tasks
                 // 3. Stop recording
                 DebugHelper.WriteLine("Stopping recording...");
                 string? outputPath = await ScreenRecordingManager.Instance.StopRecordingAsync();
+                DebugHelper.WriteLine($"[GIF] StopRecordingAsync returned: {(string.IsNullOrEmpty(outputPath) ? "(null)" : outputPath)} (exists={(!string.IsNullOrEmpty(outputPath) && File.Exists(outputPath))})");
+
+                if (string.IsNullOrEmpty(outputPath) && !string.IsNullOrEmpty(Info.FilePath) && File.Exists(Info.FilePath))
+                {
+                    DebugHelper.WriteLine($"[GIF] StopRecordingAsync returned null but Info.FilePath exists. Recovering path: {Info.FilePath}");
+                    outputPath = Info.FilePath;
+                }
 
                 if (!string.IsNullOrEmpty(outputPath))
                 {
                     DebugHelper.WriteLine($"Recording saved to: {outputPath}");
                     Info.FilePath = outputPath;
                     Info.DataType = EDataType.File;
+
+                    bool isGifJob = taskSettings.Job == WorkflowType.ScreenRecorderGIF ||
+                                    taskSettings.Job == WorkflowType.ScreenRecorderGIFActiveWindow ||
+                                    taskSettings.Job == WorkflowType.ScreenRecorderGIFCustomRegion ||
+                                    taskSettings.Job == WorkflowType.StartScreenRecorderGIF;
+                    DebugHelper.WriteLine($"[GIF] isGifJob={isGifJob}, Job={taskSettings.Job}");
+
+                    if (isGifJob && !string.IsNullOrEmpty(outputPath) && File.Exists(outputPath))
+                    {
+                         TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Converting video to GIF...");
+                         DebugHelper.WriteLine($"[GIF] Conversion requested. Job={taskSettings.Job}, Source={outputPath}");
+                         string gifPath = Path.ChangeExtension(outputPath, ".gif");
+                         int gifFps = taskSettings.CaptureSettings?.GIFFPS > 0
+                             ? taskSettings.CaptureSettings.GIFFPS
+                             : taskSettings.CaptureSettings?.ScreenRecordingSettings?.FPS ?? 15;
+                         var ffmpegOptions = taskSettings.CaptureSettings?.FFmpegOptions;
+                         string? ffmpegPath = ResolveGifFFmpegPath(ffmpegOptions);
+                         DebugHelper.WriteLine($"[GIF] FFmpegPath={(string.IsNullOrWhiteSpace(ffmpegPath) ? "(missing)" : ffmpegPath)}");
+                         if (string.IsNullOrWhiteSpace(ffmpegPath))
+                         {
+                             TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "FFmpeg not found. GIF conversion skipped.");
+                             DebugHelper.WriteLine("FFmpeg not found. GIF conversion skipped.");
+                             try
+                             {
+                                 PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
+                                 {
+                                     Title = "GIF Conversion Skipped",
+                                     Text = "FFmpeg not found. Configure or download FFmpeg to enable GIF output.",
+                                     Duration = 5f,
+                                     Size = new SizeI(420, 120),
+                                     AutoHide = true,
+                                     LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
+                                 });
+                             }
+                             catch
+                             {
+                                 // Ignore toast errors
+                             }
+                         }
+                         var videoHelpers = new VideoHelpers(ffmpegPath);
+                         string? statsMode = ffmpegOptions?.GIFStatsMode.ToString();
+                         string? dither = ffmpegOptions?.GIFDither.ToString();
+                         int bayerScale = ffmpegOptions?.GIFBayerScale ?? 2;
+                         int maxWidth = ffmpegOptions?.GIFMaxWidth > 0 ? ffmpegOptions.GIFMaxWidth : -1;
+                         bool paletteNew = ffmpegOptions != null &&
+                             ffmpegOptions.GIFStatsMode == XerahS.Core.FFmpegPaletteGenStatsMode.single;
+                         DebugHelper.WriteLine($"[GIF] Settings: fps={gifFps}, maxWidth={maxWidth}, statsMode={statsMode}, dither={dither}, bayerScale={bayerScale}, paletteNew={paletteNew}");
+                         bool success = await videoHelpers.ConvertToGifAsync(
+                             outputPath,
+                             gifPath,
+                             gifFps,
+                             maxWidth,
+                             statsMode,
+                             dither,
+                             bayerScale,
+                             paletteNew);
+                         DebugHelper.WriteLine($"[GIF] Conversion result: success={success}, output={(File.Exists(gifPath) ? gifPath : "(missing)")}");
+                         
+                         if (success)
+                         {
+                             TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Conversion successful. Switching result to GIF.");
+                             
+                             // Delete original MP4 if conversion succeeded
+                             try { File.Delete(outputPath); } catch { }
+                             
+                             outputPath = gifPath;
+                             Info.FilePath = outputPath;
+                         }
+                         else
+                         {
+                             TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Conversion failed. Keeping MP4.");
+                         }
+                    }
+                    
+                    // Handle After Capture tasks for recordings (manual handling since CaptureJobProcessor is for images)
+                    if (taskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyImageToClipboard))
+                    {
+                         if (PlatformServices.IsInitialized && !string.IsNullOrEmpty(outputPath))
+                         {
+                             try
+                             {
+                                 // For files/recordings, "Copy Image" implies copying file to clipboard
+                                 PlatformServices.Clipboard.SetFileDropList(new[] { outputPath });
+                                 DebugHelper.WriteLine($"[GIF] Copied recording to clipboard: {outputPath}");
+                             }
+                             catch (Exception ex)
+                             {
+                                 DebugHelper.WriteException(ex, "Failed to copy recording to clipboard");
+                             }
+                         }
+                    }
                     
                     // Reuse upload pipeline for recordings; flag upload when AfterUpload tasks exist.
                     if (taskSettings.AfterUploadJob != AfterUploadTasks.None)
@@ -739,30 +920,71 @@ namespace XerahS.Core.Tasks
                     }
 
                     var uploadProcessor = new UploadJobProcessor();
-                    await uploadProcessor.ProcessAsync(Info, CancellationToken.None);
+                    await uploadProcessor.ProcessAsync(Info, _cancellationTokenSource.Token);
 
-                    // Add to History
-                    try
+                    // Add to History with retry logic for transient failures
+                    const int MaxRetries = 3;
+                    bool historySaved = false;
+
+                    for (int retry = 0; retry < MaxRetries; retry++)
                     {
-                        var historyPath = SettingsManager.GetHistoryFilePath();
-                        using var historyManager = new HistoryManagerSQLite(historyPath);
-                        var historyItem = new HistoryItem
+                        try
                         {
-                            FilePath = outputPath,
-                            FileName = Path.GetFileName(outputPath),
-                            DateTime = DateTime.Now,
-                            Type = "Video",
-                            URL = metadata.UploadURL ?? string.Empty // Will be populated if upload succeeded
-                        };
+                            var historyPath = SettingsManager.GetHistoryFilePath();
+                            using var historyManager = new HistoryManagerSQLite(historyPath);
+                            var historyItem = new HistoryItem
+                            {
+                                FilePath = outputPath,
+                                FileName = Path.GetFileName(outputPath),
+                                DateTime = DateTime.Now,
+                                Type = "Video",
+                                URL = metadata.UploadURL ?? string.Empty // Will be populated if upload succeeded
+                            };
 
-                        DebugHelper.WriteLine($"[HistoryTrace] Preparing to add item. URL='{historyItem.URL}', File='{historyItem.FileName}'");
+                            DebugHelper.WriteLine($"[HistoryTrace] Preparing to add item. URL='{historyItem.URL}', File='{historyItem.FileName}'");
 
-                        await Task.Run(() => historyManager.AppendHistoryItem(historyItem));
-                        DebugHelper.WriteLine($"Added recording to history: {historyItem.FileName} (URL: {historyItem.URL})");
+                            await Task.Run(() => historyManager.AppendHistoryItem(historyItem));
+                            DebugHelper.WriteLine($"Added recording to history: {historyItem.FileName} (URL: {historyItem.URL})");
+                            historySaved = true;
+                            break; // Success - exit retry loop
+                        }
+                        catch (Microsoft.Data.Sqlite.SqliteException ex) when (ex.SqliteErrorCode == 5 && retry < MaxRetries - 1)
+                        {
+                            // SQLITE_BUSY - database locked, retry after delay
+                            DebugHelper.WriteLine($"History database busy, retry {retry + 1}/{MaxRetries}");
+                            await Task.Delay(100 * (retry + 1));
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugHelper.WriteException(ex, "Failed to add recording to history");
+
+                            // Notify user on final failure
+                            if (retry == MaxRetries - 1)
+                            {
+                                try
+                                {
+                                    PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
+                                    {
+                                        Title = "History Save Failed",
+                                        Text = "Recording completed but could not be added to history. Check disk space and logs.",
+                                        Duration = 5f,
+                                        Size = new SizeI(400, 120),
+                                        AutoHide = true,
+                                        LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
+                                    });
+                                }
+                                catch
+                                {
+                                    // Ignore toast errors
+                                }
+                            }
+                            break;
+                        }
                     }
-                    catch (Exception ex)
+
+                    if (!historySaved)
                     {
-                        DebugHelper.WriteException(ex, "Failed to add recording to history");
+                        DebugHelper.WriteLine("WARNING: Recording completed successfully but history record was not saved.");
                     }
                 }
             }
@@ -783,6 +1005,22 @@ namespace XerahS.Core.Tasks
         {
              // Legacy handler
              await ScreenRecordingManager.Instance.AbortRecordingAsync();
+        }
+
+        private async Task HandlePauseRecordingAsync()
+        {
+             await ScreenRecordingManager.Instance.TogglePauseResumeAsync();
+        }
+
+        private static string? ResolveGifFFmpegPath(FFmpegOptions? ffmpegOptions)
+        {
+            if (ffmpegOptions != null && !string.IsNullOrWhiteSpace(ffmpegOptions.CLIPath))
+            {
+                return ffmpegOptions.CLIPath;
+            }
+
+            string detectedPath = PathsManager.GetFFmpegPath();
+            return string.IsNullOrWhiteSpace(detectedPath) ? null : detectedPath;
         }
 
         #endregion

@@ -49,6 +49,15 @@ public partial class App : Application
 
 #if DEBUG
         this.AttachDeveloperTools();
+
+        // Load Audit Styles (Debug Only)
+        Styles.Add(new Avalonia.Markup.Xaml.Styling.StyleInclude(new Uri("avares://XerahS.UI/Themes/AuditStyles.axaml"))
+        {
+            Source = new Uri("avares://XerahS.UI/Themes/AuditStyles.axaml")
+        });
+        
+        // Enable Runtime Wiring Checks
+        Auditing.UiAudit.InitializeRuntimeChecks();
 #endif
     }
 
@@ -167,11 +176,14 @@ public partial class App : Application
                             return;
                         }
 
-                        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+                        var options = new Avalonia.Platform.Storage.FilePickerOpenOptions
                         {
                             Title = "Select File to Upload",
-                            AllowMultiple = false
-                        });
+                            AllowMultiple = false,
+                            SuggestedStartLocation = await topLevel.StorageProvider.TryGetWellKnownFolderAsync(Avalonia.Platform.Storage.WellKnownFolder.Desktop)
+                        };
+
+                        var files = await topLevel.StorageProvider.OpenFilePickerAsync(options);
 
                         if (files.Count >= 1)
                         {
@@ -197,6 +209,7 @@ public partial class App : Application
             desktop.Exit += (sender, args) =>
             {
                 XerahS.Core.SettingsManager.SaveAllSettings();
+                DebugHelper.Shutdown();
             };
 
             // Subscribe to workflow completion for notification
@@ -206,6 +219,12 @@ public partial class App : Application
             // Trigger async recording initialization via callback
             // This prevents blocking the main window from showing quickly
             PostUIInitializationCallback?.Invoke();
+
+            // Initialize auto-update service if enabled
+            if (SettingsManager.Settings.AutoCheckUpdate)
+            {
+                Services.UpdateService.Instance.Initialize();
+            }
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -577,9 +596,29 @@ public partial class App : Application
             bool isRecordingHotkey = settings.Job == Core.WorkflowType.ScreenRecorder ||
                                      settings.Job == Core.WorkflowType.ScreenRecorderActiveWindow ||
                                      settings.Job == Core.WorkflowType.StopScreenRecording ||
-                                     settings.Job == Core.WorkflowType.StartScreenRecorder;
+                                     settings.Job == Core.WorkflowType.StartScreenRecorder ||
+                                     settings.Job == Core.WorkflowType.ScreenRecorderGIF ||
+                                     settings.Job == Core.WorkflowType.ScreenRecorderGIFActiveWindow ||
+                                     settings.Job == Core.WorkflowType.ScreenRecorderGIFCustomRegion ||
+                                     settings.Job == Core.WorkflowType.StartScreenRecorderGIF;
 
-            if (isRecordingHotkey && Core.Managers.ScreenRecordingManager.Instance.IsRecording)
+            if (settings.Job == Core.WorkflowType.PauseScreenRecording &&
+                (Core.Managers.ScreenRecordingManager.Instance.IsRecording || Core.Managers.ScreenRecordingManager.Instance.IsPaused))
+            {
+                DebugHelper.WriteLine("Pause/Resume hotkey triggered - toggling recording pause state...");
+                await Core.Managers.ScreenRecordingManager.Instance.TogglePauseResumeAsync();
+                return;
+            }
+
+            if (settings.Job == Core.WorkflowType.AbortScreenRecording &&
+                (Core.Managers.ScreenRecordingManager.Instance.IsRecording || Core.Managers.ScreenRecordingManager.Instance.IsPaused))
+            {
+                DebugHelper.WriteLine("Abort hotkey triggered - aborting recording...");
+                await Core.Managers.ScreenRecordingManager.Instance.AbortRecordingAsync();
+                return;
+            }
+
+            if (isRecordingHotkey && (Core.Managers.ScreenRecordingManager.Instance.IsRecording || Core.Managers.ScreenRecordingManager.Instance.IsPaused))
             {
                 DebugHelper.WriteLine("Screen Recording active - flagging Stop Signal to existing task...");
                 Core.Managers.ScreenRecordingManager.Instance.SignalStop();

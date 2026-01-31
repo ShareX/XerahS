@@ -24,6 +24,8 @@
 #endregion License Information (GPL v3)
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using ShareX.Editor;
+using Common = XerahS.Common;
 using XerahS.Core;
 using XerahS.RegionCapture.ScreenRecording;
 using CommunityToolkit.Mvvm.Input;
@@ -39,14 +41,19 @@ namespace XerahS.UI.ViewModels
     public partial class TaskSettingsViewModel : ObservableObject
     {
         private TaskSettings _settings;
+        private EditorCore _effectsEditorCore;
 
         public ImageEffectsViewModel ImageEffects { get; private set; }
 
-        public TaskSettingsViewModel(TaskSettings settings)
+        public TaskSettingsViewModel(TaskSettings settings) : this(settings, null) { }
+
+        public TaskSettingsViewModel(TaskSettings settings, EditorCore? editorCore)
         {
             _settings = settings;
-            ImageEffects = new ImageEffectsViewModel(Model.ImageSettings);
+            _effectsEditorCore = editorCore ?? new EditorCore();
+            ImageEffects = new ImageEffectsViewModel(Model.ImageSettings, _effectsEditorCore);
             ImageEffects.UpdatePreview();
+            RefreshFFmpegState();
         }
 
         public IEnumerable<EImageFormat> ImageFormats => Enum.GetValues(typeof(EImageFormat)).Cast<EImageFormat>();
@@ -56,6 +63,7 @@ namespace XerahS.UI.ViewModels
 
         // Expose underlying model if needed
         public TaskSettings Model => _settings;
+        public TaskSettingsAdvanced AdvancedSettings => _settings.AdvancedSettings;
 
         public WorkflowType Job
         {
@@ -239,6 +247,94 @@ namespace XerahS.UI.ViewModels
 
         #region FFmpeg Options
 
+        private string _ffmpegStatusText = "Missing.";
+        private string _detectedFFmpegPath = string.Empty;
+        private bool _isDownloadingFFmpeg;
+        private double _ffmpegDownloadProgress;
+        private string _expectedFFmpegDownloadUrl = string.Empty;
+
+        public string FFmpegStatusText
+        {
+            get => _ffmpegStatusText;
+            private set
+            {
+                if (_ffmpegStatusText != value)
+                {
+                    _ffmpegStatusText = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string DetectedFFmpegPath
+        {
+            get => _detectedFFmpegPath;
+            private set
+            {
+                if (_detectedFFmpegPath != value)
+                {
+                    _detectedFFmpegPath = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsFFmpegDetected));
+                    OnPropertyChanged(nameof(IsFFmpegMissing));
+                    OnPropertyChanged(nameof(CanDownloadFFmpeg));
+                    OnPropertyChanged(nameof(ShowDownloadFFmpeg));
+                }
+            }
+        }
+
+        public bool IsFFmpegDetected => !string.IsNullOrWhiteSpace(_detectedFFmpegPath);
+        public bool IsFFmpegMissing => string.IsNullOrWhiteSpace(_detectedFFmpegPath);
+
+        public bool IsDownloadingFFmpeg
+        {
+            get => _isDownloadingFFmpeg;
+            private set
+            {
+                if (_isDownloadingFFmpeg != value)
+                {
+                    _isDownloadingFFmpeg = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(CanDownloadFFmpeg));
+                }
+            }
+        }
+
+        public double FFmpegDownloadProgress
+        {
+            get => _ffmpegDownloadProgress;
+            private set
+            {
+                if (Math.Abs(_ffmpegDownloadProgress - value) > 0.001)
+                {
+                    _ffmpegDownloadProgress = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(FFmpegDownloadProgressText));
+                }
+            }
+        }
+
+        public string FFmpegDownloadProgressText => $"{FFmpegDownloadProgress:0}%";
+
+        public bool CanDownloadFFmpeg => IsFFmpegMissing && !IsDownloadingFFmpeg;
+        public bool ShowDownloadFFmpeg => IsFFmpegMissing;
+
+        public string ExpectedFFmpegDownloadUrl
+        {
+            get => _expectedFFmpegDownloadUrl;
+            private set
+            {
+                if (_expectedFFmpegDownloadUrl != value)
+                {
+                    _expectedFFmpegDownloadUrl = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(ShowExpectedFFmpegDownloadUrl));
+                }
+            }
+        }
+
+        public bool ShowExpectedFFmpegDownloadUrl => !string.IsNullOrWhiteSpace(_expectedFFmpegDownloadUrl);
+
         [RelayCommand]
         private async Task OpenFFmpegOptionsAsync()
         {
@@ -265,10 +361,125 @@ namespace XerahS.UI.ViewModels
                 desktop.MainWindow != null)
             {
                 await window.ShowDialog(desktop.MainWindow);
+                RefreshFFmpegState();
             }
             else
             {
+                window.Closed += (_, _) => RefreshFFmpegState();
                 window.Show();
+            }
+        }
+
+        [RelayCommand]
+        private async Task DownloadFFmpegAsync()
+        {
+            if (IsDownloadingFFmpeg || IsFFmpegDetected)
+            {
+                return;
+            }
+
+            IsDownloadingFFmpeg = true;
+            FFmpegDownloadProgress = 0;
+            FFmpegStatusText = "Downloading FFmpeg...";
+            ExpectedFFmpegDownloadUrl = string.Empty;
+
+            try
+            {
+                IProgress<double> progress = new Progress<double>(value =>
+                {
+                    FFmpegDownloadProgress = value;
+                    FFmpegStatusText = $"Downloading FFmpeg... {FFmpegDownloadProgressText}";
+                });
+
+                Common.FFmpegDownloadResult result = await Common.FFmpegDownloader.DownloadLatestToToolsAsync(progress);
+
+                IsDownloadingFFmpeg = false;
+
+                if (result.Success)
+                {
+                    RefreshFFmpegState();
+                    RefreshOpenFFmpegOptionsWindows();
+                    ExpectedFFmpegDownloadUrl = string.Empty;
+                }
+                else
+                {
+                    FFmpegStatusText = result.ErrorMessage ?? "FFmpeg download failed.";
+                    if (!string.IsNullOrWhiteSpace(result.ExpectedDownloadUrl))
+                    {
+                        ExpectedFFmpegDownloadUrl = result.ExpectedDownloadUrl;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                IsDownloadingFFmpeg = false;
+                Common.DebugHelper.WriteException(ex, "FFmpeg download failed.");
+                FFmpegStatusText = "FFmpeg download failed.";
+                ExpectedFFmpegDownloadUrl = string.Empty;
+            }
+        }
+
+        private void RefreshFFmpegState()
+        {
+            DetectedFFmpegPath = Common.PathsManager.GetFFmpegPath();
+            FFmpegStatusText = BuildFFmpegStatusText();
+        }
+
+        private string BuildFFmpegStatusText()
+        {
+            if (IsDownloadingFFmpeg)
+            {
+                return $"Downloading FFmpeg... {FFmpegDownloadProgressText}";
+            }
+
+            FFmpegOptions? options = _settings.CaptureSettings.FFmpegOptions;
+
+            if (options?.OverrideCLIPath == true && !string.IsNullOrWhiteSpace(options.CLIPath))
+            {
+                return "Configured manually.";
+            }
+
+            if (!string.IsNullOrWhiteSpace(_detectedFFmpegPath))
+            {
+                return IsInToolsFolder(_detectedFFmpegPath) ? "Downloaded automatically." : "Configured manually.";
+            }
+
+            return "Missing.";
+        }
+
+        private static bool IsInToolsFolder(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return false;
+            }
+
+            string toolsFolder = Path.GetFullPath(Common.PathsManager.ToolsFolder);
+
+            if (!toolsFolder.EndsWith(Path.DirectorySeparatorChar))
+            {
+                toolsFolder += Path.DirectorySeparatorChar;
+            }
+
+            string fullPath = Path.GetFullPath(path);
+            StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+            return fullPath.StartsWith(toolsFolder, comparison);
+        }
+
+        private void RefreshOpenFFmpegOptionsWindows()
+        {
+            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                return;
+            }
+
+            foreach (var window in desktop.Windows.OfType<FFmpegOptionsWindow>())
+            {
+                if (window.DataContext is FFmpegOptionsViewModel vm)
+                {
+                    vm.RefreshDetectedPath();
+                }
             }
         }
 
@@ -486,6 +697,19 @@ namespace XerahS.UI.ViewModels
         #endregion
 
         #region After Upload Tasks
+
+        public bool ShowAfterUploadWindow
+        {
+            get => _settings.AfterUploadJob.HasFlag(AfterUploadTasks.ShowAfterUploadWindow);
+            set
+            {
+                if (ShowAfterUploadWindow != value)
+                {
+                    UpdateAfterUploadTask(AfterUploadTasks.ShowAfterUploadWindow, value);
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public bool CopyURLToClipboard
         {

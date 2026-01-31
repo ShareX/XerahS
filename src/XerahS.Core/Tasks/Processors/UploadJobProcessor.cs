@@ -24,6 +24,9 @@
 #endregion License Information (GPL v3)
 using System.IO;
 using XerahS.Common;
+using XerahS.Core;
+using XerahS.Core.Managers;
+using XerahS.History;
 using XerahS.Platform.Abstractions;
 using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
@@ -91,6 +94,8 @@ namespace XerahS.Core.Tasks.Processors
                         }
                     }
                 }
+
+                TryAppendHistoryItem(info);
             }
             else
             {
@@ -218,15 +223,78 @@ namespace XerahS.Core.Tasks.Processors
             try
             {
                 ProviderCatalog.InitializeBuiltInProviders();
-                string pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
-                DebugHelper.WriteLine($"Loading plugins from: {pluginsPath}");
-                ProviderCatalog.LoadPlugins(pluginsPath);
+
+                var pluginPaths = PathsManager.GetPluginDirectories();
+
+                DebugHelper.WriteLine($"Loading plugins from: {string.Join(", ", pluginPaths)}");
+                ProviderCatalog.LoadPlugins(pluginPaths);
                 DebugHelper.WriteLine($"Plugin providers available: {ProviderCatalog.GetAllProviders().Count}");
             }
             catch (Exception ex)
             {
                 DebugHelper.WriteException(ex, "Failed to load plugins");
             }
+        }
+
+        private static void TryAppendHistoryItem(TaskInfo info)
+        {
+            var url = info.Metadata?.UploadURL;
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return;
+            }
+
+            var category = info.TaskSettings.Job.GetHotkeyCategory();
+            if (category == EnumExtensions.WorkflowType_Category_ScreenCapture ||
+                category == EnumExtensions.WorkflowType_Category_ScreenRecord)
+            {
+                return;
+            }
+
+            try
+            {
+                var historyPath = SettingsManager.GetHistoryFilePath();
+                using var historyManager = new HistoryManagerSQLite(historyPath);
+
+                var historyItem = new HistoryItem
+                {
+                    FilePath = info.FilePath ?? string.Empty,
+                    FileName = TaskHelpers.GetHistoryFileName(info.FileName, info.FilePath, url),
+                    DateTime = DateTime.Now,
+                    Type = GetHistoryType(info),
+                    Host = info.UploaderHost ?? string.Empty,
+                    URL = url ?? string.Empty
+                };
+
+                var tags = info.GetTags();
+                if (tags != null)
+                {
+                    historyItem.Tags = new Dictionary<string, string?>(tags.Count);
+                    foreach (var pair in tags)
+                    {
+                        historyItem.Tags[pair.Key] = pair.Value;
+                    }
+                }
+
+                historyManager.AppendHistoryItem(historyItem);
+                DebugHelper.WriteLine($"Added upload to history: {historyItem.FileName} (URL: {historyItem.URL})");
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to add upload history item");
+            }
+        }
+
+        private static string GetHistoryType(TaskInfo info)
+        {
+            return info.DataType switch
+            {
+                EDataType.Image => "Image",
+                EDataType.Text => "Text",
+                EDataType.File => "File",
+                EDataType.URL => "URL",
+                _ => "Unknown"
+            };
         }
 
         private async Task HandleAfterUploadTasksAsync(TaskInfo info, UploadResult result, CancellationToken token)
@@ -238,6 +306,46 @@ namespace XerahS.Core.Tasks.Processors
             {
                 DebugHelper.WriteLine("AfterUpload: URL shortener requested (not implemented).");
                 // TODO: Implement URL Shortening logic using UploaderFactory
+            }
+
+            // Show After Upload window (non-blocking)
+            if (info.TaskSettings.AfterUploadJob.HasFlag(AfterUploadTasks.ShowAfterUploadWindow))
+            {
+                if (!PlatformServices.IsInitialized || PlatformServices.UI == null)
+                {
+                    DebugHelper.WriteLine("AfterUpload: ShowAfterUploadWindow requested but UI service is not initialized.");
+                }
+                else if (!string.IsNullOrEmpty(result.URL) && !result.IsError)
+                {
+                    var advancedSettings = info.TaskSettings.AdvancedSettings;
+                    var windowInfo = new Platform.Abstractions.AfterUploadWindowInfo
+                    {
+                        Url = result.URL ?? string.Empty,
+                        ShortenedUrl = result.ShortenedURL,
+                        ThumbnailUrl = result.ThumbnailURL,
+                        DeletionUrl = result.DeletionURL,
+                        FilePath = info.FilePath,
+                        FileName = info.FileName,
+                        DataType = info.DataType.ToString(),
+                        UploaderHost = info.UploaderHost,
+                        ClipboardContentFormat = advancedSettings?.ClipboardContentFormat,
+                        OpenUrlFormat = advancedSettings?.OpenURLFormat,
+                        AutoCloseAfterUploadForm = advancedSettings?.AutoCloseAfterUploadForm ?? false,
+                        PreviewImage = info.Metadata?.Image
+                    };
+
+                    _ = PlatformServices.UI.ShowAfterUploadWindowAsync(windowInfo).ContinueWith(task =>
+                    {
+                        if (task.Exception != null)
+                        {
+                            DebugHelper.WriteException(task.Exception, "AfterUpload: Failed to show window");
+                        }
+                    }, TaskContinuationOptions.OnlyOnFaulted);
+                }
+                else
+                {
+                    DebugHelper.WriteLine("AfterUpload: ShowAfterUploadWindow skipped (URL empty or result error).");
+                }
             }
 
             // Handle Clipboard Copy

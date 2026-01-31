@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using XerahS.Common;
 using XerahS.Core;
 
 namespace XerahS.UI.ViewModels;
@@ -33,6 +34,7 @@ namespace XerahS.UI.ViewModels;
 public partial class FFmpegOptionsViewModel : ObservableObject
 {
     private readonly FFmpegOptions _options;
+    private string _detectedFFmpegPath = string.Empty;
 
     public FFmpegOptionsViewModel() : this(new FFmpegOptions())
     {
@@ -41,6 +43,7 @@ public partial class FFmpegOptionsViewModel : ObservableObject
     public FFmpegOptionsViewModel(FFmpegOptions options)
     {
         _options = options ?? new FFmpegOptions();
+        RefreshDetectedPath();
     }
 
     public IReadOnlyList<FFmpegCaptureDevice> VideoCaptureDevices { get; } = new[]
@@ -95,6 +98,23 @@ public partial class FFmpegOptionsViewModel : ObservableObject
             }
         }
     }
+
+    public string DetectedFFmpegPath
+    {
+        get => _detectedFFmpegPath;
+        private set
+        {
+            if (_detectedFFmpegPath != value)
+            {
+                _detectedFFmpegPath = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsFFmpegDetected));
+                OnPropertyChanged(nameof(EffectiveFFmpegPath));
+            }
+        }
+    }
+
+    public bool IsFFmpegDetected => !string.IsNullOrWhiteSpace(_detectedFFmpegPath);
 
     public FFmpegCaptureDevice? SelectedVideoDevice
     {
@@ -462,5 +482,27 @@ public partial class FFmpegOptionsViewModel : ObservableObject
         }
     }
 
-    public string EffectiveFFmpegPath => _options.FFmpegPath;
+    public string EffectiveFFmpegPath
+    {
+        get
+        {
+            if (OverrideCLIPath && !string.IsNullOrWhiteSpace(CLIPath))
+            {
+                return CLIPath;
+            }
+
+            return DetectedFFmpegPath;
+        }
+    }
+
+    public void RefreshDetectedPath()
+    {
+        string detectedPath = PathsManager.GetFFmpegPath();
+        DetectedFFmpegPath = detectedPath;
+
+        if (!string.IsNullOrWhiteSpace(detectedPath) && string.IsNullOrWhiteSpace(CLIPath))
+        {
+            CLIPath = detectedPath;
+        }
+    }
 }

@@ -10,23 +10,24 @@
         <!-- Header -->
         <Border Grid.Row="0"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                Padding="20">
-            <StackPanel Spacing="8">
+                Padding="24,20">
+            <StackPanel Spacing="4">
                 <TextBlock Text="Add Destination from Catalog" 
-                           FontSize="20" 
-                           FontWeight="SemiBold"/>
+                           Theme="{StaticResource SubtitleTextBlockStyle}"/>
                 <TextBlock Text="{Binding Category, StringFormat='Select a provider for {0} uploads'}"
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Theme="{StaticResource CaptionTextBlockStyle}"/>
             </StackPanel>
         </Border>
 
         <!-- Provider List -->
-        <ScrollViewer Grid.Row="1" Padding="20">
+        <ScrollViewer Grid.Row="1" Padding="24">
             <ListBox ItemsSource="{Binding AvailableProviders}"
                      SelectedItem="{Binding SelectedProvider}"
                      SelectionMode="Single"
                      Background="Transparent"
-                     BorderThickness="0">
+                     BorderThickness="0"
+                     AutomationProperties.Name="Provider List">
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:ProviderViewModel">
                         <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -108,17 +109,19 @@
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0"
-                Padding="20">
+                Padding="24">
             <StackPanel Orientation="Horizontal" 
                         HorizontalAlignment="Right"
-                        Spacing="10">
+                        Spacing="12">
                 <Button Content="Cancel" 
                         Command="{Binding CancelCommand}"
-                        MinWidth="90"/>
+                        MinWidth="90"
+                        AutomationProperties.Name="Cancel Selection"/>
                 <Button Content="Add Selected" 
                         Command="{Binding AddSelectedCommand}"
                         Classes="accent"
-                        MinWidth="110"/>
+                        MinWidth="110"
+                        AutomationProperties.Name="Add Selected Provider"/>
             </StackPanel>
         </Border>
     </Grid>

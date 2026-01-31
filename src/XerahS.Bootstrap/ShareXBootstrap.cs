@@ -102,14 +102,21 @@ namespace XerahS.Bootstrap
             }
             else
             {
+                var now = DateTime.Now;
                 var baseFolder = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     SettingsManager.AppName);
-                var logsFolder = Path.Combine(baseFolder, "Logs", DateTime.Now.ToString("yyyy-MM"));
-                logPath = Path.Combine(logsFolder, $"ShareX-{DateTime.Now:yyyy-MM-dd}.log");
+                var logsFolder = Path.Combine(baseFolder, "Logs", now.ToString("yyyy-MM"));
+                logPath = Path.Combine(logsFolder, $"ShareX-{now:yyyy-MM-dd}.log");
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
+            string? logDirectory = Path.GetDirectoryName(logPath);
+            if (string.IsNullOrEmpty(logDirectory))
+            {
+                throw new ArgumentException($"Invalid log path: {logPath}", nameof(logPath));
+            }
+
+            Directory.CreateDirectory(logDirectory);
             DebugHelper.Init(logPath);
 
             var dh = DebugHelper.Logger;
@@ -141,9 +148,10 @@ namespace XerahS.Bootstrap
                     var principal = new System.Security.Principal.WindowsPrincipal(identity);
                     isElevated = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore if unable to determine elevation status
+                    DebugHelper.WriteLine($"Failed to check elevation status: {ex.Message}");
+                    // isElevated remains false
                 }
             }
             dh.WriteLine($"Running as elevated process: {isElevated}");
@@ -261,6 +269,8 @@ namespace XerahS.Bootstrap
                 Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "BOOTSTRAP", "Starting recording initialization");
                 DebugHelper.WriteLine("Starting recording initialization...");
 
+                // InitializeRecording performs CPU-bound work (COM initialization, DirectX setup)
+                // so Task.Run is used to avoid blocking the caller's synchronization context
 #if WINDOWS
                 if (OperatingSystem.IsWindows())
                 {

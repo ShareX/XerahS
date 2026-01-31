@@ -61,6 +61,13 @@ public class RecordingOptions
     /// Reference to recording settings from configuration
     /// </summary>
     public ScreenRecordingSettings? Settings { get; set; }
+
+    /// <summary>
+    /// Whether to use modern capture (WGC + Media Foundation) if available.
+    /// If false, forces FFmpeg fallback even if native recording is supported.
+    /// Maps to TaskSettings.CaptureSettings.UseModernCapture.
+    /// </summary>
+    public bool UseModernCapture { get; set; } = true;
 }
 
 /// <summary>

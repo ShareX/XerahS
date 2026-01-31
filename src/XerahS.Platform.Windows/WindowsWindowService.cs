@@ -34,6 +34,19 @@ namespace XerahS.Platform.Windows
     /// </summary>
     public class WindowsWindowService : IWindowService
     {
+        /// <summary>
+        /// Window classes to ignore when enumerating visible windows.
+        /// These are system/shell windows that shouldn't appear in window lists.
+        /// </summary>
+        private static readonly HashSet<string> IgnoredWindowClasses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Progman",                      // Program Manager (desktop background)
+            "Button",                       // System button windows
+            "Shell_TrayWnd",                // Taskbar
+            "Shell_SecondaryTrayWnd",       // Secondary taskbar (multi-monitor)
+            "Windows.UI.Core.CoreWindow"    // UWP system windows
+        };
+
         public IntPtr GetForegroundWindow()
         {
             return NativeMethods.GetForegroundWindow();
@@ -114,13 +127,9 @@ namespace XerahS.Platform.Windows
                 // Get class name for filtering
                 string className = NativeMethods.GetClassNameString(hWnd);
 
-                // Skip certain system windows
-                string[] ignoreClasses = { "Progman", "Button", "Shell_TrayWnd", "Shell_SecondaryTrayWnd", "Windows.UI.Core.CoreWindow" };
-                foreach (var ignoreClass in ignoreClasses)
-                {
-                    if (className.Equals(ignoreClass, StringComparison.OrdinalIgnoreCase))
-                        return true;
-                }
+                // Skip system/shell windows using HashSet for O(1) lookup
+                if (IgnoredWindowClasses.Contains(className))
+                    return true;
 
                 // Skip child windows (no parent)
                 if (NativeMethods.GetParent(hWnd) != IntPtr.Zero)

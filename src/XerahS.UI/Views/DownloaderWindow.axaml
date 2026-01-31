@@ -1,0 +1,71 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        x:Class="XerahS.UI.Views.DownloaderWindow"
+        x:DataType="vm:DownloaderWindowViewModel"
+        Title="Downloading Update"
+        Icon="/Assets/Logo.ico"
+        Width="460" Height="240"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="24" RowDefinitions="Auto, Auto, Auto, *, Auto">
+
+        <!-- File Name -->
+        <TextBlock Grid.Row="0"
+                   Text="{Binding FileName, StringFormat='Downloading: {0}'}"
+                   Theme="{StaticResource SubtitleTextBlockStyle}"
+                   TextTrimming="CharacterEllipsis"
+                   Margin="0,0,0,8"/>
+
+        <!-- Status Text -->
+        <TextBlock Grid.Row="1"
+                   Text="{Binding StatusText}"
+                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                   Margin="0,0,0,16"/>
+
+        <!-- Progress Bar -->
+        <ProgressBar Grid.Row="2"
+                     Value="{Binding DownloadPercentage}"
+                     Minimum="0"
+                     Maximum="100"
+                     Height="8"
+                     Margin="0,0,0,12"/>
+
+        <!-- Download Statistics -->
+        <Grid Grid.Row="3" RowDefinitions="Auto, Auto" Margin="0,0,0,16">
+            <!-- Size Info -->
+            <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="{Binding DownloadedSizeText}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="/"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                    <TextBlock Text="{Binding TotalSizeText}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <TextBlock Grid.Column="1"
+                           Text="{Binding DownloadSpeedText}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Percentage Display -->
+            <TextBlock Grid.Row="1"
+                       Text="{Binding DownloadPercentage, StringFormat={}{0:F1}%}"
+                       FontSize="28"
+                       FontWeight="Light"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource AccentFillColorDefaultBrush}"/>
+        </Grid>
+
+        <!-- Cancel Button -->
+        <Button Grid.Row="4"
+                Content="Cancel"
+                Command="{Binding CancelCommand}"
+                IsEnabled="{Binding CanCancel}"
+                HorizontalAlignment="Right"
+                MinWidth="80"
+                AutomationProperties.Name="Cancel download"/>
+
+    </Grid>
+</Window>

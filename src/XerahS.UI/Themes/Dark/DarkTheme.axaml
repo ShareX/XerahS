@@ -109,6 +109,11 @@
     <Setter Property="BorderBrush" Value="{DynamicResource MenuBorderBrush}" />
   </Style>
 
+  <Style Selector="Menu > MenuItem">
+    <Setter Property="Padding" Value="8,3" />
+    <Setter Property="MinHeight" Value="24" />
+  </Style>
+
   <Style Selector="MenuItem:pointerover">
     <Setter Property="Background" Value="{DynamicResource MenuHighlightBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource MenuHighlightBorderBrush}" />

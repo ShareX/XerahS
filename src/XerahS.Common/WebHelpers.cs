@@ -47,10 +47,8 @@ namespace XerahS.Common
 
         public static async System.Threading.Tasks.Task<string> DownloadStringAsync(string url)
         {
-            using (var client = HttpClientFactory.Create())
-            {
-                return await client.GetStringAsync(url);
-            }
+            HttpClient client = HttpClientFactory.Create();
+            return await client.GetStringAsync(url);
         }
     }
 }

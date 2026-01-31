@@ -160,7 +160,7 @@ namespace XerahS.Core
         /// <summary>
         /// Main application settings
         /// </summary>
-        public static ApplicationConfig Settings { get; set; } = new ApplicationConfig();
+        public static ApplicationConfig Settings { get; private set; } = new ApplicationConfig();
 
         /// <summary>
         /// Uploaders configuration
@@ -182,35 +182,19 @@ namespace XerahS.Core
             return WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Job == workflowType);
         }
 
+        /// <summary>
+        /// Get the first workflow matching the specified WorkflowType, or create a default workflow if none exists.
+        /// Use this method when you need guaranteed non-null workflow for a hotkey type.
+        /// </summary>
+        public static WorkflowSettings GetFirstWorkflowOrDefault(WorkflowType workflowType)
+        {
+            return GetFirstWorkflow(workflowType) ?? new WorkflowSettings(workflowType, new HotkeyInfo());
+        }
+
         public static WorkflowSettings? GetWorkflowById(string id)
         {
             if (string.IsNullOrEmpty(id)) return null;
             return WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Id == id);
-        }
-
-        /// <summary>
-        /// Retrieve a workflow's task settings by hotkey type, creating a workflow entry if none exists.
-        /// </summary>
-        [Obsolete("Use GetFirstWorkflow() to get the full WorkflowSettings, or pass TaskSettings explicitly. " +
-                  "Looking up by WorkflowType is ambiguous when multiple workflows share the same type.")]
-        public static TaskSettings GetOrCreateWorkflowTaskSettings(WorkflowType workflowType)
-        {
-            WorkflowsConfig ??= new WorkflowsConfig();
-            WorkflowsConfig.Hotkeys ??= new List<WorkflowSettings>();
-
-            var workflow = WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Job == workflowType);
-            if (workflow == null)
-            {
-                workflow = new WorkflowSettings(workflowType, new HotkeyInfo());
-                WorkflowsConfig.Hotkeys.Add(workflow);
-            }
-
-            if (workflow.TaskSettings == null)
-            {
-                workflow.TaskSettings = new TaskSettings();
-            }
-
-            return workflow.TaskSettings;
         }
 
         public static TaskSettings GetWorkflowTaskSettings(string workflowId)
@@ -380,106 +364,134 @@ namespace XerahS.Core
 
         #region Helper Methods
 
-        private static string GetUploadersConfigFileName(string destinationFolder)
+        /// <summary>
+        /// Gets machine-specific config filename, initializing from default if needed.
+        /// </summary>
+        /// <param name="destinationFolder">Folder where config files are stored</param>
+        /// <param name="configPrefix">Config filename prefix (e.g., "UploadersConfig")</param>
+        /// <param name="configExtension">Config filename extension (e.g., "json")</param>
+        /// <param name="defaultFileName">Default filename without machine-specific suffix</param>
+        /// <param name="useMachineSpecific">Whether to use machine-specific config</param>
+        /// <returns>The appropriate config filename</returns>
+        private static string GetMachineSpecificConfigFileName(
+            string destinationFolder,
+            string configPrefix,
+            string configExtension,
+            string defaultFileName,
+            bool useMachineSpecific)
         {
             if (string.IsNullOrEmpty(destinationFolder))
             {
-                // Fallback if no specific folder is determined yet, but usually not called this way
-                return UploadersConfigFileName;
+                return defaultFileName;
             }
 
-            if (Settings != null && Settings.UseMachineSpecificUploadersConfig)
+            if (!useMachineSpecific)
             {
-                string sanitizedMachineName = FileHelpers.SanitizeFileName(Environment.MachineName);
+                return defaultFileName;
+            }
 
-                if (!string.IsNullOrEmpty(sanitizedMachineName))
+            string sanitizedMachineName = FileHelpers.SanitizeFileName(Environment.MachineName);
+            if (string.IsNullOrEmpty(sanitizedMachineName))
+            {
+                return defaultFileName;
+            }
+
+            string machineSpecificFileName = $"{configPrefix}-{sanitizedMachineName}.{configExtension}";
+            string machineSpecificPath = Path.Combine(destinationFolder, machineSpecificFileName);
+
+            // If machine specific file doesn't exist, initialize from default
+            if (!File.Exists(machineSpecificPath))
+            {
+                string defaultFilePath = Path.Combine(destinationFolder, defaultFileName);
+
+                if (File.Exists(defaultFilePath))
                 {
-                    string machineSpecificFileName = $"{UploadersConfigFileNamePrefix}-{sanitizedMachineName}.{UploadersConfigFileNameExtension}";
-                    string machineSpecificPath = Path.Combine(destinationFolder, machineSpecificFileName);
-
-                    // If machine specific file doesn't exist, we might want to initialize it from default
-                    if (!File.Exists(machineSpecificPath))
+                    try
                     {
-                        string defaultFilePath = Path.Combine(destinationFolder, UploadersConfigFileName);
-
-                        // If default exists, copy it to machine specific
-                        if (File.Exists(defaultFilePath))
-                        {
-                            try
-                            {
-                                File.Copy(defaultFilePath, machineSpecificPath, false);
-                            }
-                            catch (IOException)
-                            {
-                                // Ignore
-                            }
-                        }
+                        File.Copy(defaultFilePath, machineSpecificPath, overwrite: false);
                     }
-
-                    return machineSpecificFileName;
+                    catch (IOException) when (File.Exists(machineSpecificPath))
+                    {
+                        // File was created by another process/thread - safe to ignore
+                    }
+                    catch (IOException ex)
+                    {
+                        DebugHelper.WriteException(ex, $"Failed to initialize machine-specific config: {machineSpecificPath}");
+                    }
                 }
             }
 
-            return UploadersConfigFileName;
+            return machineSpecificFileName;
+        }
+
+        private static string GetUploadersConfigFileName(string destinationFolder)
+        {
+            return GetMachineSpecificConfigFileName(
+                destinationFolder,
+                UploadersConfigFileNamePrefix,
+                UploadersConfigFileNameExtension,
+                UploadersConfigFileName,
+                Settings?.UseMachineSpecificUploadersConfig ?? false);
         }
 
         private static string GetWorkflowsConfigFileName(string destinationFolder)
         {
-            if (string.IsNullOrEmpty(destinationFolder))
-            {
-                // Fallback if no specific folder is determined yet, but usually not called this way
-                return WorkflowsConfigFileName;
-            }
-
-            if (Settings != null && Settings.UseMachineSpecificWorkflowsConfig)
-            {
-                string sanitizedMachineName = FileHelpers.SanitizeFileName(Environment.MachineName);
-
-                if (!string.IsNullOrEmpty(sanitizedMachineName))
-                {
-                    string machineSpecificFileName = $"{WorkflowsConfigFileNamePrefix}-{sanitizedMachineName}.{WorkflowsConfigFileNameExtension}";
-                    string machineSpecificPath = Path.Combine(destinationFolder, machineSpecificFileName);
-
-                    // If machine specific file doesn't exist, we might want to initialize it from default
-                    if (!File.Exists(machineSpecificPath))
-                    {
-                        string defaultFilePath = Path.Combine(destinationFolder, WorkflowsConfigFileName);
-
-                        // If default exists, copy it to machine specific
-                        if (File.Exists(defaultFilePath))
-                        {
-                            try
-                            {
-                                File.Copy(defaultFilePath, machineSpecificPath, false);
-                            }
-                            catch (IOException)
-                            {
-                                // Ignore
-                            }
-                        }
-                    }
-
-                    return machineSpecificFileName;
-                }
-            }
-
-            return WorkflowsConfigFileName;
+            return GetMachineSpecificConfigFileName(
+                destinationFolder,
+                WorkflowsConfigFileNamePrefix,
+                WorkflowsConfigFileNameExtension,
+                WorkflowsConfigFileName,
+                Settings?.UseMachineSpecificWorkflowsConfig ?? false);
         }
 
         /// <summary>
-        /// Reset all settings to defaults
+        /// Reset all settings to defaults. Creates a backup before deleting.
         /// </summary>
-        public static void ResetSettings()
+        /// <returns>True if reset succeeded, false if an error occurred</returns>
+        public static bool ResetSettings()
         {
-            // Delete files? Or just re-instantiate? Original returns to defaults.
-            if (File.Exists(ApplicationConfigFilePath)) File.Delete(ApplicationConfigFilePath);
-            Settings = new ApplicationConfig();
+            try
+            {
+                // Create timestamped backup folder
+                var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+                var backupFolder = Path.Combine(BackupFolder, $"Reset_{timestamp}");
+                Directory.CreateDirectory(backupFolder);
 
-            if (File.Exists(UploadersConfigFilePath)) File.Delete(UploadersConfigFilePath);
-            UploadersConfig = new UploadersConfig();
+                // Backup and delete ApplicationConfig
+                if (File.Exists(ApplicationConfigFilePath))
+                {
+                    File.Copy(ApplicationConfigFilePath,
+                        Path.Combine(backupFolder, ApplicationConfigFileName), overwrite: true);
+                    File.Delete(ApplicationConfigFilePath);
+                }
+                Settings = new ApplicationConfig();
 
-            if (File.Exists(WorkflowsConfigFilePath)) File.Delete(WorkflowsConfigFilePath);
-            WorkflowsConfig = new WorkflowsConfig();
+                // Backup and delete UploadersConfig
+                if (File.Exists(UploadersConfigFilePath))
+                {
+                    File.Copy(UploadersConfigFilePath,
+                        Path.Combine(backupFolder, UploadersConfigFileName), overwrite: true);
+                    File.Delete(UploadersConfigFilePath);
+                }
+                UploadersConfig = new UploadersConfig();
+
+                // Backup and delete WorkflowsConfig
+                if (File.Exists(WorkflowsConfigFilePath))
+                {
+                    File.Copy(WorkflowsConfigFilePath,
+                        Path.Combine(backupFolder, WorkflowsConfigFileName), overwrite: true);
+                    File.Delete(WorkflowsConfigFilePath);
+                }
+                WorkflowsConfig = new WorkflowsConfig();
+
+                DebugHelper.WriteLine($"Settings reset successfully. Backup created: {backupFolder}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to reset settings");
+                return false;
+            }
         }
 
 

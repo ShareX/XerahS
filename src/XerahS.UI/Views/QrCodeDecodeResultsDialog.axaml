@@ -7,52 +7,69 @@
         x:Class="XerahS.UI.Views.QrCodeDecodeResultsDialog"
         x:DataType="vm:QrCodeDecodeResultsViewModel"
         Width="800"
+        Height="500"
         MinWidth="640"
-        SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         Title="QR Code Results">
 
-    <Grid Margin="20" ColumnDefinitions="2*,*" RowDefinitions="Auto,*">
-        <StackPanel Grid.Column="0" Spacing="12">
-            <TextBlock Text="QR Code Results" FontSize="22" FontWeight="SemiBold"/>
+    <Grid Margin="24" ColumnDefinitions="2*,12,*" RowDefinitions="Auto,*">
+        
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Spacing="4" Margin="0,0,0,24">
+            <TextBlock Text="QR Code Results" Theme="{StaticResource TitleTextBlockStyle}"/>
             <TextBlock Text="{Binding StatusMessage}"
-                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       Theme="{StaticResource CaptionTextBlockStyle}"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        TextWrapping="Wrap"/>
-
-            <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                    BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
-                    BorderThickness="1"
-                    CornerRadius="6"
-                    Padding="8">
-                <ListBox ItemsSource="{Binding Results}"
-                         SelectedItem="{Binding SelectedResult}"
-                         MinHeight="220"/>
-            </Border>
-
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="Copy selected" Command="{Binding CopySelectedCommand}"/>
-                <Button Content="Copy all" Command="{Binding CopyAllCommand}"/>
-                <Button Content="Close" Command="{Binding CloseCommand}"/>
-            </StackPanel>
         </StackPanel>
 
-        <Border Grid.Column="1"
-                Margin="16,0,0,0"
-                Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="12">
+        <!-- Results List -->
+        <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="*, Auto">
+            <Border Grid.Row="0" Theme="{StaticResource CardBorderTheme}" Padding="0">
+                <ListBox ItemsSource="{Binding Results}"
+                         SelectedItem="{Binding SelectedResult}"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         AutomationProperties.Name="Decoded Results List">
+                   <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Padding" Value="12"/>
+                        </Style>
+                   </ListBox.Styles>
+                </ListBox>
+            </Border>
+
+            <!-- Actions -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12" Margin="0,16,0,0">
+                <Button Content="Copy Selected" 
+                        Command="{Binding CopySelectedCommand}" 
+                        AutomationProperties.Name="Copy Selected Result"/>
+                <Button Content="Copy All" 
+                        Command="{Binding CopyAllCommand}" 
+                        AutomationProperties.Name="Copy All Results"/>
+                <Button Content="Close" 
+                        Command="{Binding CloseCommand}" 
+                        Classes="accent"
+                        AutomationProperties.Name="Close Dialog"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Preview Image -->
+        <Border Grid.Row="1" Grid.Column="2" Theme="{StaticResource CardBorderTheme}" Padding="12">
             <Grid>
-                <TextBlock Text="Captured image"
+                <TextBlock Text="No preview available"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
-                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                           IsVisible="{Binding CapturedImage, Converter={x:Static ObjectConverters.IsNull}}"/>
+                
                 <Image Source="{Binding CapturedImage}"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
+                       VerticalAlignment="Center"
+                       AutomationProperties.Name="Captured QR Code Image"/>
             </Grid>
         </Border>
+
     </Grid>
 </Window>

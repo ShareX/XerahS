@@ -2,46 +2,52 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:audit="clr-namespace:XerahS.UI.Auditing;assembly=XerahS.UI"
              mc:Ignorable="d"
              x:Class="XerahS.UI.Views.ThemeShowcaseView">
-  <Border Padding="16" Background="{DynamicResource BackgroundBrush}">
-    <StackPanel Spacing="12">
-      <TextBlock Text="Dark Theme Showcase" FontSize="18" FontWeight="Bold" />
-      <TextBlock Text="Body text uses TextColor and base typography." />
+  
+  <Border Padding="24" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
+    <StackPanel Spacing="16">
+      <TextBlock Text="Dark Theme Showcase" Theme="{StaticResource TitleTextBlockStyle}" />
+      <TextBlock Text="Body text uses TextColor and base typography." Theme="{StaticResource BodyTextBlockStyle}" />
 
-      <TextBox Width="240" Watermark="Sample input" />
+      <TextBox Width="240" 
+               Watermark="Sample input" 
+               AutomationProperties.Name="Showcase Input"/>
 
-      <Border Background="{DynamicResource LightBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
+      <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+              BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
               BorderThickness="1"
+              CornerRadius="4"
               Padding="12">
-        <StackPanel Spacing="6">
-          <TextBlock Text="Bordered surface" />
+        <StackPanel Spacing="8">
+          <TextBlock Text="Bordered surface" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
           <Separator />
-          <TextBlock Text="Separator uses dual tone." />
+          <TextBlock Text="Separator uses dual tone." Theme="{StaticResource CaptionTextBlockStyle}"/>
         </StackPanel>
       </Border>
 
-      <HyperlinkButton Content="Hyperlink sample" NavigateUri="https://example.com" />
+      <HyperlinkButton Content="Hyperlink sample" NavigateUri="https://example.com" AutomationProperties.Name="Showcase Hyperlink" />
 
-      <Menu>
-        <MenuItem Header="File">
-          <MenuItem Header="New" />
-          <MenuItem Header="Open" />
-          <MenuItem Header="Exit" />
+      <Menu AutomationProperties.Name="Showcase Menu">
+        <MenuItem Header="File" audit:UiAudit.IsWiredManual="True">
+          <MenuItem Header="New" audit:UiAudit.IsWiredManual="True"/>
+          <MenuItem Header="Open" audit:UiAudit.IsWiredManual="True"/>
+          <MenuItem Header="Exit" audit:UiAudit.IsWiredManual="True"/>
         </MenuItem>
-        <MenuItem Header="Edit">
-          <MenuItem Header="Undo" />
-          <MenuItem Header="Redo" />
+        <MenuItem Header="Edit" audit:UiAudit.IsWiredManual="True">
+          <MenuItem Header="Undo" audit:UiAudit.IsWiredManual="True"/>
+          <MenuItem Header="Redo" audit:UiAudit.IsWiredManual="True"/>
         </MenuItem>
       </Menu>
 
-      <Border Background="{DynamicResource DarkBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
+      <Border Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
+              BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
               BorderThickness="1"
-              Padding="8">
+              CornerRadius="4"
+              Padding="12">
         <StackPanel Spacing="4">
-          <TextBlock Text="CheckerBrush" />
+          <TextBlock Text="CheckerBrush" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
           <Rectangle Fill="{DynamicResource CheckerBrush}" Height="80" />
         </StackPanel>
       </Border>

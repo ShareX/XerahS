@@ -33,6 +33,7 @@ using CommunityToolkit.Mvvm.Input;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Services;
+using XerahS.Platform.Abstractions;
 using XerahS.UI.Helpers;
 
 namespace XerahS.UI.ViewModels;
@@ -41,14 +42,16 @@ public partial class ColorPickerViewModel : ViewModelBase
 {
     private const int MaxRecentColors = 20;
     private bool _isUpdating;
+    private readonly IClipboardService? _clipboardService;
 
     public ColorPickerViewModel()
-        : this(ColorConversion.ToAvaloniaColor(DrawingColor.White))
+        : this(ColorConversion.ToAvaloniaColor(DrawingColor.White), null)
     {
     }
 
-    public ColorPickerViewModel(AvaloniaColor initialColor)
+    public ColorPickerViewModel(AvaloniaColor initialColor, IClipboardService? clipboardService = null)
     {
+        _clipboardService = clipboardService;
         PreviousColor = initialColor;
         SelectedColor = initialColor;
         StandardColors = new ObservableCollection<AvaloniaColor>(ColorHelpers.StandardColors.Select(ColorConversion.ToAvaloniaColor));
@@ -273,13 +276,15 @@ public partial class ColorPickerViewModel : ViewModelBase
 
     private async Task CopyToClipboardAsync(string text)
     {
-        if (!Platform.Abstractions.PlatformServices.IsInitialized)
+        // Use injected service if available, otherwise fall back to PlatformServices
+        var clipboard = _clipboardService ?? (PlatformServices.IsInitialized ? PlatformServices.Clipboard : null);
+        if (clipboard == null)
         {
             StatusMessage = "Clipboard service is not available.";
             return;
         }
 
-        await Platform.Abstractions.PlatformServices.Clipboard.SetTextAsync(text);
+        await clipboard.SetTextAsync(text);
         StatusMessage = "Color copied to clipboard.";
     }
 

@@ -24,11 +24,11 @@
 #endregion License Information (GPL v3)
 
 using Avalonia.Threading;
+using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Helpers;
 using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture;
-using XerahS.RegionCapture.Models;
 using SkiaSharp;
 using System;
 using System.Diagnostics;
@@ -72,20 +72,23 @@ namespace XerahS.UI.Services
                         }
                     }
 
-                    var captureService = new RegionCaptureService();
-                    
-                    // Propagate options
-                    if (options != null)
+                    // Capture background for magnifier
+                    SkiaSharp.SKBitmap? backgroundForMagnifier = null;
+                    try
                     {
-                        captureService = new RegionCaptureService
-                        {
-                            Options = new XerahS.RegionCapture.RegionCaptureOptions
-                            {
-                                ShowCursor = options.ShowCursor,
-                                // Map other options if needed, but for now we rely on defaults or what RegionCaptureService handles
-                            }
-                        };
+                        backgroundForMagnifier = await _platformImpl.CaptureFullScreenAsync(new CaptureOptions { ShowCursor = false });
                     }
+                    catch { /* Ignore */ }
+
+                    var captureService = new RegionCaptureService
+                    {
+                        Options = new XerahS.RegionCapture.RegionCaptureOptions
+                        {
+                            ShowCursor = options?.ShowCursor ?? false,
+                            BackgroundImage = backgroundForMagnifier,
+                            UseTransparentOverlay = options?.UseTransparentOverlay ?? false,
+                        }
+                    };
 
                     var result = await captureService.CaptureRegionAsync(cursorInfo);
 
@@ -147,25 +150,39 @@ namespace XerahS.UI.Services
                 }
             }
 
-            // 2. Select Region (UI) - pass ghost cursor for overlay display
+            // 2. Capture background for frozen overlay and magnifier BEFORE showing overlay
+            // Single capture serves both purposes - avoids duplicate DXGI capture (~200ms saved)
+            SKBitmap? fullScreenBitmap = null;
+            try
+            {
+                fullScreenBitmap = await _platformImpl.CaptureFullScreenAsync(new CaptureOptions
+                {
+                    ShowCursor = false,
+                    UseModernCapture = options?.UseModernCapture ?? false
+                });
+            }
+            catch
+            {
+                // Ignore - full screen capture is optional for fallback
+            }
+
+            // 3. Select Region (UI) - pass ghost cursor for overlay display
             SKRectI selection = SKRectI.Empty;
-            var cursorAtSelection = new XerahS.RegionCapture.Models.PixelPoint();
+            SKBitmap? annotationLayer = null;
+            XerahS.RegionCapture.Models.PixelPoint annotationMonitorOrigin = default;
             try
             {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    var captureService = new RegionCaptureService();
-                    
-                    if (options != null)
+                    var captureService = new RegionCaptureService
                     {
-                        captureService = new RegionCaptureService
+                        Options = new XerahS.RegionCapture.RegionCaptureOptions
                         {
-                            Options = new XerahS.RegionCapture.RegionCaptureOptions
-                            {
-                                ShowCursor = options.ShowCursor,
-                            }
-                        };
-                    }
+                            ShowCursor = options?.ShowCursor ?? false,
+                            BackgroundImage = fullScreenBitmap,
+                            UseTransparentOverlay = options?.UseTransparentOverlay ?? false,
+                        }
+                    };
 
                     var result = await captureService.CaptureRegionAsync(ghostCursor);
 
@@ -173,7 +190,8 @@ namespace XerahS.UI.Services
                     {
                         var r = result.Value.Region;
                         selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
-                        cursorAtSelection = result.Value.CursorPosition;
+                        annotationLayer = result.Value.AnnotationLayer;
+                        annotationMonitorOrigin = result.Value.MonitorOrigin;
                     }
                 });
             }
@@ -181,15 +199,14 @@ namespace XerahS.UI.Services
             {
                 // Ignore errors
             }
+            // Note: fullScreenBitmap is disposed later after cropping
 
             if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
             {
                 return null;
             }
 
-            var selectionRect = new XerahS.RegionCapture.Models.PixelRect(selection.Left, selection.Top, selection.Width, selection.Height);
             bool showCursor = options?.ShowCursor == true;
-            bool hideLiveCursor = showCursor && selectionRect.Contains(cursorAtSelection);
 
             // 3. Optional delay before capture starts (cancellable)
             if (options?.CaptureStartDelaySeconds > 0)
@@ -214,17 +231,48 @@ namespace XerahS.UI.Services
             // 4. Small delay to allow overlay windows to close fully and cursor to hide
             await Task.Delay(200);
 
-            // 5. Capture Screen (Platform) - WITHOUT cursor (we'll draw ghost cursor manually)
-            var captureOptions = options != null ? new CaptureOptions
+            // 5. Capture Screen (Platform) - ALWAYS without cursor.
+            // The ghost cursor (captured at workflow start) is drawn manually in step 6.
+            // Never let the platform draw the live cursor, as it may have moved into the
+            // captured region during the delay between overlay close and bitmap acquisition.
+            var captureOptions = new CaptureOptions
             {
-                ShowCursor = showCursor && !hideLiveCursor,
-                UseModernCapture = options.UseModernCapture,
-                WorkflowId = options.WorkflowId,
-                WorkflowCategory = options.WorkflowCategory
-            } : null;
+                ShowCursor = false,
+                UseModernCapture = options?.UseModernCapture ?? false,
+                WorkflowId = options?.WorkflowId,
+                WorkflowCategory = options?.WorkflowCategory
+            };
 
-            var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
-            var bitmap = await _platformImpl.CaptureRectAsync(skRect, captureOptions);
+            SKBitmap? bitmap = null;
+            try
+            {
+                if (fullScreenBitmap != null)
+                {
+                    SKBitmap cropped = ImageHelpers.Crop(fullScreenBitmap, selection);
+                    if (cropped.Width > 0 && cropped.Height > 0)
+                    {
+                        bitmap = cropped;
+                    }
+                    else
+                    {
+                        cropped.Dispose();
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore crop errors and fall back to live capture
+            }
+            finally
+            {
+                fullScreenBitmap?.Dispose();
+            }
+
+            if (bitmap == null)
+            {
+                var skRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
+                bitmap = await _platformImpl.CaptureRectAsync(skRect, captureOptions);
+            }
 
             // 6. Draw ghost cursor onto captured bitmap if available
             // We use the INITIAL ghost cursor (captured at start) to match ShareX behavior ("original location").
@@ -245,6 +293,36 @@ namespace XerahS.UI.Services
                 catch
                 {
                     // Ignore cursor drawing errors
+                }
+            }
+
+            // 7. Composite annotation layer onto captured bitmap if available
+            // XIP-0023: Annotations drawn during region capture are rendered onto the final image
+            if (bitmap != null && annotationLayer != null)
+            {
+                try
+                {
+                    using var canvas = new SKCanvas(bitmap);
+                    using var paint = new SKPaint { BlendMode = SKBlendMode.SrcOver };
+
+                    // The annotation layer is monitor-sized, but selection is in absolute screen coords.
+                    // Subtract the monitor origin to get coordinates relative to the annotation layer.
+                    var srcRect = new SKRect(
+                        selection.Left - (float)annotationMonitorOrigin.X,
+                        selection.Top - (float)annotationMonitorOrigin.Y,
+                        selection.Right - (float)annotationMonitorOrigin.X,
+                        selection.Bottom - (float)annotationMonitorOrigin.Y);
+                    var dstRect = new SKRect(0, 0, bitmap.Width, bitmap.Height);
+
+                    canvas.DrawBitmap(annotationLayer, srcRect, dstRect, paint);
+                }
+                catch
+                {
+                    // Ignore annotation compositing errors
+                }
+                finally
+                {
+                    annotationLayer.Dispose();
                 }
             }
 

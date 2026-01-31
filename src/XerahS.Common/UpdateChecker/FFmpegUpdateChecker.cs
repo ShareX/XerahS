@@ -33,14 +33,7 @@ namespace XerahS.Common
 
         public FFmpegUpdateChecker(string owner, string repo) : base(owner, repo)
         {
-            if (RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64)
-            {
-                Architecture = FFmpegArchitecture.win64;
-            }
-            else
-            {
-                Architecture = FFmpegArchitecture.win32;
-            }
+            Architecture = ResolveArchitecture();
         }
 
         public FFmpegUpdateChecker(string owner, string repo, FFmpegArchitecture architecture) : base(owner, repo)
@@ -67,25 +60,12 @@ namespace XerahS.Common
 
                         if (release.assets != null && release.assets.Length > 0)
                         {
-                            string endsWith;
-
-                            switch (Architecture)
-                            {
-                                default:
-                                case FFmpegArchitecture.win64:
-                                    endsWith = "win64.zip";
-                                    break;
-                                case FFmpegArchitecture.win32:
-                                    endsWith = "win32.zip";
-                                    break;
-                                case FFmpegArchitecture.macos64:
-                                    endsWith = "macos64.zip";
-                                    break;
-                            }
+                            string endsWith = GetExpectedAssetSuffix();
 
                             foreach (GitHubAsset asset in release.assets)
                             {
-                                if (asset != null && !string.IsNullOrEmpty(asset.name) && asset.name.EndsWith(endsWith, StringComparison.OrdinalIgnoreCase))
+                                if (asset != null && !string.IsNullOrEmpty(asset.name) &&
+                                    asset.name.EndsWith(endsWith, StringComparison.OrdinalIgnoreCase))
                                 {
                                     FileName = asset.name;
 
@@ -109,6 +89,44 @@ namespace XerahS.Common
             }
 
             return false;
+        }
+
+        public static FFmpegArchitecture ResolveArchitecture()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return RuntimeInformation.OSArchitecture switch
+                {
+                    System.Runtime.InteropServices.Architecture.Arm64 => FFmpegArchitecture.winArm64,
+                    System.Runtime.InteropServices.Architecture.X64 => FFmpegArchitecture.win64,
+                    _ => FFmpegArchitecture.win32
+                };
+            }
+
+            if (OperatingSystem.IsMacOS())
+            {
+                return FFmpegArchitecture.macos64;
+            }
+
+            if (OperatingSystem.IsLinux())
+            {
+                return FFmpegArchitecture.linux64;
+            }
+
+            return FFmpegArchitecture.win64;
+        }
+
+        public string GetExpectedAssetSuffix()
+        {
+            return Architecture switch
+            {
+                FFmpegArchitecture.win64 => "win-x64.zip",
+                FFmpegArchitecture.win32 => "win-x86.zip",
+                FFmpegArchitecture.winArm64 => "win-arm64.zip",
+                FFmpegArchitecture.macos64 => "macos64.zip",
+                FFmpegArchitecture.linux64 => "linux64.zip",
+                _ => "win-x64.zip"
+            };
         }
     }
 }

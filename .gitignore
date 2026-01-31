@@ -31,3 +31,7 @@ errors.md
 dist/
 .claude/
 artifacts/
+*.deb
+*.gz
+*.zip
+*.exe

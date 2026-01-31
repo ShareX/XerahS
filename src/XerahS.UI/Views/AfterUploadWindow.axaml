@@ -1,0 +1,229 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        mc:Ignorable="d"
+        x:Class="XerahS.UI.Views.AfterUploadWindow"
+        x:DataType="vm:AfterUploadViewModel"
+        Title="After Upload"
+        Icon="/Assets/Logo.ico"
+        Width="960"
+        Height="640"
+        MinWidth="760"
+        MinHeight="520"
+        WindowStartupLocation="CenterOwner">
+
+  <Window.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    </Style>
+    <Style Selector="TextBlock.section-header">
+      <Setter Property="FontSize" Value="16"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="TextBlock.caption">
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+    </Style>
+    <Style Selector="TextBox.readonly">
+      <Setter Property="IsReadOnly" Value="True"/>
+      <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="10,8"/>
+      <Setter Property="IsEnabled" Value="{Binding IsSelectable}"/>
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto, *, Auto" Margin="24" RowSpacing="20">
+    <Border Grid.Row="0"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            CornerRadius="12"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            Padding="16">
+      <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto, Auto" RowSpacing="6">
+        <TextBlock Grid.Row="0"
+                   Text="After upload"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   AutomationProperties.Name="After Upload Title"/>
+        <TextBlock Grid.Row="1"
+                   Grid.Column="0"
+                   Text="{Binding UploaderHost, StringFormat=Host: {0}}"
+                   IsVisible="{Binding HasUploaderHost}"
+                   Classes="caption"
+                   AutomationProperties.Name="Uploader Host"/>
+        <TextBlock Grid.Row="0"
+                   Grid.Column="1"
+                   Text="{Binding AutoCloseText}"
+                   IsVisible="{Binding IsAutoCloseEnabled}"
+                   Foreground="{DynamicResource AccentFillColorDefaultBrush}"
+                   FontWeight="SemiBold"
+                   AutomationProperties.Name="Auto Close Countdown"/>
+        <TextBox Grid.Row="2"
+                 Grid.Column="0"
+                 Grid.ColumnSpan="2"
+                 Text="{Binding PrimaryUrl}"
+                 Classes="readonly"
+                 TextWrapping="Wrap"
+                 MinHeight="44"
+                 AutomationProperties.Name="Primary URL"/>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="2*, 24, 3*" RowSpacing="16">
+      <!-- Left: Formats -->
+      <Grid Grid.Column="0" RowDefinitions="Auto, *, Auto" RowSpacing="12">
+        <StackPanel Grid.Row="0" Spacing="4">
+          <TextBlock Text="Clipboard formats" Classes="section-header" AutomationProperties.Name="Clipboard Formats Heading"/>
+          <TextBlock Text="Select a format to preview and copy." Classes="caption" AutomationProperties.Name="Clipboard Formats Description"/>
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="8">
+          <ListBox ItemsSource="{Binding Formats}"
+                   SelectedItem="{Binding SelectedFormat}"
+                   Background="Transparent"
+                   BorderThickness="0"
+                   AutomationProperties.Name="Clipboard Formats List">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <StackPanel Spacing="6">
+                  <TextBlock Text="{Binding Label}"
+                             IsVisible="{Binding IsHeader}"
+                             FontSize="13"
+                             FontWeight="SemiBold"
+                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                  <StackPanel IsVisible="{Binding IsSelectable}" Spacing="2">
+                    <TextBlock Text="{Binding Label}"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="{Binding Value}"
+                               FontSize="12"
+                               TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                  </StackPanel>
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Border>
+
+        <StackPanel Grid.Row="2" Spacing="6">
+          <TextBlock Text="Selected format" Classes="caption" AutomationProperties.Name="Selected Format Label"/>
+          <TextBox Text="{Binding SelectedFormatValue}"
+                   Classes="readonly"
+                   TextWrapping="Wrap"
+                   MinHeight="64"
+                   AutomationProperties.Name="Selected Format Preview"/>
+        </StackPanel>
+      </Grid>
+
+      <!-- Right: Preview -->
+      <Grid Grid.Column="2" RowDefinitions="Auto, *, Auto" RowSpacing="12">
+        <StackPanel Grid.Row="0" Spacing="4">
+          <TextBlock Text="Preview" Classes="section-header" AutomationProperties.Name="Preview Heading"/>
+          <TextBlock Text="Local file and visual preview." Classes="caption" AutomationProperties.Name="Preview Description"/>
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="12">
+          <Grid>
+            <Image Source="{Binding PreviewImage}"
+                   IsVisible="{Binding HasPreviewImage}"
+                   Stretch="Uniform"
+                   AutomationProperties.Name="Upload Preview Image"/>
+            <StackPanel IsVisible="{Binding HasPreviewFallback}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="6">
+              <TextBlock Text="{Binding PreviewFallbackTitle}"
+                         FontSize="16"
+                         FontWeight="SemiBold"
+                         HorizontalAlignment="Center"
+                         AutomationProperties.Name="Preview Fallback Title"/>
+              <TextBlock Text="{Binding PreviewFallbackDescription}"
+                         Classes="caption"
+                         TextAlignment="Center"
+                         MaxWidth="260"
+                         AutomationProperties.Name="Preview Fallback Description"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="2" Spacing="8">
+          <StackPanel Spacing="6" IsVisible="{Binding HasLocalFile}">
+            <TextBlock Text="Local file" Classes="caption" AutomationProperties.Name="Local File Label"/>
+            <TextBox Text="{Binding FilePath}"
+                     Classes="readonly"
+                     TextWrapping="Wrap"
+                     MinHeight="54"
+                     AutomationProperties.Name="Local File Path"/>
+            <TextBlock Text="{Binding FileSizeText, StringFormat=Size: {0}}"
+                       IsVisible="{Binding HasFileSize}"
+                       Classes="caption"
+                       AutomationProperties.Name="Local File Size"/>
+          </StackPanel>
+          <TextBlock Text="No local file was created for this upload."
+                     IsVisible="{Binding HasNoLocalFile}"
+                     Classes="caption"
+                     AutomationProperties.Name="Local File Missing"/>
+        </StackPanel>
+      </Grid>
+    </Grid>
+
+    <!-- Action Bar -->
+    <Border Grid.Row="2"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Padding="12">
+      <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button Content="Copy image"
+                  Command="{Binding CopyImageCommand}"
+                  IsEnabled="{Binding CanCopyImage}"
+                  AutomationProperties.Name="Copy Image"/>
+          <Button Content="Copy format"
+                  Command="{Binding CopyFormatCommand}"
+                  IsEnabled="{Binding HasFormats}"
+                  AutomationProperties.Name="Copy Selected Format"/>
+          <Button Content="Open URL"
+                  Command="{Binding OpenUrlCommand}"
+                  IsEnabled="{Binding CanOpenUrl}"
+                  AutomationProperties.Name="Open URL"/>
+          <Button Content="Open file"
+                  Command="{Binding OpenFileCommand}"
+                  IsEnabled="{Binding CanOpenFile}"
+                  AutomationProperties.Name="Open File"/>
+          <Button Content="Open folder"
+                  Command="{Binding OpenFolderCommand}"
+                  IsEnabled="{Binding CanOpenFolder}"
+                  AutomationProperties.Name="Open Folder"/>
+        </StackPanel>
+
+        <Button Grid.Column="1"
+                Content="Close"
+                Command="{Binding CloseCommand}"
+                Classes="accent"
+                IsCancel="True"
+                AutomationProperties.Name="Close After Upload Window"/>
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

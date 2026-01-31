@@ -18,43 +18,55 @@
         <vm:ColorPickerViewModel />
     </Design.DataContext>
 
-    <Grid Margin="20" ColumnDefinitions="2*,*" RowDefinitions="Auto,*">
-        <StackPanel Grid.ColumnSpan="2" Spacing="4">
-            <TextBlock Text="Color Picker" FontSize="22" FontWeight="SemiBold"/>
+    <Grid Margin="24" ColumnDefinitions="2*, 24, *" RowDefinitions="Auto, 24, *">
+        <!-- Header -->
+        <StackPanel Grid.ColumnSpan="3" Spacing="4">
+            <TextBlock Text="Color Picker" FontSize="26" FontWeight="SemiBold"/>
             <TextBlock Text="Pick a color, edit values, or sample any pixel on screen."
                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                        TextWrapping="Wrap"/>
         </StackPanel>
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" RowDefinitions="*,Auto" Margin="0,16,16,0">
-            <Border Grid.Row="0" Grid.Column="0"
-                    BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="8">
-                <cp:ColorSpectrum Color="{Binding SelectedColor, Mode=TwoWay}"
-                                  Components="{x:Static cpControls:ColorSpectrumComponents.HueSaturation}"
-                                  Shape="{x:Static cpControls:ColorSpectrumShape.Box}"
-                                  MinHeight="320"
-                                  MinWidth="320"/>
-            </Border>
-            <Border Grid.Row="0" Grid.Column="1"
-                    Margin="12,0,0,0"
-                    BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="6">
-                <cp:ColorSlider Orientation="Vertical"
-                                Color="{Binding SelectedColor, Mode=TwoWay}"
-                                ColorModel="{x:Static cpControls:ColorModel.Hsva}"
-                                ColorComponent="{x:Static cpControls:ColorComponent.Component3}"
-                                IsAlphaVisible="False"
-                                MinHeight="320"
-                                Width="28"/>
-            </Border>
+        <!-- Left Column: Spectrum & Palettes -->
+        <Grid Grid.Row="2" Grid.Column="0" RowDefinitions="Auto, 24, *">
+            
+            <!-- Spectrum & Slider -->
+            <Grid ColumnDefinitions="*, 16, Auto">
+                <Border Grid.Column="0"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="16">
+                    <cp:ColorSpectrum Color="{Binding SelectedColor, Mode=TwoWay}"
+                                      Components="{x:Static cpControls:ColorSpectrumComponents.HueSaturation}"
+                                      Shape="{x:Static cpControls:ColorSpectrumShape.Box}"
+                                      MinHeight="320"
+                                      MinWidth="320"
+                                      AutomationProperties.Name="Color Spectrum"/>
+                </Border>
+                <Border Grid.Column="2"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="12">
+                    <cp:ColorSlider Orientation="Vertical"
+                                    Color="{Binding SelectedColor, Mode=TwoWay}"
+                                    ColorModel="{x:Static cpControls:ColorModel.Hsva}"
+                                    ColorComponent="{x:Static cpControls:ColorComponent.Component3}"
+                                    IsAlphaVisible="False"
+                                    MinHeight="320"
+                                    Width="28"
+                                    AutomationProperties.Name="Brightness Slider"/>
+                </Border>
+            </Grid>
 
-            <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="10" Margin="0,16,0,0">
-                <StackPanel>
+            <!-- Palettes -->
+            <StackPanel Grid.Row="2" Spacing="24">
+                
+                <!-- Recent Colors -->
+                <StackPanel Spacing="8">
                     <TextBlock Text="Recent colors" FontWeight="SemiBold"/>
                     <ItemsControl ItemsSource="{Binding RecentColors}" IsVisible="{Binding HasRecentColors}">
                         <ItemsControl.ItemsPanel>
@@ -66,22 +78,14 @@
                             <DataTemplate>
                                 <Button Command="{Binding DataContext.SelectSwatchCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                         CommandParameter="{Binding}"
-                                        Padding="0"
-                                        Width="26"
-                                        Height="26"
-                                        Background="Transparent"
-                                        BorderThickness="0"
+                                        Padding="0" Width="26" Height="26"
+                                        Background="Transparent" BorderThickness="0"
                                         HorizontalContentAlignment="Stretch"
                                         VerticalContentAlignment="Stretch"
                                         Margin="0,0,6,6"
                                         ToolTip.Tip="{Binding Converter={StaticResource ColorToNameConverter}}"
-                                        ToolTip.Placement="Top"
-                                        ToolTip.HorizontalOffset="0"
-                                        ToolTip.VerticalOffset="-6">
-                                    <Border CornerRadius="4"
-                                            BorderBrush="#30000000"
-                                            BorderThickness="1"
-                                            >
+                                        AutomationProperties.Name="{Binding Converter={StaticResource ColorToNameConverter}}">
+                                    <Border CornerRadius="4" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                                         <Border.Background>
                                             <SolidColorBrush Color="{Binding}"/>
                                         </Border.Background>
@@ -95,7 +99,8 @@
                                IsVisible="{Binding HasNoRecentColors}"/>
                 </StackPanel>
 
-                <StackPanel>
+                <!-- Standard Palette -->
+                <StackPanel Spacing="8">
                     <TextBlock Text="Palette" FontWeight="SemiBold"/>
                     <ItemsControl ItemsSource="{Binding StandardColors}">
                         <ItemsControl.ItemsPanel>
@@ -107,22 +112,14 @@
                             <DataTemplate>
                                 <Button Command="{Binding DataContext.SelectSwatchCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                         CommandParameter="{Binding}"
-                                        Padding="0"
-                                        Width="26"
-                                        Height="26"
-                                        Background="Transparent"
-                                        BorderThickness="0"
+                                        Padding="0" Width="26" Height="26"
+                                        Background="Transparent" BorderThickness="0"
                                         HorizontalContentAlignment="Stretch"
                                         VerticalContentAlignment="Stretch"
                                         Margin="0,0,6,6"
                                         ToolTip.Tip="{Binding Converter={StaticResource ColorToNameConverter}}"
-                                        ToolTip.Placement="Top"
-                                        ToolTip.HorizontalOffset="0"
-                                        ToolTip.VerticalOffset="-6">
-                                    <Border CornerRadius="4"
-                                            BorderBrush="#30000000"
-                                            BorderThickness="1"
-                                            >
+                                        AutomationProperties.Name="{Binding Converter={StaticResource ColorToNameConverter}}">
+                                    <Border CornerRadius="4" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                                         <Border.Background>
                                             <SolidColorBrush Color="{Binding}"/>
                                         </Border.Background>
@@ -135,28 +132,30 @@
             </StackPanel>
         </Grid>
 
-        <ScrollViewer Grid.Row="1" Grid.Column="1" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Spacing="14">
-                <Border BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
+        <!-- Right Column: Details -->
+        <ScrollViewer Grid.Row="2" Grid.Column="2" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="24">
+                
+                <!-- Preview Card -->
+                <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                         BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="12">
-                    <StackPanel Spacing="8">
+                        CornerRadius="4"
+                        Padding="16">
+                    <StackPanel Spacing="16">
                         <TextBlock Text="Preview" FontWeight="SemiBold"/>
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                            <StackPanel>
-                                <TextBlock Text="Previous" FontSize="11"
-                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                                <Border Height="48" CornerRadius="6" BorderBrush="#30000000" BorderThickness="1">
+                        <Grid ColumnDefinitions="*, 16, *">
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="Previous" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                <Border Height="48" CornerRadius="4" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                                     <Border.Background>
                                         <SolidColorBrush Color="{Binding PreviousColor}"/>
                                     </Border.Background>
                                 </Border>
                             </StackPanel>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="Current" FontSize="11"
-                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                                <Border Height="48" CornerRadius="6" BorderBrush="#30000000" BorderThickness="1">
+                            <StackPanel Grid.Column="2" Spacing="4">
+                                <TextBlock Text="Current" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                <Border Height="48" CornerRadius="4" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                                     <Border.Background>
                                         <SolidColorBrush Color="{Binding SelectedColor}"/>
                                     </Border.Background>
@@ -165,69 +164,81 @@
                         </Grid>
                         <Button Content="Pick from screen"
                                 Command="{Binding PickFromScreenCommand}"
-                                IsEnabled="{Binding CanPickFromScreen}"/>
+                                IsEnabled="{Binding CanPickFromScreen}"
+                                HorizontalAlignment="Stretch"
+                                AutomationProperties.Name="Pick from Screen"/>
                     </StackPanel>
                 </Border>
 
-                <Border BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
+                <!-- Values Card -->
+                <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                         BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="12">
-                    <StackPanel Spacing="10">
+                        CornerRadius="4"
+                        Padding="16">
+                    <StackPanel Spacing="16">
                         <TextBlock Text="Values" FontWeight="SemiBold"/>
-                        <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
-                            <TextBlock Text="R" VerticalAlignment="Center"/>
-                            <TextBox Grid.Column="1" Text="{Binding Red, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                            <TextBlock Grid.Column="2" Text="G" VerticalAlignment="Center"/>
-                            <TextBox Grid.Column="3" Text="{Binding Green, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                            <TextBlock Grid.Column="4" Text="B" VerticalAlignment="Center"/>
-                            <TextBox Grid.Column="5" Text="{Binding Blue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
+                        <Grid ColumnDefinitions="Auto, 8, *, 16, Auto, 8, *, 16, Auto, 8, *" RowDefinitions="Auto, 16, Auto, 16, Auto, 16, Auto">
+                            <!-- RGB -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="R" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding Red, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Red Value"/>
+                            <TextBlock Grid.Row="0" Grid.Column="4" Text="G" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="0" Grid.Column="6" Text="{Binding Green, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Green Value"/>
+                            <TextBlock Grid.Row="0" Grid.Column="8" Text="B" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="0" Grid.Column="10" Text="{Binding Blue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Blue Value"/>
 
-                            <TextBlock Grid.Row="1" Text="H" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Hue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                            <TextBlock Grid.Row="1" Grid.Column="2" Text="S" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding Saturation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                            <TextBlock Grid.Row="1" Grid.Column="4" Text="B" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="1" Grid.Column="5" Text="{Binding Brightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
+                            <!-- HSB -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="H" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding Hue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Hue Value"/>
+                            <TextBlock Grid.Row="2" Grid.Column="4" Text="S" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="2" Grid.Column="6" Text="{Binding Saturation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Saturation Value"/>
+                            <TextBlock Grid.Row="2" Grid.Column="8" Text="B" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="2" Grid.Column="10" Text="{Binding Brightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Brightness Value"/>
 
-                            <TextBlock Grid.Row="2" Text="C" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Cyan, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                            <TextBlock Grid.Row="2" Grid.Column="2" Text="M" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding Magenta, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                            <TextBlock Grid.Row="2" Grid.Column="4" Text="Y" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="2" Grid.Column="5" Text="{Binding Yellow, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
+                            <!-- CMY -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="C" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding Cyan, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Cyan Value"/>
+                            <TextBlock Grid.Row="4" Grid.Column="4" Text="M" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="4" Grid.Column="6" Text="{Binding Magenta, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Magenta Value"/>
+                            <TextBlock Grid.Row="4" Grid.Column="8" Text="Y" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="4" Grid.Column="10" Text="{Binding Yellow, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Yellow Value"/>
 
-                            <TextBlock Grid.Row="3" Text="K" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Key, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                            <TextBlock Grid.Row="3" Grid.Column="2" Text="Hex" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="3"
+                            <!-- K & Hex -->
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="K" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="6" Grid.Column="2" Text="{Binding Key, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Key Value"/>
+                            
+                            <TextBlock Grid.Row="6" Grid.Column="4" Text="Hex" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="6" Grid.Column="6" Grid.ColumnSpan="5"
                                      Text="{Binding Hex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Width="160"/>
+                                     AutomationProperties.Name="Hex Value"/>
                         </Grid>
                     </StackPanel>
                 </Border>
 
-                <Border BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
+                <!-- Copy Actions Card -->
+                <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                         BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="12">
-                    <StackPanel Spacing="10">
+                        CornerRadius="4"
+                        Padding="16">
+                    <StackPanel Spacing="16">
                         <TextBlock Text="Copy" FontWeight="SemiBold"/>
                         <WrapPanel Orientation="Horizontal">
-                            <Button Content="Copy Hex" Command="{Binding CopyHexCommand}" Margin="0,0,8,8"/>
-                            <Button Content="Copy RGB" Command="{Binding CopyRgbCommand}" Margin="0,0,8,8"/>
-                            <Button Content="Copy HSB" Command="{Binding CopyHsbCommand}" Margin="0,0,8,8"/>
-                            <Button Content="Copy CMYK" Command="{Binding CopyCmykCommand}" Margin="0,0,8,8"/>
+                            <Button Content="Copy Hex" Command="{Binding CopyHexCommand}" Margin="0,0,8,8" AutomationProperties.Name="Copy Hex"/>
+                            <Button Content="Copy RGB" Command="{Binding CopyRgbCommand}" Margin="0,0,8,8" AutomationProperties.Name="Copy RGB"/>
+                            <Button Content="Copy HSB" Command="{Binding CopyHsbCommand}" Margin="0,0,8,8" AutomationProperties.Name="Copy HSB"/>
+                            <Button Content="Copy CMYK" Command="{Binding CopyCmykCommand}" Margin="0,0,8,8" AutomationProperties.Name="Copy CMYK"/>
                         </WrapPanel>
                     </StackPanel>
                 </Border>
 
-                <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                        BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
+                 <!-- Status Card -->
+                <Border BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
+                        Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
                         BorderThickness="1"
-                        CornerRadius="6"
-                        Padding="10">
-                    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
+                        CornerRadius="4"
+                        Padding="16">
+                    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" AutomationProperties.Name="Status Message"/>
                 </Border>
             </StackPanel>
         </ScrollViewer>

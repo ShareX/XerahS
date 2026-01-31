@@ -28,6 +28,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.Input;
+using ShareX.Editor;
 using ShareX.Editor.Extensions;
 using ShareX.Editor.ImageEffects;
 using ShareX.Editor.ImageEffects.Manipulations;
@@ -44,9 +45,24 @@ namespace XerahS.UI.ViewModels
     public partial class ImageEffectsViewModel : ViewModelBase
     {
         private TaskSettingsImage settings;
+        private EditorCore editorCore;
         private SKBitmap? sourcePreviewBitmap;
         private const int PreviewSize = 256;
         private bool isSyncSuspended;
+
+        private bool canUndo;
+        public bool CanUndo
+        {
+            get => canUndo;
+            private set => SetProperty(ref canUndo, value);
+        }
+
+        private bool canRedo;
+        public bool CanRedo
+        {
+            get => canRedo;
+            private set => SetProperty(ref canRedo, value);
+        }
 
         private string name = "New preset";
         public string Name
@@ -79,15 +95,63 @@ namespace XerahS.UI.ViewModels
             private set => SetProperty(ref previewBitmap, value);
         }
 
-        public ImageEffectsViewModel(TaskSettingsImage settings)
+        public ImageEffectsViewModel(TaskSettingsImage settings, EditorCore editorCore)
         {
             this.settings = settings;
+            this.editorCore = editorCore;
 
             InitializeAvailableEffects();
             GeneratePreviewImage();
-            ApplyPreset(settings.ImageEffectsPreset ?? ImageEffectPreset.GetDefaultPreset(), updatePreview: true);
-            
+
+            var preset = settings.ImageEffectsPreset ?? ImageEffectPreset.GetDefaultPreset();
+            isSyncSuspended = true;
+            try
+            {
+                Name = string.IsNullOrWhiteSpace(preset.Name) ? "Preset" : preset.Name;
+                editorCore.LoadEffects(preset.Effects ?? new List<ImageEffect>());
+                SyncFromCore();
+            }
+            finally
+            {
+                isSyncSuspended = false;
+                SyncToSettings();
+            }
+            UpdatePreview();
+
+            editorCore.EffectsChanged += OnEffectsChanged;
+            editorCore.HistoryChanged += OnHistoryChanged;
             Effects.CollectionChanged += (s, e) => SyncToSettings();
+        }
+
+        private void OnEffectsChanged()
+        {
+            isSyncSuspended = true;
+            try
+            {
+                SyncFromCore();
+            }
+            finally
+            {
+                isSyncSuspended = false;
+                SyncToSettings();
+            }
+            UpdatePreview();
+        }
+
+        private void OnHistoryChanged()
+        {
+            CanUndo = editorCore.CanUndo;
+            CanRedo = editorCore.CanRedo;
+        }
+
+        private void SyncFromCore()
+        {
+            Effects.Clear();
+            foreach (var effect in editorCore.Effects)
+            {
+                Effects.Add(effect);
+            }
+            SelectedEffect = Effects.FirstOrDefault();
         }
 
         private void SyncToSettings()
@@ -107,31 +171,17 @@ namespace XerahS.UI.ViewModels
 
         private void ApplyPreset(ImageEffectPreset preset, bool updatePreview)
         {
+            var effects = preset.Effects ?? new List<ImageEffect>();
             isSyncSuspended = true;
             try
             {
                 Name = string.IsNullOrWhiteSpace(preset.Name) ? "Preset" : preset.Name;
-                Effects.Clear();
-                if (preset.Effects != null)
-                {
-                    foreach (var effect in preset.Effects)
-                    {
-                        Effects.Add(effect);
-                    }
-                }
-
-                SelectedEffect = Effects.FirstOrDefault();
             }
             finally
             {
                 isSyncSuspended = false;
-                SyncToSettings();
             }
-
-            if (updatePreview)
-            {
-                UpdatePreview();
-            }
+            editorCore.SetEffects(effects);
         }
 
         private void InitializeAvailableEffects()
@@ -156,7 +206,7 @@ namespace XerahS.UI.ViewModels
             sourcePreviewBitmap?.Dispose();
             sourcePreviewBitmap = null;
 
-            try 
+            try
             {
                 sourcePreviewBitmap = new SKBitmap(PreviewSize, PreviewSize);
                 using var canvas = new SKCanvas(sourcePreviewBitmap);
@@ -209,6 +259,8 @@ namespace XerahS.UI.ViewModels
             {
                 foreach (var effect in Effects)
                 {
+                    if (!effect.IsEnabled) continue;
+
                     var processed = effect.Apply(result);
                     if (processed != result)
                     {
@@ -236,16 +288,32 @@ namespace XerahS.UI.ViewModels
             UpdatePreview();
         }
 
+        [RelayCommand]
+        public void Undo()
+        {
+            editorCore.Undo();
+        }
 
+        [RelayCommand]
+        public void Redo()
+        {
+            editorCore.Redo();
+        }
+
+        [RelayCommand]
+        public void ToggleEffect(ImageEffect? effect)
+        {
+            if (effect == null) return;
+            editorCore.ToggleEffect(effect);
+        }
 
         [RelayCommand]
         public void AddEffect(Type effectType)
         {
             if (Activator.CreateInstance(effectType) is ImageEffect effect)
             {
-                Effects.Add(effect);
-                SelectedEffect = effect;
-                UpdatePreview();
+                editorCore.AddEffect(effect);
+                SelectedEffect = Effects.LastOrDefault();
             }
         }
 
@@ -254,10 +322,8 @@ namespace XerahS.UI.ViewModels
         {
             if (SelectedEffect != null)
             {
-                var effect = SelectedEffect;
-                Effects.Remove(effect);
+                editorCore.RemoveEffect(SelectedEffect);
                 SelectedEffect = Effects.FirstOrDefault();
-                UpdatePreview();
             }
         }
 
@@ -296,10 +362,11 @@ namespace XerahS.UI.ViewModels
 
             var extension = Path.GetExtension(filePath).ToLowerInvariant();
 
+            var enabledEffects = Effects.Where(e => e.IsEnabled).ToList();
             var presetToSave = new ImageEffectPreset
             {
                 Name = Name,
-                Effects = Effects.ToList()
+                Effects = enabledEffects
             };
 
             try
@@ -403,7 +470,7 @@ namespace XerahS.UI.ViewModels
                 var preset = extension == ".sxie"
                     ? LoadLegacyPreset(filePath)
                     : ImageEffectPresetSerializer.LoadXsieFile(filePath);
-                
+
                 if (preset != null)
                 {
                     preset.Name = Path.GetFileNameWithoutExtension(filePath);
@@ -533,10 +600,6 @@ namespace XerahS.UI.ViewModels
 
             return Convert.ToInt32(value);
         }
-
-
-
-        // TODO: Move logic, rename, duplicate, etc.
     }
 
     public class EffectCategory
@@ -559,7 +622,7 @@ namespace XerahS.UI.ViewModels
         public EffectType(Type type)
         {
             Type = type;
-            
+
             string? name = null;
             try
             {

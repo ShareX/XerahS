@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using XerahS.Common;
+using XerahS.Platform.Abstractions;
 using SkiaSharp;
 
 namespace XerahS.Core;
@@ -68,10 +69,8 @@ public class TaskMetadata : IDisposable
     {
         if (windowInfo != null)
         {
-#pragma warning disable CA1416 // Validate platform compatibility
-            WindowTitle = windowInfo.Text;
-            ProcessName = windowInfo.ProcessName;
-#pragma warning restore CA1416 // Validate platform compatibility
+            WindowTitle = windowInfo.Title;
+            // ProcessName is not available in abstraction; could be obtained via ProcessId if needed
         }
     }
 

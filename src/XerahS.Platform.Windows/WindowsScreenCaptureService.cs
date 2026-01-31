@@ -59,14 +59,25 @@ namespace XerahS.Platform.Windows
                     int width = (int)rect.Width;
                     int height = (int)rect.Height;
 
-                    if (width <= 0 || height <= 0) return null;
+                    // Validate and clamp capture region to screen bounds
+                    var screenBounds = _screenService.GetVirtualScreenBounds();
+                    x = Math.Max(x, screenBounds.X);
+                    y = Math.Max(y, screenBounds.Y);
+                    width = Math.Min(width, screenBounds.Right - x);
+                    height = Math.Min(height, screenBounds.Bottom - y);
+
+                    if (width <= 0 || height <= 0)
+                    {
+                        DebugHelper.WriteLine("Capture region outside screen bounds");
+                        return null;
+                    }
 
                     if (options?.ShowCursor == false)
                     {
                         cursorHidden = HideSystemCursors();
                         if (cursorHidden)
                         {
-                            Thread.Sleep(50);
+                            Thread.Sleep(150);
                         }
                     }
 
@@ -195,7 +206,7 @@ namespace XerahS.Platform.Windows
                         cursorHidden = HideSystemCursors();
                         if (cursorHidden)
                         {
-                            Thread.Sleep(50);
+                            Thread.Sleep(150);
                         }
                     }
 
@@ -250,7 +261,7 @@ namespace XerahS.Platform.Windows
                         cursorHidden = HideSystemCursors();
                         if (cursorHidden)
                         {
-                            Thread.Sleep(50);
+                            Thread.Sleep(150);
                         }
                     }
 
@@ -305,7 +316,7 @@ namespace XerahS.Platform.Windows
                         cursorHidden = HideSystemCursors();
                         if (cursorHidden)
                         {
-                            Thread.Sleep(50);
+                            Thread.Sleep(150);
                         }
                     }
 
@@ -402,7 +413,16 @@ namespace XerahS.Platform.Windows
             {
                 bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                 stream.Seek(0, SeekOrigin.Begin);
-                return SKBitmap.Decode(stream);
+
+                // SKBitmap.Decode creates a copy of pixel data, safe to dispose stream after
+                var skBitmap = SKBitmap.Decode(stream);
+
+                if (skBitmap == null)
+                {
+                    DebugHelper.WriteLine("Failed to decode bitmap to SKBitmap");
+                }
+
+                return skBitmap;
             }
         }
 
@@ -439,40 +459,64 @@ namespace XerahS.Platform.Windows
         private static extern bool SetSystemCursor(IntPtr hcur, uint id);
 
         [DllImport("user32.dll")]
+        private static extern IntPtr CopyIcon(IntPtr hIcon);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr CreateCursor(IntPtr hInst, int xHotSpot, int yHotSpot,
+            int nWidth, int nHeight, byte[] pvANDPlane, byte[] pvXORPlane);
+
+        [DllImport("user32.dll")]
+        private static extern bool DestroyCursor(IntPtr hCursor);
+
+        [DllImport("user32.dll")]
         private static extern bool SystemParametersInfo(uint uiAction, uint uiParam, IntPtr pvParam, uint fWinIni);
 
         private const uint SPI_SETCURSORS = 0x0057;
-        private const uint IDC_ARROW = 32512;
-        private const uint IDC_IBEAM = 32513;
-        private const uint IDC_WAIT = 32514;
-        private const uint IDC_CROSS = 32515;
-        private const uint IDC_UPARROW = 32516;
-        private const uint IDC_SIZENWSE = 32642;
-        private const uint IDC_SIZENESW = 32643;
-        private const uint IDC_SIZEWE = 32644;
-        private const uint IDC_SIZENS = 32645;
-        private const uint IDC_SIZEALL = 32646;
-        private const uint IDC_NO = 32648;
-        private const uint IDC_HAND = 32649;
-        private const uint IDC_APPSTARTING = 32650;
+
+        private static readonly uint[] AllCursorIds =
+        {
+            32512, // IDC_ARROW
+            32513, // IDC_IBEAM
+            32514, // IDC_WAIT
+            32515, // IDC_CROSS
+            32516, // IDC_UPARROW
+            32642, // IDC_SIZENWSE
+            32643, // IDC_SIZENESW
+            32644, // IDC_SIZEWE
+            32645, // IDC_SIZENS
+            32646, // IDC_SIZEALL
+            32648, // IDC_NO
+            32649, // IDC_HAND
+            32650, // IDC_APPSTARTING
+        };
 
         private static bool HideSystemCursors()
         {
             try
             {
-                SetSystemCursor(IntPtr.Zero, IDC_ARROW);
-                SetSystemCursor(IntPtr.Zero, IDC_IBEAM);
-                SetSystemCursor(IntPtr.Zero, IDC_WAIT);
-                SetSystemCursor(IntPtr.Zero, IDC_CROSS);
-                SetSystemCursor(IntPtr.Zero, IDC_UPARROW);
-                SetSystemCursor(IntPtr.Zero, IDC_SIZENWSE);
-                SetSystemCursor(IntPtr.Zero, IDC_SIZENESW);
-                SetSystemCursor(IntPtr.Zero, IDC_SIZEWE);
-                SetSystemCursor(IntPtr.Zero, IDC_SIZENS);
-                SetSystemCursor(IntPtr.Zero, IDC_SIZEALL);
-                SetSystemCursor(IntPtr.Zero, IDC_NO);
-                SetSystemCursor(IntPtr.Zero, IDC_HAND);
-                SetSystemCursor(IntPtr.Zero, IDC_APPSTARTING);
+                // Create a 32x32 fully transparent cursor.
+                // AND mask all 1s = preserve screen (transparent), XOR mask all 0s = no inversion.
+                var andMask = new byte[128]; // 32x32 / 8
+                var xorMask = new byte[128];
+                for (int i = 0; i < andMask.Length; i++) andMask[i] = 0xFF;
+
+                IntPtr blankCursor = CreateCursor(IntPtr.Zero, 0, 0, 32, 32, andMask, xorMask);
+                if (blankCursor == IntPtr.Zero) return false;
+
+                try
+                {
+                    foreach (uint id in AllCursorIds)
+                    {
+                        IntPtr copy = CopyIcon(blankCursor);
+                        if (copy != IntPtr.Zero)
+                            SetSystemCursor(copy, id);
+                    }
+                }
+                finally
+                {
+                    DestroyCursor(blankCursor);
+                }
+
                 return true;
             }
             catch

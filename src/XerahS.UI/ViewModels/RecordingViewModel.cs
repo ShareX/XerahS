@@ -68,10 +68,19 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
     private bool _isRecording;
 
     [ObservableProperty]
+    private bool _isPaused;
+
+    [ObservableProperty]
     private bool _canStart = true;
 
     [ObservableProperty]
     private bool _canStop;
+
+    [ObservableProperty]
+    private bool _canPauseResume;
+
+    [ObservableProperty]
+    private bool _canAbort;
 
     [ObservableProperty]
     private string? _lastError;
@@ -229,8 +238,11 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
                 case RecordingStatus.Idle:
                     StatusText = "Ready";
                     IsRecording = false;
+                    IsPaused = false;
                     CanStart = true;
                     CanStop = false;
+                    CanPauseResume = false;
+                    CanAbort = false;
                     _durationTimer.Stop();
                     HideBorderWindow();
                     break;
@@ -238,31 +250,54 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
                 case RecordingStatus.Initializing:
                     StatusText = "Initializing...";
                     IsRecording = false;
+                    IsPaused = false;
                     CanStart = false;
                     CanStop = false;
+                    CanPauseResume = false;
+                    CanAbort = false;
                     break;
 
                 case RecordingStatus.Recording:
                     StatusText = "Recording";
                     IsRecording = true;
+                    IsPaused = false;
                     CanStart = false;
                     CanStop = true;
+                    CanPauseResume = true;
+                    CanAbort = true;
                     _durationTimer.Start();
+                    break;
+
+                case RecordingStatus.Paused:
+                    StatusText = "Paused";
+                    IsRecording = false;
+                    IsPaused = true;
+                    CanStart = false;
+                    CanStop = true;
+                    CanPauseResume = true;
+                    CanAbort = true;
+                    _durationTimer.Stop();
                     break;
 
                 case RecordingStatus.Finalizing:
                     StatusText = "Finalizing...";
                     IsRecording = false;
+                    IsPaused = false;
                     CanStart = false;
                     CanStop = false;
+                    CanPauseResume = false;
+                    CanAbort = false;
                     _durationTimer.Stop();
                     break;
 
                 case RecordingStatus.Error:
                     StatusText = "Error";
                     IsRecording = false;
+                    IsPaused = false;
                     CanStart = true;
                     CanStop = false;
+                    CanPauseResume = false;
+                    CanAbort = false;
                     _durationTimer.Stop();
                     break;
             }
@@ -444,6 +479,34 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanPauseResume))]
+    private async Task PauseResumeAsync()
+    {
+        try
+        {
+            await ScreenRecordingManager.Instance.TogglePauseResumeAsync();
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "Failed to toggle pause/resume");
+            LastError = ex.Message;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAbort))]
+    private async Task AbortRecordingAsync()
+    {
+        try
+        {
+            await ScreenRecordingManager.Instance.AbortRecordingAsync();
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "Failed to abort recording");
+            LastError = ex.Message;
+        }
+    }
+
     partial void OnCanStartChanged(bool value)
     {
         StartRecordingCommand.NotifyCanExecuteChanged();
@@ -452,6 +515,28 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
     partial void OnCanStopChanged(bool value)
     {
         StopRecordingCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnCanPauseResumeChanged(bool value)
+    {
+        PauseResumeCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnCanAbortChanged(bool value)
+    {
+        AbortRecordingCommand.NotifyCanExecuteChanged();
+    }
+
+    public bool IsRecordingOrPaused => IsRecording || IsPaused;
+
+    partial void OnIsRecordingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsRecordingOrPaused));
+    }
+
+    partial void OnIsPausedChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsRecordingOrPaused));
     }
 
     private void InitializeWorkflow()

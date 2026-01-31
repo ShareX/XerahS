@@ -9,6 +9,22 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
+## v0.5.1 - Verify Recording CLI & Editor Improvements
+
+### Features & Improvements
+- Added `verify-recording` CLI command for automated screen recording verification (`732e173`)
+- Unified editor undo history (`24ad021`) [ShareX.Editor]
+
+### Bug Fixes
+- Fix system cursor captured in region screenshots (`85a4e2f`)
+- Fix speech balloon tail geometry rendering (`784594e`) [ShareX.Editor]
+
+## v0.5.0 - Core Capture & Editor Improvements
+
+### Features & Improvements
+- Fix double cursor visibility by setting RegionCaptureControl cursor to None (`fe35424`)
+- Project status and roadmap updates reflecting completed features (`12a1b7a`)
+
 ## v0.4.0 - Image Effects & Upload Improvements
 
 ### Features & Improvements

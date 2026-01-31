@@ -22,11 +22,13 @@
 */
 
 #endregion License Information (GPL v3)
+
+using SkiaSharp;
 using XerahS.Platform.Abstractions;
-using XerahS.Uploaders; // For GenericUploader and UploadResult
+using XerahS.Core.Managers;
+using XerahS.History;
+using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
-using System.Drawing;
-using System.Drawing.Imaging;
 
 namespace XerahS.Core.Tasks;
 
@@ -41,9 +43,11 @@ public class WorkflowTask : IDisposable
 #pragma warning restore CS0067
     public event EventHandler? TaskCompleted;
 
+    private readonly IClipboardService? _clipboardService;
+
     public string FileName { get; set; } = string.Empty;
     public string? FilePath { get; set; }
-    public Image? Image { get; set; }
+    public SKBitmap? Image { get; set; }
     public Stream? Data { get; set; }
     public UploadResult? Result { get; private set; }
     public bool IsCompleted { get; private set; }
@@ -51,12 +55,21 @@ public class WorkflowTask : IDisposable
 
     private bool _disposed;
 
+    public WorkflowTask() : this(null)
+    {
+    }
+
+    public WorkflowTask(IClipboardService? clipboardService)
+    {
+        _clipboardService = clipboardService;
+    }
+
     /// <summary>
     /// Creates a workflow task for image upload
     /// </summary>
-    public static WorkflowTask CreateImageUploadTask(Image image, string fileName)
+    public static WorkflowTask CreateImageUploadTask(SKBitmap image, string fileName, IClipboardService? clipboardService = null)
     {
-        return new WorkflowTask
+        return new WorkflowTask(clipboardService)
         {
             Image = image,
             FileName = fileName
@@ -88,6 +101,11 @@ public class WorkflowTask : IDisposable
             {
                 CopyURLToClipboard(Result.ToString());
             }
+
+            if (!string.IsNullOrEmpty(Result?.URL))
+            {
+                TryAppendHistoryItem(Result.URL);
+            }
         }
         catch (Exception ex)
         {
@@ -101,12 +119,35 @@ public class WorkflowTask : IDisposable
         }
     }
 
-    private Stream ConvertImageToStream(Image image)
+    private void TryAppendHistoryItem(string url)
+    {
+        try
+        {
+            var historyPath = SettingsManager.GetHistoryFilePath();
+            using var historyManager = new HistoryManagerSQLite(historyPath);
+            var historyItem = new HistoryItem
+            {
+                FilePath = FilePath ?? string.Empty,
+                FileName = TaskHelpers.GetHistoryFileName(FileName, FilePath, url),
+                DateTime = DateTime.Now,
+                Type = "Image",
+                URL = url
+            };
+
+            historyManager.AppendHistoryItem(historyItem);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to add history item: {ex.Message}");
+        }
+    }
+
+    private Stream ConvertImageToStream(SKBitmap image)
     {
         var stream = new MemoryStream();
-#pragma warning disable CA1416 // Validate platform compatibility
-        image.Save(stream, ImageFormat.Png);
-#pragma warning restore CA1416 // Validate platform compatibility
+        using var skImage = SKImage.FromBitmap(image);
+        using var data = skImage.Encode(SKEncodedImageFormat.Png, 100);
+        data.SaveTo(stream);
         stream.Position = 0;
         return stream;
     }
@@ -178,7 +219,9 @@ public class WorkflowTask : IDisposable
     {
         try
         {
-            PlatformServices.Clipboard.SetText(url);
+            // Use injected service if available, otherwise fall back to PlatformServices
+            var clipboard = _clipboardService ?? (PlatformServices.IsInitialized ? PlatformServices.Clipboard : null);
+            clipboard?.SetText(url);
         }
         catch (Exception ex)
         {
@@ -192,9 +235,7 @@ public class WorkflowTask : IDisposable
         if (_disposed) return;
 
         Data?.Dispose();
-#pragma warning disable CA1416 // Validate platform compatibility
         Image?.Dispose();
-#pragma warning restore CA1416 // Validate platform compatibility
 
         _disposed = true;
         GC.SuppressFinalize(this);

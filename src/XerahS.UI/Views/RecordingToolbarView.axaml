@@ -1,10 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:XerahS.UI.ViewModels"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="60"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:ui="using:FluentAvalonia.UI.Controls"
-             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="60"
              x:Class="XerahS.UI.Views.RecordingToolbarView"
              x:DataType="vm:RecordingViewModel">
     
@@ -17,14 +17,15 @@
             BorderThickness="1"
             CornerRadius="8"
             Padding="12,8"
-            BoxShadow="0 2 8 0 #40000000">
+            BoxShadow="0 4 12 0 #40000000">
         
-        <StackPanel Orientation="Horizontal" Spacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="16">
             
             <!-- Recording Indicator -->
             <Ellipse Width="12" Height="12"
                      Fill="{Binding IsRecording, Converter={StaticResource BoolToRecordingColorConverter}}"
-                     VerticalAlignment="Center">
+                     VerticalAlignment="Center"
+                     AutomationProperties.Name="Recording Status Indicator">
                 <Ellipse.Styles>
                     <Style Selector="Ellipse">
                         <Style.Animations>
@@ -44,45 +45,87 @@
                 </Ellipse.Styles>
             </Ellipse>
             
-            <!-- Duration Display -->
-            <TextBlock Text="{Binding DurationFormatted}"
-                       FontFamily="Consolas, monospace"
-                       FontSize="18"
-                       FontWeight="SemiBold"
-                       VerticalAlignment="Center"
-                       MinWidth="60"/>
-            
-            <!-- Status Text -->
-            <TextBlock Text="{Binding StatusText}"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                       VerticalAlignment="Center"
-                       MinWidth="80"/>
+            <!-- Duration & Status -->
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <TextBlock Text="{Binding DurationFormatted}"
+                           FontFamily="Consolas, monospace"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           MinWidth="70"
+                           AutomationProperties.Name="Recording Duration"/>
+                
+                <TextBlock Text="{Binding StatusText}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           VerticalAlignment="Center"
+                           MinWidth="60"
+                           FontSize="12"
+                           AutomationProperties.Name="Recording Status"/>
+            </StackPanel>
             
             <!-- Separator -->
             <Border Width="1" Height="24" 
                     Background="{DynamicResource ControlStrokeColorDefaultBrush}"
                     VerticalAlignment="Center"/>
             
-            <!-- Start Button -->
-            <Button Command="{Binding StartRecordingCommand}"
-                    IsVisible="{Binding !IsRecording}"
-                    ToolTip.Tip="Start Recording">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <ui:SymbolIcon Symbol="Play" FontSize="16"/>
-                    <TextBlock Text="Start" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button>
-            
-            <!-- Stop Button -->
-            <Button Command="{Binding StopRecordingCommand}"
-                    IsVisible="{Binding IsRecording}"
-                    Classes="accent"
-                    ToolTip.Tip="Stop Recording">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <ui:SymbolIcon Symbol="Stop" FontSize="16"/>
-                    <TextBlock Text="Stop" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button>
+            <!-- Controls -->
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <!-- Start -->
+                <Button Command="{Binding StartRecordingCommand}"
+                        IsVisible="{Binding !IsRecordingOrPaused}"
+                        ToolTip.Tip="Start Recording"
+                        AutomationProperties.Name="Start Recording">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ui:SymbolIcon Symbol="Play" FontSize="16"/>
+                        <TextBlock Text="Start" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                
+                <!-- Stop -->
+                <Button Command="{Binding StopRecordingCommand}"
+                        IsVisible="{Binding IsRecordingOrPaused}"
+                        Classes="accent"
+                        ToolTip.Tip="Stop Recording"
+                        AutomationProperties.Name="Stop Recording">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ui:SymbolIcon Symbol="Stop" FontSize="16"/>
+                        <TextBlock Text="Stop" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Pause -->
+                <Button Command="{Binding PauseResumeCommand}"
+                        IsVisible="{Binding IsRecording}"
+                        ToolTip.Tip="Pause Recording"
+                        AutomationProperties.Name="Pause Recording">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ui:SymbolIcon Symbol="Pause" FontSize="16"/>
+                        <TextBlock Text="Pause" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Resume -->
+                <Button Command="{Binding PauseResumeCommand}"
+                        IsVisible="{Binding IsPaused}"
+                        ToolTip.Tip="Resume Recording"
+                        AutomationProperties.Name="Resume Recording">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ui:SymbolIcon Symbol="Play" FontSize="16"/>
+                        <TextBlock Text="Resume" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Abort -->
+                <Button Command="{Binding AbortRecordingCommand}"
+                        IsVisible="{Binding IsRecordingOrPaused}"
+                        ToolTip.Tip="Abort Recording"
+                        AutomationProperties.Name="Abort Recording">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ui:SymbolIcon Symbol="Cancel" FontSize="16"/>
+                        <TextBlock Text="Abort" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
             
         </StackPanel>
     </Border>

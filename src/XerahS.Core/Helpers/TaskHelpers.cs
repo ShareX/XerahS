@@ -298,8 +298,8 @@ public static partial class TaskHelpers
         string pattern;
 
         // Use window-specific pattern if available
-        if (!string.IsNullOrEmpty(settings.SaveImageSubFolderPatternWindow) &&
-            !string.IsNullOrEmpty(metadata?.WindowTitle))
+        if (!string.IsNullOrWhiteSpace(settings.SaveImageSubFolderPatternWindow) &&
+            !string.IsNullOrWhiteSpace(metadata?.WindowTitle))
         {
             pattern = taskSettings.UploadSettings.NameFormatPatternActiveWindow;
         }
@@ -342,6 +342,38 @@ public static partial class TaskHelpers
         return fileName;
     }
 
+    /// <summary>
+    /// Resolve a safe history file name using known file info or URL.
+    /// </summary>
+    public static string GetHistoryFileName(string fileName, string? filePath, string? url)
+    {
+        if (!string.IsNullOrWhiteSpace(fileName))
+        {
+            return fileName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(filePath))
+        {
+            return Path.GetFileName(filePath);
+        }
+
+        if (!string.IsNullOrWhiteSpace(url) && Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            var segment = Path.GetFileName(uri.AbsolutePath);
+            if (!string.IsNullOrWhiteSpace(segment))
+            {
+                return segment;
+            }
+
+            if (!string.IsNullOrWhiteSpace(uri.Host))
+            {
+                return uri.Host;
+            }
+        }
+
+        return "URL";
+    }
+
     #endregion
 
     #region Screenshots Folder
@@ -377,8 +409,8 @@ public static partial class TaskHelpers
         {
             string subFolderPattern;
 
-            if (!string.IsNullOrEmpty(settings.SaveImageSubFolderPatternWindow) &&
-                !string.IsNullOrEmpty(nameParser.WindowText))
+            if (!string.IsNullOrWhiteSpace(settings.SaveImageSubFolderPatternWindow) &&
+                !string.IsNullOrWhiteSpace(nameParser.WindowText))
             {
                 subFolderPattern = settings.SaveImageSubFolderPatternWindow;
             }
@@ -453,8 +485,12 @@ public static partial class TaskHelpers
                     return "";
 
                 case FileExistAction.Ask:
+                    // Ask requires UI interaction - return empty to signal caller
+                    DebugHelper.WriteLine($"File exists, action is Ask: {filePath}");
+                    return string.Empty;
+
                 default:
-                    // For now, default to unique name (UI will handle Ask)
+                    DebugHelper.WriteLine($"Unknown FileExistAction, using unique name for: {filePath}");
                     return FileHelpers.GetUniqueFilePath(filePath);
             }
         }
@@ -478,8 +514,22 @@ public static partial class TaskHelpers
     }
 
     /// <summary>
-    /// Save image to stream
+    /// Save image to a new MemoryStream with specified format.
     /// </summary>
+    /// <param name="bmp">The bitmap to encode</param>
+    /// <param name="imageFormat">The image format to use</param>
+    /// <param name="pngBitDepth">PNG bit depth (when using PNG format)</param>
+    /// <param name="jpegQuality">JPEG quality 0-100 (when using JPEG format)</param>
+    /// <param name="gifQuality">GIF quality setting (when using GIF format)</param>
+    /// <returns>
+    /// A new MemoryStream containing the encoded image, positioned at the start and ready for reading.
+    /// Returns null if encoding fails or bmp is null.
+    /// IMPORTANT: Caller MUST dispose the returned MemoryStream to prevent memory leaks.
+    /// </returns>
+    /// <remarks>
+    /// The returned stream is owned by the caller and must be disposed when no longer needed.
+    /// Consider using 'using' statement or calling Dispose() explicitly.
+    /// </remarks>
     public static MemoryStream? SaveImageAsStream(SkiaSharp.SKBitmap bmp, EImageFormat imageFormat,
         PNGBitDepth pngBitDepth = PNGBitDepth.Default,
         int jpegQuality = 90,
@@ -505,8 +555,9 @@ public static partial class TaskHelpers
             ms.Position = 0;
             return ms;
         }
-        catch
+        catch (Exception ex)
         {
+            DebugHelper.WriteException(ex, $"Failed to encode image as {imageFormat}");
             ms.Dispose();
             return null;
         }
@@ -583,11 +634,23 @@ public static partial class TaskHelpers
     public static SkiaSharp.SKBitmap? CreateThumbnail(SkiaSharp.SKBitmap bmp, int width, int height)
     {
         if (bmp == null) return null;
+        if (width <= 0 && height <= 0) return null;
 
-        // Calculate dimensions maintaining aspect ratio
-        double ratioX = width > 0 ? (double)width / bmp.Width : 0;
-        double ratioY = height > 0 ? (double)height / bmp.Height : 0;
-        double ratio = Math.Min(ratioX > 0 ? ratioX : ratioY, ratioY > 0 ? ratioY : ratioX);
+        // Calculate scale ratio maintaining aspect ratio
+        double ratio;
+        if (width > 0 && height > 0)
+        {
+            // Both dimensions specified - fit within bounds
+            ratio = Math.Min((double)width / bmp.Width, (double)height / bmp.Height);
+        }
+        else if (width > 0)
+        {
+            ratio = (double)width / bmp.Width;
+        }
+        else
+        {
+            ratio = (double)height / bmp.Height;
+        }
 
         if (ratio <= 0 || ratio >= 1) return null;
 
@@ -604,7 +667,7 @@ public static partial class TaskHelpers
     {
         if (!taskSettings.ImageSettings.ImageAutoUseJPEG) return false;
 
-        long imageSize = (long)bmp.Width * bmp.Height;
+        long imageSize = (long)bmp.Width * (long)bmp.Height;
         long threshold = (long)taskSettings.ImageSettings.ImageAutoUseJPEGSize * 1024;
 
         return imageSize > threshold;

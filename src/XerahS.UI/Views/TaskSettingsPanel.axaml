@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:XerahS.UI.ViewModels"
              xmlns:controls="using:XerahS.UI.Controls"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
              x:Class="XerahS.UI.Views.TaskSettingsPanel"
              x:DataType="vm:TaskSettingsViewModel">
 
@@ -16,68 +16,78 @@
         <TabControl Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinHeight="300">
             <!-- General Tab -->
             <TabItem Header="General">
-                <ScrollViewer>
-                    <StackPanel Margin="20" Spacing="20">
-                        <StackPanel Spacing="10">
+                <ScrollViewer Padding="20">
+                    <StackPanel Spacing="24">
+                        <!-- Notifications Section -->
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Notifications" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding PlaySoundAfterCapture}" Content="Play sound after capture"/>
-                                    <CheckBox IsChecked="{Binding PlaySoundAfterUpload}" Content="Play sound after upload"/>
-                                    <CheckBox IsChecked="{Binding PlaySoundAfterAction}" Content="Play sound after action"/>
-                                    <CheckBox IsChecked="{Binding ShowToastNotification}" Content="Show toast notification after task completed"/>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <StackPanel Spacing="10">
+                                        <CheckBox IsChecked="{Binding PlaySoundAfterCapture}" Content="Play sound after capture"/>
+                                        <CheckBox IsChecked="{Binding PlaySoundAfterUpload}" Content="Play sound after upload"/>
+                                        <CheckBox IsChecked="{Binding PlaySoundAfterAction}" Content="Play sound after action"/>
+                                        <CheckBox IsChecked="{Binding ShowToastNotification}" Content="Include toast notification"/>
+                                    </StackPanel>
                                     
                                     <!-- Toast Settings -->
-                                    <StackPanel Spacing="10" Margin="20,0,0,0" IsVisible="{Binding ShowToastNotification}">
-                                        <Grid ColumnDefinitions="Auto, 10, Auto, 10, Auto, 20, Auto, 10, Auto, 10, Auto">
-                                             <TextBlock Grid.Column="0" Text="Duration:" VerticalAlignment="Center"/>
-                                             <NumericUpDown Grid.Column="2" Value="{Binding ToastWindowDuration}" Minimum="0.5" Maximum="30" Increment="0.5" FormatString="0.0" Width="80"/>
-                                             <TextBlock Grid.Column="4" Text="seconds" VerticalAlignment="Center"/>
-                                            
-                                             <TextBlock Grid.Column="6" Text="Fade duration:" VerticalAlignment="Center"/>
-                                             <NumericUpDown Grid.Column="8" Value="{Binding ToastWindowFadeDuration}" Minimum="0" Maximum="5" Increment="0.1" FormatString="0.0" Width="80"/>
-                                             <TextBlock Grid.Column="10" Text="seconds" VerticalAlignment="Center"/>
-                                        </Grid>
+                                    <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto" 
+                                          IsVisible="{Binding ShowToastNotification}" Margin="24,0,0,0">
+                                        
+                                        <!-- Duration -->
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Duration:" VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                                            <NumericUpDown Value="{Binding ToastWindowDuration}" Minimum="0.5" Maximum="30" Increment="0.5" FormatString="0.0" Width="120" AutomationProperties.Name="Toast Duration"/>
+                                            <TextBlock Text="seconds" VerticalAlignment="Center"/>
+                                        </StackPanel>
 
-                                        <CheckBox IsChecked="{Binding ToastWindowAutoHide}" Content="Auto hide toast notification"/>
+                                        <!-- Fade Duration -->
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Fade duration:" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                        <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                                            <NumericUpDown Value="{Binding ToastWindowFadeDuration}" Minimum="0" Maximum="5" Increment="0.1" FormatString="0.0" Width="120" AutomationProperties.Name="Toast Fade Duration"/>
+                                            <TextBlock Text="seconds" VerticalAlignment="Center"/>
+                                        </StackPanel>
 
-                                        <Grid ColumnDefinitions="Auto, 10, *, 20, Auto, 10, Auto, 5, Auto, 5, Auto">
-                                            <TextBlock Grid.Column="0" Text="Placement:" VerticalAlignment="Center"/>
-                                            <ComboBox Grid.Column="2" ItemsSource="{Binding ContentAlignments}" SelectedItem="{Binding ToastWindowPlacement}" HorizontalAlignment="Stretch"/>
-                                            
-                                            <TextBlock Grid.Column="4" Text="Size:" VerticalAlignment="Center"/>
-                                            <NumericUpDown Grid.Column="6" Value="{Binding ToastWindowWidth}" Minimum="100" Maximum="2000" Increment="10" Width="80"/>
-                                            <TextBlock Grid.Column="8" Text="x" VerticalAlignment="Center"/>
-                                            <NumericUpDown Grid.Column="10" Value="{Binding ToastWindowHeight}" Minimum="50" Maximum="1000" Increment="10" Width="80"/>
-                                        </Grid>
+                                        <!-- Placement -->
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Placement:" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                        <ComboBox Grid.Row="2" Grid.Column="2" ItemsSource="{Binding ContentAlignments}" SelectedItem="{Binding ToastWindowPlacement}" HorizontalAlignment="Left" Width="200" Margin="0,8,0,0" AutomationProperties.Name="Toast Placement"/>
 
-                                        <Grid ColumnDefinitions="Auto, 10, *">
-                                            <TextBlock Grid.Column="0" Text="Left click action:" VerticalAlignment="Center"/>
-                                            <ComboBox Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowLeftClickAction}" HorizontalAlignment="Stretch"/>
-                                        </Grid>
+                                        <!-- Size -->
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Size:" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                        <StackPanel Grid.Row="3" Grid.Column="2" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                                            <NumericUpDown Value="{Binding ToastWindowWidth}" Minimum="100" Maximum="2000" Increment="10" Width="120" AutomationProperties.Name="Toast Width"/>
+                                            <TextBlock Text="x" VerticalAlignment="Center"/>
+                                            <NumericUpDown Value="{Binding ToastWindowHeight}" Minimum="50" Maximum="1000" Increment="10" Width="120" AutomationProperties.Name="Toast Height"/>
+                                        </StackPanel>
+                                        
+                                        <!-- Auto Hide -->
+                                         <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" IsChecked="{Binding ToastWindowAutoHide}" Content="Auto hide toast notification" Margin="0,8,0,0"/>
 
-                                        <Grid ColumnDefinitions="Auto, 10, *">
-                                            <TextBlock Grid.Column="0" Text="Middle click action:" VerticalAlignment="Center"/>
-                                            <ComboBox Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowMiddleClickAction}" HorizontalAlignment="Stretch"/>
-                                        </Grid>
+                                        <!-- Click Actions -->
+                                        <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, Auto, Auto" Margin="0,16,0,0">
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Left click:" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Row="0" Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowLeftClickAction}" HorizontalAlignment="Stretch" AutomationProperties.Name="Left Click Action"/>
 
-                                        <Grid ColumnDefinitions="Auto, 10, *">
-                                            <TextBlock Grid.Column="0" Text="Right click action:" VerticalAlignment="Center"/>
-                                            <ComboBox Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowRightClickAction}" HorizontalAlignment="Stretch"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Middle click:" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                            <ComboBox Grid.Row="1" Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowMiddleClickAction}" HorizontalAlignment="Stretch" Margin="0,8,0,0" AutomationProperties.Name="Middle Click Action"/>
+
+                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Right click:" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                            <ComboBox Grid.Row="2" Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowRightClickAction}" HorizontalAlignment="Stretch" Margin="0,8,0,0" AutomationProperties.Name="Right Click Action"/>
                                         </Grid>
-                                    </StackPanel>
+                                    </Grid>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
-                        <StackPanel Spacing="10">
+                        <!-- Sound Section -->
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Sound" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
                                     <CheckBox IsChecked="{Binding UseCustomCaptureSound}" Content="Use custom capture sound"/>
-                                    <Grid ColumnDefinitions="Auto, 10, *" IsVisible="{Binding UseCustomCaptureSound}">
+                                    <Grid ColumnDefinitions="Auto, 16, *" IsVisible="{Binding UseCustomCaptureSound}">
                                         <TextBlock Grid.Column="0" Text="Path:" VerticalAlignment="Center"/>
-                                        <TextBox Grid.Column="2" Text="{Binding CustomCaptureSoundPath}"/>
+                                        <TextBox Grid.Column="2" Text="{Binding CustomCaptureSoundPath}" AutomationProperties.Name="Sound File Path"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
@@ -89,83 +99,82 @@
 
             <!-- Capture Tab -->
             <TabItem Header="Capture">
-                <ScrollViewer>
-                    <StackPanel Margin="20" Spacing="20">
-                        <StackPanel Spacing="10">
+                <ScrollViewer Padding="20">
+                    <StackPanel Spacing="24">
+                        <!-- General Capture Settings -->
+                        <StackPanel Spacing="8">
                             <TextBlock Text="General" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
                                     <CheckBox IsChecked="{Binding UseModernCapture}" Content="Use modern screen capture (Direct3D11)"/>
                                     <CheckBox IsChecked="{Binding ShowCursor}" Content="Show cursor in screenshots"/>
-                                    <Grid ColumnDefinitions="Auto, 15, 120, 15, Auto">
-                                         <TextBlock Grid.Column="0" Text="Screenshot delay:" VerticalAlignment="Center"/>
-                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenshotDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" MinWidth="120"/>
-                                         <TextBlock Grid.Column="4" Text="seconds" VerticalAlignment="Center"/>
+                                    
+                                    <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, Auto, Auto">
+                                        <!-- Screenshot Delay -->
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Screenshot delay:" VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                                            <NumericUpDown Value="{Binding ScreenshotDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" Width="120" AutomationProperties.Name="Screenshot Delay"/>
+                                            <TextBlock Text="seconds" VerticalAlignment="Center"/>
+                                        </StackPanel>
+
+                                        <!-- Window Title -->
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Window title:" VerticalAlignment="Center" Margin="0,16,0,0"/>
+                                        <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding CaptureCustomWindow, UpdateSourceTrigger=PropertyChanged}" 
+                                                 Watermark="Window title to capture (CustomWindow job)" Margin="0,16,0,0" AutomationProperties.Name="Window Title"/>
                                     </Grid>
-                                    <CheckBox IsChecked="{Binding CaptureTransparent}" Content="Capture transparency"/>
-                                    <CheckBox IsChecked="{Binding CaptureShadow}" Content="Capture window shadow" IsEnabled="{Binding CaptureTransparent}" Margin="20,0,0,0"/>
-                                    <CheckBox IsChecked="{Binding CaptureClientArea}" Content="Capture client area (remove window chrome)"/>
-                                    <CheckBox IsChecked="{Binding CaptureAutoHideTaskbar}" Content="Auto hide taskbar during capture"/>
-                                    <Grid ColumnDefinitions="Auto, 10, *">
-                                         <TextBlock Grid.Column="0" Text="Window title:" VerticalAlignment="Center"/>
-                                         <TextBox Grid.Column="2" Text="{Binding CaptureCustomWindow, UpdateSourceTrigger=PropertyChanged}" Watermark="Window title to capture (CustomWindow job)"/>
-                                    </Grid>
+
+                                    <StackPanel Spacing="10">
+                                        <CheckBox IsChecked="{Binding CaptureTransparent}" Content="Capture transparency"/>
+                                        <CheckBox IsChecked="{Binding CaptureShadow}" Content="Capture window shadow" IsEnabled="{Binding CaptureTransparent}" Margin="24,0,0,0"/>
+                                        <CheckBox IsChecked="{Binding CaptureClientArea}" Content="Capture client area (remove window chrome)"/>
+                                        <CheckBox IsChecked="{Binding CaptureAutoHideTaskbar}" Content="Auto hide taskbar during capture"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
-                        <StackPanel Spacing="10">
+                        <!-- Screen Recorder Settings -->
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Screen recorder" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <Grid ColumnDefinitions="Auto, 15, 120, 15, Auto">
-                                         <TextBlock Grid.Column="0" Text="FPS:" VerticalAlignment="Center"/>
-                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenRecordFPS}" Minimum="1" Maximum="144" Increment="1" MinWidth="120"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="Auto, 15, 120, 15, Auto">
-                                         <TextBlock Grid.Column="0" Text="Duration:" VerticalAlignment="Center"/>
-                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenRecordDuration}" Minimum="0" Maximum="3600" Increment="1" MinWidth="120"/>
-                                         <TextBlock Grid.Column="4" Text="seconds (0 to disable)" VerticalAlignment="Center"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="Auto, 15, 120, 15, Auto">
-                                         <TextBlock Grid.Column="0" Text="Start delay:" VerticalAlignment="Center"/>
-                                         <NumericUpDown Grid.Column="2" Value="{Binding ScreenRecordStartDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" MinWidth="120"/>
-                                         <TextBlock Grid.Column="4" Text="seconds" VerticalAlignment="Center"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="Auto, 10, *">
-                                         <TextBlock Grid.Column="0" Text="Recording intent:" VerticalAlignment="Center"/>
-                                         <ComboBox Grid.Column="2"
-                                                   ItemsSource="{Binding RecordingIntents}"
-                                                   SelectedItem="{Binding RecordingIntent}"
-                                                   HorizontalAlignment="Stretch"
-                                                   MinWidth="150"/>
-                                    </Grid>
-                                </StackPanel>
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                                <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, Auto, Auto, Auto" RowSpacing="16">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="FPS:" VerticalAlignment="Center"/>
+                                    <NumericUpDown Grid.Row="0" Grid.Column="2" Value="{Binding ScreenRecordFPS}" Minimum="1" Maximum="144" Increment="1" Width="120" HorizontalAlignment="Left" AutomationProperties.Name="FPS"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Duration:" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                                        <NumericUpDown Value="{Binding ScreenRecordDuration}" Minimum="0" Maximum="3600" Increment="1" Width="120" AutomationProperties.Name="Recording Duration"/>
+                                        <TextBlock Text="seconds (0 to disable)" VerticalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Start delay:" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                                        <NumericUpDown Value="{Binding ScreenRecordStartDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" Width="120" AutomationProperties.Name="Recording Start Delay"/>
+                                        <TextBlock Text="seconds" VerticalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Recording intent:" VerticalAlignment="Center"/>
+                                    <ComboBox Grid.Row="3" Grid.Column="2" ItemsSource="{Binding RecordingIntents}" SelectedItem="{Binding RecordingIntent}" HorizontalAlignment="Left" Width="200" AutomationProperties.Name="Recording Intent"/>
+                                </Grid>
                             </Border>
                         </StackPanel>
 
                         <!-- After Capture Tasks Section -->
-                        <StackPanel Spacing="10">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="After capture" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="12">
                                     <TextBlock Text="Choose actions to perform automatically after capturing" 
                                                FontSize="12" 
-                                               Foreground="Gray" 
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
                                                Margin="0,0,0,4"/>
-                                    <CheckBox IsChecked="{Binding SaveImageToFile}" 
-                                              Content="Save image to file"/>
-                                    <CheckBox IsChecked="{Binding CopyImageToClipboard}" 
-                                              Content="Copy image to clipboard"/>
-                                    <CheckBox IsChecked="{Binding UploadImageToHost}" 
-                                              Content="Upload image to host"
-                                              FontWeight="SemiBold"/>
-                                    <CheckBox IsChecked="{Binding ApplyImageEffects}"
-                                              Content="Apply image effects"/>
-                                    <CheckBox IsChecked="{Binding AnnotateImage}" 
-                                              Content="Annotate image"/>
-                                    <CheckBox IsChecked="{Binding ShowAfterCaptureWindow}" 
-                                              Content="Show after capture window"/>
+                                    
+                                    <CheckBox IsChecked="{Binding SaveImageToFile}" Content="Save image to file"/>
+                                    <CheckBox IsChecked="{Binding CopyImageToClipboard}" Content="Copy image to clipboard"/>
+                                    <CheckBox IsChecked="{Binding UploadImageToHost}" Content="Upload image to host" FontWeight="SemiBold"/>
+                                    <CheckBox IsChecked="{Binding ApplyImageEffects}" Content="Apply image effects"/>
+                                    <CheckBox IsChecked="{Binding AnnotateImage}" Content="Annotate image"/>
+                                    <CheckBox IsChecked="{Binding ShowAfterCaptureWindow}" Content="Show after capture window"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -174,57 +183,57 @@
             </TabItem>
 
             <TabItem Header="Image">
-                <Grid RowDefinitions="Auto, *">
-                    <StackPanel Grid.Row="0" Margin="10" Spacing="20" Orientation="Horizontal">
-                        <StackPanel Spacing="10" MinWidth="200">
+                <ScrollViewer Padding="20">
+                    <Grid ColumnDefinitions="*, 16, *" RowDefinitions="Auto">
+                        <!-- Quality -->
+                        <StackPanel Grid.Column="0" Spacing="8">
                             <TextBlock Text="Quality" FontWeight="SemiBold"/>
-                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <Grid ColumnDefinitions="Auto, 10, *">
+                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
                                         <TextBlock Grid.Column="0" Text="Format:" VerticalAlignment="Center"/>
-                                        <ComboBox Grid.Column="2" ItemsSource="{Binding ImageFormats}" SelectedItem="{Binding ImageFormat}" HorizontalAlignment="Stretch"/>
+                                        <ComboBox Grid.Column="2" ItemsSource="{Binding ImageFormats}" SelectedItem="{Binding ImageFormat}" HorizontalAlignment="Stretch" AutomationProperties.Name="Image Format"/>
                                     </Grid>
-                                    <Grid ColumnDefinitions="Auto, 10, *">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
                                         <TextBlock Grid.Column="0" Text="JPEG Quality:" VerticalAlignment="Center"/>
-                                        <NumericUpDown Grid.Column="2" Value="{Binding ImageJPEGQuality}" Minimum="0" Maximum="100" Increment="1"/>
+                                        <NumericUpDown Grid.Column="2" Value="{Binding ImageJPEGQuality}" Minimum="0" Maximum="100" Increment="1" Width="120" HorizontalAlignment="Left" AutomationProperties.Name="JPEG Quality"/>
                                     </Grid>
                                 </StackPanel>
                              </Border>
                         </StackPanel>
                         
-                        <StackPanel Spacing="10" MinWidth="200">
+                        <!-- Thumbnail -->
+                        <StackPanel Grid.Column="2" Spacing="8">
                             <TextBlock Text="Thumbnail" FontWeight="SemiBold"/>
-                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <Grid ColumnDefinitions="Auto, 10, *">
+                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
                                         <TextBlock Grid.Column="0" Text="Width:" VerticalAlignment="Center"/>
-                                        <NumericUpDown Grid.Column="2" Value="{Binding ThumbnailWidth}" Minimum="0" Maximum="10000" Increment="10"/>
+                                        <NumericUpDown Grid.Column="2" Value="{Binding ThumbnailWidth}" Minimum="0" Maximum="10000" Increment="10" Width="120" HorizontalAlignment="Left" AutomationProperties.Name="Thumbnail Width"/>
                                     </Grid>
-                                    <Grid ColumnDefinitions="Auto, 10, *">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
                                         <TextBlock Grid.Column="0" Text="Height:" VerticalAlignment="Center"/>
-                                        <NumericUpDown Grid.Column="2" Value="{Binding ThumbnailHeight}" Minimum="0" Maximum="10000" Increment="10"/>
+                                        <NumericUpDown Grid.Column="2" Value="{Binding ThumbnailHeight}" Minimum="0" Maximum="10000" Increment="10" Width="120" HorizontalAlignment="Left" AutomationProperties.Name="Thumbnail Height"/>
                                     </Grid>
-                                    <Grid ColumnDefinitions="Auto, 10, *">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
                                         <TextBlock Grid.Column="0" Text="Name:" VerticalAlignment="Center"/>
-                                        <TextBox Grid.Column="2" Text="{Binding ThumbnailName}"/>
+                                        <TextBox Grid.Column="2" Text="{Binding ThumbnailName}" AutomationProperties.Name="Thumbnail Name suffix"/>
                                     </Grid>
                                     <CheckBox IsChecked="{Binding ThumbnailCheckSize}" Content="Save thumbnail only if smaller than image"/>
                                 </StackPanel>
                              </Border>
                         </StackPanel>
-                    </StackPanel>
-
-
-                </Grid>
+                    </Grid>
+                </ScrollViewer>
             </TabItem>
 
             <!-- Effects Tab -->
             <TabItem Header="Effects">
-                <Grid RowDefinitions="Auto, *" Margin="20">
+                <Grid RowDefinitions="Auto, *" Margin="24">
                     <!-- Top Toolbar -->
-                    <Border Grid.Row="0" Margin="0,0,0,10" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="4" Padding="10">
+                    <Border Grid.Row="0" Margin="0,0,0,16" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="4" Padding="12">
                          <Grid ColumnDefinitions="*, Auto">
-                              <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                              <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
                                   <TextBlock Text="Preset:" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                   <TextBlock Text="{Binding ImageEffects.Name}" VerticalAlignment="Center"/>
                               </StackPanel>
@@ -236,12 +245,13 @@
                     </Border>
 
                     <!-- Main Content -->
-                    <Grid Grid.Row="1" ColumnDefinitions="250, 10, 300, 10, *">
+                    <Grid Grid.Row="1" ColumnDefinitions="280, 24, 300, 24, *">
                          <!-- Effects List -->
                          <Grid Grid.Column="0" RowDefinitions="Auto, *, Auto">
-                             <TextBlock Grid.Row="0" Text="Active Effects" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                             <TextBlock Grid.Row="0" Text="Active Effects" FontWeight="SemiBold" Margin="0,0,0,8"/>
                              <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" CornerRadius="4">
-                                 <ListBox ItemsSource="{Binding ImageEffects.Effects}" SelectedItem="{Binding ImageEffects.SelectedEffect}" Background="Transparent" BorderThickness="0">
+                                 <ListBox ItemsSource="{Binding ImageEffects.Effects}" SelectedItem="{Binding ImageEffects.SelectedEffect}" Background="Transparent" BorderThickness="0"
+                                          AutomationProperties.Name="Active Effects List">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Name}"/>
@@ -249,7 +259,7 @@
                                     </ListBox.ItemTemplate>
                                  </ListBox>
                              </Border>
-                             <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="5" Margin="0,5,0,0">
+                             <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
                                   <Button Content="Add Effect">
                                       <Button.Flyout>
                                           <Flyout Placement="BottomEdgeAlignedLeft" ShowMode="Standard">
@@ -275,17 +285,17 @@
 
                          <!-- Properties -->
                          <Grid Grid.Column="2" RowDefinitions="Auto, *">
-                             <TextBlock Grid.Row="0" Text="Properties" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                             <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" CornerRadius="4" Padding="5">
-                                  <controls:PropertyGrid x:Name="EffectPropertyGrid" SelectedObject="{Binding ImageEffects.SelectedEffect}"/>
+                             <TextBlock Grid.Row="0" Text="Properties" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                             <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" CornerRadius="4" Padding="8">
+                                  <controls:PropertyGrid x:Name="EffectPropertyGrid" SelectedObject="{Binding ImageEffects.SelectedEffect}" AutomationProperties.Name="Effect Properties"/>
                              </Border>
                          </Grid>
 
                          <!-- Preview -->
                          <Grid Grid.Column="4" RowDefinitions="Auto, *">
-                             <TextBlock Grid.Row="0" Text="Preview" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                             <TextBlock Grid.Row="0" Text="Preview" FontWeight="SemiBold" Margin="0,0,0,8"/>
                              <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" CornerRadius="4">
-                                  <Image Source="{Binding ImageEffects.PreviewBitmap}" Stretch="Uniform" Margin="10"/>
+                                  <Image Source="{Binding ImageEffects.PreviewBitmap}" Stretch="Uniform" Margin="10" AutomationProperties.Name="Effect Preview"/>
                              </Border>
                          </Grid>
                     </Grid>
@@ -294,38 +304,41 @@
 
             <!-- Upload Tab -->
             <TabItem Header="Upload">
-                <ScrollViewer>
-                    <StackPanel Margin="20" Spacing="20">
-                        <StackPanel Spacing="10">
+                <ScrollViewer Padding="20">
+                    <StackPanel Spacing="24">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="File naming" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <Grid ColumnDefinitions="Auto, 10, *">
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
                                         <TextBlock Grid.Column="0" Text="Name pattern:" VerticalAlignment="Center"/>
-                                        <TextBox Grid.Column="2" Text="{Binding NameFormatPattern, Mode=TwoWay}"/>
+                                        <TextBox Grid.Column="2" Text="{Binding NameFormatPattern, Mode=TwoWay}" AutomationProperties.Name="Name Pattern"/>
                                     </Grid>
-                                    <Grid ColumnDefinitions="Auto, 10, *">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
                                         <TextBlock Grid.Column="0" Text="Active window name pattern:" VerticalAlignment="Center"/>
-                                        <TextBox Grid.Column="2" Text="{Binding NameFormatPatternActiveWindow, Mode=TwoWay}"/>
+                                        <TextBox Grid.Column="2" Text="{Binding NameFormatPatternActiveWindow, Mode=TwoWay}" AutomationProperties.Name="Active Window Name Pattern"/>
                                     </Grid>
-                                    <CheckBox IsChecked="{Binding FileUploadUseNamePattern}" Content="Use name pattern for file uploaders"/>
-                                    <CheckBox IsChecked="{Binding FileUploadReplaceProblematicCharacters}" Content="Replace potentially problematic characters"/>
-                                    <CheckBox IsChecked="{Binding URLRegexReplace}" Content="Perform regex replace on URL"/>
-                                    <Grid ColumnDefinitions="Auto, 10, *" IsVisible="{Binding URLRegexReplace}">
-                                        <TextBlock Grid.Column="0" Text="Regex pattern:" VerticalAlignment="Center"/>
-                                        <TextBox Grid.Column="2" Text="{Binding URLRegexReplacePattern, Mode=TwoWay}"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="Auto, 10, *" IsVisible="{Binding URLRegexReplace}">
-                                        <TextBlock Grid.Column="0" Text="Replacement:" VerticalAlignment="Center"/>
-                                        <TextBox Grid.Column="2" Text="{Binding URLRegexReplaceReplacement, Mode=TwoWay}"/>
+                                    
+                                    <StackPanel Spacing="10">
+                                        <CheckBox IsChecked="{Binding FileUploadUseNamePattern}" Content="Use name pattern for file uploaders"/>
+                                        <CheckBox IsChecked="{Binding FileUploadReplaceProblematicCharacters}" Content="Replace potentially problematic characters"/>
+                                        <CheckBox IsChecked="{Binding URLRegexReplace}" Content="Perform regex replace on URL"/>
+                                    </StackPanel>
+                                    
+                                    <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, 16, Auto" IsVisible="{Binding URLRegexReplace}">
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Regex pattern:" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding URLRegexReplacePattern, Mode=TwoWay}" AutomationProperties.Name="URL Regex Pattern"/>
+                                        
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Replacement:" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding URLRegexReplaceReplacement, Mode=TwoWay}" AutomationProperties.Name="URL Regex Replacement"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
-                        <StackPanel Spacing="10">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Clipboard upload" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="10">
                                     <CheckBox IsChecked="{Binding ClipboardUploadURLContents}" Content="Upload URL contents"/>
                                     <CheckBox IsChecked="{Binding ClipboardUploadShortenURL}" Content="Shorten URL"/>
@@ -333,20 +346,20 @@
                             </Border>
                         </StackPanel>
 
-
-
                         <!-- After Upload Tasks Section -->
-                        <StackPanel Spacing="10">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="After upload" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="12">
                                     <TextBlock Text="Choose actions to perform automatically after upload" 
                                                FontSize="12" 
-                                               Foreground="Gray" 
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
                                                Margin="0,0,0,4"/>
+                                    <CheckBox IsChecked="{Binding ShowAfterUploadWindow}" 
+                                              Content="Show after upload window"
+                                              AutomationProperties.Name="Show After Upload Window"/>
                                     <CheckBox IsChecked="{Binding CopyURLToClipboard}" 
-                                              Content="Copy URL to clipboard"
-                                              FontWeight="SemiBold"/>
+                                              Content="Copy URL to clipboard"/>
                                     <CheckBox IsChecked="{Binding UseURLShortener}" 
                                               Content="Use URL shortener"/>
                                     <CheckBox IsChecked="{Binding ShareURL}" 
@@ -363,81 +376,127 @@
                  <TextBlock Text="Actions actions placeholder" Margin="20" Foreground="Gray"/>
             </TabItem>
 
-             <!-- Advanced Tab -->
+            <!-- Advanced Tab -->
             <TabItem Header="Advanced">
-                 <TextBlock Text="Advanced settings placeholder" Margin="20" Foreground="Gray"/>
+                <Grid Margin="24" RowDefinitions="Auto, *">
+                    <TextBlock Grid.Row="0"
+                               Text="Advanced Properties"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,12"/>
+                    <Border Grid.Row="1"
+                            BorderThickness="1"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                            CornerRadius="4"
+                            Padding="8">
+                        <controls:PropertyGrid SelectedObject="{Binding AdvancedSettings}"
+                                               AutomationProperties.Name="Advanced Task Settings"/>
+                    </Border>
+                </Grid>
             </TabItem>
 
             <!-- Tools Tab -->
             <TabItem Header="Tools">
-                <ScrollViewer>
-                    <StackPanel Margin="20" Spacing="20">
-                        <StackPanel Spacing="10">
+                <ScrollViewer Padding="20">
+                    <StackPanel Spacing="24">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Capture" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
                                     <TextBlock Text="Configure FFmpeg fallback options for screen recording and audio capture."
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                FontSize="12"
                                                TextWrapping="Wrap"/>
-                                    <Button Content="Configure FFmpeg..."
-                                            Command="{Binding OpenFFmpegOptionsCommand}"
-                                            HorizontalAlignment="Left"/>
+                                    
+                                    <TextBlock Text="{Binding FFmpegStatusText}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               FontSize="12"
+                                               IsVisible="{Binding FFmpegStatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    
+                                    <Grid ColumnDefinitions="Auto, 16, Auto, 16, Auto">
+                                        <Button Grid.Column="0" Content="Download FFmpeg..."
+                                                Command="{Binding DownloadFFmpegCommand}"
+                                                IsVisible="{Binding ShowDownloadFFmpeg}"
+                                                IsEnabled="{Binding CanDownloadFFmpeg}"/>
+                                        
+                                        <TextBlock Grid.Column="2" Text="{Binding FFmpegDownloadProgressText}"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="{Binding IsDownloadingFFmpeg}"/>
+                                        
+                                        <Button Grid.Column="4" Content="Configure FFmpeg..."
+                                                Command="{Binding OpenFFmpegOptionsCommand}"/>
+                                    </Grid>
+                                    
+                                    <TextBox Text="{Binding ExpectedFFmpegDownloadUrl}"
+                                             IsReadOnly="True"
+                                             TextWrapping="Wrap"
+                                             MinWidth="360"
+                                             IsVisible="{Binding ShowExpectedFFmpegDownloadUrl}"
+                                             AutomationProperties.Name="Expected FFmpeg Download URL"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
-                        <StackPanel Spacing="10" IsVisible="{Binding IsIndexFolderJob}">
+                        <StackPanel Spacing="8" IsVisible="{Binding IsIndexFolderJob}">
                             <TextBlock Text="Index folder" FontWeight="SemiBold"/>
-                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <StackPanel Spacing="10">
-                                    <Grid ColumnDefinitions="Auto, 10, *, Auto">
+                            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <Grid ColumnDefinitions="Auto, 16, *, Auto">
                                         <TextBlock Grid.Column="0" Text="Folder:" VerticalAlignment="Center"/>
-                                        <TextBox Grid.Column="2" Text="{Binding IndexerFolderPath}" Watermark="Folder to index"/>
-                                        <Button Grid.Column="3" Content="Browse..." Command="{Binding BrowseIndexerFolderCommand}" Margin="10,0,0,0"/>
+                                        <TextBox Grid.Column="2" Text="{Binding IndexerFolderPath}" Watermark="Folder to index" AutomationProperties.Name="Indexer Folder"/>
+                                        <Button Grid.Column="3" Content="Browse..." Command="{Binding BrowseIndexerFolderCommand}" Margin="16,0,0,0"/>
                                     </Grid>
 
-                                    <Grid ColumnDefinitions="Auto, 10, *">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
                                         <TextBlock Grid.Column="0" Text="Output:" VerticalAlignment="Center"/>
-                                        <ComboBox Grid.Column="2" ItemsSource="{Binding IndexerOutputs}" SelectedItem="{Binding IndexerOutput}" Width="160"/>
+                                        <ComboBox Grid.Column="2" ItemsSource="{Binding IndexerOutputs}" SelectedItem="{Binding IndexerOutput}" Width="200" HorizontalAlignment="Left" AutomationProperties.Name="Indexer Output Format"/>
                                     </Grid>
 
-                                    <Grid ColumnDefinitions="Auto, 10, *">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
                                         <TextBlock Grid.Column="0" Text="Max depth:" VerticalAlignment="Center"/>
-                                        <NumericUpDown Grid.Column="2" Value="{Binding IndexerMaxDepthLevel}" Minimum="0" Maximum="50" Width="120"/>
+                                        <NumericUpDown Grid.Column="2" Value="{Binding IndexerMaxDepthLevel}" Minimum="0" Maximum="50" Width="120" HorizontalAlignment="Left" AutomationProperties.Name="Max Depth Level"/>
                                     </Grid>
 
-                                    <CheckBox IsChecked="{Binding IndexerSkipHiddenFolders}" Content="Skip hidden folders"/>
-                                    <CheckBox IsChecked="{Binding IndexerSkipHiddenFiles}" Content="Skip hidden files"/>
-                                    <CheckBox IsChecked="{Binding IndexerSkipFiles}" Content="Skip files"/>
-                                    <CheckBox IsChecked="{Binding IndexerShowSizeInfo}" Content="Show size info"/>
-                                    <CheckBox IsChecked="{Binding IndexerAddFooter}" Content="Add footer"/>
+                                    <StackPanel Spacing="10">
+                                        <CheckBox IsChecked="{Binding IndexerSkipHiddenFolders}" Content="Skip hidden folders"/>
+                                        <CheckBox IsChecked="{Binding IndexerSkipHiddenFiles}" Content="Skip hidden files"/>
+                                        <CheckBox IsChecked="{Binding IndexerSkipFiles}" Content="Skip files"/>
+                                        <CheckBox IsChecked="{Binding IndexerShowSizeInfo}" Content="Show size info"/>
+                                        <CheckBox IsChecked="{Binding IndexerAddFooter}" Content="Add footer"/>
+                                    </StackPanel>
 
-                                    <Grid ColumnDefinitions="Auto, 10, *">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
                                         <TextBlock Grid.Column="0" Text="Indentation:" VerticalAlignment="Center"/>
-                                        <TextBox Grid.Column="2" Text="{Binding IndexerIndentationText}" Width="160"/>
+                                        <TextBox Grid.Column="2" Text="{Binding IndexerIndentationText}" Width="200" HorizontalAlignment="Left" AutomationProperties.Name="Indentation Text"/>
                                     </Grid>
 
                                     <CheckBox IsChecked="{Binding IndexerAddEmptyLineAfterFolders}" Content="Add empty line after folders"/>
 
-                                    <Separator Margin="0,5"/>
+                                    <Separator Background="{DynamicResource SystemControlForegroundBaseLowBrush}" Height="1"/>
+                                    
                                     <TextBlock Text="HTML options" FontWeight="SemiBold" FontSize="12"/>
                                     <CheckBox IsChecked="{Binding IndexerUseCustomCssFile}" Content="Use custom CSS file"/>
-                                    <Grid ColumnDefinitions="Auto, 10, *, Auto" IsEnabled="{Binding IndexerUseCustomCssFile}">
+                                    
+                                    <Grid ColumnDefinitions="Auto, 16, *, Auto" IsEnabled="{Binding IndexerUseCustomCssFile}">
                                         <TextBlock Grid.Column="0" Text="CSS path:" VerticalAlignment="Center"/>
-                                        <TextBox Grid.Column="2" Text="{Binding IndexerCustomCssFilePath}"/>
-                                        <Button Grid.Column="3" Content="Browse..." Command="{Binding BrowseIndexerCssFileCommand}" Margin="10,0,0,0"/>
+                                        <TextBox Grid.Column="2" Text="{Binding IndexerCustomCssFilePath}" AutomationProperties.Name="CSS File Path"/>
+                                        <Button Grid.Column="3" Content="Browse..." Command="{Binding BrowseIndexerCssFileCommand}" Margin="16,0,0,0"/>
                                     </Grid>
+                                    
                                     <CheckBox IsChecked="{Binding IndexerDisplayPath}" Content="Display path for subfolders"/>
                                     <CheckBox IsChecked="{Binding IndexerDisplayPathLimited}"
                                               Content="Limit display path to root folder"
-                                              IsEnabled="{Binding IndexerDisplayPath}"/>
+                                              IsEnabled="{Binding IndexerDisplayPath}"
+                                              Margin="24,0,0,0"/>
 
-                                    <Separator Margin="0,5"/>
+                                    <Separator Background="{DynamicResource SystemControlForegroundBaseLowBrush}" Height="1"/>
+                                    
                                     <TextBlock Text="XML / JSON options" FontWeight="SemiBold" FontSize="12"/>
-                                    <CheckBox IsChecked="{Binding IndexerUseAttribute}" Content="Write file info as attribute (XML)"/>
-                                    <CheckBox IsChecked="{Binding IndexerCreateParseableJson}" Content="Create parseable JSON"/>
-                                    <CheckBox IsChecked="{Binding IndexerBinaryUnits}" Content="Use binary units for size"/>
+                                    <StackPanel Spacing="10">
+                                        <CheckBox IsChecked="{Binding IndexerUseAttribute}" Content="Write file info as attribute (XML)"/>
+                                        <CheckBox IsChecked="{Binding IndexerCreateParseableJson}" Content="Create parseable JSON"/>
+                                        <CheckBox IsChecked="{Binding IndexerBinaryUnits}" Content="Use binary units for size"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -445,5 +504,6 @@
                 </ScrollViewer>
             </TabItem>
         </TabControl>
+
     </Grid>
 </UserControl>

@@ -13,13 +13,14 @@
 
     <Grid RowDefinitions="Auto,*">
         <!-- Toolbar -->
-        <Border Grid.Row="0" Padding="10" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <Button Command="{Binding OpenLogsFolderCommand}" Content="Open Logs Folder" />
-                <Button Command="{Binding OpenSettingsFolderCommand}" Content="Open Settings Folder" />
-                <Button Command="{Binding CopyCommand}" Content="Copy" />
-                <Button Command="{Binding ClearCommand}" Content="Clear" />
-                <Button Command="{Binding UploadCommand}" Content="Upload" />
+        <Border Grid.Row="0" Padding="16" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <Button Command="{Binding OpenLogsFolderCommand}" Content="Open Logs Folder" AutomationProperties.Name="Open Logs Folder"/>
+                <Button Command="{Binding OpenSettingsFolderCommand}" Content="Open Settings Folder" AutomationProperties.Name="Open Settings Folder"/>
+                <Button Command="{Binding CopyCommand}" Content="Copy" AutomationProperties.Name="Copy Log"/>
+                <Button Command="{Binding ClearCommand}" Content="Clear" AutomationProperties.Name="Clear Log"/>
+                <Button Command="{Binding UploadCommand}" Content="Upload" AutomationProperties.Name="Upload Log"/>
             </StackPanel>
         </Border>
 
@@ -33,6 +34,8 @@
                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                  BorderThickness="0"
                  Background="Transparent"
-                 Padding="10"/>
+                 Padding="16"
+                 AutomationProperties.Name="Log Output"
+                 SelectionBrush="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
     </Grid>
 </UserControl>

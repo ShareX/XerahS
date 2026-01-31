@@ -195,7 +195,9 @@ namespace XerahS.Common
     {
         win64,
         win32,
-        macos64
+        winArm64,
+        macos64,
+        linux64
     }
 
     public enum StepType // Localized

@@ -2,7 +2,7 @@
 
 A cross-platform port of the popular **ShareX** screen capture and file sharing tool, built with **Avalonia UI** and .NET 10.
 
-![ShareX Avalonia](https://getsharex.com/img/XerahS_Logo.png)
+![ShareX Avalonia](https://getsharex.com/xerahs/img/XerahS_Logo.png)
 *(Note: Project is in active development)*
 
 ## ✨ Key Features
@@ -66,6 +66,17 @@ Global hotkeys use SharpHook and need Accessibility permission:
 1. Open **System Settings** > **Privacy & Security** > **Accessibility**.
 2. Enable XerahS (or the published app bundle) for accessibility access.
 3. Restart the app and retest hotkeys.
+
+### macOS Troubleshooting ("App is damaged")
+If you see a message saying **"XerahS is damaged and can't be opened"**, it is due to macOS security (Gatekeeper) on quarantined downloads. To fix it:
+
+1. Open **Terminal**.
+2. Type the following command (do not hit Enter yet):
+   ```bash
+   xattr -cr 
+   ```
+3. Drag the **XerahS.app** file from Finder into the Terminal window (this pastes the full path).
+4. Only now, press **Enter**.
 
 ## 🛠️ Developer Information
 

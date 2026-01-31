@@ -49,17 +49,34 @@ namespace XerahS.Common
         {
             try
             {
+                string url = IncludePreRelease ? ReleasesURL : LatestReleaseURL;
+                DebugHelper.WriteLine($"Checking for updates at: {url}");
+
                 GitHubRelease? latestRelease = await GetLatestRelease(IncludePreRelease);
+
+                if (latestRelease == null)
+                {
+                    DebugHelper.WriteLine($"No release found for {Owner}/{Repo}");
+                    Status = UpdateStatus.UpdateCheckFailed;
+                    return;
+                }
+
+                DebugHelper.WriteLine($"Found release: {latestRelease.tag_name?.TrimStart('v')} (prerelease: {latestRelease.prerelease})");
 
                 if (UpdateReleaseInfo(latestRelease, IsPortable, IsPortable))
                 {
                     RefreshStatus();
+                    DebugHelper.WriteLine($"Current: {CurrentVersion?.ToString(3)}, Latest: {LatestVersion?.ToString(3)}, Status: {Status}");
                     return;
+                }
+                else
+                {
+                    DebugHelper.WriteLine($"Failed to update release info. Tag: {latestRelease.tag_name}, Assets: {latestRelease.assets?.Length ?? 0}");
                 }
             }
             catch (Exception e)
             {
-                DebugHelper.WriteException(e, "GitHub update check failed.");
+                DebugHelper.WriteException(e, $"GitHub update check failed for {Owner}/{Repo}.");
             }
 
             Status = UpdateStatus.UpdateCheckFailed;
@@ -107,11 +124,19 @@ namespace XerahS.Common
         {
             GitHubRelease? latestRelease = null;
 
-            string response = await WebHelpers.DownloadStringAsync(LatestReleaseURL);
-
-            if (!string.IsNullOrEmpty(response))
+            try
             {
-                latestRelease = JsonConvert.DeserializeObject<GitHubRelease>(response);
+                string response = await WebHelpers.DownloadStringAsync(LatestReleaseURL);
+
+                if (!string.IsNullOrEmpty(response))
+                {
+                    latestRelease = JsonConvert.DeserializeObject<GitHubRelease>(response);
+                }
+            }
+            catch (HttpRequestException ex) when (ex.Message.Contains("404"))
+            {
+                DebugHelper.WriteLine($"No releases found at {LatestReleaseURL}. The repository may not have any releases yet.");
+                throw;
             }
 
             return latestRelease;
@@ -146,8 +171,48 @@ namespace XerahS.Common
 
                 if (release.assets != null && release.assets.Length > 0)
                 {
-                    string endsWith;
+                    string endsWith = "";
+                    string arch = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64 ? "arm64" : "x64";
+                    
+                    if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+                    {
+                         endsWith = isPortable ? $"-win-{arch}.zip" : $"-win-{arch}.exe";
+                    }
+                    else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+                    {
+                         endsWith = isPortable ? $"-osx-{arch}.zip" : $"-osx-{arch}.dmg";
+                    }
+                    else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
+                    {
+                         // Linux naming: XerahS-0.6.2-linux-arm64.tar.gz or .deb
+                         endsWith = isPortable ? $"-linux-{arch}.tar.gz" : $"-linux-{arch}.deb";
+                    }
 
+                    if (!string.IsNullOrEmpty(endsWith))
+                    {
+                        foreach (GitHubAsset? asset in release.assets)
+                        {
+                            if (asset != null && !string.IsNullOrEmpty(asset.name) && asset.name.EndsWith(endsWith, StringComparison.OrdinalIgnoreCase))
+                            {
+                                FileName = asset.name;
+
+                                if (isBrowserDownloadURL)
+                                {
+                                    DownloadURL = asset.browser_download_url;
+                                }
+                                else
+                                {
+                                    DownloadURL = asset.url;
+                                }
+
+                                IsPreRelease = release.prerelease;
+
+                                return true;
+                            }
+                        }
+                    }
+
+                    // Fallback to legacy naming for backward compatibility if new naming scheme not found
                     if (isPortable)
                     {
                         endsWith = "portable.zip";

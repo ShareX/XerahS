@@ -39,10 +39,10 @@ public static class ProviderCatalog
     private static readonly PluginLoader _pluginLoader = new(); // Keep contexts alive
 
     /// <summary>
-    /// Load plugins from the specified directory
+    /// Load plugins from the specified directories
     /// </summary>
-    /// <param name="pluginsDirectory">Path to Plugins/ directory</param>
-    public static void LoadPlugins(string pluginsDirectory, bool forceReload = false)
+    /// <param name="pluginDirectories">List of directories to scan</param>
+    public static void LoadPlugins(IEnumerable<string> pluginDirectories, bool forceReload = false)
     {
         lock (_lock)
         {
@@ -53,26 +53,32 @@ public static class ProviderCatalog
             }
 
             DebugHelper.WriteLine($"[Plugins] ========================================");
-            DebugHelper.WriteLine($"[Plugins] Loading plugins from: {pluginsDirectory}");
-            DebugHelper.WriteLine($"[Plugins] Directory exists: {Directory.Exists(pluginsDirectory)}");
+            
+            var discovery = new PluginDiscovery();
+            var allDiscovered = new List<PluginMetadata>();
 
-            if (!Directory.Exists(pluginsDirectory))
+            foreach (var pluginsDirectory in pluginDirectories)
             {
-                DebugHelper.WriteLine($"[Plugins] Creating Plugins directory...");
-                try { Directory.CreateDirectory(pluginsDirectory); } catch { }
+                DebugHelper.WriteLine($"[Plugins] Scanning directory: {pluginsDirectory}");
+                if (Directory.Exists(pluginsDirectory))
+                {
+                    var discovered = discovery.DiscoverPlugins(pluginsDirectory);
+                    allDiscovered.AddRange(discovered);
+                    DebugHelper.WriteLine($"[Plugins] Discovered {discovered.Count} plugin(s) in {pluginsDirectory}");
+                }
+                else
+                {
+                    DebugHelper.WriteLine($"[Plugins] Directory does not exist: {pluginsDirectory}");
+                }
             }
 
-            var discovery = new PluginDiscovery();
-
-            // Discover all plugins
-            var discovered = discovery.DiscoverPlugins(pluginsDirectory);
-            DebugHelper.WriteLine($"[Plugins] Discovered {discovered.Count} plugin(s)");
+            DebugHelper.WriteLine($"[Plugins] Total plugins discovered: {allDiscovered.Count}");
 
             // Load each plugin
             int successCount = 0;
             int failureCount = 0;
 
-            foreach (var metadata in discovered)
+            foreach (var metadata in allDiscovered)
             {
                 if (_pluginMetadata.ContainsKey(metadata.Manifest.PluginId))
                 {
@@ -112,6 +118,15 @@ public static class ProviderCatalog
             DebugHelper.WriteLine($"[Plugins] Total providers in catalog: {_providers.Count}");
             DebugHelper.WriteLine($"[Plugins] ========================================");
         }
+    }
+
+    /// <summary>
+    /// Load plugins from the specified directory
+    /// </summary>
+    /// <param name="pluginsDirectory">Path to Plugins/ directory</param>
+    public static void LoadPlugins(string pluginsDirectory, bool forceReload = false)
+    {
+        LoadPlugins(new[] { pluginsDirectory }, forceReload);
     }
 
     /// <summary>

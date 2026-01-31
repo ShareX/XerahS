@@ -4,7 +4,8 @@
              xmlns:views="using:XerahS.UI.Views"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
              x:Class="XerahS.UI.Views.RecordingView"
              x:DataType="vm:RecordingViewModel">
     
@@ -15,42 +16,34 @@
     <Grid RowDefinitions="Auto,*" Margin="24">
         
         <!-- Header -->
-        <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,24">
-            <TextBlock Text="Screen Recording"
-                       FontSize="28"
-                       FontWeight="SemiBold"/>
+        <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,24">
+            <TextBlock Text="Screen Recording" Theme="{StaticResource TitleTextBlockStyle}"/>
             <TextBlock Text="{Binding FeatureDescription}"
+                       Theme="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
         </StackPanel>
         
         <!-- Content -->
-        <ScrollViewer Grid.Row="1">
+        <ScrollViewer Grid.Row="1" Padding="0,0,16,0">
             <StackPanel Spacing="24">
                 
                 <!-- Recording Controls Card -->
-                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="24">
-                    
+                <Border Theme="{StaticResource CardBorderTheme}" Padding="24">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Recording Controls" 
-                                   FontSize="16" 
-                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="Recording Controls" Theme="{StaticResource SubtitleTextBlockStyle}"/>
                         
                         <!-- Inline Recording Toolbar -->
                         <views:RecordingToolbarView DataContext="{Binding}"/>
                         
                         <!-- Last Error Display -->
                         <Border IsVisible="{Binding LastError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                                Background="#FFEDD5"
-                                BorderBrush="#F97316"
+                                Background="{DynamicResource SystemFillColorCriticalBackgroundBrush}"
+                                BorderBrush="{DynamicResource SystemFillColorCriticalBrush}"
                                 BorderThickness="1"
                                 CornerRadius="4"
                                 Padding="12,8">
                             <TextBlock Text="{Binding LastError}"
-                                       Foreground="#C2410C"
+                                       Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                        TextWrapping="Wrap"/>
                         </Border>
                         
@@ -58,107 +51,88 @@
                         <StackPanel IsVisible="{Binding OutputFilePath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                     Spacing="4">
                             <TextBlock Text="Output File:"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                       FontSize="12"/>
+                                       Theme="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             <TextBlock Text="{Binding OutputFilePath}"
                                        FontFamily="Consolas, monospace"
-                                       FontSize="12"
+                                       Theme="{StaticResource CaptionTextBlockStyle}"
                                        TextWrapping="Wrap"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
-                <!-- Recording Settings Card (Stage 3) -->
-                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="24">
-
+                <!-- Recording Settings Card -->
+                <Border Theme="{StaticResource CardBorderTheme}" Padding="24">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Recording Settings"
-                                   FontSize="16"
-                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="Recording Settings" Theme="{StaticResource SubtitleTextBlockStyle}"/>
 
-                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="12" ColumnSpacing="16">
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="16" ColumnSpacing="24">
 
                             <!-- Codec -->
-                            <TextBlock Grid.Row="0" Grid.Column="0"
-                                       Text="Video Codec:"
-                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Video Codec:" VerticalAlignment="Center"/>
                             <ComboBox Grid.Row="0" Grid.Column="1"
                                       ItemsSource="{Binding AvailableCodecs}"
                                       SelectedItem="{Binding Codec}"
                                       IsEnabled="{Binding !IsRecording}"
                                       HorizontalAlignment="Stretch"
-                                      MinWidth="150"/>
+                                      AutomationProperties.Name="Video Codec Selection"/>
 
                             <!-- FPS -->
-                            <TextBlock Grid.Row="1" Grid.Column="0"
-                                       Text="Frame Rate (FPS):"
-                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Frame Rate (FPS):" VerticalAlignment="Center"/>
                             <ComboBox Grid.Row="1" Grid.Column="1"
                                       ItemsSource="{Binding AvailableFPS}"
                                       SelectedItem="{Binding Fps}"
                                       IsEnabled="{Binding !IsRecording}"
                                       HorizontalAlignment="Stretch"
-                                      MinWidth="150"/>
+                                      AutomationProperties.Name="Frame Rate Selection"/>
 
                             <!-- Bitrate -->
-                            <TextBlock Grid.Row="2" Grid.Column="0"
-                                       Text="Bitrate (kbps):"
-                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Bitrate (kbps):" VerticalAlignment="Center"/>
                             <ComboBox Grid.Row="2" Grid.Column="1"
                                       ItemsSource="{Binding AvailableBitrates}"
                                       SelectedItem="{Binding BitrateKbps}"
                                       IsEnabled="{Binding !IsRecording}"
                                       HorizontalAlignment="Stretch"
-                                      MinWidth="150"/>
+                                      AutomationProperties.Name="Bitrate Selection"/>
 
                             <!-- Show Cursor -->
-                            <TextBlock Grid.Row="3" Grid.Column="0"
-                                       Text="Show Cursor:"
-                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Show Cursor:" VerticalAlignment="Center"/>
                             <CheckBox Grid.Row="3" Grid.Column="1"
                                       IsChecked="{Binding ShowCursor}"
                                       IsEnabled="{Binding !IsRecording}"
-                                      Content="Include mouse cursor in recording"/>
+                                      Content="Include mouse cursor in recording"
+                                      AutomationProperties.Name="Include Mouse Cursor Checkbox"/>
 
-                            <!-- Stage 6: Audio Settings -->
                             <!-- System Audio -->
-                            <TextBlock Grid.Row="4" Grid.Column="0"
-                                       Text="System Audio:"
-                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="System Audio:" VerticalAlignment="Center"/>
                             <CheckBox Grid.Row="4" Grid.Column="1"
                                       IsChecked="{Binding CaptureSystemAudio}"
                                       IsEnabled="{Binding !IsRecording}"
-                                      Content="Capture system audio output"/>
+                                      Content="Capture system audio output"
+                                      AutomationProperties.Name="Capture System Audio Checkbox"/>
 
                             <!-- Microphone -->
-                            <TextBlock Grid.Row="5" Grid.Column="0"
-                                       Text="Microphone:"
-                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Microphone:" VerticalAlignment="Center"/>
                             <CheckBox Grid.Row="5" Grid.Column="1"
                                       IsChecked="{Binding CaptureMicrophone}"
                                       IsEnabled="{Binding !IsRecording}"
-                                      Content="Capture microphone input"/>
+                                      Content="Capture microphone input"
+                                      AutomationProperties.Name="Capture Microphone Checkbox"/>
 
                             <!-- Recording Intent -->
-                            <TextBlock Grid.Row="6" Grid.Column="0"
-                                       Text="Recording intent:"
-                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Recording Intent:" VerticalAlignment="Center"/>
                             <ComboBox Grid.Row="6" Grid.Column="1"
                                       ItemsSource="{Binding AvailableRecordingIntents}"
                                       SelectedItem="{Binding RecordingIntent}"
                                       IsEnabled="{Binding !IsRecording}"
                                       HorizontalAlignment="Stretch"
-                                      MinWidth="150"/>
+                                      AutomationProperties.Name="Recording Intent Selection"/>
 
                         </Grid>
 
                         <TextBlock Text="Note: Higher bitrates and frame rates will result in larger file sizes. Hardware encoding may be used automatically if available. Audio capture requires FFmpeg and appropriate system audio devices."
+                                   Theme="{StaticResource CaptionTextBlockStyle}"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                   FontSize="12"
                                    TextWrapping="Wrap"/>
 
                         <!-- Encoder Info -->
@@ -166,15 +140,11 @@
                                 BorderBrush="{DynamicResource SystemFillColorAttentionBrush}"
                                 BorderThickness="1"
                                 CornerRadius="4"
-                                Padding="12,8"
-                                Margin="0,8,0,0">
-                            <StackPanel Spacing="4" Orientation="Horizontal">
-                                <PathIcon Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,7H13V9H11V7M11,11H13V17H11V11Z"
-                                          Width="16"
-                                          Height="16"
-                                          Foreground="{DynamicResource SystemFillColorAttentionBrush}"/>
+                                Padding="12,8">
+                            <StackPanel Spacing="8" Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Important" FontSize="16" Foreground="{DynamicResource SystemFillColorAttentionBrush}"/>
                                 <TextBlock Text="{Binding EncoderInfo}"
-                                           FontSize="11"
+                                           Theme="{StaticResource CaptionTextBlockStyle}"
                                            TextWrapping="Wrap"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
@@ -183,34 +153,24 @@
                 </Border>
 
                 <!-- Instructions Card -->
-                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="24">
-                    
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="How to Record" 
-                                   FontSize="16" 
-                                   FontWeight="SemiBold"/>
+                <Border Theme="{StaticResource CardBorderTheme}" Padding="24">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="How to Record" Theme="{StaticResource SubtitleTextBlockStyle}"/>
                         
                         <StackPanel Spacing="8">
-                            <TextBlock Text="1. Click 'Start' to begin recording your primary monitor"/>
-                            <TextBlock Text="2. Perform actions you want to capture"/>
-                            <TextBlock Text="3. Click 'Stop' to end recording and save the video"/>
+                            <TextBlock Text="1. Click 'Start' to begin recording your primary monitor" Theme="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock Text="2. Perform actions you want to capture" Theme="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock Text="3. Click 'Stop' to end recording and save the video" Theme="{StaticResource BodyTextBlockStyle}"/>
                         </StackPanel>
 
                         <TextBlock Text="{Binding UsageNotes}"
+                                   Theme="{StaticResource CaptionTextBlockStyle}"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                   FontSize="12"
                                    TextWrapping="Wrap"
                                    Margin="0,8,0,0"/>
                     </StackPanel>
                 </Border>
-                
             </StackPanel>
         </ScrollViewer>
-        
     </Grid>
-    
 </UserControl>

@@ -53,6 +53,8 @@ namespace XerahS.Common
         private StringBuilder sbMessages = new StringBuilder();
         private string _currentDate = DateTime.Now.ToString("yyyy-MM-dd");
         private bool _disposed = false;
+        private int _consecutiveFileWriteFailures = 0;
+        private const int MaxFileWriteFailures = 5;
 
         public Logger()
         {
@@ -156,10 +158,18 @@ namespace XerahS.Common
                             }
 
                             File.AppendAllText(currentLogPath, message, Encoding.UTF8);
+                            _consecutiveFileWriteFailures = 0; // Reset on success
                         }
                         catch (Exception e)
                         {
-                            Debug.WriteLine(e);
+                            _consecutiveFileWriteFailures++;
+                            Debug.WriteLine($"Logger file write failed ({_consecutiveFileWriteFailures}/{MaxFileWriteFailures}): {e.Message}");
+
+                            if (_consecutiveFileWriteFailures >= MaxFileWriteFailures)
+                            {
+                                FileWrite = false;
+                                Debug.WriteLine($"Logger: Disabled file writing after {MaxFileWriteFailures} consecutive failures");
+                            }
                         }
                     }
 
@@ -172,7 +182,19 @@ namespace XerahS.Common
         {
             if (message != null)
             {
-                message = string.Format(MessageFormat, DateTime.Now, message);
+                // Capture format once to avoid race condition if MessageFormat changes
+                string format = MessageFormat;
+                try
+                {
+                    message = string.Format(format, DateTime.Now, message);
+                }
+                catch (FormatException ex)
+                {
+                    // Fallback if format string is invalid or changed concurrently
+                    message = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - {message}";
+                    Debug.WriteLine($"Logger format error: {ex.Message}");
+                }
+
                 messageQueue.Enqueue(message);
 
                 if (AsyncWrite)
