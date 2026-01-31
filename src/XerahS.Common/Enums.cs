@@ -52,20 +52,6 @@ namespace XerahS.Common
         Grayscale
     }
 
-    public enum EImageFormat
-    {
-        [Description("png")]
-        PNG,
-        [Description("jpg")]
-        JPEG,
-        [Description("gif")]
-        GIF,
-        [Description("bmp")]
-        BMP,
-        [Description("tif")]
-        TIFF
-    }
-
     public enum HashType
     {
         [Description("CRC-32")]

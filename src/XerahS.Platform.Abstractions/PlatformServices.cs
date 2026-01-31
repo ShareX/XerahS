@@ -117,6 +117,13 @@ namespace XerahS.Platform.Abstractions
             private set => _toastService = value;
         }
 
+        private static IImageEncoderService? _imageEncoderService;
+        public static IImageEncoderService ImageEncoder
+        {
+            get => _imageEncoderService ?? throw new InvalidOperationException("ImageEncoder service not initialized. Call RegisterImageEncoderService() first.");
+            private set => _imageEncoderService = value;
+        }
+
         /// <summary>
         /// Checks if toast service has been initialized
         /// </summary>
@@ -196,6 +203,11 @@ namespace XerahS.Platform.Abstractions
         public static void RegisterToastService(IToastService toastService)
         {
             _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
+        }
+
+        public static void RegisterImageEncoderService(IImageEncoderService imageEncoderService)
+        {
+            _imageEncoderService = imageEncoderService ?? throw new ArgumentNullException(nameof(imageEncoderService));
         }
 
         /// <summary>

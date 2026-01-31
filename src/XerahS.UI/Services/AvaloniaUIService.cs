@@ -111,9 +111,13 @@ namespace XerahS.UI.Services
                     owner = desktop.MainWindow;
                 }
 
-                if (owner != null)
+                bool canUseOwner = owner != null && owner.IsVisible &&
+                                   owner.WindowState != Avalonia.Controls.WindowState.Minimized &&
+                                   owner.ShowInTaskbar;
+
+                if (canUseOwner)
                 {
-                    await window.ShowDialog(owner);
+                    await window.ShowDialog(owner!);
                 }
                 else
                 {
@@ -140,10 +144,19 @@ namespace XerahS.UI.Services
                 viewModel.RequestClose += () => window.Close();
                 window.Closed += (_, _) => viewModel.Dispose();
 
-                if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
-                    desktop.MainWindow != null)
+                Window? owner = null;
+                if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
-                    window.Show(desktop.MainWindow);
+                    owner = desktop.MainWindow;
+                }
+
+                bool canUseOwner = owner != null && owner.IsVisible &&
+                                   owner.WindowState != Avalonia.Controls.WindowState.Minimized &&
+                                   owner.ShowInTaskbar;
+
+                if (canUseOwner)
+                {
+                    window.Show(owner!);
                 }
                 else
                 {

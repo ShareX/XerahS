@@ -30,6 +30,7 @@ using Avalonia.Platform.Storage;
 using ShareX.Editor.ViewModels;
 using XerahS.Common;
 using XerahS.Core;
+using XerahS.Media.Encoders;
 using XerahS.Platform.Abstractions;
 using XerahS.UI.Services;
 using XerahS.UI.Views;
@@ -106,6 +107,10 @@ public partial class App : Application
 
             // Register Toast Service
             Platform.Abstractions.PlatformServices.RegisterToastService(new Services.AvaloniaToastService());
+
+            // Register Image Encoder Service (supports PNG, JPEG, BMP, GIF, WEBP, TIFF via Skia; AVIF via FFmpeg)
+            PlatformServices.RegisterImageEncoderService(
+                ImageEncoderService.CreateDefault(() => PathsManager.GetFFmpegPath()));
 
             // Wire up Editor clipboard to platform implementation
             ShareX.Editor.Services.EditorServices.Clipboard = new Services.EditorClipboardAdapter();
