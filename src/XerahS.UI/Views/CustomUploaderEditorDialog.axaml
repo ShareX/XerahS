@@ -101,7 +101,7 @@
                                     Padding="8,4" FontSize="12"
                                     AutomationProperties.Name="Add Header"/>
                         </Grid>
-                        <ItemsControl ItemsSource="{Binding Headers}">
+                        <ItemsControl ItemsSource="{Binding Headers}" x:Name="HeadersControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:KeyValuePairViewModel">
                                     <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
@@ -110,7 +110,7 @@
                                         <TextBox Grid.Column="1" Text="{Binding Value}" Watermark="Value"
                                                  AutomationProperties.Name="Header Value"/>
                                         <Button Grid.Column="2" Content="X" Padding="8,4"
-                                                Command="{Binding $parent[ItemsControl].((vm:CustomUploaderEditorViewModel)DataContext).RemoveHeaderCommand}"
+                                                Command="{Binding #HeadersControl.DataContext.RemoveHeaderCommand}"
                                                 CommandParameter="{Binding}"
                                                 AutomationProperties.Name="Remove Header"/>
                                     </Grid>
@@ -131,7 +131,7 @@
                                     Padding="8,4" FontSize="12"
                                     AutomationProperties.Name="Add Parameter"/>
                         </Grid>
-                        <ItemsControl ItemsSource="{Binding Parameters}">
+                        <ItemsControl ItemsSource="{Binding Parameters}" x:Name="ParametersControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:KeyValuePairViewModel">
                                     <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
@@ -140,7 +140,7 @@
                                         <TextBox Grid.Column="1" Text="{Binding Value}" Watermark="Value"
                                                  AutomationProperties.Name="Parameter Value"/>
                                         <Button Grid.Column="2" Content="X" Padding="8,4"
-                                                Command="{Binding $parent[ItemsControl].((vm:CustomUploaderEditorViewModel)DataContext).RemoveParameterCommand}"
+                                                Command="{Binding #ParametersControl.DataContext.RemoveParameterCommand}"
                                                 CommandParameter="{Binding}"
                                                 AutomationProperties.Name="Remove Parameter"/>
                                     </Grid>
@@ -180,7 +180,7 @@
                                     Padding="8,4" FontSize="12"
                                     AutomationProperties.Name="Add Argument"/>
                         </Grid>
-                        <ItemsControl ItemsSource="{Binding Arguments}">
+                        <ItemsControl ItemsSource="{Binding Arguments}" x:Name="ArgumentsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:KeyValuePairViewModel">
                                     <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
@@ -189,7 +189,7 @@
                                         <TextBox Grid.Column="1" Text="{Binding Value}" Watermark="Value"
                                                  AutomationProperties.Name="Argument Value"/>
                                         <Button Grid.Column="2" Content="X" Padding="8,4"
-                                                Command="{Binding $parent[ItemsControl].((vm:CustomUploaderEditorViewModel)DataContext).RemoveArgumentCommand}"
+                                                Command="{Binding #ArgumentsControl.DataContext.RemoveArgumentCommand}"
                                                 CommandParameter="{Binding}"
                                                 AutomationProperties.Name="Remove Argument"/>
                                     </Grid>
