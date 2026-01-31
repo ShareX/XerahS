@@ -619,7 +619,7 @@ public partial class OverlayWindow : Window
         // Render each annotation using EditorCore's rendering
         foreach (var annotation in annotations)
         {
-            annotation.Render(canvas, 1.0f); // Scale factor 1.0 for physical pixels
+            annotation.Render(canvas);
         }
 
         return bitmap;

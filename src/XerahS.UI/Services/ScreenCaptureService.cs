@@ -171,6 +171,7 @@ namespace XerahS.UI.Services
 
             // 3. Select Region (UI) - pass ghost cursor for overlay display
             SKRectI selection = SKRectI.Empty;
+            SKBitmap? annotationLayer = null;
             try
             {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
@@ -191,6 +192,7 @@ namespace XerahS.UI.Services
                     {
                         var r = result.Value.Region;
                         selection = new SKRectI((int)r.X, (int)r.Y, (int)r.Right, (int)r.Bottom);
+                        annotationLayer = result.Value.AnnotationLayer;
                     }
                 });
             }
@@ -198,7 +200,7 @@ namespace XerahS.UI.Services
             {
                 // Ignore errors
             }
-            // Note: fullScreenBitmap is disposed later after cropping (line ~277)
+            // Note: fullScreenBitmap is disposed later after cropping
 
             if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
             {
@@ -292,6 +294,32 @@ namespace XerahS.UI.Services
                 catch
                 {
                     // Ignore cursor drawing errors
+                }
+            }
+
+            // 7. Composite annotation layer onto captured bitmap if available
+            // XIP-0023: Annotations drawn during region capture are rendered onto the final image
+            if (bitmap != null && annotationLayer != null)
+            {
+                try
+                {
+                    using var canvas = new SKCanvas(bitmap);
+                    using var paint = new SKPaint { BlendMode = SKBlendMode.SrcOver };
+
+                    // The annotation layer is full-screen sized, so we need to crop the portion
+                    // that corresponds to the selected region
+                    var srcRect = new SKRect(selection.Left, selection.Top, selection.Right, selection.Bottom);
+                    var dstRect = new SKRect(0, 0, bitmap.Width, bitmap.Height);
+
+                    canvas.DrawBitmap(annotationLayer, srcRect, dstRect, paint);
+                }
+                catch
+                {
+                    // Ignore annotation compositing errors
+                }
+                finally
+                {
+                    annotationLayer.Dispose();
                 }
             }
 
