@@ -30,6 +30,7 @@ using XerahS.Common;
 using XerahS.Core;
 using XerahS.UI.Views;
 using XerahS.Uploaders;
+using XerahS.Uploaders.CustomUploader;
 using XerahS.Uploaders.PluginSystem;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -222,6 +223,93 @@ public partial class DestinationSettingsViewModel : ViewModelBase
         {
             Common.DebugHelper.WriteException(ex, "Failed to open plugins folder");
         }
+    }
+
+    [RelayCommand]
+    private async Task AddCustomUploader()
+    {
+        var mainWindow = Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            ? desktop.MainWindow
+            : null;
+
+        if (mainWindow == null)
+        {
+            Common.DebugHelper.WriteLine("[DestinationSettings] Cannot open custom uploader editor (main window missing).");
+            return;
+        }
+
+        try
+        {
+            var viewModel = new CustomUploaderEditorViewModel();
+            var dialog = new CustomUploaderEditorDialog
+            {
+                DataContext = viewModel
+            };
+
+            var result = await dialog.ShowDialog<bool>(mainWindow);
+
+            if (result)
+            {
+                // Save the custom uploader to the Plugins folder
+                var item = viewModel.ToItem();
+                var safeName = MakeSafeFileName(item.Name);
+                var pluginsPath = PathsManager.PluginsFolder;
+
+                if (!Directory.Exists(pluginsPath))
+                {
+                    Directory.CreateDirectory(pluginsPath);
+                }
+
+                var filePath = Path.Combine(pluginsPath, $"{safeName}.sxcu");
+
+                // Ensure unique filename
+                int counter = 1;
+                while (File.Exists(filePath))
+                {
+                    filePath = Path.Combine(pluginsPath, $"{safeName}_{counter++}.sxcu");
+                }
+
+                if (CustomUploaderRepository.SaveToFile(item, filePath))
+                {
+                    // Reload custom uploaders to include the new one
+                    ProviderCatalog.LoadCustomUploaders(pluginsPath);
+
+                    // Refresh all categories to show the new uploader
+                    foreach (var category in Categories)
+                    {
+                        category.LoadInstances();
+                    }
+
+                    await ShowMessageDialogAsync("Custom Uploader Created",
+                        $"Custom uploader '{item.Name}' has been saved and is now available in the catalog.");
+                }
+                else
+                {
+                    await ShowMessageDialogAsync("Save Failed",
+                        "Failed to save the custom uploader. Check the logs for details.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Common.DebugHelper.WriteException(ex, "Failed to create custom uploader");
+            await ShowMessageDialogAsync("Error", $"Failed to create custom uploader: {ex.Message}");
+        }
+    }
+
+    private static string MakeSafeFileName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return "CustomUploader";
+
+        var invalidChars = Path.GetInvalidFileNameChars();
+        var safeName = new string(name.Where(c => !invalidChars.Contains(c)).ToArray());
+
+        // Replace spaces with underscores
+        safeName = safeName.Replace(' ', '_');
+
+        // Ensure not empty after sanitization
+        return string.IsNullOrWhiteSpace(safeName) ? "CustomUploader" : safeName;
     }
 
     private async Task ShowMessageDialogAsync(string title, string message)
