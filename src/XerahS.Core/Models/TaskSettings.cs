@@ -29,6 +29,7 @@ using System.ComponentModel;
 using System.Drawing;
 using Newtonsoft.Json;
 using XerahS.Common;
+using XerahS.Services.Abstractions;
 using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
 using XerahS.RegionCapture.ScreenRecording;

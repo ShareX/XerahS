@@ -28,6 +28,7 @@ using ShareX.Editor.ImageEffects;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using XerahS.Services.Abstractions;
 
 namespace XerahS.Core;
 

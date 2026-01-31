@@ -146,19 +146,7 @@ public enum ThumbnailLocationType
     CustomFolder
 }
 
-public enum EImageFormat
-{
-    [Description("png")]
-    PNG,
-    [Description("jpg")]
-    JPEG,
-    [Description("gif")]
-    GIF,
-    [Description("bmp")]
-    BMP,
-    [Description("tif")]
-    TIFF
-}
+// EImageFormat moved to XerahS.Services.Abstractions
 
 public enum IndexerOutput
 {

@@ -28,6 +28,7 @@ using ShareX.Editor;
 using Common = XerahS.Common;
 using XerahS.Core;
 using XerahS.RegionCapture.ScreenRecording;
+using XerahS.Services.Abstractions;
 using CommunityToolkit.Mvvm.Input;
 using Avalonia;
 using Avalonia.Controls;
