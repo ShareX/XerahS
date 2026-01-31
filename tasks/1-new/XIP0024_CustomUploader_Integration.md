@@ -1,6 +1,6 @@
 # XIP0024: Custom Uploader Integration Plan
 
-**Status**: In Progress (Phase 1 & 2 Complete)
+**Status**: In Progress (Phase 1, 2 & 3 Complete)
 **Created**: 2026-01-31
 **Area**: Uploaders / Plugin System
 **Goal**: Integrate Custom Uploaders (.sxcu/JSON) as first-class Providers in XerahS plugin architecture.
@@ -166,10 +166,21 @@ A new UI component is required to create and edit these JSON files.
   - Existing `ShareXCustomUploaderSyntaxParser` already handles all syntax functions
   - No changes needed - already fully functional
 
-### Phase 3: Creator UI
-- [ ] Create `CustomUploaderEditorView` (Avalonia).
-- [ ] Implement Import/Export (.sxcu).
-- [ ] Add "Test" functionality.
+### Phase 3: Creator UI ✅ COMPLETE
+- [x] Create `CustomUploaderEditorView` (Avalonia).
+  - File: `src/XerahS.UI/Views/CustomUploaderEditorDialog.axaml`
+  - ViewModel: `src/XerahS.UI/ViewModels/CustomUploaderEditorViewModel.cs`
+  - Form-based editor with sections: Basic Info, HTTP Request, Body, Response Parsing
+  - Grid-based layout with consistent spacing following UI design guidelines
+  - Full validation with error display
+  - Accessible with AutomationProperties on all controls
+- [x] Implement Import/Export (.sxcu).
+  - Import command with file picker for .sxcu and .json files
+  - Export command with save file dialog
+  - JSON serialization with proper formatting
+- [x] Add "Test" functionality.
+  - Test command validates configuration
+  - Status bar shows success/error feedback
 
 ### Phase 4: Compatibility Check
 - [ ] Test with standard ShareX `.sxcu` exports to ensure 100% compatibility.
@@ -182,6 +193,9 @@ A new UI component is required to create and edit these JSON files.
 | `src/XerahS.Uploaders/CustomUploader/CustomUploaderRepository.cs` | Discovery, loading, validation, and saving of .sxcu files |
 | `src/XerahS.Uploaders/CustomUploader/CustomUploaderExecutor.cs` | Unified HTTP execution engine for all uploader categories |
 | `src/XerahS.Uploaders/CustomUploader/CustomUploaderProvider.cs` | IUploaderProvider adapter for CustomUploaderItem |
+| `src/XerahS.UI/Views/CustomUploaderEditorDialog.axaml` | Avalonia UI dialog for creating/editing custom uploaders |
+| `src/XerahS.UI/Views/CustomUploaderEditorDialog.axaml.cs` | Code-behind with file picker implementations |
+| `src/XerahS.UI/ViewModels/CustomUploaderEditorViewModel.cs` | ViewModel with validation, commands, and data binding |
 
 ### Modified Files
 | File | Changes |
