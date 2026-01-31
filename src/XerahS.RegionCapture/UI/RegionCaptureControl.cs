@@ -833,7 +833,7 @@ public sealed class RegionCaptureControl : UserControl
         if (_state != CaptureState.Hovering)
             return;
 
-        var instructions = "Click and drag to select a region | Click a window to snap | Esc to cancel";
+        var instructions = "Drag to select region | Click to snap window | Ctrl: toggle annotation/selection | Enter: finish | Esc: cancel";
         if (_mode == RegionCaptureMode.ScreenColorPicker)
         {
             instructions = "Click to pick a color | Esc to cancel";
