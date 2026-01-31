@@ -622,13 +622,18 @@ public partial class OverlayWindow : Window
             return null;
         }
 
-        // Create a transparent bitmap the size of the full virtual screen (matching background)
+        // Create a transparent bitmap the size of the full physical screen
         int width = (int)_monitor.PhysicalBounds.Width;
         int height = (int)_monitor.PhysicalBounds.Height;
 
         var bitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.Transparent);
+
+        // Scale canvas to account for DPI: annotations are in logical coordinates,
+        // but the bitmap is in physical coordinates
+        float scaleFactor = (float)_monitor.ScaleFactor;
+        canvas.Scale(scaleFactor, scaleFactor);
 
         // Render each annotation using EditorCore's rendering
         foreach (var annotation in annotations)
