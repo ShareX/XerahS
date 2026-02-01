@@ -35,6 +35,18 @@ namespace XerahS.CLI.Services
     /// </summary>
     public class HeadlessUIService : IUIService
     {
+        public Task HideMainWindowAsync()
+        {
+            // No window to hide in CLI mode
+            return Task.CompletedTask;
+        }
+
+        public Task RestoreMainWindowAsync()
+        {
+            // No window to restore in CLI mode
+            return Task.CompletedTask;
+        }
+
         public Task<SKBitmap?> ShowEditorAsync(SKBitmap image)
         {
             Console.Error.WriteLine("[WARNING] Image editor not available in CLI mode.");

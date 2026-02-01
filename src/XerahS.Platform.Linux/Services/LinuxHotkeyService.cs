@@ -22,13 +22,14 @@
 */
 
 #endregion License Information (GPL v3)
+
 using Avalonia.Input;
-using XerahS.Common;
-using XerahS.Platform.Abstractions;
+using global::Avalonia.Threading;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
-using global::Avalonia.Threading;
+using XerahS.Common;
+using XerahS.Platform.Abstractions;
 using HotkeyStatus = XerahS.Platform.Abstractions.HotkeyStatus;
 
 namespace XerahS.Platform.Linux.Services;
@@ -43,6 +44,10 @@ public sealed class LinuxHotkeyService : IHotkeyService
     private readonly object _lock = new();
     private ushort _nextId = 1;
     private bool _isDisposed;
+
+    // X error handling - must be static for the delegate to work with P/Invoke
+    private static bool _grabError;
+    private static readonly NativeMethods.XErrorHandler _errorHandler = HandleXError;
 
     public event EventHandler<HotkeyTriggeredEventArgs>? HotkeyTriggered;
     public bool IsSuspended { get; set; }
@@ -237,28 +242,55 @@ public sealed class LinuxHotkeyService : IHotkeyService
         }
     }
 
+    private static int HandleXError(IntPtr display, ref XErrorEvent error)
+    {
+        if (error.error_code == NativeMethods.BadAccess)
+        {
+            _grabError = true;
+        }
+
+        return 0;
+    }
+
     private (bool success, string? error) TryGrab(HotkeyRegistration registration)
     {
         var grabbed = new List<uint>();
 
-        foreach (var mask in registration.GrabMasks)
+        // Install our error handler to catch BadAccess errors
+        IntPtr previousHandler = NativeMethods.XSetErrorHandler(_errorHandler);
+
+        try
         {
-            int result = NativeMethods.XGrabKey(_display, registration.Keycode, mask, _rootWindow, false, NativeMethods.GrabModeAsync, NativeMethods.GrabModeAsync);
-            if (result != NativeMethods.GrabSuccess)
+            foreach (var mask in registration.GrabMasks)
             {
-                foreach (var rollbackMask in grabbed)
+                _grabError = false;
+
+                _ = NativeMethods.XGrabKey(_display, registration.Keycode, mask, _rootWindow, false, NativeMethods.GrabModeAsync, NativeMethods.GrabModeAsync);
+
+                // Sync to ensure any errors are processed before we check
+                NativeMethods.XSync(_display, false);
+
+                if (_grabError)
                 {
-                    NativeMethods.XUngrabKey(_display, registration.Keycode, rollbackMask, _rootWindow);
+                    foreach (var rollbackMask in grabbed)
+                    {
+                        NativeMethods.XUngrabKey(_display, registration.Keycode, rollbackMask, _rootWindow);
+                    }
+
+                    NativeMethods.XSync(_display, false);
+                    return (false, "Key combination is already grabbed by another application");
                 }
-                NativeMethods.XFlush(_display);
-                return (false, $"XGrabKey returned {result}");
+
+                grabbed.Add(mask);
             }
 
-            grabbed.Add(mask);
+            return (true, null);
         }
-
-        NativeMethods.XFlush(_display);
-        return (true, null);
+        finally
+        {
+            // Restore the previous error handler
+            NativeMethods.XSetErrorHandlerPtr(previousHandler);
+        }
     }
 
     private static uint GetModifierMask(KeyModifiers modifiers)

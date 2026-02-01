@@ -103,6 +103,17 @@ namespace XerahS.Platform.Linux
         internal static extern int XFlush(IntPtr display);
 
         [DllImport(libX11)]
+        internal static extern int XSync(IntPtr display, bool discard);
+
+        [DllImport(libX11)]
+        internal static extern IntPtr XSetErrorHandler(XErrorHandler handler);
+
+        [DllImport(libX11, EntryPoint = "XSetErrorHandler")]
+        internal static extern IntPtr XSetErrorHandlerPtr(IntPtr handler);
+
+        internal delegate int XErrorHandler(IntPtr display, ref XErrorEvent error);
+
+        [DllImport(libX11)]
         internal static extern int XGetClassHint(IntPtr display, IntPtr w, out XClassHint class_hints_return);
 
         // Window map state
@@ -129,7 +140,9 @@ namespace XerahS.Platform.Linux
 
         internal const int GrabModeAsync = 1;
         internal const int GrabModeSync = 0;
-        internal const int GrabSuccess = 0;
+
+        // X error codes
+        internal const int BadAccess = 10;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -215,5 +228,17 @@ internal struct XImage
 
         [FieldOffset(0)]
         public XKeyEvent key;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XErrorEvent
+    {
+        public int type;
+        public IntPtr display;
+        public uint resourceid;
+        public uint serial;
+        public byte error_code;
+        public byte request_code;
+        public byte minor_code;
     }
 }
