@@ -204,23 +204,23 @@ internal struct XImage
     internal struct XKeyEvent
     {
         public int type;
-        public uint serial;
-        public bool send_event;
+        public ulong serial;
+        public int send_event;
         public IntPtr display;
         public IntPtr window;
         public IntPtr root;
         public IntPtr subwindow;
-        public uint time;
+        public ulong time;
         public int x;
         public int y;
         public int x_root;
         public int y_root;
         public uint state;
         public uint keycode;
-        public bool same_screen;
+        public int same_screen;
     }
 
-    [StructLayout(LayoutKind.Explicit)]
+    [StructLayout(LayoutKind.Explicit, Size = 192)]
     internal struct XEvent
     {
         [FieldOffset(0)]

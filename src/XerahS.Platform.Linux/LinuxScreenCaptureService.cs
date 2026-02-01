@@ -332,18 +332,31 @@ namespace XerahS.Platform.Linux
 
         public async Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null)
         {
-            // Most Linux tools support window capture with --window flag
-            // For now, fall back to fullscreen
-            return await CaptureFullScreenAsync();
+            var handle = windowService.GetForegroundWindow();
+            if (handle == IntPtr.Zero)
+            {
+                DebugHelper.WriteLine("LinuxScreenCaptureService: No foreground window found, falling back to fullscreen");
+                return await CaptureFullScreenAsync(options);
+            }
+            
+            return await CaptureWindowAsync(handle, windowService, options);
         }
 
         public async Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
         {
-            // TODO: Implement Linux window capture by handle
-            // For now, get bounds and capture rect
             if (windowHandle == IntPtr.Zero) return null;
+
             var bounds = windowService.GetWindowBounds(windowHandle);
-            if (bounds.Width <= 0 || bounds.Height <= 0) return null;
+            DebugHelper.WriteLine($"LinuxScreenCaptureService: Capturing window {windowHandle} bounds: {bounds}");
+
+            if (bounds.Width <= 0 || bounds.Height <= 0)
+            {
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Invalid window bounds");
+                return null;
+            }
+
+            // Capture the specific rectangle
+            // Note: X11 window coordinates are relative to the screen
             return await CaptureRectAsync(new SKRect(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height), options);
         }
 
