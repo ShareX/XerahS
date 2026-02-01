@@ -176,13 +176,12 @@ class Program
     {
         using var fileStream = File.Create(outputPath);
         using var gzipStream = new GZipStream(fileStream, CompressionLevel.Optimal);
-        using var tarWriter = new TarWriter(gzipStream);
+        using var tarWriter = new TarWriter(gzipStream, TarEntryFormat.Ustar);
 
         foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
         {
-            string relativePath = Path.GetRelativePath(sourceDir, file);
-            // In tarball, just put them in root
-            tarWriter.WriteEntry(file, relativePath);
+            string relativePath = Path.GetRelativePath(sourceDir, file).Replace('\\', '/');
+            WriteTarFileEntry(tarWriter, file, relativePath);
         }
     }
 
@@ -251,10 +250,10 @@ class Program
             using (var ms = new MemoryStream())
             {
                 using (var gz = new GZipStream(ms, CompressionLevel.Optimal))
-                using (var tar = new TarWriter(gz))
+                using (var tar = new TarWriter(gz, TarEntryFormat.Ustar))
                 {
                     // Add control file
-                    tar.WriteEntry(Path.Combine(controlRoot, "control"), "control");
+                    WriteTarFileEntry(tar, Path.Combine(controlRoot, "control"), "control", (UnixFileMode)Convert.ToInt32("644", 8));
                 }
                 controlTarGz = ms.ToArray();
             }
@@ -265,7 +264,7 @@ class Program
             using (var ms = new MemoryStream())
             {
                 using (var gz = new GZipStream(ms, CompressionLevel.Optimal))
-                using (var tar = new TarWriter(gz))
+                using (var tar = new TarWriter(gz, TarEntryFormat.Ustar))
                 {
                     // Add app files recursively
                     // Note: Permissions must be set correctly for Linux!
@@ -287,6 +286,14 @@ class Program
 
     static void AddDirectoryToTar(TarWriter tar, string rootDir, string currentDir)
     {
+        string relativeDirPath = Path.GetRelativePath(rootDir, currentDir).Replace('\\', '/');
+        if (!string.IsNullOrEmpty(relativeDirPath) && relativeDirPath != ".")
+        {
+            if (relativeDirPath.StartsWith("/")) relativeDirPath = relativeDirPath.Substring(1);
+            relativeDirPath = "./" + relativeDirPath.TrimEnd('/') + "/";
+            WriteTarDirectoryEntry(tar, relativeDirPath);
+        }
+
         foreach (var file in Directory.GetFiles(currentDir))
         {
             string relativePath = Path.GetRelativePath(rootDir, file).Replace('\\', '/');
@@ -295,27 +302,53 @@ class Program
             // Standard debian data.tar.gz is usually ./usr/..., so we simulate that
             relativePath = "./" + relativePath;
 
-            var entry = new PaxTarEntry(TarEntryType.RegularFile, relativePath);
-            using var fs = File.OpenRead(file);
-            entry.DataStream = fs;
-            
             // Permission handling
+            UnixFileMode mode;
             if (relativePath.EndsWith("/xerahs") || relativePath.EndsWith("/XerahS")) // Wrapper script or main executable
             {
-                entry.Mode = (UnixFileMode)Convert.ToInt32("755", 8);
+                mode = (UnixFileMode)Convert.ToInt32("755", 8);
             }
             else
             {
-                entry.Mode = (UnixFileMode)Convert.ToInt32("644", 8);
+                mode = (UnixFileMode)Convert.ToInt32("644", 8);
             }
-            
-            tar.WriteEntry(entry);
+
+            WriteTarFileEntry(tar, file, relativePath, mode);
         }
 
         foreach (var dir in Directory.GetDirectories(currentDir))
         {
             AddDirectoryToTar(tar, rootDir, dir);
         }
+    }
+
+    static void WriteTarDirectoryEntry(TarWriter tar, string entryPath)
+    {
+        var entry = new UstarTarEntry(TarEntryType.Directory, entryPath);
+        entry.Mode = (UnixFileMode)Convert.ToInt32("755", 8);
+        tar.WriteEntry(entry);
+    }
+
+    static void WriteTarFileEntry(TarWriter tar, string filePath, string entryPath, UnixFileMode? modeOverride = null)
+    {
+        var entry = new UstarTarEntry(TarEntryType.RegularFile, entryPath);
+        using var fs = File.OpenRead(filePath);
+        entry.DataStream = fs;
+
+        if (modeOverride.HasValue)
+        {
+            entry.Mode = modeOverride.Value;
+        }
+        else if (entryPath.EndsWith("/xerahs") || entryPath.EndsWith("/XerahS"))
+        {
+            entry.Mode = (UnixFileMode)Convert.ToInt32("755", 8);
+        }
+        else
+        {
+            entry.Mode = (UnixFileMode)Convert.ToInt32("644", 8);
+        }
+
+        tar.WriteEntry(entry);
     }
 
     static void WriteArEntry(Stream stream, string name, byte[] content)
