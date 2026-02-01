@@ -35,6 +35,16 @@ namespace XerahS.Platform.Abstractions
     public interface IUIService
     {
         /// <summary>
+        /// Hides or minimizes the main window before capture to avoid capturing the app itself.
+        /// </summary>
+        Task HideMainWindowAsync();
+
+        /// <summary>
+        /// Restores the main window after capture completes (if it was visible before).
+        /// </summary>
+        Task RestoreMainWindowAsync();
+
+        /// <summary>
         /// Shows the image editor with the provided image and returns the edited image
         /// </summary>
         Task<SKBitmap?> ShowEditorAsync(SKBitmap image);

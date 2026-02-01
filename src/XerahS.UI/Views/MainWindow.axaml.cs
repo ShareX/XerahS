@@ -464,7 +464,34 @@ namespace XerahS.UI.Views
             }
 
             TaskManager.Instance.TaskCompleted += HandleTaskCompleted;
-            await TaskManager.Instance.StartTask(settings, image);
+
+            // Hide main window before capture to avoid capturing the app itself
+            // This only applies to navbar-triggered captures, not hotkeys
+            try
+            {
+                await Platform.Abstractions.PlatformServices.UI.HideMainWindowAsync();
+            }
+            catch
+            {
+                // Ignore errors - window hiding is not critical
+            }
+
+            try
+            {
+                await TaskManager.Instance.StartTask(settings, image);
+            }
+            finally
+            {
+                // Restore main window after capture
+                try
+                {
+                    await Platform.Abstractions.PlatformServices.UI.RestoreMainWindowAsync();
+                }
+                catch
+                {
+                    // Ignore errors
+                }
+            }
         }
         private void UpdateNavigationItems(NavigationView navView)
         {

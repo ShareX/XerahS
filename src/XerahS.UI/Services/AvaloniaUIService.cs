@@ -37,6 +37,55 @@ namespace XerahS.UI.Services
 {
     public class AvaloniaUIService : IUIService
     {
+        private bool _wasMainWindowVisible;
+        private Avalonia.Controls.WindowState _previousWindowState;
+
+        public async Task HideMainWindowAsync()
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    var mainWindow = desktop.MainWindow;
+                    if (mainWindow != null && mainWindow.IsVisible)
+                    {
+                        _wasMainWindowVisible = true;
+                        _previousWindowState = mainWindow.WindowState;
+
+                        // Minimize the window so it doesn't appear in screenshots
+                        mainWindow.WindowState = Avalonia.Controls.WindowState.Minimized;
+                        DebugHelper.WriteLine("AvaloniaUIService: Main window minimized before capture");
+                    }
+                    else
+                    {
+                        _wasMainWindowVisible = false;
+                    }
+                }
+            });
+
+            // Small delay to ensure window is fully minimized before capture starts
+            await Task.Delay(150);
+        }
+
+        public async Task RestoreMainWindowAsync()
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (_wasMainWindowVisible &&
+                    Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    var mainWindow = desktop.MainWindow;
+                    if (mainWindow != null)
+                    {
+                        // Restore to previous state
+                        mainWindow.WindowState = _previousWindowState;
+                        DebugHelper.WriteLine("AvaloniaUIService: Main window restored after capture");
+                    }
+                }
+                _wasMainWindowVisible = false;
+            });
+        }
+
         public async Task<SKBitmap?> ShowEditorAsync(SKBitmap image)
         {
             var tcs = new TaskCompletionSource<SKBitmap?>();

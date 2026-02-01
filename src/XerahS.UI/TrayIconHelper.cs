@@ -176,7 +176,8 @@ public class TrayIconHelper : INotifyPropertyChanged
         if (workflow != null)
         {
             DebugHelper.WriteLine($"Tray: Execute workflow (ID: {workflow.Id}): {workflow}");
-            await Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id);
+            // Hide main window for tray-triggered captures (user clicked tray menu)
+            await Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id, hideMainWindow: true);
         }
     }
 
@@ -267,15 +268,16 @@ public class TrayIconHelper : INotifyPropertyChanged
                 break;
             default:
                 // For tray click actions, execute first matching workflow
+                // Hide main window for tray-triggered captures (user clicked tray icon)
                 var workflow = SettingsManager.WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Job == action);
                 if (workflow != null)
                 {
-                    await Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id);
+                    await Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id, hideMainWindow: true);
                 }
                 else
                 {
                     // Fallback for actions that aren't workflow-based
-                    await Core.Helpers.TaskHelpers.ExecuteJob(action, new TaskSettings { Job = action });
+                    await Core.Helpers.TaskHelpers.ExecuteJob(action, new TaskSettings { Job = action }, hideMainWindow: true);
                 }
                 break;
         }
