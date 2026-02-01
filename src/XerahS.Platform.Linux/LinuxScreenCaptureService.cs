@@ -25,9 +25,11 @@
 
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
+using XerahS.Platform.Linux.Capture;
 using SkiaSharp;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Tmds.DBus;
 
 namespace XerahS.Platform.Linux
 {
@@ -108,9 +110,22 @@ namespace XerahS.Platform.Linux
                  return await CaptureWithX11Async();
             }
 
-            // Modern Mode: Try Wayland/Tools first, then fallback to X11
-            
-            // 1. Try generic tools (gnome-screenshot, spectacle, etc) which work on both Wayland and X11
+            // Modern Mode: Try XDG Portal first on Wayland, then tools, then X11
+
+            // 1. On Wayland, try XDG Portal Screenshot API first (most reliable method)
+            if (IsWayland)
+            {
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Wayland detected, trying XDG Portal...");
+                var portalResult = await CaptureWithPortalAsync();
+                if (portalResult != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: XDG Portal capture succeeded.");
+                    return portalResult;
+                }
+                DebugHelper.WriteLine("LinuxScreenCaptureService: XDG Portal capture failed, trying CLI tools...");
+            }
+
+            // 2. Try generic tools (gnome-screenshot, spectacle, etc) which work on both Wayland and X11
             var result = await CaptureWithGnomeScreenshotAsync();
             if (result != null) return result;
 
@@ -123,7 +138,7 @@ namespace XerahS.Platform.Linux
             result = await CaptureWithImportAsync();
             if (result != null) return result;
 
-            // 2. Fallback to X11 if generic tools failed
+            // 3. Fallback to X11 if generic tools failed
             DebugHelper.WriteLine("LinuxScreenCaptureService: external tools failed. Falling back to X11.");
             return await CaptureWithX11Async();
         }
@@ -391,5 +406,83 @@ namespace XerahS.Platform.Linux
                 }
             }
         }
+
+        #region XDG Portal Screenshot
+
+        private const string PortalBusName = "org.freedesktop.portal.Desktop";
+        private static readonly ObjectPath PortalObjectPath = new("/org/freedesktop/portal/desktop");
+
+        /// <summary>
+        /// Capture screenshot using XDG Desktop Portal Screenshot API.
+        /// This is the standard way to capture on Wayland and works across desktop environments.
+        /// </summary>
+        private async Task<SKBitmap?> CaptureWithPortalAsync()
+        {
+            try
+            {
+                using var connection = new Connection(Address.Session);
+                await connection.ConnectAsync();
+
+                var portal = connection.CreateProxy<IScreenshotPortal>(PortalBusName, PortalObjectPath);
+
+                // Request screenshot with modal=false to avoid blocking the compositor
+                var options = new Dictionary<string, object>
+                {
+                    ["modal"] = false,
+                    ["interactive"] = false  // Don't show UI, just capture
+                };
+
+                var requestPath = await portal.ScreenshotAsync(string.Empty, options);
+
+                var request = connection.CreateProxy<IPortalRequest>(PortalBusName, requestPath);
+                var (response, results) = await request.WaitForResponseAsync();
+
+                // Response 0 = success, 1 = user cancelled, 2 = error
+                if (response != 0)
+                {
+                    DebugHelper.WriteLine($"LinuxScreenCaptureService: Portal screenshot cancelled or failed (response={response})");
+                    return null;
+                }
+
+                if (!results.TryGetValue("uri", out var uriValue) || uriValue is not string uriStr)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Portal screenshot missing URI in response");
+                    return null;
+                }
+
+                var uri = new Uri(uriStr);
+                if (!uri.IsFile || string.IsNullOrEmpty(uri.LocalPath) || !File.Exists(uri.LocalPath))
+                {
+                    DebugHelper.WriteLine($"LinuxScreenCaptureService: Portal screenshot file not found: {uriStr}");
+                    return null;
+                }
+
+                using var stream = File.OpenRead(uri.LocalPath);
+                var bitmap = SKBitmap.Decode(stream);
+
+                // Clean up temp file created by portal
+                try { File.Delete(uri.LocalPath); } catch { }
+
+                return bitmap;
+            }
+            catch (DBusException ex)
+            {
+                DebugHelper.WriteException(ex, "LinuxScreenCaptureService: Portal D-Bus error");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "LinuxScreenCaptureService: Portal capture failed");
+                return null;
+            }
+        }
+
+        [DBusInterface("org.freedesktop.portal.Screenshot")]
+        private interface IScreenshotPortal : IDBusObject
+        {
+            Task<ObjectPath> ScreenshotAsync(string parentWindow, IDictionary<string, object> options);
+        }
+
+        #endregion
     }
 }

@@ -29,7 +29,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Threading;
-using ShareX.Avalonia.Platform.Linux.Capture;
+using XerahS.Platform.Linux.Capture;
 using Tmds.DBus;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;

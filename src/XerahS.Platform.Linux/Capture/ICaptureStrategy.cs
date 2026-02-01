@@ -25,7 +25,7 @@
 using System.Threading.Tasks;
 using ShareX.Avalonia.Platform.Abstractions.Capture;
 
-namespace ShareX.Avalonia.Platform.Linux.Capture;
+namespace XerahS.Platform.Linux.Capture;
 
 /// <summary>
 /// Internal interface for Linux capture strategies.

@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 using ShareX.Avalonia.Platform.Abstractions.Capture;
 using SkiaSharp;
 
-namespace ShareX.Avalonia.Platform.Linux.Capture;
+namespace XerahS.Platform.Linux.Capture;
 
 /// <summary>
 /// Universal fallback capture strategy using CLI tools.

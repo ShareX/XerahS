@@ -26,13 +26,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using ShareX.Avalonia.Platform.Abstractions;
 using ShareX.Avalonia.Platform.Abstractions.Capture;
 using SkiaSharp;
 using Tmds.DBus;
 using XerahS.Common;
 
-namespace ShareX.Avalonia.Platform.Linux.Capture;
+namespace XerahS.Platform.Linux.Capture;
 
 /// <summary>
 /// Capture strategy using xdg-desktop-portal Screenshot API.

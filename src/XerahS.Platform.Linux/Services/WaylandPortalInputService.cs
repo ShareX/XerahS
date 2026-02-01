@@ -31,7 +31,7 @@ using System.Threading.Tasks;
 using Tmds.DBus;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
-using ShareX.Avalonia.Platform.Linux.Capture;
+using XerahS.Platform.Linux.Capture;
 
 namespace XerahS.Platform.Linux.Services;
 

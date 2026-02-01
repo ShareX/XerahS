@@ -28,7 +28,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Tmds.DBus;
 
-namespace ShareX.Avalonia.Platform.Linux.Capture;
+namespace XerahS.Platform.Linux.Capture;
 
 internal interface IPortalRequest : IDBusObject
 {
