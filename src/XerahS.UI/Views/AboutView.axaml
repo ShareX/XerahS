@@ -23,12 +23,17 @@
 
             <ui:SettingsExpander Header="Links" IsExpanded="True" IconSource="Link">
                  <ui:SettingsExpander.Items>
-                     <ui:SettingsExpanderItem Content="Website" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Website}">
+                     <ui:SettingsExpanderItem Content="Website" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.XerahSWebsite}">
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
                      </ui:SettingsExpanderItem>
                      <ui:SettingsExpanderItem Content="GitHub Project" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.GitHub}">
+                         <ui:SettingsExpanderItem.ActionIconSource>
+                             <ui:SymbolIconSource Symbol="Link"/>
+                         </ui:SettingsExpanderItem.ActionIconSource>
+                     </ui:SettingsExpanderItem>
+                     <ui:SettingsExpanderItem Content="Issues" IsClickEnabled="True" Click="OnLinkClick" Tag="https://github.com/ShareX/XerahS/issues/">
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
