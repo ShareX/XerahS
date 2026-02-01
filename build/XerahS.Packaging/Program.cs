@@ -197,7 +197,7 @@ class Program
             string dataRoot = Path.Combine(workDir, "data");
             string installPath = Path.Combine(dataRoot, "usr", "lib", "xerahs"); // Or /opt/xerahs, let's stick to /usr/lib/xerahs for standard linux layout
             Directory.CreateDirectory(installPath);
-            
+
             // Copy files
             foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
             {
@@ -210,10 +210,43 @@ class Program
             // Create symlink binary in /usr/bin/xerahs
             string binPath = Path.Combine(dataRoot, "usr", "bin");
             Directory.CreateDirectory(binPath);
-            // We can't easily create a true symlink on Windows for the tar archive without specific library calls or storing it as a special entry. 
+            // We can't easily create a true symlink on Windows for the tar archive without specific library calls or storing it as a special entry.
             // A safer bet for cross-platform packaging is a wrapper script.
             string wrapperScript = Path.Combine(binPath, "xerahs");
             File.WriteAllText(wrapperScript, "#!/bin/sh\nexec /usr/lib/xerahs/XerahS \"$@\"\n");
+
+            // Create desktop entry for application menu
+            string applicationsPath = Path.Combine(dataRoot, "usr", "share", "applications");
+            Directory.CreateDirectory(applicationsPath);
+            string desktopEntry = $"""
+                [Desktop Entry]
+                Name=XerahS
+                Comment=Cross-platform screen capture and sharing tool
+                GenericName=Screen Capture
+                Exec=/usr/bin/xerahs %U
+                Icon=xerahs
+                Terminal=false
+                Type=Application
+                Categories=Utility;Graphics;GTK;
+                Keywords=screenshot;screen;capture;share;upload;
+                StartupWMClass=XerahS
+                X-GNOME-UsesNotifications=true
+                """;
+            File.WriteAllText(Path.Combine(applicationsPath, "xerahs.desktop"), desktopEntry);
+
+            // Copy icon to pixmaps for application menu
+            string pixmapsPath = Path.Combine(dataRoot, "usr", "share", "pixmaps");
+            Directory.CreateDirectory(pixmapsPath);
+            string? iconSource = FindIconFile(sourceDir);
+            if (iconSource != null)
+            {
+                File.Copy(iconSource, Path.Combine(pixmapsPath, "xerahs.png"));
+                Console.WriteLine("Added application icon to package.");
+            }
+            else
+            {
+                Console.WriteLine("Warning: Could not find Logo.png for desktop icon.");
+            }
             // We will handle permissions when writing the tar
 
             // 2. Prepare control directory
@@ -226,7 +259,7 @@ class Program
             sb.AppendLine("Package: xerahs");
             sb.AppendLine($"Version: {version}");
             sb.AppendLine($"Architecture: {arch}");
-            sb.AppendLine("Maintainer: ShareX Team <info@sharex.com>");
+            sb.AppendLine("Maintainer: ShareX Team <info@getsharex.com>");
             sb.AppendLine($"Installed-Size: {installedSizeKb}");
             sb.AppendLine("Section: utils");
             sb.AppendLine("Priority: optional");
@@ -391,5 +424,46 @@ class Program
             size += new FileInfo(file).Length;
         }
         return size;
+    }
+
+    static string? FindIconFile(string publishDir)
+    {
+        // Look for Logo.png in various locations
+        // 1. Check if it's in the publish directory
+        string inPublish = Path.Combine(publishDir, "Logo.png");
+        if (File.Exists(inPublish)) return inPublish;
+
+        // 2. Try to find it relative to the packaging tool location (repo structure)
+        // The packaging tool is in build/XerahS.Packaging, icon is in src/XerahS.UI/Assets/Logo.png
+        string[] searchPaths =
+        {
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "src", "XerahS.UI", "Assets", "Logo.png"),
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "src", "XerahS.UI", "Assets", "Logo.png"),
+            Path.Combine(Environment.CurrentDirectory, "src", "XerahS.UI", "Assets", "Logo.png"),
+            Path.Combine(Environment.CurrentDirectory, "..", "src", "XerahS.UI", "Assets", "Logo.png"),
+        };
+
+        foreach (var path in searchPaths)
+        {
+            string fullPath = Path.GetFullPath(path);
+            if (File.Exists(fullPath))
+            {
+                return fullPath;
+            }
+        }
+
+        // 3. Walk up from publishDir to find the repo root
+        DirectoryInfo? dir = new DirectoryInfo(publishDir);
+        while (dir != null)
+        {
+            string candidate = Path.Combine(dir.FullName, "src", "XerahS.UI", "Assets", "Logo.png");
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+            dir = dir.Parent;
+        }
+
+        return null;
     }
 }

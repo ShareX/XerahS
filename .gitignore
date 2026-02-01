@@ -36,3 +36,5 @@ artifacts/
 *.zip
 *.exe
 *.sxadp
+iscc_log_win-arm64.txt
+iscc_log_win-x64.txt
