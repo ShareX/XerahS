@@ -22,15 +22,10 @@
 */
 
 #endregion License Information (GPL v3)
-
 using Avalonia.Controls;
 
 namespace XerahS.UI.Views;
 
-/// <summary>
-/// Panel for image-specific task settings (format, quality, thumbnails).
-/// Displayed as a separate tab for screen capture workflows.
-/// </summary>
 public partial class TaskImageSettingsPanel : UserControl
 {
     public TaskImageSettingsPanel()

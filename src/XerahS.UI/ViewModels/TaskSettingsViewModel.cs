@@ -218,7 +218,7 @@ namespace XerahS.UI.ViewModels
         public IEnumerable<RecordingIntent> RecordingIntents => Enum.GetValues(typeof(RecordingIntent)).Cast<RecordingIntent>();
         public IEnumerable<FFmpegVideoCodec> VideoCodecs => Enum.GetValues(typeof(FFmpegVideoCodec)).Cast<FFmpegVideoCodec>();
 
-        public FFmpegVideoCodec VideoCodec
+        public FFmpegVideoCodec ScreenRecordVideoCodec
         {
             get => _settings.CaptureSettings.FFmpegOptions?.VideoCodec ?? FFmpegVideoCodec.libx264;
             set

@@ -22,7 +22,6 @@
 */
 
 #endregion License Information (GPL v3)
-
 using Avalonia.Controls;
 
 namespace XerahS.UI.Views;

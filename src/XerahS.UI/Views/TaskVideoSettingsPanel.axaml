@@ -3,7 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:XerahS.UI.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="400"
+             xmlns:conv="using:Avalonia.Data.Converters"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="XerahS.UI.Views.TaskVideoSettingsPanel"
              x:DataType="vm:TaskSettingsViewModel">
 
@@ -13,7 +14,7 @@
             <StackPanel Spacing="8">
                 <TextBlock Text="Screen recorder" FontWeight="SemiBold"/>
                 <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
-                    <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, Auto, Auto, Auto" RowSpacing="16">
+                    <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, Auto, Auto, Auto, Auto" RowSpacing="16">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="FPS:" VerticalAlignment="Center"/>
                         <NumericUpDown Grid.Row="0" Grid.Column="2" Value="{Binding ScreenRecordFPS}" Minimum="1" Maximum="144" Increment="1" Width="120" HorizontalAlignment="Left" AutomationProperties.Name="FPS"/>
 
@@ -31,24 +32,50 @@
 
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Recording intent:" VerticalAlignment="Center"/>
                         <ComboBox Grid.Row="3" Grid.Column="2" ItemsSource="{Binding RecordingIntents}" SelectedItem="{Binding RecordingIntent}" HorizontalAlignment="Left" Width="200" AutomationProperties.Name="Recording Intent"/>
+                        
+                        <!-- Video Codec Selector -->
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Video Codec:" VerticalAlignment="Center"/>
+                        <ComboBox Grid.Row="4" Grid.Column="2" ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding ScreenRecordVideoCodec}" HorizontalAlignment="Left" Width="200" AutomationProperties.Name="Video Codec"/>
                     </Grid>
                 </Border>
             </StackPanel>
 
-            <!-- Video Codec Settings -->
+            <!-- FFmpeg Tools -->
             <StackPanel Spacing="8">
-                <TextBlock Text="Video codec" FontWeight="SemiBold"/>
+                <TextBlock Text="FFmpeg Tools" FontWeight="SemiBold"/>
                 <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                     <StackPanel Spacing="16">
-                        <Grid ColumnDefinitions="Auto, 16, *">
-                            <TextBlock Grid.Column="0" Text="Codec:" VerticalAlignment="Center"/>
-                            <ComboBox Grid.Column="2" ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding VideoCodec}" HorizontalAlignment="Stretch" AutomationProperties.Name="Video Codec"/>
-                        </Grid>
-                        <TextBlock Text="Configure additional codec-specific settings in the FFmpeg options dialog."
-                                   FontSize="12"
+                        <TextBlock Text="Configure FFmpeg fallback options for screen recording and audio capture."
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   FontSize="12"
                                    TextWrapping="Wrap"/>
-                        <Button Content="Configure FFmpeg..." Command="{Binding OpenFFmpegOptionsCommand}"/>
+                        
+                        <TextBlock Text="{Binding FFmpegStatusText}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   FontSize="12"
+                                   IsVisible="{Binding FFmpegStatusText, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
+                        
+                        <Grid ColumnDefinitions="Auto, 16, Auto, 16, Auto">
+                            <Button Grid.Column="0" Content="Download FFmpeg..."
+                                    Command="{Binding DownloadFFmpegCommand}"
+                                    IsVisible="{Binding ShowDownloadFFmpeg}"
+                                    IsEnabled="{Binding CanDownloadFFmpeg}"/>
+                            
+                            <TextBlock Grid.Column="2" Text="{Binding FFmpegDownloadProgressText}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       VerticalAlignment="Center"
+                                       IsVisible="{Binding IsDownloadingFFmpeg}"/>
+                            
+                            <Button Grid.Column="4" Content="Configure FFmpeg..."
+                                    Command="{Binding OpenFFmpegOptionsCommand}"/>
+                        </Grid>
+                        
+                        <TextBox Text="{Binding ExpectedFFmpegDownloadUrl}"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 MinWidth="360"
+                                 IsVisible="{Binding ShowExpectedFFmpegDownloadUrl}"
+                                 AutomationProperties.Name="Expected FFmpeg Download URL"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
