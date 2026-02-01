@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="400"
+             x:Class="XerahS.UI.Views.TaskVideoSettingsPanel"
+             x:DataType="vm:TaskSettingsViewModel">
+
+    <ScrollViewer Padding="20">
+        <StackPanel Spacing="24">
+            <!-- Screen Recorder Settings -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="Screen recorder" FontWeight="SemiBold"/>
+                <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                    <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, Auto, Auto, Auto" RowSpacing="16">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="FPS:" VerticalAlignment="Center"/>
+                        <NumericUpDown Grid.Row="0" Grid.Column="2" Value="{Binding ScreenRecordFPS}" Minimum="1" Maximum="144" Increment="1" Width="120" HorizontalAlignment="Left" AutomationProperties.Name="FPS"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Duration:" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                            <NumericUpDown Value="{Binding ScreenRecordDuration}" Minimum="0" Maximum="3600" Increment="1" Width="120" AutomationProperties.Name="Recording Duration"/>
+                            <TextBlock Text="seconds (0 to disable)" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Start delay:" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                            <NumericUpDown Value="{Binding ScreenRecordStartDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" Width="120" AutomationProperties.Name="Recording Start Delay"/>
+                            <TextBlock Text="seconds" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Recording intent:" VerticalAlignment="Center"/>
+                        <ComboBox Grid.Row="3" Grid.Column="2" ItemsSource="{Binding RecordingIntents}" SelectedItem="{Binding RecordingIntent}" HorizontalAlignment="Left" Width="200" AutomationProperties.Name="Recording Intent"/>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- Video Codec Settings -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="Video codec" FontWeight="SemiBold"/>
+                <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                    <StackPanel Spacing="16">
+                        <Grid ColumnDefinitions="Auto, 16, *">
+                            <TextBlock Grid.Column="0" Text="Codec:" VerticalAlignment="Center"/>
+                            <ComboBox Grid.Column="2" ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding VideoCodec}" HorizontalAlignment="Stretch" AutomationProperties.Name="Video Codec"/>
+                        </Grid>
+                        <TextBlock Text="Configure additional codec-specific settings in the FFmpeg options dialog."
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap"/>
+                        <Button Content="Configure FFmpeg..." Command="{Binding OpenFFmpegOptionsCommand}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

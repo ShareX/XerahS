@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="400"
+             x:Class="XerahS.UI.Views.TaskImageSettingsPanel"
+             x:DataType="vm:TaskSettingsViewModel">
+
+    <ScrollViewer Padding="20">
+        <Grid ColumnDefinitions="*, 16, *" RowDefinitions="Auto">
+            <!-- Quality -->
+            <StackPanel Grid.Column="0" Spacing="8">
+                <TextBlock Text="Quality" FontWeight="SemiBold"/>
+                <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                    <StackPanel Spacing="16">
+                        <Grid ColumnDefinitions="Auto, 16, *">
+                            <TextBlock Grid.Column="0" Text="Format:" VerticalAlignment="Center"/>
+                            <ComboBox Grid.Column="2" ItemsSource="{Binding ImageFormats}" SelectedItem="{Binding ImageFormat}" HorizontalAlignment="Stretch" AutomationProperties.Name="Image Format"/>
+                        </Grid>
+                        <Grid ColumnDefinitions="Auto, 16, *">
+                            <TextBlock Grid.Column="0" Text="JPEG Quality:" VerticalAlignment="Center"/>
+                            <NumericUpDown Grid.Column="2" Value="{Binding ImageJPEGQuality}" Minimum="0" Maximum="100" Increment="1" Width="120" HorizontalAlignment="Left" AutomationProperties.Name="JPEG Quality"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- Thumbnail -->
+            <StackPanel Grid.Column="2" Spacing="8">
+                <TextBlock Text="Thumbnail" FontWeight="SemiBold"/>
+                <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                    <StackPanel Spacing="16">
+                        <Grid ColumnDefinitions="Auto, 16, *">
+                            <TextBlock Grid.Column="0" Text="Width:" VerticalAlignment="Center"/>
+                            <NumericUpDown Grid.Column="2" Value="{Binding ThumbnailWidth}" Minimum="0" Maximum="10000" Increment="10" Width="120" HorizontalAlignment="Left" AutomationProperties.Name="Thumbnail Width"/>
+                        </Grid>
+                        <Grid ColumnDefinitions="Auto, 16, *">
+                            <TextBlock Grid.Column="0" Text="Height:" VerticalAlignment="Center"/>
+                            <NumericUpDown Grid.Column="2" Value="{Binding ThumbnailHeight}" Minimum="0" Maximum="10000" Increment="10" Width="120" HorizontalAlignment="Left" AutomationProperties.Name="Thumbnail Height"/>
+                        </Grid>
+                        <Grid ColumnDefinitions="Auto, 16, *">
+                            <TextBlock Grid.Column="0" Text="Name:" VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="2" Text="{Binding ThumbnailName}" AutomationProperties.Name="Thumbnail Name suffix"/>
+                        </Grid>
+                        <CheckBox IsChecked="{Binding ThumbnailCheckSize}" Content="Save thumbnail only if smaller than image"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

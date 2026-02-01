@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ShareX.Editor;
 using Common = XerahS.Common;
+using XerahS.Common;
 using XerahS.Core;
 using XerahS.RegionCapture.ScreenRecording;
 using XerahS.Services.Abstractions;
@@ -76,11 +77,23 @@ namespace XerahS.UI.ViewModels
                     _settings.Job = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(IsIndexFolderJob));
+                    OnPropertyChanged(nameof(IsScreenCaptureJob));
+                    OnPropertyChanged(nameof(IsScreenRecordJob));
                 }
             }
         }
 
         public bool IsIndexFolderJob => _settings.Job == WorkflowType.IndexFolder;
+
+        /// <summary>
+        /// Returns true if the current job is a screen capture job (image output).
+        /// </summary>
+        public bool IsScreenCaptureJob => _settings.Job.GetHotkeyCategory() == Common.EnumExtensions.WorkflowType_Category_ScreenCapture;
+
+        /// <summary>
+        /// Returns true if the current job is a screen record job (video output).
+        /// </summary>
+        public bool IsScreenRecordJob => _settings.Job.GetHotkeyCategory() == Common.EnumExtensions.WorkflowType_Category_ScreenRecord;
 
         #region Capture Settings
 
@@ -203,6 +216,21 @@ namespace XerahS.UI.ViewModels
         }
 
         public IEnumerable<RecordingIntent> RecordingIntents => Enum.GetValues(typeof(RecordingIntent)).Cast<RecordingIntent>();
+        public IEnumerable<FFmpegVideoCodec> VideoCodecs => Enum.GetValues(typeof(FFmpegVideoCodec)).Cast<FFmpegVideoCodec>();
+
+        public FFmpegVideoCodec VideoCodec
+        {
+            get => _settings.CaptureSettings.FFmpegOptions?.VideoCodec ?? FFmpegVideoCodec.libx264;
+            set
+            {
+                _settings.CaptureSettings.FFmpegOptions ??= new XerahS.Core.FFmpegOptions();
+                if (_settings.CaptureSettings.FFmpegOptions.VideoCodec != value)
+                {
+                    _settings.CaptureSettings.FFmpegOptions.VideoCodec = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public RecordingIntent RecordingIntent
         {

@@ -107,13 +107,27 @@
             </TabItem>
             
             <!-- Tab 2: Settings -->
-            <TabItem Header="Settings">
+            <TabItem Header="Other Settings">
                 <views:TaskSettingsPanel DataContext="{Binding TaskSettings}"
-                                         HorizontalAlignment="Stretch" 
+                                         HorizontalAlignment="Stretch"
                                          VerticalAlignment="Stretch"/>
             </TabItem>
 
-            <!-- Tab 3: Index Folder -->
+            <!-- Tab 3: Image Settings (visible for screen capture jobs) -->
+            <TabItem Header="Image Settings" IsVisible="{Binding TaskSettings.IsScreenCaptureJob}">
+                <views:TaskImageSettingsPanel DataContext="{Binding TaskSettings}"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch"/>
+            </TabItem>
+
+            <!-- Tab 4: Video Settings (visible for screen record jobs) -->
+            <TabItem Header="Video Settings" IsVisible="{Binding TaskSettings.IsScreenRecordJob}">
+                <views:TaskVideoSettingsPanel DataContext="{Binding TaskSettings}"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch"/>
+            </TabItem>
+
+            <!-- Tab 5: Index Folder -->
             <TabItem Header="Index Folder" IsVisible="{Binding TaskSettings.IsIndexFolderJob}">
                 <views:IndexFolderView DataContext="{Binding IndexFolderConfig}"/>
             </TabItem>
