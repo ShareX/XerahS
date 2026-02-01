@@ -70,7 +70,68 @@ namespace XerahS.Platform.Linux
             NativeMethods.XGetInputFocus(_display, out IntPtr focus, out int revert_to);
             Console.WriteLine($"XGetInputFocus returned: focus={focus} (0x{focus:X}), revert_to={revert_to}");
 
-            return focus;
+            // The focused window might be a child widget (like an input field).
+            // Walk up the window tree to find the top-level window
+            IntPtr topLevelWindow = GetTopLevelWindow(focus);
+            if (topLevelWindow != focus)
+            {
+                Console.WriteLine($"Walked up window tree: focus={focus} (0x{focus:X}) -> top-level={topLevelWindow} (0x{topLevelWindow:X})");
+            }
+
+            return topLevelWindow;
+        }
+
+        /// <summary>
+        /// Traverse up the window hierarchy to find the top-level window
+        /// (the window whose parent is the root window)
+        /// </summary>
+        private IntPtr GetTopLevelWindow(IntPtr window)
+        {
+            if (_display == IntPtr.Zero || window == IntPtr.Zero)
+            {
+                return window;
+            }
+
+            IntPtr currentWindow = window;
+            IntPtr parent = window;
+
+            // Walk up the window tree until we find a window whose parent is the root window
+            while (parent != IntPtr.Zero && parent != _rootWindow)
+            {
+                int result = NativeMethods.XQueryTree(
+                    _display,
+                    currentWindow,
+                    out IntPtr root,
+                    out parent,
+                    out IntPtr children,
+                    out uint nchildren
+                );
+
+                // Free the children list if allocated
+                if (children != IntPtr.Zero)
+                {
+                    NativeMethods.XFree(children);
+                }
+
+                if (result == 0)
+                {
+                    // XQueryTree failed
+                    Console.WriteLine($"XQueryTree failed for window {currentWindow} (0x{currentWindow:X})");
+                    break;
+                }
+
+                // If parent is root or zero, currentWindow is the top-level window
+                if (parent == _rootWindow || parent == IntPtr.Zero)
+                {
+                    break;
+                }
+
+                // Move up to the parent
+                currentWindow = parent;
+            }
+
+            Console.WriteLine($"GetTopLevelWindow: {window} (0x{window:X}) -> {currentWindow} (0x{currentWindow:X})");
+            return currentWindow;
         }
 
         public bool SetForegroundWindow(IntPtr handle)
@@ -128,6 +189,17 @@ namespace XerahS.Platform.Linux
             {
                 Console.WriteLine($"XWindowAttributes (relative): x={attrs.x}, y={attrs.y}, width={attrs.width}, height={attrs.height}");
                 Console.WriteLine($"XWindowAttributes: map_state={attrs.map_state}, border_width={attrs.border_width}");
+                Console.WriteLine($"XWindowAttributes: depth={attrs.depth}, visual={attrs.visual}");
+
+                // Check if window is actually viewable
+                string mapStateStr = attrs.map_state switch
+                {
+                    0 => "IsUnviewable",
+                    1 => "IsViewable",
+                    2 => "IsUnmapped",
+                    _ => $"Unknown({attrs.map_state})"
+                };
+                Console.WriteLine($"Window map state: {mapStateStr}");
 
                 // Translate coordinates to root window (absolute screen coordinates)
                 // The coordinates from XGetWindowAttributes are relative to the parent window
@@ -145,10 +217,22 @@ namespace XerahS.Platform.Linux
 
                 Console.WriteLine($"XTranslateCoordinates returned: {translateResult}");
                 Console.WriteLine($"Absolute coordinates: x={absoluteX}, y={absoluteY}");
+                Console.WriteLine($"Child window returned by XTranslateCoordinates: {child} (0x{child:X})");
 
                 // Use the absolute coordinates instead of the relative ones
                 var rect = new Rectangle(absoluteX, absoluteY, attrs.width, attrs.height);
                 Console.WriteLine($"Returning Rectangle (absolute): {rect}");
+
+                // Sanity check
+                if (attrs.width <= 0 || attrs.height <= 0)
+                {
+                    Console.WriteLine($"WARNING: Window has invalid dimensions!");
+                }
+                if (absoluteX < -10000 || absoluteY < -10000 || absoluteX > 10000 || absoluteY > 10000)
+                {
+                    Console.WriteLine($"WARNING: Window coordinates seem out of reasonable range!");
+                }
+
                 return rect;
             }
 

@@ -139,6 +139,35 @@ namespace XerahS.Platform.Linux
                 fullBitmap.Dispose();
 
                 Console.WriteLine($"Successfully cropped bitmap: {cropped.Width}x{cropped.Height}");
+
+                // Sample some pixels to check if the image is blank
+                if (cropped.Width > 0 && cropped.Height > 0)
+                {
+                    int sampleX = Math.Min(10, cropped.Width / 2);
+                    int sampleY = Math.Min(10, cropped.Height / 2);
+                    var samplePixel = cropped.GetPixel(sampleX, sampleY);
+                    Console.WriteLine($"Sample pixel at ({sampleX},{sampleY}): R={samplePixel.Red}, G={samplePixel.Green}, B={samplePixel.Blue}, A={samplePixel.Alpha}");
+
+                    // Check if image appears to be all black or all white
+                    bool mightBeBlank = true;
+                    int checkPoints = Math.Min(5, Math.Min(cropped.Width, cropped.Height) / 10);
+                    for (int i = 0; i < checkPoints; i++)
+                    {
+                        int x = (i + 1) * cropped.Width / (checkPoints + 1);
+                        int y = (i + 1) * cropped.Height / (checkPoints + 1);
+                        var pixel = cropped.GetPixel(x, y);
+                        if (pixel.Red > 10 || pixel.Green > 10 || pixel.Blue > 10)
+                        {
+                            mightBeBlank = false;
+                            break;
+                        }
+                    }
+                    if (mightBeBlank)
+                    {
+                        Console.WriteLine("WARNING: Captured image appears to be blank/black!");
+                    }
+                }
+
                 return cropped;
             }
             catch (Exception ex)
@@ -363,6 +392,16 @@ namespace XerahS.Platform.Linux
                 DebugHelper.WriteLine("LinuxScreenCaptureService: No foreground window found, falling back to fullscreen");
                 return await CaptureFullScreenAsync(options);
             }
+
+            // Get window details for debugging
+            var windowTitle = windowService.GetWindowText(handle);
+            var windowClass = windowService.GetWindowClassName(handle);
+            var isVisible = windowService.IsWindowVisible(handle);
+
+            Console.WriteLine($"Window Details:");
+            Console.WriteLine($"  - Title: '{windowTitle}'");
+            Console.WriteLine($"  - Class: '{windowClass}'");
+            Console.WriteLine($"  - Visible: {isVisible}");
 
             Console.WriteLine($"Proceeding to capture window with handle: {handle}");
             return await CaptureWindowAsync(handle, windowService, options);
