@@ -60,8 +60,16 @@ namespace XerahS.Platform.Linux
 
         public IntPtr GetForegroundWindow()
         {
-            if (_display == IntPtr.Zero) return IntPtr.Zero;
+            Console.WriteLine("LinuxWindowService: GetForegroundWindow called");
+            if (_display == IntPtr.Zero)
+            {
+                Console.WriteLine("ERROR: Display is IntPtr.Zero");
+                return IntPtr.Zero;
+            }
+
             NativeMethods.XGetInputFocus(_display, out IntPtr focus, out int revert_to);
+            Console.WriteLine($"XGetInputFocus returned: focus={focus} (0x{focus:X}), revert_to={revert_to}");
+
             return focus;
         }
 
@@ -105,12 +113,46 @@ namespace XerahS.Platform.Linux
 
         public Rectangle GetWindowBounds(IntPtr handle)
         {
-            if (_display == IntPtr.Zero) return Rectangle.Empty;
-            var attrs = new XWindowAttributes();
-            if (NativeMethods.XGetWindowAttributes(_display, handle, ref attrs) != 0)
+            Console.WriteLine($"LinuxWindowService: GetWindowBounds called for handle {handle} (0x{handle:X})");
+            if (_display == IntPtr.Zero)
             {
-                return new Rectangle(attrs.x, attrs.y, attrs.width, attrs.height);
+                Console.WriteLine("ERROR: Display is IntPtr.Zero");
+                return Rectangle.Empty;
             }
+
+            var attrs = new XWindowAttributes();
+            int result = NativeMethods.XGetWindowAttributes(_display, handle, ref attrs);
+            Console.WriteLine($"XGetWindowAttributes returned: {result}");
+
+            if (result != 0)
+            {
+                Console.WriteLine($"XWindowAttributes (relative): x={attrs.x}, y={attrs.y}, width={attrs.width}, height={attrs.height}");
+                Console.WriteLine($"XWindowAttributes: map_state={attrs.map_state}, border_width={attrs.border_width}");
+
+                // Translate coordinates to root window (absolute screen coordinates)
+                // The coordinates from XGetWindowAttributes are relative to the parent window
+                int absoluteX, absoluteY;
+                IntPtr child;
+                int translateResult = NativeMethods.XTranslateCoordinates(
+                    _display,
+                    handle,           // source window
+                    _rootWindow,      // destination (root window)
+                    0, 0,             // source coordinates (0,0 of the window)
+                    out absoluteX,
+                    out absoluteY,
+                    out child
+                );
+
+                Console.WriteLine($"XTranslateCoordinates returned: {translateResult}");
+                Console.WriteLine($"Absolute coordinates: x={absoluteX}, y={absoluteY}");
+
+                // Use the absolute coordinates instead of the relative ones
+                var rect = new Rectangle(absoluteX, absoluteY, attrs.width, attrs.height);
+                Console.WriteLine($"Returning Rectangle (absolute): {rect}");
+                return rect;
+            }
+
+            Console.WriteLine("ERROR: XGetWindowAttributes failed, returning Rectangle.Empty");
             return Rectangle.Empty;
         }
 

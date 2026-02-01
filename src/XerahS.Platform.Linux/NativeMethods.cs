@@ -52,6 +52,9 @@ namespace XerahS.Platform.Linux
         internal static extern int XGetWindowAttributes(IntPtr display, IntPtr w, ref XWindowAttributes window_attributes_return);
 
         [DllImport(libX11)]
+        internal static extern int XTranslateCoordinates(IntPtr display, IntPtr src_w, IntPtr dest_w, int src_x, int src_y, out int dest_x_return, out int dest_y_return, out IntPtr child_return);
+
+        [DllImport(libX11)]
         internal static extern int XQueryTree(IntPtr display, IntPtr w, out IntPtr root_return, out IntPtr parent_return, out IntPtr children_return, out uint nchildren_return);
 
         [DllImport(libX11)]
