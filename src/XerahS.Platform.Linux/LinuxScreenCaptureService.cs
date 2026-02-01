@@ -53,7 +53,42 @@ namespace XerahS.Platform.Linux
 
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
-            // Fullscreen capture - region selection is handled at UI level
+            DebugHelper.WriteLine("LinuxScreenCaptureService: CaptureRegionAsync - using interactive region selection");
+
+            // Try interactive region selection with CLI tools (60 second timeout for user interaction)
+            // gnome-screenshot -a: interactive area selection
+            var result = await CaptureWithToolInteractiveAsync("gnome-screenshot", "-a -f");
+            if (result != null)
+            {
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with gnome-screenshot -a");
+                return result;
+            }
+
+            // spectacle -r: rectangular region selection
+            result = await CaptureWithToolInteractiveAsync("spectacle", "-b -n -r -o");
+            if (result != null)
+            {
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with spectacle -r");
+                return result;
+            }
+
+            // scrot -s: select mode
+            result = await CaptureWithToolInteractiveAsync("scrot", "-s");
+            if (result != null)
+            {
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with scrot -s");
+                return result;
+            }
+
+            // import (ImageMagick): interactive selection when no -window specified
+            result = await CaptureWithToolInteractiveAsync("import", "");
+            if (result != null)
+            {
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with import");
+                return result;
+            }
+
+            DebugHelper.WriteLine("LinuxScreenCaptureService: No region capture tool available, falling back to fullscreen");
             return await CaptureFullScreenAsync(options);
         }
 
@@ -350,9 +385,18 @@ namespace XerahS.Platform.Linux
         }
 
         /// <summary>
+        /// Helper for interactive region selection with extended timeout (60 seconds).
+        /// Used for tools like gnome-screenshot -a, spectacle -r, scrot -s.
+        /// </summary>
+        private async Task<SKBitmap?> CaptureWithToolInteractiveAsync(string toolName, string argsPrefix)
+        {
+            return await CaptureWithToolAsync(toolName, argsPrefix, timeoutMs: 60000);
+        }
+
+        /// <summary>
         /// Generic helper to run a screenshot tool and load the result
         /// </summary>
-        private async Task<SKBitmap?> CaptureWithToolAsync(string toolName, string argsPrefix)
+        private async Task<SKBitmap?> CaptureWithToolAsync(string toolName, string argsPrefix, int timeoutMs = 10000)
         {
             var tempFile = Path.Combine(Path.GetTempPath(), $"sharex_screenshot_{Guid.NewGuid():N}.png");
 
@@ -375,8 +419,8 @@ namespace XerahS.Platform.Linux
                 using var process = Process.Start(startInfo);
                 if (process == null) return null;
 
-                // Wait up to 10 seconds for the screenshot
-                var completed = await Task.Run(() => process.WaitForExit(10000));
+                // Wait for the screenshot (default 10s, interactive 60s)
+                var completed = await Task.Run(() => process.WaitForExit(timeoutMs));
                 if (!completed)
                 {
                     try { process.Kill(); } catch { }

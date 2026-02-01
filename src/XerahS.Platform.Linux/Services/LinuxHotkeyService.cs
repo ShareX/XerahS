@@ -342,8 +342,7 @@ public sealed class LinuxHotkeyService : IHotkeyService
         { Key.CapsLock, "Caps_Lock" },
         { Key.Space, "space" },
         { Key.Tab, "Tab" },
-        { Key.Return, "Return" },
-        { Key.Enter, "Return" },
+        { Key.Return, "Return" },  // Key.Enter is the same value as Key.Return in Avalonia
         { Key.Back, "BackSpace" },
         { Key.Escape, "Escape" },
         { Key.Delete, "Delete" },
