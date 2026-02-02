@@ -37,7 +37,11 @@ internal static class PortalRequestExtensions
     public static async Task<(uint response, IDictionary<string, object> results)> WaitForResponseAsync(this IPortalRequest request)
     {
         var tcs = new TaskCompletionSource<(uint, IDictionary<string, object>)>(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var watch = await request.WatchResponseAsync(data => tcs.TrySetResult((data.response, data.results))).ConfigureAwait(false);
+        using var watch = await request.WatchResponseAsync(data =>
+        {
+            Console.WriteLine($"[XDG Portal] SIGNAL RECEIVED: Response={data.response}, Count={data.results?.Count ?? 0}");
+            tcs.TrySetResult((data.response, data.results ?? new Dictionary<string, object>()));
+        }).ConfigureAwait(false);
         return await tcs.Task.ConfigureAwait(false);
     }
 

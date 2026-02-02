@@ -569,7 +569,27 @@ namespace XerahS.Platform.Linux
             if (IsWayland)
             {
                 DebugHelper.WriteLine("LinuxScreenCaptureService: Wayland active - using portal interactive capture for active window.");
-                return await CaptureWithPortalAsync(forceInteractive: true).ConfigureAwait(false);
+                var portalResult = await CaptureWithPortalAsync(forceInteractive: true).ConfigureAwait(false);
+                if (portalResult != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Portal capture successful.");
+                    return portalResult;
+                }
+                
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Portal capture failed/cancelled, trying generic tools for window capture...");
+                
+                // Fallback to generic tools
+                var result = await CaptureWindowWithGnomeScreenshotAsync();
+                if (result != null) return result;
+
+                result = await CaptureWindowWithSpectacleAsync();
+                if (result != null) return result;
+
+                result = await CaptureWindowWithScrotAsync();
+                if (result != null) return result;
+                
+                DebugHelper.WriteLine("LinuxScreenCaptureService: All window capture methods failed.");
+                return null;
             }
 
             var handle = windowService.GetForegroundWindow();
@@ -637,6 +657,24 @@ namespace XerahS.Platform.Linux
         public Task<CursorInfo?> CaptureCursorAsync()
         {
             return Task.FromResult<CursorInfo?>(null);
+        }
+
+        private async Task<SKBitmap?> CaptureWindowWithGnomeScreenshotAsync()
+        {
+            // -w = window, -b = include border
+            return await CaptureWithToolAsync("gnome-screenshot", "-w -b");
+        }
+
+        private async Task<SKBitmap?> CaptureWindowWithSpectacleAsync()
+        {
+            // -a = active window, -b = background/decorations, -n = non-notify
+            return await CaptureWithToolAsync("spectacle", "-a -b -n -o");
+        }
+
+        private async Task<SKBitmap?> CaptureWindowWithScrotAsync()
+        {
+            // -u = currently focused window, -b = border
+            return await CaptureWithToolAsync("scrot", "-u -b");
         }
 
         /// <summary>
@@ -1003,8 +1041,9 @@ namespace XerahS.Platform.Linux
 
                 var options = new Dictionary<string, object>
                 {
-                    ["modal"] = forceInteractive,
-                    ["interactive"] = forceInteractive
+                    ["modal"] = false,
+                    ["interactive"] = forceInteractive,
+                    ["handle_token"] = $"xerahs_{Guid.NewGuid():N}"
                 };
 
                 var (bitmap, response) = await TryPortalScreenshotAsync(connection, portal, options).ConfigureAwait(false);
@@ -1040,17 +1079,80 @@ namespace XerahS.Platform.Linux
 
         private static async Task<(SKBitmap? bitmap, uint response)> TryPortalScreenshotAsync(Connection connection, IScreenshotPortal portal, IDictionary<string, object> options)
         {
+            var requestStartUtc = DateTime.UtcNow;
+            using var monitor = PortalBusMonitor.TryStart("LinuxScreenCaptureService");
             var requestPath = await portal.ScreenshotAsync(string.Empty, options).ConfigureAwait(false);
             var request = connection.CreateProxy<IPortalRequest>(PortalBusName, requestPath);
             var (response, results) = await request.WaitForResponseAsync().ConfigureAwait(false);
+            string? uriStr = null;
+
+            // Start checking for results
+            if (results != null)
+            {
+                if (results.TryGetResult("uri", out uriStr) && !string.IsNullOrWhiteSpace(uriStr))
+                {
+                    var previewUri = new Uri(uriStr);
+                    if (previewUri.IsFile && !string.IsNullOrEmpty(previewUri.LocalPath) && File.Exists(previewUri.LocalPath))
+                    {
+                        using var previewStream = File.OpenRead(previewUri.LocalPath);
+                        var previewBitmap = SKBitmap.Decode(previewStream);
+                        try { File.Delete(previewUri.LocalPath); } catch { }
+                        return (previewBitmap, 0); // Return success 0 since we got the file
+                    }
+                }
+            }
 
             if (response != 0)
             {
+                var fallbackBitmap = await PortalScreenshotFallback
+                    .TryFindScreenshotAsync(requestStartUtc, TimeSpan.FromSeconds(2), "LinuxScreenCaptureService")
+                    .ConfigureAwait(false);
+                if (fallbackBitmap != null)
+                {
+                    return (fallbackBitmap, 0);
+                }
+
+                LogPortalEnvironment();
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Portal request options:");
+                DebugHelper.WriteLine($"  - interactive: {(options.TryGetValue("interactive", out var interactive) ? interactive : "unset")}");
+                DebugHelper.WriteLine($"  - modal: {(options.TryGetValue("modal", out var modal) ? modal : "unset")}");
+                DebugHelper.WriteLine($"  - handle_token: {(options.TryGetValue("handle_token", out var token) ? token : "unset")}");
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: Portal request failed with response {response}");
+                if (results != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Portal response results:");
+                    foreach (var kvp in results)
+                    {
+                        var valueStr = "null";
+                        try
+                        {
+                            if (kvp.Value != null)
+                            {
+                                // Handle potential Tmds.DBus.Protocol.Variant wrapping
+                                var unwrapped = UnwrapVariant(kvp.Value);
+                                valueStr = unwrapped?.ToString() ?? "null";
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            valueStr = $"Error reading value: {ex.Message}";
+                        }
+                        DebugHelper.WriteLine($"  - {kvp.Key}: {valueStr}");
+                    }
+                }
                 return (null, response);
             }
 
-            if (!results.TryGetResult("uri", out string? uriStr) || string.IsNullOrWhiteSpace(uriStr))
+            if (results == null || !results.TryGetResult("uri", out uriStr) || string.IsNullOrWhiteSpace(uriStr))
             {
+                var fallbackBitmap = await PortalScreenshotFallback
+                    .TryFindScreenshotAsync(requestStartUtc, TimeSpan.FromSeconds(2), "LinuxScreenCaptureService")
+                    .ConfigureAwait(false);
+                if (fallbackBitmap != null)
+                {
+                    return (fallbackBitmap, 0);
+                }
+
                 DebugHelper.WriteLine("LinuxScreenCaptureService: Portal screenshot missing URI in response");
                 return (null, response);
             }
@@ -1068,6 +1170,41 @@ namespace XerahS.Platform.Linux
             try { File.Delete(uri.LocalPath); } catch { }
 
             return (bitmap, response);
+        }
+
+        private static void LogPortalEnvironment()
+        {
+            DebugHelper.WriteLine("LinuxScreenCaptureService: Portal environment:");
+            DebugHelper.WriteLine($"  - XDG_SESSION_TYPE: {Environment.GetEnvironmentVariable("XDG_SESSION_TYPE") ?? "unset"}");
+            DebugHelper.WriteLine($"  - XDG_CURRENT_DESKTOP: {Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") ?? "unset"}");
+            DebugHelper.WriteLine($"  - XDG_SESSION_DESKTOP: {Environment.GetEnvironmentVariable("XDG_SESSION_DESKTOP") ?? "unset"}");
+        }
+
+        private static object UnwrapVariant(object value)
+        {
+            var current = value;
+            while (current != null)
+            {
+                var type = current.GetType();
+                var typeName = type.FullName;
+                if (typeName != "Tmds.DBus.Protocol.Variant" &&
+                    typeName != "Tmds.DBus.Protocol.VariantValue" &&
+                    typeName != "Tmds.DBus.Variant")
+                {
+                    break;
+                }
+
+                var valueProp = type.GetProperty("Value");
+                var unwrapped = valueProp?.GetValue(current);
+                if (unwrapped == null)
+                {
+                    break;
+                }
+
+                current = unwrapped;
+            }
+
+            return current ?? value;
         }
 
         #endregion
