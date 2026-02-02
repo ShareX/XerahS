@@ -44,10 +44,10 @@ public sealed class WaylandPortalInputService : IInputService
     private readonly IInputCapture? _portal;
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private readonly object _cursorLock = new();
-    private IAsyncDisposable? _activatedSubscription;
-    private IAsyncDisposable? _deactivatedSubscription;
-    private IAsyncDisposable? _zonesChangedSubscription;
-    private IAsyncDisposable? _disabledSubscription;
+    private IDisposable? _activatedSubscription;
+    private IDisposable? _deactivatedSubscription;
+    private IDisposable? _zonesChangedSubscription;
+    private IDisposable? _disabledSubscription;
     private System.Drawing.Point _lastCursor;
     private uint _zoneSet;
     private ObjectPath? _sessionHandle;
@@ -439,10 +439,10 @@ public sealed class WaylandPortalInputService : IInputService
             return;
         }
 
-        _activatedSubscription?.DisposeAsync().AsTask().GetAwaiter().GetResult();
-        _deactivatedSubscription?.DisposeAsync().AsTask().GetAwaiter().GetResult();
-        _zonesChangedSubscription?.DisposeAsync().AsTask().GetAwaiter().GetResult();
-        _disabledSubscription?.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        _activatedSubscription?.Dispose();
+        _deactivatedSubscription?.Dispose();
+        _zonesChangedSubscription?.Dispose();
+        _disabledSubscription?.Dispose();
 
         CloseSessionAsync().GetAwaiter().GetResult();
         _connection?.Dispose();
@@ -477,7 +477,7 @@ public sealed class WaylandPortalInputService : IInputService
     private sealed record ZoneDescriptor(uint Width, uint Height, int OffsetX, int OffsetY);
 
     [DBusInterface("org.freedesktop.portal.InputCapture")]
-    private interface IInputCapture : IDBusObject
+    internal interface IInputCapture : IDBusObject
     {
         Task<ObjectPath> CreateSessionAsync(string parentWindow, IDictionary<string, object> options);
 
@@ -489,17 +489,17 @@ public sealed class WaylandPortalInputService : IInputService
 
         Task DisableAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
 
-        Task<IAsyncDisposable> WatchActivatedAsync(Action<ObjectPath, IDictionary<string, object>> handler);
+        Task<IDisposable> WatchActivatedAsync(Action<ObjectPath, IDictionary<string, object>> handler);
 
-        Task<IAsyncDisposable> WatchDeactivatedAsync(Action<ObjectPath, IDictionary<string, object>> handler);
+        Task<IDisposable> WatchDeactivatedAsync(Action<ObjectPath, IDictionary<string, object>> handler);
 
-        Task<IAsyncDisposable> WatchDisabledAsync(Action<ObjectPath, IDictionary<string, object>> handler);
+        Task<IDisposable> WatchDisabledAsync(Action<ObjectPath, IDictionary<string, object>> handler);
 
-        Task<IAsyncDisposable> WatchZonesChangedAsync(Action<ObjectPath, IDictionary<string, object>> handler);
+        Task<IDisposable> WatchZonesChangedAsync(Action<ObjectPath, IDictionary<string, object>> handler);
     }
 
     [DBusInterface("org.freedesktop.portal.Session")]
-    private interface ISession : IDBusObject
+    internal interface ISession : IDBusObject
     {
         Task CloseAsync();
     }

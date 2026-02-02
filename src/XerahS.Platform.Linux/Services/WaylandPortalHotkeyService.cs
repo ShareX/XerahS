@@ -51,8 +51,8 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
     private ushort _nextId = 1;
     private ObjectPath? _sessionHandle;
     private ISession? _sessionProxy;
-    private IAsyncDisposable? _activatedSubscription;
-    private IAsyncDisposable? _deactivatedSubscription;
+    private IDisposable? _activatedSubscription;
+    private IDisposable? _deactivatedSubscription;
     private bool _disposed;
 
     public event EventHandler<HotkeyTriggeredEventArgs>? HotkeyTriggered;
@@ -179,8 +179,8 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
             return;
         }
 
-        _activatedSubscription?.DisposeAsync().AsTask().GetAwaiter().GetResult();
-        _deactivatedSubscription?.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        _activatedSubscription?.Dispose();
+        _deactivatedSubscription?.Dispose();
         CloseSessionAsync().GetAwaiter().GetResult();
         _connection?.Dispose();
         _bindSemaphore.Dispose();
@@ -408,7 +408,6 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
         { Key.CapsLock, "Caps_Lock" },
         { Key.Space, "Space" },
         { Key.Tab, "Tab" },
-        { Key.Return, "Return" },
         { Key.Enter, "Return" },
         { Key.Back, "BackSpace" },
         { Key.Escape, "Escape" },
@@ -443,7 +442,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
     };
 
     [DBusInterface("org.freedesktop.portal.GlobalShortcuts")]
-    private interface IGlobalShortcuts : IDBusObject
+    internal interface IGlobalShortcuts : IDBusObject
     {
         Task<ObjectPath> CreateSessionAsync(IDictionary<string, object> options);
 
@@ -453,13 +452,13 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
 
         Task ConfigureShortcutsAsync(ObjectPath sessionHandle, string parentWindow, IDictionary<string, object> options);
 
-        Task<IAsyncDisposable> WatchActivatedAsync(Action<ObjectPath, string, ulong, IDictionary<string, object>> handler);
+        Task<IDisposable> WatchActivatedAsync(Action<ObjectPath, string, ulong, IDictionary<string, object>> handler);
 
-        Task<IAsyncDisposable> WatchDeactivatedAsync(Action<ObjectPath, string, ulong, IDictionary<string, object>> handler);
+        Task<IDisposable> WatchDeactivatedAsync(Action<ObjectPath, string, ulong, IDictionary<string, object>> handler);
     }
 
     [DBusInterface("org.freedesktop.portal.Session")]
-    private interface ISession : IDBusObject
+    internal interface ISession : IDBusObject
     {
         Task CloseAsync();
     }

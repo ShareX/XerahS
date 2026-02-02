@@ -187,10 +187,4 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
 
         return new PhysicalRectangle(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top));
     }
-
-    [DBusInterface("org.freedesktop.portal.Screenshot")]
-    private interface IScreenshotPortal : IDBusObject
-    {
-        Task<ObjectPath> ScreenshotAsync(string parentWindow, IDictionary<string, object> options);
-    }
 }

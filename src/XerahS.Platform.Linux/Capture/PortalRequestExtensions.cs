@@ -30,6 +30,16 @@ using Tmds.DBus;
 
 namespace XerahS.Platform.Linux.Capture;
 
+/// <summary>
+/// Shared D-Bus interface for XDG Portal Screenshot API.
+/// Used by both LinuxScreenCaptureService and WaylandPortalStrategy.
+/// </summary>
+[DBusInterface("org.freedesktop.portal.Screenshot")]
+internal interface IScreenshotPortal : IDBusObject
+{
+    Task<ObjectPath> ScreenshotAsync(string parentWindow, IDictionary<string, object> options);
+}
+
 internal interface IPortalRequest : IDBusObject
 {
     Task<IAsyncDisposable> WatchResponseAsync(Action<uint, IDictionary<string, object>> handler);

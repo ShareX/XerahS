@@ -157,7 +157,7 @@ public sealed class WaylandPortalSystemService : ISystemService, IDisposable
     }
 
     [DBusInterface("org.freedesktop.portal.OpenURI")]
-    private interface IOpenUriPortal : IDBusObject
+    internal interface IOpenUriPortal : IDBusObject
     {
         Task<ObjectPath> OpenURIAsync(string parentWindow, string uri, IDictionary<string, object> options);
         Task<ObjectPath> OpenFileAsync(string parentWindow, SafeFileHandle fd, IDictionary<string, object> options);
