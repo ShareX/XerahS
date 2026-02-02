@@ -85,6 +85,9 @@ public class TrayIconHelper : INotifyPropertyChanged
 
     private RecordingStatus _currentRecordingStatus = RecordingStatus.Idle;
 
+    // Border window shown around the recording area (visible for all recording types including GIF)
+    private Views.RecordingBorderWindow? _borderWindow;
+
     /// <summary>
     /// Current tray icon based on recording state.
     /// - Idle/Error: Default application icon
@@ -182,7 +185,7 @@ public class TrayIconHelper : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Handles recording status changes to update tray icon and menu.
+    /// Handles recording status changes to update tray icon, menu, and border window.
     /// </summary>
     private void OnRecordingStatusChanged(object? sender, RecordingStatusEventArgs e)
     {
@@ -201,17 +204,48 @@ public class TrayIconHelper : INotifyPropertyChanged
 
             // Rebuild menu to add/remove recording-specific items
             BuildTrayMenu();
+
+            // Hide border window when recording ends (Idle or Error)
+            if (e.Status is RecordingStatus.Idle or RecordingStatus.Error)
+            {
+                HideBorderWindow();
+            }
         });
     }
 
     /// <summary>
     /// Handles recording started event.
+    /// Shows the recording border window around the capture area.
+    /// Border color indicates recording technology: Red for FFmpeg/GDI, Green for Modern Capture.
     /// </summary>
     private void OnRecordingStarted(object? sender, RecordingStartedEventArgs e)
     {
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
-            DebugHelper.WriteLine($"TrayIconHelper: Recording started (fallback={e.IsUsingFallback})");
+            try
+            {
+                DebugHelper.WriteLine($"TrayIconHelper: Recording started (fallback={e.IsUsingFallback})");
+
+                // Create and show border window around the recording area
+                _borderWindow = new Views.RecordingBorderWindow();
+
+                // Set border color: Red for FFmpeg/GDI fallback, Green for Modern Capture
+                string borderColor = e.IsUsingFallback ? "Red" : "Green";
+                _borderWindow.SetBorderColor(borderColor);
+
+                // Determine recording area bounds from options
+                var bounds = GetRecordingBounds(e.Options);
+                _borderWindow.SetBounds(bounds);
+
+                // Show the border window
+                _borderWindow.Show();
+
+                DebugHelper.WriteLine($"TrayIconHelper: Recording border shown - {borderColor} border for {(e.IsUsingFallback ? "FFmpeg/GDI" : "Modern Capture")} recording, bounds={bounds}");
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "TrayIconHelper: Failed to show recording border window");
+            }
         });
     }
 
@@ -229,8 +263,74 @@ public class TrayIconHelper : INotifyPropertyChanged
                 OnPropertyChanged(nameof(TrayToolTipText));
                 OnPropertyChanged(nameof(IsRecordingActive));
                 BuildTrayMenu();
+                HideBorderWindow();
             }
         });
+    }
+
+    /// <summary>
+    /// Calculates the recording area bounds based on recording options.
+    /// </summary>
+    private static System.Drawing.Rectangle GetRecordingBounds(RecordingOptions options)
+    {
+        switch (options.Mode)
+        {
+            case CaptureMode.Region:
+                // Use the specified region
+                return options.Region;
+
+            case CaptureMode.Window:
+                // Get window bounds from platform services
+                if (options.TargetWindowHandle != IntPtr.Zero)
+                {
+                    try
+                    {
+                        return Platform.Abstractions.PlatformServices.Window.GetWindowBounds(options.TargetWindowHandle);
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugHelper.WriteException(ex, "TrayIconHelper: Failed to get window bounds");
+                    }
+                }
+                // Fall through to screen mode if window bounds fail
+                goto case CaptureMode.Screen;
+
+            case CaptureMode.Screen:
+            default:
+                // Get primary screen bounds
+                var screens = Platform.Abstractions.PlatformServices.Screen.GetAllScreens();
+                var primaryScreen = screens.FirstOrDefault(s => s.IsPrimary);
+                if (primaryScreen != null)
+                {
+                    return new System.Drawing.Rectangle(
+                        primaryScreen.Bounds.Left,
+                        primaryScreen.Bounds.Top,
+                        primaryScreen.Bounds.Width,
+                        primaryScreen.Bounds.Height);
+                }
+                // Default fallback
+                return new System.Drawing.Rectangle(0, 0, 1920, 1080);
+        }
+    }
+
+    /// <summary>
+    /// Closes and disposes the recording border window.
+    /// </summary>
+    private void HideBorderWindow()
+    {
+        if (_borderWindow != null)
+        {
+            try
+            {
+                _borderWindow.Close();
+                _borderWindow = null;
+                DebugHelper.WriteLine("TrayIconHelper: Recording border window hidden");
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "TrayIconHelper: Failed to hide recording border window");
+            }
+        }
     }
 
     /// <summary>
