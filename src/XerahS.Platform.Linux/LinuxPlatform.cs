@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
+using XerahS.Platform.Linux.Recording;
 using XerahS.Platform.Linux.Services;
 using XerahS.RegionCapture.ScreenRecording;
 namespace XerahS.Platform.Linux
@@ -86,17 +87,25 @@ namespace XerahS.Platform.Linux
         {
             try
             {
-                // Linux uses FFmpegRecordingService as the primary recording method
-                // FFmpeg supports x11grab (X11) and various Wayland capture methods
-                DebugHelper.WriteLine("Linux: Initializing screen recording with FFmpeg backend");
+                bool isWayland = LinuxScreenCaptureService.IsWayland;
+                bool hasScreenCastPortal = isWayland && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.ScreenCast");
 
-                // Register FFmpegRecordingService factory
-                // Note: FFmpegRecordingService is a complete recording service (not just capture/encoder)
-                // so we don't use CaptureSourceFactory/EncoderFactory pattern here
+                if (hasScreenCastPortal)
+                {
+                    DebugHelper.WriteLine("Linux: ScreenCast portal detected. Using Wayland portal recording.");
+                    ScreenRecorderService.NativeRecordingServiceFactory = () => new WaylandPortalRecordingService();
+                }
+                else
+                {
+                    DebugHelper.WriteLine("Linux: ScreenCast portal not available. Using FFmpeg backend.");
+                }
+
                 ScreenRecorderService.FallbackServiceFactory = () => new FFmpegRecordingService();
 
                 DebugHelper.WriteLine("Linux: Screen recording initialized successfully");
-                DebugHelper.WriteLine("  - Recording backend: FFmpeg (x11grab/Wayland)");
+                DebugHelper.WriteLine(hasScreenCastPortal
+                    ? "  - Recording backend: XDG ScreenCast Portal (PipeWire) with FFmpeg encoding"
+                    : "  - Recording backend: FFmpeg (x11grab/Wayland)");
                 DebugHelper.WriteLine("  - Supported modes: Screen, Window, Region");
                 DebugHelper.WriteLine("  - Codecs: H.264, HEVC, VP9, AV1 (depends on FFmpeg build)");
             }
