@@ -618,12 +618,6 @@ namespace XerahS.Platform.Linux
             }
         }
 
-        [DBusInterface("org.freedesktop.portal.Screenshot")]
-        private interface IScreenshotPortal : IDBusObject
-        {
-            Task<ObjectPath> ScreenshotAsync(string parentWindow, IDictionary<string, object> options);
-        }
-
         #endregion
     }
 }
