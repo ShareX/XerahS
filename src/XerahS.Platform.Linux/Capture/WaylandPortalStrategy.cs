@@ -171,7 +171,7 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
             return (null, response);
         }
 
-        if (!results.TryGetValue("uri", out var uriValue) || uriValue is not string uriStr)
+        if (!results.TryGetResult("uri", out string? uriStr) || string.IsNullOrWhiteSpace(uriStr))
         {
             return (null, response);
         }

@@ -630,7 +630,7 @@ namespace XerahS.Platform.Linux
                 return (null, response);
             }
 
-            if (!results.TryGetValue("uri", out var uriValue) || uriValue is not string uriStr)
+            if (!results.TryGetResult("uri", out string? uriStr) || string.IsNullOrWhiteSpace(uriStr))
             {
                 DebugHelper.WriteLine("LinuxScreenCaptureService: Portal screenshot missing URI in response");
                 return (null, response);

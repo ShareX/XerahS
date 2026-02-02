@@ -40,4 +40,56 @@ internal static class PortalRequestExtensions
         using var watch = await request.WatchResponseAsync(data => tcs.TrySetResult((data.response, data.results))).ConfigureAwait(false);
         return await tcs.Task.ConfigureAwait(false);
     }
+
+    public static bool TryGetResult<T>(this IDictionary<string, object> results, string key, out T? value)
+    {
+        value = default;
+        if (!results.TryGetValue(key, out var raw) || raw == null)
+        {
+            return false;
+        }
+
+        raw = UnwrapVariant(raw);
+
+        if (raw is T typed)
+        {
+            value = typed;
+            return true;
+        }
+
+        if (typeof(T) == typeof(string) && raw is ObjectPath path)
+        {
+            value = (T)(object)path.ToString();
+            return true;
+        }
+
+        return false;
+    }
+
+    private static object UnwrapVariant(object value)
+    {
+        var current = value;
+        while (current != null)
+        {
+            var type = current.GetType();
+            var typeName = type.FullName;
+            if (typeName != "Tmds.DBus.Protocol.Variant" &&
+                typeName != "Tmds.DBus.Protocol.VariantValue" &&
+                typeName != "Tmds.DBus.Variant")
+            {
+                break;
+            }
+
+            var valueProp = type.GetProperty("Value");
+            var unwrapped = valueProp?.GetValue(current);
+            if (unwrapped == null)
+            {
+                break;
+            }
+
+            current = unwrapped;
+        }
+
+        return current ?? value;
+    }
 }

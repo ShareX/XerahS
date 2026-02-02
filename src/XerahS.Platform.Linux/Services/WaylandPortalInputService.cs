@@ -165,7 +165,7 @@ public sealed class WaylandPortalInputService : IInputService
             return null;
         }
 
-        if (!results.TryGetValue("session_handle", out var handleObj) || handleObj is not string handlePath)
+        if (!results.TryGetResult("session_handle", out string? handlePath) || string.IsNullOrWhiteSpace(handlePath))
         {
             DebugHelper.WriteLine("WaylandPortalInputService: Session handle missing in portal response");
             return null;

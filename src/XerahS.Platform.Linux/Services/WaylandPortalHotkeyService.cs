@@ -259,7 +259,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
             throw new InvalidOperationException($"WaylandPortalHotkeyService: CreateSession failed ({response})");
         }
 
-        if (!results.TryGetValue("session_handle", out var handleObj) || handleObj is not string handlePath)
+        if (!results.TryGetResult("session_handle", out string? handlePath) || string.IsNullOrWhiteSpace(handlePath))
         {
             throw new InvalidOperationException("WaylandPortalHotkeyService: Session handle missing in portal response");
         }
