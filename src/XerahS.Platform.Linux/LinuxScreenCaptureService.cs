@@ -88,6 +88,16 @@ namespace XerahS.Platform.Linux
                 return result;
             }
 
+            if (IsWayland)
+            {
+                DebugHelper.WriteLine("LinuxScreenCaptureService: No region capture tool available, trying portal interactive capture");
+                result = await CaptureWithPortalAsync(forceInteractive: true).ConfigureAwait(false);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
             DebugHelper.WriteLine("LinuxScreenCaptureService: No region capture tool available, falling back to fullscreen");
             return await CaptureFullScreenAsync(options);
         }
@@ -197,7 +207,7 @@ namespace XerahS.Platform.Linux
             if (IsWayland)
             {
                 DebugHelper.WriteLine("LinuxScreenCaptureService: Wayland detected, trying XDG Portal...");
-                var portalResult = await CaptureWithPortalAsync();
+                var portalResult = await CaptureWithPortalAsync(forceInteractive: false);
                 if (portalResult != null)
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: XDG Portal capture succeeded.");
@@ -382,6 +392,12 @@ namespace XerahS.Platform.Linux
             Console.WriteLine("LinuxScreenCaptureService: CaptureActiveWindowAsync started");
             DebugHelper.WriteLine("LinuxScreenCaptureService: CaptureActiveWindowAsync started");
 
+            if (IsWayland)
+            {
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Wayland active - using portal interactive capture for active window.");
+                return await CaptureWithPortalAsync(forceInteractive: true).ConfigureAwait(false);
+            }
+
             var handle = windowService.GetForegroundWindow();
             Console.WriteLine($"GetForegroundWindow returned handle: {handle} (0x{handle:X})");
             DebugHelper.WriteLine($"LinuxScreenCaptureService: GetForegroundWindow returned handle: {handle}");
@@ -557,7 +573,7 @@ namespace XerahS.Platform.Linux
         /// Capture screenshot using XDG Desktop Portal Screenshot API.
         /// This is the standard way to capture on Wayland and works across desktop environments.
         /// </summary>
-        private async Task<SKBitmap?> CaptureWithPortalAsync()
+        private async Task<SKBitmap?> CaptureWithPortalAsync(bool forceInteractive)
         {
             try
             {
@@ -566,45 +582,30 @@ namespace XerahS.Platform.Linux
 
                 var portal = connection.CreateProxy<IScreenshotPortal>(PortalBusName, PortalObjectPath);
 
-                // Request screenshot with modal=false to avoid blocking the compositor
                 var options = new Dictionary<string, object>
                 {
-                    ["modal"] = false,
-                    ["interactive"] = false  // Don't show UI, just capture
+                    ["modal"] = forceInteractive,
+                    ["interactive"] = forceInteractive
                 };
 
-                var requestPath = await portal.ScreenshotAsync(string.Empty, options);
-
-                var request = connection.CreateProxy<IPortalRequest>(PortalBusName, requestPath);
-                var (response, results) = await request.WaitForResponseAsync();
-
-                // Response 0 = success, 1 = user cancelled, 2 = error
-                if (response != 0)
+                var (bitmap, response) = await TryPortalScreenshotAsync(connection, portal, options).ConfigureAwait(false);
+                if (bitmap != null)
                 {
-                    DebugHelper.WriteLine($"LinuxScreenCaptureService: Portal screenshot cancelled or failed (response={response})");
-                    return null;
+                    return bitmap;
                 }
 
-                if (!results.TryGetValue("uri", out var uriValue) || uriValue is not string uriStr)
+                // Response 1 = user cancelled, 2 = error. Retry interactively only on error.
+                if (!forceInteractive && response == 2)
                 {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Portal screenshot missing URI in response");
-                    return null;
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Portal non-interactive capture failed; retrying interactive.");
+                    options["interactive"] = true;
+                    options["modal"] = true;
+                    var (interactiveBitmap, _) = await TryPortalScreenshotAsync(connection, portal, options).ConfigureAwait(false);
+                    return interactiveBitmap;
                 }
 
-                var uri = new Uri(uriStr);
-                if (!uri.IsFile || string.IsNullOrEmpty(uri.LocalPath) || !File.Exists(uri.LocalPath))
-                {
-                    DebugHelper.WriteLine($"LinuxScreenCaptureService: Portal screenshot file not found: {uriStr}");
-                    return null;
-                }
-
-                using var stream = File.OpenRead(uri.LocalPath);
-                var bitmap = SKBitmap.Decode(stream);
-
-                // Clean up temp file created by portal
-                try { File.Delete(uri.LocalPath); } catch { }
-
-                return bitmap;
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: Portal screenshot cancelled or failed (response={response})");
+                return null;
             }
             catch (DBusException ex)
             {
@@ -616,6 +617,38 @@ namespace XerahS.Platform.Linux
                 DebugHelper.WriteException(ex, "LinuxScreenCaptureService: Portal capture failed");
                 return null;
             }
+        }
+
+        private static async Task<(SKBitmap? bitmap, uint response)> TryPortalScreenshotAsync(Connection connection, IScreenshotPortal portal, IDictionary<string, object> options)
+        {
+            var requestPath = await portal.ScreenshotAsync(string.Empty, options).ConfigureAwait(false);
+            var request = connection.CreateProxy<IPortalRequest>(PortalBusName, requestPath);
+            var (response, results) = await request.WaitForResponseAsync().ConfigureAwait(false);
+
+            if (response != 0)
+            {
+                return (null, response);
+            }
+
+            if (!results.TryGetValue("uri", out var uriValue) || uriValue is not string uriStr)
+            {
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Portal screenshot missing URI in response");
+                return (null, response);
+            }
+
+            var uri = new Uri(uriStr);
+            if (!uri.IsFile || string.IsNullOrEmpty(uri.LocalPath) || !File.Exists(uri.LocalPath))
+            {
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: Portal screenshot file not found: {uriStr}");
+                return (null, response);
+            }
+
+            using var stream = File.OpenRead(uri.LocalPath);
+            var bitmap = SKBitmap.Decode(stream);
+
+            try { File.Delete(uri.LocalPath); } catch { }
+
+            return (bitmap, response);
         }
 
         #endregion

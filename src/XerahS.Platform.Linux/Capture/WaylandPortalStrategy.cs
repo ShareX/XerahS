@@ -114,36 +114,28 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
             await connection.ConnectAsync();
 
             var portal = connection.CreateProxy<IScreenshotPortal>(PortalBusName, PortalObjectPath);
-            var requestPath = await portal.ScreenshotAsync(string.Empty, new Dictionary<string, object> { ["modal"] = false });
 
-            var request = connection.CreateProxy<IPortalRequest>(PortalBusName, requestPath);
-            var (response, results) = await request.WaitForResponseAsync();
-
-            if (response != 0)
+            var options = new Dictionary<string, object>
             {
-                DebugHelper.WriteLine($"WaylandPortalStrategy: Portal request failed with response code: {response}");
-                return null;
+                ["modal"] = false,
+                ["interactive"] = false
+            };
+
+            var (bitmap, response) = await TryPortalScreenshotAsync(connection, portal, options).ConfigureAwait(false);
+            if (bitmap == null && response == 2)
+            {
+                DebugHelper.WriteLine("WaylandPortalStrategy: Portal non-interactive capture failed; retrying interactive.");
+                options["interactive"] = true;
+                options["modal"] = true;
+                (bitmap, _) = await TryPortalScreenshotAsync(connection, portal, options).ConfigureAwait(false);
             }
 
-            if (!results.TryGetValue("uri", out var uriValue) || uriValue is not string uriStr)
-            {
-                DebugHelper.WriteLine("WaylandPortalStrategy: 'uri' missing or invalid in portal response.");
-                return null;
-            }
-            DebugHelper.WriteLine($"WaylandPortalStrategy: Received URI: {uriStr}");
-
-            var uri = new Uri(uriStr);
-            if (!uri.IsFile || string.IsNullOrEmpty(uri.LocalPath) || !File.Exists(uri.LocalPath))
-            {
-                DebugHelper.WriteLine($"WaylandPortalStrategy: Invalid file URI or file does not exist: {uriStr}");
-                return null;
-            }
-
-            using var stream = File.OpenRead(uri.LocalPath);
-            var bitmap = SKBitmap.Decode(stream);
             if (bitmap == null)
             {
-                DebugHelper.WriteLine("WaylandPortalStrategy: Failed to decode bitmap from stream.");
+                if (response != 0)
+                {
+                    DebugHelper.WriteLine($"WaylandPortalStrategy: Portal request failed with response code: {response}");
+                }
                 return null;
             }
 
@@ -166,6 +158,33 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
             DebugHelper.WriteException(ex, "WaylandPortalStrategy: Unexpected capture failure");
             return null;
         }
+    }
+
+    private static async Task<(SKBitmap? bitmap, uint response)> TryPortalScreenshotAsync(Connection connection, IScreenshotPortal portal, IDictionary<string, object> options)
+    {
+        var requestPath = await portal.ScreenshotAsync(string.Empty, options).ConfigureAwait(false);
+        var request = connection.CreateProxy<IPortalRequest>(PortalBusName, requestPath);
+        var (response, results) = await request.WaitForResponseAsync().ConfigureAwait(false);
+
+        if (response != 0)
+        {
+            return (null, response);
+        }
+
+        if (!results.TryGetValue("uri", out var uriValue) || uriValue is not string uriStr)
+        {
+            return (null, response);
+        }
+
+        var uri = new Uri(uriStr);
+        if (!uri.IsFile || string.IsNullOrEmpty(uri.LocalPath) || !File.Exists(uri.LocalPath))
+        {
+            return (null, response);
+        }
+
+        using var stream = File.OpenRead(uri.LocalPath);
+        var bitmap = SKBitmap.Decode(stream);
+        return (bitmap, response);
     }
 
     private static CapturedBitmap? CropToRegion(SKBitmap source, PhysicalRectangle region)

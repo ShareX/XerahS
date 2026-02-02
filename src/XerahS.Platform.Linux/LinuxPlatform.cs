@@ -41,15 +41,20 @@ namespace XerahS.Platform.Linux
                     : "Linux: Running on X11. Using LinuxScreenCaptureService with CLI fallbacks.");
             }
 
-            IHotkeyService hotkeyService = LinuxScreenCaptureService.IsWayland
+            bool isWayland = LinuxScreenCaptureService.IsWayland;
+            bool hasGlobalShortcuts = isWayland && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.GlobalShortcuts");
+            bool hasInputCapture = isWayland && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.InputCapture");
+            bool hasOpenUri = isWayland && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.OpenURI");
+
+            IHotkeyService hotkeyService = hasGlobalShortcuts
                 ? new WaylandPortalHotkeyService()
                 : new LinuxHotkeyService();
 
-            IInputService inputService = LinuxScreenCaptureService.IsWayland
+            IInputService inputService = hasInputCapture
                 ? new WaylandPortalInputService()
                 : new LinuxInputService();
 
-            ISystemService systemService = LinuxScreenCaptureService.IsWayland
+            ISystemService systemService = hasOpenUri
                 ? new WaylandPortalSystemService()
                 : new LinuxSystemService();
 
