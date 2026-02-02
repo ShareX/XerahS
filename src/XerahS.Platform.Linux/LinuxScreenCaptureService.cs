@@ -51,55 +51,221 @@ namespace XerahS.Platform.Linux
             return Task.FromResult(SKRectI.Empty);
         }
 
+        /// <summary>
+        /// Detect the current desktop environment
+        /// </summary>
+        private static string? GetCurrentDesktop()
+        {
+            // XDG_CURRENT_DESKTOP can contain multiple values separated by colon
+            var desktop = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP");
+            if (!string.IsNullOrEmpty(desktop))
+            {
+                var desktops = desktop.Split(':');
+                foreach (var d in desktops)
+                {
+                    var normalized = d.Trim().ToUpperInvariant();
+                    if (normalized.Contains("GNOME")) return "GNOME";
+                    if (normalized.Contains("KDE") || normalized.Contains("PLASMA")) return "KDE";
+                    if (normalized.Contains("HYPRLAND")) return "HYPRLAND";
+                    if (normalized.Contains("SWAY")) return "SWAY";
+                    if (normalized.Contains("XFCE")) return "XFCE";
+                    if (normalized.Contains("MATE")) return "MATE";
+                    if (normalized.Contains("CINNAMON")) return "CINNAMON";
+                    if (normalized.Contains("LXQT")) return "LXQT";
+                    if (normalized.Contains("LXDE")) return "LXDE";
+                }
+            }
+
+            // Fallback: check DESKTOP_SESSION
+            var session = Environment.GetEnvironmentVariable("DESKTOP_SESSION");
+            if (!string.IsNullOrEmpty(session))
+            {
+                var normalized = session.ToUpperInvariant();
+                if (normalized.Contains("GNOME")) return "GNOME";
+                if (normalized.Contains("PLASMA") || normalized.Contains("KDE")) return "KDE";
+                if (normalized.Contains("HYPRLAND")) return "HYPRLAND";
+                if (normalized.Contains("SWAY")) return "SWAY";
+            }
+
+            return null;
+        }
+
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
             DebugHelper.WriteLine("LinuxScreenCaptureService: CaptureRegionAsync - using interactive region selection");
 
-            // Try interactive region selection with CLI tools (60 second timeout for user interaction)
-            // gnome-screenshot -a: interactive area selection
-            var result = await CaptureWithToolInteractiveAsync("gnome-screenshot", "-a -f");
-            if (result != null)
-            {
-                DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with gnome-screenshot -a");
-                return result;
-            }
-
-            // spectacle -r: rectangular region selection
-            result = await CaptureWithToolInteractiveAsync("spectacle", "-b -n -r -o");
-            if (result != null)
-            {
-                DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with spectacle -r");
-                return result;
-            }
-
-            // scrot -s: select mode
-            result = await CaptureWithToolInteractiveAsync("scrot", "-s");
-            if (result != null)
-            {
-                DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with scrot -s");
-                return result;
-            }
-
-            // import (ImageMagick): interactive selection when no -window specified
-            result = await CaptureWithToolInteractiveAsync("import", "");
-            if (result != null)
-            {
-                DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with import");
-                return result;
-            }
+            SKBitmap? result;
+            var currentDesktop = GetCurrentDesktop();
+            DebugHelper.WriteLine($"LinuxScreenCaptureService: Detected desktop environment: {currentDesktop ?? "unknown"}, Wayland: {IsWayland}");
 
             if (IsWayland)
             {
-                DebugHelper.WriteLine("LinuxScreenCaptureService: No region capture tool available, trying portal interactive capture");
+                // On Wayland, try XDG Portal first - it's the standard cross-DE method
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Trying XDG Portal for interactive region capture");
                 result = await CaptureWithPortalAsync(forceInteractive: true).ConfigureAwait(false);
                 if (result != null)
                 {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with XDG Portal");
                     return result;
                 }
             }
 
+            // Try DE-native tools first based on detected desktop
+            result = await TryCaptureWithDesktopNativeToolAsync(currentDesktop);
+            if (result != null)
+            {
+                return result;
+            }
+
+            // On Wayland (especially wlroots-based like Hyprland, Sway), try grim+slurp
+            if (IsWayland)
+            {
+                // grim + slurp (works on all wlroots compositors: Hyprland, Sway, River, etc.)
+                result = await CaptureWithGrimSlurpAsync();
+                if (result != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with grim+slurp");
+                    return result;
+                }
+
+                // grimblast (Hyprland convenience wrapper)
+                result = await CaptureWithGrimblastRegionAsync();
+                if (result != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with grimblast");
+                    return result;
+                }
+
+                // hyprshot (alternative Hyprland tool)
+                result = await CaptureWithHyprshotRegionAsync();
+                if (result != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with hyprshot");
+                    return result;
+                }
+            }
+
+            // Try remaining generic tools that weren't already tried
+            result = await TryCaptureWithGenericToolsAsync(currentDesktop);
+            if (result != null)
+            {
+                return result;
+            }
+
             DebugHelper.WriteLine("LinuxScreenCaptureService: No region capture tool available, falling back to fullscreen");
             return await CaptureFullScreenAsync(options);
+        }
+
+        /// <summary>
+        /// Try the native screenshot tool for the detected desktop environment
+        /// </summary>
+        private async Task<SKBitmap?> TryCaptureWithDesktopNativeToolAsync(string? desktop)
+        {
+            SKBitmap? result;
+
+            switch (desktop)
+            {
+                case "GNOME":
+                case "CINNAMON":
+                case "MATE":
+                    // GNOME and GNOME-based: gnome-screenshot
+                    result = await CaptureWithToolInteractiveAsync("gnome-screenshot", "-a -f");
+                    if (result != null)
+                    {
+                        DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with gnome-screenshot");
+                        return result;
+                    }
+                    break;
+
+                case "KDE":
+                case "LXQT":
+                    // KDE Plasma: spectacle
+                    result = await CaptureWithToolInteractiveAsync("spectacle", "-b -n -r -o");
+                    if (result != null)
+                    {
+                        DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with spectacle");
+                        return result;
+                    }
+                    break;
+
+                case "XFCE":
+                    // XFCE: xfce4-screenshooter
+                    result = await CaptureWithToolInteractiveAsync("xfce4-screenshooter", "-r -s");
+                    if (result != null)
+                    {
+                        DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with xfce4-screenshooter");
+                        return result;
+                    }
+                    break;
+
+                case "HYPRLAND":
+                case "SWAY":
+                    // wlroots-based: prefer grim+slurp (handled in main method)
+                    break;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Try generic screenshot tools that work across multiple DEs
+        /// </summary>
+        private async Task<SKBitmap?> TryCaptureWithGenericToolsAsync(string? alreadyTriedDesktop)
+        {
+            SKBitmap? result;
+
+            // Try tools that weren't already tried based on desktop
+            if (alreadyTriedDesktop != "GNOME" && alreadyTriedDesktop != "CINNAMON" && alreadyTriedDesktop != "MATE")
+            {
+                result = await CaptureWithToolInteractiveAsync("gnome-screenshot", "-a -f");
+                if (result != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with gnome-screenshot");
+                    return result;
+                }
+            }
+
+            if (alreadyTriedDesktop != "KDE" && alreadyTriedDesktop != "LXQT")
+            {
+                result = await CaptureWithToolInteractiveAsync("spectacle", "-b -n -r -o");
+                if (result != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with spectacle");
+                    return result;
+                }
+            }
+
+            if (alreadyTriedDesktop != "XFCE")
+            {
+                result = await CaptureWithToolInteractiveAsync("xfce4-screenshooter", "-r -s");
+                if (result != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with xfce4-screenshooter");
+                    return result;
+                }
+            }
+
+            // X11-only tools (won't work on pure Wayland but worth trying)
+            if (!IsWayland)
+            {
+                // scrot -s: select mode (X11 only)
+                result = await CaptureWithToolInteractiveAsync("scrot", "-s");
+                if (result != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with scrot");
+                    return result;
+                }
+
+                // import (ImageMagick): interactive selection (X11 only)
+                result = await CaptureWithToolInteractiveAsync("import", "");
+                if (result != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with import");
+                    return result;
+                }
+            }
+
+            return null;
         }
 
         public async Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
@@ -213,7 +379,15 @@ namespace XerahS.Platform.Linux
                     DebugHelper.WriteLine("LinuxScreenCaptureService: XDG Portal capture succeeded.");
                     return portalResult;
                 }
-                DebugHelper.WriteLine("LinuxScreenCaptureService: XDG Portal capture failed, trying CLI tools...");
+                DebugHelper.WriteLine("LinuxScreenCaptureService: XDG Portal capture failed, trying Wayland-native tools...");
+
+                // Try grim (standard Wayland screenshot tool, works with Hyprland, Sway, etc.)
+                var grimResult = await CaptureWithGrimAsync();
+                if (grimResult != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Screenshot captured with grim.");
+                    return grimResult;
+                }
             }
 
             // 2. Try generic tools (gnome-screenshot, spectacle, etc) which work on both Wayland and X11
@@ -496,6 +670,251 @@ namespace XerahS.Platform.Linux
         {
             return await CaptureWithToolAsync("import", "-window root");
         }
+
+        #region Wayland-native capture tools (grim, slurp, grimblast, hyprshot)
+
+        /// <summary>
+        /// Capture region using grimblast (Hyprland's grim+slurp wrapper).
+        /// This is the preferred tool for Hyprland users.
+        /// </summary>
+        private async Task<SKBitmap?> CaptureWithGrimblastRegionAsync()
+        {
+            var tempFile = Path.Combine(Path.GetTempPath(), $"sharex_screenshot_{Guid.NewGuid():N}.png");
+
+            try
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "grimblast",
+                    Arguments = $"save area \"{tempFile}\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using var process = Process.Start(startInfo);
+                if (process == null) return null;
+
+                var completed = await Task.Run(() => process.WaitForExit(60000));
+                if (!completed)
+                {
+                    try { process.Kill(); } catch { }
+                    return null;
+                }
+
+                if (process.ExitCode != 0 || !File.Exists(tempFile))
+                {
+                    return null;
+                }
+
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Screenshot captured with grimblast");
+                using var stream = File.OpenRead(tempFile);
+                return SKBitmap.Decode(stream);
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                {
+                    try { File.Delete(tempFile); } catch { }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Capture region using grim + slurp (standard Wayland screenshot tools).
+        /// slurp provides interactive region selection, grim captures the region.
+        /// </summary>
+        private async Task<SKBitmap?> CaptureWithGrimSlurpAsync()
+        {
+            var tempFile = Path.Combine(Path.GetTempPath(), $"sharex_screenshot_{Guid.NewGuid():N}.png");
+
+            try
+            {
+                // First, use slurp to get the region selection
+                var slurpStartInfo = new ProcessStartInfo
+                {
+                    FileName = "slurp",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                string? geometry;
+                using (var slurpProcess = Process.Start(slurpStartInfo))
+                {
+                    if (slurpProcess == null) return null;
+
+                    var completed = await Task.Run(() => slurpProcess.WaitForExit(60000));
+                    if (!completed)
+                    {
+                        try { slurpProcess.Kill(); } catch { }
+                        return null;
+                    }
+
+                    if (slurpProcess.ExitCode != 0)
+                    {
+                        return null;
+                    }
+
+                    geometry = (await slurpProcess.StandardOutput.ReadToEndAsync()).Trim();
+                    if (string.IsNullOrEmpty(geometry))
+                    {
+                        return null;
+                    }
+                }
+
+                // Now use grim to capture the selected region
+                var grimStartInfo = new ProcessStartInfo
+                {
+                    FileName = "grim",
+                    Arguments = $"-g \"{geometry}\" \"{tempFile}\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using var grimProcess = Process.Start(grimStartInfo);
+                if (grimProcess == null) return null;
+
+                var grimCompleted = await Task.Run(() => grimProcess.WaitForExit(10000));
+                if (!grimCompleted)
+                {
+                    try { grimProcess.Kill(); } catch { }
+                    return null;
+                }
+
+                if (grimProcess.ExitCode != 0 || !File.Exists(tempFile))
+                {
+                    return null;
+                }
+
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Screenshot captured with grim+slurp");
+                using var stream = File.OpenRead(tempFile);
+                return SKBitmap.Decode(stream);
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                {
+                    try { File.Delete(tempFile); } catch { }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Capture region using hyprshot (alternative Hyprland screenshot tool).
+        /// </summary>
+        private async Task<SKBitmap?> CaptureWithHyprshotRegionAsync()
+        {
+            var tempFile = Path.Combine(Path.GetTempPath(), $"sharex_screenshot_{Guid.NewGuid():N}.png");
+
+            try
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "hyprshot",
+                    Arguments = $"-m region -o \"{Path.GetDirectoryName(tempFile)}\" -f \"{Path.GetFileName(tempFile)}\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using var process = Process.Start(startInfo);
+                if (process == null) return null;
+
+                var completed = await Task.Run(() => process.WaitForExit(60000));
+                if (!completed)
+                {
+                    try { process.Kill(); } catch { }
+                    return null;
+                }
+
+                if (process.ExitCode != 0 || !File.Exists(tempFile))
+                {
+                    return null;
+                }
+
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Screenshot captured with hyprshot");
+                using var stream = File.OpenRead(tempFile);
+                return SKBitmap.Decode(stream);
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                {
+                    try { File.Delete(tempFile); } catch { }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Capture full screen using grim (standard Wayland screenshot tool).
+        /// </summary>
+        private async Task<SKBitmap?> CaptureWithGrimAsync()
+        {
+            var tempFile = Path.Combine(Path.GetTempPath(), $"sharex_screenshot_{Guid.NewGuid():N}.png");
+
+            try
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "grim",
+                    Arguments = $"\"{tempFile}\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using var process = Process.Start(startInfo);
+                if (process == null) return null;
+
+                var completed = await Task.Run(() => process.WaitForExit(10000));
+                if (!completed)
+                {
+                    try { process.Kill(); } catch { }
+                    return null;
+                }
+
+                if (process.ExitCode != 0 || !File.Exists(tempFile))
+                {
+                    return null;
+                }
+
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Screenshot captured with grim");
+                using var stream = File.OpenRead(tempFile);
+                return SKBitmap.Decode(stream);
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                {
+                    try { File.Delete(tempFile); } catch { }
+                }
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Helper for interactive region selection with extended timeout (60 seconds).

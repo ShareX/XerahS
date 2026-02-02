@@ -140,15 +140,83 @@ internal sealed class LinuxCliCaptureStrategy : ICaptureStrategy
 
     private static string? DetectAvailableTool()
     {
-        var tools = new[] { "gnome-screenshot", "spectacle", "scrot", "import" };
+        var sessionType = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE");
+        var isWayland = sessionType?.Equals("wayland", StringComparison.OrdinalIgnoreCase) ?? false;
+        var currentDesktop = GetCurrentDesktop();
+
+        // First, try the native tool for the current desktop environment
+        var nativeTool = GetNativeToolForDesktop(currentDesktop);
+        if (nativeTool != null && IsToolAvailable(nativeTool))
+        {
+            return nativeTool;
+        }
+
+        // On Wayland (especially wlroots-based), try grim+slurp
+        if (isWayland)
+        {
+            if (IsCommandAvailable("grim") && IsCommandAvailable("slurp"))
+                return "grim";
+
+            if (IsCommandAvailable("grimblast"))
+                return "grimblast";
+
+            if (IsCommandAvailable("hyprshot"))
+                return "hyprshot";
+        }
+
+        // Try generic tools in order of preference
+        var tools = new[] { "gnome-screenshot", "spectacle", "xfce4-screenshooter", "scrot", "import" };
 
         foreach (var tool in tools)
         {
+            // Skip X11-only tools on Wayland
+            if (isWayland && (tool == "scrot" || tool == "import"))
+                continue;
+
             if (IsCommandAvailable(tool))
                 return tool;
         }
 
         return null;
+    }
+
+    private static string? GetCurrentDesktop()
+    {
+        var desktop = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP");
+        if (!string.IsNullOrEmpty(desktop))
+        {
+            var normalized = desktop.ToUpperInvariant();
+            if (normalized.Contains("GNOME")) return "GNOME";
+            if (normalized.Contains("KDE") || normalized.Contains("PLASMA")) return "KDE";
+            if (normalized.Contains("XFCE")) return "XFCE";
+            if (normalized.Contains("HYPRLAND")) return "HYPRLAND";
+            if (normalized.Contains("SWAY")) return "SWAY";
+            if (normalized.Contains("MATE")) return "MATE";
+            if (normalized.Contains("CINNAMON")) return "CINNAMON";
+            if (normalized.Contains("LXQT")) return "LXQT";
+        }
+        return null;
+    }
+
+    private static string? GetNativeToolForDesktop(string? desktop)
+    {
+        return desktop switch
+        {
+            "GNOME" or "MATE" or "CINNAMON" => "gnome-screenshot",
+            "KDE" or "LXQT" => "spectacle",
+            "XFCE" => "xfce4-screenshooter",
+            "HYPRLAND" or "SWAY" => "grim", // requires slurp
+            _ => null
+        };
+    }
+
+    private static bool IsToolAvailable(string tool)
+    {
+        // grim requires slurp for region selection
+        if (tool == "grim")
+            return IsCommandAvailable("grim") && IsCommandAvailable("slurp");
+
+        return IsCommandAvailable(tool);
     }
 
     private static bool IsCommandAvailable(string command)
@@ -183,12 +251,23 @@ internal sealed class LinuxCliCaptureStrategy : ICaptureStrategy
         PhysicalRectangle region,
         string outputFile)
     {
+        // Handle grim+slurp specially since it's a two-step process
+        if (tool == "grim")
+        {
+            await CaptureWithGrimSlurp(region, outputFile);
+            return;
+        }
+
         var arguments = tool switch
         {
+            "grimblast" => $"save area \"{outputFile}\"",
+            "hyprshot" => $"-m region -o \"{Path.GetDirectoryName(outputFile)}\" -f \"{Path.GetFileName(outputFile)}\"",
             "gnome-screenshot" => $"-a -f \"{outputFile}\"",
-            "spectacle" => $"-b -n -r -o \"{outputFile}\" -r {region.X},{region.Y},{region.Width},{region.Height}",
-            "scrot" => $"-a {region.X},{region.Y},{region.Width},{region.Height} \"{outputFile}\"",
-            "import" => $"-window root -crop {region.Width}x{region.Height}+{region.X}+{region.Y} \"{outputFile}\"",
+            // spectacle: -b=background, -n=no notification, -r=rectangular region (interactive), -o=output
+            "spectacle" => $"-b -n -r -o \"{outputFile}\"",
+            "xfce4-screenshooter" => $"-r -s \"{outputFile}\"",
+            "scrot" => $"-s \"{outputFile}\"",
+            "import" => $"\"{outputFile}\"",
             _ => throw new NotSupportedException($"Unknown tool: {tool}")
         };
 
@@ -211,6 +290,54 @@ internal sealed class LinuxCliCaptureStrategy : ICaptureStrategy
         {
             var error = await process.StandardError.ReadToEndAsync();
             throw new InvalidOperationException($"{tool} failed: {error}");
+        }
+    }
+
+    private static async Task CaptureWithGrimSlurp(PhysicalRectangle region, string outputFile)
+    {
+        // Use slurp to select the region interactively
+        var slurpProcess = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "slurp",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            }
+        };
+
+        slurpProcess.Start();
+        var geometry = (await slurpProcess.StandardOutput.ReadToEndAsync()).Trim();
+        await slurpProcess.WaitForExitAsync();
+
+        if (slurpProcess.ExitCode != 0 || string.IsNullOrEmpty(geometry))
+        {
+            var error = await slurpProcess.StandardError.ReadToEndAsync();
+            throw new InvalidOperationException($"slurp failed: {error}");
+        }
+
+        // Use grim to capture the selected region
+        var grimProcess = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "grim",
+                Arguments = $"-g \"{geometry}\" \"{outputFile}\"",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardError = true
+            }
+        };
+
+        grimProcess.Start();
+        await grimProcess.WaitForExitAsync();
+
+        if (grimProcess.ExitCode != 0)
+        {
+            var error = await grimProcess.StandardError.ReadToEndAsync();
+            throw new InvalidOperationException($"grim failed: {error}");
         }
     }
 
