@@ -1,0 +1,25 @@
+Application Runtime Log - 2026-02-02
+
+Command: dotnet run --project "XerahS/src/XerahS.App/XerahS.App.csproj"
+
+Output Snapshot:
+2026-02-02 11:13:52.318 - LinuxScreenCaptureService: Attempting capture (Modern=True)...
+2026-02-02 11:13:52.318 - LinuxScreenCaptureService: Wayland detected, trying XDG Portal...
+2026-02-02 11:13:52.321 - LinuxScreenCaptureService: Portal capture failed:
+System.ArgumentException: Duplicate type name within an assembly.
+   at System.Reflection.Emit.RuntimeTypeBuilder.DefineType(QCallModule module, String fullname, Int32 tkParent, TypeAttributes attributes, Int32 tkEnclosingType, Int32[] interfaceTokens)
+   at System.Reflection.Emit.RuntimeTypeBuilder..ctor(String name, TypeAttributes attr, Type parent, Type[] interfaces, RuntimeModuleBuilder module, PackingSize iPackingSize, Int32 iTypeSize, RuntimeTypeBuilder enclosingType)
+   at System.Reflection.Emit.RuntimeModuleBuilder.DefineTypeCore(String name, TypeAttributes attr, Type parent, Type[] interfaces, PackingSize packingSize, Int32 typesize)
+   at System.Reflection.Emit.ModuleBuilder.DefineType(String name, TypeAttributes attr, Type parent)
+   at Tmds.DBus.CodeGen.DBusObjectProxyTypeBuilder.Build(Type interfaceType)
+   at Tmds.DBus.CodeGen.DynamicAssembly.GetProxyTypeInfo(Type interfaceType)
+   at Tmds.DBus.Connection.CreateProxy(Type interfaceType, String busName, ObjectPath path)
+   at Tmds.DBus.Connection.CreateProxy[T](String serviceName, ObjectPath path)
+   at XerahS.Platform.Linux.LinuxScreenCaptureService.CaptureWithPortalAsync() in /home/xerahs/Documents/GitHub/ShareX Team/XerahS/src/XerahS.Platform.Linux/LinuxScreenCaptureService.cs:line 567
+2026-02-02 11:13:52.321 - LinuxScreenCaptureService: XDG Portal capture failed, trying CLI tools...
+2026-02-02 11:13:52.322 - LinuxScreenCaptureService: external tools failed. Falling back to X11.
+2026-02-02 11:13:52.322 - LinuxScreenCaptureService: X11 capture skipped (Wayland active).
+ERROR: CaptureFullScreenAsync returned null
+CaptureRectAsync returned bitmap: NULL
+=== ACTIVE WINDOW CAPTURE DEBUG END ===
+2026-02-02 11:13:52.322 - Capture returned null for job type: ActiveWindow (elapsed 18ms)
