@@ -42,6 +42,7 @@ public class ScreenRecordingManager
     public static ScreenRecordingManager Instance => _lazy.Value;
 
     private readonly object _lock = new();
+    private readonly SemaphoreSlim _stopSemaphore = new(1, 1);
     private IRecordingService? _currentRecording;
     private RecordingOptions? _currentOptions;
     private TaskCompletionSource<bool>? _stopSignal;
@@ -51,6 +52,8 @@ public class ScreenRecordingManager
     private int _segmentIndex;
     private bool _isPaused;
     private bool _abortRequested;
+    private bool _isFinalized;
+    private string? _cachedFinalPath;
     private TimeSpan _lastDuration;
 
     /// <summary>
@@ -287,45 +290,83 @@ public class ScreenRecordingManager
     }
 
     /// <summary>
-    /// Stops the current recording session
+    /// Stops the current recording session.
+    /// Thread-safe: Uses a semaphore to prevent concurrent stop/finalization operations.
+    /// If already finalized, returns the cached final path without re-processing.
     /// </summary>
     /// <returns>Output file path if recording completed successfully, null otherwise</returns>
     public async Task<string?> StopRecordingAsync()
     {
-        bool wasPaused = IsPaused;
-        if (wasPaused)
+        // Fast path: if already finalized, return cached path immediately
+        lock (_lock)
         {
-            // Stop while paused: finalize segments without starting a new recording.
-            _isPaused = false;
-            StatusChanged?.Invoke(this, new RecordingStatusEventArgs(RecordingStatus.Finalizing, _lastDuration));
+            if (_isFinalized)
+            {
+                DebugHelper.WriteLine("ScreenRecordingManager: Already finalized, returning cached path");
+                return _cachedFinalPath;
+            }
         }
 
-        if (_abortRequested)
+        // Acquire semaphore to ensure only one stop/finalization runs at a time
+        await _stopSemaphore.WaitAsync();
+        try
         {
-            CleanupSegments(deleteFinalOutput: true);
-            _abortRequested = false;
-            return null;
+            // Double-check after acquiring lock (another call may have finished)
+            lock (_lock)
+            {
+                if (_isFinalized)
+                {
+                    DebugHelper.WriteLine("ScreenRecordingManager: Already finalized (after semaphore), returning cached path");
+                    return _cachedFinalPath;
+                }
+            }
+
+            bool wasPaused = IsPaused;
+            if (wasPaused)
+            {
+                // Stop while paused: finalize segments without starting a new recording.
+                _isPaused = false;
+                StatusChanged?.Invoke(this, new RecordingStatusEventArgs(RecordingStatus.Finalizing, _lastDuration));
+            }
+
+            if (_abortRequested)
+            {
+                CleanupSegments(deleteFinalOutput: true);
+                _abortRequested = false;
+                return null;
+            }
+
+            await StopRecordingCoreAsync(signalStop: true);
+            string? finalPath = await FinalizeSegmentsAsync();
+
+            if (!string.IsNullOrEmpty(finalPath))
+            {
+                RecordingCompleted?.Invoke(this, finalPath);
+            }
+
+            if (string.IsNullOrEmpty(finalPath) && !string.IsNullOrEmpty(_finalOutputPath) && File.Exists(_finalOutputPath))
+            {
+                finalPath = _finalOutputPath;
+            }
+
+            if (wasPaused)
+            {
+                StatusChanged?.Invoke(this, new RecordingStatusEventArgs(RecordingStatus.Idle, _lastDuration));
+            }
+
+            // Mark as finalized and cache the path for subsequent calls
+            lock (_lock)
+            {
+                _isFinalized = true;
+                _cachedFinalPath = finalPath;
+            }
+
+            return finalPath;
         }
-
-        await StopRecordingCoreAsync(signalStop: true);
-        string? finalPath = await FinalizeSegmentsAsync();
-
-        if (!string.IsNullOrEmpty(finalPath))
+        finally
         {
-            RecordingCompleted?.Invoke(this, finalPath);
+            _stopSemaphore.Release();
         }
-
-        if (string.IsNullOrEmpty(finalPath) && !string.IsNullOrEmpty(_finalOutputPath) && File.Exists(_finalOutputPath))
-        {
-            finalPath = _finalOutputPath;
-        }
-
-        if (wasPaused)
-        {
-            StatusChanged?.Invoke(this, new RecordingStatusEventArgs(RecordingStatus.Idle, _lastDuration));
-        }
-
-        return finalPath;
     }
 
     /// <summary>
@@ -519,6 +560,8 @@ public class ScreenRecordingManager
             _segmentIndex = 0;
             _abortRequested = false;
             _isPaused = false;
+            _isFinalized = false;
+            _cachedFinalPath = null;
             _finalOutputPath = options.OutputPath;
             _resumeOptions = CloneOptions(options);
         }
@@ -863,6 +906,8 @@ public class ScreenRecordingManager
         _finalOutputPath = null;
         _segmentIndex = 0;
         _isPaused = false;
+        _isFinalized = false;
+        _cachedFinalPath = null;
     }
 
     private static async Task<bool> WaitForFileAsync(string path, TimeSpan timeout)

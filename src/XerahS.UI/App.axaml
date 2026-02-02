@@ -53,8 +53,12 @@
 
     <TrayIcon.Icons>
         <TrayIcons>
-            <TrayIcon Icon="avares://XerahS.UI/Assets/ShareX.iconset/icon_16x16.png"
-                      ToolTipText="{x:Static common:AppResources.AppName}"
+            <!-- TrayIcon dynamically changes based on recording state:
+                 - Default: Application icon
+                 - Recording/Initializing: Red recording icon
+                 - Paused/Finalizing: Yellow paused icon -->
+            <TrayIcon Icon="{Binding CurrentTrayIcon, Source={x:Static local:TrayIconHelper.Instance}}"
+                      ToolTipText="{Binding TrayToolTipText, Source={x:Static local:TrayIconHelper.Instance}}"
                       IsVisible="{Binding ShowTray, Source={x:Static local:TrayIconHelper.Instance}}"
                       Menu="{Binding TrayMenu, Source={x:Static local:TrayIconHelper.Instance}}"
                       Clicked="TrayIcon_Clicked">
