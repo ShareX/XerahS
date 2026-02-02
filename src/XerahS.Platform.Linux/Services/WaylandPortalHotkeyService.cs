@@ -311,9 +311,9 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
         return (shortcuts.ToArray(), map);
     }
 
-    private void OnActivated(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)
+    private void OnActivated((ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options) data)
     {
-        if (_sessionHandle == null || !_sessionHandle.Equals(sessionHandle) || IsSuspended)
+        if (_sessionHandle == null || !_sessionHandle.Equals(data.sessionHandle) || IsSuspended)
         {
             return;
         }
@@ -321,7 +321,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
         HotkeyInfo? info;
         lock (_hotkeyLock)
         {
-            _shortcutMap.TryGetValue(shortcutId, out info);
+            _shortcutMap.TryGetValue(data.shortcutId, out info);
         }
 
         if (info == null)
@@ -333,7 +333,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
         Dispatcher.UIThread.Post(() => HotkeyTriggered?.Invoke(this, args));
     }
 
-    private void OnDeactivated(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)
+    private void OnDeactivated((ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options) data)
     {
         // Portal currently only triggers once per activation; no action needed.
     }
@@ -452,9 +452,9 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
 
         Task ConfigureShortcutsAsync(ObjectPath sessionHandle, string parentWindow, IDictionary<string, object> options);
 
-        Task<IDisposable> WatchActivatedAsync(Action<ObjectPath, string, ulong, IDictionary<string, object>> handler, Action<Exception>? error = null);
+        Task<IDisposable> WatchActivatedAsync(Action<(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
 
-        Task<IDisposable> WatchDeactivatedAsync(Action<ObjectPath, string, ulong, IDictionary<string, object>> handler, Action<Exception>? error = null);
+        Task<IDisposable> WatchDeactivatedAsync(Action<(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
     }
 
     [DBusInterface("org.freedesktop.portal.Session")]

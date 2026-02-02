@@ -385,14 +385,14 @@ public sealed class WaylandPortalInputService : IInputService
         return _sessionHandle != null && _sessionHandle.Equals(sessionHandle);
     }
 
-    private void OnActivated(ObjectPath sessionHandle, IDictionary<string, object> options)
+    private void OnActivated((ObjectPath sessionHandle, IDictionary<string, object> options) data)
     {
-        if (!SessionMatches(sessionHandle))
+        if (!SessionMatches(data.sessionHandle))
         {
             return;
         }
 
-        var point = ExtractCursorPosition(options);
+        var point = ExtractCursorPosition(data.options);
         if (point.HasValue)
         {
             lock (_cursorLock)
@@ -402,9 +402,9 @@ public sealed class WaylandPortalInputService : IInputService
         }
     }
 
-    private void OnDeactivated(ObjectPath sessionHandle, IDictionary<string, object> options)
+    private void OnDeactivated((ObjectPath sessionHandle, IDictionary<string, object> options) data)
     {
-        if (!SessionMatches(sessionHandle))
+        if (!SessionMatches(data.sessionHandle))
         {
             return;
         }
@@ -412,9 +412,9 @@ public sealed class WaylandPortalInputService : IInputService
         _ = EnableAsync();
     }
 
-    private void OnDisabled(ObjectPath sessionHandle, IDictionary<string, object> options)
+    private void OnDisabled((ObjectPath sessionHandle, IDictionary<string, object> options) data)
     {
-        if (!SessionMatches(sessionHandle))
+        if (!SessionMatches(data.sessionHandle))
         {
             return;
         }
@@ -422,9 +422,9 @@ public sealed class WaylandPortalInputService : IInputService
         _ = EnableAsync();
     }
 
-    private void OnZonesChanged(ObjectPath sessionHandle, IDictionary<string, object> options)
+    private void OnZonesChanged((ObjectPath sessionHandle, IDictionary<string, object> options) data)
     {
-        if (!SessionMatches(sessionHandle))
+        if (!SessionMatches(data.sessionHandle))
         {
             return;
         }
@@ -489,13 +489,13 @@ public sealed class WaylandPortalInputService : IInputService
 
         Task DisableAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
 
-        Task<IDisposable> WatchActivatedAsync(Action<ObjectPath, IDictionary<string, object>> handler, Action<Exception>? error = null);
+        Task<IDisposable> WatchActivatedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
 
-        Task<IDisposable> WatchDeactivatedAsync(Action<ObjectPath, IDictionary<string, object>> handler, Action<Exception>? error = null);
+        Task<IDisposable> WatchDeactivatedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
 
-        Task<IDisposable> WatchDisabledAsync(Action<ObjectPath, IDictionary<string, object>> handler, Action<Exception>? error = null);
+        Task<IDisposable> WatchDisabledAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
 
-        Task<IDisposable> WatchZonesChangedAsync(Action<ObjectPath, IDictionary<string, object>> handler, Action<Exception>? error = null);
+        Task<IDisposable> WatchZonesChangedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
     }
 
     [DBusInterface("org.freedesktop.portal.Session")]
