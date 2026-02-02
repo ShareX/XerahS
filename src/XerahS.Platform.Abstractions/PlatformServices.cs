@@ -156,6 +156,18 @@ namespace XerahS.Platform.Abstractions
             set => _diagnosticService = value;
         }
 
+        private static IThemeService? _themeService;
+        public static IThemeService Theme
+        {
+            get => _themeService ?? throw new InvalidOperationException("Theme service not initialized.");
+            set => _themeService = value;
+        }
+
+        /// <summary>
+        /// Checks if theme service has been initialized
+        /// </summary>
+        public static bool IsThemeServiceInitialized => _themeService != null;
+
 
 
         /// <summary>
@@ -229,6 +241,7 @@ namespace XerahS.Platform.Abstractions
             _startupService = null;
             _diagnosticService = null;
             _shellIntegrationService = null;
+            _themeService = null;
         }
     }
 }

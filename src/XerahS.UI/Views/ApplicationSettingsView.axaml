@@ -119,18 +119,24 @@
                      <StackPanel Spacing="24">
                          <StackPanel Spacing="8">
                             <TextBlock Text="Theme" FontWeight="SemiBold"/>
-                            <Border BorderThickness="1" 
-                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                            <Border BorderThickness="1"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
                                     <Grid ColumnDefinitions="Auto, 16, *">
                                         <TextBlock Grid.Column="0" Text="Application Theme:" VerticalAlignment="Center"/>
-                                        <ComboBox Grid.Column="2" SelectedIndex="{Binding SelectedTheme}" Width="200" HorizontalAlignment="Left" AutomationProperties.Name="Application Theme">
-                                            <ComboBoxItem Content="Default"/>
-                                            <ComboBoxItem Content="Dark"/>
-                                        </ComboBox>
+                                        <ComboBox Grid.Column="2"
+                                                  ItemsSource="{Binding ThemeModes}"
+                                                  SelectedItem="{Binding ThemeMode}"
+                                                  Width="200"
+                                                  HorizontalAlignment="Left"
+                                                  AutomationProperties.Name="Application Theme"/>
                                     </Grid>
+                                    <TextBlock Text="'System default' follows your operating system's light/dark mode preference."
+                                               FontSize="12"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

@@ -73,6 +73,10 @@ namespace XerahS.Platform.Linux
                 notificationService: new LinuxNotificationService(),
                 diagnosticService: new Services.LinuxDiagnosticService()
             );
+
+            // Initialize theme service for dark mode detection
+            PlatformServices.Theme = new LinuxThemeService();
+            DebugHelper.WriteLine($"Linux: Theme service initialized. Dark mode preferred: {PlatformServices.Theme.IsDarkModePreferred}");
         }
 
         /// <summary>
