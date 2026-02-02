@@ -9,6 +9,7 @@
              xmlns:core="using:XerahS.Core"
              xmlns:common="clr-namespace:XerahS.Common;assembly=XerahS.Common"
              x:Class="XerahS.UI.App"
+             Name="XerahS"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
@@ -31,6 +32,15 @@
             <views:ProviderCatalogView/>
         </DataTemplate>
     </Application.DataTemplates>
+
+    <!-- macOS Native Menu -->
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="About XerahS" Click="OnAboutClick"/>
+            <NativeMenuItemSeparator/>
+            <NativeMenuItem Header="Preferences..." Click="OnPreferencesClick"/>
+        </NativeMenu>
+    </NativeMenu.Menu>
   
     <Application.Styles>
         <!-- TODO: Re-enable dark theme when ready -->

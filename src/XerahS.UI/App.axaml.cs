@@ -635,4 +635,23 @@ public partial class App : Application
             }
         }
     }
+
+    private void OnAboutClick(object? sender, EventArgs e)
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            desktop.MainWindow is Views.MainWindow mainWindow)
+        {
+            mainWindow.NavigateToAbout();
+        }
+    }
+
+    private void OnPreferencesClick(object? sender, EventArgs e)
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            desktop.MainWindow is Views.MainWindow mainWindow)
+        {
+            mainWindow.NavigateToSettings();
+        }
+    }
+
 }
