@@ -156,11 +156,12 @@ public sealed class WaylandPortalSystemService : ISystemService, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    [DBusInterface("org.freedesktop.portal.OpenURI")]
-    public interface IOpenUriPortal : IDBusObject
-    {
-        Task<ObjectPath> OpenURIAsync(string parentWindow, string uri, IDictionary<string, object> options);
-        Task<ObjectPath> OpenFileAsync(string parentWindow, SafeFileHandle fd, IDictionary<string, object> options);
-        Task<ObjectPath> OpenDirectoryAsync(string parentWindow, SafeFileHandle fd, IDictionary<string, object> options);
     }
+
+[DBusInterface("org.freedesktop.portal.OpenURI")]
+public interface IOpenUriPortal : IDBusObject
+{
+    Task<ObjectPath> OpenURIAsync(string parentWindow, string uri, IDictionary<string, object> options);
+    Task<ObjectPath> OpenFileAsync(string parentWindow, SafeFileHandle fd, IDictionary<string, object> options);
+    Task<ObjectPath> OpenDirectoryAsync(string parentWindow, SafeFileHandle fd, IDictionary<string, object> options);
 }

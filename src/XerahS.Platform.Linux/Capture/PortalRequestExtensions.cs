@@ -30,28 +30,14 @@ using Tmds.DBus;
 
 namespace XerahS.Platform.Linux.Capture;
 
-/// <summary>
-/// Shared D-Bus interface for XDG Portal Screenshot API.
-/// Used by both LinuxScreenCaptureService and WaylandPortalStrategy.
-/// </summary>
-[DBusInterface("org.freedesktop.portal.Screenshot")]
-public interface IScreenshotPortal : IDBusObject
-{
-    Task<ObjectPath> ScreenshotAsync(string parentWindow, IDictionary<string, object> options);
-}
 
-[DBusInterface("org.freedesktop.portal.Request")]
-public interface IPortalRequest : IDBusObject
-{
-    Task<IAsyncDisposable> WatchResponseAsync(Action<uint, IDictionary<string, object>> handler);
-}
 
 internal static class PortalRequestExtensions
 {
     public static async Task<(uint response, IDictionary<string, object> results)> WaitForResponseAsync(this IPortalRequest request)
     {
         var tcs = new TaskCompletionSource<(uint, IDictionary<string, object>)>(TaskCreationOptions.RunContinuationsAsynchronously);
-        await using var watch = await request.WatchResponseAsync((response, results) => tcs.TrySetResult((response, results))).ConfigureAwait(false);
+        using var watch = await request.WatchResponseAsync(data => tcs.TrySetResult((data.response, data.results))).ConfigureAwait(false);
         return await tcs.Task.ConfigureAwait(false);
     }
 }

@@ -441,21 +441,21 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
         { Key.Decimal, "KP_Decimal" }
     };
 
-    [DBusInterface("org.freedesktop.portal.GlobalShortcuts")]
-    public interface IGlobalShortcuts : IDBusObject
-    {
-        Task<ObjectPath> CreateSessionAsync(IDictionary<string, object> options);
-
-        Task<ObjectPath> BindShortcutsAsync(ObjectPath sessionHandle, ValueTuple<string, IDictionary<string, object>>[] shortcuts, string parentWindow, IDictionary<string, object> options);
-
-        Task<ObjectPath> ListShortcutsAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
-
-        Task ConfigureShortcutsAsync(ObjectPath sessionHandle, string parentWindow, IDictionary<string, object> options);
-
-        Task<IDisposable> WatchActivatedAsync(Action<(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
-
-        Task<IDisposable> WatchDeactivatedAsync(Action<(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
-    }
-
     // Session interface is defined in PortalSession.cs to avoid duplicate proxy names.
+}
+
+[DBusInterface("org.freedesktop.portal.GlobalShortcuts")]
+public interface IGlobalShortcuts : IDBusObject
+{
+    Task<ObjectPath> CreateSessionAsync(IDictionary<string, object> options);
+
+    Task<ObjectPath> BindShortcutsAsync(ObjectPath sessionHandle, ValueTuple<string, IDictionary<string, object>>[] shortcuts, string parentWindow, IDictionary<string, object> options);
+
+    Task<ObjectPath> ListShortcutsAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
+
+    Task ConfigureShortcutsAsync(ObjectPath sessionHandle, string parentWindow, IDictionary<string, object> options);
+
+    Task<IDisposable> WatchActivatedAsync(Action<(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
+
+    Task<IDisposable> WatchDeactivatedAsync(Action<(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
 }

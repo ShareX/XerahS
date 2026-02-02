@@ -476,27 +476,27 @@ public sealed class WaylandPortalInputService : IInputService
 
     private sealed record ZoneDescriptor(uint Width, uint Height, int OffsetX, int OffsetY);
 
-    [DBusInterface("org.freedesktop.portal.InputCapture")]
-    public interface IInputCapture : IDBusObject
-    {
-        Task<ObjectPath> CreateSessionAsync(string parentWindow, IDictionary<string, object> options);
-
-        Task<ObjectPath> GetZonesAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
-
-        Task<ObjectPath> SetPointerBarriersAsync(ObjectPath sessionHandle, IDictionary<string, object> options, IDictionary<string, object>[] barriers, uint zoneSet);
-
-        Task EnableAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
-
-        Task DisableAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
-
-        Task<IDisposable> WatchActivatedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
-
-        Task<IDisposable> WatchDeactivatedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
-
-        Task<IDisposable> WatchDisabledAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
-
-        Task<IDisposable> WatchZonesChangedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
-    }
-
     // Session interface is defined in PortalSession.cs to avoid duplicate proxy names.
+}
+
+[DBusInterface("org.freedesktop.portal.InputCapture")]
+public interface IInputCapture : IDBusObject
+{
+    Task<ObjectPath> CreateSessionAsync(string parentWindow, IDictionary<string, object> options);
+
+    Task<ObjectPath> GetZonesAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
+
+    Task<ObjectPath> SetPointerBarriersAsync(ObjectPath sessionHandle, IDictionary<string, object> options, IDictionary<string, object>[] barriers, uint zoneSet);
+
+    Task EnableAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
+
+    Task DisableAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
+
+    Task<IDisposable> WatchActivatedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
+
+    Task<IDisposable> WatchDeactivatedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
+
+    Task<IDisposable> WatchDisabledAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
+
+    Task<IDisposable> WatchZonesChangedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
 }

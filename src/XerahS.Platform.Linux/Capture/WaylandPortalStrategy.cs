@@ -121,17 +121,21 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
 
             if (response != 0)
             {
+                DebugHelper.WriteLine($"WaylandPortalStrategy: Portal request failed with response code: {response}");
                 return null;
             }
 
             if (!results.TryGetValue("uri", out var uriValue) || uriValue is not string uriStr)
             {
+                DebugHelper.WriteLine("WaylandPortalStrategy: 'uri' missing or invalid in portal response.");
                 return null;
             }
+            DebugHelper.WriteLine($"WaylandPortalStrategy: Received URI: {uriStr}");
 
             var uri = new Uri(uriStr);
             if (!uri.IsFile || string.IsNullOrEmpty(uri.LocalPath) || !File.Exists(uri.LocalPath))
             {
+                DebugHelper.WriteLine($"WaylandPortalStrategy: Invalid file URI or file does not exist: {uriStr}");
                 return null;
             }
 
@@ -139,6 +143,7 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
             var bitmap = SKBitmap.Decode(stream);
             if (bitmap == null)
             {
+                DebugHelper.WriteLine("WaylandPortalStrategy: Failed to decode bitmap from stream.");
                 return null;
             }
 
