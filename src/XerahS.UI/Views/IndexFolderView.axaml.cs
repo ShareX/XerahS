@@ -25,9 +25,10 @@
 
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using System;
 using System.ComponentModel;
-
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using XerahS.UI.ViewModels;
@@ -40,12 +41,13 @@ public partial class IndexFolderView : UserControl
     private Control? _webViewControl;
     private PropertyInfo? _webViewSourceProperty;
     private IndexFolderViewModel? _viewModel;
+    private bool _webViewInitAttempted;
 
     public IndexFolderView()
     {
         InitializeComponent();
         _htmlPreviewHost = this.FindControl<ContentControl>("HtmlPreviewHost");
-        TryInitializeWebView();
+        _ = TryInitializeWebViewAsync();
         DataContextChanged += OnDataContextChanged;
 
         if (DataContext == null)
@@ -83,14 +85,27 @@ public partial class IndexFolderView : UserControl
         }
     }
 
-    private void TryInitializeWebView()
+    private async System.Threading.Tasks.Task TryInitializeWebViewAsync()
     {
+        if (_webViewInitAttempted)
+        {
+            return;
+        }
+
+        _webViewInitAttempted = true;
+
         if (_htmlPreviewHost == null)
         {
             return;
         }
 
-        var webViewType = FindWebViewType();
+        if (OperatingSystem.IsLinux() && !string.Equals(Environment.GetEnvironmentVariable("XERAHS_ENABLE_WEBVIEW"), "1", StringComparison.Ordinal))
+        {
+            Console.WriteLine("IndexFolderView: WebView initialization skipped on Linux (set XERAHS_ENABLE_WEBVIEW=1 to enable).");
+            return;
+        }
+
+        var webViewType = await System.Threading.Tasks.Task.Run(FindWebViewType).ConfigureAwait(false);
         if (webViewType == null) 
         {
             Console.WriteLine("IndexFolderView: webViewType is null - WebView type found");
@@ -103,10 +118,35 @@ public partial class IndexFolderView : UserControl
             return;
         }
 
-        try 
+        using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(2));
+        var sw = Stopwatch.StartNew();
+        try
         {
-             Console.WriteLine($"IndexFolderView: Attempting to instantiate {webViewType.FullName}");
-            _webViewControl = (Control?)Activator.CreateInstance(webViewType);
+            Console.WriteLine($"IndexFolderView: Attempting to instantiate {webViewType.FullName} (timeout=2s)");
+            var tcs = new System.Threading.Tasks.TaskCompletionSource<Control?>(System.Threading.Tasks.TaskCreationOptions.RunContinuationsAsynchronously);
+            Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    tcs.TrySetResult((Control?)Activator.CreateInstance(webViewType));
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                }
+            }, DispatcherPriority.Background);
+
+            var completed = await System.Threading.Tasks.Task.WhenAny(tcs.Task, System.Threading.Tasks.Task.Delay(Timeout.Infinite, cts.Token))
+                .ConfigureAwait(false);
+
+            if (completed != tcs.Task)
+            {
+                Console.WriteLine("IndexFolderView: WebView instantiation timed out; skipping WebView.");
+                return;
+            }
+
+            _webViewControl = await tcs.Task;
+            Console.WriteLine($"IndexFolderView: WebView instantiated in {sw.ElapsedMilliseconds}ms");
         }
         catch (Exception ex)
         {
@@ -118,7 +158,11 @@ public partial class IndexFolderView : UserControl
         
         if (_webViewControl != null)
         {
-            _htmlPreviewHost.Content = _webViewControl;
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _htmlPreviewHost.Content = _webViewControl;
+            });
+            Console.WriteLine("IndexFolderView: WebView content assigned");
         }
     }
 

@@ -25,6 +25,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using XerahS.Common;
 using XerahS.UI.ViewModels;
 
 namespace XerahS.UI.Views;
@@ -33,7 +34,13 @@ public partial class WorkflowEditorView : Window
 {
     public WorkflowEditorView()
     {
+        DebugHelper.WriteLine("[WorkflowEditorView] ctor start");
         InitializeComponent();
+        DebugHelper.WriteLine("[WorkflowEditorView] InitializeComponent completed");
+
+        Opened += (_, _) => DebugHelper.WriteLine("[WorkflowEditorView] Opened");
+        Closing += (_, _) => DebugHelper.WriteLine("[WorkflowEditorView] Closing");
+        Closed += (_, _) => DebugHelper.WriteLine("[WorkflowEditorView] Closed");
     }
 
     private void InitializeComponent()

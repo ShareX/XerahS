@@ -34,6 +34,7 @@ using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace XerahS.UI.ViewModels;
 
@@ -122,10 +123,14 @@ public partial class WorkflowEditorViewModel : ViewModelBase
 
     public WorkflowEditorViewModel(WorkflowSettings model)
     {
+        var sw = Stopwatch.StartNew();
+        DebugHelper.WriteLine($"[WorkflowEditorVM] ctor start. Job={model.Job}, Id={model.Id}");
+
         _model = model;
         _selectedKey = model.HotkeyInfo.Key;
         _selectedModifiers = model.HotkeyInfo.Modifiers;
         _selectedJob = model.Job;
+        LogStep(sw, "basic fields set");
 
         // Initialize TaskSettings VM
         if (model.TaskSettings == null)
@@ -133,21 +138,30 @@ public partial class WorkflowEditorViewModel : ViewModelBase
 
         TaskSettings = new TaskSettingsViewModel(model.TaskSettings);
         IndexFolderConfig = new IndexFolderViewModel(model.TaskSettings, true);
+        LogStep(sw, "task settings viewmodels created");
 
         LoadJobCategories();
+        LogStep(sw, $"job categories loaded: {JobCategories.Count}");
 
         // Select the current job from the category tree
         SelectJobInCategories(model.Job);
+        LogStep(sw, $"job selected: {SelectedJob}");
 
         _isLoadingSelection = true;
         InitializeCategories();
+        LogStep(sw, "uploader categories initialized");
         UpdateDestinations();
+        LogStep(sw, $"destinations updated: {AvailableDestinations.Count}");
         LoadSelectedDestination();
+        LogStep(sw, $"selected destination loaded: {SelectedDestination?.DisplayName ?? "none"}");
         _isLoadingSelection = false;
+
+        LogStep(sw, "ctor end");
     }
 
     private void InitializeCategories()
     {
+        DebugHelper.WriteLine("[WorkflowEditorVM] InitializeCategories start");
         _imageCategory = new CategoryViewModel("Image Uploaders", UploaderCategory.Image);
         _imageCategory.LoadInstances();
 
@@ -159,6 +173,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
 
         _urlCategory = new CategoryViewModel("URL Shorteners", UploaderCategory.UrlShortener);
         _urlCategory.LoadInstances();
+        DebugHelper.WriteLine($"[WorkflowEditorVM] InitializeCategories end: image={_imageCategory.Instances.Count}, text={_textCategory.Instances.Count}, file={_fileCategory.Instances.Count}, url={_urlCategory.Instances.Count}");
     }
 
     partial void OnSelectedJobChanged(WorkflowType value)
@@ -172,6 +187,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
 
     private void UpdateDestinations()
     {
+        DebugHelper.WriteLine($"[WorkflowEditorVM] UpdateDestinations start. Job={SelectedJob}");
         if (_imageCategory == null || _textCategory == null || _fileCategory == null || _urlCategory == null)
         {
             InitializeCategories();
@@ -239,6 +255,8 @@ public partial class WorkflowEditorViewModel : ViewModelBase
         {
             SelectedDestination = AvailableDestinations.FirstOrDefault();
         }
+
+        DebugHelper.WriteLine($"[WorkflowEditorVM] UpdateDestinations end. Count={AvailableDestinations.Count}, Selected={SelectedDestination?.DisplayName ?? "none"}");
     }
 
 
@@ -248,7 +266,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
         UploaderInstanceViewModel? matched = null;
         var settings = Model;
 
-        DebugHelper.WriteLine($"[DEBUG] LoadSelectedDestination Entry. Job={SelectedJob}");
+        DebugHelper.WriteLine($"[WorkflowEditorVM] LoadSelectedDestination start. Job={SelectedJob}, Available={AvailableDestinations.Count}");
 
         if (settings.TaskSettings.OverrideCustomUploader)
         {
@@ -257,7 +275,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
             {
                 var custom = customList[settings.TaskSettings.CustomUploaderIndex];
                 matched = AvailableDestinations.FirstOrDefault(d => d.DisplayName == custom.Name);
-                DebugHelper.WriteLine($"[DEBUG] Matched Custom Uploader: {matched?.DisplayName}");
+                DebugHelper.WriteLine($"[WorkflowEditorVM] Matched Custom Uploader: {matched?.DisplayName}");
             }
         }
         else if (settings.TaskSettings.OverrideFTP)
@@ -267,7 +285,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
             {
                 var ftp = ftpList[settings.TaskSettings.FTPIndex];
                 matched = AvailableDestinations.FirstOrDefault(d => d.DisplayName == $"FTP: {ftp.Name}");
-                DebugHelper.WriteLine($"[DEBUG] Matched FTP: {matched?.DisplayName}");
+                DebugHelper.WriteLine($"[WorkflowEditorVM] Matched FTP: {matched?.DisplayName}");
             }
         }
         else
@@ -281,7 +299,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
                     string.Equals(d.Instance.InstanceId, targetInstanceId, StringComparison.OrdinalIgnoreCase));
             }
 
-            DebugHelper.WriteLine($"[DEBUG] TaskSettings returned target instance: {targetInstanceId}. Matched: {matched?.DisplayName}");
+            DebugHelper.WriteLine($"[WorkflowEditorVM] TaskSettings target instance: {targetInstanceId}. Matched: {matched?.DisplayName}");
         }
 
         if (matched != null)
@@ -290,8 +308,10 @@ public partial class WorkflowEditorViewModel : ViewModelBase
         }
         else
         {
-            DebugHelper.WriteLine("[DEBUG] No matching destination found, keeping default.");
+            DebugHelper.WriteLine("[WorkflowEditorVM] No matching destination found, keeping default.");
         }
+
+        DebugHelper.WriteLine($"[WorkflowEditorVM] LoadSelectedDestination end. Selected={SelectedDestination?.DisplayName ?? "none"}");
     }
 
     public void Save()
@@ -367,7 +387,7 @@ public partial class WorkflowEditorViewModel : ViewModelBase
         {
             // Persist the selection immediately so closing the dialog without OK does not lose context
             Model.TaskSettings.SetDestinationInstanceId(SelectedJob, value.Instance.InstanceId);
-            DebugHelper.WriteLine($"[DEBUG] Selected destination changed to instance {value.Instance.InstanceId} for job {SelectedJob}");
+            DebugHelper.WriteLine($"[WorkflowEditorVM] Selected destination changed to instance {value.Instance.InstanceId} for job {SelectedJob}");
         }
     }
 
@@ -457,5 +477,10 @@ public partial class WorkflowEditorViewModel : ViewModelBase
             EnumExtensions.WorkflowType_Category_Other => 4,
             _ => 99
         };
+    }
+
+    private static void LogStep(Stopwatch sw, string message)
+    {
+        DebugHelper.WriteLine($"[WorkflowEditorVM] {message} (+{sw.ElapsedMilliseconds}ms)");
     }
 }
