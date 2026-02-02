@@ -118,23 +118,26 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
             var options = new Dictionary<string, object>
             {
                 ["modal"] = false,
-                ["interactive"] = false
+                ["interactive"] = false,
+                ["handle_token"] = $"xerahs_{Guid.NewGuid():N}"
             };
 
-            var (bitmap, response) = await TryPortalScreenshotAsync(connection, portal, options).ConfigureAwait(false);
+            var (bitmap, response, results) = await TryPortalScreenshotAsync(connection, portal, options).ConfigureAwait(false);
             if (bitmap == null && response == 2)
             {
                 DebugHelper.WriteLine("WaylandPortalStrategy: Portal non-interactive capture failed; retrying interactive.");
                 options["interactive"] = true;
                 options["modal"] = true;
-                (bitmap, _) = await TryPortalScreenshotAsync(connection, portal, options).ConfigureAwait(false);
+                (bitmap, _, results) = await TryPortalScreenshotAsync(connection, portal, options).ConfigureAwait(false);
             }
 
             if (bitmap == null)
             {
                 if (response != 0)
                 {
+                    LogPortalEnvironment();
                     DebugHelper.WriteLine($"WaylandPortalStrategy: Portal request failed with response code: {response}");
+                    LogPortalResults(results);
                 }
                 return null;
             }
@@ -160,31 +163,110 @@ internal sealed class WaylandPortalStrategy : ICaptureStrategy
         }
     }
 
-    private static async Task<(SKBitmap? bitmap, uint response)> TryPortalScreenshotAsync(Connection connection, IScreenshotPortal portal, IDictionary<string, object> options)
+    private static async Task<(SKBitmap? bitmap, uint response, IDictionary<string, object>? results)> TryPortalScreenshotAsync(Connection connection, IScreenshotPortal portal, IDictionary<string, object> options)
     {
+        var requestStartUtc = DateTime.UtcNow;
+        using var monitor = PortalBusMonitor.TryStart("WaylandPortalStrategy");
         var requestPath = await portal.ScreenshotAsync(string.Empty, options).ConfigureAwait(false);
         var request = connection.CreateProxy<IPortalRequest>(PortalBusName, requestPath);
         var (response, results) = await request.WaitForResponseAsync().ConfigureAwait(false);
 
         if (response != 0)
         {
-            return (null, response);
+            var fallbackBitmap = await PortalScreenshotFallback
+                .TryFindScreenshotAsync(requestStartUtc, TimeSpan.FromSeconds(2), "WaylandPortalStrategy")
+                .ConfigureAwait(false);
+            if (fallbackBitmap != null)
+            {
+                return (fallbackBitmap, 0, results);
+            }
+            return (null, response, results);
         }
 
         if (!results.TryGetResult("uri", out string? uriStr) || string.IsNullOrWhiteSpace(uriStr))
         {
-            return (null, response);
+            var fallbackBitmap = await PortalScreenshotFallback
+                .TryFindScreenshotAsync(requestStartUtc, TimeSpan.FromSeconds(2), "WaylandPortalStrategy")
+                .ConfigureAwait(false);
+            if (fallbackBitmap != null)
+            {
+                return (fallbackBitmap, 0, results);
+            }
+            return (null, response, results);
         }
 
         var uri = new Uri(uriStr);
         if (!uri.IsFile || string.IsNullOrEmpty(uri.LocalPath) || !File.Exists(uri.LocalPath))
         {
-            return (null, response);
+            return (null, response, results);
         }
 
         using var stream = File.OpenRead(uri.LocalPath);
         var bitmap = SKBitmap.Decode(stream);
-        return (bitmap, response);
+        return (bitmap, response, results);
+    }
+
+    private static void LogPortalEnvironment()
+    {
+        DebugHelper.WriteLine("WaylandPortalStrategy: Portal environment:");
+        DebugHelper.WriteLine($"  - XDG_SESSION_TYPE: {Environment.GetEnvironmentVariable("XDG_SESSION_TYPE") ?? "unset"}");
+        DebugHelper.WriteLine($"  - XDG_CURRENT_DESKTOP: {Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") ?? "unset"}");
+        DebugHelper.WriteLine($"  - XDG_SESSION_DESKTOP: {Environment.GetEnvironmentVariable("XDG_SESSION_DESKTOP") ?? "unset"}");
+    }
+
+    private static void LogPortalResults(IDictionary<string, object>? results)
+    {
+        if (results == null)
+        {
+            DebugHelper.WriteLine("WaylandPortalStrategy: Portal response results are null.");
+            return;
+        }
+
+        DebugHelper.WriteLine("WaylandPortalStrategy: Portal response results:");
+        foreach (var kvp in results)
+        {
+            var valueStr = "null";
+            try
+            {
+                if (kvp.Value != null)
+                {
+                    var unwrapped = UnwrapVariant(kvp.Value);
+                    valueStr = unwrapped?.ToString() ?? "null";
+                }
+            }
+            catch (Exception ex)
+            {
+                valueStr = $"Error reading value: {ex.Message}";
+            }
+            DebugHelper.WriteLine($"  - {kvp.Key}: {valueStr}");
+        }
+    }
+
+    private static object UnwrapVariant(object value)
+    {
+        var current = value;
+        while (current != null)
+        {
+            var type = current.GetType();
+            var typeName = type.FullName;
+            if (typeName != "Tmds.DBus.Protocol.Variant" &&
+                typeName != "Tmds.DBus.Protocol.VariantValue" &&
+                typeName != "Tmds.DBus.Variant")
+            {
+                break;
+            }
+
+            var valueProp = type.GetProperty("Value");
+            var unwrapped = valueProp?.GetValue(current);
+            if (unwrapped == null)
+            {
+                break;
+            }
+
+            current = unwrapped;
+        }
+
+        return current ?? value;
     }
 
     private static CapturedBitmap? CropToRegion(SKBitmap source, PhysicalRectangle region)
