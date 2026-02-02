@@ -332,44 +332,27 @@ namespace XerahS.UI.Views
         }
         public void NavigateToEditor()
         {
-            var navView = this.FindControl<NavigationView>("NavView");
-            if (navView != null)
-            {
-                // Navigate to Editor (Tag="Editor")
-                foreach (var item in navView.MenuItems)
-                {
-                    if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == "Editor")
-                    {
-                        navView.SelectedItem = navItem;
-                        break;
-                    }
-                }
-            }
-
-            // Ensure window is visible and active
-            if (!this.IsVisible)
-            {
-                this.Show();
-            }
-
-            if (this.WindowState == Avalonia.Controls.WindowState.Minimized)
-            {
-                this.WindowState = Avalonia.Controls.WindowState.Maximized;
-            }
-
-            this.Activate();
-            this.Focus();
+            NavigateTo("Editor");
         }
 
         public void NavigateToSettings()
         {
+            NavigateTo("Settings");
+        }
+
+        public void NavigateToAbout()
+        {
+            NavigateTo("About");
+        }
+
+        private void NavigateTo(string navTag)
+        {
             var navView = this.FindControl<NavigationView>("NavView");
             if (navView != null)
             {
-                // Navigate to Settings (Tag="Settings")
                 foreach (var item in navView.MenuItems)
                 {
-                    if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == "Settings")
+                    if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == navTag)
                     {
                         navView.SelectedItem = navItem;
                         break;
