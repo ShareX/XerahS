@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Hotkeys;
 using XerahS.Platform.Abstractions;
@@ -59,16 +60,19 @@ public partial class WorkflowsViewModel : ViewModelBase
 
     public WorkflowsViewModel()
     {
+        DebugHelper.WriteLine("[WorkflowsVM] ctor start");
         if (global::Avalonia.Application.Current is App app)
         {
             _manager = app.WorkflowManager;
         }
 
         LoadWorkflows();
+        DebugHelper.WriteLine($"[WorkflowsVM] ctor end. Workflows={Workflows.Count}");
     }
 
     private void LoadWorkflows()
     {
+        DebugHelper.WriteLine("[WorkflowsVM] LoadWorkflows start");
         Workflows.Clear();
 
         IEnumerable<WorkflowSettings> source;
@@ -96,6 +100,8 @@ public partial class WorkflowsViewModel : ViewModelBase
             Workflows.Add(vm);
             index++;
         }
+
+        DebugHelper.WriteLine($"[WorkflowsVM] LoadWorkflows end. Count={Workflows.Count}");
     }
 
     private void SaveHotkeys()
@@ -148,6 +154,7 @@ public partial class WorkflowsViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanEditWorkflow))]
     private async Task EditWorkflow()
     {
+        DebugHelper.WriteLine($"[WorkflowsVM] EditWorkflow invoked. Selected={(SelectedWorkflow != null ? SelectedWorkflow.Model.Id : "null")}, CanEdit={CanEditWorkflow()}, HasRequester={EditHotkeyRequester != null}");
         if (SelectedWorkflow != null && EditHotkeyRequester != null)
         {
             var changed = await EditHotkeyRequester(SelectedWorkflow.Model);
@@ -164,6 +171,11 @@ public partial class WorkflowsViewModel : ViewModelBase
     }
 
     private bool CanEditWorkflow() => SelectedWorkflow != null;
+
+    partial void OnSelectedWorkflowChanged(HotkeyItemViewModel? value)
+    {
+        DebugHelper.WriteLine($"[WorkflowsVM] SelectedWorkflow changed: {(value != null ? value.Model.Id : "null")}");
+    }
 
     [RelayCommand(CanExecute = nameof(CanEditWorkflow))]
     private void RemoveWorkflow()

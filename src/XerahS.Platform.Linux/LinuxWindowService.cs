@@ -92,46 +92,76 @@ namespace XerahS.Platform.Linux
                 return window;
             }
 
-            IntPtr currentWindow = window;
-            IntPtr parent = window;
-
-            // Walk up the window tree until we find a window whose parent is the root window
-            while (parent != IntPtr.Zero && parent != _rootWindow)
+            // If the window is already the root window, return it
+            if (window == _rootWindow)
             {
-                int result = NativeMethods.XQueryTree(
-                    _display,
-                    currentWindow,
-                    out IntPtr root,
-                    out parent,
-                    out IntPtr children,
-                    out uint nchildren
-                );
-
-                // Free the children list if allocated
-                if (children != IntPtr.Zero)
-                {
-                    NativeMethods.XFree(children);
-                }
-
-                if (result == 0)
-                {
-                    // XQueryTree failed
-                    Console.WriteLine($"XQueryTree failed for window {currentWindow} (0x{currentWindow:X})");
-                    break;
-                }
-
-                // If parent is root or zero, currentWindow is the top-level window
-                if (parent == _rootWindow || parent == IntPtr.Zero)
-                {
-                    break;
-                }
-
-                // Move up to the parent
-                currentWindow = parent;
+                return window;
             }
 
-            Console.WriteLine($"GetTopLevelWindow: {window} (0x{window:X}) -> {currentWindow} (0x{currentWindow:X})");
-            return currentWindow;
+            IntPtr currentWindow = window;
+            int maxDepth = 50; // Prevent infinite loops
+            int depth = 0;
+
+            try
+            {
+                // Walk up the window tree until we find a window whose parent is the root window
+                while (depth < maxDepth)
+                {
+                    depth++;
+
+                    int result = NativeMethods.XQueryTree(
+                        _display,
+                        currentWindow,
+                        out IntPtr root,
+                        out IntPtr parent,
+                        out IntPtr children,
+                        out uint nchildren
+                    );
+
+                    // Free the children list if allocated
+                    if (children != IntPtr.Zero)
+                    {
+                        try
+                        {
+                            NativeMethods.XFree(children);
+                        }
+                        catch
+                        {
+                            // Ignore errors when freeing
+                        }
+                    }
+
+                    if (result == 0)
+                    {
+                        // XQueryTree failed
+                        Console.WriteLine($"XQueryTree failed for window {currentWindow:X} at depth {depth}");
+                        break;
+                    }
+
+                    // If parent is root or zero, currentWindow is the top-level window
+                    if (parent == _rootWindow || parent == IntPtr.Zero)
+                    {
+                        Console.WriteLine($"GetTopLevelWindow: {window:X} -> {currentWindow:X} (depth={depth})");
+                        return currentWindow;
+                    }
+
+                    // Move up to the parent
+                    currentWindow = parent;
+                }
+
+                if (depth >= maxDepth)
+                {
+                    Console.WriteLine($"GetTopLevelWindow: Hit max depth ({maxDepth}), returning current window");
+                }
+
+                Console.WriteLine($"GetTopLevelWindow: {window:X} -> {currentWindow:X} (depth={depth})");
+                return currentWindow;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"GetTopLevelWindow: Exception - {ex.Message}, returning original window");
+                return window;
+            }
         }
 
         public bool SetForegroundWindow(IntPtr handle)
