@@ -9,94 +9,149 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
+## v0.7.5 - Linux Improvements & Custom Uploaders
+
+### Features & Improvements
+- **Custom Uploaders**: Implemented full support for Custom Uploaders including editor UI and integration `(5962870, 8020d73)`
+- **Task Settings**: Redesigned Task Settings UX with dedicated Image/Video tabs `(43436af)`
+- **Tray Icon**: Added recording-aware tray icon with pause/abort controls `(7d22818)`
+- **Image Formats**: Added AVIF and WebP image format support `(3b89381)`
+- **Linux/Wayland**: Fix screen capture on Wayland by integrating XDG Portal API `(4cc5a9f)`
+
+### Bug Fixes
+- Fix Linux active window capture hierarchy and coordinates `(2957c89, 007f261)`
+- Fix Linux hotkey initialization and Region Capture `(73dd95d, e8a9cc8)`
+- Hide main window when capture triggered from tray/navbar `(45264fb)`
+- Fix update dialog layout `(7868256)`
+
+## v0.7.0 - Annotation Overlays & Packaging
+
+### Features & Improvements
+- **Annotations**: Enabled Annotation Toolbar in Region Capture Overlay `(05dcaf3)`
+- **Region Capture**: Added support for transparent background capture (RectangleTransparent) `(9ee7277)`
+- **macOS**: Native single-file app bundle packaging (`.app`) `(c2b882c)`
+- **Packaging**: Automated multi-arch Windows release builds `(49a7ec6)`
+- **Plugins**: Support for user-installed plugins and packaging `(e787536)`
+- **Window Capture**: Added support via monitor cropping fallback `(d73daf5)`
+
+### Bug Fixes
+- Fix annotation layer coordinate system for multi-monitor and high DPI `(5d69425, 61bd0c9)`
+- Fix annotation layer compositing `(3875298)`
+- Global exception handling implementation `(ad6d443)`
+
+## v0.6.0 - UI Redesign & Auto-Update
+
+### Features & Improvements
+- **UI Redesign**: Comprehensive visual overhaul of strictly all views (Settings, History, Tools) using Grid layout and consistent styling `(34f4cbf, d390fa7)`
+- **Auto-Update**: Implemented auto-update system with Avalonia UI `(54b9546)`
+- **After Upload**: Added "After Upload" results window `(18a3ab7)`
+- **Property Grid**: Added ApplicationConfig property grid `(c4d20bf)`
+
+### Bug Fixes
+- Improve GIF recording quality and added clipboard support `(1baecc0, 4148e49)`
+- Add pause and stroke-based abort for recordings `(c3d04a7)`
+- Fix "After Upload" window theming and errors `(9b752c0, 6dfe81e)`
+
 ## v0.5.1 - Verify Recording CLI & Editor Improvements
 
 ### Features & Improvements
-- Added `verify-recording` CLI command for automated screen recording verification (`732e173`)
-- Unified editor undo history (`24ad021`) [ShareX.Editor]
+- **CLI**: Added `verify-recording` command for automated screen recording validation `(732e173)`
+- **Editor**: Unified editor undo history across different toolsets `(24ad021)`
+- **Architecture**: Moved Windows-specific P/Invoke types to dedicated Platform.Windows project `(90da89a)`
+- **FFmpeg**: Improved FFmpeg download/config UX with progress hooks and better path resolution `(1646cbb, 7677ceb, b4fdcbf)`
 
 ### Bug Fixes
-- Fix system cursor captured in region screenshots (`85a4e2f`)
-- Fix speech balloon tail geometry rendering (`784594e`) [ShareX.Editor]
+- Fix speech balloon tail geometry rendering issues `(784594e)`
+- Fix system cursor appearing in region screenshots on some configurations `(85a4e2f)`
 
 ## v0.5.0 - Core Capture & Editor Improvements
 
 ### Features & Improvements
-- Fix double cursor visibility by setting RegionCaptureControl cursor to None (`fe35424`)
-- Project status and roadmap updates reflecting completed features (`12a1b7a`)
-
-## v0.4.0 - Image Effects & Upload Improvements
-
-### Features & Improvements
-- Add FAQ entries for workflow settings and pronunciation (`ee3e5bd`)
-- Update default workflow hotkey assignments (`1fbc122`)
-- Show upload progress in window title during uploads (`549f315`)
-- Add file upload dialog support for FileUpload jobs (`3259cc5`)
-- Add image effects application to capture workflow (`5c89ebc`)
+- **Capture**: Added single instance enforcement for the application `(aacb23b)`
+- **Region Capture**: Enhanced crosshair visibility and added magnifier pixel sampling from background `(a838ae1, 56aa4de)`
+- **Region Capture**: Hide system cursor when ghost cursor is active `(d338b32)`
+- **Editor**: Wire ImageEffectsViewModel to unified undo/redo stack `(81a3815)`
+- **UX**: Set default file picker location to Desktop for easier access `(f5083e3)`
 
 ### Bug Fixes
-- Fix startup log to use AppName resource (`348847d`)
-- Fix 2 HIGH priority Platform.Windows resource leaks (`c2e8b65`)
-- Reorder annotation to occur before saving image (`617f41e`)
-- Improve image saving and window navigation logic (`122a3b1`)
-- Improve cursor hiding during DXGI screen capture (`c262bc7`)
+- Fix 11+ HIGH/MEDIUM priority issues including null safety and resource management `(9188a22, 1f9a74f)`
+- Set RegionCaptureControl cursor to None to prevent double cursor visibility `(fe35424)`
 
-### Documentation & Maintenance
-- Documentation updates: Modernize README, CHANGELOG (`e6d87a8`, `36eed19`)
-- Documentation updates: macOS/Linux/Editor extraction/Integration (`5e1184e`, `6394dc7`, `17a319e`, `2e7e29c`, `090d9e9`, `cabd8c3`, `fc4851f`)
-
-## v0.3.1 - Bug Fixes
-
-- 0.3.1 - `df9bd33` - Fix NullReferenceException in CaptureFullScreenDxgi by preventing premature disposal of ID3D11DeviceContext
-
-## v0.3.0 - Modern Capture Architecture (SIP0016)
+## v0.4.0 - Image Effects & Tools
 
 ### Features & Improvements
-- 0.3.0 - Implemented Unified Screen Recording pipeline with native Windows/MF support, FFmpeg fallback, and audio options (`9224b62`, `7a6e47b`, `8fc451c`, `a223bd0`, `642133d`, `1e2ef2c`, `d4409f9`, `d6773c0`, `bdeef06`, `674f350`, `b0e623e`)
-- 0.3.0 - Modernized Region Capture backend with cross-platform and DXGI support (`97ba056`, `9cc0209`, `3bdaaf0`, `21ec1e2`, `aa417f6`, `4ee0c05`)
-- 0.3.0 - Enhanced Workflow and Hotkey system: ID persistence, state machine, reordering, and wizard UI (`faebe87`, `927b819`, `dd1f36e`, `d904b17`, `1b29c6d`, `4c8c0df`, `64f2b42`, `0a446d9`, `9d84dd3`, `7b11ec1`, `132b0fc`, `aab8396`, `8b2477d`, `3958351`, `7d2b6ee`, `fd395c3`)
-- 0.3.0 - Refactored Destination and Uploader persistence to be Job-Type aware and use TaskSettings logic (`3388271`, `e7b1603`, `979dc0d`, `67a54ee`, `8d1dbc2`, `edc5a06`)
-- 0.3.0 - New Toast Notification system with custom UI, advanced settings, and platform integration (`81ccf18`, `f1d9b88`, `6229154`, `91106fb`, `919f31a`, `ad4be91`, `b3c2df6`)
-- 0.3.0 - Settings UI improvements: Weekly Backups, Tray interaction, Image Effects editor, and ApplicationGeneral settings (`0a8e15f`, `5224805`, `c34faa9`, `035e8b4`, `4ddfb59`, `f4a5dc2`, `6f24b2c`, `d3cc468`, `76ca3c8`, `f46995f`, `054c9a9`)
-- 0.3.0 - Cross-platform support updates: macOS ScreenCaptureKit, Linux CLI wrappers, and System Service abstraction (`de2d17b`, `c511441`, `86945ba`, `dfa4cd4`, `b637a74`, `18fd706`, `1440efc`)
-- 0.3.0 - DPI scaling fixes and robust Window Activation logic (`c79e7a7`, `386aaae`, `875fd8b`, `00e8728`, `cb602a8`, `e4817b1`, `e35159c`, `48b1a2c`)
-- 0.3.0 - Performance optimizations: Modern Capture (DXGI) acceleration and Task logic improvements (`25f544d`, `52ae45e`, `df5764e`, `c94ce29`, `261c643`, `8c52464`)
-- 0.3.0 - Media Foundation encoder implementation with low-level COM/VTable interop (`b6bd5bb`, `559c8cb`, `fafb402`, `b039ec8`, `295104d`, `7374dc0`)
-- 0.3.0 - Project documentation (SIPs, Rules, FAQ) and build system updates (`f80ad00`, `7534f23`, `cba5d60`, `a88d5f9`, `97097a3`, `e7dc315`, `52844d0`, `affb927`, `ed9d756`, `facfe0c`, `c7d48f6`, `1dc0dad`, `a66e6f9`, `9417e1d`, `739dcfe`, `a34bf22`, `af30444`, `ac09f37`, `410a14c`, `ccbd9b3`, `9a321f1`, `09d6cad`, `eecc915`, `d12e289`, `e5d8e2f`, `2f44742`, `f295bd2`, `9aa61ec`, `4e88d23`, `bfe81da`, `30f7273`, `24cbfd2`, `fd30d4f`, `779410b`, `9b24777`, `1914e72`, `b2ccfae`, `3b51a93`)
+- **Image Effects**: Refactored preset management and improved effects UI `(154a6c9, 5d9dbd7, ee47e3d)`
+- **Tools**: Added QR code generator/decoder tools `(66bd61b)`
+- **Tools**: Added Color Picker tools with standard color name mapping `(bdb22f8, 0b50328)`
+- **Watch Folders**: Implemented Watch Folder system with per-folder workflow assignments `(49e838d, 63124f6, 951e034)`
+- **Indexer**: Added Index Folder preview and modernized HTML output using WebView `(63ca369, 3f3a751, e57932e)`
+- **macOS**: Added native ScreenCaptureKit video recording support `(fd75640)`
 
-## v0.2.1 - Multi-Monitor and DPI Fixes
+### Bug Fixes
+- Fix cursor tracking and visibility during GDI capture `(f6973f6, e0a056b, 265a96a)`
 
-- 0.2.1 - `1a33aed` - Implement macOS window activation and state checks
-- 0.2.1 - `876f46a` - Update version to 0.2.1 and resource version to 0.2.0
-- 0.2.1 - `e47e81b` - Fix: Multi-monitor region capture offset and DPI scaling issues
+## v0.3.1 - Critical Bug Fixes
 
-## v0.2.0 - macOS Platform Support & Plugin System
+### Bug Fixes
+- **Capture**: Fix NullReferenceException in DXGI capture by preventing premature disposal of D3D11 device context `(df9bd33)`
+
+## v0.3.0 - Modern Capture Architecture
 
 ### Features & Improvements
-- 0.2.0 - Implemented Plugin System with packaging `.sxadp`, CLI tools, and installer (`4f4d120`, `298`, `4be59f3`, `a6acc5d`, `020ddde`, `cead71a`, `433788c`, `f81c656`, `0adc892`, `b60676f`, `0e3aab3`, `437349a`, `fc2dafc`, `72f0bc8`, `73315c4`)
-- 0.2.0 - Initial macOS platform support: ScreenCaptureKit, SharpHook hotkeys, Clipboard, and App Bundle (`1a33aed`, `6fbf63e`, `439c35a`, `fae6588`, `ca05d4b`, `97957d7`, `d17e1b9`, `acba9d5`, `c9a2ee0`, `0fb4b4a`)
-- 0.2.0 - Major Editor refactor to ShareX.Editor, SkiaSharp transition, and new annotation tools (Crop, Pixelate, Smart Padding) (`bfc56e4`, `d6f0490`, `ff0678c`, `0a6f41b`, `4411a17`, `86c6588`, `765ee80`, `12d9abf`, `0d76bac`, `4204e76`, `5c14abc`, `5b8cc6a`, `c3f1399`)
-- 0.2.0 - History system overhaul: SQLite backend, auto-backup, and UI improvements (`0f20d76`, `22b6cf5`, `66f6589`, `5a3c2c8`, `e189ed8`, `0802010`, `697d1a2`)
-- 0.2.0 - General Settings and Configuration improvements (`7c42a83`, `293886c`, `1c8014c`, `6b61f4b`, `f2859d1`)
-- 0.2.0 - Documentation updates: Workflow overview, SIPs, and Developer guides (`77b70ee`, `1914e72`)
+- **Modern Capture**: Implemented DXGI-based high-performance screen capture for Windows `(1440efc, 25f544d)`
+- **Screen Recording**: Unified recording pipeline with Windows Media Foundation and FFmpeg support `(9224b62, 7a6e47b, 8fc451c)`
+- **Workflow System**: Major overhaul of hotkeys into a full Workflow system with GUID persistence `(faebe87, 09f1e35)`
+- **Toast Notifications**: New custom Avalonia-based notification system with advanced settings `(6229154, f1d9b88)`
+- **Linux**: Initial support for Wayland via XDG Desktop Portal `(3573ad1, f7a103c, b92fb89)`
+- **Linux**: Native X11 capture path implementation `(7ccd5d9)`
+- **Settings**: Added weekly backup system for application settings `(0a8e15f)`
+- **UX**: Added tray icon support with customizable click actions `(035e8b4, 4ddfb59)`
+
+### Bug Fixes
+- Fix multi-monitor blank capture issues in modern capture path `(52ae45e)`
+- Fix DPI handling and coordinate mapping in region capture `(e4817b1, 954dee3)`
+- Massive code audit: fixed 500+ license headers and 160+ nullability issues `(dca9217, dd90761)`
+
+## v0.2.1 - Multi-Monitor & DPI Polish
+
+### Bug Fixes
+- Fix region capture offsets and scaling issues on multi-monitor setups `(e47e81b)`
+- Standardized Windows TFM and fixed CsWinRT interop issues `(2f44742, 4e88d23)`
+
+## v0.2.0 - macOS Support & Plugin System
+
+### Features & Improvements
+- **macOS**: Initial platform support including ScreenCaptureKit, SharpHook hotkeys, and app bundling `(acba9d5, ca05d4b, 6fbf63e)`
+- **Plugins**: Implemented dynamic plugin system with packaging (`.sxap`) and CLI tools `(f81c656, a2adbf3, e787536)`
+- **History**: Switched history storage from XML to SQLite with automatic backups `(22b6cf5, 0f20d76)`
+- **Editor**: Integrated ShareX.Editor as a core component with SkiaSharp rendering `(57bfe32, 90b5871)`
+- **Integration**: Added `.sxadp` file association for plugin packages `(df9bbd1)`
 
 ## v0.1.0 - Initial Feature Set
 
 ### Core Features
-- 0.1.0 - Initial Editor implementation with Annotation Canvas, Shapes, and Gradient support (`3babd33`, `5be170d`, `5dd5263`, `8395e4d`, `dec0317`, `c2a603e`, `8888ee8`, `656a186`, `7b4790f`, `e44b2f2`, `064bb3a`)
-- 0.1.0 - Region Capture features: Marching ants, detailed info label, and background dimming (`00b3a63`, `64be7b5`, `fd47b8d`, `f552e2f`, `c67d61d`, `67d0914`, `9d63c9f`)
-- 0.1.0 - Hotkey System implementation with robust key capture and inline editing (`49aa435`, `861afd1`, `7357914`, `80cd222`, `236aee9`)
-- 0.1.0 - Plugin architecture refactoring to pure dynamic loading (`af14844`, `a2adbf3`, `53db734`, `62561af`, `8d771ab`, `ea204fa`)
+- **UI**: Reimagined interface with two-toolbar system and modern dark theme `(c0bad1e, 231e4df)`
+- **Capture**: Region, Fullscreen, and Window capture modes `(4839944)`
+- **Annotations**: Object-based editor with Rectangle, Ellipse, Arrow, Line, Text, Number, and Crop tools `(bd1153c, 9b6cfe0)`
+- **Annotations**: Full Undo/Redo support and object manipulation `(9ecd720, cb7b54a)`
+- **Hotkeys**: Global hotkey system with Win32 registration `(80cd222)`
+- **Image Effects**: Initial implementation of 40+ effects including Resize, Shadows, and Gradients `(0840cef, 6777d86)`
+- **History**: Basic task history tracking `(9c1c2f8)`
 
 ---
 
 ## Version Summary
 
-- **v0.3.1**: Critical bug fix for DXGI capture crash
-- **v0.3.0**: Modern capture architecture with DXGI/Direct3D11, screen recording (SIP0017), toast notifications, workflow system
-- **v0.2.1**: Multi-monitor and DPI scaling fixes
-- **v0.2.0**: macOS platform support, plugin system, SQLite history, editor extraction, XerahS rebranding
-- **v0.1.0**: Initial implementation with basic capture, annotation canvas, hotkey system, and editor features
+- **v0.7.5**: Custom Uploaders, Task Settings redesign, Linux/Wayland fixes, WebP/AVIF support
+- **v0.7.0**: Annotation overlays in region capture, transparent capture, macOS .app bundles
+- **v0.6.0**: Complete UI Redesign, Auto-Update system, After Upload window
+- **v0.5.1**: verify-recording CLI, editor improvements
+- **v0.5.0**: Core capture fixes, region capture magnifier
+- **v0.4.0**: Image effects, QR codes, Color picker, Watch folders
+- **v0.3.1**: DXGI capture crash fix
+- **v0.3.0**: Modern capture architecture, screen recording, workflow system, toast notifications
+- **v0.2.0**: macOS support, plugin system, SQLite history, editor extraction
+- **v0.1.0**: Initial implementation
 
 ---
 
