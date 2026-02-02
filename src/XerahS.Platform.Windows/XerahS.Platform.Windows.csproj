@@ -10,6 +10,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <Target Name="Build" Condition="'$(OS)' != 'Windows_NT'">
+    <Message Importance="high" Text="Skipping XerahS.Platform.Windows build on non-Windows OS." />
+  </Target>
+
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
@@ -26,4 +30,3 @@
   </ItemGroup>
 
 </Project>
-
