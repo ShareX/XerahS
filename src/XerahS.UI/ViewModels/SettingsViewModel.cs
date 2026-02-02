@@ -59,6 +59,19 @@ namespace XerahS.UI.ViewModels
         private int _selectedTheme;
 
         [ObservableProperty]
+        private AppThemeMode _themeMode;
+
+        public AppThemeMode[] ThemeModes => (AppThemeMode[])Enum.GetValues(typeof(AppThemeMode));
+
+        partial void OnThemeModeChanged(AppThemeMode value)
+        {
+            if (_isLoading) return;
+
+            // Apply theme change immediately
+            Services.ThemeService.ApplyTheme(value);
+        }
+
+        [ObservableProperty]
         private bool _useModernCapture;
 
         [ObservableProperty]
@@ -517,6 +530,7 @@ namespace XerahS.UI.ViewModels
             ShowTray = settings.ShowTray;
             SilentRun = settings.SilentRun;
             SelectedTheme = settings.SelectedTheme;
+            ThemeMode = settings.ThemeMode;
             TrayIconProgressEnabled = settings.TrayIconProgressEnabled;
             TaskbarProgressEnabled = settings.TaskbarProgressEnabled;
             AutoCheckUpdate = settings.AutoCheckUpdate;
@@ -598,6 +612,7 @@ namespace XerahS.UI.ViewModels
             settings.ShowTray = ShowTray;
             settings.SilentRun = SilentRun;
             settings.SelectedTheme = SelectedTheme;
+            settings.ThemeMode = ThemeMode;
             settings.TrayIconProgressEnabled = TrayIconProgressEnabled;
             settings.TaskbarProgressEnabled = TaskbarProgressEnabled;
             settings.AutoCheckUpdate = AutoCheckUpdate;

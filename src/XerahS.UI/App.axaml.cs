@@ -48,6 +48,10 @@ public partial class App : Application
     {
         AvaloniaXamlLoader.Load(this);
 
+        // Initialize theme based on user preference (System/Light/Dark)
+        // This handles Linux properly where Avalonia's default detection doesn't work
+        Services.ThemeService.Initialize();
+
 #if DEBUG
         this.AttachDeveloperTools();
 
@@ -56,7 +60,7 @@ public partial class App : Application
         {
             Source = new Uri("avares://XerahS.UI/Themes/AuditStyles.axaml")
         });
-        
+
         // Enable Runtime Wiring Checks
         Auditing.UiAudit.InitializeRuntimeChecks();
 #endif
