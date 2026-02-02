@@ -35,12 +35,13 @@ namespace XerahS.Platform.Linux.Capture;
 /// Used by both LinuxScreenCaptureService and WaylandPortalStrategy.
 /// </summary>
 [DBusInterface("org.freedesktop.portal.Screenshot")]
-internal interface IScreenshotPortal : IDBusObject
+public interface IScreenshotPortal : IDBusObject
 {
     Task<ObjectPath> ScreenshotAsync(string parentWindow, IDictionary<string, object> options);
 }
 
-internal interface IPortalRequest : IDBusObject
+[DBusInterface("org.freedesktop.portal.Request")]
+public interface IPortalRequest : IDBusObject
 {
     Task<IAsyncDisposable> WatchResponseAsync(Action<uint, IDictionary<string, object>> handler);
 }

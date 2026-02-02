@@ -50,7 +50,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
     private Dictionary<string, HotkeyInfo> _shortcutMap = new();
     private ushort _nextId = 1;
     private ObjectPath? _sessionHandle;
-    private ISession? _sessionProxy;
+    private IPortalSession? _sessionProxy;
     private IDisposable? _activatedSubscription;
     private IDisposable? _deactivatedSubscription;
     private bool _disposed;
@@ -209,7 +209,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
             await CloseSessionAsync().ConfigureAwait(false);
             _sessionHandle = await CreateSessionAsync().ConfigureAwait(false);
             ObjectPath sessionHandle = (ObjectPath)_sessionHandle!;
-            _sessionProxy = _connection!.CreateProxy<ISession>(PortalBusName, sessionHandle);
+            _sessionProxy = _connection!.CreateProxy<IPortalSession>(PortalBusName, sessionHandle);
             await BindShortcutsAsync(bindings).ConfigureAwait(false);
             _shortcutMap = map;
         }
@@ -442,7 +442,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
     };
 
     [DBusInterface("org.freedesktop.portal.GlobalShortcuts")]
-    internal interface IGlobalShortcuts : IDBusObject
+    public interface IGlobalShortcuts : IDBusObject
     {
         Task<ObjectPath> CreateSessionAsync(IDictionary<string, object> options);
 
@@ -457,9 +457,5 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
         Task<IDisposable> WatchDeactivatedAsync(Action<(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
     }
 
-    [DBusInterface("org.freedesktop.portal.Session")]
-    internal interface ISession : IDBusObject
-    {
-        Task CloseAsync();
-    }
+    // Session interface is defined in PortalSession.cs to avoid duplicate proxy names.
 }

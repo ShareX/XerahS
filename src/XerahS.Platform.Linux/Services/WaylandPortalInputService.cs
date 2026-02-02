@@ -51,7 +51,7 @@ public sealed class WaylandPortalInputService : IInputService
     private System.Drawing.Point _lastCursor;
     private uint _zoneSet;
     private ObjectPath? _sessionHandle;
-    private ISession? _sessionProxy;
+    private IPortalSession? _sessionProxy;
     private bool _disposed;
 
     public WaylandPortalInputService()
@@ -97,7 +97,7 @@ public sealed class WaylandPortalInputService : IInputService
         }
 
         ObjectPath sessionHandle = (ObjectPath)_sessionHandle!;
-        _sessionProxy = _connection?.CreateProxy<ISession>(PortalBusName, sessionHandle);
+        _sessionProxy = _connection?.CreateProxy<IPortalSession>(PortalBusName, sessionHandle);
 
         _activatedSubscription = await _portal.WatchActivatedAsync(OnActivated).ConfigureAwait(false);
         _deactivatedSubscription = await _portal.WatchDeactivatedAsync(OnDeactivated).ConfigureAwait(false);
@@ -477,7 +477,7 @@ public sealed class WaylandPortalInputService : IInputService
     private sealed record ZoneDescriptor(uint Width, uint Height, int OffsetX, int OffsetY);
 
     [DBusInterface("org.freedesktop.portal.InputCapture")]
-    internal interface IInputCapture : IDBusObject
+    public interface IInputCapture : IDBusObject
     {
         Task<ObjectPath> CreateSessionAsync(string parentWindow, IDictionary<string, object> options);
 
@@ -498,9 +498,5 @@ public sealed class WaylandPortalInputService : IInputService
         Task<IDisposable> WatchZonesChangedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
     }
 
-    [DBusInterface("org.freedesktop.portal.Session")]
-    internal interface ISession : IDBusObject
-    {
-        Task CloseAsync();
-    }
+    // Session interface is defined in PortalSession.cs to avoid duplicate proxy names.
 }
