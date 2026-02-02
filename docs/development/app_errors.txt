@@ -23,3 +23,348 @@ ERROR: CaptureFullScreenAsync returned null
 CaptureRectAsync returned bitmap: NULL
 === ACTIVE WINDOW CAPTURE DEBUG END ===
 2026-02-02 11:13:52.322 - Capture returned null for job type: ActiveWindow (elapsed 18ms)
+
+
+# XerahS Master Branch - Wayland Hotkey Issues Report
+
+**Date**: 2026-02-01  
+**Branch**: master (commit 1e78835)  
+**Environment**: EndeavourOS (Arch), Wayland  
+**Application Version**: 0.6.3
+
+---
+
+## Build Fixes Required
+
+The master branch does not compile without these two fixes:
+
+### 1. Missing CommunityToolkit.Mvvm Package
+
+**File**: [src/XerahS.RegionCapture/XerahS.RegionCapture.csproj](file:///home/mathew/Documents/GitHub/ShareX%20Team/XerahS/src/XerahS.RegionCapture/XerahS.RegionCapture.csproj)
+
+**Fix**: Add package reference:
+```xml
+<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+```
+
+### 2. Incorrect ShareX.Editor Project Reference Path
+
+**Files**:
+- [src/XerahS.RegionCapture/XerahS.RegionCapture.csproj](file:///home/mathew/Documents/GitHub/ShareX%20Team/XerahS/src/XerahS.RegionCapture/XerahS.RegionCapture.csproj)
+- [src/XerahS.Core/XerahS.Core.csproj](file:///home/mathew/Documents/GitHub/ShareX%20Team/XerahS/src/XerahS.Core/XerahS.Core.csproj)
+
+**Current (incorrect)**:
+```xml
+<ProjectReference Include="..\..\..\ShareX.Editor\src\ShareX.Editor\ShareX.Editor.csproj" />
+```
+
+**Fixed**:
+```xml
+<ProjectReference Include="..\..\..\XerahS.Editor\src\ShareX.Editor\ShareX.Editor.csproj" />
+```
+
+---
+
+## Runtime Errors on Wayland
+
+After applying the build fixes, the application compiles and runs but **all three Wayland portal services fail to initialize**.
+
+### Error 1: WaylandPortalHotkeyService - Duplicate Dictionary Key
+
+**Location**: `WaylandPortalHotkeyService.cs:line 403`
+
+**Error**:
+```
+System.TypeInitializationException: The type initializer for 'XerahS.Platform.Linux.Services.WaylandPortalHotkeyService' threw an exception.
+ ---> System.ArgumentException: An item with the same key has already been added. Key: Return
+   at System.Collections.Generic.Dictionary`2.TryInsert(TKey key, TValue value, InsertionBehavior behavior)
+   at System.Collections.Generic.Dictionary`2.Add(TKey key, TValue value)
+   at XerahS.Platform.Linux.Services.WaylandPortalHotkeyService..cctor()
+```
+
+**Impact**: Hotkey service fails to initialize, causing all hotkey operations to fail.
+
+---
+
+### Error 2: WaylandPortalInputService - DBus Interface Type Mismatch
+
+**Location**: `WaylandPortalInputService.cs:line 68`
+
+**Error**:
+```
+System.ArgumentException: Signal System.Threading.Tasks.Task`1[System.IAsyncDisposable] WatchActivatedAsync(System.Action`2[Tmds.DBus.ObjectPath,System.Collections.Generic.IDictionary`2[System.String,System.Object]]) does not return 'Task<IDisposable>'
+   at Tmds.DBus.CodeGen.TypeDescription.AddInterfaceDescription(Type type, DBusInterfaceAttribute interfaceAttribute, List`1 interfaces)
+   at Tmds.DBus.CodeGen.TypeDescription.Describe(Type type, Boolean isInterfaceType)
+   at Tmds.DBus.CodeGen.TypeDescription.DescribeInterface(Type type)
+   at Tmds.DBus.CodeGen.DBusObjectProxyTypeBuilder.Build(Type interfaceType)
+   at Tmds.DBus.CodeGen.DynamicAssembly.GetProxyTypeInfo(Type interfaceType)
+   at Tmds.DBus.Connection.CreateProxy(Type interfaceType, String busName, ObjectPath path)
+   at Tmds.DBus.Connection.CreateProxy[T](String serviceName, ObjectPath path)
+   at XerahS.Platform.Linux.Services.WaylandPortalInputService..ctor()
+```
+
+**Impact**: Input capture service fails to initialize on Wayland.
+
+---
+
+### Error 3: WaylandPortalSystemService - Inaccessible Interface
+
+**Location**: `WaylandPortalSystemService.cs:line 59`
+
+**Error**:
+```
+System.TypeLoadException: Type 'XerahS.Platform.Linux.Services.WaylandPortalSystemService\+IOpenUriPortalProxy' from assembly 'Tmds.DBus.Emit, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9abd76e9812c1bca' is attempting to implement an inaccessible interface.
+   at System.Reflection.Emit.RuntimeTypeBuilder.CreateTypeNoLock()
+   at System.Reflection.Emit.RuntimeTypeBuilder.CreateTypeInfoImpl()
+   at Tmds.DBus.CodeGen.DBusObjectProxyTypeBuilder.Build(Type interfaceType)
+   at Tmds.DBus.CodeGen.DynamicAssembly.GetProxyTypeInfo(Type interfaceType)
+   at Tmds.DBus.Connection.CreateProxy(Type interfaceType, String busName, ObjectPath path)
+   at Tmds.DBus.Connection.CreateProxy[T](String serviceName, ObjectPath path)
+   at XerahS.Platform.Linux.Services.WaylandPortalSystemService..ctor()
+```
+
+**Impact**: System service (OpenURI portal) fails to initialize on Wayland.
+
+---
+
+## Hotkey Registration Failure
+
+### Symptom
+Users must click the hotkey registration button **3-4 times** before a hotkey appears to register, but the hotkey never actually becomes functional.
+
+### Root Cause
+Because [WaylandPortalHotkeyService](file:///home/mathew/Documents/GitHub/ShareX%20Team/XerahS/src/XerahS.Platform.Linux/Services/WaylandPortalHotkeyService.cs#40-467) fails to initialize (Error 1 above), the hotkey service reports `UnsupportedPlatform` status for all registration attempts.
+
+### Observed Behavior (from logs)
+
+**First attempt** (clicking button to cancel):
+```
+2026-02-01 21:00:20.538 - [Hotkey] StopRecording: Attempting to register hotkey: Print
+2026-02-01 21:00:20.539 - [Hotkey] StopRecording: Details - Key=Print, Modifiers=None, Id=0
+2026-02-01 21:00:20.539 - [Hotkey] StopRecording: RegisterHotkey returned: False, Status: UnsupportedPlatform
+```
+
+**Second attempt** (pressing the actual key):
+```
+2026-02-01 21:00:22.412 - [Hotkey] StopRecording: Attempting to register hotkey: Print
+2026-02-01 21:00:22.412 - [Hotkey] StopRecording: Details - Key=Print, Modifiers=None, Id=0
+2026-02-01 21:00:22.413 - [Hotkey] StopRecording: RegisterHotkey returned: False, Status: UnsupportedPlatform
+```
+
+**Every subsequent attempt** returns the same `False` with `UnsupportedPlatform` status.
+
+### Analysis
+1. User clicks the hotkey button to start recording
+2. User either clicks again to cancel OR presses the desired key
+3. `StopRecording()` is called and attempts to register the hotkey
+4. Registration **always fails** with `Status: UnsupportedPlatform`
+5. The UI updates to show the key name, giving the **false impression** that registration succeeded
+6. User clicks multiple times thinking it will eventually work, but it never does
+
+### Why Multiple Clicks Appear Necessary
+The UI shows the hotkey name after each failed registration attempt, making it seem like repeated clicks are "working" when in reality:
+- **Every registration attempt fails**
+- The hotkey is never actually registered with the system
+- Pressing the hotkey does nothing (no capture is triggered)
+
+---
+
+## Hotkey Activation Failure
+
+### Symptom
+Even after "registering" a hotkey (e.g., Print Screen), pressing the key does nothing.
+
+### Root Cause
+Since [WaylandPortalHotkeyService](file:///home/mathew/Documents/GitHub/ShareX%20Team/XerahS/src/XerahS.Platform.Linux/Services/WaylandPortalHotkeyService.cs#40-467) failed to initialize, there is no active hotkey service listening for key presses. The registration returns `UnsupportedPlatform`, meaning the platform layer has no functional hotkey backend.
+
+### Observed Behavior
+After attempting to register Print Screen, pressing the key shows:
+```
+2026-02-01 21:00:25.026 - [Hotkey] OnPreviewKeyDown: Key=Print, Mods=None, Mode=Normal
+2026-02-01 21:00:25.026 - [Hotkey] OnPreviewKeyDown: Ignoring - not in recording mode or viewModel null
+```
+
+The key press is detected by the UI control but:
+- No global hotkey event is triggered
+- No screen capture is initiated
+- The hotkey is completely non-functional
+
+---
+
+## Summary
+
+**Build Status**: ❌ Does not compile without fixes  
+**Runtime Status**: ⚠️ Compiles and runs, but Wayland hotkey functionality is completely broken
+
+**Affected Functionality**:
+1. ❌ Hotkey Registration - Always fails with `UnsupportedPlatform`
+2. ❌ Hotkey Activation - Registered hotkeys do not trigger any actions
+3. ❌ WaylandPortalHotkeyService - Fails to initialize
+4. ❌ WaylandPortalInputService - Fails to initialize  
+5. ❌ WaylandPortalSystemService - Fails to initialize
+
+**User Impact**: 
+- Hotkeys appear to register after multiple clicks (UI shows key name)
+- However, **no hotkeys actually work** on Wayland
+- Users must use menu/toolbar buttons for all actions
+- Screen capture can only be triggered manually, not via hotkeys
+
+---
+
+## Files Requiring Fixes
+
+### Build Issues:
+- [src/XerahS.RegionCapture/XerahS.RegionCapture.csproj](file:///home/mathew/Documents/GitHub/ShareX%20Team/XerahS/src/XerahS.RegionCapture/XerahS.RegionCapture.csproj)
+- [src/XerahS.Core/XerahS.Core.csproj](file:///home/mathew/Documents/GitHub/ShareX%20Team/XerahS/src/XerahS.Core/XerahS.Core.csproj)
+
+### Runtime Issues:
+- [src/XerahS.Platform.Linux/Services/WaylandPortalHotkeyService.cs](file:///home/mathew/Documents/GitHub/ShareX%20Team/XerahS/src/XerahS.Platform.Linux/Services/WaylandPortalHotkeyService.cs)
+- [src/XerahS.Platform.Linux/Services/WaylandPortalInputService.cs](file:///home/mathew/Documents/GitHub/ShareX%20Team/XerahS/src/XerahS.Platform.Linux/Services/WaylandPortalInputService.cs)
+- [src/XerahS.Platform.Linux/Services/WaylandPortalSystemService.cs](file:///home/mathew/Documents/GitHub/ShareX%20Team/XerahS/src/XerahS.Platform.Linux/Services/WaylandPortalSystemService.cs)
+
+---
+
+## Full Runtime Log
+
+The complete runtime log with all errors is available at:
+[/tmp/xerahs_wayland_runtime_errors.log](file:///tmp/xerahs_wayland_runtime_errors.log)
+
+
+# XerahS Master Branch - Wayland Capture Failures Report
+
+**Date**: 2026-02-01  
+**Branch**: master (commit 1e78835)  
+**Environment**: EndeavourOS (Arch), Wayland  
+**Application Version**: 0.6.3
+
+---
+
+## Active Window Capture Failure
+
+### Symptom
+Clicking "Capture Active Window" does nothing - no screenshot is taken, no error dialog is shown to the user.
+
+### Root Cause
+The capture service attempts to use XDG Portal for Wayland, but when that fails, it tries to fall back to X11 capture. However, since the system is running Wayland (not X11), the X11 fallback is skipped, resulting in a null capture.
+
+### Observed Behavior (from logs)
+
+**First attempt**:
+```
+2026-02-01 21:08:39.329 - Capture start: Job=ActiveWindow
+2026-02-01 21:08:39.331 - LinuxScreenCaptureService: Attempting capture (Modern=True)...
+2026-02-01 21:08:39.342 - LinuxScreenCaptureService: external tools failed. Falling back to X11.
+2026-02-01 21:08:39.343 - LinuxScreenCaptureService: X11 capture skipped (Wayland active).
+2026-02-01 21:08:39.344 - Capture returned null for job type: ActiveWindow (elapsed 13ms)
+```
+
+**Second attempt**:
+```
+2026-02-01 21:08:47.456 - Capture start: Job=ActiveWindow
+2026-02-01 21:08:47.456 - LinuxScreenCaptureService: Attempting capture (Modern=True)...
+2026-02-01 21:08:47.464 - LinuxScreenCaptureService: external tools failed. Falling back to X11.
+2026-02-01 21:08:47.464 - LinuxScreenCaptureService: X11 capture skipped (Wayland active).
+2026-02-01 21:08:47.464 - Capture returned null for job type: ActiveWindow (elapsed 7ms)
+```
+
+### Analysis
+1. User clicks "Capture Active Window"
+2. Service attempts modern capture (XDG Portal)
+3. **External tools fail** (likely due to portal initialization errors)
+4. Service tries to fall back to X11
+5. X11 is skipped because Wayland is active
+6. Capture returns `null`
+7. Task stops with no screenshot
+
+### User Impact
+- **No visual feedback** - user doesn't know why capture failed
+- **Silent failure** - no error message or notification
+- Appears as if the button doesn't work at all
+
+---
+
+## Region Capture Failure
+
+### Symptom
+Clicking "Capture Region" does nothing - the region selection overlay never appears, no screenshot is taken.
+
+> **Note**: User reports that region capture "semi worked" in an earlier pre-release build, suggesting this may be a **regression**. The current master branch (v0.6.3) shows complete failure, but newer tags exist (v0.7.4) that may have different behavior.
+
+### Root Cause
+Identical to Active Window capture - XDG Portal fails, X11 fallback is skipped on Wayland.
+
+### Observed Behavior (from logs)
+
+```
+2026-02-01 21:09:15.406 - Capture start: Job=RectangleRegion
+2026-02-01 21:09:15.407 - LinuxScreenCaptureService: Attempting capture (Modern=True)...
+2026-02-01 21:09:15.414 - LinuxScreenCaptureService: external tools failed. Falling back to X11.
+2026-02-01 21:09:15.414 - LinuxScreenCaptureService: X11 capture skipped (Wayland active).
+2026-02-01 21:09:15.414 - Capture returned null for job type: RectangleRegion (elapsed 8ms)
+```
+
+### Analysis
+1. User clicks "Capture Region"
+2. Service attempts modern capture (XDG Portal)
+3. **External tools fail** (portal not initialized)
+4. Service tries to fall back to X11
+5. X11 is skipped because Wayland is active
+6. Capture returns `null`
+7. Region selection overlay never appears
+
+### User Impact
+- **No region selector** - the overlay window never opens
+- **Silent failure** - no error message
+- Completely non-functional on Wayland
+
+---
+
+## Why External Tools Fail
+
+The "external tools failed" message indicates that the XDG Portal capture is not working. This is likely related to the portal initialization errors seen at startup:
+
+1. **WaylandPortalInputService failed** - DBus interface type mismatch
+2. **WaylandPortalSystemService failed** - Inaccessible interface
+
+Without these portal services initialized, the modern capture path cannot function.
+
+---
+
+## Summary
+
+**Affected Functionality**:
+- ❌ Active Window Capture - Always returns null
+- ❌ Region Capture - Always returns null
+- ❌ No error messages shown to user
+- ❌ Silent failures with no visual feedback
+
+**Root Causes**:
+1. XDG Portal services fail to initialize (DBus errors)
+2. Modern capture path fails
+3. X11 fallback is correctly skipped on Wayland
+4. No alternative capture method available
+5. Result: null capture, no screenshot
+
+**User Experience**:
+- Capture buttons appear to do nothing
+- No error dialogs or notifications
+- Users have no way to know why captures are failing
+- Application appears completely broken for screenshots on Wayland
+
+---
+
+## Files Involved
+
+### Capture Service:
+- `src/XerahS.Platform.Linux/Services/LinuxScreenCaptureService.cs`
+
+### Portal Services (initialization failures):
+- [src/XerahS.Platform.Linux/Services/WaylandPortalInputService.cs](file:///home/mathew/Documents/GitHub/ShareX%20Team/XerahS/src/XerahS.Platform.Linux/Services/WaylandPortalInputService.cs)
+- [src/XerahS.Platform.Linux/Services/WaylandPortalSystemService.cs](file:///home/mathew/Documents/GitHub/ShareX%20Team/XerahS/src/XerahS.Platform.Linux/Services/WaylandPortalSystemService.cs)
+
+---
+
+## Full Runtime Log
+
+The complete runtime log with all errors is available at:
+[/tmp/xerahs_capture_errors.log](file:///tmp/xerahs_capture_errors.log)

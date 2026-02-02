@@ -46,6 +46,10 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 ```bash
 # Clone the repository
 git clone https://github.com/ShareX/XerahS.git
+
+# Clone the required dependency (must be in a sibling folder named 'ShareX.Editor')
+git clone https://github.com/ShareX/XerahS.Editor.git ShareX.Editor
+
 cd XerahS
 
 # Build the solution
