@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>XerahS.Paste2.Plugin</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT' And !$(RuntimeIdentifier.StartsWith('linux')) And !$(RuntimeIdentifier.StartsWith('osx'))">net10.0-windows10.0.19041.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RootNamespace>XerahS.Paste2.Plugin</RootNamespace>
+    <PluginId>paste2</PluginId>
+    <PluginName>Paste2 Text Uploader</PluginName>
+  </PropertyGroup>
+
+  <!-- Avalonia packages for UI - use exact versions from main app -->
+  <!-- Mark as ExcludeAssets=runtime so they are NOT copied to plugin output (use host's versions) -->
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.9">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.9">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\XerahS.Uploaders\XerahS.Uploaders.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="plugin.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Copy plugin to main app's Plugins directory (only when built standalone) -->
+  <Target Name="CopyToPluginsDir" AfterTargets="Build" Condition="!$(OutputPath.Contains('Plugins'))">
+    <PropertyGroup>
+      <PluginOutputDir>$(MSBuildThisFileDirectory)..\..\XerahS.App\bin\$(Configuration)\$(TargetFramework)\Plugins\$(PluginId)</PluginOutputDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- Only copy the plugin's own assembly and non-excluded dependencies, not project references marked Private=false -->
+      <PluginFiles Include="$(OutputPath)$(AssemblyName).dll" />
+      <PluginFiles Include="$(OutputPath)$(AssemblyName).pdb" Condition="Exists('$(OutputPath)$(AssemblyName).pdb')" />
+      <PluginFiles Include="$(OutputPath)plugin.json" Condition="Exists('$(OutputPath)plugin.json')" />
+      <!-- Include any additional runtime dependencies that aren't from the host -->
+      <PluginFiles Include="$(OutputPath)*.dll" Exclude="$(OutputPath)$(AssemblyName).dll;$(OutputPath)Avalonia*.dll;$(OutputPath)XerahS.*.dll;$(OutputPath)CommunityToolkit*.dll;$(OutputPath)Newtonsoft*.dll" />
+    </ItemGroup>
+    <MakeDir Directories="$(PluginOutputDir)" Condition="!Exists('$(PluginOutputDir)')" />
+    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(PluginOutputDir)" SkipUnchangedFiles="true" />
+    <Message Importance="High" Text="Copied $(PluginName) plugin to: $(PluginOutputDir)" />
+  </Target>
+
+</Project>
