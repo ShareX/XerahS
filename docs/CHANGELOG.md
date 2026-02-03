@@ -9,6 +9,18 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
+## v0.7.7 - Editor Namespace & Plugin Build Fixes
+
+### Features & Improvements
+- **Editor**: Renamed namespace from ShareX.Editor to XerahS.Editor for consistency `(25135d0, d0d1266)`
+- **Build System**: Improved plugin copy target to only include plugin assemblies `(a9b5c63)`
+- **Project Structure**: Updated all editor references and AXAML declarations `(1dfeb3b, 90b9fe0)`
+
+### Bug Fixes
+- Fix Font Awesome font loading error (`InvalidOperationException`) by correcting avares:// resource paths `(25135d0)`
+- Fix MSB3030 plugin build errors where dependencies were looked up in wrong target framework path `(a9b5c63)`
+- Remove OutputPath override from App's BuildPlugins target to prevent dependency resolution issues `(a9b5c63)`
+
 ## v0.7.5 - Linux Improvements & Custom Uploaders
 
 ### Features & Improvements
