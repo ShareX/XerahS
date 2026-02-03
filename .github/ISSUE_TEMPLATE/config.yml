@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions or discussions
+    url: https://github.com/XerahS/XerahS/discussions
+    about: Use Discussions for questions or ideas

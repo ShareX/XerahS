@@ -111,7 +111,7 @@ body:
       label: .NET SDK Version
       placeholder: 10.0.100
     validations:
-      required: true
+      required: false
 
   - type: input
     id: xerahs_version
