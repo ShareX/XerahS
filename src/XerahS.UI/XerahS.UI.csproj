@@ -29,7 +29,7 @@
     <ProjectReference Include="..\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="'$(OS)' != 'Windows_NT'" />
     <ProjectReference Include="..\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
     <ProjectReference Include="..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
-    <ProjectReference Include="..\..\..\XerahS.Editor\src\ShareX.Editor\XerahS.Editor.csproj" />
+    <ProjectReference Include="..\..\..\XerahS.Editor\src\XerahS.Editor\XerahS.Editor.csproj" />
   </ItemGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />

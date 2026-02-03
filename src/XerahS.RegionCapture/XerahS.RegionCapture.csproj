@@ -34,7 +34,7 @@
     <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\XerahS.Media\XerahS.Media.csproj" />
     <!-- XIP-0023: ShareX.Editor reference for AnnotationToolbar in Region Capture Overlay -->
-    <ProjectReference Include="..\..\..\XerahS.Editor\src\ShareX.Editor\XerahS.Editor.csproj" />
+    <ProjectReference Include="..\..\..\XerahS.Editor\src\XerahS.Editor\XerahS.Editor.csproj" />
   </ItemGroup>
 
 </Project>
