@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11415.280 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
@@ -41,11 +41,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.PluginExporter", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.MacOS", "src\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj", "{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ShareX.Editor", "ShareX.Editor", "{9CDEF635-2B92-7BC4-7BA3-E0B4A4C557C7}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "XerahS.Editor", "XerahS.Editor", "{9CDEF635-2B92-7BC4-7BA3-E0B4A4C557C7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E8CB8917-EEBC-BC23-7F1D-9730F69BE860}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.Editor", "..\XerahS.Editor\src\ShareX.Editor\ShareX.Editor.csproj", "{9E99E9F2-FE0C-485D-9EF4-C54206AB4DCA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Editor", "..\XerahS.Editor\src\ShareX.Editor\XerahS.Editor.csproj", "{9E99E9F2-FE0C-485D-9EF4-C54206AB4DCA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.Linux", "src\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj", "{326B5A95-16A2-4E7A-A320-8E253D5970E3}"
 EndProject

@@ -42,6 +42,14 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 ### Prerequisites
 - [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 
+### Arch Linux (AUR)
+Arch Linux users can install the latest development version via the community-maintained AUR package [`xerahs-git`](https://aur.archlinux.org/packages/xerahs-git) (maintained by @unicxrn).
+
+This package builds directly from the source code and automatically handles dependencies, including the .NET 10 SDK. It can be installed using an AUR helper like `yay`:
+```bash
+yay -S xerahs-git
+```
+
 ### Building and Running
 ```bash
 # Clone the repository
@@ -84,7 +92,7 @@ If you see a message saying **"XerahS is damaged and can't be opened"**, it is d
 
 ## 🛠️ Developer Information
 
-See [DEVELOPER_README.md](docs/development/DEVELOPER_README.md) for architecture details and contribution guidelines.
+See [DEVELOPER_README.md](DEVELOPER_README.md) for architecture details and contribution guidelines.
 
 ## 📄 [License](LICENSE.txt)
 
