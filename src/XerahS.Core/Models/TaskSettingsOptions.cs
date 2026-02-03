@@ -24,7 +24,7 @@
 #endregion License Information (GPL v3)
 #pragma warning disable CA1416 // Validate platform compatibility
 using Newtonsoft.Json;
-using ShareX.Editor.ImageEffects;
+using XerahS.Editor.ImageEffects;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;

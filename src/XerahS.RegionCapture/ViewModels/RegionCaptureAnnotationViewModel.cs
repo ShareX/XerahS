@@ -26,8 +26,8 @@
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.Editor;
-using ShareX.Editor.Annotations;
+using XerahS.Editor;
+using XerahS.Editor.Annotations;
 using SkiaSharp;
 
 namespace XerahS.RegionCapture.ViewModels;

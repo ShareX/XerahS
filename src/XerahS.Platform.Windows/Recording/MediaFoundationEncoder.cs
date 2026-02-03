@@ -1,4 +1,4 @@
-﻿#region License Information (GPL v3)
+#region License Information (GPL v3)
 
 /*
     XerahS - The Avalonia UI implementation of ShareX
@@ -354,7 +354,7 @@ public class MediaFoundationEncoder : IVideoEncoder
 
         if (_applyVerticalFlip)
         {
-            // [2026-01-10T14:37:00+08:00] Apply vertical flip only; prior 180Â° rotation fixed upside-down but left horizontal mirror.
+            // [2026-01-10T14:37:00+08:00] Apply vertical flip only; prior 180° rotation fixed upside-down but left horizontal mirror.
             byte* srcBase = (byte*)frame.DataPtr.ToPointer();
             byte* dstBase = (byte*)bufferPtr.ToPointer();
             int height = frame.Height;

@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Editor.ImageEffects;
+using XerahS.Editor.ImageEffects;
 using System;
 using XerahS.Common;
 using XerahS.Services.Abstractions;

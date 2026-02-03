@@ -36,9 +36,9 @@ using XerahS.Core.Hotkeys;
 using Avalonia; // For Application.Current
 using XerahS.Core.Tasks;
 using XerahS.Core.Managers;
-using ShareX.Editor.Annotations;
-using ShareX.Editor.ViewModels;
-using ShareX.Editor.Views;
+using XerahS.Editor.Annotations;
+using XerahS.Editor.ViewModels;
+using XerahS.Editor.Views;
 using XerahS.UI.Helpers;
 using XerahS.UI.Services;
 
