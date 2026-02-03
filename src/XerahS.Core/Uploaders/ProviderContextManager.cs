@@ -33,6 +33,8 @@ public static class ProviderContextManager
     private static IProviderContext? _context;
     private static readonly object _lock = new();
 
+    public static IProviderContext? Current => _context;
+
     public static IProviderContext EnsureProviderContext()
     {
         lock (_lock)

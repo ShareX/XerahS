@@ -32,14 +32,27 @@ using XerahS.Uploaders.PluginSystem;
 
 namespace XerahS.Core.Security;
 
-public sealed class SecretStore : ISecretStore
+public sealed class SecretStore : ISecretStore, ISecretStoreInfo
 {
     private readonly ISecretStore _backend;
+    private readonly string _backendName;
+    private readonly string _backendDetails;
+    private readonly bool _isFallback;
 
     public SecretStore(string filePath)
     {
-        _backend = CreateBackend(filePath);
+        var backend = CreateBackend(filePath);
+        _backend = backend.Backend;
+        _backendName = backend.Name;
+        _backendDetails = backend.Details;
+        _isFallback = backend.IsFallback;
     }
+
+    public string BackendName => _backendName;
+
+    public string BackendDetails => _backendDetails;
+
+    public bool IsFallback => _isFallback;
 
     public string? GetSecret(string providerId, string secretKey, string name)
         => _backend.GetSecret(providerId, secretKey, name);
@@ -53,34 +66,60 @@ public sealed class SecretStore : ISecretStore
     public bool HasSecret(string providerId, string secretKey, string name)
         => _backend.HasSecret(providerId, secretKey, name);
 
-    private static ISecretStore CreateBackend(string filePath)
+    private static BackendSelection CreateBackend(string filePath)
     {
+        const string serviceName = "XerahS";
+
         if (OperatingSystem.IsWindows())
         {
-            return new DpapiFileSecretStore(filePath);
+            return BackendSelection.Create(
+                new DpapiFileSecretStore(filePath),
+                "Windows DPAPI file store",
+                "DPAPI-protected SecretsStore.json",
+                isFallback: false);
         }
 
         if (OperatingSystem.IsMacOS())
         {
             if (MacOSKeychainSecretStore.IsAvailable())
             {
-                return new MacOSKeychainSecretStore("XerahS");
+                return BackendSelection.Create(
+                    new MacOSKeychainSecretStore(serviceName),
+                    "macOS Keychain",
+                    $"Stored in Keychain service \"{serviceName}\"",
+                    isFallback: false);
             }
 
-            return new AesFileSecretStore(filePath, GetKeyPath(filePath));
+            return BackendSelection.Create(
+                new AesFileSecretStore(filePath, GetKeyPath(filePath)),
+                "AES file store (fallback)",
+                "AES-GCM SecretsStore.json + SecretsStore.key",
+                isFallback: true);
         }
 
         if (OperatingSystem.IsLinux())
         {
             if (LinuxLibsecretSecretStore.IsAvailable())
             {
-                return new LinuxLibsecretSecretStore("XerahS");
+                return BackendSelection.Create(
+                    new LinuxLibsecretSecretStore(serviceName),
+                    "Linux libsecret",
+                    $"Stored via secret-tool service \"{serviceName}\"",
+                    isFallback: false);
             }
 
-            return new AesFileSecretStore(filePath, GetKeyPath(filePath));
+            return BackendSelection.Create(
+                new AesFileSecretStore(filePath, GetKeyPath(filePath)),
+                "AES file store (fallback)",
+                "AES-GCM SecretsStore.json + SecretsStore.key",
+                isFallback: true);
         }
 
-        return new AesFileSecretStore(filePath, GetKeyPath(filePath));
+        return BackendSelection.Create(
+            new AesFileSecretStore(filePath, GetKeyPath(filePath)),
+            "AES file store (fallback)",
+            "AES-GCM SecretsStore.json + SecretsStore.key",
+            isFallback: true);
     }
 
     private static string GetKeyPath(string filePath)
@@ -114,7 +153,7 @@ public sealed class SecretStore : ISecretStore
 
                 try
                 {
-                    return Cryptographic.DPAPI.Decrypt(encrypted);
+                    return DPAPI.Decrypt(encrypted);
                 }
                 catch (Exception ex)
                 {
@@ -130,7 +169,7 @@ public sealed class SecretStore : ISecretStore
             lock (_lock)
             {
                 EnsureLoaded();
-                _secrets[key] = Cryptographic.DPAPI.Encrypt(value);
+                _secrets[key] = DPAPI.Encrypt(value);
                 Save();
             }
         }
@@ -253,7 +292,7 @@ public sealed class SecretStore : ISecretStore
 
                     var keyBytes = LoadOrCreateKey();
                     var plain = new byte[cipher.Length];
-                    using var aes = new AesGcm(keyBytes);
+                    using var aes = new AesGcm(keyBytes, 16);
                     aes.Decrypt(nonce, cipher, tag, plain);
                     return Encoding.UTF8.GetString(plain);
                 }
@@ -276,7 +315,7 @@ public sealed class SecretStore : ISecretStore
                 var plain = Encoding.UTF8.GetBytes(value);
                 var cipher = new byte[plain.Length];
                 var tag = new byte[16];
-                using var aes = new AesGcm(keyBytes);
+                using var aes = new AesGcm(keyBytes, 16);
                 aes.Encrypt(nonce, plain, cipher, tag);
                 var combined = new byte[nonce.Length + tag.Length + cipher.Length];
                 Buffer.BlockCopy(nonce, 0, combined, 0, nonce.Length);
@@ -594,5 +633,11 @@ public sealed class SecretStore : ISecretStore
         {
             DebugHelper.WriteException(ex, $"SecretStore command failed: {fileName} {arguments}");
         }
+    }
+
+    private readonly record struct BackendSelection(ISecretStore Backend, string Name, string Details, bool IsFallback)
+    {
+        public static BackendSelection Create(ISecretStore backend, string name, string details, bool isFallback)
+            => new(backend, name, details, isFallback);
     }
 }
