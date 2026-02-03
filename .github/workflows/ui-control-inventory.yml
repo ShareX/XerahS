@@ -1,16 +1,7 @@
 name: UI Control Inventory Audit
 
 on:
-  push:
-    branches: [ master, main, develop ]
-    paths:
-      - 'src/**/*.axaml'
-      - 'docs/audits/**'
-  pull_request:
-    branches: [ master, main, develop ]
-    paths:
-      - 'src/**/*.axaml'
-      - 'docs/audits/**'
+  workflow_dispatch:
 
 jobs:
   audit:
