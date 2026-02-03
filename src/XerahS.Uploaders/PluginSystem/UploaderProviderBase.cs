@@ -30,8 +30,16 @@ namespace XerahS.Uploaders.PluginSystem;
 /// <summary>
 /// Base class for uploader providers with common functionality
 /// </summary>
-public abstract class UploaderProviderBase : IUploaderProvider
+public abstract class UploaderProviderBase : IUploaderProvider, IProviderContextAware
 {
+    protected IProviderContext? Context { get; private set; }
+    protected ISecretStore? Secrets => Context?.Secrets;
+
+    public void SetContext(IProviderContext context)
+    {
+        Context = context;
+    }
+
     public abstract string ProviderId { get; }
     public abstract string Name { get; }
     public abstract string Description { get; }

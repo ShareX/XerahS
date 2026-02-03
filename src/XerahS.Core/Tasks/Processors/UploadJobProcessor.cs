@@ -222,6 +222,7 @@ namespace XerahS.Core.Tasks.Processors
 
             try
             {
+                XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
                 ProviderCatalog.InitializeBuiltInProviders();
 
                 var pluginPaths = PathsManager.GetPluginDirectories();

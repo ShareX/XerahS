@@ -39,6 +39,8 @@ public class AmazonS3Uploader : FileUploader
 {
     private const string DefaultRegion = "us-east-1";
     private readonly S3ConfigModel _config;
+    private readonly string _accessKeyId;
+    private readonly string _secretAccessKey;
 
     public static List<AmazonS3Endpoint> Endpoints { get; } = new List<AmazonS3Endpoint>
     {
@@ -70,9 +72,11 @@ public class AmazonS3Uploader : FileUploader
         new AmazonS3Endpoint("Wasabi", "s3.wasabisys.com")
     };
 
-    public AmazonS3Uploader(S3ConfigModel config)
+    public AmazonS3Uploader(S3ConfigModel config, string accessKeyId, string secretAccessKey)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
+        _accessKeyId = accessKeyId ?? throw new ArgumentNullException(nameof(accessKeyId));
+        _secretAccessKey = secretAccessKey ?? throw new ArgumentNullException(nameof(secretAccessKey));
     }
 
     public override UploadResult Upload(Stream stream, string fileName)
@@ -90,7 +94,7 @@ public class AmazonS3Uploader : FileUploader
         string credentialDate = DateTime.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
         string region = GetRegion();
         string scope = string.Join("/", credentialDate, region, "s3", "aws4_request");
-        string credential = string.Join("/", _config.AccessKeyId, scope);
+        string credential = string.Join("/", _accessKeyId, scope);
         string timeStamp = DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
         string contentType = MimeTypes.GetMimeTypeFromFileName(fileName);
 
@@ -137,7 +141,7 @@ public class AmazonS3Uploader : FileUploader
 
         string stringToSign = $"{algorithm}\n{timeStamp}\n{scope}\n{BytesToHex(ComputeSHA256(canonicalRequest))}";
 
-        byte[] dateKey = ComputeHMACSHA256(credentialDate, "AWS4" + _config.SecretAccessKey);
+        byte[] dateKey = ComputeHMACSHA256(credentialDate, "AWS4" + _secretAccessKey);
         byte[] dateRegionKey = ComputeHMACSHA256(region, dateKey);
         byte[] dateRegionServiceKey = ComputeHMACSHA256("s3", dateRegionKey);
         byte[] signingKey = ComputeHMACSHA256("aws4_request", dateRegionServiceKey);

@@ -38,6 +38,19 @@ public static class ProviderCatalog
     private static readonly object _lock = new();
     private static bool _pluginsLoaded = false;
     private static readonly PluginLoader _pluginLoader = new(); // Keep contexts alive
+    private static IProviderContext? _providerContext;
+
+    public static void SetProviderContext(IProviderContext context)
+    {
+        _providerContext = context;
+
+        foreach (var provider in _providers.Values)
+        {
+            ApplyContext(provider);
+        }
+    }
+
+    public static IProviderContext? GetProviderContext() => _providerContext;
 
     /// <summary>
     /// Load plugins from the specified directories
@@ -96,6 +109,7 @@ public static class ProviderCatalog
                     {
                         // Register the provider
                         _providers[provider.ProviderId] = provider;
+                        ApplyContext(provider);
                         _pluginMetadata[provider.ProviderId] = metadata;
                         successCount++;
                         DebugHelper.WriteLine($"[Plugins] ✓ SUCCESS: {metadata.Manifest.Name} (categories: {string.Join(", ", provider.SupportedCategories)})");
@@ -154,6 +168,7 @@ public static class ProviderCatalog
             if (!_providers.ContainsKey(provider.ProviderId))
             {
                 _providers[provider.ProviderId] = provider;
+                ApplyContext(provider);
                 DebugHelper.WriteLine($"[Plugins] Registered provider: {provider.Name} ({provider.ProviderId})");
             }
         }
@@ -286,6 +301,7 @@ public static class ProviderCatalog
                     }
 
                     _providers[provider.ProviderId] = provider;
+                    ApplyContext(provider);
 
                     // Create synthetic metadata for custom uploaders
                     var metadata = CreateCustomUploaderMetadata(provider, uploader);
@@ -390,6 +406,7 @@ public static class ProviderCatalog
             }
 
             _providers[provider.ProviderId] = provider;
+            ApplyContext(provider);
             _pluginMetadata[provider.ProviderId] = CreateCustomUploaderMetadata(provider, loaded);
 
             DebugHelper.WriteLine($"[CustomUploader] Reloaded: {provider.Name} ({provider.ProviderId})");
@@ -436,6 +453,19 @@ public static class ProviderCatalog
             _pluginsLoaded = false;
             _builtInInitialized = false;
             CustomUploaderRepository.Clear();
+        }
+    }
+
+    private static void ApplyContext(IUploaderProvider provider)
+    {
+        if (_providerContext == null)
+        {
+            return;
+        }
+
+        if (provider is IProviderContextAware contextAware)
+        {
+            contextAware.SetContext(_providerContext);
         }
     }
 }

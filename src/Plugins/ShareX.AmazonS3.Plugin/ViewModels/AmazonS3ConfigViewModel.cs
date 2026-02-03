@@ -27,6 +27,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Newtonsoft.Json;
 using XerahS.Uploaders.FileUploaders;
 using XerahS.Uploaders.PluginSystem;
+using System;
 using System.Collections.ObjectModel;
 
 namespace ShareX.AmazonS3.Plugin.ViewModels;
@@ -34,7 +35,7 @@ namespace ShareX.AmazonS3.Plugin.ViewModels;
 /// <summary>
 /// ViewModel for Amazon S3 configuration
 /// </summary>
-public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfigViewModel
+public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfigViewModel, IProviderContextAware
 {
     [ObservableProperty]
     private string _accessKeyId = string.Empty;
@@ -78,6 +79,9 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
     [ObservableProperty]
     private bool _removeExtensionText = false;
 
+    private string _secretKey = Guid.NewGuid().ToString("N");
+    private ISecretStore? _secrets;
+
     public ObservableCollection<AmazonS3Endpoint> Endpoints { get; } = new(AmazonS3Uploader.Endpoints);
 
     public string[] StorageClasses { get; } = new[]
@@ -96,8 +100,9 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
             var config = JsonConvert.DeserializeObject<S3ConfigModel>(json);
             if (config != null)
             {
-                AccessKeyId = config.AccessKeyId ?? string.Empty;
-                SecretAccessKey = config.SecretAccessKey ?? string.Empty;
+                _secretKey = string.IsNullOrWhiteSpace(config.SecretKey) ? Guid.NewGuid().ToString("N") : config.SecretKey;
+                AccessKeyId = _secrets?.GetSecret("amazons3", _secretKey, "accessKeyId") ?? string.Empty;
+                SecretAccessKey = _secrets?.GetSecret("amazons3", _secretKey, "secretAccessKey") ?? string.Empty;
                 BucketName = config.BucketName ?? string.Empty;
 
                 int index = Endpoints.ToList().FindIndex(e => e.Endpoint == config.Endpoint);
@@ -124,8 +129,7 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
     {
         var config = new S3ConfigModel
         {
-            AccessKeyId = AccessKeyId,
-            SecretAccessKey = SecretAccessKey,
+            SecretKey = _secretKey,
             BucketName = BucketName,
             Endpoint = Endpoints[RegionIndex].Endpoint,
             Region = Endpoints[RegionIndex].Region,
@@ -139,6 +143,27 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
             RemoveExtensionVideo = RemoveExtensionVideo,
             RemoveExtensionText = RemoveExtensionText
         };
+
+        if (_secrets != null)
+        {
+            if (string.IsNullOrWhiteSpace(AccessKeyId))
+            {
+                _secrets.DeleteSecret("amazons3", _secretKey, "accessKeyId");
+            }
+            else
+            {
+                _secrets.SetSecret("amazons3", _secretKey, "accessKeyId", AccessKeyId);
+            }
+
+            if (string.IsNullOrWhiteSpace(SecretAccessKey))
+            {
+                _secrets.DeleteSecret("amazons3", _secretKey, "secretAccessKey");
+            }
+            else
+            {
+                _secrets.SetSecret("amazons3", _secretKey, "secretAccessKey", SecretAccessKey);
+            }
+        }
 
         return JsonConvert.SerializeObject(config, Formatting.Indented);
     }
@@ -163,7 +188,18 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
             return false;
         }
 
+        if (_secrets != null)
+        {
+            _secrets.SetSecret("amazons3", _secretKey, "accessKeyId", AccessKeyId);
+            _secrets.SetSecret("amazons3", _secretKey, "secretAccessKey", SecretAccessKey);
+        }
+
         StatusMessage = null;
         return true;
+    }
+
+    public void SetContext(IProviderContext context)
+    {
+        _secrets = context.Secrets;
     }
 }

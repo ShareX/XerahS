@@ -24,8 +24,10 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Text;
 using System.Security.Cryptography;
+using XerahS.Common;
 
 namespace XerahS.Uploaders.PluginSystem;
 
@@ -49,6 +51,180 @@ public class InstanceManager
         _configFilePath = Path.Combine(configDir, "uploader-instances.json");
 
         _configuration = LoadConfiguration();
+    }
+
+    public void MigrateSecretsIfNeeded()
+    {
+        lock (_lock)
+        {
+            var context = ProviderCatalog.GetProviderContext();
+            var secrets = context?.Secrets;
+            if (secrets == null)
+            {
+                return;
+            }
+
+            bool updated = false;
+            int migratedInstances = 0;
+            int migratedSecrets = 0;
+
+            foreach (var instance in _configuration.Instances)
+            {
+                bool instanceUpdated = false;
+                bool instanceSecretsMigrated = false;
+                if (!RequiresSecretKey(instance.ProviderId))
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(instance.SettingsJson))
+                {
+                    continue;
+                }
+
+                JObject? json;
+                try
+                {
+                    json = JObject.Parse(instance.SettingsJson);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                var secretKey = json.Value<string>("SecretKey");
+                if (string.IsNullOrWhiteSpace(secretKey))
+                {
+                    secretKey = Guid.NewGuid().ToString("N");
+                    json["SecretKey"] = secretKey;
+                    instanceUpdated = true;
+                }
+
+                if (instance.ProviderId == "amazons3")
+                {
+                    var accessKeyId = json.Value<string>("AccessKeyId");
+                    var secretAccessKey = json.Value<string>("SecretAccessKey");
+
+                    if (!string.IsNullOrWhiteSpace(accessKeyId))
+                    {
+                        if (TrySetSecret(secrets, instance.ProviderId, secretKey, "accessKeyId", accessKeyId))
+                        {
+                            json.Remove("AccessKeyId");
+                            instanceUpdated = true;
+                            migratedSecrets++;
+                            instanceSecretsMigrated = true;
+                        }
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(secretAccessKey))
+                    {
+                        if (TrySetSecret(secrets, instance.ProviderId, secretKey, "secretAccessKey", secretAccessKey))
+                        {
+                            json.Remove("SecretAccessKey");
+                            instanceUpdated = true;
+                            migratedSecrets++;
+                            instanceSecretsMigrated = true;
+                        }
+                    }
+                }
+
+                if (instance.ProviderId is "imgur" or "gist")
+                {
+                    var oauthInfo = json["OAuth2Info"] as JObject;
+                    if (oauthInfo != null)
+                    {
+                        var clientId = oauthInfo.Value<string>("Client_ID");
+                        var clientSecret = oauthInfo.Value<string>("Client_Secret");
+                        var token = oauthInfo["Token"] as JObject;
+
+                        if (instance.ProviderId == "gist")
+                        {
+                            if (!string.IsNullOrWhiteSpace(clientId))
+                            {
+                                if (TrySetSecret(secrets, instance.ProviderId, secretKey, "clientId", clientId))
+                                {
+                                    migratedSecrets++;
+                                    instanceSecretsMigrated = true;
+                                }
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(clientSecret))
+                            {
+                                if (TrySetSecret(secrets, instance.ProviderId, secretKey, "clientSecret", clientSecret))
+                                {
+                                    migratedSecrets++;
+                                    instanceSecretsMigrated = true;
+                                }
+                            }
+                        }
+                        else if (instance.ProviderId == "imgur")
+                        {
+                            if (!string.IsNullOrWhiteSpace(clientSecret))
+                            {
+                                if (TrySetSecret(secrets, instance.ProviderId, secretKey, "clientSecret", clientSecret))
+                                {
+                                    migratedSecrets++;
+                                    instanceSecretsMigrated = true;
+                                }
+                            }
+
+                            if (string.IsNullOrWhiteSpace(json.Value<string>("ClientId")) && !string.IsNullOrWhiteSpace(clientId))
+                            {
+                                json["ClientId"] = clientId;
+                                instanceUpdated = true;
+                            }
+                        }
+
+                        if (token != null)
+                        {
+                            if (TrySetSecret(secrets, instance.ProviderId, secretKey, "oauthToken", token.ToString(Formatting.None)))
+                            {
+                                migratedSecrets++;
+                                instanceSecretsMigrated = true;
+                            }
+                        }
+
+                        if (instanceSecretsMigrated)
+                        {
+                            json.Remove("OAuth2Info");
+                            instanceUpdated = true;
+                        }
+                    }
+                }
+
+                if (instanceUpdated)
+                {
+                    instance.SettingsJson = json.ToString(Formatting.Indented);
+                    updated = true;
+                    migratedInstances++;
+                }
+            }
+
+            if (updated)
+            {
+                SaveConfiguration();
+                DebugHelper.WriteLine($"[Secrets] Migration completed: {migratedInstances} instance(s), {migratedSecrets} secret(s).");
+            }
+        }
+    }
+
+    private static bool RequiresSecretKey(string providerId)
+    {
+        return providerId is "amazons3" or "imgur" or "gist";
+    }
+
+    private static bool TrySetSecret(ISecretStore secrets, string providerId, string secretKey, string name, string value)
+    {
+        try
+        {
+            secrets.SetSecret(providerId, secretKey, name, value);
+            return secrets.HasSecret(providerId, secretKey, name);
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, $"[Secrets] Failed to set secret {providerId}:{name}");
+            return false;
+        }
     }
 
     /// <summary>

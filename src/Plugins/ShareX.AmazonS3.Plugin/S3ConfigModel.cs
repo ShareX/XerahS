@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using XerahS.Uploaders.FileUploaders;
 
 namespace ShareX.AmazonS3.Plugin;
@@ -32,9 +33,7 @@ namespace ShareX.AmazonS3.Plugin;
 /// </summary>
 public class S3ConfigModel
 {
-    public string AccessKeyId { get; set; } = string.Empty;
-
-    public string SecretAccessKey { get; set; } = string.Empty;
+    public string SecretKey { get; set; } = Guid.NewGuid().ToString("N");
 
     public string BucketName { get; set; } = string.Empty;
 

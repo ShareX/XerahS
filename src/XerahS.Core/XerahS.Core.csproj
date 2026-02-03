@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NETStandard.Library" Version="2.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
     <PackageReference Include="ZXing.Net.Bindings.SkiaSharp" Version="0.16.9" />
   </ItemGroup>

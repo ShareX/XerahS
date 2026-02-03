@@ -328,6 +328,7 @@ namespace XerahS.Core.Tasks.Processors
 
             try
             {
+                XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
                 ProviderCatalog.InitializeBuiltInProviders();
                 string pluginsPath = PathsManager.PluginsFolder;
                 DebugHelper.WriteLine($"Loading plugins from: {pluginsPath}");

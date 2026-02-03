@@ -49,7 +49,31 @@ public class GitHubGistProvider : UploaderProviderBase
             throw new InvalidOperationException("Failed to deserialize GitHub Gist settings");
         }
 
-        return new GitHubGistUploader(config);
+        if (Secrets == null)
+        {
+            throw new InvalidOperationException("Secret store not available for GitHub Gist");
+        }
+
+        if (string.IsNullOrWhiteSpace(config.SecretKey))
+        {
+            throw new InvalidOperationException("GitHub Gist secret key is missing");
+        }
+
+        string clientId = Secrets.GetSecret(ProviderId, config.SecretKey, "clientId") ?? string.Empty;
+        string clientSecret = Secrets.GetSecret(ProviderId, config.SecretKey, "clientSecret") ?? string.Empty;
+        string? tokenJson = Secrets.GetSecret(ProviderId, config.SecretKey, "oauthToken");
+
+        var authInfo = new OAuth2Info(clientId, clientSecret);
+        if (!string.IsNullOrWhiteSpace(tokenJson))
+        {
+            var token = JsonConvert.DeserializeObject<OAuth2Token>(tokenJson);
+            if (token != null)
+            {
+                authInfo.Token = token;
+            }
+        }
+
+        return new GitHubGistUploader(config, authInfo);
     }
 
     public override Dictionary<UploaderCategory, string[]> GetSupportedFileTypes()

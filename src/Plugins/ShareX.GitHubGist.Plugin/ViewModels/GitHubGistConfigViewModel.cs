@@ -28,6 +28,7 @@ using CommunityToolkit.Mvvm.Input;
 using Newtonsoft.Json;
 using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -36,7 +37,7 @@ namespace ShareX.GitHubGist.Plugin.ViewModels;
 /// <summary>
 /// ViewModel for GitHub Gist configuration
 /// </summary>
-public partial class GitHubGistConfigViewModel : ObservableObject, IUploaderConfigViewModel
+public partial class GitHubGistConfigViewModel : ObservableObject, IUploaderConfigViewModel, IProviderContextAware
 {
     [ObservableProperty]
     private string _clientId = string.Empty;
@@ -62,12 +63,15 @@ public partial class GitHubGistConfigViewModel : ObservableObject, IUploaderConf
     [ObservableProperty]
     private string? _statusMessage;
 
+    private string _secretKey = Guid.NewGuid().ToString("N");
+    private ISecretStore? _secrets;
+
     private GitHubGistUploader? _uploader;
     private GitHubGistConfigModel _config = new();
 
     public GitHubGistConfigViewModel()
     {
-        _uploader = new GitHubGistUploader(_config);
+        _uploader = null;
     }
 
     [RelayCommand]
@@ -77,8 +81,7 @@ public partial class GitHubGistConfigViewModel : ObservableObject, IUploaderConf
 
         if (_uploader == null)
         {
-            StatusMessage = "Uploader not initialized.";
-            return;
+            _uploader = BuildUploader();
         }
 
         string url = _uploader.GetAuthorizationURL();
@@ -108,8 +111,7 @@ public partial class GitHubGistConfigViewModel : ObservableObject, IUploaderConf
 
         if (_uploader == null)
         {
-            StatusMessage = "Uploader not initialized.";
-            return;
+            _uploader = BuildUploader();
         }
 
         if (string.IsNullOrWhiteSpace(Code))
@@ -123,6 +125,7 @@ public partial class GitHubGistConfigViewModel : ObservableObject, IUploaderConf
             IsLoggedIn = true;
             StatusMessage = "Logged in successfully.";
             Code = string.Empty;
+            PersistToken();
         }
         else
         {
@@ -146,15 +149,16 @@ public partial class GitHubGistConfigViewModel : ObservableObject, IUploaderConf
             if (config != null)
             {
                 _config = config;
-                _uploader = new GitHubGistUploader(_config);
+                _secretKey = string.IsNullOrWhiteSpace(_config.SecretKey) ? Guid.NewGuid().ToString("N") : _config.SecretKey;
+                _uploader = BuildUploader();
 
-                ClientId = _config.OAuth2Info?.Client_ID ?? string.Empty;
-                ClientSecret = _config.OAuth2Info?.Client_Secret ?? string.Empty;
+                ClientId = _secrets?.GetSecret("gist", _secretKey, "clientId") ?? string.Empty;
+                ClientSecret = _secrets?.GetSecret("gist", _secretKey, "clientSecret") ?? string.Empty;
                 PublicUpload = _config.PublicUpload;
                 RawUrl = _config.RawURL;
                 CustomApiUrl = _config.CustomURLAPI ?? string.Empty;
 
-                IsLoggedIn = _config.OAuth2Info != null && OAuth2Info.CheckOAuth(_config.OAuth2Info);
+                IsLoggedIn = HasToken();
             }
         }
         catch
@@ -166,6 +170,8 @@ public partial class GitHubGistConfigViewModel : ObservableObject, IUploaderConf
     public string ToJson()
     {
         EnsureConfigFromFields(resetToken: false);
+
+        PersistCredentials();
 
         return JsonConvert.SerializeObject(_config, Formatting.Indented);
     }
@@ -190,26 +196,99 @@ public partial class GitHubGistConfigViewModel : ObservableObject, IUploaderConf
             return false;
         }
 
+        PersistCredentials();
         StatusMessage = null;
         return true;
     }
 
     private void EnsureConfigFromFields(bool resetToken)
     {
-        _config.OAuth2Info ??= new OAuth2Info(ClientId, ClientSecret);
-        _config.OAuth2Info.Client_ID = ClientId;
-        _config.OAuth2Info.Client_Secret = ClientSecret;
-
-        if (resetToken)
-        {
-            _config.OAuth2Info.Token = null!;
-            IsLoggedIn = false;
-        }
-
+        _config.SecretKey = _secretKey;
         _config.PublicUpload = PublicUpload;
         _config.RawURL = RawUrl;
         _config.CustomURLAPI = CustomApiUrl ?? string.Empty;
+        if (resetToken)
+        {
+            _secrets?.DeleteSecret("gist", _secretKey, "oauthToken");
+            IsLoggedIn = false;
+        }
+    }
 
-        _uploader ??= new GitHubGistUploader(_config);
+    public void SetContext(IProviderContext context)
+    {
+        _secrets = context.Secrets;
+    }
+
+    private GitHubGistUploader BuildUploader()
+    {
+        var authInfo = new OAuth2Info(ClientId ?? string.Empty, ClientSecret ?? string.Empty);
+        var tokenJson = _secrets?.GetSecret("gist", _secretKey, "oauthToken");
+        if (!string.IsNullOrWhiteSpace(tokenJson))
+        {
+            var token = JsonConvert.DeserializeObject<OAuth2Token>(tokenJson);
+            if (token != null)
+            {
+                authInfo.Token = token;
+            }
+        }
+
+        return new GitHubGistUploader(_config, authInfo);
+    }
+
+    private void PersistCredentials()
+    {
+        if (_secrets == null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ClientId))
+        {
+            _secrets.DeleteSecret("gist", _secretKey, "clientId");
+        }
+        else
+        {
+            _secrets.SetSecret("gist", _secretKey, "clientId", ClientId);
+        }
+
+        if (string.IsNullOrWhiteSpace(ClientSecret))
+        {
+            _secrets.DeleteSecret("gist", _secretKey, "clientSecret");
+        }
+        else
+        {
+            _secrets.SetSecret("gist", _secretKey, "clientSecret", ClientSecret);
+        }
+    }
+
+    private void PersistToken()
+    {
+        if (_secrets == null || _uploader == null)
+        {
+            return;
+        }
+
+        if (_uploader.AuthInfo.Token != null && !string.IsNullOrEmpty(_uploader.AuthInfo.Token.access_token))
+        {
+            var json = JsonConvert.SerializeObject(_uploader.AuthInfo.Token, Formatting.None);
+            _secrets.SetSecret("gist", _secretKey, "oauthToken", json);
+        }
+    }
+
+    private bool HasToken()
+    {
+        if (_secrets == null)
+        {
+            return false;
+        }
+
+        var tokenJson = _secrets.GetSecret("gist", _secretKey, "oauthToken");
+        if (string.IsNullOrWhiteSpace(tokenJson))
+        {
+            return false;
+        }
+
+        var token = JsonConvert.DeserializeObject<OAuth2Token>(tokenJson);
+        return token != null && !string.IsNullOrEmpty(token.access_token);
     }
 }

@@ -56,7 +56,25 @@ public class AmazonS3Provider : UploaderProviderBase
             throw new InvalidOperationException("Failed to deserialize Amazon S3 settings");
         }
 
-        return new AmazonS3Uploader(config);
+        if (Secrets == null)
+        {
+            throw new InvalidOperationException("Secret store not available for Amazon S3");
+        }
+
+        if (string.IsNullOrWhiteSpace(config.SecretKey))
+        {
+            throw new InvalidOperationException("Amazon S3 secret key is missing");
+        }
+
+        string accessKeyId = Secrets.GetSecret(ProviderId, config.SecretKey, "accessKeyId") ?? string.Empty;
+        string secretAccessKey = Secrets.GetSecret(ProviderId, config.SecretKey, "secretAccessKey") ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(accessKeyId) || string.IsNullOrWhiteSpace(secretAccessKey))
+        {
+            throw new InvalidOperationException("Amazon S3 credentials are missing");
+        }
+
+        return new AmazonS3Uploader(config, accessKeyId, secretAccessKey);
     }
 
     public override Dictionary<UploaderCategory, string[]> GetSupportedFileTypes()

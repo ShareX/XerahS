@@ -38,12 +38,14 @@ public sealed class GitHubGistUploader : TextUploader, IOAuth2Basic
 {
     private const string DefaultApiUrl = "https://api.github.com";
     private readonly GitHubGistConfigModel _config;
+    private readonly OAuth2Info _authInfo;
 
-    public OAuth2Info AuthInfo => _config.OAuth2Info ??= new OAuth2Info(string.Empty, string.Empty);
+    public OAuth2Info AuthInfo => _authInfo;
 
-    public GitHubGistUploader(GitHubGistConfigModel config)
+    public GitHubGistUploader(GitHubGistConfigModel config, OAuth2Info authInfo)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
+        _authInfo = authInfo ?? throw new ArgumentNullException(nameof(authInfo));
     }
 
     public string GetAuthorizationURL()

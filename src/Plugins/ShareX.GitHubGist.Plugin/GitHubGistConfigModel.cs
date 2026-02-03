@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using XerahS.Uploaders;
+using System;
 
 namespace ShareX.GitHubGist.Plugin;
 
@@ -32,7 +32,7 @@ namespace ShareX.GitHubGist.Plugin;
 /// </summary>
 public class GitHubGistConfigModel
 {
-    public OAuth2Info? OAuth2Info { get; set; }
+    public string SecretKey { get; set; } = Guid.NewGuid().ToString("N");
 
     public bool PublicUpload { get; set; } = false;
 

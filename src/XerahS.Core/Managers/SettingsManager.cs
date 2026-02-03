@@ -50,6 +50,7 @@ namespace XerahS.Core
         public const string WorkflowsConfigFileNamePrefix = "WorkflowsConfig";
         public const string WorkflowsConfigFileNameExtension = "json";
         public const string WorkflowsConfigFileName = WorkflowsConfigFileNamePrefix + "." + WorkflowsConfigFileNameExtension;
+        public const string SecretsStoreFileName = "SecretsStore.json";
 
         #endregion
 
@@ -158,6 +159,11 @@ namespace XerahS.Core
         }
 
         /// <summary>
+        /// Secrets store file path
+        /// </summary>
+        public static string SecretsStoreFilePath => Path.Combine(SettingsFolder, SecretsStoreFileName);
+
+        /// <summary>
         /// Main application settings
         /// </summary>
         public static ApplicationConfig Settings { get; private set; } = new ApplicationConfig();
@@ -225,6 +231,7 @@ namespace XerahS.Core
             LoadUploadersConfig();
             LoadWorkflowsConfig();
             InitializeRecentTasks();
+            XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
         }
 
         /// <summary>

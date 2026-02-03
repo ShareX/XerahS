@@ -175,6 +175,15 @@ public partial class UploaderInstanceViewModel : ViewModelBase
 
             ConfigView = provider.CreateConfigView();
             Common.DebugHelper.WriteLine($"[UploaderInstanceVM] ConfigView created: {ConfigView?.GetType().Name ?? "null"}");
+
+            if (ConfigViewModel is IProviderContextAware contextAware)
+            {
+                var context = ProviderCatalog.GetProviderContext();
+                if (context != null)
+                {
+                    contextAware.SetContext(context);
+                }
+            }
         }
         else
         {

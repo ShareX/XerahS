@@ -23,32 +23,9 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using XerahS.Uploaders;
+namespace XerahS.Uploaders.PluginSystem;
 
-namespace ShareX.Imgur.Plugin;
-
-/// <summary>
-/// Configuration model for Imgur uploader
-/// </summary>
-public class ImgurConfigModel
+public interface IProviderContext
 {
-    public AccountType AccountType { get; set; } = AccountType.Anonymous;
-
-    public string SecretKey { get; set; } = Guid.NewGuid().ToString("N");
-
-    public bool DirectLink { get; set; } = true;
-
-    public ImgurThumbnailType ThumbnailType { get; set; } = ImgurThumbnailType.Medium_Thumbnail;
-
-    public bool UseGIFV { get; set; } = true;
-
-    public bool UploadToSelectedAlbum { get; set; } = false;
-
-    public ImgurAlbumData? SelectedAlbum { get; set; }
-
-    /// <summary>
-    /// Imgur Client ID for API access
-    /// </summary>
-    public string ClientId { get; set; } = "30d41ft9z9r8jtt"; // Default ShareX client ID
+    ISecretStore Secrets { get; }
 }
