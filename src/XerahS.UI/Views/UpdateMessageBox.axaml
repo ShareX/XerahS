@@ -47,28 +47,34 @@
                            Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
             </Border>
 
-            <!-- Message -->
-            <TextBlock Text="{Binding PortableNotice}"
-                       TextWrapping="Wrap"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+            <!-- Message (Removed from here) -->
 
         </StackPanel>
 
         <!-- Footer Actions -->
         <StackPanel Grid.Row="2"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Spacing="12"
+                    Spacing="16"
                     Margin="0,24,0,0">
-            <Button Content="Yes"
-                    Command="{Binding YesCommand}"
-                    Classes="accent"
-                    MinWidth="80"
-                    AutomationProperties.Name="Yes, download update"/>
-            <Button Content="No"
-                    Command="{Binding NoCommand}"
-                    MinWidth="80"
-                    AutomationProperties.Name="No, skip this update"/>
+            
+            <!-- Question / Portable Notice -->
+            <TextBlock Text="{Binding PortableNotice}"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+
+            <!-- Buttons -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="12">
+                <Button Content="Yes"
+                        Command="{Binding YesCommand}"
+                        Classes="accent"
+                        MinWidth="80"
+                        AutomationProperties.Name="Yes, download update"/>
+                <Button Content="No"
+                        Command="{Binding NoCommand}"
+                        MinWidth="80"
+                        AutomationProperties.Name="No, skip this update"/>
+            </StackPanel>
         </StackPanel>
 
     </Grid>

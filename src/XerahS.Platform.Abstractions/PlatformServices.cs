@@ -117,6 +117,13 @@ namespace XerahS.Platform.Abstractions
             private set => _toastService = value;
         }
 
+        private static IImageEncoderService? _imageEncoderService;
+        public static IImageEncoderService ImageEncoder
+        {
+            get => _imageEncoderService ?? throw new InvalidOperationException("ImageEncoder service not initialized. Call RegisterImageEncoderService() first.");
+            private set => _imageEncoderService = value;
+        }
+
         /// <summary>
         /// Checks if toast service has been initialized
         /// </summary>
@@ -148,6 +155,18 @@ namespace XerahS.Platform.Abstractions
             get => _diagnosticService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
             set => _diagnosticService = value;
         }
+
+        private static IThemeService? _themeService;
+        public static IThemeService Theme
+        {
+            get => _themeService ?? throw new InvalidOperationException("Theme service not initialized.");
+            set => _themeService = value;
+        }
+
+        /// <summary>
+        /// Checks if theme service has been initialized
+        /// </summary>
+        public static bool IsThemeServiceInitialized => _themeService != null;
 
 
 
@@ -198,6 +217,11 @@ namespace XerahS.Platform.Abstractions
             _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
         }
 
+        public static void RegisterImageEncoderService(IImageEncoderService imageEncoderService)
+        {
+            _imageEncoderService = imageEncoderService ?? throw new ArgumentNullException(nameof(imageEncoderService));
+        }
+
         /// <summary>
         /// Resets all platform services (mainly for testing)
         /// </summary>
@@ -217,6 +241,7 @@ namespace XerahS.Platform.Abstractions
             _startupService = null;
             _diagnosticService = null;
             _shellIntegrationService = null;
+            _themeService = null;
         }
     }
 }

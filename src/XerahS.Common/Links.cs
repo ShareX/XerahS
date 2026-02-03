@@ -32,17 +32,19 @@ namespace XerahS.Common
         public const string Contributors = GitHub + "/graphs/contributors";
         public const string Changelog = GitHub + "/blob/develop/docs/CHANGELOG.md";
 
-        public const string Website = "https://getsharex.com";
-        public const string Callback = Website + "/callback/";
-        public const string Donate = Website + "/donate";
-        public const string PrivacyPolicy = Website + "/privacy-policy";
-        public const string ImageEffects = Website + "/image-effects";
-        public const string Actions = Website + "/actions";
-        private const string Docs = Website + "/docs";
+        public const string ShareXWebsite = "https://getsharex.com";
+        public const string Callback = ShareXWebsite + "/callback/";
+        public const string Donate = ShareXWebsite + "/donate";
+        public const string PrivacyPolicy = ShareXWebsite + "/privacy-policy";
+        public const string ImageEffects = ShareXWebsite + "/image-effects";
+        public const string Actions = ShareXWebsite + "/actions";
+        private const string Docs = ShareXWebsite + "/docs";
         public const string DocsCustomUploader = Docs + "/custom-uploader";
         public const string DocsKeybinds = Docs + "/keybinds";
         public const string DocsOCR = Docs + "/ocr";
         public const string DocsScrollingScreenshot = Docs + "/scrolling-screenshot";
+
+        public const string XerahSWebsite = "https://xerahs.com";
 
         public const string Jaex = "https://github.com/Jaex";
         public const string McoreD = "https://github.com/McoreD";

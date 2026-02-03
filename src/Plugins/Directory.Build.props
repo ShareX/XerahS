@@ -1,0 +1,10 @@
+<Project>
+  <!-- Import parent Directory.Build.props -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))" />
+
+  <PropertyGroup>
+    <!-- Plugins are libraries, not executables - disable single-file publishing -->
+    <!-- This prevents NETSDK1099 when main app publishes with PublishSingleFile=true -->
+    <PublishSingleFile>false</PublishSingleFile>
+  </PropertyGroup>
+</Project>

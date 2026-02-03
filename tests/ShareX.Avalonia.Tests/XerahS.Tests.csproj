@@ -3,6 +3,7 @@
   <PropertyGroup>
     <RootNamespace>XerahS.Tests</RootNamespace>
     <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <EnableWindowsTargeting Condition="'$(OS)' != 'Windows_NT'">true</EnableWindowsTargeting>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -26,8 +27,14 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\..\src\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\ShareX.Editor\src\ShareX.Editor\ShareX.Editor.csproj" />
+    <ProjectReference Include="..\..\src\XerahS.Uploaders\XerahS.Uploaders.csproj" />
+    <ProjectReference Include="..\..\..\XerahS.Editor\src\XerahS.Editor\XerahS.Editor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="CustomUploader\SampleUploaders\*.sxcu">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
-

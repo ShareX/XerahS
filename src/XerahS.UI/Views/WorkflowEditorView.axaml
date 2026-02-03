@@ -106,43 +106,32 @@
                 </ScrollViewer>
             </TabItem>
             
-            <!-- Tab 2: Settings -->
-            <TabItem Header="Settings">
+            <!-- Tab 2: Image Settings (visible for screen capture jobs) -->
+            <TabItem Header="Image Settings" IsVisible="{Binding TaskSettings.IsScreenCaptureJob}">
+                <views:TaskImageSettingsPanel DataContext="{Binding TaskSettings}"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch"/>
+            </TabItem>
+
+            <!-- Tab 3: Video Settings (visible for screen record jobs) -->
+            <TabItem Header="Video Settings" IsVisible="{Binding TaskSettings.IsScreenRecordJob}">
+                <views:TaskVideoSettingsPanel DataContext="{Binding TaskSettings}"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch"/>
+            </TabItem>
+
+            <!-- Tab 4: Task Settings (Renamed from Settings / Other Settings) -->
+            <TabItem Header="Task Settings">
                 <views:TaskSettingsPanel DataContext="{Binding TaskSettings}"
-                                         HorizontalAlignment="Stretch" 
+                                         HorizontalAlignment="Stretch"
                                          VerticalAlignment="Stretch"/>
             </TabItem>
 
-            <!-- Tab 3: Index Folder -->
+            <!-- Tab 5: Index Folder -->
             <TabItem Header="Index Folder" IsVisible="{Binding TaskSettings.IsIndexFolderJob}">
                 <views:IndexFolderView DataContext="{Binding IndexFolderConfig}"/>
             </TabItem>
-
-            <!-- Tab 4: Destinations -->
-            <TabItem Header="Destinations" IsVisible="{Binding TaskSettings.UploadImageToHost}">
-                <Grid RowDefinitions="Auto, *" Margin="24">
-                    <TextBlock Text="Select Destination" Theme="{StaticResource SubtitleTextBlockStyle}" Margin="0,0,0,16"/>
-                    
-                    <ComboBox Grid.Row="1" 
-                              ItemsSource="{Binding AvailableDestinations}" 
-                              SelectedItem="{Binding SelectedDestination}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Top"
-                              PlaceholderText="Select default destination for this workflow"
-                              AutomationProperties.Name="Destination Selection">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate DataType="vm:UploaderInstanceViewModel">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="{Binding DisplayName}"/>
-                                    <TextBlock Text="{Binding Category}" 
-                                               Theme="{StaticResource CaptionTextBlockStyle}" 
-                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                 </Grid>
-            </TabItem>
+            
         </TabControl>
 
         <!-- Bottom Buttons -->

@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ShareX.GitHubGist.Plugin.ViewModels"
+             x:Class="ShareX.GitHubGist.Plugin.Views.GitHubGistConfigView"
+             x:DataType="vm:GitHubGistConfigViewModel">
+
+    <StackPanel Spacing="15">
+        <TextBlock Text="GitHub Gist Configuration"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,10"/>
+
+        <!-- Client ID -->
+        <StackPanel Spacing="5">
+            <TextBlock Text="Client ID *" FontWeight="Medium"/>
+            <TextBox Text="{Binding ClientId, UpdateSourceTrigger=PropertyChanged}"
+                     Watermark="Enter GitHub OAuth Client ID"
+                     Width="400"
+                     HorizontalAlignment="Left"/>
+        </StackPanel>
+
+        <!-- Client Secret -->
+        <StackPanel Spacing="5">
+            <TextBlock Text="Client Secret *" FontWeight="Medium"/>
+            <TextBox Text="{Binding ClientSecret, UpdateSourceTrigger=PropertyChanged}"
+                     Watermark="Enter GitHub OAuth Client Secret"
+                     PasswordChar="*"
+                     Width="400"
+                     HorizontalAlignment="Left"/>
+        </StackPanel>
+
+        <!-- OAuth Login -->
+        <Border Background="{DynamicResource SystemFillColorSecondaryBackground}"
+                Padding="15"
+                CornerRadius="4">
+            <StackPanel Spacing="10">
+                <TextBlock Text="Account Login" FontWeight="SemiBold"/>
+
+                <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding !IsLoggedIn}">
+                    <Button Content="Step 1: Open Login URL"
+                            Command="{Binding OpenLoginUrlCommand}"/>
+                </StackPanel>
+
+                <StackPanel Spacing="5" IsVisible="{Binding !IsLoggedIn}">
+                    <TextBlock Text="Step 2: Enter code from the callback URL" FontSize="12"/>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBox Text="{Binding Code}"
+                                 Watermark="Enter code"
+                                 Width="200"/>
+                        <Button Content="Complete Login"
+                                Command="{Binding CompleteLoginCommand}"
+                                Classes="accent"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding IsLoggedIn}">
+                    <TextBlock Text="Logged in" Foreground="Green" VerticalAlignment="Center"/>
+                    <Button Content="Clear Login"
+                            Command="{Binding ClearLoginCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Options -->
+        <StackPanel Spacing="5">
+            <CheckBox Content="Publish as public gist"
+                      IsChecked="{Binding PublicUpload}"/>
+            <CheckBox Content="Use raw URL"
+                      IsChecked="{Binding RawUrl}"/>
+        </StackPanel>
+
+        <!-- Custom API URL -->
+        <StackPanel Spacing="5">
+            <TextBlock Text="Custom API URL (Optional)" FontWeight="Medium"/>
+            <TextBox Text="{Binding CustomApiUrl, UpdateSourceTrigger=PropertyChanged}"
+                     Watermark="https://api.github.com"
+                     Width="400"
+                     HorizontalAlignment="Left"/>
+            <TextBlock Text="Leave empty to use the public GitHub API"
+                       FontSize="11"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+        </StackPanel>
+
+        <!-- Status Message -->
+        <Border Background="{DynamicResource SystemFillColorAttentionBackground}"
+                Padding="10"
+                CornerRadius="4"
+                IsVisible="{Binding !!StatusMessage}">
+            <TextBlock Text="{Binding StatusMessage}"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource SystemFillColorAttention}"/>
+        </Border>
+    </StackPanel>
+</UserControl>

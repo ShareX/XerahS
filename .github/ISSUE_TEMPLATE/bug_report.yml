@@ -1,0 +1,157 @@
+name: Bug Report
+description: Report a problem with XerahS
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report.
+        Please include clear steps and as much environment detail as possible.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What is the problem? A short, clear summary.
+      placeholder: The Print key cannot be registered as a hotkey on Linux (X11/XWayland).
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Provide the minimal steps needed to reproduce the issue.
+      placeholder: |
+        1. Open Workflows settings
+        2. Click the hotkey button for "Capture region"
+        3. Press Print
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      placeholder: Print should register successfully and trigger region capture.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      placeholder: Registration fails with "Unable to map key Print".
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        **System Information**
+
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      description: Distribution and version (or Windows version).
+      placeholder: EndeavourOS (Arch-based)
+    validations:
+      required: true
+
+  - type: input
+    id: kernel
+    attributes:
+      label: Kernel
+      placeholder: Linux 6.18.6-zen1-1-zen
+    validations:
+      required: false
+
+  - type: input
+    id: arch
+    attributes:
+      label: Architecture
+      placeholder: x86_64
+    validations:
+      required: false
+
+  - type: input
+    id: session_type
+    attributes:
+      label: Session Type
+      placeholder: Wayland (XWayland for X11 apps)
+    validations:
+      required: false
+
+  - type: input
+    id: desktop_environment
+    attributes:
+      label: Desktop Environment
+      placeholder: KDE Plasma
+    validations:
+      required: false
+
+  - type: input
+    id: display_server
+    attributes:
+      label: Display Server
+      placeholder: Wayland + XWayland
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        **Software Versions**
+
+  - type: input
+    id: dotnet
+    attributes:
+      label: .NET SDK Version
+      placeholder: 10.0.100
+    validations:
+      required: false
+
+  - type: input
+    id: xerahs_version
+    attributes:
+      label: XerahS Version
+      description: App version and branch/commit if applicable.
+      placeholder: 0.7.7 (develop branch, commit 90b9fe0)
+    validations:
+      required: true
+
+  - type: input
+    id: hotkey_service
+    attributes:
+      label: Hotkey Service (if relevant)
+      placeholder: LinuxHotkeyService (X11)
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Paste relevant log output (avoid sensitive data).
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: keymap
+    attributes:
+      label: Input/Keymap Info (if relevant)
+      description: For Linux hotkey issues, include `xmodmap -pke | grep -i print` or similar.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Notes
+      description: Any other context, analysis, or suspected root cause.
+    validations:
+      required: false

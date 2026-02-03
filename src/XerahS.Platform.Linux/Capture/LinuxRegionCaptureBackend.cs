@@ -26,7 +26,7 @@ using System;
 using System.Threading.Tasks;
 using ShareX.Avalonia.Platform.Abstractions.Capture;
 
-namespace ShareX.Avalonia.Platform.Linux.Capture;
+namespace XerahS.Platform.Linux.Capture;
 
 /// <summary>
 /// Linux implementation with automatic X11/Wayland detection.

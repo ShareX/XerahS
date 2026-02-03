@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using XerahS.Common;
+using XerahS.Uploaders.CustomUploader;
 
 namespace XerahS.Uploaders.PluginSystem;
 
@@ -115,6 +116,18 @@ public static class ProviderCatalog
 
             _pluginsLoaded = true;
             DebugHelper.WriteLine($"[Plugins] Complete: {successCount} succeeded, {failureCount} failed");
+
+            // Also load custom uploaders (.sxcu files) from the same directories
+            int customCount = 0;
+            foreach (var pluginsDirectory in pluginDirectories)
+            {
+                if (Directory.Exists(pluginsDirectory))
+                {
+                    customCount += LoadCustomUploaders(pluginsDirectory);
+                }
+            }
+
+            DebugHelper.WriteLine($"[Plugins] Custom uploaders loaded: {customCount}");
             DebugHelper.WriteLine($"[Plugins] Total providers in catalog: {_providers.Count}");
             DebugHelper.WriteLine($"[Plugins] ========================================");
         }
@@ -243,6 +256,175 @@ public static class ProviderCatalog
     }
 
     /// <summary>
+    /// Load custom uploaders (.sxcu files) from a directory
+    /// </summary>
+    /// <param name="directory">Directory to scan for .sxcu and .json files</param>
+    /// <returns>Number of custom uploaders loaded</returns>
+    public static int LoadCustomUploaders(string directory)
+    {
+        if (!Directory.Exists(directory))
+        {
+            return 0;
+        }
+
+        int loadedCount = 0;
+
+        lock (_lock)
+        {
+            var loaded = CustomUploaderRepository.DiscoverUploaders(directory);
+
+            foreach (var uploader in loaded.Where(u => u.IsValid))
+            {
+                try
+                {
+                    var provider = new CustomUploaderProvider(uploader);
+
+                    if (_providers.ContainsKey(provider.ProviderId))
+                    {
+                        DebugHelper.WriteLine($"[CustomUploader] Provider already exists: {provider.ProviderId}");
+                        continue;
+                    }
+
+                    _providers[provider.ProviderId] = provider;
+
+                    // Create synthetic metadata for custom uploaders
+                    var metadata = CreateCustomUploaderMetadata(provider, uploader);
+                    _pluginMetadata[provider.ProviderId] = metadata;
+
+                    loadedCount++;
+                    DebugHelper.WriteLine($"[CustomUploader] ✓ Loaded: {provider.Name} ({provider.ProviderId}) - Categories: {string.Join(", ", provider.SupportedCategories)}");
+                }
+                catch (Exception ex)
+                {
+                    DebugHelper.WriteLine($"[CustomUploader] ✗ Error creating provider for {uploader.FilePath}: {ex.Message}");
+                }
+            }
+
+            // Log failures
+            foreach (var uploader in loaded.Where(u => !u.IsValid))
+            {
+                DebugHelper.WriteLine($"[CustomUploader] ✗ Failed to load {uploader.FilePath}: {uploader.LoadError}");
+            }
+        }
+
+        return loadedCount;
+    }
+
+    /// <summary>
+    /// Creates synthetic plugin metadata for a custom uploader
+    /// </summary>
+    private static PluginMetadata CreateCustomUploaderMetadata(CustomUploaderProvider provider, LoadedCustomUploader uploader)
+    {
+        var manifest = new PluginManifest
+        {
+            PluginId = provider.ProviderId,
+            Name = provider.Name,
+            Version = provider.Version.ToString(),
+            Author = "Custom Uploader",
+            Description = provider.Description,
+            ApiVersion = "1.0",
+            EntryPoint = "CustomUploader",
+            AssemblyFileName = Path.GetFileName(uploader.FilePath),
+            SupportedCategories = provider.SupportedCategories.Select(c => c.ToString()).ToList()
+        };
+
+        var pluginDir = Path.GetDirectoryName(uploader.FilePath) ?? "";
+        var metadata = new PluginMetadata(manifest, pluginDir, uploader.FilePath)
+        {
+            Provider = provider // This sets IsLoaded to true
+        };
+
+        return metadata;
+    }
+
+    /// <summary>
+    /// Checks if a provider is a custom uploader
+    /// </summary>
+    /// <param name="providerId">The provider ID to check</param>
+    /// <returns>True if the provider is a custom uploader</returns>
+    public static bool IsCustomUploader(string providerId)
+    {
+        return providerId?.StartsWith("custom_", StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    /// <summary>
+    /// Gets all custom uploader providers
+    /// </summary>
+    /// <returns>List of custom uploader providers</returns>
+    public static List<CustomUploaderProvider> GetCustomUploaderProviders()
+    {
+        lock (_lock)
+        {
+            return _providers.Values
+                .OfType<CustomUploaderProvider>()
+                .ToList();
+        }
+    }
+
+    /// <summary>
+    /// Reloads a specific custom uploader file
+    /// </summary>
+    /// <param name="filePath">Path to the .sxcu file to reload</param>
+    /// <returns>True if reload was successful</returns>
+    public static bool ReloadCustomUploader(string filePath)
+    {
+        var loaded = CustomUploaderRepository.ReloadFile(filePath);
+
+        if (loaded == null)
+        {
+            return false;
+        }
+
+        lock (_lock)
+        {
+            var provider = new CustomUploaderProvider(loaded);
+
+            // Remove old provider with same file if exists
+            var existingKey = _providers.Keys.FirstOrDefault(k =>
+                _providers[k] is CustomUploaderProvider cp && cp.FilePath == filePath);
+
+            if (existingKey != null)
+            {
+                _providers.Remove(existingKey);
+                _pluginMetadata.Remove(existingKey);
+            }
+
+            _providers[provider.ProviderId] = provider;
+            _pluginMetadata[provider.ProviderId] = CreateCustomUploaderMetadata(provider, loaded);
+
+            DebugHelper.WriteLine($"[CustomUploader] Reloaded: {provider.Name} ({provider.ProviderId})");
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Removes a custom uploader provider
+    /// </summary>
+    /// <param name="providerId">The provider ID to remove</param>
+    /// <returns>True if removed successfully</returns>
+    public static bool RemoveCustomUploader(string providerId)
+    {
+        if (!IsCustomUploader(providerId))
+        {
+            return false;
+        }
+
+        lock (_lock)
+        {
+            if (_providers.TryGetValue(providerId, out var provider) && provider is CustomUploaderProvider customProvider)
+            {
+                CustomUploaderRepository.RemoveFile(customProvider.FilePath);
+                _providers.Remove(providerId);
+                _pluginMetadata.Remove(providerId);
+                DebugHelper.WriteLine($"[CustomUploader] Removed: {customProvider.Name} ({providerId})");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Clear all providers (for testing)
     /// </summary>
     internal static void Clear()
@@ -253,6 +435,7 @@ public static class ProviderCatalog
             _pluginMetadata.Clear();
             _pluginsLoaded = false;
             _builtInInitialized = false;
+            CustomUploaderRepository.Clear();
         }
     }
 }

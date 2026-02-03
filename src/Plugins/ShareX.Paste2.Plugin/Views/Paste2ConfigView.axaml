@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ShareX.Paste2.Plugin.ViewModels"
+             x:Class="ShareX.Paste2.Plugin.Views.Paste2ConfigView"
+             x:DataType="vm:Paste2ConfigViewModel">
+
+    <StackPanel Spacing="15">
+        <TextBlock Text="Paste2 Configuration"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,10"/>
+
+        <!-- Text Format -->
+        <StackPanel Spacing="5">
+            <TextBlock Text="Text Format *" FontWeight="Medium"/>
+            <TextBox Text="{Binding TextFormat, UpdateSourceTrigger=PropertyChanged}"
+                     Watermark="text"
+                     Width="300"
+                     HorizontalAlignment="Left"/>
+            <TextBlock Text="Example: text, csharp, json, xml"
+                       FontSize="11"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       TextWrapping="Wrap"
+                       MaxWidth="400"
+                       HorizontalAlignment="Left"/>
+        </StackPanel>
+
+        <!-- Description -->
+        <StackPanel Spacing="5">
+            <TextBlock Text="Description (Optional)" FontWeight="Medium"/>
+            <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                     Watermark="Add a description for your paste"
+                     Width="400"
+                     HorizontalAlignment="Left"/>
+        </StackPanel>
+
+        <!-- Status Message -->
+        <Border Background="{DynamicResource SystemFillColorAttentionBackground}"
+                Padding="10"
+                CornerRadius="4"
+                IsVisible="{Binding !!StatusMessage}">
+            <TextBlock Text="{Binding StatusMessage}"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource SystemFillColorAttention}"/>
+        </Border>
+    </StackPanel>
+</UserControl>

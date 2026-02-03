@@ -1,4 +1,4 @@
-﻿#region License Information (GPL v3)
+#region License Information (GPL v3)
 /*
     XerahS - The Avalonia UI implementation of ShareX
     Copyright (c) 2007-2026 ShareX Team
@@ -26,6 +26,7 @@ using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text;
 
 class Program
@@ -49,6 +50,7 @@ class Program
 
         string arch = args[3]; // e.g. amd64 for deb, linux-x64 for filename
         string debArch = arch == "linux-x64" ? "amd64" : arch; // map linux-x64 to debian amd64
+        string rpmArch = MapRpmArch(arch);
 
         Console.WriteLine($"Packaging XerahS {version} for {debArch}...");
         Console.WriteLine($"Input: {publishDir}");
@@ -88,6 +90,18 @@ class Program
         string debPath = Path.Combine(outputDir, debName);
         CreateDeb(publishDir, debPath, version, debArch);
         Console.WriteLine($"Created Debian package: {debName}");
+
+        // 3. Create .rpm (Fedora/RHEL)
+        string rpmName = $"XerahS-{version}-{arch}.rpm";
+        string rpmPath = Path.Combine(outputDir, rpmName);
+        if (CreateRpm(publishDir, rpmPath, version, rpmArch))
+        {
+            Console.WriteLine($"Created RPM package: {rpmName}");
+        }
+        else
+        {
+            Console.WriteLine("Skipped RPM package (rpmbuild not available or build failed).");
+        }
     }
 
     static string? DetectVersionFromProps(string searchStartPath)
@@ -176,13 +190,12 @@ class Program
     {
         using var fileStream = File.Create(outputPath);
         using var gzipStream = new GZipStream(fileStream, CompressionLevel.Optimal);
-        using var tarWriter = new TarWriter(gzipStream);
+        using var tarWriter = new TarWriter(gzipStream, TarEntryFormat.Ustar);
 
         foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
         {
-            string relativePath = Path.GetRelativePath(sourceDir, file);
-            // In tarball, just put them in root
-            tarWriter.WriteEntry(file, relativePath);
+            string relativePath = Path.GetRelativePath(sourceDir, file).Replace('\\', '/');
+            WriteTarFileEntry(tarWriter, file, relativePath);
         }
     }
 
@@ -198,7 +211,7 @@ class Program
             string dataRoot = Path.Combine(workDir, "data");
             string installPath = Path.Combine(dataRoot, "usr", "lib", "xerahs"); // Or /opt/xerahs, let's stick to /usr/lib/xerahs for standard linux layout
             Directory.CreateDirectory(installPath);
-            
+
             // Copy files
             foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
             {
@@ -211,10 +224,43 @@ class Program
             // Create symlink binary in /usr/bin/xerahs
             string binPath = Path.Combine(dataRoot, "usr", "bin");
             Directory.CreateDirectory(binPath);
-            // We can't easily create a true symlink on Windows for the tar archive without specific library calls or storing it as a special entry. 
+            // We can't easily create a true symlink on Windows for the tar archive without specific library calls or storing it as a special entry.
             // A safer bet for cross-platform packaging is a wrapper script.
             string wrapperScript = Path.Combine(binPath, "xerahs");
             File.WriteAllText(wrapperScript, "#!/bin/sh\nexec /usr/lib/xerahs/XerahS \"$@\"\n");
+
+            // Create desktop entry for application menu
+            string applicationsPath = Path.Combine(dataRoot, "usr", "share", "applications");
+            Directory.CreateDirectory(applicationsPath);
+            string desktopEntry = $"""
+                [Desktop Entry]
+                Name=XerahS
+                Comment=Cross-platform screen capture and sharing tool
+                GenericName=Screen Capture
+                Exec=/usr/bin/xerahs %U
+                Icon=xerahs
+                Terminal=false
+                Type=Application
+                Categories=Utility;Graphics;GTK;
+                Keywords=screenshot;screen;capture;share;upload;
+                StartupWMClass=XerahS
+                X-GNOME-UsesNotifications=true
+                """;
+            File.WriteAllText(Path.Combine(applicationsPath, "xerahs.desktop"), desktopEntry);
+
+            // Copy icon to pixmaps for application menu
+            string pixmapsPath = Path.Combine(dataRoot, "usr", "share", "pixmaps");
+            Directory.CreateDirectory(pixmapsPath);
+            string? iconSource = FindIconFile(sourceDir);
+            if (iconSource != null)
+            {
+                File.Copy(iconSource, Path.Combine(pixmapsPath, "xerahs.png"));
+                Console.WriteLine("Added application icon to package.");
+            }
+            else
+            {
+                Console.WriteLine("Warning: Could not find Logo.png for desktop icon.");
+            }
             // We will handle permissions when writing the tar
 
             // 2. Prepare control directory
@@ -227,7 +273,7 @@ class Program
             sb.AppendLine("Package: xerahs");
             sb.AppendLine($"Version: {version}");
             sb.AppendLine($"Architecture: {arch}");
-            sb.AppendLine("Maintainer: ShareX Team <info@sharex.com>");
+            sb.AppendLine("Maintainer: ShareX Team <info@getsharex.com>");
             sb.AppendLine($"Installed-Size: {installedSizeKb}");
             sb.AppendLine("Section: utils");
             sb.AppendLine("Priority: optional");
@@ -251,10 +297,10 @@ class Program
             using (var ms = new MemoryStream())
             {
                 using (var gz = new GZipStream(ms, CompressionLevel.Optimal))
-                using (var tar = new TarWriter(gz))
+                using (var tar = new TarWriter(gz, TarEntryFormat.Ustar))
                 {
                     // Add control file
-                    tar.WriteEntry(Path.Combine(controlRoot, "control"), "control");
+                    WriteTarFileEntry(tar, Path.Combine(controlRoot, "control"), "control", (UnixFileMode)Convert.ToInt32("644", 8));
                 }
                 controlTarGz = ms.ToArray();
             }
@@ -265,7 +311,7 @@ class Program
             using (var ms = new MemoryStream())
             {
                 using (var gz = new GZipStream(ms, CompressionLevel.Optimal))
-                using (var tar = new TarWriter(gz))
+                using (var tar = new TarWriter(gz, TarEntryFormat.Ustar))
                 {
                     // Add app files recursively
                     // Note: Permissions must be set correctly for Linux!
@@ -285,8 +331,283 @@ class Program
         }
     }
 
+    static bool CreateRpm(string sourceDir, string outputPath, string version, string arch)
+    {
+        if (!IsToolAvailable("rpmbuild"))
+        {
+            Console.WriteLine("rpmbuild not found in PATH.");
+            return false;
+        }
+
+        string workDir = Path.Combine(Path.GetTempPath(), "xerahs_rpm_" + Guid.NewGuid());
+        string rpmRoot = Path.Combine(workDir, "rpmbuild");
+        string buildRoot = Path.Combine(rpmRoot, "BUILDROOT");
+        string sourcesRoot = Path.Combine(rpmRoot, "SOURCES");
+        string specsRoot = Path.Combine(rpmRoot, "SPECS");
+
+        Directory.CreateDirectory(buildRoot);
+        Directory.CreateDirectory(Path.Combine(rpmRoot, "BUILD"));
+        Directory.CreateDirectory(Path.Combine(rpmRoot, "RPMS"));
+        Directory.CreateDirectory(Path.Combine(rpmRoot, "SRPMS"));
+        Directory.CreateDirectory(sourcesRoot);
+        Directory.CreateDirectory(specsRoot);
+
+        try
+        {
+            // Stage install tree under xerahs-{version}/usr/...
+            string stageRoot = Path.Combine(workDir, "stage");
+            string stagePackageRoot = Path.Combine(stageRoot, $"xerahs-{version}");
+            string installPath = Path.Combine(stagePackageRoot, "usr", "lib", "xerahs");
+            Directory.CreateDirectory(installPath);
+
+            foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+            {
+                string relativePath = Path.GetRelativePath(sourceDir, file);
+                string destFile = Path.Combine(installPath, relativePath);
+                Directory.CreateDirectory(Path.GetDirectoryName(destFile)!);
+                File.Copy(file, destFile);
+            }
+
+            // Wrapper script
+            string binPath = Path.Combine(stagePackageRoot, "usr", "bin");
+            Directory.CreateDirectory(binPath);
+            string wrapperScript = Path.Combine(binPath, "xerahs");
+            File.WriteAllText(wrapperScript, "#!/bin/sh\nexec /usr/lib/xerahs/XerahS \"$@\"\n");
+
+            // Desktop entry
+            string applicationsPath = Path.Combine(stagePackageRoot, "usr", "share", "applications");
+            Directory.CreateDirectory(applicationsPath);
+            string desktopEntry = $"""
+                [Desktop Entry]
+                Name=XerahS
+                Comment=Cross-platform screen capture and sharing tool
+                GenericName=Screen Capture
+                Exec=/usr/bin/xerahs %U
+                Icon=xerahs
+                Terminal=false
+                Type=Application
+                Categories=Utility;Graphics;GTK;
+                Keywords=screenshot;screen;capture;share;upload;
+                StartupWMClass=XerahS
+                X-GNOME-UsesNotifications=true
+                """;
+            File.WriteAllText(Path.Combine(applicationsPath, "xerahs.desktop"), desktopEntry);
+
+            // Icon
+            string pixmapsPath = Path.Combine(stagePackageRoot, "usr", "share", "pixmaps");
+            Directory.CreateDirectory(pixmapsPath);
+            string? iconSource = FindIconFile(sourceDir);
+            if (iconSource != null)
+            {
+                File.Copy(iconSource, Path.Combine(pixmapsPath, "xerahs.png"));
+            }
+            else
+            {
+                Console.WriteLine("Warning: Could not find Logo.png for RPM icon.");
+            }
+
+            // Create source tarball (contains xerahs-{version}/...)
+            string sourceTarGz = Path.Combine(sourcesRoot, $"xerahs-{version}.tar.gz");
+            if (Directory.Exists(stageRoot))
+            {
+                CreateTarball(stageRoot, sourceTarGz);
+            }
+
+            // Write spec
+            string specPath = Path.Combine(specsRoot, "xerahs.spec");
+            File.WriteAllText(specPath, BuildRpmSpec(version, arch));
+
+            // Build
+            bool requireDeps = IsRpmNativeHost();
+            string depFlag = requireDeps ? string.Empty : " --nodeps";
+            if (!requireDeps)
+            {
+                Console.WriteLine("Non-RPM host detected; disabling rpmbuild dependency checks.");
+            }
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "rpmbuild",
+                Arguments = $"-bb{depFlag} --define \"_topdir {rpmRoot}\" \"{specPath}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var proc = Process.Start(psi);
+            if (proc == null)
+            {
+                Console.WriteLine("Failed to start rpmbuild.");
+                return false;
+            }
+
+            string stdout = proc.StandardOutput.ReadToEnd();
+            string stderr = proc.StandardError.ReadToEnd();
+            proc.WaitForExit();
+
+            if (proc.ExitCode != 0)
+            {
+                Console.WriteLine("rpmbuild failed:");
+                Console.WriteLine(stdout);
+                Console.WriteLine(stderr);
+                return false;
+            }
+
+            // Copy resulting RPM to output path
+            string rpmDir = Path.Combine(rpmRoot, "RPMS", arch);
+            if (!Directory.Exists(rpmDir))
+            {
+                rpmDir = Path.Combine(rpmRoot, "RPMS");
+            }
+
+            string? builtRpm = Directory.Exists(rpmDir)
+                ? Directory.GetFiles(rpmDir, "*.rpm", SearchOption.AllDirectories).FirstOrDefault()
+                : null;
+
+            if (builtRpm == null)
+            {
+                Console.WriteLine("RPM build succeeded but no RPM file found.");
+                return false;
+            }
+
+            File.Copy(builtRpm, outputPath, true);
+            return true;
+        }
+        finally
+        {
+            try { Directory.Delete(workDir, true); } catch { }
+        }
+    }
+
+    static string BuildRpmSpec(string version, string arch)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("Name: xerahs");
+        sb.AppendLine($"Version: {version}");
+        sb.AppendLine("Release: 1%{?dist}");
+        sb.AppendLine("Summary: XerahS - Cross-platform screen capture tool");
+        sb.AppendLine("License: GPL-3.0-or-later");
+        sb.AppendLine("URL: https://github.com/ShareX/XerahS");
+        sb.AppendLine("Source0: %{name}-%{version}.tar.gz");
+        sb.AppendLine($"BuildArch: {arch}");
+        sb.AppendLine("BuildRequires: desktop-file-utils");
+        sb.AppendLine();
+        sb.AppendLine("%description");
+        sb.AppendLine("XerahS is a modern, cross-platform screen capture and sharing tool.");
+        sb.AppendLine();
+        sb.AppendLine("%prep");
+        sb.AppendLine("%setup -q -n %{name}-%{version}");
+        sb.AppendLine();
+        sb.AppendLine("%install");
+        sb.AppendLine("rm -rf %{buildroot}");
+        sb.AppendLine("mkdir -p %{buildroot}");
+        sb.AppendLine("cp -a usr %{buildroot}/usr");
+        sb.AppendLine("chmod 755 %{buildroot}/usr/bin/xerahs");
+        sb.AppendLine("chmod 755 %{buildroot}/usr/lib/xerahs/XerahS");
+        sb.AppendLine("desktop-file-validate %{buildroot}/usr/share/applications/xerahs.desktop");
+        sb.AppendLine();
+        sb.AppendLine("%files");
+        sb.AppendLine("%{_bindir}/xerahs");
+        sb.AppendLine("/usr/lib/xerahs");
+        sb.AppendLine("/usr/lib/xerahs/*");
+        sb.AppendLine("%{_datadir}/applications/xerahs.desktop");
+        sb.AppendLine("%{_datadir}/pixmaps/xerahs.png");
+        sb.AppendLine();
+        sb.AppendLine("%changelog");
+        sb.AppendLine($"* {DateTime.UtcNow:ddd MMM dd yyyy} ShareX Team <info@getsharex.com> - {version}-1");
+        sb.AppendLine("- Automated build");
+        return sb.ToString();
+    }
+
+    static string MapRpmArch(string arch)
+    {
+        return arch switch
+        {
+            "linux-x64" => "x86_64",
+            "amd64" => "x86_64",
+            "x64" => "x86_64",
+            "arm64" => "aarch64",
+            "aarch64" => "aarch64",
+            "armhf" => "armhfp",
+            "arm" => "armhfp",
+            _ => arch
+        };
+    }
+
+    static bool IsToolAvailable(string toolName)
+    {
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = toolName,
+                Arguments = "--version",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            using var proc = Process.Start(psi);
+            if (proc == null) return false;
+            proc.WaitForExit(3000);
+            return proc.ExitCode == 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    static bool IsRpmNativeHost()
+    {
+        try
+        {
+            const string osRelease = "/etc/os-release";
+            if (!File.Exists(osRelease))
+            {
+                return false;
+            }
+
+            string id = string.Empty;
+            string idLike = string.Empty;
+            foreach (var line in File.ReadLines(osRelease))
+            {
+                if (line.StartsWith("ID="))
+                {
+                    id = line.Substring(3).Trim().Trim('"');
+                }
+                else if (line.StartsWith("ID_LIKE="))
+                {
+                    idLike = line.Substring(8).Trim().Trim('"');
+                }
+            }
+
+            string combined = $"{id} {idLike}".ToLowerInvariant();
+            return combined.Contains("fedora") ||
+                   combined.Contains("rhel") ||
+                   combined.Contains("centos") ||
+                   combined.Contains("suse") ||
+                   combined.Contains("opensuse") ||
+                   combined.Contains("rocky") ||
+                   combined.Contains("almalinux");
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     static void AddDirectoryToTar(TarWriter tar, string rootDir, string currentDir)
     {
+        string relativeDirPath = Path.GetRelativePath(rootDir, currentDir).Replace('\\', '/');
+        if (!string.IsNullOrEmpty(relativeDirPath) && relativeDirPath != ".")
+        {
+            if (relativeDirPath.StartsWith("/")) relativeDirPath = relativeDirPath.Substring(1);
+            relativeDirPath = "./" + relativeDirPath.TrimEnd('/') + "/";
+            WriteTarDirectoryEntry(tar, relativeDirPath);
+        }
+
         foreach (var file in Directory.GetFiles(currentDir))
         {
             string relativePath = Path.GetRelativePath(rootDir, file).Replace('\\', '/');
@@ -295,27 +616,53 @@ class Program
             // Standard debian data.tar.gz is usually ./usr/..., so we simulate that
             relativePath = "./" + relativePath;
 
-            var entry = new PaxTarEntry(TarEntryType.RegularFile, relativePath);
-            using var fs = File.OpenRead(file);
-            entry.DataStream = fs;
-            
             // Permission handling
+            UnixFileMode mode;
             if (relativePath.EndsWith("/xerahs") || relativePath.EndsWith("/XerahS")) // Wrapper script or main executable
             {
-                entry.Mode = (UnixFileMode)Convert.ToInt32("755", 8);
+                mode = (UnixFileMode)Convert.ToInt32("755", 8);
             }
             else
             {
-                entry.Mode = (UnixFileMode)Convert.ToInt32("644", 8);
+                mode = (UnixFileMode)Convert.ToInt32("644", 8);
             }
-            
-            tar.WriteEntry(entry);
+
+            WriteTarFileEntry(tar, file, relativePath, mode);
         }
 
         foreach (var dir in Directory.GetDirectories(currentDir))
         {
             AddDirectoryToTar(tar, rootDir, dir);
         }
+    }
+
+    static void WriteTarDirectoryEntry(TarWriter tar, string entryPath)
+    {
+        var entry = new UstarTarEntry(TarEntryType.Directory, entryPath);
+        entry.Mode = (UnixFileMode)Convert.ToInt32("755", 8);
+        tar.WriteEntry(entry);
+    }
+
+    static void WriteTarFileEntry(TarWriter tar, string filePath, string entryPath, UnixFileMode? modeOverride = null)
+    {
+        var entry = new UstarTarEntry(TarEntryType.RegularFile, entryPath);
+        using var fs = File.OpenRead(filePath);
+        entry.DataStream = fs;
+
+        if (modeOverride.HasValue)
+        {
+            entry.Mode = modeOverride.Value;
+        }
+        else if (entryPath.EndsWith("/xerahs") || entryPath.EndsWith("/XerahS"))
+        {
+            entry.Mode = (UnixFileMode)Convert.ToInt32("755", 8);
+        }
+        else
+        {
+            entry.Mode = (UnixFileMode)Convert.ToInt32("644", 8);
+        }
+
+        tar.WriteEntry(entry);
     }
 
     static void WriteArEntry(Stream stream, string name, byte[] content)
@@ -358,5 +705,46 @@ class Program
             size += new FileInfo(file).Length;
         }
         return size;
+    }
+
+    static string? FindIconFile(string publishDir)
+    {
+        // Look for Logo.png in various locations
+        // 1. Check if it's in the publish directory
+        string inPublish = Path.Combine(publishDir, "Logo.png");
+        if (File.Exists(inPublish)) return inPublish;
+
+        // 2. Try to find it relative to the packaging tool location (repo structure)
+        // The packaging tool is in build/XerahS.Packaging, icon is in src/XerahS.UI/Assets/Logo.png
+        string[] searchPaths =
+        {
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "src", "XerahS.UI", "Assets", "Logo.png"),
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "src", "XerahS.UI", "Assets", "Logo.png"),
+            Path.Combine(Environment.CurrentDirectory, "src", "XerahS.UI", "Assets", "Logo.png"),
+            Path.Combine(Environment.CurrentDirectory, "..", "src", "XerahS.UI", "Assets", "Logo.png"),
+        };
+
+        foreach (var path in searchPaths)
+        {
+            string fullPath = Path.GetFullPath(path);
+            if (File.Exists(fullPath))
+            {
+                return fullPath;
+            }
+        }
+
+        // 3. Walk up from publishDir to find the repo root
+        DirectoryInfo? dir = new DirectoryInfo(publishDir);
+        while (dir != null)
+        {
+            string candidate = Path.Combine(dir.FullName, "src", "XerahS.UI", "Assets", "Logo.png");
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+            dir = dir.Parent;
+        }
+
+        return null;
     }
 }

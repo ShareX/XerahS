@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>XerahS.App</RootNamespace>
-    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT' And !$(RuntimeIdentifier.StartsWith('linux')) And !$(RuntimeIdentifier.StartsWith('osx'))">net10.0-windows10.0.26100.0</TargetFramework>
     <OutputType Condition="'$(OS)' == 'Windows_NT'">WinExe</OutputType>
     <OutputType Condition="'$(OS)' == 'Windows_NT' And '$(Configuration)' == 'Debug'">Exe</OutputType>
     <OutputType Condition="'$(OS)' != 'Windows_NT'">Exe</OutputType>
@@ -34,14 +34,15 @@
     <PackageReference Include="WebView.Avalonia.Desktop" Version="11.0.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Audits tool is only needed for Debug builds (development/auditing) -->
+    <ProjectReference Include="..\XerahS.Audits.Tool\XerahS.Audits.Tool.csproj" Condition="'$(Configuration)' == 'Debug'" />
     <ProjectReference Include="..\XerahS.UI\XerahS.UI.csproj" />
     <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
-    <ProjectReference Include="..\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />
-    <ProjectReference Include="..\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="'$(OS)' != 'Windows_NT'" />
-    <ProjectReference Include="..\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+    <ProjectReference Include="..\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '')" />
+    <ProjectReference Include="..\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="$(RuntimeIdentifier.StartsWith('osx')) Or ('$(OS)' != 'Windows_NT' And '$(RuntimeIdentifier)' == '')" />
+    <ProjectReference Include="..\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="$(RuntimeIdentifier.StartsWith('linux')) Or ('$(OS)' != 'Windows_NT' And '$(RuntimeIdentifier)' == '')" />
   </ItemGroup>
-  <Target Name="CreateMacOSAppBundle" AfterTargets="Publish"
-          Condition="'$(OS)' != 'Windows_NT' And ('$(RuntimeIdentifier)' == 'osx-x64' Or '$(RuntimeIdentifier)' == 'osx-arm64')">
+  <Target Name="CreateMacOSAppBundle" AfterTargets="Publish" Condition="'$(OS)' != 'Windows_NT' And ('$(RuntimeIdentifier)' == 'osx-x64' Or '$(RuntimeIdentifier)' == 'osx-arm64')">
     <PropertyGroup>
     <RootNamespace>XerahS.App</RootNamespace>
       <_MacAppBundle>$(PublishDir)$(AssemblyName).app</_MacAppBundle>
@@ -54,10 +55,7 @@
     <ItemGroup>
       <_MacPublishFiles Include="$(PublishDir)**" Exclude="$(PublishDir)*.app/**;$(PublishDir)*.pdb;$(PublishDir)*.xml;$(PublishDir)Plugins/**" />
     </ItemGroup>
-    <Copy SourceFiles="@(_MacPublishFiles)"
-          DestinationFolder="$(_MacMacOS)/%(_MacPublishFiles.RecursiveDir)"
-          SkipUnchangedFiles="true"
-          Condition="'@(_MacPublishFiles)' != ''" />
+    <Copy SourceFiles="@(_MacPublishFiles)" DestinationFolder="$(_MacMacOS)/%(_MacPublishFiles.RecursiveDir)" SkipUnchangedFiles="true" Condition="'@(_MacPublishFiles)' != ''" />
     <ItemGroup>
       <_MacPlistLines Include="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;" />
       <_MacPlistLines Include="&lt;plist version=&quot;1.0&quot;&gt;" />
@@ -77,46 +75,36 @@
       <_MacPlistLines Include="&lt;/dict&gt;" />
       <_MacPlistLines Include="&lt;/plist&gt;" />
     </ItemGroup>
-    <WriteLinesToFile File="$(_MacPlist)"
-                      Lines="@(_MacPlistLines)"
-                      Overwrite="true"
-                      Condition="!Exists('$(_MacPlist)')" />
+    <WriteLinesToFile File="$(_MacPlist)" Lines="@(_MacPlistLines)" Overwrite="true" Condition="!Exists('$(_MacPlist)')" />
   </Target>
-  <Target Name="ConfigureMacOSBundleIcon" AfterTargets="CreateMacOSAppBundle"
-          Condition="'$(OS)' != 'Windows_NT' And Exists('/usr/libexec/PlistBuddy') And ('$(RuntimeIdentifier)' == 'osx-x64' Or '$(RuntimeIdentifier)' == 'osx-arm64')">
+  <Target Name="ConfigureMacOSBundleIcon" AfterTargets="CreateMacOSAppBundle" Condition="'$(OS)' != 'Windows_NT' And Exists('/usr/libexec/PlistBuddy') And ('$(RuntimeIdentifier)' == 'osx-x64' Or '$(RuntimeIdentifier)' == 'osx-arm64')">
     <PropertyGroup>
     <RootNamespace>XerahS.App</RootNamespace>
       <_MacAppBundle>$(PublishDir)$(AssemblyName).app</_MacAppBundle>
       <_MacPlist>$(_MacAppBundle)/Contents/Info.plist</_MacPlist>
       <_MacResources>$(_MacAppBundle)/Contents/Resources</_MacResources>
     </PropertyGroup>
-    <Copy SourceFiles="..\XerahS.UI\Assets\Logo.icns"
-          DestinationFiles="$(_MacResources)/Logo.icns"
-          Condition="Exists('$(_MacAppBundle)')" />
-    <Exec Command="/bin/sh -c 'if /usr/libexec/PlistBuddy -c &quot;Print :CFBundleIconFile&quot; &quot;$(_MacPlist)&quot; &gt;/dev/null 2&gt;&amp;1; then /usr/libexec/PlistBuddy -c &quot;Set :CFBundleIconFile Logo&quot; &quot;$(_MacPlist)&quot;; else /usr/libexec/PlistBuddy -c &quot;Add :CFBundleIconFile string Logo&quot; &quot;$(_MacPlist)&quot;; fi'"
-          Condition="Exists('$(_MacPlist)')" />
-    <Exec Command="/bin/sh -c 'if /usr/libexec/PlistBuddy -c &quot;Print :CFBundleIconName&quot; &quot;$(_MacPlist)&quot; &gt;/dev/null 2&gt;&amp;1; then /usr/libexec/PlistBuddy -c &quot;Set :CFBundleIconName Logo&quot; &quot;$(_MacPlist)&quot;; else /usr/libexec/PlistBuddy -c &quot;Add :CFBundleIconName string Logo&quot; &quot;$(_MacPlist)&quot;; fi'"
-          Condition="Exists('$(_MacPlist)')" />
+    <Copy SourceFiles="..\XerahS.UI\Assets\Logo.icns" DestinationFiles="$(_MacResources)/Logo.icns" Condition="Exists('$(_MacAppBundle)')" />
+    <Exec Command="/bin/sh -c 'if /usr/libexec/PlistBuddy -c &quot;Print :CFBundleIconFile&quot; &quot;$(_MacPlist)&quot; &gt;/dev/null 2&gt;&amp;1; then /usr/libexec/PlistBuddy -c &quot;Set :CFBundleIconFile Logo&quot; &quot;$(_MacPlist)&quot;; else /usr/libexec/PlistBuddy -c &quot;Add :CFBundleIconFile string Logo&quot; &quot;$(_MacPlist)&quot;; fi'" Condition="Exists('$(_MacPlist)')" />
+    <Exec Command="/bin/sh -c 'if /usr/libexec/PlistBuddy -c &quot;Print :CFBundleIconName&quot; &quot;$(_MacPlist)&quot; &gt;/dev/null 2&gt;&amp;1; then /usr/libexec/PlistBuddy -c &quot;Set :CFBundleIconName Logo&quot; &quot;$(_MacPlist)&quot;; else /usr/libexec/PlistBuddy -c &quot;Add :CFBundleIconName string Logo&quot; &quot;$(_MacPlist)&quot;; fi'" Condition="Exists('$(_MacPlist)')" />
   </Target>
 
   <!-- Bundle Default Plugins -->
   <ItemGroup>
     <_DefaultPlugins Include="..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" PluginId="amazons3" />
     <_DefaultPlugins Include="..\Plugins\ShareX.Imgur.Plugin\XerahS.Imgur.Plugin.csproj" PluginId="imgur" />
+    <_DefaultPlugins Include="..\Plugins\ShareX.Paste2.Plugin\XerahS.Paste2.Plugin.csproj" PluginId="paste2" />
+    <_DefaultPlugins Include="..\Plugins\ShareX.GitHubGist.Plugin\XerahS.GitHubGist.Plugin.csproj" PluginId="gist" />
   </ItemGroup>
 
   <Target Name="BundlePlugins" AfterTargets="Publish" Condition="'$(SkipBundlePlugins)' != 'true'">
     <Message Text="Bundling default plugin: %(_DefaultPlugins.PluginId)" Importance="High" />
-    <MSBuild Projects="%(_DefaultPlugins.Identity)"
-             Targets="Restore;Publish"
-             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=false;PublishDir=$(PublishDir)Plugins/%(_DefaultPlugins.PluginId)/" />
+    <MSBuild Projects="%(_DefaultPlugins.Identity)" Targets="Restore;Publish" Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=false;PublishSingleFile=false;PublishDir=$(PublishDir)Plugins/%(_DefaultPlugins.PluginId)/" />
   </Target>
 
   <Target Name="BuildPlugins" AfterTargets="Build" Condition="'$(SkipBundlePlugins)' != 'true'">
     <Message Text="Building default plugin for dev: %(_DefaultPlugins.PluginId)" Importance="High" />
-    <MSBuild Projects="%(_DefaultPlugins.Identity)"
-             Targets="Restore;Build"
-             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);OutputPath=$(OutDir)Plugins\%(_DefaultPlugins.PluginId)\" />
+    <MSBuild Projects="%(_DefaultPlugins.Identity)" Targets="Restore;Build" Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier)" />
   </Target>
 </Project>
 

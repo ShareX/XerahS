@@ -1,0 +1,14 @@
+{
+  "pluginId": "paste2",
+  "name": "Paste2 Text Uploader",
+  "version": "1.0.0",
+  "author": "ShareX Team",
+  "description": "Upload text to Paste2",
+  "apiVersion": "1.0",
+  "entryPoint": "ShareX.Paste2.Plugin.Paste2Provider",
+  "assemblyFileName": "XerahS.Paste2.Plugin.dll",
+  "supportedCategories": ["Text"],
+  "configViewId": "paste2",
+  "dependencies": [],
+  "homepageUrl": "https://paste2.org/"
+}

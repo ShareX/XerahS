@@ -24,9 +24,9 @@
 #endregion License Information (GPL v3)
 
 using NUnit.Framework;
-using ShareX.Editor;
-using ShareX.Editor.Annotations;
-using ShareX.Editor.ImageEffects.Adjustments;
+using XerahS.Editor;
+using XerahS.Editor.Annotations;
+using XerahS.Editor.ImageEffects.Adjustments;
 using SkiaSharp;
 
 namespace XerahS.Tests.Editor;

@@ -24,7 +24,7 @@ The extraction was driven by the need to:
 ### New Repository Location
 
 ```
-ShareX.Editor/
+XerahS.Editor/
 ├── src/
 │   ├── ShareX.Editor/           # Core editor library
 │   │   ├── Annotations/         # 20+ annotation types
@@ -194,7 +194,7 @@ The editor extraction was completed through the following commits:
 ## Related Documentation
 
 - [EditorCustomization.md](./EditorCustomization.md) - How to customize editor branding
-- [ShareX.Editor README](../../../ShareX.Editor/README.md) - Editor project overview
+- [XerahS.Editor README](../../../XerahS.Editor/README.md) - Editor project overview
 - [XerahS README](../../README.md) - Main project documentation
 
 ## Technical Decisions

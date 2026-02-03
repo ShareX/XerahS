@@ -29,7 +29,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.Editor.Helpers;
+using XerahS.Editor.Helpers;
 using SkiaSharp;
 using XerahS.Core.Services;
 using XerahS.Platform.Abstractions;

@@ -46,7 +46,11 @@
                             Command="{Binding OpenPluginsFolderCommand}"
                             ToolTip.Tip="Open the plugins folder"
                             AutomationProperties.Name="Open Plugins Folder"/>
-                    <Button Content="Add from Catalog" 
+                    <Button Content="Add Custom Uploader"
+                            Command="{Binding AddCustomUploaderCommand}"
+                            ToolTip.Tip="Create a new custom uploader (.sxcu)"
+                            AutomationProperties.Name="Add Custom Uploader"/>
+                    <Button Content="Add from Catalog"
                             Command="{Binding SelectedCategory.AddFromCatalogCommand}"
                             Classes="accent"
                             AutomationProperties.Name="Add Destination from Catalog"/>

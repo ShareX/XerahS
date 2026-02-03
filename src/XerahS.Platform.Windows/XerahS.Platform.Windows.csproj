@@ -2,13 +2,24 @@
 
   <PropertyGroup>
     <RootNamespace>XerahS.Platform.Windows</RootNamespace>
-    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <UseWindowsForms Condition="'$(OS)' == 'Windows_NT'">true</UseWindowsForms>
+    <EnableWindowsTargeting Condition="'$(OS)' == 'Windows_NT'">true</EnableWindowsTargeting>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SkipNonWindowsBuild Condition="'$(OS)' != 'Windows_NT'">true</SkipNonWindowsBuild>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(SkipNonWindowsBuild)' == 'true'">
+    <Compile Remove="**\*.cs" />
+    <None Include="**\*" Exclude="obj\**;bin\**" />
+  </ItemGroup>
+
+  <Target Name="Build" Condition="'$(SkipNonWindowsBuild)' == 'true'">
+    <Message Importance="high" Text="Skipping XerahS.Platform.Windows build on non-Windows OS." />
+  </Target>
 
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
@@ -18,7 +29,7 @@
     <ProjectReference Include="..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
     <PackageReference Include="Vortice.Direct3D11" Version="3.8.2" />
     <PackageReference Include="Vortice.DXGI" Version="3.8.2" />
@@ -26,4 +37,3 @@
   </ItemGroup>
 
 </Project>
-

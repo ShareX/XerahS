@@ -1,0 +1,16 @@
+{
+  "Version": "16.1.0",
+  "Name": "Pastebin",
+  "DestinationType": "TextUploader",
+  "RequestMethod": "POST",
+  "RequestURL": "https://pastebin.com/api/api_post.php",
+  "Body": "FormURLEncoded",
+  "Arguments": {
+    "api_dev_key": "{inputbox:API Key|Enter your Pastebin API key}",
+    "api_option": "paste",
+    "api_paste_code": "{input}",
+    "api_paste_name": "{filename}",
+    "api_paste_private": "1"
+  },
+  "URL": "{response}"
+}

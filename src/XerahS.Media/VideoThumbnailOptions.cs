@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using XerahS.Common;
+using XerahS.Services.Abstractions;
 using System.ComponentModel;
 using System.Drawing.Design;
 

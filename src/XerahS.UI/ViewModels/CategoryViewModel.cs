@@ -26,7 +26,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using XerahS.Common;
 using XerahS.Uploaders.PluginSystem;
-using ShareX.Editor.ViewModels;
+using XerahS.Editor.ViewModels;
 using System.Collections.ObjectModel;
 
 namespace XerahS.UI.ViewModels;

@@ -23,9 +23,10 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.Editor.ImageEffects;
+using XerahS.Editor.ImageEffects;
 using System;
 using XerahS.Common;
+using XerahS.Services.Abstractions;
 
 namespace XerahS.Core;
 
@@ -548,6 +549,8 @@ public static partial class TaskHelpers
                 EImageFormat.GIF => image.Encode(SkiaSharp.SKEncodedImageFormat.Gif, 100),
                 EImageFormat.BMP => image.Encode(SkiaSharp.SKEncodedImageFormat.Bmp, 100),
                 EImageFormat.TIFF => image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100), // SkiaSharp doesn't support TIFF encoding
+                EImageFormat.WEBP => image.Encode(SkiaSharp.SKEncodedImageFormat.Webp, jpegQuality), // WebP uses quality like JPEG
+                EImageFormat.AVIF => image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100), // AVIF requires FFmpeg, fallback to PNG for stream
                 _ => image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100)
             };
 

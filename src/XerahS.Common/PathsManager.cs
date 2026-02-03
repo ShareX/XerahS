@@ -113,14 +113,20 @@ namespace XerahS.Common
             var paths = new System.Collections.Generic.List<string>();
 
             // 1. App-bundled plugins (BaseDirectory/Plugins)
+            // In Release, we also want to check this location adjacent to the executable
             string appPluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppResources.PluginsFolderName);
-            paths.Add(appPluginsPath);
+            if (Directory.Exists(appPluginsPath))
+            {
+                paths.Add(appPluginsPath);
+            }
 
             // 2. User-installed plugins (PluginsFolder -> PersonalFolder/Plugins)
+            // This allows users to add plugins without modifying the app installation
             string userPluginsPath = PluginsFolder;
             
-            // Avoid duplicate if they are the same
-            if (!string.Equals(appPluginsPath, userPluginsPath, StringComparison.OrdinalIgnoreCase))
+            // Only add if it exists and is different from the app plugins path
+            if (Directory.Exists(userPluginsPath) && 
+                !string.Equals(appPluginsPath, userPluginsPath, StringComparison.OrdinalIgnoreCase))
             {
                 paths.Add(userPluginsPath);
             }

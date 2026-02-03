@@ -1,0 +1,298 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        mc:Ignorable="d"
+        x:Class="XerahS.UI.Views.CustomUploaderEditorDialog"
+        x:DataType="vm:CustomUploaderEditorViewModel"
+        Width="680"
+        MinWidth="580"
+        Height="720"
+        MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        Title="{Binding Title}">
+
+    <Design.DataContext>
+        <vm:CustomUploaderEditorViewModel />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="24,24,24,0" Spacing="8">
+            <TextBlock Text="{Binding Title}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+            <TextBlock Text="Configure HTTP-based custom uploader for images, files, text, or URL shortening."
+                       Theme="{StaticResource CaptionTextBlockStyle}"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <!-- Scrollable Content -->
+        <ScrollViewer Grid.Row="1" Margin="0,16,0,0" Padding="24,0">
+            <StackPanel Spacing="24">
+
+                <!-- Basic Info Section -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Basic Information" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Name *" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                 Watermark="My Custom Uploader"
+                                 AutomationProperties.Name="Uploader Name"/>
+                        <TextBlock Text="{Binding NameError}"
+                                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                   Theme="{StaticResource CaptionTextBlockStyle}"
+                                   IsVisible="{Binding HasNameError}"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Destination Types *" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                        <WrapPanel Orientation="Horizontal">
+                            <CheckBox Content="Image Uploader" IsChecked="{Binding IsImageUploader}" Margin="0,0,16,4"
+                                      AutomationProperties.Name="Image Uploader"/>
+                            <CheckBox Content="Text Uploader" IsChecked="{Binding IsTextUploader}" Margin="0,0,16,4"
+                                      AutomationProperties.Name="Text Uploader"/>
+                            <CheckBox Content="File Uploader" IsChecked="{Binding IsFileUploader}" Margin="0,0,16,4"
+                                      AutomationProperties.Name="File Uploader"/>
+                            <CheckBox Content="URL Shortener" IsChecked="{Binding IsUrlShortener}" Margin="0,0,16,4"
+                                      AutomationProperties.Name="URL Shortener"/>
+                            <CheckBox Content="URL Sharing" IsChecked="{Binding IsUrlSharingService}" Margin="0,0,16,4"
+                                      AutomationProperties.Name="URL Sharing Service"/>
+                        </WrapPanel>
+                        <TextBlock Text="{Binding DestinationTypeError}"
+                                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                   Theme="{StaticResource CaptionTextBlockStyle}"
+                                   IsVisible="{Binding HasDestinationTypeError}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Separator/>
+
+                <!-- HTTP Request Section -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="HTTP Request" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <StackPanel Grid.Column="0" Spacing="8" Width="100">
+                            <TextBlock Text="Method" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                            <ComboBox ItemsSource="{Binding HttpMethods}"
+                                      SelectedItem="{Binding SelectedMethod}"
+                                      HorizontalAlignment="Stretch"
+                                      AutomationProperties.Name="HTTP Method"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="8">
+                            <TextBlock Text="Request URL *" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                            <TextBox Text="{Binding RequestUrl, UpdateSourceTrigger=PropertyChanged}"
+                                     Watermark="https://example.com/api/upload"
+                                     AutomationProperties.Name="Request URL"/>
+                            <TextBlock Text="{Binding RequestUrlError}"
+                                       Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                       Theme="{StaticResource CaptionTextBlockStyle}"
+                                       IsVisible="{Binding HasRequestUrlError}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Headers -->
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="Headers" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                            <Button Grid.Column="1" Content="+ Add" Command="{Binding AddHeaderCommand}"
+                                    Padding="8,4" FontSize="12"
+                                    AutomationProperties.Name="Add Header"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding Headers}" x:Name="HeadersControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:KeyValuePairViewModel">
+                                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
+                                        <TextBox Grid.Column="0" Text="{Binding Key}" Watermark="Key"
+                                                 AutomationProperties.Name="Header Key"/>
+                                        <TextBox Grid.Column="1" Text="{Binding Value}" Watermark="Value"
+                                                 AutomationProperties.Name="Header Value"/>
+                                        <Button Grid.Column="2" Content="X" Padding="8,4"
+                                                Command="{Binding #HeadersControl.DataContext.RemoveHeaderCommand}"
+                                                CommandParameter="{Binding}"
+                                                AutomationProperties.Name="Remove Header"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="Example: Authorization: Bearer {inputbox:API Token}"
+                                   Theme="{StaticResource CaptionTextBlockStyle}"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                   IsVisible="{Binding !Headers.Count}"/>
+                    </StackPanel>
+
+                    <!-- URL Parameters -->
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="URL Parameters" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                            <Button Grid.Column="1" Content="+ Add" Command="{Binding AddParameterCommand}"
+                                    Padding="8,4" FontSize="12"
+                                    AutomationProperties.Name="Add Parameter"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding Parameters}" x:Name="ParametersControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:KeyValuePairViewModel">
+                                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
+                                        <TextBox Grid.Column="0" Text="{Binding Key}" Watermark="Key"
+                                                 AutomationProperties.Name="Parameter Key"/>
+                                        <TextBox Grid.Column="1" Text="{Binding Value}" Watermark="Value"
+                                                 AutomationProperties.Name="Parameter Value"/>
+                                        <Button Grid.Column="2" Content="X" Padding="8,4"
+                                                Command="{Binding #ParametersControl.DataContext.RemoveParameterCommand}"
+                                                CommandParameter="{Binding}"
+                                                AutomationProperties.Name="Remove Parameter"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </StackPanel>
+
+                <Separator/>
+
+                <!-- Body Section -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Request Body" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <StackPanel Grid.Column="0" Spacing="8">
+                            <TextBlock Text="Body Type" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                            <ComboBox ItemsSource="{Binding BodyTypes}"
+                                      SelectedItem="{Binding SelectedBodyType}"
+                                      HorizontalAlignment="Stretch"
+                                      AutomationProperties.Name="Body Type"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="8">
+                            <TextBlock Text="File Form Name" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                            <TextBox Text="{Binding FileFormName}"
+                                     Watermark="file"
+                                     AutomationProperties.Name="File Form Name"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Form Arguments (for MultipartFormData / FormURLEncoded) -->
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="Form Arguments" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                            <Button Grid.Column="1" Content="+ Add" Command="{Binding AddArgumentCommand}"
+                                    Padding="8,4" FontSize="12"
+                                    AutomationProperties.Name="Add Argument"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding Arguments}" x:Name="ArgumentsControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:KeyValuePairViewModel">
+                                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
+                                        <TextBox Grid.Column="0" Text="{Binding Key}" Watermark="Key"
+                                                 AutomationProperties.Name="Argument Key"/>
+                                        <TextBox Grid.Column="1" Text="{Binding Value}" Watermark="Value"
+                                                 AutomationProperties.Name="Argument Value"/>
+                                        <Button Grid.Column="2" Content="X" Padding="8,4"
+                                                Command="{Binding #ArgumentsControl.DataContext.RemoveArgumentCommand}"
+                                                CommandParameter="{Binding}"
+                                                AutomationProperties.Name="Remove Argument"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Body Data (for JSON/XML) -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Body Data (JSON/XML)" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                        <TextBox Text="{Binding BodyData}"
+                                 Watermark="Example: JSON body with file content"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 Height="80"
+                                 AutomationProperties.Name="Body Data"/>
+                        <TextBlock Text="Use &#123;input&#125; for file content, &#123;filename&#125; for file name."
+                                   Theme="{StaticResource CaptionTextBlockStyle}"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Separator/>
+
+                <!-- Response Parsing Section -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Response Parsing" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+                    <TextBlock Text="Extract URLs from the server response using syntax like {json:path}, {regex:pattern}, or {response}."
+                               Theme="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               TextWrapping="Wrap"/>
+
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+                        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="8">
+                            <TextBlock Text="URL Pattern" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                            <TextBox Text="{Binding UrlPattern}"
+                                     Watermark="Example: json:url or response"
+                                     AutomationProperties.Name="URL Pattern"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="1" Spacing="8">
+                            <TextBlock Text="Thumbnail URL" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                            <TextBox Text="{Binding ThumbnailUrlPattern}"
+                                     Watermark="Example: json:thumbnail"
+                                     AutomationProperties.Name="Thumbnail URL Pattern"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="0" Spacing="8">
+                            <TextBlock Text="Deletion URL" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                            <TextBox Text="{Binding DeletionUrlPattern}"
+                                     Watermark="Example: json:delete_url"
+                                     AutomationProperties.Name="Deletion URL Pattern"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="8">
+                            <TextBlock Text="Error Message" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                            <TextBox Text="{Binding ErrorMessagePattern}"
+                                     Watermark="Example: json:error"
+                                     AutomationProperties.Name="Error Message Pattern"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Status Bar -->
+        <StackPanel Grid.Row="2" IsVisible="{Binding !!StatusMessage}">
+            <!-- Error Status -->
+            <Border Background="{DynamicResource SystemFillColorCriticalBackgroundBrush}"
+                    Padding="24,12"
+                    IsVisible="{Binding IsStatusError}">
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                           TextWrapping="Wrap"/>
+            </Border>
+            <!-- Success Status -->
+            <Border Background="{DynamicResource SystemFillColorSuccessBackgroundBrush}"
+                    Padding="24,12"
+                    IsVisible="{Binding !IsStatusError}">
+                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
+            </Border>
+        </StackPanel>
+
+        <!-- Action Buttons -->
+        <Border Grid.Row="3" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}">
+            <Grid Margin="24,16" ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                <Button Grid.Column="0" Content="Import..."
+                        Command="{Binding ImportCommand}"
+                        AutomationProperties.Name="Import Custom Uploader"/>
+                <Button Grid.Column="1" Content="Export..."
+                        Command="{Binding ExportCommand}"
+                        Margin="8,0,0,0"
+                        AutomationProperties.Name="Export Custom Uploader"/>
+
+                <Button Grid.Column="3" Content="Cancel"
+                        Command="{Binding CancelCommand}"
+                        AutomationProperties.Name="Cancel"/>
+                <Button Grid.Column="4" Content="Save"
+                        Command="{Binding SaveCommand}"
+                        IsEnabled="{Binding CanSave}"
+                        Classes="accent"
+                        Margin="12,0,0,0"
+                        AutomationProperties.Name="Save Custom Uploader"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

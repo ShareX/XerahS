@@ -27,7 +27,7 @@ using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using XerahS.Core;
-using ShareX.Editor.Helpers;
+using XerahS.Editor.Helpers;
 
 namespace XerahS.UI.ViewModels;
 

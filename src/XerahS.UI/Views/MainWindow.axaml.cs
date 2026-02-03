@@ -36,9 +36,9 @@ using XerahS.Core.Hotkeys;
 using Avalonia; // For Application.Current
 using XerahS.Core.Tasks;
 using XerahS.Core.Managers;
-using ShareX.Editor.Annotations;
-using ShareX.Editor.ViewModels;
-using ShareX.Editor.Views;
+using XerahS.Editor.Annotations;
+using XerahS.Editor.ViewModels;
+using XerahS.Editor.Views;
 using XerahS.UI.Helpers;
 using XerahS.UI.Services;
 
@@ -332,44 +332,27 @@ namespace XerahS.UI.Views
         }
         public void NavigateToEditor()
         {
-            var navView = this.FindControl<NavigationView>("NavView");
-            if (navView != null)
-            {
-                // Navigate to Editor (Tag="Editor")
-                foreach (var item in navView.MenuItems)
-                {
-                    if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == "Editor")
-                    {
-                        navView.SelectedItem = navItem;
-                        break;
-                    }
-                }
-            }
-
-            // Ensure window is visible and active
-            if (!this.IsVisible)
-            {
-                this.Show();
-            }
-
-            if (this.WindowState == Avalonia.Controls.WindowState.Minimized)
-            {
-                this.WindowState = Avalonia.Controls.WindowState.Maximized;
-            }
-
-            this.Activate();
-            this.Focus();
+            NavigateTo("Editor");
         }
 
         public void NavigateToSettings()
         {
+            NavigateTo("Settings");
+        }
+
+        public void NavigateToAbout()
+        {
+            NavigateTo("About");
+        }
+
+        private void NavigateTo(string navTag)
+        {
             var navView = this.FindControl<NavigationView>("NavView");
             if (navView != null)
             {
-                // Navigate to Settings (Tag="Settings")
                 foreach (var item in navView.MenuItems)
                 {
-                    if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == "Settings")
+                    if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == navTag)
                     {
                         navView.SelectedItem = navItem;
                         break;
@@ -464,7 +447,34 @@ namespace XerahS.UI.Views
             }
 
             TaskManager.Instance.TaskCompleted += HandleTaskCompleted;
-            await TaskManager.Instance.StartTask(settings, image);
+
+            // Hide main window before capture to avoid capturing the app itself
+            // This only applies to navbar-triggered captures, not hotkeys
+            try
+            {
+                await Platform.Abstractions.PlatformServices.UI.HideMainWindowAsync();
+            }
+            catch
+            {
+                // Ignore errors - window hiding is not critical
+            }
+
+            try
+            {
+                await TaskManager.Instance.StartTask(settings, image);
+            }
+            finally
+            {
+                // Restore main window after capture
+                try
+                {
+                    await Platform.Abstractions.PlatformServices.UI.RestoreMainWindowAsync();
+                }
+                catch
+                {
+                    // Ignore errors
+                }
+            }
         }
         private void UpdateNavigationItems(NavigationView navView)
         {

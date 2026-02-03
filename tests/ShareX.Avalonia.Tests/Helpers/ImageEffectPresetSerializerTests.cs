@@ -25,7 +25,7 @@
 
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using ShareX.Editor.ImageEffects.Adjustments;
+using XerahS.Editor.ImageEffects.Adjustments;
 using SkiaSharp;
 using System.IO.Compression;
 using XerahS.Common.Helpers;

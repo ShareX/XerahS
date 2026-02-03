@@ -29,7 +29,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Threading;
-using ShareX.Avalonia.Platform.Linux.Capture;
+using XerahS.Platform.Linux.Capture;
 using Tmds.DBus;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
@@ -50,9 +50,9 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
     private Dictionary<string, HotkeyInfo> _shortcutMap = new();
     private ushort _nextId = 1;
     private ObjectPath? _sessionHandle;
-    private ISession? _sessionProxy;
-    private IAsyncDisposable? _activatedSubscription;
-    private IAsyncDisposable? _deactivatedSubscription;
+    private IPortalSession? _sessionProxy;
+    private IDisposable? _activatedSubscription;
+    private IDisposable? _deactivatedSubscription;
     private bool _disposed;
 
     public event EventHandler<HotkeyTriggeredEventArgs>? HotkeyTriggered;
@@ -179,8 +179,8 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
             return;
         }
 
-        _activatedSubscription?.DisposeAsync().AsTask().GetAwaiter().GetResult();
-        _deactivatedSubscription?.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        _activatedSubscription?.Dispose();
+        _deactivatedSubscription?.Dispose();
         CloseSessionAsync().GetAwaiter().GetResult();
         _connection?.Dispose();
         _bindSemaphore.Dispose();
@@ -209,7 +209,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
             await CloseSessionAsync().ConfigureAwait(false);
             _sessionHandle = await CreateSessionAsync().ConfigureAwait(false);
             ObjectPath sessionHandle = (ObjectPath)_sessionHandle!;
-            _sessionProxy = _connection!.CreateProxy<ISession>(PortalBusName, sessionHandle);
+            _sessionProxy = _connection!.CreateProxy<IPortalSession>(PortalBusName, sessionHandle);
             await BindShortcutsAsync(bindings).ConfigureAwait(false);
             _shortcutMap = map;
         }
@@ -259,7 +259,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
             throw new InvalidOperationException($"WaylandPortalHotkeyService: CreateSession failed ({response})");
         }
 
-        if (!results.TryGetValue("session_handle", out var handleObj) || handleObj is not string handlePath)
+        if (!results.TryGetResult("session_handle", out string? handlePath) || string.IsNullOrWhiteSpace(handlePath))
         {
             throw new InvalidOperationException("WaylandPortalHotkeyService: Session handle missing in portal response");
         }
@@ -311,9 +311,9 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
         return (shortcuts.ToArray(), map);
     }
 
-    private void OnActivated(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)
+    private void OnActivated((ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options) data)
     {
-        if (_sessionHandle == null || !_sessionHandle.Equals(sessionHandle) || IsSuspended)
+        if (_sessionHandle == null || !_sessionHandle.Equals(data.sessionHandle) || IsSuspended)
         {
             return;
         }
@@ -321,7 +321,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
         HotkeyInfo? info;
         lock (_hotkeyLock)
         {
-            _shortcutMap.TryGetValue(shortcutId, out info);
+            _shortcutMap.TryGetValue(data.shortcutId, out info);
         }
 
         if (info == null)
@@ -333,7 +333,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
         Dispatcher.UIThread.Post(() => HotkeyTriggered?.Invoke(this, args));
     }
 
-    private void OnDeactivated(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)
+    private void OnDeactivated((ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options) data)
     {
         // Portal currently only triggers once per activation; no action needed.
     }
@@ -408,7 +408,6 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
         { Key.CapsLock, "Caps_Lock" },
         { Key.Space, "Space" },
         { Key.Tab, "Tab" },
-        { Key.Return, "Return" },
         { Key.Enter, "Return" },
         { Key.Back, "BackSpace" },
         { Key.Escape, "Escape" },
@@ -442,25 +441,21 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
         { Key.Decimal, "KP_Decimal" }
     };
 
-    [DBusInterface("org.freedesktop.portal.GlobalShortcuts")]
-    private interface IGlobalShortcuts : IDBusObject
-    {
-        Task<ObjectPath> CreateSessionAsync(IDictionary<string, object> options);
+    // Session interface is defined in PortalSession.cs to avoid duplicate proxy names.
+}
 
-        Task<ObjectPath> BindShortcutsAsync(ObjectPath sessionHandle, ValueTuple<string, IDictionary<string, object>>[] shortcuts, string parentWindow, IDictionary<string, object> options);
+[DBusInterface("org.freedesktop.portal.GlobalShortcuts")]
+public interface IGlobalShortcuts : IDBusObject
+{
+    Task<ObjectPath> CreateSessionAsync(IDictionary<string, object> options);
 
-        Task<ObjectPath> ListShortcutsAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
+    Task<ObjectPath> BindShortcutsAsync(ObjectPath sessionHandle, ValueTuple<string, IDictionary<string, object>>[] shortcuts, string parentWindow, IDictionary<string, object> options);
 
-        Task ConfigureShortcutsAsync(ObjectPath sessionHandle, string parentWindow, IDictionary<string, object> options);
+    Task<ObjectPath> ListShortcutsAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
 
-        Task<IAsyncDisposable> WatchActivatedAsync(Action<ObjectPath, string, ulong, IDictionary<string, object>> handler);
+    Task ConfigureShortcutsAsync(ObjectPath sessionHandle, string parentWindow, IDictionary<string, object> options);
 
-        Task<IAsyncDisposable> WatchDeactivatedAsync(Action<ObjectPath, string, ulong, IDictionary<string, object>> handler);
-    }
+    Task<IDisposable> WatchActivatedAsync(Action<(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
 
-    [DBusInterface("org.freedesktop.portal.Session")]
-    private interface ISession : IDBusObject
-    {
-        Task CloseAsync();
-    }
+    Task<IDisposable> WatchDeactivatedAsync(Action<(ObjectPath sessionHandle, string shortcutId, ulong timestamp, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
 }

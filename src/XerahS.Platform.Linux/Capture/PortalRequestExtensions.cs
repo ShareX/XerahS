@@ -28,19 +28,72 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Tmds.DBus;
 
-namespace ShareX.Avalonia.Platform.Linux.Capture;
+namespace XerahS.Platform.Linux.Capture;
 
-internal interface IPortalRequest : IDBusObject
-{
-    Task<IAsyncDisposable> WatchResponseAsync(Action<uint, IDictionary<string, object>> handler);
-}
+
 
 internal static class PortalRequestExtensions
 {
     public static async Task<(uint response, IDictionary<string, object> results)> WaitForResponseAsync(this IPortalRequest request)
     {
         var tcs = new TaskCompletionSource<(uint, IDictionary<string, object>)>(TaskCreationOptions.RunContinuationsAsynchronously);
-        await using var watch = await request.WatchResponseAsync((response, results) => tcs.TrySetResult((response, results))).ConfigureAwait(false);
+        using var watch = await request.WatchResponseAsync(data =>
+        {
+            Console.WriteLine($"[XDG Portal] SIGNAL RECEIVED: Response={data.response}, Count={data.results?.Count ?? 0}");
+            tcs.TrySetResult((data.response, data.results ?? new Dictionary<string, object>()));
+        }).ConfigureAwait(false);
         return await tcs.Task.ConfigureAwait(false);
+    }
+
+    public static bool TryGetResult<T>(this IDictionary<string, object> results, string key, out T? value)
+    {
+        value = default;
+        if (!results.TryGetValue(key, out var raw) || raw == null)
+        {
+            return false;
+        }
+
+        raw = UnwrapVariant(raw);
+
+        if (raw is T typed)
+        {
+            value = typed;
+            return true;
+        }
+
+        if (typeof(T) == typeof(string) && raw is ObjectPath path)
+        {
+            value = (T)(object)path.ToString();
+            return true;
+        }
+
+        return false;
+    }
+
+    private static object UnwrapVariant(object value)
+    {
+        var current = value;
+        while (current != null)
+        {
+            var type = current.GetType();
+            var typeName = type.FullName;
+            if (typeName != "Tmds.DBus.Protocol.Variant" &&
+                typeName != "Tmds.DBus.Protocol.VariantValue" &&
+                typeName != "Tmds.DBus.Variant")
+            {
+                break;
+            }
+
+            var valueProp = type.GetProperty("Value");
+            var unwrapped = valueProp?.GetValue(current);
+            if (unwrapped == null)
+            {
+                break;
+            }
+
+            current = unwrapped;
+        }
+
+        return current ?? value;
     }
 }

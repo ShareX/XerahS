@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using SkiaSharp;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -40,6 +41,11 @@ public sealed class LinuxClipboardService : IClipboardService
     private const string WlCopy = "wl-copy";
     private const string WlPaste = "wl-paste";
     private const string Xclip = "xclip";
+    private readonly object _clipboardOwnerLock = new();
+    private Process? _clipboardOwnerProcess;
+    private static readonly bool PreferWaylandClipboard =
+        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("WAYLAND_DISPLAY")) ||
+        string.Equals(Environment.GetEnvironmentVariable("XDG_SESSION_TYPE"), "wayland", StringComparison.OrdinalIgnoreCase);
 
     public void SetText(string text) => SetTextAsync(text).GetAwaiter().GetResult();
 
@@ -47,20 +53,39 @@ public sealed class LinuxClipboardService : IClipboardService
 
     public async Task SetTextAsync(string text)
     {
-        if (await TryPipeAsync(WlCopy, string.Empty, Encoding.UTF8.GetBytes(text)))
+        if (PreferWaylandClipboard)
+        {
+            if (await TryPipeAsync(WlCopy, string.Empty, Encoding.UTF8.GetBytes(text)))
+                return;
+        }
+
+        if (await TryPipeAsync(Xclip, "-selection clipboard", Encoding.UTF8.GetBytes(text)))
             return;
 
-        await TryPipeAsync(Xclip, "-selection clipboard", Encoding.UTF8.GetBytes(text));
+        if (!PreferWaylandClipboard)
+            await TryPipeAsync(WlCopy, string.Empty, Encoding.UTF8.GetBytes(text));
     }
 
     public async Task<string?> GetTextAsync()
     {
-        var result = await ReadTextAsync(WlPaste, string.Empty);
-        if (!string.IsNullOrWhiteSpace(result))
-            return result;
+        if (PreferWaylandClipboard)
+        {
+            var result = await ReadTextAsync(WlPaste, string.Empty);
+            if (!string.IsNullOrWhiteSpace(result))
+                return result;
+        }
 
-        result = await ReadTextAsync(Xclip, "-selection clipboard -o");
-        return string.IsNullOrWhiteSpace(result) ? null : result;
+        var fallback = await ReadTextAsync(Xclip, "-selection clipboard -o");
+        if (!string.IsNullOrWhiteSpace(fallback))
+            return fallback;
+
+        if (!PreferWaylandClipboard)
+        {
+            var result = await ReadTextAsync(WlPaste, string.Empty);
+            return string.IsNullOrWhiteSpace(result) ? null : result;
+        }
+
+        return null;
     }
 
     public void SetImage(SKBitmap image)
@@ -75,17 +100,30 @@ public sealed class LinuxClipboardService : IClipboardService
 
     public async Task SetImageAsync(byte[] pngBytes)
     {
-        if (await TryPipeAsync(WlCopy, "--type image/png", pngBytes))
+        if (PreferWaylandClipboard)
+        {
+            if (await TryPipeAsync(WlCopy, "--type image/png", pngBytes))
+                return;
+        }
+
+        if (await TryPipeAsync(Xclip, "-selection clipboard -t image/png -i", pngBytes))
             return;
 
-        await TryPipeAsync(Xclip, "-selection clipboard -t image/png -i", pngBytes);
+        if (!PreferWaylandClipboard)
+            await TryPipeAsync(WlCopy, "--type image/png", pngBytes);
     }
 
     public async Task<SKBitmap?> GetImageAsync()
     {
-        var bytes = await ReadBytesAsync(WlPaste, "--type image/png");
+        byte[]? bytes = null;
+        if (PreferWaylandClipboard)
+            bytes = await ReadBytesAsync(WlPaste, "--type image/png");
+
         if (bytes == null || bytes.Length == 0)
             bytes = await ReadBytesAsync(Xclip, "-selection clipboard -t image/png -o");
+
+        if ((bytes == null || bytes.Length == 0) && !PreferWaylandClipboard)
+            bytes = await ReadBytesAsync(WlPaste, "--type image/png");
 
         if (bytes == null || bytes.Length == 0)
             return null;
@@ -131,13 +169,21 @@ public sealed class LinuxClipboardService : IClipboardService
     {
         if (string.Equals(format, "text/uri-list", StringComparison.OrdinalIgnoreCase))
         {
-            // Try wl-paste first
-            var text = ReadTextAsync(WlPaste, "--type text/uri-list").GetAwaiter().GetResult();
-            if (!string.IsNullOrWhiteSpace(text))
-                return text;
+            if (PreferWaylandClipboard)
+            {
+                var text = ReadTextAsync(WlPaste, "--type text/uri-list").GetAwaiter().GetResult();
+                if (!string.IsNullOrWhiteSpace(text))
+                    return text;
+            }
 
-            text = ReadTextAsync(Xclip, "-selection clipboard -t text/uri-list -o").GetAwaiter().GetResult();
-            return text;
+            var fallback = ReadTextAsync(Xclip, "-selection clipboard -t text/uri-list -o").GetAwaiter().GetResult();
+            if (!string.IsNullOrWhiteSpace(fallback))
+                return fallback;
+
+            if (!PreferWaylandClipboard)
+                return ReadTextAsync(WlPaste, "--type text/uri-list").GetAwaiter().GetResult();
+
+            return null;
         }
 
         if (string.Equals(format, "text/plain", StringComparison.OrdinalIgnoreCase))
@@ -155,10 +201,17 @@ public sealed class LinuxClipboardService : IClipboardService
             ? "--type text/uri-list"
             : string.Empty;
 
-        if (TryPipeAsync(WlCopy, args, Encoding.UTF8.GetBytes(textData)).GetAwaiter().GetResult())
+        if (PreferWaylandClipboard)
+        {
+            if (TryPipeAsync(WlCopy, args, Encoding.UTF8.GetBytes(textData)).GetAwaiter().GetResult())
+                return;
+        }
+
+        if (TryPipeAsync(Xclip, $"-selection clipboard{(string.IsNullOrEmpty(args) ? string.Empty : " -t " + format)}", Encoding.UTF8.GetBytes(textData)).GetAwaiter().GetResult())
             return;
 
-        TryPipeAsync(Xclip, $"-selection clipboard{(string.IsNullOrEmpty(args) ? string.Empty : " -t " + format)}", Encoding.UTF8.GetBytes(textData)).GetAwaiter().GetResult();
+        if (!PreferWaylandClipboard)
+            TryPipeAsync(WlCopy, args, Encoding.UTF8.GetBytes(textData)).GetAwaiter().GetResult();
     }
 
     public bool ContainsData(string format)
@@ -172,19 +225,33 @@ public sealed class LinuxClipboardService : IClipboardService
         return false;
     }
 
-    private static async Task<bool> TryPipeAsync(string tool, string args, byte[] data)
+    private async Task<bool> TryPipeAsync(string tool, string args, byte[] data)
     {
         try
         {
-            using var process = CreateProcess(tool, args);
+            StopClipboardOwnerProcess();
+
+            var process = CreateProcess(tool, args);
             if (process == null)
                 return false;
 
             await process.StandardInput.BaseStream.WriteAsync(data, 0, data.Length);
             process.StandardInput.Close();
 
-            var exited = await Task.Run(() => process.WaitForExit(2000));
-            return exited && process.ExitCode == 0;
+            var exited = await Task.Run(() => process.WaitForExit(200));
+            if (exited)
+            {
+                var success = process.ExitCode == 0;
+                process.Dispose();
+                return success;
+            }
+
+            // wl-copy/xclip often stay alive to own the selection.
+            lock (_clipboardOwnerLock)
+            {
+                _clipboardOwnerProcess = process;
+            }
+            return true;
         }
         catch
         {
@@ -237,6 +304,30 @@ public sealed class LinuxClipboardService : IClipboardService
         catch
         {
             return null;
+        }
+    }
+
+    private void StopClipboardOwnerProcess()
+    {
+        lock (_clipboardOwnerLock)
+        {
+            if (_clipboardOwnerProcess == null)
+                return;
+
+            try
+            {
+                if (!_clipboardOwnerProcess.HasExited)
+                    _clipboardOwnerProcess.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+                // Ignore kill failures.
+            }
+            finally
+            {
+                _clipboardOwnerProcess.Dispose();
+                _clipboardOwnerProcess = null;
+            }
         }
     }
 }

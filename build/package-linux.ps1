@@ -60,6 +60,7 @@ foreach ($plugin in $pluginProjects) {
 
 # 2. Package
 Write-Host "Packaging..."
+Write-Host "Note: rpmbuild is required to produce RPM packages."
 $packagingTool = Join-Path $root "build\XerahS.Packaging\XerahS.Packaging.csproj"
 dotnet run --project $packagingTool -- $publishDir $outputDir $version "linux-x64"
 

@@ -48,7 +48,6 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
     private TaskSettings _taskSettings = null!;
     private bool _disposed;
     private bool _initialized;
-    private Views.RecordingBorderWindow? _borderWindow;
 
     /// <summary>
     /// Singleton instance for easy access from UI
@@ -216,9 +215,9 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         InitializeWorkflow();
 
         // Subscribe to global recording manager events
+        // Note: Border window is now managed by TrayIconHelper for all recording types
         ScreenRecordingManager.Instance.StatusChanged += OnStatusChanged;
         ScreenRecordingManager.Instance.ErrorOccurred += OnErrorOccurred;
-        ScreenRecordingManager.Instance.RecordingStarted += OnRecordingStarted;
 
         // Timer to update duration display
         _durationTimer = new System.Timers.Timer(100); // Update every 100ms
@@ -244,7 +243,6 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
                     CanPauseResume = false;
                     CanAbort = false;
                     _durationTimer.Stop();
-                    HideBorderWindow();
                     break;
 
                 case RecordingStatus.Initializing:
@@ -322,94 +320,6 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
     {
         // Duration is updated by the status event, but we can force refresh here
         OnPropertyChanged(nameof(DurationFormatted));
-    }
-
-    private void OnRecordingStarted(object? sender, RegionCapture.ScreenRecording.RecordingStartedEventArgs e)
-    {
-        // Show border window with appropriate color based on recording technology
-        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-        {
-            try
-            {
-                _borderWindow = new Views.RecordingBorderWindow();
-
-                // Set border color: Red for FFmpeg/GDI, Green for Modern Capture
-                string borderColor = e.IsUsingFallback ? "Red" : "Green";
-                _borderWindow.SetBorderColor(borderColor);
-
-                // Determine recording area bounds
-                var bounds = GetRecordingBounds(e.Options);
-                _borderWindow.SetBounds(bounds);
-
-                // Show the border window
-                _borderWindow.Show();
-
-                DebugHelper.WriteLine($"Recording border shown: {borderColor} border for {(e.IsUsingFallback ? "FFmpeg/GDI" : "Modern Capture")} recording");
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex, "Failed to show recording border window");
-            }
-        });
-    }
-
-    private System.Drawing.Rectangle GetRecordingBounds(RegionCapture.ScreenRecording.RecordingOptions options)
-    {
-        switch (options.Mode)
-        {
-            case RegionCapture.ScreenRecording.CaptureMode.Region:
-                // Use the specified region
-                return options.Region;
-
-            case RegionCapture.ScreenRecording.CaptureMode.Window:
-                // Get window bounds
-                if (options.TargetWindowHandle != IntPtr.Zero)
-                {
-                    try
-                    {
-                        return Platform.Abstractions.PlatformServices.Window.GetWindowBounds(options.TargetWindowHandle);
-                    }
-                    catch (Exception ex)
-                    {
-                        DebugHelper.WriteException(ex, "Failed to get window bounds");
-                    }
-                }
-                // Fallthrough to screen mode if window bounds fail
-                goto case RegionCapture.ScreenRecording.CaptureMode.Screen;
-
-            case RegionCapture.ScreenRecording.CaptureMode.Screen:
-            default:
-                // Get primary screen bounds
-                var screens = Platform.Abstractions.PlatformServices.Screen.GetAllScreens();
-                var primaryScreen = screens.FirstOrDefault(s => s.IsPrimary);
-                if (primaryScreen != null)
-                {
-                    return new System.Drawing.Rectangle(
-                        primaryScreen.Bounds.Left,
-                        primaryScreen.Bounds.Top,
-                        primaryScreen.Bounds.Width,
-                        primaryScreen.Bounds.Height);
-                }
-                // Default fallback
-                return new System.Drawing.Rectangle(0, 0, 1920, 1080);
-        }
-    }
-
-    private void HideBorderWindow()
-    {
-        if (_borderWindow != null)
-        {
-            try
-            {
-                _borderWindow.Close();
-                _borderWindow = null;
-                DebugHelper.WriteLine("Recording border window hidden");
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex, "Failed to hide recording border window");
-            }
-        }
     }
 
     /// <summary>
@@ -657,13 +567,10 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         _durationTimer.Stop();
         _durationTimer.Dispose();
 
-        // Clean up border window
-        HideBorderWindow();
-
         // Unsubscribe from global recording manager events (Stage 5)
+        // Note: Border window is now managed by TrayIconHelper
         ScreenRecordingManager.Instance.StatusChanged -= OnStatusChanged;
         ScreenRecordingManager.Instance.ErrorOccurred -= OnErrorOccurred;
-        ScreenRecordingManager.Instance.RecordingStarted -= OnRecordingStarted;
 
         GC.SuppressFinalize(this);
     }

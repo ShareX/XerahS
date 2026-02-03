@@ -31,7 +31,7 @@ using System.Threading.Tasks;
 using Tmds.DBus;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
-using ShareX.Avalonia.Platform.Linux.Capture;
+using XerahS.Platform.Linux.Capture;
 
 namespace XerahS.Platform.Linux.Services;
 
@@ -44,14 +44,14 @@ public sealed class WaylandPortalInputService : IInputService
     private readonly IInputCapture? _portal;
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private readonly object _cursorLock = new();
-    private IAsyncDisposable? _activatedSubscription;
-    private IAsyncDisposable? _deactivatedSubscription;
-    private IAsyncDisposable? _zonesChangedSubscription;
-    private IAsyncDisposable? _disabledSubscription;
+    private IDisposable? _activatedSubscription;
+    private IDisposable? _deactivatedSubscription;
+    private IDisposable? _zonesChangedSubscription;
+    private IDisposable? _disabledSubscription;
     private System.Drawing.Point _lastCursor;
     private uint _zoneSet;
     private ObjectPath? _sessionHandle;
-    private ISession? _sessionProxy;
+    private IPortalSession? _sessionProxy;
     private bool _disposed;
 
     public WaylandPortalInputService()
@@ -97,7 +97,7 @@ public sealed class WaylandPortalInputService : IInputService
         }
 
         ObjectPath sessionHandle = (ObjectPath)_sessionHandle!;
-        _sessionProxy = _connection?.CreateProxy<ISession>(PortalBusName, sessionHandle);
+        _sessionProxy = _connection?.CreateProxy<IPortalSession>(PortalBusName, sessionHandle);
 
         _activatedSubscription = await _portal.WatchActivatedAsync(OnActivated).ConfigureAwait(false);
         _deactivatedSubscription = await _portal.WatchDeactivatedAsync(OnDeactivated).ConfigureAwait(false);
@@ -165,7 +165,7 @@ public sealed class WaylandPortalInputService : IInputService
             return null;
         }
 
-        if (!results.TryGetValue("session_handle", out var handleObj) || handleObj is not string handlePath)
+        if (!results.TryGetResult("session_handle", out string? handlePath) || string.IsNullOrWhiteSpace(handlePath))
         {
             DebugHelper.WriteLine("WaylandPortalInputService: Session handle missing in portal response");
             return null;
@@ -385,14 +385,14 @@ public sealed class WaylandPortalInputService : IInputService
         return _sessionHandle != null && _sessionHandle.Equals(sessionHandle);
     }
 
-    private void OnActivated(ObjectPath sessionHandle, IDictionary<string, object> options)
+    private void OnActivated((ObjectPath sessionHandle, IDictionary<string, object> options) data)
     {
-        if (!SessionMatches(sessionHandle))
+        if (!SessionMatches(data.sessionHandle))
         {
             return;
         }
 
-        var point = ExtractCursorPosition(options);
+        var point = ExtractCursorPosition(data.options);
         if (point.HasValue)
         {
             lock (_cursorLock)
@@ -402,9 +402,9 @@ public sealed class WaylandPortalInputService : IInputService
         }
     }
 
-    private void OnDeactivated(ObjectPath sessionHandle, IDictionary<string, object> options)
+    private void OnDeactivated((ObjectPath sessionHandle, IDictionary<string, object> options) data)
     {
-        if (!SessionMatches(sessionHandle))
+        if (!SessionMatches(data.sessionHandle))
         {
             return;
         }
@@ -412,9 +412,9 @@ public sealed class WaylandPortalInputService : IInputService
         _ = EnableAsync();
     }
 
-    private void OnDisabled(ObjectPath sessionHandle, IDictionary<string, object> options)
+    private void OnDisabled((ObjectPath sessionHandle, IDictionary<string, object> options) data)
     {
-        if (!SessionMatches(sessionHandle))
+        if (!SessionMatches(data.sessionHandle))
         {
             return;
         }
@@ -422,9 +422,9 @@ public sealed class WaylandPortalInputService : IInputService
         _ = EnableAsync();
     }
 
-    private void OnZonesChanged(ObjectPath sessionHandle, IDictionary<string, object> options)
+    private void OnZonesChanged((ObjectPath sessionHandle, IDictionary<string, object> options) data)
     {
-        if (!SessionMatches(sessionHandle))
+        if (!SessionMatches(data.sessionHandle))
         {
             return;
         }
@@ -439,10 +439,10 @@ public sealed class WaylandPortalInputService : IInputService
             return;
         }
 
-        _activatedSubscription?.DisposeAsync().AsTask().GetAwaiter().GetResult();
-        _deactivatedSubscription?.DisposeAsync().AsTask().GetAwaiter().GetResult();
-        _zonesChangedSubscription?.DisposeAsync().AsTask().GetAwaiter().GetResult();
-        _disabledSubscription?.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        _activatedSubscription?.Dispose();
+        _deactivatedSubscription?.Dispose();
+        _zonesChangedSubscription?.Dispose();
+        _disabledSubscription?.Dispose();
 
         CloseSessionAsync().GetAwaiter().GetResult();
         _connection?.Dispose();
@@ -476,31 +476,27 @@ public sealed class WaylandPortalInputService : IInputService
 
     private sealed record ZoneDescriptor(uint Width, uint Height, int OffsetX, int OffsetY);
 
-    [DBusInterface("org.freedesktop.portal.InputCapture")]
-    private interface IInputCapture : IDBusObject
-    {
-        Task<ObjectPath> CreateSessionAsync(string parentWindow, IDictionary<string, object> options);
+    // Session interface is defined in PortalSession.cs to avoid duplicate proxy names.
+}
 
-        Task<ObjectPath> GetZonesAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
+[DBusInterface("org.freedesktop.portal.InputCapture")]
+public interface IInputCapture : IDBusObject
+{
+    Task<ObjectPath> CreateSessionAsync(string parentWindow, IDictionary<string, object> options);
 
-        Task<ObjectPath> SetPointerBarriersAsync(ObjectPath sessionHandle, IDictionary<string, object> options, IDictionary<string, object>[] barriers, uint zoneSet);
+    Task<ObjectPath> GetZonesAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
 
-        Task EnableAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
+    Task<ObjectPath> SetPointerBarriersAsync(ObjectPath sessionHandle, IDictionary<string, object> options, IDictionary<string, object>[] barriers, uint zoneSet);
 
-        Task DisableAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
+    Task EnableAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
 
-        Task<IAsyncDisposable> WatchActivatedAsync(Action<ObjectPath, IDictionary<string, object>> handler);
+    Task DisableAsync(ObjectPath sessionHandle, IDictionary<string, object> options);
 
-        Task<IAsyncDisposable> WatchDeactivatedAsync(Action<ObjectPath, IDictionary<string, object>> handler);
+    Task<IDisposable> WatchActivatedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
 
-        Task<IAsyncDisposable> WatchDisabledAsync(Action<ObjectPath, IDictionary<string, object>> handler);
+    Task<IDisposable> WatchDeactivatedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
 
-        Task<IAsyncDisposable> WatchZonesChangedAsync(Action<ObjectPath, IDictionary<string, object>> handler);
-    }
+    Task<IDisposable> WatchDisabledAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
 
-    [DBusInterface("org.freedesktop.portal.Session")]
-    private interface ISession : IDBusObject
-    {
-        Task CloseAsync();
-    }
+    Task<IDisposable> WatchZonesChangedAsync(Action<(ObjectPath sessionHandle, IDictionary<string, object> options)> handler, Action<Exception>? error = null);
 }

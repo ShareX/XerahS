@@ -1,0 +1,15 @@
+{
+  "Version": "16.1.0",
+  "Name": "TinyURL",
+  "DestinationType": "URLShortener",
+  "RequestMethod": "POST",
+  "RequestURL": "https://api.tinyurl.com/create",
+  "Headers": {
+    "Authorization": "Bearer {inputbox:API Token}",
+    "Content-Type": "application/json"
+  },
+  "Body": "JSON",
+  "Data": "{\"url\": \"{input}\"}",
+  "URL": "{json:data.tiny_url}",
+  "ErrorMessage": "{json:errors[0]}"
+}

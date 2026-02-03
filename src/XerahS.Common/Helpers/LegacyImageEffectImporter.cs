@@ -34,7 +34,7 @@ namespace XerahS.Common.Helpers;
 
 /// <summary>
 /// Imports legacy ShareX .sxie image effect presets.
-/// Maps compatible effects to ShareX.Editor.ImageEffects classes.
+/// Maps compatible effects to XerahS.Editor.ImageEffects classes.
 /// </summary>
 public static class LegacyImageEffectImporter
 {
@@ -73,7 +73,7 @@ public static class LegacyImageEffectImporter
     };
 
     /// <summary>
-    /// Import an .sxie file and return the preset data as JSON compatible with ShareX.Editor.
+    /// Import an .sxie file and return the preset data as JSON compatible with XerahS.Editor.
     /// </summary>
     public static LegacyPresetImportResult? ImportSxieFile(string filePath)
     {

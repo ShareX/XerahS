@@ -127,7 +127,7 @@ editorViewModel.ApplicationName = AppResources.AppName;  // Uses centralized pro
 ## Related Files
 
 - `XerahS.Common/ShareXResources.cs`: Centralized app name constant
-- `ShareX.Editor/ViewModels/MainViewModel.cs`: Contains the `ApplicationName` and `EditorTitle` properties
+- `XerahS.Editor/src/ShareX.Editor/ViewModels/MainViewModel.cs`: Contains the `ApplicationName` and `EditorTitle` properties
 - `XerahS.UI/Views/EditorWindow.axaml`: Window definition with title binding
 - `XerahS.UI/App.axaml.cs`: Main window initialization
 - `XerahS.UI/Services/AvaloniaUIService.cs`: Standalone editor window creation

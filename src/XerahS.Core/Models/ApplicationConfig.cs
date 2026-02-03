@@ -85,6 +85,11 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
     public List<ShareXTheme> Themes = ShareXTheme.GetDefaultThemes();
     public int SelectedTheme = 0;
 
+    /// <summary>
+    /// Application theme mode: System (follow OS), Light, or Dark
+    /// </summary>
+    public AppThemeMode ThemeMode = AppThemeMode.System;
+
     #endregion Settings - Theme
 
     #region Settings - Paths

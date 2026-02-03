@@ -24,7 +24,7 @@
 #endregion License Information (GPL v3)
 
 using Avalonia.Controls;
-using ShareX.Editor.Helpers;
+using XerahS.Editor.Helpers;
 using SkiaSharp;
 using XerahS.Core;
 using XerahS.Core.Services;

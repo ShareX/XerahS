@@ -27,9 +27,10 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
-using ShareX.Editor.ViewModels;
+using XerahS.Editor.ViewModels;
 using XerahS.Common;
 using XerahS.Core;
+using XerahS.Media.Encoders;
 using XerahS.Platform.Abstractions;
 using XerahS.UI.Services;
 using XerahS.UI.Views;
@@ -47,6 +48,10 @@ public partial class App : Application
     {
         AvaloniaXamlLoader.Load(this);
 
+        // Initialize theme based on user preference (System/Light/Dark)
+        // This handles Linux properly where Avalonia's default detection doesn't work
+        Services.ThemeService.Initialize();
+
 #if DEBUG
         this.AttachDeveloperTools();
 
@@ -55,7 +60,7 @@ public partial class App : Application
         {
             Source = new Uri("avares://XerahS.UI/Themes/AuditStyles.axaml")
         });
-        
+
         // Enable Runtime Wiring Checks
         Auditing.UiAudit.InitializeRuntimeChecks();
 #endif
@@ -107,8 +112,12 @@ public partial class App : Application
             // Register Toast Service
             Platform.Abstractions.PlatformServices.RegisterToastService(new Services.AvaloniaToastService());
 
+            // Register Image Encoder Service (supports PNG, JPEG, BMP, GIF, WEBP, TIFF via Skia; AVIF via FFmpeg)
+            PlatformServices.RegisterImageEncoderService(
+                ImageEncoderService.CreateDefault(() => PathsManager.GetFFmpegPath()));
+
             // Wire up Editor clipboard to platform implementation
-            ShareX.Editor.Services.EditorServices.Clipboard = new Services.EditorClipboardAdapter();
+            XerahS.Editor.Services.EditorServices.Clipboard = new Services.EditorClipboardAdapter();
 
             // Setup window selector callback for CustomWindow hotkey
             Core.Tasks.WorkerTask.ShowWindowSelectorCallback = async () =>
@@ -630,4 +639,23 @@ public partial class App : Application
             }
         }
     }
+
+    private void OnAboutClick(object? sender, EventArgs e)
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            desktop.MainWindow is Views.MainWindow mainWindow)
+        {
+            mainWindow.NavigateToAbout();
+        }
+    }
+
+    private void OnPreferencesClick(object? sender, EventArgs e)
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            desktop.MainWindow is Views.MainWindow mainWindow)
+        {
+            mainWindow.NavigateToSettings();
+        }
+    }
+
 }

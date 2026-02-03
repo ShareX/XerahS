@@ -1,0 +1,54 @@
+name: Feature Request
+description: Suggest an improvement or new feature for XerahS
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a feature.
+        Please describe the use case and the benefit.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What would you like to see added or improved?
+      placeholder: Add a global shortcut for quick upload with custom modifiers.
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use Case
+      description: Who benefits and how is this used?
+      placeholder: As a frequent uploader, I want a single hotkey to upload the last capture.
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefit
+    attributes:
+      label: Benefit
+      description: What problem does this solve or improve?
+      placeholder: Reduces friction for sharing images and improves workflow speed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Other approaches or workarounds you have tried.
+      placeholder: Use a custom script or third-party tool to trigger upload.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Notes
+      description: Any extra context, mockups, or references.
+    validations:
+      required: false

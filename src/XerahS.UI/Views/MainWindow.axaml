@@ -6,7 +6,7 @@
         xmlns:ui="using:FluentAvalonia.UI.Controls"
         xmlns:views="using:XerahS.UI.Views"
         xmlns:common="clr-namespace:XerahS.Common;assembly=XerahS.Common"
-        xmlns:editvm="clr-namespace:ShareX.Editor.ViewModels;assembly=ShareX.Editor"
+        xmlns:editvm="clr-namespace:XerahS.Editor.ViewModels;assembly=XerahS.Editor"
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="650"
         x:Class="XerahS.UI.Views.MainWindow"
         x:DataType="editvm:MainViewModel"

@@ -3,12 +3,13 @@
              xmlns:local="using:XerahS.UI"
              xmlns:vm="using:XerahS.UI.ViewModels"
              xmlns:views="using:XerahS.UI.Views"
-             xmlns:converters="clr-namespace:ShareX.Editor.Converters;assembly=ShareX.Editor"
+             xmlns:converters="clr-namespace:XerahS.Editor.Converters;assembly=XerahS.Editor"
              xmlns:uiconverters="clr-namespace:XerahS.UI.Converters"
              xmlns:sty="using:FluentAvalonia.Styling"
              xmlns:core="using:XerahS.Core"
              xmlns:common="clr-namespace:XerahS.Common;assembly=XerahS.Common"
              x:Class="XerahS.UI.App"
+             Name="XerahS"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
@@ -31,6 +32,15 @@
             <views:ProviderCatalogView/>
         </DataTemplate>
     </Application.DataTemplates>
+
+    <!-- macOS Native Menu -->
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="About XerahS" Click="OnAboutClick"/>
+            <NativeMenuItemSeparator/>
+            <NativeMenuItem Header="Preferences..." Click="OnPreferencesClick"/>
+        </NativeMenu>
+    </NativeMenu.Menu>
   
     <Application.Styles>
         <!-- TODO: Re-enable dark theme when ready -->
@@ -53,8 +63,12 @@
 
     <TrayIcon.Icons>
         <TrayIcons>
-            <TrayIcon Icon="avares://XerahS.UI/Assets/ShareX.iconset/icon_16x16.png"
-                      ToolTipText="{x:Static common:AppResources.AppName}"
+            <!-- TrayIcon dynamically changes based on recording state:
+                 - Default: Application icon
+                 - Recording/Initializing: Red recording icon
+                 - Paused/Finalizing: Yellow paused icon -->
+            <TrayIcon Icon="{Binding CurrentTrayIcon, Source={x:Static local:TrayIconHelper.Instance}}"
+                      ToolTipText="{Binding TrayToolTipText, Source={x:Static local:TrayIconHelper.Instance}}"
                       IsVisible="{Binding ShowTray, Source={x:Static local:TrayIconHelper.Instance}}"
                       Menu="{Binding TrayMenu, Source={x:Static local:TrayIconHelper.Instance}}"
                       Clicked="TrayIcon_Clicked">
