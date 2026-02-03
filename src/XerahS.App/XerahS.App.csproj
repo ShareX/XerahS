@@ -34,7 +34,8 @@
     <PackageReference Include="WebView.Avalonia.Desktop" Version="11.0.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\XerahS.Audits.Tool\XerahS.Audits.Tool.csproj" />
+    <!-- Audits tool is only needed for Debug builds (development/auditing) -->
+    <ProjectReference Include="..\XerahS.Audits.Tool\XerahS.Audits.Tool.csproj" Condition="'$(Configuration)' == 'Debug'" />
     <ProjectReference Include="..\XerahS.UI\XerahS.UI.csproj" />
     <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '')" />
