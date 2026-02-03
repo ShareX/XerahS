@@ -165,7 +165,11 @@ namespace XerahS.App
 #elif LINUX
             if (OperatingSystem.IsLinux())
             {
-                XerahS.Platform.Linux.LinuxPlatform.Initialize();
+                XerahS.Common.DebugHelper.WriteLine("Linux: Initializing platform services");
+                var linuxCaptureService = new XerahS.Platform.Linux.LinuxScreenCaptureService();
+                var uiCaptureService = new XerahS.UI.Services.ScreenCaptureService(linuxCaptureService);
+
+                XerahS.Platform.Linux.LinuxPlatform.Initialize(uiCaptureService);
                 // NOTE: InitializeRecording() moved to async post-UI initialization in App.axaml.cs
                 return;
             }
@@ -226,25 +230,70 @@ namespace XerahS.App
                     }
 
                     // 2. Initialize Recording Platform Services
+                    // Use runtime checks instead of preprocessor directives for reliability
+                    XerahS.Common.DebugHelper.WriteLine("Initializing recording platform services...");
+
+                    // Debug: Show which preprocessor symbols are defined
+                    string definedSymbols = "";
+#if WINDOWS
+                    definedSymbols += "WINDOWS ";
+#endif
+#if MACOS
+                    definedSymbols += "MACOS ";
+#endif
+#if LINUX
+                    definedSymbols += "LINUX ";
+#endif
+                    XerahS.Common.DebugHelper.WriteLine($"Preprocessor symbols defined: [{definedSymbols.Trim()}]");
+                    XerahS.Common.DebugHelper.WriteLine($"Runtime OS: IsLinux={OperatingSystem.IsLinux()}, IsMacOS={OperatingSystem.IsMacOS()}, IsWindows={OperatingSystem.IsWindows()}");
 #if WINDOWS
                     if (OperatingSystem.IsWindows())
                     {
                         XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Platform is Windows, calling WindowsPlatform.InitializeRecording()");
                         XerahS.Platform.Windows.WindowsPlatform.InitializeRecording();
                     }
-#elif MACOS
+#endif
+#if MACOS
                     if (OperatingSystem.IsMacOS())
                     {
                         XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Platform is macOS, calling MacOSPlatform.InitializeRecording()");
                         XerahS.Platform.MacOS.MacOSPlatform.InitializeRecording();
                     }
-#elif LINUX
+#endif
+#if LINUX
                     if (OperatingSystem.IsLinux())
                     {
                         XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Platform is Linux, calling LinuxPlatform.InitializeRecording()");
                         XerahS.Platform.Linux.LinuxPlatform.InitializeRecording();
                     }
 #endif
+                    // Fallback: Initialize based on runtime OS detection if no preprocessor symbol matched
+                    if (XerahS.RegionCapture.ScreenRecording.ScreenRecorderService.NativeRecordingServiceFactory == null &&
+                        XerahS.RegionCapture.ScreenRecording.ScreenRecorderService.FallbackServiceFactory == null)
+                    {
+                        XerahS.Common.DebugHelper.WriteLine("No recording service initialized via preprocessor - trying runtime detection");
+#if LINUX
+                        if (OperatingSystem.IsLinux())
+                        {
+                            XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Fallback: Linux detected, calling LinuxPlatform.InitializeRecording()");
+                            XerahS.Platform.Linux.LinuxPlatform.InitializeRecording();
+                        }
+#endif
+#if MACOS
+                        if (OperatingSystem.IsMacOS())
+                        {
+                            XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Fallback: macOS detected, calling MacOSPlatform.InitializeRecording()");
+                            XerahS.Platform.MacOS.MacOSPlatform.InitializeRecording();
+                        }
+#endif
+#if WINDOWS
+                        if (OperatingSystem.IsWindows())
+                        {
+                            XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Fallback: Windows detected, calling WindowsPlatform.InitializeRecording()");
+                            XerahS.Platform.Windows.WindowsPlatform.InitializeRecording();
+                        }
+#endif
+                    }
                     asyncStopwatch.Stop();
                     XerahS.Core.Helpers.TroubleshootingHelper.Log("ScreenRecorder", "PROGRAM", "Background task completed successfully");
                     XerahS.Common.DebugHelper.WriteLine("Async services initialization completed successfully");

@@ -461,15 +461,27 @@ namespace XerahS.Core.Tasks
                             Info.Metadata.Image = null;
                         }
 
-                        // Show region selector and get user selection
-                        var regionCaptureOptions = new CaptureOptions
-                        {
-                            UseModernCapture = Info.TaskSettings.CaptureSettings.UseModernCapture,
-                            ShowCursor = Info.TaskSettings.CaptureSettings.ShowCursor,
-                            WorkflowId = Info.TaskSettings.WorkflowId
-                        };
+                        SKRectI selection;
 
-                        SKRectI selection = await PlatformServices.ScreenCapture.SelectRegionAsync(regionCaptureOptions);
+                        // On Linux Wayland, use slurp for region selection (faster, native feel)
+                        if (OperatingSystem.IsLinux() &&
+                            Environment.GetEnvironmentVariable("XDG_SESSION_TYPE")?.Equals("wayland", StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "Linux Wayland: Using slurp for region selection");
+                            selection = await SelectRegionWithSlurpAsync();
+                        }
+                        else
+                        {
+                            // Show region selector and get user selection (Windows/macOS/X11)
+                            var regionCaptureOptions = new CaptureOptions
+                            {
+                                UseModernCapture = Info.TaskSettings.CaptureSettings.UseModernCapture,
+                                ShowCursor = Info.TaskSettings.CaptureSettings.ShowCursor,
+                                WorkflowId = Info.TaskSettings.WorkflowId
+                            };
+
+                            selection = await PlatformServices.ScreenCapture.SelectRegionAsync(regionCaptureOptions);
+                        }
 
                         if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
                         {
@@ -743,6 +755,70 @@ namespace XerahS.Core.Tasks
 
         #region Recording Handlers (Stage 5)
 
+        /// <summary>
+        /// Select a region using slurp (Linux Wayland native tool).
+        /// Returns the selected region, or empty if cancelled/failed.
+        /// </summary>
+        private static async Task<SKRectI> SelectRegionWithSlurpAsync()
+        {
+            try
+            {
+                var slurpStartInfo = new ProcessStartInfo
+                {
+                    FileName = "slurp",
+                    Arguments = "-f \"%x %y %w %h\"",  // Output format: x y width height
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using var slurpProcess = Process.Start(slurpStartInfo);
+                if (slurpProcess == null)
+                {
+                    DebugHelper.WriteLine("WorkerTask: Failed to start slurp process");
+                    return SKRectI.Empty;
+                }
+
+                var completed = await Task.Run(() => slurpProcess.WaitForExit(60000));
+                if (!completed)
+                {
+                    try { slurpProcess.Kill(); } catch { }
+                    DebugHelper.WriteLine("WorkerTask: slurp timed out");
+                    return SKRectI.Empty;
+                }
+
+                if (slurpProcess.ExitCode != 0)
+                {
+                    // Exit code 1 typically means user cancelled (pressed Escape)
+                    DebugHelper.WriteLine($"WorkerTask: slurp exited with code {slurpProcess.ExitCode} (likely cancelled)");
+                    return SKRectI.Empty;
+                }
+
+                string output = (await slurpProcess.StandardOutput.ReadToEndAsync()).Trim();
+                DebugHelper.WriteLine($"WorkerTask: slurp output: '{output}'");
+
+                // Parse "x y w h" format
+                var parts = output.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 4 &&
+                    int.TryParse(parts[0], out int x) &&
+                    int.TryParse(parts[1], out int y) &&
+                    int.TryParse(parts[2], out int w) &&
+                    int.TryParse(parts[3], out int h))
+                {
+                    DebugHelper.WriteLine($"WorkerTask: slurp region selected: x={x}, y={y}, w={w}, h={h}");
+                    return new SKRectI(x, y, x + w, y + h);
+                }
+
+                DebugHelper.WriteLine($"WorkerTask: Failed to parse slurp output: '{output}'");
+                return SKRectI.Empty;
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"WorkerTask: slurp exception: {ex.Message}");
+                return SKRectI.Empty;
+            }
+        }
 
         private async Task HandleStartRecordingAsync(CaptureMode mode, IntPtr windowHandle = default, Rectangle? region = null)
         {
@@ -991,6 +1067,36 @@ namespace XerahS.Core.Tasks
             catch (Exception ex)
             {
                 DebugHelper.WriteException(ex, "Failed during recording workflow");
+
+                // Show user-facing error message
+                string errorMessage = ex switch
+                {
+                    FileNotFoundException => "FFmpeg not found. Please install FFmpeg to enable screen recording.",
+                    PlatformNotSupportedException => "Screen recording is not supported on this system.",
+                    InvalidOperationException when ex.Message.Contains("not available") =>
+                        "Screen recording is not available. On Linux Wayland, ensure xdg-desktop-portal with ScreenCast support and PipeWire are installed.",
+                    InvalidOperationException when ex.Message.Contains("initialization") =>
+                        "Screen recording initialization failed. Check that required services are running.",
+                    _ => $"Failed to start recording: {ex.Message}"
+                };
+
+                try
+                {
+                    PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
+                    {
+                        Title = "Recording Failed",
+                        Text = errorMessage,
+                        Duration = 8f,
+                        Size = new SizeI(450, 140),
+                        AutoHide = true,
+                        LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
+                    });
+                }
+                catch
+                {
+                    // Ignore toast errors
+                }
+
                 throw;
             }
         }

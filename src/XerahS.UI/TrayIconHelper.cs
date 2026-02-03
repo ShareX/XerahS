@@ -226,6 +226,13 @@ public class TrayIconHelper : INotifyPropertyChanged
             {
                 DebugHelper.WriteLine($"TrayIconHelper: Recording started (fallback={e.IsUsingFallback})");
 
+                // Skip border window on Linux - transparent windows don't work well on Wayland
+                if (OperatingSystem.IsLinux())
+                {
+                    DebugHelper.WriteLine("TrayIconHelper: Skipping recording border on Linux (transparency not supported on Wayland)");
+                    return;
+                }
+
                 // Create and show border window around the recording area
                 _borderWindow = new Views.RecordingBorderWindow();
 
