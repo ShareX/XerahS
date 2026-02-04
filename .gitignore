@@ -39,3 +39,4 @@ artifacts/
 iscc_log_win-arm64.txt
 iscc_log_win-x64.txt
 build_log.txt
+/.continue
