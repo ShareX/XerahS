@@ -23,37 +23,107 @@
 
             <ui:SettingsExpander Header="Links" IsExpanded="True" IconSource="Link">
                  <ui:SettingsExpander.Items>
-                     <ui:SettingsExpanderItem Content="Website" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.XerahSWebsite}">
+                     <ui:SettingsExpanderItem HorizontalContentAlignment="Stretch" MinWidth="720" IsClickEnabled="True" Cursor="Hand" Click="OnLinkClick" Tag="{x:Static common:Links.XerahSWebsite}">
+                         <ui:SettingsExpanderItem.Content>
+                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,8,0">
+                                 <TextBlock Text="Website" VerticalAlignment="Center" />
+                                 <TextBlock Grid.Column="1"
+                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ui:SettingsExpanderItem}}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Right"
+                                            Opacity="0.75" />
+                             </Grid>
+                         </ui:SettingsExpanderItem.Content>
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
                      </ui:SettingsExpanderItem>
-                     <ui:SettingsExpanderItem Content="GitHub Project" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.GitHub}">
+                     <ui:SettingsExpanderItem HorizontalContentAlignment="Stretch" MinWidth="720" IsClickEnabled="True" Cursor="Hand" Click="OnLinkClick" Tag="{x:Static common:Links.GitHub}">
+                         <ui:SettingsExpanderItem.Content>
+                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,8,0">
+                                 <TextBlock Text="GitHub Project" VerticalAlignment="Center" />
+                                 <TextBlock Grid.Column="1"
+                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ui:SettingsExpanderItem}}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Right"
+                                            Opacity="0.75" />
+                             </Grid>
+                         </ui:SettingsExpanderItem.Content>
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
                      </ui:SettingsExpanderItem>
-                     <ui:SettingsExpanderItem Content="Issues" IsClickEnabled="True" Click="OnLinkClick" Tag="https://github.com/ShareX/XerahS/issues/">
+                     <ui:SettingsExpanderItem HorizontalContentAlignment="Stretch" MinWidth="720" IsClickEnabled="True" Cursor="Hand" Click="OnLinkClick" Tag="https://github.com/ShareX/XerahS/issues/">
+                         <ui:SettingsExpanderItem.Content>
+                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,8,0">
+                                 <TextBlock Text="Issues" VerticalAlignment="Center" />
+                                 <TextBlock Grid.Column="1"
+                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ui:SettingsExpanderItem}}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Right"
+                                            Opacity="0.75" />
+                             </Grid>
+                         </ui:SettingsExpanderItem.Content>
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
                      </ui:SettingsExpanderItem>
-                     <ui:SettingsExpanderItem Content="Contributors" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Contributors}">
+                     <ui:SettingsExpanderItem HorizontalContentAlignment="Stretch" MinWidth="720" IsClickEnabled="True" Cursor="Hand" Click="OnLinkClick" Tag="{x:Static common:Links.Contributors}">
+                         <ui:SettingsExpanderItem.Content>
+                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,8,0">
+                                 <TextBlock Text="Contributors" VerticalAlignment="Center" />
+                                 <TextBlock Grid.Column="1"
+                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ui:SettingsExpanderItem}}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Right"
+                                            Opacity="0.75" />
+                             </Grid>
+                         </ui:SettingsExpanderItem.Content>
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
                      </ui:SettingsExpanderItem>
-                     <ui:SettingsExpanderItem Content="Changelog" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Changelog}">
+                     <ui:SettingsExpanderItem HorizontalContentAlignment="Stretch" MinWidth="720" IsClickEnabled="True" Cursor="Hand" Click="OnLinkClick" Tag="{x:Static common:Links.Changelog}">
+                         <ui:SettingsExpanderItem.Content>
+                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,8,0">
+                                 <TextBlock Text="Changelog" VerticalAlignment="Center" />
+                                 <TextBlock Grid.Column="1"
+                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ui:SettingsExpanderItem}}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Right"
+                                            Opacity="0.75" />
+                             </Grid>
+                         </ui:SettingsExpanderItem.Content>
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
                      </ui:SettingsExpanderItem>
-                     <ui:SettingsExpanderItem Content="Privacy Policy" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.PrivacyPolicy}">
+                     <ui:SettingsExpanderItem HorizontalContentAlignment="Stretch" MinWidth="720" IsClickEnabled="True" Cursor="Hand" Click="OnLinkClick" Tag="{x:Static common:Links.PrivacyPolicy}">
+                         <ui:SettingsExpanderItem.Content>
+                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,8,0">
+                                 <TextBlock Text="Privacy Policy" VerticalAlignment="Center" />
+                                 <TextBlock Grid.Column="1"
+                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ui:SettingsExpanderItem}}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Right"
+                                            Opacity="0.75" />
+                             </Grid>
+                         </ui:SettingsExpanderItem.Content>
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
                      </ui:SettingsExpanderItem>
-                     <ui:SettingsExpanderItem Content="Donate" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Donate}">
+                     <ui:SettingsExpanderItem HorizontalContentAlignment="Stretch" MinWidth="720" IsClickEnabled="True" Cursor="Hand" Click="OnLinkClick" Tag="{x:Static common:Links.Donate}">
+                         <ui:SettingsExpanderItem.Content>
+                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,8,0">
+                                 <TextBlock Text="Donate" VerticalAlignment="Center" />
+                                 <TextBlock Grid.Column="1"
+                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ui:SettingsExpanderItem}}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Right"
+                                            Opacity="0.75" />
+                             </Grid>
+                         </ui:SettingsExpanderItem.Content>
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
@@ -63,17 +133,47 @@
 
             <ui:SettingsExpander Header="Social" IsExpanded="True" IconSource="People">
                  <ui:SettingsExpander.Items>
-                     <ui:SettingsExpanderItem Content="X" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.X}">
+                     <ui:SettingsExpanderItem HorizontalContentAlignment="Stretch" MinWidth="720" IsClickEnabled="True" Cursor="Hand" Click="OnLinkClick" Tag="{x:Static common:Links.X}">
+                         <ui:SettingsExpanderItem.Content>
+                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,8,0">
+                                 <TextBlock Text="X" VerticalAlignment="Center" />
+                                 <TextBlock Grid.Column="1"
+                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ui:SettingsExpanderItem}}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Right"
+                                            Opacity="0.75" />
+                             </Grid>
+                         </ui:SettingsExpanderItem.Content>
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
                      </ui:SettingsExpanderItem>
-                     <ui:SettingsExpanderItem Content="Discord" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Discord}">
+                     <ui:SettingsExpanderItem HorizontalContentAlignment="Stretch" MinWidth="720" IsClickEnabled="True" Cursor="Hand" Click="OnLinkClick" Tag="{x:Static common:Links.Discord}">
+                         <ui:SettingsExpanderItem.Content>
+                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,8,0">
+                                 <TextBlock Text="Discord" VerticalAlignment="Center" />
+                                 <TextBlock Grid.Column="1"
+                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ui:SettingsExpanderItem}}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Right"
+                                            Opacity="0.75" />
+                             </Grid>
+                         </ui:SettingsExpanderItem.Content>
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
                      </ui:SettingsExpanderItem>
-                     <ui:SettingsExpanderItem Content="Reddit" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Reddit}">
+                     <ui:SettingsExpanderItem HorizontalContentAlignment="Stretch" MinWidth="720" IsClickEnabled="True" Cursor="Hand" Click="OnLinkClick" Tag="{x:Static common:Links.Reddit}">
+                         <ui:SettingsExpanderItem.Content>
+                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,8,0">
+                                 <TextBlock Text="Reddit" VerticalAlignment="Center" />
+                                 <TextBlock Grid.Column="1"
+                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ui:SettingsExpanderItem}}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Right"
+                                            Opacity="0.75" />
+                             </Grid>
+                         </ui:SettingsExpanderItem.Content>
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
@@ -81,14 +181,34 @@
                  </ui:SettingsExpander.Items>
             </ui:SettingsExpander>
 
-            <ui:SettingsExpander Header="Team" IsExpanded="True" IconSource="Contact">
+            <ui:SettingsExpander Header="ShareX Team" IsExpanded="True" IconSource="Contact">
                  <ui:SettingsExpander.Items>
-                     <ui:SettingsExpanderItem Content="Jaex" Description="Co-Founder" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.Jaex}">
+                     <ui:SettingsExpanderItem HorizontalContentAlignment="Stretch" MinWidth="720" IsClickEnabled="True" Cursor="Hand" Click="OnLinkClick" Tag="{x:Static common:Links.Jaex}">
+                         <ui:SettingsExpanderItem.Content>
+                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,8,0">
+                                 <TextBlock Text="Jaex | Co-Founder" VerticalAlignment="Center" />
+                                 <TextBlock Grid.Column="1"
+                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ui:SettingsExpanderItem}}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Right"
+                                            Opacity="0.75" />
+                             </Grid>
+                         </ui:SettingsExpanderItem.Content>
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
                      </ui:SettingsExpanderItem>
-                     <ui:SettingsExpanderItem Content="McoreD" Description="Co-Founder" IsClickEnabled="True" Click="OnLinkClick" Tag="{x:Static common:Links.McoreD}">
+                     <ui:SettingsExpanderItem HorizontalContentAlignment="Stretch" MinWidth="720" IsClickEnabled="True" Cursor="Hand" Click="OnLinkClick" Tag="{x:Static common:Links.McoreD}">
+                         <ui:SettingsExpanderItem.Content>
+                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,8,0">
+                                 <TextBlock Text="McoreD | Co-Founder" VerticalAlignment="Center" />
+                                 <TextBlock Grid.Column="1"
+                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ui:SettingsExpanderItem}}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Right"
+                                            Opacity="0.75" />
+                             </Grid>
+                         </ui:SettingsExpanderItem.Content>
                          <ui:SettingsExpanderItem.ActionIconSource>
                              <ui:SymbolIconSource Symbol="Link"/>
                          </ui:SettingsExpanderItem.ActionIconSource>
