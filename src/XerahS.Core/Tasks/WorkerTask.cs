@@ -592,10 +592,17 @@ namespace XerahS.Core.Tasks
 
                 captureStopwatch.Stop();
 
+                bool hasClipboardPayload = taskSettings?.Job is WorkflowType.ClipboardUpload or WorkflowType.ClipboardUploadWithContentViewer
+                    && (metadata.Image != null || !string.IsNullOrEmpty(Info.TextContent) || !string.IsNullOrEmpty(Info.FilePath));
+
                 if (image != null)
                 {
                     metadata.Image = image;
                     DebugHelper.WriteLine($"Captured image: {image.Width}x{image.Height} in {captureStopwatch.ElapsedMilliseconds}ms");
+                }
+                else if (hasClipboardPayload)
+                {
+                    DebugHelper.WriteLine($"Clipboard content loaded: dataType={Info.DataType}, filePath=\"{Info.FilePath}\", textLength={(Info.TextContent?.Length ?? 0)}");
                 }
                 else if ((taskSettings?.Job == WorkflowType.FileUpload || taskSettings?.Job == WorkflowType.IndexFolder) &&
                          !string.IsNullOrEmpty(Info.FilePath))
