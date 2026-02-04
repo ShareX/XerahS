@@ -35,15 +35,18 @@
             </Border>
 
             <!-- Hotkey List -->
-            <ScrollViewer Grid.Row="1">
-                <ItemsControl ItemsSource="{Binding Hotkeys}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <views:HotkeySelectionControl Margin="0,0,0,8"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+            <ListBox Grid.Row="1"
+                     ItemsSource="{Binding Hotkeys}"
+                     SelectedItem="{Binding SelectedHotkey}"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     AutomationProperties.Name="Hotkeys List">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <views:HotkeySelectionControl Margin="0,0,0,8"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
         </Grid>
         
         <!-- Debug Section -->
