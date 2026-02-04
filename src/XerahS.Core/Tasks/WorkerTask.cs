@@ -31,6 +31,7 @@ using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture.ScreenRecording;
 using SkiaSharp;
 using System.Diagnostics;
+using System.Linq;
 using XerahS.History;
 using Avalonia.Threading;
 using System.Drawing;
@@ -234,6 +235,32 @@ namespace XerahS.Core.Tasks
 
                 switch (taskSettings.Job)
                 {
+                    case WorkflowType.ClipboardUpload:
+                    case WorkflowType.ClipboardUploadWithContentViewer:
+                        if (PlatformServices.Clipboard == null)
+                        {
+                            Status = TaskStatus.Failed;
+                            Error = new Exception("Clipboard service is not available.");
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        if (!TryLoadClipboardContent(taskSettings, metadata, out var clipboardFiles))
+                        {
+                            Status = TaskStatus.Failed;
+                            Error = new Exception("Clipboard is empty or contains unsupported data.");
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        if (clipboardFiles != null && clipboardFiles.Length > 1)
+                        {
+                            await UploadClipboardFilesAsync(taskSettings, clipboardFiles, token);
+                            return;
+                        }
+
+                        break;
+
                     case WorkflowType.PrintScreen:
                         if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
                         {
@@ -621,6 +648,107 @@ namespace XerahS.Core.Tasks
             // Execute Upload Job
             var uploadProcessor = new UploadJobProcessor();
             await uploadProcessor.ProcessAsync(Info, token);
+        }
+
+        private bool TryLoadClipboardContent(TaskSettings taskSettings, TaskMetadata metadata, out string[]? clipboardFiles)
+        {
+            clipboardFiles = null;
+            var clipboard = PlatformServices.Clipboard;
+            if (clipboard == null)
+            {
+                return false;
+            }
+
+            // Priority: image -> text -> file
+            if (clipboard.ContainsImage())
+            {
+                var image = clipboard.GetImage();
+                if (image != null)
+                {
+                    metadata.Image = image;
+                    Info.DataType = EDataType.Image;
+                    Info.Job = TaskJob.DataUpload;
+
+                    string extension = EnumExtensions.GetDescription(taskSettings.ImageSettings.ImageFormat);
+                    Info.SetFileName(TaskHelpers.GetFileName(taskSettings, extension, metadata));
+                    return true;
+                }
+            }
+
+            if (clipboard.ContainsText())
+            {
+                var text = clipboard.GetText();
+                if (!string.IsNullOrEmpty(text))
+                {
+                    Info.TextContent = text;
+                    Info.DataType = EDataType.Text;
+                    Info.Job = TaskJob.TextUpload;
+
+                    string extension = taskSettings.AdvancedSettings.TextFileExtension;
+                    Info.SetFileName(TaskHelpers.GetFileName(taskSettings, extension, metadata));
+                    return true;
+                }
+            }
+
+            if (clipboard.ContainsFileDropList())
+            {
+                var files = clipboard.GetFileDropList();
+                if (files != null && files.Length > 0)
+                {
+                    clipboardFiles = files
+                        .Where(f => !string.IsNullOrWhiteSpace(f) && File.Exists(f))
+                        .ToArray();
+                    if (clipboardFiles.Length == 0)
+                    {
+                        return false;
+                    }
+
+                    Info.FilePath = clipboardFiles[0];
+                    Info.DataType = EDataType.File;
+                    Info.Job = TaskJob.FileUpload;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private async Task UploadClipboardFilesAsync(TaskSettings taskSettings, string[] files, CancellationToken token)
+        {
+            var uploadProcessor = new UploadJobProcessor();
+            TaskInfo? lastInfo = null;
+
+            foreach (var filePath in files)
+            {
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+                {
+                    continue;
+                }
+
+                var fileInfo = new TaskInfo(taskSettings)
+                {
+                    DataType = EDataType.File,
+                    Job = TaskJob.FileUpload,
+                    FilePath = filePath
+                };
+
+                await uploadProcessor.ProcessAsync(fileInfo, token);
+                lastInfo = fileInfo;
+            }
+
+            if (lastInfo != null)
+            {
+                Info.DataType = lastInfo.DataType;
+                Info.FilePath = lastInfo.FilePath;
+                Info.Job = lastInfo.Job;
+                Info.Result = lastInfo.Result;
+                Info.Metadata.UploadURL = lastInfo.Metadata.UploadURL;
+            }
         }
 
         private bool TryIndexFolder(TaskSettings taskSettings, out string? outputPath)

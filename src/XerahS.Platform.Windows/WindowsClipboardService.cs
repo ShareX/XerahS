@@ -49,7 +49,7 @@ namespace XerahS.Platform.Windows
         {
             try
             {
-                return Clipboard.ContainsText();
+                return RunInStaThread(() => Clipboard.ContainsText());
             }
             catch
             {
@@ -61,7 +61,7 @@ namespace XerahS.Platform.Windows
         {
             try
             {
-                return Clipboard.ContainsImage();
+                return RunInStaThread(() => Clipboard.ContainsImage());
             }
             catch
             {
@@ -73,7 +73,7 @@ namespace XerahS.Platform.Windows
         {
             try
             {
-                return Clipboard.ContainsFileDropList();
+                return RunInStaThread(() => Clipboard.ContainsFileDropList());
             }
             catch
             {
@@ -85,7 +85,7 @@ namespace XerahS.Platform.Windows
         {
             try
             {
-                return Clipboard.GetText();
+                return RunInStaThread(() => Clipboard.GetText());
             }
             catch
             {
@@ -112,17 +112,20 @@ namespace XerahS.Platform.Windows
         {
             try
             {
-                using (var image = Clipboard.GetImage())
+                return RunInStaThread(() =>
                 {
-                    if (image == null) return null;
-
-                    using (var ms = new MemoryStream())
+                    using (var image = Clipboard.GetImage())
                     {
-                        image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                        ms.Position = 0;
-                        return SKBitmap.Decode(ms);
+                        if (image == null) return null;
+
+                        using (var ms = new MemoryStream())
+                        {
+                            image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                            ms.Position = 0;
+                            return SKBitmap.Decode(ms);
+                        }
                     }
-                }
+                });
             }
             catch
             {
@@ -230,13 +233,18 @@ namespace XerahS.Platform.Windows
         {
             try
             {
-                var files = Clipboard.GetFileDropList();
-                if (files != null && files.Count > 0)
+                return RunInStaThread(() =>
                 {
-                    string[] result = new string[files.Count];
-                    files.CopyTo(result, 0);
-                    return result;
-                }
+                    var files = Clipboard.GetFileDropList();
+                    if (files != null && files.Count > 0)
+                    {
+                        string[] result = new string[files.Count];
+                        files.CopyTo(result, 0);
+                        return result;
+                    }
+
+                    return null;
+                });
             }
             catch
             {
@@ -267,11 +275,15 @@ namespace XerahS.Platform.Windows
         {
             try
             {
-                if (Clipboard.TryGetData(format, out object? data))
+                return RunInStaThread(() =>
                 {
-                    return data;
-                }
-                return null;
+                    if (Clipboard.TryGetData(format, out object? data))
+                    {
+                        return data;
+                    }
+
+                    return null;
+                });
             }
             catch
             {
@@ -301,7 +313,7 @@ namespace XerahS.Platform.Windows
 
             try
             {
-                return Clipboard.ContainsData(format);
+                return RunInStaThread(() => Clipboard.ContainsData(format));
             }
             catch
             {
@@ -350,6 +362,40 @@ namespace XerahS.Platform.Windows
             {
                 throw captured;
             }
+        }
+
+        private static T RunInStaThread<T>(Func<T> func)
+        {
+            if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
+            {
+                return func();
+            }
+
+            Exception? captured = null;
+            T? result = default;
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    result = func();
+                }
+                catch (Exception ex)
+                {
+                    captured = ex;
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.IsBackground = true;
+            thread.Start();
+            thread.Join();
+
+            if (captured != null)
+            {
+                throw captured;
+            }
+
+            return result!;
         }
     }
 }

@@ -70,6 +70,7 @@ public class TaskInfo
     }
 
     public string FileName { get; private set; } = "";
+    public string? TextContent { get; set; }
     public string ThumbnailFilePath { get; set; } = "";
     public EDataType DataType { get; set; }
     public TaskMetadata Metadata { get; set; }
@@ -134,6 +135,11 @@ public class TaskInfo
         TaskSettings = taskSettings ?? new TaskSettings();
         Metadata = new TaskMetadata();
         Result = new UploadResult();
+    }
+
+    public void SetFileName(string? fileName)
+    {
+        FileName = fileName ?? string.Empty;
     }
 
     public void ReportUploadProgress(ProgressManager progress)

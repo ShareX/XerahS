@@ -36,7 +36,7 @@ public sealed class AutoProvider : UploaderProviderBase
     public override string Name => "Auto";
     public override string Description => "Automatically uses the default uploader for the detected data type";
     public override Version Version => new Version(1, 0, 0);
-    public override UploaderCategory[] SupportedCategories => new[] { UploaderCategory.Image, UploaderCategory.Text, UploaderCategory.File };
+    public override UploaderCategory[] SupportedCategories => new[] { UploaderCategory.File };
     public override Type ConfigModelType => typeof(AutoConfigModel);
 
     public override Dictionary<UploaderCategory, string[]> GetSupportedFileTypes()

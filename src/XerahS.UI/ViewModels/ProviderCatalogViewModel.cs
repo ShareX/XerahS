@@ -27,6 +27,7 @@ using CommunityToolkit.Mvvm.Input;
 using XerahS.Common;
 using XerahS.Uploaders.PluginSystem;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace XerahS.UI.ViewModels;
 
@@ -94,6 +95,14 @@ public partial class ProviderCatalogViewModel : ViewModelBase
             }
 
             DebugHelper.WriteLine($"[ProviderCatalog] Adding new instance for provider: {provider.Name}");
+
+            if (InstanceManager.IsAutoProvider(provider.ProviderId) &&
+                InstanceManager.Instance.GetInstances().Any(i => InstanceManager.IsAutoProvider(i.ProviderId)))
+            {
+                DebugHelper.WriteLine("[ProviderCatalog] Auto provider already exists; skipping duplicate instance creation.");
+                OnInstancesAdded?.Invoke(new List<UploaderInstance>());
+                return;
+            }
 
             var instance = new UploaderInstance
             {

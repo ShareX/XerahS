@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 using System.IO;
+using System.Text;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Managers;
@@ -187,6 +188,27 @@ namespace XerahS.Core.Tasks.Processors
                         FileUploader fileUploader => fileUploader.UploadFile(info.FilePath),
                         GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
                         _ => null
+                    };
+                }
+
+                if (info.DataType == EDataType.Text && !string.IsNullOrEmpty(info.TextContent))
+                {
+                    if (uploader is GenericUploader genericUploader)
+                    {
+                        string extension = info.TaskSettings.AdvancedSettings.TextFileExtension;
+                        string fileName = string.IsNullOrWhiteSpace(info.FileName)
+                            ? TaskHelpers.GetFileName(info.TaskSettings, extension, info.Metadata)
+                            : info.FileName;
+
+                        using var ms = new MemoryStream(Encoding.UTF8.GetBytes(info.TextContent));
+                        ms.Position = 0;
+                        return genericUploader.Upload(ms, fileName);
+                    }
+
+                    return new UploadResult
+                    {
+                        IsSuccess = false,
+                        Response = "Resolved uploader does not support text uploads."
                     };
                 }
 
