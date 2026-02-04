@@ -216,6 +216,13 @@ public partial class WorkflowEditorViewModel : ViewModelBase
                     showTextUploaders = true;
                     showFileUploaders = true;
                 }
+                else if (SelectedJob == WorkflowType.ClipboardUpload ||
+                         SelectedJob == WorkflowType.ClipboardUploadWithContentViewer)
+                {
+                    showImageUploaders = true;
+                    showTextUploaders = true;
+                    showFileUploaders = true;
+                }
                 else if (SelectedJob == WorkflowType.FileUpload || SelectedJob == WorkflowType.FolderUpload)
                 {
                     showFileUploaders = true;

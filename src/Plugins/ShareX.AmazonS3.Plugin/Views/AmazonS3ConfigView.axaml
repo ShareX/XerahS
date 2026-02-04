@@ -44,7 +44,8 @@
             <ComboBox ItemsSource="{Binding Endpoints}"
                       SelectedIndex="{Binding RegionIndex}"
                       Width="350"
-                      HorizontalAlignment="Left">
+                      HorizontalAlignment="Left"
+                      IsDropDownOpen="False">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Spacing="5">
@@ -94,7 +95,8 @@
             <TextBlock Text="Storage Class" FontWeight="Medium"/>
             <ComboBox SelectedIndex="{Binding StorageClassIndex}"
                       Width="200"
-                      HorizontalAlignment="Left">
+                      HorizontalAlignment="Left"
+                      IsDropDownOpen="False">
                 <ComboBoxItem Content="STANDARD"/>
                 <ComboBoxItem Content="REDUCED_REDUNDANCY"/>
                 <ComboBoxItem Content="STANDARD_IA"/>

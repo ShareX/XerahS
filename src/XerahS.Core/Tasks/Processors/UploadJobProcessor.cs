@@ -137,13 +137,16 @@ namespace XerahS.Core.Tasks.Processors
                 {
                     DebugHelper.WriteLine($"Configured destination instance not found: {targetInstanceId}");
                 }
-                else if (targetInstance.Category != category)
+                else if (!InstanceManager.IsAutoProvider(targetInstance.ProviderId) && targetInstance.Category != category)
                 {
                     DebugHelper.WriteLine($"Configured destination category mismatch. Expected {category}, got {targetInstance.Category}. Continuing with configured instance.");
                 }
             }
 
+            targetInstance = ResolveAutoInstance(instanceManager, targetInstance, category, targetInstanceId);
+
             var defaultInstance = targetInstance ?? instanceManager.GetDefaultInstance(category);
+            defaultInstance = ResolveAutoInstance(instanceManager, defaultInstance, category, null);
             if (defaultInstance == null)
             {
                 var errorMsg = $"No uploader instance configured (plugin system) for category {category}.";
@@ -205,6 +208,31 @@ namespace XerahS.Core.Tasks.Processors
             {
                 uploader.ProgressChanged -= progressHandler;
             }
+        }
+
+        private static UploaderInstance? ResolveAutoInstance(InstanceManager instanceManager, UploaderInstance? instance, UploaderCategory category, string? autoInstanceId)
+        {
+            if (instance == null)
+            {
+                return null;
+            }
+
+            if (!InstanceManager.IsAutoProvider(instance.ProviderId))
+            {
+                return instance;
+            }
+
+            DebugHelper.WriteLine($"Auto destination selected; resolving default instance for category {category}.");
+
+            var resolved = instanceManager.ResolveAutoInstance(category, autoInstanceId);
+            if (resolved == null)
+            {
+                DebugHelper.WriteLine($"Auto destination could not be resolved for category {category}.");
+                return null;
+            }
+
+            DebugHelper.WriteLine($"Auto destination resolved to: {resolved.DisplayName} ({resolved.ProviderId})");
+            return resolved;
         }
 
         private static UploadResult UploadWithGenericUploader(GenericUploader uploader, string filePath)

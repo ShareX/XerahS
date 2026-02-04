@@ -86,6 +86,16 @@ public class TaskInfo
                 var instance = InstanceManager.Instance.GetInstance(instanceId);
                 if (instance != null)
                 {
+                    if (InstanceManager.IsAutoProvider(instance.ProviderId) &&
+                        TryGetCategoryForDataType(DataType, out var category))
+                    {
+                        var resolved = InstanceManager.Instance.ResolveAutoInstance(category, instance.InstanceId);
+                        if (resolved != null)
+                        {
+                            return resolved.DisplayName;
+                        }
+                    }
+
                     return instance.DisplayName;
                 }
 
@@ -161,6 +171,20 @@ public class TaskInfo
         }
 
         return text;
+    }
+
+    private static bool TryGetCategoryForDataType(EDataType dataType, out UploaderCategory category)
+    {
+        category = dataType switch
+        {
+            EDataType.Image => UploaderCategory.Image,
+            EDataType.Text => UploaderCategory.Text,
+            EDataType.File => UploaderCategory.File,
+            EDataType.URL => UploaderCategory.UrlShortener,
+            _ => UploaderCategory.File
+        };
+
+        return dataType is EDataType.Image or EDataType.Text or EDataType.File or EDataType.URL;
     }
 
     // TODO: Add GetHistoryItem() when HistoryLib is ported

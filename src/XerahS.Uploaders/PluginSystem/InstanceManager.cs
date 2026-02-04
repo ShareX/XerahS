@@ -406,6 +406,35 @@ public class InstanceManager
         }
     }
 
+    public static bool IsAutoProvider(string? providerId)
+    {
+        return string.Equals(providerId, ProviderIds.Auto, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public UploaderInstance? ResolveAutoInstance(UploaderCategory category, string? autoInstanceId = null)
+    {
+        lock (_lock)
+        {
+            if (_configuration.DefaultInstances.TryGetValue(category, out var defaultId))
+            {
+                var defaultInstance = _configuration.Instances.FirstOrDefault(i =>
+                    string.Equals(i.InstanceId, defaultId, StringComparison.OrdinalIgnoreCase));
+
+                if (defaultInstance != null &&
+                    !IsAutoProvider(defaultInstance.ProviderId) &&
+                    !string.Equals(defaultInstance.InstanceId, autoInstanceId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return defaultInstance;
+                }
+            }
+
+            return _configuration.Instances.FirstOrDefault(i =>
+                i.Category == category &&
+                !IsAutoProvider(i.ProviderId) &&
+                !string.Equals(i.InstanceId, autoInstanceId, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
     #region File-Type Routing
 
     /// <summary>

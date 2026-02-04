@@ -278,9 +278,12 @@ namespace XerahS.Core.Tasks.Processors
                 }
             }
 
+            targetInstance = ResolveAutoInstance(instanceManager, targetInstance, UploaderCategory.Image, configuredInstanceId);
+
             if (targetInstance == null)
             {
                 targetInstance = instanceManager.GetDefaultInstance(UploaderCategory.Image);
+                targetInstance = ResolveAutoInstance(instanceManager, targetInstance, UploaderCategory.Image, null);
             }
 
             if (targetInstance == null)
@@ -317,6 +320,31 @@ namespace XerahS.Core.Tasks.Processors
                 GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
                 _ => null
             };
+        }
+
+        private static UploaderInstance? ResolveAutoInstance(InstanceManager instanceManager, UploaderInstance? instance, UploaderCategory category, string? autoInstanceId)
+        {
+            if (instance == null)
+            {
+                return null;
+            }
+
+            if (!InstanceManager.IsAutoProvider(instance.ProviderId))
+            {
+                return instance;
+            }
+
+            DebugHelper.WriteLine($"Auto destination selected; resolving default instance for category {category}.");
+
+            var resolved = instanceManager.ResolveAutoInstance(category, autoInstanceId);
+            if (resolved == null)
+            {
+                DebugHelper.WriteLine($"Auto destination could not be resolved for category {category}.");
+                return null;
+            }
+
+            DebugHelper.WriteLine($"Auto destination resolved to: {resolved.DisplayName} ({resolved.ProviderId})");
+            return resolved;
         }
 
         private static void EnsurePluginsLoaded()
