@@ -344,6 +344,17 @@ namespace XerahS.Uploaders
 
         public void CheckBackwardCompatibility()
         {
+            // Check if this is a XerahS custom uploader (versions 0.x.x)
+            bool isXerahSVersion = !string.IsNullOrEmpty(Version) && Version.StartsWith("0.");
+
+            if (isXerahSVersion)
+            {
+                // XerahS custom uploaders use modern syntax, no migration needed
+                CheckRequestURL();
+                return;
+            }
+
+            // Legacy ShareX compatibility checks
             if (string.IsNullOrEmpty(Version) || GeneralHelpers.CompareVersion(Version, "12.3.1") <= 0)
             {
                 throw new Exception("Unsupported custom uploader" + ": " + ToString());

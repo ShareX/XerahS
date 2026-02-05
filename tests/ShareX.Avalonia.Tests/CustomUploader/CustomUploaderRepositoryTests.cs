@@ -192,4 +192,72 @@ public class CustomUploaderRepositoryTests
         Assert.That(loaded.IsValid, Is.False);
         Assert.That(loaded.LoadError, Does.Contain("Invalid JSON"));
     }
+
+    [Test]
+    public void CheckBackwardCompatibility_AcceptsXerahSVersions()
+    {
+        // Arrange - Create a custom uploader with XerahS version
+        var json = @"{
+            ""Version"": ""0.8.1"",
+            ""Name"": ""Test Uploader"",
+            ""DestinationType"": 7,
+            ""RequestMethod"": 1,
+            ""RequestURL"": ""https://example.com/upload"",
+            ""Body"": 1,
+            ""FileFormName"": ""file"",
+            ""URL"": ""{json:url}""
+        }";
+
+        // Act
+        var loaded = CustomUploaderRepository.LoadFromJson(json, "test.sxcu");
+
+        // Assert
+        Assert.That(loaded.IsValid, Is.True, $"XerahS version should be accepted: {loaded.LoadError}");
+        Assert.That(loaded.Item.Version, Is.EqualTo("0.8.1"));
+    }
+
+    [Test]
+    public void CheckBackwardCompatibility_RejectsOldShareXVersions()
+    {
+        // Arrange - Create a custom uploader with old ShareX version
+        var json = @"{
+            ""Version"": ""12.0.0"",
+            ""Name"": ""Test Uploader"",
+            ""DestinationType"": 7,
+            ""RequestMethod"": 1,
+            ""RequestURL"": ""https://example.com/upload"",
+            ""Body"": 1,
+            ""FileFormName"": ""file"",
+            ""URL"": ""{json:url}""
+        }";
+
+        // Act
+        var loaded = CustomUploaderRepository.LoadFromJson(json, "test.sxcu");
+
+        // Assert
+        Assert.That(loaded.IsValid, Is.False);
+        Assert.That(loaded.LoadError, Does.Contain("Unsupported custom uploader"));
+    }
+
+    [Test]
+    public void CheckBackwardCompatibility_AcceptsModernShareXVersions()
+    {
+        // Arrange - Create a custom uploader with modern ShareX version
+        var json = @"{
+            ""Version"": ""14.0.0"",
+            ""Name"": ""Test Uploader"",
+            ""DestinationType"": 7,
+            ""RequestMethod"": 1,
+            ""RequestURL"": ""https://example.com/upload"",
+            ""Body"": 1,
+            ""FileFormName"": ""file"",
+            ""URL"": ""{json:url}""
+        }";
+
+        // Act
+        var loaded = CustomUploaderRepository.LoadFromJson(json, "test.sxcu");
+
+        // Assert
+        Assert.That(loaded.IsValid, Is.True, $"Modern ShareX version should be accepted: {loaded.LoadError}");
+    }
 }
