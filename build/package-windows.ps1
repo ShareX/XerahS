@@ -87,7 +87,17 @@ foreach ($arch in $archs) {
     # We override OutputDir to point directly to our dist folder and OutputBaseFilename for the requested naming.
     # We also override MyAppReleaseDirectory to ensure the compiler looks in the exact publish folder we just created.
     $archLog = "iscc_log_$arch.txt"
-    & $isccPath "/d""MyAppReleaseDirectory=$publishOutput""" "/d""OutputBaseFilename=$setupBaseName""" "/d""OutputDir=$outputDir""" $issScript | Out-File -FilePath $archLog -Encoding UTF8
+    $arg1 = "/dMyAppReleaseDirectory=$publishOutput"
+    $arg2 = "/dOutputBaseFilename=$setupBaseName"
+    $arg3 = "/dOutputDir=$outputDir"
+    
+    Write-Host "ISCC Arguments:"
+    Write-Host "  $arg1"
+    Write-Host "  $arg2"
+    Write-Host "  $arg3"
+    Write-Host "  $issScript"
+
+    & $isccPath $arg1 $arg2 $arg3 $issScript | Out-File -FilePath $archLog -Encoding UTF8
     
     if ($LASTEXITCODE -ne 0) {
         throw "ISCC Compiler failed with exit code $LASTEXITCODE. See $archLog for details."
