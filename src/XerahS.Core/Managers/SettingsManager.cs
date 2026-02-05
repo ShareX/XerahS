@@ -213,7 +213,7 @@ namespace XerahS.Core
         /// Get a default TaskSettings instance.
         /// Use this for fallback/global settings instead of looking up by WorkflowType.
         /// </summary>
-        public static TaskSettings DefaultTaskSettings { get; } = new TaskSettings();
+        public static TaskSettings DefaultTaskSettings { get; private set; } = new TaskSettings { Job = WorkflowType.None };
 
         /// <summary>
         /// Recent task manager
@@ -274,6 +274,7 @@ namespace XerahS.Core
 
             // Ensure all workflows have valid IDs
             WorkflowsConfig.EnsureWorkflowIds();
+            SyncDefaultTaskSettings();
 
             DebugHelper.WriteLine($"WorkflowsConfig load finished: {path}");
         }
@@ -451,6 +452,21 @@ namespace XerahS.Core
                 Settings?.UseMachineSpecificWorkflowsConfig ?? false);
         }
 
+        private static void SyncDefaultTaskSettings()
+        {
+            if (WorkflowsConfig.DefaultTaskSettings == null)
+            {
+                WorkflowsConfig.DefaultTaskSettings = new TaskSettings { Job = WorkflowType.None };
+            }
+
+            if (WorkflowsConfig.DefaultTaskSettings.Job != WorkflowType.None)
+            {
+                WorkflowsConfig.DefaultTaskSettings.Job = WorkflowType.None;
+            }
+
+            DefaultTaskSettings = WorkflowsConfig.DefaultTaskSettings;
+        }
+
         /// <summary>
         /// Reset all settings to defaults. Creates a backup before deleting.
         /// </summary>
@@ -490,6 +506,7 @@ namespace XerahS.Core
                     File.Delete(WorkflowsConfigFilePath);
                 }
                 WorkflowsConfig = new WorkflowsConfig();
+                SyncDefaultTaskSettings();
 
                 DebugHelper.WriteLine($"Settings reset successfully. Backup created: {backupFolder}");
                 return true;

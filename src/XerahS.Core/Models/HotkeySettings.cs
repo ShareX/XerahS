@@ -43,18 +43,57 @@ namespace XerahS.Core;
 public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
 {
     public List<WorkflowSettings> Hotkeys { get; set; } = GetDefaultWorkflowList();
+    public TaskSettings DefaultTaskSettings { get; set; } = new TaskSettings { Job = WorkflowType.None };
 
     /// <summary>
-    /// Ensure all workflows have valid IDs after loading
+    /// Ensure workflows are valid after loading.
     /// </summary>
     public void EnsureWorkflowIds()
     {
         bool needsSave = false;
 
-        if (Hotkeys != null)
+        if (DefaultTaskSettings == null)
         {
-            foreach (var workflow in Hotkeys)
+            DefaultTaskSettings = new TaskSettings { Job = WorkflowType.None };
+            needsSave = true;
+        }
+        else if (DefaultTaskSettings.Job != WorkflowType.None)
+        {
+            DefaultTaskSettings.Job = WorkflowType.None;
+            needsSave = true;
+        }
+
+        if (Hotkeys == null)
+        {
+            Hotkeys = new List<WorkflowSettings>();
+            needsSave = true;
+        }
+        else
+        {
+            for (int i = Hotkeys.Count - 1; i >= 0; i--)
             {
+                var workflow = Hotkeys[i];
+                if (workflow == null)
+                {
+                    Hotkeys.RemoveAt(i);
+                    needsSave = true;
+                    continue;
+                }
+
+                if (workflow.Job == WorkflowType.None)
+                {
+                    if (workflow.TaskSettings != null)
+                    {
+                        DefaultTaskSettings = workflow.TaskSettings;
+                        DefaultTaskSettings.Job = WorkflowType.None;
+                        DefaultTaskSettings.WorkflowId = string.Empty;
+                    }
+
+                    Hotkeys.RemoveAt(i);
+                    needsSave = true;
+                    continue;
+                }
+
                 if (string.IsNullOrEmpty(workflow.Id))
                 {
                     workflow.EnsureId();

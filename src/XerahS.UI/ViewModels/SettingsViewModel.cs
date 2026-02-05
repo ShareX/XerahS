@@ -111,18 +111,13 @@ namespace XerahS.UI.ViewModels
         {
             get
             {
-                SettingsManager.WorkflowsConfig ??= new WorkflowsConfig();
-                SettingsManager.WorkflowsConfig.Hotkeys ??= new List<WorkflowSettings>();
-
-                var workflow = SettingsManager.GetFirstWorkflow(WorkflowType.None);
-                if (workflow == null)
+                var taskSettings = SettingsManager.DefaultTaskSettings;
+                if (taskSettings.Job != WorkflowType.None)
                 {
-                    workflow = new WorkflowSettings(WorkflowType.None, new HotkeyInfo());
-                    SettingsManager.WorkflowsConfig.Hotkeys.Add(workflow);
+                    taskSettings.Job = WorkflowType.None;
                 }
 
-                workflow.TaskSettings ??= new TaskSettings { Job = WorkflowType.None };
-                return workflow.TaskSettings;
+                return taskSettings;
             }
         }
 
@@ -643,6 +638,7 @@ namespace XerahS.UI.ViewModels
             taskSettings.WatchFolderList = WatchFolders.Select(item => item.ToSettings()).ToList();
 
             SettingsManager.SaveApplicationConfig();
+            SettingsManager.SaveWorkflowsConfigAsync();
             WatchFolderManager.Instance.UpdateWatchers();
         }
 
