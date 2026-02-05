@@ -1,5 +1,5 @@
 ---
-name: redesign-ui-window
+name: design-ui-window
 description: Redesigns any Avalonia .axaml view/window to best-in-class UI/UX quality. Enforces consistent layout, spacing, typography, interaction, accessibility and visual hierarchy. Only changes visuals, layout and styles — never business logic, bindings or public view-model API. Reusable by updating target_view_path.
 keywords: redesign ui ux avalonia axaml window view layout consistency accessibility animation feedback refactor style xaml
 success_condition: All validation_rules pass; no regressions in behavior; primary action visually dominant; window usable at all sizes and DPI scales; no arbitrary pixel values outside tokens.

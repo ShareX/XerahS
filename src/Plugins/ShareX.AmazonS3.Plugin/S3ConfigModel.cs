@@ -33,6 +33,8 @@ namespace ShareX.AmazonS3.Plugin;
 /// </summary>
 public class S3ConfigModel
 {
+    public S3AuthMode AuthMode { get; set; } = S3AuthMode.AccessKeys;
+
     public string SecretKey { get; set; } = Guid.NewGuid().ToString("N");
 
     public string BucketName { get; set; } = string.Empty;
@@ -60,4 +62,12 @@ public class S3ConfigModel
     public bool RemoveExtensionVideo { get; set; } = false;
 
     public bool RemoveExtensionText { get; set; } = false;
+
+    public string SsoStartUrl { get; set; } = string.Empty;
+
+    public string SsoRegion { get; set; } = "us-east-1";
+
+    public string SsoAccountId { get; set; } = string.Empty;
+
+    public string SsoRoleName { get; set; } = string.Empty;
 }
