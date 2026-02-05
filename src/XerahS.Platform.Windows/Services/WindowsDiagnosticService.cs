@@ -91,6 +91,12 @@ namespace XerahS.Platform.Windows.Services
             }
         }
 
+        public string WriteRecordingDiagnostics(string personalFolder)
+        {
+            // Windows recording diagnostics are currently covered by troubleshooting logs.
+            return string.Empty;
+        }
+
         private static string FormatResolutionList(IEnumerable<MonitorInfo> monitors)
         {
             return string.Join("+", monitors.Select(m => $"{m.ResolutionWidth}x{m.ResolutionHeight}"));

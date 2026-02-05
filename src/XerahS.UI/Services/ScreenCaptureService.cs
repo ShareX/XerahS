@@ -51,6 +51,24 @@ namespace XerahS.UI.Services
 
         public async Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
         {
+            if (IsLinuxWayland())
+            {
+                // On Wayland, prefer native region selectors (slurp/portal tools) to avoid
+                // compositor issues with custom transparent overlays (notably Hyprland/wlroots).
+                try
+                {
+                    var nativeSelection = await _platformImpl.SelectRegionAsync(options);
+                    if (!nativeSelection.IsEmpty && nativeSelection.Width > 0 && nativeSelection.Height > 0)
+                    {
+                        return nativeSelection;
+                    }
+                }
+                catch
+                {
+                    // Fall through to in-app selector as a best-effort fallback.
+                }
+            }
+
             SKRectI selection = SKRectI.Empty;
 
             try
@@ -136,6 +154,13 @@ namespace XerahS.UI.Services
 
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
         {
+            if (IsLinuxWayland())
+            {
+                // Wayland compositors can misbehave with the in-app overlay. Delegate to platform-native
+                // region capture (portal/grim/slurp and DE-specific tools) for better compatibility.
+                return await _platformImpl.CaptureRegionAsync(options);
+            }
+
             // 1. Capture cursor BEFORE showing overlay (if ShowCursor is enabled)
             XerahS.Platform.Abstractions.CursorInfo? ghostCursor = null;
             if (options?.ShowCursor == true)
@@ -158,7 +183,7 @@ namespace XerahS.UI.Services
                 fullScreenBitmap = await _platformImpl.CaptureFullScreenAsync(new CaptureOptions
                 {
                     ShowCursor = false,
-                    UseModernCapture = options?.UseModernCapture ?? false
+                    UseModernCapture = options?.UseModernCapture ?? true
                 });
             }
             catch
@@ -238,7 +263,7 @@ namespace XerahS.UI.Services
             var captureOptions = new CaptureOptions
             {
                 ShowCursor = false,
-                UseModernCapture = options?.UseModernCapture ?? false,
+                UseModernCapture = options?.UseModernCapture ?? true,
                 WorkflowId = options?.WorkflowId,
                 WorkflowCategory = options?.WorkflowCategory
             };
@@ -332,6 +357,12 @@ namespace XerahS.UI.Services
         public Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
         {
             return _platformImpl.CaptureWindowAsync(windowHandle, windowService, options);
+        }
+
+        private static bool IsLinuxWayland()
+        {
+            return OperatingSystem.IsLinux() &&
+                   Environment.GetEnvironmentVariable("XDG_SESSION_TYPE")?.Equals("wayland", StringComparison.OrdinalIgnoreCase) == true;
         }
     }
 }

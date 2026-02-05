@@ -470,6 +470,12 @@ public class ScreenRecordingManager
             // Audio capture currently routes through FFmpeg fallback
             if (settings is not null && (settings.CaptureSystemAudio || settings.CaptureMicrophone))
             {
+                if (isWayland && ScreenRecorderService.NativeRecordingServiceFactory != null)
+                {
+                    TroubleshootingHelper.Log("ScreenRecorder", "NATIVE", "Audio capture requested on Wayland -> using native portal backend");
+                    return false;
+                }
+
                 TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "Audio capture requested -> using FFmpeg");
                 return true;
             }

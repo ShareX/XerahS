@@ -47,7 +47,18 @@ namespace XerahS.Platform.Linux
 
         public Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
         {
-            // This method should only be called from the UI layer wrapper
+            // Coordinate-only region selection (used by recording).
+            // On Wayland we prefer native selector tools; on X11 the UI overlay remains the primary path.
+            if (IsWayland)
+            {
+                if (IsSlurpAvailable())
+                {
+                    return SelectRegionWithSlurpAsync();
+                }
+
+                DebugHelper.WriteLine("LinuxScreenCaptureService: SelectRegionAsync requested on Wayland but slurp is not available.");
+            }
+
             return Task.FromResult(SKRectI.Empty);
         }
 

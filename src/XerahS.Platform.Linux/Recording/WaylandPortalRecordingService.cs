@@ -85,8 +85,8 @@ public sealed class WaylandPortalRecordingService : IRecordingService
         {
             EnsureWayland();
 
-            // Prefer wf-recorder if available - it handles portal integration internally
-            if (HasWfRecorder())
+            // Prefer wf-recorder only on wlroots compositors and scenarios it supports well.
+            if (CanUseWfRecorder(options))
             {
                 DebugHelper.WriteLine("[WaylandPortalRecording] Using wf-recorder (handles portal internally)");
                 return StartWithWfRecorder(options);
@@ -622,6 +622,57 @@ public sealed class WaylandPortalRecordingService : IRecordingService
         {
             return false;
         }
+    }
+
+    private static bool CanUseWfRecorder(RecordingOptions options)
+    {
+        if (!HasWfRecorder())
+        {
+            return false;
+        }
+
+        // Keep window-mode behavior stable: current wf-recorder path doesn't implement window selection.
+        if (options.Mode == CaptureMode.Window)
+        {
+            DebugHelper.WriteLine("[WaylandPortalRecording] Window mode requested; using portal path instead of wf-recorder.");
+            return false;
+        }
+
+        var settings = options.Settings;
+        if (settings is not null && (settings.CaptureSystemAudio || settings.CaptureMicrophone))
+        {
+            // Audio handling is implemented in the portal/FFmpeg(GStreamer) path.
+            DebugHelper.WriteLine("[WaylandPortalRecording] Audio capture requested; using portal path instead of wf-recorder.");
+            return false;
+        }
+
+        if (!IsWlrootsCompositor())
+        {
+            DebugHelper.WriteLine("[WaylandPortalRecording] Non-wlroots compositor detected; preferring portal path over wf-recorder.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsWlrootsCompositor()
+    {
+        // Strong signals for wlroots-based compositors.
+        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HYPRLAND_INSTANCE_SIGNATURE")) ||
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SWAYSOCK")))
+        {
+            return true;
+        }
+
+        string currentDesktop = (Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") ?? string.Empty).ToUpperInvariant();
+        string desktopSession = (Environment.GetEnvironmentVariable("DESKTOP_SESSION") ?? string.Empty).ToUpperInvariant();
+
+        // Conservative allowlist for known wlroots families.
+        return currentDesktop.Contains("HYPRLAND") ||
+               currentDesktop.Contains("SWAY") ||
+               currentDesktop.Contains("WLROOTS") ||
+               desktopSession.Contains("HYPRLAND") ||
+               desktopSession.Contains("SWAY");
     }
 
     private static (string executable, string arguments, bool useGStreamer) BuildRecordingCommand(RecordingOptions options, uint pipeWireNodeId)

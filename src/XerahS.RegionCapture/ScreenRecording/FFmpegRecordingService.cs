@@ -320,12 +320,25 @@ public class FFmpegRecordingService : IRecordingService
         }
         else if (OperatingSystem.IsLinux())
         {
-             // basic Linux fallback (x11grab)
+             // Basic Linux fallback (x11grab, X11 only).
+             // Guard against invalid 0x0 region args for non-region capture modes.
              args.Add("-f x11grab");
              args.Add("-framerate " + settings.FPS);
-             args.Add($"-video_size {options.Region.Width}x{options.Region.Height}");
-             args.Add($"-i :0.0+{options.Region.X},{options.Region.Y}");
-             if (settings.ShowCursor) args.Add("-draw_mouse 1");
+
+             bool hasRegion = options.Region.Width > 0 && options.Region.Height > 0;
+             bool useRegionInput = hasRegion && (options.Mode == CaptureMode.Region || options.Mode == CaptureMode.Window);
+
+             if (useRegionInput)
+             {
+                 args.Add($"-video_size {options.Region.Width}x{options.Region.Height}");
+                 args.Add($"-i :0.0+{options.Region.X},{options.Region.Y}");
+             }
+             else
+             {
+                 args.Add("-i :0.0");
+             }
+
+             args.Add(settings.ShowCursor ? "-draw_mouse 1" : "-draw_mouse 0");
         }
 
         // Video codec settings

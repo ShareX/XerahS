@@ -79,6 +79,29 @@
                     </StackPanel>
                 </Border>
             </StackPanel>
+
+            <!-- Linux Recording Diagnostics -->
+            <StackPanel Spacing="8" IsVisible="{Binding IsLinuxPlatform}">
+                <TextBlock Text="Linux Recording Diagnostics" FontWeight="SemiBold"/>
+                <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Run a compatibility check for Wayland/X11 recording backends, portal interfaces, and required native tools."
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"/>
+
+                        <Button Content="Run Linux Recording Diagnostics"
+                                Command="{Binding RunLinuxRecordingDiagnosticsCommand}"
+                                HorizontalAlignment="Left"/>
+
+                        <TextBlock Text="{Binding LinuxRecordingDiagnosticsStatusText}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   IsVisible="{Binding LinuxRecordingDiagnosticsStatusText, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
