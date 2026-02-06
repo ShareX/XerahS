@@ -230,6 +230,10 @@ public partial class App : Application
                     {
                         await ScrollingCaptureToolService.HandleWorkflowAsync(workflowType, owner);
                     }
+                    else if (workflowType == WorkflowType.ImageEditor)
+                    {
+                        await OpenImageEditorAsync(owner);
+                    }
                     else
                     {
                         await QrCodeToolService.HandleWorkflowAsync(workflowType, owner);
@@ -661,6 +665,45 @@ public partial class App : Application
             desktop.MainWindow is Views.MainWindow mainWindow)
         {
             mainWindow.NavigateToSettings();
+        }
+    }
+
+    private static async Task OpenImageEditorAsync(Window? owner)
+    {
+        try
+        {
+            var topLevel = owner != null ? TopLevel.GetTopLevel(owner) : null;
+            if (topLevel == null) return;
+
+            var options = new FilePickerOpenOptions
+            {
+                Title = "Open Image in Editor",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    new FilePickerFileType("Image Files")
+                    {
+                        Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.webp", "*.tiff", "*.tif" }
+                    },
+                    FilePickerFileTypes.All
+                }
+            };
+
+            var files = await topLevel.StorageProvider.OpenFilePickerAsync(options);
+            if (files.Count < 1) return;
+
+            var path = files[0].TryGetLocalPath();
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return;
+
+            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read);
+            var skBitmap = SkiaSharp.SKBitmap.Decode(fs);
+            if (skBitmap == null) return;
+
+            await PlatformServices.UI.ShowEditorAsync(skBitmap);
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "Failed to open image in editor");
         }
     }
 

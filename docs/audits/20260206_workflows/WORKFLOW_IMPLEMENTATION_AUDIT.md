@@ -14,7 +14,7 @@
 | **Implemented in WorkerTask.cs** | 27 |
 | **Implemented via Tool Services in App.axaml.cs** | 7 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1) |
 | **Implemented in TrayIconHelper.cs** | 1 (`OpenMainWindow`) |
-| **NOT WIRED (Stub/Placeholder)** | **38** |
+| **NOT WIRED (Stub/Placeholder)** | **37** |
 
 ---
 
@@ -102,7 +102,7 @@ Tray-specific actions handled separately.
 
 ---
 
-### Tools (6 of 31 wired)
+### Tools (7 of 31 wired)
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
@@ -114,7 +114,7 @@ Tray-specific actions handled separately.
 | `PinToScreenFromClipboard` | ? Not Wired | ? | ? |
 | `PinToScreenFromFile` | ? Not Wired | ? | ? |
 | `PinToScreenCloseAll` | ? Not Wired | ? | ? |
-| `ImageEditor` | ? Not Wired | ? | **High Priority** |
+| `ImageEditor` | ? Wired | App.axaml.cs | Opens file picker → loads image → `ShowEditorAsync()` |
 | `ImageBeautifier` | ? Not Wired | ? | ? |
 | `ImageEffects` | ? Not Wired | ? | ? |
 | `ImageViewer` | ? Not Wired | ? | ? |
@@ -183,7 +183,7 @@ Many workflows have enum definitions but no execution path:
 
 ### High Priority (Core Functionality)
 1. ~~**`OCR`** - Optical Character Recognition~~ ? Done (v0.8.2) — Windows.Media.Ocr native
-2. **`ImageEditor`** - Basic image editing capabilities
+2. ~~**`ImageEditor`** - Basic image editing capabilities~~ ? Done (v0.8.2) — reuses existing EditorWindow
 3. ~~**`ScrollingCapture`** - Long page capture~~ ? Done (v0.8.2)
 4. **`UploadText`** - Text upload workflow
 
