@@ -25,4 +25,4 @@ jobs:
     - name: Verify Documentation Sync
       if: success()
       run: |
-        git diff --exit-code docs/audits
+        git diff --exit-code docs/audits/ui-control

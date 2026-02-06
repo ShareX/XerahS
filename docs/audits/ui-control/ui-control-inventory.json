@@ -1,7 +1,47 @@
 [
   {
     "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
-    "Line": 80,
+    "Line": 52,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
+    "Line": 82,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
+    "Line": 101,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
+    "Line": 135,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
+    "Line": 136,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
+  },
+  {
+    "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
+    "Line": 204,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -9,7 +49,7 @@
   },
   {
     "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
-    "Line": 108,
+    "Line": 240,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -17,7 +57,7 @@
   },
   {
     "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
-    "Line": 112,
+    "Line": 242,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -25,7 +65,7 @@
   },
   {
     "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
-    "Line": 116,
+    "Line": 252,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -33,7 +73,7 @@
   },
   {
     "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
-    "Line": 117,
+    "Line": 256,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -41,7 +81,15 @@
   },
   {
     "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
-    "Line": 118,
+    "Line": 257,
+    "Type": "CheckBox",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "DataBinding"
+  },
+  {
+    "File": "src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml",
+    "Line": 258,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -137,7 +185,7 @@
   },
   {
     "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
-    "Line": 47,
+    "Line": 140,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -145,7 +193,7 @@
   },
   {
     "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
-    "Line": 50,
+    "Line": 143,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -153,7 +201,7 @@
   },
   {
     "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
-    "Line": 53,
+    "Line": 146,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -161,7 +209,7 @@
   },
   {
     "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
-    "Line": 56,
+    "Line": 149,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -169,7 +217,7 @@
   },
   {
     "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
-    "Line": 72,
+    "Line": 161,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -177,7 +225,7 @@
   },
   {
     "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
-    "Line": 75,
+    "Line": 164,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -185,7 +233,7 @@
   },
   {
     "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
-    "Line": 78,
+    "Line": 167,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -193,7 +241,7 @@
   },
   {
     "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
-    "Line": 81,
+    "Line": 170,
     "Type": "CheckBox",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -201,7 +249,7 @@
   },
   {
     "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
-    "Line": 95,
+    "Line": 187,
     "Type": "Button",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -209,7 +257,7 @@
   },
   {
     "File": "src/XerahS.UI/Views/AfterCaptureWindow.axaml",
-    "Line": 99,
+    "Line": 191,
     "Type": "Button",
     "Name": "[Anonymous]",
     "Status": "WIRED",
@@ -510,6 +558,14 @@
     "Name": "HotkeyButton",
     "Status": "WIRED",
     "Wiring": "Event"
+  },
+  {
+    "File": "src/XerahS.UI/Views/CustomUploaderConfigView.axaml",
+    "Line": 81,
+    "Type": "Button",
+    "Name": "[Anonymous]",
+    "Status": "WIRED",
+    "Wiring": "Command"
   },
   {
     "File": "src/XerahS.UI/Views/CustomUploaderEditorDialog.axaml",
@@ -937,7 +993,7 @@
   },
   {
     "File": "src/XerahS.UI/Views/HotkeySettingsView.axaml",
-    "Line": 51,
+    "Line": 54,
     "Type": "CheckBox",
     "Name": "ShowDebugCheckBox",
     "Status": "WIRED",
@@ -1649,7 +1705,7 @@
   },
   {
     "File": "src/XerahS.UI/Views/TaskVideoSettingsPanel.axaml",
-    "Line": 69,
+    "Line": 64,
     "Type": "Button",
     "Name": "[Anonymous]",
     "Status": "WIRED",

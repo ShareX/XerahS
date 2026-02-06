@@ -1,15 +1,21 @@
 # UI Control Inventory
-Total Controls: 241
+Total Controls: 248
 Unwired: 0
 
 | File | Line | Type | Name | Status | Wiring |
 |---|---|---|---|---|---|
-| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 80 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 108 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 112 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 116 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 117 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 118 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 52 | Button | [Anonymous] | WIRED | Command |
+| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 82 | Button | [Anonymous] | WIRED | Command |
+| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 101 | Button | [Anonymous] | WIRED | Command |
+| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 135 | Button | [Anonymous] | WIRED | Command |
+| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 136 | Button | [Anonymous] | WIRED | Command |
+| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 204 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 240 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 242 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 252 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 256 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 257 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml | 258 | CheckBox | [Anonymous] | WIRED | DataBinding |
 | src/Plugins/ShareX.GitHubGist.Plugin/Views/GitHubGistConfigView.axaml | 40 | Button | [Anonymous] | WIRED | Command |
 | src/Plugins/ShareX.GitHubGist.Plugin/Views/GitHubGistConfigView.axaml | 50 | Button | [Anonymous] | WIRED | Command |
 | src/Plugins/ShareX.GitHubGist.Plugin/Views/GitHubGistConfigView.axaml | 58 | Button | [Anonymous] | WIRED | Command |
@@ -21,16 +27,16 @@ Unwired: 0
 | src/Plugins/ShareX.Imgur.Plugin/Views/ImgurConfigView.axaml | 97 | CheckBox | [Anonymous] | WIRED | DataBinding |
 | src/XerahS.UI/Controls/FileTypeSelectorControl.axaml | 9 | CheckBox | [Anonymous] | WIRED | DataBinding |
 | src/XerahS.UI/Controls/FileTypeSelectorControl.axaml | 37 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 47 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 50 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 53 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 56 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 72 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 75 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 78 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 81 | CheckBox | [Anonymous] | WIRED | DataBinding |
-| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 95 | Button | [Anonymous] | WIRED | Command |
-| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 99 | Button | [Anonymous] | WIRED | Command |
+| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 140 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 143 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 146 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 149 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 161 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 164 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 167 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 170 | CheckBox | [Anonymous] | WIRED | DataBinding |
+| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 187 | Button | [Anonymous] | WIRED | Command |
+| src/XerahS.UI/Views/AfterCaptureWindow.axaml | 191 | Button | [Anonymous] | WIRED | Command |
 | src/XerahS.UI/Views/AfterUploadWindow.axaml | 198 | Button | [Anonymous] | WIRED | Command |
 | src/XerahS.UI/Views/AfterUploadWindow.axaml | 202 | Button | [Anonymous] | WIRED | Command |
 | src/XerahS.UI/Views/AfterUploadWindow.axaml | 206 | Button | [Anonymous] | WIRED | Command |
@@ -68,6 +74,7 @@ Unwired: 0
 | src/XerahS.UI/Views/ColorPickerDialog.axaml | 230 | Button | [Anonymous] | WIRED | Command |
 | src/XerahS.UI/Views/Controls/HotkeySelectionControl.axaml | 60 | Button | TaskButton | WIRED | Event |
 | src/XerahS.UI/Views/Controls/HotkeySelectionControl.axaml | 85 | Button | HotkeyButton | WIRED | Event |
+| src/XerahS.UI/Views/CustomUploaderConfigView.axaml | 81 | Button | [Anonymous] | WIRED | Command |
 | src/XerahS.UI/Views/CustomUploaderEditorDialog.axaml | 52 | CheckBox | [Anonymous] | WIRED | DataBinding |
 | src/XerahS.UI/Views/CustomUploaderEditorDialog.axaml | 54 | CheckBox | [Anonymous] | WIRED | DataBinding |
 | src/XerahS.UI/Views/CustomUploaderEditorDialog.axaml | 56 | CheckBox | [Anonymous] | WIRED | DataBinding |
@@ -121,7 +128,7 @@ Unwired: 0
 | src/XerahS.UI/Views/HotkeySettingsView.axaml | 30 | Button | [Anonymous] | WIRED | Command |
 | src/XerahS.UI/Views/HotkeySettingsView.axaml | 31 | Button | [Anonymous] | WIRED | Command |
 | src/XerahS.UI/Views/HotkeySettingsView.axaml | 33 | Button | [Anonymous] | WIRED | Command |
-| src/XerahS.UI/Views/HotkeySettingsView.axaml | 51 | CheckBox | ShowDebugCheckBox | WIRED | Manual/Suppressed |
+| src/XerahS.UI/Views/HotkeySettingsView.axaml | 54 | CheckBox | ShowDebugCheckBox | WIRED | Manual/Suppressed |
 | src/XerahS.UI/Views/IndexFolderView.axaml | 35 | Button | [Anonymous] | WIRED | Command |
 | src/XerahS.UI/Views/IndexFolderView.axaml | 66 | CheckBox | [Anonymous] | WIRED | DataBinding |
 | src/XerahS.UI/Views/IndexFolderView.axaml | 67 | CheckBox | [Anonymous] | WIRED | DataBinding |
@@ -210,7 +217,7 @@ Unwired: 0
 | src/XerahS.UI/Views/TaskSettingsPanel.axaml | 292 | CheckBox | [Anonymous] | WIRED | DataBinding |
 | src/XerahS.UI/Views/TaskSettingsPanel.axaml | 315 | CheckBox | [Anonymous] | WIRED | DataBinding |
 | src/XerahS.UI/Views/TaskVideoSettingsPanel.axaml | 59 | Button | [Anonymous] | WIRED | Command |
-| src/XerahS.UI/Views/TaskVideoSettingsPanel.axaml | 69 | Button | [Anonymous] | WIRED | Command |
+| src/XerahS.UI/Views/TaskVideoSettingsPanel.axaml | 64 | Button | [Anonymous] | WIRED | Command |
 | src/XerahS.UI/Views/ThemeShowcaseView.axaml | 33 | MenuItem | [Anonymous] | WIRED | Manual/Suppressed |
 | src/XerahS.UI/Views/ThemeShowcaseView.axaml | 34 | MenuItem | [Anonymous] | WIRED | Manual/Suppressed |
 | src/XerahS.UI/Views/ThemeShowcaseView.axaml | 35 | MenuItem | [Anonymous] | WIRED | Manual/Suppressed |
