@@ -49,16 +49,16 @@ Tray-specific actions handled separately.
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
-| `FileUpload` | ? Wired | WorkerTask.cs | Full implementation with dialog callback |
-| `FolderUpload` | ? Not Wired | � | Stub only |
-| `ClipboardUpload` | ? Wired | WorkerTask.cs | Full implementation with image/text/file support |
-| `ClipboardUploadWithContentViewer` | ? Wired | WorkerTask.cs | Same as ClipboardUpload |
-| `UploadText` | ? Not Wired | � | Stub only |
-| `UploadURL` | ? Not Wired | � | Stub only |
-| `DragDropUpload` | ? Not Wired | � | Stub only |
-| `ShortenURL` | ? Not Wired | � | Stub only |
-| `StopUploads` | ? Not Wired | � | Stub only |
-| `IndexFolder` | ? Wired | WorkerTask.cs | Full implementation with HTML/TXT/XML/JSON output |
+| `FileUpload` | ✅ Wired | WorkerTask.cs | Full implementation with dialog callback |
+| `FolderUpload` | ❌ Not Wired | � | Stub only |
+| `ClipboardUpload` | ✅ Wired | WorkerTask.cs | Full implementation with image/text/file support |
+| `ClipboardUploadWithContentViewer` | ✅ Wired | WorkerTask.cs | Same as ClipboardUpload |
+| `UploadText` | ❌ Not Wired | � | Stub only |
+| `UploadURL` | ❌ Not Wired | � | Stub only |
+| `DragDropUpload` | ❌ Not Wired | � | Stub only |
+| `ShortenURL` | ❌ Not Wired | � | Stub only |
+| `StopUploads` | ❌ Not Wired | � | Stub only |
+| `IndexFolder` | ✅ Wired | WorkerTask.cs | Full implementation with HTML/TXT/XML/JSON output |
 
 ---
 
@@ -66,19 +66,19 @@ Tray-specific actions handled separately.
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
-| `PrintScreen` | ? Wired | WorkerTask.cs | Fullscreen capture |
-| `ActiveWindow` | ? Wired | WorkerTask.cs | Active window capture |
-| `CustomWindow` | ? Wired | WorkerTask.cs | Window selector integration |
-| `ActiveMonitor` | ? Wired | WorkerTask.cs | Captures active monitor via `GetActiveScreenBounds()` |
-| `RectangleRegion` | ? Wired | WorkerTask.cs | Region selection with frozen background |
-| `RectangleLight` | ? Not Wired | ? | Stub only |
-| `RectangleTransparent` | ? Wired | WorkerTask.cs | Region selection with transparent overlay |
-| `CustomRegion` | ? Wired | WorkerTask.cs | Captures pre-configured `CaptureCustomRegion` rect |
-| `LastRegion` | ? Wired | WorkerTask.cs | Re-captures last used region rect |
-| `ScrollingCapture` | ? Wired | App.axaml.cs | Via `ScrollingCaptureToolService` |
-| `AutoCapture` | ? Not Wired | ? | Stub only |
-| `StartAutoCapture` | ? Not Wired | ? | Stub only |
-| `StopAutoCapture` | ? Not Wired | ? | Stub only |
+| `PrintScreen` | ✅ Wired | WorkerTask.cs | Fullscreen capture |
+| `ActiveWindow` | ✅ Wired | WorkerTask.cs | Active window capture |
+| `CustomWindow` | ✅ Wired | WorkerTask.cs | Window selector integration |
+| `ActiveMonitor` | ✅ Wired | WorkerTask.cs | Captures active monitor via `GetActiveScreenBounds()` |
+| `RectangleRegion` | ✅ Wired | WorkerTask.cs | Region selection with frozen background |
+| `RectangleLight` | ❌ Not Wired | � | Stub only |
+| `RectangleTransparent` | ✅ Wired | WorkerTask.cs | Region selection with transparent overlay |
+| `CustomRegion` | ✅ Wired | WorkerTask.cs | Captures pre-configured `CaptureCustomRegion` rect |
+| `LastRegion` | ✅ Wired | WorkerTask.cs | Re-captures last used region rect |
+| `ScrollingCapture` | ✅ Wired | App.axaml.cs | Via `ScrollingCaptureToolService` |
+| `AutoCapture` | ❌ Not Wired | � | Stub only |
+| `StartAutoCapture` | ❌ Not Wired | � | Stub only |
+| `StopAutoCapture` | ❌ Not Wired | � | Stub only |
 
 ---
 
@@ -86,19 +86,19 @@ Tray-specific actions handled separately.
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
-| `ScreenRecorder` | ? Wired | WorkerTask.cs | Region selector + MP4 recording |
-| `StartScreenRecorder` | ? Wired | WorkerTask.cs | Uses last region |
-| `ScreenRecorderActiveWindow` | ? Wired | WorkerTask.cs | Active window recording |
-| `ScreenRecorderCustomRegion` | ? Wired | WorkerTask.cs | Pre-configured region |
-| `ScreenRecorderGIF` | ? Wired | WorkerTask.cs | Region selector + GIF recording |
-| `StartScreenRecorderGIF` | ? Wired | WorkerTask.cs | Uses last region + GIF |
-| `ScreenRecorderGIFActiveWindow` | ? Wired | WorkerTask.cs | Active window GIF |
-| `ScreenRecorderGIFCustomRegion` | ? Wired | WorkerTask.cs | Custom region GIF |
-| `StopScreenRecording` | ? Wired | WorkerTask.cs | Stop signal handler |
-| `PauseScreenRecording` | ? Wired | WorkerTask.cs | Pause/resume toggle |
-| `AbortScreenRecording` | ? Wired | WorkerTask.cs | Abort handler |
+| `ScreenRecorder` | ✅ Wired | WorkerTask.cs | Region selector + MP4 recording |
+| `StartScreenRecorder` | ✅ Wired | WorkerTask.cs | Uses last region |
+| `ScreenRecorderActiveWindow` | ✅ Wired | WorkerTask.cs | Active window recording |
+| `ScreenRecorderCustomRegion` | ✅ Wired | WorkerTask.cs | Pre-configured region |
+| `ScreenRecorderGIF` | ✅ Wired | WorkerTask.cs | Region selector + GIF recording |
+| `StartScreenRecorderGIF` | ✅ Wired | WorkerTask.cs | Uses last region + GIF |
+| `ScreenRecorderGIFActiveWindow` | ✅ Wired | WorkerTask.cs | Active window GIF |
+| `ScreenRecorderGIFCustomRegion` | ✅ Wired | WorkerTask.cs | Custom region GIF |
+| `StopScreenRecording` | ✅ Wired | WorkerTask.cs | Stop signal handler |
+| `PauseScreenRecording` | ✅ Wired | WorkerTask.cs | Pause/resume toggle |
+| `AbortScreenRecording` | ✅ Wired | WorkerTask.cs | Abort handler |
 
-**Status:** ? All screen recording workflows are fully implemented!
+**Status:** ✅ All screen recording workflows are fully implemented!
 
 ---
 
@@ -106,37 +106,37 @@ Tray-specific actions handled separately.
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
-| `ColorPicker` | ? Wired | App.axaml.cs | Via `ColorPickerToolService` |
-| `ScreenColorPicker` | ? Wired | App.axaml.cs | Via `ColorPickerToolService` |
-| `Ruler` | ? Not Wired | ? | ? |
-| `PinToScreen` | ? Not Wired | ? | ? |
-| `PinToScreenFromScreen` | ? Not Wired | ? | ? |
-| `PinToScreenFromClipboard` | ? Not Wired | ? | ? |
-| `PinToScreenFromFile` | ? Not Wired | ? | ? |
-| `PinToScreenCloseAll` | ? Not Wired | ? | ? |
-| `ImageEditor` | ? Wired | App.axaml.cs | Opens file picker → loads image → `ShowEditorAsync()` |
-| `ImageBeautifier` | ? Not Wired | ? | ? |
-| `ImageEffects` | ? Not Wired | ? | ? |
-| `ImageViewer` | ? Not Wired | ? | ? |
-| `ImageCombiner` | ? Not Wired | ? | ? |
-| `ImageSplitter` | ? Not Wired | ? | ? |
-| `ImageThumbnailer` | ? Not Wired | ? | ? |
-| `VideoConverter` | ? Not Wired | ? | ? |
-| `VideoThumbnailer` | ? Not Wired | ? | ? |
-| `AnalyzeImage` | ? Not Wired | ? | ? |
-| **`OCR`** | ? Wired | App.axaml.cs | Via `OcrToolService` — Windows.Media.Ocr native, stubs for Linux/macOS |
-| `QRCode` | ? Wired | App.axaml.cs | Via `QrCodeToolService` |
-| `QRCodeDecodeFromScreen` | ? Wired | App.axaml.cs | Via `QrCodeToolService` |
-| `QRCodeScanRegion` | ? Wired | App.axaml.cs | Via `QrCodeToolService` |
-| `HashCheck` | ? Not Wired | ? | ? |
-| `Metadata` | ? Not Wired | ? | ? |
-| `StripMetadata` | ? Not Wired | ? | ? |
-| `ClipboardViewer` | ? Not Wired | ? | ? |
-| `BorderlessWindow` | ? Not Wired | ? | ? |
-| `ActiveWindowBorderless` | ? Not Wired | ? | ? |
-| `ActiveWindowTopMost` | ? Not Wired | ? | ? |
-| `InspectWindow` | ? Not Wired | ? | ? |
-| `MonitorTest` | ? Not Wired | ? | ? |
+| `ColorPicker` | ✅ Wired | App.axaml.cs | Via `ColorPickerToolService` |
+| `ScreenColorPicker` | ✅ Wired | App.axaml.cs | Via `ColorPickerToolService` |
+| `Ruler` | ❌ Not Wired | � | � |
+| `PinToScreen` | ❌ Not Wired | � | � |
+| `PinToScreenFromScreen` | ❌ Not Wired | � | � |
+| `PinToScreenFromClipboard` | ❌ Not Wired | � | � |
+| `PinToScreenFromFile` | ❌ Not Wired | � | � |
+| `PinToScreenCloseAll` | ❌ Not Wired | � | � |
+| `ImageEditor` | ✅ Wired | App.axaml.cs | Opens file picker → loads image → `ShowEditorAsync()` |
+| `ImageBeautifier` | ❌ Not Wired | � | � |
+| `ImageEffects` | ❌ Not Wired | � | � |
+| `ImageViewer` | ❌ Not Wired | � | � |
+| `ImageCombiner` | ❌ Not Wired | � | � |
+| `ImageSplitter` | ❌ Not Wired | � | � |
+| `ImageThumbnailer` | ❌ Not Wired | � | � |
+| `VideoConverter` | ❌ Not Wired | � | � |
+| `VideoThumbnailer` | ❌ Not Wired | � | � |
+| `AnalyzeImage` | ❌ Not Wired | � | � |
+| **`OCR`** | ✅ Wired | App.axaml.cs | Via `OcrToolService` — Windows.Media.Ocr native, stubs for Linux/macOS |
+| `QRCode` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
+| `QRCodeDecodeFromScreen` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
+| `QRCodeScanRegion` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
+| `HashCheck` | ❌ Not Wired | � | � |
+| `Metadata` | ❌ Not Wired | � | � |
+| `StripMetadata` | ❌ Not Wired | � | � |
+| `ClipboardViewer` | ❌ Not Wired | � | � |
+| `BorderlessWindow` | ❌ Not Wired | � | � |
+| `ActiveWindowBorderless` | ❌ Not Wired | � | � |
+| `ActiveWindowTopMost` | ❌ Not Wired | � | � |
+| `InspectWindow` | ❌ Not Wired | � | � |
+| `MonitorTest` | ❌ Not Wired | � | � |
 
 ---
 
@@ -144,14 +144,14 @@ Tray-specific actions handled separately.
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
-| `DisableHotkeys` | ? Wired | WorkerTask.cs | Toggles hotkeys via `ToggleHotkeysCallback` |
-| `OpenMainWindow` | ? Wired | TrayIconHelper.cs | Tray double-click action |
-| `OpenScreenshotsFolder` | ? Wired | WorkerTask.cs | Opens screenshots folder in file explorer |
-| `OpenHistory` | ? Wired | WorkerTask.cs | Via `OpenHistoryCallback` |
-| `OpenImageHistory` | ? Wired | WorkerTask.cs | Via `OpenHistoryCallback` (shared with OpenHistory) |
-| `ToggleActionsToolbar` | ? Not Wired | ? | ? |
-| `ToggleTrayMenu` | ? Not Wired | ? | ? |
-| `ExitShareX` | ? Wired | WorkerTask.cs | Via `ExitApplicationCallback` → `Shutdown()` |
+| `DisableHotkeys` | ✅ Wired | WorkerTask.cs | Toggles hotkeys via `ToggleHotkeysCallback` |
+| `OpenMainWindow` | ✅ Wired | TrayIconHelper.cs | Tray double-click action |
+| `OpenScreenshotsFolder` | ✅ Wired | WorkerTask.cs | Opens screenshots folder in file explorer |
+| `OpenHistory` | ✅ Wired | WorkerTask.cs | Via `OpenHistoryCallback` |
+| `OpenImageHistory` | ✅ Wired | WorkerTask.cs | Via `OpenHistoryCallback` (shared with OpenHistory) |
+| `ToggleActionsToolbar` | ❌ Not Wired | � | � |
+| `ToggleTrayMenu` | ❌ Not Wired | � | � |
+| `ExitShareX` | ✅ Wired | WorkerTask.cs | Via `ExitApplicationCallback` → `Shutdown()` |
 
 ---
 
@@ -182,16 +182,16 @@ Many workflows have enum definitions but no execution path:
 ## Priority Recommendations
 
 ### High Priority (Core Functionality)
-1. ~~**`OCR`** - Optical Character Recognition~~ ? Done (v0.8.2) — Windows.Media.Ocr native
-2. ~~**`ImageEditor`** - Basic image editing capabilities~~ ? Done (v0.8.2) — reuses existing EditorWindow
-3. ~~**`ScrollingCapture`** - Long page capture~~ ? Done (v0.8.2)
+1. ~~**`OCR`** - Optical Character Recognition~~ ✅ Done (v0.8.2) — Windows.Media.Ocr native
+2. ~~**`ImageEditor`** - Basic image editing capabilities~~ ✅ Done (v0.8.2) — reuses existing EditorWindow
+3. ~~**`ScrollingCapture`** - Long page capture~~ ✅ Done (v0.8.2)
 4. **`UploadText`** - Text upload workflow
 
 ### Medium Priority (Utility)
 5. **`ImageCombiner`** - Merge multiple images
 6. **`ImageThumbnailer`** - Generate thumbnails
 7. **`HashCheck`** - File integrity verification
-8. ~~**`OpenHistory`** - Quick history access~~ ? Done (v0.8.2)
+8. ~~**`OpenHistory`** - Quick history access~~ ✅ Done (v0.8.2)
 
 ### Low Priority (Nice to Have)
 9. Pin-to-screen variants
