@@ -5,6 +5,16 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 ![ShareX Avalonia](https://getsharex.com/xerahs/img/XerahS_Logo.png)
 *(Note: Project is in active development)*
 
+## ⚠️ About This Project
+
+**XerahS is developed using agentic coding workflows.** This project embraces AI-assisted development as a first-class engineering practice, leveraging tools like GitHub Copilot, Claude, and other AI agents to accelerate feature development, refactoring, and code quality improvements. The codebase is architected with bleeding-edge technologies (.NET 10, Avalonia 11.3+) and prioritizes patterns that maximize AI comprehension: strict nullability, exhaustive documentation, and standardized MVVM architecture.
+
+**XerahS is and will always be free**, just like ShareX, built out of passion, not for profit. It's developed entirely through agentic coding as a parallel project to ShareX, designed to align with different user preferences and values. You're welcome to give it a try or stick with whatever tool works best for you.
+
+**If agentic coding is not your style**, we encourage you to try the original [**ShareX**](https://github.com/ShareX/ShareX) for Windows, which is developed using traditional methods and has a mature, battle-tested codebase backed by years of community contributions.
+
+For developers interested in AI-first development and cross-platform experimentation, XerahS offers a modern foundation built for the future of software engineering.
+
 ## ✨ Key Features
 - **Cross-Platform**: Runs on Windows, Linux, and macOS (targeting).
 - **Modern UI**: Reimagined interface inspired by modern design principles.
@@ -48,23 +58,6 @@ Arch Linux users can install the latest development version via the community-ma
 This package builds directly from the source code and automatically handles dependencies, including the .NET 10 SDK. It can be installed using an AUR helper like `yay`:
 ```bash
 yay -S xerahs-git
-```
-
-### Building and Running
-```bash
-# Clone the repository
-git clone https://github.com/ShareX/XerahS.git
-
-# Clone the required dependency (must be in a sibling folder named 'XerahS.Editor')
-git clone https://github.com/ShareX/XerahS.Editor.git
-
-cd XerahS
-
-# Build the solution
-dotnet build
-
-# Run the application
-dotnet run --project src/XerahS.App/XerahS.App.csproj
 ```
 
 ### macOS Permissions (Screen Recording)

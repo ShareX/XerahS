@@ -224,7 +224,21 @@ See also: [Plugin Development Guide](plugin_development_guide.md) for complete p
 4.  Add XML documentation for public APIs
 5.  Test on multiple platforms when possible
 
-## Building
+## Building and Running
+
+### Prerequisites
+Ensure you have the following installed:
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- XerahS.Editor (required dependency, must be in a sibling folder)
+
+### Clone Repositories
+```bash
+# Clone the main repository
+git clone https://github.com/ShareX/XerahS.git
+
+# Clone the required dependency (must be in a sibling folder named 'XerahS.Editor')
+git clone https://github.com/ShareX/XerahS.Editor.git
+```
 
 ### macOS Native Library (ScreenCaptureKit)
 On macOS, build the native ScreenCaptureKit bridge library before building the .NET solution:
@@ -234,9 +248,16 @@ make
 ls -l libscreencapturekit_bridge.dylib
 ```
 
-### .NET Solution
+### Build the Solution
 ```bash
+cd XerahS
 dotnet build XerahS.sln
+```
+
+### Run the Application
+```bash
+# From the XerahS directory
+dotnet run --project src/XerahS.App/XerahS.App.csproj
 ```
 
 ## Testing
