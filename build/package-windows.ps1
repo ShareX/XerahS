@@ -76,8 +76,47 @@ foreach ($arch in $archs) {
         $pluginOutput = Join-Path $pluginsDir $pluginId
         dotnet publish $plugin.FullName -c Release -p:OS=Windows_NT -r $arch -p:nodeReuse=false --self-contained false -o $pluginOutput
 
-        # Note: Deduplication removed to prevent intermittent file locking issues during build loop
+
     }
+
+
+    # 1.6 Deduplicate plugin files that already exist in main app
+    Write-Host "Deduplicating plugin files..."
+    $dedupStats = @{ Removed = 0; Errors = 0; BytesSaved = 0 }
+    $maxRetries = 3
+    $retryDelayMs = 500
+
+    foreach ($pluginDir in Get-ChildItem -Path $pluginsDir -Directory) {
+        $pluginFiles = Get-ChildItem -Path $pluginDir.FullName -File -ErrorAction SilentlyContinue
+        foreach ($file in $pluginFiles) {
+            $mainAppFile = Join-Path $publishOutput $file.Name
+            if (Test-Path $mainAppFile) {
+                $success = $false
+                $attempts = 0
+                while (-not $success -and $attempts -lt $maxRetries) {
+                    $attempts++
+                    try {
+                        Remove-Item -Path $file.FullName -Force -ErrorAction Stop
+                        $success = $true
+                        $dedupStats.Removed++
+                        $dedupStats.BytesSaved += $file.Length
+                    }
+                    catch {
+                        if ($attempts -eq $maxRetries) {
+                            Write-Warning "Failed to remove duplicate after $maxRetries attempts: $($file.Name)"
+                            $dedupStats.Errors++
+                        }
+                        else {
+                            Write-Host "  Retry $attempts/$maxRetries for: $($file.Name)"
+                            Start-Sleep -Milliseconds $retryDelayMs
+                        }
+                    }
+                }
+            }
+        }
+    }
+    $savedMB = [math]::Round($dedupStats.BytesSaved / 1MB, 2)
+    Write-Host "Deduplication complete: Removed $($dedupStats.Removed) files, saved ${savedMB} MB, $($dedupStats.Errors) errors"
 
     # 2. Compile Installer
     Write-Host "Compiling Installer with Inno Setup..."
