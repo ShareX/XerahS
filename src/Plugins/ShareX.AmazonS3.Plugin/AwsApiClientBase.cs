@@ -26,6 +26,7 @@
 using System.Collections.Specialized;
 using System.Net;
 using System.Text;
+using System.Linq;
 using XerahS.Uploaders;
 using UploadersHttpMethod = XerahS.Uploaders.HttpMethod;
 
@@ -59,11 +60,48 @@ internal abstract class AwsApiClientBase : Uploader
     protected AwsApiResponse SendRawRequest(UploadersHttpMethod method, string url, byte[]? payload, string? contentType,
         NameValueCollection? headers, bool allowNon2xx = false)
     {
+        int errorCount = Errors.Count;
         using MemoryStream? dataStream = payload != null && payload.Length > 0 ? new MemoryStream(payload) : null;
         using HttpWebResponse? response = GetResponse(method, url, dataStream, contentType, null, headers, null, allowNon2xx);
         string? body = ReadResponse(response);
         int statusCode = response != null ? (int)response.StatusCode : 0;
+        if (response == null && string.IsNullOrWhiteSpace(body))
+        {
+            string? errorDetails = GetNewErrorDetails(errorCount);
+            if (!string.IsNullOrWhiteSpace(errorDetails))
+            {
+                body = errorDetails;
+            }
+        }
         return new AwsApiResponse(statusCode, body, response?.Headers);
+    }
+
+    private string? GetNewErrorDetails(int errorCount)
+    {
+        if (Errors.Count <= errorCount)
+        {
+            return null;
+        }
+
+        List<string> newErrors = Errors.Errors
+            .Skip(errorCount)
+            .Select(error => error.Text)
+            .Where(text => !string.IsNullOrWhiteSpace(text))
+            .ToList();
+
+        if (newErrors.Count == 0)
+        {
+            return null;
+        }
+
+        string combined = string.Join(Environment.NewLine + Environment.NewLine, newErrors);
+        const int maxLength = 4000;
+        if (combined.Length > maxLength)
+        {
+            combined = combined.Substring(0, maxLength) + "...";
+        }
+
+        return combined;
     }
 
     private static string? ReadResponse(HttpWebResponse? response)

@@ -66,6 +66,9 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
     private string _customDomain = string.Empty;
 
     [ObservableProperty]
+    private string _cnameTarget = string.Empty;
+
+    [ObservableProperty]
     private string _ssoStartUrl = string.Empty;
 
     [ObservableProperty]
@@ -102,10 +105,13 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
     private int _storageClassIndex = 0; // STANDARD
 
     [ObservableProperty]
-    private bool _setPublicACL = true;
+    private bool _setPublicACL = false;
 
     [ObservableProperty]
-    private bool _signedPayload = false;
+    private bool _setPublicPolicy = true;
+
+    [ObservableProperty]
+    private bool _signedPayload = true;
 
     [ObservableProperty]
     private string? _statusMessage;
@@ -124,6 +130,7 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
     private string? _deviceCode;
     private DateTimeOffset _deviceCodeExpiresAt;
     private int _deviceCodeInterval = 5;
+    private const string SsoStartUrlHelpLink = "https://console.aws.amazon.com/singlesignon/";
 
     public ObservableCollection<AmazonS3Endpoint> Endpoints { get; } = new(AmazonS3Uploader.Endpoints);
     public ObservableCollection<AwsSsoAccount> SsoAccounts { get; } = new();
@@ -155,13 +162,26 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
         if (IsSsoMode)
         {
             UseCustomCNAME = true;
-            SetPublicACL = true;
-            EnsureUsEastRegion();
+            SetPublicACL = false;
+            SetPublicPolicy = true;
+            EnsureDefaultAwsRegion();
             UpdateBucketFromCustomDomain();
+            UpdateSsoRegionFromSelection();
         }
 
+        UpdateCnameTarget();
         StatusMessage = null;
         SsoStatusMessage = null;
+    }
+
+    partial void OnRegionIndexChanged(int value)
+    {
+        if (IsSsoMode)
+        {
+            UpdateSsoRegionFromSelection();
+        }
+
+        UpdateCnameTarget();
     }
 
     partial void OnCustomDomainChanged(string value)
@@ -170,6 +190,18 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
         {
             UpdateBucketFromCustomDomain();
         }
+
+        UpdateCnameTarget();
+    }
+
+    partial void OnUseCustomCNAMEChanged(bool value)
+    {
+        UpdateCnameTarget();
+    }
+
+    partial void OnBucketNameChanged(string value)
+    {
+        UpdateCnameTarget();
     }
 
     partial void OnSelectedSsoAccountChanged(AwsSsoAccount? value)
@@ -198,6 +230,15 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
             SsoStatusMessage = "Secret store not available.";
             return;
         }
+
+        AmazonS3Endpoint endpoint = GetSelectedEndpoint();
+        if (!IsAwsEndpoint(endpoint))
+        {
+            SsoStatusMessage = "SSO mode requires an AWS S3 endpoint.";
+            return;
+        }
+
+        UpdateSsoRegionFromSelection();
 
         if (string.IsNullOrWhiteSpace(SsoStartUrl) || string.IsNullOrWhiteSpace(SsoRegion))
         {
@@ -232,6 +273,12 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
         {
             SsoStatusMessage = "SSO login start failed: " + ex.Message;
         }
+    }
+
+    [RelayCommand]
+    private void OpenSsoStartUrlHelp()
+    {
+        OpenUrl(SsoStartUrlHelpLink);
     }
 
     [RelayCommand]
@@ -388,16 +435,30 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
             }
         }
 
-        var provisioner = new S3Provisioner(creds.AccessKeyId, creds.SecretAccessKey, creds.SessionToken);
-        S3ProvisionResult result = await Task.Run(() => provisioner.EnsureBucket(bucketName));
+        AmazonS3Endpoint endpoint = GetSelectedEndpoint();
+        if (!IsAwsEndpoint(endpoint))
+        {
+            SsoStatusMessage = "SSO mode requires an AWS S3 endpoint.";
+            return;
+        }
+
+        string region = GetSelectedRegion(endpoint);
+        if (string.IsNullOrWhiteSpace(region))
+        {
+            SsoStatusMessage = "Select a valid AWS region.";
+            return;
+        }
+
+        var provisioner = new S3Provisioner(creds.AccessKeyId, creds.SecretAccessKey, creds.SessionToken, region, endpoint.Endpoint);
+        S3ProvisionResult result = await Task.Run(() => provisioner.EnsureBucket(bucketName, SetPublicPolicy));
         SsoStatusMessage = result.Message;
 
         if (result.IsSuccess)
         {
             BucketName = bucketName;
             UseCustomCNAME = true;
-            SetPublicACL = true;
-            EnsureUsEastRegion();
+            SetPublicACL = false;
+            SetPublicPolicy = true;
         }
     }
 
@@ -548,13 +609,127 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
         }
     }
 
-    private void EnsureUsEastRegion()
+    private void UpdateCnameTarget()
     {
-        int index = Endpoints.ToList().FindIndex(e => e.Endpoint == "s3.amazonaws.com" || e.Region == "us-east-1");
+        if (!UseCustomCNAME || string.IsNullOrWhiteSpace(BucketName))
+        {
+            CnameTarget = string.Empty;
+            return;
+        }
+
+        AmazonS3Endpoint selectedEndpoint = GetSelectedEndpoint();
+        string endpointHost = NormalizeEndpointHost(selectedEndpoint.Endpoint);
+        if (string.IsNullOrWhiteSpace(endpointHost))
+        {
+            CnameTarget = string.Empty;
+            return;
+        }
+
+        CnameTarget = $"{BucketName}.{endpointHost}";
+    }
+
+    private static string NormalizeEndpointHost(string endpoint)
+    {
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            return string.Empty;
+        }
+
+        string value = endpoint.Trim();
+        if (value.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            value.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            if (Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) && !string.IsNullOrWhiteSpace(uri.Host))
+            {
+                return uri.Host;
+            }
+        }
+
+        return value.TrimEnd('/');
+    }
+
+    private void UpdateSsoRegionFromSelection()
+    {
+        SsoRegion = GetSelectedRegion(GetSelectedEndpoint());
+    }
+
+    private void EnsureDefaultAwsRegion()
+    {
+        if (IsAwsEndpoint(GetSelectedEndpoint()))
+        {
+            return;
+        }
+
+        int index = Endpoints.ToList().FindIndex(endpoint => IsAwsEndpoint(endpoint) &&
+                                                             (endpoint.Endpoint.Equals("s3.amazonaws.com", StringComparison.OrdinalIgnoreCase) ||
+                                                              endpoint.Region == "us-east-1"));
         if (index >= 0)
         {
             RegionIndex = index;
         }
+    }
+
+    private AmazonS3Endpoint GetSelectedEndpoint()
+    {
+        if (RegionIndex < 0 || RegionIndex >= Endpoints.Count)
+        {
+            return Endpoints.Count > 0 ? Endpoints[0] : new AmazonS3Endpoint("US East (N. Virginia)", "s3.amazonaws.com", "us-east-1");
+        }
+
+        return Endpoints[RegionIndex];
+    }
+
+    private static bool IsAwsEndpoint(AmazonS3Endpoint endpoint)
+    {
+        return endpoint.Endpoint.Contains("amazonaws.com", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetSelectedRegion(AmazonS3Endpoint endpoint)
+    {
+        if (!string.IsNullOrWhiteSpace(endpoint.Region))
+        {
+            return endpoint.Region;
+        }
+
+        return ResolveRegionFromEndpoint(endpoint.Endpoint, "us-east-1");
+    }
+
+    private static string ResolveRegionFromEndpoint(string endpoint, string fallbackRegion)
+    {
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            return fallbackRegion;
+        }
+
+        string host = endpoint.Trim();
+        if (host.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            host.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            if (Uri.TryCreate(host, UriKind.Absolute, out Uri? uri) && !string.IsNullOrWhiteSpace(uri.Host))
+            {
+                host = uri.Host;
+            }
+        }
+
+        host = host.TrimEnd('/');
+        if (!host.Contains(".amazonaws.com", StringComparison.OrdinalIgnoreCase))
+        {
+            return fallbackRegion;
+        }
+
+        string serviceAndRegion = host.Split(new[] { ".amazonaws.com" }, StringSplitOptions.None)[0];
+        if (serviceAndRegion.StartsWith("s3-"))
+        {
+            serviceAndRegion = "s3." + serviceAndRegion.Substring(3);
+        }
+
+        int separatorIndex = serviceAndRegion.LastIndexOf('.');
+        if (separatorIndex == -1)
+        {
+            return fallbackRegion;
+        }
+
+        return serviceAndRegion.Substring(separatorIndex + 1);
     }
 
     private static void OpenUrl(string url)
@@ -606,6 +781,7 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
                 SsoRoleName = config.SsoRoleName ?? string.Empty;
                 StorageClassIndex = (int)config.StorageClass;
                 SetPublicACL = config.SetPublicACL;
+                SetPublicPolicy = config.SetPublicPolicy;
                 SignedPayload = config.SignedPayload;
                 RemoveExtensionImage = config.RemoveExtensionImage;
                 RemoveExtensionVideo = config.RemoveExtensionVideo;
@@ -620,10 +796,14 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
                 if (IsSsoMode)
                 {
                     UseCustomCNAME = true;
-                    SetPublicACL = true;
-                    EnsureUsEastRegion();
+                    SetPublicACL = config.SetPublicACL;
+                    SetPublicPolicy = config.SetPublicPolicy;
+                    EnsureDefaultAwsRegion();
                     UpdateBucketFromCustomDomain();
+                    UpdateSsoRegionFromSelection();
                 }
+
+                UpdateCnameTarget();
             }
         }
         catch
@@ -646,8 +826,9 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
                 BucketName = derivedBucket;
             }
 
-            endpoint = "s3.amazonaws.com";
-            region = "us-east-1";
+            AmazonS3Endpoint selectedEndpoint = GetSelectedEndpoint();
+            endpoint = selectedEndpoint.Endpoint;
+            region = GetSelectedRegion(selectedEndpoint);
         }
 
         var config = new S3ConfigModel
@@ -662,12 +843,13 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
             UseCustomCNAME = UseCustomCNAME,
             StorageClass = (AmazonS3StorageClass)StorageClassIndex,
             SetPublicACL = SetPublicACL,
+            SetPublicPolicy = SetPublicPolicy,
             SignedPayload = SignedPayload,
             RemoveExtensionImage = RemoveExtensionImage,
             RemoveExtensionVideo = RemoveExtensionVideo,
             RemoveExtensionText = RemoveExtensionText,
             SsoStartUrl = SsoStartUrl,
-            SsoRegion = SsoRegion,
+            SsoRegion = IsSsoMode ? GetSelectedRegion(GetSelectedEndpoint()) : SsoRegion,
             SsoAccountId = SsoAccountId,
             SsoRoleName = SsoRoleName
         };
@@ -743,6 +925,20 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
         if (string.IsNullOrWhiteSpace(SsoAccountId) || string.IsNullOrWhiteSpace(SsoRoleName))
         {
             StatusMessage = "SSO account and role are required";
+            return false;
+        }
+
+        AmazonS3Endpoint selectedEndpoint = GetSelectedEndpoint();
+        if (!IsAwsEndpoint(selectedEndpoint))
+        {
+            StatusMessage = "SSO mode requires an AWS S3 endpoint.";
+            return false;
+        }
+
+        string region = GetSelectedRegion(selectedEndpoint);
+        if (string.IsNullOrWhiteSpace(region))
+        {
+            StatusMessage = "SSO mode requires a valid AWS region.";
             return false;
         }
 

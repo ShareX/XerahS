@@ -25,6 +25,7 @@
 
 using Newtonsoft.Json;
 using System.Collections.Specialized;
+using XerahS.Common;
 using XerahS.Uploaders;
 using UploadersHttpMethod = XerahS.Uploaders.HttpMethod;
 
@@ -51,18 +52,17 @@ internal sealed class AwsSsoClient : AwsApiClientBase
 
         do
         {
-            var payload = new Dictionary<string, object>
+            var query = new Dictionary<string, string>
             {
-                ["accessToken"] = accessToken,
-                ["maxResults"] = 100
+                ["max_result"] = "100"
             };
 
             if (!string.IsNullOrWhiteSpace(nextToken))
             {
-                payload["nextToken"] = nextToken!;
+                query["next_token"] = nextToken!;
             }
 
-            AwsSsoListAccountsResponse? response = SendSsoRequest<AwsSsoListAccountsResponse>("awsssoportalservice.ListAccounts", payload);
+            AwsSsoListAccountsResponse? response = SendSsoGet<AwsSsoListAccountsResponse>("/assignment/accounts", query, accessToken);
             if (response != null && response.AccountList.Count > 0)
             {
                 accounts.AddRange(response.AccountList);
@@ -82,19 +82,18 @@ internal sealed class AwsSsoClient : AwsApiClientBase
 
         do
         {
-            var payload = new Dictionary<string, object>
+            var query = new Dictionary<string, string>
             {
-                ["accessToken"] = accessToken,
-                ["accountId"] = accountId,
-                ["maxResults"] = 100
+                ["account_id"] = accountId,
+                ["max_result"] = "100"
             };
 
             if (!string.IsNullOrWhiteSpace(nextToken))
             {
-                payload["nextToken"] = nextToken!;
+                query["next_token"] = nextToken!;
             }
 
-            AwsSsoListAccountRolesResponse? response = SendSsoRequest<AwsSsoListAccountRolesResponse>("awsssoportalservice.ListAccountRoles", payload);
+            AwsSsoListAccountRolesResponse? response = SendSsoGet<AwsSsoListAccountRolesResponse>("/assignment/roles", query, accessToken);
             if (response != null && response.RoleList.Count > 0)
             {
                 roles.AddRange(response.RoleList);
@@ -109,14 +108,13 @@ internal sealed class AwsSsoClient : AwsApiClientBase
 
     public AwsSsoStoredRoleCredentials GetRoleCredentials(string accessToken, string accountId, string roleName)
     {
-        var payload = new Dictionary<string, object>
+        var query = new Dictionary<string, string>
         {
-            ["accessToken"] = accessToken,
-            ["accountId"] = accountId,
-            ["roleName"] = roleName
+            ["account_id"] = accountId,
+            ["role_name"] = roleName
         };
 
-        AwsSsoGetRoleCredentialsResponse? response = SendSsoRequest<AwsSsoGetRoleCredentialsResponse>("awsssoportalservice.GetRoleCredentials", payload);
+        AwsSsoGetRoleCredentialsResponse? response = SendSsoGet<AwsSsoGetRoleCredentialsResponse>("/federation/credentials", query, accessToken);
         AwsSsoRoleCredentialsResponse? creds = response?.RoleCredentials;
 
         if (creds == null || string.IsNullOrWhiteSpace(creds.AccessKeyId) || string.IsNullOrWhiteSpace(creds.SecretAccessKey))
@@ -133,15 +131,16 @@ internal sealed class AwsSsoClient : AwsApiClientBase
         };
     }
 
-    private T? SendSsoRequest<T>(string target, Dictionary<string, object> payload) where T : class
+    private T? SendSsoGet<T>(string path, Dictionary<string, string> query, string accessToken) where T : class
     {
         NameValueCollection headers = new NameValueCollection
         {
-            ["X-Amz-Target"] = target
+            ["x-amz-sso_bearer_token"] = accessToken,
+            ["Accept"] = "application/json"
         };
 
-        string json = JsonConvert.SerializeObject(payload);
-        AwsApiResponse response = SendJsonRequest(UploadersHttpMethod.POST, _baseUrl, json, headers, "application/x-amz-json-1.1");
+        string url = URLHelpers.CreateQueryString($"{_baseUrl}{path}", query);
+        AwsApiResponse response = SendRawRequest(UploadersHttpMethod.GET, url, null, null, headers, allowNon2xx: true);
 
         if (!response.IsSuccess || string.IsNullOrWhiteSpace(response.Body))
         {

@@ -49,11 +49,13 @@ public class S3ConfigModel
 
     public AmazonS3StorageClass StorageClass { get; set; } = AmazonS3StorageClass.Standard;
 
-    public bool SetPublicACL { get; set; } = true;
+    public bool SetPublicACL { get; set; } = false;
+
+    public bool SetPublicPolicy { get; set; } = false;
 
     public bool UsePathStyleUrl { get; set; } = false;
 
-    public bool SignedPayload { get; set; } = false;
+    public bool SignedPayload { get; set; } = true;
 
     public string Endpoint { get; set; } = "s3.amazonaws.com";
 

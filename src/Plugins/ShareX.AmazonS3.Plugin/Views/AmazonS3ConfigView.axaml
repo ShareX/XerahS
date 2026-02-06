@@ -49,38 +49,62 @@
                          Watermark="https://d-xxxxxxxxxx.awsapps.com/start"
                          Width="400"
                          HorizontalAlignment="Left"/>
+                <Button Content="Find Start URL" Command="{Binding OpenSsoStartUrlHelpCommand}" HorizontalAlignment="Left"/>
+                <TextBlock Text="Find this in IAM Identity Center: Dashboard -> Settings -> AWS access portal URL."
+                           FontSize="11"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           TextWrapping="Wrap"
+                           MaxWidth="420"
+                           HorizontalAlignment="Left"/>
             </StackPanel>
 
             <StackPanel Spacing="5">
-                <TextBlock Text="SSO Region *" FontWeight="Medium"/>
-                <TextBox Text="{Binding SsoRegion, UpdateSourceTrigger=PropertyChanged}" 
-                         Watermark="us-east-1"
-                         Width="200"
-                         HorizontalAlignment="Left"/>
+                <TextBlock Text="Endpoint / Region *" FontWeight="Medium"/>
+                <ComboBox ItemsSource="{Binding Endpoints}"
+                          SelectedIndex="{Binding RegionIndex}"
+                          Width="350"
+                          HorizontalAlignment="Left"
+                          IsDropDownOpen="False">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="{Binding Name}"/>
+                                <TextBlock Text="{Binding Endpoint, StringFormat='({0})'}" 
+                                           FontSize="10" 
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <Button Content="Start Login" Command="{Binding StartSsoLoginCommand}"/>
-                <Button Content="Complete Login" Command="{Binding CompleteSsoLoginCommand}" IsEnabled="{Binding !!SsoUserCode}"/>
-            </StackPanel>
+            <Button Content="Step 1 - Start Login" Command="{Binding StartSsoLoginCommand}" HorizontalAlignment="Left"/>
 
             <StackPanel Spacing="5">
+                <TextBlock Text="Step 2 - Approve in browser" FontWeight="Medium"/>
+                <TextBlock Text="Use the code below at the verification URL."
+                           FontSize="11"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                 <TextBlock Text="User Code" FontWeight="Medium"/>
                 <TextBox Text="{Binding SsoUserCode}" 
                          IsReadOnly="True"
                          Width="200"
                          HorizontalAlignment="Left"/>
-            </StackPanel>
-
-            <StackPanel Spacing="5">
-                <TextBlock Text="Verification URL" FontWeight="Medium"/>
+                <TextBlock Text="Verification URL" FontWeight="Medium" Margin="0,5,0,0"/>
                 <TextBox Text="{Binding SsoVerificationUrl}" 
                          IsReadOnly="True"
                          Width="400"
                          HorizontalAlignment="Left"/>
             </StackPanel>
 
+            <Button Content="Step 3 - Complete Login" Command="{Binding CompleteSsoLoginCommand}" IsEnabled="{Binding !!SsoUserCode}" HorizontalAlignment="Left"/>
+
             <StackPanel Spacing="5">
+                <TextBlock Text="Step 4 - Select account and role" FontWeight="Medium"/>
+                <TextBlock Text="Choose the assigned AWS account and role."
+                           FontSize="11"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                 <TextBlock Text="Account" FontWeight="Medium"/>
                 <ComboBox ItemsSource="{Binding SsoAccounts}"
                           SelectedItem="{Binding SelectedSsoAccount}"
@@ -93,10 +117,7 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-            </StackPanel>
-
-            <StackPanel Spacing="5">
-                <TextBlock Text="Role" FontWeight="Medium"/>
+                <TextBlock Text="Role" FontWeight="Medium" Margin="0,5,0,0"/>
                 <ComboBox ItemsSource="{Binding SsoRoles}"
                           SelectedItem="{Binding SelectedSsoRole}"
                           Width="350"
@@ -111,17 +132,22 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Spacing="10">
-                <Button Content="Refresh Credentials" Command="{Binding RefreshSsoCredentialsCommand}"/>
-                <Button Content="Provision S3" Command="{Binding ProvisionBucketCommand}"/>
+                <Button Content="Step 5 - Refresh Credentials" Command="{Binding RefreshSsoCredentialsCommand}"/>
+                <Button Content="Step 6 - Provision S3" Command="{Binding ProvisionBucketCommand}"/>
             </StackPanel>
 
-            <Border Background="{DynamicResource SystemFillColorAttentionBackground}"
+            <Border Background="#FFF7CC"
+                    BorderBrush="#F2C94C"
+                    BorderThickness="1"
                     Padding="10"
                     CornerRadius="4"
                     IsVisible="{Binding !!SsoStatusMessage}">
-                <TextBlock Text="{Binding SsoStatusMessage}"
-                           TextWrapping="Wrap"
-                           Foreground="{DynamicResource SystemFillColorAttention}"/>
+                <TextBox Text="{Binding SsoStatusMessage}"
+                         IsReadOnly="True"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         TextWrapping="Wrap"
+                         Foreground="#000000"/>
             </Border>
         </StackPanel>
 
@@ -136,13 +162,12 @@
         </StackPanel>
 
         <!-- Region / Endpoint -->
-        <StackPanel Spacing="5">
+        <StackPanel Spacing="5" IsVisible="{Binding IsAccessKeysMode}">
             <TextBlock Text="Endpoint / Region *" FontWeight="Medium"/>
             <ComboBox ItemsSource="{Binding Endpoints}"
                       SelectedIndex="{Binding RegionIndex}"
                       Width="350"
                       HorizontalAlignment="Left"
-                      IsEnabled="{Binding IsAccessKeysMode}"
                       IsDropDownOpen="False">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -187,6 +212,12 @@
             <TextBlock Text="Use custom domain instead of S3 URL for uploaded files" 
                        FontSize="11"
                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+            <TextBlock Text="Step 7 - CNAME target (copy this to DNS)" FontWeight="Medium" IsVisible="{Binding UseCustomCNAME}"/>
+            <TextBox Text="{Binding CnameTarget}"
+                     IsReadOnly="True"
+                     Width="420"
+                     HorizontalAlignment="Left"
+                     IsVisible="{Binding UseCustomCNAME}"/>
         </StackPanel>
 
         <!-- Storage Class -->
@@ -208,6 +239,14 @@
             <!-- Set Public ACL -->
             <CheckBox Content="Make uploads public (public-read ACL)"
                       IsChecked="{Binding SetPublicACL}"/>
+            <CheckBox Content="Add public bucket policy (recommended)"
+                      IsChecked="{Binding SetPublicPolicy}"
+                      Margin="0,5,0,0"/>
+            <TextBlock Text="Required when Object Ownership is 'Bucket owner enforced'."
+                       FontSize="11"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       TextWrapping="Wrap"
+                       MaxWidth="420"/>
 
             <!-- Signed Payload -->
             <CheckBox Content="Signed payload" IsChecked="{Binding SignedPayload}" Margin="0,5,0,0" />
@@ -221,13 +260,18 @@
         </StackPanel>
 
         <!-- Status Message -->
-        <Border Background="{DynamicResource SystemFillColorAttentionBackground}"
+        <Border Background="#FFF7CC"
+                BorderBrush="#F2C94C"
+                BorderThickness="1"
                 Padding="10"
                 CornerRadius="4"
                 IsVisible="{Binding !!StatusMessage}">
-            <TextBlock Text="{Binding StatusMessage}"
-                       TextWrapping="Wrap"
-                       Foreground="{DynamicResource SystemFillColorAttention}"/>
+            <TextBox Text="{Binding StatusMessage}"
+                     IsReadOnly="True"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     TextWrapping="Wrap"
+                     Foreground="#000000"/>
         </Border>
     </StackPanel>
 </UserControl>

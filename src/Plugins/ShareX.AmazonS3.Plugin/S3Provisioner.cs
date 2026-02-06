@@ -53,15 +53,19 @@ internal sealed class S3Provisioner : AwsApiClientBase
     private readonly string _accessKeyId;
     private readonly string _secretAccessKey;
     private readonly string? _sessionToken;
+    private readonly string _region;
+    private readonly string _endpoint;
 
-    public S3Provisioner(string accessKeyId, string secretAccessKey, string? sessionToken)
+    public S3Provisioner(string accessKeyId, string secretAccessKey, string? sessionToken, string region, string endpoint)
     {
         _accessKeyId = accessKeyId;
         _secretAccessKey = secretAccessKey;
         _sessionToken = sessionToken;
+        _endpoint = NormalizeEndpoint(endpoint);
+        _region = ResolveRegion(region, _endpoint);
     }
 
-    public S3ProvisionResult EnsureBucket(string bucketName)
+    public S3ProvisionResult EnsureBucket(string bucketName, bool applyPublicPolicy)
     {
         if (!S3BucketNameValidator.IsValid(bucketName))
         {
@@ -73,12 +77,24 @@ internal sealed class S3Provisioner : AwsApiClientBase
 
         if (head.StatusCode == 200)
         {
-            return ApplyPublicAccessBlock(bucketName, usePathStyle);
+            return ApplyPublicSettings(bucketName, usePathStyle, applyPublicPolicy);
         }
 
         if (head.StatusCode == 404)
         {
-            AwsApiResponse create = SendBucketRequest(UploadersHttpMethod.PUT, bucketName, usePathStyle, "", null, null, allowNon2xx: true);
+            byte[]? payload = null;
+            string? contentType = null;
+
+            if (!string.Equals(_region, DefaultRegion, StringComparison.OrdinalIgnoreCase))
+            {
+                string xml = "<CreateBucketConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">" +
+                             "<LocationConstraint>" + _region + "</LocationConstraint>" +
+                             "</CreateBucketConfiguration>";
+                payload = Encoding.UTF8.GetBytes(xml);
+                contentType = "application/xml";
+            }
+
+            AwsApiResponse create = SendBucketRequest(UploadersHttpMethod.PUT, bucketName, usePathStyle, "", payload, contentType, allowNon2xx: true);
             if (!create.IsSuccess && create.StatusCode != 200 && create.StatusCode != 204)
             {
                 if (create.StatusCode == 409)
@@ -86,14 +102,14 @@ internal sealed class S3Provisioner : AwsApiClientBase
                     AwsApiResponse confirm = SendBucketRequest(UploadersHttpMethod.HEAD, bucketName, usePathStyle, "", null, null, allowNon2xx: true);
                     if (confirm.StatusCode == 200)
                     {
-                        return ApplyPublicAccessBlock(bucketName, usePathStyle);
+                        return ApplyPublicSettings(bucketName, usePathStyle, applyPublicPolicy);
                     }
                 }
 
                 return new S3ProvisionResult(false, $"Bucket creation failed ({create.StatusCode}). {create.Body}");
             }
 
-            return ApplyPublicAccessBlock(bucketName, usePathStyle);
+            return ApplyPublicSettings(bucketName, usePathStyle, applyPublicPolicy);
         }
 
         if (head.StatusCode == 403)
@@ -109,7 +125,7 @@ internal sealed class S3Provisioner : AwsApiClientBase
         return new S3ProvisionResult(false, $"Bucket check failed ({head.StatusCode}). {head.Body}");
     }
 
-    private S3ProvisionResult ApplyPublicAccessBlock(string bucketName, bool usePathStyle)
+    private S3ProvisionResult ApplyPublicSettings(string bucketName, bool usePathStyle, bool applyPublicPolicy)
     {
         string xml = "<PublicAccessBlockConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">" +
                      "<BlockPublicAcls>false</BlockPublicAcls>" +
@@ -123,16 +139,37 @@ internal sealed class S3Provisioner : AwsApiClientBase
 
         if (response.IsSuccess || response.StatusCode == 200 || response.StatusCode == 204)
         {
-            return new S3ProvisionResult(true, "Bucket ready for uploads.");
+            if (!applyPublicPolicy)
+            {
+                return new S3ProvisionResult(true, "Bucket ready for uploads.");
+            }
+
+            return ApplyPublicReadPolicy(bucketName, usePathStyle);
         }
 
         return new S3ProvisionResult(false, $"Failed to update public access block ({response.StatusCode}). {response.Body}");
     }
 
+    private S3ProvisionResult ApplyPublicReadPolicy(string bucketName, bool usePathStyle)
+    {
+        string policyJson = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowPublicRead\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"s3:GetObject\",\"Resource\":\"arn:aws:s3:::" +
+                            bucketName + "/*\"}]}";
+
+        byte[] payload = Encoding.UTF8.GetBytes(policyJson);
+        AwsApiResponse response = SendBucketRequest(UploadersHttpMethod.PUT, bucketName, usePathStyle, "policy=", payload, "application/json", allowNon2xx: true);
+
+        if (response.IsSuccess || response.StatusCode == 200 || response.StatusCode == 204)
+        {
+            return new S3ProvisionResult(true, "Bucket ready for uploads.");
+        }
+
+        return new S3ProvisionResult(false, $"Failed to set public bucket policy ({response.StatusCode}). {response.Body}");
+    }
+
     private AwsApiResponse SendBucketRequest(UploadersHttpMethod method, string bucketName, bool usePathStyle, string queryString, byte[]? payload,
         string? contentType, bool allowNon2xx)
     {
-        string host = usePathStyle ? DefaultEndpoint : $"{bucketName}.{DefaultEndpoint}";
+        string host = usePathStyle ? _endpoint : $"{bucketName}.{_endpoint}";
         string canonicalUri = usePathStyle ? $"/{bucketName}" : "/";
         canonicalUri = URLHelpers.URLEncode(canonicalUri, true);
 
@@ -144,7 +181,7 @@ internal sealed class S3Provisioner : AwsApiClientBase
         };
 
         string hashedPayload = "UNSIGNED-PAYLOAD";
-        AwsS3Signer.Sign(headers, method.ToString(), canonicalUri, canonicalQueryString, DefaultRegion, _accessKeyId, _secretAccessKey, _sessionToken, hashedPayload);
+        AwsS3Signer.Sign(headers, method.ToString(), canonicalUri, canonicalQueryString, _region, _accessKeyId, _secretAccessKey, _sessionToken, hashedPayload);
 
         string url = $"{Scheme}{host}{canonicalUri}";
         if (!string.IsNullOrWhiteSpace(queryString))
@@ -153,6 +190,60 @@ internal sealed class S3Provisioner : AwsApiClientBase
         }
 
         return SendRawRequest(method, url, payload, contentType, headers, allowNon2xx);
+    }
+
+    private static string ResolveRegion(string region, string endpoint)
+    {
+        if (!string.IsNullOrWhiteSpace(region))
+        {
+            return region;
+        }
+
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            return DefaultRegion;
+        }
+
+        string host = endpoint;
+        if (host.Contains(".amazonaws.com", StringComparison.OrdinalIgnoreCase))
+        {
+            string serviceAndRegion = host.Split(new[] { ".amazonaws.com" }, StringSplitOptions.None)[0];
+            if (serviceAndRegion.StartsWith("s3-"))
+            {
+                serviceAndRegion = "s3." + serviceAndRegion.Substring(3);
+            }
+
+            int separatorIndex = serviceAndRegion.LastIndexOf('.');
+            if (separatorIndex != -1)
+            {
+                return serviceAndRegion.Substring(separatorIndex + 1);
+            }
+        }
+
+        return DefaultRegion;
+    }
+
+    private static string NormalizeEndpoint(string endpoint)
+    {
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            return DefaultEndpoint;
+        }
+
+        string value = endpoint.Trim();
+        if (value.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            value.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            if (Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) && !string.IsNullOrWhiteSpace(uri.Host))
+            {
+                return uri.Host;
+            }
+
+            value = value.Replace("https://", "", StringComparison.OrdinalIgnoreCase)
+                         .Replace("http://", "", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return value.TrimEnd('/');
     }
 }
 
