@@ -105,6 +105,15 @@ namespace XerahS.Core.Tasks
         /// </summary>
         public static Func<Task<string?>>? ShowOpenFileDialogCallback { get; set; }
 
+        /// <summary>Callback to open the history window from the UI layer.</summary>
+        public static Action? OpenHistoryCallback { get; set; }
+
+        /// <summary>Callback to exit the application from the UI layer.</summary>
+        public static Action? ExitApplicationCallback { get; set; }
+
+        /// <summary>Callback to toggle hotkey registration from the UI layer.</summary>
+        public static Action? ToggleHotkeysCallback { get; set; }
+
         private WorkerTask(TaskSettings taskSettings, SKBitmap? inputImage = null)
         {
             Status = TaskStatus.InQueue;
@@ -596,7 +605,72 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.QRCodeDecodeFromScreen:
                     case WorkflowType.QRCodeScanRegion:
                     case WorkflowType.ScrollingCapture:
+                    case WorkflowType.OCR:
                         await HandleToolWorkflowAsync(token);
+                        return;
+
+                    // Quick-win capture workflows
+                    case WorkflowType.ActiveMonitor:
+                        if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings!, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
+                        var activeScreenBounds = PlatformServices.Screen.GetActiveScreenBounds();
+                        image = await PlatformServices.ScreenCapture.CaptureRectAsync(
+                            new SKRect(activeScreenBounds.X, activeScreenBounds.Y,
+                                activeScreenBounds.Right, activeScreenBounds.Bottom),
+                            captureOptions);
+                        break;
+
+                    case WorkflowType.CustomRegion:
+                        if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings!, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
+                        var customRect = taskSettings!.CaptureSettings.CaptureCustomRegion;
+                        if (!customRect.IsEmpty)
+                        {
+                            image = await PlatformServices.ScreenCapture.CaptureRectAsync(
+                                new SKRect(customRect.X, customRect.Y, customRect.Right, customRect.Bottom),
+                                captureOptions);
+                        }
+                        break;
+
+                    case WorkflowType.LastRegion:
+                        if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings!, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
+                        var lastRegionRect = taskSettings!.CaptureSettings.CaptureCustomRegion;
+                        if (!lastRegionRect.IsEmpty)
+                        {
+                            image = await PlatformServices.ScreenCapture.CaptureRectAsync(
+                                new SKRect(lastRegionRect.X, lastRegionRect.Y,
+                                    lastRegionRect.Right, lastRegionRect.Bottom),
+                                captureOptions);
+                        }
+                        break;
+
+                    // Quick-win "Other" workflows
+                    case WorkflowType.OpenScreenshotsFolder:
+                        var screenshotsDir = TaskHelpers.GetScreenshotsFolder(taskSettings);
+                        if (Directory.Exists(screenshotsDir))
+                        {
+                            PlatformServices.System.OpenFile(screenshotsDir);
+                        }
+                        return;
+
+                    case WorkflowType.OpenHistory:
+                    case WorkflowType.OpenImageHistory:
+                        OpenHistoryCallback?.Invoke();
+                        return;
+
+                    case WorkflowType.ExitShareX:
+                        ExitApplicationCallback?.Invoke();
+                        return;
+
+                    case WorkflowType.DisableHotkeys:
+                        ToggleHotkeysCallback?.Invoke();
                         return;
                 }
 

@@ -63,6 +63,9 @@ namespace XerahS.Platform.MacOS
                 notificationService: new MacOSNotificationService(),
                 diagnosticService: new Services.MacOSDiagnosticService()
             );
+
+            // Register OCR service stub (Apple Vision framework integration planned)
+            PlatformServices.Ocr = new MacOSOcrService();
         }
 
         /// <summary>

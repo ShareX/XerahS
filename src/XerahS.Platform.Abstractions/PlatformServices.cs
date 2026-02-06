@@ -180,6 +180,18 @@ namespace XerahS.Platform.Abstractions
             set => _scrollingCaptureService = value;
         }
 
+        private static IOcrService? _ocrService;
+
+        /// <summary>
+        /// Optional OCR service for text recognition.
+        /// Windows uses native Windows.Media.Ocr, other platforms may use Tesseract.
+        /// </summary>
+        public static IOcrService? Ocr
+        {
+            get => _ocrService;
+            set => _ocrService = value;
+        }
+
         /// <summary>
         /// Initializes platform services with provided implementations
         /// </summary>
@@ -253,6 +265,7 @@ namespace XerahS.Platform.Abstractions
             _shellIntegrationService = null;
             _themeService = null;
             _scrollingCaptureService = null;
+            _ocrService = null;
         }
     }
 }

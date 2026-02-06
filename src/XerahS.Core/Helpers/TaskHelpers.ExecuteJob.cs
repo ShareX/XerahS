@@ -182,6 +182,10 @@ public static partial class TaskHelpers
             WorkflowType.StartScreenRecorder => true,
             WorkflowType.StartScreenRecorderGIF => true,
             WorkflowType.ScrollingCapture => true,
+            WorkflowType.OCR => true,
+            WorkflowType.ActiveMonitor => true,
+            WorkflowType.CustomRegion => true,
+            WorkflowType.LastRegion => true,
             _ => false
         };
     }

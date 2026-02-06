@@ -215,14 +215,18 @@ public partial class App : Application
                 return await tcs.Task;
             };
 
-            // Setup tool workflow callback for ColorPicker, QRCode, ScrollingCapture, etc.
+            // Setup tool workflow callback for ColorPicker, QRCode, ScrollingCapture, OCR, etc.
             Core.Tasks.WorkerTask.HandleToolWorkflowCallback = async (workflowType) =>
             {
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     var owner = desktop.MainWindow;
 
-                    if (workflowType == WorkflowType.ScrollingCapture)
+                    if (workflowType == WorkflowType.OCR)
+                    {
+                        await OcrToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else if (workflowType == WorkflowType.ScrollingCapture)
                     {
                         await ScrollingCaptureToolService.HandleWorkflowAsync(workflowType, owner);
                     }
@@ -231,6 +235,22 @@ public partial class App : Application
                         await QrCodeToolService.HandleWorkflowAsync(workflowType, owner);
                     }
                 });
+            };
+
+            // Wire quick-win workflow callbacks
+            Core.Tasks.WorkerTask.ExitApplicationCallback = () =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
+            };
+
+            Core.Tasks.WorkerTask.ToggleHotkeysCallback = () =>
+            {
+                var config = Core.SettingsManager.Settings;
+                if (config != null)
+                {
+                    config.DisableHotkeys = !config.DisableHotkeys;
+                    Common.DebugHelper.WriteLine($"Hotkeys {(config.DisableHotkeys ? "disabled" : "enabled")}");
+                }
             };
 
             desktop.Exit += (sender, args) =>
