@@ -346,7 +346,30 @@ namespace XerahS.Platform.Windows
         GETICON = 0x007F,
         QUERYDRAGICON = 0x0037,
         GETTEXT = 0x000D,
-        GETTEXTLENGTH = 0x000E
+        GETTEXTLENGTH = 0x000E,
+        WM_VSCROLL = 0x0115,
+        WM_HSCROLL = 0x0114
+    }
+
+    public enum ScrollBarOrientation : int
+    {
+        SB_HORZ = 0,
+        SB_VERT = 1,
+        SB_CTL = 2,
+        SB_BOTH = 3
+    }
+
+    public enum ScrollBarCommand : int
+    {
+        SB_LINEUP = 0,
+        SB_LINEDOWN = 1,
+        SB_PAGEUP = 2,
+        SB_PAGEDOWN = 3,
+        SB_THUMBPOSITION = 4,
+        SB_THUMBTRACK = 5,
+        SB_TOP = 6,
+        SB_BOTTOM = 7,
+        SB_ENDSCROLL = 8
     }
 
     public enum WindowShowStyle : uint

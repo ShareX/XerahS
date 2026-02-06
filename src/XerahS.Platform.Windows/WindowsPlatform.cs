@@ -71,6 +71,9 @@ namespace XerahS.Platform.Windows
                 diagnosticService: new Services.WindowsDiagnosticService()
             );
 
+            // Register optional scrolling capture service
+            PlatformServices.ScrollingCapture = new WindowsScrollingCaptureService();
+
             // Register AUMID for UWP Toast Notifications
             SetAUMID("ShareXTeam.XerahS");
         }

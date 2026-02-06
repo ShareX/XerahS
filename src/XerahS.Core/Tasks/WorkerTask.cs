@@ -595,6 +595,7 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.QRCode:
                     case WorkflowType.QRCodeDecodeFromScreen:
                     case WorkflowType.QRCodeScanRegion:
+                    case WorkflowType.ScrollingCapture:
                         await HandleToolWorkflowAsync(token);
                         return;
                 }

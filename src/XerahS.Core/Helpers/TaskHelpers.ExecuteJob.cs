@@ -181,6 +181,7 @@ public static partial class TaskHelpers
             WorkflowType.ScreenRecorderGIFCustomRegion => true,
             WorkflowType.StartScreenRecorder => true,
             WorkflowType.StartScreenRecorderGIF => true,
+            WorkflowType.ScrollingCapture => true,
             _ => false
         };
     }

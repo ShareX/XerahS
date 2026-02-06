@@ -215,13 +215,21 @@ public partial class App : Application
                 return await tcs.Task;
             };
 
-            // Setup tool workflow callback for ColorPicker, QRCode, etc.
+            // Setup tool workflow callback for ColorPicker, QRCode, ScrollingCapture, etc.
             Core.Tasks.WorkerTask.HandleToolWorkflowCallback = async (workflowType) =>
             {
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     var owner = desktop.MainWindow;
-                    await QrCodeToolService.HandleWorkflowAsync(workflowType, owner);
+
+                    if (workflowType == WorkflowType.ScrollingCapture)
+                    {
+                        await ScrollingCaptureToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else
+                    {
+                        await QrCodeToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
                 });
             };
 

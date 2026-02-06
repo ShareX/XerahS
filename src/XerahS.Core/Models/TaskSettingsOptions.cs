@@ -28,6 +28,7 @@ using XerahS.Editor.ImageEffects;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using XerahS.Platform.Abstractions;
 using XerahS.Services.Abstractions;
 
 namespace XerahS.Core;
@@ -197,8 +198,7 @@ public class ScrollingCaptureOptions
     public int StartDelay { get; set; } = 300;
     public bool AutoScrollTop { get; set; } = false;
     public int ScrollDelay { get; set; } = 300;
-    // ScrollMethod is in Enums
-    // public ScrollMethod ScrollMethod { get; set; } = ScrollMethod.MouseWheel; 
+    public ScrollMethod ScrollMethod { get; set; } = ScrollMethod.MouseWheel;
     public int ScrollAmount { get; set; } = 2;
     public bool AutoIgnoreBottomEdge { get; set; } = true;
     public bool AutoUpload { get; set; } = false;

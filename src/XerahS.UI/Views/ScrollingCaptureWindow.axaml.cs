@@ -23,17 +23,27 @@
 
 #endregion License Information (GPL v3)
 
-namespace XerahS.RegionCapture
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using XerahS.UI.ViewModels;
+
+namespace XerahS.UI.Views;
+
+public partial class ScrollingCaptureWindow : Window
 {
-    public class ScrollingCaptureOptions
+    public ScrollingCaptureWindow()
     {
-        public int StartDelay { get; set; } = 300;
-        public bool AutoScrollTop { get; set; } = false;
-        public int ScrollDelay { get; set; } = 300;
-        public ScrollMethod ScrollMethod { get; set; } = ScrollMethod.MouseWheel;
-        public int ScrollAmount { get; set; } = 2;
-        public bool AutoIgnoreBottomEdge { get; set; } = true;
-        public bool AutoUpload { get; set; } = false;
-        public bool ShowRegion { get; set; } = true;
+        InitializeComponent();
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        (DataContext as ScrollingCaptureViewModel)?.Cleanup();
+        base.OnClosing(e);
     }
 }
