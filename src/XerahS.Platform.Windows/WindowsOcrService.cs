@@ -104,16 +104,16 @@ public class WindowsOcrService : IOcrService
             ?? throw new InvalidOperationException(
                 $"Failed to create OCR engine for {language.DisplayName}.");
 
-        // Encode SKBitmap to BMP bytes
+        // Encode SKBitmap to PNG bytes (BMP encoding not supported by SkiaSharp)
         using var skImage = SKImage.FromBitmap(bitmap);
-        using var data = skImage.Encode(SKEncodedImageFormat.Bmp, 100);
-        byte[] bmpBytes = data.ToArray();
+        using var data = skImage.Encode(SKEncodedImageFormat.Png, 100);
+        byte[] pngBytes = data.ToArray();
 
         // Create WinRT stream from bytes
         using var stream = new InMemoryRandomAccessStream();
         using (var writer = new DataWriter(stream.GetOutputStreamAt(0)))
         {
-            writer.WriteBytes(bmpBytes);
+            writer.WriteBytes(pngBytes);
             await writer.StoreAsync();
             await writer.FlushAsync();
         }
