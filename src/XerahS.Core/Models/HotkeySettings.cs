@@ -116,33 +116,33 @@ public class WorkflowsConfig : SettingsBase<WorkflowsConfig>
     {
         var list = new List<WorkflowSettings>();
 
-        // WF01: Full screen capture
-        var wf01 = new WorkflowSettings(WorkflowType.PrintScreen, new HotkeyInfo(Key.PrintScreen));
+        // WF01: Full screen capture (Ctrl + Shift + F)
+        var wf01 = new WorkflowSettings(WorkflowType.PrintScreen, new HotkeyInfo(Key.F, KeyModifiers.Control | KeyModifiers.Shift));
         wf01.TaskSettings.Description = "Full screen capture";
         wf01.TaskSettings.CaptureSettings.UseModernCapture = true;
         list.Add(wf01);
 
-        // WF02: Active window capture
-        var wf02 = new WorkflowSettings(WorkflowType.ActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Alt));
+        // WF02: Active window capture (Ctrl + Shift + A)
+        var wf02 = new WorkflowSettings(WorkflowType.ActiveWindow, new HotkeyInfo(Key.A, KeyModifiers.Control | KeyModifiers.Shift));
         wf02.TaskSettings.Description = "Active window capture";
         wf02.TaskSettings.CaptureSettings.UseModernCapture = true;
         list.Add(wf02);
 
-        // WF03: Region capture
-        var wf03 = new WorkflowSettings(WorkflowType.RectangleRegion, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control));
+        // WF03: Region capture (Ctrl + Shift + X)
+        var wf03 = new WorkflowSettings(WorkflowType.RectangleRegion, new HotkeyInfo(Key.X, KeyModifiers.Control | KeyModifiers.Shift));
         wf03.TaskSettings.Description = "Region capture";
         wf03.TaskSettings.CaptureSettings.UseModernCapture = true;
         list.Add(wf03);
 
-        // WF04: Record screen using GDI
-        var wf04 = new WorkflowSettings(WorkflowType.ScreenRecorder, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Shift));
+        // WF04: Record screen using GDI (Ctrl + Shift + R)
+        var wf04 = new WorkflowSettings(WorkflowType.ScreenRecorder, new HotkeyInfo(Key.R, KeyModifiers.Control | KeyModifiers.Shift));
         wf04.TaskSettings.Description = "Record screen using GDI";
         wf04.TaskSettings.CaptureSettings.UseModernCapture = false;
         wf04.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingBackend = XerahS.RegionCapture.ScreenRecording.RecordingBackend.GDI;
         list.Add(wf04);
 
-        // WF05: Record screen for game
-        var wf05 = new WorkflowSettings(WorkflowType.ScreenRecorderActiveWindow, new HotkeyInfo(Key.PrintScreen, KeyModifiers.Control | KeyModifiers.Shift));
+        // WF05: Record screen for game (Ctrl + Shift + G)
+        var wf05 = new WorkflowSettings(WorkflowType.ScreenRecorderActiveWindow, new HotkeyInfo(Key.G, KeyModifiers.Control | KeyModifiers.Shift));
         wf05.TaskSettings.Description = "Record screen for game";
         wf05.TaskSettings.CaptureSettings.UseModernCapture = true;
         wf05.TaskSettings.CaptureSettings.ScreenRecordingSettings.RecordingIntent = XerahS.RegionCapture.ScreenRecording.RecordingIntent.Game;
