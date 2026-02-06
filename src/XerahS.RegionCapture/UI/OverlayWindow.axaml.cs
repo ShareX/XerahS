@@ -344,6 +344,30 @@ public partial class OverlayWindow : Window
             if (_currentAnnotation is HighlightAnnotation)
                 _currentAnnotation.StrokeColor = "#FFFF00";
 
+            // Last-resort fallback for SmartEraser: if EditorCore's sampling failed
+            // (SourceImage null, coords out of bounds, etc.), sample directly from
+            // the raw background bitmap using physical-to-bitmap coordinate mapping.
+            if (_currentAnnotation is SmartEraserAnnotation smartEraserAnn
+                && smartEraserAnn.StrokeColor == "#80FF0000"
+                && _backgroundBitmap != null)
+            {
+                int physX = (int)Math.Round(skPoint.X * _monitor.ScaleFactor);
+                int physY = (int)Math.Round(skPoint.Y * _monitor.ScaleFactor);
+
+                // _backgroundBitmap is the full virtual-screen capture; offset by monitor origin
+                var coordService = new Services.CoordinateTranslationService();
+                var virtualBounds = coordService.GetVirtualScreenBounds();
+                int bmpX = (int)Math.Round(_monitor.PhysicalBounds.X - virtualBounds.X) + physX;
+                int bmpY = (int)Math.Round(_monitor.PhysicalBounds.Y - virtualBounds.Y) + physY;
+                bmpX = Math.Clamp(bmpX, 0, _backgroundBitmap.Width - 1);
+                bmpY = Math.Clamp(bmpY, 0, _backgroundBitmap.Height - 1);
+                var pixel = _backgroundBitmap.GetPixel(bmpX, bmpY);
+                if (pixel.Alpha > 0)
+                {
+                    smartEraserAnn.StrokeColor = $"#{pixel.Red:X2}{pixel.Green:X2}{pixel.Blue:X2}";
+                }
+            }
+
             // Create Avalonia preview shape for visual feedback during drawing
             _currentShape = CreatePreviewForAnnotation(_currentAnnotation);
             if (_currentShape != null)
