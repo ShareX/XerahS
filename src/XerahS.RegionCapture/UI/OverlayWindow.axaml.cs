@@ -34,6 +34,7 @@ using XerahS.Editor;
 using XerahS.Editor.Annotations;
 using XerahS.Editor.Views.Controls;
 using SkiaSharp;
+using System.Runtime.InteropServices;
 using XerahS.RegionCapture.Models;
 using XerahS.RegionCapture.Services;
 using XerahS.RegionCapture.ViewModels;
@@ -344,27 +345,14 @@ public partial class OverlayWindow : Window
             if (_currentAnnotation is HighlightAnnotation)
                 _currentAnnotation.StrokeColor = "#FFFF00";
 
-            // Last-resort fallback for SmartEraser: if EditorCore's sampling failed
-            // (SourceImage null, coords out of bounds, etc.), sample directly from
-            // the raw background bitmap using physical-to-bitmap coordinate mapping.
-            if (_currentAnnotation is SmartEraserAnnotation smartEraserAnn
-                && smartEraserAnn.StrokeColor == "#80FF0000"
-                && _backgroundBitmap != null)
+            // SmartEraser: always resolve color from the frozen screen snapshot first.
+            // This avoids overlay-color contamination and prevents a persistent red fallback brush.
+            if (_currentAnnotation is SmartEraserAnnotation smartEraserAnn)
             {
-                int physX = (int)Math.Round(skPoint.X * _monitor.ScaleFactor);
-                int physY = (int)Math.Round(skPoint.Y * _monitor.ScaleFactor);
-
-                // _backgroundBitmap is the full virtual-screen capture; offset by monitor origin
-                var coordService = new Services.CoordinateTranslationService();
-                var virtualBounds = coordService.GetVirtualScreenBounds();
-                int bmpX = (int)Math.Round(_monitor.PhysicalBounds.X - virtualBounds.X) + physX;
-                int bmpY = (int)Math.Round(_monitor.PhysicalBounds.Y - virtualBounds.Y) + physY;
-                bmpX = Math.Clamp(bmpX, 0, _backgroundBitmap.Width - 1);
-                bmpY = Math.Clamp(bmpY, 0, _backgroundBitmap.Height - 1);
-                var pixel = _backgroundBitmap.GetPixel(bmpX, bmpY);
-                if (pixel.Alpha > 0)
+                var sampledColor = ResolveSmartEraserStrokeColor(skPoint);
+                if (!string.IsNullOrWhiteSpace(sampledColor))
                 {
-                    smartEraserAnn.StrokeColor = $"#{pixel.Red:X2}{pixel.Green:X2}{pixel.Blue:X2}";
+                    smartEraserAnn.StrokeColor = sampledColor;
                 }
             }
 
@@ -440,6 +428,131 @@ public partial class OverlayWindow : Window
             RebuildAnnotationCanvas();
         }
     }
+
+    /// <summary>
+    /// Attempts to resolve SmartEraser color using a robust fallback chain:
+    /// 1) Full virtual-screen background bitmap with monitor mapping,
+    /// 2) Editor source image,
+    /// 3) Current editor snapshot (background + existing annotations),
+    /// 4) Windows live-screen sampling (last resort).
+    /// </summary>
+    private string? ResolveSmartEraserStrokeColor(SKPoint logicalPoint)
+    {
+        if (TrySampleVirtualBackgroundColor(logicalPoint, out string? virtualColor))
+        {
+            return virtualColor;
+        }
+
+        if (TrySampleBitmapColor(_viewModel.EditorCore.SourceImage, logicalPoint, out string? sourceColor))
+        {
+            return sourceColor;
+        }
+
+        using var snapshot = _viewModel.EditorCore.GetSnapshot();
+        if (TrySampleBitmapColor(snapshot, logicalPoint, out string? snapshotColor))
+        {
+            return snapshotColor;
+        }
+
+#if WINDOWS
+        if (TrySampleLiveScreenColor(logicalPoint, out string? liveScreenColor))
+        {
+            return liveScreenColor;
+        }
+#endif
+
+        return null;
+    }
+
+    private bool TrySampleVirtualBackgroundColor(SKPoint logicalPoint, out string? color)
+    {
+        color = null;
+        if (_backgroundBitmap == null || _backgroundBitmap.Width <= 0 || _backgroundBitmap.Height <= 0)
+        {
+            return false;
+        }
+
+        int physX = (int)Math.Round(logicalPoint.X * _monitor.ScaleFactor);
+        int physY = (int)Math.Round(logicalPoint.Y * _monitor.ScaleFactor);
+
+        var coordService = new Services.CoordinateTranslationService();
+        var virtualBounds = coordService.GetVirtualScreenBounds();
+        int bmpX = (int)Math.Round(_monitor.PhysicalBounds.X - virtualBounds.X) + physX;
+        int bmpY = (int)Math.Round(_monitor.PhysicalBounds.Y - virtualBounds.Y) + physY;
+        bmpX = Math.Clamp(bmpX, 0, _backgroundBitmap.Width - 1);
+        bmpY = Math.Clamp(bmpY, 0, _backgroundBitmap.Height - 1);
+
+        var pixel = _backgroundBitmap.GetPixel(bmpX, bmpY);
+        color = ToRgbHex(pixel);
+        return true;
+    }
+
+#if WINDOWS
+    private bool TrySampleLiveScreenColor(SKPoint logicalPoint, out string? color)
+    {
+        color = null;
+
+        int physicalScreenX = (int)Math.Round(_monitor.PhysicalBounds.X + logicalPoint.X * _monitor.ScaleFactor);
+        int physicalScreenY = (int)Math.Round(_monitor.PhysicalBounds.Y + logicalPoint.Y * _monitor.ScaleFactor);
+
+        IntPtr hdc = GetDC(IntPtr.Zero);
+        if (hdc == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        try
+        {
+            uint pixel = GetPixel(hdc, physicalScreenX, physicalScreenY);
+            if (pixel == 0xFFFFFFFF)
+            {
+                return false;
+            }
+
+            byte r = (byte)(pixel & 0x000000FF);
+            byte g = (byte)((pixel & 0x0000FF00) >> 8);
+            byte b = (byte)((pixel & 0x00FF0000) >> 16);
+            color = $"#{r:X2}{g:X2}{b:X2}";
+            return true;
+        }
+        finally
+        {
+            _ = ReleaseDC(IntPtr.Zero, hdc);
+        }
+    }
+#endif
+
+    private static bool TrySampleBitmapColor(SKBitmap? bitmap, SKPoint logicalPoint, out string? color)
+    {
+        color = null;
+
+        if (bitmap == null || bitmap.Width <= 0 || bitmap.Height <= 0)
+        {
+            return false;
+        }
+
+        int x = Math.Clamp((int)Math.Round(logicalPoint.X), 0, bitmap.Width - 1);
+        int y = Math.Clamp((int)Math.Round(logicalPoint.Y), 0, bitmap.Height - 1);
+        var pixel = bitmap.GetPixel(x, y);
+        color = ToRgbHex(pixel);
+        return true;
+    }
+
+    private static string ToRgbHex(SKColor color)
+    {
+        return $"#{color.Red:X2}{color.Green:X2}{color.Blue:X2}";
+    }
+
+#if WINDOWS
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetDC(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+    [DllImport("gdi32.dll")]
+    private static extern uint GetPixel(IntPtr hdc, int nXPos, int nYPos);
+#endif
 
     /// <summary>
     /// Creates a lightweight Avalonia preview shape for visual feedback while drawing.
