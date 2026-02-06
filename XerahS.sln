@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.2.11415.280
@@ -61,9 +61,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.RegionCapture", "src
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ShareX.Avalonia.Tests", "ShareX.Avalonia.Tests", "{D8FB812D-4611-5831-2554-17898CDE4405}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "XerahS.Tests", "XerahS.Tests", "{D8FB812D-4611-5831-2554-17898CDE4405}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Tests", "tests\ShareX.Avalonia.Tests\XerahS.Tests.csproj", "{378EDF0A-940F-48D5-B20F-647CC9F00B2A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Tests", "tests\XerahS.Tests\XerahS.Tests.csproj", "{378EDF0A-940F-48D5-B20F-647CC9F00B2A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Audits.Tool", "src\XerahS.Audits.Tool\XerahS.Audits.Tool.csproj", "{0BA6546E-93E1-4DF9-800E-B9E3F4FBAC65}"
 EndProject
