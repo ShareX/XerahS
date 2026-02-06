@@ -338,6 +338,12 @@ public sealed class LinuxHotkeyService : IHotkeyService
 
     private static IntPtr ConvertKeyToKeysym(Key key)
     {
+        // Avalonia can report the physical PrintScreen key as "Print" on Linux/X11 backends.
+        if (key.ToString() == "Print")
+        {
+            return NativeMethods.XStringToKeysym("Print");
+        }
+
         if (SpecialKeyNames.TryGetValue(key, out var symbol))
         {
             return NativeMethods.XStringToKeysym(symbol);
@@ -369,6 +375,7 @@ public sealed class LinuxHotkeyService : IHotkeyService
     private static readonly Dictionary<Key, string> SpecialKeyNames = new()
     {
         { Key.PrintScreen, "Print" },
+        { Key.Snapshot, "Print" },
         { Key.Scroll, "Scroll_Lock" },
         { Key.Pause, "Pause" },
         { Key.CapsLock, "Caps_Lock" },
