@@ -58,6 +58,27 @@ class Program
 
         Directory.CreateDirectory(outputDir);
 
+        // Check for Windows executable
+        string windowsExePath = Path.Combine(publishDir, "XerahS.exe");
+        if (File.Exists(windowsExePath))
+        {
+            Console.WriteLine("Found XerahS.exe, creating Windows zip bundle...");
+            string zipName = $"XerahS-{version}-{arch}.zip";
+            string zipPath = Path.Combine(outputDir, zipName);
+            
+            // Delete existing to avoid error
+            if (File.Exists(zipPath)) File.Delete(zipPath);
+
+            // Create zip containing all files
+            ZipFile.CreateFromDirectory(publishDir, zipPath, CompressionLevel.Optimal, false);
+            Console.WriteLine($"Created Windows application archive: {zipName}");
+
+            // Package Plugins if they exist
+            PackagePlugins(publishDir, outputDir, version, arch);
+
+            return; // Skip tarball/deb for Windows
+        }
+
         // Check for macOS App Bundle
         string appBundlePath = Path.Combine(publishDir, "XerahS.app");
         if (Directory.Exists(appBundlePath))
