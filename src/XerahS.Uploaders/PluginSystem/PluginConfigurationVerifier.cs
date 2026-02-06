@@ -86,6 +86,15 @@ public static class PluginConfigurationVerifier
     {
         var result = new PluginVerificationResult();
 
+        // Custom uploaders are single .sxcu files, not plugin folders - skip verification
+        if (providerId.StartsWith("custom_", StringComparison.OrdinalIgnoreCase))
+        {
+            result.Status = PluginVerificationStatus.Valid;
+            result.Message = "Custom uploader (.sxcu file)";
+            result.Issues.Add("Custom uploaders are single JSON files and do not require folder verification.");
+            return result;
+        }
+
         // Find plugin folder
         var pluginsPath = Path.Combine(PathsManager.PluginsFolder, providerId);
 

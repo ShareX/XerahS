@@ -1,0 +1,103 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="350"
+             x:Class="XerahS.UI.Views.CustomUploaderConfigView"
+             x:DataType="vm:CustomUploaderConfigViewModel">
+
+    <StackPanel Spacing="16">
+
+        <!-- Request Info -->
+        <StackPanel Spacing="8">
+            <TextBlock Text="Request Configuration" FontWeight="SemiBold"/>
+
+            <Grid ColumnDefinitions="Auto,12,*" RowDefinitions="Auto,8,Auto,8,Auto,8,Auto" >
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="URL:" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="0" Grid.Column="2"
+                           Text="{Binding RequestUrl}"
+                           TextTrimming="CharacterEllipsis"
+                           ToolTip.Tip="{Binding RequestUrl}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Method:" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="2" Grid.Column="2"
+                           Text="{Binding RequestMethod}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="Body Type:" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="4" Grid.Column="2"
+                           Text="{Binding BodyType}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+
+                <TextBlock Grid.Row="6" Grid.Column="0" Text="File Field:" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="6" Grid.Column="2"
+                           Text="{Binding FileFormName}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+            </Grid>
+        </StackPanel>
+
+        <!-- Response Parsing -->
+        <StackPanel Spacing="8" IsVisible="{Binding UrlSyntax, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <TextBlock Text="Response Parsing" FontWeight="SemiBold"/>
+            <Grid ColumnDefinitions="Auto,12,*">
+                <TextBlock Grid.Column="0" Text="URL Syntax:" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2"
+                           Text="{Binding UrlSyntax}"
+                           TextTrimming="CharacterEllipsis"
+                           ToolTip.Tip="{Binding UrlSyntax}"
+                           FontFamily="Consolas, Monospace"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+            </Grid>
+        </StackPanel>
+
+        <!-- Additional Configuration -->
+        <StackPanel Spacing="8">
+            <TextBlock Text="Additional Configuration" FontWeight="SemiBold"/>
+            <WrapPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,16,0">
+                    <TextBlock Text="Headers:" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding HeaderCount}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,16,0">
+                    <TextBlock Text="Parameters:" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ParameterCount}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="Arguments:" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ArgumentCount}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </WrapPanel>
+        </StackPanel>
+
+        <!-- Edit Button -->
+        <Button Content="Edit Advanced Settings"
+                Command="{Binding EditAdvancedCommand}"
+                HorizontalAlignment="Left"
+                AutomationProperties.Name="Edit Advanced Custom Uploader Settings"/>
+
+        <!-- Info -->
+        <Border Background="{DynamicResource SystemFillColorAttentionBackground}"
+                BorderBrush="{DynamicResource SystemFillColorAttentionBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12">
+            <StackPanel Spacing="4">
+                <TextBlock Text="Custom Uploader"
+                           FontWeight="SemiBold"/>
+                <TextBlock Text="This is a custom HTTP-based uploader. Click 'Edit Advanced Settings' to modify request configuration, headers, body format, and response parsing."
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           FontSize="12"/>
+            </StackPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>
