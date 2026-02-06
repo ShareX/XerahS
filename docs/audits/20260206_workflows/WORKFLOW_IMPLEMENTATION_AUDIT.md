@@ -12,9 +12,9 @@
 |--------|-------|
 | **Total WorkflowType Definitions** | 73 |
 | **Implemented in WorkerTask.cs** | 20 |
-| **Implemented via Tool Services in App.axaml.cs** | 5 (ColorPicker ×2, QRCode ×3) |
+| **Implemented via Tool Services in App.axaml.cs** | 6 (ColorPicker x2, QRCode x3, ScrollingCapture x1) |
 | **Implemented in TrayIconHelper.cs** | 1 (`OpenMainWindow`) |
-| **NOT WIRED (Stub/Placeholder)** | **47** |
+| **NOT WIRED (Stub/Placeholder)** | **46** |
 
 ---
 
@@ -49,35 +49,35 @@ Tray-specific actions handled separately.
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
 | `FileUpload` | ? Wired | WorkerTask.cs | Full implementation with dialog callback |
-| `FolderUpload` | ? Not Wired | — | Stub only |
+| `FolderUpload` | ? Not Wired | ï¿½ | Stub only |
 | `ClipboardUpload` | ? Wired | WorkerTask.cs | Full implementation with image/text/file support |
 | `ClipboardUploadWithContentViewer` | ? Wired | WorkerTask.cs | Same as ClipboardUpload |
-| `UploadText` | ? Not Wired | — | Stub only |
-| `UploadURL` | ? Not Wired | — | Stub only |
-| `DragDropUpload` | ? Not Wired | — | Stub only |
-| `ShortenURL` | ? Not Wired | — | Stub only |
-| `StopUploads` | ? Not Wired | — | Stub only |
+| `UploadText` | ? Not Wired | ï¿½ | Stub only |
+| `UploadURL` | ? Not Wired | ï¿½ | Stub only |
+| `DragDropUpload` | ? Not Wired | ï¿½ | Stub only |
+| `ShortenURL` | ? Not Wired | ï¿½ | Stub only |
+| `StopUploads` | ? Not Wired | ï¿½ | Stub only |
 | `IndexFolder` | ? Wired | WorkerTask.cs | Full implementation with HTML/TXT/XML/JSON output |
 
 ---
 
-### Screen Capture (5 of 12 wired)
+### Screen Capture (6 of 12 wired)
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
 | `PrintScreen` | ? Wired | WorkerTask.cs | Fullscreen capture |
 | `ActiveWindow` | ? Wired | WorkerTask.cs | Active window capture |
 | `CustomWindow` | ? Wired | WorkerTask.cs | Window selector integration |
-| `ActiveMonitor` | ? Not Wired | — | Stub only |
+| `ActiveMonitor` | ? Not Wired | ï¿½ | Stub only |
 | `RectangleRegion` | ? Wired | WorkerTask.cs | Region selection with frozen background |
-| `RectangleLight` | ? Not Wired | — | Stub only |
+| `RectangleLight` | ? Not Wired | ï¿½ | Stub only |
 | `RectangleTransparent` | ? Wired | WorkerTask.cs | Region selection with transparent overlay |
-| `CustomRegion` | ? Not Wired | — | Stub only |
-| `LastRegion` | ? Not Wired | — | Stub only |
-| `ScrollingCapture` | ? Not Wired | — | Stub only |
-| `AutoCapture` | ? Not Wired | — | Stub only |
-| `StartAutoCapture` | ? Not Wired | — | Stub only |
-| `StopAutoCapture` | ? Not Wired | — | Stub only |
+| `CustomRegion` | ? Not Wired | ï¿½ | Stub only |
+| `LastRegion` | ? Not Wired | ï¿½ | Stub only |
+| `ScrollingCapture` | ? Wired | App.axaml.cs | Via `ScrollingCaptureToolService` |
+| `AutoCapture` | ? Not Wired | ï¿½ | Stub only |
+| `StartAutoCapture` | ? Not Wired | ï¿½ | Stub only |
+| `StopAutoCapture` | ? Not Wired | ï¿½ | Stub only |
 
 ---
 
@@ -107,35 +107,35 @@ Tray-specific actions handled separately.
 |--------------|--------|----------|-------|
 | `ColorPicker` | ? Wired | App.axaml.cs | Via `ColorPickerToolService` |
 | `ScreenColorPicker` | ? Wired | App.axaml.cs | Via `ColorPickerToolService` |
-| `Ruler` | ? Not Wired | — | — |
-| `PinToScreen` | ? Not Wired | — | — |
-| `PinToScreenFromScreen` | ? Not Wired | — | — |
-| `PinToScreenFromClipboard` | ? Not Wired | — | — |
-| `PinToScreenFromFile` | ? Not Wired | — | — |
-| `PinToScreenCloseAll` | ? Not Wired | — | — |
-| `ImageEditor` | ? Not Wired | — | **High Priority** |
-| `ImageBeautifier` | ? Not Wired | — | — |
-| `ImageEffects` | ? Not Wired | — | — |
-| `ImageViewer` | ? Not Wired | — | — |
-| `ImageCombiner` | ? Not Wired | — | — |
-| `ImageSplitter` | ? Not Wired | — | — |
-| `ImageThumbnailer` | ? Not Wired | — | — |
-| `VideoConverter` | ? Not Wired | — | — |
-| `VideoThumbnailer` | ? Not Wired | — | — |
-| `AnalyzeImage` | ? Not Wired | — | — |
-| **`OCR`** | ? Not Wired | — | **High Priority** |
+| `Ruler` | ? Not Wired | ï¿½ | ï¿½ |
+| `PinToScreen` | ? Not Wired | ï¿½ | ï¿½ |
+| `PinToScreenFromScreen` | ? Not Wired | ï¿½ | ï¿½ |
+| `PinToScreenFromClipboard` | ? Not Wired | ï¿½ | ï¿½ |
+| `PinToScreenFromFile` | ? Not Wired | ï¿½ | ï¿½ |
+| `PinToScreenCloseAll` | ? Not Wired | ï¿½ | ï¿½ |
+| `ImageEditor` | ? Not Wired | ï¿½ | **High Priority** |
+| `ImageBeautifier` | ? Not Wired | ï¿½ | ï¿½ |
+| `ImageEffects` | ? Not Wired | ï¿½ | ï¿½ |
+| `ImageViewer` | ? Not Wired | ï¿½ | ï¿½ |
+| `ImageCombiner` | ? Not Wired | ï¿½ | ï¿½ |
+| `ImageSplitter` | ? Not Wired | ï¿½ | ï¿½ |
+| `ImageThumbnailer` | ? Not Wired | ï¿½ | ï¿½ |
+| `VideoConverter` | ? Not Wired | ï¿½ | ï¿½ |
+| `VideoThumbnailer` | ? Not Wired | ï¿½ | ï¿½ |
+| `AnalyzeImage` | ? Not Wired | ï¿½ | ï¿½ |
+| **`OCR`** | ? Not Wired | ï¿½ | **High Priority** |
 | `QRCode` | ? Wired | App.axaml.cs | Via `QrCodeToolService` |
 | `QRCodeDecodeFromScreen` | ? Wired | App.axaml.cs | Via `QrCodeToolService` |
 | `QRCodeScanRegion` | ? Wired | App.axaml.cs | Via `QrCodeToolService` |
-| `HashCheck` | ? Not Wired | — | — |
-| `Metadata` | ? Not Wired | — | — |
-| `StripMetadata` | ? Not Wired | — | — |
-| `ClipboardViewer` | ? Not Wired | — | — |
-| `BorderlessWindow` | ? Not Wired | — | — |
-| `ActiveWindowBorderless` | ? Not Wired | — | — |
-| `ActiveWindowTopMost` | ? Not Wired | — | — |
-| `InspectWindow` | ? Not Wired | — | — |
-| `MonitorTest` | ? Not Wired | — | — |
+| `HashCheck` | ? Not Wired | ï¿½ | ï¿½ |
+| `Metadata` | ? Not Wired | ï¿½ | ï¿½ |
+| `StripMetadata` | ? Not Wired | ï¿½ | ï¿½ |
+| `ClipboardViewer` | ? Not Wired | ï¿½ | ï¿½ |
+| `BorderlessWindow` | ? Not Wired | ï¿½ | ï¿½ |
+| `ActiveWindowBorderless` | ? Not Wired | ï¿½ | ï¿½ |
+| `ActiveWindowTopMost` | ? Not Wired | ï¿½ | ï¿½ |
+| `InspectWindow` | ? Not Wired | ï¿½ | ï¿½ |
+| `MonitorTest` | ? Not Wired | ï¿½ | ï¿½ |
 
 ---
 
@@ -143,14 +143,14 @@ Tray-specific actions handled separately.
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
-| `DisableHotkeys` | ? Not Wired | — | — |
+| `DisableHotkeys` | ? Not Wired | ï¿½ | ï¿½ |
 | `OpenMainWindow` | ? Wired | TrayIconHelper.cs | Tray double-click action |
-| `OpenScreenshotsFolder` | ? Not Wired | — | — |
-| `OpenHistory` | ? Not Wired | — | — |
-| `OpenImageHistory` | ? Not Wired | — | — |
-| `ToggleActionsToolbar` | ? Not Wired | — | — |
-| `ToggleTrayMenu` | ? Not Wired | — | — |
-| `ExitShareX` | ? Not Wired | — | — |
+| `OpenScreenshotsFolder` | ? Not Wired | ï¿½ | ï¿½ |
+| `OpenHistory` | ? Not Wired | ï¿½ | ï¿½ |
+| `OpenImageHistory` | ? Not Wired | ï¿½ | ï¿½ |
+| `ToggleActionsToolbar` | ? Not Wired | ï¿½ | ï¿½ |
+| `ToggleTrayMenu` | ? Not Wired | ï¿½ | ï¿½ |
+| `ExitShareX` | ? Not Wired | ï¿½ | ï¿½ |
 
 ---
 
@@ -183,7 +183,7 @@ Many workflows have enum definitions but no execution path:
 ### High Priority (Core Functionality)
 1. **`OCR`** - Optical Character Recognition (frequently requested)
 2. **`ImageEditor`** - Basic image editing capabilities
-3. **`ScrollingCapture`** - Long page capture
+3. ~~**`ScrollingCapture`** - Long page capture~~ ? Done (v0.8.2)
 4. **`UploadText`** - Text upload workflow
 
 ### Medium Priority (Utility)
