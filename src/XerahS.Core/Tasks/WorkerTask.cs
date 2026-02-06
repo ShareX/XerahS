@@ -39,7 +39,7 @@ using XerahS.Media;
 
 namespace XerahS.Core.Tasks
 {
-    public class WorkerTask : IDisposable
+    public partial class WorkerTask : IDisposable
     {
         /// <summary>
         /// Default delay in milliseconds after window activation before capture.
@@ -588,6 +588,15 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.AbortScreenRecording:
                         await HandleAbortRecordingAsync();
                         return;
+
+                    // Tool Workflows
+                    case WorkflowType.ColorPicker:
+                    case WorkflowType.ScreenColorPicker:
+                    case WorkflowType.QRCode:
+                    case WorkflowType.QRCodeDecodeFromScreen:
+                    case WorkflowType.QRCodeScanRegion:
+                        await HandleToolWorkflowAsync(token);
+                        return;
                 }
 
                 captureStopwatch.Stop();
@@ -850,31 +859,6 @@ namespace XerahS.Core.Tasks
             }
         }
 
-        private async Task<bool> ApplyCaptureStartDelayAsync(TaskSettings taskSettings, string category, double delaySeconds, CancellationToken token)
-        {
-            if (delaySeconds <= 0)
-            {
-                return true;
-            }
-
-            var delayMs = (int)Math.Round(delaySeconds * 1000, MidpointRounding.AwayFromZero);
-            var workflowId = string.IsNullOrWhiteSpace(taskSettings.WorkflowId) ? "none" : taskSettings.WorkflowId;
-            TroubleshootingHelper.Log(taskSettings.Job.ToString(), "CAPTURE_DELAY", $"WorkflowId={workflowId}, Category={category}, DelaySeconds={delaySeconds:F3}, DelayMs={delayMs}");
-
-            try
-            {
-                await Task.Delay(delayMs, token);
-                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "CAPTURE_DELAY", $"WorkflowId={workflowId}, Category={category}, DelayCompleted=true");
-                return true;
-            }
-            catch (OperationCanceledException)
-            {
-                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "CAPTURE_DELAY", $"WorkflowId={workflowId}, Category={category}, DelayCancelled=true");
-                Status = TaskStatus.Stopped;
-                OnStatusChanged();
-                return false;
-            }
-        }
 
         #region Recording Handlers (Stage 5)
 

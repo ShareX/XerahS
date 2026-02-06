@@ -215,6 +215,16 @@ public partial class App : Application
                 return await tcs.Task;
             };
 
+            // Setup tool workflow callback for ColorPicker, QRCode, etc.
+            Core.Tasks.WorkerTask.HandleToolWorkflowCallback = async (workflowType) =>
+            {
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    var owner = desktop.MainWindow;
+                    await QrCodeToolService.HandleWorkflowAsync(workflowType, owner);
+                });
+            };
+
             desktop.Exit += (sender, args) =>
             {
                 XerahS.Core.SettingsManager.SaveAllSettings();
@@ -510,23 +520,6 @@ public partial class App : Application
 
         if (settings == null) return;
 
-        // ColorPicker/ScreenColorPicker now handled via WorkerTask (consolidated workflow execution)
-bool isQrJob = settings.Job == WorkflowType.QRCode ||
-                       settings.Job == WorkflowType.QRCodeDecodeFromScreen ||
-                       settings.Job == WorkflowType.QRCodeScanRegion;
-
-        if (isQrJob)
-        {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                var owner = ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                    ? desktop.MainWindow
-                    : null;
-
-                _ = QrCodeToolService.HandleWorkflowAsync(settings.Job, owner);
-            });
-            return;
-        }
 
         // Determine request type by category
         string category = settings.Job.GetHotkeyCategory();
