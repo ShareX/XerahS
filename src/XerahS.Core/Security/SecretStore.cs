@@ -25,6 +25,7 @@
 
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
 using XerahS.Common;
@@ -128,6 +129,7 @@ public sealed class SecretStore : ISecretStore, ISecretStoreInfo
         return Path.Combine(directory, "SecretsStore.key");
     }
 
+    [SupportedOSPlatform("windows")]
     private sealed class DpapiFileSecretStore : ISecretStore
     {
         private readonly object _lock = new();
