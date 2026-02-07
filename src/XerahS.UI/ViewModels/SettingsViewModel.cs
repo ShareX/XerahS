@@ -71,6 +71,37 @@ namespace XerahS.UI.ViewModels
             Services.ThemeService.ApplyTheme(value);
         }
 
+        partial void OnProxyMethodChanged(ProxyMethod value)
+        {
+            if (_isLoading) return;
+            OnPropertyChanged(nameof(IsManualProxy));
+            ApplyProxyAndResetClient();
+        }
+
+        partial void OnProxyHostChanged(string value)
+        {
+            if (_isLoading) return;
+            ApplyProxyAndResetClient();
+        }
+
+        partial void OnProxyPortChanged(int value)
+        {
+            if (_isLoading) return;
+            ApplyProxyAndResetClient();
+        }
+
+        partial void OnProxyUsernameChanged(string value)
+        {
+            if (_isLoading) return;
+            ApplyProxyAndResetClient();
+        }
+
+        partial void OnProxyPasswordChanged(string value)
+        {
+            if (_isLoading) return;
+            ApplyProxyAndResetClient();
+        }
+
         [ObservableProperty]
         private bool _useModernCapture;
 
@@ -87,6 +118,26 @@ namespace XerahS.UI.ViewModels
         private UpdateChannel _updateChannel;
 
         public UpdateChannel[] UpdateChannels => (UpdateChannel[])Enum.GetValues(typeof(UpdateChannel));
+
+        // Proxy Settings
+        [ObservableProperty]
+        private ProxyMethod _proxyMethod;
+
+        [ObservableProperty]
+        private string _proxyHost = string.Empty;
+
+        [ObservableProperty]
+        private int _proxyPort = 8080;
+
+        [ObservableProperty]
+        private string _proxyUsername = string.Empty;
+
+        [ObservableProperty]
+        private string _proxyPassword = string.Empty;
+
+        public ProxyMethod[] ProxyMethods => (ProxyMethod[])Enum.GetValues(typeof(ProxyMethod));
+
+        public bool IsManualProxy => ProxyMethod == ProxyMethod.Manual;
 
         public ApplicationConfig ApplicationConfig => SettingsManager.Settings;
 
@@ -531,6 +582,13 @@ namespace XerahS.UI.ViewModels
             AutoCheckUpdate = settings.AutoCheckUpdate;
             UpdateChannel = settings.UpdateChannel;
 
+            // Proxy Settings
+            ProxyMethod = settings.ProxySettings.ProxyMethod;
+            ProxyHost = settings.ProxySettings.Host;
+            ProxyPort = settings.ProxySettings.Port;
+            ProxyUsername = settings.ProxySettings.Username;
+            ProxyPassword = settings.ProxySettings.Password;
+
             // Task Settings - General (from primary workflow)
             var taskSettings = ActiveTaskSettings;
             PlaySoundAfterCapture = taskSettings.GeneralSettings.PlaySoundAfterCapture;
@@ -612,6 +670,13 @@ namespace XerahS.UI.ViewModels
             settings.TaskbarProgressEnabled = TaskbarProgressEnabled;
             settings.AutoCheckUpdate = AutoCheckUpdate;
             settings.UpdateChannel = UpdateChannel;
+
+            // Proxy Settings
+            settings.ProxySettings.ProxyMethod = ProxyMethod;
+            settings.ProxySettings.Host = ProxyHost;
+            settings.ProxySettings.Port = ProxyPort;
+            settings.ProxySettings.Username = ProxyUsername;
+            settings.ProxySettings.Password = ProxyPassword;
 
             // Save Task Settings
             var taskSettings = ActiveTaskSettings;
@@ -826,6 +891,24 @@ namespace XerahS.UI.ViewModels
             }
 
             return EnumExtensions.GetDescription(workflow.Job);
+        }
+
+        private void ApplyProxyAndResetClient()
+        {
+            var settings = SettingsManager.Settings;
+
+            // Update ApplicationConfig
+            settings.ProxySettings.ProxyMethod = ProxyMethod;
+            settings.ProxySettings.Host = ProxyHost;
+            settings.ProxySettings.Port = ProxyPort;
+            settings.ProxySettings.Username = ProxyUsername;
+            settings.ProxySettings.Password = ProxyPassword;
+
+            // Sync to HelpersOptions
+            HelpersOptions.SyncProxyFromConfig(settings.ProxySettings);
+
+            // Reset HttpClient to pick up new proxy
+            HttpClientFactory.Reset();
         }
     }
 }
