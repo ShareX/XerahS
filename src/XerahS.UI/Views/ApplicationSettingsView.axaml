@@ -343,7 +343,90 @@
 
              <!-- Proxy Tab -->
             <TabItem Header="Proxy">
-                <TextBlock Text="Proxy settings placeholder" Margin="24" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <ScrollViewer Padding="24">
+                    <StackPanel Spacing="24">
+
+                        <!-- Proxy Method -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Proxy Configuration" FontWeight="SemiBold"/>
+                            <Border BorderThickness="1"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
+                                        <TextBlock Grid.Column="0" Text="Proxy method:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Column="2"
+                                                  ItemsSource="{Binding ProxyMethods}"
+                                                  SelectedItem="{Binding ProxyMethod}"
+                                                  HorizontalAlignment="Left" Width="200"
+                                                  AutomationProperties.Name="Proxy Method"/>
+                                    </Grid>
+                                    <TextBlock Text="Configure how network requests should be proxied. Changes apply immediately to all uploads."
+                                               FontSize="12"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Manual Proxy Settings -->
+                        <StackPanel Spacing="8" IsVisible="{Binding IsManualProxy}">
+                            <TextBlock Text="Proxy Server" FontWeight="SemiBold"/>
+                            <Border BorderThickness="1"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <Grid ColumnDefinitions="100, 16, *">
+                                        <TextBlock Grid.Column="0" Text="Host:" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Text="{Binding ProxyHost}"
+                                                 Watermark="proxy.example.com"
+                                                 AutomationProperties.Name="Proxy Host"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="100, 16, *">
+                                        <TextBlock Grid.Column="0" Text="Port:" VerticalAlignment="Center"/>
+                                        <NumericUpDown Grid.Column="2"
+                                                       Value="{Binding ProxyPort}"
+                                                       Minimum="1" Maximum="65535"
+                                                       Width="120" HorizontalAlignment="Left"
+                                                       AutomationProperties.Name="Proxy Port"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Authentication -->
+                        <StackPanel Spacing="8" IsVisible="{Binding IsManualProxy}">
+                            <TextBlock Text="Authentication (Optional)" FontWeight="SemiBold"/>
+                            <Border BorderThickness="1"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <Grid ColumnDefinitions="100, 16, *">
+                                        <TextBlock Grid.Column="0" Text="Username:" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Text="{Binding ProxyUsername}"
+                                                 Watermark="username"
+                                                 AutomationProperties.Name="Proxy Username"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="100, 16, *">
+                                        <TextBlock Grid.Column="0" Text="Password:" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Text="{Binding ProxyPassword}"
+                                                 Watermark="password"
+                                                 PasswordChar="•"
+                                                 AutomationProperties.Name="Proxy Password"/>
+                                    </Grid>
+                                    <TextBlock Text="Leave username and password blank if your proxy does not require authentication."
+                                               FontSize="12"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
 
              <!-- Advanced Tab -->

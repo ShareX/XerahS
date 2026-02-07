@@ -244,6 +244,10 @@ namespace XerahS.Core
             Settings = ApplicationConfig.Load(path, BackupFolder, fallbackSupport) ?? new ApplicationConfig();
             Settings.CreateBackup = true;
             Settings.CreateWeeklyBackup = true;
+
+            // Sync proxy settings to HelpersOptions
+            HelpersOptions.SyncProxyFromConfig(Settings.ProxySettings);
+
             DebugHelper.WriteLine($"ApplicationConfig load finished: {path}");
         }
 
