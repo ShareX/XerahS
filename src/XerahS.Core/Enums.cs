@@ -277,15 +277,6 @@ public enum WorkflowType // Localized
     [Description("Image editor")]
     ImageEditor,
     [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Image beautifier")]
-    ImageBeautifier,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Image effects")]
-    ImageEffects,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Image viewer")]
-    ImageViewer,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
     [Description("Image combiner")]
     ImageCombiner,
     [Category(EnumExtensions.WorkflowType_Category_Tools)]

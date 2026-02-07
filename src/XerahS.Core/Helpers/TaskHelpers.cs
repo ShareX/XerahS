@@ -108,9 +108,6 @@ public static partial class TaskHelpers
         {
             // Image-specific tools
             WorkflowType.ImageEditor or
-            WorkflowType.ImageBeautifier or
-            WorkflowType.ImageEffects or
-            WorkflowType.ImageViewer or
             WorkflowType.ImageCombiner or
             WorkflowType.ImageSplitter or
             WorkflowType.ImageThumbnailer or
