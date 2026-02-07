@@ -1,0 +1,124 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        xmlns:media="using:XerahS.Media"
+        mc:Ignorable="d"
+        d:DesignWidth="650" d:DesignHeight="500"
+        x:Class="XerahS.UI.Views.ImageCombinerWindow"
+        x:DataType="vm:ImageCombinerViewModel"
+        Title="Image Combiner"
+        Width="650" Height="500"
+        MinWidth="500" MinHeight="400"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        DragDrop.AllowDrop="True">
+
+  <Grid RowDefinitions="*,Auto,Auto,Auto" Margin="16">
+
+    <!-- Row 0: Image list -->
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+      <ListBox Grid.Column="0"
+               ItemsSource="{Binding Items}"
+               SelectedItem="{Binding SelectedItem}"
+               AutomationProperties.Name="Image list">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:ImageCombinerInputItem">
+            <Grid ColumnDefinitions="*,Auto">
+              <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Dimensions}" Foreground="Gray" VerticalAlignment="Center" />
+              </StackPanel>
+              <Button Grid.Column="1"
+                      Content="X"
+                      Command="{Binding $parent[ListBox].((vm:ImageCombinerViewModel)DataContext).RemoveItemCommand}"
+                      CommandParameter="{Binding}"
+                      MinWidth="30" MinHeight="26"
+                      Padding="6,2"
+                      AutomationProperties.Name="Remove" />
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+
+      <StackPanel Grid.Column="1" Spacing="6" Margin="8,0,0,0" VerticalAlignment="Top">
+        <Button Content="Add..."
+                Command="{Binding AddFilesCommand}"
+                MinWidth="80"
+                AutomationProperties.Name="Add files" />
+        <Button Content="Up"
+                Command="{Binding MoveUpCommand}"
+                CommandParameter="{Binding SelectedItem}"
+                MinWidth="80"
+                AutomationProperties.Name="Move up" />
+        <Button Content="Down"
+                Command="{Binding MoveDownCommand}"
+                CommandParameter="{Binding SelectedItem}"
+                MinWidth="80"
+                AutomationProperties.Name="Move down" />
+        <Button Content="Clear"
+                Command="{Binding ClearCommand}"
+                MinWidth="80"
+                AutomationProperties.Name="Clear all" />
+      </StackPanel>
+    </Grid>
+
+    <!-- Row 1: Options -->
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="16" Margin="0,0,0,12">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBlock Text="Orientation:" VerticalAlignment="Center" />
+        <ComboBox SelectedIndex="0"
+                  SelectedItem="{Binding Orientation}"
+                  MinWidth="120"
+                  AutomationProperties.Name="Orientation">
+          <media:ImageCombinerOrientation>Vertical</media:ImageCombinerOrientation>
+          <media:ImageCombinerOrientation>Horizontal</media:ImageCombinerOrientation>
+        </ComboBox>
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBlock Text="Alignment:" VerticalAlignment="Center" />
+        <ComboBox SelectedIndex="1"
+                  SelectedItem="{Binding Alignment}"
+                  MinWidth="100"
+                  AutomationProperties.Name="Alignment">
+          <media:ImageCombinerAlignment>Near</media:ImageCombinerAlignment>
+          <media:ImageCombinerAlignment>Center</media:ImageCombinerAlignment>
+          <media:ImageCombinerAlignment>Far</media:ImageCombinerAlignment>
+        </ComboBox>
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBlock Text="Spacing:" VerticalAlignment="Center" />
+        <NumericUpDown Value="{Binding Spacing}"
+                       Minimum="0" Maximum="100" Increment="1"
+                       MinWidth="80"
+                       AutomationProperties.Name="Spacing" />
+      </StackPanel>
+
+      <CheckBox Content="Fill background"
+                IsChecked="{Binding AutoFillBackground}"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="Auto fill background" />
+    </StackPanel>
+
+    <!-- Row 2: Status -->
+    <TextBlock Grid.Row="2" Text="{Binding StatusText}" Margin="0,0,0,12" />
+
+    <!-- Row 3: Buttons -->
+    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Combine"
+              Command="{Binding CombineCommand}"
+              MinWidth="100"
+              Classes="accent"
+              IsEnabled="{Binding !IsProcessing}"
+              AutomationProperties.Name="Combine images" />
+      <Button Content="Close"
+              Click="OnCloseClick"
+              MinWidth="80"
+              AutomationProperties.Name="Close" />
+    </StackPanel>
+
+  </Grid>
+</Window>

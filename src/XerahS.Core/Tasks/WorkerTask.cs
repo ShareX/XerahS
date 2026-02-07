@@ -618,6 +618,12 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.StartAutoCapture:
                     case WorkflowType.StopAutoCapture:
                     case WorkflowType.ClipboardUploadWithContentViewer:
+                    case WorkflowType.ImageCombiner:
+                    case WorkflowType.ImageSplitter:
+                    case WorkflowType.ImageThumbnailer:
+                    case WorkflowType.VideoConverter:
+                    case WorkflowType.VideoThumbnailer:
+                    case WorkflowType.AnalyzeImage:
                         await HandleToolWorkflowAsync(token);
                         return;
 

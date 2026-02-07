@@ -1,0 +1,115 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        mc:Ignorable="d"
+        d:DesignWidth="550" d:DesignHeight="400"
+        x:Class="XerahS.UI.Views.ImageThumbnailerWindow"
+        x:DataType="vm:ImageThumbnailerViewModel"
+        Title="Image Thumbnailer"
+        Width="550" Height="430"
+        MinWidth="450" MinHeight="350"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True">
+
+  <Grid RowDefinitions="*,Auto,Auto,Auto,Auto,Auto" Margin="16">
+
+    <!-- Row 0: File list -->
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+      <ListBox Grid.Column="0"
+               ItemsSource="{Binding InputFiles}"
+               SelectedItem="{Binding SelectedFile}"
+               AutomationProperties.Name="Image file list">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding}" />
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+
+      <StackPanel Grid.Column="1" Spacing="6" Margin="8,0,0,0" VerticalAlignment="Top">
+        <Button Content="Add..."
+                Command="{Binding AddFilesCommand}"
+                MinWidth="80"
+                AutomationProperties.Name="Add files" />
+        <Button Content="Remove"
+                Command="{Binding RemoveFileCommand}"
+                CommandParameter="{Binding SelectedFile}"
+                MinWidth="80"
+                AutomationProperties.Name="Remove file" />
+        <Button Content="Clear"
+                Command="{Binding ClearCommand}"
+                MinWidth="80"
+                AutomationProperties.Name="Clear all" />
+      </StackPanel>
+    </Grid>
+
+    <!-- Row 1: Size options -->
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="16" Margin="0,0,0,12">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBlock Text="Width:" VerticalAlignment="Center" />
+        <NumericUpDown Value="{Binding ThumbnailWidth}"
+                       Minimum="16" Maximum="4096" Increment="10"
+                       MinWidth="90"
+                       AutomationProperties.Name="Thumbnail width" />
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBlock Text="Height:" VerticalAlignment="Center" />
+        <NumericUpDown Value="{Binding ThumbnailHeight}"
+                       Minimum="0" Maximum="4096" Increment="10"
+                       MinWidth="90"
+                       AutomationProperties.Name="Thumbnail height (0 = auto)" />
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBlock Text="Quality:" VerticalAlignment="Center" />
+        <NumericUpDown Value="{Binding Quality}"
+                       Minimum="1" Maximum="100" Increment="5"
+                       MinWidth="80"
+                       AutomationProperties.Name="JPEG quality" />
+      </StackPanel>
+    </StackPanel>
+
+    <!-- Row 2: Output folder -->
+    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
+      <TextBlock Grid.Column="0" Text="Output:" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <TextBox Grid.Column="1"
+               Text="{Binding OutputFolder}"
+               IsReadOnly="True"
+               AutomationProperties.Name="Output folder" />
+      <Button Grid.Column="2"
+              Content="Browse..."
+              Command="{Binding BrowseOutputCommand}"
+              Margin="8,0,0,0"
+              MinWidth="90"
+              AutomationProperties.Name="Browse output folder" />
+    </Grid>
+
+    <!-- Row 3: Progress -->
+    <ProgressBar Grid.Row="3"
+                 Value="{Binding ProgressPercent}"
+                 Minimum="0" Maximum="100"
+                 Margin="0,0,0,8"
+                 IsVisible="{Binding IsProcessing}" />
+
+    <!-- Row 4: Status -->
+    <TextBlock Grid.Row="4" Text="{Binding StatusText}" Margin="0,0,0,12" />
+
+    <!-- Row 5: Buttons -->
+    <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Generate"
+              Command="{Binding GenerateCommand}"
+              MinWidth="100"
+              Classes="accent"
+              IsEnabled="{Binding !IsProcessing}"
+              AutomationProperties.Name="Generate thumbnails" />
+      <Button Content="Close"
+              Click="OnCloseClick"
+              MinWidth="80"
+              AutomationProperties.Name="Close" />
+    </StackPanel>
+
+  </Grid>
+</Window>

@@ -256,6 +256,15 @@ public partial class App : Application
                     {
                         await UploadContentToolService.HandleWorkflowAsync(workflowType, owner);
                     }
+                    else if (workflowType is WorkflowType.ImageCombiner
+                        or WorkflowType.ImageSplitter
+                        or WorkflowType.ImageThumbnailer
+                        or WorkflowType.VideoConverter
+                        or WorkflowType.VideoThumbnailer
+                        or WorkflowType.AnalyzeImage)
+                    {
+                        await MediaToolsToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
                     else
                     {
                         await QrCodeToolService.HandleWorkflowAsync(workflowType, owner);

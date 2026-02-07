@@ -1,7 +1,7 @@
 # WorkflowType Implementation Audit
 
 **Date:** February 6, 2026
-**Version:** 0.11.0
+**Version:** 0.12.0
 **Auditor:** Claude (AI Assistant)
 
 ---
@@ -12,10 +12,10 @@
 |--------|-------|
 | **Total WorkflowType Definitions** | 59 |
 | **Implemented in WorkerTask.cs (direct logic)** | 27 |
-| **Implemented via Tool Services (delegated)** | 18 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1, PinToScreen x5, AutoCapture x3, UploadContent x1) |
+| **Implemented via Tool Services (delegated)** | 24 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1, PinToScreen x5, AutoCapture x3, UploadContent x1, MediaTools x6) |
 | **Implemented in TrayIconHelper.cs** | 1 (`OpenMainWindow`) |
 | **NOT IMPLEMENTED BY DESIGN** | 5 (Window utilities + RectangleLight delegated to ShareX) |
-| **NOT WIRED (Stub/Placeholder)** | **8** |
+| **NOT WIRED (Stub/Placeholder)** | **2** |
 
 ---
 
@@ -37,6 +37,7 @@ Standalone tools that bypass WorkerTask and are handled directly in the applicat
 - `PinToScreenToolService.HandleWorkflowAsync()` - Pin to Screen (5 variants)
 - `AutoCaptureToolService.HandleWorkflowAsync()` - Auto Capture (3 variants)
 - `UploadContentToolService.HandleWorkflowAsync()` - Upload Content Window (clipboard with content viewer)
+- `MediaToolsToolService.HandleWorkflowAsync()` - Media Tools (ImageCombiner, ImageSplitter, ImageThumbnailer, VideoConverter, VideoThumbnailer, AnalyzeImage)
 
 ### Pattern 3: Tray Icon Helper
 Tray-specific actions handled separately.
@@ -102,7 +103,7 @@ Tray-specific actions handled separately.
 
 ---
 
-### Tools (13 of 24 wired)
+### Tools (19 of 24 wired)
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
@@ -116,12 +117,12 @@ Tray-specific actions handled separately.
 | `PinToScreenCloseAll` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` → `PinToScreenManager.CloseAll()` |
 | `ImageEditor` | ✅ Wired | App.axaml.cs | Opens file picker → loads image → `ShowEditorAsync()` |
 | **Note** | — | — | ImageEditor supersedes ImageBeautifier, ImageEffects, and ImageViewer. |
-| `ImageCombiner` | ❌ Not Wired | — | — |
-| `ImageSplitter` | ❌ Not Wired | — | — |
-| `ImageThumbnailer` | ❌ Not Wired | — | — |
-| `VideoConverter` | ❌ Not Wired | — | — |
-| `VideoThumbnailer` | ❌ Not Wired | — | — |
-| `AnalyzeImage` | ❌ Not Wired | — | — |
+| `ImageCombiner` | ✅ Wired | App.axaml.cs | Via `MediaToolsToolService` — combine images with orientation, alignment, spacing |
+| `ImageSplitter` | ✅ Wired | App.axaml.cs | Via `MediaToolsToolService` — split image into grid cells |
+| `ImageThumbnailer` | ✅ Wired | App.axaml.cs | Via `MediaToolsToolService` — batch thumbnail generation |
+| `VideoConverter` | ✅ Wired | App.axaml.cs | Via `MediaToolsToolService` — FFmpeg-based video conversion with 15 codec presets |
+| `VideoThumbnailer` | ✅ Wired | App.axaml.cs | Via `MediaToolsToolService` — video thumbnail grid generation |
+| `AnalyzeImage` | ✅ Wired | App.axaml.cs | Via `MediaToolsToolService` — local image metadata analysis |
 | **`OCR`** | ✅ Wired | App.axaml.cs | Via `OcrToolService` — Windows.Media.Ocr native, stubs for Linux/macOS |
 | `QRCode` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
 | `QRCodeDecodeFromScreen` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
@@ -172,9 +173,9 @@ This maintains clean separation of concerns and keeps each file focused and main
 
 ### 3. Remaining Unimplemented Workflows
 Of the 59 total workflow types:
-- **46 are fully wired** (27 direct in WorkerTask, 18 via Tool Services, 1 in TrayIconHelper)
+- **52 are fully wired** (27 direct in WorkerTask, 24 via Tool Services, 1 in TrayIconHelper)
 - **5 are intentionally excluded** (4 window utilities + RectangleLight—use ShareX for these)
-- **8 are not yet implemented** (mostly image manipulation, specialized tools, and UI utilities)
+- **2 are not yet implemented** (Ruler, ToggleActionsToolbar/ToggleTrayMenu, and metadata tools)
 
 Most unimplemented workflows lack:
 - Case statement in switch logic
@@ -194,8 +195,8 @@ However, the core architecture is sound and ready for new implementations.
 4. ~~**Upload workflows** - Text, URL, folder, drag-drop~~ ✅ Done (v0.11.0) — UploadContentWindow with unified queue
 
 ### Medium Priority (Utility)
-5. **`ImageCombiner`** - Merge multiple images
-6. **`ImageThumbnailer`** - Generate thumbnails
+5. ~~**`ImageCombiner`** - Merge multiple images~~ ✅ Done (v0.12.0) — MediaToolsToolService with orientation/alignment/spacing
+6. ~~**`ImageThumbnailer`** - Generate thumbnails~~ ✅ Done (v0.12.0) — batch thumbnail generation with quality control
 7. ~~**`HashCheck`** - File integrity verification~~ ✅ Done (v0.8.3) — HashCheckToolService with full UI
 8. ~~**`OpenHistory`** - Quick history access~~ ✅ Done (v0.8.2)
 
@@ -251,6 +252,19 @@ When implementing a new workflow, ensure:
 | `src/XerahS.UI/Services/UploadContentToolService.cs` | Upload content workflow routing |
 | `src/XerahS.UI/ViewModels/UploadContentViewModel.cs` | Upload content ViewModel |
 | `src/XerahS.UI/Views/UploadContentWindow.axaml` | Upload content window UI |
+| `src/XerahS.UI/Services/MediaToolsToolService.cs` | Media tools workflow routing (6 tools) |
+| `src/XerahS.UI/ViewModels/ImageCombinerViewModel.cs` | Image combiner ViewModel |
+| `src/XerahS.UI/Views/ImageCombinerWindow.axaml` | Image combiner window UI |
+| `src/XerahS.UI/ViewModels/ImageSplitterViewModel.cs` | Image splitter ViewModel |
+| `src/XerahS.UI/Views/ImageSplitterWindow.axaml` | Image splitter window UI |
+| `src/XerahS.UI/ViewModels/ImageThumbnailerViewModel.cs` | Image thumbnailer ViewModel |
+| `src/XerahS.UI/Views/ImageThumbnailerWindow.axaml` | Image thumbnailer window UI |
+| `src/XerahS.UI/ViewModels/VideoConverterViewModel.cs` | Video converter ViewModel |
+| `src/XerahS.UI/Views/VideoConverterWindow.axaml` | Video converter window UI |
+| `src/XerahS.UI/ViewModels/VideoThumbnailerViewModel.cs` | Video thumbnailer ViewModel |
+| `src/XerahS.UI/Views/VideoThumbnailerWindow.axaml` | Video thumbnailer window UI |
+| `src/XerahS.UI/ViewModels/ImageAnalyzerViewModel.cs` | Image analyzer ViewModel |
+| `src/XerahS.UI/Views/ImageAnalyzerWindow.axaml` | Image analyzer window UI |
 
 ---
 
