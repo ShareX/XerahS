@@ -246,6 +246,12 @@ public partial class App : Application
                     {
                         await PinToScreenToolService.HandleWorkflowAsync(workflowType, owner);
                     }
+                    else if (workflowType is WorkflowType.AutoCapture
+                        or WorkflowType.StartAutoCapture
+                        or WorkflowType.StopAutoCapture)
+                    {
+                        await AutoCaptureToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
                     else
                     {
                         await QrCodeToolService.HandleWorkflowAsync(workflowType, owner);

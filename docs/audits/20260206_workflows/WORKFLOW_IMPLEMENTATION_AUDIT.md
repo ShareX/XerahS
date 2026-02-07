@@ -12,10 +12,10 @@
 |--------|-------|
 | **Total WorkflowType Definitions** | 65 |
 | **Implemented in WorkerTask.cs (direct logic)** | 28 |
-| **Implemented via Tool Services (delegated)** | 14 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1, PinToScreen x5) |
+| **Implemented via Tool Services (delegated)** | 17 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1, PinToScreen x5, AutoCapture x3) |
 | **Implemented in TrayIconHelper.cs** | 1 (`OpenMainWindow`) |
 | **NOT IMPLEMENTED BY DESIGN** | 5 (Window utilities + RectangleLight delegated to ShareX) |
-| **NOT WIRED (Stub/Placeholder)** | **17** |
+| **NOT WIRED (Stub/Placeholder)** | **14** |
 
 ---
 
@@ -35,6 +35,7 @@ Standalone tools that bypass WorkerTask and are handled directly in the applicat
 - `QrCodeToolService.HandleWorkflowAsync()` - QR Code, Scan from Screen, Scan Region
 - `OcrToolService.HandleWorkflowAsync()` - OCR Text Recognition
 - `PinToScreenToolService.HandleWorkflowAsync()` - Pin to Screen (5 variants)
+- `AutoCaptureToolService.HandleWorkflowAsync()` - Auto Capture (3 variants)
 
 ### Pattern 3: Tray Icon Helper
 Tray-specific actions handled separately.
@@ -64,7 +65,7 @@ Tray-specific actions handled separately.
 
 ---
 
-### Screen Capture (9 of 12 wired)
+### Screen Capture (12 of 12 wired) - COMPLETE
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
@@ -78,9 +79,9 @@ Tray-specific actions handled separately.
 | `CustomRegion` | ✅ Wired | WorkerTask.cs | Captures pre-configured `CaptureCustomRegion` rect |
 | `LastRegion` | ✅ Wired | WorkerTask.cs | Re-captures last used region rect |
 | `ScrollingCapture` | ✅ Wired | App.axaml.cs | Via `ScrollingCaptureToolService` |
-| `AutoCapture` | ❌ Not Wired | � | Stub only |
-| `StartAutoCapture` | ❌ Not Wired | � | Stub only |
-| `StopAutoCapture` | ❌ Not Wired | � | Stub only |
+| `AutoCapture` | ✅ Wired | App.axaml.cs | Via `AutoCaptureToolService` — opens config window |
+| `StartAutoCapture` | ✅ Wired | App.axaml.cs | Via `AutoCaptureToolService` — opens window and starts capturing |
+| `StopAutoCapture` | ✅ Wired | App.axaml.cs | Via `AutoCaptureToolService` — stops active capture |
 
 ---
 
@@ -174,9 +175,9 @@ This maintains clean separation of concerns and keeps each file focused and main
 
 ### 3. Remaining Unimplemented Workflows
 Of the 65 total workflow types:
-- **43 are fully wired** (28 direct in WorkerTask, 14 via Tool Services, 1 in TrayIconHelper)
+- **46 are fully wired** (28 direct in WorkerTask, 17 via Tool Services, 1 in TrayIconHelper)
 - **5 are intentionally excluded** (4 window utilities + RectangleLight—use ShareX for these)
-- **17 are not yet implemented** (mostly image manipulation, specialized tools, and UI utilities)
+- **14 are not yet implemented** (mostly image manipulation, specialized tools, and UI utilities)
 
 Most unimplemented workflows lack:
 - Case statement in switch logic
@@ -245,6 +246,9 @@ When implementing a new workflow, ensure:
 | `src/XerahS.UI/ViewModels/PinnedImageViewModel.cs` | Pinned image ViewModel |
 | `src/XerahS.UI/Views/PinnedImageWindow.axaml` | Pinned image window UI |
 | `src/XerahS.UI/Views/PinToScreenStartupDialog.axaml` | Pin-to-screen source selection dialog |
+| `src/XerahS.UI/Services/AutoCaptureToolService.cs` | Auto capture workflow routing |
+| `src/XerahS.UI/ViewModels/AutoCaptureViewModel.cs` | Auto capture ViewModel |
+| `src/XerahS.UI/Views/AutoCaptureWindow.axaml` | Auto capture configuration window |
 
 ---
 

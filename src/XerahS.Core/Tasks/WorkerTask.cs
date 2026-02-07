@@ -36,6 +36,7 @@ using XerahS.History;
 using Avalonia.Threading;
 using System.Drawing;
 using XerahS.Media;
+using XerahS.Uploaders;
 
 namespace XerahS.Core.Tasks
 {
@@ -613,6 +614,9 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.PinToScreenFromClipboard:
                     case WorkflowType.PinToScreenFromFile:
                     case WorkflowType.PinToScreenCloseAll:
+                    case WorkflowType.AutoCapture:
+                    case WorkflowType.StartAutoCapture:
+                    case WorkflowType.StopAutoCapture:
                         await HandleToolWorkflowAsync(token);
                         return;
 
@@ -746,6 +750,19 @@ namespace XerahS.Core.Tasks
             // Execute Upload Job
             var uploadProcessor = new UploadJobProcessor();
             await uploadProcessor.ProcessAsync(Info, token);
+
+            if (ShouldRequireSuccessfulUpload(Info) && !IsUploadResultSuccessful(Info.Result))
+            {
+                string message = string.IsNullOrWhiteSpace(Info.Result?.Response)
+                    ? "Upload failed."
+                    : Info.Result.Response!;
+
+                DebugHelper.WriteLine($"Upload failed during task execution: {message}");
+                Status = TaskStatus.Failed;
+                Error = new InvalidOperationException(message);
+                OnStatusChanged();
+                return;
+            }
         }
 
         public void Stop()
@@ -766,6 +783,24 @@ namespace XerahS.Core.Tasks
         protected virtual void OnTaskCompleted()
         {
             TaskCompleted?.Invoke(this, EventArgs.Empty);
+        }
+
+        private static bool ShouldRequireSuccessfulUpload(TaskInfo info)
+        {
+            return info.IsUploadJob &&
+                   (info.DataType == EDataType.Image ||
+                    info.DataType == EDataType.Text ||
+                    info.DataType == EDataType.File);
+        }
+
+        private static bool IsUploadResultSuccessful(UploadResult? result)
+        {
+            if (result == null)
+            {
+                return false;
+            }
+
+            return result.IsSuccess || (!result.IsError && !string.IsNullOrWhiteSpace(result.URL));
         }
 
         public void Dispose()
