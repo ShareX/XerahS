@@ -285,8 +285,8 @@ namespace XerahS.Platform.Linux
         {
             Console.WriteLine($"CaptureRectAsync: Capturing rect - Left={rect.Left}, Top={rect.Top}, Right={rect.Right}, Bottom={rect.Bottom}");
 
-            // Capture full screen and crop
-            var fullBitmap = await CaptureFullScreenAsync();
+            // Capture full screen with the same options and crop.
+            var fullBitmap = await CaptureFullScreenAsync(options);
             if (fullBitmap == null)
             {
                 Console.WriteLine("ERROR: CaptureFullScreenAsync returned null");
