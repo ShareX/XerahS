@@ -73,11 +73,18 @@ public partial class ToastViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _hasUrl;
 
+    [ObservableProperty]
+    private string? _errorDetails;
+
+    [ObservableProperty]
+    private bool _hasErrors;
+
     // Commands for context menu (using ContextFlyout/MenuFlyout)
     public ICommand CopyImageToClipboardCommand { get; }
     public ICommand OpenFileCommand { get; }
     public ICommand CopyFilePathCommand { get; }
     public ICommand CopyUrlCommand { get; }
+    public ICommand CopyErrorsCommand { get; }
 
     public ToastViewModel(ToastConfig config)
     {
@@ -102,12 +109,15 @@ public partial class ToastViewModel : ObservableObject, IDisposable
         Url = config.URL;
         HasImage = Image != null;
         HasUrl = !string.IsNullOrEmpty(config.URL);
+        ErrorDetails = config.ErrorDetails;
+        HasErrors = !string.IsNullOrWhiteSpace(config.ErrorDetails);
 
         // Initialize context menu commands
         CopyImageToClipboardCommand = new RelayCommand(CopyImageToClipboard);
         OpenFileCommand = new RelayCommand(OpenFile);
         CopyFilePathCommand = new RelayCommand(CopyFilePath);
         CopyUrlCommand = new RelayCommand(CopyUrl);
+        CopyErrorsCommand = new RelayCommand(CopyErrors);
 
         // Calculate fade decrement
         if (config.FadeDuration > 0)
@@ -400,6 +410,24 @@ public partial class ToastViewModel : ObservableObject, IDisposable
             {
                 DebugHelper.WriteException(ex, "Failed to copy URL from toast");
             }
+        }
+    }
+
+    private void CopyErrors()
+    {
+        if (string.IsNullOrWhiteSpace(ErrorDetails))
+        {
+            return;
+        }
+
+        try
+        {
+            PlatformServices.Clipboard.SetText(ErrorDetails);
+            DebugHelper.WriteLine("Copied task errors to clipboard from toast.");
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "Failed to copy errors from toast");
         }
     }
 

@@ -171,6 +171,7 @@ namespace XerahS.Core.Tasks
                     {
                         Title = $"{Info.TaskSettings.Job} Failed",
                         Text = errorMessage,
+                        ErrorDetails = ex.ToString(),
                         Duration = 5f,
                         Size = new SizeI(400, 120),
                         AutoHide = true,
@@ -758,10 +759,7 @@ namespace XerahS.Core.Tasks
                     : Info.Result.Response!;
 
                 DebugHelper.WriteLine($"Upload failed during task execution: {message}");
-                Status = TaskStatus.Failed;
-                Error = new InvalidOperationException(message);
-                OnStatusChanged();
-                return;
+                throw new InvalidOperationException(message);
             }
         }
 

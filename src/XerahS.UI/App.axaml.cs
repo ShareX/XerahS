@@ -321,6 +321,7 @@ public partial class App : Application
                     var generalSettings = taskSettings.GeneralSettings;
                     var filePath = task.Info?.FilePath;
                     var url = task.Info?.Result?.URL ?? task.Info?.Result?.ShortenedURL;
+                    var errorDetails = task.Error?.ToString();
 
                     // Prepare toast title and text
                     string? title = null;
@@ -330,6 +331,15 @@ public partial class App : Application
                     {
                         title = "Task Failed";
                         text = task.Info.Result.ToString();
+                        var uploaderErrors = task.Info.Result.ErrorsToString();
+                        if (!string.IsNullOrWhiteSpace(uploaderErrors))
+                        {
+                            errorDetails = uploaderErrors;
+                        }
+                        else if (!string.IsNullOrWhiteSpace(task.Info.Result.Response))
+                        {
+                            errorDetails = task.Info.Result.Response;
+                        }
                     }
                     else if (!string.IsNullOrEmpty(url))
                     {
@@ -354,6 +364,7 @@ public partial class App : Application
                     {
                         Title = title,
                         Text = text,
+                        ErrorDetails = errorDetails,
                         ImagePath = imagePath,
                         FilePath = filePath,
                         URL = url,

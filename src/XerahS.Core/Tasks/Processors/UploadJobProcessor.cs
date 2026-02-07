@@ -101,6 +101,11 @@ namespace XerahS.Core.Tasks.Processors
             else
             {
                 DebugHelper.WriteLine("Upload result was null.");
+                info.Result = new UploadResult
+                {
+                    IsSuccess = false,
+                    Response = "Upload failed: uploader returned no result."
+                };
             }
         }
 
@@ -173,7 +178,11 @@ namespace XerahS.Core.Tasks.Processors
             catch (Exception ex)
             {
                 DebugHelper.WriteException(ex, "Failed to create uploader instance");
-                return null;
+                return new UploadResult
+                {
+                    IsSuccess = false,
+                    Response = ex.Message
+                };
             }
 
             Uploader.ProgressEventHandler progressHandler = progress => info.ReportUploadProgress(progress);
