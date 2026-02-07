@@ -155,25 +155,35 @@ Tray-specific actions handled separately.
 
 ## Architectural Concerns
 
-### 1. Fragmented Implementation
-Tool workflows (ColorPicker, QRCode) are currently handled in `App.axaml.cs` rather than `WorkerTask.cs`. This creates inconsistency:
-- Some workflows go through `TaskManager` ? `WorkerTask`
-- Others bypass the task system entirely
+### 1. Unified Workflow Pipeline ✅ (Resolved)
+**Status:** All workflows—capture, recording, upload, and tools—are now consolidated through the `WorkerTask` execution pipeline:
+- **Entry Point:** `WorkerTask.DoWorkAsync()` handles all workflow types
+- **Tool Workflows:** Route through `HandleToolWorkflowAsync()` (in `WorkerTaskTools.cs` partial class)
+- **UI Delegation:** Tools delegate to service implementations (ColorPickerToolService, QrCodeToolService, etc.) via `HandleToolWorkflowCallback`
 
-**Recommendation:** Consolidate all workflow execution into `WorkerTask` or a unified handler.
+This is a clean separation of concerns: `WorkerTask` manages the execution flow, while tool services handle UI-specific interactions.
 
-### 2. WorkerTask.cs Size
-`WorkerTask.cs` is currently ~850 lines and growing. Consider splitting into partial classes:
-- `WorkerTask.Capture.cs` - Screen capture workflows
-- `WorkerTask.Recording.cs` - Screen recording workflows
-- `WorkerTask.Upload.cs` - File/clipboard upload workflows
-- `WorkerTask.Tools.cs` - Tool workflows (future)
+### 2. WorkerTask.cs Size ✅ (Resolved)
+`WorkerTask` has been successfully refactored into organized partial classes:
+- `WorkerTask.cs` - Main execution entry point (`DoWorkAsync()`)
+- `WorkerTaskCapture.cs` - Screen capture workflows
+- `WorkerTaskRecording.cs` - Screen recording workflows
+- `WorkerTaskUpload.cs` - File/clipboard upload workflows
+- `WorkerTaskTools.cs` - Tool workflows (ColorPicker, QRCode, OCR, etc.)
 
-### 3. Missing End-to-End Flow
-Many workflows have enum definitions but no execution path:
-- No `case` statement in any switch
-- No service handler
-- No UI integration
+This maintains clean separation of concerns and keeps each file focused and maintainable.
+
+### 3. Remaining Unimplemented Workflows
+Of the 73 total workflow types:
+- **35 are fully wired** (Screen Capture, Recording, Upload, Tools)
+- **37 are not yet implemented** (mostly image manipulation, window utilities, and specialized tools)
+
+Most of these lack:
+- Case statement in switch logic
+- Service handler implementation
+- UI integration
+
+However, the core architecture is sound and ready for new implementations.
 
 ---
 
