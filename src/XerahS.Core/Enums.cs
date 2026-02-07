@@ -322,18 +322,6 @@ public enum WorkflowType // Localized
     [Description("Clipboard viewer")]
     ClipboardViewer,
     [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Borderless window")]
-    BorderlessWindow,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Make active window borderless")]
-    ActiveWindowBorderless,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Make active window top most")]
-    ActiveWindowTopMost,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Inspect window")]
-    InspectWindow,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
     [Description("Monitor test")]
     MonitorTest,
     // Other

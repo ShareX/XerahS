@@ -10,11 +10,12 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total WorkflowType Definitions** | 70 |
+| **Total WorkflowType Definitions** | 66 |
 | **Implemented in WorkerTask.cs (direct logic)** | 28 |
 | **Implemented via Tool Services (delegated)** | 9 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1) |
 | **Implemented in TrayIconHelper.cs** | 1 (`OpenMainWindow`) |
-| **NOT WIRED (Stub/Placeholder)** | **32** |
+| **NOT IMPLEMENTED BY DESIGN** | 4 (Window utilities delegated to ShareX) |
+| **NOT WIRED (Stub/Placeholder)** | **24** |
 
 ---
 
@@ -102,7 +103,7 @@ Tray-specific actions handled separately.
 
 ---
 
-### Tools (8 of 28 wired)
+### Tools (8 of 24 wired)
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
@@ -129,12 +130,9 @@ Tray-specific actions handled separately.
 | `HashCheck` | ✅ Wired | App.axaml.cs | Via `HashCheckToolService` — CRC32, MD5, SHA1/256/384/512, drag-drop, two-file compare |
 | `Metadata` | ❌ Not Wired | � | � |
 | `StripMetadata` | ❌ Not Wired | � | � |
-| `ClipboardViewer` | ❌ Not Wired | � | � |
-| `BorderlessWindow` | ❌ Not Wired | � | � |
-| `ActiveWindowBorderless` | ❌ Not Wired | � | � |
-| `ActiveWindowTopMost` | ❌ Not Wired | � | � |
-| `InspectWindow` | ❌ Not Wired | � | � |
-| `MonitorTest` | ❌ Not Wired | � | � |
+| `ClipboardViewer` | ❌ Not Wired | — | — |
+| **Note** | — | — | BorderlessWindow, ActiveWindowBorderless, ActiveWindowTopMost, InspectWindow removed — use ShareX for window utilities. |
+| `MonitorTest` | ❌ Not Wired | — | — |
 
 ---
 
@@ -174,11 +172,12 @@ This is a clean separation of concerns: `WorkerTask` manages the execution flow,
 This maintains clean separation of concerns and keeps each file focused and maintainable.
 
 ### 3. Remaining Unimplemented Workflows
-Of the 73 total workflow types:
-- **35 are fully wired** (Screen Capture, Recording, Upload, Tools)
-- **37 are not yet implemented** (mostly image manipulation, window utilities, and specialized tools)
+Of the 66 total workflow types:
+- **38 are fully wired** (28 direct in WorkerTask, 9 via Tool Services, 1 in TrayIconHelper)
+- **4 are intentionally excluded** (BorderlessWindow, ActiveWindowBorderless, ActiveWindowTopMost, InspectWindow—use ShareX for window utilities)
+- **24 are not yet implemented** (mostly image manipulation, specialized tools, and UI utilities)
 
-Most of these lack:
+Most unimplemented workflows lack:
 - Case statement in switch logic
 - Service handler implementation
 - UI integration
