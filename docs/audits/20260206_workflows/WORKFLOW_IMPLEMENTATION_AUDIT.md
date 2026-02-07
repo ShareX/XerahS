@@ -10,11 +10,11 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total WorkflowType Definitions** | 73 |
-| **Implemented in WorkerTask.cs** | 27 |
-| **Implemented via Tool Services in App.axaml.cs** | 8 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, HashCheck x1) |
+| **Total WorkflowType Definitions** | 70 |
+| **Implemented in WorkerTask.cs (direct logic)** | 28 |
+| **Implemented via Tool Services (delegated)** | 9 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1) |
 | **Implemented in TrayIconHelper.cs** | 1 (`OpenMainWindow`) |
-| **NOT WIRED (Stub/Placeholder)** | **36** |
+| **NOT WIRED (Stub/Placeholder)** | **32** |
 
 ---
 
@@ -45,7 +45,7 @@ Tray-specific actions handled separately.
 
 ## Detailed Breakdown by Category
 
-### Upload (2 of 8 wired)
+### Upload (4 of 10 wired)
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
@@ -62,7 +62,7 @@ Tray-specific actions handled separately.
 
 ---
 
-### Screen Capture (9 of 12 wired)
+### Screen Capture (9 of 13 wired)
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
