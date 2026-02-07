@@ -135,14 +135,14 @@
                             VerticalAlignment="Center"
                             Margin="8,0,0,0">
                   <Button Content="Retry"
-                          Command="{Binding $parent[Window].((vm:UploadContentViewModel)DataContext).RetryItemCommand}"
+                          Command="{Binding $parent[Window].DataContext.RetryItemCommand}"
                           CommandParameter="{Binding}"
                           IsVisible="{Binding IsFailed}"
                           FontSize="11"
                           Padding="6,2"
                           AutomationProperties.Name="Retry failed upload" />
                   <Button Content="X"
-                          Command="{Binding $parent[Window].((vm:UploadContentViewModel)DataContext).RemoveItemCommand}"
+                          Command="{Binding $parent[Window].DataContext.RemoveItemCommand}"
                           CommandParameter="{Binding}"
                           IsVisible="{Binding IsPending}"
                           FontSize="11"

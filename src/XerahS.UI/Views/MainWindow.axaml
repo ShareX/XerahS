@@ -86,6 +86,12 @@
                                 <ui:NavigationViewItem Content="Scan from region" Tag="Tools_QrScanRegion" AutomationProperties.Name="Scan QR from Region"/>
                             </ui:NavigationViewItem.MenuItems>
                         </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Image Combiner..." Tag="Tools_ImageCombiner" AutomationProperties.Name="Image Combiner Tool"/>
+                        <ui:NavigationViewItem Content="Image Splitter..." Tag="Tools_ImageSplitter" AutomationProperties.Name="Image Splitter Tool"/>
+                        <ui:NavigationViewItem Content="Image Thumbnailer..." Tag="Tools_ImageThumbnailer" AutomationProperties.Name="Image Thumbnailer Tool"/>
+                        <ui:NavigationViewItem Content="Video Converter..." Tag="Tools_VideoConverter" AutomationProperties.Name="Video Converter Tool"/>
+                        <ui:NavigationViewItem Content="Video Thumbnailer..." Tag="Tools_VideoThumbnailer" AutomationProperties.Name="Video Thumbnailer Tool"/>
+                        <ui:NavigationViewItem Content="Analyze Image..." Tag="Tools_AnalyzeImage" AutomationProperties.Name="Image Analyzer Tool"/>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
                 

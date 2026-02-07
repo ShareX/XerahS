@@ -32,7 +32,7 @@
               </StackPanel>
               <Button Grid.Column="1"
                       Content="X"
-                      Command="{Binding $parent[ListBox].((vm:ImageCombinerViewModel)DataContext).RemoveItemCommand}"
+                      Command="{Binding $parent[ListBox].DataContext.RemoveItemCommand}"
                       CommandParameter="{Binding}"
                       MinWidth="30" MinHeight="26"
                       Padding="6,2"

@@ -193,6 +193,24 @@ namespace XerahS.UI.Views
                     case "Tools_QrScanRegion":
                         _ = QrCodeToolService.HandleWorkflowAsync(WorkflowType.QRCodeScanRegion, this);
                         return;
+                    case "Tools_ImageCombiner":
+                        _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.ImageCombiner, this);
+                        return;
+                    case "Tools_ImageSplitter":
+                        _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.ImageSplitter, this);
+                        return;
+                    case "Tools_ImageThumbnailer":
+                        _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.ImageThumbnailer, this);
+                        return;
+                    case "Tools_VideoConverter":
+                        _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.VideoConverter, this);
+                        return;
+                    case "Tools_VideoThumbnailer":
+                        _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.VideoThumbnailer, this);
+                        return;
+                    case "Tools_AnalyzeImage":
+                        _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.AnalyzeImage, this);
+                        return;
                     case "Settings":
                         contentFrame.Content = new SettingsView();
                         break;
