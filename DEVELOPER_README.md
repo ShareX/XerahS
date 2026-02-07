@@ -4,6 +4,8 @@
 
 **XerahS is engineered for the agentic coding era.** This project embraces bleeding-edge technologies (.NET 10, Avalonia 11.3+, SkiaSharp 2.88.9) and is architected with AI-assisted development as a first-class concern. We actively seek developers proficient in **agentic coding workflows**—leveraging AI agents like GitHub Copilot, Claude, and Codex to accelerate feature development, refactoring, and code quality. Our codebase prioritizes clarity, consistency, and comprehensive documentation to maximize AI comprehension and generation capabilities. Strict nullability, exhaustive inline documentation, and standardized patterns (MVVM, dependency injection, plugin architecture) ensure that both human developers and AI agents can navigate, understand, and extend the system efficiently. **As AI capabilities rapidly advance, agentic coding is the future—like it or not** and XerahS is built to evolve alongside these tools. If you're experienced with AI-powered development tools and ready to push the boundaries of cross-platform screenshot tooling, XerahS is your platform.
 
+**Community-Driven Development:** XerahS is built collaboratively by developers and contributors from around the world, united by a shared commitment to open-source innovation. This is a project created by the community, for the community—where every contribution, whether code, documentation, or feedback, helps shape a tool that serves users across all platforms.
+
 ## Architecture Overview
 
 This project follows the **MVVM (Model-View-ViewModel)** pattern using the `CommunityToolkit.Mvvm` library.
