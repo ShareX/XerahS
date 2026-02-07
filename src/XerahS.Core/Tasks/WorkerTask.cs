@@ -608,6 +608,11 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.OCR:
                     case WorkflowType.ImageEditor:
                     case WorkflowType.HashCheck:
+                    case WorkflowType.PinToScreen:
+                    case WorkflowType.PinToScreenFromScreen:
+                    case WorkflowType.PinToScreenFromClipboard:
+                    case WorkflowType.PinToScreenFromFile:
+                    case WorkflowType.PinToScreenCloseAll:
                         await HandleToolWorkflowAsync(token);
                         return;
 

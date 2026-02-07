@@ -12,10 +12,10 @@
 |--------|-------|
 | **Total WorkflowType Definitions** | 65 |
 | **Implemented in WorkerTask.cs (direct logic)** | 28 |
-| **Implemented via Tool Services (delegated)** | 9 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1) |
+| **Implemented via Tool Services (delegated)** | 14 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1, PinToScreen x5) |
 | **Implemented in TrayIconHelper.cs** | 1 (`OpenMainWindow`) |
 | **NOT IMPLEMENTED BY DESIGN** | 5 (Window utilities + RectangleLight delegated to ShareX) |
-| **NOT WIRED (Stub/Placeholder)** | **22** |
+| **NOT WIRED (Stub/Placeholder)** | **17** |
 
 ---
 
@@ -34,6 +34,7 @@ Standalone tools that bypass WorkerTask and are handled directly in the applicat
 - `ColorPickerToolService.HandleWorkflowAsync()` - Color Picker, Screen Color Picker
 - `QrCodeToolService.HandleWorkflowAsync()` - QR Code, Scan from Screen, Scan Region
 - `OcrToolService.HandleWorkflowAsync()` - OCR Text Recognition
+- `PinToScreenToolService.HandleWorkflowAsync()` - Pin to Screen (5 variants)
 
 ### Pattern 3: Tray Icon Helper
 Tray-specific actions handled separately.
@@ -103,18 +104,18 @@ Tray-specific actions handled separately.
 
 ---
 
-### Tools (8 of 24 wired)
+### Tools (13 of 24 wired)
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
 | `ColorPicker` | ✅ Wired | App.axaml.cs | Via `ColorPickerToolService` |
 | `ScreenColorPicker` | ✅ Wired | App.axaml.cs | Via `ColorPickerToolService` |
 | `Ruler` | ❌ Not Wired | � | � |
-| `PinToScreen` | ❌ Not Wired | � | � |
-| `PinToScreenFromScreen` | ❌ Not Wired | � | � |
-| `PinToScreenFromClipboard` | ❌ Not Wired | � | � |
-| `PinToScreenFromFile` | ❌ Not Wired | � | � |
-| `PinToScreenCloseAll` | ❌ Not Wired | � | � |
+| `PinToScreen` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` — startup dialog with source selection |
+| `PinToScreenFromScreen` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` — region capture → pin at location |
+| `PinToScreenFromClipboard` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` — clipboard image → pin |
+| `PinToScreenFromFile` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` — file picker → pin |
+| `PinToScreenCloseAll` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` → `PinToScreenManager.CloseAll()` |
 | `ImageEditor` | ✅ Wired | App.axaml.cs | Opens file picker → loads image → `ShowEditorAsync()` |
 | **Note** | — | — | ImageEditor supersedes ImageBeautifier, ImageEffects, and ImageViewer. |
 | `ImageCombiner` | ❌ Not Wired | � | � |
@@ -173,9 +174,9 @@ This maintains clean separation of concerns and keeps each file focused and main
 
 ### 3. Remaining Unimplemented Workflows
 Of the 65 total workflow types:
-- **38 are fully wired** (28 direct in WorkerTask, 9 via Tool Services, 1 in TrayIconHelper)
+- **43 are fully wired** (28 direct in WorkerTask, 14 via Tool Services, 1 in TrayIconHelper)
 - **5 are intentionally excluded** (4 window utilities + RectangleLight—use ShareX for these)
-- **22 are not yet implemented** (mostly image manipulation, specialized tools, and UI utilities)
+- **17 are not yet implemented** (mostly image manipulation, specialized tools, and UI utilities)
 
 Most unimplemented workflows lack:
 - Case statement in switch logic
@@ -201,7 +202,7 @@ However, the core architecture is sound and ready for new implementations.
 8. ~~**`OpenHistory`** - Quick history access~~ ✅ Done (v0.8.2)
 
 ### Low Priority (Nice to Have)
-9. Pin-to-screen variants
+9. ~~Pin-to-screen variants~~ ✅ Done (v0.9.0) — PinToScreenToolService with full UI
 10. Borderless window tools
 11. Monitor test patterns
 
@@ -239,6 +240,11 @@ When implementing a new workflow, ensure:
 | `src/XerahS.UI/Services/HashCheckToolService.cs` | Hash check tool implementation |
 | `src/XerahS.UI/ViewModels/HashCheckViewModel.cs` | Hash check ViewModel |
 | `src/XerahS.UI/Views/HashCheckWindow.axaml` | Hash check window UI |
+| `src/XerahS.UI/Services/PinToScreenManager.cs` | Pin-to-screen window manager |
+| `src/XerahS.UI/Services/PinToScreenToolService.cs` | Pin-to-screen workflow routing |
+| `src/XerahS.UI/ViewModels/PinnedImageViewModel.cs` | Pinned image ViewModel |
+| `src/XerahS.UI/Views/PinnedImageWindow.axaml` | Pinned image window UI |
+| `src/XerahS.UI/Views/PinToScreenStartupDialog.axaml` | Pin-to-screen source selection dialog |
 
 ---
 

@@ -238,6 +238,14 @@ public partial class App : Application
                     {
                         await HashCheckToolService.HandleWorkflowAsync(workflowType, owner);
                     }
+                    else if (workflowType is WorkflowType.PinToScreen
+                        or WorkflowType.PinToScreenFromScreen
+                        or WorkflowType.PinToScreenFromClipboard
+                        or WorkflowType.PinToScreenFromFile
+                        or WorkflowType.PinToScreenCloseAll)
+                    {
+                        await PinToScreenToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
                     else
                     {
                         await QrCodeToolService.HandleWorkflowAsync(workflowType, owner);

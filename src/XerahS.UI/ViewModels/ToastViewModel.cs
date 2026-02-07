@@ -31,6 +31,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SkiaSharp;
 using XerahS.Common;
+using XerahS.Core;
 using XerahS.Platform.Abstractions;
 
 namespace XerahS.UI.ViewModels;
@@ -444,8 +445,13 @@ public partial class ToastViewModel : ObservableObject, IDisposable
         {
             try
             {
-                // TODO: Implement pin to screen
-                DebugHelper.WriteLine($"Pin to screen requested for: {_config.FilePath}");
+                var bitmap = SKBitmap.Decode(_config.FilePath);
+                if (bitmap != null)
+                {
+                    var options = SettingsManager.DefaultTaskSettings?.ToolsSettings?.PinToScreenOptions
+                        ?? new PinToScreenOptions();
+                    Services.PinToScreenManager.PinImage(bitmap, null, options);
+                }
             }
             catch (Exception ex)
             {
