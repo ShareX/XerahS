@@ -31,7 +31,6 @@ using Avalonia.Media;
 using XerahS.Core;
 using XerahS.Platform.Abstractions;
 using XerahS.UI.ViewModels;
-using ContentAlignment = System.Drawing.ContentAlignment;
 
 namespace XerahS.UI.Views;
 
@@ -228,7 +227,7 @@ public partial class PinnedImageWindow : Window
         Height = _viewModel.ScaledHeight + border;
     }
 
-    private void PositionByPlacement(ContentAlignment placement, int offset)
+    private void PositionByPlacement(ContentPlacement placement, int offset)
     {
         var screen = Screens.Primary;
         if (screen == null) return;
@@ -238,9 +237,7 @@ public partial class PinnedImageWindow : Window
         var h = (int)Height;
         double x = 0, y = 0;
 
-        var cp = MapContentAlignment(placement);
-
-        switch (cp)
+        switch (placement)
         {
             case ContentPlacement.TopLeft:
                 x = workingArea.X + offset;
@@ -282,22 +279,5 @@ public partial class PinnedImageWindow : Window
         }
 
         Position = new PixelPoint((int)x, (int)y);
-    }
-
-    private static ContentPlacement MapContentAlignment(ContentAlignment alignment)
-    {
-        return alignment switch
-        {
-            ContentAlignment.TopLeft => ContentPlacement.TopLeft,
-            ContentAlignment.TopCenter => ContentPlacement.TopCenter,
-            ContentAlignment.TopRight => ContentPlacement.TopRight,
-            ContentAlignment.MiddleLeft => ContentPlacement.MiddleLeft,
-            ContentAlignment.MiddleCenter => ContentPlacement.MiddleCenter,
-            ContentAlignment.MiddleRight => ContentPlacement.MiddleRight,
-            ContentAlignment.BottomLeft => ContentPlacement.BottomLeft,
-            ContentAlignment.BottomCenter => ContentPlacement.BottomCenter,
-            ContentAlignment.BottomRight => ContentPlacement.BottomRight,
-            _ => ContentPlacement.BottomRight
-        };
     }
 }

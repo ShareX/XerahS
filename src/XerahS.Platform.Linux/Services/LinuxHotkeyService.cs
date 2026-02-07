@@ -375,7 +375,6 @@ public sealed class LinuxHotkeyService : IHotkeyService
     private static readonly Dictionary<Key, string> SpecialKeyNames = new()
     {
         { Key.PrintScreen, "Print" },
-        { Key.Snapshot, "Print" },
         { Key.Scroll, "Scroll_Lock" },
         { Key.Pause, "Pause" },
         { Key.CapsLock, "Caps_Lock" },
