@@ -191,9 +191,6 @@ public enum WorkflowType // Localized
     [Description("Capture region")]
     RectangleRegion,
     [Category(EnumExtensions.WorkflowType_Category_ScreenCapture)]
-    [Description("Capture region (Light)")]
-    RectangleLight,
-    [Category(EnumExtensions.WorkflowType_Category_ScreenCapture)]
     [Description("Capture region (Transparent)")]
     RectangleTransparent,
     [Category(EnumExtensions.WorkflowType_Category_ScreenCapture)]

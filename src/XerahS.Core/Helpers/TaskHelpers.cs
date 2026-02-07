@@ -145,7 +145,6 @@ public static partial class TaskHelpers
             WorkflowType.CustomWindow or
             WorkflowType.ActiveMonitor or
             WorkflowType.RectangleRegion or
-            WorkflowType.RectangleLight or
             WorkflowType.RectangleTransparent or
             WorkflowType.CustomRegion or
             WorkflowType.LastRegion or

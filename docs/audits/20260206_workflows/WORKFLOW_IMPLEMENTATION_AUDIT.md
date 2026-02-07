@@ -10,12 +10,12 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total WorkflowType Definitions** | 66 |
+| **Total WorkflowType Definitions** | 65 |
 | **Implemented in WorkerTask.cs (direct logic)** | 28 |
 | **Implemented via Tool Services (delegated)** | 9 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1) |
 | **Implemented in TrayIconHelper.cs** | 1 (`OpenMainWindow`) |
-| **NOT IMPLEMENTED BY DESIGN** | 4 (Window utilities delegated to ShareX) |
-| **NOT WIRED (Stub/Placeholder)** | **24** |
+| **NOT IMPLEMENTED BY DESIGN** | 5 (Window utilities + RectangleLight delegated to ShareX) |
+| **NOT WIRED (Stub/Placeholder)** | **22** |
 
 ---
 
@@ -63,7 +63,7 @@ Tray-specific actions handled separately.
 
 ---
 
-### Screen Capture (9 of 13 wired)
+### Screen Capture (9 of 12 wired)
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
@@ -72,8 +72,8 @@ Tray-specific actions handled separately.
 | `CustomWindow` | ✅ Wired | WorkerTask.cs | Window selector integration |
 | `ActiveMonitor` | ✅ Wired | WorkerTask.cs | Captures active monitor via `GetActiveScreenBounds()` |
 | `RectangleRegion` | ✅ Wired | WorkerTask.cs | Region selection with frozen background |
-| `RectangleLight` | ❌ Not Wired | � | Stub only |
 | `RectangleTransparent` | ✅ Wired | WorkerTask.cs | Region selection with transparent overlay |
+| **Note** | — | — | RectangleLight removed — Skia-accelerated modern rendering makes simple overlays unnecessary. |
 | `CustomRegion` | ✅ Wired | WorkerTask.cs | Captures pre-configured `CaptureCustomRegion` rect |
 | `LastRegion` | ✅ Wired | WorkerTask.cs | Re-captures last used region rect |
 | `ScrollingCapture` | ✅ Wired | App.axaml.cs | Via `ScrollingCaptureToolService` |
@@ -172,10 +172,10 @@ This is a clean separation of concerns: `WorkerTask` manages the execution flow,
 This maintains clean separation of concerns and keeps each file focused and maintainable.
 
 ### 3. Remaining Unimplemented Workflows
-Of the 66 total workflow types:
+Of the 65 total workflow types:
 - **38 are fully wired** (28 direct in WorkerTask, 9 via Tool Services, 1 in TrayIconHelper)
-- **4 are intentionally excluded** (BorderlessWindow, ActiveWindowBorderless, ActiveWindowTopMost, InspectWindow—use ShareX for window utilities)
-- **24 are not yet implemented** (mostly image manipulation, specialized tools, and UI utilities)
+- **5 are intentionally excluded** (4 window utilities + RectangleLight—use ShareX for these)
+- **22 are not yet implemented** (mostly image manipulation, specialized tools, and UI utilities)
 
 Most unimplemented workflows lack:
 - Case statement in switch logic
