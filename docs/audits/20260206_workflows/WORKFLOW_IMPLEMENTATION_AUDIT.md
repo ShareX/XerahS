@@ -102,7 +102,7 @@ Tray-specific actions handled separately.
 
 ---
 
-### Tools (8 of 31 wired)
+### Tools (8 of 28 wired)
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
@@ -115,9 +115,7 @@ Tray-specific actions handled separately.
 | `PinToScreenFromFile` | ❌ Not Wired | � | � |
 | `PinToScreenCloseAll` | ❌ Not Wired | � | � |
 | `ImageEditor` | ✅ Wired | App.axaml.cs | Opens file picker → loads image → `ShowEditorAsync()` |
-| `ImageBeautifier` | ❌ Not Wired | � | � |
-| `ImageEffects` | ❌ Not Wired | � | � |
-| `ImageViewer` | ❌ Not Wired | � | � |
+| **Note** | — | — | ImageEditor supersedes ImageBeautifier, ImageEffects, and ImageViewer. |
 | `ImageCombiner` | ❌ Not Wired | � | � |
 | `ImageSplitter` | ❌ Not Wired | � | � |
 | `ImageThumbnailer` | ❌ Not Wired | � | � |
