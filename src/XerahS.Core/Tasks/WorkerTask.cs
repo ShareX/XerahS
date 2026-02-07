@@ -607,6 +607,7 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.ScrollingCapture:
                     case WorkflowType.OCR:
                     case WorkflowType.ImageEditor:
+                    case WorkflowType.HashCheck:
                         await HandleToolWorkflowAsync(token);
                         return;
 

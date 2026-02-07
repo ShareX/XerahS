@@ -234,6 +234,10 @@ public partial class App : Application
                     {
                         await OpenImageEditorAsync(owner);
                     }
+                    else if (workflowType == WorkflowType.HashCheck)
+                    {
+                        await HashCheckToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
                     else
                     {
                         await QrCodeToolService.HandleWorkflowAsync(workflowType, owner);

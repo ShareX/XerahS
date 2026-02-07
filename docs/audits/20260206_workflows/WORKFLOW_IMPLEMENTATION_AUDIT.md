@@ -1,7 +1,7 @@
 # WorkflowType Implementation Audit
 
 **Date:** February 6, 2026  
-**Version:** 0.8.2  
+**Version:** 0.8.3
 **Auditor:** Claude (AI Assistant)
 
 ---
@@ -12,9 +12,9 @@
 |--------|-------|
 | **Total WorkflowType Definitions** | 73 |
 | **Implemented in WorkerTask.cs** | 27 |
-| **Implemented via Tool Services in App.axaml.cs** | 7 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1) |
+| **Implemented via Tool Services in App.axaml.cs** | 8 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, HashCheck x1) |
 | **Implemented in TrayIconHelper.cs** | 1 (`OpenMainWindow`) |
-| **NOT WIRED (Stub/Placeholder)** | **37** |
+| **NOT WIRED (Stub/Placeholder)** | **36** |
 
 ---
 
@@ -102,7 +102,7 @@ Tray-specific actions handled separately.
 
 ---
 
-### Tools (7 of 31 wired)
+### Tools (8 of 31 wired)
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
@@ -128,7 +128,7 @@ Tray-specific actions handled separately.
 | `QRCode` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
 | `QRCodeDecodeFromScreen` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
 | `QRCodeScanRegion` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
-| `HashCheck` | ❌ Not Wired | � | � |
+| `HashCheck` | ✅ Wired | App.axaml.cs | Via `HashCheckToolService` — CRC32, MD5, SHA1/256/384/512, drag-drop, two-file compare |
 | `Metadata` | ❌ Not Wired | � | � |
 | `StripMetadata` | ❌ Not Wired | � | � |
 | `ClipboardViewer` | ❌ Not Wired | � | � |
@@ -190,7 +190,7 @@ Many workflows have enum definitions but no execution path:
 ### Medium Priority (Utility)
 5. **`ImageCombiner`** - Merge multiple images
 6. **`ImageThumbnailer`** - Generate thumbnails
-7. **`HashCheck`** - File integrity verification
+7. ~~**`HashCheck`** - File integrity verification~~ ✅ Done (v0.8.3) — HashCheckToolService with full UI
 8. ~~**`OpenHistory`** - Quick history access~~ ✅ Done (v0.8.2)
 
 ### Low Priority (Nice to Have)
@@ -229,6 +229,9 @@ When implementing a new workflow, ensure:
 | `src/XerahS.UI/Services/OcrToolService.cs` | OCR tool implementation |
 | `src/XerahS.Platform.Abstractions/IOcrService.cs` | OCR platform abstraction |
 | `src/XerahS.Platform.Windows/WindowsOcrService.cs` | Windows OCR (Windows.Media.Ocr) |
+| `src/XerahS.UI/Services/HashCheckToolService.cs` | Hash check tool implementation |
+| `src/XerahS.UI/ViewModels/HashCheckViewModel.cs` | Hash check ViewModel |
+| `src/XerahS.UI/Views/HashCheckWindow.axaml` | Hash check window UI |
 
 ---
 
