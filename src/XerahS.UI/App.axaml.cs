@@ -252,6 +252,10 @@ public partial class App : Application
                     {
                         await AutoCaptureToolService.HandleWorkflowAsync(workflowType, owner);
                     }
+                    else if (workflowType is WorkflowType.ClipboardUploadWithContentViewer)
+                    {
+                        await UploadContentToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
                     else
                     {
                         await QrCodeToolService.HandleWorkflowAsync(workflowType, owner);

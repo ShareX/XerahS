@@ -1,0 +1,213 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        x:Class="XerahS.UI.Views.UploadContentWindow"
+        x:DataType="vm:UploadContentViewModel"
+        Title="Upload Content"
+        Width="600"
+        Height="500"
+        MinWidth="450"
+        MinHeight="350"
+        WindowStartupLocation="CenterScreen"
+        AutomationProperties.Name="Upload content window">
+
+  <DockPanel Margin="16">
+
+    <!-- Source Buttons -->
+    <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,12">
+      <TextBlock Text="Sources"
+                 FontWeight="SemiBold"
+                 FontSize="14"
+                 AutomationProperties.Name="Content sources section" />
+      <WrapPanel Orientation="Horizontal">
+        <Button Content="Clipboard"
+                Command="{Binding LoadFromClipboardCommand}"
+                Margin="0,0,8,4"
+                MinWidth="90"
+                AutomationProperties.Name="Load content from clipboard" />
+        <Button Content="Files..."
+                Command="{Binding AddFilesCommand}"
+                Margin="0,0,8,4"
+                MinWidth="90"
+                AutomationProperties.Name="Add files to upload queue" />
+        <Button Content="Folder..."
+                Command="{Binding AddFolderCommand}"
+                Margin="0,0,8,4"
+                MinWidth="90"
+                AutomationProperties.Name="Add folder contents to upload queue" />
+        <Button Content="Text"
+                Command="{Binding AddTextCommand}"
+                Margin="0,0,8,4"
+                MinWidth="90"
+                AutomationProperties.Name="Add text content to upload queue" />
+        <Button Content="URL"
+                Command="{Binding AddURLCommand}"
+                Margin="0,0,8,4"
+                MinWidth="90"
+                AutomationProperties.Name="Add URL to upload queue" />
+      </WrapPanel>
+    </StackPanel>
+
+    <!-- Bottom: Status + Buttons -->
+    <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="0,12,0,0">
+      <ProgressBar Value="{Binding OverallProgressPercent}"
+                   Minimum="0"
+                   Maximum="100"
+                   Height="16"
+                   IsVisible="{Binding HasItems}"
+                   AutomationProperties.Name="Overall upload progress" />
+
+      <DockPanel>
+        <TextBlock Text="{Binding StatusText}"
+                   VerticalAlignment="Center"
+                   FontSize="12"
+                   AutomationProperties.Name="Upload queue status" />
+
+        <StackPanel DockPanel.Dock="Right"
+                    Orientation="Horizontal"
+                    Spacing="8"
+                    HorizontalAlignment="Right">
+          <Button Content="Cancel"
+                  Command="{Binding CancelUploadCommand}"
+                  IsVisible="{Binding IsUploading}"
+                  MinWidth="80"
+                  AutomationProperties.Name="Cancel current upload" />
+          <Button Content="Upload All"
+                  Command="{Binding UploadAllCommand}"
+                  IsEnabled="{Binding HasPendingItems}"
+                  MinWidth="100"
+                  AutomationProperties.Name="Upload all pending items" />
+          <Button Content="Close"
+                  x:Name="CloseButton"
+                  Click="OnCloseClick"
+                  MinWidth="80"
+                  AutomationProperties.Name="Close upload window" />
+        </StackPanel>
+      </DockPanel>
+    </StackPanel>
+
+    <!-- Queue Header -->
+    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+      <TextBlock Text="Queue"
+                 FontWeight="SemiBold"
+                 FontSize="14"
+                 VerticalAlignment="Center"
+                 AutomationProperties.Name="Upload queue section" />
+      <Button Content="Clear Completed"
+              Command="{Binding ClearCompletedCommand}"
+              DockPanel.Dock="Right"
+              HorizontalAlignment="Right"
+              FontSize="12"
+              Padding="8,4"
+              AutomationProperties.Name="Clear completed and failed items from queue" />
+    </DockPanel>
+
+    <!-- Queue List -->
+    <Border BorderBrush="{DynamicResource SystemBaseLowColor}"
+            BorderThickness="1"
+            CornerRadius="4"
+            DragDrop.AllowDrop="True"
+            x:Name="DropTarget">
+
+      <Panel>
+        <!-- Empty state placeholder -->
+        <TextBlock Text="Drag and drop files here, or use the buttons above"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource SystemBaseMediumColor}"
+                   FontSize="13"
+                   IsVisible="{Binding !HasItems}"
+                   AutomationProperties.Name="Empty queue placeholder" />
+
+        <!-- Items list -->
+        <ListBox ItemsSource="{Binding Items}"
+                 SelectedItem="{Binding SelectedItem}"
+                 IsVisible="{Binding HasItems}"
+                 Background="Transparent"
+                 AutomationProperties.Name="Upload queue items">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:UploadQueueItem">
+              <DockPanel Margin="4,2">
+                <!-- Remove/Retry button -->
+                <StackPanel DockPanel.Dock="Right"
+                            Orientation="Horizontal"
+                            Spacing="4"
+                            VerticalAlignment="Center"
+                            Margin="8,0,0,0">
+                  <Button Content="Retry"
+                          Command="{Binding $parent[Window].((vm:UploadContentViewModel)DataContext).RetryItemCommand}"
+                          CommandParameter="{Binding}"
+                          IsVisible="{Binding IsFailed}"
+                          FontSize="11"
+                          Padding="6,2"
+                          AutomationProperties.Name="Retry failed upload" />
+                  <Button Content="X"
+                          Command="{Binding $parent[Window].((vm:UploadContentViewModel)DataContext).RemoveItemCommand}"
+                          CommandParameter="{Binding}"
+                          IsVisible="{Binding IsPending}"
+                          FontSize="11"
+                          Padding="6,2"
+                          MinWidth="24"
+                          AutomationProperties.Name="Remove item from queue" />
+                </StackPanel>
+
+                <!-- Status indicator -->
+                <StackPanel DockPanel.Dock="Right"
+                            VerticalAlignment="Center"
+                            MinWidth="70"
+                            Margin="8,0">
+                  <TextBlock Text="Pending"
+                             FontSize="11"
+                             IsVisible="{Binding IsPending}"
+                             Foreground="{DynamicResource SystemBaseMediumColor}" />
+                  <StackPanel IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}"
+                              Orientation="Horizontal"
+                              Spacing="4">
+                    <TextBlock FontSize="11">
+                      <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0}%">
+                          <Binding Path="ProgressPercent" />
+                        </MultiBinding>
+                      </TextBlock.Text>
+                      <TextBlock.IsVisible>
+                        <Binding Path="Status">
+                          <Binding.Converter>
+                            <x:Static Member="ObjectConverters.IsNotNull" />
+                          </Binding.Converter>
+                        </Binding>
+                      </TextBlock.IsVisible>
+                    </TextBlock>
+                  </StackPanel>
+                </StackPanel>
+
+                <!-- Content info -->
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                  <TextBlock Text="{Binding DisplayName}"
+                             FontSize="13"
+                             TextTrimming="CharacterEllipsis"
+                             AutomationProperties.Name="Item name" />
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding Description}"
+                               FontSize="11"
+                               Foreground="{DynamicResource SystemBaseMediumColor}" />
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               FontSize="11"
+                               Foreground="Red"
+                               IsVisible="{Binding IsFailed}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding ResultURL}"
+                               FontSize="11"
+                               Foreground="Green"
+                               IsVisible="{Binding ResultURL, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                               TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                </StackPanel>
+              </DockPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Panel>
+    </Border>
+
+  </DockPanel>
+</Window>

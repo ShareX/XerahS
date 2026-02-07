@@ -145,6 +145,8 @@ public partial class OverlayWindow : Window
 
         // Ensure window can receive keyboard input
         Focusable = true;
+
+        WireUpToolbarEvents();
     }
 
     protected override void OnOpened(EventArgs e)
@@ -818,7 +820,11 @@ public partial class OverlayWindow : Window
 
     private void OnInvalidateRequested()
     {
-        Dispatcher.UIThread.Post(InvalidateVisual);
+        Dispatcher.UIThread.Post(() =>
+        {
+            RebuildAnnotationCanvas();
+            InvalidateVisual();
+        });
     }
 
     private void OnAnnotationsRestored()
@@ -849,6 +855,58 @@ public partial class OverlayWindow : Window
         {
             _annotationCanvas.Children.Add(preserveTextBox);
         }
+    }
+
+    private void WireUpToolbarEvents()
+    {
+        var toolbar = this.FindControl<AnnotationToolbar>("AnnotationToolbarControl");
+        if (toolbar == null)
+        {
+            return;
+        }
+
+        toolbar.ColorChanged += OnToolbarColorChanged;
+        toolbar.FillColorChanged += OnToolbarFillColorChanged;
+        toolbar.WidthChanged += OnToolbarWidthChanged;
+        toolbar.FontSizeChanged += OnToolbarFontSizeChanged;
+        toolbar.StrengthChanged += OnToolbarStrengthChanged;
+        toolbar.ShadowButtonClick += OnToolbarShadowButtonClicked;
+    }
+
+    private void OnToolbarColorChanged(object? sender, IBrush color)
+    {
+        if (color is SolidColorBrush solidBrush)
+        {
+            _viewModel.SelectedColor = $"#{solidBrush.Color.A:X2}{solidBrush.Color.R:X2}{solidBrush.Color.G:X2}{solidBrush.Color.B:X2}";
+        }
+    }
+
+    private void OnToolbarFillColorChanged(object? sender, IBrush color)
+    {
+        if (color is SolidColorBrush solidBrush)
+        {
+            _viewModel.FillColor = $"#{solidBrush.Color.A:X2}{solidBrush.Color.R:X2}{solidBrush.Color.G:X2}{solidBrush.Color.B:X2}";
+        }
+    }
+
+    private void OnToolbarWidthChanged(object? sender, int width)
+    {
+        _viewModel.StrokeWidth = width;
+    }
+
+    private void OnToolbarFontSizeChanged(object? sender, float fontSize)
+    {
+        _viewModel.FontSize = fontSize;
+    }
+
+    private void OnToolbarStrengthChanged(object? sender, float strength)
+    {
+        _viewModel.EffectStrength = strength;
+    }
+
+    private void OnToolbarShadowButtonClicked(object? sender, EventArgs e)
+    {
+        _viewModel.ShadowEnabled = !_viewModel.ShadowEnabled;
     }
 
     /// <summary>

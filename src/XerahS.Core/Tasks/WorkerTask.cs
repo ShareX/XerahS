@@ -247,7 +247,6 @@ namespace XerahS.Core.Tasks
                 switch (taskSettings.Job)
                 {
                     case WorkflowType.ClipboardUpload:
-                    case WorkflowType.ClipboardUploadWithContentViewer:
                         if (PlatformServices.Clipboard == null)
                         {
                             Status = TaskStatus.Failed;
@@ -618,6 +617,7 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.AutoCapture:
                     case WorkflowType.StartAutoCapture:
                     case WorkflowType.StopAutoCapture:
+                    case WorkflowType.ClipboardUploadWithContentViewer:
                         await HandleToolWorkflowAsync(token);
                         return;
 
@@ -688,7 +688,7 @@ namespace XerahS.Core.Tasks
 
                 captureStopwatch.Stop();
 
-                bool hasClipboardPayload = taskSettings?.Job is WorkflowType.ClipboardUpload or WorkflowType.ClipboardUploadWithContentViewer
+                bool hasClipboardPayload = taskSettings?.Job is WorkflowType.ClipboardUpload
                     && (metadata.Image != null || !string.IsNullOrEmpty(Info.TextContent) || !string.IsNullOrEmpty(Info.FilePath));
 
                 if (image != null)
@@ -704,6 +704,10 @@ namespace XerahS.Core.Tasks
                          !string.IsNullOrEmpty(Info.FilePath))
                 {
                     DebugHelper.WriteLine($"FileUpload selected file: {Info.FilePath}");
+                }
+                else if (!string.IsNullOrEmpty(Info.TextContent) && Info.Job == TaskJob.TextUpload)
+                {
+                    DebugHelper.WriteLine($"Text content pre-loaded: textLength={Info.TextContent.Length}");
                 }
                 else
                 {

@@ -1,7 +1,7 @@
 # WorkflowType Implementation Audit
 
-**Date:** February 6, 2026  
-**Version:** 0.8.3
+**Date:** February 6, 2026
+**Version:** 0.11.0
 **Auditor:** Claude (AI Assistant)
 
 ---
@@ -10,12 +10,12 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total WorkflowType Definitions** | 65 |
-| **Implemented in WorkerTask.cs (direct logic)** | 28 |
-| **Implemented via Tool Services (delegated)** | 17 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1, PinToScreen x5, AutoCapture x3) |
+| **Total WorkflowType Definitions** | 59 |
+| **Implemented in WorkerTask.cs (direct logic)** | 27 |
+| **Implemented via Tool Services (delegated)** | 18 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1, PinToScreen x5, AutoCapture x3, UploadContent x1) |
 | **Implemented in TrayIconHelper.cs** | 1 (`OpenMainWindow`) |
 | **NOT IMPLEMENTED BY DESIGN** | 5 (Window utilities + RectangleLight delegated to ShareX) |
-| **NOT WIRED (Stub/Placeholder)** | **14** |
+| **NOT WIRED (Stub/Placeholder)** | **8** |
 
 ---
 
@@ -36,6 +36,7 @@ Standalone tools that bypass WorkerTask and are handled directly in the applicat
 - `OcrToolService.HandleWorkflowAsync()` - OCR Text Recognition
 - `PinToScreenToolService.HandleWorkflowAsync()` - Pin to Screen (5 variants)
 - `AutoCaptureToolService.HandleWorkflowAsync()` - Auto Capture (3 variants)
+- `UploadContentToolService.HandleWorkflowAsync()` - Upload Content Window (clipboard with content viewer)
 
 ### Pattern 3: Tray Icon Helper
 Tray-specific actions handled separately.
@@ -48,20 +49,16 @@ Tray-specific actions handled separately.
 
 ## Detailed Breakdown by Category
 
-### Upload (4 of 10 wired)
+### Upload (4 of 4 wired) - COMPLETE
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
 | `FileUpload` | ✅ Wired | WorkerTask.cs | Full implementation with dialog callback |
-| `FolderUpload` | ❌ Not Wired | � | Stub only |
-| `ClipboardUpload` | ✅ Wired | WorkerTask.cs | Full implementation with image/text/file support |
-| `ClipboardUploadWithContentViewer` | ✅ Wired | WorkerTask.cs | Same as ClipboardUpload |
-| `UploadText` | ❌ Not Wired | � | Stub only |
-| `UploadURL` | ❌ Not Wired | � | Stub only |
-| `DragDropUpload` | ❌ Not Wired | � | Stub only |
-| `ShortenURL` | ❌ Not Wired | � | Stub only |
-| `StopUploads` | ❌ Not Wired | � | Stub only |
+| `ClipboardUpload` | ✅ Wired | WorkerTask.cs | Headless clipboard upload (image/text/file) via ClipboardContentHelper |
+| `ClipboardUploadWithContentViewer` | ✅ Wired | App.axaml.cs | Via `UploadContentToolService` — interactive upload window with queue management |
 | `IndexFolder` | ✅ Wired | WorkerTask.cs | Full implementation with HTML/TXT/XML/JSON output |
+
+**v0.11.0 Changes:** Removed 6 superseded workflow types (`FolderUpload`, `UploadText`, `UploadURL`, `DragDropUpload`, `ShortenURL`, `StopUploads`). Their functionality is now unified through the UploadContentWindow, which provides buttons for clipboard, files, folders, text, and URL upload, plus drag-and-drop support. `ClipboardUpload` remains headless for fast keyboard-triggered uploads. `ClipboardContentHelper` is a shared parsing utility used by both paths.
 
 ---
 
@@ -111,7 +108,7 @@ Tray-specific actions handled separately.
 |--------------|--------|----------|-------|
 | `ColorPicker` | ✅ Wired | App.axaml.cs | Via `ColorPickerToolService` |
 | `ScreenColorPicker` | ✅ Wired | App.axaml.cs | Via `ColorPickerToolService` |
-| `Ruler` | ❌ Not Wired | � | � |
+| `Ruler` | ❌ Not Wired | — | — |
 | `PinToScreen` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` — startup dialog with source selection |
 | `PinToScreenFromScreen` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` — region capture → pin at location |
 | `PinToScreenFromClipboard` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` — clipboard image → pin |
@@ -119,19 +116,19 @@ Tray-specific actions handled separately.
 | `PinToScreenCloseAll` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` → `PinToScreenManager.CloseAll()` |
 | `ImageEditor` | ✅ Wired | App.axaml.cs | Opens file picker → loads image → `ShowEditorAsync()` |
 | **Note** | — | — | ImageEditor supersedes ImageBeautifier, ImageEffects, and ImageViewer. |
-| `ImageCombiner` | ❌ Not Wired | � | � |
-| `ImageSplitter` | ❌ Not Wired | � | � |
-| `ImageThumbnailer` | ❌ Not Wired | � | � |
-| `VideoConverter` | ❌ Not Wired | � | � |
-| `VideoThumbnailer` | ❌ Not Wired | � | � |
-| `AnalyzeImage` | ❌ Not Wired | � | � |
+| `ImageCombiner` | ❌ Not Wired | — | — |
+| `ImageSplitter` | ❌ Not Wired | — | — |
+| `ImageThumbnailer` | ❌ Not Wired | — | — |
+| `VideoConverter` | ❌ Not Wired | — | — |
+| `VideoThumbnailer` | ❌ Not Wired | — | — |
+| `AnalyzeImage` | ❌ Not Wired | — | — |
 | **`OCR`** | ✅ Wired | App.axaml.cs | Via `OcrToolService` — Windows.Media.Ocr native, stubs for Linux/macOS |
 | `QRCode` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
 | `QRCodeDecodeFromScreen` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
 | `QRCodeScanRegion` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
 | `HashCheck` | ✅ Wired | App.axaml.cs | Via `HashCheckToolService` — CRC32, MD5, SHA1/256/384/512, drag-drop, two-file compare |
-| `Metadata` | ❌ Not Wired | � | � |
-| `StripMetadata` | ❌ Not Wired | � | � |
+| `Metadata` | ❌ Not Wired | — | — |
+| `StripMetadata` | ❌ Not Wired | — | — |
 | `ClipboardViewer` | ❌ Not Wired | — | — |
 | **Note** | — | — | BorderlessWindow, ActiveWindowBorderless, ActiveWindowTopMost, InspectWindow removed — use ShareX for window utilities. |
 | `MonitorTest` | ❌ Not Wired | — | — |
@@ -147,8 +144,8 @@ Tray-specific actions handled separately.
 | `OpenScreenshotsFolder` | ✅ Wired | WorkerTask.cs | Opens screenshots folder in file explorer |
 | `OpenHistory` | ✅ Wired | WorkerTask.cs | Via `OpenHistoryCallback` |
 | `OpenImageHistory` | ✅ Wired | WorkerTask.cs | Via `OpenHistoryCallback` (shared with OpenHistory) |
-| `ToggleActionsToolbar` | ❌ Not Wired | � | � |
-| `ToggleTrayMenu` | ❌ Not Wired | � | � |
+| `ToggleActionsToolbar` | ❌ Not Wired | — | — |
+| `ToggleTrayMenu` | ❌ Not Wired | — | — |
 | `ExitShareX` | ✅ Wired | WorkerTask.cs | Via `ExitApplicationCallback` → `Shutdown()` |
 
 ---
@@ -174,10 +171,10 @@ This is a clean separation of concerns: `WorkerTask` manages the execution flow,
 This maintains clean separation of concerns and keeps each file focused and maintainable.
 
 ### 3. Remaining Unimplemented Workflows
-Of the 65 total workflow types:
-- **46 are fully wired** (28 direct in WorkerTask, 17 via Tool Services, 1 in TrayIconHelper)
+Of the 59 total workflow types:
+- **46 are fully wired** (27 direct in WorkerTask, 18 via Tool Services, 1 in TrayIconHelper)
 - **5 are intentionally excluded** (4 window utilities + RectangleLight—use ShareX for these)
-- **14 are not yet implemented** (mostly image manipulation, specialized tools, and UI utilities)
+- **8 are not yet implemented** (mostly image manipulation, specialized tools, and UI utilities)
 
 Most unimplemented workflows lack:
 - Case statement in switch logic
@@ -194,7 +191,7 @@ However, the core architecture is sound and ready for new implementations.
 1. ~~**`OCR`** - Optical Character Recognition~~ ✅ Done (v0.8.2) — Windows.Media.Ocr native
 2. ~~**`ImageEditor`** - Basic image editing capabilities~~ ✅ Done (v0.8.2) — reuses existing EditorWindow
 3. ~~**`ScrollingCapture`** - Long page capture~~ ✅ Done (v0.8.2)
-4. **`UploadText`** - Text upload workflow
+4. ~~**Upload workflows** - Text, URL, folder, drag-drop~~ ✅ Done (v0.11.0) — UploadContentWindow with unified queue
 
 ### Medium Priority (Utility)
 5. **`ImageCombiner`** - Merge multiple images
@@ -231,6 +228,8 @@ When implementing a new workflow, ensure:
 | `src/XerahS.Core/Tasks/WorkerTask.cs` | Main execution engine |
 | `src/XerahS.Core/Helpers/TaskHelpers.cs` | Media type helpers |
 | `src/XerahS.Core/Helpers/TaskHelpers.ExecuteJob.cs` | Job execution entry |
+| `src/XerahS.Core/Helpers/ClipboardContentHelper.cs` | Shared clipboard parsing utility |
+| `src/XerahS.Core/Managers/TaskManager.cs` | Task lifecycle management |
 | `src/XerahS.UI/App.axaml.cs` | Tool service routing |
 | `src/XerahS.UI/TrayIconHelper.cs` | Tray action handling |
 | `src/XerahS.UI/Services/ColorPickerToolService.cs` | Color picker implementation |
@@ -249,6 +248,9 @@ When implementing a new workflow, ensure:
 | `src/XerahS.UI/Services/AutoCaptureToolService.cs` | Auto capture workflow routing |
 | `src/XerahS.UI/ViewModels/AutoCaptureViewModel.cs` | Auto capture ViewModel |
 | `src/XerahS.UI/Views/AutoCaptureWindow.axaml` | Auto capture configuration window |
+| `src/XerahS.UI/Services/UploadContentToolService.cs` | Upload content workflow routing |
+| `src/XerahS.UI/ViewModels/UploadContentViewModel.cs` | Upload content ViewModel |
+| `src/XerahS.UI/Views/UploadContentWindow.axaml` | Upload content window UI |
 
 ---
 

@@ -162,6 +162,62 @@ namespace XerahS.Core.Managers
             await task.StartAsync();
         }
 
+        public async Task StartTextTask(TaskSettings? taskSettings, string text)
+        {
+            if (taskSettings == null)
+            {
+                DebugHelper.WriteLine("StartTextTask called with null TaskSettings, skipping.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                DebugHelper.WriteLine("StartTextTask called with empty text, skipping.");
+                return;
+            }
+
+            TroubleshootingHelper.Log(taskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", $"StartTextTask Entry: textLength={text.Length}");
+
+            var safeTaskSettings = taskSettings ?? new TaskSettings();
+            var task = WorkerTask.Create(safeTaskSettings);
+            task.Info.TextContent = text;
+            task.Info.DataType = EDataType.Text;
+            task.Info.Job = TaskJob.TextUpload;
+
+            string extension = safeTaskSettings.AdvancedSettings?.TextFileExtension ?? "txt";
+            task.Info.SetFileName(TaskHelpers.GetFileName(safeTaskSettings, extension, task.Info.Metadata));
+
+            lock (_tasksLock)
+            {
+                _tasks.Enqueue(task);
+
+                while (_tasks.Count > _maxHistoricalTasks)
+                {
+                    if (_tasks.TryDequeue(out var oldTask))
+                    {
+                        try
+                        {
+                            oldTask.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugHelper.WriteLine($"Error disposing old task: {ex.Message}");
+                        }
+                    }
+                }
+            }
+
+            task.StatusChanged += (s, e) => DebugHelper.WriteLine($"Task Status: {task.Status}");
+            task.TaskCompleted += (s, e) =>
+            {
+                TaskCompleted?.Invoke(this, task);
+            };
+
+            TaskStarted?.Invoke(this, task);
+
+            await task.StartAsync();
+        }
+
         public void StopAllTasks()
         {
             foreach (var task in _tasks.Where(t => t.IsWorking))

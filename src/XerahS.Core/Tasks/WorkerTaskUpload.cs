@@ -27,7 +27,6 @@ using XerahS.Common;
 using XerahS.Core.Helpers;
 using XerahS.Core.Tasks.Processors;
 using XerahS.Platform.Abstractions;
-using System.Linq;
 
 namespace XerahS.Core.Tasks
 {
@@ -45,55 +44,40 @@ namespace XerahS.Core.Tasks
                 return false;
             }
 
-            // Priority: image -> text -> file
-            if (clipboard.ContainsImage())
+            var content = ClipboardContentHelper.ParseClipboard(clipboard);
+            if (content == null)
             {
-                var image = clipboard.GetImage();
-                if (image != null)
-                {
-                    metadata.Image = image;
+                return false;
+            }
+
+            switch (content.DataType)
+            {
+                case EDataType.Image:
+                    metadata.Image = content.Image;
                     Info.DataType = EDataType.Image;
                     Info.Job = TaskJob.DataUpload;
-
-                    string extension = EnumExtensions.GetDescription(taskSettings.ImageSettings.ImageFormat);
-                    Info.SetFileName(TaskHelpers.GetFileName(taskSettings, extension, metadata));
+                    string imageExtension = EnumExtensions.GetDescription(taskSettings.ImageSettings.ImageFormat);
+                    Info.SetFileName(TaskHelpers.GetFileName(taskSettings, imageExtension, metadata));
                     return true;
-                }
-            }
 
-            if (clipboard.ContainsText())
-            {
-                var text = clipboard.GetText();
-                if (!string.IsNullOrEmpty(text))
-                {
-                    Info.TextContent = text;
+                case EDataType.Text:
+                    Info.TextContent = content.Text;
                     Info.DataType = EDataType.Text;
                     Info.Job = TaskJob.TextUpload;
-
-                    string extension = taskSettings.AdvancedSettings.TextFileExtension;
-                    Info.SetFileName(TaskHelpers.GetFileName(taskSettings, extension, metadata));
+                    string textExtension = taskSettings.AdvancedSettings.TextFileExtension;
+                    Info.SetFileName(TaskHelpers.GetFileName(taskSettings, textExtension, metadata));
                     return true;
-                }
-            }
 
-            if (clipboard.ContainsFileDropList())
-            {
-                var files = clipboard.GetFileDropList();
-                if (files != null && files.Length > 0)
-                {
-                    clipboardFiles = files
-                        .Where(f => !string.IsNullOrWhiteSpace(f) && File.Exists(f))
-                        .ToArray();
-                    if (clipboardFiles.Length == 0)
+                case EDataType.File:
+                    clipboardFiles = content.Files;
+                    if (clipboardFiles == null || clipboardFiles.Length == 0)
                     {
                         return false;
                     }
-
                     Info.FilePath = clipboardFiles[0];
                     Info.DataType = EDataType.File;
                     Info.Job = TaskJob.FileUpload;
                     return true;
-                }
             }
 
             return false;

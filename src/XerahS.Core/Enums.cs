@@ -151,29 +151,11 @@ public enum WorkflowType // Localized
     [Description("Upload file")]
     FileUpload,
     [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Upload folder")]
-    FolderUpload,
-    [Category(EnumExtensions.WorkflowType_Category_Upload)]
     [Description("Upload from clipboard")]
     ClipboardUpload,
     [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Upload from clipboard with content viewer")]
+    [Description("Upload content")]
     ClipboardUploadWithContentViewer,
-    [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Upload text")]
-    UploadText,
-    [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Upload from URL")]
-    UploadURL,
-    [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Drag and drop upload")]
-    DragDropUpload,
-    [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Shorten URL")]
-    ShortenURL,
-    [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Stop all active uploads")]
-    StopUploads,
     // Screen capture
     [Category(EnumExtensions.WorkflowType_Category_ScreenCapture)]
     [Description("Capture entire screen")]

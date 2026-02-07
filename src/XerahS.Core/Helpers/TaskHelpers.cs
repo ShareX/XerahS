@@ -86,15 +86,9 @@ public static partial class TaskHelpers
     {
         return job switch
         {
-            WorkflowType.UploadText => JobMediaType.Text,
             WorkflowType.FileUpload or
-            WorkflowType.FolderUpload or
             WorkflowType.ClipboardUpload or
-            WorkflowType.ClipboardUploadWithContentViewer or
-            WorkflowType.DragDropUpload => JobMediaType.File,
-            WorkflowType.ShortenURL or
-            WorkflowType.UploadURL or
-            WorkflowType.StopUploads => JobMediaType.System,
+            WorkflowType.ClipboardUploadWithContentViewer => JobMediaType.File,
             _ => JobMediaType.None
         };
     }

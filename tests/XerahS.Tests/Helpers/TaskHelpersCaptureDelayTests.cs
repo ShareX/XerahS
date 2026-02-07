@@ -90,7 +90,7 @@ public class TaskHelpersCaptureDelayTests
     {
         var settings = new TaskSettings
         {
-            Job = WorkflowType.UploadText
+            Job = WorkflowType.ClipboardUpload
         };
 
         var delaySeconds = TaskHelpers.GetCaptureStartDelaySeconds(settings, out var category);
