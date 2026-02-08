@@ -109,12 +109,6 @@ public static class ToolNavigationHelper
             case "Tools_HashCheck":
                 _ = executeWorkflowFromNavigationAsync(WorkflowType.HashCheck);
                 return true;
-            case "Tools_Metadata":
-                _ = executeWorkflowFromNavigationAsync(WorkflowType.Metadata);
-                return true;
-            case "Tools_StripMetadata":
-                _ = executeWorkflowFromNavigationAsync(WorkflowType.StripMetadata);
-                return true;
             case "Tools_ClipboardViewer":
                 _ = executeWorkflowFromNavigationAsync(WorkflowType.ClipboardViewer);
                 return true;

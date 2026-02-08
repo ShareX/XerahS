@@ -264,7 +264,8 @@ public partial class App : Application
                     {
                         await AutoCaptureToolService.HandleWorkflowAsync(workflowType, owner);
                     }
-                    else if (workflowType is WorkflowType.ClipboardUploadWithContentViewer)
+                    else if (workflowType is WorkflowType.ClipboardUploadWithContentViewer
+                        or WorkflowType.ClipboardViewer)
                     {
                         await UploadContentToolService.HandleWorkflowAsync(workflowType, owner);
                     }

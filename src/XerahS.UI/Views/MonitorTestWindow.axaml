@@ -128,7 +128,7 @@
       </Grid>
 
       <!-- Visual Test Pattern View -->
-      <Border x:Name="TestPatternView" Background="{Binding TestColor}" />
+      <Border x:Name="TestPatternView" Background="{Binding TestBrush}" />
 
     </Panel>
   </Grid>

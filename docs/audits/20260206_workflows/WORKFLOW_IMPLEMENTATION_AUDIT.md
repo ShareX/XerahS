@@ -130,9 +130,9 @@ Tray-specific actions handled separately.
 | `QRCodeDecodeFromScreen` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
 | `QRCodeScanRegion` | ✅ Wired | App.axaml.cs | Via `QrCodeToolService` |
 | `HashCheck` | ✅ Wired | App.axaml.cs | Via `HashCheckToolService` — CRC32, MD5, SHA1/256/384/512, drag-drop, two-file compare |
-| `Metadata` | ❌ Not Wired | — | — |
-| `StripMetadata` | ❌ Not Wired | — | — |
-| `ClipboardViewer` | ❌ Not Wired | — | — |
+| `Metadata` | ❌ Not Implemented by Design | — | Not critical / Removed |
+| `StripMetadata` | ❌ Not Implemented by Design | — | Not critical / Removed |
+| `ClipboardViewer` | ✅ Wired | App.axaml.cs | Via `UploadContentToolService` — opens upload window with clipboard content pre-loaded |
 | **Note** | — | — | BorderlessWindow, ActiveWindowBorderless, ActiveWindowTopMost, InspectWindow removed — use ShareX for window utilities. |
 | `MonitorTest` | ✅ Wired | App.axaml.cs | Via `MonitorTestToolService` — Dual-mode: (1) Monitor diagnostics with layout visualization, DPI/scaling info; (2) Visual pattern testing (solid colors, gradients, patterns) |
 
@@ -147,8 +147,8 @@ Tray-specific actions handled separately.
 | `OpenScreenshotsFolder` | ✅ Wired | WorkerTask.cs | Opens screenshots folder in file explorer |
 | `OpenHistory` | ✅ Wired | WorkerTask.cs | Via `OpenHistoryCallback` |
 | `OpenImageHistory` | ✅ Wired | WorkerTask.cs | Via `OpenHistoryCallback` (shared with OpenHistory) |
-| `ToggleActionsToolbar` | ❌ Not Wired | — | — |
-| `ToggleTrayMenu` | ❌ Not Wired | — | — |
+| `ToggleTrayMenu` | ❌ Not Implemented by Design | — | Not critical / Removed |
+| `ToggleActionsToolbar` | ❌ Not Implemented by Design | — | Not critical / Removed |
 | `ExitShareX` | ✅ Wired | WorkerTask.cs | Via `ExitApplicationCallback` → `Shutdown()` |
 
 ---

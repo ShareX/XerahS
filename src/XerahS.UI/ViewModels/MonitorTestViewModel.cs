@@ -58,6 +58,9 @@ public partial class MonitorTestViewModel : ViewModelBase
     private Color _testColor = Colors.White;
 
     [ObservableProperty]
+    private IBrush _testBrush = new SolidColorBrush(Colors.White);
+
+    [ObservableProperty]
     private int _grayscaleValue = 128;
 
     [ObservableProperty]
@@ -104,6 +107,7 @@ public partial class MonitorTestViewModel : ViewModelBase
     public MonitorTestViewModel()
     {
         RefreshMonitors();
+        UpdateTestBrush();
     }
 
     [RelayCommand]
@@ -162,6 +166,7 @@ public partial class MonitorTestViewModel : ViewModelBase
     {
         var gray = (byte)GrayscaleValue;
         TestColor = Color.FromRgb(gray, gray, gray);
+        UpdateTestBrush();
     }
 
     [RelayCommand]
@@ -171,23 +176,26 @@ public partial class MonitorTestViewModel : ViewModelBase
             (byte)RedValue,
             (byte)GreenValue,
             (byte)BlueValue);
+        UpdateTestBrush();
     }
 
     partial void OnSelectedTestModeChanged(TestMode value)
     {
-        // Update test color based on selected mode
+        // Update test values based on selected mode.
         switch (value)
         {
             case TestMode.Grayscale:
                 UpdateGrayscale();
-                break;
+                return;
             case TestMode.RgbColor:
                 UpdateRgb();
-                break;
+                return;
             case TestMode.SolidColor:
                 // Keep current test color
                 break;
         }
+
+        UpdateTestBrush();
     }
 
     partial void OnGrayscaleValueChanged(int value)
@@ -220,6 +228,153 @@ public partial class MonitorTestViewModel : ViewModelBase
         {
             UpdateRgb();
         }
+    }
+
+    partial void OnTestColorChanged(Color value)
+    {
+        if (SelectedTestMode == TestMode.SolidColor)
+        {
+            UpdateTestBrush();
+        }
+    }
+
+    partial void OnSelectedGradientModeChanged(GradientMode value)
+    {
+        if (SelectedTestMode == TestMode.Gradient)
+        {
+            UpdateTestBrush();
+        }
+    }
+
+    partial void OnGradientColor1Changed(Color value)
+    {
+        if (SelectedTestMode == TestMode.Gradient)
+        {
+            UpdateTestBrush();
+        }
+    }
+
+    partial void OnGradientColor2Changed(Color value)
+    {
+        if (SelectedTestMode == TestMode.Gradient)
+        {
+            UpdateTestBrush();
+        }
+    }
+
+    partial void OnSelectedPatternTypeChanged(PatternType value)
+    {
+        if (SelectedTestMode == TestMode.Pattern)
+        {
+            UpdateTestBrush();
+        }
+    }
+
+    partial void OnPatternSizeChanged(int value)
+    {
+        if (SelectedTestMode == TestMode.Pattern)
+        {
+            UpdateTestBrush();
+        }
+    }
+
+    private void UpdateTestBrush()
+    {
+        TestBrush = SelectedTestMode switch
+        {
+            TestMode.Gradient => CreateGradientBrush(),
+            TestMode.Pattern => CreatePatternBrush(),
+            _ => new SolidColorBrush(TestColor)
+        };
+    }
+
+    private IBrush CreateGradientBrush()
+    {
+        var (startPoint, endPoint) = SelectedGradientMode switch
+        {
+            GradientMode.Horizontal => (
+                new RelativePoint(0, 0.5, RelativeUnit.Relative),
+                new RelativePoint(1, 0.5, RelativeUnit.Relative)),
+            GradientMode.Vertical => (
+                new RelativePoint(0.5, 0, RelativeUnit.Relative),
+                new RelativePoint(0.5, 1, RelativeUnit.Relative)),
+            GradientMode.DiagonalBackward => (
+                new RelativePoint(1, 0, RelativeUnit.Relative),
+                new RelativePoint(0, 1, RelativeUnit.Relative)),
+            _ => (
+                new RelativePoint(0, 0, RelativeUnit.Relative),
+                new RelativePoint(1, 1, RelativeUnit.Relative))
+        };
+
+        return new LinearGradientBrush
+        {
+            StartPoint = startPoint,
+            EndPoint = endPoint,
+            GradientStops = new GradientStops
+            {
+                new GradientStop(GradientColor1, 0),
+                new GradientStop(GradientColor2, 1)
+            }
+        };
+    }
+
+    private IBrush CreatePatternBrush()
+    {
+        var cellSize = Math.Max(2, PatternSize);
+        var tileSize = cellSize * 2.0;
+        var lightBrush = new SolidColorBrush(Color.FromRgb(230, 230, 230));
+        var darkBrush = new SolidColorBrush(Color.FromRgb(40, 40, 40));
+
+        var drawing = new DrawingGroup
+        {
+            Children =
+            {
+                new GeometryDrawing
+                {
+                    Brush = lightBrush,
+                    Geometry = new RectangleGeometry(new Rect(0, 0, tileSize, tileSize))
+                }
+            }
+        };
+
+        switch (SelectedPatternType)
+        {
+            case PatternType.HorizontalLines:
+                drawing.Children.Add(new GeometryDrawing
+                {
+                    Brush = darkBrush,
+                    Geometry = new RectangleGeometry(new Rect(0, 0, tileSize, cellSize))
+                });
+                break;
+            case PatternType.VerticalLines:
+                drawing.Children.Add(new GeometryDrawing
+                {
+                    Brush = darkBrush,
+                    Geometry = new RectangleGeometry(new Rect(0, 0, cellSize, tileSize))
+                });
+                break;
+            case PatternType.Checkerboard:
+                drawing.Children.Add(new GeometryDrawing
+                {
+                    Brush = darkBrush,
+                    Geometry = new RectangleGeometry(new Rect(0, 0, cellSize, cellSize))
+                });
+                drawing.Children.Add(new GeometryDrawing
+                {
+                    Brush = darkBrush,
+                    Geometry = new RectangleGeometry(new Rect(cellSize, cellSize, cellSize, cellSize))
+                });
+                break;
+        }
+
+        return new DrawingBrush
+        {
+            TileMode = TileMode.Tile,
+            Stretch = Stretch.None,
+            SourceRect = new RelativeRect(0, 0, tileSize, tileSize, RelativeUnit.Absolute),
+            DestinationRect = new RelativeRect(0, 0, tileSize, tileSize, RelativeUnit.Absolute),
+            Drawing = drawing
+        };
     }
 
     public void UpdateCursorPosition(Point position)

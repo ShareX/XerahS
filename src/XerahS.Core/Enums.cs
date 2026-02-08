@@ -288,12 +288,7 @@ public enum WorkflowType // Localized
     [Category(EnumExtensions.WorkflowType_Category_Tools)]
     [Description("Hash checker")]
     HashCheck,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Metadata")]
-    Metadata,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Strip metadata")]
-    StripMetadata,
+
     [Category(EnumExtensions.WorkflowType_Category_Tools)]
     [Description("Directory indexer")]
     IndexFolder,
@@ -319,12 +314,7 @@ public enum WorkflowType // Localized
     [Category(EnumExtensions.WorkflowType_Category_Other)]
     [Description("Open image history window")]
     OpenImageHistory,
-    [Category(EnumExtensions.WorkflowType_Category_Other)]
-    [Description("Toggle actions toolbar")]
-    ToggleActionsToolbar,
-    [Category(EnumExtensions.WorkflowType_Category_Other)]
-    [Description("Toggle tray menu")]
-    ToggleTrayMenu,
+
     [Category(EnumExtensions.WorkflowType_Category_Other)]
     [Description("Exit ShareX")]
     ExitShareX

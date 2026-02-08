@@ -638,6 +638,7 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.VideoConverter:
                     case WorkflowType.VideoThumbnailer:
                     case WorkflowType.AnalyzeImage:
+                    case WorkflowType.ClipboardViewer:
                         await HandleToolWorkflowAsync(token);
                         return;
 

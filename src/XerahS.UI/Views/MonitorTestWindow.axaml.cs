@@ -34,16 +34,20 @@ namespace XerahS.UI.Views;
 
 public partial class MonitorTestWindow : Window
 {
+    private MonitorTestViewModel? _boundViewModel;
     private MonitorTestViewModel? ViewModel => DataContext as MonitorTestViewModel;
 
     public MonitorTestWindow()
     {
         InitializeComponent();
 
-        // Wait for layout to be ready before drawing
-        LayoutCanvas.LayoutUpdated += (_, _) =>
+        // Redraw only when canvas size changes to avoid layout feedback loops.
+        LayoutCanvas.SizeChanged += (_, e) =>
         {
-            if (ViewModel?.Snapshot != null && LayoutCanvas.Bounds.Width > 0)
+            if (e.NewSize.Width > 0 &&
+                e.NewSize.Height > 0 &&
+                ViewModel?.Snapshot != null &&
+                ViewModel.SelectedTestMode == TestMode.MonitorDiagnostics)
             {
                 DrawMonitorLayout();
             }
@@ -54,11 +58,29 @@ public partial class MonitorTestWindow : Window
     {
         base.OnDataContextChanged(e);
 
-        if (ViewModel != null)
+        if (_boundViewModel != null)
         {
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            _boundViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+        }
+
+        _boundViewModel = ViewModel;
+
+        if (_boundViewModel != null)
+        {
+            _boundViewModel.PropertyChanged += ViewModel_PropertyChanged;
             UpdateViewVisibility();
         }
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        if (_boundViewModel != null)
+        {
+            _boundViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            _boundViewModel = null;
+        }
+
+        base.OnClosed(e);
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)
@@ -100,7 +122,9 @@ public partial class MonitorTestWindow : Window
 
     private void DrawMonitorLayout()
     {
-        if (ViewModel?.Snapshot == null || LayoutCanvas == null)
+        if (ViewModel?.Snapshot == null ||
+            LayoutCanvas == null ||
+            ViewModel.SelectedTestMode != TestMode.MonitorDiagnostics)
             return;
 
         LayoutCanvas.Children.Clear();
@@ -113,7 +137,10 @@ public partial class MonitorTestWindow : Window
         var canvasWidth = LayoutCanvas.Bounds.Width;
         var canvasHeight = LayoutCanvas.Bounds.Height;
 
-        if (canvasWidth <= 0 || canvasHeight <= 0)
+        if (canvasWidth <= 0 ||
+            canvasHeight <= 0 ||
+            virtualBounds.Width <= 0 ||
+            virtualBounds.Height <= 0)
             return;
 
         // Calculate scale to fit all monitors in canvas with padding
