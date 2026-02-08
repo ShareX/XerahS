@@ -7,7 +7,21 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **MINOR** (y): New features and enhancements
 - **PATCH** (z): Bug fixes and patches
 
+
 ## Unreleased
+
+## v0.14.0
+
+### Features
+- **Monitor Test**: Implement MonitorTest workflow with diagnostic and pattern testing modes `(56a1ea3, 1dc10f8)`
+- **Tools**: Add Ruler workflow routing and placeholder service `(5647b4d)`
+
+## v0.13.0
+
+### Fixes
+- **Menu Bar**: Fix menu-bar hash checker routing and dynamic workflows menu `(8068e6f)`
+- **Upload**: Improve Upload Content workflow handling and window UX `(62a1cda)`
+- **Upload**: Improve Upload nav workflow fallback and text upload routing `(4fd8182)`
 
 ## v0.12.0
 
