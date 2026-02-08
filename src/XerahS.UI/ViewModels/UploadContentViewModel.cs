@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using System.Collections.ObjectModel;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Newtonsoft.Json;
@@ -33,6 +34,7 @@ using XerahS.Core;
 using XerahS.Core.Managers;
 using XerahS.Core.Tasks;
 using XerahS.Platform.Abstractions;
+using BitmapConversionHelpers = XerahS.Editor.Helpers.BitmapConversionHelpers;
 
 namespace XerahS.UI.ViewModels;
 
@@ -88,6 +90,8 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
 {
     private bool _disposed;
     private CancellationTokenSource? _uploadCts;
+    private Bitmap? _selectedPreviewImage;
+    private string _selectedFileMetadata = "No file selected.";
 
     public ObservableCollection<UploadQueueItem> Items { get; } = new();
 
@@ -109,6 +113,47 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private bool _hasItems;
 
+    public Bitmap? SelectedPreviewImage
+    {
+        get => _selectedPreviewImage;
+        private set
+        {
+            if (ReferenceEquals(_selectedPreviewImage, value))
+            {
+                return;
+            }
+
+            _selectedPreviewImage?.Dispose();
+            _selectedPreviewImage = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasSelectedPreviewImage));
+            OnPropertyChanged(nameof(ShowImagePreview));
+        }
+    }
+
+    public string SelectedFileMetadata
+    {
+        get => _selectedFileMetadata;
+        private set
+        {
+            if (_selectedFileMetadata == value)
+            {
+                return;
+            }
+
+            _selectedFileMetadata = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool HasSelectedItem => SelectedItem != null;
+    public bool HasSelectedPreviewImage => SelectedPreviewImage != null;
+    public bool ShowImagePreview => SelectedItem?.DataType == EDataType.Image && HasSelectedPreviewImage;
+    public bool ShowTextPreview => SelectedItem?.DataType is EDataType.Text or EDataType.URL;
+    public bool ShowFilePreview => SelectedItem?.DataType == EDataType.File;
+    public string SelectedTextPreview => SelectedItem?.TextContent ?? string.Empty;
+    public string SelectedItemTypeText => $"Type: {GetDataTypeDisplayText(SelectedItem?.DataType)}";
+
     public event EventHandler? FilePickerRequested;
     public event EventHandler? FolderPickerRequested;
     public event EventHandler? TextInputRequested;
@@ -117,6 +162,11 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
     public UploadContentViewModel()
     {
         Items.CollectionChanged += (_, _) => UpdateStatus();
+    }
+
+    partial void OnSelectedItemChanged(UploadQueueItem? value)
+    {
+        UpdateSelectedPreview();
     }
 
     [RelayCommand]
@@ -131,36 +181,53 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
             return;
         }
 
+        UploadQueueItem? firstAddedItem = null;
+
         switch (content.DataType)
         {
             case EDataType.Image when content.Image != null:
-                Items.Add(new UploadQueueItem
+                firstAddedItem = new UploadQueueItem
                 {
                     DisplayName = "Clipboard Image",
                     Description = $"{content.Image.Width}x{content.Image.Height}",
                     DataType = EDataType.Image,
                     Image = content.Image
-                });
+                };
+                Items.Add(firstAddedItem);
                 break;
 
             case EDataType.Text when !string.IsNullOrEmpty(content.Text):
-                Items.Add(new UploadQueueItem
+                firstAddedItem = new UploadQueueItem
                 {
                     DisplayName = "Clipboard Text",
                     Description = $"{content.Text.Length} characters",
                     DataType = EDataType.Text,
                     TextContent = content.Text
-                });
+                };
+                Items.Add(firstAddedItem);
                 break;
 
             case EDataType.File when content.Files != null:
                 foreach (var file in content.Files)
                 {
-                    AddFileItem(file);
+                    var addedItem = AddFileItem(file);
+                    if (firstAddedItem == null && addedItem != null)
+                    {
+                        firstAddedItem = addedItem;
+                    }
                 }
                 break;
         }
 
+        if (firstAddedItem != null)
+        {
+            SelectedItem = firstAddedItem;
+        }
+
+        DebugHelper.WriteLine(
+            $"[UploadContentDebug] Clipboard parsed: dataType={content.DataType}, " +
+            $"textLength={(content.Text?.Length ?? 0)}, fileCount={(content.Files?.Length ?? 0)}, " +
+            $"image={(content.Image != null ? $"{content.Image.Width}x{content.Image.Height}" : "null")}.");
         DebugHelper.WriteLine($"UploadContent: Loaded {content.DataType} from clipboard.");
     }
 
@@ -188,18 +255,21 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         URLInputRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    public void AddFileItem(string filePath)
+    public UploadQueueItem? AddFileItem(string filePath)
     {
-        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath)) return;
+        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath)) return null;
 
         var fileInfo = new FileInfo(filePath);
-        Items.Add(new UploadQueueItem
+        var item = new UploadQueueItem
         {
             DisplayName = Path.GetFileName(filePath),
             Description = FormatFileSize(fileInfo.Length),
             DataType = EDataType.File,
             FilePath = filePath
-        });
+        };
+
+        Items.Add(item);
+        return item;
     }
 
     public void AddFolderFiles(string folderPath)
@@ -207,9 +277,19 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath)) return;
 
         var files = Directory.GetFiles(folderPath);
+        UploadQueueItem? firstAddedItem = null;
         foreach (var file in files)
         {
-            AddFileItem(file);
+            var addedItem = AddFileItem(file);
+            if (firstAddedItem == null && addedItem != null)
+            {
+                firstAddedItem = addedItem;
+            }
+        }
+
+        if (firstAddedItem != null)
+        {
+            SelectedItem = firstAddedItem;
         }
 
         DebugHelper.WriteLine($"UploadContent: Added {files.Length} files from folder '{folderPath}'.");
@@ -219,26 +299,32 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
     {
         if (string.IsNullOrEmpty(text)) return;
 
-        Items.Add(new UploadQueueItem
+        var item = new UploadQueueItem
         {
             DisplayName = "Text",
             Description = $"{text.Length} characters",
             DataType = EDataType.Text,
             TextContent = text
-        });
+        };
+
+        Items.Add(item);
+        SelectedItem = item;
     }
 
     public void AddURLItem(string url)
     {
         if (string.IsNullOrEmpty(url)) return;
 
-        Items.Add(new UploadQueueItem
+        var item = new UploadQueueItem
         {
             DisplayName = url.Length > 60 ? url.Substring(0, 57) + "..." : url,
             Description = "URL",
             DataType = EDataType.URL,
             TextContent = url
-        });
+        };
+
+        Items.Add(item);
+        SelectedItem = item;
     }
 
     [RelayCommand]
@@ -248,6 +334,8 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
 
         var pendingItems = Items.Where(i => i.Status == UploadQueueItemStatus.Pending).ToList();
         if (pendingItems.Count == 0) return;
+
+        DebugHelper.WriteLine($"[UploadContentDebug] UploadAll started. pendingItems={pendingItems.Count}");
 
         IsUploading = true;
         _uploadCts = new CancellationTokenSource();
@@ -277,6 +365,11 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         item.ProgressPercent = 0;
         item.ErrorMessage = null;
 
+        DebugHelper.WriteLine(
+            $"[UploadContentDebug] UploadItem start: dataType={item.DataType}, " +
+            $"displayName=\"{item.DisplayName}\", filePath=\"{item.FilePath ?? string.Empty}\", " +
+            $"textLength={(item.TextContent?.Length ?? 0)}");
+
         WorkerTask? capturedTask = null;
 
         void OnTaskStarted(object? sender, WorkerTask task)
@@ -298,6 +391,11 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         try
         {
             var settings = CreateUploadTaskSettings(item.DataType);
+            DebugHelper.WriteLine(
+                $"[UploadContentDebug] TaskSettings resolved for item: job={settings.Job}, workflowId=\"{settings.WorkflowId ?? string.Empty}\", " +
+                $"destinationInstanceId=\"{settings.DestinationInstanceId ?? string.Empty}\", " +
+                $"urlShortenerInstanceId=\"{settings.UrlShortenerDestinationInstanceId ?? string.Empty}\", " +
+                $"afterCapture={settings.AfterCaptureJob}, afterUpload={settings.AfterUploadJob}");
 
             switch (item.DataType)
             {
@@ -313,11 +411,17 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
 
                 case EDataType.Text when !string.IsNullOrEmpty(item.TextContent):
                     settings.Job = WorkflowType.ClipboardUploadWithContentViewer;
+                    DebugHelper.WriteLine(
+                        $"[UploadContentDebug] Starting text upload task. textLength={item.TextContent.Length}, " +
+                        $"textPreview=\"{GetTextPreview(item.TextContent)}\"");
                     await TaskManager.Instance.StartTextTask(settings, item.TextContent);
                     break;
 
                 case EDataType.URL when !string.IsNullOrEmpty(item.TextContent):
                     settings.Job = WorkflowType.ClipboardUploadWithContentViewer;
+                    DebugHelper.WriteLine(
+                        $"[UploadContentDebug] Starting URL upload task. urlLength={item.TextContent.Length}, " +
+                        $"urlPreview=\"{GetTextPreview(item.TextContent)}\"");
                     await TaskManager.Instance.StartTextTask(settings, item.TextContent);
                     break;
 
@@ -332,17 +436,20 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
                 item.Status = UploadQueueItemStatus.Completed;
                 item.ProgressPercent = 100;
                 item.ResultURL = capturedTask.Info?.Result?.URL ?? capturedTask.Info?.Metadata?.UploadURL;
+                DebugHelper.WriteLine($"[UploadContentDebug] UploadItem success: resultUrl=\"{item.ResultURL ?? string.Empty}\"");
             }
             else
             {
                 item.Status = UploadQueueItemStatus.Failed;
                 item.ErrorMessage = capturedTask?.Error?.Message ?? "Upload failed";
+                DebugHelper.WriteLine($"[UploadContentDebug] UploadItem failed: error=\"{item.ErrorMessage}\"");
             }
         }
         catch (Exception ex)
         {
             item.Status = UploadQueueItemStatus.Failed;
             item.ErrorMessage = ex.Message;
+            DebugHelper.WriteLine($"[UploadContentDebug] UploadItem exception: {ex.Message}");
             DebugHelper.WriteException(ex, "UploadContent: Upload failed");
         }
         finally
@@ -366,6 +473,10 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
             workflow = SettingsManager.GetFirstWorkflow(WorkflowType.FileUpload);
         }
 
+        DebugHelper.WriteLine(
+            $"[UploadContentDebug] CreateUploadTaskSettings: dataType={dataType}, preferredJob={preferredWorkflowJob}, " +
+            $"workflowFound={(workflow != null)}, workflowId=\"{workflow?.Id ?? string.Empty}\", workflowJob={(workflow?.Job.ToString() ?? "None")}");
+
         TaskSettings settings;
         if (workflow?.TaskSettings != null)
         {
@@ -381,6 +492,11 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         {
             settings.Job = preferredWorkflowJob;
         }
+
+        DebugHelper.WriteLine(
+            $"[UploadContentDebug] CreateUploadTaskSettings result: job={settings.Job}, " +
+            $"destinationInstanceId=\"{settings.DestinationInstanceId ?? string.Empty}\", " +
+            $"urlShortenerInstanceId=\"{settings.UrlShortenerDestinationInstanceId ?? string.Empty}\"");
 
         return settings;
     }
@@ -409,6 +525,11 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         }
 
         Items.Remove(item);
+
+        if (ReferenceEquals(SelectedItem, item))
+        {
+            SelectedItem = Items.FirstOrDefault();
+        }
     }
 
     [RelayCommand]
@@ -439,6 +560,11 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
                 item.Image = null;
             }
             Items.Remove(item);
+        }
+
+        if (SelectedItem == null || !Items.Contains(SelectedItem))
+        {
+            SelectedItem = Items.FirstOrDefault();
         }
     }
 
@@ -478,6 +604,69 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         return $"{bytes / (1024.0 * 1024 * 1024):0.#} GB";
     }
 
+    private static string GetDataTypeDisplayText(EDataType? dataType)
+    {
+        if (!dataType.HasValue)
+        {
+            return "None";
+        }
+
+        return dataType.Value switch
+        {
+            EDataType.Image => "Image",
+            EDataType.Text => "Text",
+            EDataType.File => "File",
+            EDataType.URL => "URL",
+            _ => dataType.Value.ToString()
+        };
+    }
+
+    private static string GetTextPreview(string text, int maxLength = 120)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return string.Empty;
+        }
+
+        string compact = text.Replace("\r", "\\r").Replace("\n", "\\n");
+        return compact.Length <= maxLength ? compact : compact.Substring(0, maxLength) + "...";
+    }
+
+    private void UpdateSelectedPreview()
+    {
+        SelectedPreviewImage = null;
+        SelectedFileMetadata = "No file selected.";
+
+        if (SelectedItem?.DataType == EDataType.Image && SelectedItem.Image != null)
+        {
+            SelectedPreviewImage = BitmapConversionHelpers.ToAvaloniBitmap(SelectedItem.Image);
+        }
+
+        if (SelectedItem?.DataType == EDataType.File && !string.IsNullOrWhiteSpace(SelectedItem.FilePath))
+        {
+            if (File.Exists(SelectedItem.FilePath))
+            {
+                var fileInfo = new FileInfo(SelectedItem.FilePath);
+                SelectedFileMetadata =
+                    $"Name: {fileInfo.Name}{Environment.NewLine}" +
+                    $"Extension: {fileInfo.Extension}{Environment.NewLine}" +
+                    $"Size: {FormatFileSize(fileInfo.Length)}{Environment.NewLine}" +
+                    $"Modified: {fileInfo.LastWriteTime:yyyy-MM-dd HH:mm:ss}{Environment.NewLine}" +
+                    $"Path: {fileInfo.FullName}";
+            }
+            else
+            {
+                SelectedFileMetadata = $"File not found: {SelectedItem.FilePath}";
+            }
+        }
+
+        OnPropertyChanged(nameof(HasSelectedItem));
+        OnPropertyChanged(nameof(ShowTextPreview));
+        OnPropertyChanged(nameof(ShowFilePreview));
+        OnPropertyChanged(nameof(SelectedTextPreview));
+        OnPropertyChanged(nameof(SelectedItemTypeText));
+    }
+
     public void Dispose()
     {
         if (_disposed) return;
@@ -485,6 +674,7 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
 
         _uploadCts?.Cancel();
         _uploadCts?.Dispose();
+        SelectedPreviewImage = null;
 
         foreach (var item in Items)
         {

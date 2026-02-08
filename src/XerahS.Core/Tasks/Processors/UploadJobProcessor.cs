@@ -134,6 +134,24 @@ namespace XerahS.Core.Tasks.Processors
 
             var instanceManager = InstanceManager.Instance;
             var targetInstanceId = info.TaskSettings.GetDestinationInstanceIdForDataType(info.DataType);
+            DebugHelper.WriteLine(
+                $"[UploadContentDebug] UploadWithPluginSystem: category={category}, dataType={info.DataType}, " +
+                $"taskSettingsJob={info.TaskSettings.Job}, destinationInstanceId=\"{info.TaskSettings.DestinationInstanceId ?? string.Empty}\", " +
+                $"resolvedTargetInstanceId=\"{targetInstanceId ?? string.Empty}\"");
+
+            if (category == UploaderCategory.Text)
+            {
+                var textInstances = instanceManager.GetInstancesByCategory(UploaderCategory.Text);
+                var defaultTextInstance = instanceManager.GetDefaultInstance(UploaderCategory.Text);
+                var textInstanceSummary = textInstances.Count > 0
+                    ? string.Join(", ", textInstances.Select(i => $"{i.DisplayName}({i.InstanceId})"))
+                    : "(none)";
+
+                DebugHelper.WriteLine(
+                    $"[UploadContentDebug] Text instances: count={textInstances.Count}, " +
+                    $"default=\"{defaultTextInstance?.DisplayName ?? "(none)"}\", list={textInstanceSummary}");
+            }
+
             UploaderInstance? targetInstance = null;
 
             if (!string.IsNullOrEmpty(targetInstanceId))
@@ -214,13 +232,17 @@ namespace XerahS.Core.Tasks.Processors
                     };
                 }
 
-                if (info.DataType == EDataType.Text && !string.IsNullOrEmpty(info.TextContent))
+            if (info.DataType == EDataType.Text && !string.IsNullOrEmpty(info.TextContent))
+            {
+                DebugHelper.WriteLine(
+                    $"[UploadContentDebug] Text upload dispatch: provider={selectedInstance.ProviderId}, " +
+                    $"textLength={info.TextContent.Length}, fileName=\"{info.FileName}\"");
+
+                if (uploader is GenericUploader genericUploader)
                 {
-                    if (uploader is GenericUploader genericUploader)
-                    {
-                        string extension = info.TaskSettings.AdvancedSettings.TextFileExtension;
-                        string fileName = string.IsNullOrWhiteSpace(info.FileName)
-                            ? TaskHelpers.GetFileName(info.TaskSettings, extension, info.Metadata)
+                    string extension = info.TaskSettings.AdvancedSettings.TextFileExtension;
+                    string fileName = string.IsNullOrWhiteSpace(info.FileName)
+                        ? TaskHelpers.GetFileName(info.TaskSettings, extension, info.Metadata)
                             : info.FileName;
 
                         using var ms = new MemoryStream(Encoding.UTF8.GetBytes(info.TextContent));

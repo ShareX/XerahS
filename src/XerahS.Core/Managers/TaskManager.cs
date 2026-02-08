@@ -176,9 +176,14 @@ namespace XerahS.Core.Managers
                 return;
             }
 
-            TroubleshootingHelper.Log(taskSettings?.Job.ToString() ?? "Unknown", "TASK_MANAGER", $"StartTextTask Entry: textLength={text.Length}");
+            TaskSettings safeTaskSettings = taskSettings;
+            TroubleshootingHelper.Log(safeTaskSettings.Job.ToString(), "TASK_MANAGER", $"StartTextTask Entry: textLength={text.Length}");
+            DebugHelper.WriteLine(
+                $"[UploadContentDebug] StartTextTask: job={safeTaskSettings.Job}, workflowId=\"{safeTaskSettings.WorkflowId ?? string.Empty}\", " +
+                $"destinationInstanceId=\"{safeTaskSettings.DestinationInstanceId ?? string.Empty}\", " +
+                $"urlShortenerInstanceId=\"{safeTaskSettings.UrlShortenerDestinationInstanceId ?? string.Empty}\", " +
+                $"afterCapture={safeTaskSettings.AfterCaptureJob}, afterUpload={safeTaskSettings.AfterUploadJob}");
 
-            var safeTaskSettings = taskSettings ?? new TaskSettings();
             var task = WorkerTask.Create(safeTaskSettings);
             task.Info.TextContent = text;
             task.Info.DataType = EDataType.Text;
@@ -186,6 +191,9 @@ namespace XerahS.Core.Managers
 
             string extension = safeTaskSettings.AdvancedSettings?.TextFileExtension ?? "txt";
             task.Info.SetFileName(TaskHelpers.GetFileName(safeTaskSettings, extension, task.Info.Metadata));
+            DebugHelper.WriteLine(
+                $"[UploadContentDebug] StartTextTask created WorkerTask: fileName=\"{task.Info.FileName}\", " +
+                $"dataType={task.Info.DataType}, taskJob={task.Info.Job}, textLength={(task.Info.TextContent?.Length ?? 0)}");
 
             lock (_tasksLock)
             {

@@ -271,6 +271,21 @@ namespace XerahS.Core.Tasks
 
                         break;
 
+                    case WorkflowType.ClipboardUploadWithContentViewer:
+                        bool hasPreloadedUploadContent =
+                            metadata.Image != null ||
+                            !string.IsNullOrEmpty(Info.TextContent) ||
+                            !string.IsNullOrEmpty(Info.FilePath);
+
+                        if (hasPreloadedUploadContent)
+                        {
+                            DebugHelper.WriteLine("ClipboardUploadWithContentViewer: preloaded content detected, bypassing tool callback.");
+                            break;
+                        }
+
+                        await HandleToolWorkflowAsync(token);
+                        return;
+
                     case WorkflowType.PrintScreen:
                         if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
                         {
@@ -617,7 +632,6 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.AutoCapture:
                     case WorkflowType.StartAutoCapture:
                     case WorkflowType.StopAutoCapture:
-                    case WorkflowType.ClipboardUploadWithContentViewer:
                     case WorkflowType.ImageCombiner:
                     case WorkflowType.ImageSplitter:
                     case WorkflowType.ImageThumbnailer:
@@ -694,7 +708,7 @@ namespace XerahS.Core.Tasks
 
                 captureStopwatch.Stop();
 
-                bool hasClipboardPayload = taskSettings?.Job is WorkflowType.ClipboardUpload
+                bool hasClipboardPayload = taskSettings?.Job is WorkflowType.ClipboardUpload or WorkflowType.ClipboardUploadWithContentViewer
                     && (metadata.Image != null || !string.IsNullOrEmpty(Info.TextContent) || !string.IsNullOrEmpty(Info.FilePath));
 
                 if (image != null)
