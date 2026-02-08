@@ -65,31 +65,26 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **Security**: Add cross-platform secrets store `(c2b8105)`
 - **Upload**: Add auto destination uploader `(f3abe81)`
 - **Diagnostics**: Add secret store diagnostics `(f626f09)`
-
-### Fixes
-- **Capture**: Allow clipboard payloads in capture phase `(a2e336f)`
-- **Upload**: Add clipboard upload auto routing `(6527590)`
-- **Region Capture**: Correct crop offset and refresh AfterCapture UI `(c5efeab)`
-- **Region Capture**: Fix coordinate mapping for Windows `(#29)`
-
-### Refactor
-- **Editor**: Update XerahS.Editor.csproj references `(1dfeb3b)`
-- **Docs**: Rename editor docs references to XerahS.Editor `(90b9fe0)`
-
-## v0.7.5 - Linux Improvements & Custom Uploaders
-
-### Features & Improvements
 - **Custom Uploaders**: Implemented full support for Custom Uploaders including editor UI and integration `(5962870, 8020d73)`
 - **Task Settings**: Redesigned Task Settings UX with dedicated Image/Video tabs `(43436af)`
 - **Tray Icon**: Added recording-aware tray icon with pause/abort controls `(7d22818)`
 - **Image Formats**: Added AVIF and WebP image format support `(3b89381)`
 - **Linux/Wayland**: Fix screen capture on Wayland by integrating XDG Portal API `(4cc5a9f)`
 
-### Bug Fixes
+### Fixes
+- **Capture**: Allow clipboard payloads in capture phase `(a2e336f)`
+- **Upload**: Add clipboard upload auto routing `(6527590)`
+- **Region Capture**: Correct crop offset and refresh AfterCapture UI `(c5efeab)`
+- **Region Capture**: Fix coordinate mapping for Windows `(#29)`
 - Fix Linux active window capture hierarchy and coordinates `(2957c89, 007f261)`
 - Fix Linux hotkey initialization and Region Capture `(73dd95d, e8a9cc8)`
 - Hide main window when capture triggered from tray/navbar `(45264fb)`
 - Fix update dialog layout `(7868256)`
+
+### Refactor
+- **Editor**: Update XerahS.Editor.csproj references `(1dfeb3b)`
+- **Docs**: Rename editor docs references to XerahS.Editor `(90b9fe0)`
+
 
 ## v0.7.0 - Annotation Overlays & Packaging
 
@@ -157,11 +152,8 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ### Bug Fixes
 - Fix cursor tracking and visibility during GDI capture `(f6973f6, e0a056b, 265a96a)`
-
-## v0.3.1 - Critical Bug Fixes
-
-### Bug Fixes
 - **Capture**: Fix NullReferenceException in DXGI capture by preventing premature disposal of D3D11 device context `(df9bd33)`
+
 
 ## v0.3.0 - Modern Capture Architecture
 
@@ -179,12 +171,10 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - Fix multi-monitor blank capture issues in modern capture path `(52ae45e)`
 - Fix DPI handling and coordinate mapping in region capture `(e4817b1, 954dee3)`
 - Massive code audit: fixed 500+ license headers and 160+ nullability issues `(dca9217, dd90761)`
-
-## v0.2.1 - Multi-Monitor & DPI Polish
-
-### Bug Fixes
 - Fix region capture offsets and scaling issues on multi-monitor setups `(e47e81b)`
 - Standardized Windows TFM and fixed CsWinRT interop issues `(2f44742, 4e88d23)`
+
+
 
 ## v0.2.0 - macOS Support & Plugin System
 
