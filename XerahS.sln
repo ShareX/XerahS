@@ -49,7 +49,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "XerahS.Editor", "XerahS.Edi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E8CB8917-EEBC-BC23-7F1D-9730F69BE860}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Editor", "..\XerahS.Editor\src\XerahS.Editor\XerahS.Editor.csproj", "{9E99E9F2-FE0C-485D-9EF4-C54206AB4DCA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Editor", "XerahS.Editor\src\XerahS.Editor\XerahS.Editor.csproj", "{9E99E9F2-FE0C-485D-9EF4-C54206AB4DCA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.Linux", "src\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj", "{326B5A95-16A2-4E7A-A320-8E253D5970E3}"
 EndProject

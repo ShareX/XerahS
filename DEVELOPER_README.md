@@ -6,6 +6,29 @@
 
 **Community-Driven Development:** XerahS is built collaboratively by developers and contributors from around the world, united by a shared commitment to open-source innovation. This is a project created by the community, for the community—where every contribution, whether code, documentation, or feedback, helps shape a tool that serves users across all platforms.
 
+## Getting Started for Developers
+
+### Cloning with Submodules
+XerahS depends on [XerahS.Editor](https://github.com/ShareX/XerahS.Editor), which is included as a Git submodule. To clone the repository with all dependencies:
+
+```bash
+git clone --recursive https://github.com/ShareX/XerahS.git
+```
+
+If you've already cloned the repository without the `--recursive` flag:
+```bash
+cd XerahS
+git submodule update --init --recursive
+```
+
+### Building the Project
+After cloning with submodules:
+```bash
+cd XerahS
+dotnet restore
+dotnet build
+```
+
 ## Architecture Overview
 
 This project follows the **MVVM (Model-View-ViewModel)** pattern using the `CommunityToolkit.Mvvm` library.

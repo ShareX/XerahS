@@ -51,6 +51,18 @@ For developers interested in AI-first development and cross-platform experimenta
 
 ## 🚀 Getting Started
 
+### Cloning the Repository
+XerahS requires the XerahS.Editor submodule. Clone with:
+```bash
+git clone --recursive https://github.com/ShareX/XerahS.git
+```
+
+If you already cloned without `--recursive`, initialize the submodule:
+```bash
+cd XerahS
+git submodule update --init --recursive
+```
+
 ### Prerequisites
 - [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 

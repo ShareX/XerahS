@@ -1,0 +1,3 @@
+[submodule "XerahS.Editor"]
+	path = XerahS.Editor
+	url = https://github.com/ShareX/XerahS.Editor.git
