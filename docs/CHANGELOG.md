@@ -14,10 +14,13 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 ### Fixes
 - **Tools**: Added media tools to Tools navigation bar `(485a438)`
 - **DataTemplates**: Fix DataTemplate issues `(485a438)`
-- **Proxy**: Fix custom uploader loading and add configuration UI `(#77, @Hexeption)`
-- **Linux**: Add dark mode support and theme settings `(#62, @unicxrn)`
-- **macOS**: Add native application menu `(#60, @Hexeption)`
-- **Custom Uploaders**: Fix compatibility improvements `(#74, @Hexeption)`
+- **Proxy**: Fix custom uploader loading and add configuration UI `(#77, [@Hexeption](https://github.com/Hexeption))`
+- **Linux**: Add dark mode support and theme settings `(#62, [@unicxrn](https://github.com/unicxrn))`
+- **macOS**: Add native application menu `(#60, [@Hexeption](https://github.com/Hexeption))`
+- **Custom Uploaders**: Fix compatibility improvements `(#74, [@Hexeption](https://github.com/Hexeption))`
+- **Linux**: Wayland Hyprland screenshot support `(#61, [@unicxrn](https://github.com/unicxrn))`
+- **Security**: Fix DPAPI platform warning `(#73, [@Hexeption](https://github.com/Hexeption))`
+- **Custom Uploaders**: Fix version compatibility `(#71, [@emmsixx](https://github.com/emmsixx))`
 
 ### Refactor
 - **Editor**: Renamed namespace from ShareX.Editor to XerahS.Editor for consistency `(25135d0, d0d1266)`
@@ -67,6 +70,7 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **Capture**: Allow clipboard payloads in capture phase `(a2e336f)`
 - **Upload**: Add clipboard upload auto routing `(6527590)`
 - **Region Capture**: Correct crop offset and refresh AfterCapture UI `(c5efeab)`
+- **Region Capture**: Fix coordinate mapping for Windows `(#29)`
 
 ### Refactor
 - **Editor**: Update XerahS.Editor.csproj references `(1dfeb3b)`
@@ -96,11 +100,15 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **Packaging**: Automated multi-arch Windows release builds `(49a7ec6)`
 - **Plugins**: Support for user-installed plugins and packaging `(e787536)`
 - **Window Capture**: Added support via monitor cropping fallback `(d73daf5)`
+- **Annotations**: Refactor Annotation Toolbar `(#53)`
+- **Media Library**: Basic implementation `(#49)`
 
 ### Bug Fixes
 - Fix annotation layer coordinate system for multi-monitor and high DPI `(5d69425, 61bd0c9)`
 - Fix annotation layer compositing `(3875298)`
 - Global exception handling implementation `(ad6d443)`
+- **Screen**: Fix frozen screen issue `(#51)`
+- **Cursor**: Fix system cursor issues `(#46)`
 
 ## v0.6.0 - UI Redesign & Auto-Update
 
@@ -109,23 +117,20 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **Auto-Update**: Implemented auto-update system with Avalonia UI `(54b9546)`
 - **After Upload**: Added "After Upload" results window `(18a3ab7)`
 - **Property Grid**: Added ApplicationConfig property grid `(c4d20bf)`
+- **CLI**: Added `verify-recording` command for automated screen recording validation `(732e173)`
+- **Editor**: Unified editor undo history across different toolsets `(24ad021)`
+- **Architecture**: Moved Windows-specific P/Invoke types to dedicated Platform.Windows project `(90da89a)`
+- **FFmpeg**: Improved FFmpeg download/config UX with progress hooks and better path resolution `(1646cbb, 7677ceb, b4fdcbf)`
+- **Documentation**: Replace ShareX.Avalonia references with XerahS `(#44)`
+- **Workflow**: Update cursor handling `(#43)`
 
 ### Bug Fixes
 - Improve GIF recording quality and added clipboard support `(1baecc0, 4148e49)`
 - Add pause and stroke-based abort for recordings `(c3d04a7)`
 - Fix "After Upload" window theming and errors `(9b752c0, 6dfe81e)`
-
-## v0.5.1 - Verify Recording CLI & Editor Improvements
-
-### Features & Improvements
-- **CLI**: Added `verify-recording` command for automated screen recording validation `(732e173)`
-- **Editor**: Unified editor undo history across different toolsets `(24ad021)`
-- **Architecture**: Moved Windows-specific P/Invoke types to dedicated Platform.Windows project `(90da89a)`
-- **FFmpeg**: Improved FFmpeg download/config UX with progress hooks and better path resolution `(1646cbb, 7677ceb, b4fdcbf)`
-
-### Bug Fixes
 - Fix speech balloon tail geometry rendering issues `(784594e)`
 - Fix system cursor appearing in region screenshots on some configurations `(85a4e2f)`
+- Fix region capture hotkey issues `(#38, #39)`
 
 ## v0.5.0 - Core Capture & Editor Improvements
 
