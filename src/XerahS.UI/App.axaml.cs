@@ -78,6 +78,10 @@ public partial class App : Application
 
             // Prepare for Silent Run
             bool silentRun = XerahS.Core.SettingsManager.Settings.SilentRun;
+#if DEBUG
+            // In DEBUG builds always show main window at startup for easier development.
+            silentRun = false;
+#endif
 
             if (silentRun)
             {

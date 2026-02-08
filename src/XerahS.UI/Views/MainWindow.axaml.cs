@@ -43,7 +43,6 @@ using XerahS.Editor.Annotations;
 using XerahS.Editor.ViewModels;
 using XerahS.Editor.Views;
 using XerahS.UI.Helpers;
-using XerahS.UI.Services;
 
 namespace XerahS.UI.Views
 {
@@ -293,6 +292,11 @@ namespace XerahS.UI.Views
                 return false;
             }
 
+            if (ToolNavigationHelper.TryHandleToolsTag(tag, this, contentFrame, ExecuteWorkflowFromNavigationAsync))
+            {
+                return true;
+            }
+
             switch (tag)
             {
                 case "Editor":
@@ -317,78 +321,6 @@ namespace XerahS.UI.Views
                     return true;
                 case "Upload_FileUpload":
                     _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.FileUpload);
-                    return true;
-                case "Tools":
-                    contentFrame.Content = new ToolsView();
-                    return true;
-                case "Tools_IndexFolder":
-                    contentFrame.Content = new IndexFolderView();
-                    return true;
-                case "Tools_ColorPicker":
-                    _ = ColorPickerToolService.HandleWorkflowAsync(WorkflowType.ColorPicker, this);
-                    return true;
-                case "Tools_ScreenColorPicker":
-                    _ = ColorPickerToolService.HandleWorkflowAsync(WorkflowType.ScreenColorPicker, this);
-                    return true;
-                case "Tools_QrGenerator":
-                    _ = QrCodeToolService.HandleWorkflowAsync(WorkflowType.QRCode, this);
-                    return true;
-                case "Tools_QrScanScreen":
-                    _ = QrCodeToolService.HandleWorkflowAsync(WorkflowType.QRCodeDecodeFromScreen, this);
-                    return true;
-                case "Tools_QrScanRegion":
-                    _ = QrCodeToolService.HandleWorkflowAsync(WorkflowType.QRCodeScanRegion, this);
-                    return true;
-                case "Tools_ImageCombiner":
-                    _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.ImageCombiner, this);
-                    return true;
-                case "Tools_ImageSplitter":
-                    _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.ImageSplitter, this);
-                    return true;
-                case "Tools_ImageThumbnailer":
-                    _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.ImageThumbnailer, this);
-                    return true;
-                case "Tools_VideoConverter":
-                    _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.VideoConverter, this);
-                    return true;
-                case "Tools_VideoThumbnailer":
-                    _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.VideoThumbnailer, this);
-                    return true;
-                case "Tools_AnalyzeImage":
-                    _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.AnalyzeImage, this);
-                    return true;
-                case "Tools_Ruler":
-                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.Ruler);
-                    return true;
-                case "Tools_PinToScreenFromScreen":
-                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.PinToScreenFromScreen);
-                    return true;
-                case "Tools_PinToScreenFromClipboard":
-                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.PinToScreenFromClipboard);
-                    return true;
-                case "Tools_PinToScreenFromFile":
-                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.PinToScreenFromFile);
-                    return true;
-                case "Tools_PinToScreenCloseAll":
-                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.PinToScreenCloseAll);
-                    return true;
-                case "Tools_OCR":
-                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.OCR);
-                    return true;
-                case "Tools_HashCheck":
-                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.HashCheck);
-                    return true;
-                case "Tools_Metadata":
-                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.Metadata);
-                    return true;
-                case "Tools_StripMetadata":
-                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.StripMetadata);
-                    return true;
-                case "Tools_ClipboardViewer":
-                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.ClipboardViewer);
-                    return true;
-                case "Tools_MonitorTest":
-                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.MonitorTest);
                     return true;
                 case "Settings":
                     contentFrame.Content = new SettingsView();

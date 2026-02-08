@@ -47,12 +47,6 @@
                     <MenuItem Header="E_xit" Click="OnExitClick" InputGesture="Alt+F4"/>
                 </MenuItem>
                 
-                <!-- Capture Menu -->
-                <MenuItem Header="_Capture">
-                    <MenuItem Header="Capture _Region" Command="{Binding CaptureRegionCommand}"/>
-                    <MenuItem Header="_Recording" Command="{Binding NavigateCommand}" CommandParameter="Recording"/>
-                </MenuItem>
-                
                 <!-- Edit Menu -->
                 <MenuItem Header="_Edit">
                     <MenuItem Header="_Undo" Command="{Binding UndoCommand}" InputGesture="Ctrl+Z"/>
@@ -75,7 +69,6 @@
                 <!-- Workflows Menu -->
                 <MenuItem Header="_Workflows" Name="WorkflowsMenuItem">
                     <MenuItem Header="_Manage Workflows" Command="{Binding NavigateCommand}" CommandParameter="Workflows"/>
-                    <MenuItem Header="_New Workflow..." Command="{Binding NewWorkflowCommand}"/>
                     <Separator/>
                     <MenuItem Header="_Run Workflow" Name="RunWorkflowsMenuItem"/>
                 </MenuItem>
