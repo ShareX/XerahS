@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:hotkeys="using:XerahS.Core.Hotkeys"
         xmlns:views="using:XerahS.UI.Views"
         xmlns:common="clr-namespace:XerahS.Common;assembly=XerahS.Common"
         xmlns:editvm="clr-namespace:XerahS.Editor.ViewModels;assembly=XerahS.Editor"
@@ -28,7 +29,107 @@
 
     <Grid RowDefinitions="Auto,*">
         
-        <!-- Header Row reserved for future use or native integration -->
+        <!-- Row 0: Main Menu Bar -->
+        <Border Grid.Row="0" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
+            <Menu Background="Transparent">
+                <!-- File Menu -->
+                <MenuItem Header="_File">
+                    <MenuItem Header="_Open..." Command="{Binding OpenImageCommand}" InputGesture="Ctrl+O"/>
+                    <Separator/>
+                    <MenuItem Header="_Upload">
+                        <MenuItem Header="Upload _File..." Command="{Binding NavigateCommand}" CommandParameter="Upload_FileUpload"/>
+                        <MenuItem Header="Upload _Content..." Command="{Binding NavigateCommand}" CommandParameter="Upload_ClipboardUploadWithContentViewer"/>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="_Save" Command="{Binding SaveCommand}" InputGesture="Ctrl+S"/>
+                    <MenuItem Header="Save _As..." Command="{Binding SaveAsCommand}" InputGesture="Ctrl+Shift+S"/>
+                    <Separator/>
+                    <MenuItem Header="E_xit" Click="OnExitClick" InputGesture="Alt+F4"/>
+                </MenuItem>
+                
+                <!-- Capture Menu -->
+                <MenuItem Header="_Capture">
+                    <MenuItem Header="Capture _Region" Command="{Binding CaptureRegionCommand}"/>
+                    <MenuItem Header="_Recording" Command="{Binding NavigateCommand}" CommandParameter="Recording"/>
+                </MenuItem>
+                
+                <!-- Edit Menu -->
+                <MenuItem Header="_Edit">
+                    <MenuItem Header="_Undo" Command="{Binding UndoCommand}" InputGesture="Ctrl+Z"/>
+                    <MenuItem Header="_Redo" Command="{Binding RedoCommand}" InputGesture="Ctrl+Y"/>
+                    <Separator/>
+                    <MenuItem Header="_Copy to Clipboard" Command="{Binding CopyCommand}" InputGesture="Ctrl+Shift+C"/>
+                </MenuItem>
+                
+                <!-- View Menu -->
+                <MenuItem Header="_View">
+                    <MenuItem Header="_Editor" Command="{Binding NavigateCommand}" CommandParameter="Editor"/>
+                    <MenuItem Header="_History" Command="{Binding NavigateCommand}" CommandParameter="History"/>
+                    <Separator/>
+                    <MenuItem Header="Zoom _In" Command="{Binding ZoomInCommand}" InputGesture="Ctrl++"/>
+                    <MenuItem Header="Zoom _Out" Command="{Binding ZoomOutCommand}" InputGesture="Ctrl+-"/>
+                    <MenuItem Header="_Reset Zoom" Command="{Binding ResetZoomCommand}" InputGesture="Ctrl+0"/>
+                    <MenuItem Header="Zoom to _Fit" Command="{Binding ZoomToFitCommand}" InputGesture="Ctrl+9"/>
+                </MenuItem>
+                
+                <!-- Workflows Menu -->
+                <MenuItem Header="_Workflows" Name="WorkflowsMenuItem">
+                    <MenuItem Header="_Manage Workflows" Command="{Binding NavigateCommand}" CommandParameter="Workflows"/>
+                    <MenuItem Header="_New Workflow..." Command="{Binding NewWorkflowCommand}"/>
+                    <Separator/>
+                    <MenuItem Header="_Run Workflow" Name="RunWorkflowsMenuItem"/>
+                </MenuItem>
+                
+                <!-- Tools Menu -->
+                <MenuItem Header="_Tools">
+                    <MenuItem Header="_Color Picker..." Command="{Binding NavigateCommand}" CommandParameter="Tools_ColorPicker"/>
+                    <MenuItem Header="Pick From _Screen" Command="{Binding NavigateCommand}" CommandParameter="Tools_ScreenColorPicker"/>
+                    <MenuItem Header="_Ruler" Command="{Binding NavigateCommand}" CommandParameter="Tools_Ruler"/>
+                    <Separator/>
+                    <MenuItem Header="_QR Code">
+                        <MenuItem Header="_Generator..." Command="{Binding NavigateCommand}" CommandParameter="Tools_QrGenerator"/>
+                        <MenuItem Header="Scan from _Screen" Command="{Binding NavigateCommand}" CommandParameter="Tools_QrScanScreen"/>
+                        <MenuItem Header="Scan from _Region" Command="{Binding NavigateCommand}" CommandParameter="Tools_QrScanRegion"/>
+                    </MenuItem>
+                    <MenuItem Header="_Pin to Screen">
+                        <MenuItem Header="From _Screen" Command="{Binding NavigateCommand}" CommandParameter="Tools_PinToScreenFromScreen"/>
+                        <MenuItem Header="From _Clipboard" Command="{Binding NavigateCommand}" CommandParameter="Tools_PinToScreenFromClipboard"/>
+                        <MenuItem Header="From _File" Command="{Binding NavigateCommand}" CommandParameter="Tools_PinToScreenFromFile"/>
+                        <MenuItem Header="Close _All" Command="{Binding NavigateCommand}" CommandParameter="Tools_PinToScreenCloseAll"/>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="_OCR" Command="{Binding NavigateCommand}" CommandParameter="Tools_OCR"/>
+                    <MenuItem Header="_Hash Checker..." Command="{Binding NavigateCommand}" CommandParameter="Tools_HashCheck"/>
+                    <MenuItem Header="_Index Folder..." Command="{Binding NavigateCommand}" CommandParameter="Tools_IndexFolder"/>
+                    <Separator/>
+                    <MenuItem Header="_Image Combiner..." Command="{Binding NavigateCommand}" CommandParameter="Tools_ImageCombiner"/>
+                    <MenuItem Header="Image _Splitter..." Command="{Binding NavigateCommand}" CommandParameter="Tools_ImageSplitter"/>
+                    <MenuItem Header="Image _Thumbnailer..." Command="{Binding NavigateCommand}" CommandParameter="Tools_ImageThumbnailer"/>
+                    <MenuItem Header="_Analyze Image..." Command="{Binding NavigateCommand}" CommandParameter="Tools_AnalyzeImage"/>
+                    <Separator/>
+                    <MenuItem Header="_Metadata" Command="{Binding NavigateCommand}" CommandParameter="Tools_Metadata"/>
+                    <MenuItem Header="Strip Meta_data" Command="{Binding NavigateCommand}" CommandParameter="Tools_StripMetadata"/>
+                    <Separator/>
+                    <MenuItem Header="_Video Converter..." Command="{Binding NavigateCommand}" CommandParameter="Tools_VideoConverter"/>
+                    <MenuItem Header="Video Thumb_nailer..." Command="{Binding NavigateCommand}" CommandParameter="Tools_VideoThumbnailer"/>
+                    <Separator/>
+                    <MenuItem Header="Clipboard _Viewer" Command="{Binding NavigateCommand}" CommandParameter="Tools_ClipboardViewer"/>
+                    <MenuItem Header="_Monitor Test" Command="{Binding NavigateCommand}" CommandParameter="Tools_MonitorTest"/>
+                </MenuItem>
+                
+                <!-- Settings Menu -->
+                <MenuItem Header="_Settings">
+                    <MenuItem Header="_Application Settings" Command="{Binding NavigateCommand}" CommandParameter="Settings_App"/>
+                    <MenuItem Header="_Destination Settings" Command="{Binding NavigateCommand}" CommandParameter="Settings_Dest"/>
+                </MenuItem>
+                
+                <!-- Help Menu -->
+                <MenuItem Header="_Help">
+                    <MenuItem Header="_About" Command="{Binding NavigateCommand}" CommandParameter="About"/>
+                    <MenuItem Header="_Debug" Command="{Binding NavigateCommand}" CommandParameter="Debug"/>
+                </MenuItem>
+            </Menu>
+        </Border>
 
         <!-- Main Navigation Shell -->
         <ui:NavigationView Grid.Row="1" 
