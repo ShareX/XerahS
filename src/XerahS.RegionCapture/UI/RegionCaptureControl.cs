@@ -59,6 +59,8 @@ public sealed class RegionCaptureControl : UserControl
     private readonly bool _enableWindowSnapping;
     private readonly bool _enableMagnifier;
     private readonly bool _useTransparentOverlay;
+    private readonly bool _quickCrop;
+    private readonly bool _useLightResizeNodes;
     private readonly XerahS.Platform.Abstractions.CursorInfo? _ghostCursor;
     private readonly Bitmap? _ghostCursorBitmap;
     private readonly SkiaSharp.SKBitmap? _backgroundBitmap;
@@ -128,6 +130,8 @@ public sealed class RegionCaptureControl : UserControl
         _useTransparentOverlay = options.UseTransparentOverlay;
         _crosshairColor = options.CrosshairColor;
         _crosshairLineColor = options.CrosshairLineColor;
+        _quickCrop = options.QuickCrop;
+        _useLightResizeNodes = options.UseLightResizeNodes;
 
         // Convert background bitmap to Avalonia Bitmap for rendering when not transparent
         // PERFORMANCE: Use direct pixel copy instead of slow PNG encoding (~1-2s saved for 4K screens)
@@ -464,8 +468,22 @@ public sealed class RegionCaptureControl : UserControl
                 // Draw resize handles at corners
                 DrawResizeHandles(context, rect);
 
-                // Draw dimensions text
-                DrawDimensionsText(context, rect);
+                // Draw mode-specific overlays
+                if (_mode == RegionCaptureMode.Ruler)
+                {
+                    // Fill selection with semi-transparent white
+                    var rulerFillBrush = new SolidColorBrush(Color.FromArgb(50, 255, 255, 255));
+                    context.DrawRectangle(rulerFillBrush, null, rect);
+
+                    // Draw ruler ticks and measurements
+                    DrawRulerTicks(context, rect);
+                    DrawRulerMeasurements(context, rect);
+                }
+                else
+                {
+                    // Standard dimensions text for other modes
+                    DrawDimensionsText(context, rect);
+                }
             }
             else if (_hoveredWindow is not null)
             {
@@ -552,9 +570,14 @@ public sealed class RegionCaptureControl : UserControl
 
     private void DrawResizeHandles(DrawingContext context, Rect rect)
     {
-        const double handleSize = 8;
-        var handleBrush = Brushes.White;
-        var handlePen = new Pen(Brushes.Black, 1);
+        // Use lighter/smaller handles in ruler mode to reduce visual clutter
+        var handleSize = _useLightResizeNodes ? 6.0 : 8.0;
+        IBrush handleBrush = _useLightResizeNodes
+            ? new SolidColorBrush(Color.FromArgb(180, 255, 255, 255))  // Semi-transparent white
+            : Brushes.White;
+        IPen handlePen = _useLightResizeNodes
+            ? new Pen(new SolidColorBrush(Color.FromArgb(150, 0, 0, 0)), 1)  // Lighter border
+            : new Pen(Brushes.Black, 1);
 
         var corners = new[]
         {
@@ -775,6 +798,121 @@ public sealed class RegionCaptureControl : UserControl
         context.DrawText(formattedText, new Point(textX, textY));
     }
 
+    private void DrawRulerTicks(DrawingContext context, Rect rect)
+    {
+        // Draw ruler ticks on all four edges
+        var rulerPen = new Pen(Brushes.White, 1);
+        var smallTickSize = 5;
+        var largeTickSize = 15;
+        var smallTickInterval = 10;
+        var largeTickInterval = 100;
+
+        // Horizontal ticks (top and bottom edges)
+        for (double x = 0; x <= rect.Width; x += smallTickInterval)
+        {
+            var isLargeTick = (x % largeTickInterval) == 0;
+            var tickSize = isLargeTick ? largeTickSize : smallTickSize;
+
+            // Top edge ticks
+            context.DrawLine(rulerPen,
+                new Point(rect.Left + x, rect.Top),
+                new Point(rect.Left + x, rect.Top + tickSize));
+
+            // Bottom edge ticks
+            context.DrawLine(rulerPen,
+                new Point(rect.Left + x, rect.Bottom),
+                new Point(rect.Left + x, rect.Bottom - tickSize));
+        }
+
+        // Vertical ticks (left and right edges)
+        for (double y = 0; y <= rect.Height; y += smallTickInterval)
+        {
+            var isLargeTick = (y % largeTickInterval) == 0;
+            var tickSize = isLargeTick ? largeTickSize : smallTickSize;
+
+            // Left edge ticks
+            context.DrawLine(rulerPen,
+                new Point(rect.Left, rect.Top + y),
+                new Point(rect.Left + tickSize, rect.Top + y));
+
+            // Right edge ticks
+            context.DrawLine(rulerPen,
+                new Point(rect.Right, rect.Top + y),
+                new Point(rect.Right - tickSize, rect.Top + y));
+        }
+
+        // Draw crosshair at center
+        var centerX = rect.Left + rect.Width / 2;
+        var centerY = rect.Top + rect.Height / 2;
+        var crosshairSize = 10;
+
+        var centerPen = new Pen(Brushes.White, 2);
+        var centerShadowPen = new Pen(Brushes.Black, 3);
+
+        // Shadow
+        context.DrawLine(centerShadowPen,
+            new Point(centerX - crosshairSize, centerY),
+            new Point(centerX + crosshairSize, centerY));
+        context.DrawLine(centerShadowPen,
+            new Point(centerX, centerY - crosshairSize),
+            new Point(centerX, centerY + crosshairSize));
+
+        // Crosshair
+        context.DrawLine(centerPen,
+            new Point(centerX - crosshairSize, centerY),
+            new Point(centerX + crosshairSize, centerY));
+        context.DrawLine(centerPen,
+            new Point(centerX, centerY - crosshairSize),
+            new Point(centerX, centerY + crosshairSize));
+    }
+
+    private void DrawRulerMeasurements(DrawingContext context, Rect rect)
+    {
+        var width = _selectionRect.Width;
+        var height = _selectionRect.Height;
+        var topLeftX = _selectionRect.X;
+        var topLeftY = _selectionRect.Y;
+        var bottomRightX = topLeftX + width;
+        var bottomRightY = topLeftY + height;
+
+        // Calculate diagonal distance and angle
+        var distance = Math.Sqrt(width * width + height * height);
+        var angle = Math.Atan2(height, width) * (180.0 / Math.PI);
+        var area = width * height;
+        var perimeter = 2 * (width + height);
+
+        // Build measurement text
+        var measurements = $"X: {topLeftX:F0}, Y: {topLeftY:F0} | Right: {bottomRightX:F0}, Bottom: {bottomRightY:F0}\n" +
+                          $"Width: {width:F0} px | Height: {height:F0} px\n" +
+                          $"Area: {area:F0} px² | Perimeter: {perimeter:F0} px\n" +
+                          $"Distance: {distance:F2} px | Angle: {angle:F2}°";
+
+        var formattedText = new FormattedText(
+            measurements,
+            System.Globalization.CultureInfo.CurrentCulture,
+            FlowDirection.LeftToRight,
+            new Typeface("Segoe UI", FontStyle.Normal, FontWeight.Normal),
+            12,
+            Brushes.White);
+
+        // Position text below the selection (or above if not enough space)
+        var textX = rect.X + (rect.Width - formattedText.Width) / 2;
+        var textY = rect.Bottom + 12;
+
+        if (textY + formattedText.Height > Bounds.Height - 10)
+            textY = rect.Top - formattedText.Height - 12;
+
+        textX = Math.Max(8, Math.Min(Bounds.Width - formattedText.Width - 8, textX));
+
+        // Draw text background
+        var textBounds = new Rect(textX - 12, textY - 6,
+            formattedText.Width + 24, formattedText.Height + 12);
+        context.DrawRectangle(InfoBackgroundBrush, null, textBounds, 6, 6);
+
+        // Draw text
+        context.DrawText(formattedText, new Point(textX, textY));
+    }
+
     private void DrawWindowTitle(DrawingContext context, Rect rect, string title)
     {
         if (string.IsNullOrWhiteSpace(title))
@@ -882,6 +1020,10 @@ public sealed class RegionCaptureControl : UserControl
             if (_mode == RegionCaptureMode.ScreenColorPicker)
             {
                 instructions = "Click to pick a color | Esc to cancel";
+            }
+            else if (_mode == RegionCaptureMode.Ruler)
+            {
+                instructions = "Drag to measure distance and area | Arrow keys: adjust | Enter: finish | Esc: cancel";
             }
             var formatted = new FormattedText(
                 instructions,

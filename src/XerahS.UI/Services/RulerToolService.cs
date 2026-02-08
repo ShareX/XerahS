@@ -24,7 +24,11 @@
 #endregion License Information (GPL v3)
 
 using Avalonia.Controls;
+using SkiaSharp;
+using XerahS.Common;
 using XerahS.Core;
+using XerahS.Core.Services;
+using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture;
 using XerahS.RegionCapture.Services;
 
@@ -42,15 +46,53 @@ public static class RulerToolService
 
     private static async Task ShowRulerAsync()
     {
-        // TODO: This is a placeholder that will be replaced with full RegionCapture integration
-        // For now, we'll document that Ruler requires RegionCapture system enhancement
+        var captureSettings = SettingsManager.DefaultTaskSettings?.CaptureSettings ?? new TaskSettingsCapture();
+        var captureOptions = new CaptureOptions
+        {
+            UseModernCapture = captureSettings.UseModernCapture,
+            ShowCursor = false,
+            CaptureTransparent = captureSettings.CaptureTransparent,
+            CaptureShadow = captureSettings.CaptureShadow,
+            CaptureClientArea = captureSettings.CaptureClientArea
+        };
 
-        // When fully implemented, this should:
-        // 1. Create RegionCapture with Mode = Ruler
-        // 2. Set QuickCrop = false, UseLightResizeNodes = true
-        // 3. Add ruler tick rendering in RegionCapture overlay
-        // 4. Show measurement overlay with all metrics
+        // Capture full-screen background for magnifier
+        SKBitmap? fullScreenBitmap = null;
+        try
+        {
+            fullScreenBitmap = await PlatformServices.ScreenCapture.CaptureFullScreenAsync(captureOptions);
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "Ruler initial capture failed");
+            // Continue without background - magnifier won't work but ruler will
+        }
 
-        await Task.CompletedTask;
+        try
+        {
+            // Configure ruler options
+            var rulerOptions = new XerahS.RegionCapture.RegionCaptureOptions
+            {
+                Mode = RegionCaptureMode.Ruler,
+                QuickCrop = false,                  // Don't auto-complete on click
+                UseLightResizeNodes = true,         // Use lighter resize handles
+                EnableWindowSnapping = false,       // Disable window snapping for ruler
+                EnableMagnifier = true,             // Enable magnifier for precision
+                EnableKeyboardNudge = true,         // Allow arrow key adjustments
+                ShowCursor = false,                 // Hide cursor (overlay draws crosshair)
+                BackgroundImage = fullScreenBitmap
+            };
+
+            var regionCaptureService = new RegionCaptureService { Options = rulerOptions };
+            var result = await regionCaptureService.CaptureRegionAsync();
+
+            // Result contains the measured region if user confirmed
+            // For now, we just dismiss - could add clipboard copy of measurements later
+        }
+        finally
+        {
+            // Clean up background bitmap
+            fullScreenBitmap?.Dispose();
+        }
     }
 }

@@ -138,4 +138,18 @@ public sealed record RegionCaptureOptions
     /// Note: This is different from CaptureTransparent in CaptureOptions, which controls window capture transparency.
     /// </summary>
     public bool UseTransparentOverlay { get; init; } = false;
+
+    /// <summary>
+    /// When true, clicking completes the selection immediately (quick crop).
+    /// When false, user must manually confirm selection (used for Ruler mode).
+    /// Default: true
+    /// </summary>
+    public bool QuickCrop { get; init; } = true;
+
+    /// <summary>
+    /// When true, resize handles are rendered with lighter/simpler styling.
+    /// Used for Ruler mode to reduce visual clutter.
+    /// Default: false
+    /// </summary>
+    public bool UseLightResizeNodes { get; init; } = false;
 }
