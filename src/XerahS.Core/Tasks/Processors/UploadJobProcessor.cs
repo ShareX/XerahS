@@ -151,20 +151,34 @@ namespace XerahS.Core.Tasks.Processors
 
             targetInstance = ResolveAutoInstance(instanceManager, targetInstance, category, targetInstanceId);
 
-            var defaultInstance = targetInstance ?? instanceManager.GetDefaultInstance(category);
-            defaultInstance = ResolveAutoInstance(instanceManager, defaultInstance, category, null);
-            if (defaultInstance == null)
+            var selectedInstance = targetInstance ?? instanceManager.GetDefaultInstance(category);
+
+            if (selectedInstance == null)
+            {
+                // If no explicit default is set, use the first available instance in the category.
+                // This prevents false "no uploader configured" failures when instances exist but no default is marked.
+                selectedInstance = instanceManager.GetInstancesByCategory(category).FirstOrDefault();
+                if (selectedInstance != null)
+                {
+                    DebugHelper.WriteLine(
+                        $"No default uploader instance configured for category {category}; " +
+                        $"using first available: {selectedInstance.DisplayName} ({selectedInstance.ProviderId}).");
+                }
+            }
+
+            selectedInstance = ResolveAutoInstance(instanceManager, selectedInstance, category, null);
+            if (selectedInstance == null)
             {
                 var errorMsg = $"No uploader instance configured (plugin system) for category {category}.";
                 DebugHelper.WriteLine(errorMsg);
                 return new UploadResult { IsSuccess = false, Response = errorMsg };
             }
 
-            DebugHelper.WriteLine($"Plugin instance selected: {defaultInstance.DisplayName} ({defaultInstance.ProviderId})");
-            var provider = ProviderCatalog.GetProvider(defaultInstance.ProviderId);
+            DebugHelper.WriteLine($"Plugin instance selected: {selectedInstance.DisplayName} ({selectedInstance.ProviderId})");
+            var provider = ProviderCatalog.GetProvider(selectedInstance.ProviderId);
             if (provider == null)
             {
-                DebugHelper.WriteLine($"Provider not found in catalog: {defaultInstance.ProviderId}");
+                DebugHelper.WriteLine($"Provider not found in catalog: {selectedInstance.ProviderId}");
                 return null;
             }
 
@@ -173,7 +187,7 @@ namespace XerahS.Core.Tasks.Processors
             Uploader uploader;
             try
             {
-                uploader = provider.CreateInstance(defaultInstance.SettingsJson);
+                uploader = provider.CreateInstance(selectedInstance.SettingsJson);
             }
             catch (Exception ex)
             {

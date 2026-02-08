@@ -70,6 +70,20 @@
                         <ui:SymbolIconSource Symbol="List"/>
                     </ui:NavigationViewItem.IconSource>
                 </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem Content="Upload" Tag="Upload" SelectsOnInvoked="False" IsExpanded="False" AutomationProperties.Name="Upload Menu">
+                    <ui:NavigationViewItem.IconSource>
+                        <ui:SymbolIconSource Symbol="Upload"/>
+                    </ui:NavigationViewItem.IconSource>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem Content="Upload File..."
+                                               Tag="Upload_FileUpload"
+                                               AutomationProperties.Name="File Upload"/>
+                        <ui:NavigationViewItem Content="Upload Content..."
+                                               Tag="Upload_ClipboardUploadWithContentViewer"
+                                               AutomationProperties.Name="Upload Content"/>
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
                 
                 <ui:NavigationViewItem Content="Tools" Tag="Tools" SelectsOnInvoked="True" IsExpanded="False" AutomationProperties.Name="Tools Menu">
                     <ui:NavigationViewItem.IconSource>

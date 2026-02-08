@@ -26,6 +26,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Newtonsoft.Json;
 using SkiaSharp;
 using XerahS.Common;
 using XerahS.Core;
@@ -296,7 +297,7 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
 
         try
         {
-            var settings = CreateUploadTaskSettings();
+            var settings = CreateUploadTaskSettings(item.DataType);
 
             switch (item.DataType)
             {
@@ -311,10 +312,12 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
                     break;
 
                 case EDataType.Text when !string.IsNullOrEmpty(item.TextContent):
+                    settings.Job = WorkflowType.ClipboardUploadWithContentViewer;
                     await TaskManager.Instance.StartTextTask(settings, item.TextContent);
                     break;
 
                 case EDataType.URL when !string.IsNullOrEmpty(item.TextContent):
+                    settings.Job = WorkflowType.ClipboardUploadWithContentViewer;
                     await TaskManager.Instance.StartTextTask(settings, item.TextContent);
                     break;
 
@@ -348,21 +351,50 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private static TaskSettings CreateUploadTaskSettings()
+    private static TaskSettings CreateUploadTaskSettings(EDataType dataType)
     {
-        var defaults = SettingsManager.DefaultTaskSettings;
-        return new TaskSettings
+        var preferredWorkflowJob = dataType == EDataType.File
+            ? WorkflowType.FileUpload
+            : WorkflowType.ClipboardUploadWithContentViewer;
+
+        var workflow = SettingsManager.GetFirstWorkflow(preferredWorkflowJob);
+
+        // Upload Content fallback:
+        // if no clipboard workflow exists, use FileUpload workflow settings.
+        if (workflow == null && preferredWorkflowJob == WorkflowType.ClipboardUploadWithContentViewer)
         {
-            AfterCaptureJob = defaults?.AfterCaptureJob
-                ?? (AfterCaptureTasks.CopyImageToClipboard | AfterCaptureTasks.SaveImageToFile),
-            AfterUploadJob = defaults?.AfterUploadJob
-                ?? AfterUploadTasks.CopyURLToClipboard,
-            ImageSettings = defaults?.ImageSettings ?? new TaskSettingsImage(),
-            CaptureSettings = defaults?.CaptureSettings ?? new TaskSettingsCapture(),
-            UploadSettings = defaults?.UploadSettings ?? new TaskSettingsUpload(),
-            AdvancedSettings = defaults?.AdvancedSettings ?? new TaskSettingsAdvanced(),
-            GeneralSettings = defaults?.GeneralSettings ?? new TaskSettingsGeneral(),
+            workflow = SettingsManager.GetFirstWorkflow(WorkflowType.FileUpload);
+        }
+
+        TaskSettings settings;
+        if (workflow?.TaskSettings != null)
+        {
+            settings = CloneTaskSettings(workflow.TaskSettings);
+            settings.WorkflowId = workflow.Id;
+        }
+        else
+        {
+            settings = CloneTaskSettings(SettingsManager.DefaultTaskSettings ?? new TaskSettings());
+        }
+
+        if (settings.Job == WorkflowType.None)
+        {
+            settings.Job = preferredWorkflowJob;
+        }
+
+        return settings;
+    }
+
+    private static TaskSettings CloneTaskSettings(TaskSettings source)
+    {
+        var serializerSettings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Auto,
+            ObjectCreationHandling = ObjectCreationHandling.Replace
         };
+
+        string json = JsonConvert.SerializeObject(source, serializerSettings);
+        return JsonConvert.DeserializeObject<TaskSettings>(json, serializerSettings) ?? new TaskSettings();
     }
 
     [RelayCommand]

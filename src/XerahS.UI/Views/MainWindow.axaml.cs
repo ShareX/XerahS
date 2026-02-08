@@ -172,6 +172,12 @@ namespace XerahS.UI.Views
                     case "Workflows":
                         contentFrame.Content = new WorkflowsView();
                         break;
+                    case "Upload_ClipboardUploadWithContentViewer":
+                        _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.ClipboardUploadWithContentViewer);
+                        return;
+                    case "Upload_FileUpload":
+                        _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.FileUpload);
+                        return;
                     case "Tools":
                         contentFrame.Content = new ToolsView();
                         break;
@@ -494,6 +500,27 @@ namespace XerahS.UI.Views
                 }
             }
         }
+
+        private static Task ExecuteWorkflowFromNavigationAsync(WorkflowType jobType)
+        {
+            var workflow = SettingsManager.GetFirstWorkflow(jobType);
+
+            // Upload Content nav fallback:
+            // if no workflow is configured for ClipboardUploadWithContentViewer,
+            // use FileUpload workflow when available.
+            if (workflow == null && jobType == WorkflowType.ClipboardUploadWithContentViewer)
+            {
+                workflow = SettingsManager.GetFirstWorkflow(WorkflowType.FileUpload);
+            }
+
+            if (workflow != null)
+            {
+                return XerahS.Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id);
+            }
+
+            return XerahS.Core.Helpers.TaskHelpers.ExecuteJob(jobType, new TaskSettings { Job = jobType });
+        }
+
         private void UpdateNavigationItems(NavigationView navView)
         {
             var captureItem = this.FindControl<NavigationViewItem>("CaptureNavItem");
