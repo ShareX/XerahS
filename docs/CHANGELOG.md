@@ -9,17 +9,68 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
-## v0.7.7 - Editor Namespace & Plugin Build Fixes
+## v0.12.0
 
-### Features & Improvements
+### Fixes
+- **Tools**: Added media tools to Tools navigation bar `(485a438)`
+- **DataTemplates**: Fix DataTemplate issues `(485a438)`
+- **Proxy**: Fix custom uploader loading and add configuration UI `(#77, @Hexeption)`
+- **Linux**: Add dark mode support and theme settings `(#62, @unicxrn)`
+- **macOS**: Add native application menu `(#60, @Hexeption)`
+- **Custom Uploaders**: Fix compatibility improvements `(#74, @Hexeption)`
+
+### Refactor
 - **Editor**: Renamed namespace from ShareX.Editor to XerahS.Editor for consistency `(25135d0, d0d1266)`
-- **Build System**: Improved plugin copy target to only include plugin assemblies `(a9b5c63)`
-- **Project Structure**: Updated all editor references and AXAML declarations `(1dfeb3b, 90b9fe0)`
+- **Project Structure**: Updated all editor references and AXAML declarations `(1dfeb3b)`
 
-### Bug Fixes
-- Fix Font Awesome font loading error (`InvalidOperationException`) by correcting avares:// resource paths `(25135d0)`
-- Fix MSB3030 plugin build errors where dependencies were looked up in wrong target framework path `(a9b5c63)`
-- Remove OutputPath override from App's BuildPlugins target to prevent dependency resolution issues `(a9b5c63)`
+### Build
+- **Plugins**: Improved plugin copy target to only include plugin assemblies `(a9b5c63)`
+- **Configuration**: Updated build files and packaging configuration `(09222cc)`
+- **Infrastructure**: Added GitHub issue templates `(5c03c33)` and bug report configuration `(b107da9)`
+- **Git**: Updated .gitignore `(789ec93)`
+
+## v0.11.0
+
+### Features
+- **Upload**: Implement UploadContentWindow and remove superseded upload WorkflowTypes `(298457a)`
+
+## v0.10.0
+
+### Features
+- **Workflows**: Implement AutoCapture workflows `(a45d02f)`
+
+## v0.9.0
+
+### Features
+- **Workflows**: Implement Pin to Screen workflows `(1e0d3f2)`
+- **Amazon S3**: Enhance SSO with region selection `(6880866)`
+
+### Fixes
+- **Upload**: Improve upload error surfacing and history actions `(760a6ef)`
+- **Workflows**: Preserve workflow order and exclude None `(6c08b22)`
+- **Custom Uploaders**: Fix compatibility check for XerahS versions `(422710a)`
+
+### Build
+- **Plugins**: Restore plugin DLL deduplication with retry logic `(81db32e)`
+
+### Core
+- **Rendering**: Remove RectangleLight; modern Skia rendering deprecated it `(12d3ae5)`
+
+## v0.8.0
+
+### Features
+- **Security**: Add cross-platform secrets store `(c2b8105)`
+- **Upload**: Add auto destination uploader `(f3abe81)`
+- **Diagnostics**: Add secret store diagnostics `(f626f09)`
+
+### Fixes
+- **Capture**: Allow clipboard payloads in capture phase `(a2e336f)`
+- **Upload**: Add clipboard upload auto routing `(6527590)`
+- **Region Capture**: Correct crop offset and refresh AfterCapture UI `(c5efeab)`
+
+### Refactor
+- **Editor**: Update XerahS.Editor.csproj references `(1dfeb3b)`
+- **Docs**: Rename editor docs references to XerahS.Editor `(90b9fe0)`
 
 ## v0.7.5 - Linux Improvements & Custom Uploaders
 
