@@ -27,7 +27,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
-using Avalonia.Rendering.Composition;
 using System.ComponentModel;
 using XerahS.UI.ViewModels;
 
@@ -40,6 +39,15 @@ public partial class MonitorTestWindow : Window
     public MonitorTestWindow()
     {
         InitializeComponent();
+
+        // Wait for layout to be ready before drawing
+        LayoutCanvas.LayoutUpdated += (_, _) =>
+        {
+            if (ViewModel?.Snapshot != null && LayoutCanvas.Bounds.Width > 0)
+            {
+                DrawMonitorLayout();
+            }
+        };
     }
 
     protected override void OnDataContextChanged(EventArgs e)
@@ -49,7 +57,7 @@ public partial class MonitorTestWindow : Window
         if (ViewModel != null)
         {
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-            DrawMonitorLayout();
+            UpdateViewVisibility();
         }
     }
 
@@ -70,6 +78,24 @@ public partial class MonitorTestWindow : Window
         {
             DrawMonitorLayout();
         }
+        else if (e.PropertyName == nameof(MonitorTestViewModel.SelectedTestMode))
+        {
+            UpdateViewVisibility();
+        }
+    }
+
+    private void UpdateViewVisibility()
+    {
+        if (ViewModel == null) return;
+
+        var isDiagnostics = ViewModel.SelectedTestMode == TestMode.MonitorDiagnostics;
+        DiagnosticsView.IsVisible = isDiagnostics;
+        TestPatternView.IsVisible = !isDiagnostics;
+
+        if (isDiagnostics)
+        {
+            DrawMonitorLayout();
+        }
     }
 
     private void DrawMonitorLayout()
@@ -87,13 +113,23 @@ public partial class MonitorTestWindow : Window
         var canvasWidth = LayoutCanvas.Bounds.Width;
         var canvasHeight = LayoutCanvas.Bounds.Height;
 
-        if (canvasWidth == 0 || canvasHeight == 0)
+        if (canvasWidth <= 0 || canvasHeight <= 0)
             return;
 
-        // Calculate scale to fit all monitors in canvas
-        var scaleX = (canvasWidth - 40) / virtualBounds.Width;
-        var scaleY = (canvasHeight - 40) / virtualBounds.Height;
+        // Calculate scale to fit all monitors in canvas with padding
+        var padding = 40.0;
+        var availableWidth = canvasWidth - (padding * 2);
+        var availableHeight = canvasHeight - (padding * 2);
+
+        var scaleX = availableWidth / virtualBounds.Width;
+        var scaleY = availableHeight / virtualBounds.Height;
         var scale = Math.Min(scaleX, scaleY);
+
+        // Center the layout
+        var totalScaledWidth = virtualBounds.Width * scale;
+        var totalScaledHeight = virtualBounds.Height * scale;
+        var offsetX = (canvasWidth - totalScaledWidth) / 2;
+        var offsetY = (canvasHeight - totalScaledHeight) / 2;
 
         // Draw each monitor
         for (int i = 0; i < snapshot.Monitors.Count; i++)
@@ -102,8 +138,8 @@ public partial class MonitorTestWindow : Window
             var bounds = monitor.PhysicalBounds;
 
             // Calculate scaled position and size
-            var x = (bounds.X - virtualBounds.X) * scale + 20;
-            var y = (bounds.Y - virtualBounds.Y) * scale + 20;
+            var x = (bounds.X - virtualBounds.X) * scale + offsetX;
+            var y = (bounds.Y - virtualBounds.Y) * scale + offsetY;
             var width = bounds.Width * scale;
             var height = bounds.Height * scale;
 
@@ -113,24 +149,32 @@ public partial class MonitorTestWindow : Window
                 Width = width,
                 Height = height,
                 BorderBrush = monitor.IsPrimary ? Brushes.Green : Brushes.Gray,
-                BorderThickness = new Thickness(2),
-                Background = new SolidColorBrush(Colors.LightGray, 0.3),
-                CornerRadius = new CornerRadius(4)
+                BorderThickness = new Thickness(monitor.IsPrimary ? 3 : 2),
+                Background = new SolidColorBrush(Color.FromArgb(40, 100, 149, 237)), // Light blue tint
+                CornerRadius = new CornerRadius(6)
             };
 
             Canvas.SetLeft(rect, x);
             Canvas.SetTop(rect, y);
             LayoutCanvas.Children.Add(rect);
 
-            // Draw label
+            // Draw label with monitor info
+            var labelText = $"{monitor.DeviceName}\n{bounds.Width:F0} × {bounds.Height:F0}\n({bounds.X:F0}, {bounds.Y:F0})\n{monitor.ScaleFactor:F2}× scale";
+
+            if (monitor.IsPrimary)
+            {
+                labelText += "\n★ PRIMARY";
+            }
+
             var label = new TextBlock
             {
-                Text = $"Monitor {i + 1}\n{bounds.Width}x{bounds.Height}\n({bounds.X}, {bounds.Y})\n{monitor.ScaleFactor:F2}x",
-                FontSize = 11,
+                Text = labelText,
+                FontSize = Math.Max(10, Math.Min(14, width / 15)), // Scale font with monitor size
                 Foreground = Brushes.Black,
                 TextAlignment = TextAlignment.Center,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                FontWeight = FontWeight.SemiBold
             };
 
             var labelContainer = new Border
