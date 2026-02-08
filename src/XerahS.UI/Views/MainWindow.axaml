@@ -100,9 +100,6 @@
                     <MenuItem Header="Image _Thumbnailer..." Command="{Binding NavigateCommand}" CommandParameter="Tools_ImageThumbnailer"/>
                     <MenuItem Header="_Analyze Image..." Command="{Binding NavigateCommand}" CommandParameter="Tools_AnalyzeImage"/>
                     <Separator/>
-                    <MenuItem Header="_Metadata" Command="{Binding NavigateCommand}" CommandParameter="Tools_Metadata"/>
-                    <MenuItem Header="Strip Meta_data" Command="{Binding NavigateCommand}" CommandParameter="Tools_StripMetadata"/>
-                    <Separator/>
                     <MenuItem Header="_Video Converter..." Command="{Binding NavigateCommand}" CommandParameter="Tools_VideoConverter"/>
                     <MenuItem Header="Video Thumb_nailer..." Command="{Binding NavigateCommand}" CommandParameter="Tools_VideoThumbnailer"/>
                     <Separator/>
