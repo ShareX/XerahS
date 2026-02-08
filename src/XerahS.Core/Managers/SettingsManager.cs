@@ -50,6 +50,7 @@ namespace XerahS.Core
         public const string WorkflowsConfigFileNamePrefix = "WorkflowsConfig";
         public const string WorkflowsConfigFileNameExtension = "json";
         public const string WorkflowsConfigFileName = WorkflowsConfigFileNamePrefix + "." + WorkflowsConfigFileNameExtension;
+        public const string SecretsStoreFileName = "SecretsStore.json";
 
         #endregion
 
@@ -158,6 +159,11 @@ namespace XerahS.Core
         }
 
         /// <summary>
+        /// Secrets store file path
+        /// </summary>
+        public static string SecretsStoreFilePath => Path.Combine(SettingsFolder, SecretsStoreFileName);
+
+        /// <summary>
         /// Main application settings
         /// </summary>
         public static ApplicationConfig Settings { get; private set; } = new ApplicationConfig();
@@ -207,7 +213,7 @@ namespace XerahS.Core
         /// Get a default TaskSettings instance.
         /// Use this for fallback/global settings instead of looking up by WorkflowType.
         /// </summary>
-        public static TaskSettings DefaultTaskSettings { get; } = new TaskSettings();
+        public static TaskSettings DefaultTaskSettings { get; private set; } = new TaskSettings { Job = WorkflowType.None };
 
         /// <summary>
         /// Recent task manager
@@ -225,6 +231,7 @@ namespace XerahS.Core
             LoadUploadersConfig();
             LoadWorkflowsConfig();
             InitializeRecentTasks();
+            XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
         }
 
         /// <summary>
@@ -237,6 +244,10 @@ namespace XerahS.Core
             Settings = ApplicationConfig.Load(path, BackupFolder, fallbackSupport) ?? new ApplicationConfig();
             Settings.CreateBackup = true;
             Settings.CreateWeeklyBackup = true;
+
+            // Sync proxy settings to HelpersOptions
+            HelpersOptions.SyncProxyFromConfig(Settings.ProxySettings);
+
             DebugHelper.WriteLine($"ApplicationConfig load finished: {path}");
         }
 
@@ -267,6 +278,7 @@ namespace XerahS.Core
 
             // Ensure all workflows have valid IDs
             WorkflowsConfig.EnsureWorkflowIds();
+            SyncDefaultTaskSettings();
 
             DebugHelper.WriteLine($"WorkflowsConfig load finished: {path}");
         }
@@ -444,6 +456,21 @@ namespace XerahS.Core
                 Settings?.UseMachineSpecificWorkflowsConfig ?? false);
         }
 
+        private static void SyncDefaultTaskSettings()
+        {
+            if (WorkflowsConfig.DefaultTaskSettings == null)
+            {
+                WorkflowsConfig.DefaultTaskSettings = new TaskSettings { Job = WorkflowType.None };
+            }
+
+            if (WorkflowsConfig.DefaultTaskSettings.Job != WorkflowType.None)
+            {
+                WorkflowsConfig.DefaultTaskSettings.Job = WorkflowType.None;
+            }
+
+            DefaultTaskSettings = WorkflowsConfig.DefaultTaskSettings;
+        }
+
         /// <summary>
         /// Reset all settings to defaults. Creates a backup before deleting.
         /// </summary>
@@ -483,6 +510,7 @@ namespace XerahS.Core
                     File.Delete(WorkflowsConfigFilePath);
                 }
                 WorkflowsConfig = new WorkflowsConfig();
+                SyncDefaultTaskSettings();
 
                 DebugHelper.WriteLine($"Settings reset successfully. Backup created: {backupFolder}");
                 return true;

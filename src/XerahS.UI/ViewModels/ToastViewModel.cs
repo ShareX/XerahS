@@ -31,6 +31,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SkiaSharp;
 using XerahS.Common;
+using XerahS.Core;
 using XerahS.Platform.Abstractions;
 
 namespace XerahS.UI.ViewModels;
@@ -72,11 +73,18 @@ public partial class ToastViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _hasUrl;
 
+    [ObservableProperty]
+    private string? _errorDetails;
+
+    [ObservableProperty]
+    private bool _hasErrors;
+
     // Commands for context menu (using ContextFlyout/MenuFlyout)
     public ICommand CopyImageToClipboardCommand { get; }
     public ICommand OpenFileCommand { get; }
     public ICommand CopyFilePathCommand { get; }
     public ICommand CopyUrlCommand { get; }
+    public ICommand CopyErrorsCommand { get; }
 
     public ToastViewModel(ToastConfig config)
     {
@@ -101,12 +109,15 @@ public partial class ToastViewModel : ObservableObject, IDisposable
         Url = config.URL;
         HasImage = Image != null;
         HasUrl = !string.IsNullOrEmpty(config.URL);
+        ErrorDetails = config.ErrorDetails;
+        HasErrors = !string.IsNullOrWhiteSpace(config.ErrorDetails);
 
         // Initialize context menu commands
         CopyImageToClipboardCommand = new RelayCommand(CopyImageToClipboard);
         OpenFileCommand = new RelayCommand(OpenFile);
         CopyFilePathCommand = new RelayCommand(CopyFilePath);
         CopyUrlCommand = new RelayCommand(CopyUrl);
+        CopyErrorsCommand = new RelayCommand(CopyErrors);
 
         // Calculate fade decrement
         if (config.FadeDuration > 0)
@@ -402,6 +413,24 @@ public partial class ToastViewModel : ObservableObject, IDisposable
         }
     }
 
+    private void CopyErrors()
+    {
+        if (string.IsNullOrWhiteSpace(ErrorDetails))
+        {
+            return;
+        }
+
+        try
+        {
+            PlatformServices.Clipboard.SetText(ErrorDetails);
+            DebugHelper.WriteLine("Copied task errors to clipboard from toast.");
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "Failed to copy errors from toast");
+        }
+    }
+
     private async void AnnotateImage()
     {
         if (!string.IsNullOrEmpty(_config.FilePath) && FileHelpers.IsImageFile(_config.FilePath))
@@ -444,8 +473,13 @@ public partial class ToastViewModel : ObservableObject, IDisposable
         {
             try
             {
-                // TODO: Implement pin to screen
-                DebugHelper.WriteLine($"Pin to screen requested for: {_config.FilePath}");
+                var bitmap = SKBitmap.Decode(_config.FilePath);
+                if (bitmap != null)
+                {
+                    var options = SettingsManager.DefaultTaskSettings?.ToolsSettings?.PinToScreenOptions
+                        ?? new PinToScreenOptions();
+                    Services.PinToScreenManager.PinImage(bitmap, null, options);
+                }
             }
             catch (Exception ex)
             {

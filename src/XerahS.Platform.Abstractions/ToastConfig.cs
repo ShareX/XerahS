@@ -73,6 +73,11 @@ public class ToastConfig
     public string? Text { get; set; }
 
     /// <summary>
+    /// Detailed error payload for failed operations. When present, UI can expose "Copy Errors".
+    /// </summary>
+    public string? ErrorDetails { get; set; }
+
+    /// <summary>
     /// File path associated with this notification (for actions)
     /// </summary>
     public string? FilePath { get; set; }

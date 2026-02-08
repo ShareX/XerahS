@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using XerahS.Uploaders.FileUploaders;
 
 namespace ShareX.AmazonS3.Plugin;
@@ -32,9 +33,9 @@ namespace ShareX.AmazonS3.Plugin;
 /// </summary>
 public class S3ConfigModel
 {
-    public string AccessKeyId { get; set; } = string.Empty;
+    public S3AuthMode AuthMode { get; set; } = S3AuthMode.AccessKeys;
 
-    public string SecretAccessKey { get; set; } = string.Empty;
+    public string SecretKey { get; set; } = Guid.NewGuid().ToString("N");
 
     public string BucketName { get; set; } = string.Empty;
 
@@ -48,11 +49,13 @@ public class S3ConfigModel
 
     public AmazonS3StorageClass StorageClass { get; set; } = AmazonS3StorageClass.Standard;
 
-    public bool SetPublicACL { get; set; } = true;
+    public bool SetPublicACL { get; set; } = false;
+
+    public bool SetPublicPolicy { get; set; } = false;
 
     public bool UsePathStyleUrl { get; set; } = false;
 
-    public bool SignedPayload { get; set; } = false;
+    public bool SignedPayload { get; set; } = true;
 
     public string Endpoint { get; set; } = "s3.amazonaws.com";
 
@@ -61,4 +64,12 @@ public class S3ConfigModel
     public bool RemoveExtensionVideo { get; set; } = false;
 
     public bool RemoveExtensionText { get; set; } = false;
+
+    public string SsoStartUrl { get; set; } = string.Empty;
+
+    public string SsoRegion { get; set; } = "us-east-1";
+
+    public string SsoAccountId { get; set; } = string.Empty;
+
+    public string SsoRoleName { get; set; } = string.Empty;
 }

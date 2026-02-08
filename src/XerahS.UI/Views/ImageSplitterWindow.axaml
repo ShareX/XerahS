@@ -1,0 +1,90 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        mc:Ignorable="d"
+        d:DesignWidth="500" d:DesignHeight="350"
+        x:Class="XerahS.UI.Views.ImageSplitterWindow"
+        x:DataType="vm:ImageSplitterViewModel"
+        Title="Image Splitter"
+        Width="500" Height="350"
+        MinWidth="400" MinHeight="300"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True">
+
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" Margin="16">
+
+    <!-- Row 0: Input file -->
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+      <TextBox Grid.Column="0"
+               Text="{Binding InputFilePath}"
+               Watermark="Select an image file..."
+               IsReadOnly="True"
+               AutomationProperties.Name="Input file path" />
+      <Button Grid.Column="1"
+              Content="Browse..."
+              Command="{Binding BrowseInputCommand}"
+              Margin="8,0,0,0"
+              MinWidth="90"
+              AutomationProperties.Name="Browse input file" />
+    </Grid>
+
+    <!-- Row 1: Dimensions info -->
+    <TextBlock Grid.Row="1"
+               Text="{Binding StatusText}"
+               Margin="0,0,0,12"
+               IsVisible="{Binding HasInput}" />
+
+    <!-- Row 2: Rows / Columns -->
+    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="16" Margin="0,0,0,12">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBlock Text="Columns:" VerticalAlignment="Center" />
+        <NumericUpDown Value="{Binding Columns}"
+                       Minimum="1" Maximum="20" Increment="1"
+                       MinWidth="80"
+                       AutomationProperties.Name="Columns" />
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBlock Text="Rows:" VerticalAlignment="Center" />
+        <NumericUpDown Value="{Binding Rows}"
+                       Minimum="1" Maximum="20" Increment="1"
+                       MinWidth="80"
+                       AutomationProperties.Name="Rows" />
+      </StackPanel>
+    </StackPanel>
+
+    <!-- Row 3: Output folder -->
+    <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
+      <TextBlock Grid.Column="0" Text="Output:" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <TextBox Grid.Column="1"
+               Text="{Binding OutputFolder}"
+               IsReadOnly="True"
+               AutomationProperties.Name="Output folder" />
+      <Button Grid.Column="2"
+              Content="Browse..."
+              Command="{Binding BrowseOutputCommand}"
+              Margin="8,0,0,0"
+              MinWidth="90"
+              AutomationProperties.Name="Browse output folder" />
+    </Grid>
+
+    <!-- Row 4: Spacer -->
+
+    <!-- Row 5: Buttons -->
+    <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Split"
+              Command="{Binding SplitCommand}"
+              MinWidth="100"
+              Classes="accent"
+              IsEnabled="{Binding HasInput}"
+              AutomationProperties.Name="Split image" />
+      <Button Content="Close"
+              Click="OnCloseClick"
+              MinWidth="80"
+              AutomationProperties.Name="Close" />
+    </StackPanel>
+
+  </Grid>
+</Window>

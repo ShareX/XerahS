@@ -210,6 +210,7 @@ namespace XerahS.App
                     try
                     {
                         XerahS.Common.DebugHelper.WriteLine("Initializing Plugins...");
+                        XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
                         XerahS.Uploaders.PluginSystem.ProviderCatalog.InitializeBuiltInProviders(); // Ensure built-ins
                         
                         var pluginPaths = XerahS.Common.PathsManager.GetPluginDirectories();

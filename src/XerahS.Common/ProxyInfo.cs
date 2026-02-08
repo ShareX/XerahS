@@ -38,7 +38,7 @@ namespace XerahS.Common
 
         public ProxyInfo()
         {
-            ProxyMethod = ProxyMethod.Manual;
+            ProxyMethod = ProxyMethod.None;
         }
 
         public bool IsValidProxy()

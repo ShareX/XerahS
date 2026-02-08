@@ -78,6 +78,10 @@ public partial class App : Application
 
             // Prepare for Silent Run
             bool silentRun = XerahS.Core.SettingsManager.Settings.SilentRun;
+#if DEBUG
+            // In DEBUG builds always show main window at startup for easier development.
+            silentRun = false;
+#endif
 
             if (silentRun)
             {
@@ -215,6 +219,88 @@ public partial class App : Application
                 return await tcs.Task;
             };
 
+            // Setup tool workflow callback for ColorPicker, QRCode, ScrollingCapture, OCR, etc.
+            Core.Tasks.WorkerTask.HandleToolWorkflowCallback = async (workflowType) =>
+            {
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    var owner = desktop.MainWindow;
+
+                    if (workflowType == WorkflowType.OCR)
+                    {
+                        await OcrToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else if (workflowType == WorkflowType.ScrollingCapture)
+                    {
+                        await ScrollingCaptureToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else if (workflowType == WorkflowType.ImageEditor)
+                    {
+                        await OpenImageEditorAsync(owner);
+                    }
+                    else if (workflowType == WorkflowType.HashCheck)
+                    {
+                        await HashCheckToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else if (workflowType is WorkflowType.PinToScreen
+                        or WorkflowType.PinToScreenFromScreen
+                        or WorkflowType.PinToScreenFromClipboard
+                        or WorkflowType.PinToScreenFromFile
+                        or WorkflowType.PinToScreenCloseAll)
+                    {
+                        await PinToScreenToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else if (workflowType == WorkflowType.MonitorTest)
+                    {
+                        await MonitorTestToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else if (workflowType == WorkflowType.Ruler)
+                    {
+                        await RulerToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else if (workflowType is WorkflowType.AutoCapture
+                        or WorkflowType.StartAutoCapture
+                        or WorkflowType.StopAutoCapture)
+                    {
+                        await AutoCaptureToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else if (workflowType is WorkflowType.ClipboardUploadWithContentViewer
+                        or WorkflowType.ClipboardViewer)
+                    {
+                        await UploadContentToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else if (workflowType is WorkflowType.ImageCombiner
+                        or WorkflowType.ImageSplitter
+                        or WorkflowType.ImageThumbnailer
+                        or WorkflowType.VideoConverter
+                        or WorkflowType.VideoThumbnailer
+                        or WorkflowType.AnalyzeImage)
+                    {
+                        await MediaToolsToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else
+                    {
+                        await QrCodeToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                });
+            };
+
+            // Wire quick-win workflow callbacks
+            Core.Tasks.WorkerTask.ExitApplicationCallback = () =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
+            };
+
+            Core.Tasks.WorkerTask.ToggleHotkeysCallback = () =>
+            {
+                var config = Core.SettingsManager.Settings;
+                if (config != null)
+                {
+                    config.DisableHotkeys = !config.DisableHotkeys;
+                    Common.DebugHelper.WriteLine($"Hotkeys {(config.DisableHotkeys ? "disabled" : "enabled")}");
+                }
+            };
+
             desktop.Exit += (sender, args) =>
             {
                 XerahS.Core.SettingsManager.SaveAllSettings();
@@ -261,6 +347,7 @@ public partial class App : Application
                     var generalSettings = taskSettings.GeneralSettings;
                     var filePath = task.Info?.FilePath;
                     var url = task.Info?.Result?.URL ?? task.Info?.Result?.ShortenedURL;
+                    var errorDetails = task.Error?.ToString();
 
                     // Prepare toast title and text
                     string? title = null;
@@ -270,6 +357,15 @@ public partial class App : Application
                     {
                         title = "Task Failed";
                         text = task.Info.Result.ToString();
+                        var uploaderErrors = task.Info.Result.ErrorsToString();
+                        if (!string.IsNullOrWhiteSpace(uploaderErrors))
+                        {
+                            errorDetails = uploaderErrors;
+                        }
+                        else if (!string.IsNullOrWhiteSpace(task.Info.Result.Response))
+                        {
+                            errorDetails = task.Info.Result.Response;
+                        }
                     }
                     else if (!string.IsNullOrEmpty(url))
                     {
@@ -294,6 +390,7 @@ public partial class App : Application
                     {
                         Title = title,
                         Text = text,
+                        ErrorDetails = errorDetails,
                         ImagePath = imagePath,
                         FilePath = filePath,
                         URL = url,
@@ -510,38 +607,6 @@ public partial class App : Application
 
         if (settings == null) return;
 
-        bool isColorPickerJob = settings.Job == WorkflowType.ColorPicker ||
-                                settings.Job == WorkflowType.ScreenColorPicker;
-
-        if (isColorPickerJob)
-        {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                var owner = ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                    ? desktop.MainWindow
-                    : null;
-
-                _ = ColorPickerToolService.HandleWorkflowAsync(settings.Job, owner);
-            });
-            return;
-        }
-
-        bool isQrJob = settings.Job == WorkflowType.QRCode ||
-                       settings.Job == WorkflowType.QRCodeDecodeFromScreen ||
-                       settings.Job == WorkflowType.QRCodeScanRegion;
-
-        if (isQrJob)
-        {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                var owner = ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                    ? desktop.MainWindow
-                    : null;
-
-                _ = QrCodeToolService.HandleWorkflowAsync(settings.Job, owner);
-            });
-            return;
-        }
 
         // Determine request type by category
         string category = settings.Job.GetHotkeyCategory();
@@ -655,6 +720,45 @@ public partial class App : Application
             desktop.MainWindow is Views.MainWindow mainWindow)
         {
             mainWindow.NavigateToSettings();
+        }
+    }
+
+    private static async Task OpenImageEditorAsync(Window? owner)
+    {
+        try
+        {
+            var topLevel = owner != null ? TopLevel.GetTopLevel(owner) : null;
+            if (topLevel == null) return;
+
+            var options = new FilePickerOpenOptions
+            {
+                Title = "Open Image in Editor",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    new FilePickerFileType("Image Files")
+                    {
+                        Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.webp", "*.tiff", "*.tif" }
+                    },
+                    FilePickerFileTypes.All
+                }
+            };
+
+            var files = await topLevel.StorageProvider.OpenFilePickerAsync(options);
+            if (files.Count < 1) return;
+
+            var path = files[0].TryGetLocalPath();
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return;
+
+            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read);
+            var skBitmap = SkiaSharp.SKBitmap.Decode(fs);
+            if (skBitmap == null) return;
+
+            await PlatformServices.UI.ShowEditorAsync(skBitmap);
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "Failed to open image in editor");
         }
     }
 

@@ -151,29 +151,11 @@ public enum WorkflowType // Localized
     [Description("Upload file")]
     FileUpload,
     [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Upload folder")]
-    FolderUpload,
-    [Category(EnumExtensions.WorkflowType_Category_Upload)]
     [Description("Upload from clipboard")]
     ClipboardUpload,
     [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Upload from clipboard with content viewer")]
+    [Description("Upload content")]
     ClipboardUploadWithContentViewer,
-    [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Upload text")]
-    UploadText,
-    [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Upload from URL")]
-    UploadURL,
-    [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Drag and drop upload")]
-    DragDropUpload,
-    [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Shorten URL")]
-    ShortenURL,
-    [Category(EnumExtensions.WorkflowType_Category_Upload)]
-    [Description("Stop all active uploads")]
-    StopUploads,
     // Screen capture
     [Category(EnumExtensions.WorkflowType_Category_ScreenCapture)]
     [Description("Capture entire screen")]
@@ -190,9 +172,6 @@ public enum WorkflowType // Localized
     [Category(EnumExtensions.WorkflowType_Category_ScreenCapture)]
     [Description("Capture region")]
     RectangleRegion,
-    [Category(EnumExtensions.WorkflowType_Category_ScreenCapture)]
-    [Description("Capture region (Light)")]
-    RectangleLight,
     [Category(EnumExtensions.WorkflowType_Category_ScreenCapture)]
     [Description("Capture region (Transparent)")]
     RectangleTransparent,
@@ -277,15 +256,6 @@ public enum WorkflowType // Localized
     [Description("Image editor")]
     ImageEditor,
     [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Image beautifier")]
-    ImageBeautifier,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Image effects")]
-    ImageEffects,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Image viewer")]
-    ImageViewer,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
     [Description("Image combiner")]
     ImageCombiner,
     [Category(EnumExtensions.WorkflowType_Category_Tools)]
@@ -318,30 +288,13 @@ public enum WorkflowType // Localized
     [Category(EnumExtensions.WorkflowType_Category_Tools)]
     [Description("Hash checker")]
     HashCheck,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Metadata")]
-    Metadata,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Strip metadata")]
-    StripMetadata,
+
     [Category(EnumExtensions.WorkflowType_Category_Tools)]
     [Description("Directory indexer")]
     IndexFolder,
     [Category(EnumExtensions.WorkflowType_Category_Tools)]
     [Description("Clipboard viewer")]
     ClipboardViewer,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Borderless window")]
-    BorderlessWindow,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Make active window borderless")]
-    ActiveWindowBorderless,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Make active window top most")]
-    ActiveWindowTopMost,
-    [Category(EnumExtensions.WorkflowType_Category_Tools)]
-    [Description("Inspect window")]
-    InspectWindow,
     [Category(EnumExtensions.WorkflowType_Category_Tools)]
     [Description("Monitor test")]
     MonitorTest,
@@ -361,12 +314,7 @@ public enum WorkflowType // Localized
     [Category(EnumExtensions.WorkflowType_Category_Other)]
     [Description("Open image history window")]
     OpenImageHistory,
-    [Category(EnumExtensions.WorkflowType_Category_Other)]
-    [Description("Toggle actions toolbar")]
-    ToggleActionsToolbar,
-    [Category(EnumExtensions.WorkflowType_Category_Other)]
-    [Description("Toggle tray menu")]
-    ToggleTrayMenu,
+
     [Category(EnumExtensions.WorkflowType_Category_Other)]
     [Description("Exit ShareX")]
     ExitShareX

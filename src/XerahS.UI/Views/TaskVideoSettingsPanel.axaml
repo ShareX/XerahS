@@ -55,18 +55,13 @@
                                    FontSize="12"
                                    IsVisible="{Binding FFmpegStatusText, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
                         
-                        <Grid ColumnDefinitions="Auto, 16, Auto, 16, Auto">
+                        <Grid ColumnDefinitions="Auto, 16, Auto">
                             <Button Grid.Column="0" Content="Download FFmpeg..."
                                     Command="{Binding DownloadFFmpegCommand}"
                                     IsVisible="{Binding ShowDownloadFFmpeg}"
                                     IsEnabled="{Binding CanDownloadFFmpeg}"/>
-                            
-                            <TextBlock Grid.Column="2" Text="{Binding FFmpegDownloadProgressText}"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                       VerticalAlignment="Center"
-                                       IsVisible="{Binding IsDownloadingFFmpeg}"/>
-                            
-                            <Button Grid.Column="4" Content="Configure FFmpeg..."
+
+                            <Button Grid.Column="2" Content="Configure FFmpeg..."
                                     Command="{Binding OpenFFmpegOptionsCommand}"/>
                         </Grid>
                         

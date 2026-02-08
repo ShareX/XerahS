@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        x:Class="XerahS.UI.Views.PinnedImageWindow"
+        x:DataType="vm:PinnedImageViewModel"
+        Title="Pinned Image"
+        Topmost="True"
+        ShowInTaskbar="False"
+        CanResize="False"
+        SystemDecorations="None"
+        Background="Transparent"
+        WindowStartupLocation="Manual"
+        Focusable="True"
+        AutomationProperties.Name="Pinned Image">
+
+  <Window.ContextFlyout>
+    <MenuFlyout>
+      <MenuItem Header="Copy image"
+                Command="{Binding CopyImageCommand}"
+                AutomationProperties.Name="Copy pinned image to clipboard" />
+      <MenuItem Header="Reset scale"
+                Command="{Binding ResetScaleCommand}"
+                AutomationProperties.Name="Reset image scale to 100 percent" />
+      <Separator />
+      <MenuItem Header="Close"
+                Command="{Binding RequestCloseCommand}"
+                AutomationProperties.Name="Close this pinned image" />
+      <MenuItem Header="Close all"
+                Command="{Binding CloseAllCommand}"
+                AutomationProperties.Name="Close all pinned images" />
+    </MenuFlyout>
+  </Window.ContextFlyout>
+
+  <Border x:Name="OuterBorder"
+          Background="{Binding BackgroundBrush}"
+          BorderBrush="{Binding BorderBrush}"
+          BorderThickness="{Binding BorderThickness}"
+          ClipToBounds="True">
+    <Grid>
+      <!-- The pinned image -->
+      <Image x:Name="PinnedImage"
+             Source="{Binding DisplayImage}"
+             Stretch="Uniform"
+             Width="{Binding ScaledWidth}"
+             Height="{Binding ScaledHeight}"
+             Opacity="{Binding ImageOpacity}"
+             AutomationProperties.Name="Pinned screenshot" />
+
+      <!-- Hover toolbar overlay -->
+      <Border x:Name="HoverToolbar"
+              Background="#80000000"
+              VerticalAlignment="Top"
+              HorizontalAlignment="Right"
+              CornerRadius="0,0,0,4"
+              Padding="6,3"
+              IsVisible="False">
+        <TextBlock Text="{Binding ScaleText}"
+                   Foreground="White"
+                   FontSize="11"
+                   VerticalAlignment="Center" />
+      </Border>
+    </Grid>
+  </Border>
+</Window>

@@ -28,6 +28,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using XerahS.Common;
 using XerahS.Core;
+using XerahS.Core.Uploaders;
+using XerahS.Uploaders.PluginSystem;
 using System.Diagnostics;
 
 namespace XerahS.UI.ViewModels
@@ -37,12 +39,29 @@ namespace XerahS.UI.ViewModels
         [ObservableProperty]
         private string _logText = "";
 
+        [ObservableProperty]
+        private string _secretStoreBackendName = "Unknown";
+
+        [ObservableProperty]
+        private string _secretStoreBackendDetails = "Secrets store diagnostics not available.";
+
+        [ObservableProperty]
+        private string _secretStoreBackendStatus = "Unknown";
+
         public DebugViewModel()
         {
             if (DebugHelper.Logger != null)
             {
                 LogText = DebugHelper.Logger.ToString() ?? "";
                 DebugHelper.Logger.MessageAdded += Logger_MessageAdded;
+            }
+
+            var context = ProviderContextManager.EnsureProviderContext();
+            if (context.Secrets is ISecretStoreInfo info)
+            {
+                SecretStoreBackendName = info.BackendName;
+                SecretStoreBackendDetails = info.BackendDetails;
+                SecretStoreBackendStatus = info.IsFallback ? "Fallback" : "Primary";
             }
         }
 

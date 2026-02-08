@@ -25,10 +25,11 @@
 #pragma warning disable CA1416 // Validate platform compatibility
 using Newtonsoft.Json;
 using XerahS.Editor.ImageEffects;
+using XerahS.Platform.Abstractions;
+using XerahS.Services.Abstractions;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using XerahS.Services.Abstractions;
 
 namespace XerahS.Core;
 
@@ -197,8 +198,7 @@ public class ScrollingCaptureOptions
     public int StartDelay { get; set; } = 300;
     public bool AutoScrollTop { get; set; } = false;
     public int ScrollDelay { get; set; } = 300;
-    // ScrollMethod is in Enums
-    // public ScrollMethod ScrollMethod { get; set; } = ScrollMethod.MouseWheel; 
+    public ScrollMethod ScrollMethod { get; set; } = ScrollMethod.MouseWheel;
     public int ScrollAmount { get; set; } = 2;
     public bool AutoIgnoreBottomEdge { get; set; } = true;
     public bool AutoUpload { get; set; } = false;
@@ -248,7 +248,7 @@ public class PinToScreenOptions
     public bool HighQualityScale { get; set; } = true;
     public int InitialOpacity { get; set; } = 100;
     public int OpacityStep { get; set; } = 10;
-    public ContentAlignment Placement { get; set; } = ContentAlignment.BottomRight;
+    public ContentPlacement Placement { get; set; } = ContentPlacement.BottomRight;
     public int PlacementOffset { get; set; } = 10;
     public bool TopMost { get; set; } = true;
     public bool KeepCenterLocation { get; set; } = true;

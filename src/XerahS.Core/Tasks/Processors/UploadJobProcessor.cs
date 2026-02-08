@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 using System.IO;
+using System.Text;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Managers;
@@ -100,6 +101,11 @@ namespace XerahS.Core.Tasks.Processors
             else
             {
                 DebugHelper.WriteLine("Upload result was null.");
+                info.Result = new UploadResult
+                {
+                    IsSuccess = false,
+                    Response = "Upload failed: uploader returned no result."
+                };
             }
         }
 
@@ -128,6 +134,24 @@ namespace XerahS.Core.Tasks.Processors
 
             var instanceManager = InstanceManager.Instance;
             var targetInstanceId = info.TaskSettings.GetDestinationInstanceIdForDataType(info.DataType);
+            DebugHelper.WriteLine(
+                $"[UploadContentDebug] UploadWithPluginSystem: category={category}, dataType={info.DataType}, " +
+                $"taskSettingsJob={info.TaskSettings.Job}, destinationInstanceId=\"{info.TaskSettings.DestinationInstanceId ?? string.Empty}\", " +
+                $"resolvedTargetInstanceId=\"{targetInstanceId ?? string.Empty}\"");
+
+            if (category == UploaderCategory.Text)
+            {
+                var textInstances = instanceManager.GetInstancesByCategory(UploaderCategory.Text);
+                var defaultTextInstance = instanceManager.GetDefaultInstance(UploaderCategory.Text);
+                var textInstanceSummary = textInstances.Count > 0
+                    ? string.Join(", ", textInstances.Select(i => $"{i.DisplayName}({i.InstanceId})"))
+                    : "(none)";
+
+                DebugHelper.WriteLine(
+                    $"[UploadContentDebug] Text instances: count={textInstances.Count}, " +
+                    $"default=\"{defaultTextInstance?.DisplayName ?? "(none)"}\", list={textInstanceSummary}");
+            }
+
             UploaderInstance? targetInstance = null;
 
             if (!string.IsNullOrEmpty(targetInstanceId))
@@ -137,25 +161,42 @@ namespace XerahS.Core.Tasks.Processors
                 {
                     DebugHelper.WriteLine($"Configured destination instance not found: {targetInstanceId}");
                 }
-                else if (targetInstance.Category != category)
+                else if (!InstanceManager.IsAutoProvider(targetInstance.ProviderId) && targetInstance.Category != category)
                 {
                     DebugHelper.WriteLine($"Configured destination category mismatch. Expected {category}, got {targetInstance.Category}. Continuing with configured instance.");
                 }
             }
 
-            var defaultInstance = targetInstance ?? instanceManager.GetDefaultInstance(category);
-            if (defaultInstance == null)
+            targetInstance = ResolveAutoInstance(instanceManager, targetInstance, category, targetInstanceId);
+
+            var selectedInstance = targetInstance ?? instanceManager.GetDefaultInstance(category);
+
+            if (selectedInstance == null)
+            {
+                // If no explicit default is set, use the first available instance in the category.
+                // This prevents false "no uploader configured" failures when instances exist but no default is marked.
+                selectedInstance = instanceManager.GetInstancesByCategory(category).FirstOrDefault();
+                if (selectedInstance != null)
+                {
+                    DebugHelper.WriteLine(
+                        $"No default uploader instance configured for category {category}; " +
+                        $"using first available: {selectedInstance.DisplayName} ({selectedInstance.ProviderId}).");
+                }
+            }
+
+            selectedInstance = ResolveAutoInstance(instanceManager, selectedInstance, category, null);
+            if (selectedInstance == null)
             {
                 var errorMsg = $"No uploader instance configured (plugin system) for category {category}.";
                 DebugHelper.WriteLine(errorMsg);
                 return new UploadResult { IsSuccess = false, Response = errorMsg };
             }
 
-            DebugHelper.WriteLine($"Plugin instance selected: {defaultInstance.DisplayName} ({defaultInstance.ProviderId})");
-            var provider = ProviderCatalog.GetProvider(defaultInstance.ProviderId);
+            DebugHelper.WriteLine($"Plugin instance selected: {selectedInstance.DisplayName} ({selectedInstance.ProviderId})");
+            var provider = ProviderCatalog.GetProvider(selectedInstance.ProviderId);
             if (provider == null)
             {
-                DebugHelper.WriteLine($"Provider not found in catalog: {defaultInstance.ProviderId}");
+                DebugHelper.WriteLine($"Provider not found in catalog: {selectedInstance.ProviderId}");
                 return null;
             }
 
@@ -164,12 +205,16 @@ namespace XerahS.Core.Tasks.Processors
             Uploader uploader;
             try
             {
-                uploader = provider.CreateInstance(defaultInstance.SettingsJson);
+                uploader = provider.CreateInstance(selectedInstance.SettingsJson);
             }
             catch (Exception ex)
             {
                 DebugHelper.WriteException(ex, "Failed to create uploader instance");
-                return null;
+                return new UploadResult
+                {
+                    IsSuccess = false,
+                    Response = ex.Message
+                };
             }
 
             Uploader.ProgressEventHandler progressHandler = progress => info.ReportUploadProgress(progress);
@@ -184,6 +229,31 @@ namespace XerahS.Core.Tasks.Processors
                         FileUploader fileUploader => fileUploader.UploadFile(info.FilePath),
                         GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
                         _ => null
+                    };
+                }
+
+            if (info.DataType == EDataType.Text && !string.IsNullOrEmpty(info.TextContent))
+            {
+                DebugHelper.WriteLine(
+                    $"[UploadContentDebug] Text upload dispatch: provider={selectedInstance.ProviderId}, " +
+                    $"textLength={info.TextContent.Length}, fileName=\"{info.FileName}\"");
+
+                if (uploader is GenericUploader genericUploader)
+                {
+                    string extension = info.TaskSettings.AdvancedSettings.TextFileExtension;
+                    string fileName = string.IsNullOrWhiteSpace(info.FileName)
+                        ? TaskHelpers.GetFileName(info.TaskSettings, extension, info.Metadata)
+                            : info.FileName;
+
+                        using var ms = new MemoryStream(Encoding.UTF8.GetBytes(info.TextContent));
+                        ms.Position = 0;
+                        return genericUploader.Upload(ms, fileName);
+                    }
+
+                    return new UploadResult
+                    {
+                        IsSuccess = false,
+                        Response = "Resolved uploader does not support text uploads."
                     };
                 }
 
@@ -207,6 +277,31 @@ namespace XerahS.Core.Tasks.Processors
             }
         }
 
+        private static UploaderInstance? ResolveAutoInstance(InstanceManager instanceManager, UploaderInstance? instance, UploaderCategory category, string? autoInstanceId)
+        {
+            if (instance == null)
+            {
+                return null;
+            }
+
+            if (!InstanceManager.IsAutoProvider(instance.ProviderId))
+            {
+                return instance;
+            }
+
+            DebugHelper.WriteLine($"Auto destination selected; resolving default instance for category {category}.");
+
+            var resolved = instanceManager.ResolveAutoInstance(category, autoInstanceId);
+            if (resolved == null)
+            {
+                DebugHelper.WriteLine($"Auto destination could not be resolved for category {category}.");
+                return null;
+            }
+
+            DebugHelper.WriteLine($"Auto destination resolved to: {resolved.DisplayName} ({resolved.ProviderId})");
+            return resolved;
+        }
+
         private static UploadResult UploadWithGenericUploader(GenericUploader uploader, string filePath)
         {
             using FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -222,6 +317,7 @@ namespace XerahS.Core.Tasks.Processors
 
             try
             {
+                XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
                 ProviderCatalog.InitializeBuiltInProviders();
 
                 var pluginPaths = PathsManager.GetPluginDirectories();

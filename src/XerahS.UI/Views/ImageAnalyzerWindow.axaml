@@ -1,0 +1,67 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        mc:Ignorable="d"
+        d:DesignWidth="500" d:DesignHeight="450"
+        x:Class="XerahS.UI.Views.ImageAnalyzerWindow"
+        x:DataType="vm:ImageAnalyzerViewModel"
+        Title="Image Analyzer"
+        Width="500" Height="480"
+        MinWidth="400" MinHeight="350"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True">
+
+  <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="16">
+
+    <!-- Row 0: Input file -->
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+      <TextBox Grid.Column="0"
+               Text="{Binding InputFilePath}"
+               Watermark="Select an image file..."
+               IsReadOnly="True"
+               AutomationProperties.Name="Input file path" />
+      <Button Grid.Column="1"
+              Content="Browse..."
+              Command="{Binding BrowseCommand}"
+              Margin="8,0,0,0"
+              MinWidth="90"
+              AutomationProperties.Name="Browse file" />
+    </Grid>
+
+    <!-- Row 1: Properties list -->
+    <DataGrid Grid.Row="1"
+              ItemsSource="{Binding Properties}"
+              IsReadOnly="True"
+              CanUserResizeColumns="True"
+              CanUserReorderColumns="False"
+              CanUserSortColumns="False"
+              GridLinesVisibility="Horizontal"
+              Margin="0,0,0,12"
+              AutomationProperties.Name="Image properties">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="80" />
+        <DataGridTextColumn Header="Property" Binding="{Binding Name}" Width="120" />
+        <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+      </DataGrid.Columns>
+    </DataGrid>
+
+    <!-- Row 2: Status -->
+    <TextBlock Grid.Row="2" Text="{Binding StatusText}" Margin="0,0,0,12" />
+
+    <!-- Row 3: Buttons -->
+    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Copy All"
+              Command="{Binding CopyAllCommand}"
+              MinWidth="90"
+              IsEnabled="{Binding HasInput}"
+              AutomationProperties.Name="Copy all properties" />
+      <Button Content="Close"
+              Click="OnCloseClick"
+              MinWidth="80"
+              AutomationProperties.Name="Close" />
+    </StackPanel>
+
+  </Grid>
+</Window>

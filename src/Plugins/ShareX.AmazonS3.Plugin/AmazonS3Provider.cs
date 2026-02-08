@@ -56,7 +56,29 @@ public class AmazonS3Provider : UploaderProviderBase
             throw new InvalidOperationException("Failed to deserialize Amazon S3 settings");
         }
 
-        return new AmazonS3Uploader(config);
+        if (Secrets == null)
+        {
+            throw new InvalidOperationException("Secret store not available for Amazon S3");
+        }
+
+        if (string.IsNullOrWhiteSpace(config.SecretKey))
+        {
+            throw new InvalidOperationException("Amazon S3 secret key is missing");
+        }
+        if (config.AuthMode == S3AuthMode.AwsSso)
+        {
+            return CreateSsoInstance(config);
+        }
+
+        string accessKeyId = Secrets.GetSecret(ProviderId, config.SecretKey, "accessKeyId") ?? string.Empty;
+        string secretAccessKey = Secrets.GetSecret(ProviderId, config.SecretKey, "secretAccessKey") ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(accessKeyId) || string.IsNullOrWhiteSpace(secretAccessKey))
+        {
+            throw new InvalidOperationException("Amazon S3 credentials are missing");
+        }
+
+        return new AmazonS3Uploader(config, accessKeyId, secretAccessKey);
     }
 
     public override Dictionary<UploaderCategory, string[]> GetSupportedFileTypes()
@@ -88,5 +110,62 @@ public class AmazonS3Provider : UploaderProviderBase
     public override IUploaderConfigViewModel? CreateConfigViewModel()
     {
         return new ViewModels.AmazonS3ConfigViewModel();
+    }
+
+    private AmazonS3Uploader CreateSsoInstance(S3ConfigModel config)
+    {
+        if (Secrets == null)
+        {
+            throw new InvalidOperationException("Secret store not available for Amazon S3");
+        }
+
+        if (string.IsNullOrWhiteSpace(config.SsoRegion))
+        {
+            throw new InvalidOperationException("SSO region is required for Amazon S3.");
+        }
+
+        AwsSsoStoredToken? token = AwsSsoSecretStore.LoadToken(Secrets, config.SecretKey);
+        if (token == null)
+        {
+            throw new InvalidOperationException("SSO login required for Amazon S3.");
+        }
+
+        if (token.IsExpired())
+        {
+            AwsSsoStoredClient? client = AwsSsoSecretStore.LoadClient(Secrets, config.SecretKey);
+            if (client == null || client.IsExpired())
+            {
+                throw new InvalidOperationException("SSO login required for Amazon S3.");
+            }
+
+            if (string.IsNullOrWhiteSpace(token.RefreshToken))
+            {
+                throw new InvalidOperationException("SSO session expired. Please login again.");
+            }
+
+            var oidc = new AwsSsoOidcClient(config.SsoRegion);
+            token = oidc.RefreshToken(client, token.RefreshToken);
+            AwsSsoSecretStore.SaveToken(Secrets, config.SecretKey, token);
+        }
+
+        if (string.IsNullOrWhiteSpace(config.SsoAccountId) || string.IsNullOrWhiteSpace(config.SsoRoleName))
+        {
+            throw new InvalidOperationException("SSO account and role must be selected for Amazon S3.");
+        }
+
+        AwsSsoStoredRoleCredentials? creds = AwsSsoSecretStore.LoadRoleCredentials(Secrets, config.SecretKey);
+        if (creds == null || creds.IsExpired())
+        {
+            var ssoClient = new AwsSsoClient(config.SsoRegion);
+            creds = ssoClient.GetRoleCredentials(token.AccessToken, config.SsoAccountId, config.SsoRoleName);
+            AwsSsoSecretStore.SaveRoleCredentials(Secrets, config.SecretKey, creds);
+        }
+
+        if (string.IsNullOrWhiteSpace(creds.AccessKeyId) || string.IsNullOrWhiteSpace(creds.SecretAccessKey))
+        {
+            throw new InvalidOperationException("SSO role credentials are missing.");
+        }
+
+        return new AmazonS3Uploader(config, creds.AccessKeyId, creds.SecretAccessKey, creds.SessionToken);
     }
 }

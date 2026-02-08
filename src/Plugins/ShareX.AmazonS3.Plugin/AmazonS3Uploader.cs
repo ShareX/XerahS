@@ -28,7 +28,6 @@ using XerahS.Uploaders;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace ShareX.AmazonS3.Plugin;
 
@@ -39,6 +38,9 @@ public class AmazonS3Uploader : FileUploader
 {
     private const string DefaultRegion = "us-east-1";
     private readonly S3ConfigModel _config;
+    private readonly string _accessKeyId;
+    private readonly string _secretAccessKey;
+    private readonly string? _sessionToken;
 
     public static List<AmazonS3Endpoint> Endpoints { get; } = new List<AmazonS3Endpoint>
     {
@@ -70,9 +72,12 @@ public class AmazonS3Uploader : FileUploader
         new AmazonS3Endpoint("Wasabi", "s3.wasabisys.com")
     };
 
-    public AmazonS3Uploader(S3ConfigModel config)
+    public AmazonS3Uploader(S3ConfigModel config, string accessKeyId, string secretAccessKey, string? sessionToken = null)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
+        _accessKeyId = accessKeyId ?? throw new ArgumentNullException(nameof(accessKeyId));
+        _secretAccessKey = secretAccessKey ?? throw new ArgumentNullException(nameof(secretAccessKey));
+        _sessionToken = sessionToken;
     }
 
     public override UploadResult Upload(Stream stream, string fileName)
@@ -86,12 +91,7 @@ public class AmazonS3Uploader : FileUploader
             ? endpoint
             : $"{_config.BucketName}.{endpoint}";
 
-        string algorithm = "AWS4-HMAC-SHA256";
-        string credentialDate = DateTime.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
         string region = GetRegion();
-        string scope = string.Join("/", credentialDate, region, "s3", "aws4_request");
-        string credential = string.Join("/", _config.AccessKeyId, scope);
-        string timeStamp = DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
         string contentType = MimeTypes.GetMimeTypeFromFileName(fileName);
 
         string hashedPayload;
@@ -114,8 +114,6 @@ public class AmazonS3Uploader : FileUploader
             ["Host"] = host,
             ["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture),
             ["Content-Type"] = contentType,
-            ["x-amz-date"] = timeStamp,
-            ["x-amz-content-sha256"] = hashedPayload,
             ["x-amz-storage-class"] = _config.StorageClass.ToString().ToUpperInvariant()
         };
 
@@ -130,21 +128,7 @@ public class AmazonS3Uploader : FileUploader
         canonicalURI = URLHelpers.URLEncode(canonicalURI, true);
 
         string canonicalQueryString = "";
-        string canonicalHeaders = CreateCanonicalHeaders(headers);
-        string signedHeaders = GetSignedHeaders(headers);
-
-        string canonicalRequest = $"PUT\n{canonicalURI}\n{canonicalQueryString}\n{canonicalHeaders}\n{signedHeaders}\n{hashedPayload}";
-
-        string stringToSign = $"{algorithm}\n{timeStamp}\n{scope}\n{BytesToHex(ComputeSHA256(canonicalRequest))}";
-
-        byte[] dateKey = ComputeHMACSHA256(credentialDate, "AWS4" + _config.SecretAccessKey);
-        byte[] dateRegionKey = ComputeHMACSHA256(region, dateKey);
-        byte[] dateRegionServiceKey = ComputeHMACSHA256("s3", dateRegionKey);
-        byte[] signingKey = ComputeHMACSHA256("aws4_request", dateRegionServiceKey);
-
-        string signature = BytesToHex(ComputeHMACSHA256(stringToSign, signingKey));
-
-        headers["Authorization"] = $"{algorithm} Credential={credential},SignedHeaders={signedHeaders},Signature={signature}";
+        AwsS3Signer.Sign(headers, "PUT", canonicalURI, canonicalQueryString, region, _accessKeyId, _secretAccessKey, _sessionToken, hashedPayload);
 
         headers.Remove("Host");
         headers.Remove("Content-Type");
@@ -270,23 +254,6 @@ public class AmazonS3Uploader : FileUploader
         return new[] { ".txt", ".log", ".json", ".xml", ".md", ".html", ".css", ".js" }.Contains(ext);
     }
 
-    private string CreateCanonicalHeaders(NameValueCollection headers)
-    {
-        var sorted = headers.AllKeys
-            .Where(k => k != null)
-            .OrderBy(k => k)
-            .Select(k => $"{k!.ToLowerInvariant()}:{headers[k]?.Trim()}\n");
-        return string.Join("", sorted);
-    }
-
-    private string GetSignedHeaders(NameValueCollection headers)
-    {
-        return string.Join(";", headers.AllKeys
-            .Where(k => k != null)
-            .OrderBy(k => k)
-            .Select(k => k!.ToLowerInvariant()));
-    }
-
     private string ComputeSHA256Hash(Stream stream)
     {
         long position = stream.Position;
@@ -294,23 +261,6 @@ public class AmazonS3Uploader : FileUploader
         byte[] hash = SHA256.HashData(stream);
         stream.Seek(position, SeekOrigin.Begin);
         return BytesToHex(hash);
-    }
-
-    // Local crypto helper methods
-    private static byte[] ComputeSHA256(string text)
-    {
-        return SHA256.HashData(Encoding.UTF8.GetBytes(text));
-    }
-
-    private static byte[] ComputeHMACSHA256(string text, string key)
-    {
-        return ComputeHMACSHA256(text, Encoding.UTF8.GetBytes(key));
-    }
-
-    private static byte[] ComputeHMACSHA256(string text, byte[] key)
-    {
-        using var hmac = new HMACSHA256(key);
-        return hmac.ComputeHash(Encoding.UTF8.GetBytes(text));
     }
 
     private static string BytesToHex(byte[] bytes)

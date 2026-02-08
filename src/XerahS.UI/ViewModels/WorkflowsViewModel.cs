@@ -164,6 +164,7 @@ public partial class WorkflowsViewModel : ViewModelBase
                 // Refresh specific item or reload all?
                 // Reloading ensures displayed description updates if Hotkey/Job changed
                 LoadWorkflows();
+                _manager?.NotifyWorkflowsChanged();
                 // Restore selection?
                 // For now, reload clears selection, but cleaner UI
             }
@@ -201,7 +202,10 @@ public partial class WorkflowsViewModel : ViewModelBase
     {
         if (SelectedWorkflow != null && _manager != null)
         {
-            var clone = new XerahS.Core.Hotkeys.WorkflowSettings(SelectedWorkflow.Model.Job,
+            var cloneJob = SelectedWorkflow.Model.Job == WorkflowType.None
+                ? WorkflowType.RectangleRegion
+                : SelectedWorkflow.Model.Job;
+            var clone = new XerahS.Core.Hotkeys.WorkflowSettings(cloneJob,
                 new HotkeyInfo(
                     SelectedWorkflow.Model.HotkeyInfo.Key,
                     SelectedWorkflow.Model.HotkeyInfo.Modifiers));

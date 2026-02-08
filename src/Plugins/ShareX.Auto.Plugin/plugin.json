@@ -1,0 +1,14 @@
+{
+  "pluginId": "auto",
+  "name": "Auto Destination",
+  "version": "1.0.0",
+  "author": "ShareX Team",
+  "description": "Automatically uses the default uploader for the detected data type",
+  "apiVersion": "1.0",
+  "entryPoint": "ShareX.Auto.Plugin.AutoProvider",
+  "assemblyFileName": "XerahS.Auto.Plugin.dll",
+  "supportedCategories": ["File"],
+  "configViewId": "auto",
+  "dependencies": [],
+  "homepageUrl": "https://getsharex.com/"
+}

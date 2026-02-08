@@ -366,18 +366,4 @@ namespace XerahS.RegionCapture
         Aborted
     }
 
-    public enum ScrollingCaptureStatus
-    {
-        Failed,
-        PartiallySuccessful,
-        Successful
-    }
-
-    public enum ScrollMethod // Localized
-    {
-        MouseWheel,
-        DownArrow,
-        PageDown,
-        ScrollMessage
-    }
 }

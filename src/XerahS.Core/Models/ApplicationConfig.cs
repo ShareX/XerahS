@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using XerahS.Common;
+using XerahS.Platform.Abstractions;
 using XerahS.Uploaders;
 using System.ComponentModel;
 using System.Drawing;
@@ -271,8 +272,8 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
     [Category("Drag and drop window"), DefaultValue(5), Description("Drop window offset.")]
     public int DropOffset { get; set; }
 
-    [Category("Drag and drop window"), DefaultValue(ContentAlignment.BottomRight), Description("Drop window alignment.")]
-    public ContentAlignment DropAlignment { get; set; }
+    [Category("Drag and drop window"), DefaultValue(ContentPlacement.BottomRight), Description("Drop window alignment.")]
+    public ContentPlacement DropAlignment { get; set; }
 
     [Category("Drag and drop window"), DefaultValue(100), Description("Drop window opacity.")]
     public int DropOpacity { get; set; }

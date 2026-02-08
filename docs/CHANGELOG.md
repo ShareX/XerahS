@@ -7,34 +7,98 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **MINOR** (y): New features and enhancements
 - **PATCH** (z): Bug fixes and patches
 
+
 ## Unreleased
 
-## v0.7.7 - Editor Namespace & Plugin Build Fixes
+## v0.14.0
 
-### Features & Improvements
+### Features
+- **Monitor Test**: Implement MonitorTest workflow with diagnostic and pattern testing modes `(56a1ea3, 1dc10f8)`
+- **Tools**: Add Ruler workflow routing and placeholder service `(5647b4d)`
+
+## v0.13.0
+
+### Fixes
+- **Menu Bar**: Fix menu-bar hash checker routing and dynamic workflows menu `(8068e6f)`
+- **Upload**: Improve Upload Content workflow handling and window UX `(62a1cda)`
+- **Upload**: Improve Upload nav workflow fallback and text upload routing `(4fd8182)`
+
+## v0.12.0
+
+### Fixes
+- **Tools**: Added media tools to Tools navigation bar `(485a438)`
+- **DataTemplates**: Fix DataTemplate issues `(485a438)`
+- **Proxy**: Fix custom uploader loading and add configuration UI `(#77)` ([@Hexeption](https://github.com/Hexeption))
+- **Linux**: Add dark mode support and theme settings `(#62)` ([@unicxrn](https://github.com/unicxrn))
+- **macOS**: Add native application menu `(#60)` ([@Hexeption](https://github.com/Hexeption))
+- **Custom Uploaders**: Fix compatibility improvements `(#74)` ([@Hexeption](https://github.com/Hexeption))
+- **Linux**: Wayland Hyprland screenshot support `(#61)` ([@unicxrn](https://github.com/unicxrn))
+- **Security**: Fix DPAPI platform warning `(#73)` ([@Hexeption](https://github.com/Hexeption))
+- **Custom Uploaders**: Fix version compatibility `(#71)` ([@emmsixx](https://github.com/emmsixx))
+
+### Refactor
 - **Editor**: Renamed namespace from ShareX.Editor to XerahS.Editor for consistency `(25135d0, d0d1266)`
-- **Build System**: Improved plugin copy target to only include plugin assemblies `(a9b5c63)`
-- **Project Structure**: Updated all editor references and AXAML declarations `(1dfeb3b, 90b9fe0)`
+- **Project Structure**: Updated all editor references and AXAML declarations `(1dfeb3b)`
 
-### Bug Fixes
-- Fix Font Awesome font loading error (`InvalidOperationException`) by correcting avares:// resource paths `(25135d0)`
-- Fix MSB3030 plugin build errors where dependencies were looked up in wrong target framework path `(a9b5c63)`
-- Remove OutputPath override from App's BuildPlugins target to prevent dependency resolution issues `(a9b5c63)`
+### Build
+- **Plugins**: Improved plugin copy target to only include plugin assemblies `(a9b5c63)`
+- **Configuration**: Updated build files and packaging configuration `(09222cc)`
+- **Infrastructure**: Added GitHub issue templates `(5c03c33)` and bug report configuration `(b107da9)`
+- **Git**: Updated .gitignore `(789ec93)`
 
-## v0.7.5 - Linux Improvements & Custom Uploaders
+## v0.11.0
 
-### Features & Improvements
+### Features
+- **Upload**: Implement UploadContentWindow and remove superseded upload WorkflowTypes `(298457a)`
+
+## v0.10.0
+
+### Features
+- **Workflows**: Implement AutoCapture workflows `(a45d02f)`
+
+## v0.9.0
+
+### Features
+- **Workflows**: Implement Pin to Screen workflows `(1e0d3f2)`
+- **Amazon S3**: Enhance SSO with region selection `(6880866)`
+
+### Fixes
+- **Upload**: Improve upload error surfacing and history actions `(760a6ef)`
+- **Workflows**: Preserve workflow order and exclude None `(6c08b22)`
+- **Custom Uploaders**: Fix compatibility check for XerahS versions `(422710a)`
+
+### Build
+- **Plugins**: Restore plugin DLL deduplication with retry logic `(81db32e)`
+
+### Core
+- **Rendering**: Remove RectangleLight; modern Skia rendering deprecated it `(12d3ae5)`
+
+## v0.8.0
+
+### Features
+- **Security**: Add cross-platform secrets store `(c2b8105)`
+- **Upload**: Add auto destination uploader `(f3abe81)`
+- **Diagnostics**: Add secret store diagnostics `(f626f09)`
 - **Custom Uploaders**: Implemented full support for Custom Uploaders including editor UI and integration `(5962870, 8020d73)`
 - **Task Settings**: Redesigned Task Settings UX with dedicated Image/Video tabs `(43436af)`
 - **Tray Icon**: Added recording-aware tray icon with pause/abort controls `(7d22818)`
 - **Image Formats**: Added AVIF and WebP image format support `(3b89381)`
 - **Linux/Wayland**: Fix screen capture on Wayland by integrating XDG Portal API `(4cc5a9f)`
 
-### Bug Fixes
+### Fixes
+- **Capture**: Allow clipboard payloads in capture phase `(a2e336f)`
+- **Upload**: Add clipboard upload auto routing `(6527590)`
+- **Region Capture**: Correct crop offset and refresh AfterCapture UI `(c5efeab)`
+- **Region Capture**: Fix coordinate mapping for Windows `(#29)`
 - Fix Linux active window capture hierarchy and coordinates `(2957c89, 007f261)`
 - Fix Linux hotkey initialization and Region Capture `(73dd95d, e8a9cc8)`
 - Hide main window when capture triggered from tray/navbar `(45264fb)`
 - Fix update dialog layout `(7868256)`
+
+### Refactor
+- **Editor**: Update XerahS.Editor.csproj references `(1dfeb3b)`
+- **Docs**: Rename editor docs references to XerahS.Editor `(90b9fe0)`
+
 
 ## v0.7.0 - Annotation Overlays & Packaging
 
@@ -45,11 +109,15 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **Packaging**: Automated multi-arch Windows release builds `(49a7ec6)`
 - **Plugins**: Support for user-installed plugins and packaging `(e787536)`
 - **Window Capture**: Added support via monitor cropping fallback `(d73daf5)`
+- **Annotations**: Refactor Annotation Toolbar `(#53)`
+- **Media Library**: Basic implementation `(#49)`
 
 ### Bug Fixes
 - Fix annotation layer coordinate system for multi-monitor and high DPI `(5d69425, 61bd0c9)`
 - Fix annotation layer compositing `(3875298)`
 - Global exception handling implementation `(ad6d443)`
+- **Screen**: Fix frozen screen issue `(#51)`
+- **Cursor**: Fix system cursor issues `(#46)`
 
 ## v0.6.0 - UI Redesign & Auto-Update
 
@@ -58,23 +126,20 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **Auto-Update**: Implemented auto-update system with Avalonia UI `(54b9546)`
 - **After Upload**: Added "After Upload" results window `(18a3ab7)`
 - **Property Grid**: Added ApplicationConfig property grid `(c4d20bf)`
+- **CLI**: Added `verify-recording` command for automated screen recording validation `(732e173)`
+- **Editor**: Unified editor undo history across different toolsets `(24ad021)`
+- **Architecture**: Moved Windows-specific P/Invoke types to dedicated Platform.Windows project `(90da89a)`
+- **FFmpeg**: Improved FFmpeg download/config UX with progress hooks and better path resolution `(1646cbb, 7677ceb, b4fdcbf)`
+- **Documentation**: Replace ShareX.Avalonia references with XerahS `(#44)`
+- **Workflow**: Update cursor handling `(#43)`
 
 ### Bug Fixes
 - Improve GIF recording quality and added clipboard support `(1baecc0, 4148e49)`
 - Add pause and stroke-based abort for recordings `(c3d04a7)`
 - Fix "After Upload" window theming and errors `(9b752c0, 6dfe81e)`
-
-## v0.5.1 - Verify Recording CLI & Editor Improvements
-
-### Features & Improvements
-- **CLI**: Added `verify-recording` command for automated screen recording validation `(732e173)`
-- **Editor**: Unified editor undo history across different toolsets `(24ad021)`
-- **Architecture**: Moved Windows-specific P/Invoke types to dedicated Platform.Windows project `(90da89a)`
-- **FFmpeg**: Improved FFmpeg download/config UX with progress hooks and better path resolution `(1646cbb, 7677ceb, b4fdcbf)`
-
-### Bug Fixes
 - Fix speech balloon tail geometry rendering issues `(784594e)`
 - Fix system cursor appearing in region screenshots on some configurations `(85a4e2f)`
+- Fix region capture hotkey issues `(#38, #39)`
 
 ## v0.5.0 - Core Capture & Editor Improvements
 
@@ -101,11 +166,8 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ### Bug Fixes
 - Fix cursor tracking and visibility during GDI capture `(f6973f6, e0a056b, 265a96a)`
-
-## v0.3.1 - Critical Bug Fixes
-
-### Bug Fixes
 - **Capture**: Fix NullReferenceException in DXGI capture by preventing premature disposal of D3D11 device context `(df9bd33)`
+
 
 ## v0.3.0 - Modern Capture Architecture
 
@@ -123,12 +185,10 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - Fix multi-monitor blank capture issues in modern capture path `(52ae45e)`
 - Fix DPI handling and coordinate mapping in region capture `(e4817b1, 954dee3)`
 - Massive code audit: fixed 500+ license headers and 160+ nullability issues `(dca9217, dd90761)`
-
-## v0.2.1 - Multi-Monitor & DPI Polish
-
-### Bug Fixes
 - Fix region capture offsets and scaling issues on multi-monitor setups `(e47e81b)`
 - Standardized Windows TFM and fixed CsWinRT interop issues `(2f44742, 4e88d23)`
+
+
 
 ## v0.2.0 - macOS Support & Plugin System
 

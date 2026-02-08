@@ -36,12 +36,14 @@ namespace ShareX.Imgur.Plugin;
 public class ImgurUploader : ImageUploader, IOAuth2
 {
     private readonly ImgurConfigModel _config;
+    private readonly OAuth2Info _authInfo;
 
-    public OAuth2Info AuthInfo => _config.OAuth2Info ??= new OAuth2Info(_config.ClientId, "98871f37e179e496a0149e9c8558487779d424ft"); // Placeholder secret if not provided
+    public OAuth2Info AuthInfo => _authInfo;
 
-    public ImgurUploader(ImgurConfigModel config)
+    public ImgurUploader(ImgurConfigModel config, OAuth2Info authInfo)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
+        _authInfo = authInfo ?? throw new ArgumentNullException(nameof(authInfo));
     }
 
     public string GetAuthorizationURL()

@@ -88,6 +88,10 @@
                           Command="{Binding CopyUrlCommand}" 
                           IsVisible="{Binding HasUrl}"
                           AutomationProperties.Name="Copy URL"/>
+                <MenuItem Header="Copy Errors"
+                          Command="{Binding CopyErrorsCommand}"
+                          IsVisible="{Binding HasErrors}"
+                          AutomationProperties.Name="Copy Errors"/>
             </MenuFlyout>
         </Border.ContextFlyout>
     </Border>

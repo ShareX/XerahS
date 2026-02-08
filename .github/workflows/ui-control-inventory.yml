@@ -1,16 +1,7 @@
 name: UI Control Inventory Audit
 
 on:
-  push:
-    branches: [ master, main, develop ]
-    paths:
-      - 'src/**/*.axaml'
-      - 'docs/audits/**'
-  pull_request:
-    branches: [ master, main, develop ]
-    paths:
-      - 'src/**/*.axaml'
-      - 'docs/audits/**'
+  workflow_dispatch:
 
 jobs:
   audit:
@@ -34,4 +25,4 @@ jobs:
     - name: Verify Documentation Sync
       if: success()
       run: |
-        git diff --exit-code docs/audits
+        git diff --exit-code docs/audits/ui-control

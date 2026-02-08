@@ -1,0 +1,140 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        mc:Ignorable="d"
+        d:DesignWidth="560" d:DesignHeight="440"
+        x:Class="XerahS.UI.Views.HashCheckWindow"
+        x:DataType="vm:HashCheckViewModel"
+        Title="Hash Check"
+        Width="560" Height="440"
+        MinWidth="440" MinHeight="360"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        DragDrop.AllowDrop="True">
+
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*,Auto" Margin="16">
+
+    <!-- Row 0: File Path -->
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+      <TextBox Grid.Column="0"
+               Text="{Binding FilePath}"
+               Watermark="Select a file or drag and drop..."
+               IsReadOnly="True"
+               AutomationProperties.Name="File path" />
+      <Button Grid.Column="1"
+              Content="Browse..."
+              Command="{Binding BrowseFileCommand}"
+              Margin="8,0,0,0"
+              MinWidth="90"
+              AutomationProperties.Name="Browse for file" />
+    </Grid>
+
+    <!-- Row 1: Compare Two Files checkbox -->
+    <CheckBox Grid.Row="1"
+              Content="Compare two files"
+              IsChecked="{Binding CompareTwoFiles}"
+              Margin="0,0,0,8"
+              AutomationProperties.Name="Compare two files mode" />
+
+    <!-- Row 2: Second file (visible when compare mode enabled) -->
+    <Grid Grid.Row="2"
+          ColumnDefinitions="*,Auto"
+          Margin="0,0,0,12"
+          IsVisible="{Binding CompareTwoFiles}">
+      <TextBox Grid.Column="0"
+               Text="{Binding FilePath2}"
+               Watermark="Select second file..."
+               IsReadOnly="True"
+               AutomationProperties.Name="Second file path" />
+      <Button Grid.Column="1"
+              Content="Browse..."
+              Command="{Binding BrowseFile2Command}"
+              Margin="8,0,0,0"
+              MinWidth="90"
+              AutomationProperties.Name="Browse for second file" />
+    </Grid>
+
+    <!-- Row 3: Hash Type -->
+    <Grid Grid.Row="3" ColumnDefinitions="Auto,*" Margin="0,0,0,12">
+      <TextBlock Grid.Column="0"
+                 Text="Hash type:"
+                 VerticalAlignment="Center"
+                 Margin="0,0,12,0" />
+      <ComboBox Grid.Column="1"
+                ItemsSource="{Binding HashTypes}"
+                SelectedItem="{Binding SelectedHashType}"
+                MinWidth="140"
+                AutomationProperties.Name="Hash algorithm" />
+    </Grid>
+
+    <!-- Row 4: Result -->
+    <Grid Grid.Row="4" RowDefinitions="Auto,Auto" Margin="0,0,0,8">
+      <TextBlock Grid.Row="0"
+                 Text="Result:"
+                 Margin="0,0,0,4"
+                 FontWeight="SemiBold" />
+      <TextBox Grid.Row="1"
+               Text="{Binding ResultHash}"
+               IsReadOnly="True"
+               FontFamily="Consolas, Courier New, monospace"
+               AutomationProperties.Name="Hash result" />
+    </Grid>
+
+    <!-- Row 5: Target / Verification -->
+    <Grid Grid.Row="5" RowDefinitions="Auto,Auto" Margin="0,0,0,8">
+      <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,4">
+        <TextBlock Text="Target:"
+                   FontWeight="SemiBold"
+                   VerticalAlignment="Center" />
+        <TextBlock x:Name="MatchIndicator"
+                   VerticalAlignment="Center"
+                   FontWeight="Bold" />
+      </StackPanel>
+
+      <TextBox Grid.Row="1"
+               Text="{Binding TargetHash, Mode=TwoWay}"
+               Watermark="Paste expected hash here to verify..."
+               FontFamily="Consolas, Courier New, monospace"
+               AutomationProperties.Name="Target hash for comparison" />
+    </Grid>
+
+    <!-- Row 6: Progress -->
+    <ProgressBar Grid.Row="6"
+                 Value="{Binding Progress}"
+                 Minimum="0"
+                 Maximum="100"
+                 Height="6"
+                 VerticalAlignment="Top"
+                 Margin="0,0,0,12" />
+
+    <!-- Row 7: Action Buttons -->
+    <Grid Grid.Row="7" ColumnDefinitions="Auto,Auto,*,Auto">
+      <Button Grid.Column="0"
+              x:Name="CheckButton"
+              Command="{Binding CheckHashCommand}"
+              Classes="accent"
+              MinWidth="100"
+              HorizontalContentAlignment="Center"
+              AutomationProperties.Name="Compute hash">
+        <TextBlock Text="Check" />
+      </Button>
+
+      <Button Grid.Column="1"
+              Content="Copy"
+              Command="{Binding CopyResultCommand}"
+              Margin="8,0,0,0"
+              MinWidth="80"
+              HorizontalContentAlignment="Center"
+              AutomationProperties.Name="Copy hash to clipboard" />
+
+      <TextBlock Grid.Column="3"
+                 Text="{Binding StatusText}"
+                 VerticalAlignment="Center"
+                 Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                 TextTrimming="CharacterEllipsis"
+                 MaxWidth="220" />
+    </Grid>
+  </Grid>
+</Window>

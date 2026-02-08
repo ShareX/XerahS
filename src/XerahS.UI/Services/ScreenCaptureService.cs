@@ -248,7 +248,34 @@ namespace XerahS.UI.Services
             {
                 if (fullScreenBitmap != null)
                 {
-                    SKBitmap cropped = ImageHelpers.Crop(fullScreenBitmap, selection);
+                    var cropRect = selection;
+                    try
+                    {
+                        var virtualBounds = PlatformServices.Screen.GetVirtualScreenBounds();
+                        if (!virtualBounds.IsEmpty)
+                        {
+                            var offsetX = virtualBounds.X;
+                            var offsetY = virtualBounds.Y;
+                            cropRect = new SKRectI(
+                                selection.Left - offsetX,
+                                selection.Top - offsetY,
+                                selection.Right - offsetX,
+                                selection.Bottom - offsetY);
+
+#if DEBUG
+                            if (offsetX != 0 || offsetY != 0)
+                            {
+                                DebugHelper.WriteLine($"[RegionCapture] Applied virtual screen offset: ({offsetX},{offsetY}) Selection={selection.Left},{selection.Top},{selection.Right},{selection.Bottom} Crop={cropRect.Left},{cropRect.Top},{cropRect.Right},{cropRect.Bottom}");
+                            }
+#endif
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore virtual screen lookup failures
+                    }
+
+                    SKBitmap cropped = ImageHelpers.Crop(fullScreenBitmap, cropRect);
                     if (cropped.Width > 0 && cropped.Height > 0)
                     {
                         bitmap = cropped;
