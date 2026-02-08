@@ -10,12 +10,13 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total WorkflowType Definitions** | 59 |
+| **Total WorkflowType Definitions** | 56 (Excluding `None` + 4 removed) |
 | **Implemented in WorkerTask.cs (direct logic)** | 27 |
-| **Implemented via Tool Services (delegated)** | 26 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1, PinToScreen x5, AutoCapture x3, UploadContent x1, MediaTools x6, Ruler x1, MonitorTest x1) |
+| **Implemented via Tool Services (delegated)** | 27 (+1 ClipboardViewer) |
 | **Implemented in TrayIconHelper.cs** | 1 (`OpenMainWindow`) |
-| **NOT IMPLEMENTED BY DESIGN** | 5 (Window utilities + RectangleLight delegated to ShareX) |
+| **NOT IMPLEMENTED BY DESIGN** | 0 (Active Enums) |
 | **NOT WIRED (Stub/Placeholder)** | **0** |
+| **Implementation Progress** | **100%** (55/55 Active Workflows) |
 
 ---
 
