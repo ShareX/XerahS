@@ -14,13 +14,13 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 ### Fixes
 - **Tools**: Added media tools to Tools navigation bar `(485a438)`
 - **DataTemplates**: Fix DataTemplate issues `(485a438)`
-- **Proxy**: Fix custom uploader loading and add configuration UI `(#77, [@Hexeption](https://github.com/Hexeption))`
-- **Linux**: Add dark mode support and theme settings `(#62, [@unicxrn](https://github.com/unicxrn))`
-- **macOS**: Add native application menu `(#60, [@Hexeption](https://github.com/Hexeption))`
-- **Custom Uploaders**: Fix compatibility improvements `(#74, [@Hexeption](https://github.com/Hexeption))`
-- **Linux**: Wayland Hyprland screenshot support `(#61, [@unicxrn](https://github.com/unicxrn))`
-- **Security**: Fix DPAPI platform warning `(#73, [@Hexeption](https://github.com/Hexeption))`
-- **Custom Uploaders**: Fix version compatibility `(#71, [@emmsixx](https://github.com/emmsixx))`
+- **Proxy**: Fix custom uploader loading and add configuration UI `(#77)` ([@Hexeption](https://github.com/Hexeption))
+- **Linux**: Add dark mode support and theme settings `(#62)` ([@unicxrn](https://github.com/unicxrn))
+- **macOS**: Add native application menu `(#60)` ([@Hexeption](https://github.com/Hexeption))
+- **Custom Uploaders**: Fix compatibility improvements `(#74)` ([@Hexeption](https://github.com/Hexeption))
+- **Linux**: Wayland Hyprland screenshot support `(#61)` ([@unicxrn](https://github.com/unicxrn))
+- **Security**: Fix DPAPI platform warning `(#73)` ([@Hexeption](https://github.com/Hexeption))
+- **Custom Uploaders**: Fix version compatibility `(#71)` ([@emmsixx](https://github.com/emmsixx))
 
 ### Refactor
 - **Editor**: Renamed namespace from ShareX.Editor to XerahS.Editor for consistency `(25135d0, d0d1266)`
