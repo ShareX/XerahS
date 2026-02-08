@@ -1,7 +1,7 @@
 # WorkflowType Implementation Audit
 
 **Date:** February 6, 2026
-**Version:** 0.12.0
+**Version:** 0.14.0
 **Auditor:** Claude (AI Assistant)
 
 ---
@@ -12,10 +12,10 @@
 |--------|-------|
 | **Total WorkflowType Definitions** | 59 |
 | **Implemented in WorkerTask.cs (direct logic)** | 27 |
-| **Implemented via Tool Services (delegated)** | 24 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1, PinToScreen x5, AutoCapture x3, UploadContent x1, MediaTools x6) |
+| **Implemented via Tool Services (delegated)** | 26 (ColorPicker x2, QRCode x3, ScrollingCapture x1, OCR x1, ImageEditor x1, HashCheck x1, PinToScreen x5, AutoCapture x3, UploadContent x1, MediaTools x6, Ruler x1, MonitorTest x1) |
 | **Implemented in TrayIconHelper.cs** | 1 (`OpenMainWindow`) |
 | **NOT IMPLEMENTED BY DESIGN** | 5 (Window utilities + RectangleLight delegated to ShareX) |
-| **NOT WIRED (Stub/Placeholder)** | **2** |
+| **NOT WIRED (Stub/Placeholder)** | **0** |
 
 ---
 
@@ -38,6 +38,8 @@ Standalone tools that bypass WorkerTask and are handled directly in the applicat
 - `AutoCaptureToolService.HandleWorkflowAsync()` - Auto Capture (3 variants)
 - `UploadContentToolService.HandleWorkflowAsync()` - Upload Content Window (clipboard with content viewer)
 - `MediaToolsToolService.HandleWorkflowAsync()` - Media Tools (ImageCombiner, ImageSplitter, ImageThumbnailer, VideoConverter, VideoThumbnailer, AnalyzeImage)
+- `RulerToolService.HandleWorkflowAsync()` - Screen ruler for measuring pixel distances, angles, and areas
+- `MonitorTestToolService.HandleWorkflowAsync()` - Monitor diagnostics and visual pattern testing
 
 ### Pattern 3: Tray Icon Helper
 Tray-specific actions handled separately.
@@ -103,13 +105,13 @@ Tray-specific actions handled separately.
 
 ---
 
-### Tools (19 of 24 wired)
+### Tools (21 of 24 wired)
 
 | WorkflowType | Status | Location | Notes |
 |--------------|--------|----------|-------|
 | `ColorPicker` | ✅ Wired | App.axaml.cs | Via `ColorPickerToolService` |
 | `ScreenColorPicker` | ✅ Wired | App.axaml.cs | Via `ColorPickerToolService` |
-| `Ruler` | ❌ Not Wired | — | — |
+| `Ruler` | ✅ Wired | App.axaml.cs | Via `RulerToolService` — RegionCapture-based screen ruler with tick marks, measurements (distance, angle, area, perimeter) |
 | `PinToScreen` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` — startup dialog with source selection |
 | `PinToScreenFromScreen` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` — region capture → pin at location |
 | `PinToScreenFromClipboard` | ✅ Wired | App.axaml.cs | Via `PinToScreenToolService` — clipboard image → pin |
@@ -132,7 +134,7 @@ Tray-specific actions handled separately.
 | `StripMetadata` | ❌ Not Wired | — | — |
 | `ClipboardViewer` | ❌ Not Wired | — | — |
 | **Note** | — | — | BorderlessWindow, ActiveWindowBorderless, ActiveWindowTopMost, InspectWindow removed — use ShareX for window utilities. |
-| `MonitorTest` | ❌ Not Wired | — | — |
+| `MonitorTest` | ✅ Wired | App.axaml.cs | Via `MonitorTestToolService` — Dual-mode: (1) Monitor diagnostics with layout visualization, DPI/scaling info; (2) Visual pattern testing (solid colors, gradients, patterns) |
 
 ---
 
@@ -173,9 +175,9 @@ This maintains clean separation of concerns and keeps each file focused and main
 
 ### 3. Remaining Unimplemented Workflows
 Of the 59 total workflow types:
-- **52 are fully wired** (27 direct in WorkerTask, 24 via Tool Services, 1 in TrayIconHelper)
+- **54 are fully wired** (27 direct in WorkerTask, 26 via Tool Services, 1 in TrayIconHelper)
 - **5 are intentionally excluded** (4 window utilities + RectangleLight—use ShareX for these)
-- **2 are not yet implemented** (Ruler, ToggleActionsToolbar/ToggleTrayMenu, and metadata tools)
+- **0 are not yet implemented** — All planned workflows are now complete!
 
 Most unimplemented workflows lack:
 - Case statement in switch logic
@@ -202,8 +204,9 @@ However, the core architecture is sound and ready for new implementations.
 
 ### Low Priority (Nice to Have)
 9. ~~Pin-to-screen variants~~ ✅ Done (v0.9.0) — PinToScreenToolService with full UI
-10. Borderless window tools
-11. Monitor test patterns
+10. ~~**`Ruler`**~~ ✅ Done (v0.14.0) — RulerToolService with RegionCapture integration, tick marks, and comprehensive measurements
+11. ~~**`MonitorTest`**~~ ✅ Done (v0.14.0) — MonitorTestToolService with diagnostics + visual pattern testing
+12. Borderless window tools (deferred to ShareX)
 
 ---
 
@@ -265,6 +268,12 @@ When implementing a new workflow, ensure:
 | `src/XerahS.UI/Views/VideoThumbnailerWindow.axaml` | Video thumbnailer window UI |
 | `src/XerahS.UI/ViewModels/ImageAnalyzerViewModel.cs` | Image analyzer ViewModel |
 | `src/XerahS.UI/Views/ImageAnalyzerWindow.axaml` | Image analyzer window UI |
+| `src/XerahS.UI/Services/RulerToolService.cs` | Ruler tool workflow routing |
+| `src/XerahS.UI/Services/MonitorTestToolService.cs` | Monitor test workflow routing |
+| `src/XerahS.UI/ViewModels/MonitorTestViewModel.cs` | Monitor test ViewModel |
+| `src/XerahS.UI/Views/MonitorTestWindow.axaml` | Monitor test window UI |
+| `src/XerahS.RegionCapture/Models/MonitorSnapshot.cs` | Immutable monitor snapshot model |
+| `src/XerahS.RegionCapture/Services/MonitorSnapshotService.cs` | Monitor snapshot service |
 
 ---
 

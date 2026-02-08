@@ -39,7 +39,7 @@ public static class UploadContentToolService
     {
         ShowWindow(owner);
 
-        if (job == WorkflowType.ClipboardUploadWithContentViewer)
+        if (job is WorkflowType.ClipboardUploadWithContentViewer or WorkflowType.ClipboardViewer)
         {
             _window?.ViewModel?.LoadFromClipboardCommand.Execute(null);
         }
