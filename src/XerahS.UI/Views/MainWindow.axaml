@@ -186,6 +186,7 @@
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem Content="Color Picker..." Tag="Tools_ColorPicker" AutomationProperties.Name="Color Picker Tool"/>
                         <ui:NavigationViewItem Content="Pick From Screen" Tag="Tools_ScreenColorPicker" AutomationProperties.Name="Screen Color Picker Tool"/>
+                        <ui:NavigationViewItem Content="Ruler" Tag="Tools_Ruler" AutomationProperties.Name="Ruler Tool"/>
                         <ui:NavigationViewItem Content="Index Folder..." Tag="Tools_IndexFolder" AutomationProperties.Name="Index Folder Tool"/>
                         <ui:NavigationViewItem Content="QR Code" AutomationProperties.Name="QR Code Tools">
                             <ui:NavigationViewItem.MenuItems>
@@ -200,6 +201,7 @@
                         <ui:NavigationViewItem Content="Video Converter..." Tag="Tools_VideoConverter" AutomationProperties.Name="Video Converter Tool"/>
                         <ui:NavigationViewItem Content="Video Thumbnailer..." Tag="Tools_VideoThumbnailer" AutomationProperties.Name="Video Thumbnailer Tool"/>
                         <ui:NavigationViewItem Content="Analyze Image..." Tag="Tools_AnalyzeImage" AutomationProperties.Name="Image Analyzer Tool"/>
+                        <ui:NavigationViewItem Content="Monitor Test" Tag="Tools_MonitorTest" AutomationProperties.Name="Monitor Test Tool"/>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
                 

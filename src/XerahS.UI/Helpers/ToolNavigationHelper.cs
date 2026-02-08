@@ -89,7 +89,7 @@ public static class ToolNavigationHelper
                 _ = MediaToolsToolService.HandleWorkflowAsync(WorkflowType.AnalyzeImage, owner);
                 return true;
             case "Tools_Ruler":
-                _ = executeWorkflowFromNavigationAsync(WorkflowType.Ruler);
+                _ = RulerToolService.HandleWorkflowAsync(WorkflowType.Ruler, owner);
                 return true;
             case "Tools_PinToScreenFromScreen":
                 _ = executeWorkflowFromNavigationAsync(WorkflowType.PinToScreenFromScreen);
@@ -119,7 +119,7 @@ public static class ToolNavigationHelper
                 _ = executeWorkflowFromNavigationAsync(WorkflowType.ClipboardViewer);
                 return true;
             case "Tools_MonitorTest":
-                _ = executeWorkflowFromNavigationAsync(WorkflowType.MonitorTest);
+                _ = MonitorTestToolService.HandleWorkflowAsync(WorkflowType.MonitorTest, owner);
                 return true;
             default:
                 return false;
