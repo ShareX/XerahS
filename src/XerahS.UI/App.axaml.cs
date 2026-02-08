@@ -254,6 +254,10 @@ public partial class App : Application
                     {
                         await MonitorTestToolService.HandleWorkflowAsync(workflowType, owner);
                     }
+                    else if (workflowType == WorkflowType.Ruler)
+                    {
+                        await RulerToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
                     else if (workflowType is WorkflowType.AutoCapture
                         or WorkflowType.StartAutoCapture
                         or WorkflowType.StopAutoCapture)
