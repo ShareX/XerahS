@@ -250,6 +250,10 @@ public partial class App : Application
                     {
                         await PinToScreenToolService.HandleWorkflowAsync(workflowType, owner);
                     }
+                    else if (workflowType == WorkflowType.MonitorTest)
+                    {
+                        await MonitorTestToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
                     else if (workflowType is WorkflowType.AutoCapture
                         or WorkflowType.StartAutoCapture
                         or WorkflowType.StopAutoCapture)

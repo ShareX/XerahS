@@ -1,0 +1,76 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        mc:Ignorable="d"
+        d:DesignWidth="900" d:DesignHeight="600"
+        x:Class="XerahS.UI.Views.MonitorTestWindow"
+        x:DataType="vm:MonitorTestViewModel"
+        Title="Monitor Test"
+        Width="900" Height="600"
+        MinWidth="700" MinHeight="500"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True">
+
+  <Grid RowDefinitions="Auto,*">
+    <!-- Toolbar -->
+    <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" Padding="12,8">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <ComboBox ItemsSource="{Binding TestModes}"
+                  SelectedItem="{Binding SelectedTestMode}"
+                  MinWidth="180"
+                  AutomationProperties.Name="Test mode" />
+        <Button Content="Refresh" Command="{Binding RefreshMonitorsCommand}" AutomationProperties.Name="Refresh monitors" />
+        <Button Content="Copy Diagnostics" Command="{Binding CopyDiagnosticsCommand}" AutomationProperties.Name="Copy diagnostics" />
+        <Button Content="Export..." Command="{Binding ExportDiagnosticsCommand}" AutomationProperties.Name="Export diagnostics" />
+      </StackPanel>
+    </Border>
+
+    <!-- Content -->
+    <Panel Grid.Row="1">
+      <!-- Monitor Diagnostics View -->
+      <Grid IsVisible="{Binding SelectedTestMode, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:TestMode.MonitorDiagnostics}}"
+            ColumnDefinitions="300,*" Margin="16">
+
+        <!-- Monitor List -->
+        <Border Grid.Column="0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1" Padding="8" CornerRadius="4">
+          <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Monitors}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                          BorderThickness="1" Padding="12" Margin="0,0,0,8" CornerRadius="4">
+                    <StackPanel Spacing="4">
+                      <TextBlock Text="{Binding DeviceName}" FontWeight="Bold" />
+                      <TextBlock Text="{Binding PhysicalBounds, StringFormat='Bounds: {0}'}" FontSize="12" />
+                      <TextBlock Text="{Binding WorkArea, StringFormat='Work Area: {0}'}" FontSize="12" />
+                      <TextBlock Text="{Binding Dpi, StringFormat='DPI: {0:F0}'}" FontSize="12" />
+                      <TextBlock Text="{Binding ScaleFactor, StringFormat='Scale: {0:F2}x'}" FontSize="12" />
+                      <TextBlock Text="{Binding IsPrimary, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                 IsVisible="{Binding IsPrimary}" Foreground="Green" FontWeight="Bold" FontSize="12">
+                        PRIMARY
+                      </TextBlock>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Border>
+
+        <!-- Layout Map -->
+        <Border Grid.Column="1" Margin="16,0,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1" Padding="8" CornerRadius="4">
+          <Canvas x:Name="LayoutCanvas" Background="{DynamicResource SystemControlBackgroundAltMediumBrush}" />
+        </Border>
+      </Grid>
+
+      <!-- Visual Test Pattern Views -->
+      <Grid IsVisible="{Binding SelectedTestMode, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static vm:TestMode.MonitorDiagnostics}}">
+        <Panel x:Name="TestPatternPanel" Background="{Binding TestColor}" />
+      </Grid>
+    </Panel>
+  </Grid>
+</Window>
