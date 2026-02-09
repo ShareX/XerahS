@@ -1,0 +1,342 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - XerahS</title>
+    <meta name="description" content="Frequently asked questions about XerahS.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Styles (Linked to live site for consistency) -->
+    <link rel="stylesheet" href="https://xerahs.github.io/css/tokens.css">
+    <link rel="stylesheet" href="https://xerahs.github.io/css/animations.css">
+    <link rel="stylesheet" href="https://xerahs.github.io/css/components.css">
+    <link rel="stylesheet" href="https://xerahs.github.io/css/layout.css">
+
+    <link rel="icon" href="https://xerahs.github.io/favicon.ico">
+</head>
+
+<body>
+    <!-- ═══════════════════════════════════════
+         BACKGROUND SYSTEM
+         ═══════════════════════════════════════ -->
+    <div class="background-system">
+        <div class="gradient-base"></div>
+        <div class="noise-overlay"></div>
+        <div class="blob blob-primary"></div>
+        <div class="blob blob-secondary"></div>
+        <div class="blob blob-tertiary"></div>
+        <div class="blob blob-bottom"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         NAVIGATION
+         ═══════════════════════════════════════ -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="https://xerahs.github.io/index.html" class="nav-logo">XerahS</a>
+
+            <div class="nav-links">
+                <a href="https://xerahs.github.io/index.html#features" class="nav-link">Features</a>
+                <a href="https://xerahs.github.io/screenshots.html" class="nav-link">Screenshots</a>
+                <a href="https://xerahs.github.io/downloads.html" class="nav-link">Downloads</a>
+                <a href="https://xerahs.github.io/changelog.html" class="nav-link">Changelog</a>
+                <a href="faq.html" class="nav-link active">FAQ</a>
+                <a href="https://github.com/ShareX/XerahS" class="nav-link" target="_blank" rel="noopener">GitHub</a>
+                <button class="theme-toggle" aria-label="Toggle theme">
+                    <i class="fa-solid fa-moon"></i>
+                    <i class="fa-solid fa-sun"></i>
+                </button>
+            </div>
+
+            <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="nav-mobile">
+            <div class="nav-mobile-links">
+                <a href="https://xerahs.github.io/index.html#features" class="nav-mobile-link">Features</a>
+                <a href="https://xerahs.github.io/screenshots.html" class="nav-mobile-link">Screenshots</a>
+                <a href="https://xerahs.github.io/downloads.html" class="nav-mobile-link">Downloads</a>
+                <a href="https://xerahs.github.io/changelog.html" class="nav-mobile-link">Changelog</a>
+                <a href="faq.html" class="nav-mobile-link">FAQ</a>
+                <a href="https://github.com/ShareX/XerahS" class="nav-mobile-link" target="_blank" rel="noopener">GitHub</a>
+                <button class="theme-toggle" aria-label="Toggle theme">
+                    <i class="fa-solid fa-moon"></i>
+                    <i class="fa-solid fa-sun"></i>
+                </button>
+                <a href="https://xerahs.github.io/downloads.html" class="btn btn-primary nav-mobile-cta">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- ═══════════════════════════════════════
+             FAQ HEADER
+             ═══════════════════════════════════════ -->
+        <section class="page-header">
+            <div class="container">
+                <div class="page-header-content animate-on-scroll">
+                    <h1 class="page-title gradient-text">FAQ</h1>
+                    <p class="page-subtitle">Frequently asked questions about XerahS</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════
+             FAQ CONTENT
+             ═══════════════════════════════════════ -->
+        <section class="faq-section section-padding">
+            <div class="container">
+                <div class="faq-layout">
+                    <!-- TOC Sidebar -->
+                    <aside class="faq-sidebar animate-on-scroll">
+                        <div class="sticky-toc">
+                            <h3 class="toc-title">Contents</h3>
+                            <nav class="toc-nav" id="toc-nav">
+                                <!-- TOC generated by JS -->
+                            </nav>
+                        </div>
+                    </aside>
+
+                    <!-- Main Content -->
+                    <div class="faq-main animate-on-scroll">
+                        <div class="faq-container card">
+                            <div class="spotlight"></div>
+                            <div class="faq-content" id="faq-content">
+                                <div class="faq-loading">
+                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                    <span>Loading FAQ...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ═══════════════════════════════════════
+         FOOTER
+         ═══════════════════════════════════════ -->
+    <footer>
+        <div class="container">
+            <div class="section-header" style="text-align: center;">
+                <h2 class="section-title">Join the Community</h2>
+                <p class="section-subtitle">Connect with developers, get help, and stay updated</p>
+            </div>
+            <div class="footer-social">
+                <a href="https://github.com/ShareX/XerahS" class="footer-social-card btn btn-secondary" target="_blank"
+                    rel="noopener">
+                    <i class="fa-brands fa-github"></i>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://x.com/ShareX" class="footer-social-card btn btn-secondary" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-x-twitter"></i>
+                    <span>X</span>
+                </a>
+                <a href="https://discord.gg/ShareX" class="footer-social-card btn btn-secondary" target="_blank"
+                    rel="noopener">
+                    <i class="fa-brands fa-discord"></i>
+                    <span>Discord</span>
+                </a>
+                <a href="https://www.reddit.com/r/sharex" class="footer-social-card btn btn-secondary" target="_blank"
+                    rel="noopener">
+                    <i class="fa-brands fa-reddit-alien"></i>
+                    <span>Reddit</span>
+                </a>
+            </div>
+        </div>
+        <div class="section-divider-accent"></div>
+        <div class="container">
+            <div class="footer-content">
+                <span class="footer-copyright">© 2024 ShareX Team. All rights reserved.</span>
+                <div class="footer-links">
+                    <a href="https://xerahs.github.io/privacy-policy" class="footer-link">Privacy Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Marked.js for Markdown parsing (Pinned to v9.1.2 for stability) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.2/marked.min.js"></script>
+
+    <!-- ═══════════════════════════════════════
+         SCRIPTS
+         ═══════════════════════════════════════ -->
+    <script>
+        // ─────────────────────────────────────────
+        // Scroll-triggered animations
+        // ─────────────────────────────────────────
+        const observerOptions = {
+            threshold: 0.15,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // ─────────────────────────────────────────
+        // Mobile menu toggle
+        // ─────────────────────────────────────────
+        const navToggle = document.querySelector('.nav-toggle');
+        const navMobile = document.querySelector('.nav-mobile');
+
+        navToggle.addEventListener('click', () => {
+            const isActive = navToggle.classList.toggle('active');
+            navMobile.classList.toggle('active');
+            navToggle.setAttribute('aria-expanded', isActive);
+        });
+
+        // ─────────────────────────────────────────
+        // Theme toggle functionality
+        // ─────────────────────────────────────────
+        const themeToggles = document.querySelectorAll('.theme-toggle');
+        const html = document.documentElement;
+
+        function getPreferredTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) return savedTheme;
+            return 'light'; // Default to light mode
+        }
+
+        function setTheme(theme) {
+            if (theme === 'light') {
+                html.setAttribute('data-theme', 'light');
+            } else {
+                html.removeAttribute('data-theme');
+            }
+            localStorage.setItem('theme', theme);
+        }
+
+        setTheme(getPreferredTheme());
+
+        themeToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                setTheme(newTheme);
+            });
+        });
+
+        // ─────────────────────────────────────────
+        // Fetch and render FAQ & TOC
+        // ─────────────────────────────────────────
+        // Configure marked to add IDs to headings
+        const renderer = new marked.Renderer();
+        const tocData = []; // Store headings for TOC
+
+        renderer.heading = function (text, level, raw) {
+            // Safe access to raw text for slug generation
+            // marked versions might differ in arg order or type
+            const rawText = raw || text || '';
+            const slug = String(rawText).toLowerCase()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+            
+            // Only index h3 and above for TOC
+            if (level <= 3) {
+                 tocData.push({ text: text, id: slug, level: level });
+            }
+
+            return `
+                <h${level} id="${slug}" class="faq-heading">
+                    ${text}
+                    <a href="#${slug}" class="heading-anchor" aria-label="Link to this section">
+                        <i class="fa-solid fa-link"></i>
+                    </a>
+                </h${level}>`;
+        };
+        
+        marked.use({ renderer });
+
+        const faqUrl = 'https://raw.githubusercontent.com/ShareX/XerahS/develop/FAQ.md';
+        const contentEl = document.getElementById('faq-content');
+        const tocEl = document.getElementById('toc-nav');
+
+        function generateTOC() {
+            if (tocData.length === 0) return;
+            
+            const tocHTML = tocData.map(item => {
+                return `<a href="#${item.id}" class="toc-link" data-level="${item.level}">${item.text}</a>`;
+            }).join('');
+            
+            tocEl.innerHTML = tocHTML;
+            setupTOCObserver();
+        }
+
+        function setupTOCObserver() {
+            const headings = document.querySelectorAll('.faq-heading');
+            const tocLinks = document.querySelectorAll('.toc-link');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Remove active class from all links
+                        tocLinks.forEach(link => link.classList.remove('active'));
+                        
+                        // Add active class to corresponding link
+                        const id = entry.target.getAttribute('id');
+                        const activeLink = document.querySelector(`.toc-link[href="#${id}"]`);
+                        if (activeLink) activeLink.classList.add('active');
+                    }
+                });
+            }, { 
+                rootMargin: '-100px 0px -60% 0px' 
+            });
+
+            headings.forEach(heading => observer.observe(heading));
+        }
+
+        fetch(faqUrl)
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to fetch');
+                return response.text();
+            })
+            .then(markdown => {
+                contentEl.innerHTML = marked.parse(markdown);
+                generateTOC();
+            })
+            .catch(error => {
+                console.error('FAQ Error:', error);
+                contentEl.innerHTML = `
+                    <div class="error-message" style="text-align: center; padding: 2rem; color: #ff6b6b;">
+                        <i class="fa-solid fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p style="font-weight: bold; margin-bottom: 0.5rem;">Failed to load FAQ</p>
+                        <p style="font-family: monospace; font-size: 0.875rem; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 4px; display: inline-block; text-align: left; max-width: 100%; overflow-x: auto;">
+                            ${error.message}
+                            ${error.stack ? `<br><br><span style="opacity: 0.7">${error.stack}</span>` : ''}
+                        </p>
+                        <p style="margin-top: 1rem;">
+                            <a href="https://github.com/ShareX/XerahS/blob/develop/FAQ.md" target="_blank" style="text-decoration: underline;">View on GitHub</a>
+                        </p>
+                    </div>
+                `;
+            });
+    </script>
+</body>
+
+</html>
