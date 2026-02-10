@@ -53,7 +53,7 @@ public static class ToolNavigationHelper
                 contentFrame.Content = new ToolsView();
                 return true;
             case "Tools_IndexFolder":
-                contentFrame.Content = new IndexFolderView();
+                ShowIndexFolderWindow(owner);
                 return true;
             case "Tools_ColorPicker":
                 _ = ColorPickerToolService.HandleWorkflowAsync(WorkflowType.ColorPicker, owner);
@@ -117,6 +117,19 @@ public static class ToolNavigationHelper
                 return true;
             default:
                 return false;
+        }
+    }
+
+    private static void ShowIndexFolderWindow(Window? owner)
+    {
+        var window = new IndexFolderView();
+        if (owner != null)
+        {
+            window.Show(owner);
+        }
+        else
+        {
+            window.Show();
         }
     }
 }
