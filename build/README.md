@@ -1,4 +1,4 @@
-# XerahS Build System Documentation
+﻿# XerahS Build System Documentation
 
 This document describes the build system structure and how builds work for each operating system.
 
@@ -13,13 +13,14 @@ build/
 │   ├── package-windows.ps1           # Main PowerShell build script
 │   └── XerahS-setup.iss              # Inno Setup installer script
 ├── linux/                             # Linux build scripts
-│   ├── package-linux.ps1             # PowerShell wrapper for Linux build
-│   ├── package-linux.sh              # Bash script for Linux build
+│   ├── package-linux.ps1             # PowerShell wrapper for Linux build (Windows)
+│   ├── package-linux.sh              # Bash script for Linux build (Linux/macOS)
 │   └── XerahS.Packaging/             # C# packaging tool
 │       ├── Program.cs                # Packaging logic (tar.gz, .deb, .rpm)
 │       └── XerahS.Packaging.csproj   # Project file
 └── macos/                             # macOS build scripts
-    └── package-mac.sh                # Bash script for macOS build
+    ├── package-mac.ps1               # PowerShell script for macOS build (Windows)
+    └── package-mac.sh                # Bash script for macOS build (macOS)
 ```
 
 ---
@@ -138,40 +139,93 @@ build/
 ## macOS Build
 
 ### Files
-- **`package-mac.sh`** - Bash build script
+- **`package-mac.ps1`** - PowerShell script for cross-compilation from Windows
+- **`package-mac.sh`** - Bash script for building on macOS
 
 ### How It Works
 
+#### Option 1: Build from Windows (Cross-Compilation)
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                         macOS Build Flow                                │
+│                    macOS Build Flow (from Windows)                      │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
 │  1. Detect version from Directory.Build.props                           │
 │                              ↓                                          │
-│  2. dotnet publish (main app)                                           │
-│     • Runtime: osx-x64 or osx-arm64                                     │
-│     • Single file: true                                                 │
-│     • Self-contained: true                                              │
+│  2. Verify pre-compiled native library exists                           │
+│     • native/macos/libscreencapturekit_bridge.dylib                     │
+│     • (Compile on macOS first if update needed)                         │
 │                              ↓                                          │
-│  3. Create .app bundle structure                                        │
-│     XerahS.app/                                                         │
-│     └── Contents/                                                       │
-│         ├── Info.plist                                                  │
-│         ├── MacOS/XerahS (executable)                                   │
-│         └── Resources/ (icons, etc.)                                    │
+│  3. For each architecture (osx-arm64, osx-x64):                         │
 │                              ↓                                          │
-│  4. Plugins are included in the bundle                                  │
-│     • Copied to XerahS.app/Contents/MacOS/Plugins/                      │
+│     a. dotnet publish with -p:CrossCompile=true                         │
+│        • Uses net10.0 (not net10.0-windows...)                          │
+│        • References XerahS.Platform.MacOS (not Windows)                 │
 │                              ↓                                          │
-│  5. Output options:                                                     │
-│     • .zip bundle for distribution                                      │
-│     • .dmg (disk image) - optional                                      │
+│     b. Create .app bundle structure                                     │
+│        XerahS.app/Contents/MacOS/                                       │
+│                              ↓                                          │
+│     c. Publish Plugins to Plugins/ subfolder                            │
+│        • Same process as other platforms                                │
+│                              ↓                                          │
+│     d. Package as .tar.gz                                               │
+│                              ↓                                          │
+│  4. Output: dist/XerahS-{version}-mac-{arch}.tar.gz                     │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
+#### Option 2: Build from macOS (Native)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      macOS Build Flow (from macOS)                      │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  1. Detect version from Directory.Build.props                           │
+│                              ↓                                          │
+│  2. Build native ScreenCaptureKit library                               │
+│     • cd native/macos && make                                           │
+│     • Produces libscreencapturekit_bridge.dylib                         │
+│                              ↓                                          │
+│  3. dotnet publish (triggers CreateMacOSAppBundle target)               │
+│                              ↓                                          │
+│  4. Plugins, packaging same as cross-compile                            │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Cross-Compilation (`CrossCompile` Property)
+
+The `-p:CrossCompile=true` flag enables building macOS/Linux binaries from Windows:
+
+| Setting | Normal (Windows) | Cross-Compile (macOS/Linux) |
+|---------|------------------|----------------------------|
+| TargetFramework | `net10.0-windows10.0.26100.0` | `net10.0` |
+| Platform Reference | `XerahS.Platform.Windows` | `XerahS.Platform.MacOS/Linux` |
+| Preprocessor | `WINDOWS` defined | `WINDOWS` NOT defined |
+| App Bundle | N/A | Created for macOS |
+
+### Native Library Management
+
+| Script | Native Library Source | Action |
+|--------|----------------------|--------|
+| `package-mac.sh` (macOS) | Source code | Compiles with `make` |
+| `package-mac.ps1` (Windows) | Pre-compiled binary | Copies existing `.dylib` |
+
+**To update the native library:**
+1. Run `package-mac.sh` on macOS (compiles latest)
+2. Commit the updated `libscreencapturekit_bridge.dylib`
+3. Windows builds will use the updated binary
+
 ### Requirements
+
+**For `package-mac.ps1` (Windows):**
+- .NET SDK 10.0+
+- Pre-compiled `native/macos/libscreencapturekit_bridge.dylib`
+
+**For `package-mac.sh` (macOS):**
 - macOS with Xcode Command Line Tools
 - .NET SDK 10.0+
 
@@ -189,12 +243,12 @@ All platforms use the same plugin discovery and build logic:
 │  src/Plugins/                                                   │
 │  ├── ShareX.AmazonS3.Plugin/                                    │
 │  │   ├── XerahS.AmazonS3.Plugin.csproj                          │
-│  │   └── plugin.json ←──┐                                       │
-│  ├── ShareX.Auto.Plugin/          │                             │
-│  │   └── plugin.json ←──┤                                       │
-│  └── ...                          │                             │
-│                                   │                             │
-│  Build script:                    │                             │
+│  │   └── plugin.json                                            │
+│  ├── ShareX.Auto.Plugin/                                        │
+│  │   └── plugin.json                                            │
+│  └── ...                                                        │
+│                                                                 │
+│  Build script:                                                  │
 │  1. Find all .csproj in src/Plugins/                            │
 │  2. Read plugin.json → extract "pluginId"                       │
 │  3. dotnet publish to Plugins/{pluginId}/                       │
@@ -236,7 +290,8 @@ dist/
 │   └── paste2-0.14.3-linux-x64.zip
 │
 └── macOS
-    └── XerahS-0.14.3-osx-x64.zip (or .dmg)
+    ├── XerahS-0.14.3-mac-arm64.tar.gz  (Apple Silicon)
+    └── XerahS-0.14.3-mac-x64.tar.gz    (Intel Mac)
 ```
 
 ---
@@ -245,12 +300,13 @@ dist/
 
 ### Build Commands
 
-| Platform | Command | Host OS |
-|----------|---------|---------|
-| Windows | `.\build\windows\package-windows.ps1` | Windows |
-| Linux (PowerShell) | `.\build\linux\package-linux.ps1` | Windows |
-| Linux (Bash) | `./build/linux/package-linux.sh` | Linux/macOS |
-| macOS | `./build/macos/package-mac.sh` | macOS |
+| Platform | Command | Host OS | Native Library |
+|----------|---------|---------|----------------|
+| Windows | `.\build\windows\package-windows.ps1` | Windows | N/A |
+| Linux | `.\build\linux\package-linux.ps1` | Windows | N/A |
+| Linux | `./build/linux/package-linux.sh` | Linux/macOS | N/A |
+| macOS | `.\build\macos\package-mac.ps1` | Windows | Pre-compiled |
+| macOS | `./build/macos/package-mac.sh` | macOS | Compiled from source |
 
 ### Version Detection
 
@@ -268,6 +324,9 @@ All scripts read version from `Directory.Build.props`:
 | `-r {runtime}` | Runtime identifier (win-x64, linux-x64, osx-x64, etc.) |
 | `-p:PublishSingleFile=true/false` | Single executable vs multiple files |
 | `--self-contained true/false` | Include .NET runtime |
+| `-p:CrossCompile=true` | Enable cross-compilation from Windows to macOS/Linux |
+| `-p:SkipBundlePlugins=true` | Skip automatic plugin bundling |
+| `-p:nodeReuse=false` | Disable MSBuild node reuse (prevents file locking) |
 
 ---
 
@@ -281,7 +340,12 @@ All scripts read version from `Directory.Build.props`:
 - **rpmbuild not found**: RPM package will be skipped (others still built)
 - **Permission errors**: Ensure `dotnet` is in PATH
 
-### macOS
+### macOS (Cross-Compile from Windows)
+- **Native library not found**: Run `package-mac.sh` on macOS first to compile `libscreencapturekit_bridge.dylib`, then commit it
+- **Screen capture not working**: Native library is outdated - rebuild on macOS
+
+### macOS (Build on macOS)
+- **make: command not found**: Install Xcode Command Line Tools (`xcode-select --install`)
 - **Codesign issues**: May need to disable SIP or sign with developer cert
 - **Notarization**: Required for distribution outside App Store
 
@@ -292,3 +356,4 @@ All scripts read version from `Directory.Build.props`:
 - `../DEVELOPER_README.md` - General development setup
 - `../docs/development/RELEASE_PROCESS.md` - Release procedures
 - `../docs/architecture/PORTING_GUIDE.md` - Platform abstractions
+- `../native/macos/README_NATIVE.md` - Native macOS library documentation

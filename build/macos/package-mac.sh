@@ -14,6 +14,18 @@ mkdir -p "$DIST_DIR"
 VERSION=$(grep '<Version>' "$ROOT/Directory.Build.props" | sed -n 's/.*<Version>\(.*\)<\/Version>.*/\1/p' | tr -d '[:space:]')
 echo "Building XerahS version $VERSION for macOS..."
 
+# Build native ScreenCaptureKit library
+echo "Building native ScreenCaptureKit library..."
+cd "$ROOT/native/macos"
+make clean 2>/dev/null || true
+make
+if [ ! -f "libscreencapturekit_bridge.dylib" ]; then
+    echo "Error: Failed to build native library"
+    exit 1
+fi
+echo "Native library built successfully"
+cd "$ROOT"
+
 publish_and_package() {
     ARCH=$1
     RID="osx-$ARCH"
