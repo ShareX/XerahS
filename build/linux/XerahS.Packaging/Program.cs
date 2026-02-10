@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 /*
     XerahS - The Avalonia UI implementation of ShareX
     Copyright (c) 2007-2026 ShareX Team
@@ -128,7 +128,7 @@ class Program
     static string? DetectVersionFromProps(string searchStartPath)
     {
         // Try to find Directory.Build.props by walking up from publishDir or current dir
-        // Usually build/XerahS.Packaging is run from repo root, so let's check repo root first
+        // Usually build/linux/XerahS.Packaging is run from repo root, so let's check repo root first
         
         string[] candidates = {
             "Directory.Build.props",
@@ -736,11 +736,11 @@ class Program
         if (File.Exists(inPublish)) return inPublish;
 
         // 2. Try to find it relative to the packaging tool location (repo structure)
-        // The packaging tool is in build/XerahS.Packaging, icon is in src/XerahS.UI/Assets/Logo.png
+        // The packaging tool is in build/linux/XerahS.Packaging, icon is in src/XerahS.UI/Assets/Logo.png
         string[] searchPaths =
         {
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "src", "XerahS.UI", "Assets", "Logo.png"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "src", "XerahS.UI", "Assets", "Logo.png"),
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..", "src", "XerahS.UI", "Assets", "Logo.png"),
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "src", "XerahS.UI", "Assets", "Logo.png"),
             Path.Combine(Environment.CurrentDirectory, "src", "XerahS.UI", "Assets", "Logo.png"),
             Path.Combine(Environment.CurrentDirectory, "..", "src", "XerahS.UI", "Assets", "Logo.png"),
         };
@@ -769,3 +769,6 @@ class Program
         return null;
     }
 }
+
+
+

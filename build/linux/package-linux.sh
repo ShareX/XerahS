@@ -64,8 +64,9 @@ done
 # 2. Package
 echo "Packaging..."
 echo "Note: rpmbuild is required to produce RPM packages."
-PACKAGING_TOOL="$ROOT/build/XerahS.Packaging/XerahS.Packaging.csproj"
+PACKAGING_TOOL="$ROOT/build/linux/XerahS.Packaging/XerahS.Packaging.csproj"
 dotnet run --project "$PACKAGING_TOOL" -- "$PUBLISH_DIR" "$OUTPUT_DIR" "$VERSION" "linux-x64"
 
 echo "Done! Packages in $OUTPUT_DIR"
+
 
