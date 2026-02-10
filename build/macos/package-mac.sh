@@ -1,9 +1,9 @@
-#!/bin/bash
+﻿#!/bin/bash
 set -e
 
 # Configuration
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-ROOT="$SCRIPT_DIR/.."
+ROOT="$SCRIPT_DIR/../.."
 PROJECT="$ROOT/src/XerahS.App/XerahS.App.csproj"
 UI_PROJECT="$ROOT/src/XerahS.UI/XerahS.UI.csproj"
 DIST_DIR="$ROOT/dist"
@@ -91,3 +91,4 @@ publish_and_package "x64"
 
 echo "------------------------------------------------"
 echo "Done! Packages in $DIST_DIR"
+

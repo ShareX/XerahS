@@ -1,6 +1,6 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 
-$root = Resolve-Path "$PSScriptRoot\.."
+$root = Resolve-Path "$PSScriptRoot\..\.."
 $project = Join-Path $root "src\XerahS.App\XerahS.App.csproj"
 $uiProject = Join-Path $root "src\XerahS.UI\XerahS.UI.csproj"
 $outputDir = Join-Path $root "dist"
@@ -65,3 +65,4 @@ $packagingTool = Join-Path $root "build\XerahS.Packaging\XerahS.Packaging.csproj
 dotnet run --project $packagingTool -- $publishDir $outputDir $version "linux-x64"
 
 Write-Host "Done! Packages in $outputDir"
+

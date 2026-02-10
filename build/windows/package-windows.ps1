@@ -1,8 +1,8 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 
-$root = Resolve-Path "$PSScriptRoot\.."
+$root = Resolve-Path "$PSScriptRoot\..\.."
 $project = Join-Path $root "src\XerahS.App\XerahS.App.csproj"
-$issScript = Join-Path $root "InnoSetup\XerahS-setup.iss"
+$issScript = Join-Path $root "build\windows\XerahS-setup.iss"
 $outputDir = Join-Path $root "dist"
 
 if (!(Test-Path $outputDir)) { New-Item -ItemType Directory -Force -Path $outputDir | Out-Null }
@@ -164,3 +164,5 @@ foreach ($arch in $archs) {
 }
 
 Write-Host "`nAll builds complete! Installers in $outputDir"
+
+

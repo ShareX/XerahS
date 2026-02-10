@@ -1,9 +1,9 @@
-#!/bin/bash
+﻿#!/bin/bash
 set -e
 
 # Configuration
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-ROOT="$SCRIPT_DIR/.."
+ROOT="$SCRIPT_DIR/../.."
 PROJECT="$ROOT/src/XerahS.App/XerahS.App.csproj"
 OUTPUT_DIR="$ROOT/dist"
 
@@ -68,3 +68,4 @@ PACKAGING_TOOL="$ROOT/build/XerahS.Packaging/XerahS.Packaging.csproj"
 dotnet run --project "$PACKAGING_TOOL" -- "$PUBLISH_DIR" "$OUTPUT_DIR" "$VERSION" "linux-x64"
 
 echo "Done! Packages in $OUTPUT_DIR"
+
