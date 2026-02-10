@@ -24,7 +24,6 @@
 #endregion License Information (GPL v3)
 
 using Avalonia;
-using Avalonia.WebView.Desktop;
 
 namespace XerahS.App
 {
@@ -283,7 +282,7 @@ namespace XerahS.App
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<XerahS.UI.App>()
                 .UsePlatformDetect()
-                .UseDesktopWebView()
+
                 .LogToTrace();
 
         /// <summary>

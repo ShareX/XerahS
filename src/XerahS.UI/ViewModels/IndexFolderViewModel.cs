@@ -408,6 +408,7 @@ public partial class IndexFolderViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasOutput));
         OnPropertyChanged(nameof(CanUpload));
         OnPropertyChanged(nameof(CanSave));
+        OnPropertyChanged(nameof(CanRenderHtml));
 
         try
         {
@@ -433,6 +434,7 @@ public partial class IndexFolderViewModel : ViewModelBase
             OnPropertyChanged(nameof(HasOutput));
             OnPropertyChanged(nameof(CanUpload));
             OnPropertyChanged(nameof(CanSave));
+            OnPropertyChanged(nameof(CanRenderHtml));
         }
     }
 
@@ -448,6 +450,7 @@ public partial class IndexFolderViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasOutput));
         OnPropertyChanged(nameof(CanUpload));
         OnPropertyChanged(nameof(CanSave));
+        OnPropertyChanged(nameof(CanRenderHtml));
     }
 
     partial void OnGeneratedFilePathChanged(string value)

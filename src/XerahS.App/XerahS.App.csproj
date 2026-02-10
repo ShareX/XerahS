@@ -31,7 +31,6 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" Version="11.3.9" />
-    <PackageReference Include="WebView.Avalonia.Desktop" Version="11.0.0.1" />
   </ItemGroup>
   <ItemGroup>
     <!-- Audits tool is only needed for Debug builds (development/auditing) -->
