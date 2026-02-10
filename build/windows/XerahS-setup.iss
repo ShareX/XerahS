@@ -1,8 +1,8 @@
-#define MyAppName "XerahS"
+﻿#define MyAppName "XerahS"
 #define MyAppExeName "XerahS.exe"
-#define MyAppRootDirectory "..\..\"
+#define MyAppRootDirectory "..\..\..\"
 #ifndef MyAppReleaseDirectory
-#define MyAppReleaseDirectory MyAppRootDirectory + "XerahS\src\XerahS.App\bin\Release\net10.0-windows10.0.26100.0"
+#define MyAppReleaseDirectory MyAppRootDirectory + "src\\XerahS.App\bin\Release\net10.0-windows10.0.26100.0"
 #endif
 
 #ifndef MyAppPublisher
@@ -112,3 +112,6 @@ function DesktopIconExists(): Boolean;
 begin
   Result := FileExists(ExpandConstant('{userdesktop}\{#MyAppName}.lnk'));
 end;
+
+
+

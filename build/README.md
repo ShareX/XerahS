@@ -1,0 +1,294 @@
+# XerahS Build System Documentation
+
+This document describes the build system structure and how builds work for each operating system.
+
+---
+
+## Directory Structure
+
+```
+build/
+├── README.md                          # This file
+├── windows/                           # Windows build scripts
+│   ├── package-windows.ps1           # Main PowerShell build script
+│   └── XerahS-setup.iss              # Inno Setup installer script
+├── linux/                             # Linux build scripts
+│   ├── package-linux.ps1             # PowerShell wrapper for Linux build
+│   ├── package-linux.sh              # Bash script for Linux build
+│   └── XerahS.Packaging/             # C# packaging tool
+│       ├── Program.cs                # Packaging logic (tar.gz, .deb, .rpm)
+│       └── XerahS.Packaging.csproj   # Project file
+└── macos/                             # macOS build scripts
+    └── package-mac.sh                # Bash script for macOS build
+```
+
+---
+
+## Windows Build
+
+### Files
+- **`package-windows.ps1`** - PowerShell build orchestrator
+- **`XerahS-setup.iss`** - Inno Setup installer definition
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Windows Build Flow                               │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  1. Detect version from Directory.Build.props                           │
+│                              ↓                                          │
+│  2. For each architecture (win-x64, win-arm64):                         │
+│                              ↓                                          │
+│     a. dotnet publish (main app) → build/publish-temp-{arch}/           │
+│                              ↓                                          │
+│     b. Publish Plugins to Plugins/ subfolder                            │
+│        • Reads plugin.json for pluginId                                 │
+│        • Publishes each plugin to Plugins/{pluginId}/                   │
+│                              ↓                                          │
+│     c. Deduplicate plugin files                                         │
+│        • Removes duplicate DLLs already in main app                     │
+│        • Saves ~170 MB per architecture                                 │
+│                              ↓                                          │
+│     d. ISCC.exe (Inno Setup)                                            │
+│        • /dMyAppReleaseDirectory={publish-temp}                         │
+│        • /dOutputBaseFilename=XerahS-{version}-{arch}                   │
+│        • /dOutputDir={dist}                                             │
+│                              ↓                                          │
+│  3. Output: dist/XerahS-{version}-{arch}.exe                            │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Key Features
+- **Dual architecture support**: Builds for both x64 and ARM64
+- **Plugin bundling**: Includes 5 plugins (amazons3, auto, gist, imgur, paste2)
+- **File deduplication**: Saves space by removing duplicate DLLs from plugins
+- **Inno Setup integration**: Creates professional Windows installers
+
+### Requirements
+- Inno Setup 6 (installed at `%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe`)
+- .NET SDK 10.0+
+
+---
+
+## Linux Build
+
+### Files
+- **`package-linux.ps1`** - PowerShell wrapper (Windows hosts)
+- **`package-linux.sh`** - Bash script (Linux/macOS hosts)
+- **`XerahS.Packaging/`** - C# packaging tool
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         Linux Build Flow                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  1. Detect version from Directory.Build.props                           │
+│                              ↓                                          │
+│  2. dotnet publish (main app)                                           │
+│     • Runtime: linux-x64                                                │
+│     • Single file: true                                                 │
+│     • Self-contained: true                                              │
+│     → src/XerahS.App/bin/Release/net10.0/linux-x64/publish/             │
+│                              ↓                                          │
+│  3. Publish Plugins to Plugins/ subfolder                               │
+│     • Same process as Windows                                           │
+│     • Deduplicates files against main app                               │
+│                              ↓                                          │
+│  4. XerahS.Packaging tool creates:                                      │
+│                              ↓                                          │
+│     ┌─────────────────┬──────────────────────────────────────────┐     │
+│     │   Tarball       │ XerahS-{version}-linux-x64.tar.gz        │     │
+│     │   (.tar.gz)     │ Portable, extract and run                │     │
+│     ├─────────────────┼──────────────────────────────────────────┤     │
+│     │   Debian        │ XerahS-{version}-linux-x64.deb           │     │
+│     │   Package       │ Installs to /usr/lib/xerahs/             │     │
+│     │   (.deb)        │ Creates /usr/bin/xerahs wrapper          │     │
+│     │                 │ Desktop entry + icon included            │     │
+│     ├─────────────────┼──────────────────────────────────────────┤     │
+│     │   RPM Package   │ XerahS-{version}-linux-x64.rpm           │     │
+│     │   (.rpm)        │ For Fedora/RHEL/CentOS/SUSE              │     │
+│     │                 │ Requires rpmbuild tool                   │     │
+│     └─────────────────┴──────────────────────────────────────────┘     │
+│                              ↓                                          │
+│  5. Individual plugin .zip files also created                           │
+│     • {pluginId}-{version}-linux-x64.zip                                │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Package Details
+
+| Package Type | Install Location | Usage |
+|-------------|------------------|-------|
+| `.tar.gz` | User choice | Extract and run `./XerahS` |
+| `.deb` | `/usr/lib/xerahs/` | `sudo dpkg -i xerahs.deb` |
+| `.rpm` | `/usr/lib/xerahs/` | `sudo rpm -i xerahs.rpm` |
+
+### Requirements
+- .NET SDK 10.0+
+- For RPM: `rpmbuild` tool (optional)
+
+---
+
+## macOS Build
+
+### Files
+- **`package-mac.sh`** - Bash build script
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         macOS Build Flow                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  1. Detect version from Directory.Build.props                           │
+│                              ↓                                          │
+│  2. dotnet publish (main app)                                           │
+│     • Runtime: osx-x64 or osx-arm64                                     │
+│     • Single file: true                                                 │
+│     • Self-contained: true                                              │
+│                              ↓                                          │
+│  3. Create .app bundle structure                                        │
+│     XerahS.app/                                                         │
+│     └── Contents/                                                       │
+│         ├── Info.plist                                                  │
+│         ├── MacOS/XerahS (executable)                                   │
+│         └── Resources/ (icons, etc.)                                    │
+│                              ↓                                          │
+│  4. Plugins are included in the bundle                                  │
+│     • Copied to XerahS.app/Contents/MacOS/Plugins/                      │
+│                              ↓                                          │
+│  5. Output options:                                                     │
+│     • .zip bundle for distribution                                      │
+│     • .dmg (disk image) - optional                                      │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Requirements
+- macOS with Xcode Command Line Tools
+- .NET SDK 10.0+
+
+---
+
+## Shared Plugin Build Process
+
+All platforms use the same plugin discovery and build logic:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Plugin Build Flow                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  src/Plugins/                                                   │
+│  ├── ShareX.AmazonS3.Plugin/                                    │
+│  │   ├── XerahS.AmazonS3.Plugin.csproj                          │
+│  │   └── plugin.json ←──┐                                       │
+│  ├── ShareX.Auto.Plugin/          │                             │
+│  │   └── plugin.json ←──┤                                       │
+│  └── ...                          │                             │
+│                                   │                             │
+│  Build script:                    │                             │
+│  1. Find all .csproj in src/Plugins/                            │
+│  2. Read plugin.json → extract "pluginId"                       │
+│  3. dotnet publish to Plugins/{pluginId}/                       │
+│  4. Remove files that already exist in main app                 │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Current Plugins
+
+| Plugin ID | Name | Description |
+|-----------|------|-------------|
+| `amazons3` | Amazon S3 Uploader | Upload files to Amazon S3 buckets |
+| `auto` | Auto Destination | Automatic upload destination selection |
+| `gist` | GitHub Gist Text Uploader | Upload text/code to GitHub Gist |
+| `imgur` | Imgur Uploader | Upload images to Imgur |
+| `paste2` | Paste2 Text Uploader | Upload text to Paste2 service |
+
+---
+
+## Output Directory
+
+All builds place their final artifacts in the `dist/` folder:
+
+```
+dist/
+├── Windows
+│   ├── XerahS-0.14.3-win-x64.exe
+│   └── XerahS-0.14.3-win-arm64.exe
+│
+├── Linux
+│   ├── XerahS-0.14.3-linux-x64.tar.gz
+│   ├── XerahS-0.14.3-linux-x64.deb
+│   ├── XerahS-0.14.3-linux-x64.rpm
+│   ├── amazons3-0.14.3-linux-x64.zip
+│   ├── auto-0.14.3-linux-x64.zip
+│   ├── gist-0.14.3-linux-x64.zip
+│   ├── imgur-0.14.3-linux-x64.zip
+│   └── paste2-0.14.3-linux-x64.zip
+│
+└── macOS
+    └── XerahS-0.14.3-osx-x64.zip (or .dmg)
+```
+
+---
+
+## Quick Reference
+
+### Build Commands
+
+| Platform | Command | Host OS |
+|----------|---------|---------|
+| Windows | `.\build\windows\package-windows.ps1` | Windows |
+| Linux (PowerShell) | `.\build\linux\package-linux.ps1` | Windows |
+| Linux (Bash) | `./build/linux/package-linux.sh` | Linux/macOS |
+| macOS | `./build/macos/package-mac.sh` | macOS |
+
+### Version Detection
+
+All scripts read version from `Directory.Build.props`:
+```xml
+<Version>0.14.3</Version>
+```
+
+### Common Build Flags
+
+| Flag | Purpose |
+|------|---------|
+| `-c Release` | Release configuration |
+| `-p:OS={OS}` | Target OS (Windows_NT, Linux, macOS) |
+| `-r {runtime}` | Runtime identifier (win-x64, linux-x64, osx-x64, etc.) |
+| `-p:PublishSingleFile=true/false` | Single executable vs multiple files |
+| `--self-contained true/false` | Include .NET runtime |
+
+---
+
+## Troubleshooting
+
+### Windows
+- **ISCC not found**: Install Inno Setup 6 at default location
+- **File locked**: Script disables `nodeReuse` to prevent file locking
+
+### Linux
+- **rpmbuild not found**: RPM package will be skipped (others still built)
+- **Permission errors**: Ensure `dotnet` is in PATH
+
+### macOS
+- **Codesign issues**: May need to disable SIP or sign with developer cert
+- **Notarization**: Required for distribution outside App Store
+
+---
+
+## Related Documentation
+
+- `../DEVELOPER_README.md` - General development setup
+- `../docs/development/RELEASE_PROCESS.md` - Release procedures
+- `../docs/architecture/PORTING_GUIDE.md` - Platform abstractions
