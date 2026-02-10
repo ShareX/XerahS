@@ -114,7 +114,7 @@
             </ScrollViewer>
 
             <!-- Right Column: Preview & Actions -->
-            <Grid Grid.Column="1" RowDefinitions="Auto, Auto, Auto, *">
+            <Grid Grid.Column="1" RowDefinitions="Auto, Auto, *">
                 
                 <!-- Action Bar -->
                 <Border Grid.Row="0" Padding="16" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
@@ -124,8 +124,8 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                             <Button Classes="accent" Content="{Binding PrimaryActionLabel}" Command="{Binding IndexFolderCommand}" 
                                     IsEnabled="{Binding IsNotBusy}" AutomationProperties.Name="Generate Index"/>
-                            <Button Content="Render" Command="{Binding RenderHtmlPreviewCommand}" 
-                                    IsEnabled="{Binding CanRenderHtml}" AutomationProperties.Name="Render HTML Preview"/>
+                            <Button Content="Open in Browser" Command="{Binding RenderHtmlPreviewCommand}" 
+                                    IsEnabled="{Binding CanRenderHtml}" AutomationProperties.Name="Open HTML in Browser"/>
                             <Button Content="Copy" Command="{Binding CopyOutputCommand}" 
                                     IsEnabled="{Binding HasOutput}" AutomationProperties.Name="Copy Output"/>
                             <Button Content="Save As" Command="{Binding SaveAsCommand}" 
@@ -139,19 +139,8 @@
                 <!-- Progress -->
                 <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="2" Margin="0,0,0,16" IsVisible="{Binding IsBusy}"/>
 
-                <!-- HTML Preview -->
-                <Border Grid.Row="2"
-                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        Height="300"
-                        Margin="0,0,0,16"
-                        IsVisible="{Binding ShowHtmlPreview}">
-                    <ContentControl x:Name="HtmlPreviewHost"/>
-                </Border>
-
                 <!-- Text Output -->
-                <TextBox Grid.Row="3"
+                <TextBox Grid.Row="2"
                          Text="{Binding OutputText}"
                          IsReadOnly="True"
                          TextWrapping="NoWrap"

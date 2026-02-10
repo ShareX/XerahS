@@ -15,8 +15,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="FluentAvaloniaUI" Version="2.4.1" />
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
-    <PackageReference Include="WebView.Avalonia" Version="11.0.0.1" />
-    <PackageReference Include="WebView.Avalonia.Desktop" Version="11.0.0.1" />
+
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
