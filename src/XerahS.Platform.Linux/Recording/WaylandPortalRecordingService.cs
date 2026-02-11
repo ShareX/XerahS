@@ -47,6 +47,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
 
     private FFmpegCLIManager? _ffmpeg;
     private Process? _gstreamerProcess;
+    private int? _gstreamerPid;
     private Task? _ffmpegTask;
     private RecordingOptions? _currentOptions;
     private RecordingStatus _status = RecordingStatus.Idle;
@@ -104,6 +105,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                 // Use GStreamer directly via Process
                 _ffmpegTask = Task.Run(() =>
                 {
+                    Process? process = null;
                     try
                     {
                         lock (_lock)
@@ -122,7 +124,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                             CreateNoWindow = true
                         };
 
-                        using var process = Process.Start(startInfo);
+                        process = Process.Start(startInfo);
                         if (process == null)
                         {
                             HandleFatalError(new Exception("Failed to start GStreamer process"), true);
@@ -130,8 +132,14 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                         }
 
                         _gstreamerProcess = process;
+                        try { _gstreamerPid = process.Id; } catch { }
                         string output = process.StandardError.ReadToEnd();
                         process.WaitForExit();
+
+                        if (process.ExitCode != 0)
+                        {
+                            DebugHelper.WriteLine($"[WaylandPortalRecording] GStreamer stderr:\n{output}");
+                        }
 
                         if (process.ExitCode != 0 && !_stopRequested)
                         {
@@ -229,6 +237,22 @@ public sealed class WaylandPortalRecordingService : IRecordingService
         args.Add($"-p crf=23");  // Quality setting
         args.Add($"-r {settings.FPS}");  // Frame rate
 
+        // Audio capture
+        if (settings.CaptureSystemAudio)
+        {
+            string monitorSource = PulseAudioHelper.GetDefaultMonitorSource();
+            args.Add($"-a{monitorSource}");
+            DebugHelper.WriteLine($"[WaylandPortalRecording] wf-recorder audio: system audio via {monitorSource}");
+        }
+        else if (settings.CaptureMicrophone)
+        {
+            string micDevice = !string.IsNullOrEmpty(settings.MicrophoneDeviceId)
+                ? settings.MicrophoneDeviceId
+                : "default";
+            args.Add($"-a{micDevice}");
+            DebugHelper.WriteLine($"[WaylandPortalRecording] wf-recorder audio: microphone via {micDevice}");
+        }
+
         // Output file
         args.Add($"-f \"{outputPath}\"");
 
@@ -255,7 +279,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                     CreateNoWindow = true
                 };
 
-                using var process = Process.Start(startInfo);
+                var process = Process.Start(startInfo);
                 if (process == null)
                 {
                     HandleFatalError(new Exception("Failed to start wf-recorder process"), true);
@@ -263,6 +287,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                 }
 
                 _gstreamerProcess = process;  // Reuse this field for the process reference
+                try { _gstreamerPid = process.Id; } catch { }
                 string output = process.StandardError.ReadToEnd();
                 process.WaitForExit();
 
@@ -284,6 +309,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
     {
         FFmpegCLIManager? ffmpeg;
         Process? gstreamer;
+        int? gstreamerPid;
         Task? ffmpegTask;
 
         lock (_lock)
@@ -299,6 +325,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
 
             ffmpeg = _ffmpeg;
             gstreamer = _gstreamerProcess;
+            gstreamerPid = _gstreamerPid;
             ffmpegTask = _ffmpegTask;
         }
 
@@ -312,22 +339,22 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             }
 
             // Stop GStreamer by sending EOS (End of Stream) via SIGINT
-            if (gstreamer != null && !gstreamer.HasExited)
+            if (gstreamerPid.HasValue)
             {
                 try
                 {
-                    DebugHelper.WriteLine("[WaylandPortalRecording] Sending SIGINT to GStreamer for graceful shutdown...");
+                    DebugHelper.WriteLine($"[WaylandPortalRecording] Sending SIGINT to GStreamer (PID {gstreamerPid.Value}) for graceful shutdown...");
                     // Send SIGINT to GStreamer for graceful shutdown (triggers EOS with -e flag)
-                    var killProcess = Process.Start("kill", $"-2 {gstreamer.Id}");
+                    var killProcess = Process.Start("kill", $"-2 {gstreamerPid.Value}");
                     killProcess?.WaitForExit(1000);
 
                     // Wait for GStreamer to finish writing and exit
-                    if (!gstreamer.WaitForExit(10000))
+                    if (gstreamer != null && !gstreamer.WaitForExit(10000))
                     {
                         DebugHelper.WriteLine("[WaylandPortalRecording] GStreamer did not exit in time, force killing...");
-                        try { gstreamer.Kill(); } catch { }
+                        try { Process.Start("kill", $"-9 {gstreamerPid.Value}")?.WaitForExit(1000); } catch { }
                     }
-                    else
+                    else if (gstreamer != null)
                     {
                         DebugHelper.WriteLine($"[WaylandPortalRecording] GStreamer exited with code {gstreamer.ExitCode}");
                     }
@@ -336,8 +363,13 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                 {
                     DebugHelper.WriteLine($"[WaylandPortalRecording] Error stopping GStreamer: {ex.Message}");
                     // If SIGINT fails, try force kill
-                    try { gstreamer.Kill(); } catch { }
+                    try { Process.Start("kill", $"-9 {gstreamerPid.Value}")?.WaitForExit(1000); } catch { }
                 }
+            }
+            else if (gstreamer != null)
+            {
+                // Fallback: no stored PID, try Kill() directly
+                try { gstreamer.Kill(); } catch { }
             }
 
             if (ffmpegTask != null)
@@ -357,6 +389,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             {
                 _ffmpeg = null;
                 _gstreamerProcess = null;
+                _gstreamerPid = null;
                 _currentOptions = null;
                 _stopRequested = false;
                 UpdateStatus(RecordingStatus.Idle);
@@ -549,9 +582,15 @@ public sealed class WaylandPortalRecordingService : IRecordingService
     {
         try
         {
+            string ffmpegPath = PathsManager.GetFFmpegPath();
+            if (string.IsNullOrEmpty(ffmpegPath) || !File.Exists(ffmpegPath))
+            {
+                ffmpegPath = "ffmpeg";
+            }
+
             var startInfo = new ProcessStartInfo
             {
-                FileName = "ffmpeg",
+                FileName = ffmpegPath,
                 Arguments = "-devices",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -638,14 +677,6 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             return false;
         }
 
-        var settings = options.Settings;
-        if (settings is not null && (settings.CaptureSystemAudio || settings.CaptureMicrophone))
-        {
-            // Audio handling is implemented in the portal/FFmpeg(GStreamer) path.
-            DebugHelper.WriteLine("[WaylandPortalRecording] Audio capture requested; using portal path instead of wf-recorder.");
-            return false;
-        }
-
         if (!IsWlrootsCompositor())
         {
             DebugHelper.WriteLine("[WaylandPortalRecording] Non-wlroots compositor detected; preferring portal path over wf-recorder.");
@@ -691,7 +722,16 @@ public sealed class WaylandPortalRecordingService : IRecordingService
         {
             DebugHelper.WriteLine("[WaylandPortalRecording] FFmpeg lacks pipewire support, using GStreamer");
             // -e flag: send EOS on SIGINT for proper file finalization
-            return ("gst-launch-1.0", "-e " + BuildGStreamerPipeline(options, pipeWireNodeId, outputPath), true);
+            var (pipeline, actualOutputPath) = BuildGStreamerPipeline(options, pipeWireNodeId, outputPath);
+
+            // Update options with the actual output path (may differ if muxer changed, e.g. .mp4 -> .mkv)
+            if (!string.Equals(outputPath, actualOutputPath, StringComparison.Ordinal))
+            {
+                options.OutputPath = actualOutputPath;
+                DebugHelper.WriteLine($"[WaylandPortalRecording] Output path changed to: {actualOutputPath}");
+            }
+
+            return ("gst-launch-1.0", "-e " + pipeline, true);
         }
 
         // Last resort: try FFmpeg anyway (will likely fail)
@@ -702,12 +742,40 @@ public sealed class WaylandPortalRecordingService : IRecordingService
     private static string BuildFFmpegArguments(RecordingOptions options, uint pipeWireNodeId, string outputPath)
     {
         var settings = options.Settings ?? new ScreenRecordingSettings();
+        bool hasAudio = settings.CaptureSystemAudio || settings.CaptureMicrophone;
+
+        // Video input (input 0)
         var args = new List<string>
         {
             "-f pipewire",
             "-framerate " + settings.FPS.ToString(CultureInfo.InvariantCulture),
             $"-i {pipeWireNodeId}"
         };
+
+        // Audio input (input 1) — must come right after video input, before codec/output args
+        if (hasAudio)
+        {
+            args.Add("-f pulse");
+
+            if (settings.CaptureSystemAudio)
+            {
+                string monitorSource = PulseAudioHelper.GetDefaultMonitorSource();
+                args.Add($"-i {monitorSource}");
+            }
+            else
+            {
+                args.Add(!string.IsNullOrEmpty(settings.MicrophoneDeviceId)
+                    ? $"-i {settings.MicrophoneDeviceId}"
+                    : "-i default");
+            }
+        }
+
+        // Stream mapping — required when there are multiple inputs
+        if (hasAudio)
+        {
+            args.Add("-map 0:v");
+            args.Add("-map 1:a");
+        }
 
         if (options.Mode == CaptureMode.Region && options.Region.Width > 0 && options.Region.Height > 0)
         {
@@ -736,24 +804,10 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                 break;
         }
 
-        if (settings.CaptureSystemAudio || settings.CaptureMicrophone)
+        if (hasAudio)
         {
-            if (settings.CaptureSystemAudio)
-            {
-                args.Add("-f pulse");
-                args.Add("-i default");
-                args.Add("-c:a aac");
-                args.Add("-b:a 192k");
-            }
-            else if (settings.CaptureMicrophone)
-            {
-                args.Add("-f pulse");
-                args.Add(!string.IsNullOrEmpty(settings.MicrophoneDeviceId)
-                    ? $"-i {settings.MicrophoneDeviceId}"
-                    : "-i default");
-                args.Add("-c:a aac");
-                args.Add("-b:a 192k");
-            }
+            args.Add("-c:a aac");
+            args.Add("-b:a 192k");
         }
 
         args.Add("-pix_fmt yuv420p");
@@ -795,20 +849,32 @@ public sealed class WaylandPortalRecordingService : IRecordingService
         });
     }
 
-    private static string BuildGStreamerPipeline(RecordingOptions options, uint pipeWireNodeId, string outputPath)
+    private static (string pipeline, string actualOutputPath) BuildGStreamerPipeline(RecordingOptions options, uint pipeWireNodeId, string outputPath)
     {
         var settings = options.Settings ?? new ScreenRecordingSettings();
+        bool hasAudio = settings.CaptureSystemAudio || settings.CaptureMicrophone;
 
-        // Build pipeline with queue for buffering large frames
-        var pipeline = new List<string>
+        // Build pipeline with queue for buffering large frames.
+        // Request video/x-raw to avoid DMA-BUF format negotiation failures.
+        // If GL elements are available, use gldownload as a more robust path.
+        var pipeline = new List<string>();
+        pipeline.Add($"pipewiresrc path={pipeWireNodeId} do-timestamp=true");
+
+        if (HasGStreamerElement("gldownload") && HasGStreamerElement("glupload"))
         {
-            // pipewiresrc - let it negotiate format naturally
-            $"pipewiresrc path={pipeWireNodeId} do-timestamp=true",
-            // queue to decouple and handle buffering
-            "!", "queue max-size-buffers=3 leaky=downstream",
-            // videoconvert handles any format conversion needed
-            "!", "videoconvert"
-        };
+            // GPU path: handles DMA-BUF / EGL frames from PipeWire
+            pipeline.AddRange(new[] { "!", "glupload", "!", "glcolorconvert", "!", "gldownload" });
+        }
+        else
+        {
+            // CPU path: request raw video from PipeWire
+            pipeline.AddRange(new[] { "!", "video/x-raw" });
+        }
+
+        // queue to decouple and handle buffering
+        pipeline.AddRange(new[] { "!", "queue max-size-buffers=3 leaky=downstream" });
+        // videoconvert handles any format conversion needed
+        pipeline.AddRange(new[] { "!", "videoconvert" });
 
         // Add crop filter for region capture using FFmpeg-style crop filter
         if (options.Mode == CaptureMode.Region && options.Region.Width > 0 && options.Region.Height > 0)
@@ -845,15 +911,106 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             finalOutputPath = Path.Combine(dir, baseName + fileExtension);
         }
 
-        // Muxer and output
-        pipeline.Add("!");
-        pipeline.Add(muxerElement);
-        pipeline.Add("!");
-        pipeline.Add($"filesink location=\"{finalOutputPath}\"");
+        if (hasAudio)
+        {
+            // Audio branch: pulsesrc -> queue -> audioconvert -> encoder -> mux.
+            string audioDevice;
+            if (settings.CaptureSystemAudio)
+            {
+                audioDevice = PulseAudioHelper.GetDefaultMonitorSource();
+            }
+            else
+            {
+                audioDevice = !string.IsNullOrEmpty(settings.MicrophoneDeviceId)
+                    ? settings.MicrophoneDeviceId
+                    : "default";
+            }
+
+            var (audioEncoder, actualMuxer, actualExtension) = GetCompatibleAudioEncoder(muxerElement, fileExtension);
+
+            // Update output path if the muxer/extension changed (e.g. mp4 -> mkv for Opus)
+            if (actualExtension != fileExtension)
+            {
+                string dir = Path.GetDirectoryName(finalOutputPath) ?? "";
+                string baseName = Path.GetFileNameWithoutExtension(finalOutputPath);
+                finalOutputPath = Path.Combine(dir, baseName + actualExtension);
+            }
+
+            // Use a named muxer so both video and audio branches can connect
+            pipeline.Add("!");
+            pipeline.Add($"{actualMuxer} name=mux");
+            pipeline.Add("!");
+            pipeline.Add($"filesink location=\"{finalOutputPath}\"");
+
+            pipeline.Add($"pulsesrc device=\"{audioDevice}\"");
+            pipeline.Add("!");
+            pipeline.Add("queue");
+            pipeline.Add("!");
+            pipeline.Add("audioconvert");
+            pipeline.Add("!");
+            pipeline.Add(audioEncoder);
+            pipeline.Add("!");
+            pipeline.Add("mux.");
+
+            DebugHelper.WriteLine($"[WaylandPortalRecording] GStreamer audio: device={audioDevice}, encoder={audioEncoder}, muxer={actualMuxer}");
+        }
+        else
+        {
+            // Simple pipeline without named muxer
+            pipeline.Add("!");
+            pipeline.Add(muxerElement);
+            pipeline.Add("!");
+            pipeline.Add($"filesink location=\"{finalOutputPath}\"");
+        }
 
         DebugHelper.WriteLine($"[WaylandPortalRecording] GStreamer encoder: {encoderElement.Split(' ')[0]}, muxer: {muxerElement}, output: {finalOutputPath}");
 
-        return string.Join(" ", pipeline);
+        return (string.Join(" ", pipeline), finalOutputPath);
+    }
+
+    /// <summary>
+    /// Returns a compatible (audioEncoder, muxer, extension) tuple.
+    /// MP4 requires AAC; if only Opus is available, falls back to Matroska container.
+    /// </summary>
+    private static (string audioEncoder, string muxer, string extension) GetCompatibleAudioEncoder(string requestedMuxer, string requestedExtension)
+    {
+        bool isMp4 = requestedMuxer.Contains("mp4", StringComparison.OrdinalIgnoreCase);
+
+        // AAC encoders work in both MP4 and MKV
+        if (HasGStreamerElement("avenc_aac"))
+            return ("avenc_aac", requestedMuxer, requestedExtension);
+        if (HasGStreamerElement("voaacenc"))
+            return ("voaacenc", requestedMuxer, requestedExtension);
+        if (HasGStreamerElement("fdkaacenc"))
+            return ("fdkaacenc", requestedMuxer, requestedExtension);
+
+        // Opus is available but incompatible with MP4 — switch to MKV
+        if (HasGStreamerElement("opusenc"))
+        {
+            if (isMp4)
+            {
+                DebugHelper.WriteLine("[WaylandPortalRecording] No AAC encoder available; switching from mp4mux to matroskamux for Opus compatibility");
+                return ("opusenc", "matroskamux", ".mkv");
+            }
+
+            return ("opusenc", requestedMuxer, requestedExtension);
+        }
+
+        // Vorbis works in WebM/MKV/OGG
+        if (HasGStreamerElement("vorbisenc"))
+        {
+            if (isMp4)
+            {
+                DebugHelper.WriteLine("[WaylandPortalRecording] No AAC/Opus encoder available; switching from mp4mux to matroskamux for Vorbis");
+                return ("vorbisenc", "matroskamux", ".mkv");
+            }
+
+            return ("vorbisenc", requestedMuxer, requestedExtension);
+        }
+
+        // Last resort: raw audio in MKV (will work but produce large files)
+        DebugHelper.WriteLine("[WaylandPortalRecording] No audio encoder found, using raw audio in MKV");
+        return ("identity", "matroskamux", ".mkv");
     }
 
     private static (string encoder, string muxer, string extension) GetEncoderAndMuxer(VideoCodec codec, int bitrateKbps)

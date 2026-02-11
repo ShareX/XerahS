@@ -290,6 +290,36 @@ namespace XerahS.Core.Tasks
             catch (Exception ex)
             {
                 DebugHelper.WriteException(ex, "Failed during recording workflow");
+
+                // Show user-facing error message
+                string errorMessage = ex switch
+                {
+                    FileNotFoundException => "FFmpeg not found. Please install FFmpeg to enable screen recording.",
+                    PlatformNotSupportedException => "Screen recording is not supported on this system.",
+                    InvalidOperationException when ex.Message.Contains("not available") =>
+                        "Screen recording is not available. On Linux Wayland, ensure xdg-desktop-portal with ScreenCast support and PipeWire are installed.",
+                    InvalidOperationException when ex.Message.Contains("initialization") =>
+                        "Screen recording initialization failed. Check that required services are running.",
+                    _ => $"Failed to start recording: {ex.Message}"
+                };
+
+                try
+                {
+                    PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
+                    {
+                        Title = "Recording Failed",
+                        Text = errorMessage,
+                        Duration = 8f,
+                        Size = new SizeI(450, 140),
+                        AutoHide = true,
+                        LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
+                    });
+                }
+                catch
+                {
+                    // Ignore toast errors
+                }
+
                 throw;
             }
         }

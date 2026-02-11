@@ -534,7 +534,7 @@ public class ScreenRecordingManager
         DebugHelper.WriteException(e.Error, $"ScreenRecordingManager: Recording error (Fatal={e.IsFatal})");
         ErrorOccurred?.Invoke(this, e);
 
-        // Clean up on fatal error
+        // Clean up on fatal error and unblock the waiting WorkerTask
         if (e.IsFatal)
         {
             lock (_lock)
@@ -547,6 +547,8 @@ public class ScreenRecordingManager
                 _currentRecording = null;
                 _currentOptions = null;
             }
+
+            SignalStop();
         }
     }
 
