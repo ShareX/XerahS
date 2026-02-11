@@ -37,5 +37,12 @@ namespace XerahS.Platform.Abstractions
         /// <param name="personalFolder">The base folder (PathsManager.PersonalFolder) for output</param>
         /// <returns>Full path of the written log file, or empty string on failure</returns>
         string WriteRegionCaptureDiagnostics(string personalFolder);
+
+        /// <summary>
+        /// Writes a diagnostic report for screen recording troubleshooting.
+        /// </summary>
+        /// <param name="personalFolder">The base folder (PathsManager.PersonalFolder) for output</param>
+        /// <returns>Full path of the written log file, or empty string on failure</returns>
+        string WriteRecordingDiagnostics(string personalFolder);
     }
 }

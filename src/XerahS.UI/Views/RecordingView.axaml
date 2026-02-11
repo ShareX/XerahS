@@ -149,6 +149,27 @@
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                         </Border>
+
+                        <!-- Linux Recording Diagnostics -->
+                        <Border IsVisible="{Binding IsLinuxPlatform}"
+                                Background="{DynamicResource SystemFillColorNeutralBackgroundBrush}"
+                                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="12,8">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Linux Recording Diagnostics"
+                                           Theme="{StaticResource CaptionTextBlockStyle}"/>
+                                <Button Content="Run Linux Recording Diagnostics"
+                                        Command="{Binding RunLinuxRecordingDiagnosticsCommand}"
+                                        HorizontalAlignment="Left"/>
+                                <TextBlock Text="{Binding LinuxRecordingDiagnosticsStatusText}"
+                                           Theme="{StaticResource CaptionTextBlockStyle}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           IsVisible="{Binding LinuxRecordingDiagnosticsStatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </Border>
 

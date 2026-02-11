@@ -251,10 +251,10 @@ public class FFmpegRecordingService : IRecordingService
     private string BuildFFmpegArguments(RecordingOptions options)
     {
         var settings = options.Settings ?? new ScreenRecordingSettings();
+        bool hasAudio = settings.CaptureSystemAudio || settings.CaptureMicrophone;
         var args = new List<string>();
 
-        // Input source based on capture mode
-        // Input source based on capture mode
+        // === Video input (input 0) ===
         if (OperatingSystem.IsWindows())
         {
             switch (options.Mode)
@@ -280,7 +280,7 @@ public class FFmpegRecordingService : IRecordingService
                         args.Add($"-offset_y {options.Region.Y}");
                         args.Add($"-video_size {options.Region.Width}x{options.Region.Height}");
                     }
-                    
+
                     args.Add("-i desktop");
                     break;
             }
@@ -290,12 +290,12 @@ public class FFmpegRecordingService : IRecordingService
              // macOS uses avfoundation
              args.Add("-f avfoundation");
              args.Add("-framerate " + settings.FPS);
-             
+
              if (settings.ShowCursor)
              {
                  args.Add("-capture_cursor 1");
              }
-             else 
+             else
              {
                  args.Add("-capture_cursor 0");
              }
@@ -303,13 +303,13 @@ public class FFmpegRecordingService : IRecordingService
              // Mouse clicks visualization optional
              // args.Add("-capture_mouse_clicks 1");
 
-             // For now default to screen 1. 
+             // For now default to screen 1.
              // Ideally we would enumerate screens or look at options.Region to determine screen index.
              // But for MVP/Fix, "1" or "1:" is usually main screen.
-             // Using "1" as video input. 
+             // Using "1" as video input.
              // Note: avfoundation input format is "video_device:audio_device" or just "video_device"
-             args.Add("-i \"1\""); 
-             
+             args.Add("-i \"1\"");
+
              // Region capture in avfoundation is not directly supported via offset/size args like gdigrab
              // It usually requires a complex filter chain (crop).
              if (options.Mode == CaptureMode.Region && options.Region.Width > 0 && options.Region.Height > 0)
@@ -320,15 +320,86 @@ public class FFmpegRecordingService : IRecordingService
         }
         else if (OperatingSystem.IsLinux())
         {
-             // basic Linux fallback (x11grab)
+             // Basic Linux fallback (x11grab, X11 only).
+             // Guard against invalid 0x0 region args for non-region capture modes.
              args.Add("-f x11grab");
              args.Add("-framerate " + settings.FPS);
-             args.Add($"-video_size {options.Region.Width}x{options.Region.Height}");
-             args.Add($"-i :0.0+{options.Region.X},{options.Region.Y}");
-             if (settings.ShowCursor) args.Add("-draw_mouse 1");
+
+             bool hasRegion = options.Region.Width > 0 && options.Region.Height > 0;
+             bool useRegionInput = hasRegion && (options.Mode == CaptureMode.Region || options.Mode == CaptureMode.Window);
+
+             if (useRegionInput)
+             {
+                 args.Add($"-video_size {options.Region.Width}x{options.Region.Height}");
+                 args.Add($"-i :0.0+{options.Region.X},{options.Region.Y}");
+             }
+             else
+             {
+                 args.Add("-i :0.0");
+             }
+
+             args.Add(settings.ShowCursor ? "-draw_mouse 1" : "-draw_mouse 0");
         }
 
-        // Video codec settings
+        // === Audio input (input 1) — must come right after video input, before codec/output args ===
+        if (hasAudio)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                if (settings.CaptureSystemAudio)
+                {
+                    args.Add("-f dshow");
+                    args.Add("-i audio=\"Stereo Mix\"");
+                    DebugHelper.WriteLine("FFmpeg: Capturing system audio via Stereo Mix (dshow)");
+                    DebugHelper.WriteLine("  Note: Requires 'Stereo Mix' to be enabled in Windows Sound settings");
+                }
+                else if (settings.CaptureMicrophone)
+                {
+                    args.Add("-f dshow");
+                    if (!string.IsNullOrEmpty(settings.MicrophoneDeviceId))
+                    {
+                        args.Add($"-i audio=\"{settings.MicrophoneDeviceId}\"");
+                    }
+                    else
+                    {
+                        args.Add("-i audio=\"@device_cm_{33D9A762-90C8-11D0-BD43-00A0C911CE86}\\wave_{00000000-0000-0000-0000-000000000000}\"");
+                    }
+                    DebugHelper.WriteLine("FFmpeg: Capturing microphone audio via dshow");
+                }
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                args.Add("-f pulse");
+                if (settings.CaptureSystemAudio)
+                {
+                    // System audio requires a PulseAudio monitor source, not the default input
+                    args.Add("-i default.monitor");
+                    DebugHelper.WriteLine("FFmpeg: Capturing system audio via PulseAudio monitor (Linux)");
+                }
+                else if (settings.CaptureMicrophone)
+                {
+                    args.Add(!string.IsNullOrEmpty(settings.MicrophoneDeviceId)
+                        ? $"-i {settings.MicrophoneDeviceId}"
+                        : "-i default");
+                    DebugHelper.WriteLine("FFmpeg: Capturing microphone via PulseAudio (Linux)");
+                }
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                args.Add("-f avfoundation");
+                args.Add("-i \":0\""); // Default audio device
+                DebugHelper.WriteLine("FFmpeg: Capturing audio via avfoundation (macOS)");
+            }
+        }
+
+        // === Stream mapping — required when there are multiple inputs ===
+        if (hasAudio)
+        {
+            args.Add("-map 0:v");
+            args.Add("-map 1:a");
+        }
+
+        // === Video codec settings ===
         switch (settings.Codec)
         {
             case VideoCodec.H264:
@@ -354,87 +425,11 @@ public class FFmpegRecordingService : IRecordingService
                 break;
         }
 
-        // Stage 6: Audio capture support
-        if (settings.CaptureSystemAudio || settings.CaptureMicrophone)
+        // === Audio codec settings ===
+        if (hasAudio)
         {
-            if (OperatingSystem.IsWindows())
-            {
-                // Windows audio capture via dshow (DirectShow)
-                if (settings.CaptureSystemAudio)
-                {
-                    // WASAPI loopback for system audio (Windows Vista+)
-                    // Note: This captures the default audio output device
-                    args.Add("-f dshow");
-                    args.Add("-i audio=\"Stereo Mix\"");
-                    args.Add("-c:a aac");
-                    args.Add("-b:a 192k");
-
-                    DebugHelper.WriteLine("FFmpeg: Capturing system audio via Stereo Mix (dshow)");
-                    DebugHelper.WriteLine("  Note: Requires 'Stereo Mix' to be enabled in Windows Sound settings");
-                }
-                else if (settings.CaptureMicrophone)
-                {
-                    // Microphone capture
-                    if (!string.IsNullOrEmpty(settings.MicrophoneDeviceId))
-                    {
-                        args.Add("-f dshow");
-                        args.Add($"-i audio=\"{settings.MicrophoneDeviceId}\"");
-                    }
-                    else
-                    {
-                        // Use default microphone
-                        args.Add("-f dshow");
-                        args.Add("-i audio=\"@device_cm_{33D9A762-90C8-11D0-BD43-00A0C911CE86}\\wave_{00000000-0000-0000-0000-000000000000}\"");
-                    }
-                    args.Add("-c:a aac");
-                    args.Add("-b:a 192k");
-
-                    DebugHelper.WriteLine("FFmpeg: Capturing microphone audio via dshow");
-                }
-
-                // TODO: Mix both system audio and microphone requires filter_complex
-                // For Stage 6 MVP, we support one audio source at a time
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-                // Linux audio capture via PulseAudio or ALSA
-                if (settings.CaptureSystemAudio)
-                {
-                    // PulseAudio loopback monitor
-                    args.Add("-f pulse");
-                    args.Add("-i default");
-                    args.Add("-c:a aac");
-                    args.Add("-b:a 192k");
-
-                    DebugHelper.WriteLine("FFmpeg: Capturing system audio via PulseAudio (Linux)");
-                }
-                else if (settings.CaptureMicrophone)
-                {
-                    // PulseAudio microphone
-                    args.Add("-f pulse");
-                    args.Add(!string.IsNullOrEmpty(settings.MicrophoneDeviceId)
-                        ? $"-i {settings.MicrophoneDeviceId}"
-                        : "-i default");
-                    args.Add("-c:a aac");
-                    args.Add("-b:a 192k");
-
-                    DebugHelper.WriteLine("FFmpeg: Capturing microphone via PulseAudio (Linux)");
-                }
-            }
-            else if (OperatingSystem.IsMacOS())
-            {
-                // macOS audio capture via avfoundation
-                if (settings.CaptureSystemAudio || settings.CaptureMicrophone)
-                {
-                    // avfoundation for audio on macOS
-                    args.Add("-f avfoundation");
-                    args.Add("-i \":0\""); // Default audio device
-                    args.Add("-c:a aac");
-                    args.Add("-b:a 192k");
-
-                    DebugHelper.WriteLine("FFmpeg: Capturing audio via avfoundation (macOS)");
-                }
-            }
+            args.Add("-c:a aac");
+            args.Add("-b:a 192k");
         }
 
         // Output options

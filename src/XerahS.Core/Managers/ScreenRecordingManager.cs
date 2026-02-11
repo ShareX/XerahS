@@ -177,6 +177,14 @@ public class ScreenRecordingManager
         // This ensures factories are set up before we try to create recording services
         await EnsureRecordingInitialized();
 
+        // Verify recording services are available after initialization
+        if (ScreenRecorderService.NativeRecordingServiceFactory == null &&
+            ScreenRecorderService.FallbackServiceFactory == null)
+        {
+            throw new InvalidOperationException(
+                "Screen recording is not available. On Linux Wayland, ensure xdg-desktop-portal with ScreenCast support and PipeWire are installed and running.");
+        }
+
         if (string.IsNullOrEmpty(options.OutputPath))
         {
             string screenCapturesFolder = SettingsManager.ScreencastsFolder;
@@ -421,15 +429,40 @@ public class ScreenRecordingManager
         {
             var settings = options.Settings;
 
+            // Detect Wayland - FFmpeg x11grab doesn't work on Wayland
+            bool isWayland = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE")?.Equals("wayland", StringComparison.OrdinalIgnoreCase) == true;
+            bool hasNativeFactory = ScreenRecorderService.NativeRecordingServiceFactory != null;
+
+            DebugHelper.WriteLine($"ShouldForceFallback: isWayland={isWayland}, hasNativeFactory={hasNativeFactory}, UseModernCapture={options.UseModernCapture}");
+
             // Check UseModernCapture override: if false, force FFmpeg fallback
+            // BUT on Wayland, FFmpeg x11grab doesn't work, so prefer native recording if available
             if (!options.UseModernCapture)
             {
+                if (isWayland && hasNativeFactory)
+                {
+                    TroubleshootingHelper.Log("ScreenRecorder", "NATIVE", "UseModernCapture is disabled but on Wayland with portal available -> using native (x11grab won't work)");
+                    return false; // Use native on Wayland even if UseModernCapture is false
+                }
+
+                if (isWayland && !hasNativeFactory)
+                {
+                    DebugHelper.WriteLine("WARNING: On Wayland but NativeRecordingServiceFactory is null - portal recording not initialized!");
+                }
+
                 TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "UseModernCapture is disabled -> forcing FFmpeg fallback");
                 return true;
             }
 
             if (settings?.ForceFFmpeg == true)
             {
+                // On Wayland, warn that ForceFFmpeg won't work and fall back to native if available
+                if (isWayland && ScreenRecorderService.NativeRecordingServiceFactory != null)
+                {
+                    TroubleshootingHelper.Log("ScreenRecorder", "NATIVE", "ForceFFmpeg requested but on Wayland -> using native (x11grab won't work)");
+                    return false;
+                }
+
                 TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "ForceFFmpeg setting is enabled -> using FFmpeg");
                 return true;
             }
@@ -437,6 +470,12 @@ public class ScreenRecordingManager
             // Audio capture currently routes through FFmpeg fallback
             if (settings is not null && (settings.CaptureSystemAudio || settings.CaptureMicrophone))
             {
+                if (isWayland && ScreenRecorderService.NativeRecordingServiceFactory != null)
+                {
+                    TroubleshootingHelper.Log("ScreenRecorder", "NATIVE", "Audio capture requested on Wayland -> using native portal backend");
+                    return false;
+                }
+
                 TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "Audio capture requested -> using FFmpeg");
                 return true;
             }
@@ -495,7 +534,7 @@ public class ScreenRecordingManager
         DebugHelper.WriteException(e.Error, $"ScreenRecordingManager: Recording error (Fatal={e.IsFatal})");
         ErrorOccurred?.Invoke(this, e);
 
-        // Clean up on fatal error
+        // Clean up on fatal error and unblock the waiting WorkerTask
         if (e.IsFatal)
         {
             lock (_lock)
@@ -508,6 +547,8 @@ public class ScreenRecordingManager
                 _currentRecording = null;
                 _currentOptions = null;
             }
+
+            SignalStop();
         }
     }
 
@@ -954,8 +995,9 @@ public class ScreenRecordingManager
         }
         catch (Exception ex)
         {
-            // Initialization failed, but we can still continue with fallback
+            // Initialization failed - re-throw so caller knows recording won't work
             DebugHelper.WriteException(ex, "ScreenRecordingManager: Error waiting for recording initialization");
+            throw;
         }
     }
 }

@@ -30,6 +30,7 @@ errors.md
 # Local packaging output
 dist/
 .claude/
+.SRCINFO
 artifacts/
 *.deb
 *.gz

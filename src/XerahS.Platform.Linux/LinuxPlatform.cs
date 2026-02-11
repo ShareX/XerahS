@@ -92,21 +92,43 @@ namespace XerahS.Platform.Linux
         /// </summary>
         public static void InitializeRecording()
         {
+            DebugHelper.WriteLine("LinuxPlatform.InitializeRecording() called");
             try
             {
                 bool isWayland = LinuxScreenCaptureService.IsWayland;
-                bool hasScreenCastPortal = isWayland && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.ScreenCast");
+                DebugHelper.WriteLine($"LinuxPlatform: isWayland={isWayland}");
+
+                bool hasScreenCastPortal = false;
+                if (isWayland)
+                {
+                    hasScreenCastPortal = PortalInterfaceChecker.HasInterface("org.freedesktop.portal.ScreenCast");
+                    DebugHelper.WriteLine($"LinuxPlatform: hasScreenCastPortal={hasScreenCastPortal}");
+                }
 
                 if (hasScreenCastPortal)
                 {
                     DebugHelper.WriteLine("Linux: ScreenCast portal detected. Using Wayland portal recording.");
                     ScreenRecorderService.NativeRecordingServiceFactory = () => new WaylandPortalRecordingService();
+                    DebugHelper.WriteLine($"LinuxPlatform: NativeRecordingServiceFactory set = {ScreenRecorderService.NativeRecordingServiceFactory != null}");
                 }
                 else
                 {
-                    DebugHelper.WriteLine("Linux: ScreenCast portal not available. Using FFmpeg backend.");
+                    DebugHelper.WriteLine("Linux: ScreenCast portal NOT detected.");
+                    if (isWayland)
+                    {
+                        DebugHelper.WriteLine("WARNING: On Wayland without ScreenCast portal, screen recording may not work properly.");
+                        DebugHelper.WriteLine("  - Install xdg-desktop-portal with ScreenCast support for your desktop environment");
+                        DebugHelper.WriteLine("  - Ensure PipeWire is running");
+                        DebugHelper.WriteLine("  - Common portal backends: xdg-desktop-portal-gnome, xdg-desktop-portal-kde, xdg-desktop-portal-wlr, xdg-desktop-portal-hyprland");
+                    }
+                    else
+                    {
+                        DebugHelper.WriteLine("Linux X11: Using FFmpeg x11grab backend.");
+                    }
                 }
 
+                // FFmpeg fallback only works reliably on X11
+                // On Wayland without portal, this will likely fail
                 ScreenRecorderService.FallbackServiceFactory = () => new FFmpegRecordingService();
 
                 DebugHelper.WriteLine("Linux: Screen recording initialized successfully");

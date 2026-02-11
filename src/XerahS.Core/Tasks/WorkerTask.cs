@@ -513,7 +513,6 @@ namespace XerahS.Core.Tasks
                             Info.Metadata.Image = null;
                         }
 
-                        // Show region selector and get user selection
                         var regionCaptureOptions = new CaptureOptions
                         {
                             UseModernCapture = Info.TaskSettings.CaptureSettings.UseModernCapture,
@@ -521,7 +520,32 @@ namespace XerahS.Core.Tasks
                             WorkflowId = Info.TaskSettings.WorkflowId
                         };
 
-                        SKRectI selection = await PlatformServices.ScreenCapture.SelectRegionAsync(regionCaptureOptions);
+                        SKRectI selection;
+                        bool isLinuxWayland = OperatingSystem.IsLinux() &&
+                            Environment.GetEnvironmentVariable("XDG_SESSION_TYPE")?.Equals("wayland", StringComparison.OrdinalIgnoreCase) == true;
+
+                        if (isLinuxWayland)
+                        {
+                            TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "Linux Wayland: Trying slurp for region selection");
+                            var slurpResult = await SelectRegionWithSlurpAsync();
+                            selection = slurpResult.Region;
+
+                            if (slurpResult.WasCancelled)
+                            {
+                                TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "Linux Wayland: slurp cancelled by user");
+                            }
+                            // Keep compatibility across DE/WM setups where slurp is missing or unavailable.
+                            else if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
+                            {
+                                TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "WORKER_TASK", "Linux Wayland: slurp unavailable/failed, falling back to in-app region selector");
+                                selection = await PlatformServices.ScreenCapture.SelectRegionAsync(regionCaptureOptions);
+                            }
+                        }
+                        else
+                        {
+                            // Show region selector and get user selection (Windows/macOS/X11)
+                            selection = await PlatformServices.ScreenCapture.SelectRegionAsync(regionCaptureOptions);
+                        }
 
                         if (selection.IsEmpty || selection.Width <= 0 || selection.Height <= 0)
                         {
@@ -797,6 +821,75 @@ namespace XerahS.Core.Tasks
                 _cancellationTokenSource.Cancel();
             }
         }
+
+        #region Recording Handlers (Stage 5)
+
+        /// <summary>
+        /// Select a region using slurp (Linux Wayland native tool).
+        /// Returns the selected region, or empty if cancelled/failed.
+        /// </summary>
+        private static async Task<(SKRectI Region, bool WasCancelled)> SelectRegionWithSlurpAsync()
+        {
+            try
+            {
+                var slurpStartInfo = new ProcessStartInfo
+                {
+                    FileName = "slurp",
+                    Arguments = "-f \"%x %y %w %h\"",  // Output format: x y width height
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using var slurpProcess = Process.Start(slurpStartInfo);
+                if (slurpProcess == null)
+                {
+                    DebugHelper.WriteLine("WorkerTask: Failed to start slurp process");
+                    return (SKRectI.Empty, false);
+                }
+
+                var completed = await Task.Run(() => slurpProcess.WaitForExit(60000));
+                if (!completed)
+                {
+                    try { slurpProcess.Kill(); } catch { }
+                    DebugHelper.WriteLine("WorkerTask: slurp timed out");
+                    return (SKRectI.Empty, false);
+                }
+
+                if (slurpProcess.ExitCode != 0)
+                {
+                    // Exit code 1 typically means user cancelled (pressed Escape)
+                    DebugHelper.WriteLine($"WorkerTask: slurp exited with code {slurpProcess.ExitCode} (likely cancelled)");
+                    return (SKRectI.Empty, slurpProcess.ExitCode == 1);
+                }
+
+                string output = (await slurpProcess.StandardOutput.ReadToEndAsync()).Trim();
+                DebugHelper.WriteLine($"WorkerTask: slurp output: '{output}'");
+
+                // Parse "x y w h" format
+                var parts = output.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 4 &&
+                    int.TryParse(parts[0], out int x) &&
+                    int.TryParse(parts[1], out int y) &&
+                    int.TryParse(parts[2], out int w) &&
+                    int.TryParse(parts[3], out int h))
+                {
+                    DebugHelper.WriteLine($"WorkerTask: slurp region selected: x={x}, y={y}, w={w}, h={h}");
+                    return (new SKRectI(x, y, x + w, y + h), false);
+                }
+
+                DebugHelper.WriteLine($"WorkerTask: Failed to parse slurp output: '{output}'");
+                return (SKRectI.Empty, false);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"WorkerTask: slurp exception: {ex.Message}");
+                return (SKRectI.Empty, false);
+            }
+        }
+
+        #endregion
 
         protected virtual void OnStatusChanged()
         {

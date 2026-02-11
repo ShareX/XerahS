@@ -53,7 +53,18 @@ namespace XerahS.Platform.Linux
 
         public Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
         {
-            // This method should only be called from the UI layer wrapper
+            // Coordinate-only region selection (used by recording).
+            // On Wayland we prefer native selector tools; on X11 the UI overlay remains the primary path.
+            if (IsWayland)
+            {
+                if (IsSlurpAvailable())
+                {
+                    return SelectRegionWithSlurpAsync();
+                }
+
+                DebugHelper.WriteLine("LinuxScreenCaptureService: SelectRegionAsync requested on Wayland but slurp is not available.");
+            }
+
             return Task.FromResult(SKRectI.Empty);
         }
 
@@ -109,53 +120,43 @@ namespace XerahS.Platform.Linux
                 // On Wayland, try XDG Portal first - it's the standard cross-DE method
                 DebugHelper.WriteLine("LinuxScreenCaptureService: Trying XDG Portal for interactive region capture");
                 var (portalResult, portalResponse) = await CaptureWithPortalDetailedAsync(forceInteractive: true).ConfigureAwait(false);
-                result = portalResult;
-                if (result != null)
+                if (portalResult != null)
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with XDG Portal");
-                    return result;
+                    return portalResult;
                 }
 
+                // If user explicitly cancelled (pressed Escape), don't try fallback tools
                 if (portalResponse == PortalResponseCancelled)
                 {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: XDG Portal region capture cancelled by user. Skipping tool fallback.");
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region capture cancelled by user");
                     return null;
                 }
+
+                // Portal failed (not cancelled) - try ONE fallback method based on desktop environment
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Portal failed, trying single fallback method");
+
+                // For wlroots-based compositors (Hyprland, Sway), try grim+slurp
+                if (currentDesktop == "HYPRLAND" || currentDesktop == "SWAY")
+                {
+                    result = await CaptureWithGrimSlurpAsync();
+                    if (result != null)
+                    {
+                        DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with grim+slurp");
+                        return result;
+                    }
+                }
+
+                // If fallback also failed - return null, don't capture fullscreen
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Region capture failed");
+                return null;
             }
 
-            // Try DE-native tools first based on detected desktop
+            // X11 path: Try DE-native tools first based on detected desktop
             result = await TryCaptureWithDesktopNativeToolAsync(currentDesktop);
             if (result != null)
             {
                 return result;
-            }
-
-            // On Wayland (especially wlroots-based like Hyprland, Sway), try grim+slurp
-            if (IsWayland)
-            {
-                // grim + slurp (works on all wlroots compositors: Hyprland, Sway, River, etc.)
-                result = await CaptureWithGrimSlurpAsync();
-                if (result != null)
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with grim+slurp");
-                    return result;
-                }
-
-                // grimblast (Hyprland convenience wrapper)
-                result = await CaptureWithGrimblastRegionAsync();
-                if (result != null)
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with grimblast");
-                    return result;
-                }
-
-                // hyprshot (alternative Hyprland tool)
-                result = await CaptureWithHyprshotRegionAsync();
-                if (result != null)
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with hyprshot");
-                    return result;
-                }
             }
 
             // Try remaining generic tools that weren't already tried
@@ -165,8 +166,10 @@ namespace XerahS.Platform.Linux
                 return result;
             }
 
-            DebugHelper.WriteLine("LinuxScreenCaptureService: No region capture tool available, falling back to fullscreen");
-            return await CaptureFullScreenAsync(options);
+            // No tool succeeded - return null instead of falling back to fullscreen
+            // If the user wanted fullscreen, they would use the fullscreen capture action
+            DebugHelper.WriteLine("LinuxScreenCaptureService: Region capture cancelled or no tool available");
+            return null;
         }
 
         /// <summary>
@@ -386,7 +389,7 @@ namespace XerahS.Platform.Linux
             if (IsWayland)
             {
                 DebugHelper.WriteLine("LinuxScreenCaptureService: Wayland detected, trying XDG Portal...");
-                var portalResult = await CaptureWithPortalAsync(forceInteractive: false);
+                var (portalResult, _) = await CaptureWithPortalDetailedAsync(forceInteractive: false);
                 if (portalResult != null)
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: XDG Portal capture succeeded.");
@@ -589,14 +592,15 @@ namespace XerahS.Platform.Linux
                     return portalResult;
                 }
 
+                // If user cancelled, don't try fallback tools
                 if (portalResponse == PortalResponseCancelled)
                 {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Portal active-window capture cancelled by user. Skipping tool fallback.");
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Active window capture cancelled by user.");
                     return null;
                 }
 
                 DebugHelper.WriteLine("LinuxScreenCaptureService: Portal capture failed, trying generic tools for window capture...");
-                
+
                 // Fallback to generic tools
                 var result = await CaptureWindowWithGnomeScreenshotAsync();
                 if (result != null) return result;
@@ -729,6 +733,99 @@ namespace XerahS.Platform.Linux
         }
 
         #region Wayland-native capture tools (grim, slurp, grimblast, hyprshot)
+
+        /// <summary>
+        /// Get region selection using slurp (Wayland-native region selector).
+        /// Returns the selected region without capturing a screenshot.
+        /// This is ideal for video recording where we just need coordinates.
+        /// </summary>
+        /// <returns>Selected region, or empty if cancelled/failed</returns>
+        public static async Task<SKRectI> SelectRegionWithSlurpAsync()
+        {
+            try
+            {
+                var slurpStartInfo = new ProcessStartInfo
+                {
+                    FileName = "slurp",
+                    Arguments = "-f \"%x %y %w %h\"",  // Output format: x y width height
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using var slurpProcess = Process.Start(slurpStartInfo);
+                if (slurpProcess == null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Failed to start slurp process");
+                    return SKRectI.Empty;
+                }
+
+                var completed = await Task.Run(() => slurpProcess.WaitForExit(60000));
+                if (!completed)
+                {
+                    try { slurpProcess.Kill(); } catch { }
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: slurp timed out");
+                    return SKRectI.Empty;
+                }
+
+                if (slurpProcess.ExitCode != 0)
+                {
+                    // Exit code 1 typically means user cancelled (pressed Escape)
+                    DebugHelper.WriteLine($"LinuxScreenCaptureService: slurp exited with code {slurpProcess.ExitCode} (likely cancelled)");
+                    return SKRectI.Empty;
+                }
+
+                string output = (await slurpProcess.StandardOutput.ReadToEndAsync()).Trim();
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: slurp output: '{output}'");
+
+                // Parse "x y w h" format
+                var parts = output.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 4 &&
+                    int.TryParse(parts[0], out int x) &&
+                    int.TryParse(parts[1], out int y) &&
+                    int.TryParse(parts[2], out int w) &&
+                    int.TryParse(parts[3], out int h))
+                {
+                    DebugHelper.WriteLine($"LinuxScreenCaptureService: slurp region selected: x={x}, y={y}, w={w}, h={h}");
+                    return new SKRectI(x, y, x + w, y + h);
+                }
+
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: Failed to parse slurp output: '{output}'");
+                return SKRectI.Empty;
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: slurp exception: {ex.Message}");
+                return SKRectI.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Check if slurp is available on the system
+        /// </summary>
+        public static bool IsSlurpAvailable()
+        {
+            try
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "which",
+                    Arguments = "slurp",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
+                };
+                using var process = Process.Start(startInfo);
+                process?.WaitForExit(3000);
+                return process?.ExitCode == 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// Capture region using grimblast (Hyprland's grim+slurp wrapper).
@@ -1044,16 +1141,6 @@ namespace XerahS.Platform.Linux
 
         private const string PortalBusName = "org.freedesktop.portal.Desktop";
         private static readonly ObjectPath PortalObjectPath = new("/org/freedesktop/portal/desktop");
-
-        /// <summary>
-        /// Capture screenshot using XDG Desktop Portal Screenshot API.
-        /// This is the standard way to capture on Wayland and works across desktop environments.
-        /// </summary>
-        private async Task<SKBitmap?> CaptureWithPortalAsync(bool forceInteractive)
-        {
-            var (bitmap, _) = await CaptureWithPortalDetailedAsync(forceInteractive).ConfigureAwait(false);
-            return bitmap;
-        }
 
         private async Task<(SKBitmap? bitmap, uint response)> CaptureWithPortalDetailedAsync(bool forceInteractive)
         {

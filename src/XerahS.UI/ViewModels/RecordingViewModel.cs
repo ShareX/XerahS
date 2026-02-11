@@ -31,6 +31,7 @@ using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Hotkeys;
 using XerahS.Core.Managers;
+using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture.ScreenRecording;
 using HotkeyInfo = XerahS.Platform.Abstractions.HotkeyInfo;
 
@@ -87,6 +88,9 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private string? _outputFilePath;
 
+    [ObservableProperty]
+    private string _linuxRecordingDiagnosticsStatusText = string.Empty;
+
     // Stage 3: Recording settings
     [ObservableProperty]
     private int _fps = 30;
@@ -135,6 +139,8 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
     /// Available bitrate options (in kbps)
     /// </summary>
     public List<int> AvailableBitrates { get; } = new() { 1000, 2000, 4000, 8000, 16000, 32000 };
+
+    public bool IsLinuxPlatform => OperatingSystem.IsLinux();
 
     /// <summary>
     /// Encoder information for display
@@ -414,6 +420,37 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         {
             DebugHelper.WriteException(ex, "Failed to abort recording");
             LastError = ex.Message;
+        }
+    }
+
+    [RelayCommand]
+    private async Task RunLinuxRecordingDiagnosticsAsync()
+    {
+        if (!IsLinuxPlatform)
+        {
+            return;
+        }
+
+        LinuxRecordingDiagnosticsStatusText = "Running Linux recording diagnostics...";
+
+        try
+        {
+            string reportPath = await Task.Run(() =>
+                PlatformServices.Diagnostic.WriteRecordingDiagnostics(PathsManager.PersonalFolder));
+
+            if (!string.IsNullOrWhiteSpace(reportPath))
+            {
+                LinuxRecordingDiagnosticsStatusText = $"Diagnostics report saved: {reportPath}";
+            }
+            else
+            {
+                LinuxRecordingDiagnosticsStatusText = "Diagnostics failed. Unable to write report.";
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "Linux recording diagnostics failed.");
+            LinuxRecordingDiagnosticsStatusText = "Diagnostics failed. Check logs for details.";
         }
     }
 

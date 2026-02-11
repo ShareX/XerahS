@@ -25,15 +25,12 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using Tmds.DBus;
+using System.Diagnostics;
 
 namespace XerahS.Platform.Linux.Services;
 
 internal static class PortalInterfaceChecker
 {
-    private const string PortalBusName = "org.freedesktop.portal.Desktop";
-    private static readonly ObjectPath PortalObjectPath = new("/org/freedesktop/portal/desktop");
     private static readonly ConcurrentDictionary<string, bool> Cache = new(StringComparer.Ordinal);
 
     public static bool HasInterface(string interfaceName)
@@ -50,21 +47,45 @@ internal static class PortalInterfaceChecker
     {
         try
         {
-            using var connection = new Connection(Address.Session);
-            connection.ConnectAsync().GetAwaiter().GetResult();
-            var proxy = connection.CreateProxy<IIntrospectable>(PortalBusName, PortalObjectPath);
-            var xml = proxy.IntrospectAsync().GetAwaiter().GetResult();
-            return xml?.Contains($"interface name=\"{interfaceName}\"", StringComparison.Ordinal) ?? false;
+            XerahS.Common.DebugHelper.WriteLine($"PortalInterfaceChecker: Checking for interface '{interfaceName}'...");
+
+            // Use busctl to check for the interface - more reliable than Tmds.DBus proxy generation
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "busctl",
+                Arguments = "--user introspect org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = Process.Start(startInfo);
+            if (process == null)
+            {
+                XerahS.Common.DebugHelper.WriteLine("PortalInterfaceChecker: Failed to start busctl process");
+                return false;
+            }
+
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit(5000);
+
+            if (process.ExitCode != 0)
+            {
+                XerahS.Common.DebugHelper.WriteLine($"PortalInterfaceChecker: busctl exited with code {process.ExitCode}");
+                return false;
+            }
+
+            // busctl output format: "org.freedesktop.portal.ScreenCast          interface -"
+            bool found = output.Contains(interfaceName, StringComparison.Ordinal);
+            XerahS.Common.DebugHelper.WriteLine($"PortalInterfaceChecker: Interface '{interfaceName}' found={found}");
+
+            return found;
         }
-        catch
+        catch (Exception ex)
         {
+            XerahS.Common.DebugHelper.WriteLine($"PortalInterfaceChecker: Exception checking '{interfaceName}': {ex.Message}");
             return false;
         }
-    }
-
-    [DBusInterface("org.freedesktop.DBus.Introspectable")]
-    private interface IIntrospectable : IDBusObject
-    {
-        Task<string> IntrospectAsync();
     }
 }

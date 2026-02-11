@@ -34,5 +34,11 @@ namespace XerahS.Platform.MacOS.Services
             // Not implemented for macOS yet
             return string.Empty;
         }
+
+        public string WriteRecordingDiagnostics(string personalFolder)
+        {
+            // Not implemented for macOS yet
+            return string.Empty;
+        }
     }
 }

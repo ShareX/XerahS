@@ -281,6 +281,7 @@ namespace XerahS.UI.ViewModels
         private bool _isDownloadingFFmpeg;
         private double _ffmpegDownloadProgress;
         private string _expectedFFmpegDownloadUrl = string.Empty;
+        private string _linuxRecordingDiagnosticsStatusText = string.Empty;
 
         public string FFmpegStatusText
         {
@@ -364,6 +365,21 @@ namespace XerahS.UI.ViewModels
 
         public bool ShowExpectedFFmpegDownloadUrl => !string.IsNullOrWhiteSpace(_expectedFFmpegDownloadUrl);
 
+        public bool IsLinuxPlatform => OperatingSystem.IsLinux();
+
+        public string LinuxRecordingDiagnosticsStatusText
+        {
+            get => _linuxRecordingDiagnosticsStatusText;
+            private set
+            {
+                if (_linuxRecordingDiagnosticsStatusText != value)
+                {
+                    _linuxRecordingDiagnosticsStatusText = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         [RelayCommand]
         private async Task OpenFFmpegOptionsAsync()
         {
@@ -445,6 +461,37 @@ namespace XerahS.UI.ViewModels
                 Common.DebugHelper.WriteException(ex, "FFmpeg download failed.");
                 FFmpegStatusText = "FFmpeg download failed.";
                 ExpectedFFmpegDownloadUrl = string.Empty;
+            }
+        }
+
+        [RelayCommand]
+        private async Task RunLinuxRecordingDiagnosticsAsync()
+        {
+            if (!IsLinuxPlatform)
+            {
+                return;
+            }
+
+            LinuxRecordingDiagnosticsStatusText = "Running Linux recording diagnostics...";
+
+            try
+            {
+                string reportPath = await Task.Run(() =>
+                    PlatformServices.Diagnostic.WriteRecordingDiagnostics(Common.PathsManager.PersonalFolder));
+
+                if (!string.IsNullOrWhiteSpace(reportPath))
+                {
+                    LinuxRecordingDiagnosticsStatusText = $"Diagnostics report saved: {reportPath}";
+                }
+                else
+                {
+                    LinuxRecordingDiagnosticsStatusText = "Diagnostics failed. Unable to write report.";
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.DebugHelper.WriteException(ex, "Linux recording diagnostics failed.");
+                LinuxRecordingDiagnosticsStatusText = "Diagnostics failed. Check logs for details.";
             }
         }
 
