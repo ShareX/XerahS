@@ -37,8 +37,8 @@
                     <MenuItem Header="_Open..." Command="{Binding OpenImageCommand}" InputGesture="Ctrl+O"/>
                     <Separator/>
                     <MenuItem Header="_Upload">
-                        <MenuItem Header="Upload _File..." Command="{Binding NavigateCommand}" CommandParameter="Upload_FileUpload"/>
-                        <MenuItem Header="Upload _Content..." Command="{Binding NavigateCommand}" CommandParameter="Upload_ClipboardUploadWithContentViewer"/>
+                        <MenuItem Header="Upload _File..." Click="OnMenuNavigateClick" Tag="Upload_FileUpload"/>
+                        <MenuItem Header="Upload _Content..." Click="OnMenuNavigateClick" Tag="Upload_ClipboardUploadWithContentViewer"/>
                     </MenuItem>
                     <Separator/>
                     <MenuItem Header="_Save" Command="{Binding SaveCommand}" InputGesture="Ctrl+S"/>
@@ -57,8 +57,8 @@
                 
                 <!-- View Menu -->
                 <MenuItem Header="_View">
-                    <MenuItem Header="_Editor" Command="{Binding NavigateCommand}" CommandParameter="Editor"/>
-                    <MenuItem Header="_History" Command="{Binding NavigateCommand}" CommandParameter="History"/>
+                    <MenuItem Header="_Editor" Click="OnMenuNavigateClick" Tag="Editor"/>
+                    <MenuItem Header="_History" Click="OnMenuNavigateClick" Tag="History"/>
                     <Separator/>
                     <MenuItem Header="Zoom _In" Command="{Binding ZoomInCommand}" InputGesture="Ctrl++"/>
                     <MenuItem Header="Zoom _Out" Command="{Binding ZoomOutCommand}" InputGesture="Ctrl+-"/>
@@ -68,55 +68,55 @@
                 
                 <!-- Workflows Menu -->
                 <MenuItem Header="_Workflows" Name="WorkflowsMenuItem">
-                    <MenuItem Header="_Manage Workflows" Command="{Binding NavigateCommand}" CommandParameter="Workflows"/>
+                    <MenuItem Header="_Manage Workflows" Click="OnMenuNavigateClick" Tag="Workflows"/>
                     <Separator/>
                     <MenuItem Header="_Run Workflow" Name="RunWorkflowsMenuItem"/>
                 </MenuItem>
                 
                 <!-- Tools Menu -->
                 <MenuItem Header="_Tools">
-                    <MenuItem Header="_Color Picker..." Command="{Binding NavigateCommand}" CommandParameter="Tools_ColorPicker"/>
-                    <MenuItem Header="Pick From _Screen" Command="{Binding NavigateCommand}" CommandParameter="Tools_ScreenColorPicker"/>
-                    <MenuItem Header="_Ruler" Command="{Binding NavigateCommand}" CommandParameter="Tools_Ruler"/>
+                    <MenuItem Header="_Color Picker..." Click="OnMenuNavigateClick" Tag="Tools_ColorPicker"/>
+                    <MenuItem Header="Pick From _Screen" Click="OnMenuNavigateClick" Tag="Tools_ScreenColorPicker"/>
+                    <MenuItem Header="_Ruler" Click="OnMenuNavigateClick" Tag="Tools_Ruler"/>
                     <Separator/>
                     <MenuItem Header="_QR Code">
-                        <MenuItem Header="_Generator..." Command="{Binding NavigateCommand}" CommandParameter="Tools_QrGenerator"/>
-                        <MenuItem Header="Scan from _Screen" Command="{Binding NavigateCommand}" CommandParameter="Tools_QrScanScreen"/>
-                        <MenuItem Header="Scan from _Region" Command="{Binding NavigateCommand}" CommandParameter="Tools_QrScanRegion"/>
+                        <MenuItem Header="_Generator..." Click="OnMenuNavigateClick" Tag="Tools_QrGenerator"/>
+                        <MenuItem Header="Scan from _Screen" Click="OnMenuNavigateClick" Tag="Tools_QrScanScreen"/>
+                        <MenuItem Header="Scan from _Region" Click="OnMenuNavigateClick" Tag="Tools_QrScanRegion"/>
                     </MenuItem>
                     <MenuItem Header="_Pin to Screen">
-                        <MenuItem Header="From _Screen" Command="{Binding NavigateCommand}" CommandParameter="Tools_PinToScreenFromScreen"/>
-                        <MenuItem Header="From _Clipboard" Command="{Binding NavigateCommand}" CommandParameter="Tools_PinToScreenFromClipboard"/>
-                        <MenuItem Header="From _File" Command="{Binding NavigateCommand}" CommandParameter="Tools_PinToScreenFromFile"/>
-                        <MenuItem Header="Close _All" Command="{Binding NavigateCommand}" CommandParameter="Tools_PinToScreenCloseAll"/>
+                        <MenuItem Header="From _Screen" Click="OnMenuNavigateClick" Tag="Tools_PinToScreenFromScreen"/>
+                        <MenuItem Header="From _Clipboard" Click="OnMenuNavigateClick" Tag="Tools_PinToScreenFromClipboard"/>
+                        <MenuItem Header="From _File" Click="OnMenuNavigateClick" Tag="Tools_PinToScreenFromFile"/>
+                        <MenuItem Header="Close _All" Click="OnMenuNavigateClick" Tag="Tools_PinToScreenCloseAll"/>
                     </MenuItem>
                     <Separator/>
-                    <MenuItem Header="_OCR" Command="{Binding NavigateCommand}" CommandParameter="Tools_OCR"/>
-                    <MenuItem Header="_Hash Checker..." Command="{Binding NavigateCommand}" CommandParameter="Tools_HashCheck"/>
-                    <MenuItem Header="_Index Folder..." Command="{Binding NavigateCommand}" CommandParameter="Tools_IndexFolder"/>
+                    <MenuItem Header="_OCR" Click="OnMenuNavigateClick" Tag="Tools_OCR"/>
+                    <MenuItem Header="_Hash Checker..." Click="OnMenuNavigateClick" Tag="Tools_HashCheck"/>
+                    <MenuItem Header="_Index Folder..." Click="OnMenuNavigateClick" Tag="Tools_IndexFolder"/>
                     <Separator/>
-                    <MenuItem Header="_Image Combiner..." Command="{Binding NavigateCommand}" CommandParameter="Tools_ImageCombiner"/>
-                    <MenuItem Header="Image _Splitter..." Command="{Binding NavigateCommand}" CommandParameter="Tools_ImageSplitter"/>
-                    <MenuItem Header="Image _Thumbnailer..." Command="{Binding NavigateCommand}" CommandParameter="Tools_ImageThumbnailer"/>
-                    <MenuItem Header="_Analyze Image..." Command="{Binding NavigateCommand}" CommandParameter="Tools_AnalyzeImage"/>
+                    <MenuItem Header="_Image Combiner..." Click="OnMenuNavigateClick" Tag="Tools_ImageCombiner"/>
+                    <MenuItem Header="Image _Splitter..." Click="OnMenuNavigateClick" Tag="Tools_ImageSplitter"/>
+                    <MenuItem Header="Image _Thumbnailer..." Click="OnMenuNavigateClick" Tag="Tools_ImageThumbnailer"/>
+                    <MenuItem Header="_Analyze Image..." Click="OnMenuNavigateClick" Tag="Tools_AnalyzeImage"/>
                     <Separator/>
-                    <MenuItem Header="_Video Converter..." Command="{Binding NavigateCommand}" CommandParameter="Tools_VideoConverter"/>
-                    <MenuItem Header="Video Thumb_nailer..." Command="{Binding NavigateCommand}" CommandParameter="Tools_VideoThumbnailer"/>
+                    <MenuItem Header="_Video Converter..." Click="OnMenuNavigateClick" Tag="Tools_VideoConverter"/>
+                    <MenuItem Header="Video Thumb_nailer..." Click="OnMenuNavigateClick" Tag="Tools_VideoThumbnailer"/>
                     <Separator/>
-                    <MenuItem Header="Clipboard _Viewer" Command="{Binding NavigateCommand}" CommandParameter="Tools_ClipboardViewer"/>
-                    <MenuItem Header="_Monitor Test" Command="{Binding NavigateCommand}" CommandParameter="Tools_MonitorTest"/>
+                    <MenuItem Header="Clipboard _Viewer" Click="OnMenuNavigateClick" Tag="Tools_ClipboardViewer"/>
+                    <MenuItem Header="_Monitor Test" Click="OnMenuNavigateClick" Tag="Tools_MonitorTest"/>
                 </MenuItem>
                 
                 <!-- Settings Menu -->
                 <MenuItem Header="_Settings">
-                    <MenuItem Header="_Application Settings" Command="{Binding NavigateCommand}" CommandParameter="Settings_App"/>
-                    <MenuItem Header="_Destination Settings" Command="{Binding NavigateCommand}" CommandParameter="Settings_Dest"/>
+                    <MenuItem Header="_Application Settings" Click="OnMenuNavigateClick" Tag="Settings_App"/>
+                    <MenuItem Header="_Destination Settings" Click="OnMenuNavigateClick" Tag="Settings_Dest"/>
                 </MenuItem>
                 
                 <!-- Help Menu -->
                 <MenuItem Header="_Help">
-                    <MenuItem Header="_About" Command="{Binding NavigateCommand}" CommandParameter="About"/>
-                    <MenuItem Header="_Debug" Command="{Binding NavigateCommand}" CommandParameter="Debug"/>
+                    <MenuItem Header="_About" Click="OnMenuNavigateClick" Tag="About"/>
+                    <MenuItem Header="_Debug" Click="OnMenuNavigateClick" Tag="Debug"/>
                 </MenuItem>
             </Menu>
         </Border>

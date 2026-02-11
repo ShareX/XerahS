@@ -85,6 +85,22 @@ namespace XerahS.UI.Views
             Close();
         }
 
+        private void OnMenuNavigateClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuItem menuItem)
+            {
+                return;
+            }
+
+            var navTag = menuItem.Tag?.ToString();
+            if (string.IsNullOrWhiteSpace(navTag))
+            {
+                return;
+            }
+
+            NavigateTo(navTag);
+        }
+
         /// <summary>
         /// Loads user-configured workflows from SettingsManager into UserWorkflows collection.
         /// </summary>
