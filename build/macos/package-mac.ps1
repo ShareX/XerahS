@@ -143,7 +143,7 @@ foreach ($arch in $archs) {
 
     # Publish with cross-compilation flag
     # The csproj automatically includes libscreencapturekit_bridge.dylib for osx RIDs
-    dotnet publish $project -c Release -r $rid -p:PublishSingleFile=false --self-contained true -p:nodeReuse=false -p:SkipBundlePlugins=true -p:CrossCompile=true
+    dotnet publish $project -c Release -r $rid -p:PublishSingleFile=false --self-contained true -p:nodeReuse=false -p:SkipBundlePlugins=true
     if ($LASTEXITCODE -ne 0) {
         throw "dotnet publish failed for $rid with exit code $LASTEXITCODE."
     }
