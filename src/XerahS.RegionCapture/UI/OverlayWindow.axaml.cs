@@ -30,10 +30,11 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
-using XerahS.Editor;
-using XerahS.Editor.Annotations;
-using XerahS.Editor.Views.Controls;
+using ShareX.ImageEditor;
+using ShareX.ImageEditor.Annotations;
+using XerahS.RegionCapture.UI.Controls;
 using SkiaSharp;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using XerahS.RegionCapture.Models;
 using XerahS.RegionCapture.Services;
@@ -52,6 +53,8 @@ namespace XerahS.RegionCapture.UI;
 /// </summary>
 public partial class OverlayWindow : Window
 {
+    private static readonly long SelectionDragRebuildIntervalTicks = Math.Max(1, Stopwatch.Frequency / 30);
+
     private readonly MonitorInfo _monitor;
     private readonly TaskCompletionSource<RegionSelectionResult?> _completionSource;
     private readonly RegionCaptureControl _captureControl;
@@ -63,6 +66,10 @@ public partial class OverlayWindow : Window
     private Control? _currentShape;
     private bool _isDrawing;
     private Annotation? _currentAnnotation;
+    private bool _rebuildScheduled;
+    private bool _rebuildPending;
+    private long _lastRebuildTicks;
+    private bool _selectionInteractionActive;
 
     // CTRL modifier state for toggling between drawing and region selection
     private bool _ctrlPressed;
@@ -160,7 +167,10 @@ public partial class OverlayWindow : Window
     {
         if (e.PropertyName == nameof(RegionCaptureAnnotationViewModel.ActiveTool))
         {
-            UpdateAnnotationCanvasHitTesting();
+            if (UpdateAnnotationCanvasHitTesting())
+            {
+                _captureControl.InvalidateVisual();
+            }
         }
     }
 
@@ -170,20 +180,31 @@ public partial class OverlayWindow : Window
     /// Drawing tools + CTRL: hit testing OFF (CTRL allows region selection)
     /// Drawing tools (no CTRL): hit testing ON (canvas handles drawing)
     /// </summary>
-    private void UpdateAnnotationCanvasHitTesting()
+    private bool UpdateAnnotationCanvasHitTesting()
     {
-        if (_annotationCanvas == null) return;
+        if (_annotationCanvas == null) return false;
 
         // Annotation mode is active when:
-        // 1. A drawing tool is selected (not Select)
-        // 2. CTRL is NOT pressed (CTRL allows region selection even with drawing tool)
-        bool isAnnotationMode = _viewModel.ActiveTool != EditorTool.Select && !_ctrlPressed;
+        // 1. CTRL is NOT pressed (CTRL always allows region selection)
+        // 2. Either a drawing tool is active, or Select is active with existing annotations
+        //    so users can select/move/resize previously drawn annotations.
+        bool hasAnnotations = _viewModel.EditorCore.Annotations.Count > 0;
+        bool isAnnotationMode = !_ctrlPressed &&
+                                (_viewModel.ActiveTool != EditorTool.Select || hasAnnotations);
 
-        _annotationCanvas.IsHitTestVisible = isAnnotationMode;
+        if (_annotationCanvas.IsHitTestVisible != isAnnotationMode)
+        {
+            _annotationCanvas.IsHitTestVisible = isAnnotationMode;
+        }
 
         // Update the capture control's mode indicator
-        _captureControl.IsAnnotationMode = isAnnotationMode;
-        _captureControl.InvalidateVisual();
+        if (_captureControl.IsAnnotationMode != isAnnotationMode)
+        {
+            _captureControl.IsAnnotationMode = isAnnotationMode;
+            return true;
+        }
+
+        return false;
     }
 
     private void InitializeComponent()
@@ -210,7 +231,10 @@ public partial class OverlayWindow : Window
         if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
         {
             _ctrlPressed = true;
-            UpdateAnnotationCanvasHitTesting();
+            if (UpdateAnnotationCanvasHitTesting())
+            {
+                _captureControl.InvalidateVisual();
+            }
         }
 
         if (e.Key == Key.Escape)
@@ -241,8 +265,8 @@ public partial class OverlayWindow : Window
                 case Key.A: _viewModel.SelectToolCommand.Execute(EditorTool.Arrow); e.Handled = true; break;
                 case Key.L: _viewModel.SelectToolCommand.Execute(EditorTool.Line); e.Handled = true; break;
                 case Key.T: _viewModel.SelectToolCommand.Execute(EditorTool.Text); e.Handled = true; break;
-                case Key.H: _viewModel.SelectToolCommand.Execute(EditorTool.Highlighter); e.Handled = true; break;
-                case Key.P: _viewModel.SelectToolCommand.Execute(EditorTool.Pen); e.Handled = true; break;
+                case Key.H: _viewModel.SelectToolCommand.Execute(EditorTool.Highlight); e.Handled = true; break;
+                case Key.P: _viewModel.SelectToolCommand.Execute(EditorTool.Freehand); e.Handled = true; break;
                 case Key.B: _viewModel.SelectToolCommand.Execute(EditorTool.Blur); e.Handled = true; break;
             }
         }
@@ -269,7 +293,10 @@ public partial class OverlayWindow : Window
         if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
         {
             _ctrlPressed = false;
-            UpdateAnnotationCanvasHitTesting();
+            if (UpdateAnnotationCanvasHitTesting())
+            {
+                _captureControl.InvalidateVisual();
+            }
         }
     }
 
@@ -295,18 +322,31 @@ public partial class OverlayWindow : Window
         // Right-click: delete annotation under cursor
         if (props.IsRightButtonPressed)
         {
+            int annotationCountBeforeDelete = _viewModel.EditorCore.Annotations.Count;
             _viewModel.EditorCore.OnPointerPressed(skPoint, isRightButton: true);
-            _viewModel.HasAnnotations = _viewModel.EditorCore.Annotations.Count > 0;
-            _captureControl.HasAnnotations = _viewModel.HasAnnotations;
-            RebuildAnnotationCanvas();
+            _selectionInteractionActive = false;
+            SyncAnnotationState();
+            if (_viewModel.EditorCore.Annotations.Count != annotationCountBeforeDelete)
+            {
+                RebuildAnnotationCanvas();
+            }
             return;
         }
 
         if (!props.IsLeftButtonPressed) return;
 
-        // Only handle drawing for non-Select tools
+        // Select tool still routes to EditorCore so existing annotations can be selected/moved/resized.
         if (_viewModel.ActiveTool == EditorTool.Select)
         {
+            var selectedBefore = _viewModel.EditorCore.SelectedAnnotation;
+            _viewModel.EditorCore.OnPointerPressed(skPoint);
+            _selectionInteractionActive = true;
+            SyncAnnotationState();
+            if (!ReferenceEquals(selectedBefore, _viewModel.EditorCore.SelectedAnnotation))
+            {
+                RebuildAnnotationCanvas();
+            }
+            e.Pointer.Capture(_annotationCanvas);
             return;
         }
 
@@ -318,6 +358,7 @@ public partial class OverlayWindow : Window
         }
         _currentAnnotation = null;
         _isDrawing = false;
+        _selectionInteractionActive = false;
 
         // Delegate to EditorCore for annotation creation and initialization.
         int countBefore = _viewModel.EditorCore.Annotations.Count;
@@ -401,6 +442,7 @@ public partial class OverlayWindow : Window
 
         var endPoint = e.GetPosition(_annotationCanvas);
         var skPoint = new SKPoint((float)endPoint.X, (float)endPoint.Y);
+        _selectionInteractionActive = false;
 
         if (e.Pointer.Captured == _annotationCanvas)
         {
@@ -417,10 +459,6 @@ public partial class OverlayWindow : Window
             _currentShape = null;
         }
         _isDrawing = false;
-
-        _viewModel.HasAnnotations = _viewModel.EditorCore.Annotations.Count > 0;
-        _captureControl.HasAnnotations = _viewModel.HasAnnotations;
-        _captureControl.InvalidateVisual();
         _currentAnnotation = null;
 
         // Rebuild canvas with finalized annotations (effects rendered, etc.)
@@ -429,6 +467,8 @@ public partial class OverlayWindow : Window
         {
             RebuildAnnotationCanvas();
         }
+
+        SyncAnnotationState();
     }
 
     /// <summary>
@@ -820,16 +860,53 @@ public partial class OverlayWindow : Window
 
     private void OnInvalidateRequested()
     {
-        Dispatcher.UIThread.Post(() =>
+        // During active drawing we already update a lightweight preview shape in pointer handlers.
+        // Rebuilding every annotation control on each move causes visible lag.
+        if (_isDrawing && _currentShape != null)
         {
-            RebuildAnnotationCanvas();
-            InvalidateVisual();
-        });
+            return;
+        }
+
+        if (_selectionInteractionActive && ShouldThrottleSelectionRebuild())
+        {
+            return;
+        }
+
+        _rebuildPending = true;
+        if (_rebuildScheduled)
+        {
+            return;
+        }
+
+        _rebuildScheduled = true;
+        Dispatcher.UIThread.Post(ProcessPendingRebuild, DispatcherPriority.Background);
     }
 
     private void OnAnnotationsRestored()
     {
-        Dispatcher.UIThread.Post(RebuildAnnotationCanvas);
+        Dispatcher.UIThread.Post(() =>
+        {
+            RebuildAnnotationCanvas();
+            SyncAnnotationState();
+        });
+    }
+
+    private void ProcessPendingRebuild()
+    {
+        if (_rebuildPending)
+        {
+            _rebuildPending = false;
+            RebuildAnnotationCanvas();
+            SyncAnnotationState();
+            InvalidateVisual();
+        }
+
+        _rebuildScheduled = false;
+        if (_rebuildPending)
+        {
+            _rebuildScheduled = true;
+            Dispatcher.UIThread.Post(ProcessPendingRebuild, DispatcherPriority.Background);
+        }
     }
 
     private void RebuildAnnotationCanvas()
@@ -854,6 +931,45 @@ public partial class OverlayWindow : Window
         if (preserveTextBox != null)
         {
             _annotationCanvas.Children.Add(preserveTextBox);
+        }
+
+        _lastRebuildTicks = Stopwatch.GetTimestamp();
+    }
+
+    private bool ShouldThrottleSelectionRebuild()
+    {
+        if (_lastRebuildTicks == 0)
+        {
+            return false;
+        }
+
+        long elapsedTicks = Stopwatch.GetTimestamp() - _lastRebuildTicks;
+        return elapsedTicks < SelectionDragRebuildIntervalTicks;
+    }
+
+    private void SyncAnnotationState()
+    {
+        bool hasAnnotations = _viewModel.EditorCore.Annotations.Count > 0;
+        bool hasSelectedAnnotation = _viewModel.EditorCore.SelectedAnnotation != null;
+
+        _viewModel.HasAnnotations = hasAnnotations;
+        _viewModel.HasSelectedAnnotation = hasSelectedAnnotation;
+
+        bool shouldInvalidateCapture = false;
+        if (_captureControl.HasAnnotations != hasAnnotations)
+        {
+            _captureControl.HasAnnotations = hasAnnotations;
+            shouldInvalidateCapture = true;
+        }
+
+        if (UpdateAnnotationCanvasHitTesting())
+        {
+            shouldInvalidateCapture = true;
+        }
+
+        if (shouldInvalidateCapture)
+        {
+            _captureControl.InvalidateVisual();
         }
     }
 
@@ -923,7 +1039,9 @@ public partial class OverlayWindow : Window
         var bounds = annotation.GetBounds();
 
         // Effect annotations: show EffectBitmap as Avalonia Image if available
-        if (annotation is BaseEffectAnnotation effectAnn && effectAnn.EffectBitmap != null)
+        if (annotation is BaseEffectAnnotation effectAnn &&
+            annotation is not HighlightAnnotation &&
+            effectAnn.EffectBitmap != null)
         {
             var avBitmap = ConvertSKBitmapToAvalonia(effectAnn.EffectBitmap);
             if (avBitmap != null)
@@ -1414,3 +1532,4 @@ internal static class SKColorExtensions
         return Color.FromArgb(color.Alpha, color.Red, color.Green, color.Blue);
     }
 }
+

@@ -39,9 +39,9 @@ using XerahS.Core.Hotkeys;
 using Avalonia; // For Application.Current
 using XerahS.Core.Tasks;
 using XerahS.Core.Managers;
-using XerahS.Editor.Annotations;
-using XerahS.Editor.ViewModels;
-using XerahS.Editor.Views;
+using ShareX.ImageEditor.Annotations;
+using ShareX.ImageEditor.ViewModels;
+using ShareX.ImageEditor.Views;
 using XerahS.UI.Helpers;
 
 namespace XerahS.UI.Views
@@ -78,20 +78,27 @@ namespace XerahS.UI.Views
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
-            if (DataContext is MainViewModel vm)
-            {
-                vm.NavigateRequested += OnNavigateRequested;
-            }
-        }
-
-        private void OnNavigateRequested(object? sender, string tag)
-        {
-            NavigateTo(tag);
         }
 
         private void OnExitClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void OnMenuNavigateClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuItem menuItem)
+            {
+                return;
+            }
+
+            var navTag = menuItem.Tag?.ToString();
+            if (string.IsNullOrWhiteSpace(navTag))
+            {
+                return;
+            }
+
+            NavigateTo(navTag);
         }
 
         /// <summary>
@@ -303,7 +310,6 @@ namespace XerahS.UI.Views
                     if (_editorView == null)
                     {
                         _editorView = new EditorView();
-                        _editorView.ShowMenuBar = false; // Hide internal menu when hosted in MainWindow
                     }
                     contentFrame.Content = _editorView;
                     return true;
@@ -384,7 +390,7 @@ namespace XerahS.UI.Views
                         if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
                             vm.SaveAsCommand.Execute(null);
                         else
-                            vm.QuickSaveCommand.Execute(null);
+                            vm.SaveCommand.Execute(null);
                         e.Handled = true;
                         return;
                 }
@@ -420,7 +426,7 @@ namespace XerahS.UI.Views
                         e.Handled = true;
                         break;
                     case Key.N:
-                        vm.SelectToolCommand.Execute(EditorTool.Number);
+                        vm.SelectToolCommand.Execute(EditorTool.Step);
                         e.Handled = true;
                         break;
                     case Key.S:
@@ -674,3 +680,4 @@ namespace XerahS.UI.Views
         }
     }
 }
+

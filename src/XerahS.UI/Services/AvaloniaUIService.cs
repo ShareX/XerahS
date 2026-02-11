@@ -30,7 +30,7 @@ using XerahS.Common;
 using XerahS.Core;
 using XerahS.Platform.Abstractions;
 using XerahS.UI.ViewModels;
-using XerahS.Editor.ViewModels;
+using ShareX.ImageEditor.ViewModels;
 using SkiaSharp;
 
 namespace XerahS.UI.Services
@@ -114,7 +114,7 @@ namespace XerahS.UI.Services
                 {
                     try
                     {
-                        var editorView = editorWindow.FindControl<XerahS.Editor.Views.EditorView>("EditorViewControl");
+                        var editorView = editorWindow.FindControl<ShareX.ImageEditor.Views.EditorView>("EditorViewControl");
                         if (editorView != null)
                         {
                             var snapshot = editorView.GetSnapshot();
@@ -215,3 +215,4 @@ namespace XerahS.UI.Services
         }
     }
 }
+

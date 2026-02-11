@@ -34,7 +34,7 @@ using XerahS.Core;
 using XerahS.Core.Managers;
 using XerahS.Core.Tasks;
 using XerahS.Platform.Abstractions;
-using BitmapConversionHelpers = XerahS.Editor.Helpers.BitmapConversionHelpers;
+using BitmapConversionHelpers = ShareX.ImageEditor.Helpers.BitmapConversionHelpers;
 
 namespace XerahS.UI.ViewModels;
 
@@ -688,3 +688,4 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         Items.Clear();
     }
 }
+

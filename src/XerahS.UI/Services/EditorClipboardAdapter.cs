@@ -22,7 +22,7 @@
 */
 
 #endregion License Information (GPL v3)
-using XerahS.Editor.Services;
+using ShareX.ImageEditor.Services;
 using SkiaSharp;
 
 namespace XerahS.UI.Services;
@@ -42,3 +42,4 @@ public class EditorClipboardAdapter : IClipboardService
         return Platform.Abstractions.PlatformServices.Clipboard.GetImage();
     }
 }
+

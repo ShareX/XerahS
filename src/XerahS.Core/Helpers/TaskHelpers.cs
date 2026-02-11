@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using XerahS.Editor.ImageEffects;
+using ShareX.ImageEditor.ImageEffects;
 using System;
 using XerahS.Common;
 using XerahS.Services.Abstractions;
@@ -680,3 +680,4 @@ public static partial class TaskHelpers
 
     #endregion
 }
+

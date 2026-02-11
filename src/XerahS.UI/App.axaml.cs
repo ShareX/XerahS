@@ -27,7 +27,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
-using XerahS.Editor.ViewModels;
+using ShareX.ImageEditor.ViewModels;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Media.Encoders;
@@ -121,7 +121,7 @@ public partial class App : Application
                 ImageEncoderService.CreateDefault(() => PathsManager.GetFFmpegPath()));
 
             // Wire up Editor clipboard to platform implementation
-            XerahS.Editor.Services.EditorServices.Clipboard = new Services.EditorClipboardAdapter();
+            ShareX.ImageEditor.Services.EditorServices.Clipboard = new Services.EditorClipboardAdapter();
 
             // Setup window selector callback for CustomWindow hotkey
             Core.Tasks.WorkerTask.ShowWindowSelectorCallback = async () =>
@@ -763,3 +763,4 @@ public partial class App : Application
     }
 
 }
+

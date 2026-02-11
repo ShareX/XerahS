@@ -22,7 +22,7 @@
 */
 
 #endregion License Information (GPL v3)
-using XerahS.Editor.ViewModels;
+using ShareX.ImageEditor.ViewModels;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Uploaders.PluginSystem;
@@ -45,7 +45,7 @@ public static class MainViewModelHelper
             try
             {
                 // Convert Avalonia Bitmap to SKBitmap for upload pipeline
-                using var skBitmap = XerahS.Editor.Helpers.BitmapConversionHelpers.ToSKBitmap(bitmap);
+                using var skBitmap = ShareX.ImageEditor.Helpers.BitmapConversionHelpers.ToSKBitmap(bitmap);
                 DebugHelper.WriteLine($"MainViewModelHelper: Converted bitmap {skBitmap.Width}x{skBitmap.Height}");
 
                 // Get the default image uploader instance, or first available
@@ -96,3 +96,4 @@ public static class MainViewModelHelper
         };
     }
 }
+

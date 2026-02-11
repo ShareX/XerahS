@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>XerahS.RegionCapture</RootNamespace>
     <AssemblyName>XerahS.RegionCapture</AssemblyName>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks>net10.0;net10.0-windows10.0.26100.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <!-- Windows-specific DWM features -->
-  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
@@ -25,17 +25,26 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.183" PrivateAssets="all" />
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="2.88.9" />
+  </ItemGroup>
+
+  <!-- Non-Windows target only exposes screen recording surface used by Linux/macOS platform projects. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <Compile Remove="**\*.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="ScreenRecording\**\*.cs" />
+    <AvaloniaXaml Remove="UI\**\*.axaml" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\XerahS.Media\XerahS.Media.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
-    <!-- XIP-0023: ShareX.Editor reference for AnnotationToolbar in Region Capture Overlay -->
-    <ProjectReference Include="..\..\XerahS.Editor\src\XerahS.Editor\XerahS.Editor.csproj" />
+    <!-- XIP-0023: ShareX.ImageEditor integration -->
+    <ProjectReference Include="..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj"
+                      Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'" />
   </ItemGroup>
 
 </Project>

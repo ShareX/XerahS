@@ -28,7 +28,13 @@
     <ProjectReference Include="..\..\src\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\..\src\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\XerahS.Uploaders\XerahS.Uploaders.csproj" />
-    <ProjectReference Include="..\..\XerahS.Editor\src\XerahS.Editor\XerahS.Editor.csproj" />
+    <ProjectReference Include="..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj" GlobalPropertiesToRemove="OS" />
+  </ItemGroup>
+
+  <!-- Legacy tests target XerahS.Editor-only APIs that are not in upstream ShareX.ImageEditor. -->
+  <ItemGroup>
+    <Compile Remove="Editor\EditorHistoryEffectsTests.cs" />
+    <Compile Remove="Editor\EditorRotateAnnotationsTests.cs" />
   </ItemGroup>
 
   <ItemGroup>

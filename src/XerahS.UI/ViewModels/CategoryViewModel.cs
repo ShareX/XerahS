@@ -26,7 +26,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using XerahS.Common;
 using XerahS.Uploaders.PluginSystem;
-using XerahS.Editor.ViewModels;
+using ShareX.ImageEditor.ViewModels;
 using System.Collections.ObjectModel;
 
 namespace XerahS.UI.ViewModels;
@@ -177,3 +177,4 @@ public partial class CategoryViewModel : ViewModelBase
         }
     }
 }
+

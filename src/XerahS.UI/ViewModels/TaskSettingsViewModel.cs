@@ -24,7 +24,7 @@
 #endregion License Information (GPL v3)
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using XerahS.Editor;
+using ShareX.ImageEditor;
 using Common = XerahS.Common;
 using XerahS.Common;
 using XerahS.Core;
@@ -1400,3 +1400,4 @@ namespace XerahS.UI.ViewModels
         #endregion
     }
 }
+

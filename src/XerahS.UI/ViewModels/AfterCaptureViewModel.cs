@@ -27,7 +27,7 @@ using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using XerahS.Core;
-using XerahS.Editor.Helpers;
+using ShareX.ImageEditor.Helpers;
 
 namespace XerahS.UI.ViewModels;
 
@@ -175,3 +175,4 @@ public partial class AfterCaptureViewModel : ViewModelBase
         AfterUploadTasks = enabled ? AfterUploadTasks | flag : AfterUploadTasks & ~flag;
     }
 }
+
