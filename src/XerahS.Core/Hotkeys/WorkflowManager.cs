@@ -93,11 +93,22 @@ public class WorkflowManager : IDisposable
         WorkflowsChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    public void NotifyWorkflowsChanged()
+    {
+        WorkflowsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     /// <summary>
     /// Register a single hotkey
     /// </summary>
     public bool RegisterHotkey(WorkflowSettings settings)
     {
+        if (settings.Job == WorkflowType.None)
+        {
+            settings.HotkeyInfo.Status = HotkeyStatus.NotConfigured;
+            return false;
+        }
+
         if (!settings.Enabled || !settings.HotkeyInfo.IsValid)
         {
             settings.HotkeyInfo.Status = HotkeyStatus.NotConfigured;
@@ -108,7 +119,7 @@ public class WorkflowManager : IDisposable
         // Ignore failures - the hotkey might not have been registered yet
         if (settings.HotkeyInfo.Id != 0)
         {
-            UnregisterHotkey(settings); // Don't check result
+            UnregisterHotkeyInternal(settings, removeFromList: false); // Don't check result
         }
 
         bool result = _hotkeyService.RegisterHotkey(settings.HotkeyInfo);
@@ -129,7 +140,7 @@ public class WorkflowManager : IDisposable
             Debug.WriteLine($"HotkeyManager: Failed to register {settings}");
         }
 
-        if (!Workflows.Contains(settings))
+        if (!Workflows.Contains(settings) && settings.Job != WorkflowType.None)
         {
             Workflows.Add(settings);
             WorkflowsChanged?.Invoke(this, EventArgs.Empty);
@@ -143,13 +154,20 @@ public class WorkflowManager : IDisposable
     /// </summary>
     public bool UnregisterHotkey(WorkflowSettings settings)
     {
+        return UnregisterHotkeyInternal(settings, removeFromList: true);
+    }
+
+    private bool UnregisterHotkeyInternal(WorkflowSettings settings, bool removeFromList)
+    {
         if (settings.HotkeyInfo.Id == 0)
+        {
             return false;
+        }
 
         bool result = _hotkeyService.UnregisterHotkey(settings.HotkeyInfo);
         _hotkeyMap.Remove(settings.HotkeyInfo.Id);
 
-        if (Workflows.Contains(settings))
+        if (removeFromList && Workflows.Contains(settings))
         {
             Workflows.Remove(settings);
             WorkflowsChanged?.Invoke(this, EventArgs.Empty);

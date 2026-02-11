@@ -506,8 +506,41 @@ public static extern IntPtr GetModuleHandle(string? lpModuleName);
         [DllImport("kernel32.dll")]
         public static extern uint GetCurrentThreadId();
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetScrollInfo(IntPtr hwnd, int fnBar, ref SCROLLINFO lpsi);
+
+        [DllImport("user32.dll")]
+        public static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
+
         public const int CURSOR_SHOWING = 0x00000001;
         public const int DI_NORMAL = 0x0003;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SCROLLINFO
+    {
+        public uint cbSize;
+        public ScrollInfoMask fMask;
+        public int nMin;
+        public int nMax;
+        public uint nPage;
+        public int nPos;
+        public int nTrackPos;
+    }
+
+    [Flags]
+    public enum ScrollInfoMask : uint
+    {
+        SIF_RANGE = 0x0001,
+        SIF_PAGE = 0x0002,
+        SIF_POS = 0x0004,
+        SIF_DISABLENOSCROLL = 0x0008,
+        SIF_TRACKPOS = 0x0010,
+        SIF_ALL = SIF_RANGE | SIF_PAGE | SIF_POS | SIF_TRACKPOS
     }
 
     [StructLayout(LayoutKind.Sequential)]

@@ -211,12 +211,14 @@ public partial class WorkflowEditorViewModel : ViewModelBase
                 break;
 
             case EnumExtensions.WorkflowType_Category_Upload:
-                if (SelectedJob == WorkflowType.UploadText)
+                if (SelectedJob == WorkflowType.ClipboardUpload ||
+                    SelectedJob == WorkflowType.ClipboardUploadWithContentViewer)
                 {
+                    showImageUploaders = true;
                     showTextUploaders = true;
                     showFileUploaders = true;
                 }
-                else if (SelectedJob == WorkflowType.FileUpload || SelectedJob == WorkflowType.FolderUpload)
+                else if (SelectedJob == WorkflowType.FileUpload)
                 {
                     showFileUploaders = true;
                 }

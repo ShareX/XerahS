@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using XerahS.Uploaders;
 
 namespace ShareX.Imgur.Plugin;
@@ -34,7 +35,7 @@ public class ImgurConfigModel
 {
     public AccountType AccountType { get; set; } = AccountType.Anonymous;
 
-    public OAuth2Info? OAuth2Info { get; set; }
+    public string SecretKey { get; set; } = Guid.NewGuid().ToString("N");
 
     public bool DirectLink { get; set; } = true;
 

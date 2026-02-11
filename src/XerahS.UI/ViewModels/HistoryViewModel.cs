@@ -27,8 +27,12 @@ using Avalonia.Data.Converters;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using XerahS.Common;
+using XerahS.Common.Converters;
 using XerahS.Core;
+using XerahS.Core.Managers;
 using XerahS.History;
 using SkiaSharp;
 using System.Collections.ObjectModel;
@@ -338,6 +342,32 @@ namespace XerahS.UI.ViewModels
         }
 
         [RelayCommand]
+        private async Task UploadItem(HistoryItem? item)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.FilePath))
+            {
+                return;
+            }
+
+            if (!File.Exists(item.FilePath))
+            {
+                DebugHelper.WriteLine($"HistoryViewModel - Upload skipped, file not found: {item.FilePath}");
+                return;
+            }
+
+            try
+            {
+                var settings = GetUploadTaskSettings();
+                settings.Job = WorkflowType.FileUpload;
+                await TaskManager.Instance.StartFileTask(settings, item.FilePath);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "HistoryViewModel - UploadItem failed");
+            }
+        }
+
+        [RelayCommand]
         private async Task CopyFilePath(HistoryItem? item)
         {
             if (item == null || string.IsNullOrEmpty(item.FilePath)) return;
@@ -516,6 +546,36 @@ namespace XerahS.UI.ViewModels
             }
 
             return result;
+        }
+
+        private TaskSettings GetUploadTaskSettings()
+        {
+            var uploadWorkflow = SettingsManager.GetFirstWorkflow(WorkflowType.FileUpload);
+            if (uploadWorkflow?.TaskSettings != null)
+            {
+                var settings = CloneTaskSettings(uploadWorkflow.TaskSettings);
+                settings.WorkflowId = uploadWorkflow.Id;
+                return settings;
+            }
+
+            return CloneTaskSettings(SettingsManager.DefaultTaskSettings ?? new TaskSettings());
+        }
+
+        private static TaskSettings CloneTaskSettings(TaskSettings source)
+        {
+            var jsonSettings = new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto,
+                ObjectCreationHandling = ObjectCreationHandling.Replace,
+                Converters = new List<JsonConverter>
+                {
+                    new StringEnumConverter(),
+                    new SkColorJsonConverter()
+                }
+            };
+
+            var json = JsonConvert.SerializeObject(source, jsonSettings);
+            return JsonConvert.DeserializeObject<TaskSettings>(json, jsonSettings) ?? new TaskSettings();
         }
 
         public void Dispose()

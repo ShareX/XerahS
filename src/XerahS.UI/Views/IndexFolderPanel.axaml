@@ -1,0 +1,156 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignWidth="1100" d:DesignHeight="700"
+             x:Class="XerahS.UI.Views.IndexFolderPanel"
+             x:DataType="vm:IndexFolderViewModel">
+
+    <Design.DataContext>
+        <vm:IndexFolderViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*" Margin="24">
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,24">
+            <TextBlock Text="Index Folder" Theme="{StaticResource TitleTextBlockStyle}"/>
+            <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" ColumnDefinitions="400, *" ColumnSpan="2">
+            <!-- Left Column: Settings -->
+            <ScrollViewer Grid.Column="0" Padding="0,0,24,0">
+                <StackPanel Spacing="16">
+                    
+                    <!-- Folder Selection Card -->
+                    <Border Theme="{StaticResource CardBorderTheme}">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="Folder" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBox Grid.Column="0" Text="{Binding FolderPath}" Watermark="Select folder to index..."
+                                         AutomationProperties.Name="Folder Path"/>
+                                <Button Grid.Column="1" Content="Browse" Command="{Binding BrowseFolderCommand}" Margin="8,0,0,0"
+                                        AutomationProperties.Name="Browse Folder"/>
+                            </Grid>
+                            <TextBlock Text="{Binding FolderPathError}"
+                                       Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                       FontSize="12"
+                                       IsVisible="{Binding HasFolderPathError}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Output Options Card -->
+                    <Border Theme="{StaticResource CardBorderTheme}">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="Output Configuration" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            
+                            <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto" RowSpacing="12" ColumnSpacing="12">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Format:" VerticalAlignment="Center"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding IndexerOutputs}" SelectedItem="{Binding Output}" 
+                                          HorizontalAlignment="Stretch" AutomationProperties.Name="Output Format"/>
+                                
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Max Depth:" VerticalAlignment="Center"/>
+                                <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding MaxDepthLevel}" Minimum="0" Maximum="50" 
+                                               HorizontalAlignment="Stretch" AutomationProperties.Name="Max Depth Level"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Filters Card -->
+                    <Border Theme="{StaticResource CardBorderTheme}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Filters &amp; Metadata" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <CheckBox IsChecked="{Binding SkipHiddenFolders}" Content="Skip hidden folders" AutomationProperties.Name="Skip Hidden Folders"/>
+                            <CheckBox IsChecked="{Binding SkipHiddenFiles}" Content="Skip hidden files" AutomationProperties.Name="Skip Hidden Files"/>
+                            <CheckBox IsChecked="{Binding SkipFiles}" Content="Skip files (Folders only)" AutomationProperties.Name="Skip Files"/>
+                            <CheckBox IsChecked="{Binding ShowSizeInfo}" Content="Include size information" AutomationProperties.Name="Include Size Info"/>
+                            <CheckBox IsChecked="{Binding BinaryUnits}" Content="Use binary units for size" AutomationProperties.Name="Use Binary Units"/>
+                            <CheckBox IsChecked="{Binding AddFooter}" Content="Add generation footer" AutomationProperties.Name="Add Footer"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Text Formatting Card -->
+                    <Border Theme="{StaticResource CardBorderTheme}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Text Formatting" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12">
+                                <TextBlock Grid.Column="0" Text="Indentation:" VerticalAlignment="Center"/>
+                                <TextBox Grid.Column="1" Text="{Binding IndentationText}" AutomationProperties.Name="Indentation Text"/>
+                            </Grid>
+                            <CheckBox IsChecked="{Binding AddEmptyLineAfterFolders}" Content="Add empty line after folders" AutomationProperties.Name="Add Empty Line After Folders"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- HTML Options Card -->
+                    <Border Theme="{StaticResource CardBorderTheme}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="HTML Options" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <CheckBox IsChecked="{Binding UseCustomCssFile}" Content="Use custom CSS file" AutomationProperties.Name="Use Custom CSS"/>
+                            <Grid ColumnDefinitions="*, Auto" IsEnabled="{Binding UseCustomCssFile}">
+                                <TextBox Grid.Column="0" Text="{Binding CustomCssFilePath}" Watermark="Path to CSS file"
+                                         AutomationProperties.Name="Custom CSS Path"/>
+                                <Button Grid.Column="1" Content="Browse" Command="{Binding BrowseCssCommand}" Margin="8,0,0,0"
+                                        AutomationProperties.Name="Browse CSS File"/>
+                            </Grid>
+                            <CheckBox IsChecked="{Binding DisplayPath}" Content="Display path for subfolders" AutomationProperties.Name="Display Path for Subfolders"/>
+                            <CheckBox IsChecked="{Binding DisplayPathLimited}" Content="Limit display path to root" IsEnabled="{Binding DisplayPath}" Margin="24,0,0,0"
+                                      AutomationProperties.Name="Limit Display Path"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Structured Data Card -->
+                    <Border Theme="{StaticResource CardBorderTheme}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="XML / JSON Options" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <CheckBox IsChecked="{Binding UseAttribute}" Content="Write info as attributes (XML)" AutomationProperties.Name="XML Attributes"/>
+                            <CheckBox IsChecked="{Binding CreateParseableJson}" Content="Create parseable JSON" AutomationProperties.Name="Parseable JSON"/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Right Column: Preview & Actions -->
+            <Grid Grid.Column="1" RowDefinitions="Auto, Auto, *">
+                
+                <!-- Action Bar -->
+                <Border Grid.Row="0" Padding="16" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,16">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Grid.Column="0" Text="Preview &amp; Actions" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <Button Classes="accent" Content="{Binding PrimaryActionLabel}" Command="{Binding IndexFolderCommand}" 
+                                    IsEnabled="{Binding IsNotBusy}" AutomationProperties.Name="Generate Index"/>
+                            <Button Content="Open in Browser" Command="{Binding RenderHtmlPreviewCommand}" 
+                                    IsEnabled="{Binding CanRenderHtml}" AutomationProperties.Name="Open HTML in Browser"/>
+                            <Button Content="Copy" Command="{Binding CopyOutputCommand}" 
+                                    IsEnabled="{Binding HasOutput}" AutomationProperties.Name="Copy Output"/>
+                            <Button Content="Save As" Command="{Binding SaveAsCommand}" 
+                                    IsEnabled="{Binding CanSave}" IsVisible="{Binding ShowSave}" AutomationProperties.Name="Save Output"/>
+                            <Button Content="Upload" Command="{Binding UploadCommand}" 
+                                    IsEnabled="{Binding CanUpload}" IsVisible="{Binding ShowUpload}" AutomationProperties.Name="Upload Output"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Progress -->
+                <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="2" Margin="0,0,0,16" IsVisible="{Binding IsBusy}"/>
+
+                <!-- Text Output -->
+                <TextBox Grid.Row="2"
+                         Text="{Binding OutputText}"
+                         IsReadOnly="True"
+                         TextWrapping="NoWrap"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         AcceptsReturn="True"
+                         AutomationProperties.Name="Output Preview"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

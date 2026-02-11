@@ -121,45 +121,117 @@ public static class ColorPickerToolService
     private static async Task<PointInfo?> CapturePointAsync()
     {
         var captureSettings = SettingsManager.DefaultTaskSettings?.CaptureSettings ?? new TaskSettingsCapture();
+        var forceModernCapture = IsWaylandSession() && !captureSettings.UseModernCapture;
+        var effectiveUseModernCapture = captureSettings.UseModernCapture || forceModernCapture;
+        if (forceModernCapture)
+        {
+            Console.WriteLine("[ColorPicker] Wayland session detected with legacy capture disabled; forcing modern capture.");
+        }
+
         var captureOptions = new CaptureOptions
         {
-            UseModernCapture = captureSettings.UseModernCapture,
+            UseModernCapture = effectiveUseModernCapture,
             ShowCursor = false,
             CaptureTransparent = captureSettings.CaptureTransparent,
             CaptureShadow = captureSettings.CaptureShadow,
             CaptureClientArea = captureSettings.CaptureClientArea
         };
 
-        var pickerOptions = new XerahS.RegionCapture.RegionCaptureOptions
+        // 1. Capture full screen first (essential for magnifier and to avoid double-XDG portal on Linux)
+        SKBitmap? fullScreenBitmap = null;
+        try
         {
-            Mode = RegionCaptureMode.ScreenColorPicker,
-            EnableWindowSnapping = false,
-            EnableMagnifier = true,
-            ShowCursor = false
-        };
-
-        var captureService = new RegionCaptureService { Options = pickerOptions };
-        var result = await captureService.CaptureRegionAsync();
-        if (result == null)
+            Console.WriteLine("[ColorPicker] Starting initial full screen capture...");
+            // Note: On Wayland, this triggers the "Share this screen" dialog immediately.
+            fullScreenBitmap = await PlatformServices.ScreenCapture.CaptureFullScreenAsync(new CaptureOptions
+            {
+                ShowCursor = false,
+                UseModernCapture = effectiveUseModernCapture
+            });
+            Console.WriteLine($"[ColorPicker] Initial capture finished. Bitmap: {(fullScreenBitmap != null ? $"{fullScreenBitmap.Width}x{fullScreenBitmap.Height}" : "NULL")}");
+        }
+        catch (Exception ex)
         {
-            return null;
+            Console.WriteLine($"[ColorPicker] Initial capture exception: {ex}");
+            DebugHelper.WriteException(ex, "ColorPicker initial capture failed");
+            // Continue without background if capture fails (magnifier will be empty, but selection might still work)
         }
 
-        var point = result.Value.CursorPosition;
-        int x = (int)Math.Round(point.X);
-        int y = (int)Math.Round(point.Y);
-
-        var color = await GetColorFromScreenPoint(new DrawingPoint(x, y), captureOptions);
-        if (!color.HasValue)
+        try
         {
-            return null;
+            var pickerOptions = new XerahS.RegionCapture.RegionCaptureOptions
+            {
+                Mode = RegionCaptureMode.ScreenColorPicker,
+                EnableWindowSnapping = false,
+                EnableMagnifier = true,
+                ShowCursor = false,
+                // Pass the pre-captured bitmap to the region selector for the magnifier
+                BackgroundImage = fullScreenBitmap
+            };
+
+            var captureService = new RegionCaptureService { Options = pickerOptions };
+            
+            // 2. Let user select a point
+            Console.WriteLine("[ColorPicker] Starting interactive region selection...");
+            var result = await captureService.CaptureRegionAsync();
+            Console.WriteLine($"[ColorPicker] Region selection finished. Result: {(result != null ? "Selected" : "Cancelled")}");
+            
+            if (result == null)
+            {
+                return null;
+            }
+
+            var point = result.Value.CursorPosition;
+            int x = (int)Math.Round(point.X);
+            int y = (int)Math.Round(point.Y);
+            Console.WriteLine($"[ColorPicker] Selected point: {x}, {y}");
+
+            // 3. Extract color from the pre-captured bitmap if available, otherwise fall back to fresh capture
+            System.Drawing.Color? color = null;
+
+            if (fullScreenBitmap != null && fullScreenBitmap.Width > 0 && fullScreenBitmap.Height > 0)
+            {
+                Console.WriteLine("[ColorPicker] Using pre-captured bitmap for color extraction.");
+                // Ensure coordinates are within bounds
+                int bmpX = Math.Clamp(x, 0, fullScreenBitmap.Width - 1);
+                int bmpY = Math.Clamp(y, 0, fullScreenBitmap.Height - 1);
+                
+                // Account for potential virtual screen offsets if the bitmap covers multiple monitors
+                // (The RegionSelectionResult coordinates are absolute virtual screen coordinates)
+                var virtualBounds = PlatformServices.Screen.GetVirtualScreenBounds();
+                if (!virtualBounds.IsEmpty)
+                {
+                    bmpX = Math.Clamp(x - virtualBounds.X, 0, fullScreenBitmap.Width - 1);
+                    bmpY = Math.Clamp(y - virtualBounds.Y, 0, fullScreenBitmap.Height - 1);
+                    Console.WriteLine($"[ColorPicker] Adjusted for virtual bounds ({virtualBounds.X}, {virtualBounds.Y}): {bmpX}, {bmpY}");
+                }
+
+                var skColor = fullScreenBitmap.GetPixel(bmpX, bmpY);
+                color = System.Drawing.Color.FromArgb(skColor.Alpha, skColor.Red, skColor.Green, skColor.Blue);
+                Console.WriteLine($"[ColorPicker] Color extracted: {color}");
+            }
+            else
+            {
+                Console.WriteLine("[ColorPicker] Pre-captured bitmap unavailable or invalid. Falling back to fresh capture (may trigger portal).");
+                // Fallback: This will trigger a second XDG portal on Wayland, but it's better than failing
+                color = await GetColorFromScreenPoint(new DrawingPoint(x, y), captureOptions);
+            }
+
+            if (!color.HasValue)
+            {
+                return null;
+            }
+
+            return new PointInfo
+            {
+                Position = new DrawingPoint(x, y),
+                Color = color.Value
+            };
         }
-
-        return new PointInfo
+        finally
         {
-            Position = new DrawingPoint(x, y),
-            Color = color.Value
-        };
+            fullScreenBitmap?.Dispose();
+        }
     }
 
     private static async Task CopyResultAsync(PointInfo result)
@@ -192,6 +264,15 @@ public static class ColorPickerToolService
         }
 
         return Task.CompletedTask;
+    }
+
+    private static bool IsWaylandSession()
+    {
+        return OperatingSystem.IsLinux() &&
+               string.Equals(
+                   Environment.GetEnvironmentVariable("XDG_SESSION_TYPE"),
+                   "wayland",
+                   StringComparison.OrdinalIgnoreCase);
     }
 
     private static void ShowToast(string title, string text)

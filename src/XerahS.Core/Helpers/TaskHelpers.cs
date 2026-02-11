@@ -86,15 +86,9 @@ public static partial class TaskHelpers
     {
         return job switch
         {
-            WorkflowType.UploadText => JobMediaType.Text,
             WorkflowType.FileUpload or
-            WorkflowType.FolderUpload or
             WorkflowType.ClipboardUpload or
-            WorkflowType.ClipboardUploadWithContentViewer or
-            WorkflowType.DragDropUpload => JobMediaType.File,
-            WorkflowType.ShortenURL or
-            WorkflowType.UploadURL or
-            WorkflowType.StopUploads => JobMediaType.System,
+            WorkflowType.ClipboardUploadWithContentViewer => JobMediaType.File,
             _ => JobMediaType.None
         };
     }
@@ -108,9 +102,6 @@ public static partial class TaskHelpers
         {
             // Image-specific tools
             WorkflowType.ImageEditor or
-            WorkflowType.ImageBeautifier or
-            WorkflowType.ImageEffects or
-            WorkflowType.ImageViewer or
             WorkflowType.ImageCombiner or
             WorkflowType.ImageSplitter or
             WorkflowType.ImageThumbnailer or
@@ -148,7 +139,6 @@ public static partial class TaskHelpers
             WorkflowType.CustomWindow or
             WorkflowType.ActiveMonitor or
             WorkflowType.RectangleRegion or
-            WorkflowType.RectangleLight or
             WorkflowType.RectangleTransparent or
             WorkflowType.CustomRegion or
             WorkflowType.LastRegion or

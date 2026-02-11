@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>XerahS.UI</RootNamespace>
-    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework Condition="'$(CrossCompile)' == 'true' Or $(RuntimeIdentifier.StartsWith('osx')) Or $(RuntimeIdentifier.StartsWith('linux'))">net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -15,8 +15,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="FluentAvaloniaUI" Version="2.4.1" />
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
-    <PackageReference Include="WebView.Avalonia" Version="11.0.0.1" />
-    <PackageReference Include="WebView.Avalonia.Desktop" Version="11.0.0.1" />
+
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
@@ -24,9 +23,9 @@
     <ProjectReference Include="..\XerahS.Media\XerahS.Media.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\XerahS.Indexer\XerahS.Indexer.csproj" />
-    <ProjectReference Include="..\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />
-    <ProjectReference Include="..\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="'$(OS)' != 'Windows_NT'" />
-    <ProjectReference Include="..\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+    <ProjectReference Include="..\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT' And !$(RuntimeIdentifier.StartsWith('osx')) And !$(RuntimeIdentifier.StartsWith('linux')) And '$(CrossCompile)' != 'true'" />
+    <ProjectReference Include="..\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="$(RuntimeIdentifier.StartsWith('osx')) Or '$(CrossCompile)' == 'true'" />
+    <ProjectReference Include="..\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="$(RuntimeIdentifier.StartsWith('linux'))" />
     <ProjectReference Include="..\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
     <ProjectReference Include="..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
     <ProjectReference Include="..\..\..\XerahS.Editor\src\XerahS.Editor\XerahS.Editor.csproj" />

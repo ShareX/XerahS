@@ -24,7 +24,6 @@
 #endregion License Information (GPL v3)
 
 using Avalonia;
-using Avalonia.WebView.Desktop;
 
 namespace XerahS.App
 {
@@ -214,6 +213,7 @@ namespace XerahS.App
                     try
                     {
                         XerahS.Common.DebugHelper.WriteLine("Initializing Plugins...");
+                        XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
                         XerahS.Uploaders.PluginSystem.ProviderCatalog.InitializeBuiltInProviders(); // Ensure built-ins
                         
                         var pluginPaths = XerahS.Common.PathsManager.GetPluginDirectories();
@@ -331,7 +331,7 @@ namespace XerahS.App
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<XerahS.UI.App>()
                 .UsePlatformDetect()
-                .UseDesktopWebView()
+
                 .LogToTrace();
 
         /// <summary>

@@ -26,6 +26,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -33,7 +34,9 @@ using XerahS.Editor;
 using XerahS.Editor.Annotations;
 using XerahS.Editor.Views.Controls;
 using SkiaSharp;
+using System.Runtime.InteropServices;
 using XerahS.RegionCapture.Models;
+using XerahS.RegionCapture.Services;
 using XerahS.RegionCapture.ViewModels;
 using AvPixelRect = Avalonia.PixelRect;
 using AvPixelPoint = Avalonia.PixelPoint;
@@ -56,13 +59,17 @@ public partial class OverlayWindow : Window
     private readonly SKBitmap? _backgroundBitmap;
     private Canvas? _annotationCanvas;
 
-    // Annotation drawing state
+    // Annotation drawing state - delegates to EditorCore for lifecycle
     private Control? _currentShape;
     private bool _isDrawing;
-    private Point _drawStartPoint;
+    private Annotation? _currentAnnotation;
 
     // CTRL modifier state for toggling between drawing and region selection
     private bool _ctrlPressed;
+
+    // Inline text editing state
+    private TextBox? _inlineTextBox;
+    private Annotation? _editingAnnotation;
 
     public OverlayWindow()
     {
@@ -92,11 +99,19 @@ public partial class OverlayWindow : Window
         _viewModel.InvalidateRequested += OnInvalidateRequested;
         _viewModel.AnnotationsRestored += OnAnnotationsRestored;
 
-        // Load background image into EditorCore if available
+        // Load a monitor-scoped background image into EditorCore at logical resolution
+        // so annotation coordinates (from Avalonia pointer events) match image coordinates.
         if (_backgroundBitmap != null)
         {
-            _viewModel.LoadBackgroundImage(_backgroundBitmap.Copy());
+            var editorBitmap = CreateMonitorLogicalBackgroundBitmap(_backgroundBitmap, monitor);
+            if (editorBitmap != null)
+            {
+                _viewModel.LoadBackgroundImage(editorBitmap);
+            }
         }
+
+        // Wire up EditorCore events
+        _viewModel.EditorCore.EditAnnotationRequested += OnEditAnnotationRequested;
 
         InitializeComponent();
         DataContext = _viewModel;
@@ -130,6 +145,8 @@ public partial class OverlayWindow : Window
 
         // Ensure window can receive keyboard input
         Focusable = true;
+
+        WireUpToolbarEvents();
     }
 
     protected override void OnOpened(EventArgs e)
@@ -177,6 +194,17 @@ public partial class OverlayWindow : Window
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
+
+        // If inline text editing is active, let the TextBox handle keys
+        if (_inlineTextBox != null)
+        {
+            if (e.Key == Key.Escape)
+            {
+                CancelInlineText();
+                e.Handled = true;
+            }
+            return;
+        }
 
         // Track CTRL key for toggling between drawing and region selection
         if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
@@ -251,26 +279,91 @@ public partial class OverlayWindow : Window
     {
         if (_annotationCanvas == null) return;
 
+        // Commit any pending inline text edit. The click that commits text should not also
+        // start a new annotation.
+        if (_inlineTextBox != null)
+        {
+            CommitInlineText();
+            e.Handled = true;
+            return;
+        }
+
         var point = e.GetPosition(_annotationCanvas);
         var props = e.GetCurrentPoint(_annotationCanvas).Properties;
+        var skPoint = new SKPoint((float)point.X, (float)point.Y);
+
+        // Right-click: delete annotation under cursor
+        if (props.IsRightButtonPressed)
+        {
+            _viewModel.EditorCore.OnPointerPressed(skPoint, isRightButton: true);
+            _viewModel.HasAnnotations = _viewModel.EditorCore.Annotations.Count > 0;
+            _captureControl.HasAnnotations = _viewModel.HasAnnotations;
+            RebuildAnnotationCanvas();
+            return;
+        }
 
         if (!props.IsLeftButtonPressed) return;
 
         // Only handle drawing for non-Select tools
         if (_viewModel.ActiveTool == EditorTool.Select)
         {
-            // Handle selection - find if we clicked on an existing shape
             return;
         }
 
-        _isDrawing = true;
-        _drawStartPoint = point;
-
-        // Create the shape based on active tool
-        _currentShape = CreateShapeForTool(_viewModel.ActiveTool, point);
+        // Clear any previous preview state before forwarding the new press to EditorCore.
         if (_currentShape != null)
         {
-            _annotationCanvas.Children.Add(_currentShape);
+            _annotationCanvas.Children.Remove(_currentShape);
+            _currentShape = null;
+        }
+        _currentAnnotation = null;
+        _isDrawing = false;
+
+        // Delegate to EditorCore for annotation creation and initialization.
+        int countBefore = _viewModel.EditorCore.Annotations.Count;
+        _viewModel.EditorCore.OnPointerPressed(skPoint);
+
+        // Check if EditorCore created a new annotation
+        if (_viewModel.EditorCore.Annotations.Count > countBefore)
+        {
+            _currentAnnotation = _viewModel.EditorCore.Annotations[_viewModel.EditorCore.Annotations.Count - 1];
+            _isDrawing = true;
+
+            // Apply ViewModel properties that EditorCore doesn't manage
+            _currentAnnotation.FillColor = _viewModel.FillColor;
+            _currentAnnotation.ShadowEnabled = _viewModel.ShadowEnabled;
+
+            if (_currentAnnotation is TextAnnotation textAnn)
+                textAnn.FontSize = _viewModel.FontSize;
+            else if (_currentAnnotation is NumberAnnotation numAnn)
+                numAnn.FontSize = _viewModel.FontSize;
+            else if (_currentAnnotation is SpeechBalloonAnnotation balloonAnn)
+                balloonAnn.FontSize = _viewModel.FontSize;
+
+            if (_currentAnnotation is BaseEffectAnnotation effectAnn)
+                effectAnn.Amount = _viewModel.EffectStrength;
+
+            // Override highlighter color to yellow (matching original behavior)
+            if (_currentAnnotation is HighlightAnnotation)
+                _currentAnnotation.StrokeColor = "#FFFF00";
+
+            // SmartEraser: always resolve color from the frozen screen snapshot first.
+            // This avoids overlay-color contamination and prevents a persistent red fallback brush.
+            if (_currentAnnotation is SmartEraserAnnotation smartEraserAnn)
+            {
+                var sampledColor = ResolveSmartEraserStrokeColor(skPoint);
+                if (!string.IsNullOrWhiteSpace(sampledColor))
+                {
+                    smartEraserAnn.StrokeColor = sampledColor;
+                }
+            }
+
+            // Create Avalonia preview shape for visual feedback during drawing
+            _currentShape = CreatePreviewForAnnotation(_currentAnnotation);
+            if (_currentShape != null)
+            {
+                _annotationCanvas.Children.Add(_currentShape);
+            }
         }
 
         e.Pointer.Capture(_annotationCanvas);
@@ -278,166 +371,445 @@ public partial class OverlayWindow : Window
 
     private void OnAnnotationCanvasPointerMoved(object? sender, PointerEventArgs e)
     {
-        if (!_isDrawing || _currentShape == null || _annotationCanvas == null) return;
+        if (_annotationCanvas == null) return;
 
-        var currentPoint = e.GetPosition(_annotationCanvas);
-        UpdateShapeGeometry(_currentShape, _drawStartPoint, currentPoint);
+        // Match EditorCanvas behavior: forward move events while a button is pressed or while captured.
+        var props = e.GetCurrentPoint(_annotationCanvas).Properties;
+        if (e.Pointer.Captured != _annotationCanvas &&
+            !props.IsLeftButtonPressed &&
+            !props.IsRightButtonPressed)
+        {
+            return;
+        }
+
+        var point = e.GetPosition(_annotationCanvas);
+        var skPoint = new SKPoint((float)point.X, (float)point.Y);
+
+        // Delegate to EditorCore for annotation state updates (drawing/dragging/resizing).
+        _viewModel.EditorCore.OnPointerMoved(skPoint);
+
+        // Update preview shape from the annotation's updated state.
+        if (_isDrawing && _currentAnnotation != null && _currentShape != null)
+        {
+            UpdatePreviewFromAnnotation(_currentShape, _currentAnnotation);
+        }
     }
 
     private void OnAnnotationCanvasPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        if (!_isDrawing || _currentShape == null || _annotationCanvas == null) return;
+        if (_annotationCanvas == null) return;
 
         var endPoint = e.GetPosition(_annotationCanvas);
-        e.Pointer.Capture(null);
-        _isDrawing = false;
+        var skPoint = new SKPoint((float)endPoint.X, (float)endPoint.Y);
 
-        // Finalize the shape in EditorCore
-        if (_currentShape.Tag is Annotation annotation)
+        if (e.Pointer.Captured == _annotationCanvas)
         {
-            annotation.StartPoint = new SKPoint((float)_drawStartPoint.X, (float)_drawStartPoint.Y);
-            annotation.EndPoint = new SKPoint((float)endPoint.X, (float)endPoint.Y);
-            _viewModel.EditorCore.AddAnnotation(annotation);
-            _viewModel.HasAnnotations = true;
-
-            // Update capture control's annotation state
-            _captureControl.HasAnnotations = true;
-            _captureControl.InvalidateVisual();
+            e.Pointer.Capture(null);
         }
 
-        _currentShape = null;
+        // Always forward release, even when not drawing, so EditorCore can end drag/resize state.
+        _viewModel.EditorCore.OnPointerReleased(skPoint);
+
+        // Remove preview shape if one was created for this draw operation.
+        if (_isDrawing && _currentShape != null)
+        {
+            _annotationCanvas.Children.Remove(_currentShape);
+            _currentShape = null;
+        }
+        _isDrawing = false;
+
+        _viewModel.HasAnnotations = _viewModel.EditorCore.Annotations.Count > 0;
+        _captureControl.HasAnnotations = _viewModel.HasAnnotations;
+        _captureControl.InvalidateVisual();
+        _currentAnnotation = null;
+
+        // Rebuild canvas with finalized annotations (effects rendered, etc.)
+        // Skip rebuild if inline text editing is about to start (EditAnnotationRequested handler will rebuild)
+        if (_editingAnnotation == null)
+        {
+            RebuildAnnotationCanvas();
+        }
     }
 
-    private Control? CreateShapeForTool(EditorTool tool, Point startPoint)
+    /// <summary>
+    /// Attempts to resolve SmartEraser color using a robust fallback chain:
+    /// 1) Full virtual-screen background bitmap with monitor mapping,
+    /// 2) Editor source image,
+    /// 3) Current editor snapshot (background + existing annotations),
+    /// 4) Windows live-screen sampling (last resort).
+    /// </summary>
+    private string? ResolveSmartEraserStrokeColor(SKPoint logicalPoint)
     {
-        Control? shape = null;
-        Annotation? annotation = null;
-
-        var strokeBrush = new SolidColorBrush(Color.Parse(_viewModel.SelectedColor));
-        IBrush fillBrush = _viewModel.FillColor == "#00000000"
-            ? Brushes.Transparent
-            : new SolidColorBrush(Color.Parse(_viewModel.FillColor));
-
-        switch (tool)
+        if (TrySampleVirtualBackgroundColor(logicalPoint, out string? virtualColor))
         {
-            case EditorTool.Rectangle:
-                annotation = new RectangleAnnotation
-                {
-                    StrokeColor = _viewModel.SelectedColor,
-                    FillColor = _viewModel.FillColor,
-                    StrokeWidth = _viewModel.StrokeWidth,
-                    ShadowEnabled = _viewModel.ShadowEnabled
-                };
+            return virtualColor;
+        }
+
+        if (TrySampleBitmapColor(_viewModel.EditorCore.SourceImage, logicalPoint, out string? sourceColor))
+        {
+            return sourceColor;
+        }
+
+        using var snapshot = _viewModel.EditorCore.GetSnapshot();
+        if (TrySampleBitmapColor(snapshot, logicalPoint, out string? snapshotColor))
+        {
+            return snapshotColor;
+        }
+
+#if WINDOWS
+        if (TrySampleLiveScreenColor(logicalPoint, out string? liveScreenColor))
+        {
+            return liveScreenColor;
+        }
+#endif
+
+        return null;
+    }
+
+    private bool TrySampleVirtualBackgroundColor(SKPoint logicalPoint, out string? color)
+    {
+        color = null;
+        if (_backgroundBitmap == null || _backgroundBitmap.Width <= 0 || _backgroundBitmap.Height <= 0)
+        {
+            return false;
+        }
+
+        int physX = (int)Math.Round(logicalPoint.X * _monitor.ScaleFactor);
+        int physY = (int)Math.Round(logicalPoint.Y * _monitor.ScaleFactor);
+
+        var coordService = new Services.CoordinateTranslationService();
+        var virtualBounds = coordService.GetVirtualScreenBounds();
+        int bmpX = (int)Math.Round(_monitor.PhysicalBounds.X - virtualBounds.X) + physX;
+        int bmpY = (int)Math.Round(_monitor.PhysicalBounds.Y - virtualBounds.Y) + physY;
+        bmpX = Math.Clamp(bmpX, 0, _backgroundBitmap.Width - 1);
+        bmpY = Math.Clamp(bmpY, 0, _backgroundBitmap.Height - 1);
+
+        var pixel = _backgroundBitmap.GetPixel(bmpX, bmpY);
+        color = ToRgbHex(pixel);
+        return true;
+    }
+
+#if WINDOWS
+    private bool TrySampleLiveScreenColor(SKPoint logicalPoint, out string? color)
+    {
+        color = null;
+
+        int physicalScreenX = (int)Math.Round(_monitor.PhysicalBounds.X + logicalPoint.X * _monitor.ScaleFactor);
+        int physicalScreenY = (int)Math.Round(_monitor.PhysicalBounds.Y + logicalPoint.Y * _monitor.ScaleFactor);
+
+        IntPtr hdc = GetDC(IntPtr.Zero);
+        if (hdc == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        try
+        {
+            uint pixel = GetPixel(hdc, physicalScreenX, physicalScreenY);
+            if (pixel == 0xFFFFFFFF)
+            {
+                return false;
+            }
+
+            byte r = (byte)(pixel & 0x000000FF);
+            byte g = (byte)((pixel & 0x0000FF00) >> 8);
+            byte b = (byte)((pixel & 0x00FF0000) >> 16);
+            color = $"#{r:X2}{g:X2}{b:X2}";
+            return true;
+        }
+        finally
+        {
+            _ = ReleaseDC(IntPtr.Zero, hdc);
+        }
+    }
+#endif
+
+    private static bool TrySampleBitmapColor(SKBitmap? bitmap, SKPoint logicalPoint, out string? color)
+    {
+        color = null;
+
+        if (bitmap == null || bitmap.Width <= 0 || bitmap.Height <= 0)
+        {
+            return false;
+        }
+
+        int x = Math.Clamp((int)Math.Round(logicalPoint.X), 0, bitmap.Width - 1);
+        int y = Math.Clamp((int)Math.Round(logicalPoint.Y), 0, bitmap.Height - 1);
+        var pixel = bitmap.GetPixel(x, y);
+        color = ToRgbHex(pixel);
+        return true;
+    }
+
+    private static string ToRgbHex(SKColor color)
+    {
+        return $"#{color.Red:X2}{color.Green:X2}{color.Blue:X2}";
+    }
+
+#if WINDOWS
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetDC(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+    [DllImport("gdi32.dll")]
+    private static extern uint GetPixel(IntPtr hdc, int nXPos, int nYPos);
+#endif
+
+    /// <summary>
+    /// Creates a lightweight Avalonia preview shape for visual feedback while drawing.
+    /// </summary>
+    private Control? CreatePreviewForAnnotation(Annotation annotation)
+    {
+        var strokeBrush = new SolidColorBrush(Color.Parse(annotation.StrokeColor));
+        IBrush fillBrush = annotation.FillColor == "#00000000"
+            ? Brushes.Transparent
+            : new SolidColorBrush(Color.Parse(annotation.FillColor));
+
+        Control? shape = null;
+
+        switch (annotation)
+        {
+            case RectangleAnnotation:
                 shape = new Rectangle
                 {
                     Stroke = strokeBrush,
-                    StrokeThickness = _viewModel.StrokeWidth,
+                    StrokeThickness = annotation.StrokeWidth,
                     Fill = fillBrush,
                     Tag = annotation
                 };
-                Canvas.SetLeft(shape, startPoint.X);
-                Canvas.SetTop(shape, startPoint.Y);
+                Canvas.SetLeft(shape, annotation.StartPoint.X);
+                Canvas.SetTop(shape, annotation.StartPoint.Y);
                 break;
 
-            case EditorTool.Ellipse:
-                annotation = new EllipseAnnotation
-                {
-                    StrokeColor = _viewModel.SelectedColor,
-                    FillColor = _viewModel.FillColor,
-                    StrokeWidth = _viewModel.StrokeWidth,
-                    ShadowEnabled = _viewModel.ShadowEnabled
-                };
+            case EllipseAnnotation:
                 shape = new Ellipse
                 {
                     Stroke = strokeBrush,
-                    StrokeThickness = _viewModel.StrokeWidth,
+                    StrokeThickness = annotation.StrokeWidth,
                     Fill = fillBrush,
                     Tag = annotation
                 };
-                Canvas.SetLeft(shape, startPoint.X);
-                Canvas.SetTop(shape, startPoint.Y);
+                Canvas.SetLeft(shape, annotation.StartPoint.X);
+                Canvas.SetTop(shape, annotation.StartPoint.Y);
                 break;
 
-            case EditorTool.Line:
-                annotation = new LineAnnotation
-                {
-                    StrokeColor = _viewModel.SelectedColor,
-                    StrokeWidth = _viewModel.StrokeWidth
-                };
+            case LineAnnotation:
                 shape = new Line
                 {
                     Stroke = strokeBrush,
-                    StrokeThickness = _viewModel.StrokeWidth,
-                    StartPoint = startPoint,
-                    EndPoint = startPoint,
+                    StrokeThickness = annotation.StrokeWidth,
+                    StartPoint = new Point(annotation.StartPoint.X, annotation.StartPoint.Y),
+                    EndPoint = new Point(annotation.StartPoint.X, annotation.StartPoint.Y),
                     Tag = annotation
                 };
                 break;
 
-            case EditorTool.Arrow:
-                annotation = new ArrowAnnotation
-                {
-                    StrokeColor = _viewModel.SelectedColor,
-                    StrokeWidth = _viewModel.StrokeWidth
-                };
-                var arrowPath = new Avalonia.Controls.Shapes.Path
+            case ArrowAnnotation:
+                shape = new Avalonia.Controls.Shapes.Path
                 {
                     Stroke = strokeBrush,
                     Fill = strokeBrush,
-                    StrokeThickness = _viewModel.StrokeWidth,
+                    StrokeThickness = annotation.StrokeWidth,
                     Tag = annotation
                 };
-                shape = arrowPath;
                 break;
 
-            case EditorTool.Highlighter:
-                annotation = new HighlightAnnotation
-                {
-                    StrokeColor = "#FFFF00" // Yellow highlighter
-                };
+            case HighlightAnnotation:
                 var highlightColor = Color.FromArgb(0x55, 0xFF, 0xFF, 0x00);
                 shape = new Rectangle
                 {
                     Fill = new SolidColorBrush(highlightColor),
                     Tag = annotation
                 };
-                Canvas.SetLeft(shape, startPoint.X);
-                Canvas.SetTop(shape, startPoint.Y);
+                Canvas.SetLeft(shape, annotation.StartPoint.X);
+                Canvas.SetTop(shape, annotation.StartPoint.Y);
+                break;
+
+            case TextAnnotation:
+                // Dashed rectangle placeholder showing text bounds
+                shape = new Rectangle
+                {
+                    Stroke = strokeBrush,
+                    StrokeThickness = 1,
+                    StrokeDashArray = new Avalonia.Collections.AvaloniaList<double> { 4, 4 },
+                    Fill = new SolidColorBrush(Color.FromArgb(30, 255, 255, 255)),
+                    Tag = annotation
+                };
+                Canvas.SetLeft(shape, annotation.StartPoint.X);
+                Canvas.SetTop(shape, annotation.StartPoint.Y);
+                break;
+
+            case SpeechBalloonAnnotation:
+                // Filled rectangle placeholder showing balloon bounds
+                var balloonFill = new SolidColorBrush(Color.FromArgb(128, 255, 255, 255));
+                shape = new Rectangle
+                {
+                    Stroke = strokeBrush,
+                    StrokeThickness = annotation.StrokeWidth,
+                    Fill = balloonFill,
+                    RadiusX = 10,
+                    RadiusY = 10,
+                    Tag = annotation
+                };
+                Canvas.SetLeft(shape, annotation.StartPoint.X);
+                Canvas.SetTop(shape, annotation.StartPoint.Y);
+                break;
+
+            case NumberAnnotation numAnn:
+                // Circle at click point
+                var radius = numAnn.Radius;
+                var numGrid = new Grid
+                {
+                    Width = radius * 2,
+                    Height = radius * 2,
+                    Tag = annotation
+                };
+                numGrid.Children.Add(new Ellipse
+                {
+                    Fill = fillBrush,
+                    Stroke = strokeBrush,
+                    StrokeThickness = annotation.StrokeWidth
+                });
+                numGrid.Children.Add(new TextBlock
+                {
+                    Text = numAnn.Number.ToString(),
+                    Foreground = Brushes.White,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    FontWeight = FontWeight.Bold,
+                    FontSize = numAnn.FontSize * 0.6
+                });
+                Canvas.SetLeft(numGrid, annotation.StartPoint.X - radius);
+                Canvas.SetTop(numGrid, annotation.StartPoint.Y - radius);
+                shape = numGrid;
+                break;
+
+            case BlurAnnotation:
+                shape = new Rectangle
+                {
+                    Fill = new SolidColorBrush(Color.Parse("#200000FF")),
+                    Stroke = new SolidColorBrush(Color.FromArgb(80, 0, 0, 255)),
+                    StrokeThickness = 1,
+                    Tag = annotation
+                };
+                Canvas.SetLeft(shape, annotation.StartPoint.X);
+                Canvas.SetTop(shape, annotation.StartPoint.Y);
+                break;
+
+            case PixelateAnnotation:
+                shape = new Rectangle
+                {
+                    Fill = new SolidColorBrush(Color.Parse("#2000FF00")),
+                    Stroke = new SolidColorBrush(Color.FromArgb(80, 0, 255, 0)),
+                    StrokeThickness = 1,
+                    Tag = annotation
+                };
+                Canvas.SetLeft(shape, annotation.StartPoint.X);
+                Canvas.SetTop(shape, annotation.StartPoint.Y);
+                break;
+
+            case MagnifyAnnotation:
+                shape = new Rectangle
+                {
+                    Fill = new SolidColorBrush(Color.FromArgb(30, 211, 211, 211)),
+                    Stroke = new SolidColorBrush(Color.FromArgb(80, 100, 100, 100)),
+                    StrokeThickness = 1,
+                    Tag = annotation
+                };
+                Canvas.SetLeft(shape, annotation.StartPoint.X);
+                Canvas.SetTop(shape, annotation.StartPoint.Y);
+                break;
+
+            case SpotlightAnnotation:
+                // Dark rectangle showing where the spotlight hole will be
+                shape = new Rectangle
+                {
+                    Fill = Brushes.Transparent,
+                    Stroke = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
+                    StrokeThickness = 2,
+                    StrokeDashArray = new Avalonia.Collections.AvaloniaList<double> { 6, 3 },
+                    Tag = annotation
+                };
+                Canvas.SetLeft(shape, annotation.StartPoint.X);
+                Canvas.SetTop(shape, annotation.StartPoint.Y);
+                break;
+
+            case SmartEraserAnnotation:
+            case FreehandAnnotation:
+                // Path that builds during drag
+                var pathBrush = new SolidColorBrush(Color.Parse(annotation.StrokeColor));
+                shape = new Avalonia.Controls.Shapes.Path
+                {
+                    Stroke = pathBrush,
+                    StrokeThickness = annotation.StrokeWidth,
+                    StrokeLineCap = PenLineCap.Round,
+                    StrokeJoin = PenLineJoin.Round,
+                    Tag = annotation
+                };
                 break;
         }
 
         return shape;
     }
 
-    private void UpdateShapeGeometry(Control shape, Point start, Point current)
+    /// <summary>
+    /// Updates the preview shape's position and geometry from the annotation's current state.
+    /// </summary>
+    private void UpdatePreviewFromAnnotation(Control shape, Annotation annotation)
     {
-        var left = Math.Min(start.X, current.X);
-        var top = Math.Min(start.Y, current.Y);
-        var width = Math.Abs(current.X - start.X);
-        var height = Math.Abs(current.Y - start.Y);
+        var bounds = annotation.GetBounds();
+        var left = bounds.Left;
+        var top = bounds.Top;
+        var width = Math.Max(1, bounds.Width);
+        var height = Math.Max(1, bounds.Height);
 
-        switch (shape)
+        switch (annotation)
         {
-            case Rectangle rect:
-                Canvas.SetLeft(rect, left);
-                Canvas.SetTop(rect, top);
-                rect.Width = Math.Max(1, width);
-                rect.Height = Math.Max(1, height);
+            case ArrowAnnotation arrow when shape is Avalonia.Controls.Shapes.Path arrowPath:
+                var start = new Point(annotation.StartPoint.X, annotation.StartPoint.Y);
+                var end = new Point(annotation.EndPoint.X, annotation.EndPoint.Y);
+                arrowPath.Data = arrow.CreateArrowGeometry(start, end,
+                    annotation.StrokeWidth * ArrowAnnotation.ArrowHeadWidthMultiplier);
                 break;
 
-            case Ellipse ellipse:
-                Canvas.SetLeft(ellipse, left);
-                Canvas.SetTop(ellipse, top);
-                ellipse.Width = Math.Max(1, width);
-                ellipse.Height = Math.Max(1, height);
+            case LineAnnotation when shape is Line line:
+                line.StartPoint = new Point(annotation.StartPoint.X, annotation.StartPoint.Y);
+                line.EndPoint = new Point(annotation.EndPoint.X, annotation.EndPoint.Y);
                 break;
 
-            case Line line:
-                line.EndPoint = current;
+            case FreehandAnnotation freehand when shape is Avalonia.Controls.Shapes.Path freehandPath:
+                freehandPath.Data = freehand.CreateSmoothedGeometry();
                 break;
 
-            case Avalonia.Controls.Shapes.Path arrowPath when shape.Tag is ArrowAnnotation arrow:
-                arrowPath.Data = arrow.CreateArrowGeometry(start, current, _viewModel.StrokeWidth * ArrowAnnotation.ArrowHeadWidthMultiplier);
+            case NumberAnnotation:
+                // Number stays at StartPoint, no update needed during drag
+                break;
+
+            default:
+                // Rectangle-based shapes: update position and size
+                if (shape is Rectangle || shape is Ellipse)
+                {
+                    Canvas.SetLeft(shape, left);
+                    Canvas.SetTop(shape, top);
+                    if (shape is Rectangle rect)
+                    {
+                        rect.Width = width;
+                        rect.Height = height;
+                    }
+                    else if (shape is Ellipse ellipse)
+                    {
+                        ellipse.Width = width;
+                        ellipse.Height = height;
+                    }
+                }
+                else if (shape is Grid grid)
+                {
+                    Canvas.SetLeft(grid, left);
+                    Canvas.SetTop(grid, top);
+                    grid.Width = width;
+                    grid.Height = height;
+                }
                 break;
         }
     }
@@ -448,7 +820,11 @@ public partial class OverlayWindow : Window
 
     private void OnInvalidateRequested()
     {
-        Dispatcher.UIThread.Post(InvalidateVisual);
+        Dispatcher.UIThread.Post(() =>
+        {
+            RebuildAnnotationCanvas();
+            InvalidateVisual();
+        });
     }
 
     private void OnAnnotationsRestored()
@@ -460,6 +836,9 @@ public partial class OverlayWindow : Window
     {
         if (_annotationCanvas == null) return;
 
+        // Preserve inline text box if active
+        var preserveTextBox = _inlineTextBox;
+
         _annotationCanvas.Children.Clear();
 
         foreach (var annotation in _viewModel.EditorCore.Annotations)
@@ -470,44 +849,407 @@ public partial class OverlayWindow : Window
                 _annotationCanvas.Children.Add(shape);
             }
         }
+
+        // Re-add inline text box if it was active
+        if (preserveTextBox != null)
+        {
+            _annotationCanvas.Children.Add(preserveTextBox);
+        }
     }
 
+    private void WireUpToolbarEvents()
+    {
+        var toolbar = this.FindControl<AnnotationToolbar>("AnnotationToolbarControl");
+        if (toolbar == null)
+        {
+            return;
+        }
+
+        toolbar.ColorChanged += OnToolbarColorChanged;
+        toolbar.FillColorChanged += OnToolbarFillColorChanged;
+        toolbar.WidthChanged += OnToolbarWidthChanged;
+        toolbar.FontSizeChanged += OnToolbarFontSizeChanged;
+        toolbar.StrengthChanged += OnToolbarStrengthChanged;
+        toolbar.ShadowButtonClick += OnToolbarShadowButtonClicked;
+    }
+
+    private void OnToolbarColorChanged(object? sender, IBrush color)
+    {
+        if (color is SolidColorBrush solidBrush)
+        {
+            _viewModel.SelectedColor = $"#{solidBrush.Color.A:X2}{solidBrush.Color.R:X2}{solidBrush.Color.G:X2}{solidBrush.Color.B:X2}";
+        }
+    }
+
+    private void OnToolbarFillColorChanged(object? sender, IBrush color)
+    {
+        if (color is SolidColorBrush solidBrush)
+        {
+            _viewModel.FillColor = $"#{solidBrush.Color.A:X2}{solidBrush.Color.R:X2}{solidBrush.Color.G:X2}{solidBrush.Color.B:X2}";
+        }
+    }
+
+    private void OnToolbarWidthChanged(object? sender, int width)
+    {
+        _viewModel.StrokeWidth = width;
+    }
+
+    private void OnToolbarFontSizeChanged(object? sender, float fontSize)
+    {
+        _viewModel.FontSize = fontSize;
+    }
+
+    private void OnToolbarStrengthChanged(object? sender, float strength)
+    {
+        _viewModel.EffectStrength = strength;
+    }
+
+    private void OnToolbarShadowButtonClicked(object? sender, EventArgs e)
+    {
+        _viewModel.ShadowEnabled = !_viewModel.ShadowEnabled;
+    }
+
+    /// <summary>
+    /// Creates a full Avalonia visual control for a finalized annotation.
+    /// Uses each annotation's CreateVisual() method for accurate rendering.
+    /// Handles positioning differently based on annotation coordinate model:
+    /// - Absolute-coordinate types (Line, Arrow, Freehand, SmartEraser): no Canvas offset
+    /// - Spotlight: positioned at (0,0) with full canvas size
+    /// - Effect annotations with EffectBitmap: rendered as Avalonia Image
+    /// - Local-coordinate types (Rectangle, Ellipse, Text, etc.): Canvas.SetLeft/Top + Width/Height
+    /// </summary>
     private Control? CreateControlForAnnotation(Annotation annotation)
     {
         var bounds = annotation.GetBounds();
-        var strokeBrush = new SolidColorBrush(Color.Parse(annotation.StrokeColor));
 
-        Control? control = null;
-
-        if (annotation is RectangleAnnotation rect)
+        // Effect annotations: show EffectBitmap as Avalonia Image if available
+        if (annotation is BaseEffectAnnotation effectAnn && effectAnn.EffectBitmap != null)
         {
-            control = rect.CreateVisual();
-        }
-        else if (annotation is EllipseAnnotation ellipse)
-        {
-            control = ellipse.CreateVisual();
-        }
-        else if (annotation is LineAnnotation line)
-        {
-            control = line.CreateVisual();
-        }
-        else if (annotation is ArrowAnnotation arrow)
-        {
-            control = arrow.CreateVisual();
-        }
-
-        if (control != null)
-        {
-            Canvas.SetLeft(control, bounds.Left);
-            Canvas.SetTop(control, bounds.Top);
-            if (control is Shape shape && !(control is Line))
+            var avBitmap = ConvertSKBitmapToAvalonia(effectAnn.EffectBitmap);
+            if (avBitmap != null)
             {
-                shape.Width = bounds.Width;
-                shape.Height = bounds.Height;
+                var image = new Image
+                {
+                    Source = avBitmap,
+                    Width = Math.Max(1, bounds.Width),
+                    Height = Math.Max(1, bounds.Height),
+                    Tag = annotation
+                };
+                Canvas.SetLeft(image, bounds.Left);
+                Canvas.SetTop(image, bounds.Top);
+                return image;
             }
         }
 
+        Control? control = null;
+
+        // Create the Avalonia visual using each annotation's CreateVisual()
+        switch (annotation)
+        {
+            case RectangleAnnotation rect:
+                control = rect.CreateVisual();
+                break;
+            case EllipseAnnotation ellipse:
+                control = ellipse.CreateVisual();
+                break;
+            case LineAnnotation line:
+                control = line.CreateVisual();
+                break;
+            case ArrowAnnotation arrow:
+                control = arrow.CreateVisual();
+                // Rebuild arrow geometry from annotation points (CreateVisual returns empty Path)
+                if (control is Avalonia.Controls.Shapes.Path arrowPath)
+                {
+                    var start = new Point(annotation.StartPoint.X, annotation.StartPoint.Y);
+                    var end = new Point(annotation.EndPoint.X, annotation.EndPoint.Y);
+                    arrowPath.Data = arrow.CreateArrowGeometry(start, end,
+                        annotation.StrokeWidth * ArrowAnnotation.ArrowHeadWidthMultiplier);
+                }
+                break;
+            case TextAnnotation text:
+                control = text.CreateVisual();
+                break;
+            case SpeechBalloonAnnotation balloon:
+                control = balloon.CreateVisual();
+                break;
+            case NumberAnnotation number:
+                control = number.CreateVisual();
+                break;
+            case BlurAnnotation blur:
+                control = blur.CreateVisual();
+                break;
+            case PixelateAnnotation pixelate:
+                control = pixelate.CreateVisual();
+                break;
+            case MagnifyAnnotation magnify:
+                control = magnify.CreateVisual();
+                break;
+            case SpotlightAnnotation spotlight:
+                control = spotlight.CreateVisual();
+                break;
+            case HighlightAnnotation highlight:
+                control = highlight.CreateVisual();
+                break;
+            case SmartEraserAnnotation smartEraser:
+                control = smartEraser.CreateVisual();
+                break;
+            case FreehandAnnotation freehand:
+                control = freehand.CreateVisual();
+                break;
+        }
+
+        if (control == null) return null;
+
+        // Position and size the control based on annotation type
+        switch (annotation)
+        {
+            // Absolute-coordinate types: geometry uses absolute canvas coordinates
+            // Do NOT set Canvas.SetLeft/Top as it would double-offset
+            // SmartEraserAnnotation must come before FreehandAnnotation (it extends FreehandAnnotation)
+            case LineAnnotation:
+            case ArrowAnnotation:
+            case SmartEraserAnnotation:
+            case FreehandAnnotation:
+                break;
+
+            // Spotlight covers the full canvas with a darkening overlay
+            case SpotlightAnnotation:
+                Canvas.SetLeft(control, 0);
+                Canvas.SetTop(control, 0);
+                control.Width = Width;
+                control.Height = Height;
+                break;
+
+            // NumberAnnotation: Grid already has Width/Height from CreateVisual()
+            case NumberAnnotation:
+                Canvas.SetLeft(control, bounds.Left);
+                Canvas.SetTop(control, bounds.Top);
+                break;
+
+            // All other local-coordinate types: position + dimensions
+            default:
+                Canvas.SetLeft(control, bounds.Left);
+                Canvas.SetTop(control, bounds.Top);
+                if (control is Shape s && s is not Line)
+                {
+                    s.Width = Math.Max(1, bounds.Width);
+                    s.Height = Math.Max(1, bounds.Height);
+                }
+                else if (control is not Shape)
+                {
+                    // TextBox, SpeechBalloonControl, Grid, etc.
+                    control.Width = Math.Max(1, bounds.Width);
+                    control.Height = Math.Max(1, bounds.Height);
+                }
+                break;
+        }
+
         return control;
+    }
+
+    /// <summary>
+    /// Converts an SKBitmap to an Avalonia Bitmap for display in Image controls.
+    /// </summary>
+    private static Avalonia.Media.Imaging.Bitmap? ConvertSKBitmapToAvalonia(SKBitmap skBitmap)
+    {
+        if (skBitmap == null || skBitmap.Width <= 0 || skBitmap.Height <= 0) return null;
+        using var skImage = SKImage.FromBitmap(skBitmap);
+        using var skData = skImage.Encode(SKEncodedImageFormat.Png, 100);
+        if (skData == null) return null;
+        var stream = new System.IO.MemoryStream(skData.ToArray());
+        return new Avalonia.Media.Imaging.Bitmap(stream);
+    }
+
+    /// <summary>
+    /// Crops the full virtual-screen capture to this monitor and scales it to the monitor's logical size.
+    /// This keeps effect tool sampling aligned with pointer coordinates on per-monitor overlays.
+    /// </summary>
+    private static SKBitmap? CreateMonitorLogicalBackgroundBitmap(SKBitmap fullBackground, MonitorInfo monitor)
+    {
+        if (fullBackground.Width <= 0 || fullBackground.Height <= 0)
+        {
+            return null;
+        }
+
+        var coordinateService = new CoordinateTranslationService();
+        var virtualBounds = coordinateService.GetVirtualScreenBounds();
+
+        int sourceX = (int)Math.Round(monitor.PhysicalBounds.X - virtualBounds.X);
+        int sourceY = (int)Math.Round(monitor.PhysicalBounds.Y - virtualBounds.Y);
+        int sourceWidth = Math.Max(1, (int)Math.Round(monitor.PhysicalBounds.Width));
+        int sourceHeight = Math.Max(1, (int)Math.Round(monitor.PhysicalBounds.Height));
+
+        var sourceRect = new SKRectI(sourceX, sourceY, sourceX + sourceWidth, sourceY + sourceHeight);
+        sourceRect.Intersect(new SKRectI(0, 0, fullBackground.Width, fullBackground.Height));
+        if (sourceRect.Width <= 0 || sourceRect.Height <= 0)
+        {
+            return null;
+        }
+
+        var monitorBitmap = new SKBitmap(sourceRect.Width, sourceRect.Height, fullBackground.ColorType, fullBackground.AlphaType);
+        if (!fullBackground.ExtractSubset(monitorBitmap, sourceRect))
+        {
+            using var subsetCanvas = new SKCanvas(monitorBitmap);
+            subsetCanvas.DrawBitmap(
+                fullBackground,
+                sourceRect,
+                new SKRect(0, 0, monitorBitmap.Width, monitorBitmap.Height));
+        }
+
+        int logicalWidth = Math.Max(1, (int)Math.Round(monitor.PhysicalBounds.Width / monitor.ScaleFactor));
+        int logicalHeight = Math.Max(1, (int)Math.Round(monitor.PhysicalBounds.Height / monitor.ScaleFactor));
+        if (monitorBitmap.Width == logicalWidth && monitorBitmap.Height == logicalHeight)
+        {
+            return monitorBitmap;
+        }
+
+        var logicalBitmap = monitorBitmap.Resize(new SKImageInfo(logicalWidth, logicalHeight), SKFilterQuality.High);
+        if (logicalBitmap != null)
+        {
+            monitorBitmap.Dispose();
+            return logicalBitmap;
+        }
+
+        return monitorBitmap;
+    }
+
+    #endregion
+
+    #region Inline Text Editing
+
+    /// <summary>
+    /// Handles EditorCore's EditAnnotationRequested event for Text and SpeechBalloon tools.
+    /// Shows an inline TextBox at the annotation position.
+    /// </summary>
+    private void OnEditAnnotationRequested(Annotation annotation)
+    {
+        if (_annotationCanvas == null) return;
+        if (annotation is not TextAnnotation && annotation is not SpeechBalloonAnnotation) return;
+
+        _editingAnnotation = annotation;
+
+        var bounds = annotation.GetBounds();
+        float fontSize = annotation is TextAnnotation t ? t.FontSize :
+                         annotation is SpeechBalloonAnnotation s ? s.FontSize : 16;
+
+        _inlineTextBox = new TextBox
+        {
+            Width = Math.Max(200, bounds.Width),
+            Height = Math.Max(40, bounds.Height),
+            FontSize = fontSize,
+            Foreground = new SolidColorBrush(Color.Parse(annotation.StrokeColor)),
+            Background = new SolidColorBrush(Color.FromArgb(220, 255, 255, 255)),
+            BorderBrush = new SolidColorBrush(Colors.DodgerBlue),
+            BorderThickness = new Thickness(2),
+            AcceptsReturn = false,
+            TextWrapping = TextWrapping.Wrap,
+            Padding = new Thickness(4),
+            Watermark = "Type text here..."
+        };
+
+        Canvas.SetLeft(_inlineTextBox, bounds.Left);
+        Canvas.SetTop(_inlineTextBox, bounds.Top);
+
+        _inlineTextBox.KeyDown += OnInlineTextBoxKeyDown;
+        _inlineTextBox.LostFocus += OnInlineTextBoxLostFocus;
+
+        _annotationCanvas.Children.Add(_inlineTextBox);
+
+        // Rebuild canvas first to show underlying annotations, then focus the text box
+        RebuildAnnotationCanvas();
+
+        Dispatcher.UIThread.Post(() => _inlineTextBox?.Focus(), DispatcherPriority.Input);
+    }
+
+    private void OnInlineTextBoxKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            CommitInlineText();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape)
+        {
+            CancelInlineText();
+            e.Handled = true;
+        }
+    }
+
+    private void OnInlineTextBoxLostFocus(object? sender, RoutedEventArgs e)
+    {
+        // Don't auto-commit if already cleaned up
+        if (_inlineTextBox != null && _editingAnnotation != null)
+        {
+            CommitInlineText();
+        }
+    }
+
+    private void CommitInlineText()
+    {
+        if (_inlineTextBox == null || _editingAnnotation == null) return;
+
+        var text = _inlineTextBox.Text ?? "";
+
+        // Persist final bounds from the inline editor so finalized text remains visible.
+        var left = Canvas.GetLeft(_inlineTextBox);
+        if (double.IsNaN(left))
+        {
+            left = _editingAnnotation.StartPoint.X;
+        }
+
+        var top = Canvas.GetTop(_inlineTextBox);
+        if (double.IsNaN(top))
+        {
+            top = _editingAnnotation.StartPoint.Y;
+        }
+
+        var width = _inlineTextBox.Bounds.Width > 0 ? _inlineTextBox.Bounds.Width : _inlineTextBox.Width;
+        if (double.IsNaN(width) || width <= 0)
+        {
+            width = 10;
+        }
+
+        var height = _inlineTextBox.Bounds.Height > 0 ? _inlineTextBox.Bounds.Height : _inlineTextBox.Height;
+        if (double.IsNaN(height) || height <= 0)
+        {
+            height = 10;
+        }
+
+        _editingAnnotation.StartPoint = new SKPoint((float)left, (float)top);
+        _editingAnnotation.EndPoint = new SKPoint((float)(left + width), (float)(top + height));
+
+        if (_editingAnnotation is TextAnnotation textAnn)
+            textAnn.Text = text;
+        else if (_editingAnnotation is SpeechBalloonAnnotation balloonAnn)
+            balloonAnn.Text = text;
+
+        CleanupInlineTextBox();
+        RebuildAnnotationCanvas();
+    }
+
+    private void CancelInlineText()
+    {
+        if (_editingAnnotation != null)
+        {
+            // Remove the annotation since user cancelled text input
+            _viewModel.EditorCore.RemoveAnnotation(_editingAnnotation);
+            _viewModel.HasAnnotations = _viewModel.EditorCore.Annotations.Count > 0;
+        }
+
+        CleanupInlineTextBox();
+        RebuildAnnotationCanvas();
+    }
+
+    private void CleanupInlineTextBox()
+    {
+        if (_inlineTextBox != null)
+        {
+            _inlineTextBox.KeyDown -= OnInlineTextBoxKeyDown;
+            _inlineTextBox.LostFocus -= OnInlineTextBoxLostFocus;
+            _annotationCanvas?.Children.Remove(_inlineTextBox);
+            _inlineTextBox = null;
+        }
+        _editingAnnotation = null;
     }
 
     #endregion

@@ -11,7 +11,7 @@
         <vm:DebugViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
         <!-- Toolbar -->
         <Border Grid.Row="0" Padding="16" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
                 BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
@@ -24,8 +24,19 @@
             </StackPanel>
         </Border>
 
+        <!-- Diagnostics -->
+        <Border Grid.Row="1" Padding="16" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+            <StackPanel Spacing="4">
+                <TextBlock Text="Secret Store Diagnostics" FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding SecretStoreBackendName, StringFormat=Backend: {0}}"/>
+                <TextBlock Text="{Binding SecretStoreBackendStatus, StringFormat=Status: {0}}"/>
+                <TextBlock Text="{Binding SecretStoreBackendDetails, StringFormat=Details: {0}}"/>
+            </StackPanel>
+        </Border>
+
         <!-- Log Output -->
-        <TextBox Grid.Row="1" 
+        <TextBox Grid.Row="2" 
                  Text="{Binding LogText}"
                  IsReadOnly="True"
                  FontFamily="Consolas, Monospace"

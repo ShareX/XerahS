@@ -10,7 +10,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>..\XerahS.UI\Assets\Logo.ico</ApplicationIcon>
-    <DefineConstants Condition="'$(OS)' == 'Windows_NT'">$(DefineConstants);WINDOWS</DefineConstants>
+    <DefineConstants Condition="'$(OS)' == 'Windows_NT' And '$(CrossCompile)' != 'true'">$(DefineConstants);WINDOWS</DefineConstants>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(DefineConstants);LINUX</DefineConstants>
     <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
@@ -31,7 +31,6 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" Version="11.3.9" />
-    <PackageReference Include="WebView.Avalonia.Desktop" Version="11.0.0.1" />
   </ItemGroup>
   <ItemGroup>
     <!-- Audits tool is only needed for Debug builds (development/auditing) -->
@@ -42,7 +41,7 @@
     <ProjectReference Include="..\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="$(RuntimeIdentifier.StartsWith('osx')) Or ('$(OS)' != 'Windows_NT' And '$(RuntimeIdentifier)' == '')" />
     <ProjectReference Include="..\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="$(RuntimeIdentifier.StartsWith('linux')) Or ('$(OS)' != 'Windows_NT' And '$(RuntimeIdentifier)' == '')" />
   </ItemGroup>
-  <Target Name="CreateMacOSAppBundle" AfterTargets="Publish" Condition="'$(OS)' != 'Windows_NT' And ('$(RuntimeIdentifier)' == 'osx-x64' Or '$(RuntimeIdentifier)' == 'osx-arm64')">
+  <Target Name="CreateMacOSAppBundle" AfterTargets="Publish" Condition="('$(OS)' != 'Windows_NT' Or '$(CrossCompile)' == 'true') And ('$(RuntimeIdentifier)' == 'osx-x64' Or '$(RuntimeIdentifier)' == 'osx-arm64')">
     <PropertyGroup>
     <RootNamespace>XerahS.App</RootNamespace>
       <_MacAppBundle>$(PublishDir)$(AssemblyName).app</_MacAppBundle>
@@ -93,6 +92,9 @@
   <ItemGroup>
     <_DefaultPlugins Include="..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" PluginId="amazons3" />
     <_DefaultPlugins Include="..\Plugins\ShareX.Imgur.Plugin\XerahS.Imgur.Plugin.csproj" PluginId="imgur" />
+    <_DefaultPlugins Include="..\Plugins\ShareX.Paste2.Plugin\XerahS.Paste2.Plugin.csproj" PluginId="paste2" />
+    <_DefaultPlugins Include="..\Plugins\ShareX.GitHubGist.Plugin\XerahS.GitHubGist.Plugin.csproj" PluginId="gist" />
+    <_DefaultPlugins Include="..\Plugins\ShareX.Auto.Plugin\XerahS.Auto.Plugin.csproj" PluginId="auto" />
   </ItemGroup>
 
   <Target Name="BundlePlugins" AfterTargets="Publish" Condition="'$(SkipBundlePlugins)' != 'true'">

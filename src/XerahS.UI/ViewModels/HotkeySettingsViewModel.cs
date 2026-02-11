@@ -64,6 +64,11 @@ public partial class HotkeySettingsViewModel : ViewModelBase
             System.Diagnostics.Debug.WriteLine($"[HotkeySettings] Manager has {_manager.Workflows.Count} hotkeys");
             foreach (var hk in _manager.Workflows)
             {
+                if (hk.Job == WorkflowType.None)
+                {
+                    continue;
+                }
+
                 System.Diagnostics.Debug.WriteLine($"[HotkeySettings] Adding hotkey: {hk.Job} - {hk.HotkeyInfo}");
                 Hotkeys.Add(new HotkeyItemViewModel(hk));
             }
@@ -94,7 +99,7 @@ public partial class HotkeySettingsViewModel : ViewModelBase
         if (_manager == null) return;
 
         // Create new hotkey with default settings
-        var newHotkey = new XerahS.Core.Hotkeys.WorkflowSettings();
+        var newHotkey = new XerahS.Core.Hotkeys.WorkflowSettings(WorkflowType.RectangleRegion, new Platform.Abstractions.HotkeyInfo());
 
         // Add to list (user will configure inline via HotkeySelectionControl)
         _manager.Workflows.Add(newHotkey);
@@ -135,6 +140,7 @@ public partial class HotkeySettingsViewModel : ViewModelBase
                 }
                 SelectedHotkey.Refresh();
                 SaveHotkeys();
+                _manager?.NotifyWorkflowsChanged();
             }
         }
     }
@@ -145,7 +151,10 @@ public partial class HotkeySettingsViewModel : ViewModelBase
         if (SelectedHotkey != null && _manager != null)
         {
             // Shallow copy for now, deep would be better
-            var clone = new XerahS.Core.Hotkeys.WorkflowSettings(SelectedHotkey.Model.Job,
+            var cloneJob = SelectedHotkey.Model.Job == WorkflowType.None
+                ? WorkflowType.RectangleRegion
+                : SelectedHotkey.Model.Job;
+            var clone = new XerahS.Core.Hotkeys.WorkflowSettings(cloneJob,
                 new Platform.Abstractions.HotkeyInfo(
                     SelectedHotkey.Model.HotkeyInfo.Key,
                     SelectedHotkey.Model.HotkeyInfo.Modifiers));

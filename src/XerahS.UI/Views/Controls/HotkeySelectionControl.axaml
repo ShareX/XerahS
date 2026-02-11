@@ -67,7 +67,7 @@
                     Click="TaskButton_Click">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="{Binding Description}" 
-                               FontWeight="{Binding IsSelected, Converter={x:Static vm:BoolToFontWeightConverter.Instance}}"
+                               FontWeight="{Binding $parent[ListBoxItem].IsSelected, Converter={x:Static vm:BoolToFontWeightConverter.Instance}}"
                                VerticalAlignment="Center"/>
 
                 </StackPanel>

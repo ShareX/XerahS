@@ -53,7 +53,31 @@ public class ImgurProvider : UploaderProviderBase
             throw new InvalidOperationException("Failed to deserialize Imgur settings");
         }
 
-        return new ImgurUploader(config);
+        if (Secrets == null)
+        {
+            throw new InvalidOperationException("Secret store not available for Imgur");
+        }
+
+        if (string.IsNullOrWhiteSpace(config.SecretKey))
+        {
+            throw new InvalidOperationException("Imgur secret key is missing");
+        }
+
+        string clientSecret = Secrets.GetSecret(ProviderId, config.SecretKey, "clientSecret")
+            ?? "98871f37e179e496a0149e9c8558487779d424ft";
+
+        var authInfo = new OAuth2Info(config.ClientId, clientSecret);
+        string? tokenJson = Secrets.GetSecret(ProviderId, config.SecretKey, "oauthToken");
+        if (!string.IsNullOrWhiteSpace(tokenJson))
+        {
+            var token = JsonConvert.DeserializeObject<OAuth2Token>(tokenJson);
+            if (token != null)
+            {
+                authInfo.Token = token;
+            }
+        }
+
+        return new ImgurUploader(config, authInfo);
     }
 
     public override Dictionary<UploaderCategory, string[]> GetSupportedFileTypes()

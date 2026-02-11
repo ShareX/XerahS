@@ -113,12 +113,6 @@ public class TaskSettings
             return instanceId;
         }
 
-        // URL shortener falls back to enum until pluginized
-        if (job == WorkflowType.ShortenURL || job == WorkflowType.UploadURL)
-        {
-            return URLShortenerDestination.ToString();
-        }
-
         return string.Empty;
     }
 
@@ -129,18 +123,7 @@ public class TaskSettings
     {
         if (IsValidInstanceId(providerId))
         {
-            if (job != WorkflowType.ShortenURL && job != WorkflowType.UploadURL)
-            {
-                return SetDestinationInstanceId(job, providerId);
-            }
-        }
-
-        // URL shorteners are still enum-based until pluginized
-        if ((job == WorkflowType.ShortenURL || job == WorkflowType.UploadURL) &&
-            Enum.TryParse<UrlShortenerType>(providerId, out var urlDest))
-        {
-            URLShortenerDestination = urlDest;
-            return true;
+            return SetDestinationInstanceId(job, providerId);
         }
 
         return false;
@@ -151,11 +134,6 @@ public class TaskSettings
     /// </summary>
     public string? GetDestinationInstanceId(WorkflowType job)
     {
-        if (job == WorkflowType.ShortenURL || job == WorkflowType.UploadURL)
-        {
-            return UrlShortenerDestinationInstanceId;
-        }
-
         return DestinationInstanceId;
     }
 
@@ -169,15 +147,7 @@ public class TaskSettings
             return false;
         }
 
-        var normalized = NormalizeInstanceId(instanceId);
-
-        if (job == WorkflowType.ShortenURL || job == WorkflowType.UploadURL)
-        {
-            UrlShortenerDestinationInstanceId = normalized;
-            return true;
-        }
-
-        DestinationInstanceId = normalized;
+        DestinationInstanceId = NormalizeInstanceId(instanceId);
         return true;
     }
 

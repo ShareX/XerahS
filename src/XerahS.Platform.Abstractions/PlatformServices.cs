@@ -168,7 +168,29 @@ namespace XerahS.Platform.Abstractions
         /// </summary>
         public static bool IsThemeServiceInitialized => _themeService != null;
 
+        private static IScrollingCaptureService? _scrollingCaptureService;
 
+        /// <summary>
+        /// Optional scrolling capture service for scroll simulation and scroll bar queries.
+        /// Null on platforms that do not support scrolling capture.
+        /// </summary>
+        public static IScrollingCaptureService? ScrollingCapture
+        {
+            get => _scrollingCaptureService;
+            set => _scrollingCaptureService = value;
+        }
+
+        private static IOcrService? _ocrService;
+
+        /// <summary>
+        /// Optional OCR service for text recognition.
+        /// Windows uses native Windows.Media.Ocr, other platforms may use Tesseract.
+        /// </summary>
+        public static IOcrService? Ocr
+        {
+            get => _ocrService;
+            set => _ocrService = value;
+        }
 
         /// <summary>
         /// Initializes platform services with provided implementations
@@ -242,6 +264,8 @@ namespace XerahS.Platform.Abstractions
             _diagnosticService = null;
             _shellIntegrationService = null;
             _themeService = null;
+            _scrollingCaptureService = null;
+            _ocrService = null;
         }
     }
 }

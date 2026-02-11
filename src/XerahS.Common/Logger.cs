@@ -26,6 +26,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace XerahS.Common
 {
@@ -52,9 +53,11 @@ namespace XerahS.Common
         private ConcurrentQueue<string> messageQueue = new ConcurrentQueue<string>();
         private StringBuilder sbMessages = new StringBuilder();
         private string _currentDate = DateTime.Now.ToString("yyyy-MM-dd");
+        private string _baseFileName = string.Empty;
         private bool _disposed = false;
         private int _consecutiveFileWriteFailures = 0;
         private const int MaxFileWriteFailures = 5;
+        private static readonly Regex DateSuffixRegex = new Regex(@"-\d{8}$", RegexOptions.Compiled);
 
         public Logger()
         {
@@ -68,6 +71,10 @@ namespace XerahS.Common
                 LogFilePathTemplate = logFilePath;
                 LogFilePath = logFilePath;
                 _currentDate = DateTime.Now.ToString("yyyy-MM-dd");
+
+                // Extract base filename without date suffix (e.g., "XerahS-20260209" -> "XerahS")
+                string filename = Path.GetFileNameWithoutExtension(logFilePath);
+                _baseFileName = DateSuffixRegex.Replace(filename, string.Empty);
 
                 string? directory = Path.GetDirectoryName(LogFilePath);
 
@@ -94,7 +101,6 @@ namespace XerahS.Common
                 // Build the path with yyyy-MM folder structure
                 string baseTemplate = LogFilePathTemplate;
                 string? directory = Path.GetDirectoryName(baseTemplate);
-                string filename = Path.GetFileNameWithoutExtension(baseTemplate);
                 string extension = Path.GetExtension(baseTemplate);
 
                 // Extract the base directory (before Logs folder)
@@ -113,7 +119,8 @@ namespace XerahS.Common
                 }
 
                 string logDirectory = directory ?? string.Empty;
-                LogFilePath = Path.Combine(logDirectory, $"{filename}-{today}{extension}");
+                // Use _baseFileName (without date suffix) to avoid duplicate dates like "XerahS-20260209-2026-02-10.log"
+                LogFilePath = Path.Combine(logDirectory, $"{_baseFileName}-{today}{extension}");
             }
 
             return LogFilePath;

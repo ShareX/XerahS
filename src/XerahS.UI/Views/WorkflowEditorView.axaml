@@ -129,7 +129,7 @@
 
             <!-- Tab 5: Index Folder -->
             <TabItem Header="Index Folder" IsVisible="{Binding TaskSettings.IsIndexFolderJob}">
-                <views:IndexFolderView DataContext="{Binding IndexFolderConfig}"/>
+                <views:IndexFolderPanel DataContext="{Binding IndexFolderConfig}"/>
             </TabItem>
             
         </TabControl>

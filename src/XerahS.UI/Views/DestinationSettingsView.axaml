@@ -193,7 +193,7 @@
                             </StackPanel>
 
                             <!-- Custom Config -->
-                            <StackPanel Spacing="8">
+                            <StackPanel Spacing="8" IsVisible="{Binding SelectedCategory.SelectedInstance.ConfigView, Converter={x:Static ObjectConverters.IsNotNull}}">
                                 <TextBlock Text="Provider Settings" FontWeight="SemiBold" FontSize="16"/>
                                 <ContentControl Content="{Binding SelectedCategory.SelectedInstance.ConfigView}"/>
                             </StackPanel>

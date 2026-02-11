@@ -1,0 +1,14 @@
+{
+  "pluginId": "gist",
+  "name": "GitHub Gist Text Uploader",
+  "version": "1.0.0",
+  "author": "ShareX Team",
+  "description": "Upload text to GitHub Gist",
+  "apiVersion": "1.0",
+  "entryPoint": "ShareX.GitHubGist.Plugin.GitHubGistProvider",
+  "assemblyFileName": "XerahS.GitHubGist.Plugin.dll",
+  "supportedCategories": ["Text"],
+  "configViewId": "gist",
+  "dependencies": [],
+  "homepageUrl": "https://gist.github.com/"
+}

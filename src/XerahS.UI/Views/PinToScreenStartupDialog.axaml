@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="XerahS.UI.Views.PinToScreenStartupDialog"
+        Title="Pin to Screen"
+        Width="320" Height="240"
+        MinWidth="320" MinHeight="240"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        AutomationProperties.Name="Pin to Screen source selection">
+
+  <StackPanel Margin="24" Spacing="12" VerticalAlignment="Center">
+
+    <TextBlock Text="Select image source to pin:"
+               FontWeight="SemiBold"
+               FontSize="14"
+               HorizontalAlignment="Center"
+               Margin="0,0,0,8" />
+
+    <Button x:Name="FromScreenButton"
+            Content="From Screen"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Center"
+            Classes="accent"
+            AutomationProperties.Name="Capture region from screen" />
+
+    <Button x:Name="FromClipboardButton"
+            Content="From Clipboard"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Center"
+            AutomationProperties.Name="Get image from clipboard" />
+
+    <Button x:Name="FromFileButton"
+            Content="From File"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Center"
+            AutomationProperties.Name="Browse for image file" />
+
+    <Button x:Name="CancelButton"
+            Content="Cancel"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Center"
+            AutomationProperties.Name="Cancel" />
+  </StackPanel>
+</Window>

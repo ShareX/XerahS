@@ -29,6 +29,7 @@ using XerahS.Platform.Linux.Capture;
 using SkiaSharp;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Tmds.DBus;
 
 namespace XerahS.Platform.Linux
@@ -39,6 +40,11 @@ namespace XerahS.Platform.Linux
     /// </summary>
     public class LinuxScreenCaptureService : IScreenCaptureService
     {
+        private const uint PortalResponseSuccess = 0;
+        private const uint PortalResponseCancelled = 1;
+        private const uint PortalResponseFailed = 2;
+        private static int _portalDiagnosticsLogged;
+
         /// <summary>
         /// Check if running on Wayland (where X11 APIs don't work)
         /// </summary>
@@ -113,7 +119,7 @@ namespace XerahS.Platform.Linux
             {
                 // On Wayland, try XDG Portal first - it's the standard cross-DE method
                 DebugHelper.WriteLine("LinuxScreenCaptureService: Trying XDG Portal for interactive region capture");
-                var (portalResult, wasCancelled) = await CaptureWithPortalAsync(forceInteractive: true).ConfigureAwait(false);
+                var (portalResult, portalResponse) = await CaptureWithPortalDetailedAsync(forceInteractive: true).ConfigureAwait(false);
                 if (portalResult != null)
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with XDG Portal");
@@ -121,7 +127,7 @@ namespace XerahS.Platform.Linux
                 }
 
                 // If user explicitly cancelled (pressed Escape), don't try fallback tools
-                if (wasCancelled)
+                if (portalResponse == PortalResponseCancelled)
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: Region capture cancelled by user");
                     return null;
@@ -282,8 +288,8 @@ namespace XerahS.Platform.Linux
         {
             Console.WriteLine($"CaptureRectAsync: Capturing rect - Left={rect.Left}, Top={rect.Top}, Right={rect.Right}, Bottom={rect.Bottom}");
 
-            // Capture full screen and crop
-            var fullBitmap = await CaptureFullScreenAsync();
+            // Capture full screen with the same options and crop.
+            var fullBitmap = await CaptureFullScreenAsync(options);
             if (fullBitmap == null)
             {
                 Console.WriteLine("ERROR: CaptureFullScreenAsync returned null");
@@ -383,7 +389,7 @@ namespace XerahS.Platform.Linux
             if (IsWayland)
             {
                 DebugHelper.WriteLine("LinuxScreenCaptureService: Wayland detected, trying XDG Portal...");
-                var (portalResult, _) = await CaptureWithPortalAsync(forceInteractive: false);
+                var (portalResult, _) = await CaptureWithPortalDetailedAsync(forceInteractive: false);
                 if (portalResult != null)
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: XDG Portal capture succeeded.");
@@ -579,7 +585,7 @@ namespace XerahS.Platform.Linux
             if (IsWayland)
             {
                 DebugHelper.WriteLine("LinuxScreenCaptureService: Wayland active - using portal interactive capture for active window.");
-                var (portalResult, wasCancelled) = await CaptureWithPortalAsync(forceInteractive: true).ConfigureAwait(false);
+                var (portalResult, portalResponse) = await CaptureWithPortalDetailedAsync(forceInteractive: true).ConfigureAwait(false);
                 if (portalResult != null)
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: Portal capture successful.");
@@ -587,7 +593,7 @@ namespace XerahS.Platform.Linux
                 }
 
                 // If user cancelled, don't try fallback tools
-                if (wasCancelled)
+                if (portalResponse == PortalResponseCancelled)
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: Active window capture cancelled by user.");
                     return null;
@@ -1136,15 +1142,12 @@ namespace XerahS.Platform.Linux
         private const string PortalBusName = "org.freedesktop.portal.Desktop";
         private static readonly ObjectPath PortalObjectPath = new("/org/freedesktop/portal/desktop");
 
-        /// <summary>
-        /// Capture screenshot using XDG Desktop Portal Screenshot API.
-        /// This is the standard way to capture on Wayland and works across desktop environments.
-        /// Returns (bitmap, wasCancelled) where wasCancelled is true if user pressed Escape/cancelled.
-        /// </summary>
-        private async Task<(SKBitmap? bitmap, bool wasCancelled)> CaptureWithPortalAsync(bool forceInteractive)
+        private async Task<(SKBitmap? bitmap, uint response)> CaptureWithPortalDetailedAsync(bool forceInteractive)
         {
             try
             {
+                LogPortalDiagnosticsOnce();
+
                 using var connection = new Connection(Address.Session);
                 await connection.ConnectAsync();
 
@@ -1160,34 +1163,36 @@ namespace XerahS.Platform.Linux
                 var (bitmap, response) = await TryPortalScreenshotAsync(connection, portal, options).ConfigureAwait(false);
                 if (bitmap != null)
                 {
-                    return (bitmap, false);
+                    return (bitmap, PortalResponseSuccess);
                 }
 
                 // Response 1 = user cancelled, 2 = error. Retry interactively only on error.
-                if (!forceInteractive && response == 2)
+                if (!forceInteractive && response == PortalResponseFailed)
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: Portal non-interactive capture failed; retrying interactive.");
                     options["interactive"] = true;
                     options["modal"] = true;
-                    var (interactiveBitmap, retryResponse) = await TryPortalScreenshotAsync(connection, portal, options).ConfigureAwait(false);
-                    // If retry was cancelled (response=1), report as cancelled
-                    return (interactiveBitmap, retryResponse == 1);
+                    var (interactiveBitmap, interactiveResponse) = await TryPortalScreenshotAsync(connection, portal, options).ConfigureAwait(false);
+                    if (interactiveBitmap != null)
+                    {
+                        return (interactiveBitmap, PortalResponseSuccess);
+                    }
+
+                    response = interactiveResponse;
                 }
 
-                // Response 1 = user cancelled
-                bool wasCancelled = response == 1;
-                DebugHelper.WriteLine($"LinuxScreenCaptureService: Portal screenshot {(wasCancelled ? "cancelled by user" : "failed")} (response={response})");
-                return (null, wasCancelled);
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: Portal screenshot cancelled or failed (response={response})");
+                return (null, response);
             }
             catch (DBusException ex)
             {
                 DebugHelper.WriteException(ex, "LinuxScreenCaptureService: Portal D-Bus error");
-                return (null, false); // Error, not cancellation
+                return (null, PortalResponseFailed);
             }
             catch (Exception ex)
             {
                 DebugHelper.WriteException(ex, "LinuxScreenCaptureService: Portal capture failed");
-                return (null, false); // Error, not cancellation
+                return (null, PortalResponseFailed);
             }
         }
 
@@ -1292,6 +1297,105 @@ namespace XerahS.Platform.Linux
             DebugHelper.WriteLine($"  - XDG_SESSION_TYPE: {Environment.GetEnvironmentVariable("XDG_SESSION_TYPE") ?? "unset"}");
             DebugHelper.WriteLine($"  - XDG_CURRENT_DESKTOP: {Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") ?? "unset"}");
             DebugHelper.WriteLine($"  - XDG_SESSION_DESKTOP: {Environment.GetEnvironmentVariable("XDG_SESSION_DESKTOP") ?? "unset"}");
+        }
+
+        private static void LogPortalDiagnosticsOnce()
+        {
+            if (Interlocked.Exchange(ref _portalDiagnosticsLogged, 1) != 0)
+            {
+                return;
+            }
+
+            var runningBackends = GetRunningPortalBackends();
+            var routingHint = GetPortalRoutingHint();
+            var portalsConfigSummary = GetPortalsConfigSummary();
+
+            DebugHelper.WriteLine("LinuxScreenCaptureService: XDG portal backend diagnostics:");
+            DebugHelper.WriteLine($"  - Running backends: {runningBackends}");
+            DebugHelper.WriteLine($"  - Routing hint (from desktop session): {routingHint}");
+            DebugHelper.WriteLine($"  - portals.conf: {portalsConfigSummary}");
+            DebugHelper.WriteLine("  - Note: Portal UI is provided by the selected backend and can differ across desktop environments.");
+        }
+
+        private static string GetRunningPortalBackends()
+        {
+            var running = new List<string>();
+
+            TryAddRunningBackend(running, "xdg-desktop-portal-kde", "kde");
+            TryAddRunningBackend(running, "xdg-desktop-portal-gnome", "gnome");
+            TryAddRunningBackend(running, "xdg-desktop-portal-gtk", "gtk");
+            TryAddRunningBackend(running, "xdg-desktop-portal-wlr", "wlr");
+            TryAddRunningBackend(running, "xdg-desktop-portal-hyprland", "hyprland");
+            TryAddRunningBackend(running, "xdg-desktop-portal-lxqt", "lxqt");
+
+            return running.Count > 0 ? string.Join(", ", running) : "none detected";
+        }
+
+        private static void TryAddRunningBackend(List<string> running, string processName, string label)
+        {
+            try
+            {
+                if (Process.GetProcessesByName(processName).Length > 0)
+                {
+                    running.Add(label);
+                }
+            }
+            catch
+            {
+                // Best-effort diagnostics only.
+            }
+        }
+
+        private static string GetPortalRoutingHint()
+        {
+            var desktop = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") ??
+                          Environment.GetEnvironmentVariable("XDG_SESSION_DESKTOP") ??
+                          string.Empty;
+
+            var normalized = desktop.ToUpperInvariant();
+            if (normalized.Contains("KDE") || normalized.Contains("PLASMA"))
+            {
+                return "kde";
+            }
+
+            if (normalized.Contains("GNOME"))
+            {
+                return "gnome";
+            }
+
+            if (normalized.Contains("HYPRLAND"))
+            {
+                return "hyprland/wlr";
+            }
+
+            if (normalized.Contains("SWAY"))
+            {
+                return "wlr";
+            }
+
+            return "unknown";
+        }
+
+        private static string GetPortalsConfigSummary()
+        {
+            var configHome = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+            if (string.IsNullOrWhiteSpace(configHome))
+            {
+                var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                configHome = string.IsNullOrWhiteSpace(userProfile) ? null : Path.Combine(userProfile, ".config");
+            }
+
+            var userConfigPath = string.IsNullOrWhiteSpace(configHome)
+                ? string.Empty
+                : Path.Combine(configHome, "xdg-desktop-portal", "portals.conf");
+            var systemConfigPath = "/etc/xdg-desktop-portal/portals.conf";
+
+            var userConfigState = string.IsNullOrWhiteSpace(userConfigPath)
+                ? "user=unresolved"
+                : $"user={(File.Exists(userConfigPath) ? "present" : "missing")}";
+            var systemConfigState = $"system={(File.Exists(systemConfigPath) ? "present" : "missing")}";
+
+            return $"{userConfigState}, {systemConfigState}";
         }
 
         private static object UnwrapVariant(object value)

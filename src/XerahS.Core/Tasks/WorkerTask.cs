@@ -31,14 +31,16 @@ using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture.ScreenRecording;
 using SkiaSharp;
 using System.Diagnostics;
+using System.Linq;
 using XerahS.History;
 using Avalonia.Threading;
 using System.Drawing;
 using XerahS.Media;
+using XerahS.Uploaders;
 
 namespace XerahS.Core.Tasks
 {
-    public class WorkerTask : IDisposable
+    public partial class WorkerTask : IDisposable
     {
         /// <summary>
         /// Default delay in milliseconds after window activation before capture.
@@ -104,6 +106,15 @@ namespace XerahS.Core.Tasks
         /// </summary>
         public static Func<Task<string?>>? ShowOpenFileDialogCallback { get; set; }
 
+        /// <summary>Callback to open the history window from the UI layer.</summary>
+        public static Action? OpenHistoryCallback { get; set; }
+
+        /// <summary>Callback to exit the application from the UI layer.</summary>
+        public static Action? ExitApplicationCallback { get; set; }
+
+        /// <summary>Callback to toggle hotkey registration from the UI layer.</summary>
+        public static Action? ToggleHotkeysCallback { get; set; }
+
         private WorkerTask(TaskSettings taskSettings, SKBitmap? inputImage = null)
         {
             Status = TaskStatus.InQueue;
@@ -160,6 +171,7 @@ namespace XerahS.Core.Tasks
                     {
                         Title = $"{Info.TaskSettings.Job} Failed",
                         Text = errorMessage,
+                        ErrorDetails = ex.ToString(),
                         Duration = 5f,
                         Size = new SizeI(400, 120),
                         AutoHide = true,
@@ -234,6 +246,46 @@ namespace XerahS.Core.Tasks
 
                 switch (taskSettings.Job)
                 {
+                    case WorkflowType.ClipboardUpload:
+                        if (PlatformServices.Clipboard == null)
+                        {
+                            Status = TaskStatus.Failed;
+                            Error = new Exception("Clipboard service is not available.");
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        if (!TryLoadClipboardContent(taskSettings, metadata, out var clipboardFiles))
+                        {
+                            Status = TaskStatus.Failed;
+                            Error = new Exception("Clipboard is empty or contains unsupported data.");
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        if (clipboardFiles != null && clipboardFiles.Length > 1)
+                        {
+                            await UploadClipboardFilesAsync(taskSettings, clipboardFiles, token);
+                            return;
+                        }
+
+                        break;
+
+                    case WorkflowType.ClipboardUploadWithContentViewer:
+                        bool hasPreloadedUploadContent =
+                            metadata.Image != null ||
+                            !string.IsNullOrEmpty(Info.TextContent) ||
+                            !string.IsNullOrEmpty(Info.FilePath);
+
+                        if (hasPreloadedUploadContent)
+                        {
+                            DebugHelper.WriteLine("ClipboardUploadWithContentViewer: preloaded content detected, bypassing tool callback.");
+                            break;
+                        }
+
+                        await HandleToolWorkflowAsync(token);
+                        return;
+
                     case WorkflowType.PrintScreen:
                         if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
                         {
@@ -585,19 +637,122 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.AbortScreenRecording:
                         await HandleAbortRecordingAsync();
                         return;
+
+                    // Tool Workflows
+                    case WorkflowType.ColorPicker:
+                    case WorkflowType.ScreenColorPicker:
+                    case WorkflowType.QRCode:
+                    case WorkflowType.QRCodeDecodeFromScreen:
+                    case WorkflowType.QRCodeScanRegion:
+                    case WorkflowType.ScrollingCapture:
+                    case WorkflowType.OCR:
+                    case WorkflowType.ImageEditor:
+                    case WorkflowType.HashCheck:
+                    case WorkflowType.PinToScreen:
+                    case WorkflowType.PinToScreenFromScreen:
+                    case WorkflowType.PinToScreenFromClipboard:
+                    case WorkflowType.PinToScreenFromFile:
+                    case WorkflowType.PinToScreenCloseAll:
+                    case WorkflowType.AutoCapture:
+                    case WorkflowType.StartAutoCapture:
+                    case WorkflowType.StopAutoCapture:
+                    case WorkflowType.ImageCombiner:
+                    case WorkflowType.ImageSplitter:
+                    case WorkflowType.ImageThumbnailer:
+                    case WorkflowType.VideoConverter:
+                    case WorkflowType.VideoThumbnailer:
+                    case WorkflowType.AnalyzeImage:
+                    case WorkflowType.ClipboardViewer:
+                        await HandleToolWorkflowAsync(token);
+                        return;
+
+                    // Quick-win capture workflows
+                    case WorkflowType.ActiveMonitor:
+                        if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings!, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
+                        var activeScreenBounds = PlatformServices.Screen.GetActiveScreenBounds();
+                        image = await PlatformServices.ScreenCapture.CaptureRectAsync(
+                            new SKRect(activeScreenBounds.X, activeScreenBounds.Y,
+                                activeScreenBounds.Right, activeScreenBounds.Bottom),
+                            captureOptions);
+                        break;
+
+                    case WorkflowType.CustomRegion:
+                        if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings!, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
+                        var customRect = taskSettings!.CaptureSettings.CaptureCustomRegion;
+                        if (!customRect.IsEmpty)
+                        {
+                            image = await PlatformServices.ScreenCapture.CaptureRectAsync(
+                                new SKRect(customRect.X, customRect.Y, customRect.Right, customRect.Bottom),
+                                captureOptions);
+                        }
+                        break;
+
+                    case WorkflowType.LastRegion:
+                        if (isScreenCaptureDelay && !await ApplyCaptureStartDelayAsync(taskSettings!, workflowCategory, captureDelaySeconds, token))
+                        {
+                            return;
+                        }
+                        var lastRegionRect = taskSettings!.CaptureSettings.CaptureCustomRegion;
+                        if (!lastRegionRect.IsEmpty)
+                        {
+                            image = await PlatformServices.ScreenCapture.CaptureRectAsync(
+                                new SKRect(lastRegionRect.X, lastRegionRect.Y,
+                                    lastRegionRect.Right, lastRegionRect.Bottom),
+                                captureOptions);
+                        }
+                        break;
+
+                    // Quick-win "Other" workflows
+                    case WorkflowType.OpenScreenshotsFolder:
+                        var screenshotsDir = TaskHelpers.GetScreenshotsFolder(taskSettings);
+                        if (Directory.Exists(screenshotsDir))
+                        {
+                            PlatformServices.System.OpenFile(screenshotsDir);
+                        }
+                        return;
+
+                    case WorkflowType.OpenHistory:
+                    case WorkflowType.OpenImageHistory:
+                        OpenHistoryCallback?.Invoke();
+                        return;
+
+                    case WorkflowType.ExitShareX:
+                        ExitApplicationCallback?.Invoke();
+                        return;
+
+                    case WorkflowType.DisableHotkeys:
+                        ToggleHotkeysCallback?.Invoke();
+                        return;
                 }
 
                 captureStopwatch.Stop();
+
+                bool hasClipboardPayload = taskSettings?.Job is WorkflowType.ClipboardUpload or WorkflowType.ClipboardUploadWithContentViewer
+                    && (metadata.Image != null || !string.IsNullOrEmpty(Info.TextContent) || !string.IsNullOrEmpty(Info.FilePath));
 
                 if (image != null)
                 {
                     metadata.Image = image;
                     DebugHelper.WriteLine($"Captured image: {image.Width}x{image.Height} in {captureStopwatch.ElapsedMilliseconds}ms");
                 }
+                else if (hasClipboardPayload)
+                {
+                    DebugHelper.WriteLine($"Clipboard content loaded: dataType={Info.DataType}, filePath=\"{Info.FilePath}\", textLength={(Info.TextContent?.Length ?? 0)}");
+                }
                 else if ((taskSettings?.Job == WorkflowType.FileUpload || taskSettings?.Job == WorkflowType.IndexFolder) &&
                          !string.IsNullOrEmpty(Info.FilePath))
                 {
                     DebugHelper.WriteLine($"FileUpload selected file: {Info.FilePath}");
+                }
+                else if (!string.IsNullOrEmpty(Info.TextContent) && Info.Job == TaskJob.TextUpload)
+                {
+                    DebugHelper.WriteLine($"Text content pre-loaded: textLength={Info.TextContent.Length}");
                 }
                 else
                 {
@@ -645,88 +800,16 @@ namespace XerahS.Core.Tasks
             // Execute Upload Job
             var uploadProcessor = new UploadJobProcessor();
             await uploadProcessor.ProcessAsync(Info, token);
-        }
 
-        private bool TryIndexFolder(TaskSettings taskSettings, out string? outputPath)
-        {
-            outputPath = null;
-
-            if (taskSettings?.ToolsSettings == null)
+            if (ShouldRequireSuccessfulUpload(Info) && !IsUploadResultSuccessful(Info.Result))
             {
-                DebugHelper.WriteLine("IndexFolder: ToolsSettings missing.");
-                return false;
+                string message = string.IsNullOrWhiteSpace(Info.Result?.Response)
+                    ? "Upload failed."
+                    : Info.Result.Response!;
+
+                DebugHelper.WriteLine($"Upload failed during task execution: {message}");
+                throw new InvalidOperationException(message);
             }
-
-            string folderPath = taskSettings.ToolsSettings.IndexerFolderPath;
-            if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
-            {
-                DebugHelper.WriteLine($"IndexFolder: Folder path invalid: '{folderPath}'");
-                return false;
-            }
-
-            try
-            {
-                var coreSettings = taskSettings.ToolsSettings.IndexerSettings ?? new IndexerSettings();
-                var indexerSettings = BuildIndexerSettings(coreSettings);
-
-                string output = XerahS.Indexer.Indexer.Index(folderPath, indexerSettings);
-                outputPath = WriteIndexOutput(taskSettings, folderPath, output, coreSettings.Output);
-                return !string.IsNullOrEmpty(outputPath);
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex, "IndexFolder: indexing failed");
-                return false;
-            }
-        }
-
-        private static XerahS.Indexer.IndexerSettings BuildIndexerSettings(IndexerSettings settings)
-        {
-            var indexerSettings = new XerahS.Indexer.IndexerSettings
-            {
-                Output = (XerahS.Indexer.IndexerOutput)settings.Output,
-                SkipHiddenFolders = settings.SkipHiddenFolders,
-                SkipHiddenFiles = settings.SkipHiddenFiles,
-                SkipFiles = settings.SkipFiles,
-                MaxDepthLevel = settings.MaxDepthLevel,
-                ShowSizeInfo = settings.ShowSizeInfo,
-                AddFooter = settings.AddFooter,
-                IndentationText = settings.IndentationText,
-                AddEmptyLineAfterFolders = settings.AddEmptyLineAfterFolders,
-                UseCustomCSSFile = settings.UseCustomCSSFile,
-                DisplayPath = settings.DisplayPath,
-                DisplayPathLimited = settings.DisplayPathLimited,
-                CustomCSSFilePath = settings.CustomCSSFilePath,
-                UseAttribute = settings.UseAttribute,
-                CreateParseableJson = settings.CreateParseableJson
-            };
-
-            indexerSettings.BinaryUnits = settings.BinaryUnits;
-            return indexerSettings;
-        }
-
-        private static string WriteIndexOutput(TaskSettings taskSettings, string folderPath, string output, IndexerOutput outputType)
-        {
-            string extension = GetIndexFolderExtension(outputType);
-            string screenshotsFolder = TaskHelpers.GetScreenshotsFolder(taskSettings);
-            Directory.CreateDirectory(screenshotsFolder);
-
-            string fileName = TaskHelpers.GetFileName(taskSettings, extension);
-            string resolvedPath = TaskHelpers.HandleExistsFile(screenshotsFolder, fileName, taskSettings);
-            File.WriteAllText(resolvedPath, output);
-            return resolvedPath;
-        }
-
-        private static string GetIndexFolderExtension(IndexerOutput outputType)
-        {
-            return outputType switch
-            {
-                IndexerOutput.Html => "html",
-                IndexerOutput.Txt => "txt",
-                IndexerOutput.Xml => "xml",
-                IndexerOutput.Json => "json",
-                _ => "txt"
-            };
         }
 
         public void Stop()
@@ -736,32 +819,6 @@ namespace XerahS.Core.Tasks
                 Status = TaskStatus.Stopping;
                 OnStatusChanged();
                 _cancellationTokenSource.Cancel();
-            }
-        }
-
-        private async Task<bool> ApplyCaptureStartDelayAsync(TaskSettings taskSettings, string category, double delaySeconds, CancellationToken token)
-        {
-            if (delaySeconds <= 0)
-            {
-                return true;
-            }
-
-            var delayMs = (int)Math.Round(delaySeconds * 1000, MidpointRounding.AwayFromZero);
-            var workflowId = string.IsNullOrWhiteSpace(taskSettings.WorkflowId) ? "none" : taskSettings.WorkflowId;
-            TroubleshootingHelper.Log(taskSettings.Job.ToString(), "CAPTURE_DELAY", $"WorkflowId={workflowId}, Category={category}, DelaySeconds={delaySeconds:F3}, DelayMs={delayMs}");
-
-            try
-            {
-                await Task.Delay(delayMs, token);
-                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "CAPTURE_DELAY", $"WorkflowId={workflowId}, Category={category}, DelayCompleted=true");
-                return true;
-            }
-            catch (OperationCanceledException)
-            {
-                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "CAPTURE_DELAY", $"WorkflowId={workflowId}, Category={category}, DelayCancelled=true");
-                Status = TaskStatus.Stopped;
-                OnStatusChanged();
-                return false;
             }
         }
 
@@ -832,315 +889,6 @@ namespace XerahS.Core.Tasks
             }
         }
 
-        private async Task HandleStartRecordingAsync(CaptureMode mode, IntPtr windowHandle = default, Rectangle? region = null)
-        {
-            var taskSettings = Info.TaskSettings ?? new TaskSettings();
-            var metadata = Info.Metadata ?? new TaskMetadata();
-
-            TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", $"HandleStartRecordingAsync Entry: mode={mode}, region={region}");
-
-            try
-            {
-                // Note: We don't check IsRecording here because App.axaml.cs ensures we only get here if NOT recording.
-
-                // Build recording options from task settings
-                taskSettings.CaptureSettings ??= new TaskSettingsCapture();
-                var captureSettings = taskSettings.CaptureSettings;
-
-                var recordingOptions = new RecordingOptions
-                {
-                    Mode = mode,
-                    Settings = captureSettings.ScreenRecordingSettings,
-                    TargetWindowHandle = windowHandle,
-                    UseModernCapture = captureSettings.UseModernCapture
-                };
-
-                // Set region if provided (for Region mode)
-                if (region.HasValue)
-                {
-                    recordingOptions.Region = region.Value;
-                    TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", $"Recording region set: {region.Value}");
-                }
-
-                // [2026-01-10T14:40:00+08:00] Align screen recording output with screenshot naming/destination using TaskHelpers.
-                var recordingMetadata = metadata;
-                string recordingsFolder = TaskHelpers.GetScreenshotsFolder(taskSettings, recordingMetadata);
-                string fileName = TaskHelpers.GetFileName(taskSettings, "mp4", recordingMetadata);
-                Directory.CreateDirectory(recordingsFolder);
-                var resolvedPath = TaskHelpers.HandleExistsFile(recordingsFolder, fileName, taskSettings);
-                recordingOptions.OutputPath = resolvedPath;
-                Info.FilePath = resolvedPath;
-                Info.DataType = EDataType.File;
-                DebugHelper.WriteLine($"[PathTrace {Info.CorrelationId}] ScreenRecorder resolved path: dir=\"{recordingsFolder}\", fileName=\"{fileName}\", fullPath=\"{resolvedPath}\"");
-
-                if (recordingOptions.Settings != null &&
-                    (recordingOptions.Settings.CaptureSystemAudio || recordingOptions.Settings.CaptureMicrophone))
-                {
-                    // Force FFmpeg path until native audio capture is implemented
-                    recordingOptions.Settings.ForceFFmpeg = true;
-                }
-
-                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Calling ScreenRecordingManager.StartRecordingAsync");
-                DebugHelper.WriteLine($"Starting recording: Mode={mode}, Codec={recordingOptions.Settings?.Codec}, FPS={recordingOptions.Settings?.FPS}");
-                DebugHelper.WriteLine($"Output path: {recordingOptions.OutputPath}");
-
-                // 1. Start recording
-                await ScreenRecordingManager.Instance.StartRecordingAsync(recordingOptions);
-                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "ScreenRecordingManager.StartRecordingAsync completed");
-
-                // 2. Wait for stop signal (ASYNC WAIT - Yields thread, keeps task alive)
-                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Waiting for stop signal...");
-                await ScreenRecordingManager.Instance.WaitForStopSignalAsync();
-                TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Stop signal received. Resuming...");
-
-                // 3. Stop recording
-                DebugHelper.WriteLine("Stopping recording...");
-                string? outputPath = await ScreenRecordingManager.Instance.StopRecordingAsync();
-                DebugHelper.WriteLine($"[GIF] StopRecordingAsync returned: {(string.IsNullOrEmpty(outputPath) ? "(null)" : outputPath)} (exists={(!string.IsNullOrEmpty(outputPath) && File.Exists(outputPath))})");
-
-                if (string.IsNullOrEmpty(outputPath) && !string.IsNullOrEmpty(Info.FilePath) && File.Exists(Info.FilePath))
-                {
-                    DebugHelper.WriteLine($"[GIF] StopRecordingAsync returned null but Info.FilePath exists. Recovering path: {Info.FilePath}");
-                    outputPath = Info.FilePath;
-                }
-
-                if (!string.IsNullOrEmpty(outputPath))
-                {
-                    DebugHelper.WriteLine($"Recording saved to: {outputPath}");
-                    Info.FilePath = outputPath;
-                    Info.DataType = EDataType.File;
-
-                    bool isGifJob = taskSettings.Job == WorkflowType.ScreenRecorderGIF ||
-                                    taskSettings.Job == WorkflowType.ScreenRecorderGIFActiveWindow ||
-                                    taskSettings.Job == WorkflowType.ScreenRecorderGIFCustomRegion ||
-                                    taskSettings.Job == WorkflowType.StartScreenRecorderGIF;
-                    DebugHelper.WriteLine($"[GIF] isGifJob={isGifJob}, Job={taskSettings.Job}");
-
-                    if (isGifJob && !string.IsNullOrEmpty(outputPath) && File.Exists(outputPath))
-                    {
-                         TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Converting video to GIF...");
-                         DebugHelper.WriteLine($"[GIF] Conversion requested. Job={taskSettings.Job}, Source={outputPath}");
-                         string gifPath = Path.ChangeExtension(outputPath, ".gif");
-                         int gifFps = taskSettings.CaptureSettings?.GIFFPS > 0
-                             ? taskSettings.CaptureSettings.GIFFPS
-                             : taskSettings.CaptureSettings?.ScreenRecordingSettings?.FPS ?? 15;
-                         var ffmpegOptions = taskSettings.CaptureSettings?.FFmpegOptions;
-                         string? ffmpegPath = ResolveGifFFmpegPath(ffmpegOptions);
-                         DebugHelper.WriteLine($"[GIF] FFmpegPath={(string.IsNullOrWhiteSpace(ffmpegPath) ? "(missing)" : ffmpegPath)}");
-                         if (string.IsNullOrWhiteSpace(ffmpegPath))
-                         {
-                             TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "FFmpeg not found. GIF conversion skipped.");
-                             DebugHelper.WriteLine("FFmpeg not found. GIF conversion skipped.");
-                             try
-                             {
-                                 PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
-                                 {
-                                     Title = "GIF Conversion Skipped",
-                                     Text = "FFmpeg not found. Configure or download FFmpeg to enable GIF output.",
-                                     Duration = 5f,
-                                     Size = new SizeI(420, 120),
-                                     AutoHide = true,
-                                     LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
-                                 });
-                             }
-                             catch
-                             {
-                                 // Ignore toast errors
-                             }
-                         }
-                         var videoHelpers = new VideoHelpers(ffmpegPath);
-                         string? statsMode = ffmpegOptions?.GIFStatsMode.ToString();
-                         string? dither = ffmpegOptions?.GIFDither.ToString();
-                         int bayerScale = ffmpegOptions?.GIFBayerScale ?? 2;
-                         int maxWidth = ffmpegOptions?.GIFMaxWidth > 0 ? ffmpegOptions.GIFMaxWidth : -1;
-                         bool paletteNew = ffmpegOptions != null &&
-                             ffmpegOptions.GIFStatsMode == XerahS.Core.FFmpegPaletteGenStatsMode.single;
-                         DebugHelper.WriteLine($"[GIF] Settings: fps={gifFps}, maxWidth={maxWidth}, statsMode={statsMode}, dither={dither}, bayerScale={bayerScale}, paletteNew={paletteNew}");
-                         bool success = await videoHelpers.ConvertToGifAsync(
-                             outputPath,
-                             gifPath,
-                             gifFps,
-                             maxWidth,
-                             statsMode,
-                             dither,
-                             bayerScale,
-                             paletteNew);
-                         DebugHelper.WriteLine($"[GIF] Conversion result: success={success}, output={(File.Exists(gifPath) ? gifPath : "(missing)")}");
-                         
-                         if (success)
-                         {
-                             TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Conversion successful. Switching result to GIF.");
-                             
-                             // Delete original MP4 if conversion succeeded
-                             try { File.Delete(outputPath); } catch { }
-                             
-                             outputPath = gifPath;
-                             Info.FilePath = outputPath;
-                         }
-                         else
-                         {
-                             TroubleshootingHelper.Log(taskSettings.Job.ToString(), "WORKER_TASK", "Conversion failed. Keeping MP4.");
-                         }
-                    }
-                    
-                    // Handle After Capture tasks for recordings (manual handling since CaptureJobProcessor is for images)
-                    if (taskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyImageToClipboard))
-                    {
-                         if (PlatformServices.IsInitialized && !string.IsNullOrEmpty(outputPath))
-                         {
-                             try
-                             {
-                                 // For files/recordings, "Copy Image" implies copying file to clipboard
-                                 PlatformServices.Clipboard.SetFileDropList(new[] { outputPath });
-                                 DebugHelper.WriteLine($"[GIF] Copied recording to clipboard: {outputPath}");
-                             }
-                             catch (Exception ex)
-                             {
-                                 DebugHelper.WriteException(ex, "Failed to copy recording to clipboard");
-                             }
-                         }
-                    }
-                    
-                    // Reuse upload pipeline for recordings; flag upload when AfterUpload tasks exist.
-                    if (taskSettings.AfterUploadJob != AfterUploadTasks.None)
-                    {
-                        taskSettings.AfterCaptureJob |= AfterCaptureTasks.UploadImageToHost;
-                    }
-
-                    var uploadProcessor = new UploadJobProcessor();
-                    await uploadProcessor.ProcessAsync(Info, _cancellationTokenSource.Token);
-
-                    // Add to History with retry logic for transient failures
-                    const int MaxRetries = 3;
-                    bool historySaved = false;
-
-                    for (int retry = 0; retry < MaxRetries; retry++)
-                    {
-                        try
-                        {
-                            var historyPath = SettingsManager.GetHistoryFilePath();
-                            using var historyManager = new HistoryManagerSQLite(historyPath);
-                            var historyItem = new HistoryItem
-                            {
-                                FilePath = outputPath,
-                                FileName = Path.GetFileName(outputPath),
-                                DateTime = DateTime.Now,
-                                Type = "Video",
-                                URL = metadata.UploadURL ?? string.Empty // Will be populated if upload succeeded
-                            };
-
-                            DebugHelper.WriteLine($"[HistoryTrace] Preparing to add item. URL='{historyItem.URL}', File='{historyItem.FileName}'");
-
-                            await Task.Run(() => historyManager.AppendHistoryItem(historyItem));
-                            DebugHelper.WriteLine($"Added recording to history: {historyItem.FileName} (URL: {historyItem.URL})");
-                            historySaved = true;
-                            break; // Success - exit retry loop
-                        }
-                        catch (Microsoft.Data.Sqlite.SqliteException ex) when (ex.SqliteErrorCode == 5 && retry < MaxRetries - 1)
-                        {
-                            // SQLITE_BUSY - database locked, retry after delay
-                            DebugHelper.WriteLine($"History database busy, retry {retry + 1}/{MaxRetries}");
-                            await Task.Delay(100 * (retry + 1));
-                        }
-                        catch (Exception ex)
-                        {
-                            DebugHelper.WriteException(ex, "Failed to add recording to history");
-
-                            // Notify user on final failure
-                            if (retry == MaxRetries - 1)
-                            {
-                                try
-                                {
-                                    PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
-                                    {
-                                        Title = "History Save Failed",
-                                        Text = "Recording completed but could not be added to history. Check disk space and logs.",
-                                        Duration = 5f,
-                                        Size = new SizeI(400, 120),
-                                        AutoHide = true,
-                                        LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
-                                    });
-                                }
-                                catch
-                                {
-                                    // Ignore toast errors
-                                }
-                            }
-                            break;
-                        }
-                    }
-
-                    if (!historySaved)
-                    {
-                        DebugHelper.WriteLine("WARNING: Recording completed successfully but history record was not saved.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex, "Failed during recording workflow");
-
-                // Show user-facing error message
-                string errorMessage = ex switch
-                {
-                    FileNotFoundException => "FFmpeg not found. Please install FFmpeg to enable screen recording.",
-                    PlatformNotSupportedException => "Screen recording is not supported on this system.",
-                    InvalidOperationException when ex.Message.Contains("not available") =>
-                        "Screen recording is not available. On Linux Wayland, ensure xdg-desktop-portal with ScreenCast support and PipeWire are installed.",
-                    InvalidOperationException when ex.Message.Contains("initialization") =>
-                        "Screen recording initialization failed. Check that required services are running.",
-                    _ => $"Failed to start recording: {ex.Message}"
-                };
-
-                try
-                {
-                    PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
-                    {
-                        Title = "Recording Failed",
-                        Text = errorMessage,
-                        Duration = 8f,
-                        Size = new SizeI(450, 140),
-                        AutoHide = true,
-                        LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
-                    });
-                }
-                catch
-                {
-                    // Ignore toast errors
-                }
-
-                throw;
-            }
-        }
-
-        private async Task HandleStopRecordingAsync()
-        {
-             // Legacy handler - mapped to SignalStop in UI now
-             await Task.CompletedTask;
-        }
-
-        private async Task HandleAbortRecordingAsync()
-        {
-             // Legacy handler
-             await ScreenRecordingManager.Instance.AbortRecordingAsync();
-        }
-
-        private async Task HandlePauseRecordingAsync()
-        {
-             await ScreenRecordingManager.Instance.TogglePauseResumeAsync();
-        }
-
-        private static string? ResolveGifFFmpegPath(FFmpegOptions? ffmpegOptions)
-        {
-            if (ffmpegOptions != null && !string.IsNullOrWhiteSpace(ffmpegOptions.CLIPath))
-            {
-                return ffmpegOptions.CLIPath;
-            }
-
-            string detectedPath = PathsManager.GetFFmpegPath();
-            return string.IsNullOrWhiteSpace(detectedPath) ? null : detectedPath;
-        }
-
         #endregion
 
         protected virtual void OnStatusChanged()
@@ -1151,6 +899,24 @@ namespace XerahS.Core.Tasks
         protected virtual void OnTaskCompleted()
         {
             TaskCompleted?.Invoke(this, EventArgs.Empty);
+        }
+
+        private static bool ShouldRequireSuccessfulUpload(TaskInfo info)
+        {
+            return info.IsUploadJob &&
+                   (info.DataType == EDataType.Image ||
+                    info.DataType == EDataType.Text ||
+                    info.DataType == EDataType.File);
+        }
+
+        private static bool IsUploadResultSuccessful(UploadResult? result)
+        {
+            if (result == null)
+            {
+                return false;
+            }
+
+            return result.IsSuccess || (!result.IsError && !string.IsNullOrWhiteSpace(result.URL));
         }
 
         public void Dispose()

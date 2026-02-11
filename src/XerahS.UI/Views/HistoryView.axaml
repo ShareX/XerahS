@@ -24,6 +24,9 @@
             <MenuItem Header="Open File" 
                       Command="{Binding $parent[UserControl].DataContext.OpenFileCommand}"
                       CommandParameter="{Binding}"/>
+            <MenuItem Header="Upload" 
+                      Command="{Binding $parent[UserControl].DataContext.UploadItemCommand}"
+                      CommandParameter="{Binding}"/>
             <MenuItem Header="Show in Explorer" 
                       Command="{Binding $parent[UserControl].DataContext.OpenFolderCommand}"
                       CommandParameter="{Binding}"/>

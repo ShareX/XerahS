@@ -33,6 +33,7 @@ using Newtonsoft.Json.Converters;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using XerahS.Common;
 using XerahS.Common.Converters;
 using XerahS.Core;
@@ -72,13 +73,6 @@ public partial class IndexFolderViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RenderHtmlPreviewCommand))]
     private bool _isHtmlOutput;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(RenderHtmlPreviewCommand))]
-    private bool _isHtmlPreviewEnabled;
-
-    [ObservableProperty]
-    private string _htmlPreviewPath = string.Empty;
 
     [ObservableProperty]
     private string _folderPathError = string.Empty;
@@ -337,7 +331,9 @@ public partial class IndexFolderViewModel : ViewModelBase
 
     public string PrimaryActionLabel => IsWorkflowConfigMode ? "Test Index" : "Index";
 
-    public bool ShowHtmlPreview => IsHtmlPreviewEnabled && IsHtmlOutput && !string.IsNullOrEmpty(HtmlPreviewPath);
+    /// <summary>
+    /// Opens the HTML output in the system default browser.
+    /// </summary>
 
     public bool HasFolderPathError => !string.IsNullOrWhiteSpace(FolderPathError);
 
@@ -412,6 +408,7 @@ public partial class IndexFolderViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasOutput));
         OnPropertyChanged(nameof(CanUpload));
         OnPropertyChanged(nameof(CanSave));
+        OnPropertyChanged(nameof(CanRenderHtml));
 
         try
         {
@@ -437,6 +434,7 @@ public partial class IndexFolderViewModel : ViewModelBase
             OnPropertyChanged(nameof(HasOutput));
             OnPropertyChanged(nameof(CanUpload));
             OnPropertyChanged(nameof(CanSave));
+            OnPropertyChanged(nameof(CanRenderHtml));
         }
     }
 
@@ -449,11 +447,10 @@ public partial class IndexFolderViewModel : ViewModelBase
 
     partial void OnOutputTextChanged(string value)
     {
-        UpdateHtmlPreview(value);
         OnPropertyChanged(nameof(HasOutput));
         OnPropertyChanged(nameof(CanUpload));
         OnPropertyChanged(nameof(CanSave));
-        OnPropertyChanged(nameof(ShowHtmlPreview));
+        OnPropertyChanged(nameof(CanRenderHtml));
     }
 
     partial void OnGeneratedFilePathChanged(string value)
@@ -465,13 +462,6 @@ public partial class IndexFolderViewModel : ViewModelBase
     private void OnOutputChanged(IndexerOutput value)
     {
         IsHtmlOutput = value == IndexerOutput.Html;
-        if (!IsHtmlOutput)
-        {
-            IsHtmlPreviewEnabled = false;
-        }
-
-        UpdateHtmlPreview(OutputText);
-        OnPropertyChanged(nameof(ShowHtmlPreview));
     }
 
 
@@ -542,13 +532,43 @@ public partial class IndexFolderViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanRenderHtml))]
     private void RenderHtmlPreview()
     {
-        if (!CanRenderHtml)
+        if (!CanRenderHtml || string.IsNullOrWhiteSpace(OutputText))
         {
             return;
         }
 
-        IsHtmlPreviewEnabled = true;
-        OnPropertyChanged(nameof(ShowHtmlPreview));
+        try
+        {
+            // Write HTML to temp file and open in system default browser
+            File.WriteAllText(_tempHtmlPath, OutputText);
+            OpenInSystemBrowser(_tempHtmlPath);
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "IndexFolder: Failed to open HTML preview");
+        }
+    }
+
+    private static void OpenInSystemBrowser(string filePath)
+    {
+        string url = filePath;
+        if (!url.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+        {
+            url = "file://" + url.Replace('\\', '/');
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            Process.Start("xdg-open", url);
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            Process.Start("open", url);
+        }
     }
 
     private static XerahS.Indexer.IndexerSettings BuildIndexerSettings(XerahS.Core.IndexerSettings settings)
@@ -640,25 +660,7 @@ public partial class IndexFolderViewModel : ViewModelBase
         }
     }
 
-    private void UpdateHtmlPreview(string output)
-    {
-        if (!IsHtmlOutput || string.IsNullOrWhiteSpace(output))
-        {
-            HtmlPreviewPath = string.Empty;
-            return;
-        }
 
-        try
-        {
-            File.WriteAllText(_tempHtmlPath, output);
-            HtmlPreviewPath = _tempHtmlPath;
-        }
-        catch (Exception ex)
-        {
-            DebugHelper.WriteException(ex, "IndexFolder: HTML preview write failed");
-            HtmlPreviewPath = string.Empty;
-        }
-    }
 
     private TaskSettings GetUploadTaskSettings()
     {

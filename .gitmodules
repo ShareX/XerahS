@@ -1,0 +1,4 @@
+[submodule "XerahS.Editor"]
+	path = XerahS.Editor
+	url = https://github.com/ShareX/XerahS.Editor.git
+	branch = integrate/feature-jx-018-025-manual

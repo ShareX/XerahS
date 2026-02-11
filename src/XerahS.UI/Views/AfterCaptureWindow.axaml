@@ -8,100 +8,194 @@
         x:DataType="vm:AfterCaptureViewModel"
         Title="After Capture Tasks"
         Icon="/Assets/Logo.ico"
-        Width="900" Height="600"
+        Width="{DynamicResource WindowWidth}"
+        Height="{DynamicResource WindowHeight}"
+        MinWidth="{DynamicResource WindowMinWidth}"
+        MinHeight="{DynamicResource WindowMinHeight}"
         WindowStartupLocation="CenterOwner">
 
   <Design.DataContext>
     <vm:AfterCaptureViewModel/>
   </Design.DataContext>
 
-  <Grid ColumnDefinitions="2*, 24, *" RowDefinitions="*, 24, Auto" Margin="24">
-    
-    <!-- Preview Section -->
-    <Border Grid.Column="0" Grid.Row="0"
-            BorderThickness="1"
-            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-            CornerRadius="4"
-            Padding="16">
-      <ScrollViewer>
-        <Image Source="{Binding PreviewImage}"
-               Stretch="Uniform"
-               AutomationProperties.Name="Capture Preview"/>
-      </ScrollViewer>
+  <Window.Resources>
+    <x:Double x:Key="WindowWidth">960</x:Double>
+    <x:Double x:Key="WindowHeight">640</x:Double>
+    <x:Double x:Key="WindowMinWidth">760</x:Double>
+    <x:Double x:Key="WindowMinHeight">520</x:Double>
+
+    <x:Double x:Key="SpaceXS">4</x:Double>
+    <x:Double x:Key="SpaceS">8</x:Double>
+    <x:Double x:Key="SpaceM">12</x:Double>
+    <x:Double x:Key="SpaceL">16</x:Double>
+    <x:Double x:Key="SpaceXL">24</x:Double>
+
+    <x:Double x:Key="FontTitle">22</x:Double>
+    <x:Double x:Key="FontSection">16</x:Double>
+    <x:Double x:Key="FontBody">13</x:Double>
+    <x:Double x:Key="FontCaption">12</x:Double>
+
+    <x:Double x:Key="ControlHeight">40</x:Double>
+    <x:Double x:Key="ButtonMinWidth">100</x:Double>
+    <x:Double x:Key="PreviewMinHeight">240</x:Double>
+
+    <Thickness x:Key="PagePadding">24</Thickness>
+    <Thickness x:Key="CardPadding">16</Thickness>
+    <Thickness x:Key="CardPaddingCompact">12</Thickness>
+    <Thickness x:Key="ButtonPadding">16,8</Thickness>
+    <Thickness x:Key="CheckBoxPadding">8,4</Thickness>
+    <Thickness x:Key="BorderThin">1</Thickness>
+
+    <CornerRadius x:Key="CornerMd">8</CornerRadius>
+    <CornerRadius x:Key="CornerLg">12</CornerRadius>
+  </Window.Resources>
+
+  <Window.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="FontSize" Value="{StaticResource FontBody}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    </Style>
+    <Style Selector="TextBlock.title">
+      <Setter Property="FontSize" Value="{StaticResource FontTitle}"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="TextBlock.section-header">
+      <Setter Property="FontSize" Value="{StaticResource FontSection}"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="TextBlock.caption">
+      <Setter Property="FontSize" Value="{StaticResource FontCaption}"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+    </Style>
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+      <Setter Property="BorderThickness" Value="{StaticResource BorderThin}"/>
+      <Setter Property="CornerRadius" Value="{StaticResource CornerLg}"/>
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="MinHeight" Value="{StaticResource ControlHeight}"/>
+      <Setter Property="MinWidth" Value="{StaticResource ButtonMinWidth}"/>
+      <Setter Property="Padding" Value="{StaticResource ButtonPadding}"/>
+      <Setter Property="CornerRadius" Value="{StaticResource CornerMd}"/>
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.12"/>
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Button:disabled">
+      <Setter Property="Opacity" Value="0.6"/>
+    </Style>
+    <Style Selector="CheckBox">
+      <Setter Property="FontSize" Value="{StaticResource FontBody}"/>
+      <Setter Property="MinHeight" Value="{StaticResource ControlHeight}"/>
+      <Setter Property="Padding" Value="{StaticResource CheckBoxPadding}"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto, *, Auto"
+        Margin="{StaticResource PagePadding}"
+        RowSpacing="{StaticResource SpaceXL}">
+
+    <!-- Header -->
+    <Border Grid.Row="0" Classes="card" Padding="{StaticResource CardPadding}">
+      <Grid RowDefinitions="Auto, Auto" RowSpacing="{StaticResource SpaceXS}">
+        <TextBlock Text="After capture tasks" Classes="title" AutomationProperties.Name="After Capture Title"/>
+        <TextBlock Grid.Row="1"
+                   Text="Choose what happens to the image before you continue."
+                   Classes="caption"
+                   AutomationProperties.Name="After Capture Description"/>
+      </Grid>
     </Border>
 
-    <!-- Settings Section -->
-    <ScrollViewer Grid.Column="2" Grid.Row="0">
-      <StackPanel Spacing="24">
-        
-        <!-- After Capture Tasks -->
-        <StackPanel Spacing="8">
-          <TextBlock Text="After Capture" FontWeight="SemiBold" FontSize="16"/>
-          <Border BorderThickness="1"
-                  BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                  Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                  CornerRadius="4"
-                  Padding="16">
-            <StackPanel Spacing="16">
-              <CheckBox Content="Save image to file" 
+    <!-- Content -->
+    <Grid Grid.Row="1" ColumnDefinitions="2.2*, 1*" ColumnSpacing="{StaticResource SpaceXL}">
+      <!-- Preview Column -->
+      <Grid Grid.Column="0" RowDefinitions="Auto, *" RowSpacing="{StaticResource SpaceS}">
+        <StackPanel Spacing="{StaticResource SpaceXS}">
+          <TextBlock Text="Preview" Classes="section-header" AutomationProperties.Name="Preview Heading"/>
+          <TextBlock Text="Inspect the capture before applying tasks." Classes="caption" AutomationProperties.Name="Preview Description"/>
+        </StackPanel>
+        <Border Grid.Row="1" Classes="card" Padding="{StaticResource CardPadding}" MinHeight="{StaticResource PreviewMinHeight}">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="Transparent">
+            <Image Source="{Binding PreviewImage}"
+                   Stretch="Uniform"
+                   AutomationProperties.Name="Capture Preview"/>
+          </ScrollViewer>
+        </Border>
+      </Grid>
+
+      <!-- Tasks Column -->
+      <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="{StaticResource SpaceL}">
+          <StackPanel Spacing="{StaticResource SpaceXS}">
+            <TextBlock Text="After capture" Classes="section-header" AutomationProperties.Name="After Capture Heading"/>
+            <TextBlock Text="Run these actions immediately after the capture." Classes="caption" AutomationProperties.Name="After Capture Section Description"/>
+          </StackPanel>
+          <Border Classes="card" Padding="{StaticResource CardPadding}">
+            <StackPanel Spacing="{StaticResource SpaceM}">
+              <CheckBox Content="Save image to file"
                         IsChecked="{Binding SaveImageToFile}"
                         AutomationProperties.Name="Save Image to File"/>
-              <CheckBox Content="Copy image to clipboard" 
+              <CheckBox Content="Copy image to clipboard"
                         IsChecked="{Binding CopyImageToClipboard}"
                         AutomationProperties.Name="Copy Image to Clipboard"/>
-              <CheckBox Content="Annotate image" 
+              <CheckBox Content="Annotate image"
                         IsChecked="{Binding AnnotateImage}"
                         AutomationProperties.Name="Annotate Image"/>
-              <CheckBox Content="Upload image to host" 
+              <CheckBox Content="Upload image to host"
                         IsChecked="{Binding UploadImageToHost}"
                         AutomationProperties.Name="Upload Image to Host"/>
             </StackPanel>
           </Border>
-        </StackPanel>
 
-        <!-- After Upload Tasks -->
-        <StackPanel Spacing="8">
-          <TextBlock Text="After Upload" FontWeight="SemiBold" FontSize="16"/>
-          <Border BorderThickness="1"
-                  BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                  Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                  CornerRadius="4"
-                  Padding="16">
-            <StackPanel Spacing="16">
+          <StackPanel Spacing="{StaticResource SpaceXS}">
+            <TextBlock Text="After upload" Classes="section-header" AutomationProperties.Name="After Upload Heading"/>
+            <TextBlock Text="Choose follow-up actions once the upload completes." Classes="caption" AutomationProperties.Name="After Upload Section Description"/>
+          </StackPanel>
+          <Border Classes="card" Padding="{StaticResource CardPadding}">
+            <StackPanel Spacing="{StaticResource SpaceM}">
               <CheckBox Content="Show after upload window"
                         IsChecked="{Binding ShowAfterUploadWindow}"
                         AutomationProperties.Name="Show After Upload Window"/>
-              <CheckBox Content="Copy URL to clipboard" 
+              <CheckBox Content="Copy URL to clipboard"
                         IsChecked="{Binding CopyURLToClipboard}"
                         AutomationProperties.Name="Copy URL to Clipboard"/>
-              <CheckBox Content="Use URL shortener" 
+              <CheckBox Content="Use URL shortener"
                         IsChecked="{Binding UseURLShortener}"
                         AutomationProperties.Name="Use URL Shortener"/>
-              <CheckBox Content="Share URL" 
+              <CheckBox Content="Share URL"
                         IsChecked="{Binding ShareURL}"
                         AutomationProperties.Name="Share URL"/>
             </StackPanel>
           </Border>
         </StackPanel>
-      </StackPanel>
-    </ScrollViewer>
+      </ScrollViewer>
+    </Grid>
 
-    <!-- Dialog Buttons -->
-    <StackPanel Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3"
-                Orientation="Horizontal"
-                HorizontalAlignment="Right"
-                Spacing="16">
-      <Button Content="Cancel"
-              Command="{Binding CancelCommand}"
-              MinWidth="90"
-              AutomationProperties.Name="Cancel"/>
-      <Button Content="Continue"
-              Command="{Binding ContinueCommand}"
-              MinWidth="90"
-              Classes="accent"
-              AutomationProperties.Name="Continue"/>
-    </StackPanel>
-    
+    <!-- Action Bar -->
+    <Border Grid.Row="2" Classes="card" Padding="{StaticResource CardPaddingCompact}">
+      <Grid ColumnDefinitions="*, Auto" ColumnSpacing="{StaticResource SpaceM}" VerticalAlignment="Center">
+        <TextBlock Text="You can adjust these later in task settings." Classes="caption" AutomationProperties.Name="After Capture Footer Note"/>
+        <StackPanel Grid.Column="1"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="{StaticResource SpaceS}">
+          <Button Content="Cancel"
+                  Command="{Binding CancelCommand}"
+                  IsCancel="True"
+                  AutomationProperties.Name="Cancel"/>
+          <Button Content="Continue"
+                  Command="{Binding ContinueCommand}"
+                  IsDefault="True"
+                  Classes="accent"
+                  AutomationProperties.Name="Continue"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
   </Grid>
 </Window>

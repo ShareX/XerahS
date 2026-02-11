@@ -171,10 +171,27 @@ public partial class UploaderInstanceViewModel : ViewModelBase
             Common.DebugHelper.WriteLine($"[UploaderInstanceVM] Provider found: {provider.Name}");
 
             ConfigViewModel = provider.CreateConfigViewModel();
-            Common.DebugHelper.WriteLine($"[UploaderInstanceVM] ConfigViewModel created: {ConfigViewModel?.GetType().Name ?? "null"}");
-
             ConfigView = provider.CreateConfigView();
+
+            // Special handling for custom uploaders
+            if (ConfigViewModel == null && ConfigView == null && ProviderId.StartsWith("custom_", StringComparison.OrdinalIgnoreCase))
+            {
+                Common.DebugHelper.WriteLine($"[UploaderInstanceVM] Creating custom uploader config view/viewmodel");
+                ConfigViewModel = new CustomUploaderConfigViewModel();
+                ConfigView = new Views.CustomUploaderConfigView();
+            }
+
+            Common.DebugHelper.WriteLine($"[UploaderInstanceVM] ConfigViewModel created: {ConfigViewModel?.GetType().Name ?? "null"}");
             Common.DebugHelper.WriteLine($"[UploaderInstanceVM] ConfigView created: {ConfigView?.GetType().Name ?? "null"}");
+
+            if (ConfigViewModel is IProviderContextAware contextAware)
+            {
+                var context = ProviderCatalog.GetProviderContext();
+                if (context != null)
+                {
+                    contextAware.SetContext(context);
+                }
+            }
         }
         else
         {

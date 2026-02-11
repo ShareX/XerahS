@@ -30,6 +30,9 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using XerahS.Core;
 using XerahS.UI.ViewModels;
 using XerahS.Core.Hotkeys;
@@ -40,13 +43,17 @@ using XerahS.Editor.Annotations;
 using XerahS.Editor.ViewModels;
 using XerahS.Editor.Views;
 using XerahS.UI.Helpers;
-using XerahS.UI.Services;
 
 namespace XerahS.UI.Views
 {
     public partial class MainWindow : Window
     {
-        private EditorView? _editorView;
+        private EditorView? _editorView = null;
+
+        /// <summary>
+        /// Collection of user-configured workflows for menu binding.
+        /// </summary>
+        public ObservableCollection<WorkflowSettings> UserWorkflows { get; } = new ObservableCollection<WorkflowSettings>();
 
         public MainWindow()
         {
@@ -64,6 +71,99 @@ namespace XerahS.UI.Views
                     OnNavSelectionChanged(navView, new NavigationViewSelectionChangedEventArgs());
                 }
             }
+
+            LoadUserWorkflows();
+        }
+
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            base.OnDataContextChanged(e);
+            if (DataContext is MainViewModel vm)
+            {
+                vm.NavigateRequested += OnNavigateRequested;
+            }
+        }
+
+        private void OnNavigateRequested(object? sender, string tag)
+        {
+            NavigateTo(tag);
+        }
+
+        private void OnExitClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        /// <summary>
+        /// Loads user-configured workflows from SettingsManager into UserWorkflows collection.
+        /// </summary>
+        private void LoadUserWorkflows()
+        {
+            UserWorkflows.Clear();
+            var workflows = SettingsManager.WorkflowsConfig?.Hotkeys;
+            if (workflows != null)
+            {
+                foreach (var workflow in workflows)
+                {
+                    if (workflow.Job != WorkflowType.None)
+                    {
+                        UserWorkflows.Add(workflow);
+                    }
+                }
+            }
+
+            UpdateWorkflowMenuItems();
+        }
+
+        private void OnWorkflowMenuItemClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (sender is MenuItem menuItem && menuItem.DataContext is WorkflowSettings workflow)
+            {
+                _ = ExecuteCaptureAsync(workflow.Job, workflow.Id);
+            }
+        }
+
+        private void UpdateWorkflowMenuItems()
+        {
+            var runWorkflowsMenuItem = this.FindControl<MenuItem>("RunWorkflowsMenuItem");
+            if (runWorkflowsMenuItem == null)
+            {
+                return;
+            }
+
+            var workflowMenuItems = new List<MenuItem>();
+
+            foreach (var workflow in UserWorkflows)
+            {
+                var workflowMenuItem = new MenuItem
+                {
+                    Header = GetWorkflowDisplayName(workflow),
+                    DataContext = workflow
+                };
+                workflowMenuItem.Click += OnWorkflowMenuItemClick;
+                workflowMenuItems.Add(workflowMenuItem);
+            }
+
+            if (workflowMenuItems.Count == 0)
+            {
+                workflowMenuItems.Add(new MenuItem
+                {
+                    Header = "No workflows configured",
+                    IsEnabled = false
+                });
+            }
+
+            runWorkflowsMenuItem.ItemsSource = workflowMenuItems;
+        }
+
+        private static string GetWorkflowDisplayName(WorkflowSettings workflow)
+        {
+            if (!string.IsNullOrWhiteSpace(workflow.TaskSettings?.Description))
+            {
+                return workflow.TaskSettings.Description;
+            }
+
+            return XerahS.Common.EnumExtensions.GetDescription(workflow.Job);
         }
 
         private void OnWindowOpened(object? sender, EventArgs e)
@@ -82,12 +182,16 @@ namespace XerahS.UI.Views
                 UpdateNavigationItems(navView);
             }
 
+            LoadUserWorkflows();
+
             if (Application.Current is App app && app.WorkflowManager != null)
             {
                 app.WorkflowManager.WorkflowsChanged += (s, args) =>
                 {
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    Dispatcher.UIThread.Post(() =>
                     {
+                        LoadUserWorkflows();
+
                         if (navView != null)
                         {
                             UpdateNavigationItems(navView);
@@ -125,90 +229,116 @@ namespace XerahS.UI.Views
             var contentFrame = this.FindControl<ContentControl>("ContentFrame");
             var selectedItem = navView?.SelectedItem as NavigationViewItem;
 
-            if (contentFrame != null && selectedItem != null && DataContext is MainViewModel vm)
+            if (contentFrame == null || selectedItem == null)
             {
-                var tag = selectedItem.Tag?.ToString();
+                return;
+            }
 
-                // Handle workflow execution by ID
-                if (tag != null && tag.StartsWith("Capture_"))
+            HandleNavigationTag(selectedItem.Tag?.ToString(), contentFrame);
+        }
+
+        private bool HandleNavigationTag(string? tag, ContentControl contentFrame)
+        {
+            if (string.IsNullOrEmpty(tag))
+            {
+                return false;
+            }
+
+            // Handle workflow execution by ID
+            if (tag.StartsWith("Capture_", StringComparison.Ordinal))
+            {
+                var workflowId = tag.Replace("Capture_", "", StringComparison.Ordinal);
+                if (!string.IsNullOrEmpty(workflowId))
                 {
-                    var workflowId = tag.Replace("Capture_", "");
-                    if (!string.IsNullOrEmpty(workflowId))
+                    WorkflowSettings? workflow = null;
+
+                    // Try to get workflow from WorkflowManager first
+                    if (Application.Current is App app && app.WorkflowManager != null)
                     {
-                        WorkflowSettings? workflow = null;
+                        workflow = app.WorkflowManager.GetWorkflowById(workflowId);
+                    }
 
-                        // Try to get workflow from WorkflowManager first
-                        if (Application.Current is App app && app.WorkflowManager != null)
-                        {
-                            workflow = app.WorkflowManager.GetWorkflowById(workflowId);
-                        }
+                    // Fallback to SettingManager
+                    if (workflow == null)
+                    {
+                        workflow = SettingsManager.WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Id == workflowId);
+                    }
 
-                        // Fallback to SettingManager
-                        if (workflow == null)
-                        {
-                            workflow = SettingsManager.WorkflowsConfig.Hotkeys.FirstOrDefault(w => w.Id == workflowId);
-                        }
-
-                        if (workflow != null)
-                        {
-                            _ = ExecuteCaptureAsync(workflow.Job, workflow.Id);
-                            NavigateToEditor();
-                        }
+                    if (workflow != null)
+                    {
+                        _ = ExecuteCaptureAsync(workflow.Job, workflow.Id);
+                        NavigateToEditor();
+                        return true;
                     }
                 }
 
-                switch (tag)
+                return false;
+            }
+
+            // Handle workflow execution by ID from menu
+            if (tag.StartsWith("Workflow_", StringComparison.Ordinal))
+            {
+                var workflowId = tag.Replace("Workflow_", "", StringComparison.Ordinal);
+                if (!string.IsNullOrEmpty(workflowId))
                 {
-                    case "Editor":
-                        if (_editorView == null) _editorView = new EditorView();
-                        contentFrame.Content = _editorView;
-                        break;
-                    case "Recording":
-                        contentFrame.Content = new RecordingView();
-                        break;
-                    case "History":
-                        contentFrame.Content = new HistoryView();
-                        break;
-                    case "Workflows":
-                        contentFrame.Content = new WorkflowsView();
-                        break;
-                    case "Tools":
-                        contentFrame.Content = new ToolsView();
-                        break;
-                    case "Tools_IndexFolder":
-                        contentFrame.Content = new IndexFolderView();
-                        break;
-                    case "Tools_ColorPicker":
-                        _ = ColorPickerToolService.HandleWorkflowAsync(WorkflowType.ColorPicker, this);
-                        return;
-                    case "Tools_ScreenColorPicker":
-                        _ = ColorPickerToolService.HandleWorkflowAsync(WorkflowType.ScreenColorPicker, this);
-                        return;
-                    case "Tools_QrGenerator":
-                        _ = QrCodeToolService.HandleWorkflowAsync(WorkflowType.QRCode, this);
-                        return;
-                    case "Tools_QrScanScreen":
-                        _ = QrCodeToolService.HandleWorkflowAsync(WorkflowType.QRCodeDecodeFromScreen, this);
-                        return;
-                    case "Tools_QrScanRegion":
-                        _ = QrCodeToolService.HandleWorkflowAsync(WorkflowType.QRCodeScanRegion, this);
-                        return;
-                    case "Settings":
-                        contentFrame.Content = new SettingsView();
-                        break;
-                    case "Settings_App":
-                        contentFrame.Content = new ApplicationSettingsView();
-                        break;
-                    case "Settings_Dest":
-                        contentFrame.Content = new DestinationSettingsView();
-                        break;
-                    case "Debug":
-                        contentFrame.Content = new DebugView();
-                        break;
-                    case "About":
-                        contentFrame.Content = new AboutView();
-                        break;
+                    var workflow = SettingsManager.WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Id == workflowId);
+                    if (workflow != null)
+                    {
+                        _ = ExecuteCaptureAsync(workflow.Job, workflow.Id);
+                        return true;
+                    }
                 }
+
+                return false;
+            }
+
+            if (ToolNavigationHelper.TryHandleToolsTag(tag, this, contentFrame, ExecuteWorkflowFromNavigationAsync))
+            {
+                return true;
+            }
+
+            switch (tag)
+            {
+                case "Editor":
+                    if (_editorView == null)
+                    {
+                        _editorView = new EditorView();
+                        _editorView.ShowMenuBar = false; // Hide internal menu when hosted in MainWindow
+                    }
+                    contentFrame.Content = _editorView;
+                    return true;
+                case "Recording":
+                    contentFrame.Content = new RecordingView();
+                    return true;
+                case "History":
+                    contentFrame.Content = new HistoryView();
+                    return true;
+                case "Workflows":
+                    contentFrame.Content = new WorkflowsView();
+                    return true;
+                case "Upload_ClipboardUploadWithContentViewer":
+                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.ClipboardUploadWithContentViewer);
+                    return true;
+                case "Upload_FileUpload":
+                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.FileUpload);
+                    return true;
+                case "Settings":
+                    contentFrame.Content = new SettingsView();
+                    return true;
+                case "Settings_App":
+                    contentFrame.Content = new ApplicationSettingsView();
+                    return true;
+                case "Settings_Dest":
+                    contentFrame.Content = new DestinationSettingsView();
+                    return true;
+                case "Debug":
+                    contentFrame.Content = new DebugView();
+                    return true;
+                case "About":
+                    contentFrame.Content = new AboutView();
+                    return true;
+                default:
+                    return false;
             }
         }
 
@@ -325,11 +455,6 @@ namespace XerahS.UI.Views
 
 
 
-        protected override void OnDataContextChanged(EventArgs e)
-        {
-            base.OnDataContextChanged(e);
-            // Setup listeners if needed
-        }
         public void NavigateToEditor()
         {
             NavigateTo("Editor");
@@ -347,17 +472,30 @@ namespace XerahS.UI.Views
 
         private void NavigateTo(string navTag)
         {
+            bool handled = false;
+            var contentFrame = this.FindControl<ContentControl>("ContentFrame");
             var navView = this.FindControl<NavigationView>("NavView");
             if (navView != null)
             {
-                foreach (var item in navView.MenuItems)
+                var navItem = FindNavigationItemByTag(navView.MenuItems, navTag);
+                if (navItem != null)
                 {
-                    if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == navTag)
+                    if (!ReferenceEquals(navView.SelectedItem, navItem))
                     {
                         navView.SelectedItem = navItem;
-                        break;
+                        handled = true;
+                    }
+                    else if (contentFrame != null)
+                    {
+                        handled = HandleNavigationTag(navTag, contentFrame);
                     }
                 }
+            }
+
+            // Menu-bar actions may not have a corresponding NavigationView item.
+            if (!handled && contentFrame != null)
+            {
+                _ = HandleNavigationTag(navTag, contentFrame);
             }
 
             // Ensure window is visible and active
@@ -373,6 +511,35 @@ namespace XerahS.UI.Views
 
             this.Activate();
             this.Focus();
+        }
+
+        private static NavigationViewItem? FindNavigationItemByTag(IEnumerable? menuItems, string navTag)
+        {
+            if (menuItems == null)
+            {
+                return null;
+            }
+
+            foreach (var item in menuItems)
+            {
+                if (item is not NavigationViewItem navItem)
+                {
+                    continue;
+                }
+
+                if (string.Equals(navItem.Tag?.ToString(), navTag, StringComparison.Ordinal))
+                {
+                    return navItem;
+                }
+
+                var child = FindNavigationItemByTag(navItem.MenuItems, navTag);
+                if (child != null)
+                {
+                    return child;
+                }
+            }
+
+            return null;
         }
 
         private async Task ExecuteCaptureAsync(WorkflowType jobType, string? workflowId = null, AfterCaptureTasks afterCapture = AfterCaptureTasks.SaveImageToFile, SkiaSharp.SKBitmap? image = null)
@@ -476,6 +643,27 @@ namespace XerahS.UI.Views
                 }
             }
         }
+
+        private static Task ExecuteWorkflowFromNavigationAsync(WorkflowType jobType)
+        {
+            var workflow = SettingsManager.GetFirstWorkflow(jobType);
+
+            // Upload Content nav fallback:
+            // if no workflow is configured for ClipboardUploadWithContentViewer,
+            // use FileUpload workflow when available.
+            if (workflow == null && jobType == WorkflowType.ClipboardUploadWithContentViewer)
+            {
+                workflow = SettingsManager.GetFirstWorkflow(WorkflowType.FileUpload);
+            }
+
+            if (workflow != null)
+            {
+                return XerahS.Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id);
+            }
+
+            return XerahS.Core.Helpers.TaskHelpers.ExecuteJob(jobType, new TaskSettings { Job = jobType });
+        }
+
         private void UpdateNavigationItems(NavigationView navView)
         {
             var captureItem = this.FindControl<NavigationViewItem>("CaptureNavItem");

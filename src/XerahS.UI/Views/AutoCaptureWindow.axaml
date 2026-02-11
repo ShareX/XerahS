@@ -1,0 +1,102 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        x:Class="XerahS.UI.Views.AutoCaptureWindow"
+        x:DataType="vm:AutoCaptureViewModel"
+        Title="Auto Capture"
+        Width="400"
+        Height="380"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        AutomationProperties.Name="Auto Capture configuration window">
+
+  <StackPanel Margin="16" Spacing="16">
+
+    <!-- Region Section -->
+    <StackPanel Spacing="8">
+      <TextBlock Text="Region"
+                 FontWeight="SemiBold"
+                 FontSize="14"
+                 AutomationProperties.Name="Region section" />
+
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <RadioButton Content="Full screen"
+                     IsChecked="{Binding IsFullScreen}"
+                     GroupName="RegionMode"
+                     AutomationProperties.Name="Capture full screen" />
+        <RadioButton Content="Custom region"
+                     IsChecked="{Binding !IsFullScreen}"
+                     GroupName="RegionMode"
+                     AutomationProperties.Name="Capture custom region" />
+      </StackPanel>
+
+      <Button Content="Select region..."
+              Command="{Binding SelectRegionCommand}"
+              IsEnabled="{Binding IsSelectRegionEnabled}"
+              MinWidth="120"
+              AutomationProperties.Name="Select custom capture region" />
+
+      <TextBlock Text="{Binding RegionText}"
+                 Foreground="{DynamicResource SystemBaseMediumColor}"
+                 FontSize="12"
+                 AutomationProperties.Name="Current region display" />
+    </StackPanel>
+
+    <!-- Options Section -->
+    <StackPanel Spacing="8">
+      <TextBlock Text="Options"
+                 FontWeight="SemiBold"
+                 FontSize="14"
+                 AutomationProperties.Name="Options section" />
+
+      <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <TextBlock Text="Repeat time:"
+                   VerticalAlignment="Center" />
+        <NumericUpDown Value="{Binding RepeatTime}"
+                       Minimum="1"
+                       Maximum="3600"
+                       Increment="1"
+                       FormatString="0"
+                       Width="100"
+                       AutomationProperties.Name="Capture repeat interval in seconds" />
+        <TextBlock Text="seconds"
+                   VerticalAlignment="Center" />
+      </StackPanel>
+
+      <CheckBox Content="Minimize to tray when capturing"
+                IsChecked="{Binding MinimizeToTray}"
+                AutomationProperties.Name="Minimize window to tray when capturing starts" />
+
+      <CheckBox Content="Wait for uploads to complete"
+                IsChecked="{Binding WaitUploads}"
+                AutomationProperties.Name="Wait for uploads to complete before next capture" />
+    </StackPanel>
+
+    <!-- Status Section -->
+    <Border BorderBrush="{DynamicResource SystemBaseLowColor}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="12,8">
+      <StackPanel Spacing="6">
+        <ProgressBar Value="{Binding ProgressPercent}"
+                     Minimum="0"
+                     Maximum="100"
+                     Height="16"
+                     AutomationProperties.Name="Capture countdown progress" />
+        <TextBlock Text="{Binding StatusText}"
+                   FontSize="12"
+                   HorizontalAlignment="Center"
+                   AutomationProperties.Name="Capture status information" />
+      </StackPanel>
+    </Border>
+
+    <!-- Start/Stop Button -->
+    <Button Content="{Binding StartStopText}"
+            Command="{Binding StartStopCommand}"
+            IsEnabled="{Binding HasRegion}"
+            HorizontalAlignment="Right"
+            MinWidth="100"
+            AutomationProperties.Name="Start or stop auto capture" />
+
+  </StackPanel>
+</Window>

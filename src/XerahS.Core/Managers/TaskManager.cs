@@ -162,6 +162,70 @@ namespace XerahS.Core.Managers
             await task.StartAsync();
         }
 
+        public async Task StartTextTask(TaskSettings? taskSettings, string text)
+        {
+            if (taskSettings == null)
+            {
+                DebugHelper.WriteLine("StartTextTask called with null TaskSettings, skipping.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                DebugHelper.WriteLine("StartTextTask called with empty text, skipping.");
+                return;
+            }
+
+            TaskSettings safeTaskSettings = taskSettings;
+            TroubleshootingHelper.Log(safeTaskSettings.Job.ToString(), "TASK_MANAGER", $"StartTextTask Entry: textLength={text.Length}");
+            DebugHelper.WriteLine(
+                $"[UploadContentDebug] StartTextTask: job={safeTaskSettings.Job}, workflowId=\"{safeTaskSettings.WorkflowId ?? string.Empty}\", " +
+                $"destinationInstanceId=\"{safeTaskSettings.DestinationInstanceId ?? string.Empty}\", " +
+                $"urlShortenerInstanceId=\"{safeTaskSettings.UrlShortenerDestinationInstanceId ?? string.Empty}\", " +
+                $"afterCapture={safeTaskSettings.AfterCaptureJob}, afterUpload={safeTaskSettings.AfterUploadJob}");
+
+            var task = WorkerTask.Create(safeTaskSettings);
+            task.Info.TextContent = text;
+            task.Info.DataType = EDataType.Text;
+            task.Info.Job = TaskJob.TextUpload;
+
+            string extension = safeTaskSettings.AdvancedSettings?.TextFileExtension ?? "txt";
+            task.Info.SetFileName(TaskHelpers.GetFileName(safeTaskSettings, extension, task.Info.Metadata));
+            DebugHelper.WriteLine(
+                $"[UploadContentDebug] StartTextTask created WorkerTask: fileName=\"{task.Info.FileName}\", " +
+                $"dataType={task.Info.DataType}, taskJob={task.Info.Job}, textLength={(task.Info.TextContent?.Length ?? 0)}");
+
+            lock (_tasksLock)
+            {
+                _tasks.Enqueue(task);
+
+                while (_tasks.Count > _maxHistoricalTasks)
+                {
+                    if (_tasks.TryDequeue(out var oldTask))
+                    {
+                        try
+                        {
+                            oldTask.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugHelper.WriteLine($"Error disposing old task: {ex.Message}");
+                        }
+                    }
+                }
+            }
+
+            task.StatusChanged += (s, e) => DebugHelper.WriteLine($"Task Status: {task.Status}");
+            task.TaskCompleted += (s, e) =>
+            {
+                TaskCompleted?.Invoke(this, task);
+            };
+
+            TaskStarted?.Invoke(this, task);
+
+            await task.StartAsync();
+        }
+
         public void StopAllTasks()
         {
             foreach (var task in _tasks.Where(t => t.IsWorking))

@@ -47,7 +47,7 @@ namespace XerahS.Audits.Tool
                 var rootDir = args.Length > 0 ? args[0] : Directory.GetCurrentDirectory();
                 Console.WriteLine($"Starting Scan in: {rootDir}");
 
-                var docsDir = Path.Combine(rootDir, "docs", "audits");
+                var docsDir = Path.Combine(rootDir, "docs", "audits", "ui-control");
                 Directory.CreateDirectory(docsDir);
                 var inventoryPath = Path.Combine(docsDir, "ui-control-inventory.json");
                 var mdPath = Path.Combine(docsDir, "ui-control-inventory.md");
