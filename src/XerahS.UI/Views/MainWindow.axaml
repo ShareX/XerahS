@@ -34,7 +34,7 @@
             <Menu Background="Transparent">
                 <!-- File Menu -->
                 <MenuItem Header="_File">
-                    <MenuItem Header="_Open..." Command="{Binding OpenImageCommand}" InputGesture="Ctrl+O"/>
+                    <MenuItem Header="_Open..." Click="OnOpenImageClick" InputGesture="Ctrl+O"/>
                     <Separator/>
                     <MenuItem Header="_Upload">
                         <MenuItem Header="Upload _File..." Click="OnMenuNavigateClick" Tag="Upload_FileUpload"/>

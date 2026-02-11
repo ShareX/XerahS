@@ -25,6 +25,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using FluentAvalonia.UI.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -33,6 +34,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Reflection;
+using System.Threading.Tasks;
+using SkiaSharp;
 using XerahS.Core;
 using XerahS.UI.ViewModels;
 using XerahS.Core.Hotkeys;
@@ -43,6 +48,7 @@ using ShareX.ImageEditor.Annotations;
 using ShareX.ImageEditor.ViewModels;
 using ShareX.ImageEditor.Views;
 using XerahS.UI.Helpers;
+using XerahS.UI.Views.Dialogs;
 
 namespace XerahS.UI.Views
 {
@@ -99,6 +105,174 @@ namespace XerahS.UI.Views
             }
 
             NavigateTo(navTag);
+        }
+
+        private async void OnOpenImageClick(object? sender, RoutedEventArgs e)
+        {
+            await OpenImageFromFileAsync();
+        }
+
+        private async Task OpenImageFromFileAsync()
+        {
+            if (DataContext is not MainViewModel vm)
+            {
+                return;
+            }
+
+            string? path = await PickImagePathAsync();
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            if (vm.PreviewImage == null)
+            {
+                ReplaceImageFromPath(vm, path);
+                return;
+            }
+
+            ShowOpenImageChoiceDialog(vm, path);
+        }
+
+        private async Task<string?> PickImagePathAsync()
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel?.StorageProvider == null)
+            {
+                return null;
+            }
+
+            var options = new FilePickerOpenOptions
+            {
+                Title = "Open Image",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    new FilePickerFileType("Image Files")
+                    {
+                        Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.webp", "*.tiff", "*.tif" }
+                    },
+                    FilePickerFileTypes.All
+                }
+            };
+
+            var files = await topLevel.StorageProvider.OpenFilePickerAsync(options);
+            if (files.Count < 1)
+            {
+                return null;
+            }
+
+            string? path = files[0].TryGetLocalPath();
+            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+            {
+                return null;
+            }
+
+            return path;
+        }
+
+        private void ShowOpenImageChoiceDialog(MainViewModel vm, string path)
+        {
+            var dialog = new OpenImageChoiceDialog
+            {
+                DataContext = vm
+            };
+
+            dialog.ReplaceRequested += (_, _) =>
+            {
+                vm.CloseModalCommand.Execute(null);
+                ReplaceImageFromPath(vm, path);
+            };
+
+            dialog.AddRequested += async (_, _) =>
+            {
+                vm.CloseModalCommand.Execute(null);
+                await AddImageAsShapeFromPathAsync(path);
+            };
+
+            dialog.CancelRequested += (_, _) =>
+            {
+                vm.CloseModalCommand.Execute(null);
+            };
+
+            vm.ModalContent = dialog;
+            vm.IsModalOpen = true;
+        }
+
+        private void ReplaceImageFromPath(MainViewModel vm, string path)
+        {
+            SKBitmap? bitmap = null;
+
+            try
+            {
+                bitmap = SKBitmap.Decode(path);
+                if (bitmap == null || bitmap.Handle == IntPtr.Zero)
+                {
+                    bitmap?.Dispose();
+                    return;
+                }
+
+                NavigateToEditor();
+                vm.ClearCommand.Execute(null);
+
+                // Ownership of bitmap is transferred to ViewModel.
+                vm.UpdatePreview(bitmap, clearAnnotations: true);
+                bitmap = null;
+            }
+            catch (Exception ex)
+            {
+                XerahS.Common.DebugHelper.WriteException(ex, "Failed to load selected image");
+                bitmap?.Dispose();
+            }
+        }
+
+        private async Task AddImageAsShapeFromPathAsync(string path)
+        {
+            try
+            {
+                NavigateToEditor();
+
+                if (_editorView == null)
+                {
+                    return;
+                }
+
+                var insertMethod = typeof(EditorView).GetMethod(
+                    "InsertImageAnnotation",
+                    BindingFlags.Instance | BindingFlags.NonPublic,
+                    binder: null,
+                    types: new[] { typeof(SKBitmap), typeof(global::Avalonia.Point?) },
+                    modifiers: null);
+
+                if (insertMethod == null)
+                {
+                    XerahS.Common.DebugHelper.WriteLine("OpenImage: InsertImageAnnotation method was not found on EditorView.");
+                    return;
+                }
+
+                var bitmap = SKBitmap.Decode(path);
+                if (bitmap == null || bitmap.Handle == IntPtr.Zero)
+                {
+                    bitmap?.Dispose();
+                    return;
+                }
+
+                try
+                {
+                    insertMethod.Invoke(_editorView, new object?[] { bitmap, null });
+                    bitmap = null; // Ownership transferred to inserted image annotation.
+                }
+                finally
+                {
+                    bitmap?.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                XerahS.Common.DebugHelper.WriteException(ex, "Failed to add selected image as annotation");
+            }
+
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -391,6 +565,10 @@ namespace XerahS.UI.Views
                             vm.SaveAsCommand.Execute(null);
                         else
                             vm.SaveCommand.Execute(null);
+                        e.Handled = true;
+                        return;
+                    case Key.O:
+                        _ = OpenImageFromFileAsync();
                         e.Handled = true;
                         return;
                 }

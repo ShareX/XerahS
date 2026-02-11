@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="XerahS.UI.Views.Dialogs.OpenImageChoiceDialog">
+    <Border Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
+            BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="16">
+        <StackPanel Spacing="12" Width="420">
+            <TextBlock Text="An image is already open"
+                       FontSize="16"
+                       FontWeight="SemiBold"/>
+            <TextBlock Text="Do you want to replace the current image or add the new image as a shape?"
+                       TextWrapping="Wrap"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Content="Add as Shape"
+                        Click="OnAddClick"/>
+                <Button Content="Replace Image"
+                        Click="OnReplaceClick"/>
+                <Button Content="Cancel"
+                        Click="OnCancelClick"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>
