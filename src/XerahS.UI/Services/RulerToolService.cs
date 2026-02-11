@@ -24,13 +24,15 @@
 #endregion License Information (GPL v3)
 
 using Avalonia.Controls;
+#if WINDOWS
 using SkiaSharp;
-using XerahS.Common;
-using XerahS.Core;
 using XerahS.Core.Services;
-using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture;
 using XerahS.RegionCapture.Services;
+#endif
+using XerahS.Common;
+using XerahS.Core;
+using XerahS.Platform.Abstractions;
 
 namespace XerahS.UI.Services;
 
@@ -46,6 +48,7 @@ public static class RulerToolService
 
     private static async Task ShowRulerAsync()
     {
+#if WINDOWS
         var captureSettings = SettingsManager.DefaultTaskSettings?.CaptureSettings ?? new TaskSettingsCapture();
         var captureOptions = new CaptureOptions
         {
@@ -94,5 +97,25 @@ public static class RulerToolService
             // Clean up background bitmap
             fullScreenBitmap?.Dispose();
         }
+#else
+        try
+        {
+            if (PlatformServices.IsToastServiceInitialized)
+            {
+                PlatformServices.Toast.ShowToast(new ToastConfig
+                {
+                    Title = "Ruler",
+                    Text = "Ruler tool is currently available on Windows builds.",
+                    Duration = 4f
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "Ruler unavailable notification failed");
+        }
+
+        await Task.CompletedTask;
+#endif
     }
 }

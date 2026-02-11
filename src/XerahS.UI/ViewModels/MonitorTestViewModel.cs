@@ -28,8 +28,13 @@ using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
+#if !WINDOWS
+using Avalonia.Controls.ApplicationLifetimes;
+#endif
+#if WINDOWS
 using XerahS.RegionCapture.Models;
 using XerahS.RegionCapture.Services;
+#endif
 
 namespace XerahS.UI.ViewModels;
 
@@ -411,6 +416,123 @@ public partial class MonitorTestViewModel : ViewModelBase
         return -1;
     }
 }
+
+#if !WINDOWS
+public readonly record struct MonitorRect(int X, int Y, int Width, int Height);
+
+public sealed class MonitorInfo
+{
+    public string DeviceName { get; }
+    public MonitorRect PhysicalBounds { get; }
+    public MonitorRect WorkArea { get; }
+    public double ScaleFactor { get; }
+    public bool IsPrimary { get; }
+
+    public MonitorInfo(string deviceName, MonitorRect physicalBounds, MonitorRect workArea, double scaleFactor, bool isPrimary)
+    {
+        DeviceName = deviceName;
+        PhysicalBounds = physicalBounds;
+        WorkArea = workArea;
+        ScaleFactor = scaleFactor;
+        IsPrimary = isPrimary;
+    }
+}
+
+public sealed class MonitorSnapshot
+{
+    public DateTime Timestamp { get; }
+    public IReadOnlyList<MonitorInfo> Monitors { get; }
+    public MonitorInfo? PrimaryMonitor => Monitors.FirstOrDefault(x => x.IsPrimary);
+    public MonitorRect VirtualDesktopBounds { get; }
+    public int MonitorCount => Monitors.Count;
+
+    public MonitorSnapshot(IReadOnlyList<MonitorInfo> monitors)
+    {
+        Timestamp = DateTime.Now;
+        Monitors = monitors;
+        VirtualDesktopBounds = CalculateVirtualDesktopBounds(monitors);
+    }
+
+    private static MonitorRect CalculateVirtualDesktopBounds(IReadOnlyList<MonitorInfo> monitors)
+    {
+        if (monitors.Count == 0)
+        {
+            return new MonitorRect(0, 0, 0, 0);
+        }
+
+        int minX = int.MaxValue;
+        int minY = int.MaxValue;
+        int maxX = int.MinValue;
+        int maxY = int.MinValue;
+
+        foreach (MonitorInfo monitor in monitors)
+        {
+            minX = Math.Min(minX, monitor.PhysicalBounds.X);
+            minY = Math.Min(minY, monitor.PhysicalBounds.Y);
+            maxX = Math.Max(maxX, monitor.PhysicalBounds.X + monitor.PhysicalBounds.Width);
+            maxY = Math.Max(maxY, monitor.PhysicalBounds.Y + monitor.PhysicalBounds.Height);
+        }
+
+        return new MonitorRect(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    public string GenerateReport()
+    {
+        var lines = new List<string>
+        {
+            "=== Monitor Diagnostic Report ===",
+            $"Timestamp: {Timestamp:yyyy-MM-dd HH:mm:ss}",
+            $"Monitor Count: {Monitors.Count}",
+            string.Empty
+        };
+
+        for (int i = 0; i < Monitors.Count; i++)
+        {
+            var monitor = Monitors[i];
+            lines.Add($"Monitor {i + 1}: {monitor.DeviceName}");
+            lines.Add($"  Bounds: X={monitor.PhysicalBounds.X}, Y={monitor.PhysicalBounds.Y}, W={monitor.PhysicalBounds.Width}, H={monitor.PhysicalBounds.Height}");
+            lines.Add($"  Work Area: X={monitor.WorkArea.X}, Y={monitor.WorkArea.Y}, W={monitor.WorkArea.Width}, H={monitor.WorkArea.Height}");
+            lines.Add($"  Scale Factor: {monitor.ScaleFactor:F2}x");
+            lines.Add($"  Primary: {(monitor.IsPrimary ? "Yes" : "No")}");
+            lines.Add(string.Empty);
+        }
+
+        return string.Join(Environment.NewLine, lines);
+    }
+}
+
+public static class MonitorSnapshotService
+{
+    public static MonitorSnapshot GetSnapshot()
+    {
+        var monitors = new List<MonitorInfo>();
+
+        var screens = Avalonia.Application.Current?.ApplicationLifetime switch
+        {
+            IClassicDesktopStyleApplicationLifetime desktop => desktop.MainWindow?.Screens,
+            _ => null
+        };
+
+        if (screens != null)
+        {
+            int index = 1;
+            foreach (var screen in screens.All)
+            {
+                monitors.Add(new MonitorInfo(
+                    $"Display {index}",
+                    new MonitorRect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height),
+                    new MonitorRect(screen.WorkingArea.X, screen.WorkingArea.Y, screen.WorkingArea.Width, screen.WorkingArea.Height),
+                    screen.Scaling,
+                    screen.IsPrimary));
+
+                index++;
+            }
+        }
+
+        return new MonitorSnapshot(monitors);
+    }
+}
+#endif
 
 public enum TestMode
 {

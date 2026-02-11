@@ -30,13 +30,7 @@
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="2.88.9" />
   </ItemGroup>
 
-  <!-- Non-Windows target only exposes screen recording surface used by Linux/macOS platform projects. -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-    <Compile Remove="**\*.cs" />
-    <Compile Include="Enums.cs" />
-    <Compile Include="ScreenRecording\**\*.cs" />
-    <AvaloniaXaml Remove="UI\**\*.axaml" />
-  </ItemGroup>
+  <!-- Keep full RegionCapture API available in net10.0 so cross-compiled hosts can still reference tool surfaces. -->
 
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
@@ -44,7 +38,7 @@
     <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <!-- XIP-0023: ShareX.ImageEditor integration -->
     <ProjectReference Include="..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj"
-                      Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'" />
+                      GlobalPropertiesToRemove="OS" />
   </ItemGroup>
 
 </Project>

@@ -144,6 +144,9 @@ foreach ($arch in $archs) {
     # Publish with cross-compilation flag
     # The csproj automatically includes libscreencapturekit_bridge.dylib for osx RIDs
     dotnet publish $project -c Release -r $rid -p:PublishSingleFile=false --self-contained true -p:nodeReuse=false -p:SkipBundlePlugins=true -p:CrossCompile=true
+    if ($LASTEXITCODE -ne 0) {
+        throw "dotnet publish failed for $rid with exit code $LASTEXITCODE."
+    }
 
     $appBundlePath = Join-Path $publishDir "XerahS.app"
     if (!(Test-Path $appBundlePath)) {
@@ -178,6 +181,9 @@ foreach ($arch in $archs) {
 
         $pluginOutput = Join-Path $pluginsDir $pluginId
         dotnet publish $plugin.FullName -c Release -r $rid --self-contained true -o $pluginOutput > $null
+        if ($LASTEXITCODE -ne 0) {
+            throw "dotnet publish failed for plugin $($plugin.Name) on $rid with exit code $LASTEXITCODE."
+        }
 
         # Deduplication - remove files that already exist in main app
         $mainAppDir = Join-Path $appBundlePath "Contents\MacOS"
