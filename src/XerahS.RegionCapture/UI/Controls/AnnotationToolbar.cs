@@ -24,7 +24,10 @@
 #endregion License Information (GPL v3)
 
 using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using ShareX.ImageEditor.Controls;
 
 namespace XerahS.RegionCapture.UI.Controls;
 
@@ -32,7 +35,7 @@ namespace XerahS.RegionCapture.UI.Controls;
 /// Minimal toolbar surface used by RegionCapture overlay.
 /// Upstream ShareX.ImageEditor currently does not provide AnnotationToolbar.
 /// </summary>
-public class AnnotationToolbar : UserControl
+public partial class AnnotationToolbar : UserControl
 {
     public event EventHandler<IBrush>? ColorChanged;
     public event EventHandler<IBrush>? FillColorChanged;
@@ -48,4 +51,53 @@ public class AnnotationToolbar : UserControl
     public void RaiseFontSizeChanged(float fontSize) => FontSizeChanged?.Invoke(this, fontSize);
     public void RaiseStrengthChanged(float strength) => StrengthChanged?.Invoke(this, strength);
     public void RaiseShadowButtonClick() => ShadowButtonClick?.Invoke(this, EventArgs.Empty);
+
+    public AnnotationToolbar()
+    {
+        InitializeComponent();
+        WireCompatibilityEvents();
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+
+    private void WireCompatibilityEvents()
+    {
+        if (this.FindControl<ColorPickerDropdown>("StrokeColorPicker") is ColorPickerDropdown strokePicker)
+        {
+            strokePicker.ColorChanged += (_, brush) => RaiseColorChanged(brush);
+        }
+
+        if (this.FindControl<ColorPickerDropdown>("FillColorPicker") is ColorPickerDropdown fillPicker)
+        {
+            fillPicker.ColorChanged += (_, brush) => RaiseFillColorChanged(brush);
+        }
+
+        if (this.FindControl<WidthPickerDropdown>("StrokeWidthPicker") is WidthPickerDropdown widthPicker)
+        {
+            widthPicker.WidthChanged += (_, width) => RaiseWidthChanged(width);
+        }
+
+        if (this.FindControl<FontSizePickerDropdown>("FontSizePicker") is FontSizePickerDropdown fontSizePicker)
+        {
+            fontSizePicker.FontSizeChanged += (_, fontSize) => RaiseFontSizeChanged(fontSize);
+        }
+
+        if (this.FindControl<StrengthSlider>("EffectStrengthSlider") is StrengthSlider strengthSlider)
+        {
+            strengthSlider.StrengthChanged += (_, strength) => RaiseStrengthChanged(strength);
+        }
+
+        if (this.FindControl<Button>("ShadowToggleButton") is Button shadowToggle)
+        {
+            shadowToggle.Click += OnShadowToggleClicked;
+        }
+    }
+
+    private void OnShadowToggleClicked(object? sender, RoutedEventArgs e)
+    {
+        RaiseShadowButtonClick();
+    }
 }
