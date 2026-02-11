@@ -28,7 +28,7 @@
     <ProjectReference Include="..\..\src\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\..\src\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\XerahS.Uploaders\XerahS.Uploaders.csproj" />
-    <ProjectReference Include="..\..\..\XerahS.Editor\src\XerahS.Editor\XerahS.Editor.csproj" />
+    <ProjectReference Include="..\..\XerahS.Editor\src\XerahS.Editor\XerahS.Editor.csproj" />
   </ItemGroup>
 
   <ItemGroup>

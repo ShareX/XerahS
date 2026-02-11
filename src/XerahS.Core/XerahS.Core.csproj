@@ -14,7 +14,7 @@
     <ProjectReference Include="..\XerahS.Uploaders\XerahS.Uploaders.csproj" />
     <ProjectReference Include="..\XerahS.Indexer\XerahS.Indexer.csproj" />
 
-    <ProjectReference Include="..\..\..\XerahS.Editor\src\XerahS.Editor\XerahS.Editor.csproj" />
+    <ProjectReference Include="..\..\XerahS.Editor\src\XerahS.Editor\XerahS.Editor.csproj" />
 
     <ProjectReference Include="..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
     <ProjectReference Include="..\XerahS.Media\XerahS.Media.csproj" />
