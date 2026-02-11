@@ -24,7 +24,7 @@
 #endregion License Information (GPL v3)
 #pragma warning disable CA1416 // Validate platform compatibility
 using Newtonsoft.Json;
-using XerahS.Editor.ImageEffects;
+using ShareX.ImageEditor.ImageEffects;
 using XerahS.Platform.Abstractions;
 using XerahS.Services.Abstractions;
 using System.ComponentModel;
@@ -544,3 +544,4 @@ public class FFmpegCaptureDevice
 
     public override string ToString() => Title;
 }
+

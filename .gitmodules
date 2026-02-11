@@ -1,4 +1,3 @@
-[submodule "XerahS.Editor"]
-	path = XerahS.Editor
-	url = https://github.com/ShareX/XerahS.Editor.git
-	branch = integrate/feature-jx-018-025-manual
+[submodule "ImageEditor"]
+	path = ImageEditor
+	url = https://github.com/ShareX/ImageEditor.git

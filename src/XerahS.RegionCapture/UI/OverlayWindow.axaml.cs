@@ -30,9 +30,9 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
-using XerahS.Editor;
-using XerahS.Editor.Annotations;
-using XerahS.Editor.Views.Controls;
+using ShareX.ImageEditor;
+using ShareX.ImageEditor.Annotations;
+using XerahS.RegionCapture.UI.Controls;
 using SkiaSharp;
 using System.Runtime.InteropServices;
 using XerahS.RegionCapture.Models;
@@ -241,8 +241,8 @@ public partial class OverlayWindow : Window
                 case Key.A: _viewModel.SelectToolCommand.Execute(EditorTool.Arrow); e.Handled = true; break;
                 case Key.L: _viewModel.SelectToolCommand.Execute(EditorTool.Line); e.Handled = true; break;
                 case Key.T: _viewModel.SelectToolCommand.Execute(EditorTool.Text); e.Handled = true; break;
-                case Key.H: _viewModel.SelectToolCommand.Execute(EditorTool.Highlighter); e.Handled = true; break;
-                case Key.P: _viewModel.SelectToolCommand.Execute(EditorTool.Pen); e.Handled = true; break;
+                case Key.H: _viewModel.SelectToolCommand.Execute(EditorTool.Highlight); e.Handled = true; break;
+                case Key.P: _viewModel.SelectToolCommand.Execute(EditorTool.Freehand); e.Handled = true; break;
                 case Key.B: _viewModel.SelectToolCommand.Execute(EditorTool.Blur); e.Handled = true; break;
             }
         }
@@ -1414,3 +1414,4 @@ internal static class SKColorExtensions
         return Color.FromArgb(color.Alpha, color.Red, color.Green, color.Blue);
     }
 }
+

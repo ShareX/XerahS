@@ -7,7 +7,7 @@
         xmlns:hotkeys="using:XerahS.Core.Hotkeys"
         xmlns:views="using:XerahS.UI.Views"
         xmlns:common="clr-namespace:XerahS.Common;assembly=XerahS.Common"
-        xmlns:editvm="clr-namespace:XerahS.Editor.ViewModels;assembly=XerahS.Editor"
+        xmlns:editvm="clr-namespace:ShareX.ImageEditor.ViewModels;assembly=ShareX.ImageEditor"
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="650"
         x:Class="XerahS.UI.Views.MainWindow"
         x:DataType="editvm:MainViewModel"
@@ -261,3 +261,4 @@
     </Grid>
 
 </Window>
+

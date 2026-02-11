@@ -25,7 +25,7 @@
 
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using XerahS.Editor.ImageEffects.Adjustments;
+using ShareX.ImageEditor.ImageEffects.Adjustments;
 using SkiaSharp;
 using System.IO.Compression;
 using XerahS.Common.Helpers;
@@ -121,3 +121,4 @@ public class ImageEffectPresetSerializerTests
         }
     }
 }
+

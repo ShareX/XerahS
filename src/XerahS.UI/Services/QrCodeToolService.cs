@@ -24,7 +24,7 @@
 #endregion License Information (GPL v3)
 
 using Avalonia.Controls;
-using XerahS.Editor.Helpers;
+using ShareX.ImageEditor.Helpers;
 using SkiaSharp;
 using XerahS.Core;
 using XerahS.Core.Services;
@@ -194,3 +194,4 @@ public static class QrCodeToolService
         }
     }
 }
+

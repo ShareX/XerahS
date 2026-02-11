@@ -26,8 +26,8 @@
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using XerahS.Editor;
-using XerahS.Editor.Annotations;
+using ShareX.ImageEditor;
+using ShareX.ImageEditor.Annotations;
 using SkiaSharp;
 
 namespace XerahS.RegionCapture.ViewModels;
@@ -132,27 +132,27 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject
         ShowBorderColor = ActiveTool switch
         {
             EditorTool.Rectangle or EditorTool.Ellipse or EditorTool.Line or EditorTool.Arrow
-                or EditorTool.Pen or EditorTool.Highlighter or EditorTool.Text
-                or EditorTool.SpeechBalloon or EditorTool.Number => true,
+                or EditorTool.Freehand or EditorTool.Highlight or EditorTool.Text
+                or EditorTool.SpeechBalloon or EditorTool.Step => true,
             _ => false
         };
 
         ShowFillColor = ActiveTool switch
         {
-            EditorTool.Rectangle or EditorTool.Ellipse or EditorTool.SpeechBalloon or EditorTool.Number => true,
+            EditorTool.Rectangle or EditorTool.Ellipse or EditorTool.SpeechBalloon or EditorTool.Step => true,
             _ => false
         };
 
         ShowThickness = ActiveTool switch
         {
             EditorTool.Rectangle or EditorTool.Ellipse or EditorTool.Line or EditorTool.Arrow
-                or EditorTool.Pen or EditorTool.SpeechBalloon or EditorTool.Number or EditorTool.SmartEraser => true,
+                or EditorTool.Freehand or EditorTool.SpeechBalloon or EditorTool.Step or EditorTool.SmartEraser => true,
             _ => false
         };
 
         ShowFontSize = ActiveTool switch
         {
-            EditorTool.Text or EditorTool.Number => true,
+            EditorTool.Text or EditorTool.Step => true,
             _ => false
         };
 
@@ -165,7 +165,7 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject
         ShowShadow = ActiveTool switch
         {
             EditorTool.Rectangle or EditorTool.Ellipse or EditorTool.Line or EditorTool.Arrow
-                or EditorTool.Pen or EditorTool.Text or EditorTool.SpeechBalloon or EditorTool.Number => true,
+                or EditorTool.Freehand or EditorTool.Text or EditorTool.SpeechBalloon or EditorTool.Step => true,
             _ => false
         };
     }
@@ -368,3 +368,4 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject
 
     #endregion
 }
+

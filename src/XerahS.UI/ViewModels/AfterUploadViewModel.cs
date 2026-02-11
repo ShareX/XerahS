@@ -29,7 +29,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using XerahS.Editor.Helpers;
+using ShareX.ImageEditor.Helpers;
 using SkiaSharp;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
@@ -459,3 +459,4 @@ public sealed class AfterUploadFormatEntry
         return new AfterUploadFormatEntry(label, null, true);
     }
 }
+

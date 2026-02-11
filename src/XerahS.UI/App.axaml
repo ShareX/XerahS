@@ -3,7 +3,7 @@
              xmlns:local="using:XerahS.UI"
              xmlns:vm="using:XerahS.UI.ViewModels"
              xmlns:views="using:XerahS.UI.Views"
-             xmlns:converters="clr-namespace:XerahS.Editor.Converters;assembly=XerahS.Editor"
+             xmlns:converters="clr-namespace:ShareX.ImageEditor.Converters;assembly=ShareX.ImageEditor"
              xmlns:uiconverters="clr-namespace:XerahS.UI.Converters"
              xmlns:sty="using:FluentAvalonia.Styling"
              xmlns:core="using:XerahS.Core"
@@ -76,3 +76,4 @@
         </TrayIcons>
     </TrayIcon.Icons>
 </Application>
+

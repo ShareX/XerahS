@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="clr-namespace:XerahS.Editor.Views.Controls;assembly=XerahS.Editor"
+        xmlns:controls="clr-namespace:XerahS.RegionCapture.UI.Controls;assembly=XerahS.RegionCapture"
         x:Class="XerahS.RegionCapture.UI.OverlayWindow"
         SystemDecorations="None"
         TransparencyLevelHint="Transparent"
@@ -33,3 +33,4 @@
                                     IsVisible="True"/>
     </Grid>
 </Window>
+

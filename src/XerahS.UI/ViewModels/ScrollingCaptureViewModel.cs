@@ -30,7 +30,7 @@ using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Managers;
 using XerahS.Core.Services;
-using BitmapConversionHelpers = XerahS.Editor.Helpers.BitmapConversionHelpers;
+using BitmapConversionHelpers = ShareX.ImageEditor.Helpers.BitmapConversionHelpers;
 using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture;
 
@@ -238,3 +238,4 @@ public partial class ScrollingCaptureViewModel : ViewModelBase
         PreviewImage = null;
     }
 }
+

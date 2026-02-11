@@ -24,9 +24,9 @@
 #endregion License Information (GPL v3)
 
 using NUnit.Framework;
-using XerahS.Editor;
-using XerahS.Editor.Annotations;
-using XerahS.Editor.ImageEffects.Adjustments;
+using ShareX.ImageEditor;
+using ShareX.ImageEditor.Annotations;
+using ShareX.ImageEditor.ImageEffects.Adjustments;
 using SkiaSharp;
 
 namespace XerahS.Tests.Editor;
@@ -344,3 +344,4 @@ public class EditorRotateAnnotationsTests
 
     #endregion
 }
+

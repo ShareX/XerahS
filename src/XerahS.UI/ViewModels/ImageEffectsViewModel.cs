@@ -28,10 +28,10 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.Input;
-using XerahS.Editor;
-using XerahS.Editor.Extensions;
-using XerahS.Editor.ImageEffects;
-using XerahS.Editor.ImageEffects.Manipulations;
+using ShareX.ImageEditor;
+using ShareX.ImageEditor.Extensions;
+using ShareX.ImageEditor.ImageEffects;
+using ShareX.ImageEditor.ImageEffects.Manipulations;
 using SkiaSharp;
 using System;
 using System.Collections.ObjectModel;
@@ -108,8 +108,12 @@ namespace XerahS.UI.ViewModels
             try
             {
                 Name = string.IsNullOrWhiteSpace(preset.Name) ? "Preset" : preset.Name;
-                editorCore.LoadEffects(preset.Effects ?? new List<ImageEffect>());
-                SyncFromCore();
+                Effects.Clear();
+                foreach (var effect in preset.Effects ?? new List<ImageEffect>())
+                {
+                    Effects.Add(effect);
+                }
+                SelectedEffect = Effects.FirstOrDefault();
             }
             finally
             {
@@ -118,7 +122,6 @@ namespace XerahS.UI.ViewModels
             }
             UpdatePreview();
 
-            editorCore.EffectsChanged += OnEffectsChanged;
             editorCore.HistoryChanged += OnHistoryChanged;
             Effects.CollectionChanged += (s, e) => SyncToSettings();
         }
@@ -146,11 +149,6 @@ namespace XerahS.UI.ViewModels
 
         private void SyncFromCore()
         {
-            Effects.Clear();
-            foreach (var effect in editorCore.Effects)
-            {
-                Effects.Add(effect);
-            }
             SelectedEffect = Effects.FirstOrDefault();
         }
 
@@ -181,7 +179,17 @@ namespace XerahS.UI.ViewModels
             {
                 isSyncSuspended = false;
             }
-            editorCore.SetEffects(effects);
+            Effects.Clear();
+            foreach (var effect in effects)
+            {
+                Effects.Add(effect);
+            }
+            SelectedEffect = Effects.FirstOrDefault();
+            SyncToSettings();
+            if (updatePreview)
+            {
+                UpdatePreview();
+            }
         }
 
         private void InitializeAvailableEffects()
@@ -259,8 +267,6 @@ namespace XerahS.UI.ViewModels
             {
                 foreach (var effect in Effects)
                 {
-                    if (!effect.IsEnabled) continue;
-
                     var processed = effect.Apply(result);
                     if (processed != result)
                     {
@@ -304,7 +310,8 @@ namespace XerahS.UI.ViewModels
         public void ToggleEffect(ImageEffect? effect)
         {
             if (effect == null) return;
-            editorCore.ToggleEffect(effect);
+            UpdatePreview();
+            SyncToSettings();
         }
 
         [RelayCommand]
@@ -312,8 +319,10 @@ namespace XerahS.UI.ViewModels
         {
             if (Activator.CreateInstance(effectType) is ImageEffect effect)
             {
-                editorCore.AddEffect(effect);
+                Effects.Add(effect);
                 SelectedEffect = Effects.LastOrDefault();
+                UpdatePreview();
+                SyncToSettings();
             }
         }
 
@@ -322,8 +331,10 @@ namespace XerahS.UI.ViewModels
         {
             if (SelectedEffect != null)
             {
-                editorCore.RemoveEffect(SelectedEffect);
+                Effects.Remove(SelectedEffect);
                 SelectedEffect = Effects.FirstOrDefault();
+                UpdatePreview();
+                SyncToSettings();
             }
         }
 
@@ -362,11 +373,10 @@ namespace XerahS.UI.ViewModels
 
             var extension = Path.GetExtension(filePath).ToLowerInvariant();
 
-            var enabledEffects = Effects.Where(e => e.IsEnabled).ToList();
             var presetToSave = new ImageEffectPreset
             {
                 Name = Name,
-                Effects = enabledEffects
+                Effects = Effects.ToList()
             };
 
             try
@@ -626,7 +636,7 @@ namespace XerahS.UI.ViewModels
             string? name = null;
             try
             {
-                if (Activator.CreateInstance(type) is XerahS.Editor.ImageEffects.ImageEffect effect)
+                if (Activator.CreateInstance(type) is ShareX.ImageEditor.ImageEffects.ImageEffect effect)
                 {
                     name = effect.Name;
                 }
@@ -635,7 +645,8 @@ namespace XerahS.UI.ViewModels
             {
             }
 
-            Name = name ?? XerahS.Editor.Extensions.TypeExtensions.GetDescription(type) ?? type.Name;
+            Name = name ?? ShareX.ImageEditor.Extensions.TypeExtensions.GetDescription(type) ?? type.Name;
         }
     }
 }
+
