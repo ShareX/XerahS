@@ -34,6 +34,7 @@ using ShareX.ImageEditor;
 using ShareX.ImageEditor.Annotations;
 using XerahS.RegionCapture.UI.Controls;
 using SkiaSharp;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using XerahS.RegionCapture.Models;
 using XerahS.RegionCapture.Services;
@@ -52,6 +53,8 @@ namespace XerahS.RegionCapture.UI;
 /// </summary>
 public partial class OverlayWindow : Window
 {
+    private static readonly long SelectionDragRebuildIntervalTicks = Math.Max(1, Stopwatch.Frequency / 30);
+
     private readonly MonitorInfo _monitor;
     private readonly TaskCompletionSource<RegionSelectionResult?> _completionSource;
     private readonly RegionCaptureControl _captureControl;
@@ -65,6 +68,8 @@ public partial class OverlayWindow : Window
     private Annotation? _currentAnnotation;
     private bool _rebuildScheduled;
     private bool _rebuildPending;
+    private long _lastRebuildTicks;
+    private bool _selectionInteractionActive;
 
     // CTRL modifier state for toggling between drawing and region selection
     private bool _ctrlPressed;
@@ -162,7 +167,10 @@ public partial class OverlayWindow : Window
     {
         if (e.PropertyName == nameof(RegionCaptureAnnotationViewModel.ActiveTool))
         {
-            UpdateAnnotationCanvasHitTesting();
+            if (UpdateAnnotationCanvasHitTesting())
+            {
+                _captureControl.InvalidateVisual();
+            }
         }
     }
 
@@ -172,9 +180,9 @@ public partial class OverlayWindow : Window
     /// Drawing tools + CTRL: hit testing OFF (CTRL allows region selection)
     /// Drawing tools (no CTRL): hit testing ON (canvas handles drawing)
     /// </summary>
-    private void UpdateAnnotationCanvasHitTesting()
+    private bool UpdateAnnotationCanvasHitTesting()
     {
-        if (_annotationCanvas == null) return;
+        if (_annotationCanvas == null) return false;
 
         // Annotation mode is active when:
         // 1. CTRL is NOT pressed (CTRL always allows region selection)
@@ -184,11 +192,19 @@ public partial class OverlayWindow : Window
         bool isAnnotationMode = !_ctrlPressed &&
                                 (_viewModel.ActiveTool != EditorTool.Select || hasAnnotations);
 
-        _annotationCanvas.IsHitTestVisible = isAnnotationMode;
+        if (_annotationCanvas.IsHitTestVisible != isAnnotationMode)
+        {
+            _annotationCanvas.IsHitTestVisible = isAnnotationMode;
+        }
 
         // Update the capture control's mode indicator
-        _captureControl.IsAnnotationMode = isAnnotationMode;
-        _captureControl.InvalidateVisual();
+        if (_captureControl.IsAnnotationMode != isAnnotationMode)
+        {
+            _captureControl.IsAnnotationMode = isAnnotationMode;
+            return true;
+        }
+
+        return false;
     }
 
     private void InitializeComponent()
@@ -215,7 +231,10 @@ public partial class OverlayWindow : Window
         if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
         {
             _ctrlPressed = true;
-            UpdateAnnotationCanvasHitTesting();
+            if (UpdateAnnotationCanvasHitTesting())
+            {
+                _captureControl.InvalidateVisual();
+            }
         }
 
         if (e.Key == Key.Escape)
@@ -274,7 +293,10 @@ public partial class OverlayWindow : Window
         if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
         {
             _ctrlPressed = false;
-            UpdateAnnotationCanvasHitTesting();
+            if (UpdateAnnotationCanvasHitTesting())
+            {
+                _captureControl.InvalidateVisual();
+            }
         }
     }
 
@@ -300,9 +322,14 @@ public partial class OverlayWindow : Window
         // Right-click: delete annotation under cursor
         if (props.IsRightButtonPressed)
         {
+            int annotationCountBeforeDelete = _viewModel.EditorCore.Annotations.Count;
             _viewModel.EditorCore.OnPointerPressed(skPoint, isRightButton: true);
+            _selectionInteractionActive = false;
             SyncAnnotationState();
-            RebuildAnnotationCanvas();
+            if (_viewModel.EditorCore.Annotations.Count != annotationCountBeforeDelete)
+            {
+                RebuildAnnotationCanvas();
+            }
             return;
         }
 
@@ -311,9 +338,14 @@ public partial class OverlayWindow : Window
         // Select tool still routes to EditorCore so existing annotations can be selected/moved/resized.
         if (_viewModel.ActiveTool == EditorTool.Select)
         {
+            var selectedBefore = _viewModel.EditorCore.SelectedAnnotation;
             _viewModel.EditorCore.OnPointerPressed(skPoint);
+            _selectionInteractionActive = true;
             SyncAnnotationState();
-            RebuildAnnotationCanvas();
+            if (!ReferenceEquals(selectedBefore, _viewModel.EditorCore.SelectedAnnotation))
+            {
+                RebuildAnnotationCanvas();
+            }
             e.Pointer.Capture(_annotationCanvas);
             return;
         }
@@ -326,6 +358,7 @@ public partial class OverlayWindow : Window
         }
         _currentAnnotation = null;
         _isDrawing = false;
+        _selectionInteractionActive = false;
 
         // Delegate to EditorCore for annotation creation and initialization.
         int countBefore = _viewModel.EditorCore.Annotations.Count;
@@ -409,6 +442,7 @@ public partial class OverlayWindow : Window
 
         var endPoint = e.GetPosition(_annotationCanvas);
         var skPoint = new SKPoint((float)endPoint.X, (float)endPoint.Y);
+        _selectionInteractionActive = false;
 
         if (e.Pointer.Captured == _annotationCanvas)
         {
@@ -425,10 +459,6 @@ public partial class OverlayWindow : Window
             _currentShape = null;
         }
         _isDrawing = false;
-
-        _viewModel.HasAnnotations = _viewModel.EditorCore.Annotations.Count > 0;
-        _captureControl.HasAnnotations = _viewModel.HasAnnotations;
-        _captureControl.InvalidateVisual();
         _currentAnnotation = null;
 
         // Rebuild canvas with finalized annotations (effects rendered, etc.)
@@ -837,6 +867,11 @@ public partial class OverlayWindow : Window
             return;
         }
 
+        if (_selectionInteractionActive && ShouldThrottleSelectionRebuild())
+        {
+            return;
+        }
+
         _rebuildPending = true;
         if (_rebuildScheduled)
         {
@@ -897,15 +932,45 @@ public partial class OverlayWindow : Window
         {
             _annotationCanvas.Children.Add(preserveTextBox);
         }
+
+        _lastRebuildTicks = Stopwatch.GetTimestamp();
+    }
+
+    private bool ShouldThrottleSelectionRebuild()
+    {
+        if (_lastRebuildTicks == 0)
+        {
+            return false;
+        }
+
+        long elapsedTicks = Stopwatch.GetTimestamp() - _lastRebuildTicks;
+        return elapsedTicks < SelectionDragRebuildIntervalTicks;
     }
 
     private void SyncAnnotationState()
     {
-        _viewModel.HasAnnotations = _viewModel.EditorCore.Annotations.Count > 0;
-        _viewModel.HasSelectedAnnotation = _viewModel.EditorCore.SelectedAnnotation != null;
-        _captureControl.HasAnnotations = _viewModel.HasAnnotations;
-        _captureControl.InvalidateVisual();
-        UpdateAnnotationCanvasHitTesting();
+        bool hasAnnotations = _viewModel.EditorCore.Annotations.Count > 0;
+        bool hasSelectedAnnotation = _viewModel.EditorCore.SelectedAnnotation != null;
+
+        _viewModel.HasAnnotations = hasAnnotations;
+        _viewModel.HasSelectedAnnotation = hasSelectedAnnotation;
+
+        bool shouldInvalidateCapture = false;
+        if (_captureControl.HasAnnotations != hasAnnotations)
+        {
+            _captureControl.HasAnnotations = hasAnnotations;
+            shouldInvalidateCapture = true;
+        }
+
+        if (UpdateAnnotationCanvasHitTesting())
+        {
+            shouldInvalidateCapture = true;
+        }
+
+        if (shouldInvalidateCapture)
+        {
+            _captureControl.InvalidateVisual();
+        }
     }
 
     private void WireUpToolbarEvents()
