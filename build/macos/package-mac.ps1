@@ -7,6 +7,106 @@ $outputDir = Join-Path $root "dist"
 
 if (!(Test-Path $outputDir)) { New-Item -ItemType Directory -Force -Path $outputDir | Out-Null }
 
+function Convert-ToUnixPath {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    if ($fullPath -match "^[A-Za-z]:\\") {
+        $drive = $fullPath.Substring(0, 1).ToLowerInvariant()
+        $rest = $fullPath.Substring(2) -replace "\\", "/"
+        return "/$drive$rest"
+    }
+
+    return $fullPath -replace "\\", "/"
+}
+
+function Set-MacPlistStringKey {
+    param(
+        [Parameter(Mandatory = $true)][xml]$PlistXml,
+        [Parameter(Mandatory = $true)][System.Xml.XmlNode]$DictNode,
+        [Parameter(Mandatory = $true)][string]$Key,
+        [Parameter(Mandatory = $true)][string]$Value
+    )
+
+    $children = @($DictNode.ChildNodes)
+    for ($i = 0; $i -lt $children.Count; $i++) {
+        $child = $children[$i]
+        if ($child.NodeType -eq [System.Xml.XmlNodeType]::Element -and $child.Name -eq "key" -and $child.InnerText -eq $Key) {
+            $valueNode = $null
+            for ($j = $i + 1; $j -lt $children.Count; $j++) {
+                if ($children[$j].NodeType -eq [System.Xml.XmlNodeType]::Element) {
+                    $valueNode = $children[$j]
+                    break
+                }
+            }
+
+            if ($null -eq $valueNode -or $valueNode.Name -eq "key") {
+                $newValueNode = $PlistXml.CreateElement("string")
+                $newValueNode.InnerText = $Value
+                if ($null -eq $valueNode) {
+                    [void]$DictNode.AppendChild($newValueNode)
+                } else {
+                    [void]$DictNode.InsertBefore($newValueNode, $valueNode)
+                }
+            } elseif ($valueNode.Name -ne "string") {
+                $replacementNode = $PlistXml.CreateElement("string")
+                $replacementNode.InnerText = $Value
+                [void]$DictNode.ReplaceChild($replacementNode, $valueNode)
+            } else {
+                $valueNode.InnerText = $Value
+            }
+
+            return
+        }
+    }
+
+    $keyNode = $PlistXml.CreateElement("key")
+    $keyNode.InnerText = $Key
+    $valueNode = $PlistXml.CreateElement("string")
+    $valueNode.InnerText = $Value
+    [void]$DictNode.AppendChild($keyNode)
+    [void]$DictNode.AppendChild($valueNode)
+}
+
+function Configure-MacBundleIcon {
+    param(
+        [Parameter(Mandatory = $true)][string]$RootPath,
+        [Parameter(Mandatory = $true)][string]$AppBundlePath
+    )
+
+    $iconSource = Join-Path $RootPath "src\XerahS.UI\Assets\Logo.icns"
+    $resourcesDir = Join-Path $AppBundlePath "Contents\Resources"
+    $plistPath = Join-Path $AppBundlePath "Contents\Info.plist"
+
+    if (!(Test-Path $iconSource)) {
+        Write-Warning "Icon not found at $iconSource. macOS app icon will be missing."
+        return
+    }
+
+    if (!(Test-Path $plistPath)) {
+        Write-Warning "Info.plist not found at $plistPath. macOS app icon will be missing."
+        return
+    }
+
+    if (!(Test-Path $resourcesDir)) {
+        New-Item -ItemType Directory -Force -Path $resourcesDir | Out-Null
+    }
+
+    Copy-Item -Path $iconSource -Destination (Join-Path $resourcesDir "Logo.icns") -Force
+
+    [xml]$plistXml = Get-Content -Path $plistPath -Raw
+    $dictNode = $plistXml.SelectSingleNode("/plist/dict")
+    if ($null -eq $dictNode) {
+        throw "Invalid Info.plist format in $plistPath (missing /plist/dict)."
+    }
+
+    Set-MacPlistStringKey -PlistXml $plistXml -DictNode $dictNode -Key "CFBundleIconFile" -Value "Logo"
+    Set-MacPlistStringKey -PlistXml $plistXml -DictNode $dictNode -Key "CFBundleIconName" -Value "Logo"
+    $plistXml.Save($plistPath)
+
+    Write-Host "Configured macOS icon metadata for $AppBundlePath"
+}
+
 # Get Version from Directory.Build.props
 $buildPropsPath = Join-Path $root "Directory.Build.props"
 $version = dotnet msbuild $buildPropsPath -getProperty:Version
@@ -49,6 +149,8 @@ foreach ($arch in $archs) {
     if (!(Test-Path $appBundlePath)) {
         throw "Error: .app bundle not found at $appBundlePath"
     }
+
+    Configure-MacBundleIcon -RootPath $root -AppBundlePath $appBundlePath
 
     # 1.5 Publish Plugins
     Write-Host "Publishing Plugins..."
@@ -94,20 +196,37 @@ foreach ($arch in $archs) {
 
     Write-Host "Creating archive: $tarName"
     
-    # Use tar command (available in Windows 10/11 and via Git Bash)
-    # tar -C [dir] -czf [archive] [file] to avoid including full path
-    $tarArgs = "-C `"$publishDir`" -czf `"$tarPath`" XerahS.app"
-    $tarProcess = Start-Process -FilePath "tar" -ArgumentList $tarArgs -Wait -NoNewWindow -PassThru
-    
-    if ($tarProcess.ExitCode -ne 0) {
-        Write-Warning "tar command failed. Trying alternative method..."
-        
-        # Fallback: Use Compress-Archive then rename (creates .zip though)
-        $zipPath = [System.IO.Path]::ChangeExtension($tarPath, ".zip")
-        Compress-Archive -Path $appBundlePath -DestinationPath $zipPath -Force
-        Write-Host "Created .zip archive instead: $([System.IO.Path]::GetFileName($zipPath))"
-    } else {
+    $gitBash = "C:\Program Files\Git\bin\bash.exe"
+    if (Test-Path $gitBash) {
+        # Windows builds lose Unix execute permissions; enforce mode in archive.
+        $publishDirUnix = Convert-ToUnixPath $publishDir
+        $tarPathUnix = Convert-ToUnixPath $tarPath
+        $tarCommand = "set -e; tar -C '$publishDirUnix' --mode='a+rx,u+w' -czf '$tarPathUnix' XerahS.app"
+        & $gitBash -lc $tarCommand
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "GNU tar packaging failed for $rid."
+        }
+
         Write-Host "Success: Generated $tarName in dist."
+    } else {
+        Write-Warning "Git Bash not found at '$gitBash'. Falling back to Windows tar."
+        Write-Warning "The app may fail to open on macOS due to missing executable permissions."
+
+        # Fallback tar -C [dir] -czf [archive] [file] to avoid including full path
+        $tarArgs = "-C `"$publishDir`" -czf `"$tarPath`" XerahS.app"
+        $tarProcess = Start-Process -FilePath "tar" -ArgumentList $tarArgs -Wait -NoNewWindow -PassThru
+
+        if ($tarProcess.ExitCode -ne 0) {
+            Write-Warning "tar command failed. Trying alternative method..."
+
+            # Fallback: Use Compress-Archive then rename (creates .zip though)
+            $zipPath = [System.IO.Path]::ChangeExtension($tarPath, ".zip")
+            Compress-Archive -Path $appBundlePath -DestinationPath $zipPath -Force
+            Write-Host "Created .zip archive instead: $([System.IO.Path]::GetFileName($zipPath))"
+        } else {
+            Write-Host "Success: Generated $tarName in dist."
+        }
     }
 }
 
