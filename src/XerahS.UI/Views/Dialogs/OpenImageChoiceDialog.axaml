@@ -1,12 +1,19 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="XerahS.UI.Views.Dialogs.OpenImageChoiceDialog">
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="XerahS.UI.Views.Dialogs.OpenImageChoiceDialog"
+        Title="Open Image"
+        Width="460"
+        Height="200"
+        MinWidth="460"
+        MinHeight="200"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner">
     <Border Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
             BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"
-            CornerRadius="8"
             Padding="16">
-        <StackPanel Spacing="12" Width="420">
+        <StackPanel Spacing="12">
             <TextBlock Text="An image is already open"
                        FontSize="16"
                        FontWeight="SemiBold"/>
@@ -22,4 +29,4 @@
             </StackPanel>
         </StackPanel>
     </Border>
-</UserControl>
+</Window>

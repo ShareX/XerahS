@@ -29,12 +29,15 @@ using Avalonia.Markup.Xaml;
 
 namespace XerahS.UI.Views.Dialogs;
 
-public partial class OpenImageChoiceDialog : UserControl
+public enum OpenImageChoice
 {
-    public event EventHandler? ReplaceRequested;
-    public event EventHandler? AddRequested;
-    public event EventHandler? CancelRequested;
+    Cancel = 0,
+    ReplaceImage = 1,
+    AddAsShape = 2
+}
 
+public partial class OpenImageChoiceDialog : Window
+{
     public OpenImageChoiceDialog()
     {
         AvaloniaXamlLoader.Load(this);
@@ -42,16 +45,16 @@ public partial class OpenImageChoiceDialog : UserControl
 
     private void OnReplaceClick(object? sender, RoutedEventArgs e)
     {
-        ReplaceRequested?.Invoke(this, EventArgs.Empty);
+        Close(OpenImageChoice.ReplaceImage);
     }
 
     private void OnAddClick(object? sender, RoutedEventArgs e)
     {
-        AddRequested?.Invoke(this, EventArgs.Empty);
+        Close(OpenImageChoice.AddAsShape);
     }
 
     private void OnCancelClick(object? sender, RoutedEventArgs e)
     {
-        CancelRequested?.Invoke(this, EventArgs.Empty);
+        Close(OpenImageChoice.Cancel);
     }
 }

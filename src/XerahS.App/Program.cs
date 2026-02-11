@@ -40,83 +40,129 @@ namespace XerahS.App
             try
             {
                 // Single instance enforcement
-            _singleInstanceManager = new XerahS.Common.SingleInstanceManager(MutexName, PipeName, args);
+                _singleInstanceManager = new XerahS.Common.SingleInstanceManager(MutexName, PipeName, args);
 
-            if (!_singleInstanceManager.IsFirstInstance)
-            {
-                // Arguments have been passed to the first instance, exit this instance
-                _singleInstanceManager.Dispose();
-                return;
-            }
+                if (!_singleInstanceManager.IsFirstInstance)
+                {
+                    // Arguments have been passed to the first instance, exit this instance
+                    _singleInstanceManager.Dispose();
+                    return;
+                }
 
-            // Subscribe to receive arguments from subsequent instances
-            _singleInstanceManager.ArgumentsReceived += OnArgumentsReceived;
+                // Subscribe to receive arguments from subsequent instances
+                _singleInstanceManager.ArgumentsReceived += OnArgumentsReceived;
 
-            // Initialize logging with datestamped file in Logs/yyyy-mm folder structure
-            var baseFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), XerahS.Core.SettingsManager.AppName);
-            var logsFolder = System.IO.Path.Combine(baseFolder, "Logs", DateTime.Now.ToString("yyyy-MM"));
-            var logPath = System.IO.Path.Combine(logsFolder, $"{XerahS.Common.AppResources.AppName}-{DateTime.Now:yyyyMMdd}.log");
-            XerahS.Common.DebugHelper.Init(logPath);
+                // Initialize logging with datestamped file in Logs/yyyy-mm folder structure
+                var baseFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), XerahS.Core.SettingsManager.AppName);
+                var logsFolder = System.IO.Path.Combine(baseFolder, "Logs", DateTime.Now.ToString("yyyy-MM"));
+                var logPath = System.IO.Path.Combine(logsFolder, $"{XerahS.Common.AppResources.AppName}-{DateTime.Now:yyyyMMdd}.log");
+                XerahS.Common.DebugHelper.Init(logPath);
+                RegisterGlobalExceptionHandlers();
 
-            var dh = XerahS.Common.DebugHelper.Logger ?? throw new InvalidOperationException("Logger not initialised");
-            dh.AsyncWrite = false; // Synchronous for startup
+                var dh = XerahS.Common.DebugHelper.Logger ?? throw new InvalidOperationException("Logger not initialised");
+                dh.AsyncWrite = false; // Synchronous for startup
 
-            dh.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - {XerahS.Common.AppResources.AppName} starting.");
-            dh.WriteLine("Running as first instance (single instance mode enabled).");
+                dh.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - {XerahS.Common.AppResources.AppName} starting.");
+                dh.WriteLine("Running as first instance (single instance mode enabled).");
 
-            var version = XerahS.Common.AppResources.Version;
-            dh.WriteLine($"Version: {version}");
+                var version = XerahS.Common.AppResources.Version;
+                dh.WriteLine($"Version: {version}");
 
 #if DEBUG
-            dh.WriteLine("Build: Debug");
+                dh.WriteLine("Build: Debug");
 #else
-            dh.WriteLine("Build: Release");
+                dh.WriteLine("Build: Release");
 #endif
 
-            dh.WriteLine($"Command line: \"{Environment.ProcessPath}\"");
-            dh.WriteLine($"Personal path: {logsFolder}");
-            dh.WriteLine($"Operating system: {System.Runtime.InteropServices.RuntimeInformation.OSDescription} ({System.Runtime.InteropServices.RuntimeInformation.OSArchitecture})");
-            dh.WriteLine($".NET version: {System.Environment.Version}");
+                dh.WriteLine($"Command line: \"{Environment.ProcessPath}\"");
+                dh.WriteLine($"Personal path: {logsFolder}");
+                dh.WriteLine($"Operating system: {System.Runtime.InteropServices.RuntimeInformation.OSDescription} ({System.Runtime.InteropServices.RuntimeInformation.OSArchitecture})");
+                dh.WriteLine($".NET version: {System.Environment.Version}");
 
-            bool isElevated = false;
-            if (OperatingSystem.IsWindows())
-            {
-                using (var identity = System.Security.Principal.WindowsIdentity.GetCurrent())
+                bool isElevated = false;
+                if (OperatingSystem.IsWindows())
                 {
-                    if (identity != null)
+                    using (var identity = System.Security.Principal.WindowsIdentity.GetCurrent())
                     {
-                        var principal = new System.Security.Principal.WindowsPrincipal(identity);
-                        isElevated = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+                        if (identity != null)
+                        {
+                            var principal = new System.Security.Principal.WindowsPrincipal(identity);
+                            isElevated = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+                        }
                     }
                 }
-            }
-            dh.WriteLine($"Running as elevated process: {isElevated}");
+                dh.WriteLine($"Running as elevated process: {isElevated}");
 #if DEBUG
-            dh.WriteLine("Flags: Debug");
+                dh.WriteLine("Flags: Debug");
 #else
-            dh.WriteLine("Flags: Release");
+                dh.WriteLine("Flags: Release");
 #endif
 
-            dh.AsyncWrite = true; // Switch back to async
+                dh.AsyncWrite = true; // Switch back to async
 
-            InitializePlatformServices();
+                InitializePlatformServices();
 
-            // Register callback for post-UI async initialization
-            XerahS.UI.App.PostUIInitializationCallback = InitializeBackgroundServicesAsync;
+                // Register callback for post-UI async initialization
+                XerahS.UI.App.PostUIInitializationCallback = InitializeBackgroundServicesAsync;
 
-            // Initialize settings
-            XerahS.Core.SettingsManager.LoadInitialSettings();
+                // Initialize settings
+                XerahS.Core.SettingsManager.LoadInitialSettings();
 
-            BuildAvaloniaApp()
-                .StartWithClassicDesktopLifetime(args);
+                BuildAvaloniaApp()
+                    .StartWithClassicDesktopLifetime(args);
             }
             catch (Exception ex)
             {
                 XerahS.Common.DebugHelper.WriteException(ex, "Critical application startup failure");
+                XerahS.Common.DebugHelper.Flush();
 #if DEBUG
                 throw;
 #endif
             }
+        }
+
+        private static void RegisterGlobalExceptionHandlers()
+        {
+            AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) =>
+            {
+                try
+                {
+                    if (eventArgs.ExceptionObject is Exception ex)
+                    {
+                        XerahS.Common.DebugHelper.WriteException(ex, "Unhandled AppDomain exception");
+                    }
+                    else
+                    {
+                        XerahS.Common.DebugHelper.WriteException(
+                            $"Unhandled exception object: {eventArgs.ExceptionObject ?? "<null>"}",
+                            "Unhandled AppDomain exception");
+                    }
+
+                    XerahS.Common.DebugHelper.WriteLine($"Unhandled AppDomain exception terminating={eventArgs.IsTerminating}");
+                    XerahS.Common.DebugHelper.Flush();
+                }
+                catch
+                {
+                    // Avoid throwing from global exception handlers.
+                }
+            };
+
+            System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (_, eventArgs) =>
+            {
+                try
+                {
+                    XerahS.Common.DebugHelper.WriteException(eventArgs.Exception, "Unobserved task exception");
+                    XerahS.Common.DebugHelper.Flush();
+                }
+                catch
+                {
+                    // Avoid throwing from global exception handlers.
+                }
+                finally
+                {
+                    eventArgs.SetObserved();
+                }
+            };
         }
 
         private static void InitializePlatformServices()

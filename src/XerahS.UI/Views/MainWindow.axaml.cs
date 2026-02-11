@@ -55,6 +55,7 @@ namespace XerahS.UI.Views
     public partial class MainWindow : Window
     {
         private EditorView? _editorView = null;
+        private bool _isOpenImageInProgress;
 
         /// <summary>
         /// Collection of user-configured workflows for menu binding.
@@ -114,24 +115,53 @@ namespace XerahS.UI.Views
 
         private async Task OpenImageFromFileAsync()
         {
-            if (DataContext is not MainViewModel vm)
+            if (_isOpenImageInProgress)
             {
                 return;
             }
 
-            string? path = await PickImagePathAsync();
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return;
-            }
+            _isOpenImageInProgress = true;
 
-            if (vm.PreviewImage == null)
+            try
             {
-                ReplaceImageFromPath(vm, path);
-                return;
-            }
+                if (DataContext is not MainViewModel vm)
+                {
+                    return;
+                }
 
-            ShowOpenImageChoiceDialog(vm, path);
+                string? path = await PickImagePathAsync();
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    return;
+                }
+
+                if (vm.PreviewImage == null)
+                {
+                    ReplaceImageFromPath(vm, path);
+                    return;
+                }
+
+                OpenImageChoice choice = await ShowOpenImageChoiceDialogAsync();
+                switch (choice)
+                {
+                    case OpenImageChoice.ReplaceImage:
+                        ReplaceImageFromPath(vm, path);
+                        break;
+                    case OpenImageChoice.AddAsShape:
+                        await AddImageAsShapeFromPathAsync(path);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                XerahS.Common.DebugHelper.WriteException(ex, "File > Open failed");
+            }
+            finally
+            {
+                _isOpenImageInProgress = false;
+            }
         }
 
         private async Task<string?> PickImagePathAsync()
@@ -171,32 +201,18 @@ namespace XerahS.UI.Views
             return path;
         }
 
-        private void ShowOpenImageChoiceDialog(MainViewModel vm, string path)
+        private async Task<OpenImageChoice> ShowOpenImageChoiceDialogAsync()
         {
-            var dialog = new OpenImageChoiceDialog
+            try
             {
-                DataContext = vm
-            };
-
-            dialog.ReplaceRequested += (_, _) =>
+                var dialog = new OpenImageChoiceDialog();
+                return await dialog.ShowDialog<OpenImageChoice>(this);
+            }
+            catch (Exception ex)
             {
-                vm.CloseModalCommand.Execute(null);
-                ReplaceImageFromPath(vm, path);
-            };
-
-            dialog.AddRequested += async (_, _) =>
-            {
-                vm.CloseModalCommand.Execute(null);
-                await AddImageAsShapeFromPathAsync(path);
-            };
-
-            dialog.CancelRequested += (_, _) =>
-            {
-                vm.CloseModalCommand.Execute(null);
-            };
-
-            vm.ModalContent = dialog;
-            vm.IsModalOpen = true;
+                XerahS.Common.DebugHelper.WriteException(ex, "Failed to show open image choice dialog");
+                return OpenImageChoice.Cancel;
+            }
         }
 
         private void ReplaceImageFromPath(MainViewModel vm, string path)
