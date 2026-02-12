@@ -24,12 +24,10 @@
 #endregion License Information (GPL v3)
 
 using Avalonia.Controls;
-#if WINDOWS
 using SkiaSharp;
 using XerahS.Core.Services;
 using XerahS.RegionCapture;
 using XerahS.RegionCapture.Services;
-#endif
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Platform.Abstractions;
@@ -48,7 +46,12 @@ public static class RulerToolService
 
     private static async Task ShowRulerAsync()
     {
-#if WINDOWS
+        if (!IsRulerSupported())
+        {
+            NotifyRulerUnavailable();
+            return;
+        }
+
         var captureSettings = SettingsManager.DefaultTaskSettings?.CaptureSettings ?? new TaskSettingsCapture();
         var captureOptions = new CaptureOptions
         {
@@ -87,7 +90,7 @@ public static class RulerToolService
             };
 
             var regionCaptureService = new RegionCaptureService { Options = rulerOptions };
-            var result = await regionCaptureService.CaptureRegionAsync();
+            _ = await regionCaptureService.CaptureRegionAsync();
 
             // Result contains the measured region if user confirmed
             // For now, we just dismiss - could add clipboard copy of measurements later
@@ -97,25 +100,40 @@ public static class RulerToolService
             // Clean up background bitmap
             fullScreenBitmap?.Dispose();
         }
-#else
+    }
+
+    private static bool IsRulerSupported()
+    {
         try
         {
-            if (PlatformServices.IsToastServiceInitialized)
+            return PlatformServices.IsInitialized && PlatformServices.PlatformInfo.IsWindows;
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "Failed to check ruler platform support");
+            return false;
+        }
+    }
+
+    private static void NotifyRulerUnavailable()
+    {
+        try
+        {
+            if (!PlatformServices.IsToastServiceInitialized)
             {
-                PlatformServices.Toast.ShowToast(new ToastConfig
-                {
-                    Title = "Ruler",
-                    Text = "Ruler tool is currently available on Windows builds.",
-                    Duration = 4f
-                });
+                return;
             }
+
+            PlatformServices.Toast.ShowToast(new ToastConfig
+            {
+                Title = "Ruler",
+                Text = "Ruler tool is currently available on Windows builds.",
+                Duration = 4f
+            });
         }
         catch (Exception ex)
         {
             DebugHelper.WriteException(ex, "Ruler unavailable notification failed");
         }
-
-        await Task.CompletedTask;
-#endif
     }
 }

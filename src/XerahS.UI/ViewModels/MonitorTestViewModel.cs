@@ -24,17 +24,12 @@
 #endregion License Information (GPL v3)
 
 using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
-#if !WINDOWS
-using Avalonia.Controls.ApplicationLifetimes;
-#endif
-#if WINDOWS
-using XerahS.RegionCapture.Models;
-using XerahS.RegionCapture.Services;
-#endif
+using XerahS.Platform.Abstractions;
 
 namespace XerahS.UI.ViewModels;
 
@@ -417,7 +412,6 @@ public partial class MonitorTestViewModel : ViewModelBase
     }
 }
 
-#if !WINDOWS
 public readonly record struct MonitorRect(int X, int Y, int Width, int Height);
 
 public sealed class MonitorInfo
@@ -426,6 +420,7 @@ public sealed class MonitorInfo
     public MonitorRect PhysicalBounds { get; }
     public MonitorRect WorkArea { get; }
     public double ScaleFactor { get; }
+    public double Dpi => 96.0 * ScaleFactor;
     public bool IsPrimary { get; }
 
     public MonitorInfo(string deviceName, MonitorRect physicalBounds, MonitorRect workArea, double scaleFactor, bool isPrimary)
@@ -493,6 +488,7 @@ public sealed class MonitorSnapshot
             lines.Add($"  Bounds: X={monitor.PhysicalBounds.X}, Y={monitor.PhysicalBounds.Y}, W={monitor.PhysicalBounds.Width}, H={monitor.PhysicalBounds.Height}");
             lines.Add($"  Work Area: X={monitor.WorkArea.X}, Y={monitor.WorkArea.Y}, W={monitor.WorkArea.Width}, H={monitor.WorkArea.Height}");
             lines.Add($"  Scale Factor: {monitor.ScaleFactor:F2}x");
+            lines.Add($"  DPI: {monitor.Dpi:F0}");
             lines.Add($"  Primary: {(monitor.IsPrimary ? "Yes" : "No")}");
             lines.Add(string.Empty);
         }
@@ -505,34 +501,95 @@ public static class MonitorSnapshotService
 {
     public static MonitorSnapshot GetSnapshot()
     {
-        var monitors = new List<MonitorInfo>();
+        var monitors = GetMonitorsFromPlatformServices();
+        if (monitors.Count == 0)
+        {
+            monitors = GetMonitorsFromAvalonia();
+        }
 
-        var screens = Avalonia.Application.Current?.ApplicationLifetime switch
+        return new MonitorSnapshot(monitors);
+    }
+
+    private static List<MonitorInfo> GetMonitorsFromPlatformServices()
+    {
+        var monitors = new List<MonitorInfo>();
+        if (!PlatformServices.IsInitialized)
+        {
+            return monitors;
+        }
+
+        ScreenInfo[] screens;
+        try
+        {
+            screens = PlatformServices.Screen.GetAllScreens();
+        }
+        catch
+        {
+            return monitors;
+        }
+
+        if (screens.Length == 0)
+        {
+            return monitors;
+        }
+
+        bool hasPrimary = false;
+        foreach (var screen in screens)
+        {
+            if (screen.IsPrimary)
+            {
+                hasPrimary = true;
+                break;
+            }
+        }
+
+        for (int i = 0; i < screens.Length; i++)
+        {
+            var screen = screens[i];
+            var deviceName = string.IsNullOrWhiteSpace(screen.DeviceName) ? $"Display {i + 1}" : screen.DeviceName;
+            var scaleFactor = screen.ScaleFactor > 0 ? screen.ScaleFactor : 1.0;
+            var isPrimary = screen.IsPrimary || (!hasPrimary && i == 0);
+
+            monitors.Add(new MonitorInfo(
+                deviceName,
+                new MonitorRect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height),
+                new MonitorRect(screen.WorkingArea.X, screen.WorkingArea.Y, screen.WorkingArea.Width, screen.WorkingArea.Height),
+                scaleFactor,
+                isPrimary));
+        }
+
+        return monitors;
+    }
+
+    private static List<MonitorInfo> GetMonitorsFromAvalonia()
+    {
+        var monitors = new List<MonitorInfo>();
+        var screens = Application.Current?.ApplicationLifetime switch
         {
             IClassicDesktopStyleApplicationLifetime desktop => desktop.MainWindow?.Screens,
             _ => null
         };
 
-        if (screens != null)
+        if (screens == null)
         {
-            int index = 1;
-            foreach (var screen in screens.All)
-            {
-                monitors.Add(new MonitorInfo(
-                    $"Display {index}",
-                    new MonitorRect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height),
-                    new MonitorRect(screen.WorkingArea.X, screen.WorkingArea.Y, screen.WorkingArea.Width, screen.WorkingArea.Height),
-                    screen.Scaling,
-                    screen.IsPrimary));
-
-                index++;
-            }
+            return monitors;
         }
 
-        return new MonitorSnapshot(monitors);
+        int index = 1;
+        foreach (var screen in screens.All)
+        {
+            monitors.Add(new MonitorInfo(
+                $"Display {index}",
+                new MonitorRect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height),
+                new MonitorRect(screen.WorkingArea.X, screen.WorkingArea.Y, screen.WorkingArea.Width, screen.WorkingArea.Height),
+                screen.Scaling,
+                screen.IsPrimary));
+            index++;
+        }
+
+        return monitors;
     }
 }
-#endif
 
 public enum TestMode
 {
