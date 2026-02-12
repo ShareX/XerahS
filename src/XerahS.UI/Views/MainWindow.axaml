@@ -63,7 +63,7 @@
                     <MenuItem Header="Zoom _In" Command="{Binding ZoomInCommand}" InputGesture="Ctrl++"/>
                     <MenuItem Header="Zoom _Out" Command="{Binding ZoomOutCommand}" InputGesture="Ctrl+-"/>
                     <MenuItem Header="_Reset Zoom" Command="{Binding ResetZoomCommand}" InputGesture="Ctrl+0"/>
-                    <MenuItem Header="Zoom to _Fit" Command="{Binding ZoomToFitCommand}" InputGesture="Ctrl+9"/>
+                    <MenuItem Header="Zoom to _Fit" Command="{Binding ZoomToFitCommand}" InputGesture="Ctrl+D9"/>
                 </MenuItem>
                 
                 <!-- Workflows Menu -->

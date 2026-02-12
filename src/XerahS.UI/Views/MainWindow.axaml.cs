@@ -587,6 +587,24 @@ namespace XerahS.UI.Views
                         _ = OpenImageFromFileAsync();
                         e.Handled = true;
                         return;
+                    case Key.OemPlus:
+                    case Key.Add:
+                        vm.ZoomInCommand.Execute(null);
+                        e.Handled = true;
+                        return;
+                    case Key.OemMinus:
+                    case Key.Subtract:
+                        vm.ZoomOutCommand.Execute(null);
+                        e.Handled = true;
+                        return;
+                    case Key.D0:
+                        vm.ResetZoomCommand.Execute(null);
+                        e.Handled = true;
+                        return;
+                    case Key.D9:
+                        vm.ZoomToFitCommand.Execute(null);
+                        e.Handled = true;
+                        return;
                 }
             }
 
