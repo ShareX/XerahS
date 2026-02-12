@@ -452,7 +452,6 @@ public partial class App : Application
         task.TaskCompleted += HandleCompleted;
 
         IncrementActiveUploads();
-        UpdateMainWindowTitle(0);
     }
 
     private void IncrementActiveUploads()
