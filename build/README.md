@@ -1,4 +1,4 @@
-﻿# XerahS Build System Documentation
+# XerahS Build System Documentation
 
 This document describes the build system structure and how builds work for each operating system.
 
