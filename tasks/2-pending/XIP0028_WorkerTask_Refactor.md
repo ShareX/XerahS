@@ -1,7 +1,7 @@
 ﻿---
 id: XIP0028
 title: Refactor WorkerTask and Consolidate Tool Workflows
-status: New
+status: In Progress
 created: 2026-02-06
 author: Claude (AI Assistant)
 ---

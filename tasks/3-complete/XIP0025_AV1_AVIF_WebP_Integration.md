@@ -1,5 +1,7 @@
 # XIP0025: AV1/AVIF & WebP Support Integration
 
+**Status**: ✅ COMPLETE
+
 ## Goal Description
 Integrate AV1 (video), AVIF (image), and WebP (image) support into XerahS. This aligns XerahS with recent ShareX capabilities (PR #8151), enabling modern, high-efficiency media formats.
 

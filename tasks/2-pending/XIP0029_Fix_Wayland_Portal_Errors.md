@@ -1,4 +1,6 @@
-# Fix Wayland Portal DBus Errors
+# XIP0029: Fix Wayland Portal DBus Errors
+
+**Status**: In Progress - Implementation underway
 
 ## Context
 When running on Linux Wayland, the application crashes or fails to initialize services with `Tmds.DBus` errors.

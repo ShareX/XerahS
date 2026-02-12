@@ -10,7 +10,7 @@
 `feature/imgur-plugin-ui`
 
 ## Status
-New - Verified on 2026-01-08
+In Progress - Partial implementation. Backend properties exist, UI controls pending.
 
 ## Assessment
 0% Complete. `ImgurConfigView.axaml` is missing functionality. Specifically: "Use GIFV", Album Selection ListView, "Upload to Selected Album" checkbox.

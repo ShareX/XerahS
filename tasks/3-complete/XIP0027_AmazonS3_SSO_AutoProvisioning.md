@@ -1,5 +1,7 @@
 # XIP0027: Amazon S3 SSO Login + Auto-Provisioning via Custom Domain
 
+**Status**: ✅ COMPLETE
+
 ## Goal Description
 Add AWS IAM Identity Center (SSO) device login to the Amazon S3 plugin while keeping manual access keys.
 In SSO mode, the user selects the bucket location (Endpoint / Region) and provides a Custom Domain; the bucket name is derived from the Custom Domain and auto-provisioned in the selected region (default `us-east-1`).
