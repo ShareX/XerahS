@@ -1,7 +1,7 @@
 # Documentation Standards
 
 - **Update Policy**: Update/add docs when behavior changes.
-- **Persistence**: All created `.md` files (including artifacts) must be committed.
+- **Git + Versioning Workflow**: Use `.github/skills/xerahs-workflow/SKILL.md` as the single source of truth for commit/push and version bump rules.
 - **Structure**:
   - `docs/architecture`: High-level system design and concepts.
   - `docs/audits`: Detailed reviews, gap analyses, and action plans.

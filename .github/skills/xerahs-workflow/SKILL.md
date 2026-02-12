@@ -1,104 +1,71 @@
 ---
 name: ShareX Workflow and Versioning
-description: Semantic versioning, commit message standards, multi-agent coordination, and workflow guidelines
+description: Canonical Git, commit/push, and Directory.Build.props versioning workflow for XerahS. Use for any task that changes version numbers or requires commit/push.
 ---
-
-## Semantic Versioning Automation
-
-**Product Name**: ShareX Ava (Project files/UI should reflect this, code namespace remains `XerahS`)
-
-**Current Version**: 0.1.0 (Managed centrally in `Directory.Build.props`)
-
-**Rules for Agents**:
-
-1. **Automated Version Bumping**:
-   - **PATCH (x.x.X)**: Bump for bug fixes, refactors, or minor tasks (Complexity ≤ 3).
-   - **MINOR (x.X.x)**: Bump for new features, significant UI changes, or new workflows (Complexity 4-7).
-   - **MAJOR (X.x.x)**: Bump for breaking changes or major releases (Complexity ≥ 8).
-
-2. **How to Bump**:
-   - Read `Directory.Build.props` to get the current version from the `<Version>` tag.
-   - Increment accordingly based on the highest complexity of changes in your session.
-   - Update `<Version>` tag in `Directory.Build.props`.
-   - **IMPORTANT**: `Directory.Build.props` is the **single source of truth** for the application version. When updating the version, you MUST update this file.
-   - **Do not** update individual `.csproj` versions; they inherit from `Directory.Build.props`.
-
-### Getting Current Version
-Always read the version from `Directory.Build.props` before making changes:
-```xml
-<!-- Directory.Build.props -->
-<PropertyGroup>
-  <Version>0.1.0</Version>
-</PropertyGroup>
-```
-Use this version in commit messages: `[v0.1.0] [Type] Description`
-
-3. **Commit Messages**:
-   - Prefix commits with `[vX.Y.Z]` relative to the new version.
-   - Example: `[v0.1.1] [Fix] Captured images now display in Editor`
-
-## Semantic Versioning Standards
-
-- Uses standard SemVer 2.0.0 (MAJOR.MINOR.PATCH).
-- Pre-release tags allowed (e.g., `0.1.0-alpha.1`) for unstable features.
-
-## Git Workflow with Submodules
-
-**IMPORTANT**: This repository uses git submodules (e.g., `ImageEditor`). Always pull with submodules before committing.
-
-### Pre-Commit Steps
-Before any `git commit` and `git push`, execute:
-
-```bash
-# Pull main repo and all submodules
-git pull --recurse-submodules
-
-# If submodules need updating
-git submodule update --init --recursive
-```
-
-### Commit and Push
-After ensuring everything is up to date:
-
-```bash
-git add .
-git commit -m "[vX.Y.Z] [Type] Description"
-git push
-```
-
-### Submodule Configuration
-The following global git config should be set (already done):
-```bash
-git config --global submodule.recurse true
-```
-
-## Multi-Agent Coordination
-
-This project uses multiple AI developer agents working in parallel. See [MULTI_AGENT_COORDINATION.md](../../../docs/agents/MULTI_AGENT_COORDINATION.md) for:
-- Agent roles (Antigravity, Codex, Copilot)
-- Task distribution rules
-- Git workflow and branch naming
-- Conflict avoidance protocols
-- Communication requirements
-
-**Lead Agent**: Antigravity (architecture, integration, merge decisions)
-
-- Always summarize code changes in the final response, and use that summary when performing `git push` after each code update.
 
 ## Scope
 
-- This document provides clear operating instructions for LLM-assisted work in this repository.
-- Applies to documentation, code, tests, configs, and release notes.
-- If a request conflicts with repository guidelines, ask for clarification.
+This file is the single source of truth for Git and versioning rules that involve:
+- Commit and push workflow
+- Commit message format
+- Version bump behavior
+- `Directory.Build.props` updates
 
-## Communication
+This supersedes the retired `docs/development/RELEASE_PROCESS.md`.
 
-- Be concise and factual.
-- Prefer short paragraphs and bullet lists.
-- Use consistent terminology from existing docs.
+## Version Source Of Truth
 
-## Repository Awareness
+1. Treat `Directory.Build.props` files as the only app version source.
+2. Never set version numbers in individual `.csproj` files.
+3. When bumping version, update every `Directory.Build.props` in the repository so values match.
+4. Read current version from the root `Directory.Build.props` first.
 
-- Read existing docs before adding new guidance.
-- Avoid duplicating information unless it is a deliberate summary.
-- Keep instructions in ASCII unless the target file already uses Unicode.
+## Version Bump Policy
+
+1. Bug fix: increment patch only (`0.0.z` rule: keep major/minor, increase `z`).
+2. New feature: increment minor and reset patch.
+3. Breaking change: increment major and reset minor/patch.
+
+## Required Pre-Commit Checks
+
+Before committing and pushing:
+
+```bash
+git pull --recurse-submodules
+git submodule update --init --recursive
+dotnet build XerahS.sln
+```
+
+Only continue when build succeeds with 0 errors.
+
+## Commit And Push Procedure
+
+1. Stage changes:
+```bash
+git add .
+```
+2. Commit using:
+```bash
+git commit -m "[vX.Y.Z] [Type] concise description"
+```
+3. Push:
+```bash
+git push
+```
+
+## Commit Message Rules
+
+1. Prefix every commit with the new version: `[vX.Y.Z]`.
+2. Include a type token such as `[Fix]`, `[Feature]`, `[Build]`, `[Docs]`, `[Refactor]`.
+3. Keep the description concise and specific.
+
+## Git Hook Expectations
+
+1. Keep `.githooks` active (`git config core.hooksPath .githooks`).
+2. Do not bypass hooks with `--no-verify` unless explicitly requested for emergency use.
+3. If hooks fail, fix issues and recommit.
+
+## Documentation And Git
+
+1. Commit Markdown documentation changes with related code/config changes.
+2. Do not leave generated instruction docs uncommitted when they are part of the requested work.

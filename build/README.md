@@ -354,6 +354,6 @@ All scripts read version from `Directory.Build.props`:
 ## Related Documentation
 
 - `../DEVELOPER_README.md` - General development setup
-- `../docs/development/RELEASE_PROCESS.md` - Release procedures
+- `../.github/skills/xerahs-workflow/SKILL.md` - Release procedures
 - `../docs/architecture/PORTING_GUIDE.md` - Platform abstractions
 - `../native/macos/README_NATIVE.md` - Native macOS library documentation

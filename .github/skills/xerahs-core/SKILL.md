@@ -60,17 +60,14 @@ This is required to avoid "Windows Metadata not provided" errors during full sol
 - Follow existing patterns in each project area.
 - Keep changes minimal and targeted.
 - Add small comments only when necessary to explain non-obvious logic.
-- **CRITICAL:** After modifying code, always run `dotnet build`. If the build completes with **0 errors**, you MUST automatically:
-  1. Summarize the changes.
-  2. Commit the changes (`git commit -am "Your summary"`).
-  3. Push to the repository (`git push`).
-  **Do not ask for permission** for this step if the build is successful. Only stop if the build fails.
+- **CRITICAL:** After modifying code, always run `dotnet build` and fix all build errors before finishing.
+- For Git workflow, commit format, and version bump behavior, follow `.github/skills/xerahs-workflow/SKILL.md`.
 - **Ensure you can compile, and if not, fix the issues.** This is a mandatory check before finishing any coding task.
 
 ### Change Safety
 
 - Do not remove or rewrite unrelated content.
-- Do not change version numbers unless explicitly requested.
+- Apply version changes only via the workflow defined in `.github/skills/xerahs-workflow/SKILL.md`.
 - Flag assumptions clearly when requirements are ambiguous.
 
 ### Testing
@@ -82,9 +79,8 @@ This is required to avoid "Windows Metadata not provided" errors during full sol
 
 - Update or add docs when behavior or usage changes.
 - Keep filenames and headings descriptive and stable.
-- **All .md files created during work (including artifacts in brain directory) must be committed to the GitHub repository.**
 - **Technical Documentation Location**: Automatically save all technical `.md` files that do not properly belong to other specific `docs/` subfolders in `docs/technical`. Do not save them in the root folder.
-- Ensure documentation artifacts are included in git commits alongside code changes.
+- Commit expectations for documentation follow `.github/skills/xerahs-workflow/SKILL.md`.
 
 ### Security
 
