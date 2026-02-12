@@ -18,8 +18,9 @@ $version = ""
 $propsFile = Join-Path $root "Directory.Build.props"
 if (Test-Path $propsFile) {
     $xml = [xml](Get-Content $propsFile)
-    if ($xml.Project.PropertyGroup.Version) {
-        $version = $xml.Project.PropertyGroup.Version
+    $versionNode = $xml.SelectSingleNode("//Version")
+    if ($versionNode -and $versionNode.InnerText) {
+        $version = $versionNode.InnerText.Trim()
     }
 }
 
