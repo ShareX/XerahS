@@ -32,6 +32,36 @@ description: Semantic versioning, commit message standards, multi-agent coordina
 - Uses standard SemVer 2.0.0 (MAJOR.MINOR.PATCH).
 - Pre-release tags allowed (e.g., `0.1.0-alpha.1`) for unstable features.
 
+## Git Workflow with Submodules
+
+**IMPORTANT**: This repository uses git submodules (e.g., `ImageEditor`). Always pull with submodules before committing.
+
+### Pre-Commit Steps
+Before any `git commit` and `git push`, execute:
+
+```bash
+# Pull main repo and all submodules
+git pull --recurse-submodules
+
+# If submodules need updating
+git submodule update --init --recursive
+```
+
+### Commit and Push
+After ensuring everything is up to date:
+
+```bash
+git add .
+git commit -m "[vX.Y.Z] [Type] Description"
+git push
+```
+
+### Submodule Configuration
+The following global git config should be set (already done):
+```bash
+git config --global submodule.recurse true
+```
+
 ## Multi-Agent Coordination
 
 This project uses multiple AI developer agents working in parallel. See [MULTI_AGENT_COORDINATION.md](../../../docs/agents/MULTI_AGENT_COORDINATION.md) for:
