@@ -478,7 +478,7 @@ namespace XerahS.UI.ViewModels
             try
             {
                 var preset = extension == ".sxie"
-                    ? LoadLegacyPreset(filePath)
+                    ? LoadSxiePreset(filePath)
                     : ImageEffectPresetSerializer.LoadXsieFile(filePath);
 
                 if (preset != null)
@@ -493,6 +493,24 @@ namespace XerahS.UI.ViewModels
                 DebugHelper.WriteException(ex, "Failed to load image effects preset.");
                 return null;
             }
+        }
+
+        private ImageEffectPreset? LoadSxiePreset(string filePath)
+        {
+            try
+            {
+                var preset = ImageEffectPresetSerializer.LoadXsieFile(filePath);
+                if (preset != null)
+                {
+                    return preset;
+                }
+            }
+            catch
+            {
+                // Legacy .sxie files may use ShareX.ImageEffectsLib schema.
+            }
+
+            return LoadLegacyPreset(filePath);
         }
 
         private static Window? GetMainWindow()

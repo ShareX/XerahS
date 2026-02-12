@@ -118,16 +118,23 @@ internal sealed class XsiePreset
 
 internal sealed class ImageEffectSerializationBinder : ISerializationBinder
 {
+    private const string CurrentEffectsNamespacePrefix = "ShareX.ImageEditor.ImageEffects.";
+
+    private static readonly string[] LegacyEffectsNamespacePrefixes =
+    [
+        "ShareX.Editor.ImageEffects.",
+        "XerahS.Editor.ImageEffects."
+    ];
+
     public Type BindToType(string? assemblyName, string typeName)
     {
         if (string.IsNullOrWhiteSpace(typeName))
             throw new JsonSerializationException("Missing type name for image effect.");
 
-        if (!typeName.StartsWith("ShareX.ImageEditor.ImageEffects.", StringComparison.Ordinal))
-            throw new JsonSerializationException($"Unsupported image effect type: {typeName}");
+        string normalizedTypeName = NormalizeTypeName(typeName);
 
         var assembly = typeof(ImageEffect).Assembly;
-        var type = assembly.GetType(typeName, throwOnError: false);
+        var type = assembly.GetType(normalizedTypeName, throwOnError: false);
 
         if (type == null)
             throw new JsonSerializationException($"Unknown image effect type: {typeName}");
@@ -139,6 +146,22 @@ internal sealed class ImageEffectSerializationBinder : ISerializationBinder
     {
         assemblyName = serializedType.Assembly.GetName().Name;
         typeName = serializedType.FullName;
+    }
+
+    private static string NormalizeTypeName(string typeName)
+    {
+        if (typeName.StartsWith(CurrentEffectsNamespacePrefix, StringComparison.Ordinal))
+            return typeName;
+
+        foreach (string legacyPrefix in LegacyEffectsNamespacePrefixes)
+        {
+            if (typeName.StartsWith(legacyPrefix, StringComparison.Ordinal))
+            {
+                return CurrentEffectsNamespacePrefix + typeName[legacyPrefix.Length..];
+            }
+        }
+
+        throw new JsonSerializationException($"Unsupported image effect type: {typeName}");
     }
 }
 
