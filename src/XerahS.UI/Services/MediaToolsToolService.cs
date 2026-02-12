@@ -45,7 +45,7 @@ public static class MediaToolsToolService
         switch (job)
         {
             case WorkflowType.ImageCombiner:
-                ShowWindow(_combinerWindow, () =>
+                ShowWindow(_combinerWindow, owner, () =>
                 {
                     var vm = new ImageCombinerViewModel();
                     var w = new ImageCombinerWindow();
@@ -55,7 +55,7 @@ public static class MediaToolsToolService
                 break;
 
             case WorkflowType.ImageSplitter:
-                ShowWindow(_splitterWindow, () =>
+                ShowWindow(_splitterWindow, owner, () =>
                 {
                     var vm = new ImageSplitterViewModel();
                     var w = new ImageSplitterWindow();
@@ -65,7 +65,7 @@ public static class MediaToolsToolService
                 break;
 
             case WorkflowType.ImageThumbnailer:
-                ShowWindow(_thumbnailerWindow, () =>
+                ShowWindow(_thumbnailerWindow, owner, () =>
                 {
                     var vm = new ImageThumbnailerViewModel();
                     var w = new ImageThumbnailerWindow();
@@ -75,7 +75,7 @@ public static class MediaToolsToolService
                 break;
 
             case WorkflowType.VideoConverter:
-                ShowWindow(_converterWindow, () =>
+                ShowWindow(_converterWindow, owner, () =>
                 {
                     var vm = new VideoConverterViewModel();
                     var w = new VideoConverterWindow();
@@ -85,7 +85,7 @@ public static class MediaToolsToolService
                 break;
 
             case WorkflowType.VideoThumbnailer:
-                ShowWindow(_videoThumbnailerWindow, () =>
+                ShowWindow(_videoThumbnailerWindow, owner, () =>
                 {
                     var vm = new VideoThumbnailerViewModel();
                     var w = new VideoThumbnailerWindow();
@@ -95,7 +95,7 @@ public static class MediaToolsToolService
                 break;
 
             case WorkflowType.AnalyzeImage:
-                ShowWindow(_analyzerWindow, () =>
+                ShowWindow(_analyzerWindow, owner, () =>
                 {
                     var vm = new ImageAnalyzerViewModel();
                     var w = new ImageAnalyzerWindow();
@@ -108,13 +108,20 @@ public static class MediaToolsToolService
         return Task.CompletedTask;
     }
 
-    private static void ShowWindow<T>(T? current, Func<T> createWindow, Action<T?> setWindow, string toolName) where T : Window
+    private static void ShowWindow<T>(T? current, Window? owner, Func<T> createWindow, Action<T?> setWindow, string toolName) where T : Window
     {
         if (current != null)
         {
             try
             {
-                current.Show();
+                if (owner != null)
+                {
+                    current.Show(owner);
+                }
+                else
+                {
+                    current.Show();
+                }
                 current.Activate();
                 return;
             }
@@ -132,7 +139,14 @@ public static class MediaToolsToolService
             setWindow(null);
         };
 
-        window.Show();
+        if (owner != null)
+        {
+            window.Show(owner);
+        }
+        else
+        {
+            window.Show();
+        }
 
         DebugHelper.WriteLine($"{toolName}: Window shown.");
     }
