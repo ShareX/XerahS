@@ -160,8 +160,7 @@ publish_and_package() {
         -p:PublishSingleFile=false \
         --self-contained true \
         -p:nodeReuse=false \
-        -p:SkipBundlePlugins=true \
-        -p:CrossCompile=true
+        -p:SkipBundlePlugins=true
 
     if [ ! -d "$app_bundle_path" ]; then
         echo "Error: .app bundle not found at $app_bundle_path"
