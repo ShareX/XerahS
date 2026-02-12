@@ -165,17 +165,26 @@ public static class ColorPickerToolService
                 EnableWindowSnapping = false,
                 EnableMagnifier = true,
                 ShowCursor = false,
+                EditorOptions = RegionCaptureAnnotationOptionsStore.GetEditorOptions(workflowType: WorkflowType.ScreenColorPicker),
                 // Pass the pre-captured bitmap to the region selector for the magnifier
                 BackgroundImage = fullScreenBitmap
             };
 
             var captureService = new RegionCaptureService { Options = pickerOptions };
-            
-            // 2. Let user select a point
-            Console.WriteLine("[ColorPicker] Starting interactive region selection...");
-            var result = await captureService.CaptureRegionAsync();
-            Console.WriteLine($"[ColorPicker] Region selection finished. Result: {(result != null ? "Selected" : "Cancelled")}");
-            
+
+            XerahS.RegionCapture.Models.RegionSelectionResult? result;
+            try
+            {
+                // 2. Let user select a point
+                Console.WriteLine("[ColorPicker] Starting interactive region selection...");
+                result = await captureService.CaptureRegionAsync();
+                Console.WriteLine($"[ColorPicker] Region selection finished. Result: {(result != null ? "Selected" : "Cancelled")}");
+            }
+            finally
+            {
+                RegionCaptureAnnotationOptionsStore.Persist();
+            }
+
             if (result == null)
             {
                 return null;

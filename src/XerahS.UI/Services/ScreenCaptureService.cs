@@ -105,10 +105,19 @@ namespace XerahS.UI.Services
                             ShowCursor = options?.ShowCursor ?? false,
                             BackgroundImage = backgroundForMagnifier,
                             UseTransparentOverlay = options?.UseTransparentOverlay ?? false,
+                            EditorOptions = RegionCaptureAnnotationOptionsStore.GetEditorOptions(options?.WorkflowId),
                         }
                     };
 
-                    var result = await captureService.CaptureRegionAsync(cursorInfo);
+                    XerahS.RegionCapture.Models.RegionSelectionResult? result;
+                    try
+                    {
+                        result = await captureService.CaptureRegionAsync(cursorInfo);
+                    }
+                    finally
+                    {
+                        RegionCaptureAnnotationOptionsStore.Persist();
+                    }
 
                     if (result is not null)
                     {
@@ -206,10 +215,19 @@ namespace XerahS.UI.Services
                             ShowCursor = options?.ShowCursor ?? false,
                             BackgroundImage = fullScreenBitmap,
                             UseTransparentOverlay = options?.UseTransparentOverlay ?? false,
+                            EditorOptions = RegionCaptureAnnotationOptionsStore.GetEditorOptions(options?.WorkflowId),
                         }
                     };
 
-                    var result = await captureService.CaptureRegionAsync(ghostCursor);
+                    XerahS.RegionCapture.Models.RegionSelectionResult? result;
+                    try
+                    {
+                        result = await captureService.CaptureRegionAsync(ghostCursor);
+                    }
+                    finally
+                    {
+                        RegionCaptureAnnotationOptionsStore.Persist();
+                    }
 
                     if (result is not null)
                     {

@@ -86,11 +86,19 @@ public static class RulerToolService
                 EnableMagnifier = true,             // Enable magnifier for precision
                 EnableKeyboardNudge = true,         // Allow arrow key adjustments
                 ShowCursor = false,                 // Hide cursor (overlay draws crosshair)
+                EditorOptions = RegionCaptureAnnotationOptionsStore.GetEditorOptions(workflowType: WorkflowType.Ruler),
                 BackgroundImage = fullScreenBitmap
             };
 
             var regionCaptureService = new RegionCaptureService { Options = rulerOptions };
-            _ = await regionCaptureService.CaptureRegionAsync();
+            try
+            {
+                _ = await regionCaptureService.CaptureRegionAsync();
+            }
+            finally
+            {
+                RegionCaptureAnnotationOptionsStore.Persist();
+            }
 
             // Result contains the measured region if user confirmed
             // For now, we just dismiss - could add clipboard copy of measurements later
