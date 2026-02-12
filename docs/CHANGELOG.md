@@ -15,6 +15,35 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 ### Features
 - **Monitor Test**: Implement MonitorTest workflow with diagnostic and pattern testing modes `(56a1ea3, 1dc10f8)`
 - **Tools**: Add Ruler workflow routing and placeholder service `(5647b4d)`
+- **Tools**: Implement Ruler workflow with full RegionCapture integration `(8ea9419)`
+- **Indexer**: Make Index Folder open in its own window `(8b20b3b, v0.14.2)`
+- **Editor**: Integrate upstream ShareX.ImageEditor submodule `(0db2c71, v0.14.3)`
+- **Editor**: Add File Open choice dialog for replace or shape insert `(1a41df5, v0.14.4)`
+- **Region Capture**: Add annotation options persistence for RegionCapture `(7e82df3, v0.14.5)`
+
+### Fixes
+- **Logging**: Fix duplicate date in log filename on date rotation `(69cb3c2, v0.14.1)`
+- **Region Capture**: Improve RegionCapture annotation toolbar integration `(4500b8a, v0.14.3)`
+- **Region Capture**: Reduce annotation rebuild pressure `(3bf8224, v0.14.3)`
+- **Indexer**: Enable Open in Browser button after indexing `(4582529, v0.14.3)`
+- **Indexer**: Remove WebView and open HTML in system browser `(16945a0, v0.14.3)`
+- **Navigation**: Enable menu navigation and update editor data transfer APIs `(49772bf, v0.14.3)`
+- **Editor**: Sync ImageEditor fixes and add comparison report `(3ee199a, v0.14.3)`
+- **Packaging**: Restore macOS icon in Windows package build `(ba40fbb, v0.14.3)`
+- **ImageEditor**: Update submodule to unified Core undo-redo `(240649d, v0.14.3)`
+- **Upload**: Delay upload progress title update until actual upload starts `(9d4894b, v0.14.4)`
+- **macOS**: Harden mac packaging and cross-platform editor wiring `(6e1d569, v0.14.4)`
+- **Dialogs**: Prevent File Open dialog crash and add global exception logging `(5cbf5dd, v0.14.4)`
+- **Editor**: Persist region annotation options and track ImageEditor main `(2cc8fa7, v0.14.5)`
+- **Editor**: Refactor MonitorTest and Ruler platform abstractions `(554099c, v0.14.5)`
+- **Editor**: Update editor drag drop integration and task status `(79eb2be, v0.14.5)`
+- **Editor**: Enable Zoom to Fit menu command and shortcut `(e5ffef7, v0.14.5)`
+- **ImageEditor**: Update submodule with smart padding crop sync, clipboard fixes, z-order fixes, and double-dispose bug fixes `(b3125b8, 0ee0ad7, 4eb30bf, 0c2b53e, 1131223, 751eb7c, v0.14.5)`
+
+### Build
+- **Cross-Compilation**: Add cross-compilation support for macOS from Windows `(a2bf5a6, v0.14.3)`
+- **Documentation**: Add build system documentation and update ISS paths `(19b3a84, v0.14.3)`
+- **Infrastructure**: Fix version parsing in Windows package script `(5069a01, v0.14.4)`
 
 ## v0.13.0
 
@@ -214,6 +243,7 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Version Summary
 
+- **v0.14.0**: Monitor Test and Ruler workflows, ShareX.ImageEditor submodule integration, indexer improvements, cross-compilation support
 - **v0.7.5**: Custom Uploaders, Task Settings redesign, Linux/Wayland fixes, WebP/AVIF support
 - **v0.7.0**: Annotation overlays in region capture, transparent capture, macOS .app bundles
 - **v0.6.0**: Complete UI Redesign, Auto-Update system, After Upload window
