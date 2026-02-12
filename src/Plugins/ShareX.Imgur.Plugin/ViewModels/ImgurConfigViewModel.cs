@@ -28,6 +28,7 @@ using Newtonsoft.Json;
 using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -52,6 +53,21 @@ public partial class ImgurConfigViewModel : ObservableObject, IUploaderConfigVie
 
     [ObservableProperty]
     private bool _useDirectLink = true;
+
+    [ObservableProperty]
+    private bool _useGifv = true;
+
+    [ObservableProperty]
+    private bool _uploadToSelectedAlbum = false;
+
+    [ObservableProperty]
+    private ObservableCollection<ImgurAlbumData> _albums = new();
+
+    [ObservableProperty]
+    private ImgurAlbumData? _selectedAlbum;
+
+    [ObservableProperty]
+    private string? _albumStatusMessage;
 
     [ObservableProperty]
     private string? _statusMessage;
@@ -117,21 +133,33 @@ public partial class ImgurConfigViewModel : ObservableObject, IUploaderConfigVie
     [RelayCommand]
     private void FetchAlbums()
     {
-        EnsureUploader();
         if (_uploader == null || !IsLoggedIn)
         {
-            StatusMessage = "You must be logged in to fetch albums";
+            AlbumStatusMessage = "You must be logged in to fetch albums";
             return;
         }
 
-        var albums = _uploader.GetAlbums();
-        if (albums != null && albums.Count > 0)
+        try
         {
-            StatusMessage = $"Found {albums.Count} albums. Copy an ID to the Album field.";
+            var albumList = _uploader.GetAlbums();
+            if (albumList != null && albumList.Count > 0)
+            {
+                Albums.Clear();
+                foreach (var album in albumList)
+                {
+                    Albums.Add(album);
+                }
+                AlbumStatusMessage = $"Loaded {albumList.Count} albums";
+            }
+            else
+            {
+                Albums.Clear();
+                AlbumStatusMessage = "No albums found or failed to fetch";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            StatusMessage = "No albums found or failed to fetch.";
+            AlbumStatusMessage = $"Error fetching albums: {ex.Message}";
         }
     }
 
@@ -148,10 +176,17 @@ public partial class ImgurConfigViewModel : ObservableObject, IUploaderConfigVie
 
                 ClientId = _config.ClientId ?? "30d41ft9z9r8jtt";
                 AccountTypeIndex = (int)_config.AccountType;
-                AlbumId = _config.SelectedAlbum?.id ?? string.Empty;
                 ThumbnailTypeIndex = (int)_config.ThumbnailType;
                 UseDirectLink = _config.DirectLink;
+                UseGifv = _config.UseGIFV;
+                UploadToSelectedAlbum = _config.UploadToSelectedAlbum;
                 IsLoggedIn = HasToken();
+
+                // Load selected album if exists
+                if (_config.SelectedAlbum != null)
+                {
+                    SelectedAlbum = _config.SelectedAlbum;
+                }
             }
         }
         catch
@@ -166,12 +201,18 @@ public partial class ImgurConfigViewModel : ObservableObject, IUploaderConfigVie
         _config.AccountType = (AccountType)AccountTypeIndex;
         _config.ThumbnailType = (ImgurThumbnailType)ThumbnailTypeIndex;
         _config.DirectLink = UseDirectLink;
-        _config.UploadToSelectedAlbum = !string.IsNullOrWhiteSpace(AlbumId);
+        _config.UseGIFV = UseGifv;
+        _config.UploadToSelectedAlbum = UploadToSelectedAlbum;
         _config.SecretKey = _secretKey;
 
-        if (!string.IsNullOrWhiteSpace(AlbumId))
+        // Save selected album
+        if (UploadToSelectedAlbum && SelectedAlbum != null)
         {
-            _config.SelectedAlbum = new ImgurAlbumData { id = AlbumId };
+            _config.SelectedAlbum = SelectedAlbum;
+        }
+        else
+        {
+            _config.SelectedAlbum = null;
         }
 
         PersistCredentials();

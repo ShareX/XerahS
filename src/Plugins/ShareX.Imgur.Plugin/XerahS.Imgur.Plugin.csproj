@@ -27,6 +27,9 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.9">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.9">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>

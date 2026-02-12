@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ShareX.Imgur.Plugin.ViewModels"
+             xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
              x:Class="ShareX.Imgur.Plugin.Views.ImgurConfigView"
              x:DataType="vm:ImgurConfigViewModel">
     
@@ -63,19 +64,60 @@
 
                 <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding IsLoggedIn}">
                     <TextBlock Text="✓ Logged in" Foreground="Green" VerticalAlignment="Center"/>
-                    <Button Content="Fetch Albums" 
-                            Command="{Binding FetchAlbumsCommand}"/>
                 </StackPanel>
             </StackPanel>
         </Border>
 
-        <!-- Album (optional) -->
-        <StackPanel Spacing="5">
-            <TextBlock Text="Album ID (Optional)" FontWeight="Medium"/>
-            <TextBox Text="{Binding AlbumId}" 
-                     Watermark="Leave empty to upload to account root"
-                     Width="300"
-                     HorizontalAlignment="Left"/>
+        <!-- Album Selection (Only visible for User Account mode) -->
+        <StackPanel Spacing="10" IsVisible="{Binding AccountTypeIndex}">
+            <Border Background="{DynamicResource SystemFillColorSecondaryBackground}"
+                    Padding="15"
+                    CornerRadius="4">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Album Selection" FontWeight="SemiBold"/>
+                    
+                    <!-- Upload to Album Checkbox -->
+                    <CheckBox Content="Upload to selected album"
+                              IsChecked="{Binding UploadToSelectedAlbum}"/>
+                    
+                    <!-- Album List -->
+                    <StackPanel Spacing="5" IsVisible="{Binding UploadToSelectedAlbum}">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="Available Albums" 
+                                       FontWeight="Medium"
+                                       VerticalAlignment="Center"/>
+                            <Button Content="Refresh"
+                                    Command="{Binding FetchAlbumsCommand}"
+                                    IsEnabled="{Binding IsLoggedIn}"/>
+                        </StackPanel>
+                        
+                        <!-- Album DataGrid -->
+                        <dg:DataGrid ItemsSource="{Binding Albums}"
+                                     SelectedItem="{Binding SelectedAlbum}"
+                                     Height="200"
+                                     AutoGenerateColumns="False"
+                                     IsReadOnly="True"
+                                     GridLinesVisibility="All">
+                            <dg:DataGrid.Columns>
+                                <dg:DataGridTextColumn Header="ID" 
+                                                       Binding="{Binding id}" 
+                                                       Width="120"/>
+                                <dg:DataGridTextColumn Header="Title" 
+                                                       Binding="{Binding title}" 
+                                                       Width="*"/>
+                                <dg:DataGridTextColumn Header="Description" 
+                                                       Binding="{Binding description}" 
+                                                       Width="2*"/>
+                            </dg:DataGrid.Columns>
+                        </dg:DataGrid>
+                        
+                        <TextBlock Text="{Binding AlbumStatusMessage}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource SystemAccentColor}"
+                                   IsVisible="{Binding !!AlbumStatusMessage}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
         </StackPanel>
 
         <!-- Thumbnail Type -->
@@ -97,6 +139,17 @@
         <CheckBox Content="Use direct link (recommended)"
                   IsChecked="{Binding UseDirectLink}"
                   Margin="0,5,0,0"/>
+
+        <!-- Use GIFV -->
+        <CheckBox Content="Use GIFV for GIF images (convert to MP4)"
+                  IsChecked="{Binding UseGifv}"  
+                  Margin="0,5,0,0">
+            <ToolTip.Tip>
+                <TextBlock Text="Convert GIF images to GIFV (MP4 video) for better performance and smaller file sizes"
+                           TextWrapping="Wrap"
+                           MaxWidth="300"/>
+            </ToolTip.Tip>
+        </CheckBox>
 
         <!-- Status Message -->
         <Border Background="{DynamicResource SystemFillColorAttentionBackground}"
