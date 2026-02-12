@@ -40,6 +40,7 @@ namespace XerahS.RegionCapture.ViewModels;
 public partial class RegionCaptureAnnotationViewModel : ObservableObject
 {
     private readonly EditorCore _editorCore;
+    private EditorOptions? _options;
 
     public RegionCaptureAnnotationViewModel()
     {
@@ -47,6 +48,66 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject
         _editorCore.HistoryChanged += OnHistoryChanged;
         _editorCore.AnnotationsRestored += OnAnnotationsRestored;
         _editorCore.InvalidateRequested += OnInvalidateRequested;
+    }
+
+    /// <summary>
+    /// Loads editor options from settings into the ViewModel.
+    /// Call this after construction to restore saved preferences.
+    /// </summary>
+    public void LoadOptions(EditorOptions options)
+    {
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        SelectedColor = ColorToHex(options.BorderColor);
+        FillColor = ColorToHex(options.FillColor);
+        StrokeWidth = options.Thickness;
+        FontSize = options.FontSize;
+        ShadowEnabled = options.Shadow;
+    }
+
+    /// <summary>
+    /// Saves the current ViewModel state back to the options.
+    /// Call this before closing to persist user preferences.
+    /// </summary>
+    public void SaveOptions()
+    {
+        if (_options == null) return;
+
+        _options.BorderColor = HexToColor(SelectedColor);
+        _options.FillColor = HexToColor(FillColor);
+        _options.Thickness = StrokeWidth;
+        _options.FontSize = FontSize;
+        _options.Shadow = ShadowEnabled;
+    }
+
+    /// <summary>
+    /// Converts an Avalonia Color to hex string format.
+    /// </summary>
+    private static string ColorToHex(Color color)
+    {
+        return $"#{color.A:X2}{color.R:X2}{color.G:X2}{color.B:X2}";
+    }
+
+    /// <summary>
+    /// Converts a hex string to Avalonia Color.
+    /// </summary>
+    private static Color HexToColor(string hex)
+    {
+        if (string.IsNullOrEmpty(hex) || hex.Length < 7)
+            return Colors.Transparent;
+
+        try
+        {
+            var a = byte.Parse(hex.Substring(1, 2), System.Globalization.NumberStyles.HexNumber);
+            var r = byte.Parse(hex.Substring(3, 2), System.Globalization.NumberStyles.HexNumber);
+            var g = byte.Parse(hex.Substring(5, 2), System.Globalization.NumberStyles.HexNumber);
+            var b = byte.Parse(hex.Substring(7, 2), System.Globalization.NumberStyles.HexNumber);
+            return Color.FromArgb(a, r, g, b);
+        }
+        catch
+        {
+            return Colors.Transparent;
+        }
     }
 
     /// <summary>

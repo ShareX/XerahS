@@ -55,7 +55,7 @@ public partial class OverlayWindow : Window
 {
     private static readonly long SelectionDragRebuildIntervalTicks = Math.Max(1, Stopwatch.Frequency / 30);
 
-    private readonly MonitorInfo _monitor;
+    private readonly Models.MonitorInfo _monitor;
     private readonly TaskCompletionSource<RegionSelectionResult?> _completionSource;
     private readonly RegionCaptureControl _captureControl;
     private readonly RegionCaptureAnnotationViewModel _viewModel;
@@ -81,7 +81,7 @@ public partial class OverlayWindow : Window
     public OverlayWindow()
     {
         // Design-time constructor
-        _monitor = new MonitorInfo("Design", new PixelRect(0, 0, 1920, 1080),
+        _monitor = new Models.MonitorInfo("Design", new PixelRect(0, 0, 1920, 1080),
             new PixelRect(0, 0, 1920, 1040), 1.0, true);
         _completionSource = new TaskCompletionSource<RegionSelectionResult?>();
         _captureControl = new RegionCaptureControl(_monitor);
@@ -91,7 +91,7 @@ public partial class OverlayWindow : Window
     }
 
     public OverlayWindow(
-        MonitorInfo monitor,
+        Models.MonitorInfo monitor,
         TaskCompletionSource<RegionSelectionResult?> completionSource,
         Action<PixelRect>? selectionChanged = null,
         XerahS.Platform.Abstractions.CursorInfo? initialCursor = null,
@@ -105,6 +105,12 @@ public partial class OverlayWindow : Window
         _viewModel = new RegionCaptureAnnotationViewModel();
         _viewModel.InvalidateRequested += OnInvalidateRequested;
         _viewModel.AnnotationsRestored += OnAnnotationsRestored;
+
+        // Load saved editor options if available
+        if (options?.EditorOptions != null)
+        {
+            _viewModel.LoadOptions(options.EditorOptions);
+        }
 
         // Load a monitor-scoped background image into EditorCore at logical resolution
         // so annotation coordinates (from Avalonia pointer events) match image coordinates.
@@ -1182,7 +1188,7 @@ public partial class OverlayWindow : Window
     /// Crops the full virtual-screen capture to this monitor and scales it to the monitor's logical size.
     /// This keeps effect tool sampling aligned with pointer coordinates on per-monitor overlays.
     /// </summary>
-    private static SKBitmap? CreateMonitorLogicalBackgroundBitmap(SKBitmap fullBackground, MonitorInfo monitor)
+    private static SKBitmap? CreateMonitorLogicalBackgroundBitmap(SKBitmap fullBackground, Models.MonitorInfo monitor)
     {
         if (fullBackground.Width <= 0 || fullBackground.Height <= 0)
         {
@@ -1420,6 +1426,9 @@ public partial class OverlayWindow : Window
     /// </summary>
     private void ConfirmCaptureWithAnnotations()
     {
+        // Save annotation options before completing
+        _viewModel.SaveOptions();
+
         // Use the pending selection if user has made a region selection
         if (_pendingSelectionResult.HasValue)
         {
@@ -1450,6 +1459,9 @@ public partial class OverlayWindow : Window
             _captureControl.InvalidateVisual();
             return;
         }
+
+        // Save annotation options before completing
+        _viewModel.SaveOptions();
 
         _completionSource.TrySetResult(result);
     }
@@ -1516,6 +1528,9 @@ public partial class OverlayWindow : Window
 
     private void OnCancelled()
     {
+        // Save annotation options even when cancelled (user may have changed settings)
+        _viewModel.SaveOptions();
+
         _completionSource.TrySetResult(null);
     }
 

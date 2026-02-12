@@ -22,6 +22,7 @@
 */
 
 #endregion License Information (GPL v3)
+using ShareX.ImageEditor;
 using XerahS.RegionCapture.Models;
 using XerahS.RegionCapture.Services;
 
@@ -152,4 +153,10 @@ public sealed record RegionCaptureOptions
     /// Default: false
     /// </summary>
     public bool UseLightResizeNodes { get; init; } = false;
+
+    /// <summary>
+    /// Editor options for persisting tool selection and styling preferences.
+    /// These settings are saved between sessions.
+    /// </summary>
+    public EditorOptions EditorOptions { get; init; } = new();
 }

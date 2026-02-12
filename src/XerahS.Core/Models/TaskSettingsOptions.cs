@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 #pragma warning disable CA1416 // Validate platform compatibility
 using Newtonsoft.Json;
+using ShareX.ImageEditor;
 using ShareX.ImageEditor.ImageEffects;
 using XerahS.Platform.Abstractions;
 using XerahS.Services.Abstractions;
@@ -32,12 +33,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 
 namespace XerahS.Core;
-
-// Stubs for complex types
-public class AnnotationOptions
-{
-    // TODO: Port AnnotationOptions
-}
 
 public class ImageEffectPreset
 {
@@ -137,7 +132,7 @@ public class RegionCaptureOptions
     public bool SwitchToSelectionToolAfterDrawing { get; set; } = false;
     public bool ActiveMonitorMode { get; set; } = false;
 
-    public AnnotationOptions AnnotationOptions { get; set; } = new AnnotationOptions();
+    public EditorOptions AnnotationOptions { get; set; } = new EditorOptions();
     public ShapeType LastRegionTool { get; set; } = ShapeType.RegionRectangle;
     public ShapeType LastAnnotationTool { get; set; } = ShapeType.DrawingRectangle;
     public ShapeType LastEditorTool { get; set; } = ShapeType.DrawingRectangle;
