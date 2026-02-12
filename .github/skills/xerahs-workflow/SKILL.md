@@ -17,11 +17,21 @@ description: Semantic versioning, commit message standards, multi-agent coordina
    - **MAJOR (X.x.x)**: Bump for breaking changes or major releases (Complexity ≥ 8).
 
 2. **How to Bump**:
-   - Check `Directory.Build.props` for the current version.
+   - Read `Directory.Build.props` to get the current version from the `<Version>` tag.
    - Increment accordingly based on the highest complexity of changes in your session.
    - Update `<Version>` tag in `Directory.Build.props`.
    - **IMPORTANT**: `Directory.Build.props` is the **single source of truth** for the application version. When updating the version, you MUST update this file.
    - **Do not** update individual `.csproj` versions; they inherit from `Directory.Build.props`.
+
+### Getting Current Version
+Always read the version from `Directory.Build.props` before making changes:
+```xml
+<!-- Directory.Build.props -->
+<PropertyGroup>
+  <Version>0.1.0</Version>
+</PropertyGroup>
+```
+Use this version in commit messages: `[v0.1.0] [Type] Description`
 
 3. **Commit Messages**:
    - Prefix commits with `[vX.Y.Z]` relative to the new version.
