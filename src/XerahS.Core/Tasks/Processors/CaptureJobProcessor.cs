@@ -436,7 +436,7 @@ namespace XerahS.Core.Tasks.Processors
 
         /// <summary>
         /// Persists the "Show after capture window" setting change back to the workflow configuration.
-        /// Uses async save to avoid blocking the capture thread.
+        /// Uses synchronous save to ensure settings are written before app exit.
         /// </summary>
         private static void PersistShowAfterCaptureWindowSetting(string? workflowId, bool showWindow)
         {
@@ -457,8 +457,9 @@ namespace XerahS.Core.Tasks.Processors
                         {
                             SettingsManager.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.ShowAfterCaptureWindow;
                         }
-                        // Use async save to avoid UI thread issues
-                        SettingsManager.SaveWorkflowsConfigAsync();
+                        // Use synchronous save to ensure the setting is persisted immediately
+                        // Async save is fire-and-forget and may not complete before app exit
+                        SettingsManager.SaveWorkflowsConfig();
                         DebugHelper.WriteLine($"Updated DefaultTaskSettings.AfterCaptureJob (ShowAfterCaptureWindow={showWindow})");
                     }
                     return;
@@ -474,8 +475,9 @@ namespace XerahS.Core.Tasks.Processors
                     workflow.TaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.ShowAfterCaptureWindow;
                 }
 
-                // Use async save to avoid UI thread issues
-                SettingsManager.SaveWorkflowsConfigAsync();
+                // Use synchronous save to ensure the setting is persisted immediately
+                // Async save is fire-and-forget and may not complete before app exit
+                SettingsManager.SaveWorkflowsConfig();
                 DebugHelper.WriteLine($"Persisted ShowAfterCaptureWindow={showWindow} to workflow '{workflowId}'");
             }
             catch (Exception ex)

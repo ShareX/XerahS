@@ -76,6 +76,9 @@ public partial class App : Application
             // Wire up UploadRequested for embedded editor in MainWindow
             Services.MainViewModelHelper.WireUploadRequested(mainViewModel);
 
+            // Wire up CopyRequested for embedded editor in MainWindow
+            Services.MainViewModelHelper.WireCopyRequested(mainViewModel);
+
             // Prepare for Silent Run
             bool silentRun = XerahS.Core.SettingsManager.Settings.SilentRun;
 #if DEBUG

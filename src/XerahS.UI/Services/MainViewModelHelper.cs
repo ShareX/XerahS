@@ -95,5 +95,38 @@ public static class MainViewModelHelper
             }
         };
     }
+
+    /// <summary>
+    /// Wires up the CopyRequested event to copy the image to the system clipboard.
+    /// </summary>
+    public static void WireCopyRequested(MainViewModel viewModel)
+    {
+        viewModel.CopyRequested += async (bitmap) =>
+        {
+            DebugHelper.WriteLine("MainViewModelHelper: CopyRequested received");
+            try
+            {
+                // Convert Avalonia Bitmap to SKBitmap for clipboard
+                using var skBitmap = ShareX.ImageEditor.Helpers.BitmapConversionHelpers.ToSKBitmap(bitmap);
+                DebugHelper.WriteLine($"MainViewModelHelper: Converted bitmap {skBitmap.Width}x{skBitmap.Height} for clipboard");
+
+                // Use the platform clipboard service (set up via EditorClipboardAdapter)
+                if (Platform.Abstractions.PlatformServices.IsInitialized)
+                {
+                    Platform.Abstractions.PlatformServices.Clipboard.SetImage(skBitmap.Copy());
+                    DebugHelper.WriteLine("MainViewModelHelper: Image copied to clipboard");
+                }
+                else
+                {
+                    DebugHelper.WriteLine("MainViewModelHelper: Platform clipboard not initialized");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"Editor copy to clipboard failed: {ex.Message}");
+                DebugHelper.WriteException(ex);
+            }
+        };
+    }
 }
 
