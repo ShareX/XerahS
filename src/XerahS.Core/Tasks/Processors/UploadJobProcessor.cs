@@ -167,54 +167,118 @@ namespace XerahS.Core.Tasks.Processors
                 }
             }
 
-            targetInstance = ResolveAutoInstance(instanceManager, targetInstance, category, targetInstanceId);
-
-            var selectedInstance = targetInstance ?? instanceManager.GetDefaultInstance(category);
-
-            if (selectedInstance == null)
+            // Check if Auto destination is selected
+            if (targetInstance != null && InstanceManager.IsAutoProvider(targetInstance.ProviderId))
             {
-                // If no explicit default is set, use the first available instance in the category.
-                // This prevents false "no uploader configured" failures when instances exist but no default is marked.
-                selectedInstance = instanceManager.GetInstancesByCategory(category).FirstOrDefault();
-                if (selectedInstance != null)
-                {
-                    DebugHelper.WriteLine(
-                        $"No default uploader instance configured for category {category}; " +
-                        $"using first available: {selectedInstance.DisplayName} ({selectedInstance.ProviderId}).");
-                }
+                return TryUploadWithFallback(instanceManager, category, info, targetInstanceId);
             }
 
-            selectedInstance = ResolveAutoInstance(instanceManager, selectedInstance, category, null);
-            if (selectedInstance == null)
+            // Not Auto - use the configured instance directly
+            targetInstance ??= instanceManager.GetDefaultInstance(category);
+            
+            if (targetInstance != null && InstanceManager.IsAutoProvider(targetInstance.ProviderId))
+            {
+                return TryUploadWithFallback(instanceManager, category, info, null);
+            }
+
+            if (targetInstance == null)
             {
                 var errorMsg = $"No uploader instance configured (plugin system) for category {category}.";
                 DebugHelper.WriteLine(errorMsg);
                 return new UploadResult { IsSuccess = false, Response = errorMsg };
             }
 
-            DebugHelper.WriteLine($"Plugin instance selected: {selectedInstance.DisplayName} ({selectedInstance.ProviderId})");
-            var provider = ProviderCatalog.GetProvider(selectedInstance.ProviderId);
-            if (provider == null)
+            return TryUploadWithInstance(targetInstance, info);
+        }
+
+        /// <summary>
+        /// Tries to upload using multiple instances with fallback logic.
+        /// When one instance fails, it tries the next available instance.
+        /// </summary>
+        private static UploadResult? TryUploadWithFallback(InstanceManager instanceManager, UploaderCategory category, TaskInfo info, string? excludeInstanceId)
+        {
+            DebugHelper.WriteLine($"Auto destination selected; trying uploaders with fallback for category {category}.");
+
+            // Get all available instances for this category, ordered by priority (default first)
+            var allInstances = GetPrioritizedInstances(instanceManager, category, excludeInstanceId);
+
+            if (allInstances.Count == 0)
             {
-                DebugHelper.WriteLine($"Provider not found in catalog: {selectedInstance.ProviderId}");
-                return null;
+                DebugHelper.WriteLine($"No available uploaders for category {category}.");
+                return new UploadResult { IsSuccess = false, Response = $"No uploader instances available for {category}." };
             }
 
-            DebugHelper.WriteLine($"Provider loaded: {provider.Name} ({provider.ProviderId})");
+            DebugHelper.WriteLine($"Found {allInstances.Count} potential uploaders to try.");
+
+            List<string> failedInstances = new();
+
+            foreach (var instance in allInstances)
+            {
+                DebugHelper.WriteLine($"Trying uploader: {instance.DisplayName} ({instance.ProviderId})");
+
+                var result = TryUploadWithInstance(instance, info);
+
+                if (result != null && !result.IsError && !string.IsNullOrEmpty(result.URL))
+                {
+                    DebugHelper.WriteLine($"Upload successful with {instance.DisplayName}.");
+                    return result;
+                }
+
+                // Track failed instance
+                var errorMsg = result?.Errors?.ToString() ?? result?.Response ?? "Unknown error";
+                failedInstances.Add($"{instance.DisplayName}: {errorMsg}");
+                DebugHelper.WriteLine($"Uploader {instance.DisplayName} failed ({errorMsg}), trying next...");
+            }
+
+            var allErrors = string.Join("; ", failedInstances);
+            DebugHelper.WriteLine($"All uploaders failed: {allErrors}");
+            return new UploadResult { IsSuccess = false, Response = $"All uploaders failed: {allErrors}" };
+        }
+
+        /// <summary>
+        /// Gets all available instances for a category, prioritized by:
+        /// 1. Default instance first
+        /// 2. Other instances sorted by creation time (newest first)
+        /// </summary>
+        private static List<UploaderInstance> GetPrioritizedInstances(InstanceManager instanceManager, UploaderCategory category, string? excludeInstanceId)
+        {
+            var allInstances = instanceManager.GetInstancesByCategory(category)
+                .Where(i => !InstanceManager.IsAutoProvider(i.ProviderId))
+                .Where(i => excludeInstanceId == null || !string.Equals(i.InstanceId, excludeInstanceId, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var defaultInstance = instanceManager.GetDefaultInstance(category);
+
+            // Sort: default first, then by creation time (newest first)
+            var ordered = allInstances
+                .OrderByDescending(i => defaultInstance != null && i.InstanceId == defaultInstance.InstanceId)
+                .ThenByDescending(i => i.CreatedAt)
+                .ToList();
+
+            return ordered;
+        }
+
+        /// <summary>
+        /// Attempts to upload using a specific instance. Returns null if creation or upload fails.
+        /// </summary>
+        private static UploadResult? TryUploadWithInstance(UploaderInstance instance, TaskInfo info)
+        {
+            var provider = ProviderCatalog.GetProvider(instance.ProviderId);
+            if (provider == null)
+            {
+                DebugHelper.WriteLine($"Provider not found in catalog: {instance.ProviderId}");
+                return null;
+            }
 
             Uploader uploader;
             try
             {
-                uploader = provider.CreateInstance(selectedInstance.SettingsJson);
+                uploader = provider.CreateInstance(instance.SettingsJson);
             }
             catch (Exception ex)
             {
-                DebugHelper.WriteException(ex, "Failed to create uploader instance");
-                return new UploadResult
-                {
-                    IsSuccess = false,
-                    Response = ex.Message
-                };
+                DebugHelper.WriteException(ex, $"Failed to create uploader instance for {instance.DisplayName}");
+                return new UploadResult { IsSuccess = false, Response = ex.Message };
             }
 
             Uploader.ProgressEventHandler progressHandler = progress => info.ReportUploadProgress(progress);
@@ -228,21 +292,21 @@ namespace XerahS.Core.Tasks.Processors
                     {
                         FileUploader fileUploader => fileUploader.UploadFile(info.FilePath),
                         GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
-                        _ => null
+                        _ => new UploadResult { IsSuccess = false, Response = "Uploader type not supported." }
                     };
                 }
 
-            if (info.DataType == EDataType.Text && !string.IsNullOrEmpty(info.TextContent))
-            {
-                DebugHelper.WriteLine(
-                    $"[UploadContentDebug] Text upload dispatch: provider={selectedInstance.ProviderId}, " +
-                    $"textLength={info.TextContent.Length}, fileName=\"{info.FileName}\"");
-
-                if (uploader is GenericUploader genericUploader)
+                if (info.DataType == EDataType.Text && !string.IsNullOrEmpty(info.TextContent))
                 {
-                    string extension = info.TaskSettings.AdvancedSettings.TextFileExtension;
-                    string fileName = string.IsNullOrWhiteSpace(info.FileName)
-                        ? TaskHelpers.GetFileName(info.TaskSettings, extension, info.Metadata)
+                    DebugHelper.WriteLine(
+                        $"[UploadContentDebug] Text upload dispatch: provider={instance.ProviderId}, " +
+                        $"textLength={info.TextContent.Length}, fileName=\"{info.FileName}\"");
+
+                    if (uploader is GenericUploader genericUploader)
+                    {
+                        string extension = info.TaskSettings.AdvancedSettings.TextFileExtension;
+                        string fileName = string.IsNullOrWhiteSpace(info.FileName)
+                            ? TaskHelpers.GetFileName(info.TaskSettings, extension, info.Metadata)
                             : info.FileName;
 
                         using var ms = new MemoryStream(Encoding.UTF8.GetBytes(info.TextContent));
@@ -259,47 +323,27 @@ namespace XerahS.Core.Tasks.Processors
 
                 if (info.Metadata?.Image == null)
                 {
-                    return null;
+                    return new UploadResult { IsSuccess = false, Response = "No content to upload." };
                 }
 
                 using (MemoryStream? ms = TaskHelpers.SaveImageAsStream(info.Metadata.Image, info.TaskSettings.ImageSettings.ImageFormat, info.TaskSettings))
                 {
-                    if (ms == null) return null;
+                    if (ms == null) return new UploadResult { IsSuccess = false, Response = "Failed to create image stream." };
                     ms.Position = 0;
                     return uploader is GenericUploader genericUploader
                         ? genericUploader.Upload(ms, info.FileName)
-                        : null;
+                        : new UploadResult { IsSuccess = false, Response = "Uploader type not supported for images." };
                 }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, $"Upload failed for {instance.DisplayName}");
+                return new UploadResult { IsSuccess = false, Response = ex.Message };
             }
             finally
             {
                 uploader.ProgressChanged -= progressHandler;
             }
-        }
-
-        private static UploaderInstance? ResolveAutoInstance(InstanceManager instanceManager, UploaderInstance? instance, UploaderCategory category, string? autoInstanceId)
-        {
-            if (instance == null)
-            {
-                return null;
-            }
-
-            if (!InstanceManager.IsAutoProvider(instance.ProviderId))
-            {
-                return instance;
-            }
-
-            DebugHelper.WriteLine($"Auto destination selected; resolving default instance for category {category}.");
-
-            var resolved = instanceManager.ResolveAutoInstance(category, autoInstanceId);
-            if (resolved == null)
-            {
-                DebugHelper.WriteLine($"Auto destination could not be resolved for category {category}.");
-                return null;
-            }
-
-            DebugHelper.WriteLine($"Auto destination resolved to: {resolved.DisplayName} ({resolved.ProviderId})");
-            return resolved;
         }
 
         private static UploadResult UploadWithGenericUploader(GenericUploader uploader, string filePath)

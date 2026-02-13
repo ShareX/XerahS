@@ -278,12 +278,18 @@ namespace XerahS.Core.Tasks.Processors
                 }
             }
 
-            targetInstance = ResolveAutoInstance(instanceManager, targetInstance, UploaderCategory.Image, configuredInstanceId);
-
-            if (targetInstance == null)
+            // Check if Auto destination is selected
+            if (targetInstance != null && InstanceManager.IsAutoProvider(targetInstance.ProviderId))
             {
-                targetInstance = instanceManager.GetDefaultInstance(UploaderCategory.Image);
-                targetInstance = ResolveAutoInstance(instanceManager, targetInstance, UploaderCategory.Image, null);
+                return TryUploadWithFallback(instanceManager, UploaderCategory.Image, info.FilePath, configuredInstanceId);
+            }
+
+            // Not Auto - use the configured instance directly
+            targetInstance ??= instanceManager.GetDefaultInstance(UploaderCategory.Image);
+            
+            if (targetInstance != null && InstanceManager.IsAutoProvider(targetInstance.ProviderId))
+            {
+                return TryUploadWithFallback(instanceManager, UploaderCategory.Image, info.FilePath, null);
             }
 
             if (targetInstance == null)
@@ -292,59 +298,111 @@ namespace XerahS.Core.Tasks.Processors
                 return null;
             }
 
-            DebugHelper.WriteLine($"Plugin instance selected: {targetInstance.DisplayName} ({targetInstance.ProviderId})");
+            return TryUploadWithInstance(targetInstance, info.FilePath);
+        }
 
-            var provider = ProviderCatalog.GetProvider(targetInstance.ProviderId);
-            if (provider == null)
+        /// <summary>
+        /// Tries to upload using multiple instances with fallback logic.
+        /// When one instance fails, it tries the next available instance.
+        /// </summary>
+        private static UploadResult? TryUploadWithFallback(InstanceManager instanceManager, UploaderCategory category, string filePath, string? excludeInstanceId)
+        {
+            DebugHelper.WriteLine($"Auto destination selected; trying uploaders with fallback for category {category}.");
+
+            // Get all available instances for this category, ordered by priority (default first)
+            var allInstances = GetPrioritizedInstances(instanceManager, category, excludeInstanceId);
+
+            if (allInstances.Count == 0)
             {
-                DebugHelper.WriteLine($"Provider not found in catalog: {targetInstance.ProviderId}");
+                DebugHelper.WriteLine($"No available uploaders for category {category}.");
                 return null;
             }
 
-            DebugHelper.WriteLine($"Provider loaded: {provider.Name} ({provider.ProviderId})");
+            DebugHelper.WriteLine($"Found {allInstances.Count} potential uploaders to try.");
+
+            List<string> failedInstances = new();
+
+            foreach (var instance in allInstances)
+            {
+                DebugHelper.WriteLine($"Trying uploader: {instance.DisplayName} ({instance.ProviderId})");
+
+                var result = TryUploadWithInstance(instance, filePath);
+
+                if (result != null && !result.IsError && !string.IsNullOrEmpty(result.URL))
+                {
+                    DebugHelper.WriteLine($"Upload successful with {instance.DisplayName}.");
+                    return result;
+                }
+
+                // Track failed instance
+                failedInstances.Add($"{instance.DisplayName} ({instance.ProviderId})");
+                DebugHelper.WriteLine($"Uploader {instance.DisplayName} failed, trying next...");
+            }
+
+            DebugHelper.WriteLine($"All uploaders failed. Tried: {string.Join(", ", failedInstances)}");
+            return null;
+        }
+
+        /// <summary>
+        /// Gets all available instances for a category, prioritized by:
+        /// 1. Default instance first
+        /// 2. Other instances sorted by creation time (newest first)
+        /// </summary>
+        private static List<UploaderInstance> GetPrioritizedInstances(InstanceManager instanceManager, UploaderCategory category, string? excludeInstanceId)
+        {
+            var allInstances = instanceManager.GetInstancesByCategory(category)
+                .Where(i => !InstanceManager.IsAutoProvider(i.ProviderId))
+                .Where(i => excludeInstanceId == null || !string.Equals(i.InstanceId, excludeInstanceId, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var defaultInstance = instanceManager.GetDefaultInstance(category);
+
+            // Sort: default first, then by creation time (newest first)
+            var ordered = allInstances
+                .OrderByDescending(i => defaultInstance != null && i.InstanceId == defaultInstance.InstanceId)
+                .ThenByDescending(i => i.CreatedAt)
+                .ToList();
+
+            return ordered;
+        }
+
+        /// <summary>
+        /// Attempts to upload using a specific instance. Returns null if creation or upload fails.
+        /// </summary>
+        private static UploadResult? TryUploadWithInstance(UploaderInstance instance, string filePath)
+        {
+            var provider = ProviderCatalog.GetProvider(instance.ProviderId);
+            if (provider == null)
+            {
+                DebugHelper.WriteLine($"Provider not found in catalog: {instance.ProviderId}");
+                return null;
+            }
 
             Uploader uploader;
             try
             {
-                uploader = provider.CreateInstance(targetInstance.SettingsJson);
+                uploader = provider.CreateInstance(instance.SettingsJson);
             }
             catch (Exception ex)
             {
-                DebugHelper.WriteException(ex, "Failed to create uploader instance");
+                DebugHelper.WriteException(ex, $"Failed to create uploader instance for {instance.DisplayName}");
                 return null;
             }
 
-            return uploader switch
+            try
             {
-                FileUploader fileUploader => fileUploader.UploadFile(info.FilePath),
-                GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, info.FilePath),
-                _ => null
-            };
-        }
-
-        private static UploaderInstance? ResolveAutoInstance(InstanceManager instanceManager, UploaderInstance? instance, UploaderCategory category, string? autoInstanceId)
-        {
-            if (instance == null)
+                return uploader switch
+                {
+                    FileUploader fileUploader => fileUploader.UploadFile(filePath),
+                    GenericUploader genericUploader => UploadWithGenericUploader(genericUploader, filePath),
+                    _ => null
+                };
+            }
+            catch (Exception ex)
             {
+                DebugHelper.WriteException(ex, $"Upload failed for {instance.DisplayName}");
                 return null;
             }
-
-            if (!InstanceManager.IsAutoProvider(instance.ProviderId))
-            {
-                return instance;
-            }
-
-            DebugHelper.WriteLine($"Auto destination selected; resolving default instance for category {category}.");
-
-            var resolved = instanceManager.ResolveAutoInstance(category, autoInstanceId);
-            if (resolved == null)
-            {
-                DebugHelper.WriteLine($"Auto destination could not be resolved for category {category}.");
-                return null;
-            }
-
-            DebugHelper.WriteLine($"Auto destination resolved to: {resolved.DisplayName} ({resolved.ProviderId})");
-            return resolved;
         }
 
         private static void EnsurePluginsLoaded()
