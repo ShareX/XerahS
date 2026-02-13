@@ -1,9 +1,34 @@
 # XIP0030: Mobile Android and iOS Support via Avalonia Mobile
 
-**Status**: Ready for Implementation  
-**Created**: 2026-02-12  
-**Area**: Mobile / Cross-Platform  
+**Status**: Complete
+**Created**: 2026-02-12
+**Completed**: 2026-02-13
+**Area**: Mobile / Cross-Platform
 **Goal**: Implement "Share to XerahS" on iOS and Android using Avalonia, then upload using existing XerahS pipeline.
+
+## Implementation Notes
+
+The implementation improved on XIP0030's original design:
+
+- **No ShareImportService**: The ViewModel calls `TaskManager.StartFileTask()` directly, reusing `WatchFolderManager.CloneTaskSettings()` (same pattern as desktop watch folders). This avoids an unnecessary abstraction layer.
+- **Separate mobile head projects**: Instead of polluting `XerahS.App` with mobile code, created dedicated projects (`XerahS.Mobile.Android`, `XerahS.Mobile.iOS`) with a shared `XerahS.Mobile.UI` layer.
+- **XerahS.Platform.Mobile**: Comprehensive stub implementations for all 11 `PlatformServices` interfaces, ensuring the Core pipeline works on mobile without crashes.
+- **No new settings model for MVP**: Uses `DefaultTaskSettings` directly. Settings customization can be added later.
+- **XerahS.Core multi-targeting**: Added `net10.0` alongside `net10.0-windows` so mobile projects can reference it.
+
+### Projects Created
+| Project | TFM | Files | Purpose |
+|---------|-----|-------|---------|
+| `XerahS.Platform.Mobile` | `net10.0` | 13 | Mobile platform service stubs |
+| `XerahS.Mobile.UI` | `net10.0` | 6 | Shared Avalonia mobile app + views |
+| `XerahS.Mobile.Android` | `net10.0-android` | 5 | Android entry point + share intents |
+| `XerahS.Mobile.iOS` | `net10.0-ios` | 5 | iOS entry point + URL scheme handler |
+| `XerahS.Mobile.iOS.ShareExtension` | `net10.0-ios` | 4 | iOS Share Extension with App Groups |
+
+### Existing Files Modified
+- `IPlatformInfo.cs` - Added `Android`, `iOS` to `PlatformType` enum
+- `WatchFolderManager.cs` - Made `CloneTaskSettings` public
+- `XerahS.Core.csproj` - Multi-target `net10.0` + `net10.0-windows`
 
 ---
 
