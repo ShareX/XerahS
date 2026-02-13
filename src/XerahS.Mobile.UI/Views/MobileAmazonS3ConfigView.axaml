@@ -5,152 +5,201 @@
              x:DataType="vm:MobileAmazonS3ConfigViewModel">
 
     <ScrollViewer>
-        <StackPanel Margin="20" Spacing="20">
+        <StackPanel Margin="16" Spacing="14">
 
-            <!-- Header -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="Amazon S3"
-                           FontSize="24"
-                           FontWeight="Bold"/>
-                <TextBlock Text="Configure your S3 bucket for file uploads"
-                           FontSize="14"
-                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                           TextWrapping="Wrap"/>
-            </StackPanel>
-
-            <!-- Status Message -->
-            <Border Background="{DynamicResource SystemFillColorCautionBackground}"
-                    BorderBrush="{DynamicResource SystemFillColorCaution}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="16"
-                    IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                <TextBlock Text="{Binding StatusMessage}"
-                           TextWrapping="Wrap"
-                           Foreground="{DynamicResource SystemFillColorCaution}"/>
+            <!-- Header Card -->
+            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    CornerRadius="12"
+                    Padding="20">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Amazon S3"
+                               FontSize="22"
+                               FontWeight="Bold"/>
+                    <TextBlock Text="Configure your S3 bucket for file uploads"
+                               FontSize="13"
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
             </Border>
 
-            <!-- Access Key ID -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="Access Key ID"
-                           FontWeight="SemiBold"/>
-                <TextBox Text="{Binding AccessKeyId, UpdateSourceTrigger=PropertyChanged}"
-                         Watermark="AKIA..."
-                         FontFamily="Consolas, Monospace"
-                         Height="44"
-                         Padding="12,8"/>
-            </StackPanel>
+            <!-- Section: Authentication -->
+            <Border x:Name="AuthSection"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    CornerRadius="12"
+                    Padding="16">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="Authentication"
+                               FontWeight="SemiBold"
+                               FontSize="15"
+                               Opacity="0.7"/>
 
-            <!-- Secret Access Key -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="Secret Access Key"
-                           FontWeight="SemiBold"/>
-                <TextBox Text="{Binding SecretAccessKey, UpdateSourceTrigger=PropertyChanged}"
-                         Watermark="Enter your secret key"
-                         PasswordChar="●"
-                         FontFamily="Consolas, Monospace"
-                         Height="44"
-                         Padding="12,8"/>
-            </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Access Key ID" FontSize="13" FontWeight="SemiBold"/>
+                        <Grid>
+                            <TextBox Text="{Binding AccessKeyId, Mode=TwoWay}"
+                                     Watermark="AKIA..."
+                                     CornerRadius="8"
+                                     FontSize="13"/>
+                            <Border BorderBrush="#FF6B6B"
+                                    BorderThickness="2"
+                                    CornerRadius="8"
+                                    IsVisible="{Binding HasAccessKeyError}"
+                                    IsHitTestVisible="False"/>
+                        </Grid>
+                    </StackPanel>
 
-            <!-- Bucket Name -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="Bucket Name"
-                           FontWeight="SemiBold"/>
-                <TextBox Text="{Binding BucketName, UpdateSourceTrigger=PropertyChanged}"
-                         Watermark="my-bucket-name"
-                         Height="44"
-                         Padding="12,8"/>
-                <TextBlock Text="The S3 bucket where files will be uploaded"
-                           FontSize="12"
-                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-            </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Secret Access Key" FontSize="13" FontWeight="SemiBold"/>
+                        <Grid>
+                            <TextBox Text="{Binding SecretAccessKey, Mode=TwoWay}"
+                                     Watermark="Enter your secret key"
+                                     PasswordChar="●"
+                                     CornerRadius="8"
+                                     FontSize="13"/>
+                            <Border BorderBrush="#FF6B6B"
+                                    BorderThickness="2"
+                                    CornerRadius="8"
+                                    IsVisible="{Binding HasSecretKeyError}"
+                                    IsHitTestVisible="False"/>
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
-            <!-- Region -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="Region"
-                           FontWeight="SemiBold"/>
-                <ComboBox ItemsSource="{x:Static vm:MobileAmazonS3ConfigViewModel.Regions}"
-                          SelectedIndex="{Binding RegionIndex}"
-                          HorizontalAlignment="Stretch"
-                          Height="44"
-                          Padding="12,8">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:S3RegionOption">
-                            <StackPanel>
-                                <TextBlock Text="{Binding DisplayName}"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </StackPanel>
+            <!-- Section: Bucket Configuration -->
+            <Border x:Name="BucketSection"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    CornerRadius="12"
+                    Padding="16">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="Bucket Configuration"
+                               FontWeight="SemiBold"
+                               FontSize="15"
+                               Opacity="0.7"/>
 
-            <!-- Object Prefix -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="Object Prefix (Optional)"
-                           FontWeight="SemiBold"/>
-                <TextBox Text="{Binding ObjectPrefix, UpdateSourceTrigger=PropertyChanged}"
-                         Watermark="ShareX/%y/%mo"
-                         Height="44"
-                         Padding="12,8"/>
-                <TextBlock Text="Use %y for year, %mo for month, %d for day"
-                           FontSize="12"
-                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-            </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Bucket Name" FontSize="13" FontWeight="SemiBold"/>
+                        <Grid>
+                            <TextBox Text="{Binding BucketName, Mode=TwoWay}"
+                                     Watermark="my-bucket-name"
+                                     CornerRadius="8"
+                                     FontSize="13"/>
+                            <Border BorderBrush="#FF6B6B"
+                                    BorderThickness="2"
+                                    CornerRadius="8"
+                                    IsVisible="{Binding HasBucketError}"
+                                    IsHitTestVisible="False"/>
+                        </Grid>
+                    </StackPanel>
 
-            <!-- Custom Domain -->
-            <StackPanel Spacing="8">
-                <CheckBox Content="Use Custom Domain (CDN)"
-                          IsChecked="{Binding UseCustomDomain}"/>
-                <TextBox Text="{Binding CustomDomain, UpdateSourceTrigger=PropertyChanged}"
-                         Watermark="https://cdn.example.com"
-                         IsEnabled="{Binding UseCustomDomain}"
-                         Height="44"
-                         Padding="12,8"/>
-            </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Region" FontSize="13" FontWeight="SemiBold"/>
+                        <Grid>
+                            <ComboBox ItemsSource="{x:Static vm:MobileAmazonS3ConfigViewModel.Regions}"
+                                      SelectedIndex="{Binding RegionIndex}"
+                                      HorizontalAlignment="Stretch"
+                                      CornerRadius="8">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:S3RegionOption">
+                                        <TextBlock Text="{Binding DisplayName}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Border BorderBrush="#FF6B6B"
+                                    BorderThickness="2"
+                                    CornerRadius="8"
+                                    IsVisible="{Binding HasRegionError}"
+                                    IsHitTestVisible="False"/>
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
-            <!-- Public ACL -->
-            <CheckBox Content="Make uploads publicly accessible"
-                      IsChecked="{Binding SetPublicAcl}"/>
+            <!-- Section: Upload Options -->
+            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    CornerRadius="12"
+                    Padding="16">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="Upload Options"
+                               FontWeight="SemiBold"
+                               FontSize="15"
+                               Opacity="0.7"/>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Object Prefix" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBox Text="{Binding ObjectPrefix, Mode=TwoWay}"
+                                 Watermark="ShareX/%y/%mo"
+                                 CornerRadius="8"
+                                 FontSize="13"/>
+                        <TextBlock Text="Use %y for year, %mo for month, %d for day"
+                                   FontSize="11"
+                                   Opacity="0.5"
+                                   Margin="4,2,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="4">
+                        <CheckBox Content="Use Custom Domain (CDN)"
+                                  IsChecked="{Binding UseCustomDomain}"/>
+                        <TextBox Text="{Binding CustomDomain, Mode=TwoWay}"
+                                 Watermark="https://cdn.example.com"
+                                 IsEnabled="{Binding UseCustomDomain}"
+                                 CornerRadius="8"
+                                 FontSize="13"/>
+                    </StackPanel>
+
+                    <CheckBox Content="Make uploads publicly accessible"
+                              IsChecked="{Binding SetPublicAcl}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Section: Help -->
+            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    CornerRadius="12"
+                    Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="How to get AWS credentials"
+                               FontWeight="SemiBold"
+                               FontSize="15"
+                               Opacity="0.7"/>
+                    <TextBlock Text="1. Go to AWS Console → IAM → Users"
+                               FontSize="13"/>
+                    <TextBlock Text="2. Create a user with 'AmazonS3FullAccess' permission"
+                               FontSize="13"
+                               TextWrapping="Wrap"/>
+                    <TextBlock Text="3. Create access keys and copy them here"
+                               FontSize="13"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
 
             <!-- Action Buttons -->
-            <StackPanel Spacing="12" Margin="0,20,0,0">
+            <StackPanel Spacing="10" Margin="0,4,0,40">
                 <Button Content="Save Configuration"
                         Command="{Binding SaveCommand}"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
                         Height="48"
+                        CornerRadius="10"
                         Classes="accent"
-                        FontWeight="SemiBold"/>
-                
+                        FontWeight="SemiBold"
+                        FontSize="15"/>
+
                 <Button Content="Test Connection"
                         Command="{Binding TestCommand}"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
-                        Height="48"
+                        VerticalContentAlignment="Center"
+                        Height="42"
+                        CornerRadius="10"
+                        FontSize="14"
                         IsVisible="{Binding IsTesting, Converter={x:Static BoolConverters.Not}}"/>
-                
+
                 <ProgressBar IsIndeterminate="True"
                              IsVisible="{Binding IsTesting}"
-                             Margin="0,12"/>
+                             CornerRadius="4"
+                             Margin="0,4"/>
             </StackPanel>
-
-            <!-- Help Text -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    CornerRadius="8"
-                    Padding="16"
-                    Margin="0,10,0,40">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="How to get AWS credentials:"
-                               FontWeight="SemiBold"/>
-                    <TextBlock Text="1. Go to AWS Console → IAM → Users"
-                               FontSize="13"/>
-                    <TextBlock Text="2. Create a user with 'AmazonS3FullAccess' permission"
-                               FontSize="13"/>
-                    <TextBlock Text="3. Create access keys and copy them here"
-                               FontSize="13"/>
-                </StackPanel>
-            </Border>
 
         </StackPanel>
     </ScrollViewer>

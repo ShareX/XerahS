@@ -34,11 +34,28 @@ public partial class MobileAmazonS3ConfigView : UserControl
     public MobileAmazonS3ConfigView()
     {
         InitializeComponent();
-        DataContext = new MobileAmazonS3ConfigViewModel();
+        var vm = new MobileAmazonS3ConfigViewModel();
+        vm.ScrollToFirstError = ScrollToFirstError;
+        DataContext = vm;
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
+    }
+
+    private void ScrollToFirstError()
+    {
+        var vm = DataContext as MobileAmazonS3ConfigViewModel;
+        if (vm == null) return;
+
+        Control? target = null;
+
+        if (vm.HasAccessKeyError || vm.HasSecretKeyError)
+            target = this.FindControl<Border>("AuthSection");
+        else if (vm.HasBucketError || vm.HasRegionError)
+            target = this.FindControl<Border>("BucketSection");
+
+        target?.BringIntoView();
     }
 }
