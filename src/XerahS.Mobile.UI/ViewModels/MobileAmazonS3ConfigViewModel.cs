@@ -55,28 +55,28 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     public string AccessKeyId
     {
         get => _accessKeyId;
-        set { _accessKeyId = value; OnPropertyChanged(); UpdateIsConfigured(); }
+        set { _accessKeyId = value; HasAccessKeyError = false; OnPropertyChanged(); UpdateIsConfigured(); }
     }
 
     private string _secretAccessKey = string.Empty;
     public string SecretAccessKey
     {
         get => _secretAccessKey;
-        set { _secretAccessKey = value; OnPropertyChanged(); UpdateIsConfigured(); }
+        set { _secretAccessKey = value; HasSecretKeyError = false; OnPropertyChanged(); UpdateIsConfigured(); }
     }
 
     private string _bucketName = string.Empty;
     public string BucketName
     {
         get => _bucketName;
-        set { _bucketName = value; OnPropertyChanged(); UpdateIsConfigured(); }
+        set { _bucketName = value; HasBucketError = false; OnPropertyChanged(); UpdateIsConfigured(); }
     }
 
     private int _regionIndex;
     public int RegionIndex
     {
         get => _regionIndex;
-        set { _regionIndex = value; OnPropertyChanged(); }
+        set { _regionIndex = value; HasRegionError = false; OnPropertyChanged(); }
     }
 
     private string _objectPrefix = "ShareX/%y/%mo";
@@ -114,12 +114,36 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
         private set { _isConfigured = value; OnPropertyChanged(); OnPropertyChanged(nameof(Description)); }
     }
 
-    private string? _statusMessage;
-    public string? StatusMessage
+    // Validation Errors
+    private bool _hasAccessKeyError;
+    public bool HasAccessKeyError
     {
-        get => _statusMessage;
-        set { _statusMessage = value; OnPropertyChanged(); }
+        get => _hasAccessKeyError;
+        set { _hasAccessKeyError = value; OnPropertyChanged(); }
     }
+
+    private bool _hasSecretKeyError;
+    public bool HasSecretKeyError
+    {
+        get => _hasSecretKeyError;
+        set { _hasSecretKeyError = value; OnPropertyChanged(); }
+    }
+
+    private bool _hasBucketError;
+    public bool HasBucketError
+    {
+        get => _hasBucketError;
+        set { _hasBucketError = value; OnPropertyChanged(); }
+    }
+
+    private bool _hasRegionError;
+    public bool HasRegionError
+    {
+        get => _hasRegionError;
+        set { _hasRegionError = value; OnPropertyChanged(); }
+    }
+
+    public Action? ScrollToFirstError { get; set; }
 
     private bool _isTesting;
     public bool IsTesting
@@ -206,18 +230,15 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
             // Try loading from InstanceManager first (this is what the upload pipeline uses)
             if (LoadFromInstanceManager())
             {
-                StatusMessage = null;
                 return;
             }
 
             // Fall back to legacy UploadersConfig for migration
             LoadFromLegacySettings();
-            StatusMessage = null;
         }
         catch (Exception ex)
         {
             DebugHelper.WriteException(ex, "[MobileAmazonS3Config] LoadConfig failed");
-            StatusMessage = "Failed to load settings";
         }
     }
 
@@ -289,12 +310,15 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     {
         try
         {
-            if (!Validate()) return false;
+            if (!Validate())
+            {
+                ScrollToFirstError?.Invoke();
+                return false;
+            }
 
             var secrets = ProviderCatalog.GetProviderContext()?.Secrets;
             if (secrets == null)
             {
-                StatusMessage = "Secret store not available";
                 return false;
             }
 
@@ -363,13 +387,11 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
             }
 
             UpdateIsConfigured();
-            StatusMessage = "Settings saved successfully!";
             return true;
         }
         catch (Exception ex)
         {
             DebugHelper.WriteException(ex, "[MobileAmazonS3Config] SaveConfig failed");
-            StatusMessage = "Failed to save settings";
             return false;
         }
     }
@@ -377,13 +399,13 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     public async Task<bool> TestConfigAsync()
     {
         IsTesting = true;
-        StatusMessage = "Testing connection...";
 
         try
         {
             // Basic validation first
             if (!Validate())
             {
+                ScrollToFirstError?.Invoke();
                 IsTesting = false;
                 return false;
             }
@@ -392,14 +414,12 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
             // For MVP, we'll do a basic validation
             await Task.Delay(500); // Simulate network delay
 
-            StatusMessage = "Configuration looks valid. Full test coming soon.";
             IsTesting = false;
             return true;
         }
         catch (Exception ex)
         {
             DebugHelper.WriteException(ex, "[MobileAmazonS3Config] TestConfig failed");
-            StatusMessage = $"Test failed: {ex.Message}";
             IsTesting = false;
             return false;
         }
@@ -411,31 +431,33 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
 
     private bool Validate()
     {
+        bool valid = true;
+
         if (string.IsNullOrWhiteSpace(AccessKeyId))
         {
-            StatusMessage = "Access Key ID is required";
-            return false;
+            HasAccessKeyError = true;
+            valid = false;
         }
 
         if (string.IsNullOrWhiteSpace(SecretAccessKey))
         {
-            StatusMessage = "Secret Access Key is required";
-            return false;
+            HasSecretKeyError = true;
+            valid = false;
         }
 
         if (string.IsNullOrWhiteSpace(BucketName))
         {
-            StatusMessage = "Bucket Name is required";
-            return false;
+            HasBucketError = true;
+            valid = false;
         }
 
         if (RegionIndex < 0 || RegionIndex >= Regions.Count)
         {
-            StatusMessage = "Please select a region";
-            return false;
+            HasRegionError = true;
+            valid = false;
         }
 
-        return true;
+        return valid;
     }
 
     private void UpdateIsConfigured()
