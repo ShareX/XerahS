@@ -50,7 +50,9 @@ namespace XerahS.Core
         public const string WorkflowsConfigFileNamePrefix = "WorkflowsConfig";
         public const string WorkflowsConfigFileNameExtension = "json";
         public const string WorkflowsConfigFileName = WorkflowsConfigFileNamePrefix + "." + WorkflowsConfigFileNameExtension;
-        public const string SecretsStoreFileName = "SecretsStore.json";
+        public const string SecretsStoreFileNamePrefix = "SecretsStore";
+        public const string SecretsStoreFileNameExtension = "json";
+        public const string SecretsStoreFileName = SecretsStoreFileNamePrefix + "." + SecretsStoreFileNameExtension;
 
         #endregion
 
@@ -161,7 +163,15 @@ namespace XerahS.Core
         /// <summary>
         /// Secrets store file path
         /// </summary>
-        public static string SecretsStoreFilePath => Path.Combine(SettingsFolder, SecretsStoreFileName);
+        public static string SecretsStoreFilePath
+        {
+            get
+            {
+                string secretsStoreFolder = SettingsFolder;
+                string secretsStoreFileName = GetSecretsStoreFileName(secretsStoreFolder);
+                return Path.Combine(secretsStoreFolder, secretsStoreFileName);
+            }
+        }
 
         /// <summary>
         /// Main application settings
@@ -454,6 +464,16 @@ namespace XerahS.Core
                 WorkflowsConfigFileNameExtension,
                 WorkflowsConfigFileName,
                 Settings?.UseMachineSpecificWorkflowsConfig ?? false);
+        }
+
+        private static string GetSecretsStoreFileName(string destinationFolder)
+        {
+            return GetMachineSpecificConfigFileName(
+                destinationFolder,
+                SecretsStoreFileNamePrefix,
+                SecretsStoreFileNameExtension,
+                SecretsStoreFileName,
+                Settings?.UseMachineSpecificSecretsStore ?? false);
         }
 
         private static void SyncDefaultTaskSettings()
