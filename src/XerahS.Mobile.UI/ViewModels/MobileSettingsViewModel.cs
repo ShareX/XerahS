@@ -87,6 +87,7 @@ public class MobileSettingsViewModel : INotifyPropertyChanged
     public string CurrentViewTitle => CurrentView?.GetType().Name switch
     {
         "MobileAmazonS3ConfigView" => "Amazon S3",
+        "MobileCustomUploaderConfigView" => "Custom Uploader",
         _ => "Settings"
     };
 
@@ -124,6 +125,17 @@ public class MobileSettingsViewModel : INotifyPropertyChanged
         // var dropboxVm = new MobileDropboxConfigViewModel();
         // items.Add(new SettingsItem { ... });
 
+        // Custom Uploader - add/manage custom image uploaders via .sxcu JSON
+        var customVm = new MobileCustomUploaderConfigViewModel();
+        items.Add(new SettingsItem
+        {
+            Title = customVm.UploaderName,
+            Description = customVm.Description,
+            IconPath = customVm.IconPath,
+            IsConfigured = customVm.IsConfigured,
+            CreateView = () => new MobileCustomUploaderConfigView()
+        });
+
         SettingsItems = new ObservableCollection<SettingsItem>(items);
     }
 
@@ -135,6 +147,12 @@ public class MobileSettingsViewModel : INotifyPropertyChanged
             if (item.Title == "Amazon S3")
             {
                 var vm = new MobileAmazonS3ConfigViewModel();
+                item.IsConfigured = vm.IsConfigured;
+                item.Description = vm.Description;
+            }
+            else if (item.Title == "Custom Uploader")
+            {
+                var vm = new MobileCustomUploaderConfigViewModel();
                 item.IsConfigured = vm.IsConfigured;
                 item.Description = vm.Description;
             }

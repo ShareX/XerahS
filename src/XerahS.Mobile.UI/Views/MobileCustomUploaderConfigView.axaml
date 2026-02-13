@@ -1,0 +1,553 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:XerahS.Mobile.UI.ViewModels"
+             x:Class="XerahS.Mobile.UI.Views.MobileCustomUploaderConfigView"
+             x:DataType="vm:MobileCustomUploaderConfigViewModel"
+             x:Name="RootView">
+
+    <Grid>
+        <!-- State 1: List View -->
+        <ScrollViewer IsVisible="{Binding !IsEditorVisible}">
+            <StackPanel Margin="16" Spacing="16">
+
+                <!-- Header Card -->
+                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                        CornerRadius="12"
+                        Padding="20">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Custom Uploader"
+                                   FontSize="22"
+                                   FontWeight="Bold"/>
+                        <TextBlock Text="Add and manage custom HTTP uploaders"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Configured Uploaders Card -->
+                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                        CornerRadius="12"
+                        Padding="16">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Configured Uploaders"
+                                   FontWeight="SemiBold"
+                                   FontSize="15"
+                                   Margin="4,0,0,0"/>
+
+                        <ListBox ItemsSource="{Binding CustomUploaders}"
+                                 SelectedIndex="{Binding SelectedUploaderIndex}"
+                                 MinHeight="60"
+                                 MaxHeight="280"
+                                 CornerRadius="8"
+                                 Padding="0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CustomUploaderListItem">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="4,6">
+                                        <!-- Icon circle -->
+                                        <Border Grid.Column="0"
+                                                Width="36" Height="36"
+                                                CornerRadius="18"
+                                                Background="{DynamicResource SystemAccentColor}"
+                                                Margin="0,0,12,0"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="☁"
+                                                       FontSize="18"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="White"/>
+                                        </Border>
+
+                                        <!-- Name and host -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="14"/>
+                                            <TextBlock Text="{Binding HostName}"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Active badge -->
+                                        <Border Grid.Column="2"
+                                                IsVisible="{Binding IsActive}"
+                                                CornerRadius="10"
+                                                Background="#1A4CAF50"
+                                                Padding="10,4"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="ACTIVE"
+                                                       FontSize="10"
+                                                       FontWeight="Bold"
+                                                       Foreground="#4CAF50"/>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <!-- Empty state -->
+                        <Border IsVisible="{Binding !CustomUploaders.Count}"
+                                CornerRadius="8"
+                                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                BorderThickness="1"
+                                Opacity="0.4"
+                                Padding="20"
+                                HorizontalAlignment="Stretch">
+                            <StackPanel HorizontalAlignment="Center" Spacing="6">
+                                <TextBlock Text="☁"
+                                           FontSize="28"
+                                           HorizontalAlignment="Center"
+                                           Opacity="0.5"/>
+                                <TextBlock Text="No custom uploaders configured yet"
+                                           FontSize="13"
+                                           FontStyle="Italic"
+                                           HorizontalAlignment="Center"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Action Buttons -->
+                <StackPanel Spacing="10">
+                    <Button Content="Add New Uploader"
+                            Command="{Binding AddNewCommand}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Height="48"
+                            CornerRadius="10"
+                            Classes="accent"
+                            FontWeight="SemiBold"
+                            FontSize="15"/>
+
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                        <Button Grid.Column="0"
+                                Content="Edit"
+                                Command="{Binding EditSelectedCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Height="42"
+                                CornerRadius="10"
+                                FontSize="13"/>
+                        <Button Grid.Column="1"
+                                Content="Set Active"
+                                Command="{Binding SetActiveCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Height="42"
+                                CornerRadius="10"
+                                FontSize="13"/>
+                        <Button Grid.Column="2"
+                                Content="Remove"
+                                Command="{Binding RemoveSelectedCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Height="42"
+                                CornerRadius="10"
+                                FontSize="13"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Progress -->
+                <ProgressBar IsIndeterminate="True"
+                             IsVisible="{Binding IsTesting}"
+                             CornerRadius="4"
+                             Margin="0,4"/>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- State 2: Editor Form -->
+        <ScrollViewer IsVisible="{Binding IsEditorVisible}"
+                      x:Name="EditorScrollViewer">
+            <StackPanel Margin="16" Spacing="14">
+
+                <!-- Editor Title -->
+                <TextBlock Text="{Binding EditorTitle}"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Margin="4,4,0,0"/>
+
+                <!-- Section: Basic Information -->
+                <Border x:Name="BasicInfoSection"
+                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                        CornerRadius="12"
+                        Padding="16">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Basic Information"
+                                   FontWeight="SemiBold"
+                                   FontSize="15"
+                                   Opacity="0.7"/>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Name" FontSize="13" FontWeight="SemiBold"/>
+                            <Grid>
+                                <TextBox Text="{Binding EditorName, Mode=TwoWay}"
+                                         Watermark="My Custom Uploader"
+                                         CornerRadius="8"/>
+                                <Border BorderBrush="#FF6B6B"
+                                        BorderThickness="2"
+                                        CornerRadius="8"
+                                        IsVisible="{Binding HasNameError}"
+                                        IsHitTestVisible="False"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Destination Types" FontSize="13" FontWeight="SemiBold"/>
+                            <WrapPanel Orientation="Horizontal">
+                                <CheckBox Content="Image" IsChecked="{Binding IsImageUploader}" Margin="0,0,14,6"/>
+                                <CheckBox Content="Text" IsChecked="{Binding IsTextUploader}" Margin="0,0,14,6"/>
+                                <CheckBox Content="File" IsChecked="{Binding IsFileUploader}" Margin="0,0,14,6"/>
+                                <CheckBox Content="URL Shortener" IsChecked="{Binding IsUrlShortener}" Margin="0,0,14,6"/>
+                                <CheckBox Content="URL Sharing" IsChecked="{Binding IsUrlSharingService}" Margin="0,0,0,6"/>
+                            </WrapPanel>
+                            <TextBlock Text="Select at least one destination type"
+                                       FontSize="12"
+                                       Foreground="#FF6B6B"
+                                       IsVisible="{Binding HasDestinationError}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Section: HTTP Request -->
+                <Border x:Name="HttpRequestSection"
+                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                        CornerRadius="12"
+                        Padding="16">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="HTTP Request"
+                                   FontWeight="SemiBold"
+                                   FontSize="15"
+                                   Opacity="0.7"/>
+
+                        <Grid ColumnDefinitions="100,*" ColumnSpacing="10">
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="Method" FontSize="13" FontWeight="SemiBold"/>
+                                <ComboBox ItemsSource="{Binding HttpMethods}"
+                                          SelectedIndex="{Binding SelectedMethodIndex}"
+                                          HorizontalAlignment="Stretch"
+                                          CornerRadius="8"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4">
+                                <TextBlock Text="Request URL" FontSize="13" FontWeight="SemiBold"/>
+                                <Grid>
+                                    <TextBox Text="{Binding RequestUrl, Mode=TwoWay}"
+                                             Watermark="https://example.com/api/upload"
+                                             CornerRadius="8"/>
+                                    <Border BorderBrush="#FF6B6B"
+                                            BorderThickness="2"
+                                            CornerRadius="8"
+                                            IsVisible="{Binding HasUrlError}"
+                                            IsHitTestVisible="False"/>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Headers -->
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Headers" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1"
+                                        Content="+ Add"
+                                        Command="{Binding AddHeaderCommand}"
+                                        Padding="12,4"
+                                        FontSize="12"
+                                        CornerRadius="6"
+                                        VerticalContentAlignment="Center"
+                                        Height="28"/>
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding Headers}"
+                                          x:Name="HeadersList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:KeyValuePairItem">
+                                        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                                                CornerRadius="8"
+                                                Padding="8"
+                                                Margin="0,2">
+                                            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="6">
+                                                <TextBox Grid.Column="0"
+                                                         Text="{Binding Key, Mode=TwoWay}"
+                                                         Watermark="Key"
+                                                         CornerRadius="6"
+                                                         FontSize="13"/>
+                                                <TextBox Grid.Column="1"
+                                                         Text="{Binding Value, Mode=TwoWay}"
+                                                         Watermark="Value"
+                                                         CornerRadius="6"
+                                                         FontSize="13"/>
+                                                <Button Grid.Column="2"
+                                                        Content="✕"
+                                                        Command="{Binding RemoveCommand}"
+                                                        Width="30" Height="30"
+                                                        Padding="0"
+                                                        CornerRadius="6"
+                                                        FontSize="12"
+                                                        HorizontalContentAlignment="Center"
+                                                        VerticalContentAlignment="Center"
+                                                        Foreground="#FF6B6B"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!-- URL Parameters -->
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="URL Parameters" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1"
+                                        Content="+ Add"
+                                        Command="{Binding AddParameterCommand}"
+                                        Padding="12,4"
+                                        FontSize="12"
+                                        CornerRadius="6"
+                                        VerticalContentAlignment="Center"
+                                        Height="28"/>
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding Parameters}"
+                                          x:Name="ParametersList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:KeyValuePairItem">
+                                        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                                                CornerRadius="8"
+                                                Padding="8"
+                                                Margin="0,2">
+                                            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="6">
+                                                <TextBox Grid.Column="0"
+                                                         Text="{Binding Key, Mode=TwoWay}"
+                                                         Watermark="Key"
+                                                         CornerRadius="6"
+                                                         FontSize="13"/>
+                                                <TextBox Grid.Column="1"
+                                                         Text="{Binding Value, Mode=TwoWay}"
+                                                         Watermark="Value"
+                                                         CornerRadius="6"
+                                                         FontSize="13"/>
+                                                <Button Grid.Column="2"
+                                                        Content="✕"
+                                                        Command="{Binding RemoveCommand}"
+                                                        Width="30" Height="30"
+                                                        Padding="0"
+                                                        CornerRadius="6"
+                                                        FontSize="12"
+                                                        HorizontalContentAlignment="Center"
+                                                        VerticalContentAlignment="Center"
+                                                        Foreground="#FF6B6B"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Section: Request Body -->
+                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                        CornerRadius="12"
+                        Padding="16">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Request Body"
+                                   FontWeight="SemiBold"
+                                   FontSize="15"
+                                   Opacity="0.7"/>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="Body Type" FontSize="13" FontWeight="SemiBold"/>
+                                <ComboBox ItemsSource="{Binding BodyTypes}"
+                                          SelectedIndex="{Binding SelectedBodyTypeIndex}"
+                                          HorizontalAlignment="Stretch"
+                                          CornerRadius="8"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4">
+                                <TextBlock Text="File Form Name" FontSize="13" FontWeight="SemiBold"/>
+                                <TextBox Text="{Binding FileFormName, Mode=TwoWay}"
+                                         Watermark="file"
+                                         CornerRadius="8"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Form Arguments -->
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Form Arguments" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1"
+                                        Content="+ Add"
+                                        Command="{Binding AddArgumentCommand}"
+                                        Padding="12,4"
+                                        FontSize="12"
+                                        CornerRadius="6"
+                                        VerticalContentAlignment="Center"
+                                        Height="28"/>
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding Arguments}"
+                                          x:Name="ArgumentsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:KeyValuePairItem">
+                                        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                                                CornerRadius="8"
+                                                Padding="8"
+                                                Margin="0,2">
+                                            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="6">
+                                                <TextBox Grid.Column="0"
+                                                         Text="{Binding Key, Mode=TwoWay}"
+                                                         Watermark="Key"
+                                                         CornerRadius="6"
+                                                         FontSize="13"/>
+                                                <TextBox Grid.Column="1"
+                                                         Text="{Binding Value, Mode=TwoWay}"
+                                                         Watermark="Value"
+                                                         CornerRadius="6"
+                                                         FontSize="13"/>
+                                                <Button Grid.Column="2"
+                                                        Content="✕"
+                                                        Command="{Binding RemoveCommand}"
+                                                        Width="30" Height="30"
+                                                        Padding="0"
+                                                        CornerRadius="6"
+                                                        FontSize="12"
+                                                        HorizontalContentAlignment="Center"
+                                                        VerticalContentAlignment="Center"
+                                                        Foreground="#FF6B6B"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!-- Body Data -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Body Data (JSON/XML)" FontSize="13" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding BodyData, Mode=TwoWay}"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     MinHeight="80"
+                                     MaxHeight="150"
+                                     Watermark="JSON or XML body content"
+                                     CornerRadius="8"
+                                     FontFamily="Consolas, Monospace"
+                                     FontSize="12"/>
+                            <TextBlock Text="Use input for file content, filename for file name."
+                                       FontSize="11"
+                                       Opacity="0.5"
+                                       Margin="4,2,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Section: Response Parsing -->
+                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                        CornerRadius="12"
+                        Padding="16">
+                    <StackPanel Spacing="14">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Response Parsing"
+                                       FontWeight="SemiBold"
+                                       FontSize="15"
+                                       Opacity="0.7"/>
+                            <TextBlock Text="Extract URLs from the server response using json:path, regex:pattern, or response syntax."
+                                       FontSize="11"
+                                       Opacity="0.5"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="URL" FontSize="13" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding UrlPattern, Mode=TwoWay}"
+                                     Watermark="e.g. json:url or response"
+                                     CornerRadius="8"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Thumbnail URL" FontSize="13" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding ThumbnailUrlPattern, Mode=TwoWay}"
+                                     Watermark="e.g. json:thumbnail"
+                                     CornerRadius="8"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Deletion URL" FontSize="13" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding DeletionUrlPattern, Mode=TwoWay}"
+                                     Watermark="e.g. json:delete_url"
+                                     CornerRadius="8"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Error Message" FontSize="13" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding ErrorMessagePattern, Mode=TwoWay}"
+                                     Watermark="e.g. json:error"
+                                     CornerRadius="8"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Section: Import from JSON -->
+                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                        CornerRadius="12"
+                        Padding="16">
+                    <StackPanel Spacing="10">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Import from JSON"
+                                       FontWeight="SemiBold"
+                                       FontSize="15"
+                                       Opacity="0.7"/>
+                            <TextBlock Text="Paste .sxcu JSON to populate the form above"
+                                       FontSize="11"
+                                       Opacity="0.5"/>
+                        </StackPanel>
+                        <TextBox Text="{Binding JsonInput, Mode=TwoWay}"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="80"
+                                 MaxHeight="150"
+                                 Watermark="Paste .sxcu JSON content here..."
+                                 FontFamily="Consolas, Monospace"
+                                 FontSize="12"
+                                 CornerRadius="8"/>
+                        <Button Content="Import JSON"
+                                Command="{Binding ImportJsonCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Height="40"
+                                CornerRadius="8"
+                                FontSize="13"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Editor Action Buttons -->
+                <StackPanel Spacing="10" Margin="0,4,0,40">
+                    <Button Content="Save"
+                            Command="{Binding SaveEditorCommand}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Height="48"
+                            CornerRadius="10"
+                            Classes="accent"
+                            FontWeight="SemiBold"
+                            FontSize="15"/>
+
+                    <Button Content="Cancel"
+                            Command="{Binding CancelEditorCommand}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Height="42"
+                            CornerRadius="10"
+                            FontSize="14"/>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+
+</UserControl>

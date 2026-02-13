@@ -68,6 +68,8 @@ namespace XerahS.Common
             get
             {
 #if DEBUG
+                if (OperatingSystem.IsIOS() || OperatingSystem.IsAndroid())
+                    return Path.Combine(PersonalFolder, AppResources.PluginsFolderName);
                 return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppResources.PluginsFolderName);
 #else
                 return Path.Combine(PersonalFolder, AppResources.PluginsFolderName);

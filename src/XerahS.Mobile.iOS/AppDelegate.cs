@@ -45,6 +45,9 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
         // Initialize platform services for mobile
         MobilePlatform.Initialize(PlatformType.iOS);
 
+        // Replace in-memory clipboard with native iOS clipboard
+        PlatformServices.Clipboard = new iOSClipboardService();
+
         // Set personal folder to app's Documents directory
         var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         PathsManager.PersonalFolder = documentsPath;
