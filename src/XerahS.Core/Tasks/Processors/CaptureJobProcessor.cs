@@ -53,6 +53,7 @@ namespace XerahS.Core.Tasks.Processors
                 }
                 else
                 {
+                    var originalAfterCapture = settings.AfterCaptureJob;
                     var result = await PlatformServices.UI.ShowAfterCaptureWindowAsync(
                         info.Metadata.Image,
                         settings.AfterCaptureJob,
@@ -65,6 +66,13 @@ namespace XerahS.Core.Tasks.Processors
 
                     settings.AfterCaptureJob = result.Capture;
                     settings.AfterUploadJob = result.Upload;
+
+                    // Persist "Show after capture window" setting if user unchecked it
+                    if (originalAfterCapture.HasFlag(AfterCaptureTasks.ShowAfterCaptureWindow) &&
+                        !result.Capture.HasFlag(AfterCaptureTasks.ShowAfterCaptureWindow))
+                    {
+                        PersistShowAfterCaptureWindowSetting(settings.WorkflowId, false);
+                    }
                 }
             }
 
@@ -402,6 +410,54 @@ namespace XerahS.Core.Tasks.Processors
             {
                 DebugHelper.WriteException(ex, $"Upload failed for {instance.DisplayName}");
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Persists the "Show after capture window" setting change back to the workflow configuration.
+        /// </summary>
+        private static void PersistShowAfterCaptureWindowSetting(string? workflowId, bool showWindow)
+        {
+            try
+            {
+                // Find the workflow by ID
+                var workflow = !string.IsNullOrEmpty(workflowId) ? SettingsManager.GetWorkflowById(workflowId) : null;
+                if (workflow?.TaskSettings == null)
+                {
+                    // Fall back to default task settings if no workflow found
+                    if (SettingsManager.DefaultTaskSettings != null)
+                    {
+                        if (showWindow)
+                        {
+                            SettingsManager.DefaultTaskSettings.AfterCaptureJob |= AfterCaptureTasks.ShowAfterCaptureWindow;
+                        }
+                        else
+                        {
+                            SettingsManager.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.ShowAfterCaptureWindow;
+                        }
+                        SettingsManager.SaveWorkflowsConfig();
+                        DebugHelper.WriteLine($"Updated DefaultTaskSettings.AfterCaptureJob (ShowAfterCaptureWindow={showWindow})");
+                    }
+                    return;
+                }
+
+                // Update the workflow's task settings
+                if (showWindow)
+                {
+                    workflow.TaskSettings.AfterCaptureJob |= AfterCaptureTasks.ShowAfterCaptureWindow;
+                }
+                else
+                {
+                    workflow.TaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.ShowAfterCaptureWindow;
+                }
+
+                // Save the workflows configuration
+                SettingsManager.SaveWorkflowsConfig();
+                DebugHelper.WriteLine($"Persisted ShowAfterCaptureWindow={showWindow} to workflow '{workflowId}'");
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to persist ShowAfterCaptureWindow setting");
             }
         }
 
