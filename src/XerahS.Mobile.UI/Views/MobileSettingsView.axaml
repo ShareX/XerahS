@@ -57,7 +57,7 @@
                             <TextBlock Text="Upload Destinations"
                                        FontSize="16"
                                        FontWeight="SemiBold"/>
-                            <TextBlock Text="Configure where your files will be uploaded. Currently Amazon S3 is supported."
+                            <TextBlock Text="Configure where your files will be uploaded. Amazon S3 and custom uploaders are supported."
                                        FontSize="13"
                                        TextWrapping="Wrap"
                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>

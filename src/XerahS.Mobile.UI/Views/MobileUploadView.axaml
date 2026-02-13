@@ -56,6 +56,7 @@
 
                 <!-- Results list -->
                 <ItemsControl ItemsSource="{Binding Results}"
+                              x:Name="ResultsList"
                               Margin="0,8">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:UploadResultItem">
@@ -84,7 +85,7 @@
                                     <!-- Copy URL button -->
                                     <Button Content="Copy URL"
                                             IsVisible="{Binding HasUrl}"
-                                            Command="{Binding $parent[ItemsControl].((vm:MobileUploadViewModel)DataContext).CopyUrlCommand}"
+                                            Command="{Binding CopyUrlCommand}"
                                             CommandParameter="{Binding Url}"
                                             HorizontalAlignment="Left" />
 

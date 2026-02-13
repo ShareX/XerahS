@@ -133,7 +133,8 @@ public class MobileUploadViewModel : INotifyPropertyChanged
             FileName = fileName,
             Success = success,
             Url = url,
-            Error = error
+            Error = error,
+            CopyUrlCommand = CopyUrlCommand
         });
 
         _pendingCount--;
@@ -173,6 +174,7 @@ public class UploadResultItem
     public string? Url { get; set; }
     public string? Error { get; set; }
     public bool HasUrl => !string.IsNullOrEmpty(Url);
+    public ICommand? CopyUrlCommand { get; set; }
 }
 
 internal class RelayCommand<T> : ICommand
