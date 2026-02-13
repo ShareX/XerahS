@@ -1,0 +1,149 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:XerahS.Mobile.UI.ViewModels"
+             x:Class="XerahS.Mobile.UI.Views.MobileSettingsView"
+             x:DataType="vm:MobileSettingsViewModel">
+
+    <Grid RowDefinitions="Auto, *">
+        
+        <!-- Header -->
+        <Grid Grid.Row="0" 
+              Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+              Height="56"
+              ColumnDefinitions="Auto, *, Auto">
+            
+            <!-- Back Button (shown when in config view or to close settings) -->
+            <Button Grid.Column="0"
+                    Content="←"
+                    FontSize="20"
+                    Command="{Binding BackCommand}"
+                    Background="Transparent"
+                    Width="48"
+                    Height="48"
+                    Margin="4,0"/>
+            
+            <!-- Title -->
+            <TextBlock Grid.Column="1"
+                       Text="{Binding CurrentViewTitle}"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Margin="16,0"/>
+            
+            <!-- Refresh Button (only in list view) -->
+            <Button Grid.Column="2"
+                    Content="↻"
+                    FontSize="16"
+                    Command="{Binding RefreshCommand}"
+                    IsVisible="{Binding IsListView}"
+                    Background="Transparent"
+                    Width="48"
+                    Height="48"
+                    Margin="4,0"/>
+        </Grid>
+
+        <!-- Content Area -->
+        <Grid Grid.Row="1">
+            
+            <!-- Settings List -->
+            <ScrollViewer IsVisible="{Binding IsListView}">
+                <StackPanel Margin="16" Spacing="12">
+                    
+                    <!-- Info Card -->
+                    <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                            CornerRadius="12"
+                            Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Upload Destinations"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock Text="Configure where your files will be uploaded. Currently Amazon S3 is supported."
+                                       FontSize="13"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Uploader Items -->
+                    <ItemsControl ItemsSource="{Binding SettingsItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SettingsItem">
+                                <Button HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Padding="0"
+                                        Margin="0,4"
+                                        CornerRadius="12"
+                                        Click="OnSettingsItemClick">
+                                    <Button.Content>
+                                        <Grid ColumnDefinitions="Auto, *, Auto">
+                                            
+                                            <!-- Icon/Status -->
+                                            <Border Grid.Column="0"
+                                                    Width="48"
+                                                    Height="48"
+                                                    CornerRadius="24"
+                                                    Background="{DynamicResource SystemAccentColor}"
+                                                    Margin="12"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="☁"
+                                                           FontSize="24"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="White"/>
+                                            </Border>
+                                            
+                                            <!-- Text -->
+                                            <StackPanel Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,12">
+                                                <TextBlock Text="{Binding Title}"
+                                                           FontSize="16"
+                                                           FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Description}"
+                                                           FontSize="13"
+                                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                            
+                                            <!-- Status Badge -->
+                                            <Border Grid.Column="2"
+                                                    Width="32"
+                                                    Height="32"
+                                                    CornerRadius="16"
+                                                    Background="{Binding IsConfigured, Converter={StaticResource BoolToConfiguredBrushConverter}}"
+                                                    Margin="12"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding BadgeText}"
+                                                           FontSize="16"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="White"/>
+                                            </Border>
+                                            
+                                        </Grid>
+                                    </Button.Content>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Config View -->
+            <ContentControl Content="{Binding CurrentView}"
+                            IsVisible="{Binding IsListView, Converter={x:Static BoolConverters.Not}}"/>
+
+        </Grid>
+    </Grid>
+
+    <!-- Resources -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <vm:BoolToConfiguredBrushConverter x:Key="BoolToConfiguredBrushConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+</UserControl>

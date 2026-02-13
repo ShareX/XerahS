@@ -4,74 +4,98 @@
              x:Class="XerahS.Mobile.UI.Views.MobileUploadView"
              x:DataType="vm:MobileUploadViewModel">
 
-    <ScrollViewer>
-        <StackPanel Margin="20" Spacing="16">
-
-            <!-- Header -->
-            <TextBlock Text="XerahS"
-                       FontSize="28"
+    <Grid RowDefinitions="Auto, *">
+        
+        <!-- Header with Settings Button -->
+        <Grid Grid.Row="0" 
+              Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+              Height="56"
+              ColumnDefinitions="*, Auto">
+            
+            <!-- Title -->
+            <TextBlock Grid.Column="0"
+                       Text="XerahS"
+                       FontSize="20"
                        FontWeight="Bold"
-                       HorizontalAlignment="Center"
-                       Margin="0,20,0,0" />
+                       VerticalAlignment="Center"
+                       Margin="20,0"/>
+            
+            <!-- Settings Button -->
+            <Button Grid.Column="1"
+                    Content="⚙"
+                    FontSize="20"
+                    Command="{Binding OpenSettingsCommand}"
+                    Background="Transparent"
+                    Width="48"
+                    Height="48"
+                    Margin="4,0"
+                    ToolTip.Tip="Settings"/>
+        </Grid>
 
-            <TextBlock Text="Share &amp; Upload"
-                       FontSize="16"
-                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,10" />
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Margin="20" Spacing="16">
 
-            <!-- Status -->
-            <TextBlock Text="{Binding StatusText}"
-                       HorizontalAlignment="Center"
-                       TextWrapping="Wrap"
-                       TextAlignment="Center" />
+                <!-- Subtitle -->
+                <TextBlock Text="Share &amp; Upload"
+                           FontSize="16"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,10" />
 
-            <!-- Progress -->
-            <ProgressBar IsIndeterminate="True"
-                         IsVisible="{Binding IsUploading}"
-                         Margin="0,8" />
+                <!-- Status -->
+                <TextBlock Text="{Binding StatusText}"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center" />
 
-            <!-- Results list -->
-            <ItemsControl ItemsSource="{Binding Results}"
-                          Margin="0,8">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:UploadResultItem">
-                        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                                CornerRadius="8"
-                                Padding="16"
-                                Margin="0,4">
-                            <StackPanel Spacing="8">
+                <!-- Progress -->
+                <ProgressBar IsIndeterminate="True"
+                             IsVisible="{Binding IsUploading}"
+                             Margin="0,8" />
 
-                                <!-- File name -->
-                                <TextBlock Text="{Binding FileName}"
-                                           FontWeight="SemiBold" />
+                <!-- Results list -->
+                <ItemsControl ItemsSource="{Binding Results}"
+                              Margin="0,8">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:UploadResultItem">
+                            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                                    CornerRadius="8"
+                                    Padding="16"
+                                    Margin="0,4">
+                                <StackPanel Spacing="8">
 
-                                <!-- URL (if success) -->
-                                <TextBlock Text="{Binding Url}"
-                                           IsVisible="{Binding HasUrl}"
-                                           Foreground="{DynamicResource SystemAccentColor}"
-                                           TextWrapping="Wrap" />
+                                    <!-- File name -->
+                                    <TextBlock Text="{Binding FileName}"
+                                               FontWeight="SemiBold" />
 
-                                <!-- Error (if failed) -->
-                                <TextBlock Text="{Binding Error}"
-                                           IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                                           Foreground="Red"
-                                           TextWrapping="Wrap" />
+                                    <!-- URL (if success) -->
+                                    <TextBlock Text="{Binding Url}"
+                                               IsVisible="{Binding HasUrl}"
+                                               Foreground="{DynamicResource SystemAccentColor}"
+                                               TextWrapping="Wrap" />
 
-                                <!-- Copy URL button -->
-                                <Button Content="Copy URL"
-                                        IsVisible="{Binding HasUrl}"
-                                        Command="{Binding $parent[ItemsControl].((vm:MobileUploadViewModel)DataContext).CopyUrlCommand}"
-                                        CommandParameter="{Binding Url}"
-                                        HorizontalAlignment="Left" />
+                                    <!-- Error (if failed) -->
+                                    <TextBlock Text="{Binding Error}"
+                                               IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                               Foreground="Red"
+                                               TextWrapping="Wrap" />
 
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                                    <!-- Copy URL button -->
+                                    <Button Content="Copy URL"
+                                            IsVisible="{Binding HasUrl}"
+                                            Command="{Binding $parent[ItemsControl].((vm:MobileUploadViewModel)DataContext).CopyUrlCommand}"
+                                            CommandParameter="{Binding Url}"
+                                            HorizontalAlignment="Left" />
 
-        </StackPanel>
-    </ScrollViewer>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 
 </UserControl>

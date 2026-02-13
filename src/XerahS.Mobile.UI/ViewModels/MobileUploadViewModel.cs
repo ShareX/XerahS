@@ -57,12 +57,19 @@ public class MobileUploadViewModel : INotifyPropertyChanged
     public ObservableCollection<UploadResultItem> Results { get; } = new();
 
     public ICommand CopyUrlCommand { get; }
+    public ICommand OpenSettingsCommand { get; }
 
     private int _pendingCount;
+
+    /// <summary>
+    /// Action to navigate to settings view - set by MobileApp
+    /// </summary>
+    public static Action? OnOpenSettings { get; set; }
 
     public MobileUploadViewModel()
     {
         CopyUrlCommand = new RelayCommand<string>(CopyUrl);
+        OpenSettingsCommand = new RelayCommand(_ => OnOpenSettings?.Invoke());
     }
 
     public async void ProcessFiles(string[] filePaths)
@@ -184,4 +191,22 @@ internal class RelayCommand<T> : ICommand
     }
     public bool CanExecute(object? parameter) => true;
     public void Execute(object? parameter) => _execute((T?)parameter);
+}
+
+internal class RelayCommand : ICommand
+{
+    private readonly Action<object?> _execute;
+
+    public RelayCommand(Action<object?> execute)
+    {
+        _execute = execute;
+    }
+
+    public event EventHandler? CanExecuteChanged
+    {
+        add { }
+        remove { }
+    }
+    public bool CanExecute(object? parameter) => true;
+    public void Execute(object? parameter) => _execute(parameter);
 }

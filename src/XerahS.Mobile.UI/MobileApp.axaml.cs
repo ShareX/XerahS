@@ -24,6 +24,8 @@
 #endregion License Information (GPL v3)
 
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using XerahS.Mobile.UI.ViewModels;
@@ -39,7 +41,9 @@ public partial class MobileApp : Application
     /// </summary>
     public static Action<string[]>? OnFilesReceived { get; set; }
 
-    private MobileUploadViewModel? _viewModel;
+    private MobileUploadViewModel? _uploadViewModel;
+    private MobileSettingsView? _settingsView;
+    private ISingleViewApplicationLifetime? _singleView;
 
     public override void Initialize()
     {
@@ -48,20 +52,51 @@ public partial class MobileApp : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        if (ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.ISingleViewApplicationLifetime singleView)
+        if (ApplicationLifetime is ISingleViewApplicationLifetime singleView)
         {
-            _viewModel = new MobileUploadViewModel();
-            singleView.MainView = new MobileUploadView
-            {
-                DataContext = _viewModel
-            };
-
-            OnFilesReceived = (paths) =>
-            {
-                Dispatcher.UIThread.Post(() => _viewModel.ProcessFiles(paths));
-            };
+            _singleView = singleView;
+            ShowUploadView();
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void ShowUploadView()
+    {
+        if (_singleView == null) return;
+
+        _uploadViewModel = new MobileUploadViewModel();
+        var uploadView = new MobileUploadView
+        {
+            DataContext = _uploadViewModel
+        };
+
+        // Set up callbacks
+        OnFilesReceived = (paths) =>
+        {
+            Dispatcher.UIThread.Post(() => _uploadViewModel.ProcessFiles(paths));
+        };
+
+        MobileUploadViewModel.OnOpenSettings = ShowSettingsView;
+
+        _singleView.MainView = uploadView;
+    }
+
+    private void ShowSettingsView()
+    {
+        if (_singleView == null) return;
+
+        _settingsView = new MobileSettingsView();
+        
+        // Hook into the close request
+        if (_settingsView.DataContext is MobileSettingsViewModel vm)
+        {
+            vm.RequestCloseSettings += () =>
+            {
+                ShowUploadView();
+            };
+        }
+
+        _singleView.MainView = _settingsView;
     }
 }
