@@ -45,8 +45,7 @@ public class InstanceManager
 
     private InstanceManager()
     {
-        // TODO: Get proper config path from app settings
-        var configDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ShareX.Ava");
+        var configDir = PathsManager.SettingsFolder;
         Directory.CreateDirectory(configDir);
         _configFilePath = Path.Combine(configDir, "uploader-instances.json");
 

@@ -26,9 +26,11 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using XerahS.Common;
 using XerahS.Core;
-using XerahS.Uploaders.FileUploaders;
+using XerahS.Uploaders.PluginSystem;
 
 namespace XerahS.Mobile.UI.ViewModels;
 
@@ -81,7 +83,7 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     public string ObjectPrefix
     {
         get => _objectPrefix;
-        set => _objectPrefix = value ?? "ShareX/%y/%mo";
+        set { _objectPrefix = value ?? "ShareX/%y/%mo"; OnPropertyChanged(); }
     }
 
     private string _customDomain = string.Empty;
@@ -127,6 +129,18 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     }
 
     #endregion
+
+    private const string ProviderId = "amazons3";
+
+    /// <summary>
+    /// GUID reference for ISecretStore credential lookups. Loaded from existing instance or generated on first save.
+    /// </summary>
+    private string? _secretKey;
+
+    /// <summary>
+    /// InstanceId of the existing UploaderInstance in InstanceManager (null if not yet created).
+    /// </summary>
+    private string? _instanceId;
 
     #region Commands
 
@@ -189,25 +203,15 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     {
         try
         {
-            var settings = SettingsManager.UploadersConfig?.AmazonS3Settings;
-            if (settings == null) return;
+            // Try loading from InstanceManager first (this is what the upload pipeline uses)
+            if (LoadFromInstanceManager())
+            {
+                StatusMessage = null;
+                return;
+            }
 
-            AccessKeyId = settings.AccessKeyID ?? string.Empty;
-            SecretAccessKey = settings.SecretAccessKey ?? string.Empty;
-            BucketName = settings.Bucket ?? string.Empty;
-            ObjectPrefix = settings.ObjectPrefix ?? "ShareX/%y/%mo";
-            CustomDomain = settings.CustomDomain ?? string.Empty;
-            UseCustomDomain = settings.UseCustomCNAME;
-            SetPublicAcl = settings.SetPublicACL;
-
-            // Find matching region
-            var endpoint = settings.Endpoint ?? "s3.amazonaws.com";
-            var region = Regions.FindIndex(r => 
-                r.Endpoint.Equals(endpoint, StringComparison.OrdinalIgnoreCase) ||
-                r.RegionCode.Equals(settings.Region, StringComparison.OrdinalIgnoreCase));
-            RegionIndex = region >= 0 ? region : 0;
-
-            UpdateIsConfigured();
+            // Fall back to legacy UploadersConfig for migration
+            LoadFromLegacySettings();
             StatusMessage = null;
         }
         catch (Exception ex)
@@ -217,33 +221,147 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
         }
     }
 
+    private bool LoadFromInstanceManager()
+    {
+        var instance = InstanceManager.Instance.GetInstances()
+            .FirstOrDefault(i => i.ProviderId == ProviderId);
+
+        if (instance == null || string.IsNullOrWhiteSpace(instance.SettingsJson))
+            return false;
+
+        _instanceId = instance.InstanceId;
+
+        var json = JObject.Parse(instance.SettingsJson);
+
+        _secretKey = json.Value<string>("SecretKey");
+        BucketName = json.Value<string>("BucketName") ?? string.Empty;
+        ObjectPrefix = json.Value<string>("ObjectPrefix") ?? "ShareX/%y/%mo";
+        CustomDomain = json.Value<string>("CustomDomain") ?? string.Empty;
+        UseCustomDomain = json.Value<bool?>("UseCustomCNAME") ?? false;
+        SetPublicAcl = json.Value<bool?>("SetPublicACL") ?? false;
+
+        // Find matching region
+        var endpoint = json.Value<string>("Endpoint") ?? "s3.amazonaws.com";
+        var regionCode = json.Value<string>("Region") ?? "us-east-1";
+        var regionIdx = Regions.FindIndex(r =>
+            r.Endpoint.Equals(endpoint, StringComparison.OrdinalIgnoreCase) ||
+            r.RegionCode.Equals(regionCode, StringComparison.OrdinalIgnoreCase));
+        RegionIndex = regionIdx >= 0 ? regionIdx : 0;
+
+        // Retrieve credentials from ISecretStore
+        if (!string.IsNullOrWhiteSpace(_secretKey))
+        {
+            var secrets = ProviderCatalog.GetProviderContext()?.Secrets;
+            if (secrets != null)
+            {
+                AccessKeyId = secrets.GetSecret(ProviderId, _secretKey, "accessKeyId") ?? string.Empty;
+                SecretAccessKey = secrets.GetSecret(ProviderId, _secretKey, "secretAccessKey") ?? string.Empty;
+            }
+        }
+
+        UpdateIsConfigured();
+        return true;
+    }
+
+    private void LoadFromLegacySettings()
+    {
+        var settings = SettingsManager.UploadersConfig?.AmazonS3Settings;
+        if (settings == null) return;
+
+        AccessKeyId = settings.AccessKeyID ?? string.Empty;
+        SecretAccessKey = settings.SecretAccessKey ?? string.Empty;
+        BucketName = settings.Bucket ?? string.Empty;
+        ObjectPrefix = settings.ObjectPrefix ?? "ShareX/%y/%mo";
+        CustomDomain = settings.CustomDomain ?? string.Empty;
+        UseCustomDomain = settings.UseCustomCNAME;
+        SetPublicAcl = settings.SetPublicACL;
+
+        var endpoint = settings.Endpoint ?? "s3.amazonaws.com";
+        var regionIdx = Regions.FindIndex(r =>
+            r.Endpoint.Equals(endpoint, StringComparison.OrdinalIgnoreCase) ||
+            r.RegionCode.Equals(settings.Region, StringComparison.OrdinalIgnoreCase));
+        RegionIndex = regionIdx >= 0 ? regionIdx : 0;
+
+        UpdateIsConfigured();
+    }
+
     public bool SaveConfig()
     {
         try
         {
             if (!Validate()) return false;
 
-            var settings = SettingsManager.UploadersConfig?.AmazonS3Settings;
-            if (settings == null)
+            var secrets = ProviderCatalog.GetProviderContext()?.Secrets;
+            if (secrets == null)
             {
-                StatusMessage = "UploadersConfig not available";
+                StatusMessage = "Secret store not available";
                 return false;
             }
 
+            // Reuse existing SecretKey GUID or generate a new one
+            if (string.IsNullOrWhiteSpace(_secretKey))
+            {
+                _secretKey = Guid.NewGuid().ToString("N");
+            }
+
+            // Store actual credentials in ISecretStore (NOT in JSON)
+            secrets.SetSecret(ProviderId, _secretKey, "accessKeyId", AccessKeyId.Trim());
+            secrets.SetSecret(ProviderId, _secretKey, "secretAccessKey", SecretAccessKey.Trim());
+
             var region = Regions[RegionIndex];
 
-            settings.AccessKeyID = AccessKeyId.Trim();
-            settings.SecretAccessKey = SecretAccessKey.Trim();
-            settings.Bucket = BucketName.Trim().ToLowerInvariant();
-            settings.Endpoint = region.Endpoint;
-            settings.Region = region.RegionCode;
-            settings.ObjectPrefix = ObjectPrefix.Trim();
-            settings.CustomDomain = CustomDomain.Trim();
-            settings.UseCustomCNAME = UseCustomDomain;
-            settings.SetPublicACL = SetPublicAcl;
-            settings.UsePathStyle = false;
+            // Build S3ConfigModel-compatible JSON (credentials are NOT stored here)
+            var settingsJson = new JObject
+            {
+                ["AuthMode"] = 0, // AccessKeys
+                ["SecretKey"] = _secretKey,
+                ["BucketName"] = BucketName.Trim().ToLowerInvariant(),
+                ["Region"] = region.RegionCode,
+                ["Endpoint"] = region.Endpoint,
+                ["ObjectPrefix"] = ObjectPrefix.Trim(),
+                ["UseCustomCNAME"] = UseCustomDomain,
+                ["CustomDomain"] = CustomDomain.Trim(),
+                ["StorageClass"] = 0, // Standard
+                ["SetPublicACL"] = SetPublicAcl,
+                ["SetPublicPolicy"] = false,
+                ["UsePathStyleUrl"] = false,
+                ["SignedPayload"] = true,
+                ["RemoveExtensionImage"] = false,
+                ["RemoveExtensionVideo"] = false,
+                ["RemoveExtensionText"] = false
+            };
 
-            SettingsManager.SaveUploadersConfig();
+            var instanceManager = InstanceManager.Instance;
+            var existingInstance = _instanceId != null
+                ? instanceManager.GetInstance(_instanceId)
+                : instanceManager.GetInstances().FirstOrDefault(i => i.ProviderId == ProviderId);
+
+            if (existingInstance != null)
+            {
+                // Update existing instance
+                existingInstance.SettingsJson = settingsJson.ToString(Formatting.Indented);
+                instanceManager.UpdateInstance(existingInstance);
+                _instanceId = existingInstance.InstanceId;
+            }
+            else
+            {
+                // Create new instance
+                var newInstance = new UploaderInstance
+                {
+                    ProviderId = ProviderId,
+                    Category = UploaderCategory.File,
+                    DisplayName = "Amazon S3",
+                    SettingsJson = settingsJson.ToString(Formatting.Indented),
+                    FileTypeRouting = new FileTypeScope { AllFileTypes = true }
+                };
+
+                instanceManager.AddInstance(newInstance);
+                _instanceId = newInstance.InstanceId;
+
+                // Set as default for File uploads (mobile uses WorkflowType.FileUpload)
+                instanceManager.SetDefaultInstance(UploaderCategory.File, _instanceId);
+            }
+
             UpdateIsConfigured();
             StatusMessage = "Settings saved successfully!";
             return true;
