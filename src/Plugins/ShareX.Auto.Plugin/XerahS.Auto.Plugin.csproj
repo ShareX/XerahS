@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>XerahS.Auto.Plugin</RootNamespace>
-    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <OutputType>Library</OutputType>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

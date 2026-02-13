@@ -243,26 +243,51 @@ public static class ProviderCatalog
     /// </summary>
     public static void InitializeBuiltInProviders()
     {
+        InitializeBuiltInProviders(Array.Empty<System.Reflection.Assembly>());
+    }
+
+    /// <summary>
+    /// Initialize built-in providers by scanning the current assembly and additional assemblies.
+    /// On mobile, plugin assemblies are bundled with the app and passed here instead of using LoadPlugins().
+    /// </summary>
+    public static void InitializeBuiltInProviders(params System.Reflection.Assembly[] additionalAssemblies)
+    {
         lock (_lock)
         {
             if (_builtInInitialized) return;
 
-            var providerTypes = typeof(ProviderCatalog).Assembly.GetTypes()
-                .Where(t => typeof(IUploaderProvider).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+            var assemblies = new List<System.Reflection.Assembly> { typeof(ProviderCatalog).Assembly };
+            assemblies.AddRange(additionalAssemblies);
 
-            foreach (var type in providerTypes)
+            foreach (var assembly in assemblies)
             {
                 try
                 {
-                    // Check if it has a parameterless constructor
-                    if (type.GetConstructor(Type.EmptyTypes) != null)
+                    var providerTypes = assembly.GetTypes()
+                        .Where(t => typeof(IUploaderProvider).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+
+                    foreach (var type in providerTypes)
                     {
-                        Activator.CreateInstance(type);
+                        try
+                        {
+                            if (type.GetConstructor(Type.EmptyTypes) != null)
+                            {
+                                var provider = Activator.CreateInstance(type) as IUploaderProvider;
+                                if (provider != null)
+                                {
+                                    RegisterProvider(provider);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugHelper.WriteLine($"Error initializing built-in provider {type.Name}: {ex.Message}");
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    DebugHelper.WriteLine($"Error initializing built-in provider {type.Name}: {ex.Message}");
+                    DebugHelper.WriteLine($"Error scanning assembly {assembly.GetName().Name}: {ex.Message}");
                 }
             }
 

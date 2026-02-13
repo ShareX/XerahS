@@ -29,6 +29,7 @@ using Android.Content.PM;
 using Android.OS;
 using Avalonia;
 using Avalonia.Android;
+using ShareX.AmazonS3.Plugin;
 using XerahS.Common;
 using XerahS.Mobile.UI;
 using XerahS.Platform.Abstractions;
@@ -63,15 +64,18 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
         // Initialize platform services for mobile
         MobilePlatform.Initialize(PlatformType.Android);
 
+        // Replace in-memory clipboard with native Android clipboard
+        PlatformServices.Clipboard = new AndroidClipboardService(this);
+
         // Set personal folder to app's internal storage
         PathsManager.PersonalFolder = FilesDir!.AbsolutePath;
 
         // Load settings (UploadersConfig, WorkflowsConfig, etc.)
         XerahS.Core.SettingsManager.LoadInitialSettings();
 
-        // Initialize plugin system
+        // Initialize plugin system - on mobile, plugins are bundled with the app
         XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
-        ProviderCatalog.InitializeBuiltInProviders();
+        ProviderCatalog.InitializeBuiltInProviders(typeof(AmazonS3Provider).Assembly);
 
         return builder
             .UseAndroid()

@@ -27,6 +27,7 @@ using Foundation;
 using UIKit;
 using Avalonia;
 using Avalonia.iOS;
+using ShareX.AmazonS3.Plugin;
 using XerahS.Common;
 using XerahS.Mobile.UI;
 using XerahS.Platform.Abstractions;
@@ -55,9 +56,9 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
         // Load settings (UploadersConfig, WorkflowsConfig, etc.)
         XerahS.Core.SettingsManager.LoadInitialSettings();
 
-        // Initialize plugin system
+        // Initialize plugin system - on mobile, plugins are bundled with the app
         XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
-        ProviderCatalog.InitializeBuiltInProviders();
+        ProviderCatalog.InitializeBuiltInProviders(typeof(AmazonS3Provider).Assembly);
 
         return builder
             .UseiOS()

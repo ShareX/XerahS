@@ -20,6 +20,7 @@
     <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\XerahS.Uploaders\XerahS.Uploaders.csproj" />
+    <ProjectReference Include="..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" />
     <ProjectReference Include="..\XerahS.Mobile.iOS.ShareExtension\XerahS.Mobile.iOS.ShareExtension.csproj">
       <IsAppExtension>true</IsAppExtension>
     </ProjectReference>

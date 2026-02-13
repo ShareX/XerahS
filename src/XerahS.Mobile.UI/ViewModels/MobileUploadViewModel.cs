@@ -84,6 +84,9 @@ public class MobileUploadViewModel : INotifyPropertyChanged
         _pendingCount = filePaths.Length;
         StatusText = $"Uploading {filePaths.Length} file(s)...";
 
+        // Subscribe once for all uploads
+        TaskManager.Instance.TaskCompleted += OnTaskCompleted;
+
         foreach (var filePath in filePaths)
         {
             if (!File.Exists(filePath))
@@ -100,9 +103,6 @@ public class MobileUploadViewModel : INotifyPropertyChanged
                 clonedSettings.Job = WorkflowType.FileUpload;
                 clonedSettings.AfterUploadJob = AfterUploadTasks.CopyURLToClipboard;
 
-                var fileName = Path.GetFileName(filePath);
-
-                TaskManager.Instance.TaskCompleted += OnTaskCompleted;
                 await TaskManager.Instance.StartFileTask(clonedSettings, filePath);
             }
             catch (Exception ex)
@@ -115,15 +115,22 @@ public class MobileUploadViewModel : INotifyPropertyChanged
 
     private void OnTaskCompleted(object? sender, WorkerTask task)
     {
-        TaskManager.Instance.TaskCompleted -= OnTaskCompleted;
-
         var fileName = task.Info?.FileName ?? task.Info?.FilePath ?? "Unknown";
         fileName = Path.GetFileName(fileName);
         var url = task.Info?.Result?.URL;
         var success = !string.IsNullOrEmpty(url);
         var error = success ? null : (task.Error?.Message ?? task.Info?.Result?.Response ?? "Upload failed");
 
-        Dispatcher.UIThread.Post(() => DecrementPending(fileName, success, url, error));
+        Dispatcher.UIThread.Post(() =>
+        {
+            DecrementPending(fileName, success, url, error);
+
+            // Unsubscribe when all uploads are done
+            if (_pendingCount <= 0)
+            {
+                TaskManager.Instance.TaskCompleted -= OnTaskCompleted;
+            }
+        });
     }
 
     private void DecrementPending(string fileName, bool success, string? url, string? error)
