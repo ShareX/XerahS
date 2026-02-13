@@ -328,6 +328,18 @@ namespace XerahS.Common
             if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
             {
                 System.Diagnostics.Debug.WriteLine($"{typeName} load started: {filePath}");
+                DebugHelper.WriteLine($"[SettingsBase] {typeName} load started: {filePath}");
+
+                // DEBUG: Log file details
+                try
+                {
+                    var fileInfo = new FileInfo(filePath);
+                    DebugHelper.WriteLine($"[SettingsBase] File exists: {fileInfo.Exists}, Size: {fileInfo.Length} bytes, LastWrite: {fileInfo.LastWriteTime}");
+                }
+                catch (Exception ex)
+                {
+                    DebugHelper.WriteLine($"[SettingsBase] Failed to get file info: {ex.Message}");
+                }
 
                 try
                 {
@@ -347,24 +359,44 @@ namespace XerahS.Common
                                 serializer.TypeNameHandling = TypeNameHandling.Auto;
                                 serializer.DateTimeZoneHandling = DateTimeZoneHandling.Local;
                                 serializer.ObjectCreationHandling = ObjectCreationHandling.Replace;
-                                serializer.Error += Serializer_Error;
+                                serializer.Error += (sender, args) =>
+                                {
+                                    DebugHelper.WriteLine($"[SettingsBase] JSON Error: {args.ErrorContext.Error.Message} at path: {args.ErrorContext.Path}");
+                                    args.ErrorContext.Handled = true;
+                                };
+                                
+                                DebugHelper.WriteLine($"[SettingsBase] Starting deserialization for {typeName}");
                                 settings = serializer.Deserialize<T>(jsonReader) ?? throw new Exception($"{typeName} object is null.");
                             }
 
                             System.Diagnostics.Debug.WriteLine($"{typeName} load finished: {filePath}");
+                            DebugHelper.WriteLine($"[SettingsBase] {typeName} load finished successfully");
 
                             return settings;
+                        }
+                        else
+                        {
+                            DebugHelper.WriteLine($"[SettingsBase] WARNING: File is empty (0 bytes): {filePath}");
                         }
                     }
                 }
                 catch (Exception e)
                 {
                     System.Diagnostics.Debug.WriteLine($"{typeName} load failed: {filePath}. Error: {e}");
+                    DebugHelper.WriteLine($"[SettingsBase] {typeName} load FAILED: {filePath}");
+                    DebugHelper.WriteLine($"[SettingsBase] Exception type: {e.GetType().Name}");
+                    DebugHelper.WriteLine($"[SettingsBase] Exception message: {e.Message}");
+                    DebugHelper.WriteLine($"[SettingsBase] Stack trace: {e.StackTrace}");
+                    if (e.InnerException != null)
+                    {
+                        DebugHelper.WriteLine($"[SettingsBase] Inner exception: {e.InnerException.Message}");
+                    }
                 }
             }
             else
             {
                 System.Diagnostics.Debug.WriteLine($"{typeName} file does not exist: {filePath}");
+                DebugHelper.WriteLine($"[SettingsBase] {typeName} file does not exist: {filePath}");
             }
 
             if (fallbackFilePaths != null && fallbackFilePaths.Count > 0)

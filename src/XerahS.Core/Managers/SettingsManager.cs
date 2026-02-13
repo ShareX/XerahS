@@ -267,12 +267,43 @@ namespace XerahS.Core
         public static void LoadUploadersConfig(bool fallbackSupport = true)
         {
             var path = UploadersConfigFilePath;
-            DebugHelper.WriteLine($"UploadersConfig load started: {path}");
+            DebugHelper.WriteLine($"[SettingsManager] UploadersConfig load started: {path}");
+            
+            // DEBUG: Log machine-specific config settings
+            DebugHelper.WriteLine($"[SettingsManager] UseMachineSpecificUploadersConfig: {Settings?.UseMachineSpecificUploadersConfig}");
+            DebugHelper.WriteLine($"[SettingsManager] MachineName: {Environment.MachineName}");
+            DebugHelper.WriteLine($"[SettingsManager] SettingsFolder: {SettingsFolder}");
+            
+            // DEBUG: Check if file exists before loading
+            if (File.Exists(path))
+            {
+                var fileInfo = new FileInfo(path);
+                DebugHelper.WriteLine($"[SettingsManager] File exists: {path}, Size: {fileInfo.Length} bytes");
+            }
+            else
+            {
+                DebugHelper.WriteLine($"[SettingsManager] File NOT found: {path}");
+                // DEBUG: List files in settings folder that match UploadersConfig*
+                try
+                {
+                    var matchingFiles = Directory.GetFiles(SettingsFolder, "UploadersConfig*");
+                    DebugHelper.WriteLine($"[SettingsManager] Found {matchingFiles.Length} matching files:");
+                    foreach (var file in matchingFiles)
+                    {
+                        DebugHelper.WriteLine($"[SettingsManager]   - {Path.GetFileName(file)}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DebugHelper.WriteLine($"[SettingsManager] Failed to list matching files: {ex.Message}");
+                }
+            }
+            
             UploadersConfig = UploadersConfig.Load(path, BackupFolder, fallbackSupport) ?? new UploadersConfig();
             UploadersConfig.CreateBackup = true;
             UploadersConfig.CreateWeeklyBackup = true;
             UploadersConfig.SupportDPAPIEncryption = true;
-            DebugHelper.WriteLine($"UploadersConfig load finished: {path}");
+            DebugHelper.WriteLine($"[SettingsManager] UploadersConfig load finished: {path}");
         }
 
         /// <summary>
@@ -402,47 +433,73 @@ namespace XerahS.Core
             string defaultFileName,
             bool useMachineSpecific)
         {
+            DebugHelper.WriteLine($"[GetMachineSpecificConfig] Prefix: {configPrefix}, useMachineSpecific: {useMachineSpecific}, folder: {destinationFolder}");
+            
             if (string.IsNullOrEmpty(destinationFolder))
             {
+                DebugHelper.WriteLine($"[GetMachineSpecificConfig] Empty destination folder, returning default: {defaultFileName}");
                 return defaultFileName;
             }
 
             if (!useMachineSpecific)
             {
+                DebugHelper.WriteLine($"[GetMachineSpecificConfig] Machine-specific disabled, returning default: {defaultFileName}");
                 return defaultFileName;
             }
 
             string sanitizedMachineName = FileHelpers.SanitizeFileName(Environment.MachineName);
+            DebugHelper.WriteLine($"[GetMachineSpecificConfig] Machine name: '{Environment.MachineName}', sanitized: '{sanitizedMachineName}'");
+            
             if (string.IsNullOrEmpty(sanitizedMachineName))
             {
+                DebugHelper.WriteLine($"[GetMachineSpecificConfig] Sanitized machine name is empty, returning default: {defaultFileName}");
                 return defaultFileName;
             }
 
             string machineSpecificFileName = $"{configPrefix}-{sanitizedMachineName}.{configExtension}";
             string machineSpecificPath = Path.Combine(destinationFolder, machineSpecificFileName);
+            
+            DebugHelper.WriteLine($"[GetMachineSpecificConfig] Machine-specific filename: {machineSpecificFileName}");
+            DebugHelper.WriteLine($"[GetMachineSpecificConfig] Machine-specific path: {machineSpecificPath}");
+            DebugHelper.WriteLine($"[GetMachineSpecificConfig] Machine-specific file exists: {File.Exists(machineSpecificPath)}");
 
             // If machine specific file doesn't exist, initialize from default
             if (!File.Exists(machineSpecificPath))
             {
                 string defaultFilePath = Path.Combine(destinationFolder, defaultFileName);
+                
+                DebugHelper.WriteLine($"[GetMachineSpecificConfig] Default file path: {defaultFilePath}");
+                DebugHelper.WriteLine($"[GetMachineSpecificConfig] Default file exists: {File.Exists(defaultFilePath)}");
 
                 if (File.Exists(defaultFilePath))
                 {
                     try
                     {
+                        DebugHelper.WriteLine($"[GetMachineSpecificConfig] Copying default to machine-specific: {defaultFilePath} -> {machineSpecificPath}");
                         File.Copy(defaultFilePath, machineSpecificPath, overwrite: false);
+                        DebugHelper.WriteLine($"[GetMachineSpecificConfig] Copy successful");
                     }
                     catch (IOException) when (File.Exists(machineSpecificPath))
                     {
                         // File was created by another process/thread - safe to ignore
+                        DebugHelper.WriteLine($"[GetMachineSpecificConfig] File created by another process, ignoring");
                     }
                     catch (IOException ex)
                     {
-                        DebugHelper.WriteException(ex, $"Failed to initialize machine-specific config: {machineSpecificPath}");
+                        DebugHelper.WriteException(ex, $"[GetMachineSpecificConfig] Failed to initialize machine-specific config: {machineSpecificPath}");
                     }
                 }
+                else
+                {
+                    DebugHelper.WriteLine($"[GetMachineSpecificConfig] Default file does not exist, cannot copy");
+                }
+            }
+            else
+            {
+                DebugHelper.WriteLine($"[GetMachineSpecificConfig] Machine-specific file already exists: {machineSpecificPath}");
             }
 
+            DebugHelper.WriteLine($"[GetMachineSpecificConfig] Returning filename: {machineSpecificFileName}");
             return machineSpecificFileName;
         }
 

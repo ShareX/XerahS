@@ -20,6 +20,32 @@
                       IsDropDownOpen="False"/>
         </StackPanel>
 
+        <!-- Custom Domain -->
+        <StackPanel Spacing="5">
+            <TextBlock Text="Custom Domain (Required for SSO before provisioning)" FontWeight="Medium"/>
+            <TextBlock Text="Step 1 - Configure custom domain"
+                       FontSize="11"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       IsVisible="{Binding IsSsoMode}"/>
+            <CheckBox Content="Use custom domain (CNAME)"
+                      IsChecked="{Binding UseCustomCNAME}"
+                      IsEnabled="{Binding IsAccessKeysMode}"/>
+            <TextBox Text="{Binding CustomDomain, UpdateSourceTrigger=PropertyChanged}" 
+                     Watermark="https://cdn.example.com"
+                     Width="400"
+                     HorizontalAlignment="Left"
+                     IsEnabled="{Binding UseCustomCNAME}"/>
+            <TextBlock Text="Use custom domain instead of S3 URL for uploaded files" 
+                       FontSize="11"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+            <TextBlock Text="CNAME target (copy this to DNS)" FontWeight="Medium" IsVisible="{Binding UseCustomCNAME}"/>
+            <TextBox Text="{Binding CnameTarget}"
+                     IsReadOnly="True"
+                     Width="420"
+                     HorizontalAlignment="Left"
+                     IsVisible="{Binding UseCustomCNAME}"/>
+        </StackPanel>
+
         <!-- Access Key ID -->
         <StackPanel Spacing="5" IsVisible="{Binding IsAccessKeysMode}">
             <TextBlock Text="Access Key ID *" FontWeight="Medium"/>
@@ -79,10 +105,10 @@
                 </ComboBox>
             </StackPanel>
 
-            <Button Content="Step 1 - Start Login" Command="{Binding StartSsoLoginCommand}" HorizontalAlignment="Left"/>
+            <Button Content="Step 2 - Start Login" Command="{Binding StartSsoLoginCommand}" HorizontalAlignment="Left"/>
 
             <StackPanel Spacing="5">
-                <TextBlock Text="Step 2 - Approve in browser" FontWeight="Medium"/>
+                <TextBlock Text="Step 3 - Approve in browser" FontWeight="Medium"/>
                 <TextBlock Text="Use the code below at the verification URL."
                            FontSize="11"
                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
@@ -98,10 +124,10 @@
                          HorizontalAlignment="Left"/>
             </StackPanel>
 
-            <Button Content="Step 3 - Complete Login" Command="{Binding CompleteSsoLoginCommand}" IsEnabled="{Binding !!SsoUserCode}" HorizontalAlignment="Left"/>
+            <Button Content="Step 4 - Complete Login" Command="{Binding CompleteSsoLoginCommand}" IsEnabled="{Binding !!SsoUserCode}" HorizontalAlignment="Left"/>
 
             <StackPanel Spacing="5">
-                <TextBlock Text="Step 4 - Select account and role" FontWeight="Medium"/>
+                <TextBlock Text="Step 5 - Select account and role" FontWeight="Medium"/>
                 <TextBlock Text="Choose the assigned AWS account and role."
                            FontSize="11"
                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
@@ -132,8 +158,8 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Spacing="10">
-                <Button Content="Step 5 - Refresh Credentials" Command="{Binding RefreshSsoCredentialsCommand}"/>
-                <Button Content="Step 6 - Provision S3" Command="{Binding ProvisionBucketCommand}"/>
+                <Button Content="Step 6 - Refresh Credentials" Command="{Binding RefreshSsoCredentialsCommand}"/>
+                <Button Content="Step 7 - Provision S3" Command="{Binding ProvisionBucketCommand}"/>
             </StackPanel>
 
             <Border Background="#FFF7CC"
@@ -196,28 +222,6 @@
                        TextWrapping="Wrap"
                        MaxWidth="400"
                        HorizontalAlignment="Left"/>
-        </StackPanel>
-
-        <!-- Custom Domain -->
-        <StackPanel Spacing="5">
-            <TextBlock Text="Custom Domain (Required for SSO)" FontWeight="Medium"/>
-            <CheckBox Content="Use custom domain (CNAME)"
-                      IsChecked="{Binding UseCustomCNAME}"
-                      IsEnabled="{Binding IsAccessKeysMode}"/>
-            <TextBox Text="{Binding CustomDomain, UpdateSourceTrigger=PropertyChanged}" 
-                     Watermark="https://cdn.example.com"
-                     Width="400"
-                     HorizontalAlignment="Left"
-                     IsEnabled="{Binding UseCustomCNAME}"/>
-            <TextBlock Text="Use custom domain instead of S3 URL for uploaded files" 
-                       FontSize="11"
-                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-            <TextBlock Text="Step 7 - CNAME target (copy this to DNS)" FontWeight="Medium" IsVisible="{Binding UseCustomCNAME}"/>
-            <TextBox Text="{Binding CnameTarget}"
-                     IsReadOnly="True"
-                     Width="420"
-                     HorizontalAlignment="Left"
-                     IsVisible="{Binding UseCustomCNAME}"/>
         </StackPanel>
 
         <!-- Storage Class -->
