@@ -269,7 +269,7 @@ namespace XerahS.Core.Managers
             }
         }
 
-        private static TaskSettings CloneTaskSettings(TaskSettings source)
+        public static TaskSettings CloneTaskSettings(TaskSettings source)
         {
             var jsonSettings = new JsonSerializerSettings
             {

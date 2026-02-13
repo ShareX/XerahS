@@ -90,6 +90,8 @@ namespace XerahS.Platform.Abstractions
         Windows,
         Linux,
         MacOS,
-        FreeBSD
+        FreeBSD,
+        Android,
+        iOS
     }
 }
