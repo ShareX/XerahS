@@ -194,6 +194,7 @@ namespace XerahS.Core.Tasks.Processors
         /// <summary>
         /// Tries to upload using multiple instances with fallback logic.
         /// When one instance fails, it tries the next available instance.
+        /// Falls back to File category uploaders if the primary category fails.
         /// </summary>
         private static UploadResult? TryUploadWithFallback(InstanceManager instanceManager, UploaderCategory category, TaskInfo info, string? excludeInstanceId)
         {
@@ -205,34 +206,47 @@ namespace XerahS.Core.Tasks.Processors
             if (allInstances.Count == 0)
             {
                 DebugHelper.WriteLine($"No available uploaders for category {category}.");
-                return new UploadResult { IsSuccess = false, Response = $"No uploader instances available for {category}." };
             }
-
-            DebugHelper.WriteLine($"Found {allInstances.Count} potential uploaders to try.");
-
-            List<string> failedInstances = new();
-
-            foreach (var instance in allInstances)
+            else
             {
-                DebugHelper.WriteLine($"Trying uploader: {instance.DisplayName} ({instance.ProviderId})");
+                DebugHelper.WriteLine($"Found {allInstances.Count} potential uploaders to try in category {category}.");
 
-                var result = TryUploadWithInstance(instance, info);
+                List<string> failedInstances = new();
 
-                if (result != null && !result.IsError && !string.IsNullOrEmpty(result.URL))
+                foreach (var instance in allInstances)
                 {
-                    DebugHelper.WriteLine($"Upload successful with {instance.DisplayName}.");
-                    return result;
+                    DebugHelper.WriteLine($"Trying uploader: {instance.DisplayName} ({instance.ProviderId})");
+
+                    var result = TryUploadWithInstance(instance, info);
+
+                    if (result != null && !result.IsError && !string.IsNullOrEmpty(result.URL))
+                    {
+                        DebugHelper.WriteLine($"Upload successful with {instance.DisplayName}.");
+                        return result;
+                    }
+
+                    // Track failed instance
+                    var errorMsg = result?.Errors?.ToString() ?? result?.Response ?? "Unknown error";
+                    failedInstances.Add($"{instance.DisplayName}: {errorMsg}");
+                    DebugHelper.WriteLine($"Uploader {instance.DisplayName} failed ({errorMsg}), trying next...");
                 }
 
-                // Track failed instance
-                var errorMsg = result?.Errors?.ToString() ?? result?.Response ?? "Unknown error";
-                failedInstances.Add($"{instance.DisplayName}: {errorMsg}");
-                DebugHelper.WriteLine($"Uploader {instance.DisplayName} failed ({errorMsg}), trying next...");
+                var allErrors = string.Join("; ", failedInstances);
+                DebugHelper.WriteLine($"All uploaders in category {category} failed: {allErrors}");
             }
 
-            var allErrors = string.Join("; ", failedInstances);
-            DebugHelper.WriteLine($"All uploaders failed: {allErrors}");
-            return new UploadResult { IsSuccess = false, Response = $"All uploaders failed: {allErrors}" };
+            // If primary category failed (or had no uploaders), try File category as fallback
+            if (category != UploaderCategory.File)
+            {
+                DebugHelper.WriteLine($"Trying File category uploaders as fallback...");
+                var fileFallbackResult = TryUploadWithFallback(instanceManager, UploaderCategory.File, info, excludeInstanceId);
+                if (fileFallbackResult != null && !fileFallbackResult.IsError && !string.IsNullOrEmpty(fileFallbackResult.URL))
+                {
+                    return fileFallbackResult;
+                }
+            }
+
+            return new UploadResult { IsSuccess = false, Response = $"All uploaders failed for category {category} and File fallback." };
         }
 
         /// <summary>
