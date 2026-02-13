@@ -205,49 +205,63 @@ namespace XerahS.Common
                 }
 
                 // Create yyyy-MM subfolder
-                // Create yyyy-MM subfolder
                 string monthFolder = Path.Combine(BackupFolder, DateTime.Now.ToString("yyyy-MM"));
                 if (!Directory.Exists(monthFolder))
                 {
                     Directory.CreateDirectory(monthFolder);
                 }
 
+                // Get machine name for machine-specific backups
+                string machineName = Environment.MachineName;
+
                 string zipFileName;
 
                 if (CreateWeeklyBackup)
                 {
-                    // Create zip file with year and week number: yyyy-Www format
-                    zipFileName = $"backup-{DateTime.Now.Year}-W{FileHelpers.WeekOfYear(DateTime.Now):00}.zip";
+                    // Create zip file with year, week number, and machine name: yyyy-Www-MACHINENAME format
+                    zipFileName = $"backup-{DateTime.Now.Year}-W{FileHelpers.WeekOfYear(DateTime.Now):00}-{machineName}.zip";
                 }
                 else
                 {
-                    // Create zip file with date stamp: yyyy-MM-dd format
-                    zipFileName = $"backup-{DateTime.Now:yyyy-MM-dd}.zip";
+                    // Create zip file with date stamp and machine name: yyyy-MM-dd-MACHINENAME format
+                    zipFileName = $"backup-{DateTime.Now:yyyy-MM-dd}-{machineName}.zip";
                 }
 
                 string zipFilePath = Path.Combine(monthFolder, zipFileName);
 
-                // If a backup for today already exists, delete it (we're updating with latest)
-                if (File.Exists(zipFilePath))
+                // Get the directory containing the settings file
+                string? settingsDirectory = Path.GetDirectoryName(filePath);
+                if (string.IsNullOrEmpty(settingsDirectory))
                 {
-                    File.Delete(zipFilePath);
+                    return;
                 }
 
-                // Create zip file containing the JSON file
-                using (var archive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
+                // Create or update zip file containing ALL JSON files in the settings directory
+                using (var archive = ZipFile.Open(zipFilePath, ZipArchiveMode.Update))
                 {
-                    string fileName = Path.GetFileName(filePath);
-                    using (var fileStream = File.OpenRead(filePath))
+                    // Find all JSON files in the settings directory
+                    var jsonFiles = Directory.GetFiles(settingsDirectory, "*.json");
+                    foreach (var jsonFile in jsonFiles)
                     {
-                        var entry = archive.CreateEntry(fileName);
-                        using (var entryStream = entry.Open())
+                        string entryName = Path.GetFileName(jsonFile);
+                        
+                        // Remove existing entry if it exists (we're updating with latest)
+                        var existingEntry = archive.GetEntry(entryName);
+                        existingEntry?.Delete();
+
+                        // Add the file to the archive
+                        using (var fileStream = File.OpenRead(jsonFile))
                         {
-                            fileStream.CopyTo(entryStream);
+                            var entry = archive.CreateEntry(entryName);
+                            using (var entryStream = entry.Open())
+                            {
+                                fileStream.CopyTo(entryStream);
+                            }
                         }
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"Backup created: {zipFilePath}");
+                System.Diagnostics.Debug.WriteLine($"Backup created: {zipFilePath} with all JSON files");
             }
             catch (Exception e)
             {
