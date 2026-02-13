@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>XerahS.Mobile.iOS.ShareExtension</RootNamespace>
+    <TargetFramework>net10.0-ios</TargetFramework>
+    <OutputType>Library</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationId>com.sharexteam.xerahs.share-extension</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>0.14.6</ApplicationDisplayVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <IsAppExtension>true</IsAppExtension>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="Entitlements.plist" />
+  </ItemGroup>
+  <PropertyGroup>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+  </PropertyGroup>
+</Project>
