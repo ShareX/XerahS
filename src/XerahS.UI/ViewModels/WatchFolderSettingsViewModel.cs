@@ -44,6 +44,9 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
     private bool _moveFilesToScreenshotsFolder;
 
     [ObservableProperty]
+    private bool _convertMovToMp4BeforeProcessing;
+
+    [ObservableProperty]
     private string _statusText = "Disabled";
 
     [ObservableProperty]
@@ -62,6 +65,8 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
 
     public string MoveFilesToScreenshotsFolderText => MoveFilesToScreenshotsFolder ? "Yes" : "No";
 
+    public string ConvertMovToMp4BeforeProcessingText => ConvertMovToMp4BeforeProcessing ? "Yes" : "No";
+
     partial void OnIncludeSubdirectoriesChanged(bool value)
     {
         OnPropertyChanged(nameof(IncludeSubdirectoriesText));
@@ -70,6 +75,11 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
     partial void OnMoveFilesToScreenshotsFolderChanged(bool value)
     {
         OnPropertyChanged(nameof(MoveFilesToScreenshotsFolderText));
+    }
+
+    partial void OnConvertMovToMp4BeforeProcessingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ConvertMovToMp4BeforeProcessingText));
     }
 
 
@@ -122,6 +132,7 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
             Filter = string.IsNullOrWhiteSpace(settings.Filter) ? "*.*" : settings.Filter,
             IncludeSubdirectories = settings.IncludeSubdirectories,
             MoveFilesToScreenshotsFolder = settings.MoveFilesToScreenshotsFolder,
+            ConvertMovToMp4BeforeProcessing = settings.ConvertMovToMp4BeforeProcessing,
             WorkflowId = settings.WorkflowId,
             Enabled = settings.Enabled
         };
@@ -135,6 +146,7 @@ public partial class WatchFolderSettingsViewModel : ObservableObject
             Filter = string.IsNullOrWhiteSpace(Filter) ? "*.*" : Filter,
             IncludeSubdirectories = IncludeSubdirectories,
             MoveFilesToScreenshotsFolder = MoveFilesToScreenshotsFolder,
+            ConvertMovToMp4BeforeProcessing = ConvertMovToMp4BeforeProcessing,
             WorkflowId = WorkflowId,
             Enabled = Enabled
         };

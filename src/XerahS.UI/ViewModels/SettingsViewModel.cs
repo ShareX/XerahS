@@ -751,6 +751,7 @@ namespace XerahS.UI.ViewModels
                 Filter = string.IsNullOrWhiteSpace(editVm.Filter) ? "*.*" : editVm.Filter,
                 IncludeSubdirectories = editVm.IncludeSubdirectories,
                 MoveFilesToScreenshotsFolder = editVm.MoveFilesToScreenshotsFolder,
+                ConvertMovToMp4BeforeProcessing = editVm.ConvertMovToMp4BeforeProcessing,
                 Enabled = editVm.Enabled,
                 WorkflowId = editVm.SelectedWorkflowId,
                 WorkflowName = editVm.SelectedWorkflow?.Name ?? "Unassigned"
@@ -777,6 +778,7 @@ namespace XerahS.UI.ViewModels
                 Filter = SelectedWatchFolder.Filter,
                 IncludeSubdirectories = SelectedWatchFolder.IncludeSubdirectories,
                 MoveFilesToScreenshotsFolder = SelectedWatchFolder.MoveFilesToScreenshotsFolder,
+                ConvertMovToMp4BeforeProcessing = SelectedWatchFolder.ConvertMovToMp4BeforeProcessing,
                 Enabled = SelectedWatchFolder.Enabled
             };
             PopulateEditViewModel(editVm, SelectedWatchFolder.WorkflowId);
@@ -791,6 +793,7 @@ namespace XerahS.UI.ViewModels
             SelectedWatchFolder.Filter = string.IsNullOrWhiteSpace(editVm.Filter) ? "*.*" : editVm.Filter;
             SelectedWatchFolder.IncludeSubdirectories = editVm.IncludeSubdirectories;
             SelectedWatchFolder.MoveFilesToScreenshotsFolder = editVm.MoveFilesToScreenshotsFolder;
+            SelectedWatchFolder.ConvertMovToMp4BeforeProcessing = editVm.ConvertMovToMp4BeforeProcessing;
             SelectedWatchFolder.Enabled = editVm.Enabled;
             SelectedWatchFolder.WorkflowId = editVm.SelectedWorkflowId;
             SelectedWatchFolder.WorkflowName = editVm.SelectedWorkflow?.Name ?? "Unassigned";
@@ -835,6 +838,7 @@ namespace XerahS.UI.ViewModels
                     e.PropertyName == nameof(WatchFolderSettingsViewModel.Filter) ||
                     e.PropertyName == nameof(WatchFolderSettingsViewModel.IncludeSubdirectories) ||
                     e.PropertyName == nameof(WatchFolderSettingsViewModel.MoveFilesToScreenshotsFolder) ||
+                    e.PropertyName == nameof(WatchFolderSettingsViewModel.ConvertMovToMp4BeforeProcessing) ||
                     e.PropertyName == nameof(WatchFolderSettingsViewModel.WorkflowId) ||
                     e.PropertyName == nameof(WatchFolderSettingsViewModel.Enabled))
                 {

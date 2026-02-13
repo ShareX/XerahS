@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 using XerahS.Common;
 using XerahS.Core.Helpers;
+using XerahS.Media;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Collections.Concurrent;
@@ -117,53 +118,80 @@ namespace XerahS.Core.Managers
 
         private async Task ProcessFileAsync(WatchFolderSettings settings, string fullPath)
         {
-            if (!settings.Enabled)
-            {
-                return;
-            }
-
-            if (!File.Exists(fullPath))
-            {
-                return;
-            }
+            string? convertedPathInFlight = null;
 
             try
             {
-                var attributes = File.GetAttributes(fullPath);
-                if (attributes.HasFlag(FileAttributes.Directory))
+                if (!settings.Enabled)
                 {
                     return;
                 }
+
+                if (!File.Exists(fullPath))
+                {
+                    return;
+                }
+
+                try
+                {
+                    var attributes = File.GetAttributes(fullPath);
+                    if (attributes.HasFlag(FileAttributes.Directory))
+                    {
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DebugHelper.WriteLine($"Failed to read attributes for {fullPath}: {ex.Message}");
+                    return;
+                }
+
+                if (!await WaitForFileReadyAsync(fullPath))
+                {
+                    DebugHelper.WriteLine($"WatchFolder: file not ready in time: {fullPath}");
+                    return;
+                }
+
+                var workflow = SettingsManager.GetWorkflowById(settings.WorkflowId);
+                if (workflow?.TaskSettings == null)
+                {
+                    DebugHelper.WriteLine($"WatchFolder: workflow not found for file {fullPath}");
+                    return;
+                }
+
+                var clonedSettings = CloneTaskSettings(workflow.TaskSettings);
+                clonedSettings.Job = WorkflowType.FileUpload;
+
+                string fileToProcess = fullPath;
+                if (settings.ConvertMovToMp4BeforeProcessing && IsMovFile(fullPath))
+                {
+                    string? convertedPath = await ConvertMovToMp4Async(fullPath);
+                    if (string.IsNullOrWhiteSpace(convertedPath))
+                    {
+                        return;
+                    }
+
+                    fileToProcess = convertedPath;
+
+                    // The converted MP4 may trigger a watcher event while it is being processed.
+                    convertedPathInFlight = fileToProcess;
+                    _inFlight.TryAdd(convertedPathInFlight, 0);
+                }
+
+                if (settings.MoveFilesToScreenshotsFolder)
+                {
+                    fileToProcess = MoveToScreenshotsFolder(fileToProcess, clonedSettings);
+                }
+
+                await TaskManager.Instance.StartFileTask(clonedSettings, fileToProcess);
             }
-            catch (Exception ex)
+            finally
             {
-                DebugHelper.WriteLine($"Failed to read attributes for {fullPath}: {ex.Message}");
-                return;
+                if (!string.IsNullOrWhiteSpace(convertedPathInFlight))
+                {
+                    _inFlight.TryRemove(convertedPathInFlight, out _);
+                }
             }
-
-            if (!await WaitForFileReadyAsync(fullPath))
-            {
-                DebugHelper.WriteLine($"WatchFolder: file not ready in time: {fullPath}");
-                return;
-            }
-
-            var workflow = SettingsManager.GetWorkflowById(settings.WorkflowId);
-            if (workflow?.TaskSettings == null)
-            {
-                DebugHelper.WriteLine($"WatchFolder: workflow not found for file {fullPath}");
-                return;
-            }
-
-            var clonedSettings = CloneTaskSettings(workflow.TaskSettings);
-            clonedSettings.Job = WorkflowType.FileUpload;
-
-            string fileToProcess = fullPath;
-            if (settings.MoveFilesToScreenshotsFolder)
-            {
-                fileToProcess = MoveToScreenshotsFolder(fullPath, clonedSettings);
-            }
-
-            await TaskManager.Instance.StartFileTask(clonedSettings, fileToProcess);
         }
 
         private static string MoveToScreenshotsFolder(string sourcePath, TaskSettings taskSettings)
@@ -184,6 +212,96 @@ namespace XerahS.Core.Managers
             {
                 DebugHelper.WriteLine($"Failed to move file to screenshots folder: {ex.Message}");
                 return sourcePath;
+            }
+        }
+
+        private static bool IsMovFile(string fullPath)
+        {
+            return Path.GetExtension(fullPath).Equals(".mov", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static async Task<string?> ConvertMovToMp4Async(string sourcePath)
+        {
+            string ffmpegPath = PathsManager.GetFFmpegPath();
+            if (string.IsNullOrWhiteSpace(ffmpegPath) || !File.Exists(ffmpegPath))
+            {
+                DebugHelper.WriteLine($"WatchFolder: FFmpeg not found, cannot convert MOV file {sourcePath}.");
+                return null;
+            }
+
+            string targetPath = FileHelpers.GetUniqueFilePath(Path.ChangeExtension(sourcePath, ".mp4"));
+
+            try
+            {
+                using var ffmpeg = new FFmpegCLIManager(ffmpegPath)
+                {
+                    ShowError = false
+                };
+
+                bool conversionSucceeded = ffmpeg.Run($"-i \"{sourcePath}\" -movflags +faststart \"{targetPath}\"");
+                if (!conversionSucceeded || !File.Exists(targetPath))
+                {
+                    DebugHelper.WriteLine($"WatchFolder: MOV to MP4 conversion failed for {sourcePath}.");
+                    DeleteFileIfExists(targetPath);
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"WatchFolder: error converting MOV file {sourcePath}: {ex.Message}");
+                DeleteFileIfExists(targetPath);
+                return null;
+            }
+
+            if (!await DeleteFileWithRetryAsync(sourcePath))
+            {
+                DebugHelper.WriteLine($"WatchFolder: conversion succeeded but failed to delete original MOV file {sourcePath}.");
+                DeleteFileIfExists(targetPath);
+                return null;
+            }
+
+            return targetPath;
+        }
+
+        private static async Task<bool> DeleteFileWithRetryAsync(string fullPath, int retryCount = 5, int delayMs = 200)
+        {
+            for (int i = 0; i < retryCount; i++)
+            {
+                try
+                {
+                    if (!File.Exists(fullPath))
+                    {
+                        return true;
+                    }
+
+                    File.Delete(fullPath);
+                    return !File.Exists(fullPath);
+                }
+                catch (IOException)
+                {
+                }
+                catch (UnauthorizedAccessException)
+                {
+                }
+
+                await Task.Delay(delayMs);
+            }
+
+            return !File.Exists(fullPath);
+        }
+
+        private static void DeleteFileIfExists(string fullPath)
+        {
+            try
+            {
+                if (File.Exists(fullPath))
+                {
+                    File.Delete(fullPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"WatchFolder: failed to delete file {fullPath}: {ex.Message}");
             }
         }
 

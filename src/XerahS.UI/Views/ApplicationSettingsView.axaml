@@ -210,7 +210,7 @@
                                     </Grid>
 
                                     <!-- Watch Folder List Header -->
-                                    <Grid ColumnDefinitions="80, 90, 2*, 150, 120, 120, 150" Margin="4,0,4,0">
+                                    <Grid ColumnDefinitions="80, 90, 2*, 150, 120, 120, 150, 120" Margin="4,0,4,0">
                                         <TextBlock Grid.Column="0" Text="Enabled" FontWeight="SemiBold" FontSize="12"/>
                                         <TextBlock Grid.Column="1" Text="Status" FontWeight="SemiBold" FontSize="12"/>
                                         <TextBlock Grid.Column="2" Text="Folder" FontWeight="SemiBold" FontSize="12"/>
@@ -218,6 +218,7 @@
                                         <TextBlock Grid.Column="4" Text="Filter" FontWeight="SemiBold" FontSize="12"/>
                                         <TextBlock Grid.Column="5" Text="Subfolders" FontWeight="SemiBold" FontSize="12"/>
                                         <TextBlock Grid.Column="6" Text="Move to Screenshots" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="7" Text="MOV to MP4" FontWeight="SemiBold" FontSize="12"/>
                                     </Grid>
 
                                     <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" CornerRadius="4">
@@ -227,7 +228,7 @@
                                                  AutomationProperties.Name="Watch Folders List">
                                             <ListBox.ItemTemplate>
                                                 <DataTemplate x:DataType="vm:WatchFolderSettingsViewModel">
-                                                    <Grid ColumnDefinitions="80, 90, 2*, 150, 120, 120, 150" Margin="6">
+                                                    <Grid ColumnDefinitions="80, 90, 2*, 150, 120, 120, 150, 120" Margin="6">
                                                         <CheckBox Grid.Column="0" IsChecked="{Binding Enabled}" AutomationProperties.Name="Enable Watch Folder"/>
                                                         <TextBlock Grid.Column="1" Text="{Binding StatusText}" VerticalAlignment="Center" ToolTip.Tip="{Binding StatusDetail}"/>
                                                         <TextBlock Grid.Column="2" Text="{Binding FolderPath}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding FolderPath}"/>
@@ -235,6 +236,7 @@
                                                         <TextBlock Grid.Column="4" Text="{Binding Filter}" VerticalAlignment="Center"/>
                                                         <TextBlock Grid.Column="5" Text="{Binding IncludeSubdirectoriesText}" VerticalAlignment="Center"/>
                                                         <TextBlock Grid.Column="6" Text="{Binding MoveFilesToScreenshotsFolderText}" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="7" Text="{Binding ConvertMovToMp4BeforeProcessingText}" VerticalAlignment="Center"/>
                                                     </Grid>
                                                 </DataTemplate>
                                             </ListBox.ItemTemplate>

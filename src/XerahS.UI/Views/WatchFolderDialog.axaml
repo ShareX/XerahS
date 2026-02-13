@@ -70,6 +70,9 @@
             <CheckBox IsChecked="{Binding MoveFilesToScreenshotsFolder}" 
                       Content="Move files to screenshots folder after processing"
                       AutomationProperties.Name="Move Files Checkbox"/>
+            <CheckBox IsChecked="{Binding ConvertMovToMp4BeforeProcessing}"
+                      Content="Convert .mov files to .mp4 before processing"
+                      AutomationProperties.Name="Convert MOV Files Checkbox"/>
             <CheckBox IsChecked="{Binding Enabled}" 
                       Content="Enable this watch folder"
                       AutomationProperties.Name="Enable Watch Folder Checkbox"/>

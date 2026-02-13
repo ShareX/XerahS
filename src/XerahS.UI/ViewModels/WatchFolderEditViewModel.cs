@@ -55,6 +55,9 @@ public partial class WatchFolderEditViewModel : ViewModelBase, INotifyDataErrorI
     private bool _moveFilesToScreenshotsFolder;
 
     [ObservableProperty]
+    private bool _convertMovToMp4BeforeProcessing;
+
+    [ObservableProperty]
     private bool _enabled = true;
 
     [ObservableProperty]
