@@ -196,16 +196,20 @@ namespace XerahS.Core.Tasks.Processors
         /// When one instance fails, it tries the next available instance.
         /// Falls back to File category uploaders if the primary category fails.
         /// </summary>
-        private static UploadResult? TryUploadWithFallback(InstanceManager instanceManager, UploaderCategory category, TaskInfo info, string? excludeInstanceId)
+        private static UploadResult? TryUploadWithFallback(InstanceManager instanceManager, UploaderCategory category, TaskInfo info, string? excludeInstanceId, HashSet<string>? attemptedInstanceIds = null)
         {
+            attemptedInstanceIds ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            
             DebugHelper.WriteLine($"Auto destination selected; trying uploaders with fallback for category {category}.");
 
-            // Get all available instances for this category, ordered by priority (default first)
-            var allInstances = GetPrioritizedInstances(instanceManager, category, excludeInstanceId);
+            // Get all available instances for this category that haven't been attempted yet
+            var allInstances = GetPrioritizedInstances(instanceManager, category, excludeInstanceId)
+                .Where(i => !attemptedInstanceIds.Contains(i.InstanceId))
+                .ToList();
 
             if (allInstances.Count == 0)
             {
-                DebugHelper.WriteLine($"No available uploaders for category {category}.");
+                DebugHelper.WriteLine($"No available uploaders for category {category} (excluding already attempted).");
             }
             else
             {
@@ -215,6 +219,9 @@ namespace XerahS.Core.Tasks.Processors
 
                 foreach (var instance in allInstances)
                 {
+                    // Mark as attempted to avoid retrying in fallback categories
+                    attemptedInstanceIds.Add(instance.InstanceId);
+                    
                     DebugHelper.WriteLine($"Trying uploader: {instance.DisplayName} ({instance.ProviderId})");
 
                     var result = TryUploadWithInstance(instance, info);
@@ -239,7 +246,7 @@ namespace XerahS.Core.Tasks.Processors
             if (category != UploaderCategory.File)
             {
                 DebugHelper.WriteLine($"Trying File category uploaders as fallback...");
-                var fileFallbackResult = TryUploadWithFallback(instanceManager, UploaderCategory.File, info, excludeInstanceId);
+                var fileFallbackResult = TryUploadWithFallback(instanceManager, UploaderCategory.File, info, excludeInstanceId, attemptedInstanceIds);
                 if (fileFallbackResult != null && !fileFallbackResult.IsError && !string.IsNullOrEmpty(fileFallbackResult.URL))
                 {
                     return fileFallbackResult;

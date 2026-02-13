@@ -314,16 +314,20 @@ namespace XerahS.Core.Tasks.Processors
         /// When one instance fails, it tries the next available instance.
         /// Falls back to File category uploaders if the primary category fails.
         /// </summary>
-        private static UploadResult? TryUploadWithFallback(InstanceManager instanceManager, UploaderCategory category, string filePath, string? excludeInstanceId)
+        private static UploadResult? TryUploadWithFallback(InstanceManager instanceManager, UploaderCategory category, string filePath, string? excludeInstanceId, HashSet<string>? attemptedInstanceIds = null)
         {
+            attemptedInstanceIds ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            
             DebugHelper.WriteLine($"Auto destination selected; trying uploaders with fallback for category {category}.");
 
-            // Get all available instances for this category, ordered by priority (default first)
-            var allInstances = GetPrioritizedInstances(instanceManager, category, excludeInstanceId);
+            // Get all available instances for this category that haven't been attempted yet
+            var allInstances = GetPrioritizedInstances(instanceManager, category, excludeInstanceId)
+                .Where(i => !attemptedInstanceIds.Contains(i.InstanceId))
+                .ToList();
 
             if (allInstances.Count == 0)
             {
-                DebugHelper.WriteLine($"No available uploaders for category {category}.");
+                DebugHelper.WriteLine($"No available uploaders for category {category} (excluding already attempted).");
             }
             else
             {
@@ -333,6 +337,9 @@ namespace XerahS.Core.Tasks.Processors
 
                 foreach (var instance in allInstances)
                 {
+                    // Mark as attempted to avoid retrying in fallback categories
+                    attemptedInstanceIds.Add(instance.InstanceId);
+                    
                     DebugHelper.WriteLine($"Trying uploader: {instance.DisplayName} ({instance.ProviderId})");
 
                     var result = TryUploadWithInstance(instance, filePath);
@@ -355,7 +362,7 @@ namespace XerahS.Core.Tasks.Processors
             if (category != UploaderCategory.File)
             {
                 DebugHelper.WriteLine($"Trying File category uploaders as fallback...");
-                var fileFallbackResult = TryUploadWithFallback(instanceManager, UploaderCategory.File, filePath, excludeInstanceId);
+                var fileFallbackResult = TryUploadWithFallback(instanceManager, UploaderCategory.File, filePath, excludeInstanceId, attemptedInstanceIds);
                 if (fileFallbackResult != null)
                 {
                     return fileFallbackResult;
@@ -429,6 +436,7 @@ namespace XerahS.Core.Tasks.Processors
 
         /// <summary>
         /// Persists the "Show after capture window" setting change back to the workflow configuration.
+        /// Uses async save to avoid blocking the capture thread.
         /// </summary>
         private static void PersistShowAfterCaptureWindowSetting(string? workflowId, bool showWindow)
         {
@@ -449,7 +457,8 @@ namespace XerahS.Core.Tasks.Processors
                         {
                             SettingsManager.DefaultTaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.ShowAfterCaptureWindow;
                         }
-                        SettingsManager.SaveWorkflowsConfig();
+                        // Use async save to avoid UI thread issues
+                        SettingsManager.SaveWorkflowsConfigAsync();
                         DebugHelper.WriteLine($"Updated DefaultTaskSettings.AfterCaptureJob (ShowAfterCaptureWindow={showWindow})");
                     }
                     return;
@@ -465,8 +474,8 @@ namespace XerahS.Core.Tasks.Processors
                     workflow.TaskSettings.AfterCaptureJob &= ~AfterCaptureTasks.ShowAfterCaptureWindow;
                 }
 
-                // Save the workflows configuration
-                SettingsManager.SaveWorkflowsConfig();
+                // Use async save to avoid UI thread issues
+                SettingsManager.SaveWorkflowsConfigAsync();
                 DebugHelper.WriteLine($"Persisted ShowAfterCaptureWindow={showWindow} to workflow '{workflowId}'");
             }
             catch (Exception ex)
