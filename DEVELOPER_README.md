@@ -29,6 +29,54 @@ dotnet restore
 dotnet build
 ```
 
+## Target Framework Reference
+
+All projects standardize on Windows SDK **10.0.26100.0** (Windows 11 24H2). Plugins use plain `net10.0` for cross-platform compatibility.
+
+| Project | Target Framework(s) | Notes |
+|---------|---------------------|-------|
+| **Desktop App** | | |
+| XerahS.App | `net10.0-windows10.0.26100.0` / `net10.0` | Entry point; Windows TFM on Windows, plain on others |
+| XerahS.UI | `net10.0-windows10.0.26100.0` / `net10.0` | Avalonia UI layer |
+| XerahS.Bootstrap | `net10.0-windows10.0.26100.0` / `net10.0` | DI bootstrap |
+| XerahS.CLI | `net10.0-windows10.0.26100.0` / `net10.0` | CLI tool |
+| **Core Libraries** | | |
+| XerahS.Core | `net10.0` + `net10.0-windows10.0.26100.0` | Multi-target; Windows variant uses CsWin32 |
+| XerahS.RegionCapture | `net10.0` + `net10.0-windows10.0.26100.0` | Multi-target; CsWin32 for DWM/D3D11 |
+| XerahS.Common | `net10.0` | Cross-platform |
+| XerahS.Uploaders | `net10.0` | Cross-platform |
+| XerahS.Media | `net10.0` | Cross-platform |
+| XerahS.History | `net10.0` | Cross-platform |
+| XerahS.Indexer | `net10.0` | Cross-platform |
+| XerahS.ViewModels | `net10.0` | Cross-platform |
+| XerahS.Services | `net10.0` | Cross-platform |
+| XerahS.Services.Abstractions | `net10.0` | Cross-platform |
+| **Platform** | | |
+| XerahS.Platform.Abstractions | `net10.0` | Interfaces only |
+| XerahS.Platform.Windows | `net10.0-windows10.0.26100.0` | D3D11, CsWinRT, native APIs |
+| XerahS.Platform.MacOS | `net10.0` | SharpHook for hotkeys |
+| XerahS.Platform.Linux | `net10.0` | DBus integration |
+| XerahS.Platform.Mobile | `net10.0` | Shared mobile abstractions |
+| **Mobile** | | |
+| XerahS.Mobile.Maui | `net10.0-android` / `net10.0-ios` | MAUI entry point |
+| XerahS.Mobile.Android | `net10.0-android` | Android platform services |
+| XerahS.Mobile.iOS | `net10.0-ios` | iOS platform services |
+| XerahS.Mobile.iOS.ShareExtension | `net10.0-ios` | iOS Share Extension |
+| XerahS.Mobile.UI | `net10.0` | Cross-platform mobile UI |
+| **Plugins** (all `net10.0`) | | Dynamic loading; `ExcludeAssets=runtime` for shared deps |
+| XerahS.Auto.Plugin | `net10.0` | |
+| XerahS.Imgur.Plugin | `net10.0` | |
+| XerahS.AmazonS3.Plugin | `net10.0` | |
+| XerahS.Paste2.Plugin | `net10.0` | |
+| XerahS.GitHubGist.Plugin | `net10.0` | |
+| **Tools** | | |
+| XerahS.PluginExporter | `net10.0` | Plugin packager |
+| XerahS.Audits.Tool | `net10.0` | Dev tool |
+| XerahS.Tests | `net10.0-windows10.0.26100.0` | NUnit tests |
+| **Submodule (ImageEditor)** | | |
+| ShareX.ImageEditor | `net9.0` / `net9.0-windows10.0.26100.0` / `net10.0` / `net10.0-windows10.0.26100.0` | Multi-target for ShareX compat; only net10.0 variants build from XerahS |
+| ShareX.ImageEditor.Loader | `net10.0-windows10.0.26100.0` | Standalone demo app |
+
 ## Architecture Overview
 
 This project follows the **MVVM (Model-View-ViewModel)** pattern using the `CommunityToolkit.Mvvm` library.

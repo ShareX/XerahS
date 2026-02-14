@@ -71,7 +71,9 @@
       "Bash(Select-Object -First 20)",
       "WebFetch(domain:wieslawsoltes.github.io)",
       "Bash(curl:*)",
-      "WebFetch(domain:vladislavantonyuk.github.io)"
+      "WebFetch(domain:vladislavantonyuk.github.io)",
+      "Bash(git -C \"c:\\\\Users\\\\liveu\\\\source\\\\repos\\\\ShareX Team\\\\XerahS\\\\ImageEditor\" remote -v)",
+      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\liveu\\\\source\\\\repos\\\\ShareX Team\\\\XerahS\\\\ImageEditor\\\\src\\\\ShareX.ImageEditor\\\\obj\")"
     ]
   }
 }

@@ -47,3 +47,4 @@ build_log.txt
 # Local iOS bundle id override files
 src/XerahS.Mobile.iOS/Main.BundleId.plist
 src/XerahS.Mobile.iOS.ShareExtension/ShareExtension.BundleId.plist
+.claude/settings.local.json

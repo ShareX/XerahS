@@ -9,7 +9,7 @@
 1. **Build Integrity**:
    - `dotnet build` must pass with **0 errors** before any push.
    - **NEVER** disable `<TreatWarningsAsErrors>`. Fix the warnings.
-   - **Target Framework**: `net10.0-windows10.0.19041.0` (Do NOT use `net10.0-windows` alone).
+   - **Target Framework**: `net10.0-windows10.0.26100.0` (Do NOT use `net10.0-windows` alone).
    - **SkiaSharp**: Must use **2.88.9** (Do NOT upgrade to 3.x).
 
 2. **Shell Best Practices**:
