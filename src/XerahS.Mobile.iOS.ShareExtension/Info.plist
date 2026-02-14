@@ -7,8 +7,6 @@
     <string>XerahS Share</string>
     <key>CFBundleName</key>
     <string>XerahS.ShareExtension</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.sharexteam.xerahs.share-extension</string>
     <key>CFBundleShortVersionString</key>
     <string>0.14.6</string>
     <key>CFBundleVersion</key>

@@ -25,6 +25,7 @@
 
 using Foundation;
 using Social;
+using System.Text;
 using UIKit;
 using UniformTypeIdentifiers;
 
@@ -33,8 +34,7 @@ namespace XerahS.Mobile.iOS.ShareExtension;
 [Register("ShareViewController")]
 public class ShareViewController : SLComposeServiceViewController
 {
-    private const string AppGroupId = "group.com.sharexteam.xerahs";
-    private const string SharedFolderName = "SharedFiles";
+    private const string SharedPayloadKey = "xerahs_shared_payload";
     private const string AppUrlScheme = "xerahs://share";
 
     public override void ViewDidLoad()
@@ -55,13 +55,6 @@ public class ShareViewController : SLComposeServiceViewController
 
     private async void ProcessAttachmentsAsync()
     {
-        var sharedFolder = GetSharedFolder();
-        if (sharedFolder == null)
-        {
-            CompleteRequest();
-            return;
-        }
-
         var inputItems = ExtensionContext?.InputItems;
         if (inputItems == null || inputItems.Length == 0)
         {
@@ -69,7 +62,7 @@ public class ShareViewController : SLComposeServiceViewController
             return;
         }
 
-        var filesCopied = false;
+        var payload = new List<SharedFilePayload>();
 
         foreach (var inputItem in inputItems)
         {
@@ -78,20 +71,24 @@ public class ShareViewController : SLComposeServiceViewController
 
             foreach (var attachment in attachments)
             {
-                var copied = await ProcessAttachmentAsync(attachment, sharedFolder);
-                if (copied) filesCopied = true;
+                var item = await ProcessAttachmentAsync(attachment);
+                if (item != null)
+                {
+                    payload.Add(item);
+                }
             }
         }
 
-        if (filesCopied)
+        if (payload.Count > 0)
         {
+            SavePayloadToPasteboard(payload);
             OpenMainApp();
         }
 
         CompleteRequest();
     }
 
-    private async Task<bool> ProcessAttachmentAsync(NSItemProvider attachment, string sharedFolder)
+    private async Task<SharedFilePayload?> ProcessAttachmentAsync(NSItemProvider attachment)
     {
         // Try image types first, then files, then URLs
         string[] typeIdentifiers =
@@ -115,30 +112,37 @@ public class ShareViewController : SLComposeServiceViewController
                 if (result is NSUrl url && url.IsFileUrl)
                 {
                     var fileName = url.LastPathComponent ?? $"share_{Guid.NewGuid():N}";
-                    var destPath = Path.Combine(sharedFolder, fileName);
-                    EnsureUniqueFileName(ref destPath);
+                    var urlData = NSData.FromUrl(url);
+                    if (urlData == null) continue;
 
-                    NSFileManager.DefaultManager.Copy(url, NSUrl.FromFilename(destPath), out _);
-                    return true;
+                    return new SharedFilePayload
+                    {
+                        FileName = fileName,
+                        Base64Content = urlData.GetBase64EncodedString(NSDataBase64EncodingOptions.None)
+                    };
                 }
 
                 if (result is NSData data)
                 {
                     var ext = GetExtensionForType(typeId);
                     var fileName = $"share_{Guid.NewGuid():N}{ext}";
-                    var destPath = Path.Combine(sharedFolder, fileName);
-
-                    data.Save(NSUrl.FromFilename(destPath), atomically: true);
-                    return true;
+                    return new SharedFilePayload
+                    {
+                        FileName = fileName,
+                        Base64Content = data.GetBase64EncodedString(NSDataBase64EncodingOptions.None)
+                    };
                 }
 
                 if (result is NSString text)
                 {
                     var fileName = $"share_{Guid.NewGuid():N}.txt";
-                    var destPath = Path.Combine(sharedFolder, fileName);
-
-                    File.WriteAllText(destPath, text.ToString());
-                    return true;
+                    var bytes = Encoding.UTF8.GetBytes(text.ToString());
+                    var textData = NSData.FromArray(bytes);
+                    return new SharedFilePayload
+                    {
+                        FileName = fileName,
+                        Base64Content = textData.GetBase64EncodedString(NSDataBase64EncodingOptions.None)
+                    };
                 }
             }
             catch
@@ -147,22 +151,7 @@ public class ShareViewController : SLComposeServiceViewController
             }
         }
 
-        return false;
-    }
-
-    private string? GetSharedFolder()
-    {
-        var containerUrl = NSFileManager.DefaultManager.GetContainerUrl(AppGroupId);
-        if (containerUrl?.Path == null) return null;
-
-        var sharedFolder = Path.Combine(containerUrl.Path, SharedFolderName);
-
-        if (!Directory.Exists(sharedFolder))
-        {
-            Directory.CreateDirectory(sharedFolder);
-        }
-
-        return sharedFolder;
+        return null;
     }
 
     private void OpenMainApp()
@@ -188,20 +177,33 @@ public class ShareViewController : SLComposeServiceViewController
         ExtensionContext?.CompleteRequest([], null);
     }
 
-    private static void EnsureUniqueFileName(ref string filePath)
+    private static void SavePayloadToPasteboard(List<SharedFilePayload> payload)
     {
-        if (!File.Exists(filePath)) return;
+        var lines = payload
+            .Select(x => $"{Uri.EscapeDataString(x.FileName)}|{x.Base64Content}");
+        var encoded = string.Join("\n", lines);
+        var pasteboard = UIPasteboard.FromName(GetSharedPasteboardName(), create: true) ?? UIPasteboard.General;
+        pasteboard.String = $"{SharedPayloadKey}:{encoded}";
+    }
 
-        var dir = Path.GetDirectoryName(filePath)!;
-        var name = Path.GetFileNameWithoutExtension(filePath);
-        var ext = Path.GetExtension(filePath);
-        var counter = 1;
+    private static string GetSharedPasteboardName()
+    {
+        const string shareExtensionSuffix = ".share-extension";
+        const string shareExtensionAltSuffix = ".shareextension";
 
-        while (File.Exists(filePath))
+        var bundleId = NSBundle.MainBundle.BundleIdentifier ?? "com.sharexteam.xerahs.share-extension";
+        var appBundleId = bundleId;
+
+        if (bundleId.EndsWith(shareExtensionSuffix, StringComparison.Ordinal))
         {
-            filePath = Path.Combine(dir, $"{name}_{counter}{ext}");
-            counter++;
+            appBundleId = bundleId[..^shareExtensionSuffix.Length];
         }
+        else if (bundleId.EndsWith(shareExtensionAltSuffix, StringComparison.Ordinal))
+        {
+            appBundleId = bundleId[..^shareExtensionAltSuffix.Length];
+        }
+
+        return $"{appBundleId}.shared";
     }
 
     private static string GetExtensionForType(string typeIdentifier)
@@ -216,4 +218,10 @@ public class ShareViewController : SLComposeServiceViewController
     {
         return [];
     }
+}
+
+internal class SharedFilePayload
+{
+    public string FileName { get; set; } = string.Empty;
+    public string Base64Content { get; set; } = string.Empty;
 }

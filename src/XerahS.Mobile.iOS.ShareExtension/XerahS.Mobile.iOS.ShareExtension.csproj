@@ -5,16 +5,13 @@
     <OutputType>Library</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <ApplicationId>com.sharexteam.xerahs.share-extension</ApplicationId>
+    <ShareExtensionApplicationId Condition="'$(ShareExtensionApplicationId)' == ''">com.sharexteam.xerahs.share-extension</ShareExtensionApplicationId>
+    <ApplicationId>$(ShareExtensionApplicationId)</ApplicationId>
+    <CodesignBundleId>$(ApplicationId)</CodesignBundleId>
+    <CodesignProvision>$(ShareExtensionCodesignProvision)</CodesignProvision>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>0.14.6</ApplicationDisplayVersion>
     <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
     <IsAppExtension>true</IsAppExtension>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include="Entitlements.plist" />
-  </ItemGroup>
-  <PropertyGroup>
-    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
   </PropertyGroup>
 </Project>

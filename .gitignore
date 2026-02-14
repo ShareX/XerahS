@@ -43,3 +43,7 @@ build_log.txt
 /.continue
 /build/publish-temp-win-arm64
 /build/publish-temp-win-x64
+
+# Local iOS bundle id override files
+src/XerahS.Mobile.iOS/Main.BundleId.plist
+src/XerahS.Mobile.iOS.ShareExtension/ShareExtension.BundleId.plist

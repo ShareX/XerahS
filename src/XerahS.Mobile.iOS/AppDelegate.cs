@@ -41,6 +41,8 @@ namespace XerahS.Mobile.iOS;
 public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
 #pragma warning restore CA1711
 {
+    private const string SharedPayloadPrefix = "xerahs_shared_payload:";
+
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
         // Initialize platform services for mobile
@@ -80,29 +82,25 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
 
     private void ProcessSharedFiles()
     {
-        // Read files from App Group shared container
-        var sharedContainer = NSFileManager.DefaultManager.GetContainerUrl("group.com.sharexteam.xerahs");
-        if (sharedContainer == null) return;
+        var payload = ReadSharedPayload();
+        if (payload == null || payload.Count == 0) return;
 
-        var sharedFolder = Path.Combine(sharedContainer.Path!, "SharedFiles");
-        if (!Directory.Exists(sharedFolder)) return;
-
-        var files = Directory.GetFiles(sharedFolder);
-        if (files.Length == 0) return;
-
-        // Copy to app's cache and clean up shared folder
+        // Copy shared payload files to app cache.
         var localPaths = new List<string>();
         var cachePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             "..", "Library", "Caches");
 
-        foreach (var file in files)
+        foreach (var item in payload)
         {
             try
             {
-                var destPath = Path.Combine(cachePath, Path.GetFileName(file));
-                File.Copy(file, destPath, overwrite: true);
-                File.Delete(file);
+                var fileName = string.IsNullOrWhiteSpace(item.FileName)
+                    ? $"share_{Guid.NewGuid():N}.bin"
+                    : Path.GetFileName(item.FileName);
+                var destPath = Path.Combine(cachePath, fileName);
+                EnsureUniqueFileName(ref destPath);
+                File.WriteAllBytes(destPath, Convert.FromBase64String(item.Base64Content));
                 localPaths.Add(destPath);
             }
             catch (Exception ex)
@@ -116,4 +114,65 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
             MobileApp.OnFilesReceived?.Invoke(localPaths.ToArray());
         }
     }
+
+    private static List<SharedFilePayload>? ReadSharedPayload()
+    {
+        var sharedPasteboardName = $"{NSBundle.MainBundle.BundleIdentifier ?? "com.sharexteam.xerahs"}.shared";
+        var pasteboard = UIPasteboard.FromName(sharedPasteboardName, create: false) ?? UIPasteboard.General;
+        var text = pasteboard.String;
+        if (string.IsNullOrWhiteSpace(text) || !text.StartsWith(SharedPayloadPrefix, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        try
+        {
+            var encoded = text.Substring(SharedPayloadPrefix.Length);
+            pasteboard.String = string.Empty;
+
+            var list = new List<SharedFilePayload>();
+            var lines = encoded.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var line in lines)
+            {
+                var separator = line.IndexOf('|');
+                if (separator <= 0 || separator == line.Length - 1) continue;
+
+                var encodedFileName = line.Substring(0, separator);
+                var base64 = line.Substring(separator + 1);
+                list.Add(new SharedFilePayload
+                {
+                    FileName = Uri.UnescapeDataString(encodedFileName),
+                    Base64Content = base64
+                });
+            }
+
+            return list;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static void EnsureUniqueFileName(ref string filePath)
+    {
+        if (!File.Exists(filePath)) return;
+
+        var dir = Path.GetDirectoryName(filePath)!;
+        var name = Path.GetFileNameWithoutExtension(filePath);
+        var ext = Path.GetExtension(filePath);
+        var counter = 1;
+
+        while (File.Exists(filePath))
+        {
+            filePath = Path.Combine(dir, $"{name}_{counter}{ext}");
+            counter++;
+        }
+    }
+}
+
+internal class SharedFilePayload
+{
+    public string FileName { get; set; } = string.Empty;
+    public string Base64Content { get; set; } = string.Empty;
 }

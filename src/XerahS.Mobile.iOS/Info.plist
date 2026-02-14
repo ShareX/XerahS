@@ -5,8 +5,6 @@
 <dict>
     <key>CFBundleDisplayName</key>
     <string>XerahS</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.sharexteam.xerahs</string>
     <key>CFBundleShortVersionString</key>
     <string>0.14.6</string>
     <key>CFBundleVersion</key>
@@ -50,5 +48,9 @@
             </array>
         </dict>
     </array>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>XerahS needs access to your photos so you can select images to upload.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>XerahS may save images to your photo library.</string>
 </dict>
 </plist>

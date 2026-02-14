@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <!-- Local-only bundle IDs. Copy this file to Directory.Build.props.user -->
+    <!-- Directory.Build.props.user is ignored by git (*.user). -->
+    <ApplicationId>com.yourname.xerahs</ApplicationId>
+    <MainCodesignProvision>iOS Team Provisioning Profile: com.yourname.xerahs</MainCodesignProvision>
+
+    <!-- Keep disabled until you also provision the extension bundle id. -->
+    <EnableShareExtension>false</EnableShareExtension>
+    <ShareExtensionApplicationId>com.yourname.xerahs.share-extension</ShareExtensionApplicationId>
+    <ShareExtensionCodesignProvision>iOS Team Provisioning Profile: com.yourname.xerahs.share-extension</ShareExtensionCodesignProvision>
+  </PropertyGroup>
+</Project>

@@ -5,7 +5,11 @@
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <ApplicationId>com.sharexteam.xerahs</ApplicationId>
+    <EnableShareExtension Condition="'$(EnableShareExtension)' == ''">true</EnableShareExtension>
+    <ApplicationId Condition="'$(ApplicationId)' == ''">com.sharexteam.xerahs</ApplicationId>
+    <CodesignBundleId Condition="'$(CodesignBundleId)' == ''">$(ApplicationId)</CodesignBundleId>
+    <MainCodesignProvision Condition="'$(MainCodesignProvision)' == ''">$(CodesignProvision)</MainCodesignProvision>
+    <CodesignProvision Condition="'$(MainCodesignProvision)' != ''">$(MainCodesignProvision)</CodesignProvision>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>0.14.6</ApplicationDisplayVersion>
     <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
@@ -21,7 +25,7 @@
     <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\XerahS.Uploaders\XerahS.Uploaders.csproj" />
     <ProjectReference Include="..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" />
-    <ProjectReference Include="..\XerahS.Mobile.iOS.ShareExtension\XerahS.Mobile.iOS.ShareExtension.csproj">
+    <ProjectReference Include="..\XerahS.Mobile.iOS.ShareExtension\XerahS.Mobile.iOS.ShareExtension.csproj" Condition="'$(EnableShareExtension)' == 'true'">
       <IsAppExtension>true</IsAppExtension>
     </ProjectReference>
   </ItemGroup>

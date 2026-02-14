@@ -49,6 +49,11 @@
                            TextWrapping="Wrap"
                            TextAlignment="Center" />
 
+                <Button Content="Choose Photo or File"
+                        Click="OnChooseFilesClick"
+                        HorizontalAlignment="Center"
+                        Margin="0,4" />
+
                 <!-- Progress -->
                 <ProgressBar IsIndeterminate="True"
                              IsVisible="{Binding IsUploading}"
