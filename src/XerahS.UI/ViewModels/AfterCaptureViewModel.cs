@@ -51,7 +51,9 @@ public partial class AfterCaptureViewModel : ViewModelBase
         if (image == null) throw new ArgumentNullException(nameof(image));
 
         PreviewImage = BitmapConversionHelpers.ToAvaloniBitmap(image);
-        AfterCaptureTasks = afterCapture & ~AfterCaptureTasks.ShowAfterCaptureWindow;
+        // Keep the full flag set so the workflow setting is not implicitly cleared
+        // after this dialog returns.
+        AfterCaptureTasks = afterCapture;
         AfterUploadTasks = afterUpload;
     }
 
