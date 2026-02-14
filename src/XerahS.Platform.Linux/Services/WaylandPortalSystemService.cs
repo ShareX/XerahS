@@ -104,9 +104,23 @@ public sealed class WaylandPortalSystemService : ISystemService, IDisposable
 
     public bool OpenFile(string filePath)
     {
-        if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+        if (string.IsNullOrWhiteSpace(filePath) || (!File.Exists(filePath) && !Directory.Exists(filePath)))
         {
             return false;
+        }
+
+        if (Directory.Exists(filePath))
+        {
+            if (_portal != null)
+            {
+                var folderUri = new Uri(filePath, UriKind.Absolute).AbsoluteUri;
+                if (TryPortalRequest(() => _portal.OpenURIAsync(string.Empty, folderUri, new Dictionary<string, object>())))
+                {
+                    return true;
+                }
+            }
+
+            return _fallback.OpenFile(filePath);
         }
 
         if (_portal != null)

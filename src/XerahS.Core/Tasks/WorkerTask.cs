@@ -711,9 +711,14 @@ namespace XerahS.Core.Tasks
                     // Quick-win "Other" workflows
                     case WorkflowType.OpenScreenshotsFolder:
                         var screenshotsDir = TaskHelpers.GetScreenshotsFolder(taskSettings);
-                        if (Directory.Exists(screenshotsDir))
+                        try
                         {
+                            Directory.CreateDirectory(screenshotsDir);
                             PlatformServices.System.OpenFile(screenshotsDir);
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugHelper.WriteException(ex, $"Failed to open screenshots folder: {screenshotsDir}");
                         }
                         return;
 

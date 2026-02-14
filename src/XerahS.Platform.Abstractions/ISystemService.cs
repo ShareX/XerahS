@@ -45,9 +45,9 @@ namespace XerahS.Platform.Abstractions
         bool OpenUrl(string url);
 
         /// <summary>
-        /// Opens the specified file using the default application.
+        /// Opens the specified file or folder using the default application/file manager.
         /// </summary>
-        /// <param name="filePath">The path to the file.</param>
+        /// <param name="filePath">The path to the file or folder.</param>
         /// <returns>True if successful, false otherwise.</returns>
         bool OpenFile(string filePath);
     }

@@ -69,7 +69,7 @@ namespace XerahS.Platform.MacOS.Services
 
         public bool OpenFile(string filePath)
         {
-            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) return false;
+            if (string.IsNullOrWhiteSpace(filePath) || (!File.Exists(filePath) && !Directory.Exists(filePath))) return false;
 
             try
             {
