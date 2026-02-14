@@ -43,6 +43,12 @@ This project follows the **MVVM (Model-View-ViewModel)** pattern using the `Comm
 *   **XerahS.ScreenCapture**: Screen capture logic and region selection
 *   **XerahS.Uploaders**: Upload providers (Imgur, Amazon S3, etc.)
 *   **XerahS.History**: Capture history management
+*   **XerahS.Mobile.***: Mobile implementation using .NET MAUI (Android/iOS)
+    *   `XerahS.Mobile.Maui`: Main MAUI application (Android/iOS targets)
+    *   `XerahS.Mobile.UI`: Shared mobile UI components and view models
+    *   `XerahS.Mobile.Android`: Android-specific platform services
+    *   `XerahS.Mobile.iOS`: iOS-specific platform services
+    *   `XerahS.Mobile.iOS.ShareExtension`: iOS Share Extension for receiving shared content
 
 ### Services & Dependency Injection
 Services are initialized in `Program.cs` and `App.axaml.cs`. We use a Service Locator pattern via `PlatformServices` static class for easy access in ViewModels (though Constructor Injection is preferred where possible).
@@ -289,3 +295,102 @@ dotnet run --project src/XerahS.App/XerahS.App.csproj
 ```bash
 dotnet test
 ```
+
+## Mobile Development
+
+XerahS includes an experimental **.NET MAUI** mobile implementation for Android and iOS. This extends ShareX's upload capabilities to mobile devices.
+
+### Mobile Architecture
+
+The mobile implementation follows a layered architecture:
+
+```
+┌─────────────────────────────────────┐
+│  XerahS.Mobile.Maui (Entry Point)   │
+│  - App.xaml / AppShell.xaml         │
+│  - Platform-specific initialization │
+├─────────────────────────────────────┤
+│  XerahS.Mobile.UI                   │
+│  - Shared Views (MobileUploadPage)  │
+│  - ViewModels (MobileUploadVM)      │
+├─────────────────────────────────────┤
+│  XerahS.Mobile.Android / iOS        │
+│  - Platform services                │
+│  - Native file pickers              │
+├─────────────────────────────────────┤
+│  XerahS.Core / Common / Uploaders   │
+│  - Shared business logic            │
+└─────────────────────────────────────┘
+```
+
+### Building Mobile
+
+#### Prerequisites
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- **Android**: Android SDK API 21+ (included with .NET MAUI workload)
+- **iOS**: Xcode 16+ (macOS required), iOS 15.0+ deployment target
+
+#### Install .NET MAUI Workload
+```bash
+dotnet workload install maui
+```
+
+#### Build Android
+```bash
+dotnet build src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
+```
+
+#### Run Android (emulator or device)
+```bash
+dotnet run --project src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
+```
+
+#### Build iOS (macOS only)
+```bash
+dotnet build src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-ios
+```
+
+#### Run iOS Simulator (macOS only)
+```bash
+dotnet run --project src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-ios
+```
+
+### Mobile Features
+
+| Feature | Android | iOS | Notes |
+|---------|---------|-----|-------|
+| File Upload | ✅ | ✅ | Images, videos, documents |
+| Share Extension | ❌ | ✅ | iOS Share Sheet integration |
+| Amazon S3 | ✅ | ✅ | Full S3 uploader support |
+| Custom Uploaders | ✅ | ✅ | HTTP-based uploaders |
+| Imgur | ✅ | ✅ | Image hosting |
+| Settings | ✅ | ✅ | Mobile-optimized UI |
+
+### iOS Share Extension
+
+The iOS Share Extension (`XerahS.Mobile.iOS.ShareExtension`) allows users to share content from other apps directly to XerahS:
+
+1. Built as an app extension embedded in the main iOS app
+2. Receives shared images, videos, URLs, and text
+3. Hands off to the main app for upload processing
+
+**Build Configuration:**
+The Share Extension is referenced in the main MAUI project with `IsAppExtension=true`:
+```xml
+<ProjectReference Include="..\XerahS.Mobile.iOS.ShareExtension\XerahS.Mobile.iOS.ShareExtension.csproj">
+  <IsAppExtension>true</IsAppExtension>
+</ProjectReference>
+```
+
+### Code Sharing
+
+Mobile projects share code with desktop via:
+- **XerahS.Core**: Business logic, uploaders, settings
+- **XerahS.Common**: Utilities, helpers, extensions
+- **XerahS.Uploaders**: Uploader implementations
+- **XerahS.Platform.Abstractions**: Platform interfaces
+
+Platform-specific implementations are in:
+- `XerahS.Mobile.Android`: Android file picker, permissions
+- `XerahS.Mobile.iOS`: iOS file picker, Share Extension bridge
+- `XerahS.Platform.Mobile`: Shared mobile platform abstractions
