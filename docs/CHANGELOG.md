@@ -21,7 +21,17 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **Indexer**: Implement async streaming indexer with progress and cancellation `(8b2fe88)`
 - **Mobile**: Add .NET MAUI mobile app project to solution `(493d147)`
 
+### Mobile
+- **iOS**: Improve local signing setup and share extension flow `(30f6822)`
+
 ### Fixes
+- **Image Editor**: Share annotation preview visuals with ImageEditor to ensure consistecy `(cc074ad)`
+- **Annotations**: Remove draw-start dot artifact and align arrow preview `(d1afa2f)`
+- **Annotations**: Optimize overlay drawing responsiveness `(faa84e7)`
+- **Region Capture**: Optimize annotation rendering performance `(891eed0)`
+- **Workflow**: Complete WorkflowType end-to-end wiring `(47ead0b)`
+- **UX**: Hide SilentRun window on first open instead of minimizing `(7567223)`
+- **Updates**: Gracefully handle repositories with only pre-releases `(ed68066)`
 - **After Capture**: Persist and preserve "Show after capture window" behavior across repeated runs `(9a04c9d, a3a581d, a8262d4)`
 - **Upload**: Add multi-uploader auto destination fallback and avoid retrying failed instances `(72079e6, c06f17f, a576e78)`
 - **Mobile Upload**: Wire Amazon S3 and plugin integration to InstanceManager upload pipeline `(44c316b, 02087fb)`
@@ -30,9 +40,15 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **Amazon S3**: Reorder and renumber setup steps `(3196b02)`
 
 ### Build
+- **Plugins**: Centralize plugin copy target and pass host TFM `(6bfa2e1)`
+- **Dependencies**: Bump Avalonia packages to 11.3.12 `(27ce502)`
+- **ImageEditor**: Keep submodule attached to develop branch and enforce latest `(5e8eee0, e03ec12)`
+- **ImageEditor**: Update submodule for theme-aware editor view `(71601ee)`
 - **ImageEditor**: Update submodule for ShareX net9 compatibility and track `develop` `(a17d91e, 493d147)`
 
 ### Documentation
+- **Audits**: Organized audit files and added unused enums analysis report `(e3d2a9c)`
+- **Audits**: Update UI control audit inventory snapshots `(aadfea4)`
 - **Tasks**: Mark XIP0030 complete and move it to completed tasks `(25a83a1)`
 
 ## v0.14.0
