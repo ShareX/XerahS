@@ -70,6 +70,8 @@ public partial class OverlayWindow : Window
     private bool _rebuildPending;
     private long _lastRebuildTicks;
     private bool _selectionInteractionActive;
+    private SKBitmap? _annotationRenderTarget;
+    private int _freehandUpdateCounter;
 
     // CTRL modifier state for toggling between drawing and region selection
     private bool _ctrlPressed;
@@ -365,6 +367,7 @@ public partial class OverlayWindow : Window
         _currentAnnotation = null;
         _isDrawing = false;
         _selectionInteractionActive = false;
+        _freehandUpdateCounter = 0;
 
         // Delegate to EditorCore for annotation creation and initialization.
         int countBefore = _viewModel.EditorCore.Annotations.Count;
@@ -438,6 +441,18 @@ public partial class OverlayWindow : Window
         // Update preview shape from the annotation's updated state.
         if (_isDrawing && _currentAnnotation != null && _currentShape != null)
         {
+            // Throttle freehand/eraser geometry updates - skip intermediate frames
+            // to avoid O(N) StreamGeometry rebuild on every pointer move.
+            if (_currentAnnotation is FreehandAnnotation freehand)
+            {
+                _freehandUpdateCounter++;
+                int throttle = freehand.Points.Count > 100 ? 4 : 2;
+                if (_freehandUpdateCounter % throttle != 0)
+                {
+                    return;
+                }
+            }
+
             UpdatePreviewFromAnnotation(_currentShape, _currentAnnotation);
         }
     }
@@ -924,12 +939,46 @@ public partial class OverlayWindow : Window
 
         _annotationCanvas.Children.Clear();
 
-        foreach (var annotation in _viewModel.EditorCore.Annotations)
+        var annotations = _viewModel.EditorCore.Annotations;
+        if (annotations.Count > 0)
         {
-            var shape = CreateControlForAnnotation(annotation);
-            if (shape != null)
+            int logicalWidth = (int)Width;
+            int logicalHeight = (int)Height;
+            if (logicalWidth <= 0 || logicalHeight <= 0) return;
+
+            // Reuse or create render target bitmap
+            if (_annotationRenderTarget == null ||
+                _annotationRenderTarget.Width != logicalWidth ||
+                _annotationRenderTarget.Height != logicalHeight)
             {
-                _annotationCanvas.Children.Add(shape);
+                _annotationRenderTarget?.Dispose();
+                _annotationRenderTarget = new SKBitmap(logicalWidth, logicalHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
+            }
+
+            using var canvas = new SKCanvas(_annotationRenderTarget);
+            canvas.Clear(SKColors.Transparent);
+
+            foreach (var annotation in annotations)
+            {
+                if (annotation is SpotlightAnnotation spotlight)
+                {
+                    spotlight.CanvasSize = new SKSize(logicalWidth, logicalHeight);
+                }
+                annotation.Render(canvas);
+            }
+
+            // Convert to WriteableBitmap with fast direct pixel copy (no PNG encode/decode)
+            var writeable = ConvertSKBitmapToWriteableBitmap(_annotationRenderTarget);
+            if (writeable != null)
+            {
+                var image = new Image
+                {
+                    Source = writeable,
+                    Width = logicalWidth,
+                    Height = logicalHeight,
+                    IsHitTestVisible = false
+                };
+                _annotationCanvas.Children.Add(image);
             }
         }
 
@@ -1032,156 +1081,29 @@ public partial class OverlayWindow : Window
     }
 
     /// <summary>
-    /// Creates a full Avalonia visual control for a finalized annotation.
-    /// Uses each annotation's CreateVisual() method for accurate rendering.
-    /// Handles positioning differently based on annotation coordinate model:
-    /// - Absolute-coordinate types (Line, Arrow, Freehand, SmartEraser): no Canvas offset
-    /// - Spotlight: positioned at (0,0) with full canvas size
-    /// - Effect annotations with EffectBitmap: rendered as Avalonia Image
-    /// - Local-coordinate types (Rectangle, Ellipse, Text, etc.): Canvas.SetLeft/Top + Width/Height
+    /// Converts an SKBitmap to a WriteableBitmap using fast direct pixel copy.
+    /// Avoids the expensive PNG encode/decode roundtrip.
     /// </summary>
-    private Control? CreateControlForAnnotation(Annotation annotation)
-    {
-        var bounds = annotation.GetBounds();
-
-        // Effect annotations: show EffectBitmap as Avalonia Image if available
-        if (annotation is BaseEffectAnnotation effectAnn &&
-            annotation is not HighlightAnnotation &&
-            effectAnn.EffectBitmap != null)
-        {
-            var avBitmap = ConvertSKBitmapToAvalonia(effectAnn.EffectBitmap);
-            if (avBitmap != null)
-            {
-                var image = new Image
-                {
-                    Source = avBitmap,
-                    Width = Math.Max(1, bounds.Width),
-                    Height = Math.Max(1, bounds.Height),
-                    Tag = annotation
-                };
-                Canvas.SetLeft(image, bounds.Left);
-                Canvas.SetTop(image, bounds.Top);
-                return image;
-            }
-        }
-
-        Control? control = null;
-
-        // Create the Avalonia visual using each annotation's CreateVisual()
-        switch (annotation)
-        {
-            case RectangleAnnotation rect:
-                control = rect.CreateVisual();
-                break;
-            case EllipseAnnotation ellipse:
-                control = ellipse.CreateVisual();
-                break;
-            case LineAnnotation line:
-                control = line.CreateVisual();
-                break;
-            case ArrowAnnotation arrow:
-                control = arrow.CreateVisual();
-                // Rebuild arrow geometry from annotation points (CreateVisual returns empty Path)
-                if (control is Avalonia.Controls.Shapes.Path arrowPath)
-                {
-                    var start = new Point(annotation.StartPoint.X, annotation.StartPoint.Y);
-                    var end = new Point(annotation.EndPoint.X, annotation.EndPoint.Y);
-                    arrowPath.Data = arrow.CreateArrowGeometry(start, end,
-                        annotation.StrokeWidth * ArrowAnnotation.ArrowHeadWidthMultiplier);
-                }
-                break;
-            case TextAnnotation text:
-                control = text.CreateVisual();
-                break;
-            case SpeechBalloonAnnotation balloon:
-                control = balloon.CreateVisual();
-                break;
-            case NumberAnnotation number:
-                control = number.CreateVisual();
-                break;
-            case BlurAnnotation blur:
-                control = blur.CreateVisual();
-                break;
-            case PixelateAnnotation pixelate:
-                control = pixelate.CreateVisual();
-                break;
-            case MagnifyAnnotation magnify:
-                control = magnify.CreateVisual();
-                break;
-            case SpotlightAnnotation spotlight:
-                control = spotlight.CreateVisual();
-                break;
-            case HighlightAnnotation highlight:
-                control = highlight.CreateVisual();
-                break;
-            case SmartEraserAnnotation smartEraser:
-                control = smartEraser.CreateVisual();
-                break;
-            case FreehandAnnotation freehand:
-                control = freehand.CreateVisual();
-                break;
-        }
-
-        if (control == null) return null;
-
-        // Position and size the control based on annotation type
-        switch (annotation)
-        {
-            // Absolute-coordinate types: geometry uses absolute canvas coordinates
-            // Do NOT set Canvas.SetLeft/Top as it would double-offset
-            // SmartEraserAnnotation must come before FreehandAnnotation (it extends FreehandAnnotation)
-            case LineAnnotation:
-            case ArrowAnnotation:
-            case SmartEraserAnnotation:
-            case FreehandAnnotation:
-                break;
-
-            // Spotlight covers the full canvas with a darkening overlay
-            case SpotlightAnnotation:
-                Canvas.SetLeft(control, 0);
-                Canvas.SetTop(control, 0);
-                control.Width = Width;
-                control.Height = Height;
-                break;
-
-            // NumberAnnotation: Grid already has Width/Height from CreateVisual()
-            case NumberAnnotation:
-                Canvas.SetLeft(control, bounds.Left);
-                Canvas.SetTop(control, bounds.Top);
-                break;
-
-            // All other local-coordinate types: position + dimensions
-            default:
-                Canvas.SetLeft(control, bounds.Left);
-                Canvas.SetTop(control, bounds.Top);
-                if (control is Shape s && s is not Line)
-                {
-                    s.Width = Math.Max(1, bounds.Width);
-                    s.Height = Math.Max(1, bounds.Height);
-                }
-                else if (control is not Shape)
-                {
-                    // TextBox, SpeechBalloonControl, Grid, etc.
-                    control.Width = Math.Max(1, bounds.Width);
-                    control.Height = Math.Max(1, bounds.Height);
-                }
-                break;
-        }
-
-        return control;
-    }
-
-    /// <summary>
-    /// Converts an SKBitmap to an Avalonia Bitmap for display in Image controls.
-    /// </summary>
-    private static Avalonia.Media.Imaging.Bitmap? ConvertSKBitmapToAvalonia(SKBitmap skBitmap)
+    private static Avalonia.Media.Imaging.WriteableBitmap? ConvertSKBitmapToWriteableBitmap(SKBitmap skBitmap)
     {
         if (skBitmap == null || skBitmap.Width <= 0 || skBitmap.Height <= 0) return null;
-        using var skImage = SKImage.FromBitmap(skBitmap);
-        using var skData = skImage.Encode(SKEncodedImageFormat.Png, 100);
-        if (skData == null) return null;
-        var stream = new System.IO.MemoryStream(skData.ToArray());
-        return new Avalonia.Media.Imaging.Bitmap(stream);
+
+        var wb = new Avalonia.Media.Imaging.WriteableBitmap(
+            new PixelSize(skBitmap.Width, skBitmap.Height),
+            new Vector(96, 96),
+            Avalonia.Platform.PixelFormat.Bgra8888,
+            Avalonia.Platform.AlphaFormat.Premul);
+
+        using (var fb = wb.Lock())
+        {
+            var srcPtr = skBitmap.GetPixels();
+            int size = skBitmap.RowBytes * skBitmap.Height;
+            var buffer = new byte[size];
+            Marshal.Copy(srcPtr, buffer, 0, size);
+            Marshal.Copy(buffer, 0, fb.Address, size);
+        }
+
+        return wb;
     }
 
     /// <summary>
