@@ -683,6 +683,11 @@ namespace XerahS.UI.Views
             NavigateTo("Settings");
         }
 
+        public void NavigateToHistory()
+        {
+            NavigateTo("History");
+        }
+
         public void NavigateToAbout()
         {
             NavigateTo("About");

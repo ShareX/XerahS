@@ -229,7 +229,11 @@ public partial class App : Application
                 {
                     var owner = desktop.MainWindow;
 
-                    if (workflowType == WorkflowType.OCR)
+                    if (workflowType is WorkflowType.ColorPicker or WorkflowType.ScreenColorPicker)
+                    {
+                        await ColorPickerToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else if (workflowType == WorkflowType.OCR)
                     {
                         await OcrToolService.HandleWorkflowAsync(workflowType, owner);
                     }
@@ -281,14 +285,59 @@ public partial class App : Application
                     {
                         await MediaToolsToolService.HandleWorkflowAsync(workflowType, owner);
                     }
-                    else
+                    else if (workflowType is WorkflowType.QRCode
+                        or WorkflowType.QRCodeDecodeFromScreen
+                        or WorkflowType.QRCodeScanRegion)
                     {
                         await QrCodeToolService.HandleWorkflowAsync(workflowType, owner);
+                    }
+                    else
+                    {
+                        DebugHelper.WriteLine($"Unhandled tool workflow callback: {workflowType}");
                     }
                 });
             };
 
             // Wire quick-win workflow callbacks
+            Core.Tasks.WorkerTask.OpenMainWindowCallback = () =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    if (desktop.MainWindow is not MainWindow mainWindow)
+                    {
+                        return;
+                    }
+
+                    mainWindow.ShowInTaskbar = true;
+
+                    if (!mainWindow.IsVisible)
+                    {
+                        mainWindow.Show();
+                    }
+
+                    if (mainWindow.WindowState == Avalonia.Controls.WindowState.Minimized)
+                    {
+                        mainWindow.WindowState = Avalonia.Controls.WindowState.Normal;
+                    }
+
+                    mainWindow.Activate();
+                    mainWindow.Focus();
+                });
+            };
+
+            Core.Tasks.WorkerTask.OpenHistoryCallback = _ =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    if (desktop.MainWindow is not MainWindow mainWindow)
+                    {
+                        return;
+                    }
+
+                    mainWindow.NavigateToHistory();
+                });
+            };
+
             Core.Tasks.WorkerTask.ExitApplicationCallback = () =>
             {
                 Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
@@ -300,6 +349,7 @@ public partial class App : Application
                 if (config != null)
                 {
                     config.DisableHotkeys = !config.DisableHotkeys;
+                    WorkflowManager?.ToggleHotkeys(config.DisableHotkeys);
                     Common.DebugHelper.WriteLine($"Hotkeys {(config.DisableHotkeys ? "disabled" : "enabled")}");
                 }
             };
@@ -671,6 +721,7 @@ public partial class App : Application
             // We do NOT start a new workflow.
             bool isRecordingHotkey = settings.Job == Core.WorkflowType.ScreenRecorder ||
                                      settings.Job == Core.WorkflowType.ScreenRecorderActiveWindow ||
+                                     settings.Job == Core.WorkflowType.ScreenRecorderCustomRegion ||
                                      settings.Job == Core.WorkflowType.StopScreenRecording ||
                                      settings.Job == Core.WorkflowType.StartScreenRecorder ||
                                      settings.Job == Core.WorkflowType.ScreenRecorderGIF ||

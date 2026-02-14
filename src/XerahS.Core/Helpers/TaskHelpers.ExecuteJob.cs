@@ -176,6 +176,7 @@ public static partial class TaskHelpers
             WorkflowType.CustomWindow => true,
             WorkflowType.ScreenRecorder => true,
             WorkflowType.ScreenRecorderActiveWindow => true,
+            WorkflowType.ScreenRecorderCustomRegion => true,
             WorkflowType.ScreenRecorderGIF => true,
             WorkflowType.ScreenRecorderGIFActiveWindow => true,
             WorkflowType.ScreenRecorderGIFCustomRegion => true,

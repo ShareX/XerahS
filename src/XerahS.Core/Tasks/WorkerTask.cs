@@ -107,7 +107,10 @@ namespace XerahS.Core.Tasks
         public static Func<Task<string?>>? ShowOpenFileDialogCallback { get; set; }
 
         /// <summary>Callback to open the history window from the UI layer.</summary>
-        public static Action? OpenHistoryCallback { get; set; }
+        public static Action<WorkflowType>? OpenHistoryCallback { get; set; }
+
+        /// <summary>Callback to open and focus the main window from the UI layer.</summary>
+        public static Action? OpenMainWindowCallback { get; set; }
 
         /// <summary>Callback to exit the application from the UI layer.</summary>
         public static Action? ExitApplicationCallback { get; set; }
@@ -616,14 +619,39 @@ namespace XerahS.Core.Tasks
                             Info.Metadata.Image = null;
                         }
 
-                        // TODO: Show region selector UI and get selected region
-                        // For now, just start full screen recording
-                        DebugHelper.WriteLine("ScreenRecorderCustomRegion: Region selector not yet implemented, falling back to full screen");
+                        var configuredRegion = taskSettings.CaptureSettings.CaptureCustomRegion;
+                        if (configuredRegion.IsEmpty || configuredRegion.Width <= 0 || configuredRegion.Height <= 0)
+                        {
+                            DebugHelper.WriteLine("ScreenRecorderCustomRegion: No configured region available.");
+                            Status = TaskStatus.Stopped;
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        // Video encoders require even dimensions.
+                        int customAdjustedWidth = configuredRegion.Width - (configuredRegion.Width % VideoDimensionAlignment);
+                        int customAdjustedHeight = configuredRegion.Height - (configuredRegion.Height % VideoDimensionAlignment);
+
+                        if (customAdjustedWidth < MinVideoWidth || customAdjustedHeight < MinVideoHeight)
+                        {
+                            DebugHelper.WriteLine($"ScreenRecorderCustomRegion: Configured region too small after alignment ({customAdjustedWidth}x{customAdjustedHeight}).");
+                            Status = TaskStatus.Stopped;
+                            OnStatusChanged();
+                            return;
+                        }
+
+                        var configuredRecordingRegion = new Rectangle(
+                            configuredRegion.X,
+                            configuredRegion.Y,
+                            customAdjustedWidth,
+                            customAdjustedHeight);
+
                         if (isScreenRecordDelay && !await ApplyCaptureStartDelayAsync(taskSettings, workflowCategory, captureDelaySeconds, token))
                         {
                             return;
                         }
-                        await HandleStartRecordingAsync(CaptureMode.Screen);
+
+                        await HandleStartRecordingAsync(CaptureMode.Region, region: configuredRecordingRegion);
                         return;
 
                     case WorkflowType.StopScreenRecording:
@@ -663,6 +691,8 @@ namespace XerahS.Core.Tasks
                     case WorkflowType.VideoThumbnailer:
                     case WorkflowType.AnalyzeImage:
                     case WorkflowType.ClipboardViewer:
+                    case WorkflowType.MonitorTest:
+                    case WorkflowType.Ruler:
                         await HandleToolWorkflowAsync(token);
                         return;
 
@@ -724,7 +754,11 @@ namespace XerahS.Core.Tasks
 
                     case WorkflowType.OpenHistory:
                     case WorkflowType.OpenImageHistory:
-                        OpenHistoryCallback?.Invoke();
+                        OpenHistoryCallback?.Invoke(taskSettings.Job);
+                        return;
+
+                    case WorkflowType.OpenMainWindow:
+                        OpenMainWindowCallback?.Invoke();
                         return;
 
                     case WorkflowType.ExitShareX:
