@@ -18,7 +18,8 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 For developers interested in AI-first development and cross-platform experimentation, XerahS offers a modern foundation built for the future of software engineering.
 
 ## ✨ Key Features
-- **Cross-Platform**: Runs on Windows, Linux, and macOS (targeting).
+- **Cross-Platform Desktop**: Runs on Windows, Linux, and macOS (targeting).
+- **Mobile Support (Experimental)**: .NET MAUI implementation for **Android** and **iOS** with file upload, share extension, and uploader configuration.
 - **Modern UI**: Reimagined interface inspired by modern design principles.
 - **Powerful Capture**:
     - **Region Capture**: supports multi-monitor setups with crosshair cursor.
@@ -48,6 +49,43 @@ For developers interested in AI-first development and cross-platform experimenta
     - **40+ Effects**: Organized into Adjustments, Filters, Manipulations, and Drawings.
     - **Real-time Preview**: Apply effects with instant visual feedback.
     - **Serialization**: Save and load annotations with full type support.
+
+## 📱 Mobile (Experimental)
+
+XerahS now includes an experimental **.NET MAUI** mobile implementation for Android and iOS, bringing ShareX's powerful upload capabilities to mobile devices.
+
+### Mobile Features
+- **File Upload**: Upload images, videos, and files from your device
+- **Share Extension (iOS)**: Share content directly from other apps into XerahS
+- **Uploader Support**: Configure Amazon S3 and Custom Uploaders
+- **Settings Sync**: Mobile-optimized settings interface
+
+### Building Mobile
+
+#### Prerequisites
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- **Android**: Android SDK API 21+ with emulator or physical device
+- **iOS**: Xcode 16+ (macOS required), iOS 15.0+ target
+
+#### Build & Run
+```bash
+# Android
+dotnet build src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
+dotnet run --project src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
+
+# iOS (macOS only)
+dotnet build src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-ios
+dotnet run --project src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-ios
+```
+
+### Project Structure
+- `XerahS.Mobile.Maui` - Main MAUI application (Android/iOS)
+- `XerahS.Mobile.UI` - Shared mobile UI components
+- `XerahS.Mobile.Android` - Android-specific platform code
+- `XerahS.Mobile.iOS` - iOS-specific platform code
+- `XerahS.Mobile.iOS.ShareExtension` - iOS Share Extension for receiving shared content
+
+---
 
 ## 🚀 Getting Started
 
