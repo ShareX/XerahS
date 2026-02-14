@@ -34,6 +34,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using XerahS.Common;
 using XerahS.Common.Converters;
 using XerahS.Core;
@@ -47,6 +48,8 @@ public partial class IndexFolderViewModel : ViewModelBase
     private readonly TaskSettings _taskSettings;
     private readonly bool _isWorkflowConfigMode;
     private readonly string _tempHtmlPath;
+    private CancellationTokenSource? _indexingCancellationTokenSource;
+    private readonly Progress<XerahS.Indexer.IndexerProgress> _indexerProgress;
 
     [ObservableProperty]
     private string _folderPath = string.Empty;
@@ -64,6 +67,8 @@ public partial class IndexFolderViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(UploadCommand))]
     [NotifyCanExecuteChangedFor(nameof(SaveAsCommand))]
+    [NotifyCanExecuteChangedFor(nameof(IndexFolderCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CancelIndexingCommand))]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -91,6 +96,21 @@ public partial class IndexFolderViewModel : ViewModelBase
 
         FolderPath = _taskSettings.ToolsSettings.IndexerFolderPath;
         IsHtmlOutput = _taskSettings.ToolsSettings.IndexerSettings.Output == IndexerOutput.Html;
+        
+        // Initialize progress reporter for async indexing
+        _indexerProgress = new Progress<XerahS.Indexer.IndexerProgress>(OnIndexingProgress);
+    }
+    
+    private void OnIndexingProgress(XerahS.Indexer.IndexerProgress progress)
+    {
+        if (progress.FilesProcessed > 0 || progress.FoldersProcessed > 0)
+        {
+            StatusMessage = $"Indexing... {progress.FilesProcessed} files, {progress.FoldersProcessed} folders";
+            if (!string.IsNullOrEmpty(progress.CurrentItem))
+            {
+                StatusMessage += $" - {Path.GetFileName(progress.CurrentItem)}";
+            }
+        }
     }
 
     partial void OnFolderPathChanged(string value)
@@ -320,6 +340,10 @@ public partial class IndexFolderViewModel : ViewModelBase
     public bool CanSave => HasOutput && !IsBusy;
 
     public bool CanRenderHtml => IsHtmlOutput && HasOutput;
+    
+    public bool CanStartIndexing => !IsBusy;
+    
+    public bool CanCancelIndexing => IsBusy && _indexingCancellationTokenSource != null;
 
     public bool IsNotBusy => !IsBusy;
 
@@ -390,7 +414,7 @@ public partial class IndexFolderViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanStartIndexing))]
     private async Task IndexFolderAsync()
     {
         if (string.IsNullOrWhiteSpace(FolderPath) || !Directory.Exists(FolderPath))
@@ -402,6 +426,7 @@ public partial class IndexFolderViewModel : ViewModelBase
 
         FolderPathError = string.Empty;
         IsBusy = true;
+        _indexingCancellationTokenSource = new CancellationTokenSource();
         StatusMessage = "Indexing folder...";
         OutputText = string.Empty;
         GeneratedFilePath = string.Empty;
@@ -409,6 +434,8 @@ public partial class IndexFolderViewModel : ViewModelBase
         OnPropertyChanged(nameof(CanUpload));
         OnPropertyChanged(nameof(CanSave));
         OnPropertyChanged(nameof(CanRenderHtml));
+        OnPropertyChanged(nameof(CanStartIndexing));
+        OnPropertyChanged(nameof(CanCancelIndexing));
 
         try
         {
@@ -416,12 +443,27 @@ public partial class IndexFolderViewModel : ViewModelBase
             _taskSettings.ToolsSettings.IndexerFolderPath = FolderPath;
 
             var indexerSettings = BuildIndexerSettings(_taskSettings.ToolsSettings.IndexerSettings);
-            string output = await Task.Run(() => XerahS.Indexer.Indexer.Index(FolderPath, indexerSettings));
+            
+            // Use async indexer with progress reporting and cancellation support
+            var outputPath = Path.Combine(Path.GetTempPath(), $"xerahs_index_{Guid.NewGuid():N}.txt");
+            var result = await XerahS.Indexer.IndexerAsync.IndexWithPreviewAsync(
+                FolderPath, 
+                outputPath,
+                indexerSettings,
+                maxPreviewLines: 10000,
+                _indexerProgress,
+                _indexingCancellationTokenSource.Token);
+            string output = result.Preview;
 
             GeneratedFilePath = WriteIndexOutput(_taskSettings, output);
             OutputText = output;
             StatusMessage = $"Index generated: {GeneratedFilePath}";
             SaveWorkflowSettingsIfAvailable();
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Indexing cancelled.";
+            OutputText = string.Empty;
         }
         catch (Exception ex)
         {
@@ -431,11 +473,22 @@ public partial class IndexFolderViewModel : ViewModelBase
         finally
         {
             IsBusy = false;
+            _indexingCancellationTokenSource?.Dispose();
+            _indexingCancellationTokenSource = null;
             OnPropertyChanged(nameof(HasOutput));
             OnPropertyChanged(nameof(CanUpload));
             OnPropertyChanged(nameof(CanSave));
             OnPropertyChanged(nameof(CanRenderHtml));
+            OnPropertyChanged(nameof(CanStartIndexing));
+            OnPropertyChanged(nameof(CanCancelIndexing));
         }
+    }
+    
+    [RelayCommand(CanExecute = nameof(CanCancelIndexing))]
+    private void CancelIndexing()
+    {
+        _indexingCancellationTokenSource?.Cancel();
+        StatusMessage = "Cancelling...";
     }
 
     partial void OnIsBusyChanged(bool value)

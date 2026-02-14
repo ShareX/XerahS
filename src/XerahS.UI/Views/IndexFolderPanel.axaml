@@ -123,7 +123,9 @@
                         <TextBlock Grid.Column="0" Text="Preview &amp; Actions" VerticalAlignment="Center" FontWeight="SemiBold"/>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                             <Button Classes="accent" Content="{Binding PrimaryActionLabel}" Command="{Binding IndexFolderCommand}" 
-                                    IsEnabled="{Binding IsNotBusy}" AutomationProperties.Name="Generate Index"/>
+                                    IsEnabled="{Binding CanStartIndexing}" AutomationProperties.Name="Generate Index"/>
+                            <Button Content="Cancel" Command="{Binding CancelIndexingCommand}" 
+                                    IsEnabled="{Binding CanCancelIndexing}" AutomationProperties.Name="Cancel Indexing"/>
                             <Button Content="Open in Browser" Command="{Binding RenderHtmlPreviewCommand}" 
                                     IsEnabled="{Binding CanRenderHtml}" AutomationProperties.Name="Open HTML in Browser"/>
                             <Button Content="Copy" Command="{Binding CopyOutputCommand}" 
