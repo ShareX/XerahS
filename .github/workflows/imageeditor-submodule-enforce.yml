@@ -22,6 +22,7 @@ jobs:
         run: |
           set -euo pipefail
           configured_branch="$(git config -f .gitmodules --get submodule.ImageEditor.branch || true)"
+          configured_update="$(git config -f .gitmodules --get submodule.ImageEditor.update || true)"
           if [[ -z "${configured_branch}" ]]; then
             echo "Missing submodule.ImageEditor.branch in .gitmodules"
             exit 1
@@ -30,7 +31,12 @@ jobs:
             echo "ImageEditor submodule must track 'develop', found '${configured_branch}'"
             exit 1
           fi
+          if [[ "${configured_update}" != "rebase" ]]; then
+            echo "ImageEditor submodule update strategy must be 'rebase', found '${configured_update}'"
+            exit 1
+          fi
           echo "Configured branch: ${configured_branch}"
+          echo "Configured update strategy: ${configured_update}"
 
       - name: Validate Submodule Commit Is Latest Develop
         shell: bash

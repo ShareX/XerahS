@@ -2,3 +2,4 @@
 	path = ImageEditor
 	url = https://github.com/ShareX/ImageEditor.git
 	branch = develop
+	update = rebase
