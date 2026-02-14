@@ -34,12 +34,12 @@ namespace XerahS.Uploaders.PluginSystem;
 public enum PluginVerificationStatus
 {
     /// <summary>
-    /// Plugin is properly configured (7-11 files in folder)
+    /// Plugin is properly configured (3 files in folder)
     /// </summary>
     Valid,
 
     /// <summary>
-    /// Plugin may have minor configuration issues (any file count outside 7-11)
+    /// Plugin may have minor configuration issues (any file count outside 3)
     /// </summary>
     Warning,
 
@@ -129,7 +129,7 @@ public static class PluginConfigurationVerifier
             result.Issues.Add("");
             result.Issues.Add("Fix: Delete these duplicate DLLs from the plugin folder, then restart the app.");
         }
-        else if (result.FileCount >= 7 && result.FileCount <= 11)
+        else if (result.FileCount == 3)
         {
             result.Status = PluginVerificationStatus.Valid;
             result.Message = $"\u2713 Plugin properly configured ({result.FileCount} files)";
@@ -139,7 +139,7 @@ public static class PluginConfigurationVerifier
         else
         {
             result.Status = PluginVerificationStatus.Warning;
-            result.Message = $"\u26A0\uFE0F Plugin folder has {result.FileCount} files (expected 7-11)";
+            result.Message = $"\u26A0\uFE0F Plugin folder has {result.FileCount} files (expected 3)";
             result.Issues.Add("Plugin folder contains an unexpected number of files.");
             result.Issues.Add("Verify that only plugin-specific dependencies are included.");
         }
