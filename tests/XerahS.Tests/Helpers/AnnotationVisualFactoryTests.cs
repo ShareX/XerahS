@@ -35,34 +35,29 @@ namespace XerahS.Tests.Helpers;
 public class AnnotationVisualFactoryTests
 {
     [Test]
-    public void ArrowHeadSize_UsesStrokeBasedDefaultWhenOverrideNotSet()
+    public void ComputeArrowPoints_ProducesConsistentGeometry()
     {
-        var arrow = new ArrowAnnotation
-        {
-            StartPoint = new SKPoint(10, 20),
-            EndPoint = new SKPoint(140, 85),
-            StrokeWidth = 6,
-            StrokeColor = "#FF00AAFF",
-            ArrowHeadSize = 0
-        };
+        // ComputeArrowPoints is the single source of truth for arrow shape.
+        // Both Render() (SKCanvas) and CreateArrowGeometry() (Avalonia) consume it.
+        var pts = ArrowAnnotation.ComputeArrowPoints(10, 20, 140, 85, 6 * ArrowAnnotation.ArrowHeadWidthMultiplier);
 
-        var expected = (float)(arrow.StrokeWidth * ArrowAnnotation.ArrowHeadWidthMultiplier);
-        Assert.That(arrow.GetEffectiveArrowHeadSize(), Is.EqualTo(expected).Within(0.001f));
+        Assert.That(pts, Is.Not.Null);
+        var p = pts!.Value;
+
+        // Wing points should be farther from the arrow axis than shaft end points
+        // (the arrowhead flares out beyond the shaft)
+        var wingSpreadSq = (p.WingLeft.X - p.WingRight.X) * (p.WingLeft.X - p.WingRight.X)
+                         + (p.WingLeft.Y - p.WingRight.Y) * (p.WingLeft.Y - p.WingRight.Y);
+        var shaftSpreadSq = (p.ShaftEndLeft.X - p.ShaftEndRight.X) * (p.ShaftEndLeft.X - p.ShaftEndRight.X)
+                          + (p.ShaftEndLeft.Y - p.ShaftEndRight.Y) * (p.ShaftEndLeft.Y - p.ShaftEndRight.Y);
+        Assert.That(wingSpreadSq, Is.GreaterThan(shaftSpreadSq));
     }
 
     [Test]
-    public void ArrowHeadSize_RespectsExplicitOverride()
+    public void ComputeArrowPoints_ReturnsNullForZeroLength()
     {
-        var arrow = new ArrowAnnotation
-        {
-            StartPoint = new SKPoint(20, 30),
-            EndPoint = new SKPoint(160, 110),
-            StrokeWidth = 4,
-            StrokeColor = "#FFFF5500",
-            ArrowHeadSize = 42
-        };
-
-        Assert.That(arrow.GetEffectiveArrowHeadSize(), Is.EqualTo(42).Within(0.001f));
+        var pts = ArrowAnnotation.ComputeArrowPoints(50, 50, 50, 50, 18);
+        Assert.That(pts, Is.Null);
     }
 
     [Test]
