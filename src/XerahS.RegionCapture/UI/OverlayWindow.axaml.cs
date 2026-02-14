@@ -658,189 +658,16 @@ public partial class OverlayWindow : Window
     /// </summary>
     private Control? CreatePreviewForAnnotation(Annotation annotation)
     {
-        var strokeBrush = new SolidColorBrush(Color.Parse(annotation.StrokeColor));
-        IBrush fillBrush = annotation.FillColor == "#00000000"
-            ? Brushes.Transparent
-            : new SolidColorBrush(Color.Parse(annotation.FillColor));
-
-        Control? shape = null;
-
-        switch (annotation)
+        var shape = AnnotationVisualFactory.CreateVisualControl(annotation, AnnotationVisualMode.Preview);
+        if (shape != null)
         {
-            case RectangleAnnotation:
-                shape = new Rectangle
-                {
-                    Stroke = strokeBrush,
-                    StrokeThickness = annotation.StrokeWidth,
-                    Fill = fillBrush,
-                    Tag = annotation
-                };
-                Canvas.SetLeft(shape, annotation.StartPoint.X);
-                Canvas.SetTop(shape, annotation.StartPoint.Y);
-                break;
-
-            case EllipseAnnotation:
-                shape = new Ellipse
-                {
-                    Stroke = strokeBrush,
-                    StrokeThickness = annotation.StrokeWidth,
-                    Fill = fillBrush,
-                    Tag = annotation
-                };
-                Canvas.SetLeft(shape, annotation.StartPoint.X);
-                Canvas.SetTop(shape, annotation.StartPoint.Y);
-                break;
-
-            case LineAnnotation:
-                shape = new Line
-                {
-                    Stroke = strokeBrush,
-                    StrokeThickness = annotation.StrokeWidth,
-                    StartPoint = new Point(annotation.StartPoint.X, annotation.StartPoint.Y),
-                    EndPoint = new Point(annotation.StartPoint.X, annotation.StartPoint.Y),
-                    Tag = annotation
-                };
-                break;
-
-            case ArrowAnnotation arrow:
-                shape = arrow.CreateVisual();
-                break;
-
-            case HighlightAnnotation:
-                var highlightColor = Color.FromArgb(0x55, 0xFF, 0xFF, 0x00);
-                shape = new Rectangle
-                {
-                    Fill = new SolidColorBrush(highlightColor),
-                    Tag = annotation
-                };
-                Canvas.SetLeft(shape, annotation.StartPoint.X);
-                Canvas.SetTop(shape, annotation.StartPoint.Y);
-                break;
-
-            case TextAnnotation:
-                // Dashed rectangle placeholder showing text bounds
-                shape = new Rectangle
-                {
-                    Stroke = strokeBrush,
-                    StrokeThickness = 1,
-                    StrokeDashArray = new Avalonia.Collections.AvaloniaList<double> { 4, 4 },
-                    Fill = new SolidColorBrush(Color.FromArgb(30, 255, 255, 255)),
-                    Tag = annotation
-                };
-                Canvas.SetLeft(shape, annotation.StartPoint.X);
-                Canvas.SetTop(shape, annotation.StartPoint.Y);
-                break;
-
-            case SpeechBalloonAnnotation:
-                // Filled rectangle placeholder showing balloon bounds
-                var balloonFill = new SolidColorBrush(Color.FromArgb(128, 255, 255, 255));
-                shape = new Rectangle
-                {
-                    Stroke = strokeBrush,
-                    StrokeThickness = annotation.StrokeWidth,
-                    Fill = balloonFill,
-                    RadiusX = 10,
-                    RadiusY = 10,
-                    Tag = annotation
-                };
-                Canvas.SetLeft(shape, annotation.StartPoint.X);
-                Canvas.SetTop(shape, annotation.StartPoint.Y);
-                break;
-
-            case NumberAnnotation numAnn:
-                // Circle at click point
-                var radius = numAnn.Radius;
-                var numGrid = new Grid
-                {
-                    Width = radius * 2,
-                    Height = radius * 2,
-                    Tag = annotation
-                };
-                numGrid.Children.Add(new Ellipse
-                {
-                    Fill = fillBrush,
-                    Stroke = strokeBrush,
-                    StrokeThickness = annotation.StrokeWidth
-                });
-                numGrid.Children.Add(new TextBlock
-                {
-                    Text = numAnn.Number.ToString(),
-                    Foreground = Brushes.White,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                    FontWeight = FontWeight.Bold,
-                    FontSize = numAnn.FontSize * 0.6
-                });
-                Canvas.SetLeft(numGrid, annotation.StartPoint.X - radius);
-                Canvas.SetTop(numGrid, annotation.StartPoint.Y - radius);
-                shape = numGrid;
-                break;
-
-            case BlurAnnotation:
-                shape = new Rectangle
-                {
-                    Fill = new SolidColorBrush(Color.Parse("#200000FF")),
-                    Stroke = new SolidColorBrush(Color.FromArgb(80, 0, 0, 255)),
-                    StrokeThickness = 1,
-                    Tag = annotation
-                };
-                Canvas.SetLeft(shape, annotation.StartPoint.X);
-                Canvas.SetTop(shape, annotation.StartPoint.Y);
-                break;
-
-            case PixelateAnnotation:
-                shape = new Rectangle
-                {
-                    Fill = new SolidColorBrush(Color.Parse("#2000FF00")),
-                    Stroke = new SolidColorBrush(Color.FromArgb(80, 0, 255, 0)),
-                    StrokeThickness = 1,
-                    Tag = annotation
-                };
-                Canvas.SetLeft(shape, annotation.StartPoint.X);
-                Canvas.SetTop(shape, annotation.StartPoint.Y);
-                break;
-
-            case MagnifyAnnotation:
-                shape = new Rectangle
-                {
-                    Fill = new SolidColorBrush(Color.FromArgb(30, 211, 211, 211)),
-                    Stroke = new SolidColorBrush(Color.FromArgb(80, 100, 100, 100)),
-                    StrokeThickness = 1,
-                    Tag = annotation
-                };
-                Canvas.SetLeft(shape, annotation.StartPoint.X);
-                Canvas.SetTop(shape, annotation.StartPoint.Y);
-                break;
-
-            case SpotlightAnnotation:
-                // Dark rectangle showing where the spotlight hole will be
-                shape = new Rectangle
-                {
-                    Fill = Brushes.Transparent,
-                    Stroke = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
-                    StrokeThickness = 2,
-                    StrokeDashArray = new Avalonia.Collections.AvaloniaList<double> { 6, 3 },
-                    Tag = annotation
-                };
-                Canvas.SetLeft(shape, annotation.StartPoint.X);
-                Canvas.SetTop(shape, annotation.StartPoint.Y);
-                break;
-
-            case SmartEraserAnnotation:
-            case FreehandAnnotation:
-                // Path that builds during drag
-                var pathBrush = new SolidColorBrush(Color.Parse(annotation.StrokeColor));
-                shape = new Avalonia.Controls.Shapes.Path
-                {
-                    Stroke = pathBrush,
-                    StrokeThickness = annotation.StrokeWidth,
-                    StrokeLineCap = PenLineCap.Round,
-                    StrokeJoin = PenLineJoin.Round,
-                    Tag = annotation
-                };
-                break;
+            AnnotationVisualFactory.UpdateVisualControl(
+                shape,
+                annotation,
+                AnnotationVisualMode.Preview,
+                Width,
+                Height);
         }
-
         return shape;
     }
 
@@ -849,60 +676,12 @@ public partial class OverlayWindow : Window
     /// </summary>
     private void UpdatePreviewFromAnnotation(Control shape, Annotation annotation)
     {
-        var bounds = annotation.GetBounds();
-        var left = bounds.Left;
-        var top = bounds.Top;
-        var width = Math.Max(1, bounds.Width);
-        var height = Math.Max(1, bounds.Height);
-
-        switch (annotation)
-        {
-            case ArrowAnnotation arrow when shape is Avalonia.Controls.Shapes.Path arrowPath:
-                var start = new Point(annotation.StartPoint.X, annotation.StartPoint.Y);
-                var end = new Point(annotation.EndPoint.X, annotation.EndPoint.Y);
-                arrowPath.Data = arrow.CreateArrowGeometry(start, end,
-                    annotation.StrokeWidth * ArrowAnnotation.ArrowHeadWidthMultiplier);
-                break;
-
-            case LineAnnotation when shape is Line line:
-                line.StartPoint = new Point(annotation.StartPoint.X, annotation.StartPoint.Y);
-                line.EndPoint = new Point(annotation.EndPoint.X, annotation.EndPoint.Y);
-                break;
-
-            case FreehandAnnotation freehand when shape is Avalonia.Controls.Shapes.Path freehandPath:
-                freehandPath.Data = freehand.CreateSmoothedGeometry();
-                break;
-
-            case NumberAnnotation:
-                // Number stays at StartPoint, no update needed during drag
-                break;
-
-            default:
-                // Rectangle-based shapes: update position and size
-                if (shape is Rectangle || shape is Ellipse)
-                {
-                    Canvas.SetLeft(shape, left);
-                    Canvas.SetTop(shape, top);
-                    if (shape is Rectangle rect)
-                    {
-                        rect.Width = width;
-                        rect.Height = height;
-                    }
-                    else if (shape is Ellipse ellipse)
-                    {
-                        ellipse.Width = width;
-                        ellipse.Height = height;
-                    }
-                }
-                else if (shape is Grid grid)
-                {
-                    Canvas.SetLeft(grid, left);
-                    Canvas.SetTop(grid, top);
-                    grid.Width = width;
-                    grid.Height = height;
-                }
-                break;
-        }
+        AnnotationVisualFactory.UpdateVisualControl(
+            shape,
+            annotation,
+            AnnotationVisualMode.Preview,
+            Width,
+            Height);
     }
 
     #endregion
