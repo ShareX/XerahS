@@ -30,7 +30,7 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.9" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.12" />
   </ItemGroup>
   <ItemGroup>
     <!-- Audits tool is only needed for Debug builds (development/auditing) -->
