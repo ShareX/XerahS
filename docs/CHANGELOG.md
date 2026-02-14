@@ -10,6 +10,31 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
+## v0.15.0
+
+### Features
+- **Mobile**: Add Android MVP with Share-to-XerahS upload support `(8746372)`
+- **Mobile**: Add iOS MVP with Share Extension support `(03698c6)`
+- **Mobile**: Add Custom Uploader configuration UI for mobile `(#124, @Hexeption)`
+- **Mobile**: Redesign Amazon S3 configuration UI to match Custom Uploaders `(#125, @Hexeption)`
+- **Mobile**: Add mobile-friendly Amazon S3 configuration and settings navigation `(78a488e)`
+- **Indexer**: Implement async streaming indexer with progress and cancellation `(8b2fe88)`
+- **Mobile**: Add .NET MAUI mobile app project to solution `(493d147)`
+
+### Fixes
+- **After Capture**: Persist and preserve "Show after capture window" behavior across repeated runs `(9a04c9d, a3a581d, a8262d4)`
+- **Upload**: Add multi-uploader auto destination fallback and avoid retrying failed instances `(72079e6, c06f17f, a576e78)`
+- **Mobile Upload**: Wire Amazon S3 and plugin integration to InstanceManager upload pipeline `(44c316b, 02087fb)`
+- **Watch Folder**: Convert MOV captures to MP4 `(27f6fec)`
+- **Settings**: Make backup and secrets filenames machine-specific `(c618542, 55a32d0)`
+- **Amazon S3**: Reorder and renumber setup steps `(3196b02)`
+
+### Build
+- **ImageEditor**: Update submodule for ShareX net9 compatibility and track `develop` `(a17d91e, 493d147)`
+
+### Documentation
+- **Tasks**: Mark XIP0030 complete and move it to completed tasks `(25a83a1)`
+
 ## v0.14.0
 
 ### Features
