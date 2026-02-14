@@ -1,2 +1,23 @@
 # Inventory Diff
-No regressions found.
+## Regressions
+- UNWIRED: MenuItem at ImageEditor/src/ShareX.ImageEditor/UI/Controls/EffectsMenuDropdown.axaml:96
+- UNWIRED: MenuItem at ImageEditor/src/ShareX.ImageEditor/UI/Controls/EffectsMenuDropdown.axaml:182
+- UNWIRED: MenuItem at ImageEditor/src/ShareX.ImageEditor/UI/Controls/EffectsMenuDropdown.axaml:266
+- UNWIRED: CheckBox at ImageEditor/src/ShareX.ImageEditor/UI/Views/Dialogs/ReflectionDialog.axaml:67
+- UNWIRED: CheckBox at ImageEditor/src/ShareX.ImageEditor/UI/Views/Dialogs/TornEdgeDialog.axaml:55
+- UNWIRED: Button at src/XerahS.RegionCapture/UI/Controls/AnnotationToolbar.axaml:273
+- UNWIRED: MenuItem at src/XerahS.UI/Views/MainWindow.axaml:36
+- UNWIRED: MenuItem at src/XerahS.UI/Views/MainWindow.axaml:39
+- UNWIRED: MenuItem at src/XerahS.UI/Views/MainWindow.axaml:51
+- UNWIRED: MenuItem at src/XerahS.UI/Views/MainWindow.axaml:59
+- UNWIRED: MenuItem at src/XerahS.UI/Views/MainWindow.axaml:70
+- UNWIRED: MenuItem at src/XerahS.UI/Views/MainWindow.axaml:73
+- UNWIRED: MenuItem at src/XerahS.UI/Views/MainWindow.axaml:77
+- UNWIRED: MenuItem at src/XerahS.UI/Views/MainWindow.axaml:82
+- UNWIRED: MenuItem at src/XerahS.UI/Views/MainWindow.axaml:87
+- UNWIRED: MenuItem at src/XerahS.UI/Views/MainWindow.axaml:111
+- UNWIRED: MenuItem at src/XerahS.UI/Views/MainWindow.axaml:117
+- UNWIRED: Button at src/XerahS.UI/Views/PinToScreenStartupDialog.axaml:19
+- UNWIRED: Button at src/XerahS.UI/Views/PinToScreenStartupDialog.axaml:26
+- UNWIRED: Button at src/XerahS.UI/Views/PinToScreenStartupDialog.axaml:32
+- UNWIRED: Button at src/XerahS.UI/Views/PinToScreenStartupDialog.axaml:38
