@@ -71,9 +71,7 @@ public partial class OverlayWindow : Window
     private long _lastRebuildTicks;
     private bool _selectionInteractionActive;
     private bool _suppressInvalidateRequested;
-    private SKBitmap? _annotationRenderTarget;
-    private Image? _annotationImage;
-    private Avalonia.Media.Imaging.WriteableBitmap? _annotationBitmap;
+    private readonly List<Control> _persistedAnnotationVisuals = new();
 
     // CTRL modifier state for toggling between drawing and region selection
     private bool _ctrlPressed;
@@ -747,66 +745,35 @@ public partial class OverlayWindow : Window
     {
         if (_annotationCanvas == null) return;
 
+        // Remove previous persisted visuals
+        foreach (var visual in _persistedAnnotationVisuals)
+        {
+            _annotationCanvas.Children.Remove(visual);
+        }
+        _persistedAnnotationVisuals.Clear();
+
         var annotations = _viewModel.EditorCore.Annotations;
         if (annotations.Count > 0)
         {
-            int logicalWidth = (int)Width;
-            int logicalHeight = (int)Height;
-            if (logicalWidth <= 0 || logicalHeight <= 0) return;
-
-            // Reuse or create render target bitmap
-            if (_annotationRenderTarget == null ||
-                _annotationRenderTarget.Width != logicalWidth ||
-                _annotationRenderTarget.Height != logicalHeight)
-            {
-                _annotationRenderTarget?.Dispose();
-                _annotationRenderTarget = new SKBitmap(logicalWidth, logicalHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
-            }
-
-            using var canvas = new SKCanvas(_annotationRenderTarget);
-            canvas.Clear(SKColors.Transparent);
+            double canvasWidth = Width;
+            double canvasHeight = Height;
+            if (canvasWidth <= 0 || canvasHeight <= 0) return;
 
             foreach (var annotation in annotations)
             {
-                if (annotation is SpotlightAnnotation spotlight)
+                var visual = AnnotationVisualFactory.CreateVisualControl(
+                    annotation, AnnotationVisualMode.Persisted);
+
+                if (visual != null)
                 {
-                    spotlight.CanvasSize = new SKSize(logicalWidth, logicalHeight);
-                }
-                annotation.Render(canvas);
-            }
-
-            if (_annotationBitmap == null ||
-                _annotationBitmap.PixelSize.Width != logicalWidth ||
-                _annotationBitmap.PixelSize.Height != logicalHeight)
-            {
-                _annotationBitmap?.Dispose();
-                _annotationBitmap = new Avalonia.Media.Imaging.WriteableBitmap(
-                    new PixelSize(logicalWidth, logicalHeight),
-                    new Vector(96, 96),
-                    Avalonia.Platform.PixelFormat.Bgra8888,
-                    Avalonia.Platform.AlphaFormat.Premul);
-            }
-
-            if (CopySkBitmapToWriteableBitmap(_annotationRenderTarget, _annotationBitmap))
-            {
-                _annotationImage ??= new Image
-                {
-                    IsHitTestVisible = false
-                };
-
-                _annotationImage.Source = _annotationBitmap;
-                _annotationImage.Width = logicalWidth;
-                _annotationImage.Height = logicalHeight;
-
-                if (!_annotationCanvas.Children.Contains(_annotationImage))
-                {
-                    _annotationCanvas.Children.Insert(0, _annotationImage);
+                    visual.IsHitTestVisible = false;
+                    AnnotationVisualFactory.UpdateVisualControl(
+                        visual, annotation, AnnotationVisualMode.Persisted,
+                        canvasWidth, canvasHeight);
+                    _annotationCanvas.Children.Insert(0, visual);
+                    _persistedAnnotationVisuals.Add(visual);
                 }
             }
-        }
-        else if (_annotationImage != null && _annotationCanvas.Children.Contains(_annotationImage))
-        {
-            _annotationCanvas.Children.Remove(_annotationImage);
         }
 
         if (_inlineTextBox != null)
@@ -911,54 +878,7 @@ public partial class OverlayWindow : Window
         _viewModel.ShadowEnabled = !_viewModel.ShadowEnabled;
     }
 
-    private static bool CopySkBitmapToWriteableBitmap(
-        SKBitmap source,
-        Avalonia.Media.Imaging.WriteableBitmap destination)
-    {
-        if (source == null || destination == null || source.Width <= 0 || source.Height <= 0)
-        {
-            return false;
-        }
 
-        if (destination.PixelSize.Width != source.Width || destination.PixelSize.Height != source.Height)
-        {
-            return false;
-        }
-
-        using var fb = destination.Lock();
-        var srcInfo = source.Info;
-        var dstInfo = new SKImageInfo(source.Width, source.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
-
-        if (srcInfo.ColorType == SKColorType.Bgra8888)
-        {
-            unsafe
-            {
-                var srcPtr = source.GetPixels();
-                var dstPtr = fb.Address;
-                int srcStride = source.RowBytes;
-                int dstStride = fb.RowBytes;
-                int copyWidth = Math.Min(srcStride, dstStride);
-
-                for (int y = 0; y < source.Height; y++)
-                {
-                    var srcRow = IntPtr.Add(srcPtr, y * srcStride);
-                    var dstRow = IntPtr.Add(dstPtr, y * dstStride);
-                    Buffer.MemoryCopy((void*)srcRow, (void*)dstRow, dstStride, copyWidth);
-                }
-            }
-
-            return true;
-        }
-
-        var pixmap = source.PeekPixels();
-        if (pixmap != null)
-        {
-            return pixmap.ReadPixels(dstInfo, fb.Address, fb.RowBytes, 0, 0);
-        }
-
-        _ = source.GetPixels();
-        return source.PeekPixels()?.ReadPixels(dstInfo, fb.Address, fb.RowBytes, 0, 0) ?? false;
-    }
 
     /// <summary>
     /// Crops the full virtual-screen capture to this monitor and scales it to the monitor's logical size.
