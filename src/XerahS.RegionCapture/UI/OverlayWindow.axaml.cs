@@ -70,6 +70,7 @@ public partial class OverlayWindow : Window
     private bool _rebuildPending;
     private long _lastRebuildTicks;
     private bool _selectionInteractionActive;
+    private bool _suppressInvalidateRequested;
     private SKBitmap? _annotationRenderTarget;
     private Image? _annotationImage;
     private Avalonia.Media.Imaging.WriteableBitmap? _annotationBitmap;
@@ -371,11 +372,22 @@ public partial class OverlayWindow : Window
 
         // Delegate to EditorCore for annotation creation and initialization.
         int countBefore = _viewModel.EditorCore.Annotations.Count;
-        _viewModel.EditorCore.OnPointerPressed(skPoint);
+        _suppressInvalidateRequested = true;
+        try
+        {
+            _viewModel.EditorCore.OnPointerPressed(skPoint);
+        }
+        finally
+        {
+            _suppressInvalidateRequested = false;
+        }
 
         // Check if EditorCore created a new annotation
         if (_viewModel.EditorCore.Annotations.Count > countBefore)
         {
+            // Discard any stale pending rebuild that could render a degenerate start-point artifact.
+            _rebuildPending = false;
+
             _currentAnnotation = _viewModel.EditorCore.Annotations[_viewModel.EditorCore.Annotations.Count - 1];
             _isDrawing = true;
 
@@ -690,14 +702,8 @@ public partial class OverlayWindow : Window
                 };
                 break;
 
-            case ArrowAnnotation:
-                shape = new Avalonia.Controls.Shapes.Path
-                {
-                    Stroke = strokeBrush,
-                    Fill = strokeBrush,
-                    StrokeThickness = annotation.StrokeWidth,
-                    Tag = annotation
-                };
+            case ArrowAnnotation arrow:
+                shape = arrow.CreateVisual();
                 break;
 
             case HighlightAnnotation:
@@ -905,6 +911,11 @@ public partial class OverlayWindow : Window
 
     private void OnInvalidateRequested()
     {
+        if (_suppressInvalidateRequested)
+        {
+            return;
+        }
+
         // During active drawing we already update a lightweight preview shape in pointer handlers.
         // Rebuilding every annotation control on each move causes visible lag.
         if (_isDrawing && _currentShape != null)
