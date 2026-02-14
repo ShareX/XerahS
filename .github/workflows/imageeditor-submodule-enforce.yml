@@ -1,0 +1,55 @@
+name: Enforce ImageEditor Submodule Develop Head
+
+on:
+  pull_request:
+    branches:
+      - develop
+  push:
+    branches:
+      - develop
+
+jobs:
+  verify-imageeditor-submodule:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate Submodule Branch Configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          configured_branch="$(git config -f .gitmodules --get submodule.ImageEditor.branch || true)"
+          if [[ -z "${configured_branch}" ]]; then
+            echo "Missing submodule.ImageEditor.branch in .gitmodules"
+            exit 1
+          fi
+          if [[ "${configured_branch}" != "develop" ]]; then
+            echo "ImageEditor submodule must track 'develop', found '${configured_branch}'"
+            exit 1
+          fi
+          echo "Configured branch: ${configured_branch}"
+
+      - name: Validate Submodule Commit Is Latest Develop
+        shell: bash
+        run: |
+          set -euo pipefail
+          submodule_url="$(git config -f .gitmodules --get submodule.ImageEditor.url)"
+          pinned_commit="$(git ls-tree HEAD ImageEditor | awk '{print $3}')"
+          latest_develop_commit="$(git ls-remote "${submodule_url}" refs/heads/develop | awk '{print $1}')"
+
+          echo "Pinned commit: ${pinned_commit}"
+          echo "Latest develop: ${latest_develop_commit}"
+
+          if [[ -z "${pinned_commit}" || -z "${latest_develop_commit}" ]]; then
+            echo "Failed to resolve pinned or latest develop commit."
+            exit 1
+          fi
+
+          if [[ "${pinned_commit}" != "${latest_develop_commit}" ]]; then
+            echo "ImageEditor submodule is not at latest develop head."
+            echo "Run: git submodule update --remote -- ImageEditor"
+            exit 1
+          fi
