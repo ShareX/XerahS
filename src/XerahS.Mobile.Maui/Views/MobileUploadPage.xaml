@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:XerahS.Mobile.Maui.ViewModels"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="XerahS.Mobile.Maui.Views.MobileUploadPage"
+             x:DataType="vm:MobileUploadViewModel"
+             Title="XerahS">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Settings"
+                     Command="{Binding OpenSettingsCommand}"
+                     Order="Primary"/>
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <!-- Subtitle -->
+            <Label Text="Share &amp; Upload"
+                   FontSize="16"
+                   TextColor="{AppThemeBinding Light=#888888, Dark=#AAAAAA}"
+                   HorizontalOptions="Center"
+                   Margin="0,0,0,10"/>
+
+            <!-- Status -->
+            <Label Text="{Binding StatusText}"
+                   HorizontalOptions="Center"
+                   LineBreakMode="WordWrap"
+                   HorizontalTextAlignment="Center"/>
+
+            <!-- Progress -->
+            <ActivityIndicator IsRunning="{Binding IsUploading}"
+                               IsVisible="{Binding IsUploading}"
+                               Margin="0,8"/>
+
+            <!-- Results list -->
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Results}"
+                                 Spacing="4">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:UploadResultItem">
+                        <Border BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                                Stroke="Transparent"
+                                Padding="16"
+                                Margin="0,4">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="8"/>
+                            </Border.StrokeShape>
+                            <VerticalStackLayout Spacing="8">
+
+                                <!-- File name -->
+                                <Label Text="{Binding FileName}"
+                                       FontAttributes="Bold"/>
+
+                                <!-- URL (if success) -->
+                                <Label Text="{Binding Url}"
+                                       IsVisible="{Binding HasUrl}"
+                                       TextColor="{StaticResource Primary}"
+                                       LineBreakMode="WordWrap"/>
+
+                                <!-- Error (if failed) -->
+                                <Label Text="{Binding Error}"
+                                       IsVisible="{Binding Error, Converter={StaticResource IsNotNullOrEmptyConverter}}"
+                                       TextColor="{StaticResource ErrorRed}"
+                                       LineBreakMode="WordWrap"/>
+
+                                <!-- Copy URL button -->
+                                <Button Text="Copy URL"
+                                        IsVisible="{Binding HasUrl}"
+                                        Command="{Binding CopyUrlCommand}"
+                                        CommandParameter="{Binding Url}"
+                                        HorizontalOptions="Start"/>
+
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

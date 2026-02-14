@@ -1,4 +1,4 @@
 [submodule "ImageEditor"]
 	path = ImageEditor
 	url = https://github.com/ShareX/ImageEditor.git
-	branch = main
+	branch = develop

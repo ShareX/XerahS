@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:XerahS.Mobile.Maui.ViewModels"
+             x:Class="XerahS.Mobile.Maui.Views.MobileAmazonS3ConfigPage"
+             x:DataType="vm:MobileAmazonS3ConfigViewModel"
+             Title="Amazon S3">
+
+    <ScrollView x:Name="MainScrollView">
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+            <!-- Header Card -->
+            <Border BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                    Stroke="Transparent"
+                    Padding="20">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12"/>
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Amazon S3"
+                           FontSize="22"
+                           FontAttributes="Bold"/>
+                    <Label Text="Configure your S3 bucket for file uploads"
+                           FontSize="13"
+                           TextColor="{AppThemeBinding Light=#888888, Dark=#AAAAAA}"
+                           LineBreakMode="WordWrap"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Section: Authentication -->
+            <Border x:Name="AuthSection"
+                    BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                    Stroke="Transparent"
+                    Padding="16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12"/>
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Authentication"
+                           FontAttributes="Bold"
+                           FontSize="15"
+                           Opacity="0.7"/>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Access Key ID" FontSize="13" FontAttributes="Bold"/>
+                        <Grid>
+                            <Entry Text="{Binding AccessKeyId, Mode=TwoWay}"
+                                   Placeholder="AKIA..."
+                                   FontSize="13"/>
+                            <Border Stroke="{StaticResource ErrorRed}"
+                                    StrokeThickness="2"
+                                    IsVisible="{Binding HasAccessKeyError}"
+                                    InputTransparent="True"
+                                    BackgroundColor="Transparent">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Secret Access Key" FontSize="13" FontAttributes="Bold"/>
+                        <Grid>
+                            <Entry Text="{Binding SecretAccessKey, Mode=TwoWay}"
+                                   Placeholder="Enter your secret key"
+                                   IsPassword="True"
+                                   FontSize="13"/>
+                            <Border Stroke="{StaticResource ErrorRed}"
+                                    StrokeThickness="2"
+                                    IsVisible="{Binding HasSecretKeyError}"
+                                    InputTransparent="True"
+                                    BackgroundColor="Transparent">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Section: Bucket Configuration -->
+            <Border x:Name="BucketSection"
+                    BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                    Stroke="Transparent"
+                    Padding="16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12"/>
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Bucket Configuration"
+                           FontAttributes="Bold"
+                           FontSize="15"
+                           Opacity="0.7"/>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Bucket Name" FontSize="13" FontAttributes="Bold"/>
+                        <Grid>
+                            <Entry Text="{Binding BucketName, Mode=TwoWay}"
+                                   Placeholder="my-bucket-name"
+                                   FontSize="13"/>
+                            <Border Stroke="{StaticResource ErrorRed}"
+                                    StrokeThickness="2"
+                                    IsVisible="{Binding HasBucketError}"
+                                    InputTransparent="True"
+                                    BackgroundColor="Transparent">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Region" FontSize="13" FontAttributes="Bold"/>
+                        <Grid>
+                            <Picker ItemsSource="{x:Static vm:MobileAmazonS3ConfigViewModel.Regions}"
+                                    SelectedIndex="{Binding RegionIndex}"
+                                    ItemDisplayBinding="{Binding DisplayName}"
+                                    HorizontalOptions="Fill"/>
+                            <Border Stroke="{StaticResource ErrorRed}"
+                                    StrokeThickness="2"
+                                    IsVisible="{Binding HasRegionError}"
+                                    InputTransparent="True"
+                                    BackgroundColor="Transparent">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Section: Upload Options -->
+            <Border BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                    Stroke="Transparent"
+                    Padding="16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12"/>
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Upload Options"
+                           FontAttributes="Bold"
+                           FontSize="15"
+                           Opacity="0.7"/>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Object Prefix" FontSize="13" FontAttributes="Bold"/>
+                        <Entry Text="{Binding ObjectPrefix, Mode=TwoWay}"
+                               Placeholder="ShareX/%y/%mo"
+                               FontSize="13"/>
+                        <Label Text="Use %y for year, %mo for month, %d for day"
+                               FontSize="11"
+                               Opacity="0.5"
+                               Margin="4,2,0,0"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <HorizontalStackLayout Spacing="8">
+                            <CheckBox IsChecked="{Binding UseCustomDomain}"/>
+                            <Label Text="Use Custom Domain (CDN)" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                        <Entry Text="{Binding CustomDomain, Mode=TwoWay}"
+                               Placeholder="https://cdn.example.com"
+                               IsEnabled="{Binding UseCustomDomain}"
+                               FontSize="13"/>
+                    </VerticalStackLayout>
+
+                    <HorizontalStackLayout Spacing="8">
+                        <CheckBox IsChecked="{Binding SetPublicAcl}"/>
+                        <Label Text="Make uploads publicly accessible" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Section: Help -->
+            <Border BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                    Stroke="Transparent"
+                    Padding="16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12"/>
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="How to get AWS credentials"
+                           FontAttributes="Bold"
+                           FontSize="15"
+                           Opacity="0.7"/>
+                    <Label Text="1. Go to AWS Console → IAM → Users"
+                           FontSize="13"/>
+                    <Label Text="2. Create a user with 'AmazonS3FullAccess' permission"
+                           FontSize="13"
+                           LineBreakMode="WordWrap"/>
+                    <Label Text="3. Create access keys and copy them here"
+                           FontSize="13"
+                           LineBreakMode="WordWrap"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Action Buttons -->
+            <VerticalStackLayout Spacing="10" Margin="0,4,0,40">
+                <Button Text="Save Configuration"
+                        Command="{Binding SaveCommand}"
+                        HorizontalOptions="Fill"
+                        HeightRequest="48"
+                        CornerRadius="10"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        FontSize="15"/>
+
+                <Button Text="Test Connection"
+                        Command="{Binding TestCommand}"
+                        HorizontalOptions="Fill"
+                        HeightRequest="42"
+                        CornerRadius="10"
+                        FontSize="14"
+                        IsVisible="{Binding IsTesting, Converter={StaticResource InvertedBoolConverter}}"/>
+
+                <ActivityIndicator IsRunning="{Binding IsTesting}"
+                                   IsVisible="{Binding IsTesting}"
+                                   Margin="0,4"/>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

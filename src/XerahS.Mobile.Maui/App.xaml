@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:converters="clr-namespace:XerahS.Mobile.Maui.Converters"
+             x:Class="XerahS.Mobile.Maui.App">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Colors -->
+            <Color x:Key="Primary">#0078D4</Color>
+            <Color x:Key="PrimaryDark">#005A9E</Color>
+            <Color x:Key="ConfiguredGreen">Green</Color>
+            <Color x:Key="NotConfiguredOrange">Orange</Color>
+            <Color x:Key="ErrorRed">#FF6B6B</Color>
+
+            <!-- Converters -->
+            <converters:BoolToConfiguredBrushConverter x:Key="BoolToConfiguredBrushConverter"/>
+            <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter"/>
+            <toolkit:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
+
+</Application>

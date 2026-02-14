@@ -1,0 +1,565 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:XerahS.Mobile.Maui.ViewModels"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="XerahS.Mobile.Maui.Views.MobileCustomUploaderConfigPage"
+             x:DataType="vm:MobileCustomUploaderConfigViewModel"
+             Title="Custom Uploader">
+
+    <Grid>
+        <!-- State 1: List View -->
+        <ScrollView IsVisible="{Binding IsEditorVisible, Converter={StaticResource InvertedBoolConverter}}">
+            <VerticalStackLayout Padding="16" Spacing="16">
+
+                <!-- Header Card -->
+                <Border BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                        Stroke="Transparent"
+                        Padding="20">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Custom Uploader"
+                               FontSize="22"
+                               FontAttributes="Bold"/>
+                        <Label Text="Add and manage custom HTTP uploaders"
+                               FontSize="13"
+                               TextColor="{AppThemeBinding Light=#888888, Dark=#AAAAAA}"
+                               LineBreakMode="WordWrap"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Configured Uploaders Card -->
+                <Border BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                        Stroke="Transparent"
+                        Padding="16">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="Configured Uploaders"
+                               FontAttributes="Bold"
+                               FontSize="15"
+                               Margin="4,0,0,0"/>
+
+                        <CollectionView ItemsSource="{Binding CustomUploaders}"
+                                        SelectionMode="Single"
+                                        SelectionChanged="OnUploaderSelectionChanged"
+                                        MinimumHeightRequest="60">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CustomUploaderListItem">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="4,6">
+                                        <!-- Icon circle -->
+                                        <Border Grid.Column="0"
+                                                WidthRequest="36" HeightRequest="36"
+                                                BackgroundColor="{StaticResource Primary}"
+                                                Stroke="Transparent"
+                                                Margin="0,0,12,0"
+                                                VerticalOptions="Center">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="18"/>
+                                            </Border.StrokeShape>
+                                            <Label Text="&#x2601;"
+                                                   FontSize="18"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center"
+                                                   TextColor="White"/>
+                                        </Border>
+
+                                        <!-- Name and host -->
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                                            <Label Text="{Binding Name}"
+                                                   FontAttributes="Bold"
+                                                   FontSize="14"/>
+                                            <Label Text="{Binding HostName}"
+                                                   FontSize="12"
+                                                   TextColor="{AppThemeBinding Light=#888888, Dark=#AAAAAA}"/>
+                                        </VerticalStackLayout>
+
+                                        <!-- Active badge -->
+                                        <Border Grid.Column="2"
+                                                IsVisible="{Binding IsActive}"
+                                                BackgroundColor="#1A4CAF50"
+                                                Stroke="Transparent"
+                                                Padding="10,4"
+                                                VerticalOptions="Center">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="10"/>
+                                            </Border.StrokeShape>
+                                            <Label Text="ACTIVE"
+                                                   FontSize="10"
+                                                   FontAttributes="Bold"
+                                                   TextColor="#4CAF50"/>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                            <CollectionView.EmptyView>
+                                <VerticalStackLayout HorizontalOptions="Center"
+                                                     Padding="20"
+                                                     Spacing="6"
+                                                     Opacity="0.5">
+                                    <Label Text="&#x2601;"
+                                           FontSize="28"
+                                           HorizontalOptions="Center"/>
+                                    <Label Text="No custom uploaders configured yet"
+                                           FontSize="13"
+                                           FontAttributes="Italic"
+                                           HorizontalOptions="Center"
+                                           TextColor="{AppThemeBinding Light=#888888, Dark=#AAAAAA}"/>
+                                </VerticalStackLayout>
+                            </CollectionView.EmptyView>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Action Buttons -->
+                <VerticalStackLayout Spacing="10">
+                    <Button Text="Add New Uploader"
+                            Command="{Binding AddNewCommand}"
+                            HorizontalOptions="Fill"
+                            HeightRequest="48"
+                            CornerRadius="10"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            FontSize="15"/>
+
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                        <Button Grid.Column="0"
+                                Text="Edit"
+                                Command="{Binding EditSelectedCommand}"
+                                HorizontalOptions="Fill"
+                                HeightRequest="42"
+                                CornerRadius="10"
+                                FontSize="13"/>
+                        <Button Grid.Column="1"
+                                Text="Set Active"
+                                Command="{Binding SetActiveCommand}"
+                                HorizontalOptions="Fill"
+                                HeightRequest="42"
+                                CornerRadius="10"
+                                FontSize="13"/>
+                        <Button Grid.Column="2"
+                                Text="Remove"
+                                Command="{Binding RemoveSelectedCommand}"
+                                HorizontalOptions="Fill"
+                                HeightRequest="42"
+                                CornerRadius="10"
+                                FontSize="13"/>
+                    </Grid>
+                </VerticalStackLayout>
+
+                <!-- Progress -->
+                <ActivityIndicator IsRunning="{Binding IsTesting}"
+                                   IsVisible="{Binding IsTesting}"
+                                   Margin="0,4"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- State 2: Editor Form -->
+        <ScrollView IsVisible="{Binding IsEditorVisible}"
+                    x:Name="EditorScrollView">
+            <VerticalStackLayout Padding="16" Spacing="14">
+
+                <!-- Editor Title -->
+                <Label Text="{Binding EditorTitle}"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       Margin="4,4,0,0"/>
+
+                <!-- Section: Basic Information -->
+                <Border x:Name="BasicInfoSection"
+                        BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                        Stroke="Transparent"
+                        Padding="16">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="14">
+                        <Label Text="Basic Information"
+                               FontAttributes="Bold"
+                               FontSize="15"
+                               Opacity="0.7"/>
+
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Name" FontSize="13" FontAttributes="Bold"/>
+                            <Grid>
+                                <Entry Text="{Binding EditorName, Mode=TwoWay}"
+                                       Placeholder="My Custom Uploader"/>
+                                <Border Stroke="{StaticResource ErrorRed}"
+                                        StrokeThickness="2"
+                                        IsVisible="{Binding HasNameError}"
+                                        InputTransparent="True"
+                                        BackgroundColor="Transparent">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8"/>
+                                    </Border.StrokeShape>
+                                </Border>
+                            </Grid>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Destination Types" FontSize="13" FontAttributes="Bold"/>
+                            <FlexLayout Wrap="Wrap">
+                                <HorizontalStackLayout Spacing="4" Margin="0,0,14,6">
+                                    <CheckBox IsChecked="{Binding IsImageUploader}"/>
+                                    <Label Text="Image" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="4" Margin="0,0,14,6">
+                                    <CheckBox IsChecked="{Binding IsTextUploader}"/>
+                                    <Label Text="Text" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="4" Margin="0,0,14,6">
+                                    <CheckBox IsChecked="{Binding IsFileUploader}"/>
+                                    <Label Text="File" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="4" Margin="0,0,14,6">
+                                    <CheckBox IsChecked="{Binding IsUrlShortener}"/>
+                                    <Label Text="URL Shortener" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="4" Margin="0,0,0,6">
+                                    <CheckBox IsChecked="{Binding IsUrlSharingService}"/>
+                                    <Label Text="URL Sharing" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </FlexLayout>
+                            <Label Text="Select at least one destination type"
+                                   FontSize="12"
+                                   TextColor="{StaticResource ErrorRed}"
+                                   IsVisible="{Binding HasDestinationError}"/>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Section: HTTP Request -->
+                <Border x:Name="HttpRequestSection"
+                        BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                        Stroke="Transparent"
+                        Padding="16">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="14">
+                        <Label Text="HTTP Request"
+                               FontAttributes="Bold"
+                               FontSize="15"
+                               Opacity="0.7"/>
+
+                        <Grid ColumnDefinitions="100,*" ColumnSpacing="10">
+                            <VerticalStackLayout Grid.Column="0" Spacing="4">
+                                <Label Text="Method" FontSize="13" FontAttributes="Bold"/>
+                                <Picker ItemsSource="{x:Static vm:MobileCustomUploaderConfigViewModel.HttpMethods}"
+                                        SelectedIndex="{Binding SelectedMethodIndex}"
+                                        HorizontalOptions="Fill"/>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                <Label Text="Request URL" FontSize="13" FontAttributes="Bold"/>
+                                <Grid>
+                                    <Entry Text="{Binding RequestUrl, Mode=TwoWay}"
+                                           Placeholder="https://example.com/api/upload"/>
+                                    <Border Stroke="{StaticResource ErrorRed}"
+                                            StrokeThickness="2"
+                                            IsVisible="{Binding HasUrlError}"
+                                            InputTransparent="True"
+                                            BackgroundColor="Transparent">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="8"/>
+                                        </Border.StrokeShape>
+                                    </Border>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <!-- Headers -->
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="Headers" FontSize="13" FontAttributes="Bold" VerticalOptions="Center"/>
+                                <Button Grid.Column="1"
+                                        Text="+ Add"
+                                        Command="{Binding AddHeaderCommand}"
+                                        Padding="12,4"
+                                        FontSize="12"
+                                        CornerRadius="6"
+                                        HeightRequest="28"/>
+                            </Grid>
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Headers}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:KeyValuePairItem">
+                                        <Border BackgroundColor="{AppThemeBinding Light=#EBEBEB, Dark=#333333}"
+                                                Stroke="Transparent"
+                                                Padding="8"
+                                                Margin="0,2">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="8"/>
+                                            </Border.StrokeShape>
+                                            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="6">
+                                                <Entry Grid.Column="0"
+                                                       Text="{Binding Key, Mode=TwoWay}"
+                                                       Placeholder="Key"
+                                                       FontSize="13"/>
+                                                <Entry Grid.Column="1"
+                                                       Text="{Binding Value, Mode=TwoWay}"
+                                                       Placeholder="Value"
+                                                       FontSize="13"/>
+                                                <Button Grid.Column="2"
+                                                        Text="&#x2715;"
+                                                        Command="{Binding RemoveCommand}"
+                                                        WidthRequest="30" HeightRequest="30"
+                                                        Padding="0"
+                                                        CornerRadius="6"
+                                                        FontSize="12"
+                                                        TextColor="{StaticResource ErrorRed}"
+                                                        BackgroundColor="Transparent"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+
+                        <!-- URL Parameters -->
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="URL Parameters" FontSize="13" FontAttributes="Bold" VerticalOptions="Center"/>
+                                <Button Grid.Column="1"
+                                        Text="+ Add"
+                                        Command="{Binding AddParameterCommand}"
+                                        Padding="12,4"
+                                        FontSize="12"
+                                        CornerRadius="6"
+                                        HeightRequest="28"/>
+                            </Grid>
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Parameters}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:KeyValuePairItem">
+                                        <Border BackgroundColor="{AppThemeBinding Light=#EBEBEB, Dark=#333333}"
+                                                Stroke="Transparent"
+                                                Padding="8"
+                                                Margin="0,2">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="8"/>
+                                            </Border.StrokeShape>
+                                            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="6">
+                                                <Entry Grid.Column="0"
+                                                       Text="{Binding Key, Mode=TwoWay}"
+                                                       Placeholder="Key"
+                                                       FontSize="13"/>
+                                                <Entry Grid.Column="1"
+                                                       Text="{Binding Value, Mode=TwoWay}"
+                                                       Placeholder="Value"
+                                                       FontSize="13"/>
+                                                <Button Grid.Column="2"
+                                                        Text="&#x2715;"
+                                                        Command="{Binding RemoveCommand}"
+                                                        WidthRequest="30" HeightRequest="30"
+                                                        Padding="0"
+                                                        CornerRadius="6"
+                                                        FontSize="12"
+                                                        TextColor="{StaticResource ErrorRed}"
+                                                        BackgroundColor="Transparent"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Section: Request Body -->
+                <Border BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                        Stroke="Transparent"
+                        Padding="16">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="14">
+                        <Label Text="Request Body"
+                               FontAttributes="Bold"
+                               FontSize="15"
+                               Opacity="0.7"/>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <VerticalStackLayout Grid.Column="0" Spacing="4">
+                                <Label Text="Body Type" FontSize="13" FontAttributes="Bold"/>
+                                <Picker ItemsSource="{x:Static vm:MobileCustomUploaderConfigViewModel.BodyTypes}"
+                                        SelectedIndex="{Binding SelectedBodyTypeIndex}"
+                                        HorizontalOptions="Fill"/>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                <Label Text="File Form Name" FontSize="13" FontAttributes="Bold"/>
+                                <Entry Text="{Binding FileFormName, Mode=TwoWay}"
+                                       Placeholder="file"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <!-- Form Arguments -->
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="Form Arguments" FontSize="13" FontAttributes="Bold" VerticalOptions="Center"/>
+                                <Button Grid.Column="1"
+                                        Text="+ Add"
+                                        Command="{Binding AddArgumentCommand}"
+                                        Padding="12,4"
+                                        FontSize="12"
+                                        CornerRadius="6"
+                                        HeightRequest="28"/>
+                            </Grid>
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Arguments}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:KeyValuePairItem">
+                                        <Border BackgroundColor="{AppThemeBinding Light=#EBEBEB, Dark=#333333}"
+                                                Stroke="Transparent"
+                                                Padding="8"
+                                                Margin="0,2">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="8"/>
+                                            </Border.StrokeShape>
+                                            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="6">
+                                                <Entry Grid.Column="0"
+                                                       Text="{Binding Key, Mode=TwoWay}"
+                                                       Placeholder="Key"
+                                                       FontSize="13"/>
+                                                <Entry Grid.Column="1"
+                                                       Text="{Binding Value, Mode=TwoWay}"
+                                                       Placeholder="Value"
+                                                       FontSize="13"/>
+                                                <Button Grid.Column="2"
+                                                        Text="&#x2715;"
+                                                        Command="{Binding RemoveCommand}"
+                                                        WidthRequest="30" HeightRequest="30"
+                                                        Padding="0"
+                                                        CornerRadius="6"
+                                                        FontSize="12"
+                                                        TextColor="{StaticResource ErrorRed}"
+                                                        BackgroundColor="Transparent"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+
+                        <!-- Body Data -->
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Body Data (JSON/XML)" FontSize="13" FontAttributes="Bold"/>
+                            <Editor Text="{Binding BodyData, Mode=TwoWay}"
+                                    MinimumHeightRequest="80"
+                                    MaximumHeightRequest="150"
+                                    Placeholder="JSON or XML body content"
+                                    FontFamily="Consolas"
+                                    FontSize="12"
+                                    AutoSize="TextChanges"/>
+                            <Label Text="Use input for file content, filename for file name."
+                                   FontSize="11"
+                                   Opacity="0.5"
+                                   Margin="4,2,0,0"/>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Section: Response Parsing -->
+                <Border BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                        Stroke="Transparent"
+                        Padding="16">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="14">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Response Parsing"
+                                   FontAttributes="Bold"
+                                   FontSize="15"
+                                   Opacity="0.7"/>
+                            <Label Text="Extract URLs from the server response using json:path, regex:pattern, or response syntax."
+                                   FontSize="11"
+                                   Opacity="0.5"
+                                   LineBreakMode="WordWrap"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="URL" FontSize="13" FontAttributes="Bold"/>
+                            <Entry Text="{Binding UrlPattern, Mode=TwoWay}"
+                                   Placeholder="e.g. json:url or response"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Thumbnail URL" FontSize="13" FontAttributes="Bold"/>
+                            <Entry Text="{Binding ThumbnailUrlPattern, Mode=TwoWay}"
+                                   Placeholder="e.g. json:thumbnail"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Deletion URL" FontSize="13" FontAttributes="Bold"/>
+                            <Entry Text="{Binding DeletionUrlPattern, Mode=TwoWay}"
+                                   Placeholder="e.g. json:delete_url"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Error Message" FontSize="13" FontAttributes="Bold"/>
+                            <Entry Text="{Binding ErrorMessagePattern, Mode=TwoWay}"
+                                   Placeholder="e.g. json:error"/>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Section: Import from JSON -->
+                <Border BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                        Stroke="Transparent"
+                        Padding="16">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="10">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Import from JSON"
+                                   FontAttributes="Bold"
+                                   FontSize="15"
+                                   Opacity="0.7"/>
+                            <Label Text="Paste .sxcu JSON to populate the form above"
+                                   FontSize="11"
+                                   Opacity="0.5"/>
+                        </VerticalStackLayout>
+                        <Editor Text="{Binding JsonInput, Mode=TwoWay}"
+                                MinimumHeightRequest="80"
+                                MaximumHeightRequest="150"
+                                Placeholder="Paste .sxcu JSON content here..."
+                                FontFamily="Consolas"
+                                FontSize="12"
+                                AutoSize="TextChanges"/>
+                        <Button Text="Import JSON"
+                                Command="{Binding ImportJsonCommand}"
+                                HorizontalOptions="Fill"
+                                HeightRequest="40"
+                                CornerRadius="8"
+                                FontSize="13"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Editor Action Buttons -->
+                <VerticalStackLayout Spacing="10" Margin="0,4,0,40">
+                    <Button Text="Save"
+                            Command="{Binding SaveEditorCommand}"
+                            HorizontalOptions="Fill"
+                            HeightRequest="48"
+                            CornerRadius="10"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            FontSize="15"/>
+
+                    <Button Text="Cancel"
+                            Command="{Binding CancelEditorCommand}"
+                            HorizontalOptions="Fill"
+                            HeightRequest="42"
+                            CornerRadius="10"
+                            FontSize="14"/>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+
+</ContentPage>

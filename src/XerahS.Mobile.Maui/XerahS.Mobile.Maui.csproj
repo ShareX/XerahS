@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>XerahS.Mobile.Maui</RootNamespace>
+    <TargetFrameworks>net10.0-android;net10.0-ios</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- App identifiers -->
+    <ApplicationTitle>XerahS</ApplicationTitle>
+    <ApplicationId>com.sharexteam.xerahs</ApplicationId>
+    <ApplicationDisplayVersion>0.15.2</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+
+    <!-- Platform minimum versions -->
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <!-- NuGet Packages -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.30" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="CommunityToolkit.Maui" Version="14.0.0" />
+    <PackageReference Include="SkiaSharp" Version="2.88.9" />
+  </ItemGroup>
+
+  <!-- Project References -->
+  <ItemGroup>
+    <ProjectReference Include="..\XerahS.Platform.Mobile\XerahS.Platform.Mobile.csproj" />
+    <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
+    <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\XerahS.Uploaders\XerahS.Uploaders.csproj" />
+    <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" />
+  </ItemGroup>
+
+  <!-- iOS Share Extension -->
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <ProjectReference Include="..\XerahS.Mobile.iOS.ShareExtension\XerahS.Mobile.iOS.ShareExtension.csproj">
+      <IsAppExtension>true</IsAppExtension>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>

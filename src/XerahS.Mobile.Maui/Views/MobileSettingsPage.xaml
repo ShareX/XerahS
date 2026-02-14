@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:XerahS.Mobile.Maui.ViewModels"
+             x:Class="XerahS.Mobile.Maui.Views.MobileSettingsPage"
+             x:DataType="vm:MobileSettingsViewModel"
+             Title="Settings">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Refresh"
+                     Command="{Binding RefreshCommand}"
+                     Order="Primary"/>
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <!-- Info Card -->
+            <Border BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                    Stroke="Transparent"
+                    Padding="16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12"/>
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Upload Destinations"
+                           FontSize="16"
+                           FontAttributes="Bold"/>
+                    <Label Text="Configure where your files will be uploaded. Amazon S3 and custom uploaders are supported."
+                           FontSize="13"
+                           LineBreakMode="WordWrap"
+                           TextColor="{AppThemeBinding Light=#888888, Dark=#AAAAAA}"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Uploader Items -->
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding SettingsItems}"
+                                 Spacing="4">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SettingsItem">
+                        <Border BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                                Stroke="Transparent"
+                                Padding="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnSettingsItemTapped"
+                                                     CommandParameter="{Binding .}"/>
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="Auto, *, Auto">
+
+                                <!-- Icon -->
+                                <Border Grid.Column="0"
+                                        WidthRequest="48"
+                                        HeightRequest="48"
+                                        BackgroundColor="{StaticResource Primary}"
+                                        Stroke="Transparent"
+                                        Margin="12"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="24"/>
+                                    </Border.StrokeShape>
+                                    <Label Text="&#x2601;"
+                                           FontSize="24"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center"
+                                           TextColor="White"/>
+                                </Border>
+
+                                <!-- Text -->
+                                <VerticalStackLayout Grid.Column="1"
+                                                     VerticalOptions="Center"
+                                                     Margin="0,12">
+                                    <Label Text="{Binding Title}"
+                                           FontSize="16"
+                                           FontAttributes="Bold"/>
+                                    <Label Text="{Binding Description}"
+                                           FontSize="13"
+                                           TextColor="{AppThemeBinding Light=#888888, Dark=#AAAAAA}"
+                                           LineBreakMode="TailTruncation"/>
+                                </VerticalStackLayout>
+
+                                <!-- Status Badge -->
+                                <Border Grid.Column="2"
+                                        WidthRequest="32"
+                                        HeightRequest="32"
+                                        Background="{Binding IsConfigured, Converter={StaticResource BoolToConfiguredBrush}}"
+                                        Stroke="Transparent"
+                                        Margin="12"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="16"/>
+                                    </Border.StrokeShape>
+                                    <Label Text="{Binding BadgeText}"
+                                           FontSize="16"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center"
+                                           TextColor="White"/>
+                                </Border>
+
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
