@@ -49,7 +49,12 @@ class Program
         }
 
         string arch = args[3]; // e.g. amd64 for deb, linux-x64 for filename
-        string debArch = arch == "linux-x64" ? "amd64" : arch; // map linux-x64 to debian amd64
+        string debArch = arch switch 
+        {
+            "linux-x64" => "amd64",
+            "linux-arm64" => "arm64",
+            _ => arch
+        };
         string rpmArch = MapRpmArch(arch);
 
         Console.WriteLine($"Packaging XerahS {version} for {debArch}...");
@@ -449,7 +454,7 @@ class Program
             var psi = new ProcessStartInfo
             {
                 FileName = "rpmbuild",
-                Arguments = $"-bb{depFlag} --define \"_topdir {rpmRoot}\" \"{specPath}\"",
+                Arguments = $"-bb{depFlag} --target {arch} --define \"_topdir {rpmRoot}\" \"{specPath}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -546,6 +551,7 @@ class Program
         return arch switch
         {
             "linux-x64" => "x86_64",
+            "linux-arm64" => "aarch64",
             "amd64" => "x86_64",
             "x64" => "x86_64",
             "arm64" => "aarch64",
