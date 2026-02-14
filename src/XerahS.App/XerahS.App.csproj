@@ -104,7 +104,7 @@
 
   <Target Name="BuildPlugins" AfterTargets="Build" Condition="'$(SkipBundlePlugins)' != 'true'">
     <Message Text="Building default plugin for dev: %(_DefaultPlugins.PluginId)" Importance="High" />
-    <MSBuild Projects="%(_DefaultPlugins.Identity)" Targets="Restore;Build" Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier)" />
+    <MSBuild Projects="%(_DefaultPlugins.Identity)" Targets="Restore;Build" Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);HostTargetFramework=$(TargetFramework)" />
   </Target>
 </Project>
 

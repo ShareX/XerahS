@@ -49,22 +49,4 @@
     </None>
   </ItemGroup>
 
-  <!-- Copy plugin to main app's Plugins directory (only when built standalone) -->
-  <Target Name="CopyToPluginsDir" AfterTargets="Build" Condition="!$(OutputPath.Contains('Plugins'))">
-    <PropertyGroup>
-      <PluginOutputDir>$(MSBuildThisFileDirectory)..\..\XerahS.App\bin\$(Configuration)\$(TargetFramework)\Plugins\$(PluginId)</PluginOutputDir>
-    </PropertyGroup>
-    <ItemGroup>
-      <!-- Only copy the plugin's own assembly and non-excluded dependencies, not project references marked Private=false -->
-      <PluginFiles Include="$(OutputPath)$(AssemblyName).dll" />
-      <PluginFiles Include="$(OutputPath)$(AssemblyName).pdb" Condition="Exists('$(OutputPath)$(AssemblyName).pdb')" />
-      <PluginFiles Include="$(OutputPath)plugin.json" Condition="Exists('$(OutputPath)plugin.json')" />
-      <!-- Include any additional runtime dependencies that aren't from the host -->
-      <PluginFiles Include="$(OutputPath)*.dll" Exclude="$(OutputPath)$(AssemblyName).dll;$(OutputPath)Avalonia*.dll;$(OutputPath)XerahS.*.dll;$(OutputPath)CommunityToolkit*.dll;$(OutputPath)Newtonsoft*.dll" />
-    </ItemGroup>
-    <MakeDir Directories="$(PluginOutputDir)" Condition="!Exists('$(PluginOutputDir)')" />
-    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(PluginOutputDir)" SkipUnchangedFiles="true" />
-    <Message Importance="High" Text="Copied $(PluginName) plugin to: $(PluginOutputDir)" />
-  </Target>
-
 </Project>
