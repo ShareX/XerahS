@@ -124,19 +124,11 @@ namespace XerahS.Common
         {
             GitHubRelease? latestRelease = null;
 
-            try
-            {
-                string response = await WebHelpers.DownloadStringAsync(LatestReleaseURL);
+            string response = await WebHelpers.DownloadStringAsync(LatestReleaseURL);
 
-                if (!string.IsNullOrEmpty(response))
-                {
-                    latestRelease = JsonConvert.DeserializeObject<GitHubRelease>(response);
-                }
-            }
-            catch (HttpRequestException ex) when (ex.Message.Contains("404"))
+            if (!string.IsNullOrEmpty(response))
             {
-                DebugHelper.WriteLine($"No releases found at {LatestReleaseURL}. The repository may not have any releases yet.");
-                throw;
+                latestRelease = JsonConvert.DeserializeObject<GitHubRelease>(response);
             }
 
             return latestRelease;
@@ -157,7 +149,22 @@ namespace XerahS.Common
             }
             else
             {
-                latestRelease = await GetLatestRelease();
+                try
+                {
+                    latestRelease = await GetLatestRelease();
+                }
+                catch (HttpRequestException ex) when (ex.Message.Contains("404"))
+                {
+                    // No stable release found, fall back to checking all releases
+                    DebugHelper.WriteLine($"No stable releases found for {Owner}/{Repo}. Checking for pre-releases...");
+                    List<GitHubRelease>? releases = await GetReleases();
+
+                    if (releases != null && releases.Count > 0)
+                    {
+                        latestRelease = releases[0];
+                        DebugHelper.WriteLine($"Found pre-release: {latestRelease.tag_name} (Only pre-releases available)");
+                    }
+                }
             }
 
             return latestRelease;
