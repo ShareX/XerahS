@@ -53,7 +53,7 @@ namespace XerahS.RegionCapture.UI;
 /// </summary>
 public partial class OverlayWindow : Window
 {
-    private static readonly long SelectionDragRebuildIntervalTicks = Math.Max(1, Stopwatch.Frequency / 30);
+    private static readonly long SelectionDragRebuildIntervalTicks = Math.Max(1, Stopwatch.Frequency / 60);
 
     private readonly Models.MonitorInfo _monitor;
     private readonly TaskCompletionSource<RegionSelectionResult?> _completionSource;
@@ -71,7 +71,8 @@ public partial class OverlayWindow : Window
     private long _lastRebuildTicks;
     private bool _selectionInteractionActive;
     private SKBitmap? _annotationRenderTarget;
-    private int _freehandUpdateCounter;
+    private Image? _annotationImage;
+    private Avalonia.Media.Imaging.WriteableBitmap? _annotationBitmap;
 
     // CTRL modifier state for toggling between drawing and region selection
     private bool _ctrlPressed;
@@ -367,7 +368,6 @@ public partial class OverlayWindow : Window
         _currentAnnotation = null;
         _isDrawing = false;
         _selectionInteractionActive = false;
-        _freehandUpdateCounter = 0;
 
         // Delegate to EditorCore for annotation creation and initialization.
         int countBefore = _viewModel.EditorCore.Annotations.Count;
@@ -435,26 +435,21 @@ public partial class OverlayWindow : Window
         var point = e.GetPosition(_annotationCanvas);
         var skPoint = new SKPoint((float)point.X, (float)point.Y);
 
-        // Delegate to EditorCore for annotation state updates (drawing/dragging/resizing).
-        _viewModel.EditorCore.OnPointerMoved(skPoint);
-
-        // Update preview shape from the annotation's updated state.
-        if (_isDrawing && _currentAnnotation != null && _currentShape != null)
+        if (_isDrawing && _currentAnnotation != null)
         {
-            // Throttle freehand/eraser geometry updates - skip intermediate frames
-            // to avoid O(N) StreamGeometry rebuild on every pointer move.
-            if (_currentAnnotation is FreehandAnnotation freehand)
-            {
-                _freehandUpdateCounter++;
-                int throttle = freehand.Points.Count > 100 ? 4 : 2;
-                if (_freehandUpdateCounter % throttle != 0)
-                {
-                    return;
-                }
-            }
+            // Keep draw-path updates lightweight and local to the active annotation preview.
+            // This avoids expensive full-core invalidation work on every pointer move.
+            UpdateCurrentDrawingAnnotation(skPoint);
 
-            UpdatePreviewFromAnnotation(_currentShape, _currentAnnotation);
+            if (_currentShape != null)
+            {
+                UpdatePreviewFromAnnotation(_currentShape, _currentAnnotation);
+            }
+            return;
         }
+
+        // Delegate to EditorCore for selection drag/resize interactions.
+        _viewModel.EditorCore.OnPointerMoved(skPoint);
     }
 
     private void OnAnnotationCanvasPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -490,6 +485,35 @@ public partial class OverlayWindow : Window
         }
 
         SyncAnnotationState();
+    }
+
+    private void UpdateCurrentDrawingAnnotation(SKPoint point)
+    {
+        if (_currentAnnotation == null)
+        {
+            return;
+        }
+
+        if (_currentAnnotation is FreehandAnnotation freehand)
+        {
+            freehand.Points.Add(point);
+        }
+        else if (_currentAnnotation is CutOutAnnotation cutOut)
+        {
+            float deltaX = Math.Abs(point.X - _currentAnnotation.StartPoint.X);
+            float deltaY = Math.Abs(point.Y - _currentAnnotation.StartPoint.Y);
+            cutOut.IsVertical = deltaX > deltaY;
+            _currentAnnotation.EndPoint = point;
+        }
+        else
+        {
+            _currentAnnotation.EndPoint = point;
+        }
+
+        if (_currentAnnotation is SpotlightAnnotation spotlight)
+        {
+            spotlight.CanvasSize = new SKSize((float)Math.Max(1, Width), (float)Math.Max(1, Height));
+        }
     }
 
     /// <summary>
@@ -900,7 +924,7 @@ public partial class OverlayWindow : Window
         }
 
         _rebuildScheduled = true;
-        Dispatcher.UIThread.Post(ProcessPendingRebuild, DispatcherPriority.Background);
+        Dispatcher.UIThread.Post(ProcessPendingRebuild, DispatcherPriority.Render);
     }
 
     private void OnAnnotationsRestored()
@@ -919,25 +943,19 @@ public partial class OverlayWindow : Window
             _rebuildPending = false;
             RebuildAnnotationCanvas();
             SyncAnnotationState();
-            InvalidateVisual();
         }
 
         _rebuildScheduled = false;
         if (_rebuildPending)
         {
             _rebuildScheduled = true;
-            Dispatcher.UIThread.Post(ProcessPendingRebuild, DispatcherPriority.Background);
+            Dispatcher.UIThread.Post(ProcessPendingRebuild, DispatcherPriority.Render);
         }
     }
 
     private void RebuildAnnotationCanvas()
     {
         if (_annotationCanvas == null) return;
-
-        // Preserve inline text box if active
-        var preserveTextBox = _inlineTextBox;
-
-        _annotationCanvas.Children.Clear();
 
         var annotations = _viewModel.EditorCore.Annotations;
         if (annotations.Count > 0)
@@ -967,25 +985,48 @@ public partial class OverlayWindow : Window
                 annotation.Render(canvas);
             }
 
-            // Convert to WriteableBitmap with fast direct pixel copy (no PNG encode/decode)
-            var writeable = ConvertSKBitmapToWriteableBitmap(_annotationRenderTarget);
-            if (writeable != null)
+            if (_annotationBitmap == null ||
+                _annotationBitmap.PixelSize.Width != logicalWidth ||
+                _annotationBitmap.PixelSize.Height != logicalHeight)
             {
-                var image = new Image
+                _annotationBitmap?.Dispose();
+                _annotationBitmap = new Avalonia.Media.Imaging.WriteableBitmap(
+                    new PixelSize(logicalWidth, logicalHeight),
+                    new Vector(96, 96),
+                    Avalonia.Platform.PixelFormat.Bgra8888,
+                    Avalonia.Platform.AlphaFormat.Premul);
+            }
+
+            if (CopySkBitmapToWriteableBitmap(_annotationRenderTarget, _annotationBitmap))
+            {
+                _annotationImage ??= new Image
                 {
-                    Source = writeable,
-                    Width = logicalWidth,
-                    Height = logicalHeight,
                     IsHitTestVisible = false
                 };
-                _annotationCanvas.Children.Add(image);
+
+                _annotationImage.Source = _annotationBitmap;
+                _annotationImage.Width = logicalWidth;
+                _annotationImage.Height = logicalHeight;
+
+                if (!_annotationCanvas.Children.Contains(_annotationImage))
+                {
+                    _annotationCanvas.Children.Insert(0, _annotationImage);
+                }
             }
         }
-
-        // Re-add inline text box if it was active
-        if (preserveTextBox != null)
+        else if (_annotationImage != null && _annotationCanvas.Children.Contains(_annotationImage))
         {
-            _annotationCanvas.Children.Add(preserveTextBox);
+            _annotationCanvas.Children.Remove(_annotationImage);
+        }
+
+        if (_inlineTextBox != null)
+        {
+            if (_annotationCanvas.Children.Contains(_inlineTextBox))
+            {
+                _annotationCanvas.Children.Remove(_inlineTextBox);
+            }
+
+            _annotationCanvas.Children.Add(_inlineTextBox);
         }
 
         _lastRebuildTicks = Stopwatch.GetTimestamp();
@@ -1080,30 +1121,53 @@ public partial class OverlayWindow : Window
         _viewModel.ShadowEnabled = !_viewModel.ShadowEnabled;
     }
 
-    /// <summary>
-    /// Converts an SKBitmap to a WriteableBitmap using fast direct pixel copy.
-    /// Avoids the expensive PNG encode/decode roundtrip.
-    /// </summary>
-    private static Avalonia.Media.Imaging.WriteableBitmap? ConvertSKBitmapToWriteableBitmap(SKBitmap skBitmap)
+    private static bool CopySkBitmapToWriteableBitmap(
+        SKBitmap source,
+        Avalonia.Media.Imaging.WriteableBitmap destination)
     {
-        if (skBitmap == null || skBitmap.Width <= 0 || skBitmap.Height <= 0) return null;
-
-        var wb = new Avalonia.Media.Imaging.WriteableBitmap(
-            new PixelSize(skBitmap.Width, skBitmap.Height),
-            new Vector(96, 96),
-            Avalonia.Platform.PixelFormat.Bgra8888,
-            Avalonia.Platform.AlphaFormat.Premul);
-
-        using (var fb = wb.Lock())
+        if (source == null || destination == null || source.Width <= 0 || source.Height <= 0)
         {
-            var srcPtr = skBitmap.GetPixels();
-            int size = skBitmap.RowBytes * skBitmap.Height;
-            var buffer = new byte[size];
-            Marshal.Copy(srcPtr, buffer, 0, size);
-            Marshal.Copy(buffer, 0, fb.Address, size);
+            return false;
         }
 
-        return wb;
+        if (destination.PixelSize.Width != source.Width || destination.PixelSize.Height != source.Height)
+        {
+            return false;
+        }
+
+        using var fb = destination.Lock();
+        var srcInfo = source.Info;
+        var dstInfo = new SKImageInfo(source.Width, source.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+
+        if (srcInfo.ColorType == SKColorType.Bgra8888)
+        {
+            unsafe
+            {
+                var srcPtr = source.GetPixels();
+                var dstPtr = fb.Address;
+                int srcStride = source.RowBytes;
+                int dstStride = fb.RowBytes;
+                int copyWidth = Math.Min(srcStride, dstStride);
+
+                for (int y = 0; y < source.Height; y++)
+                {
+                    var srcRow = IntPtr.Add(srcPtr, y * srcStride);
+                    var dstRow = IntPtr.Add(dstPtr, y * dstStride);
+                    Buffer.MemoryCopy((void*)srcRow, (void*)dstRow, dstStride, copyWidth);
+                }
+            }
+
+            return true;
+        }
+
+        var pixmap = source.PeekPixels();
+        if (pixmap != null)
+        {
+            return pixmap.ReadPixels(dstInfo, fb.Address, fb.RowBytes, 0, 0);
+        }
+
+        _ = source.GetPixels();
+        return source.PeekPixels()?.ReadPixels(dstInfo, fb.Address, fb.RowBytes, 0, 0) ?? false;
     }
 
     /// <summary>
