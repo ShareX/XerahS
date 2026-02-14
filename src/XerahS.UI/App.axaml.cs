@@ -98,13 +98,33 @@ public partial class App : Application
             };
             _baseTitle = desktop.MainWindow.Title ?? AppResources.ProductNameWithVersion;
 
-            // Apply window state based on SilentRun
-            // Note: MainWindow is automatically shown by ApplicationLifetime after this method returns.
-            // Setting it to minimized and hiding from taskbar is the best way to simulate "start hidden".
+            // Apply window state based on SilentRun.
+            // We avoid starting minimized because some Windows setups can leave a minimized
+            // thumbnail/button at the bottom-left instead of staying tray-only.
             if (silentRun)
             {
-                desktop.MainWindow.WindowState = Avalonia.Controls.WindowState.Minimized;
                 desktop.MainWindow.ShowInTaskbar = false;
+
+                EventHandler? hideOnFirstOpen = null;
+                hideOnFirstOpen = (_, _) =>
+                {
+                    if (desktop.MainWindow != null)
+                    {
+                        desktop.MainWindow.Opened -= hideOnFirstOpen;
+                    }
+
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        if (desktop.MainWindow != null && XerahS.Core.SettingsManager.Settings.SilentRun && !IsExiting)
+                        {
+                            desktop.MainWindow.Hide();
+                            desktop.MainWindow.ShowInTaskbar = false;
+                            Common.DebugHelper.WriteLine("SilentRun startup: main window hidden to tray.");
+                        }
+                    }, Avalonia.Threading.DispatcherPriority.Background);
+                };
+
+                desktop.MainWindow.Opened += hideOnFirstOpen;
             }
             else
             {
