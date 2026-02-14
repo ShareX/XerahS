@@ -442,7 +442,7 @@
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <CheckBox IsChecked="{Binding UseModernCapture}" Content="Use Modern Screen Capture (Direct3D11)" AutomationProperties.Name="Use Modern Capture"/>
+                                    <CheckBox IsChecked="{Binding UseModernCapture}" Content="Use Modern Screen Capture (Direct3D11 on Windows, XDG Portal on Linux). Requires restart." AutomationProperties.Name="Use Modern Capture"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

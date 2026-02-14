@@ -54,13 +54,13 @@ namespace XerahS.Bootstrap
                     InitializeLogging(options.LogPath);
                 }
 
-                // 2. Initialize platform services
-                InitializePlatformServices(options.ScreenCaptureService);
-                result.PlatformServicesInitialized = true;
-
-                // 3. Load configuration
+                // 2. Load configuration (must be before platform init so UseModernCapture is available)
                 SettingsManager.LoadInitialSettings();
                 result.ConfigurationLoaded = true;
+
+                // 3. Initialize platform services
+                InitializePlatformServices(options.ScreenCaptureService);
+                result.PlatformServicesInitialized = true;
 
                 // 4. Initialize recording (async, critical for ScreenRecorder)
                 if (options.InitializeRecording)
@@ -252,7 +252,9 @@ namespace XerahS.Bootstrap
         /// </summary>
         private static void InitializeLinuxPlatform()
         {
-            Platform.Linux.LinuxPlatform.Initialize();
+            bool useModernCapture = Core.SettingsManager.DefaultTaskSettings?.CaptureSettings?.UseModernCapture ?? true;
+            DebugHelper.WriteLine($"Linux: UseModernCapture={useModernCapture}");
+            Platform.Linux.LinuxPlatform.Initialize(useModernCapture: useModernCapture);
         }
 #endif
 

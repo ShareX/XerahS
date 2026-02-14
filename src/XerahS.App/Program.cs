@@ -100,13 +100,13 @@ namespace XerahS.App
 
                 dh.AsyncWrite = true; // Switch back to async
 
+                // Initialize settings first (UseModernCapture must be available for platform init)
+                XerahS.Core.SettingsManager.LoadInitialSettings();
+
                 InitializePlatformServices();
 
                 // Register callback for post-UI async initialization
                 XerahS.UI.App.PostUIInitializationCallback = InitializeBackgroundServicesAsync;
-
-                // Initialize settings
-                XerahS.Core.SettingsManager.LoadInitialSettings();
 
                 BuildAvaloniaApp()
                     .StartWithClassicDesktopLifetime(args);
@@ -214,7 +214,10 @@ namespace XerahS.App
                 var linuxCaptureService = new XerahS.Platform.Linux.LinuxScreenCaptureService();
                 var uiCaptureService = new XerahS.UI.Services.ScreenCaptureService(linuxCaptureService);
 
-                XerahS.Platform.Linux.LinuxPlatform.Initialize(uiCaptureService);
+                bool useModernCapture = XerahS.Core.SettingsManager.DefaultTaskSettings?.CaptureSettings?.UseModernCapture ?? true;
+                XerahS.Common.DebugHelper.WriteLine($"Linux: UseModernCapture={useModernCapture}");
+
+                XerahS.Platform.Linux.LinuxPlatform.Initialize(uiCaptureService, useModernCapture);
                 // NOTE: InitializeRecording() moved to async post-UI initialization in App.axaml.cs
                 return;
             }

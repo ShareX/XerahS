@@ -376,50 +376,85 @@ namespace XerahS.Platform.Linux
 
             DebugHelper.WriteLine($"LinuxScreenCaptureService: Attempting capture (Modern={useModern})...");
 
-            // If Modern Capture is disabled, force X11 immediately (legacy mode)
-            if (!useModern)
-            {
-                 DebugHelper.WriteLine("LinuxScreenCaptureService: Legacy mode enabled. Forcing X11 capture.");
-                 return await CaptureWithX11Async();
-            }
-
-            // Modern Mode: Try XDG Portal first on Wayland, then tools, then X11
-
-            // 1. On Wayland, try XDG Portal Screenshot API first (most reliable method)
             if (IsWayland)
             {
-                DebugHelper.WriteLine("LinuxScreenCaptureService: Wayland detected, trying XDG Portal...");
-                var (portalResult, _) = await CaptureWithPortalDetailedAsync(forceInteractive: false);
+                // On Wayland, X11 capture is impossible.
+                // Always try the non-interactive portal first as it's the standard way to get pixels
+                // on GNOME/KDE Wayland without showing the selection UI.
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Wayland detected, trying XDG Portal (non-interactive)...");
+                var (portalResult, _) = await CaptureWithPortalDetailedAsync(forceInteractive: false, allowInteractiveFallback: false);
                 if (portalResult != null)
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: XDG Portal capture succeeded.");
                     return portalResult;
                 }
-                DebugHelper.WriteLine("LinuxScreenCaptureService: XDG Portal capture failed, trying Wayland-native tools...");
+                DebugHelper.WriteLine("LinuxScreenCaptureService: XDG Portal capture failed, trying fallback tools...");
 
                 // Try grim (standard Wayland screenshot tool, works with Hyprland, Sway, etc.)
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Trying grim...");
                 var grimResult = await CaptureWithGrimAsync();
                 if (grimResult != null)
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: Screenshot captured with grim.");
                     return grimResult;
                 }
+                DebugHelper.WriteLine("LinuxScreenCaptureService: grim failed or not available.");
+
+                // Try GNOME Shell internal screenshot (D-Bus) - often works where Portal fails silently
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Trying GNOME Shell D-Bus...");
+                var gnomeShellResult = await CaptureWithGnomeShellDBusAsync();
+                if (gnomeShellResult != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Screenshot captured with GNOME Shell D-Bus.");
+                    return gnomeShellResult;
+                }
+                DebugHelper.WriteLine("LinuxScreenCaptureService: GNOME Shell D-Bus failed.");
+
+                // Try generic tools (gnome-screenshot, spectacle, etc.) which also work on Wayland
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Trying gnome-screenshot...");
+                var result = await CaptureWithGnomeScreenshotAsync();
+                if (result != null) 
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Screenshot captured with gnome-screenshot.");
+                    return result;
+                }
+                DebugHelper.WriteLine("LinuxScreenCaptureService: gnome-screenshot failed.");
+
+                DebugHelper.WriteLine("LinuxScreenCaptureService: Trying spectacle...");
+                result = await CaptureWithSpectacleAsync();
+                if (result != null)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: Screenshot captured with spectacle.");
+                    return result;
+                }
+                DebugHelper.WriteLine("LinuxScreenCaptureService: spectacle failed.");
+
+                // No tool succeeded on Wayland - return null
+                DebugHelper.WriteLine("LinuxScreenCaptureService: All Wayland capture methods failed.");
+                return null;
             }
 
-            // 2. Try generic tools (gnome-screenshot, spectacle, etc) which work on both Wayland and X11
-            var result = await CaptureWithGnomeScreenshotAsync();
-            if (result != null) return result;
+            // X11 path: If UseModernCapture is disabled, force X11 immediately (legacy mode)
+            if (!useModern)
+            {
+                 DebugHelper.WriteLine("LinuxScreenCaptureService: Legacy mode enabled. Forcing X11 capture.");
+                 return await CaptureWithX11Async();
+            }
 
-            result = await CaptureWithSpectacleAsync();
-            if (result != null) return result;
+            // X11 modern path: Try generic tools first, then X11 fallback
+            var x11Result = await CaptureWithGnomeScreenshotAsync();
+            if (x11Result != null) return x11Result;
 
-            result = await CaptureWithScrotAsync();
-            if (result != null) return result;
+            x11Result = await CaptureWithSpectacleAsync();
+            if (x11Result != null) return x11Result;
 
-            result = await CaptureWithImportAsync();
-            if (result != null) return result;
+            x11Result = await CaptureWithScrotAsync();
+            if (x11Result != null) return x11Result;
 
-            // 3. Fallback to X11 if generic tools failed
+            x11Result = await CaptureWithImportAsync();
+            if (x11Result != null) return x11Result;
+
+            // Fallback to X11 if generic tools failed
             DebugHelper.WriteLine("LinuxScreenCaptureService: external tools failed. Falling back to X11.");
             return await CaptureWithX11Async();
         }
@@ -1142,7 +1177,7 @@ namespace XerahS.Platform.Linux
         private const string PortalBusName = "org.freedesktop.portal.Desktop";
         private static readonly ObjectPath PortalObjectPath = new("/org/freedesktop/portal/desktop");
 
-        private async Task<(SKBitmap? bitmap, uint response)> CaptureWithPortalDetailedAsync(bool forceInteractive)
+        private async Task<(SKBitmap? bitmap, uint response)> CaptureWithPortalDetailedAsync(bool forceInteractive, bool allowInteractiveFallback = true)
         {
             try
             {
@@ -1167,7 +1202,7 @@ namespace XerahS.Platform.Linux
                 }
 
                 // Response 1 = user cancelled, 2 = error. Retry interactively only on error.
-                if (!forceInteractive && response == PortalResponseFailed)
+                if (allowInteractiveFallback && !forceInteractive && response == PortalResponseFailed)
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: Portal non-interactive capture failed; retrying interactive.");
                     options["interactive"] = true;
@@ -1426,5 +1461,45 @@ namespace XerahS.Platform.Linux
         }
 
         #endregion
+        private async Task<SKBitmap?> CaptureWithGnomeShellDBusAsync()
+        {
+            var tempFile = Path.Combine(Path.GetTempPath(), $"sharex_gnome_{Guid.NewGuid():N}.png");
+            try
+            {
+                using var connection = new Connection(Address.Session);
+                await connection.ConnectAsync();
+
+                var proxy = connection.CreateProxy<IGnomeShellScreenshot>("org.gnome.Shell.Screenshot", "/org/gnome/Shell/Screenshot");
+                
+                // Screenshot(include_cursor, flash, filename)
+                var (success, filenameUsed) = await proxy.ScreenshotAsync(false, false, tempFile);
+
+                if (success && File.Exists(tempFile))
+                {
+                    DebugHelper.WriteLine($"LinuxScreenCaptureService: GNOME Shell D-Bus capture succeeded: {tempFile}");
+                    using var stream = File.OpenRead(tempFile);
+                    var bitmap = SKBitmap.Decode(stream);
+                    return bitmap;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: GNOME Shell D-Bus capture failed: {ex.Message}");
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                {
+                    try { File.Delete(tempFile); } catch { }
+                }
+            }
+            return null;
+        }
+
+        [DBusInterface("org.gnome.Shell.Screenshot")]
+        public interface IGnomeShellScreenshot : IDBusObject
+        {
+            Task<(bool success, string filename)> ScreenshotAsync(bool include_cursor, bool flash, string filename);
+        }
     }
 }

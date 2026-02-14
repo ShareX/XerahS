@@ -6,7 +6,7 @@
     <Company>ShareX Team</Company>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <PropertyGroup Condition="'${OS}' != 'Windows_NT'">
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
     <CrossCompile>true</CrossCompile>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>

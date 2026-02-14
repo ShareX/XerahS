@@ -31,7 +31,7 @@ namespace XerahS.Platform.Linux
 {
     public static class LinuxPlatform
     {
-        public static void Initialize(IScreenCaptureService? screenCaptureService = null)
+        public static void Initialize(IScreenCaptureService? screenCaptureService = null, bool useModernCapture = true)
         {
             // Use LinuxScreenCaptureService if none provided
             if (screenCaptureService == null)
@@ -43,9 +43,19 @@ namespace XerahS.Platform.Linux
             }
 
             bool isWayland = LinuxScreenCaptureService.IsWayland;
-            bool hasGlobalShortcuts = isWayland && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.GlobalShortcuts");
-            bool hasInputCapture = isWayland && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.InputCapture");
-            bool hasOpenUri = isWayland && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.OpenURI");
+
+            // When UseModernCapture is disabled, skip all XDG Portal services to avoid
+            // EIS connection errors and unnecessary D-Bus connections
+            bool usePortalServices = useModernCapture && isWayland;
+            if (!useModernCapture && isWayland)
+            {
+                DebugHelper.WriteLine("Linux: UseModernCapture is disabled. Skipping XDG Portal services (input capture, hotkeys, system). " +
+                    "Using fallback services instead. Re-enable and restart to use portal services.");
+            }
+
+            bool hasGlobalShortcuts = usePortalServices && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.GlobalShortcuts");
+            bool hasInputCapture = usePortalServices && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.InputCapture");
+            bool hasOpenUri = usePortalServices && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.OpenURI");
 
             IHotkeyService hotkeyService = hasGlobalShortcuts
                 ? new WaylandPortalHotkeyService()

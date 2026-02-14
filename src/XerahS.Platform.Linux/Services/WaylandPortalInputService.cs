@@ -53,6 +53,7 @@ public sealed class WaylandPortalInputService : IInputService
     private ObjectPath? _sessionHandle;
     private IPortalSession? _sessionProxy;
     private bool _disposed;
+    private bool _enableFailed;
 
     public WaylandPortalInputService()
     {
@@ -364,7 +365,7 @@ public sealed class WaylandPortalInputService : IInputService
 
     private async Task EnableAsync()
     {
-        if (_portal == null || _sessionHandle == null)
+        if (_portal == null || _sessionHandle == null || _enableFailed)
         {
             return;
         }
@@ -376,7 +377,10 @@ public sealed class WaylandPortalInputService : IInputService
         }
         catch (Exception ex)
         {
+            _enableFailed = true;
             DebugHelper.WriteException(ex, "WaylandPortalInputService: Enable failed");
+            DebugHelper.WriteLine("WaylandPortalInputService: Portal input capture disabled due to EIS connection failure. " +
+                "This is expected if the EIS daemon is not running. Cursor tracking will use fallback.");
         }
     }
 

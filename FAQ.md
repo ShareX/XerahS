@@ -88,3 +88,19 @@ We use **SkiaSharp**, which is a .NET binding for Google's Skia graphics engine 
 *   **True Cross-Platform:** It renders identically on all supported operating systems.
 
 Use `SkiaSharp` for **editing, processing, and saving** images.
+
+---
+
+### Why does a "Share this screen" dialog appear on Linux?
+
+**Q: On Linux (Wayland), why do I see a "Share this screen" dialog every time I try to capture a region?**
+
+**A:** This happens if you have disabled **"Use modern capture"** in settings but are running on a secure Wayland compositor (like GNOME 42+ or KDE Plasma 6).
+
+*   **Modern Capture (Enabled):** Uses the system's native screenshot UI. It is secure and doesn't require extra permissions, but lacks ShareX's custom crosshair/magnifier.
+*   **Legacy Capture (Disabled):** Uses ShareX's custom `OverlayWindow`. To draw this overlay on top of your screen, the app must first **capture the entire specific screen** to use as a background.
+    *   **Security Block:** Most modern Wayland systems block apps from silently capturing the screen.
+    *   **The Dialog:** The OS forces you to explicitly allow the capture via the portal dialog.
+*   **Solution (Smart Fallback):** ShareX detects if silent capture is blocked. Instead of showing a broken overlay or forcing you to click through dialogs, it will **automatically fall back to the system's native region tool** (Portal). This ensures you can always take a screenshot without complex workarounds.
+
+If you prefer the native tool, you can enable **"Use modern capture"** to skip the check entirely.
