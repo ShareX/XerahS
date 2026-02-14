@@ -320,6 +320,61 @@ public partial class IndexFolderViewModel : ViewModelBase
         }
     }
 
+    public string IncludedFileExtensionsText
+    {
+        get => _taskSettings.ToolsSettings.IndexerSettings.IncludedFileExtensions != null 
+            ? string.Join(", ", _taskSettings.ToolsSettings.IndexerSettings.IncludedFileExtensions) 
+            : string.Empty;
+        set
+        {
+            var list = ParseExtensionsText(value);
+            if (!ListEquals(_taskSettings.ToolsSettings.IndexerSettings.IncludedFileExtensions, list))
+            {
+                _taskSettings.ToolsSettings.IndexerSettings.IncludedFileExtensions = list;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public string ExcludedFileExtensionsText
+    {
+        get => _taskSettings.ToolsSettings.IndexerSettings.ExcludedFileExtensions != null 
+            ? string.Join(", ", _taskSettings.ToolsSettings.IndexerSettings.ExcludedFileExtensions) 
+            : string.Empty;
+        set
+        {
+            var list = ParseExtensionsText(value);
+            if (!ListEquals(_taskSettings.ToolsSettings.IndexerSettings.ExcludedFileExtensions, list))
+            {
+                _taskSettings.ToolsSettings.IndexerSettings.ExcludedFileExtensions = list;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    private static List<string>? ParseExtensionsText(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
+        
+        var extensions = text.Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries)
+            .Select(ext => ext.Trim().ToLowerInvariant())
+            .Where(ext => !string.IsNullOrEmpty(ext))
+            .Select(ext => ext.StartsWith(".") ? ext.TrimStart('.') : ext)
+            .Distinct()
+            .ToList();
+        
+        return extensions.Count > 0 ? extensions : null;
+    }
+
+    private static bool ListEquals(List<string>? a, List<string>? b)
+    {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        if (a.Count != b.Count) return false;
+        return a.SequenceEqual(b);
+    }
+
     public bool BinaryUnits
     {
         get => _taskSettings.ToolsSettings.IndexerSettings.BinaryUnits;

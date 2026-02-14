@@ -72,6 +72,23 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- File Extension Filters Card -->
+                    <Border Theme="{StaticResource CardBorderTheme}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="File Extension Filters" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Include only (e.g., cs, txt, md):" FontSize="12" Opacity="0.8"/>
+                                <TextBox Text="{Binding IncludedFileExtensionsText}" Watermark="Leave empty to include all files..."
+                                         AutomationProperties.Name="Included File Extensions"/>
+                            </StackPanel>
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Exclude (e.g., pdb, obj, exe):" FontSize="12" Opacity="0.8"/>
+                                <TextBox Text="{Binding ExcludedFileExtensionsText}" Watermark="Leave empty to exclude nothing..."
+                                         AutomationProperties.Name="Excluded File Extensions"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
                     <!-- Text Formatting Card -->
                     <Border Theme="{StaticResource CardBorderTheme}">
                         <StackPanel Spacing="12">

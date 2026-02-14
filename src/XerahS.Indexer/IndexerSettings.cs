@@ -78,6 +78,12 @@ namespace XerahS.Indexer
         [JsonIgnore]
         public bool BinaryUnits;
 
+        [Category("Indexer / Filters"), DefaultValue(null), Description("List of file extensions to include (e.g., '.cs', '.txt'). If empty/null, all files are included.")]
+        public List<string>? IncludedFileExtensions { get; set; }
+
+        [Category("Indexer / Filters"), DefaultValue(null), Description("List of file extensions to exclude (e.g., '.pdb', '.obj'). Applied after include filter.")]
+        public List<string>? ExcludedFileExtensions { get; set; }
+
         public IndexerSettings()
         {
             Output = IndexerOutput.Html;

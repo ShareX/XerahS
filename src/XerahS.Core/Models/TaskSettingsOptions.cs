@@ -305,6 +305,12 @@ public class IndexerSettings
     [JsonIgnore]
     public bool BinaryUnits;
 
+    [DefaultValue(null)]
+    public List<string>? IncludedFileExtensions { get; set; }
+
+    [DefaultValue(null)]
+    public List<string>? ExcludedFileExtensions { get; set; }
+
     public IndexerSettings()
     {
         Output = IndexerOutput.Html;
