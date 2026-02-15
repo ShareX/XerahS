@@ -14,14 +14,14 @@
 
 #### 1.1 Pull Main Repository
 ```powershell
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" pull origin develop
+git pull origin develop
 ```
 - Pulls the latest changes from the `develop` branch of the main XerahS repository
 - Verify exit code is 0 (success)
 
 #### 1.2 Pull ImageEditor Repository
 ```powershell
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" pull origin main
+git -C ImageEditor pull origin main
 ```
 - Pulls the latest changes from ImageEditor submodule/nested repository
 - This typically targets `main` or `develop` depending on ImageEditor's branch strategy
@@ -29,7 +29,7 @@ git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" pull origin 
 
 #### 1.3 Pull Website Repository (Optional)
 ```powershell
-git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" pull origin main
+git -C ../xerahs.github.io pull origin main
 ```
 - Pulls the latest changes from the website repository for coordinated updates
 - Optional if not performing website updates in this chore cycle
@@ -42,7 +42,7 @@ git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" pull origin ma
 
 #### 2.1 Identify Current Version
 ```powershell
-$version = (Select-String -Path "c:\Users\liveu\source\repos\ShareX Team\XerahS\Directory.Build.props" -Pattern '<Version>(.+?)</Version>').Matches[0].Groups[1].Value
+$version = (Select-String -Path Directory.Build.props -Pattern '<Version>(.+?)</Version>').Matches[0].Groups[1].Value
 Write-Host "Current Version: $version"
 ```
 - Extract the current semantic version from `Directory.Build.props`
@@ -141,16 +141,16 @@ Entry Format:
 
 ```powershell
 # Check main repository
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" status --short
+git status --short
 
 # Check ImageEditor submodule
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" status --short
+git -C ImageEditor status --short
 
 # Check website repository
-git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" status --short
+git -C ../xerahs.github.io status --short
 
 # Check ShareX repository (if applicable)
-git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" status --short
+git -C ../ShareX status --short
 ```
 
 **Important**: Always check ALL submodules, not just known ones. If detached HEAD is detected in any submodule, checkout the appropriate branch first.
@@ -160,16 +160,16 @@ git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" status --short
 
 ```powershell
 # Main repository
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" add .
+git add .
 
 # ImageEditor submodule (always check, even if no direct edits)
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" add .
+git -C ImageEditor add .
 
 # Website repository
-git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" add .
+git -C ../xerahs.github.io add .
 
 # ShareX repository (if applicable)
-git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" add .
+git -C ../ShareX add .
 ```
 
 #### 4.2 Commit with Proper Format in ALL Repositories
@@ -179,16 +179,16 @@ git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" add .
 
 ```powershell
 # ImageEditor submodule (commit FIRST - submodules before parent)
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" commit -m "[v0.15.6] [Chore] Update ImageEditor version and changes"
+git -C ImageEditor commit -m "[v0.15.6] [Chore] Update ImageEditor version and changes"
 
 # Main repository (commit AFTER submodules to capture updated references)
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" commit -m "[v0.15.6] [Chore] Update version and changelog for release"
+git commit -m "[v0.15.6] [Chore] Update version and changelog for release"
 
 # Website repository (if updated)
-git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" commit -m "[v0.15.6] [Chore] Update website content"
+git -C ../xerahs.github.io commit -m "[v0.15.6] [Chore] Update website content"
 
 # ShareX repository (if applicable)
-git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" commit -m "[v0.15.6] [Chore] Update ShareX changes"
+git -C ../ShareX commit -m "[v0.15.6] [Chore] Update ShareX changes"
 ```
 
 **Commit Message Components**:
@@ -205,16 +205,16 @@ git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" commit -m "[v0.15.6] [Ch
 
 ```powershell
 # ImageEditor submodule (push FIRST - before parent)
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" push origin develop
+git -C ImageEditor push origin develop
 
 # Main repository (push AFTER submodules)
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" push origin develop
+git push origin develop
 
 # Website repository
-git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" push origin main
+git -C ../xerahs.github.io push origin main
 
 # ShareX repository (if applicable)
-git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" push origin develop
+git -C ../ShareX push origin develop
 ```
 
 **Push Order**: Submodules first, parent repository last.
@@ -247,10 +247,11 @@ git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" push origin develop
 
 ## 📝 Prerequisites
 
-- Local repositories cloned at expected paths:
-  - `c:\Users\liveu\source\repos\ShareX Team\XerahS`
-  - `c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor`
-  - `c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io` (optional)
+- Local repositories cloned as siblings under `ShareX Team/` directory:
+  - `XerahS/` (main repository, current working directory)
+  - `XerahS/ImageEditor/` (submodule)
+  - `xerahs.github.io/` (sibling repository, optional)
+  - `ShareX/` (sibling repository, optional)
 - Git configured with user identity
 - Push access to all target repositories
 - Working directory clean (no uncommitted changes in unrelated files)
@@ -282,30 +283,30 @@ git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" push origin develop
 
 **Check status of ALL repositories**:
 ```powershell
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" status --short
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" status --short
-git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" status --short
-git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" status --short
+git status --short
+git -C ImageEditor status --short
+git -C ../xerahs.github.io status --short
+git -C ../ShareX status --short
 ```
 
 **Pull all repositories**:
 ```powershell
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" pull origin develop
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" pull origin develop
-git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" pull origin main
-git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" pull origin develop
+git pull origin develop
+git -C ImageEditor pull origin develop
+git -C ../xerahs.github.io pull origin main
+git -C ../ShareX pull origin develop
 ```
 
 **Stage, commit, and push ALL repositories (including submodules)**:
 ```powershell
 # Submodules first, parent last
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" add . ; git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" commit -m "[vX.Y.Z] [Chore] Update ImageEditor" ; git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" push origin develop
+git -C ImageEditor add . ; git -C ImageEditor commit -m "[vX.Y.Z] [Chore] Update ImageEditor" ; git -C ImageEditor push origin develop
 
 # Then parent repository
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" add . ; git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" commit -m "[vX.Y.Z] [Chore] Update version and changelog" ; git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" push origin develop
+git add . ; git commit -m "[vX.Y.Z] [Chore] Update version and changelog" ; git push origin develop
 
 # Website and other repos
-git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" add . ; git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" commit -m "[vX.Y.Z] [Chore] Update website" ; git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" push origin main
+git -C ../xerahs.github.io add . ; git -C ../xerahs.github.io commit -m "[vX.Y.Z] [Chore] Update website" ; git -C ../xerahs.github.io push origin main
 ```
 
 ---
