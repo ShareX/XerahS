@@ -58,7 +58,7 @@ internal sealed class PortalCaptureProvider : ILinuxCaptureProvider
             return LinuxCaptureResult.Success(ProviderId, bitmap);
         }
 
-        if (response == _runtime.PortalResponseCancelled)
+        if (response == _runtime.PortalCancelledResponseCode)
         {
             return LinuxCaptureResult.Cancelled(ProviderId);
         }
@@ -66,4 +66,3 @@ internal sealed class PortalCaptureProvider : ILinuxCaptureProvider
         return LinuxCaptureResult.Failure(ProviderId);
     }
 }
-

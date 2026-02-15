@@ -31,7 +31,7 @@ namespace XerahS.Platform.Linux.Capture.Contracts;
 
 internal interface ILinuxCaptureRuntime
 {
-    uint PortalResponseCancelled { get; }
+    uint PortalCancelledResponseCode { get; }
 
     Task<(SKBitmap? bitmap, uint response)> TryPortalCaptureAsync(LinuxCaptureKind kind, CaptureOptions? options);
 
@@ -45,4 +45,3 @@ internal interface ILinuxCaptureRuntime
         IWindowService? windowService,
         CaptureOptions? options);
 }
-

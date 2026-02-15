@@ -26,6 +26,10 @@
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using XerahS.Platform.Linux.Capture;
+using XerahS.Platform.Linux.Capture.Contracts;
+using XerahS.Platform.Linux.Capture.Detection;
+using XerahS.Platform.Linux.Capture.Orchestration;
+using XerahS.Platform.Linux.Capture.Providers;
 using XerahS.Platform.Linux.Services;
 using SkiaSharp;
 using Microsoft.Win32.SafeHandles;
@@ -40,7 +44,7 @@ namespace XerahS.Platform.Linux
     /// Linux screen capture service with multiple fallback methods.
     /// Supports gnome-screenshot, spectacle (KDE), scrot, and import (ImageMagick).
     /// </summary>
-    public class LinuxScreenCaptureService : IScreenCaptureService
+    public class LinuxScreenCaptureService : IScreenCaptureService, ILinuxCaptureRuntime
     {
         private const uint PortalResponseSuccess = 0;
         private const uint PortalResponseCancelled = 1;
@@ -48,6 +52,7 @@ namespace XerahS.Platform.Linux
         private const string KdeScreenShotBusName = "org.kde.KWin.ScreenShot2";
         private static readonly ObjectPath KdeScreenShotObjectPath = new("/org/kde/KWin/ScreenShot2");
         private static int _portalDiagnosticsLogged;
+        private readonly LinuxCaptureCoordinator _captureCoordinator;
 
         private enum WaterfallCaptureKind
         {
@@ -60,6 +65,19 @@ namespace XerahS.Platform.Linux
         {
             ActiveWindow,
             Workspace
+        }
+
+        public LinuxScreenCaptureService()
+        {
+            _captureCoordinator = new LinuxCaptureCoordinator(
+                new ILinuxCaptureProvider[]
+                {
+                    new PortalCaptureProvider(this),
+                    new DesktopDbusCaptureProvider(this),
+                    new WaylandProtocolCaptureProvider(this),
+                    new X11CaptureProvider(this)
+                },
+                new WaterfallCapturePolicy());
         }
 
         /// <summary>
@@ -159,63 +177,138 @@ namespace XerahS.Platform.Linux
             return desktop == "HYPRLAND" || desktop == "SWAY";
         }
 
-        public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
+        uint ILinuxCaptureRuntime.PortalCancelledResponseCode => PortalResponseCancelled;
+
+        Task<(SKBitmap? bitmap, uint response)> ILinuxCaptureRuntime.TryPortalCaptureAsync(LinuxCaptureKind kind, CaptureOptions? options)
         {
-            DebugHelper.WriteLine("LinuxScreenCaptureService: CaptureRegionAsync - using interactive region selection");
+            bool forceInteractive = kind != LinuxCaptureKind.FullScreen;
+            return CaptureWithPortalDetailedAsync(forceInteractive, allowInteractiveFallback: false);
+        }
 
-            var currentDesktop = GetCurrentDesktop();
-            DebugHelper.WriteLine($"LinuxScreenCaptureService: Detected desktop environment: {currentDesktop ?? "unknown"}, Wayland: {IsWayland}");
+        Task<SKBitmap?> ILinuxCaptureRuntime.TryDesktopDbusCaptureAsync(LinuxCaptureKind kind, string? desktop, CaptureOptions? options)
+        {
+            return CaptureWithDesktopDbusFallbackAsync(ToWaterfallKind(kind), desktop, options);
+        }
 
-            // Stage 1: XDG Portal (modern standard)
-            if (ShouldTryPortalStage())
+        Task<SKBitmap?> ILinuxCaptureRuntime.TryWaylandProtocolCaptureAsync(LinuxCaptureKind kind, string? desktop, CaptureOptions? options)
+        {
+            return CaptureWithWaylandProtocolFallbackAsync(ToWaterfallKind(kind), desktop);
+        }
+
+        async Task<SKBitmap?> ILinuxCaptureRuntime.TryX11CaptureAsync(
+            LinuxCaptureKind kind,
+            string? desktop,
+            IWindowService? windowService,
+            CaptureOptions? options)
+        {
+            switch (kind)
             {
-                DebugHelper.WriteLine("LinuxScreenCaptureService: [Stage 1/4] Trying XDG Portal for region capture");
-                var (portalResult, portalResponse) = await CaptureWithPortalDetailedAsync(forceInteractive: true, allowInteractiveFallback: false).ConfigureAwait(false);
-                if (portalResult != null)
+                case LinuxCaptureKind.Region:
                 {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with XDG Portal");
-                    return portalResult;
-                }
+                    if (IsWayland)
+                    {
+                        return null;
+                    }
 
-                if (portalResponse == PortalResponseCancelled)
+                    var x11Result = await TryCaptureWithDesktopNativeToolAsync(desktop).ConfigureAwait(false);
+                    if (x11Result != null)
+                    {
+                        return x11Result;
+                    }
+
+                    return await TryCaptureWithGenericToolsAsync(desktop).ConfigureAwait(false);
+                }
+                case LinuxCaptureKind.FullScreen:
                 {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region capture cancelled by user (portal)");
+                    var x11Result = await CaptureWithX11Async().ConfigureAwait(false);
+                    if (x11Result != null)
+                    {
+                        return x11Result;
+                    }
+
+                    if (IsWayland)
+                    {
+                        return null;
+                    }
+
+                    x11Result = await CaptureWithGnomeScreenshotAsync().ConfigureAwait(false);
+                    if (x11Result != null) return x11Result;
+
+                    x11Result = await CaptureWithSpectacleAsync().ConfigureAwait(false);
+                    if (x11Result != null) return x11Result;
+
+                    x11Result = await CaptureWithScrotAsync().ConfigureAwait(false);
+                    if (x11Result != null) return x11Result;
+
+                    x11Result = await CaptureWithImportAsync().ConfigureAwait(false);
+                    return x11Result;
+                }
+                case LinuxCaptureKind.ActiveWindow:
+                {
+                    if (IsWayland || windowService == null)
+                    {
+                        return null;
+                    }
+
+                    var handle = windowService.GetForegroundWindow();
+                    if (handle != IntPtr.Zero)
+                    {
+                        var capturedWindow = await CaptureWindowAsync(handle, windowService, options).ConfigureAwait(false);
+                        if (capturedWindow != null)
+                        {
+                            return capturedWindow;
+                        }
+                    }
+
+                    var x11Result = await CaptureWindowWithGnomeScreenshotAsync().ConfigureAwait(false);
+                    if (x11Result != null) return x11Result;
+
+                    x11Result = await CaptureWindowWithSpectacleAsync().ConfigureAwait(false);
+                    if (x11Result != null) return x11Result;
+
+                    x11Result = await CaptureWindowWithScrotAsync().ConfigureAwait(false);
+                    if (x11Result != null) return x11Result;
+
+                    if (handle == IntPtr.Zero)
+                    {
+                        return await CaptureFullScreenAsync(options).ConfigureAwait(false);
+                    }
+
                     return null;
                 }
+                default:
+                    return null;
             }
+        }
 
-            // Stage 2: Desktop-specific D-Bus
-            var dbusResult = await CaptureWithDesktopDbusFallbackAsync(WaterfallCaptureKind.Region, currentDesktop, options).ConfigureAwait(false);
-            if (dbusResult != null)
+        private static WaterfallCaptureKind ToWaterfallKind(LinuxCaptureKind kind)
+        {
+            return kind switch
             {
-                return dbusResult;
-            }
+                LinuxCaptureKind.Region => WaterfallCaptureKind.Region,
+                LinuxCaptureKind.FullScreen => WaterfallCaptureKind.FullScreen,
+                LinuxCaptureKind.ActiveWindow => WaterfallCaptureKind.ActiveWindow,
+                _ => WaterfallCaptureKind.FullScreen
+            };
+        }
 
-            // Stage 3: Wayland protocol/tool fallback
-            var waylandResult = await CaptureWithWaylandProtocolFallbackAsync(WaterfallCaptureKind.Region, currentDesktop).ConfigureAwait(false);
-            if (waylandResult != null)
+        public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
+        {
+            var context = LinuxRuntimeContextDetector.Detect();
+            var request = new LinuxCaptureRequest(LinuxCaptureKind.Region, options);
+            var result = await _captureCoordinator.CaptureAsync(request, context).ConfigureAwait(false);
+            if (result.IsCancelled)
             {
-                return waylandResult;
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: Region capture cancelled by provider '{result.ProviderId}'.");
+                return null;
             }
 
-            // Stage 4: X11/XLib fallback
-            if (!IsWayland)
+            if (result.Bitmap != null)
             {
-                var x11Result = await TryCaptureWithDesktopNativeToolAsync(currentDesktop);
-                if (x11Result != null)
-                {
-                    return x11Result;
-                }
-
-                x11Result = await TryCaptureWithGenericToolsAsync(currentDesktop);
-                if (x11Result != null)
-                {
-                    return x11Result;
-                }
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: Region capture succeeded with provider '{result.ProviderId}'.");
             }
 
-            DebugHelper.WriteLine("LinuxScreenCaptureService: Region capture failed after waterfall fallbacks");
-            return null;
+            return result.Bitmap;
         }
 
         /// <summary>
@@ -539,74 +632,21 @@ namespace XerahS.Platform.Linux
 
         public async Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
         {
-            bool useModern = options?.UseModernCapture ?? true;
-            var currentDesktop = GetCurrentDesktop();
-
-            DebugHelper.WriteLine($"LinuxScreenCaptureService: CaptureFullScreenAsync start (Modern={useModern}, Desktop={currentDesktop ?? "unknown"}, Wayland={IsWayland})");
-
-            // Keep legacy override on X11 when modern capture is disabled.
-            if (!useModern && !IsWayland)
+            var context = LinuxRuntimeContextDetector.Detect();
+            var request = new LinuxCaptureRequest(LinuxCaptureKind.FullScreen, options);
+            var result = await _captureCoordinator.CaptureAsync(request, context).ConfigureAwait(false);
+            if (result.IsCancelled)
             {
-                DebugHelper.WriteLine("LinuxScreenCaptureService: Legacy mode enabled on X11. Forcing X11 capture.");
-                return await CaptureWithX11Async();
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: Full-screen capture cancelled by provider '{result.ProviderId}'.");
+                return null;
             }
 
-            // Stage 1: XDG Portal
-            if (useModern && ShouldTryPortalStage())
+            if (result.Bitmap != null)
             {
-                DebugHelper.WriteLine("LinuxScreenCaptureService: [Stage 1/4] Trying XDG Portal for full-screen capture");
-                var (portalResult, portalResponse) = await CaptureWithPortalDetailedAsync(forceInteractive: false, allowInteractiveFallback: false).ConfigureAwait(false);
-                if (portalResult != null)
-                {
-                    return portalResult;
-                }
-
-                if (portalResponse == PortalResponseCancelled)
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Full-screen capture cancelled by user (portal).");
-                    return null;
-                }
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: Full-screen capture succeeded with provider '{result.ProviderId}'.");
             }
 
-            // Stage 2: Desktop-specific D-Bus
-            var dbusResult = await CaptureWithDesktopDbusFallbackAsync(WaterfallCaptureKind.FullScreen, currentDesktop, options).ConfigureAwait(false);
-            if (dbusResult != null)
-            {
-                return dbusResult;
-            }
-
-            // Stage 3: Wayland protocol/tool fallback
-            var waylandResult = await CaptureWithWaylandProtocolFallbackAsync(WaterfallCaptureKind.FullScreen, currentDesktop).ConfigureAwait(false);
-            if (waylandResult != null)
-            {
-                return waylandResult;
-            }
-
-            // Stage 4: X11/XLib fallback
-            var x11Result = await CaptureWithX11Async().ConfigureAwait(false);
-            if (x11Result != null)
-            {
-                return x11Result;
-            }
-
-            // Additional legacy X11 tools (best-effort) after direct X11 fallback.
-            if (!IsWayland)
-            {
-                x11Result = await CaptureWithGnomeScreenshotAsync().ConfigureAwait(false);
-                if (x11Result != null) return x11Result;
-
-                x11Result = await CaptureWithSpectacleAsync().ConfigureAwait(false);
-                if (x11Result != null) return x11Result;
-
-                x11Result = await CaptureWithScrotAsync().ConfigureAwait(false);
-                if (x11Result != null) return x11Result;
-
-                x11Result = await CaptureWithImportAsync().ConfigureAwait(false);
-                if (x11Result != null) return x11Result;
-            }
-
-            DebugHelper.WriteLine("LinuxScreenCaptureService: Full-screen capture failed after waterfall fallbacks.");
-            return null;
+            return result.Bitmap;
         }
 
         private async Task<SKBitmap?> CaptureWithX11Async()
@@ -766,86 +806,21 @@ namespace XerahS.Platform.Linux
             Console.WriteLine("=== ACTIVE WINDOW CAPTURE DEBUG START ===");
             Console.WriteLine("LinuxScreenCaptureService: CaptureActiveWindowAsync started");
             DebugHelper.WriteLine("LinuxScreenCaptureService: CaptureActiveWindowAsync started");
-            var currentDesktop = GetCurrentDesktop();
-
-            // Stage 1: XDG Portal
-            if (ShouldTryPortalStage())
+            var context = LinuxRuntimeContextDetector.Detect();
+            var request = new LinuxCaptureRequest(LinuxCaptureKind.ActiveWindow, options, windowService);
+            var result = await _captureCoordinator.CaptureAsync(request, context).ConfigureAwait(false);
+            if (result.IsCancelled)
             {
-                DebugHelper.WriteLine("LinuxScreenCaptureService: [Stage 1/4] Trying XDG Portal for active window capture");
-                var (portalResult, portalResponse) = await CaptureWithPortalDetailedAsync(forceInteractive: true, allowInteractiveFallback: false).ConfigureAwait(false);
-                if (portalResult != null)
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Active window captured with XDG Portal.");
-                    return portalResult;
-                }
-
-                if (portalResponse == PortalResponseCancelled)
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Active window capture cancelled by user (portal).");
-                    return null;
-                }
-            }
-
-            // Stage 2: Desktop-specific D-Bus
-            var dbusResult = await CaptureWithDesktopDbusFallbackAsync(WaterfallCaptureKind.ActiveWindow, currentDesktop, options).ConfigureAwait(false);
-            if (dbusResult != null)
-            {
-                return dbusResult;
-            }
-
-            // Stage 3: Wayland protocol/tool fallback
-            var waylandResult = await CaptureWithWaylandProtocolFallbackAsync(WaterfallCaptureKind.ActiveWindow, currentDesktop).ConfigureAwait(false);
-            if (waylandResult != null)
-            {
-                return waylandResult;
-            }
-
-            // Stage 4: X11/XLib fallback
-            if (IsWayland)
-            {
-                DebugHelper.WriteLine("LinuxScreenCaptureService: Active window capture failed after waterfall fallbacks on Wayland.");
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: Active-window capture cancelled by provider '{result.ProviderId}'.");
                 return null;
             }
 
-            var handle = windowService.GetForegroundWindow();
-            Console.WriteLine($"GetForegroundWindow returned handle: {handle} (0x{handle:X})");
-            DebugHelper.WriteLine($"LinuxScreenCaptureService: GetForegroundWindow returned handle: {handle}");
-
-            if (handle == IntPtr.Zero)
+            if (result.Bitmap != null)
             {
-                Console.WriteLine("ERROR: No foreground window found, falling back to fullscreen");
-                DebugHelper.WriteLine("LinuxScreenCaptureService: No foreground window found, falling back to fullscreen");
-                return await CaptureFullScreenAsync(options);
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: Active-window capture succeeded with provider '{result.ProviderId}'.");
             }
 
-            // Get window details for debugging
-            var windowTitle = windowService.GetWindowText(handle);
-            var windowClass = windowService.GetWindowClassName(handle);
-            var isVisible = windowService.IsWindowVisible(handle);
-
-            Console.WriteLine($"Window Details:");
-            Console.WriteLine($"  - Title: '{windowTitle}'");
-            Console.WriteLine($"  - Class: '{windowClass}'");
-            Console.WriteLine($"  - Visible: {isVisible}");
-
-            Console.WriteLine($"Proceeding to capture window with handle: {handle}");
-            var capturedWindow = await CaptureWindowAsync(handle, windowService, options);
-            if (capturedWindow != null)
-            {
-                return capturedWindow;
-            }
-
-            var x11ToolResult = await CaptureWindowWithGnomeScreenshotAsync().ConfigureAwait(false);
-            if (x11ToolResult != null) return x11ToolResult;
-
-            x11ToolResult = await CaptureWindowWithSpectacleAsync().ConfigureAwait(false);
-            if (x11ToolResult != null) return x11ToolResult;
-
-            x11ToolResult = await CaptureWindowWithScrotAsync().ConfigureAwait(false);
-            if (x11ToolResult != null) return x11ToolResult;
-
-            DebugHelper.WriteLine("LinuxScreenCaptureService: Active window capture failed after X11 fallback attempts.");
-            return null;
+            return result.Bitmap;
         }
 
         public async Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
