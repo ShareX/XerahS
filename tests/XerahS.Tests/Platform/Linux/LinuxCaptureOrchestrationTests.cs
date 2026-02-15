@@ -134,6 +134,27 @@ public class LinuxCaptureOrchestrationTests
         });
     }
 
+    [Test]
+    public void PortalProvider_Wayland_AcceptsEvenWhenModernCaptureDisabled()
+    {
+        var runtime = new NoOpRuntime();
+        var portalProvider = new PortalCaptureProvider(runtime);
+
+        // UseModernCapture=false via explicit CaptureOptions
+        var options = new CaptureOptions { UseModernCapture = false };
+        var request = new LinuxCaptureRequest(LinuxCaptureKind.Region, options);
+
+        // Wayland + portal available → must still accept (portal is the only viable backend)
+        var waylandWithPortal = new LinuxCaptureContext(isWayland: true, desktop: "GNOME", compositor: "WAYLAND", isSandboxed: false, hasScreenshotPortal: true);
+        Assert.That(portalProvider.CanHandle(request, waylandWithPortal), Is.True,
+            "Portal must handle Wayland captures even when UseModernCapture=false");
+
+        // X11 + UseModernCapture=false → should NOT accept (X11/CLI tools can handle it)
+        var x11Context = new LinuxCaptureContext(isWayland: false, desktop: "GNOME", compositor: "X11", isSandboxed: false, hasScreenshotPortal: true);
+        Assert.That(portalProvider.CanHandle(request, x11Context), Is.False,
+            "Portal should not force-accept on X11 when UseModernCapture=false");
+    }
+
     private sealed class TestProvider : ILinuxCaptureProvider
     {
         private readonly bool _canHandle;

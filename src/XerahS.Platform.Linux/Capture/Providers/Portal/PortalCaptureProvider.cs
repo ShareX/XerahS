@@ -49,6 +49,14 @@ internal sealed class PortalCaptureProvider : ILinuxCaptureProvider
             return context.ShouldTryPortal;
         }
 
+        // On Wayland, the portal is the only viable capture method.
+        // Always allow portal even when UseModernCapture=false,
+        // since X11/CLI tools cannot work under Wayland.
+        if (context.IsWayland && context.HasScreenshotPortal)
+        {
+            return true;
+        }
+
         return request.UseModernCapture && context.ShouldTryPortal;
     }
 
