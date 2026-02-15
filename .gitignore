@@ -48,3 +48,4 @@ build_log.txt
 src/XerahS.Mobile.iOS/Main.BundleId.plist
 src/XerahS.Mobile.iOS.ShareExtension/ShareExtension.BundleId.plist
 .claude/settings.local.json
+.claude/settings.local.json
