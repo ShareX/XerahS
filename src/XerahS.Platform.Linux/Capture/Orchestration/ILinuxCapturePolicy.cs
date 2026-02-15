@@ -30,6 +30,5 @@ namespace XerahS.Platform.Linux.Capture.Orchestration;
 
 internal interface ILinuxCapturePolicy
 {
-    IReadOnlyList<LinuxCaptureStage> GetStageOrder(LinuxCaptureRequest request, LinuxCaptureContext context);
+    IReadOnlyList<LinuxCaptureStage> GetStageOrder(LinuxCaptureRequest request, ILinuxCaptureContext context);
 }
-

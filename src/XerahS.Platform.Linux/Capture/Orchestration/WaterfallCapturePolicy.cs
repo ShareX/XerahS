@@ -43,7 +43,7 @@ internal sealed class WaterfallCapturePolicy : ILinuxCapturePolicy
         LinuxCaptureStage.X11
     };
 
-    public IReadOnlyList<LinuxCaptureStage> GetStageOrder(LinuxCaptureRequest request, LinuxCaptureContext context)
+    public IReadOnlyList<LinuxCaptureStage> GetStageOrder(LinuxCaptureRequest request, ILinuxCaptureContext context)
     {
         if (context.IsSandboxed)
         {

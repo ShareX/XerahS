@@ -23,21 +23,19 @@
 
 #endregion License Information (GPL v3)
 
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace XerahS.Platform.Linux.Capture.Contracts;
 
-internal interface ILinuxCaptureProvider
+internal interface ILinuxCaptureContext
 {
-    string ProviderId { get; }
+    bool IsWayland { get; }
 
-    LinuxCaptureStage Stage { get; }
+    string? Desktop { get; }
 
-    bool CanHandle(LinuxCaptureRequest request, ILinuxCaptureContext context);
+    string? Compositor { get; }
 
-    Task<LinuxCaptureResult> TryCaptureAsync(
-        LinuxCaptureRequest request,
-        ILinuxCaptureContext context,
-        CancellationToken cancellationToken = default);
+    bool IsSandboxed { get; }
+
+    bool HasScreenshotPortal { get; }
+
+    bool ShouldTryPortal { get; }
 }

@@ -42,7 +42,7 @@ internal sealed class PortalCaptureProvider : ILinuxCaptureProvider
 
     public LinuxCaptureStage Stage => LinuxCaptureStage.Portal;
 
-    public bool CanHandle(LinuxCaptureRequest request, LinuxCaptureContext context)
+    public bool CanHandle(LinuxCaptureRequest request, ILinuxCaptureContext context)
     {
         if (context.IsSandboxed)
         {
@@ -54,7 +54,7 @@ internal sealed class PortalCaptureProvider : ILinuxCaptureProvider
 
     public async Task<LinuxCaptureResult> TryCaptureAsync(
         LinuxCaptureRequest request,
-        LinuxCaptureContext context,
+        ILinuxCaptureContext context,
         CancellationToken cancellationToken = default)
     {
         var (bitmap, response) = await _runtime.TryPortalCaptureAsync(request.Kind, request.Options).ConfigureAwait(false);

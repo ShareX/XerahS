@@ -25,7 +25,7 @@
 
 namespace XerahS.Platform.Linux.Capture.Contracts;
 
-internal sealed class LinuxCaptureContext
+internal sealed class LinuxCaptureContext : ILinuxCaptureContext
 {
     public LinuxCaptureContext(bool isWayland, string? desktop, string? compositor, bool isSandboxed, bool hasScreenshotPortal)
     {

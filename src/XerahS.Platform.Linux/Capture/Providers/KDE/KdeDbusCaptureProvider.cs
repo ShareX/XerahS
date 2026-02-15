@@ -42,7 +42,7 @@ internal sealed class KdeDbusCaptureProvider : ILinuxCaptureProvider
 
     public LinuxCaptureStage Stage => LinuxCaptureStage.DesktopDbus;
 
-    public bool CanHandle(LinuxCaptureRequest request, LinuxCaptureContext context)
+    public bool CanHandle(LinuxCaptureRequest request, ILinuxCaptureContext context)
     {
         if (context.IsSandboxed || !request.UseModernCapture)
         {
@@ -54,7 +54,7 @@ internal sealed class KdeDbusCaptureProvider : ILinuxCaptureProvider
 
     public async Task<LinuxCaptureResult> TryCaptureAsync(
         LinuxCaptureRequest request,
-        LinuxCaptureContext context,
+        ILinuxCaptureContext context,
         CancellationToken cancellationToken = default)
     {
         var bitmap = await _runtime.TryKdeDbusCaptureAsync(request.Kind, request.Options).ConfigureAwait(false);

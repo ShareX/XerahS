@@ -42,7 +42,7 @@ internal sealed class WlrootsCaptureProvider : ILinuxCaptureProvider
 
     public LinuxCaptureStage Stage => LinuxCaptureStage.WaylandProtocol;
 
-    public bool CanHandle(LinuxCaptureRequest request, LinuxCaptureContext context)
+    public bool CanHandle(LinuxCaptureRequest request, ILinuxCaptureContext context)
     {
         if (context.IsSandboxed || !request.UseModernCapture || !context.IsWayland)
         {
@@ -54,7 +54,7 @@ internal sealed class WlrootsCaptureProvider : ILinuxCaptureProvider
 
     public async Task<LinuxCaptureResult> TryCaptureAsync(
         LinuxCaptureRequest request,
-        LinuxCaptureContext context,
+        ILinuxCaptureContext context,
         CancellationToken cancellationToken = default)
     {
         var bitmap = await _runtime.TryWlrootsCaptureAsync(request.Kind, context.Desktop, request.Options).ConfigureAwait(false);

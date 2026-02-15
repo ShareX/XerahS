@@ -42,14 +42,14 @@ internal sealed class X11CaptureProvider : ILinuxCaptureProvider
 
     public LinuxCaptureStage Stage => LinuxCaptureStage.X11;
 
-    public bool CanHandle(LinuxCaptureRequest request, LinuxCaptureContext context)
+    public bool CanHandle(LinuxCaptureRequest request, ILinuxCaptureContext context)
     {
         return !context.IsSandboxed && !context.IsWayland;
     }
 
     public async Task<LinuxCaptureResult> TryCaptureAsync(
         LinuxCaptureRequest request,
-        LinuxCaptureContext context,
+        ILinuxCaptureContext context,
         CancellationToken cancellationToken = default)
     {
         var bitmap = await _runtime.TryX11NativeCaptureAsync(

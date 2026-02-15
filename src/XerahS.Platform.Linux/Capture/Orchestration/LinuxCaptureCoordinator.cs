@@ -44,7 +44,7 @@ internal sealed class LinuxCaptureCoordinator
 
     public async Task<LinuxCaptureResult> CaptureAsync(
         LinuxCaptureRequest request,
-        LinuxCaptureContext context,
+        ILinuxCaptureContext context,
         CancellationToken cancellationToken = default)
     {
         var execution = await CaptureWithTraceAsync(request, context, cancellationToken).ConfigureAwait(false);
@@ -53,7 +53,7 @@ internal sealed class LinuxCaptureCoordinator
 
     public async Task<LinuxCaptureExecutionResult> CaptureWithTraceAsync(
         LinuxCaptureRequest request,
-        LinuxCaptureContext context,
+        ILinuxCaptureContext context,
         CancellationToken cancellationToken = default)
     {
         var trace = new CaptureDecisionTrace(request.Kind);
