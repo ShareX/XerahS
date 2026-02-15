@@ -134,29 +134,61 @@ Entry Format:
 
 ### Phase 4: Commit and Push
 
-**Purpose**: Record changes and synchronize with remote repositories.
+**Purpose**: Record changes and synchronize with remote repositories. **CRITICAL**: Commit and push **everything** in **every repository** including **all submodules**.
 
-#### 4.1 Stage Changes
+#### 4.0 Check All Repository Status
+**Before committing, verify what needs to be committed across ALL repos:**
+
+```powershell
+# Check main repository
+git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" status --short
+
+# Check ImageEditor submodule
+git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" status --short
+
+# Check website repository
+git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" status --short
+
+# Check ShareX repository (if applicable)
+git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" status --short
+```
+
+**Important**: Always check ALL submodules, not just known ones. If detached HEAD is detected in any submodule, checkout the appropriate branch first.
+
+#### 4.1 Stage Changes in ALL Repositories
+**Stage changes in every repository and submodule:**
+
 ```powershell
 # Main repository
 git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" add .
 
-# ImageEditor repository (if modified)
+# ImageEditor submodule (always check, even if no direct edits)
 git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" add .
 
-# Website repository (if updated)
+# Website repository
 git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" add .
+
+# ShareX repository (if applicable)
+git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" add .
 ```
 
-#### 4.2 Commit with Proper Format
+#### 4.2 Commit with Proper Format in ALL Repositories
 **Commit Message Format**: `[vX.Y.Z] [Chore] Update version and changelog`
 
+**CRITICAL**: Commit changes in ALL repositories, even if they seem unrelated to version bump:
+
 ```powershell
-# Main repository
+# ImageEditor submodule (commit FIRST - submodules before parent)
+git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" commit -m "[v0.15.6] [Chore] Update ImageEditor version and changes"
+
+# Main repository (commit AFTER submodules to capture updated references)
 git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" commit -m "[v0.15.6] [Chore] Update version and changelog for release"
 
-# ImageEditor repository (if needed)
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" commit -m "[v0.15.6] [Chore] Update ImageEditor version"
+# Website repository (if updated)
+git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" commit -m "[v0.15.6] [Chore] Update website content"
+
+# ShareX repository (if applicable)
+git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" commit -m "[v0.15.6] [Chore] Update ShareX changes"
 ```
 
 **Commit Message Components**:
@@ -164,38 +196,52 @@ git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" commit -m "[
 - `[Chore]`: Classification per AGENTS.md 
 - Concise description of what was updated
 
-#### 4.3 Push to Remote
+**Submodule Commit Order**:
+1. **First**: Commit all submodules (deepest first if nested)
+2. **Last**: Commit parent repository to capture updated submodule references
+
+#### 4.3 Push to Remote in ALL Repositories
+**Push ALL repositories including submodules:**
+
 ```powershell
-# Main repository
+# ImageEditor submodule (push FIRST - before parent)
+git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" push origin develop
+
+# Main repository (push AFTER submodules)
 git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" push origin develop
 
-# ImageEditor repository
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" push origin main
-
-# Website repository (if applicable)
+# Website repository
 git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" push origin main
+
+# ShareX repository (if applicable)
+git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" push origin develop
 ```
 
+**Push Order**: Submodules first, parent repository last.
+
 #### 4.4 Verification
-- Confirm all pushes succeeded (exit code 0)
-- Visit GitHub UI to verify commits appear on remote branches
-- Check that no merge conflicts need resolution
+- Confirm **ALL** pushes succeeded (exit code 0) for **every repository**
+- Visit GitHub UI to verify commits appear on remote branches for **all repos**
+- Verify submodule references are updated in parent repository
+- Check that no merge conflicts need resolution in **any repository**
+- Confirm working tree is clean in **all repositories** after push
 
 ---
 
 ## 🔧 Implementation Checklist
 
-- ✅ Pull all three repositories (main XerahS, ImageEditor, website)
+- ✅ Pull all repositories (main XerahS, ImageEditor submodule, website, ShareX)
 - ✅ Determine appropriate version bump (patch/minor/major)
 - ✅ Update `Directory.Build.props` in both main and ImageEditor
 - ✅ **Run `.github/skills/update-changelog/SKILL.md` to consolidate and format changelog** ← PRIMARY STEP
 - ✅ Update version references in README/docs as needed
 - ✅ Run `dotnet build` to validate changes
-- ✅ Stage all modified files across repositories
-- ✅ Create commits with `[vX.Y.Z] [Chore]` format
-- ✅ Push to remote branches (develop for main, main for ImageEditor)
-- ✅ Verify all pushes succeeded
-- ✅ Confirm changes visible on GitHub
+- ✅ **Check status of ALL repositories and submodules (`git status --short` in each)**
+- ✅ **Stage ALL modified files in ALL repositories including submodules**
+- ✅ **Commit ALL repositories (submodules first, parent last) with `[vX.Y.Z] [Chore]` format**
+- ✅ **Push ALL repositories to remote (submodules first, parent last)**
+- ✅ **Verify ALL pushes succeeded and working tree is clean in ALL repos**
+- ✅ Confirm changes visible on GitHub for all repositories
 
 ---
 
@@ -234,15 +280,32 @@ git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" push origin ma
 
 ## 🚀 Quick Command Reference
 
+**Check status of ALL repositories**:
+```powershell
+git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" status --short
+git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" status --short
+git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" status --short
+git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" status --short
+```
+
 **Pull all repositories**:
 ```powershell
 git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" pull origin develop
-git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" pull origin main
+git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" pull origin develop
+git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" pull origin main
+git -C "c:\Users\liveu\source\repos\ShareX Team\ShareX" pull origin develop
 ```
 
-**Stage, commit, and push all**:
+**Stage, commit, and push ALL repositories (including submodules)**:
 ```powershell
+# Submodules first, parent last
+git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" add . ; git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" commit -m "[vX.Y.Z] [Chore] Update ImageEditor" ; git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS\ImageEditor" push origin develop
+
+# Then parent repository
 git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" add . ; git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" commit -m "[vX.Y.Z] [Chore] Update version and changelog" ; git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" push origin develop
+
+# Website and other repos
+git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" add . ; git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" commit -m "[vX.Y.Z] [Chore] Update website" ; git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" push origin main
 ```
 
 ---
