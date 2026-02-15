@@ -112,75 +112,6 @@ namespace XerahS.Platform.Linux
             return Task.FromResult(SKRectI.Empty);
         }
 
-        /// <summary>
-        /// Detect the current desktop environment
-        /// </summary>
-        private static string? GetCurrentDesktop()
-        {
-            // XDG_CURRENT_DESKTOP can contain multiple values separated by colon
-            var desktop = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP");
-            if (!string.IsNullOrEmpty(desktop))
-            {
-                var desktops = desktop.Split(':');
-                foreach (var d in desktops)
-                {
-                    var normalized = d.Trim().ToUpperInvariant();
-                    if (normalized.Contains("GNOME")) return "GNOME";
-                    if (normalized.Contains("KDE") || normalized.Contains("PLASMA")) return "KDE";
-                    if (normalized.Contains("HYPRLAND")) return "HYPRLAND";
-                    if (normalized.Contains("SWAY")) return "SWAY";
-                    if (normalized.Contains("XFCE")) return "XFCE";
-                    if (normalized.Contains("MATE")) return "MATE";
-                    if (normalized.Contains("CINNAMON")) return "CINNAMON";
-                    if (normalized.Contains("LXQT")) return "LXQT";
-                    if (normalized.Contains("LXDE")) return "LXDE";
-                }
-            }
-
-            // Fallback: check DESKTOP_SESSION
-            var session = Environment.GetEnvironmentVariable("DESKTOP_SESSION");
-            if (!string.IsNullOrEmpty(session))
-            {
-                var normalized = session.ToUpperInvariant();
-                if (normalized.Contains("GNOME")) return "GNOME";
-                if (normalized.Contains("PLASMA") || normalized.Contains("KDE")) return "KDE";
-                if (normalized.Contains("HYPRLAND")) return "HYPRLAND";
-                if (normalized.Contains("SWAY")) return "SWAY";
-            }
-
-            return null;
-        }
-
-        private static bool IsSandboxedSession()
-        {
-            var container = Environment.GetEnvironmentVariable("container");
-            return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FLATPAK_ID")) ||
-                   !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SNAP")) ||
-                   !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("APPIMAGE")) ||
-                   string.Equals(container, "flatpak", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(container, "snap", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool ShouldTryPortalStage()
-        {
-            if (IsWayland || IsSandboxedSession())
-            {
-                return true;
-            }
-
-            return PortalInterfaceChecker.HasInterface("org.freedesktop.portal.Screenshot");
-        }
-
-        private static bool IsKdeDesktop(string? desktop)
-        {
-            return desktop == "KDE" || desktop == "LXQT";
-        }
-
-        private static bool IsGnomeDesktop(string? desktop)
-        {
-            return desktop == "GNOME" || desktop == "MATE" || desktop == "CINNAMON";
-        }
-
         private static bool IsWlrootsDesktop(string? desktop)
         {
             return desktop == "HYPRLAND" || desktop == "SWAY";
@@ -196,6 +127,7 @@ namespace XerahS.Platform.Linux
 
         async Task<SKBitmap?> ILinuxCaptureRuntime.TryKdeDbusCaptureAsync(LinuxCaptureKind kind, CaptureOptions? options)
         {
+            DebugHelper.WriteLine("LinuxScreenCaptureService: [Stage 2/4] Trying KDE ScreenShot2 D-Bus fallback");
             return kind switch
             {
                 LinuxCaptureKind.Region => await CaptureWithKdeScreenShot2Async(KdeCaptureKind.InteractiveRegion, options).ConfigureAwait(false),
@@ -207,6 +139,7 @@ namespace XerahS.Platform.Linux
 
         async Task<SKBitmap?> ILinuxCaptureRuntime.TryGnomeDbusCaptureAsync(LinuxCaptureKind kind, CaptureOptions? options)
         {
+            DebugHelper.WriteLine("LinuxScreenCaptureService: [Stage 2/4] Trying GNOME Shell D-Bus fallback");
             return kind switch
             {
                 LinuxCaptureKind.Region => await CaptureWithGnomeShellRegionDBusAsync().ConfigureAwait(false),
@@ -460,68 +393,6 @@ namespace XerahS.Platform.Linux
                 {
                     DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with import");
                     return result;
-                }
-            }
-
-            return null;
-        }
-
-        private async Task<SKBitmap?> CaptureWithDesktopDbusFallbackAsync(WaterfallCaptureKind captureKind, string? desktop, CaptureOptions? options)
-        {
-            DebugHelper.WriteLine("LinuxScreenCaptureService: [Stage 2/4] Trying desktop-specific D-Bus fallbacks");
-
-            if (IsKdeDesktop(desktop))
-            {
-                SKBitmap? kdeResult = null;
-                if (captureKind == WaterfallCaptureKind.Region)
-                {
-                    // KWin ScreenShot2 has no explicit free-form area picker; CaptureInteractive is the closest native fallback.
-                    kdeResult = await CaptureWithKdeScreenShot2Async(KdeCaptureKind.InteractiveRegion, options).ConfigureAwait(false);
-                }
-                else if (captureKind == WaterfallCaptureKind.FullScreen)
-                {
-                    kdeResult = await CaptureWithKdeScreenShot2Async(KdeCaptureKind.Workspace, options).ConfigureAwait(false);
-                }
-                else if (captureKind == WaterfallCaptureKind.ActiveWindow)
-                {
-                    kdeResult = await CaptureWithKdeScreenShot2Async(KdeCaptureKind.ActiveWindow, options).ConfigureAwait(false);
-                }
-
-                if (kdeResult != null)
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Capture succeeded via KDE ScreenShot2 D-Bus");
-                    return kdeResult;
-                }
-            }
-
-            if (IsGnomeDesktop(desktop))
-            {
-                if (captureKind == WaterfallCaptureKind.FullScreen)
-                {
-                    var gnomeResult = await CaptureWithGnomeShellDBusAsync().ConfigureAwait(false);
-                    if (gnomeResult != null)
-                    {
-                        DebugHelper.WriteLine("LinuxScreenCaptureService: Capture succeeded via GNOME Shell D-Bus");
-                        return gnomeResult;
-                    }
-                }
-                else if (captureKind == WaterfallCaptureKind.ActiveWindow)
-                {
-                    var gnomeResult = await CaptureWithGnomeShellWindowDBusAsync(options).ConfigureAwait(false);
-                    if (gnomeResult != null)
-                    {
-                        DebugHelper.WriteLine("LinuxScreenCaptureService: Active-window capture succeeded via GNOME Shell D-Bus");
-                        return gnomeResult;
-                    }
-                }
-                else if (captureKind == WaterfallCaptureKind.Region)
-                {
-                    var gnomeResult = await CaptureWithGnomeShellRegionDBusAsync().ConfigureAwait(false);
-                    if (gnomeResult != null)
-                    {
-                        DebugHelper.WriteLine("LinuxScreenCaptureService: Region capture succeeded via GNOME Shell D-Bus");
-                        return gnomeResult;
-                    }
                 }
             }
 

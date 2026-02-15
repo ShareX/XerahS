@@ -44,7 +44,12 @@ internal sealed class WlrootsCaptureProvider : ILinuxCaptureProvider
 
     public bool CanHandle(LinuxCaptureRequest request, LinuxCaptureContext context)
     {
-        return !context.IsSandboxed && request.UseModernCapture && context.IsWayland;
+        if (context.IsSandboxed || !request.UseModernCapture || !context.IsWayland)
+        {
+            return false;
+        }
+
+        return context.Compositor != "X11";
     }
 
     public async Task<LinuxCaptureResult> TryCaptureAsync(

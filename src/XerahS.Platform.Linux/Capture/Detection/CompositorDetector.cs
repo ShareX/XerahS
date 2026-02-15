@@ -23,21 +23,37 @@
 
 #endregion License Information (GPL v3)
 
-using XerahS.Platform.Linux.Capture.Contracts;
-using XerahS.Platform.Linux.Services;
-
 namespace XerahS.Platform.Linux.Capture.Detection;
 
-internal static class LinuxRuntimeContextDetector
+internal static class CompositorDetector
 {
-    public static LinuxCaptureContext Detect()
+    public static string Detect(bool isWayland, string? desktop)
     {
-        bool isWayland = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE")?.Equals("wayland", StringComparison.OrdinalIgnoreCase) == true;
-        string? desktop = DesktopEnvironmentDetector.Detect();
-        string compositor = CompositorDetector.Detect(isWayland, desktop);
-        bool isSandboxed = SandboxDetector.IsSandboxed();
-        bool hasScreenshotPortal = PortalInterfaceChecker.HasInterface("org.freedesktop.portal.Screenshot");
+        if (!isWayland)
+        {
+            return "X11";
+        }
 
-        return new LinuxCaptureContext(isWayland, desktop, compositor, isSandboxed, hasScreenshotPortal);
+        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HYPRLAND_INSTANCE_SIGNATURE")))
+        {
+            return "HYPRLAND";
+        }
+
+        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SWAYSOCK")))
+        {
+            return "SWAY";
+        }
+
+        if (desktop == "HYPRLAND" || desktop == "SWAY")
+        {
+            return desktop;
+        }
+
+        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("WAYLAND_DISPLAY")))
+        {
+            return "WAYLAND";
+        }
+
+        return "UNKNOWN";
     }
 }

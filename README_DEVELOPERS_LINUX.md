@@ -17,6 +17,8 @@ All Linux screenshot entry points use one strict order:
 3. `WaylandProtocol` (wlroots/Wayland tool or protocol path)
 4. `X11` (X11/Xlib and legacy CLI fallback)
 
+Sandboxed sessions are strict portal-only. In Flatpak/Snap/AppImage/container contexts, non-portal stages are not attempted.
+
 This order is centralized in:
 
 - `src/XerahS.Platform.Linux/Capture/Orchestration/WaterfallCapturePolicy.cs`
@@ -46,14 +48,19 @@ Linux capture is now split for parallel development:
 
 Provider mapping:
 
-- Stage 1 `Portal`: `src/XerahS.Platform.Linux/Capture/Providers/PortalCaptureProvider.cs`
-- Stage 2 `DesktopDbus`: `src/XerahS.Platform.Linux/Capture/Providers/DesktopDbusCaptureProvider.cs`
-- Stage 3 `WaylandProtocol`: `src/XerahS.Platform.Linux/Capture/Providers/WaylandProtocolCaptureProvider.cs`
-- Stage 4 `X11`: `src/XerahS.Platform.Linux/Capture/Providers/X11CaptureProvider.cs`
+- Stage 1 `Portal`: `src/XerahS.Platform.Linux/Capture/Providers/Portal/PortalCaptureProvider.cs`
+- Stage 2 `DesktopDbus`: `src/XerahS.Platform.Linux/Capture/Providers/KDE/KdeDbusCaptureProvider.cs`
+- Stage 2 `DesktopDbus`: `src/XerahS.Platform.Linux/Capture/Providers/GNOME/GnomeDbusCaptureProvider.cs`
+- Stage 3 `WaylandProtocol`: `src/XerahS.Platform.Linux/Capture/Providers/Wlroots/WlrootsCaptureProvider.cs`
+- Stage 4 `X11`: `src/XerahS.Platform.Linux/Capture/Providers/X11/X11CaptureProvider.cs`
+- Stage 4 `X11`: `src/XerahS.Platform.Linux/Capture/Providers/Cli/CliCaptureProvider.cs`
 
 Runtime context detector:
 
 - `src/XerahS.Platform.Linux/Capture/Detection/LinuxRuntimeContextDetector.cs`
+- `src/XerahS.Platform.Linux/Capture/Detection/DesktopEnvironmentDetector.cs`
+- `src/XerahS.Platform.Linux/Capture/Detection/CompositorDetector.cs`
+- `src/XerahS.Platform.Linux/Capture/Detection/SandboxDetector.cs`
 
 ## Stage Details
 
@@ -98,7 +105,8 @@ GNOME fallback:
 
 Runtime hook:
 
-- `ILinuxCaptureRuntime.TryDesktopDbusCaptureAsync(...)`
+- `ILinuxCaptureRuntime.TryKdeDbusCaptureAsync(...)`
+- `ILinuxCaptureRuntime.TryGnomeDbusCaptureAsync(...)`
 
 ### Stage 3: Wayland Protocol / wlroots Fallback
 
@@ -111,7 +119,7 @@ Current implementation is tool-driven (not in-process Wayland protocol client):
 
 Runtime hook:
 
-- `ILinuxCaptureRuntime.TryWaylandProtocolCaptureAsync(...)`
+- `ILinuxCaptureRuntime.TryWlrootsCaptureAsync(...)`
 
 ### Stage 4: X11 Legacy Fallback
 
@@ -134,14 +142,15 @@ Legacy CLI fallbacks are still used where needed:
 
 Runtime hook:
 
-- `ILinuxCaptureRuntime.TryX11CaptureAsync(...)`
+- `ILinuxCaptureRuntime.TryX11NativeCaptureAsync(...)`
+- `ILinuxCaptureRuntime.TryCliCaptureAsync(...)`
 
 ## Arch Linux Developer Focus Paths
 
 If you are contributing from Arch Linux, pick one lane and own that lane end-to-end.
 
 1. Portal lane (Wayland + sandbox correctness)
-- `src/XerahS.Platform.Linux/Capture/Providers/PortalCaptureProvider.cs`
+- `src/XerahS.Platform.Linux/Capture/Providers/Portal/PortalCaptureProvider.cs`
 - `src/XerahS.Platform.Linux/Capture/IScreenshotPortal.cs`
 - `src/XerahS.Platform.Linux/Capture/IPortalRequest.cs`
 - `src/XerahS.Platform.Linux/Capture/PortalRequestExtensions.cs`
@@ -149,21 +158,22 @@ If you are contributing from Arch Linux, pick one lane and own that lane end-to-
 - `src/XerahS.Platform.Linux/Services/PortalInterfaceChecker.cs`
 
 2. KDE Plasma lane
-- `src/XerahS.Platform.Linux/Capture/Providers/DesktopDbusCaptureProvider.cs`
+- `src/XerahS.Platform.Linux/Capture/Providers/KDE/KdeDbusCaptureProvider.cs`
 - `src/XerahS.Platform.Linux/LinuxScreenCaptureService.cs` (KWin ScreenShot2 calls and decode path)
 - `src/XerahS.Platform.Linux/Services/LinuxStartupService.cs`
 - `build/linux/XerahS.Packaging/Program.cs`
 
 3. GNOME lane
-- `src/XerahS.Platform.Linux/Capture/Providers/DesktopDbusCaptureProvider.cs`
+- `src/XerahS.Platform.Linux/Capture/Providers/GNOME/GnomeDbusCaptureProvider.cs`
 - `src/XerahS.Platform.Linux/LinuxScreenCaptureService.cs` (GNOME Shell DBus methods)
 
 4. wlroots lane (Sway/Hyprland/Wayfire style environments)
-- `src/XerahS.Platform.Linux/Capture/Providers/WaylandProtocolCaptureProvider.cs`
+- `src/XerahS.Platform.Linux/Capture/Providers/Wlroots/WlrootsCaptureProvider.cs`
 - `src/XerahS.Platform.Linux/LinuxScreenCaptureService.cs` (grim/slurp/grimblast/hyprshot)
 
 5. X11 lane
-- `src/XerahS.Platform.Linux/Capture/Providers/X11CaptureProvider.cs`
+- `src/XerahS.Platform.Linux/Capture/Providers/X11/X11CaptureProvider.cs`
+- `src/XerahS.Platform.Linux/Capture/Providers/Cli/CliCaptureProvider.cs`
 - `src/XerahS.Platform.Linux/Capture/X11GetImageStrategy.cs`
 - `src/XerahS.Platform.Linux/LinuxWindowService.cs`
 - `src/XerahS.Platform.Linux/NativeMethods.cs`

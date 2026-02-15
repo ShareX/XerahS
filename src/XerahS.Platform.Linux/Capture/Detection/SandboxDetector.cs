@@ -23,21 +23,17 @@
 
 #endregion License Information (GPL v3)
 
-using XerahS.Platform.Linux.Capture.Contracts;
-using XerahS.Platform.Linux.Services;
-
 namespace XerahS.Platform.Linux.Capture.Detection;
 
-internal static class LinuxRuntimeContextDetector
+internal static class SandboxDetector
 {
-    public static LinuxCaptureContext Detect()
+    public static bool IsSandboxed()
     {
-        bool isWayland = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE")?.Equals("wayland", StringComparison.OrdinalIgnoreCase) == true;
-        string? desktop = DesktopEnvironmentDetector.Detect();
-        string compositor = CompositorDetector.Detect(isWayland, desktop);
-        bool isSandboxed = SandboxDetector.IsSandboxed();
-        bool hasScreenshotPortal = PortalInterfaceChecker.HasInterface("org.freedesktop.portal.Screenshot");
-
-        return new LinuxCaptureContext(isWayland, desktop, compositor, isSandboxed, hasScreenshotPortal);
+        var container = Environment.GetEnvironmentVariable("container");
+        return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FLATPAK_ID")) ||
+               !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SNAP")) ||
+               !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("APPIMAGE")) ||
+               string.Equals(container, "flatpak", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(container, "snap", StringComparison.OrdinalIgnoreCase);
     }
 }
