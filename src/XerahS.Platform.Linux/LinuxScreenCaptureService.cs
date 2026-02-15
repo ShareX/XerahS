@@ -493,17 +493,17 @@ namespace XerahS.Platform.Linux
 
         public async Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
         {
-            Console.WriteLine($"CaptureRectAsync: Capturing rect - Left={rect.Left}, Top={rect.Top}, Right={rect.Right}, Bottom={rect.Bottom}");
+            DebugHelper.WriteLine($"LinuxScreenCaptureService: CaptureRectAsync: Capturing rect - Left={rect.Left}, Top={rect.Top}, Right={rect.Right}, Bottom={rect.Bottom}");
 
             // Capture full screen with the same options and crop.
             var fullBitmap = await CaptureFullScreenAsync(options);
             if (fullBitmap == null)
             {
-                Console.WriteLine("ERROR: CaptureFullScreenAsync returned null");
+                DebugHelper.WriteLine("LinuxScreenCaptureService: CaptureRectAsync: CaptureFullScreenAsync returned null");
                 return null;
             }
 
-            Console.WriteLine($"Full screen captured: {fullBitmap.Width}x{fullBitmap.Height}");
+            DebugHelper.WriteLine($"LinuxScreenCaptureService: CaptureRectAsync: Full screen captured: {fullBitmap.Width}x{fullBitmap.Height}");
 
             try
             {
@@ -514,7 +514,7 @@ namespace XerahS.Platform.Linux
                     (int)rect.Bottom
                 );
 
-                Console.WriteLine($"Initial crop rect: Left={cropRect.Left}, Top={cropRect.Top}, Right={cropRect.Right}, Bottom={cropRect.Bottom}");
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: CaptureRectAsync: Initial crop rect: Left={cropRect.Left}, Top={cropRect.Top}, Right={cropRect.Right}, Bottom={cropRect.Bottom}");
 
                 // Clamp to image bounds
                 cropRect.Left = Math.Max(0, cropRect.Left);
@@ -522,12 +522,11 @@ namespace XerahS.Platform.Linux
                 cropRect.Right = Math.Min(fullBitmap.Width, cropRect.Right);
                 cropRect.Bottom = Math.Min(fullBitmap.Height, cropRect.Bottom);
 
-                Console.WriteLine($"Clamped crop rect: Left={cropRect.Left}, Top={cropRect.Top}, Right={cropRect.Right}, Bottom={cropRect.Bottom}");
-                Console.WriteLine($"Crop dimensions: Width={cropRect.Width}, Height={cropRect.Height}");
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: CaptureRectAsync: Clamped crop rect: Left={cropRect.Left}, Top={cropRect.Top}, Right={cropRect.Right}, Bottom={cropRect.Bottom}, Width={cropRect.Width}, Height={cropRect.Height}");
 
                 if (cropRect.Width <= 0 || cropRect.Height <= 0)
                 {
-                    Console.WriteLine($"ERROR: Invalid crop dimensions (Width={cropRect.Width}, Height={cropRect.Height})");
+                    DebugHelper.WriteLine($"LinuxScreenCaptureService: CaptureRectAsync: Invalid crop dimensions (Width={cropRect.Width}, Height={cropRect.Height})");
                     fullBitmap.Dispose();
                     return null;
                 }
@@ -537,7 +536,7 @@ namespace XerahS.Platform.Linux
                 canvas.DrawBitmap(fullBitmap, cropRect, new SKRect(0, 0, cropRect.Width, cropRect.Height));
                 fullBitmap.Dispose();
 
-                Console.WriteLine($"Successfully cropped bitmap: {cropped.Width}x{cropped.Height}");
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: CaptureRectAsync: Successfully cropped bitmap: {cropped.Width}x{cropped.Height}");
 
                 // Sample some pixels to check if the image is blank
                 if (cropped.Width > 0 && cropped.Height > 0)
@@ -545,7 +544,7 @@ namespace XerahS.Platform.Linux
                     int sampleX = Math.Min(10, cropped.Width / 2);
                     int sampleY = Math.Min(10, cropped.Height / 2);
                     var samplePixel = cropped.GetPixel(sampleX, sampleY);
-                    Console.WriteLine($"Sample pixel at ({sampleX},{sampleY}): R={samplePixel.Red}, G={samplePixel.Green}, B={samplePixel.Blue}, A={samplePixel.Alpha}");
+                    DebugHelper.WriteLine($"LinuxScreenCaptureService: CaptureRectAsync: Sample pixel at ({sampleX},{sampleY}): R={samplePixel.Red}, G={samplePixel.Green}, B={samplePixel.Blue}, A={samplePixel.Alpha}");
 
                     // Check if image appears to be all black or all white
                     bool mightBeBlank = true;
@@ -563,7 +562,7 @@ namespace XerahS.Platform.Linux
                     }
                     if (mightBeBlank)
                     {
-                        Console.WriteLine("WARNING: Captured image appears to be blank/black!");
+                        DebugHelper.WriteLine("LinuxScreenCaptureService: CaptureRectAsync: WARNING: Captured image appears to be blank/black!");
                     }
                 }
 
@@ -571,7 +570,7 @@ namespace XerahS.Platform.Linux
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR in CaptureRectAsync: {ex.Message}");
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: CaptureRectAsync: Exception: {ex.Message}");
                 fullBitmap?.Dispose();
                 return null;
             }
@@ -752,8 +751,6 @@ namespace XerahS.Platform.Linux
 
         public async Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null)
         {
-            Console.WriteLine("=== ACTIVE WINDOW CAPTURE DEBUG START ===");
-            Console.WriteLine("LinuxScreenCaptureService: CaptureActiveWindowAsync started");
             DebugHelper.WriteLine("LinuxScreenCaptureService: CaptureActiveWindowAsync started");
             var context = LinuxRuntimeContextDetector.Detect();
             var request = new LinuxCaptureRequest(LinuxCaptureKind.ActiveWindow, options, windowService);
@@ -776,23 +773,19 @@ namespace XerahS.Platform.Linux
 
         public async Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
         {
-            Console.WriteLine($"CaptureWindowAsync: Started for handle {windowHandle} (0x{windowHandle:X})");
             DebugHelper.WriteLine($"LinuxScreenCaptureService: CaptureWindowAsync started for handle {windowHandle}");
 
             if (windowHandle == IntPtr.Zero)
             {
-                Console.WriteLine("ERROR: CaptureWindowAsync called with Zero handle");
                 DebugHelper.WriteLine("LinuxScreenCaptureService: CaptureWindowAsync called with Zero handle");
                 return null;
             }
 
             var bounds = windowService.GetWindowBounds(windowHandle);
-            Console.WriteLine($"GetWindowBounds returned: X={bounds.X}, Y={bounds.Y}, Width={bounds.Width}, Height={bounds.Height}");
             DebugHelper.WriteLine($"LinuxScreenCaptureService: Capturing window {windowHandle} bounds: {bounds} (X={bounds.X}, Y={bounds.Y}, W={bounds.Width}, H={bounds.Height})");
 
             if (bounds.Width <= 0 || bounds.Height <= 0)
             {
-                Console.WriteLine($"ERROR: Invalid window bounds (Width={bounds.Width}, Height={bounds.Height})");
                 DebugHelper.WriteLine("LinuxScreenCaptureService: Invalid window bounds");
                 return null;
             }
@@ -800,15 +793,9 @@ namespace XerahS.Platform.Linux
             // Capture the specific rectangle
             // Note: X11 window coordinates are relative to the screen
             var rect = new SKRect(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height);
-            Console.WriteLine($"Calculated SKRect: Left={rect.Left}, Top={rect.Top}, Right={rect.Right}, Bottom={rect.Bottom}");
-            Console.WriteLine($"SKRect dimensions: Width={rect.Width}, Height={rect.Height}");
             DebugHelper.WriteLine($"LinuxScreenCaptureService: Calling CaptureRectAsync with rect: {rect}");
 
-            var result = await CaptureRectAsync(rect, options);
-            Console.WriteLine($"CaptureRectAsync returned bitmap: {(result != null ? $"{result.Width}x{result.Height}" : "NULL")}");
-            Console.WriteLine("=== ACTIVE WINDOW CAPTURE DEBUG END ===");
-
-            return result;
+            return await CaptureRectAsync(rect, options);
         }
 
         public Task<CursorInfo?> CaptureCursorAsync()

@@ -22,6 +22,7 @@
 */
 
 #endregion License Information (GPL v3)
+using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using System.Drawing;
 using System.Runtime.InteropServices;
@@ -60,22 +61,22 @@ namespace XerahS.Platform.Linux
 
         public IntPtr GetForegroundWindow()
         {
-            Console.WriteLine("LinuxWindowService: GetForegroundWindow called");
+            DebugHelper.WriteLine("LinuxWindowService: GetForegroundWindow called");
             if (_display == IntPtr.Zero)
             {
-                Console.WriteLine("ERROR: Display is IntPtr.Zero");
+                DebugHelper.WriteLine("LinuxWindowService: GetForegroundWindow: Display is IntPtr.Zero");
                 return IntPtr.Zero;
             }
 
             NativeMethods.XGetInputFocus(_display, out IntPtr focus, out int revert_to);
-            Console.WriteLine($"XGetInputFocus returned: focus={focus} (0x{focus:X}), revert_to={revert_to}");
+            DebugHelper.WriteLine($"LinuxWindowService: XGetInputFocus returned: focus={focus} (0x{focus:X}), revert_to={revert_to}");
 
             // The focused window might be a child widget (like an input field).
             // Walk up the window tree to find the top-level window
             IntPtr topLevelWindow = GetTopLevelWindow(focus);
             if (topLevelWindow != focus)
             {
-                Console.WriteLine($"Walked up window tree: focus={focus} (0x{focus:X}) -> top-level={topLevelWindow} (0x{topLevelWindow:X})");
+                DebugHelper.WriteLine($"LinuxWindowService: Walked up window tree: focus={focus} (0x{focus:X}) -> top-level={topLevelWindow} (0x{topLevelWindow:X})");
             }
 
             return topLevelWindow;
@@ -134,14 +135,14 @@ namespace XerahS.Platform.Linux
                     if (result == 0)
                     {
                         // XQueryTree failed
-                        Console.WriteLine($"XQueryTree failed for window {currentWindow:X} at depth {depth}");
+                        DebugHelper.WriteLine($"LinuxWindowService: XQueryTree failed for window {currentWindow:X} at depth {depth}");
                         break;
                     }
 
                     // If parent is root or zero, currentWindow is the top-level window
                     if (parent == _rootWindow || parent == IntPtr.Zero)
                     {
-                        Console.WriteLine($"GetTopLevelWindow: {window:X} -> {currentWindow:X} (depth={depth})");
+                        DebugHelper.WriteLine($"LinuxWindowService: GetTopLevelWindow: {window:X} -> {currentWindow:X} (depth={depth})");
                         return currentWindow;
                     }
 
@@ -151,15 +152,15 @@ namespace XerahS.Platform.Linux
 
                 if (depth >= maxDepth)
                 {
-                    Console.WriteLine($"GetTopLevelWindow: Hit max depth ({maxDepth}), returning current window");
+                    DebugHelper.WriteLine($"LinuxWindowService: GetTopLevelWindow: Hit max depth ({maxDepth}), returning current window");
                 }
 
-                Console.WriteLine($"GetTopLevelWindow: {window:X} -> {currentWindow:X} (depth={depth})");
+                DebugHelper.WriteLine($"LinuxWindowService: GetTopLevelWindow: {window:X} -> {currentWindow:X} (depth={depth})");
                 return currentWindow;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"GetTopLevelWindow: Exception - {ex.Message}, returning original window");
+                DebugHelper.WriteLine($"LinuxWindowService: GetTopLevelWindow: Exception - {ex.Message}, returning original window");
                 return window;
             }
         }
@@ -204,22 +205,20 @@ namespace XerahS.Platform.Linux
 
         public Rectangle GetWindowBounds(IntPtr handle)
         {
-            Console.WriteLine($"LinuxWindowService: GetWindowBounds called for handle {handle} (0x{handle:X})");
+            DebugHelper.WriteLine($"LinuxWindowService: GetWindowBounds called for handle {handle} (0x{handle:X})");
             if (_display == IntPtr.Zero)
             {
-                Console.WriteLine("ERROR: Display is IntPtr.Zero");
+                DebugHelper.WriteLine("LinuxWindowService: GetWindowBounds: Display is IntPtr.Zero");
                 return Rectangle.Empty;
             }
 
             var attrs = new XWindowAttributes();
             int result = NativeMethods.XGetWindowAttributes(_display, handle, ref attrs);
-            Console.WriteLine($"XGetWindowAttributes returned: {result}");
+            DebugHelper.WriteLine($"LinuxWindowService: XGetWindowAttributes returned: {result}");
 
             if (result != 0)
             {
-                Console.WriteLine($"XWindowAttributes (relative): x={attrs.x}, y={attrs.y}, width={attrs.width}, height={attrs.height}");
-                Console.WriteLine($"XWindowAttributes: map_state={attrs.map_state}, border_width={attrs.border_width}");
-                Console.WriteLine($"XWindowAttributes: depth={attrs.depth}, visual={attrs.visual}");
+                DebugHelper.WriteLine($"LinuxWindowService: XWindowAttributes (relative): x={attrs.x}, y={attrs.y}, width={attrs.width}, height={attrs.height}, map_state={attrs.map_state}, border_width={attrs.border_width}");
 
                 // Check if window is actually viewable
                 string mapStateStr = attrs.map_state switch
@@ -229,7 +228,7 @@ namespace XerahS.Platform.Linux
                     2 => "IsUnmapped",
                     _ => $"Unknown({attrs.map_state})"
                 };
-                Console.WriteLine($"Window map state: {mapStateStr}");
+                DebugHelper.WriteLine($"LinuxWindowService: Window map state: {mapStateStr}");
 
                 // Translate coordinates to root window (absolute screen coordinates)
                 // The coordinates from XGetWindowAttributes are relative to the parent window
@@ -245,28 +244,26 @@ namespace XerahS.Platform.Linux
                     out child
                 );
 
-                Console.WriteLine($"XTranslateCoordinates returned: {translateResult}");
-                Console.WriteLine($"Absolute coordinates: x={absoluteX}, y={absoluteY}");
-                Console.WriteLine($"Child window returned by XTranslateCoordinates: {child} (0x{child:X})");
+                DebugHelper.WriteLine($"LinuxWindowService: XTranslateCoordinates returned: {translateResult}, absolute: x={absoluteX}, y={absoluteY}");
 
                 // Use the absolute coordinates instead of the relative ones
                 var rect = new Rectangle(absoluteX, absoluteY, attrs.width, attrs.height);
-                Console.WriteLine($"Returning Rectangle (absolute): {rect}");
+                DebugHelper.WriteLine($"LinuxWindowService: GetWindowBounds returning: {rect}");
 
                 // Sanity check
                 if (attrs.width <= 0 || attrs.height <= 0)
                 {
-                    Console.WriteLine($"WARNING: Window has invalid dimensions!");
+                    DebugHelper.WriteLine("LinuxWindowService: WARNING: Window has invalid dimensions!");
                 }
                 if (absoluteX < -10000 || absoluteY < -10000 || absoluteX > 10000 || absoluteY > 10000)
                 {
-                    Console.WriteLine($"WARNING: Window coordinates seem out of reasonable range!");
+                    DebugHelper.WriteLine("LinuxWindowService: WARNING: Window coordinates seem out of reasonable range!");
                 }
 
                 return rect;
             }
 
-            Console.WriteLine("ERROR: XGetWindowAttributes failed, returning Rectangle.Empty");
+            DebugHelper.WriteLine("LinuxWindowService: XGetWindowAttributes failed, returning Rectangle.Empty");
             return Rectangle.Empty;
         }
 

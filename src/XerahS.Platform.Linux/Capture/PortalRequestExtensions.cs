@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Tmds.DBus;
+using XerahS.Common;
 
 namespace XerahS.Platform.Linux.Capture;
 
@@ -39,7 +40,7 @@ internal static class PortalRequestExtensions
         var tcs = new TaskCompletionSource<(uint, IDictionary<string, object>)>(TaskCreationOptions.RunContinuationsAsynchronously);
         using var watch = await request.WatchResponseAsync(data =>
         {
-            Console.WriteLine($"[XDG Portal] SIGNAL RECEIVED: Response={data.response}, Count={data.results?.Count ?? 0}");
+            DebugHelper.WriteLine($"[XDG Portal] SIGNAL RECEIVED: Response={data.response}, Count={data.results?.Count ?? 0}");
             tcs.TrySetResult((data.response, data.results ?? new Dictionary<string, object>()));
         }).ConfigureAwait(false);
         return await tcs.Task.ConfigureAwait(false);
