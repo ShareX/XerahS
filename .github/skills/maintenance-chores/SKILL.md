@@ -75,6 +75,22 @@ Write-Host "Current Version: $version"
 
 **Purpose**: Document all changes since the last release in a maintainable format.
 
+#### 3.0 Execute Changelog Update Skill (Primary Method)
+
+**Location**: `.github/skills/update-changelog/SKILL.md`
+
+Run the dedicated changelog management skill which handles:
+- Version grouping strategy (minor version breakdowns)
+- Consolidation rules (patch versions, pre-release fixes)
+- Specific commit assignment
+- Attribution formatting (external contributors with PR/username)
+- Categorization and formatting per Keep a Changelog standard
+
+**When to Use**:
+- This is the **primary** approach for comprehensive changelog updates
+- Ensures consistency with the established changelog management rules
+- Handles complex version histories and rollups automatically
+
 #### 3.1 Identify Change Categories
 Review since last tag/release:
 - 🔧 **Features**: New capabilties, enhancements
@@ -86,10 +102,10 @@ Review since last tag/release:
 - 🧪 **Testing**: Test additions and improvements
 - ⬆️ **Dependencies**: Dependency updates (SkiaSharp version notes)
 
-#### 3.2 Update CHANGELOG.md
+#### 3.2 Update CHANGELOG.md (Manual/Supplemental)
 **Location**: `docs/CHANGELOG.md`
 
-**Entry Format**:
+Entry Format:
 ```markdown
 ## [X.Y.Z] - YYYY-MM-DD
 
@@ -107,26 +123,6 @@ Review since last tag/release:
 
 ### Security
 - Bullet point for security updates (if any)
-```
-
-**Example**:
-```markdown
-## [0.15.6] - 2026-02-15
-
-### Added
-- Region capture annotation tools in toolbar
-- Keyboard shortcuts for common effects
-
-### Fixed
-- ShareX → XerahS reference corrections in FAQ
-- Linux screen capture dialog handling
-
-### Changed
-- SkiaSharp optimization for image rendering
-- Improved blur algorithm performance
-
-### Dependencies
-- Maintained SkiaSharp at 2.88.9 (do NOT upgrade to 3.x)
 ```
 
 #### 3.3 Update Version References
@@ -192,7 +188,7 @@ git -C "c:\Users\liveu\source\repos\ShareX Team\xerahs.github.io" push origin ma
 - ✅ Pull all three repositories (main XerahS, ImageEditor, website)
 - ✅ Determine appropriate version bump (patch/minor/major)
 - ✅ Update `Directory.Build.props` in both main and ImageEditor
-- ✅ Update `docs/CHANGELOG.md` with changes since last version
+- ✅ **Run `.github/skills/update-changelog/SKILL.md` to consolidate and format changelog** ← PRIMARY STEP
 - ✅ Update version references in README/docs as needed
 - ✅ Run `dotnet build` to validate changes
 - ✅ Stage all modified files across repositories
@@ -253,6 +249,7 @@ git -C "c:\Users\liveu\source\repos\ShareX Team\XerahS" add . ; git -C "c:\Users
 
 ## 🔗 Related Documentation
 
+- [Update Changelog Skill](.github/skills/update-changelog/SKILL.md) - **Dedicated changelog management, versioning, and consolidation rules** (Primary step in Phase 3)
 - [AGENTS.md](../../AGENTS.md) - General git workflow and commit format standards
 - [Development Standards](../development/CODING_STANDARDS.md)
 - [Release & Versioning](.github/skills/xerahs-workflow/SKILL.md)
