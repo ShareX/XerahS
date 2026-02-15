@@ -95,14 +95,19 @@ public static class PluginConfigurationVerifier
             return result;
         }
 
-        // Find plugin folder
-        var pluginsPath = Path.Combine(PathsManager.PluginsFolder, providerId);
+        // Find plugin folder - check all plugin directories (system and user)
+        var pluginsPath = PathsManager.GetPluginDirectories()
+            .Select(d => Path.Combine(d, providerId))
+            .FirstOrDefault(Directory.Exists);
 
-        if (!Directory.Exists(pluginsPath))
+        if (pluginsPath == null)
         {
+            var searchedPaths = PathsManager.GetPluginDirectories()
+                .Select(d => Path.Combine(d, providerId));
             result.Status = PluginVerificationStatus.Error;
             result.Message = "Plugin folder not found";
-            result.Issues.Add($"Plugin folder does not exist: {pluginsPath}");
+            result.Issues.Add($"Plugin folder does not exist in any known plugin directory.");
+            result.Issues.AddRange(searchedPaths.Select(p => $"  Checked: {p}"));
             return result;
         }
 
@@ -154,6 +159,7 @@ public static class PluginConfigurationVerifier
     /// <returns>Number of files deleted</returns>
     public static int CleanDuplicateFrameworkDlls(string providerId)
     {
+        // Only clean user-space plugin folders (system plugin folders may be read-only)
         var pluginsPath = Path.Combine(PathsManager.PluginsFolder, providerId);
 
         if (!Directory.Exists(pluginsPath))
