@@ -63,8 +63,15 @@ namespace XerahS.Platform.Linux
 
         private enum KdeCaptureKind
         {
+            InteractiveRegion,
             ActiveWindow,
             Workspace
+        }
+
+        private enum KdeInteractiveKind : uint
+        {
+            Window = 0,
+            Screen = 1
         }
 
         public LinuxScreenCaptureService()
@@ -430,17 +437,18 @@ namespace XerahS.Platform.Linux
             if (IsKdeDesktop(desktop))
             {
                 SKBitmap? kdeResult = null;
-                if (captureKind == WaterfallCaptureKind.FullScreen)
+                if (captureKind == WaterfallCaptureKind.Region)
+                {
+                    // KWin ScreenShot2 has no explicit free-form area picker; CaptureInteractive is the closest native fallback.
+                    kdeResult = await CaptureWithKdeScreenShot2Async(KdeCaptureKind.InteractiveRegion, options).ConfigureAwait(false);
+                }
+                else if (captureKind == WaterfallCaptureKind.FullScreen)
                 {
                     kdeResult = await CaptureWithKdeScreenShot2Async(KdeCaptureKind.Workspace, options).ConfigureAwait(false);
                 }
                 else if (captureKind == WaterfallCaptureKind.ActiveWindow)
                 {
                     kdeResult = await CaptureWithKdeScreenShot2Async(KdeCaptureKind.ActiveWindow, options).ConfigureAwait(false);
-                }
-                else
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: KDE ScreenShot2 does not provide an interactive free-form region selector.");
                 }
 
                 if (kdeResult != null)
@@ -461,9 +469,23 @@ namespace XerahS.Platform.Linux
                         return gnomeResult;
                     }
                 }
-                else
+                else if (captureKind == WaterfallCaptureKind.ActiveWindow)
                 {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: GNOME Shell D-Bus fallback only supports full-screen capture.");
+                    var gnomeResult = await CaptureWithGnomeShellWindowDBusAsync(options).ConfigureAwait(false);
+                    if (gnomeResult != null)
+                    {
+                        DebugHelper.WriteLine("LinuxScreenCaptureService: Active-window capture succeeded via GNOME Shell D-Bus");
+                        return gnomeResult;
+                    }
+                }
+                else if (captureKind == WaterfallCaptureKind.Region)
+                {
+                    var gnomeResult = await CaptureWithGnomeShellRegionDBusAsync().ConfigureAwait(false);
+                    if (gnomeResult != null)
+                    {
+                        DebugHelper.WriteLine("LinuxScreenCaptureService: Region capture succeeded via GNOME Shell D-Bus");
+                        return gnomeResult;
+                    }
                 }
             }
 
@@ -1729,6 +1751,7 @@ namespace XerahS.Platform.Linux
                 {
                     results = captureKind switch
                     {
+                        KdeCaptureKind.InteractiveRegion => await proxy.CaptureInteractiveAsync((uint)KdeInteractiveKind.Screen, kdeOptions, stream.SafeFileHandle).ConfigureAwait(false),
                         KdeCaptureKind.ActiveWindow => await proxy.CaptureActiveWindowAsync(kdeOptions, stream.SafeFileHandle).ConfigureAwait(false),
                         KdeCaptureKind.Workspace => await proxy.CaptureWorkspaceAsync(kdeOptions, stream.SafeFileHandle).ConfigureAwait(false),
                         _ => new Dictionary<string, object>()
@@ -1972,42 +1995,208 @@ namespace XerahS.Platform.Linux
         private async Task<SKBitmap?> CaptureWithGnomeShellDBusAsync()
         {
             var tempFile = Path.Combine(Path.GetTempPath(), $"sharex_gnome_{Guid.NewGuid():N}.png");
+            var cleanupPaths = new HashSet<string>(StringComparer.Ordinal)
+            {
+                tempFile
+            };
+
             try
             {
                 using var connection = new Connection(Address.Session);
-                await connection.ConnectAsync();
+                await connection.ConnectAsync().ConfigureAwait(false);
 
                 var proxy = connection.CreateProxy<IGnomeShellScreenshot>("org.gnome.Shell.Screenshot", "/org/gnome/Shell/Screenshot");
-                
-                // Screenshot(include_cursor, flash, filename)
-                var (success, filenameUsed) = await proxy.ScreenshotAsync(false, false, tempFile);
 
-                if (success && File.Exists(tempFile))
+                var (success, filenameUsed) = await proxy.ScreenshotAsync(false, false, tempFile).ConfigureAwait(false);
+                if (!success)
                 {
-                    DebugHelper.WriteLine($"LinuxScreenCaptureService: GNOME Shell D-Bus capture succeeded: {tempFile}");
-                    using var stream = File.OpenRead(tempFile);
-                    var bitmap = SKBitmap.Decode(stream);
-                    return bitmap;
+                    return null;
                 }
+
+                return await TryLoadBitmapFromPathAsync(tempFile, filenameUsed, cleanupPaths).ConfigureAwait(false);
+            }
+            catch (DBusException ex)
+            {
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: GNOME Shell full-screen D-Bus capture failed: {ex.ErrorName} ({ex.ErrorMessage})");
+                return null;
             }
             catch (Exception ex)
             {
-                DebugHelper.WriteLine($"LinuxScreenCaptureService: GNOME Shell D-Bus capture failed: {ex.Message}");
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: GNOME Shell full-screen D-Bus capture failed: {ex.Message}");
+                return null;
             }
             finally
             {
-                if (File.Exists(tempFile))
+                CleanupFiles(cleanupPaths);
+            }
+        }
+
+        private async Task<SKBitmap?> CaptureWithGnomeShellWindowDBusAsync(CaptureOptions? options)
+        {
+            var tempFile = Path.Combine(Path.GetTempPath(), $"sharex_gnome_window_{Guid.NewGuid():N}.png");
+            var cleanupPaths = new HashSet<string>(StringComparer.Ordinal)
+            {
+                tempFile
+            };
+
+            try
+            {
+                using var connection = new Connection(Address.Session);
+                await connection.ConnectAsync().ConfigureAwait(false);
+
+                var proxy = connection.CreateProxy<IGnomeShellScreenshot>("org.gnome.Shell.Screenshot", "/org/gnome/Shell/Screenshot");
+                var includeCursor = options?.ShowCursor == true;
+                var (success, filenameUsed) = await proxy.ScreenshotWindowAsync(include_frame: true, include_cursor: includeCursor, flash: false, filename: tempFile)
+                    .ConfigureAwait(false);
+                if (!success)
                 {
-                    try { File.Delete(tempFile); } catch { }
+                    return null;
+                }
+
+                return await TryLoadBitmapFromPathAsync(tempFile, filenameUsed, cleanupPaths).ConfigureAwait(false);
+            }
+            catch (DBusException ex)
+            {
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: GNOME Shell window D-Bus capture failed: {ex.ErrorName} ({ex.ErrorMessage})");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: GNOME Shell window D-Bus capture failed: {ex.Message}");
+                return null;
+            }
+            finally
+            {
+                CleanupFiles(cleanupPaths);
+            }
+        }
+
+        private async Task<SKBitmap?> CaptureWithGnomeShellRegionDBusAsync()
+        {
+            var tempFile = Path.Combine(Path.GetTempPath(), $"sharex_gnome_region_{Guid.NewGuid():N}.png");
+            var cleanupPaths = new HashSet<string>(StringComparer.Ordinal)
+            {
+                tempFile
+            };
+
+            try
+            {
+                using var connection = new Connection(Address.Session);
+                await connection.ConnectAsync().ConfigureAwait(false);
+
+                var proxy = connection.CreateProxy<IGnomeShellScreenshot>("org.gnome.Shell.Screenshot", "/org/gnome/Shell/Screenshot");
+
+                int x;
+                int y;
+                int width;
+                int height;
+
+                try
+                {
+                    (x, y, width, height) = await proxy.SelectAreaAsync().ConfigureAwait(false);
+                }
+                catch (DBusException ex) when (IsLikelyUserCancelled(ex))
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: GNOME Shell SelectArea cancelled by user.");
+                    return null;
+                }
+
+                if (width <= 0 || height <= 0)
+                {
+                    DebugHelper.WriteLine("LinuxScreenCaptureService: GNOME Shell SelectArea returned invalid region.");
+                    return null;
+                }
+
+                var (success, filenameUsed) = await proxy.ScreenshotAreaAsync(x, y, width, height, flash: false, filename: tempFile).ConfigureAwait(false);
+                if (!success)
+                {
+                    return null;
+                }
+
+                return await TryLoadBitmapFromPathAsync(tempFile, filenameUsed, cleanupPaths).ConfigureAwait(false);
+            }
+            catch (DBusException ex)
+            {
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: GNOME Shell region D-Bus capture failed: {ex.ErrorName} ({ex.ErrorMessage})");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: GNOME Shell region D-Bus capture failed: {ex.Message}");
+                return null;
+            }
+            finally
+            {
+                CleanupFiles(cleanupPaths);
+            }
+        }
+
+        private static bool IsLikelyUserCancelled(DBusException ex)
+        {
+            return ex.ErrorName.Contains("Cancel", StringComparison.OrdinalIgnoreCase) ||
+                   ex.ErrorMessage.Contains("cancel", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static async Task<SKBitmap?> TryLoadBitmapFromPathAsync(string primaryPath, string? alternatePath, HashSet<string> cleanupPaths)
+        {
+            var candidates = new List<string>();
+            if (!string.IsNullOrWhiteSpace(primaryPath))
+            {
+                candidates.Add(primaryPath);
+            }
+
+            if (!string.IsNullOrWhiteSpace(alternatePath))
+            {
+                candidates.Add(alternatePath);
+            }
+
+            foreach (var candidate in candidates)
+            {
+                cleanupPaths.Add(candidate);
+                if (!File.Exists(candidate))
+                {
+                    continue;
+                }
+
+                await using var stream = File.OpenRead(candidate);
+                var bitmap = SKBitmap.Decode(stream);
+                if (bitmap != null)
+                {
+                    return bitmap;
                 }
             }
+
             return null;
+        }
+
+        private static void CleanupFiles(IEnumerable<string> filePaths)
+        {
+            foreach (var path in filePaths)
+            {
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
+                }
+                catch
+                {
+                    // Best effort cleanup.
+                }
+            }
         }
 
         [DBusInterface("org.kde.KWin.ScreenShot2")]
         public interface IKdeScreenShot2 : IDBusObject
         {
             Task<uint> GetVersionAsync();
+            Task<IDictionary<string, object>> CaptureInteractiveAsync(uint kind, IDictionary<string, object> options, SafeFileHandle pipe);
             Task<IDictionary<string, object>> CaptureActiveWindowAsync(IDictionary<string, object> options, SafeFileHandle pipe);
             Task<IDictionary<string, object>> CaptureWorkspaceAsync(IDictionary<string, object> options, SafeFileHandle pipe);
         }
@@ -2016,6 +2205,9 @@ namespace XerahS.Platform.Linux
         public interface IGnomeShellScreenshot : IDBusObject
         {
             Task<(bool success, string filename)> ScreenshotAsync(bool include_cursor, bool flash, string filename);
+            Task<(bool success, string filename)> ScreenshotWindowAsync(bool include_frame, bool include_cursor, bool flash, string filename);
+            Task<(bool success, string filename)> ScreenshotAreaAsync(int x, int y, int width, int height, bool flash, string filename);
+            Task<(int x, int y, int width, int height)> SelectAreaAsync();
         }
     }
 }

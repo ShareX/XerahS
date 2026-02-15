@@ -271,6 +271,7 @@ class Program
                 Keywords=screenshot;screen;capture;share;upload;
                 StartupWMClass=XerahS
                 X-GNOME-UsesNotifications=true
+                X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2
                 """;
             File.WriteAllText(Path.Combine(applicationsPath, "xerahs.desktop"), desktopEntry);
 
@@ -416,6 +417,7 @@ class Program
                 Keywords=screenshot;screen;capture;share;upload;
                 StartupWMClass=XerahS
                 X-GNOME-UsesNotifications=true
+                X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2
                 """;
             File.WriteAllText(Path.Combine(applicationsPath, "xerahs.desktop"), desktopEntry);
 

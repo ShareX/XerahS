@@ -100,6 +100,7 @@ public sealed class LinuxStartupService : IStartupService
         builder.AppendLine("Hidden=false");
         builder.AppendLine("X-GNOME-Autostart-enabled=true");
         builder.AppendLine("NoDisplay=false");
+        builder.AppendLine("X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2");
         builder.AppendLine($"Comment=Auto-start {AppResources.AppName}");
         return builder.ToString();
     }
