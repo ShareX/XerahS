@@ -14,6 +14,32 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ### Fixes
 - **Documentation**: Update FAQ to correctly reference XerahS instead of ShareX in Linux screen capture section `(699634f)`
+- **Infrastructure**: Integrate update-changelog skill into maintenance-chores workflow `(5ade43b)`
+
+## v0.15.5
+
+### Features
+- **Linux Capture**: Add Linux DBus fallbacks and KDE desktop permissions support `(290b3e0)`
+- **Linux Capture**: Add Linux capture decision trace orchestration for debugging `(dc02dbd)`
+
+### Fixes
+- **Linux Capture**: Enforce portal-only sandbox capture policy `(2de4ac6)`
+- **Linux Capture**: Unify Linux capture waterfall and add KDE DBus fallback `(c744059)`
+- **Linux Capture**: Replace Console.WriteLine with DebugHelper.WriteLine in Linux capture stack `(a381faa)`
+- **Builds**: Fix cross-platform build configuration and add linux-arm64 support `(ad8611c, 519423d)`
+
+### Refactor
+- **Linux Capture**: Split Linux runtime context detection components `(733a49d)`
+- **Linux Capture**: Split Linux capture providers into parallel lanes `(5dd9931)`
+- **Linux Capture**: Wire Linux capture through provider coordinator `(0a81693)`
+- **Linux Capture**: Add modular Linux capture contracts and providers `(3569c0a)`
+
+### Testing
+- **Linux Capture**: Add Linux capture waterfall and lane matrix tests `(7f49769)`
+
+### Documentation
+- **Build System**: Rename developer README and add Linux guide `(717be27)`
+- **Roadmap**: Finalize Linux phase roadmap and release gate `(76df673)`
 
 ## v0.15.0
 
@@ -23,14 +49,11 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **Mobile**: Add Custom Uploader configuration UI for mobile `(#124, @Hexeption)`
 - **Mobile**: Redesign Amazon S3 configuration UI to match Custom Uploaders `(#125, @Hexeption)`
 - **Mobile**: Add mobile-friendly Amazon S3 configuration and settings navigation `(78a488e)`
-- **Indexer**: Implement async streaming indexer with progress and cancellation `(8b2fe88)`
 - **Mobile**: Add .NET MAUI mobile app project to solution `(493d147)`
-
-### Mobile
-- **iOS**: Improve local signing setup and share extension flow `(30f6822)`
+- **Indexer**: Implement async streaming indexer with progress and cancellation `(8b2fe88)`
 
 ### Fixes
-- **Image Editor**: Share annotation preview visuals with ImageEditor to ensure consistecy `(cc074ad)`
+- **Image Editor**: Share annotation preview visuals with ImageEditor to ensure consistency `(cc074ad)`
 - **Annotations**: Remove draw-start dot artifact and align arrow preview `(d1afa2f)`
 - **Annotations**: Optimize overlay drawing responsiveness `(faa84e7)`
 - **Region Capture**: Optimize annotation rendering performance `(891eed0)`
@@ -43,6 +66,7 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **Watch Folder**: Convert MOV captures to MP4 `(27f6fec)`
 - **Settings**: Make backup and secrets filenames machine-specific `(c618542, 55a32d0)`
 - **Amazon S3**: Reorder and renumber setup steps `(3196b02)`
+- **iOS**: Improve local signing setup and share extension flow `(30f6822)`
 
 ### Build
 - **Plugins**: Centralize plugin copy target and pass host TFM `(6bfa2e1)`
