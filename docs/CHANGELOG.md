@@ -10,6 +10,11 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
+## v0.15.6
+
+### Fixes
+- **Documentation**: Update FAQ to correctly reference XerahS instead of ShareX in Linux screen capture section `(699634f)`
+
 ## v0.15.0
 
 ### Features
