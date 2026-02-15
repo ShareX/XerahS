@@ -1419,13 +1419,30 @@ namespace XerahS.Platform.Linux
             }
         }
 
+        /// <summary>
+        /// Portal response timeout. Generous enough for interactive region selection
+        /// but prevents indefinite hangs when the portal backend doesn't respond.
+        /// </summary>
+        private static readonly TimeSpan PortalResponseTimeout = TimeSpan.FromSeconds(30);
+
         private static async Task<(SKBitmap? bitmap, uint response)> TryPortalScreenshotAsync(Connection connection, IScreenshotPortal portal, IDictionary<string, object> options)
         {
             var requestStartUtc = DateTime.UtcNow;
             using var monitor = PortalBusMonitor.TryStart("LinuxScreenCaptureService");
             var requestPath = await portal.ScreenshotAsync(string.Empty, options).ConfigureAwait(false);
             var request = connection.CreateProxy<IPortalRequest>(PortalBusName, requestPath);
-            var (response, results) = await request.WaitForResponseAsync().ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(PortalResponseTimeout);
+            (uint response, IDictionary<string, object> results) result;
+            try
+            {
+                result = await request.WaitForResponseAsync(cts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: Portal screenshot timed out after {PortalResponseTimeout.TotalSeconds}s (no Response signal received). Falling through to next capture provider.");
+                return (null, PortalResponseFailed);
+            }
+            var (response, results) = result;
             string? uriStr = null;
 
             // Start checking for results

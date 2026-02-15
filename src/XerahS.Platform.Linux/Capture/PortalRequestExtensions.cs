@@ -25,6 +25,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Tmds.DBus;
 using XerahS.Common;
@@ -35,9 +36,13 @@ namespace XerahS.Platform.Linux.Capture;
 
 internal static class PortalRequestExtensions
 {
-    public static async Task<(uint response, IDictionary<string, object> results)> WaitForResponseAsync(this IPortalRequest request)
+    public static async Task<(uint response, IDictionary<string, object> results)> WaitForResponseAsync(
+        this IPortalRequest request,
+        CancellationToken cancellationToken = default)
     {
         var tcs = new TaskCompletionSource<(uint, IDictionary<string, object>)>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var registration = cancellationToken.Register(() =>
+            tcs.TrySetCanceled(cancellationToken));
         using var watch = await request.WatchResponseAsync(data =>
         {
             DebugHelper.WriteLine($"[XDG Portal] SIGNAL RECEIVED: Response={data.response}, Count={data.results?.Count ?? 0}");
