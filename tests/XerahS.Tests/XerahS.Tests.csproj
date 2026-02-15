@@ -27,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\..\src\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" />
     <ProjectReference Include="..\..\src\XerahS.Uploaders\XerahS.Uploaders.csproj" />
     <ProjectReference Include="..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj" GlobalPropertiesToRemove="OS;Platform" />
   </ItemGroup>
