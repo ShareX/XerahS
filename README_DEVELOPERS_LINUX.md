@@ -62,6 +62,11 @@ Runtime context detector:
 - `src/XerahS.Platform.Linux/Capture/Detection/CompositorDetector.cs`
 - `src/XerahS.Platform.Linux/Capture/Detection/SandboxDetector.cs`
 
+Contract hardening:
+
+- `src/XerahS.Platform.Linux/Capture/Contracts/ILinuxCaptureContext.cs`
+- `src/XerahS.Platform.Linux/Capture/Contracts/LinuxCaptureContext.cs`
+
 ## Stage Details
 
 ### Stage 1: XDG Portal (Modern Standard)
@@ -145,6 +150,15 @@ Runtime hook:
 - `ILinuxCaptureRuntime.TryX11NativeCaptureAsync(...)`
 - `ILinuxCaptureRuntime.TryCliCaptureAsync(...)`
 
+## Decision Trace
+
+Capture orchestration records each provider decision and final outcome.
+
+- Trace model: `src/XerahS.Platform.Linux/Capture/Orchestration/CaptureDecisionTrace.cs`
+- Execution wrapper: `src/XerahS.Platform.Linux/Capture/Orchestration/LinuxCaptureExecutionResult.cs`
+- Coordinator trace path: `src/XerahS.Platform.Linux/Capture/Orchestration/LinuxCaptureCoordinator.cs`
+- Service logging integration: `src/XerahS.Platform.Linux/LinuxScreenCaptureService.cs`
+
 ## Arch Linux Developer Focus Paths
 
 If you are contributing from Arch Linux, pick one lane and own that lane end-to-end.
@@ -183,6 +197,10 @@ If you are contributing from Arch Linux, pick one lane and own that lane end-to-
 - `src/XerahS.Platform.Linux/Capture/Detection`
 - `src/XerahS.Platform.Linux/Capture/Orchestration`
 
+7. Linux orchestration tests lane
+- `tests/XerahS.Tests/Platform/Linux/LinuxCaptureOrchestrationTests.cs`
+- `tests/XerahS.Tests/XerahS.Tests.csproj`
+
 ## KDE Desktop Entry Permission Requirement
 
 KDE ScreenShot2 calls can fail without restricted DBus interface permission in desktop entries.
@@ -212,6 +230,49 @@ Current writers:
 3. Add automated Linux integration tests that assert provider order for region, fullscreen, and active-window capture.
 4. Add CI matrix jobs for GNOME Wayland, KDE Wayland, Hyprland/Sway, and X11 sessions.
 
+## Implementation Phases (1-10)
+
+1. Phase 1: Waterfall Unification (`Completed`)
+- Unified `CaptureRegionAsync`, `CaptureFullScreenAsync`, and `CaptureActiveWindowAsync` to run through one coordinator and one waterfall policy.
+
+2. Phase 2: KDE DBus Fallback + Permissions (`Completed`)
+- Added KWin ScreenShot2 fallback paths and ensured KDE desktop entry restricted interface key is written.
+
+3. Phase 3: Modular Core Skeleton (`Completed`)
+- Introduced modular Linux capture structure with `Contracts`, `Detection`, `Orchestration`, and `Providers`.
+
+4. Phase 4: Strict Sandbox Rule (`Completed`)
+- Enforced portal-only behavior for sandboxed sessions (Flatpak/Snap/AppImage/container); non-portal stages are skipped.
+
+5. Phase 5: Provider Split to Parallel Lanes (`Completed`)
+- Split provider implementation into lane folders:
+- `Providers/Portal`
+- `Providers/KDE`
+- `Providers/GNOME`
+- `Providers/Wlroots`
+- `Providers/X11`
+- `Providers/Cli`
+
+6. Phase 6: Detection Split (`Completed`)
+- Split runtime detection into:
+- `DesktopEnvironmentDetector`
+- `CompositorDetector`
+- `SandboxDetector`
+- Composed by `LinuxRuntimeContextDetector`.
+
+7. Phase 7: Capture Decision Trace (`Completed`)
+- Added `CaptureDecisionTrace` so each capture attempt records stage/provider decisions and final outcome.
+
+8. Phase 8: Interface Hardening (`Completed`)
+- Introduced `ILinuxCaptureContext` and updated provider/policy/coordinator contracts to consume the interface.
+
+9. Phase 9: Test Matrix (`Completed`)
+- Added automated tests for waterfall order, sandbox constraints, provider lane behavior, and orchestration trace sequencing.
+
+10. Phase 10: Final Docs + Release Gate (`Completed`)
+- Linux developer documentation is being maintained in this file.
+- Final gate includes `dotnet build` success and Linux orchestration test execution.
+
 ## Build and Verification Commands
 
 Linux platform project:
@@ -230,6 +291,12 @@ Solution build:
 
 ```powershell
 dotnet build -c Debug -v minimal
+```
+
+Targeted Linux orchestration tests:
+
+```powershell
+dotnet test tests/XerahS.Tests/XerahS.Tests.csproj --filter "FullyQualifiedName~LinuxCaptureOrchestrationTests" -v minimal
 ```
 
 ## Contributor Checklist
