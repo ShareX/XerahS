@@ -47,6 +47,17 @@ internal sealed class LinuxCaptureCoordinator
         LinuxCaptureContext context,
         CancellationToken cancellationToken = default)
     {
+        var execution = await CaptureWithTraceAsync(request, context, cancellationToken).ConfigureAwait(false);
+        return execution.Result;
+    }
+
+    public async Task<LinuxCaptureExecutionResult> CaptureWithTraceAsync(
+        LinuxCaptureRequest request,
+        LinuxCaptureContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var trace = new CaptureDecisionTrace(request.Kind);
+
         foreach (var stage in _policy.GetStageOrder(request, context))
         {
             foreach (var provider in _providers)
@@ -58,18 +69,31 @@ internal sealed class LinuxCaptureCoordinator
 
                 if (!provider.CanHandle(request, context))
                 {
+                    trace.AddStep(stage, provider.ProviderId, CaptureDecisionOutcome.Skipped, "CanHandle returned false.");
                     continue;
                 }
 
                 var result = await provider.TryCaptureAsync(request, context, cancellationToken).ConfigureAwait(false);
-                if (result.Bitmap != null || result.IsCancelled)
+                if (result.Bitmap != null)
                 {
-                    return result;
+                    trace.AddStep(stage, provider.ProviderId, CaptureDecisionOutcome.Succeeded);
+                    trace.Complete(provider.ProviderId, CaptureDecisionOutcome.Succeeded);
+                    return new LinuxCaptureExecutionResult(result, trace);
                 }
+
+                if (result.IsCancelled)
+                {
+                    trace.AddStep(stage, provider.ProviderId, CaptureDecisionOutcome.Cancelled);
+                    trace.Complete(provider.ProviderId, CaptureDecisionOutcome.Cancelled);
+                    return new LinuxCaptureExecutionResult(result, trace);
+                }
+
+                trace.AddStep(stage, provider.ProviderId, CaptureDecisionOutcome.Failed);
             }
         }
 
-        return LinuxCaptureResult.Failure("none");
+        var failure = LinuxCaptureResult.Failure("none");
+        trace.Complete("none", CaptureDecisionOutcome.Failed);
+        return new LinuxCaptureExecutionResult(failure, trace);
     }
 }
-

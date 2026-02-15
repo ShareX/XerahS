@@ -272,7 +272,9 @@ namespace XerahS.Platform.Linux
         {
             var context = LinuxRuntimeContextDetector.Detect();
             var request = new LinuxCaptureRequest(LinuxCaptureKind.Region, options);
-            var result = await _captureCoordinator.CaptureAsync(request, context).ConfigureAwait(false);
+            var execution = await _captureCoordinator.CaptureWithTraceAsync(request, context).ConfigureAwait(false);
+            var result = execution.Result;
+            LogCaptureDecisionTrace("Region", execution.Trace);
             if (result.IsCancelled)
             {
                 DebugHelper.WriteLine($"LinuxScreenCaptureService: Region capture cancelled by provider '{result.ProviderId}'.");
@@ -473,6 +475,22 @@ namespace XerahS.Platform.Linux
             }
         }
 
+        private static void LogCaptureDecisionTrace(string captureName, CaptureDecisionTrace trace)
+        {
+            DebugHelper.WriteLine($"LinuxScreenCaptureService: {captureName} decision trace (final={trace.FinalOutcome}, provider={trace.FinalProviderId ?? "none"})");
+
+            foreach (var step in trace.Steps)
+            {
+                if (string.IsNullOrWhiteSpace(step.Reason))
+                {
+                    DebugHelper.WriteLine($"  - stage={step.Stage}, provider={step.ProviderId}, outcome={step.Outcome}");
+                    continue;
+                }
+
+                DebugHelper.WriteLine($"  - stage={step.Stage}, provider={step.ProviderId}, outcome={step.Outcome}, reason={step.Reason}");
+            }
+        }
+
         public async Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
         {
             Console.WriteLine($"CaptureRectAsync: Capturing rect - Left={rect.Left}, Top={rect.Top}, Right={rect.Right}, Bottom={rect.Bottom}");
@@ -563,7 +581,9 @@ namespace XerahS.Platform.Linux
         {
             var context = LinuxRuntimeContextDetector.Detect();
             var request = new LinuxCaptureRequest(LinuxCaptureKind.FullScreen, options);
-            var result = await _captureCoordinator.CaptureAsync(request, context).ConfigureAwait(false);
+            var execution = await _captureCoordinator.CaptureWithTraceAsync(request, context).ConfigureAwait(false);
+            var result = execution.Result;
+            LogCaptureDecisionTrace("FullScreen", execution.Trace);
             if (result.IsCancelled)
             {
                 DebugHelper.WriteLine($"LinuxScreenCaptureService: Full-screen capture cancelled by provider '{result.ProviderId}'.");
@@ -737,7 +757,9 @@ namespace XerahS.Platform.Linux
             DebugHelper.WriteLine("LinuxScreenCaptureService: CaptureActiveWindowAsync started");
             var context = LinuxRuntimeContextDetector.Detect();
             var request = new LinuxCaptureRequest(LinuxCaptureKind.ActiveWindow, options, windowService);
-            var result = await _captureCoordinator.CaptureAsync(request, context).ConfigureAwait(false);
+            var execution = await _captureCoordinator.CaptureWithTraceAsync(request, context).ConfigureAwait(false);
+            var result = execution.Result;
+            LogCaptureDecisionTrace("ActiveWindow", execution.Trace);
             if (result.IsCancelled)
             {
                 DebugHelper.WriteLine($"LinuxScreenCaptureService: Active-window capture cancelled by provider '{result.ProviderId}'.");
