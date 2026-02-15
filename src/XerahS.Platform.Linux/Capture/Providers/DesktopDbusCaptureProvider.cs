@@ -44,7 +44,7 @@ internal sealed class DesktopDbusCaptureProvider : ILinuxCaptureProvider
 
     public bool CanHandle(LinuxCaptureRequest request, LinuxCaptureContext context)
     {
-        return request.UseModernCapture;
+        return !context.IsSandboxed && request.UseModernCapture;
     }
 
     public async Task<LinuxCaptureResult> TryCaptureAsync(
@@ -61,4 +61,3 @@ internal sealed class DesktopDbusCaptureProvider : ILinuxCaptureProvider
         return LinuxCaptureResult.Failure(ProviderId);
     }
 }
-

@@ -44,6 +44,11 @@ internal sealed class PortalCaptureProvider : ILinuxCaptureProvider
 
     public bool CanHandle(LinuxCaptureRequest request, LinuxCaptureContext context)
     {
+        if (context.IsSandboxed)
+        {
+            return context.ShouldTryPortal;
+        }
+
         return request.UseModernCapture && context.ShouldTryPortal;
     }
 

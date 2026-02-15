@@ -44,7 +44,7 @@ internal sealed class WaylandProtocolCaptureProvider : ILinuxCaptureProvider
 
     public bool CanHandle(LinuxCaptureRequest request, LinuxCaptureContext context)
     {
-        return request.UseModernCapture && context.IsWayland;
+        return !context.IsSandboxed && request.UseModernCapture && context.IsWayland;
     }
 
     public async Task<LinuxCaptureResult> TryCaptureAsync(
@@ -61,4 +61,3 @@ internal sealed class WaylandProtocolCaptureProvider : ILinuxCaptureProvider
         return LinuxCaptureResult.Failure(ProviderId);
     }
 }
-

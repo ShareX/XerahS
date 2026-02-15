@@ -30,6 +30,11 @@ namespace XerahS.Platform.Linux.Capture.Orchestration;
 
 internal sealed class WaterfallCapturePolicy : ILinuxCapturePolicy
 {
+    private static readonly LinuxCaptureStage[] SandboxedOrder =
+    {
+        LinuxCaptureStage.Portal
+    };
+
     private static readonly LinuxCaptureStage[] DefaultOrder =
     {
         LinuxCaptureStage.Portal,
@@ -40,7 +45,11 @@ internal sealed class WaterfallCapturePolicy : ILinuxCapturePolicy
 
     public IReadOnlyList<LinuxCaptureStage> GetStageOrder(LinuxCaptureRequest request, LinuxCaptureContext context)
     {
+        if (context.IsSandboxed)
+        {
+            return SandboxedOrder;
+        }
+
         return DefaultOrder;
     }
 }
-

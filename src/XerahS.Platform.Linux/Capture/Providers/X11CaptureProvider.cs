@@ -44,7 +44,7 @@ internal sealed class X11CaptureProvider : ILinuxCaptureProvider
 
     public bool CanHandle(LinuxCaptureRequest request, LinuxCaptureContext context)
     {
-        return true;
+        return !context.IsSandboxed;
     }
 
     public async Task<LinuxCaptureResult> TryCaptureAsync(
@@ -66,4 +66,3 @@ internal sealed class X11CaptureProvider : ILinuxCaptureProvider
         return LinuxCaptureResult.Failure(ProviderId);
     }
 }
-
