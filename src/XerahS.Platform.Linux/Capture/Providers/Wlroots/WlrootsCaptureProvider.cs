@@ -29,22 +29,22 @@ using XerahS.Platform.Linux.Capture.Contracts;
 
 namespace XerahS.Platform.Linux.Capture.Providers;
 
-internal sealed class DesktopDbusCaptureProvider : ILinuxCaptureProvider
+internal sealed class WlrootsCaptureProvider : ILinuxCaptureProvider
 {
     private readonly ILinuxCaptureRuntime _runtime;
 
-    public DesktopDbusCaptureProvider(ILinuxCaptureRuntime runtime)
+    public WlrootsCaptureProvider(ILinuxCaptureRuntime runtime)
     {
         _runtime = runtime;
     }
 
-    public string ProviderId => "desktop-dbus";
+    public string ProviderId => "wlroots";
 
-    public LinuxCaptureStage Stage => LinuxCaptureStage.DesktopDbus;
+    public LinuxCaptureStage Stage => LinuxCaptureStage.WaylandProtocol;
 
     public bool CanHandle(LinuxCaptureRequest request, LinuxCaptureContext context)
     {
-        return !context.IsSandboxed && request.UseModernCapture;
+        return !context.IsSandboxed && request.UseModernCapture && context.IsWayland;
     }
 
     public async Task<LinuxCaptureResult> TryCaptureAsync(
@@ -52,7 +52,7 @@ internal sealed class DesktopDbusCaptureProvider : ILinuxCaptureProvider
         LinuxCaptureContext context,
         CancellationToken cancellationToken = default)
     {
-        var bitmap = await _runtime.TryDesktopDbusCaptureAsync(request.Kind, context.Desktop, request.Options).ConfigureAwait(false);
+        var bitmap = await _runtime.TryWlrootsCaptureAsync(request.Kind, context.Desktop, request.Options).ConfigureAwait(false);
         if (bitmap != null)
         {
             return LinuxCaptureResult.Success(ProviderId, bitmap);

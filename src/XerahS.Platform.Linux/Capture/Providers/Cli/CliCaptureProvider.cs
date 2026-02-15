@@ -29,22 +29,22 @@ using XerahS.Platform.Linux.Capture.Contracts;
 
 namespace XerahS.Platform.Linux.Capture.Providers;
 
-internal sealed class X11CaptureProvider : ILinuxCaptureProvider
+internal sealed class CliCaptureProvider : ILinuxCaptureProvider
 {
     private readonly ILinuxCaptureRuntime _runtime;
 
-    public X11CaptureProvider(ILinuxCaptureRuntime runtime)
+    public CliCaptureProvider(ILinuxCaptureRuntime runtime)
     {
         _runtime = runtime;
     }
 
-    public string ProviderId => "x11";
+    public string ProviderId => "cli-tools";
 
     public LinuxCaptureStage Stage => LinuxCaptureStage.X11;
 
     public bool CanHandle(LinuxCaptureRequest request, LinuxCaptureContext context)
     {
-        return !context.IsSandboxed;
+        return !context.IsSandboxed && !context.IsWayland;
     }
 
     public async Task<LinuxCaptureResult> TryCaptureAsync(
@@ -52,7 +52,7 @@ internal sealed class X11CaptureProvider : ILinuxCaptureProvider
         LinuxCaptureContext context,
         CancellationToken cancellationToken = default)
     {
-        var bitmap = await _runtime.TryX11CaptureAsync(
+        var bitmap = await _runtime.TryCliCaptureAsync(
             request.Kind,
             context.Desktop,
             request.WindowService,

@@ -29,22 +29,29 @@ using XerahS.Platform.Linux.Capture.Contracts;
 
 namespace XerahS.Platform.Linux.Capture.Providers;
 
-internal sealed class WaylandProtocolCaptureProvider : ILinuxCaptureProvider
+internal sealed class GnomeDbusCaptureProvider : ILinuxCaptureProvider
 {
     private readonly ILinuxCaptureRuntime _runtime;
 
-    public WaylandProtocolCaptureProvider(ILinuxCaptureRuntime runtime)
+    public GnomeDbusCaptureProvider(ILinuxCaptureRuntime runtime)
     {
         _runtime = runtime;
     }
 
-    public string ProviderId => "wayland-protocol";
+    public string ProviderId => "gnome-dbus";
 
-    public LinuxCaptureStage Stage => LinuxCaptureStage.WaylandProtocol;
+    public LinuxCaptureStage Stage => LinuxCaptureStage.DesktopDbus;
 
     public bool CanHandle(LinuxCaptureRequest request, LinuxCaptureContext context)
     {
-        return !context.IsSandboxed && request.UseModernCapture && context.IsWayland;
+        if (context.IsSandboxed || !request.UseModernCapture)
+        {
+            return false;
+        }
+
+        return context.Desktop == "GNOME" ||
+               context.Desktop == "MATE" ||
+               context.Desktop == "CINNAMON";
     }
 
     public async Task<LinuxCaptureResult> TryCaptureAsync(
@@ -52,7 +59,7 @@ internal sealed class WaylandProtocolCaptureProvider : ILinuxCaptureProvider
         LinuxCaptureContext context,
         CancellationToken cancellationToken = default)
     {
-        var bitmap = await _runtime.TryWaylandProtocolCaptureAsync(request.Kind, context.Desktop, request.Options).ConfigureAwait(false);
+        var bitmap = await _runtime.TryGnomeDbusCaptureAsync(request.Kind, request.Options).ConfigureAwait(false);
         if (bitmap != null)
         {
             return LinuxCaptureResult.Success(ProviderId, bitmap);

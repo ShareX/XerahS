@@ -80,9 +80,11 @@ namespace XerahS.Platform.Linux
                 new ILinuxCaptureProvider[]
                 {
                     new PortalCaptureProvider(this),
-                    new DesktopDbusCaptureProvider(this),
-                    new WaylandProtocolCaptureProvider(this),
-                    new X11CaptureProvider(this)
+                    new KdeDbusCaptureProvider(this),
+                    new GnomeDbusCaptureProvider(this),
+                    new WlrootsCaptureProvider(this),
+                    new X11CaptureProvider(this),
+                    new CliCaptureProvider(this)
                 },
                 new WaterfallCapturePolicy());
         }
@@ -192,17 +194,66 @@ namespace XerahS.Platform.Linux
             return CaptureWithPortalDetailedAsync(forceInteractive, allowInteractiveFallback: false);
         }
 
-        Task<SKBitmap?> ILinuxCaptureRuntime.TryDesktopDbusCaptureAsync(LinuxCaptureKind kind, string? desktop, CaptureOptions? options)
+        async Task<SKBitmap?> ILinuxCaptureRuntime.TryKdeDbusCaptureAsync(LinuxCaptureKind kind, CaptureOptions? options)
         {
-            return CaptureWithDesktopDbusFallbackAsync(ToWaterfallKind(kind), desktop, options);
+            return kind switch
+            {
+                LinuxCaptureKind.Region => await CaptureWithKdeScreenShot2Async(KdeCaptureKind.InteractiveRegion, options).ConfigureAwait(false),
+                LinuxCaptureKind.FullScreen => await CaptureWithKdeScreenShot2Async(KdeCaptureKind.Workspace, options).ConfigureAwait(false),
+                LinuxCaptureKind.ActiveWindow => await CaptureWithKdeScreenShot2Async(KdeCaptureKind.ActiveWindow, options).ConfigureAwait(false),
+                _ => null
+            };
         }
 
-        Task<SKBitmap?> ILinuxCaptureRuntime.TryWaylandProtocolCaptureAsync(LinuxCaptureKind kind, string? desktop, CaptureOptions? options)
+        async Task<SKBitmap?> ILinuxCaptureRuntime.TryGnomeDbusCaptureAsync(LinuxCaptureKind kind, CaptureOptions? options)
+        {
+            return kind switch
+            {
+                LinuxCaptureKind.Region => await CaptureWithGnomeShellRegionDBusAsync().ConfigureAwait(false),
+                LinuxCaptureKind.FullScreen => await CaptureWithGnomeShellDBusAsync().ConfigureAwait(false),
+                LinuxCaptureKind.ActiveWindow => await CaptureWithGnomeShellWindowDBusAsync(options).ConfigureAwait(false),
+                _ => null
+            };
+        }
+
+        Task<SKBitmap?> ILinuxCaptureRuntime.TryWlrootsCaptureAsync(LinuxCaptureKind kind, string? desktop, CaptureOptions? options)
         {
             return CaptureWithWaylandProtocolFallbackAsync(ToWaterfallKind(kind), desktop);
         }
 
-        async Task<SKBitmap?> ILinuxCaptureRuntime.TryX11CaptureAsync(
+        async Task<SKBitmap?> ILinuxCaptureRuntime.TryX11NativeCaptureAsync(
+            LinuxCaptureKind kind,
+            IWindowService? windowService,
+            CaptureOptions? options)
+        {
+            if (IsWayland)
+            {
+                return null;
+            }
+
+            switch (kind)
+            {
+                case LinuxCaptureKind.FullScreen:
+                    return await CaptureWithX11Async().ConfigureAwait(false);
+                case LinuxCaptureKind.ActiveWindow:
+                    if (windowService == null)
+                    {
+                        return null;
+                    }
+
+                    var handle = windowService.GetForegroundWindow();
+                    if (handle == IntPtr.Zero)
+                    {
+                        return null;
+                    }
+
+                    return await CaptureWindowAsync(handle, windowService, options).ConfigureAwait(false);
+                default:
+                    return null;
+            }
+        }
+
+        async Task<SKBitmap?> ILinuxCaptureRuntime.TryCliCaptureAsync(
             LinuxCaptureKind kind,
             string? desktop,
             IWindowService? windowService,
@@ -212,11 +263,6 @@ namespace XerahS.Platform.Linux
             {
                 case LinuxCaptureKind.Region:
                 {
-                    if (IsWayland)
-                    {
-                        return null;
-                    }
-
                     var x11Result = await TryCaptureWithDesktopNativeToolAsync(desktop).ConfigureAwait(false);
                     if (x11Result != null)
                     {
@@ -227,18 +273,7 @@ namespace XerahS.Platform.Linux
                 }
                 case LinuxCaptureKind.FullScreen:
                 {
-                    var x11Result = await CaptureWithX11Async().ConfigureAwait(false);
-                    if (x11Result != null)
-                    {
-                        return x11Result;
-                    }
-
-                    if (IsWayland)
-                    {
-                        return null;
-                    }
-
-                    x11Result = await CaptureWithGnomeScreenshotAsync().ConfigureAwait(false);
+                    var x11Result = await CaptureWithGnomeScreenshotAsync().ConfigureAwait(false);
                     if (x11Result != null) return x11Result;
 
                     x11Result = await CaptureWithSpectacleAsync().ConfigureAwait(false);
@@ -252,20 +287,12 @@ namespace XerahS.Platform.Linux
                 }
                 case LinuxCaptureKind.ActiveWindow:
                 {
-                    if (IsWayland || windowService == null)
+                    if (windowService == null)
                     {
                         return null;
                     }
 
                     var handle = windowService.GetForegroundWindow();
-                    if (handle != IntPtr.Zero)
-                    {
-                        var capturedWindow = await CaptureWindowAsync(handle, windowService, options).ConfigureAwait(false);
-                        if (capturedWindow != null)
-                        {
-                            return capturedWindow;
-                        }
-                    }
 
                     var x11Result = await CaptureWindowWithGnomeScreenshotAsync().ConfigureAwait(false);
                     if (x11Result != null) return x11Result;
@@ -278,7 +305,16 @@ namespace XerahS.Platform.Linux
 
                     if (handle == IntPtr.Zero)
                     {
-                        return await CaptureFullScreenAsync(options).ConfigureAwait(false);
+                        x11Result = await CaptureWithGnomeScreenshotAsync().ConfigureAwait(false);
+                        if (x11Result != null) return x11Result;
+
+                        x11Result = await CaptureWithSpectacleAsync().ConfigureAwait(false);
+                        if (x11Result != null) return x11Result;
+
+                        x11Result = await CaptureWithScrotAsync().ConfigureAwait(false);
+                        if (x11Result != null) return x11Result;
+
+                        return await CaptureWithImportAsync().ConfigureAwait(false);
                     }
 
                     return null;

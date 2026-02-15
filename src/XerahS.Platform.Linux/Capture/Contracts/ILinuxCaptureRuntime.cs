@@ -35,11 +35,18 @@ internal interface ILinuxCaptureRuntime
 
     Task<(SKBitmap? bitmap, uint response)> TryPortalCaptureAsync(LinuxCaptureKind kind, CaptureOptions? options);
 
-    Task<SKBitmap?> TryDesktopDbusCaptureAsync(LinuxCaptureKind kind, string? desktop, CaptureOptions? options);
+    Task<SKBitmap?> TryKdeDbusCaptureAsync(LinuxCaptureKind kind, CaptureOptions? options);
 
-    Task<SKBitmap?> TryWaylandProtocolCaptureAsync(LinuxCaptureKind kind, string? desktop, CaptureOptions? options);
+    Task<SKBitmap?> TryGnomeDbusCaptureAsync(LinuxCaptureKind kind, CaptureOptions? options);
 
-    Task<SKBitmap?> TryX11CaptureAsync(
+    Task<SKBitmap?> TryWlrootsCaptureAsync(LinuxCaptureKind kind, string? desktop, CaptureOptions? options);
+
+    Task<SKBitmap?> TryX11NativeCaptureAsync(
+        LinuxCaptureKind kind,
+        IWindowService? windowService,
+        CaptureOptions? options);
+
+    Task<SKBitmap?> TryCliCaptureAsync(
         LinuxCaptureKind kind,
         string? desktop,
         IWindowService? windowService,
