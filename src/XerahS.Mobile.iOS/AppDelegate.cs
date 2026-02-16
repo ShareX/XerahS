@@ -29,6 +29,7 @@ using Avalonia;
 using Avalonia.iOS;
 using ShareX.AmazonS3.Plugin;
 using XerahS.Common;
+using XerahS.Core.Services;
 using XerahS.Mobile.UI;
 using XerahS.Platform.Abstractions;
 using XerahS.Platform.Mobile;
@@ -41,8 +42,6 @@ namespace XerahS.Mobile.iOS;
 public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
 #pragma warning restore CA1711
 {
-    private const string SharedPayloadPrefix = "xerahs_shared_payload:";
-
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
         // Initialize platform services for mobile
@@ -83,7 +82,7 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
     private void ProcessSharedFiles()
     {
         var payload = ReadSharedPayload();
-        if (payload == null || payload.Count == 0) return;
+        if (payload.Count == 0) return;
 
         // Copy shared payload files to app cache.
         var localPaths = new List<string>();
@@ -100,7 +99,7 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
                     : Path.GetFileName(item.FileName);
                 var destPath = Path.Combine(cachePath, fileName);
                 EnsureUniqueFileName(ref destPath);
-                File.WriteAllBytes(destPath, Convert.FromBase64String(item.Base64Content));
+                File.WriteAllBytes(destPath, item.Content);
                 localPaths.Add(destPath);
             }
             catch (Exception ex)
@@ -115,43 +114,17 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
         }
     }
 
-    private static List<SharedFilePayload>? ReadSharedPayload()
+    private static IReadOnlyList<SharedPayloadFile> ReadSharedPayload()
     {
         var sharedPasteboardName = $"{NSBundle.MainBundle.BundleIdentifier ?? "com.sharexteam.xerahs"}.shared";
         var pasteboard = UIPasteboard.FromName(sharedPasteboardName, create: false) ?? UIPasteboard.General;
-        var text = pasteboard.String;
-        if (string.IsNullOrWhiteSpace(text) || !text.StartsWith(SharedPayloadPrefix, StringComparison.Ordinal))
+        var parsedItems = SharedPayloadService.Parse(pasteboard.String);
+        if (parsedItems.Count > 0)
         {
-            return null;
-        }
-
-        try
-        {
-            var encoded = text.Substring(SharedPayloadPrefix.Length);
             pasteboard.String = string.Empty;
-
-            var list = new List<SharedFilePayload>();
-            var lines = encoded.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            foreach (var line in lines)
-            {
-                var separator = line.IndexOf('|');
-                if (separator <= 0 || separator == line.Length - 1) continue;
-
-                var encodedFileName = line.Substring(0, separator);
-                var base64 = line.Substring(separator + 1);
-                list.Add(new SharedFilePayload
-                {
-                    FileName = Uri.UnescapeDataString(encodedFileName),
-                    Base64Content = base64
-                });
-            }
-
-            return list;
         }
-        catch
-        {
-            return null;
-        }
+
+        return parsedItems;
     }
 
     private static void EnsureUniqueFileName(ref string filePath)
@@ -169,10 +142,4 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
             counter++;
         }
     }
-}
-
-internal class SharedFilePayload
-{
-    public string FileName { get; set; } = string.Empty;
-    public string Base64Content { get; set; } = string.Empty;
 }
