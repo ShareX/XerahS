@@ -1197,30 +1197,41 @@ public partial class OverlayWindow : Window
             return null;
         }
 
-        // Physical pixel dimensions of the full monitor
-        int width = (int)_monitor.PhysicalBounds.Width;
-        int height = (int)_monitor.PhysicalBounds.Height;
+        // Hide inline TextBox during capture so it doesn't render as a raw control
+        bool textBoxWasVisible = _inlineTextBox?.IsVisible ?? false;
+        if (_inlineTextBox != null) _inlineTextBox.IsVisible = false;
 
-        // Logical dimensions for layout (annotations are in logical coordinates)
-        double logicalWidth = _monitor.PhysicalBounds.Width / _monitor.ScaleFactor;
-        double logicalHeight = _monitor.PhysicalBounds.Height / _monitor.ScaleFactor;
+        try
+        {
+            // Physical pixel dimensions of the full monitor
+            int width = (int)_monitor.PhysicalBounds.Width;
+            int height = (int)_monitor.PhysicalBounds.Height;
 
-        // Force layout at full logical size so all annotations are positioned correctly
-        _annotationCanvas.Measure(new Size(logicalWidth, logicalHeight));
-        _annotationCanvas.Arrange(new Rect(0, 0, logicalWidth, logicalHeight));
+            // Logical dimensions for layout (annotations are in logical coordinates)
+            double logicalWidth = _monitor.PhysicalBounds.Width / _monitor.ScaleFactor;
+            double logicalHeight = _monitor.PhysicalBounds.Height / _monitor.ScaleFactor;
 
-        // Render the Avalonia visual tree to a bitmap at physical resolution
-        var dpi = 96.0 * _monitor.ScaleFactor;
-        var rtb = new RenderTargetBitmap(new PixelSize(width, height), new Vector(dpi, dpi));
-        rtb.Render(_annotationCanvas);
+            // Force layout at full logical size so all annotations are positioned correctly
+            _annotationCanvas.Measure(new Size(logicalWidth, logicalHeight));
+            _annotationCanvas.Arrange(new Rect(0, 0, logicalWidth, logicalHeight));
 
-        // Direct pixel copy from Avalonia RenderTargetBitmap to SKBitmap (avoids PNG encode/decode)
-        var skBitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
-        using var pixmap = skBitmap.PeekPixels();
-        int rowBytes = skBitmap.Info.RowBytes;
-        rtb.CopyPixels(new AvPixelRect(0, 0, width, height), pixmap.GetPixels(), rowBytes * height, rowBytes);
+            // Render the Avalonia visual tree to a bitmap at physical resolution
+            var dpi = 96.0 * _monitor.ScaleFactor;
+            var rtb = new RenderTargetBitmap(new PixelSize(width, height), new Vector(dpi, dpi));
+            rtb.Render(_annotationCanvas);
 
-        return skBitmap;
+            // Direct pixel copy from Avalonia RenderTargetBitmap to SKBitmap (avoids PNG encode/decode)
+            var skBitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+            using var pixmap = skBitmap.PeekPixels();
+            int rowBytes = skBitmap.Info.RowBytes;
+            rtb.CopyPixels(new AvPixelRect(0, 0, width, height), pixmap.GetPixels(), rowBytes * height, rowBytes);
+
+            return skBitmap;
+        }
+        finally
+        {
+            if (_inlineTextBox != null) _inlineTextBox.IsVisible = textBoxWasVisible;
+        }
     }
 
     // Stores the selection result when annotations exist, for use with ENTER key
