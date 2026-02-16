@@ -32,6 +32,11 @@
                    LineBreakMode="WordWrap"
                    HorizontalTextAlignment="Center"/>
 
+            <Button Text="Choose Photo or File"
+                    Command="{Binding PickFilesCommand}"
+                    HorizontalOptions="Center"
+                    Margin="0,4"/>
+
             <!-- Progress -->
             <ActivityIndicator IsRunning="{Binding IsUploading}"
                                IsVisible="{Binding IsUploading}"

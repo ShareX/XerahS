@@ -29,9 +29,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Avalonia.Threading;
 using XerahS.Common;
-using XerahS.Core;
-using XerahS.Core.Managers;
-using XerahS.Core.Tasks;
+using XerahS.Core.Services;
 using XerahS.Platform.Abstractions;
 
 namespace XerahS.Mobile.UI.ViewModels;
@@ -60,7 +58,7 @@ public class MobileUploadViewModel : INotifyPropertyChanged
     public ICommand OpenSettingsCommand { get; }
     public ICommand OpenHistoryCommand { get; }
 
-    private int _pendingCount;
+    private readonly UploadQueueService _uploadQueueService;
 
     /// <summary>
     /// Action to navigate to settings view - set by MobileApp
@@ -74,12 +72,25 @@ public class MobileUploadViewModel : INotifyPropertyChanged
 
     public MobileUploadViewModel()
     {
+        _uploadQueueService = UploadQueueService.Instance;
+        _uploadQueueService.StateChanged -= OnQueueStateChanged;
+        _uploadQueueService.StateChanged += OnQueueStateChanged;
+        _uploadQueueService.ItemCompleted -= OnQueueItemCompleted;
+        _uploadQueueService.ItemCompleted += OnQueueItemCompleted;
+
         CopyUrlCommand = new RelayCommand<string>(CopyUrl);
         OpenSettingsCommand = new RelayCommand(_ => OnOpenSettings?.Invoke());
         OpenHistoryCommand = new RelayCommand(_ => OnOpenHistory?.Invoke());
+
+        if (_uploadQueueService.IsProcessing || _uploadQueueService.PendingCount > 0)
+        {
+            var activeCount = _uploadQueueService.PendingCount + (_uploadQueueService.IsProcessing ? 1 : 0);
+            IsUploading = true;
+            StatusText = $"Uploading {activeCount} queued file(s)...";
+        }
     }
 
-    public async void ProcessFiles(string[] filePaths)
+    public void ProcessFiles(string[] filePaths)
     {
         if (filePaths.Length == 0)
         {
@@ -87,60 +98,62 @@ public class MobileUploadViewModel : INotifyPropertyChanged
             return;
         }
 
-        IsUploading = true;
-        _pendingCount = filePaths.Length;
-        StatusText = $"Uploading {filePaths.Length} file(s)...";
-
-        // Subscribe once for all uploads
-        TaskManager.Instance.TaskCompleted += OnTaskCompleted;
+        var validPaths = new List<string>();
 
         foreach (var filePath in filePaths)
         {
             if (!File.Exists(filePath))
             {
                 DebugHelper.WriteLine($"[Mobile] File not found: {filePath}");
-                DecrementPending(Path.GetFileName(filePath), false, null, "File not found");
+                AddResult(Path.GetFileName(filePath), false, null, "File not found");
                 continue;
             }
 
-            try
-            {
-                var defaultSettings = SettingsManager.DefaultTaskSettings;
-                var clonedSettings = WatchFolderManager.CloneTaskSettings(defaultSettings);
-                clonedSettings.Job = WorkflowType.FileUpload;
-                clonedSettings.AfterUploadJob = AfterUploadTasks.CopyURLToClipboard;
+            validPaths.Add(filePath);
+        }
 
-                await TaskManager.Instance.StartFileTask(clonedSettings, filePath);
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex, "[Mobile] ProcessFiles");
-                DecrementPending(Path.GetFileName(filePath), false, null, ex.Message);
-            }
+        var queuedCount = _uploadQueueService.EnqueueFiles(validPaths);
+        if (queuedCount > 0)
+        {
+            StatusText = $"Queued {queuedCount} file(s) for upload.";
+        }
+        else if (validPaths.Count == 0)
+        {
+            UpdateCompletionStatus();
         }
     }
 
-    private void OnTaskCompleted(object? sender, WorkerTask task)
+    private void OnQueueStateChanged(object? sender, UploadQueueStateChangedEventArgs e)
     {
-        var fileName = task.Info?.FileName ?? task.Info?.FilePath ?? "Unknown";
-        fileName = Path.GetFileName(fileName);
-        var url = task.Info?.Result?.URL;
-        var success = !string.IsNullOrEmpty(url);
-        var error = success ? null : (task.Error?.Message ?? task.Info?.Result?.Response ?? "Upload failed");
-
         Dispatcher.UIThread.Post(() =>
         {
-            DecrementPending(fileName, success, url, error);
+            IsUploading = e.IsProcessing;
 
-            // Unsubscribe when all uploads are done
-            if (_pendingCount <= 0)
+            if (e.IsProcessing)
             {
-                TaskManager.Instance.TaskCompleted -= OnTaskCompleted;
+                var activeCount = e.PendingCount + 1;
+                StatusText = $"Uploading {activeCount} queued file(s)...";
+                return;
+            }
+
+            UpdateCompletionStatus();
+        });
+    }
+
+    private void OnQueueItemCompleted(object? sender, UploadQueueItemCompletedEventArgs e)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            AddResult(e.FileName, e.Success, e.Url, e.Error);
+
+            if (!_uploadQueueService.IsProcessing)
+            {
+                UpdateCompletionStatus();
             }
         });
     }
 
-    private void DecrementPending(string fileName, bool success, string? url, string? error)
+    private void AddResult(string fileName, bool success, string? url, string? error)
     {
         Results.Add(new UploadResultItem
         {
@@ -150,17 +163,22 @@ public class MobileUploadViewModel : INotifyPropertyChanged
             Error = error,
             CopyUrlCommand = CopyUrlCommand
         });
+    }
 
-        _pendingCount--;
+    private void UpdateCompletionStatus()
+    {
+        IsUploading = false;
 
-        if (_pendingCount <= 0)
+        if (Results.Count == 0)
         {
-            IsUploading = false;
-            var successCount = Results.Count(r => r.Success);
-            StatusText = successCount == Results.Count
-                ? $"All {successCount} file(s) uploaded successfully!"
-                : $"{successCount} of {Results.Count} file(s) uploaded.";
+            StatusText = "Share files to XerahS to upload them.";
+            return;
         }
+
+        var successCount = Results.Count(r => r.Success);
+        StatusText = successCount == Results.Count
+            ? $"All {successCount} file(s) uploaded successfully!"
+            : $"{successCount} of {Results.Count} file(s) uploaded.";
     }
 
     private void CopyUrl(string? url)
