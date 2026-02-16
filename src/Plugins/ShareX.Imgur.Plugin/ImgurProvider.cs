@@ -127,7 +127,14 @@ public class ImgurProvider : UploaderProviderBase, IUploaderExplorer
         if (string.IsNullOrEmpty(folderPath))
         {
             // Root: list albums as folders
-            return await ListAlbumsAsync(authInfo, query, cancellation);
+            var rootPage = await ListAlbumsAsync(authInfo, query, cancellation);
+            if (rootPage.Items.Count > 0 || !string.IsNullOrEmpty(rootPage.ContinuationToken))
+            {
+                return rootPage;
+            }
+
+            // Fallback for accounts that upload without albums.
+            return await ListAccountImagesAsync(authInfo, query, cancellation);
         }
         else
         {
@@ -285,6 +292,53 @@ public class ImgurProvider : UploaderProviderBase, IUploaderExplorer
 
             // Album images API returns all images in one call — no pagination needed
             return new ExplorerPage { Items = items, TotalCount = items.Count };
+        }
+        catch
+        {
+            return new ExplorerPage();
+        }
+    }
+
+    private async Task<ExplorerPage> ListAccountImagesAsync(OAuth2Info authInfo, ExplorerQuery query, CancellationToken cancellation)
+    {
+        int page = int.TryParse(query.ContinuationToken, out int p) ? p : 0;
+        int perPage = query.PageSize;
+
+        string url = $"https://api.imgur.com/3/account/me/images?page={page}&perPage={perPage}";
+        using var request = new SysHttpRequestMessage(SysHttpMethod.Get, url);
+        request.Headers.TryAddWithoutValidation("Authorization", "Bearer " + authInfo.Token!.access_token);
+
+        try
+        {
+            using var response = await _explorerHttpClient.SendAsync(request, cancellation);
+            if (!response.IsSuccessStatusCode) return new ExplorerPage();
+
+            string json = await response.Content.ReadAsStringAsync(cancellation);
+            var wrapper = JsonConvert.DeserializeObject<ImgurApiResponse>(json);
+            if (wrapper?.data == null || !wrapper.success) return new ExplorerPage();
+
+            var images = JsonConvert.DeserializeObject<List<ImgurImageResponse>>(wrapper.data.ToString() ?? "[]")
+                         ?? new List<ImgurImageResponse>();
+
+            var items = images.Select(img => new MediaItem
+            {
+                Id = img.id ?? "",
+                Name = string.IsNullOrEmpty(img.name) ? (img.id + ".jpg") : img.name!,
+                Path = img.id ?? "",
+                SizeBytes = img.size,
+                MimeType = img.type,
+                ModifiedAt = img.datetime > 0 ? DateTimeOffset.FromUnixTimeSeconds(img.datetime).DateTime : null,
+                Url = img.link,
+                ThumbnailUrl = string.IsNullOrEmpty(img.id) ? null : $"https://i.imgur.com/{img.id}m.jpg",
+                Metadata = new Dictionary<string, string>
+                {
+                    ["deleteHash"] = img.deletehash ?? "",
+                    ["settingsJson"] = query.SettingsJson ?? ""
+                }
+            }).ToList();
+
+            string? nextToken = images.Count < perPage ? null : (page + 1).ToString();
+            return new ExplorerPage { Items = items, ContinuationToken = nextToken };
         }
         catch
         {

@@ -130,11 +130,20 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
     public async Task<ExplorerPage> ListAsync(ExplorerQuery query, CancellationToken cancellation = default)
     {
         var config = DeserializeConfig(query.SettingsJson);
-        var (ak, sk, st) = ResolveCredentials(config);
+        var (ak, sk, st) = ResolveCredentials(config, refreshIfExpired: true);
+        if (string.IsNullOrWhiteSpace(ak) || string.IsNullOrWhiteSpace(sk))
+        {
+            throw new InvalidOperationException("Amazon S3 explorer credentials are missing, invalid, or expired.");
+        }
 
         string region = ResolveRegion(config);
         bool pathStyle = config.UsePathStyleUrl || config.BucketName.Contains('.');
-        string endpoint = config.Endpoint.TrimEnd('/');
+        string endpoint = NormalizeEndpointHost(config.Endpoint);
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            throw new InvalidOperationException("Amazon S3 endpoint is missing or invalid.");
+        }
+
         string host = pathStyle ? endpoint : $"{config.BucketName}.{endpoint}";
 
         string prefix = (query.FolderPath ?? "").TrimStart('/');
@@ -181,16 +190,12 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(MediaItem item, CancellationToken cancellation = default)
     {
-        if (!item.Metadata.TryGetValue("settingsKey", out string? secretKey)) return false;
-        if (!item.Metadata.TryGetValue("bucket", out string? bucket)) return false;
-        if (!item.Metadata.TryGetValue("endpoint", out string? endpoint)) return false;
-        if (!item.Metadata.TryGetValue("region", out string? region)) return false;
-        if (!item.Metadata.TryGetValue("pathStyle", out string? pathStyleStr)) return false;
+        var context = ResolveItemRequestContext(item);
+        if (context == null) return false;
+        var (config, bucket, endpoint, region, pathStyle) = context.Value;
 
-        bool pathStyle = pathStyleStr == "1";
-        string ak = Secrets?.GetSecret(ProviderId, secretKey, "accessKeyId") ?? string.Empty;
-        string sk = Secrets?.GetSecret(ProviderId, secretKey, "secretAccessKey") ?? string.Empty;
-        string? st = Secrets?.GetSecret(ProviderId, secretKey, "sessionToken");
+        var (ak, sk, st) = ResolveCredentials(config, refreshIfExpired: true);
+        if (string.IsNullOrWhiteSpace(ak) || string.IsNullOrWhiteSpace(sk)) return false;
 
         string host = pathStyle ? endpoint : $"{bucket}.{endpoint}";
         string objectKey = item.Path.TrimStart('/');
@@ -226,16 +231,12 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
 
     private async Task<byte[]?> DownloadItemBytesAsync(MediaItem item, CancellationToken cancellation)
     {
-        if (!item.Metadata.TryGetValue("settingsKey", out string? secretKey)) return null;
-        if (!item.Metadata.TryGetValue("bucket", out string? bucket)) return null;
-        if (!item.Metadata.TryGetValue("endpoint", out string? endpoint)) return null;
-        if (!item.Metadata.TryGetValue("region", out string? region)) return null;
-        if (!item.Metadata.TryGetValue("pathStyle", out string? pathStyleStr)) return null;
+        var context = ResolveItemRequestContext(item);
+        if (context == null) return null;
+        var (config, bucket, endpoint, region, pathStyle) = context.Value;
 
-        bool pathStyle = pathStyleStr == "1";
-        string ak = Secrets?.GetSecret(ProviderId, secretKey, "accessKeyId") ?? string.Empty;
-        string sk = Secrets?.GetSecret(ProviderId, secretKey, "secretAccessKey") ?? string.Empty;
-        string? st = Secrets?.GetSecret(ProviderId, secretKey, "sessionToken");
+        var (ak, sk, st) = ResolveCredentials(config, refreshIfExpired: true);
+        if (string.IsNullOrWhiteSpace(ak) || string.IsNullOrWhiteSpace(sk)) return null;
 
         string host = pathStyle ? endpoint : $"{bucket}.{endpoint}";
         string objectKey = item.Path.TrimStart('/');
@@ -260,15 +261,15 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
         string region, string ak, string sk, string? st, CancellationToken cancellation)
     {
         using var request = BuildSignedRequest("GET", host, canonicalUri, canonicalQs, region, ak, sk, st);
-        try
+        using var response = await _explorerHttpClient.SendAsync(request, cancellation);
+        string body = await response.Content.ReadAsStringAsync(cancellation);
+
+        if (response.IsSuccessStatusCode)
         {
-            using var response = await _explorerHttpClient.SendAsync(request, cancellation);
-            return await response.Content.ReadAsStringAsync(cancellation);
+            return body;
         }
-        catch
-        {
-            return string.Empty;
-        }
+
+        throw new InvalidOperationException(BuildS3ErrorMessage(response, body));
     }
 
     private static SysHttpRequestMessage BuildSignedRequest(string method, string host,
@@ -292,24 +293,35 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
 
     private ExplorerPage ParseListObjectsXml(string xml, S3ConfigModel config)
     {
-        if (string.IsNullOrWhiteSpace(xml)) return new ExplorerPage();
+        if (string.IsNullOrWhiteSpace(xml))
+        {
+            return new ExplorerPage();
+        }
 
         try
         {
-            XNamespace ns = "http://s3.amazonaws.com/doc/2006-03-01/";
             var doc = XDocument.Parse(xml);
             var root = doc.Root;
             if (root == null) return new ExplorerPage();
 
+            if (root.Name.LocalName.Equals("Error", StringComparison.OrdinalIgnoreCase))
+            {
+                string code = root.Elements().FirstOrDefault(e => e.Name.LocalName == "Code")?.Value ?? "UnknownError";
+                string message = root.Elements().FirstOrDefault(e => e.Name.LocalName == "Message")?.Value ?? "Unknown S3 error";
+                throw new InvalidOperationException($"S3 request failed: {code} - {message}");
+            }
+
+            XNamespace ns = root.Name.Namespace;
             bool pathStyle = config.UsePathStyleUrl || config.BucketName.Contains('.');
-            string endpoint = config.Endpoint.TrimEnd('/');
+            string endpoint = NormalizeEndpointHost(config.Endpoint);
+            var metadataTemplate = BuildMetadata(config);
 
             var items = new List<MediaItem>();
 
             // Folders: CommonPrefixes
-            foreach (var cp in root.Elements(ns + "CommonPrefixes"))
+            foreach (var cp in ElementsByLocalName(root, ns, "CommonPrefixes"))
             {
-                string pfx = cp.Element(ns + "Prefix")?.Value ?? "";
+                string pfx = ElementValueByLocalName(cp, ns, "Prefix") ?? "";
                 string name = pfx.TrimEnd('/').Split('/').LastOrDefault() ?? pfx;
                 items.Add(new MediaItem
                 {
@@ -317,20 +329,20 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
                     Name = name,
                     Path = pfx,
                     IsFolder = true,
-                    Metadata = BuildMetadata(config)
+                    Metadata = new Dictionary<string, string>(metadataTemplate)
                 });
             }
 
             // Files: Contents
-            foreach (var content in root.Elements(ns + "Contents"))
+            foreach (var content in ElementsByLocalName(root, ns, "Contents"))
             {
-                string key = content.Element(ns + "Key")?.Value ?? "";
+                string key = ElementValueByLocalName(content, ns, "Key") ?? "";
                 if (key.EndsWith('/')) continue; // folder marker
 
                 string name = key.Split('/').LastOrDefault() ?? key;
-                long size = long.TryParse(content.Element(ns + "Size")?.Value, out long s) ? s : 0;
+                long size = long.TryParse(ElementValueByLocalName(content, ns, "Size"), out long s) ? s : 0;
                 DateTime? modified = DateTime.TryParse(
-                    content.Element(ns + "LastModified")?.Value,
+                    ElementValueByLocalName(content, ns, "LastModified"),
                     System.Globalization.CultureInfo.InvariantCulture,
                     System.Globalization.DateTimeStyles.AdjustToUniversal,
                     out DateTime dt) ? dt : null;
@@ -347,11 +359,11 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
                     ModifiedAt = modified,
                     MimeType = mime,
                     Url = url,
-                    Metadata = BuildMetadata(config)
+                    Metadata = new Dictionary<string, string>(metadataTemplate)
                 });
             }
 
-            string? nextToken = root.Element(ns + "NextContinuationToken")?.Value;
+            string? nextToken = ElementValueByLocalName(root, ns, "NextContinuationToken");
             return new ExplorerPage
             {
                 Items = items,
@@ -367,13 +379,16 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
     private Dictionary<string, string> BuildMetadata(S3ConfigModel config)
     {
         bool pathStyle = config.UsePathStyleUrl || config.BucketName.Contains('.');
+        string endpoint = NormalizeEndpointHost(config.Endpoint);
+        string settingsJson = JsonConvert.SerializeObject(config, Formatting.None);
         return new Dictionary<string, string>
         {
             ["settingsKey"] = config.SecretKey,
             ["bucket"] = config.BucketName,
-            ["endpoint"] = config.Endpoint.TrimEnd('/'),
+            ["endpoint"] = endpoint,
             ["region"] = ResolveRegion(config),
-            ["pathStyle"] = pathStyle ? "1" : "0"
+            ["pathStyle"] = pathStyle ? "1" : "0",
+            ["settingsJson"] = settingsJson
         };
     }
 
@@ -396,13 +411,13 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
         return JsonConvert.DeserializeObject<S3ConfigModel>(settingsJson) ?? new S3ConfigModel();
     }
 
-    private (string ak, string sk, string? st) ResolveCredentials(S3ConfigModel config)
+    private (string ak, string sk, string? st) ResolveCredentials(S3ConfigModel config, bool refreshIfExpired = false)
     {
         if (Secrets == null) return (string.Empty, string.Empty, null);
 
         if (config.AuthMode == S3AuthMode.AwsSso)
         {
-            var creds = AwsSsoSecretStore.LoadRoleCredentials(Secrets, config.SecretKey);
+            var creds = EnsureSsoRoleCredentials(config, refreshIfExpired);
             if (creds != null && !creds.IsExpired())
                 return (creds.AccessKeyId, creds.SecretAccessKey, creds.SessionToken);
             return (string.Empty, string.Empty, null);
@@ -411,6 +426,56 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
         string ak = Secrets.GetSecret(ProviderId, config.SecretKey, "accessKeyId") ?? string.Empty;
         string sk = Secrets.GetSecret(ProviderId, config.SecretKey, "secretAccessKey") ?? string.Empty;
         return (ak, sk, null);
+    }
+
+    private AwsSsoStoredRoleCredentials? EnsureSsoRoleCredentials(S3ConfigModel config, bool refreshIfExpired)
+    {
+        if (Secrets == null || string.IsNullOrWhiteSpace(config.SecretKey))
+        {
+            return null;
+        }
+
+        AwsSsoStoredRoleCredentials? creds = AwsSsoSecretStore.LoadRoleCredentials(Secrets, config.SecretKey);
+        if (creds != null && !creds.IsExpired())
+        {
+            return creds;
+        }
+
+        if (!refreshIfExpired)
+        {
+            return creds;
+        }
+
+        if (string.IsNullOrWhiteSpace(config.SsoRegion) ||
+            string.IsNullOrWhiteSpace(config.SsoAccountId) ||
+            string.IsNullOrWhiteSpace(config.SsoRoleName))
+        {
+            return null;
+        }
+
+        AwsSsoStoredToken? token = AwsSsoSecretStore.LoadToken(Secrets, config.SecretKey);
+        if (token == null)
+        {
+            return null;
+        }
+
+        if (token.IsExpired())
+        {
+            AwsSsoStoredClient? client = AwsSsoSecretStore.LoadClient(Secrets, config.SecretKey);
+            if (client == null || client.IsExpired() || string.IsNullOrWhiteSpace(token.RefreshToken))
+            {
+                return null;
+            }
+
+            var oidc = new AwsSsoOidcClient(config.SsoRegion);
+            token = oidc.RefreshToken(client, token.RefreshToken);
+            AwsSsoSecretStore.SaveToken(Secrets, config.SecretKey, token);
+        }
+
+        var ssoClient = new AwsSsoClient(config.SsoRegion);
+        creds = ssoClient.GetRoleCredentials(token.AccessToken, config.SsoAccountId, config.SsoRoleName);
+        AwsSsoSecretStore.SaveRoleCredentials(Secrets, config.SecretKey, creds);
+        return creds;
     }
 
     private static string ResolveRegion(S3ConfigModel config)
@@ -445,6 +510,116 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
     private static bool IsImageExtension(string ext)
     {
         return ext is ".png" or ".jpg" or ".jpeg" or ".gif" or ".bmp" or ".webp" or ".tiff";
+    }
+
+    private static string NormalizeEndpointHost(string endpoint)
+    {
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            return string.Empty;
+        }
+
+        string value = endpoint.Trim();
+        if (value.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            value.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            if (Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) && !string.IsNullOrWhiteSpace(uri.Host))
+            {
+                return uri.Host;
+            }
+        }
+
+        return value.TrimEnd('/');
+    }
+
+    private static IEnumerable<XElement> ElementsByLocalName(XElement parent, XNamespace ns, string localName)
+    {
+        var withNamespace = parent.Elements(ns + localName);
+        if (withNamespace.Any())
+        {
+            return withNamespace;
+        }
+
+        return parent.Elements().Where(e => e.Name.LocalName == localName);
+    }
+
+    private static string? ElementValueByLocalName(XElement parent, XNamespace ns, string localName)
+    {
+        return parent.Element(ns + localName)?.Value
+            ?? parent.Elements().FirstOrDefault(e => e.Name.LocalName == localName)?.Value;
+    }
+
+    private static string BuildS3ErrorMessage(System.Net.Http.HttpResponseMessage response, string body)
+    {
+        string fallback = $"S3 request failed: {(int)response.StatusCode} {response.ReasonPhrase}";
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            return fallback;
+        }
+
+        try
+        {
+            var doc = XDocument.Parse(body);
+            var root = doc.Root;
+            if (root == null || !root.Name.LocalName.Equals("Error", StringComparison.OrdinalIgnoreCase))
+            {
+                return fallback;
+            }
+
+            string? code = root.Elements().FirstOrDefault(e => e.Name.LocalName == "Code")?.Value;
+            string? message = root.Elements().FirstOrDefault(e => e.Name.LocalName == "Message")?.Value;
+            if (string.IsNullOrWhiteSpace(code) && string.IsNullOrWhiteSpace(message))
+            {
+                return fallback;
+            }
+
+            return $"S3 request failed: {code ?? "UnknownError"} - {message ?? "Unknown message"}";
+        }
+        catch
+        {
+            return fallback;
+        }
+    }
+
+    private (S3ConfigModel Config, string Bucket, string Endpoint, string Region, bool PathStyle)? ResolveItemRequestContext(MediaItem item)
+    {
+        if (!item.Metadata.TryGetValue("settingsJson", out string? settingsJson))
+        {
+            return null;
+        }
+
+        S3ConfigModel config = DeserializeConfig(settingsJson);
+
+        string bucket = config.BucketName;
+        if (string.IsNullOrWhiteSpace(bucket) && item.Metadata.TryGetValue("bucket", out string? metadataBucket))
+        {
+            bucket = metadataBucket;
+        }
+
+        string endpoint = NormalizeEndpointHost(config.Endpoint);
+        if (string.IsNullOrWhiteSpace(endpoint) && item.Metadata.TryGetValue("endpoint", out string? metadataEndpoint))
+        {
+            endpoint = NormalizeEndpointHost(metadataEndpoint);
+        }
+
+        string region = ResolveRegion(config);
+        if (string.IsNullOrWhiteSpace(region) && item.Metadata.TryGetValue("region", out string? metadataRegion))
+        {
+            region = metadataRegion;
+        }
+
+        bool pathStyle = config.UsePathStyleUrl || bucket.Contains('.');
+        if (item.Metadata.TryGetValue("pathStyle", out string? pathStyleStr))
+        {
+            pathStyle = pathStyleStr == "1";
+        }
+
+        if (string.IsNullOrWhiteSpace(bucket) || string.IsNullOrWhiteSpace(endpoint) || string.IsNullOrWhiteSpace(region))
+        {
+            return null;
+        }
+
+        return (config, bucket, endpoint, region, pathStyle);
     }
 
     private AmazonS3Uploader CreateSsoInstance(S3ConfigModel config)
