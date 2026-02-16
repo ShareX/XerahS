@@ -18,9 +18,13 @@ build/
 │   └── XerahS.Packaging/             # C# packaging tool
 │       ├── Program.cs                # Packaging logic (tar.gz, .deb, .rpm)
 │       └── XerahS.Packaging.csproj   # Project file
-└── macos/                             # macOS build scripts
-    ├── package-mac.ps1               # PowerShell script for macOS build (Windows)
-    └── package-mac.sh                # Bash script for macOS build (macOS)
+├── macos/                             # macOS build scripts
+│   ├── package-mac.ps1               # PowerShell script for macOS build (Windows)
+│   └── package-mac.sh                # Bash script for macOS build (macOS)
+└── android/                           # Android/Mobile build scripts
+    ├── build-android.sh              # Bash script for Android build (Linux)
+    ├── build-android.ps1             # PowerShell script for Android build (Windows)
+    └── README.md                     # Detailed Android build documentation
 ```
 
 ---
@@ -228,6 +232,85 @@ The `-p:CrossCompile=true` flag enables building macOS/Linux binaries from Windo
 **For `package-mac.sh` (macOS):**
 - macOS with Xcode Command Line Tools
 - .NET SDK 10.0+
+
+---
+
+## Android/Mobile Build
+
+### Files
+- **`build-android.sh`** - Bash script for building Android apps (Linux)
+- **`build-android.ps1`** - PowerShell script for building Android apps (Windows)
+- **`README.md`** - Comprehensive Android build documentation
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      Android Build Flow                                 │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  1. Detect version from Directory.Build.props                           │
+│                              ↓                                          │
+│  2. Configure Java environment                                          │
+│     • Set JAVA_HOME to JDK 21                                           │
+│     • Verify Java version                                               │
+│                              ↓                                          │
+│  3. Build XerahS.Mobile.UI (shared library)                             │
+│     • dotnet build -c Release                                           │
+│     → src/XerahS.Mobile.UI/bin/Release/net10.0/                         │
+│                              ↓                                          │
+│  4. Build XerahS.Mobile.Android (Avalonia)                              │
+│     • dotnet build -c Release -f net10.0-android                        │
+│     • Produces APK if configured for signing                            │
+│     → src/XerahS.Mobile.Android/bin/Release/net10.0-android/            │
+│                              ↓                                          │
+│  5. Build XerahS.Mobile.Maui (MAUI/Android)                             │
+│     • dotnet build -c Release -f net10.0-android                        │
+│     • Produces APK if configured for signing                            │
+│     → src/XerahS.Mobile.Maui/bin/Release/net10.0-android/               │
+│                              ↓                                          │
+│  6. Copy APKs to dist/android/                                          │
+│     • XerahS-{version}-Android.apk                                      │
+│     • XerahS-{version}-MAUI-Android.apk                                 │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Platform-Specific Configuration
+
+The MAUI project uses conditional targeting to support both platforms:
+
+```xml
+<!-- Build Android on all platforms, iOS only on macOS -->
+<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">
+  net10.0-android;net10.0-ios
+</TargetFrameworks>
+<TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('osx'))">
+  net10.0-android
+</TargetFrameworks>
+```
+
+### Requirements
+
+**For Android builds (Linux):**
+- .NET SDK 10.0+ with Android workload
+- OpenJDK 21 (not JDK 25!)
+- Android SDK Platform API Level 36
+
+**For Android builds (Windows):**
+- .NET SDK 10.0+ with Android workload
+- Microsoft JDK 21
+- Android SDK Platform API Level 36
+
+**Installation:**
+See `build/android/README.md` for detailed setup instructions including:
+- Android workload installation (requires custom temp directory on Linux)
+- JDK 21 installation
+- Android SDK dependencies installation
+
+### iOS Builds
+
+iOS projects (`XerahS.Mobile.iOS`, `XerahS.Mobile.iOS.ShareExtension`) **require macOS** and cannot be built on Linux or Windows. The MAUI project automatically excludes iOS targets on non-macOS platforms.
 
 ---
 
