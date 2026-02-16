@@ -40,4 +40,5 @@ public sealed class AfterUploadWindowInfo
     public string? OpenUrlFormat { get; init; }
     public bool AutoCloseAfterUploadForm { get; init; }
     public SKBitmap? PreviewImage { get; init; }
+    public string? ErrorDetails { get; init; }
 }

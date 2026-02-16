@@ -104,11 +104,17 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
         ? $"Auto closes in {_autoCloseRemainingSeconds}s"
         : string.Empty;
 
+    [ObservableProperty]
+    private string? _errorDetails;
+
+    public bool HasErrors => !string.IsNullOrWhiteSpace(ErrorDetails);
+
     public ICommand CopyImageCommand { get; }
     public ICommand CopyFormatCommand { get; }
     public ICommand OpenUrlCommand { get; }
     public ICommand OpenFileCommand { get; }
     public ICommand OpenFolderCommand { get; }
+    public ICommand CopyErrorsCommand { get; }
     public ICommand CloseCommand { get; }
 
     public AfterUploadViewModel(AfterUploadWindowInfo info)
@@ -125,6 +131,7 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
         FileSizeText = HasLocalFile ? FileHelpers.GetFileSizeReadable(FilePath!) : null;
         UploaderHost = info.UploaderHost;
         DataType = info.DataType;
+        ErrorDetails = info.ErrorDetails;
 
         LoadPreview(info.PreviewImage);
         BuildFormats(info.ClipboardContentFormat, info.OpenUrlFormat);
@@ -136,6 +143,7 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
         OpenUrlCommand = new RelayCommand(OpenPrimaryUrl);
         OpenFileCommand = new RelayCommand(OpenFile);
         OpenFolderCommand = new RelayCommand(OpenFolder);
+        CopyErrorsCommand = new RelayCommand(CopyErrors);
         CloseCommand = new RelayCommand(RequestCloseWindow);
 
         if (info.AutoCloseAfterUploadForm)
@@ -369,6 +377,24 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
         catch (Exception ex)
         {
             DebugHelper.WriteException(ex, "AfterUpload: Failed to copy format to clipboard");
+        }
+    }
+
+    private void CopyErrors()
+    {
+        if (string.IsNullOrWhiteSpace(ErrorDetails))
+        {
+            return;
+        }
+
+        try
+        {
+            PlatformServices.Clipboard.SetText(ErrorDetails);
+            DebugHelper.WriteLine("AfterUpload: Copied errors to clipboard.");
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "AfterUpload: Failed to copy errors to clipboard");
         }
     }
 

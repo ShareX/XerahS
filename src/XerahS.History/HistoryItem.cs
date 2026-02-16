@@ -124,6 +124,39 @@ namespace XerahS.History
                 }
             }
         }
+
+        [JsonIgnore]
+        public string? Errors
+        {
+            get
+            {
+                if (Tags != null && Tags.TryGetValue("Errors", out string? value))
+                {
+                    return value;
+                }
+
+                return null;
+            }
+            set
+            {
+                if (Tags == null)
+                {
+                    Tags = new Dictionary<string, string?>();
+                }
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    Tags["Errors"] = value;
+                }
+                else
+                {
+                    Tags.Remove("Errors");
+                }
+            }
+        }
+
+        [JsonIgnore]
+        public bool HasErrors => !string.IsNullOrWhiteSpace(Errors);
     }
 }
 

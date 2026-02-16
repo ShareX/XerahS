@@ -437,6 +437,13 @@ namespace XerahS.Core.Tasks.Processors
                     }
                 }
 
+                // Store upload errors if any
+                var uploadResult = info.Result;
+                if (uploadResult?.Errors?.Count > 0)
+                {
+                    historyItem.Errors = uploadResult.Errors.ToString();
+                }
+
                 historyManager.AppendHistoryItem(historyItem);
                 DebugHelper.WriteLine($"Added upload to history: {historyItem.FileName} (URL: {historyItem.URL})");
             }
@@ -492,7 +499,8 @@ namespace XerahS.Core.Tasks.Processors
                         ClipboardContentFormat = advancedSettings?.ClipboardContentFormat,
                         OpenUrlFormat = advancedSettings?.OpenURLFormat,
                         AutoCloseAfterUploadForm = advancedSettings?.AutoCloseAfterUploadForm ?? false,
-                        PreviewImage = info.Metadata?.Image
+                        PreviewImage = info.Metadata?.Image,
+                        ErrorDetails = result.Errors?.Count > 0 ? result.Errors.ToString() : null
                     };
 
                     _ = PlatformServices.UI.ShowAfterUploadWindowAsync(windowInfo).ContinueWith(task =>

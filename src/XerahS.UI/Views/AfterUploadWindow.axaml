@@ -203,6 +203,11 @@
                   Command="{Binding CopyFormatCommand}"
                   IsEnabled="{Binding HasFormats}"
                   AutomationProperties.Name="Copy Selected Format"/>
+          <Button Content="Copy errors"
+                  Command="{Binding CopyErrorsCommand}"
+                  IsEnabled="{Binding HasErrors}"
+                  IsVisible="{Binding HasErrors}"
+                  AutomationProperties.Name="Copy Errors"/>
           <Button Content="Open URL"
                   Command="{Binding OpenUrlCommand}"
                   IsEnabled="{Binding CanOpenUrl}"

@@ -416,6 +416,30 @@ namespace XerahS.UI.ViewModels
         }
 
         [RelayCommand]
+        private async Task CopyErrors(HistoryItem? item)
+        {
+            if (item == null || string.IsNullOrEmpty(item.Errors)) return;
+
+            try
+            {
+                // Get clipboard from the main window
+                if (Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                    && desktop.MainWindow != null)
+                {
+                    var clipboard = desktop.MainWindow.Clipboard;
+                    if (clipboard != null)
+                    {
+                        await clipboard.SetTextAsync(item.Errors);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"Failed to copy errors: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
         private void OpenURL(HistoryItem? item)
         {
             if (item == null || string.IsNullOrEmpty(item.URL)) return;
