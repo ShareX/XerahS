@@ -1211,9 +1211,13 @@ public partial class OverlayWindow : Window
             double logicalWidth = _monitor.PhysicalBounds.Width / _monitor.ScaleFactor;
             double logicalHeight = _monitor.PhysicalBounds.Height / _monitor.ScaleFactor;
 
-            // Force layout at full logical size so all annotations are positioned correctly
-            _annotationCanvas.Measure(new Size(logicalWidth, logicalHeight));
-            _annotationCanvas.Arrange(new Rect(0, 0, logicalWidth, logicalHeight));
+            // Only force layout if the canvas isn't already at the expected size
+            if (Math.Abs(_annotationCanvas.Bounds.Width - logicalWidth) > 1 ||
+                Math.Abs(_annotationCanvas.Bounds.Height - logicalHeight) > 1)
+            {
+                _annotationCanvas.Measure(new Size(logicalWidth, logicalHeight));
+                _annotationCanvas.Arrange(new Rect(0, 0, logicalWidth, logicalHeight));
+            }
 
             // Render the Avalonia visual tree to a bitmap at physical resolution
             var dpi = 96.0 * _monitor.ScaleFactor;
