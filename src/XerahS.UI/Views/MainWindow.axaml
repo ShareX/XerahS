@@ -17,6 +17,14 @@
         WindowStartupLocation="CenterScreen"
         Opened="OnWindowOpened">
 
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://ShareX.ImageEditor/UI/Themes/ShareXTheme.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
     <Window.DataTemplates>
         <DataTemplate DataType="{x:Type vm:ProviderCatalogViewModel}">
             <views:ProviderCatalogDialog/>

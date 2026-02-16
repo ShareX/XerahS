@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using ShareX.ImageEditor.Helpers;
 
 namespace XerahS.UI.Views
 {
@@ -32,6 +33,9 @@ namespace XerahS.UI.Views
         public EditorWindow()
         {
             InitializeComponent();
+
+            RequestedThemeVariant = ThemeManager.ShareXDark;
+            ThemeManager.ThemeChanged += (s, theme) => RequestedThemeVariant = theme;
         }
 
         private void InitializeComponent()

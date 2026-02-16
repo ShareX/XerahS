@@ -67,6 +67,10 @@ namespace XerahS.UI.Views
             InitializeComponent();
             KeyDown += OnKeyDown;
 
+            // Set initial theme and subscribe to changes
+            RequestedThemeVariant = ShareX.ImageEditor.Helpers.ThemeManager.ShareXDark;
+            ShareX.ImageEditor.Helpers.ThemeManager.ThemeChanged += (s, theme) => RequestedThemeVariant = theme;
+
             // Initial Navigation
             var navView = this.FindControl<NavigationView>("NavView");
             if (navView != null)
