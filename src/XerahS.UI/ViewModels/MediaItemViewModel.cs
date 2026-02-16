@@ -39,6 +39,7 @@ public partial class MediaItemViewModel : ObservableObject
 
     /// <summary>Decoded thumbnail, populated by background loading in ProviderExplorerViewModel.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasThumbnail))]
     private Bitmap? _thumbnail;
 
     public MediaItemViewModel(MediaItem item)
