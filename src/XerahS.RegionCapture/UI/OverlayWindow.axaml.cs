@@ -29,6 +29,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using ShareX.ImageEditor;
 using ShareX.ImageEditor.Annotations;
@@ -1191,32 +1192,35 @@ public partial class OverlayWindow : Window
     /// </summary>
     private SKBitmap? RenderAnnotationLayer()
     {
-        var annotations = _viewModel.EditorCore.Annotations;
-        if (annotations.Count == 0 && (_annotationCanvas?.Children.Count ?? 0) == 0)
+        if (_annotationCanvas == null || _annotationCanvas.Children.Count == 0)
         {
             return null;
         }
 
-        // Create a transparent bitmap the size of the full physical screen
+        // Physical pixel dimensions of the full monitor
         int width = (int)_monitor.PhysicalBounds.Width;
         int height = (int)_monitor.PhysicalBounds.Height;
 
-        var bitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
-        using var canvas = new SKCanvas(bitmap);
-        canvas.Clear(SKColors.Transparent);
+        // Logical dimensions for layout (annotations are in logical coordinates)
+        double logicalWidth = _monitor.PhysicalBounds.Width / _monitor.ScaleFactor;
+        double logicalHeight = _monitor.PhysicalBounds.Height / _monitor.ScaleFactor;
 
-        // Scale canvas to account for DPI: annotations are in logical coordinates,
-        // but the bitmap is in physical coordinates
-        float scaleFactor = (float)_monitor.ScaleFactor;
-        canvas.Scale(scaleFactor, scaleFactor);
+        // Force layout at full logical size so all annotations are positioned correctly
+        _annotationCanvas.Measure(new Size(logicalWidth, logicalHeight));
+        _annotationCanvas.Arrange(new Rect(0, 0, logicalWidth, logicalHeight));
 
-        // Render each annotation using EditorCore's rendering
-        foreach (var annotation in annotations)
-        {
-            annotation.Render(canvas);
-        }
+        // Render the Avalonia visual tree to a bitmap at physical resolution
+        var dpi = 96.0 * _monitor.ScaleFactor;
+        var rtb = new RenderTargetBitmap(new PixelSize(width, height), new Vector(dpi, dpi));
+        rtb.Render(_annotationCanvas);
 
-        return bitmap;
+        // Direct pixel copy from Avalonia RenderTargetBitmap to SKBitmap (avoids PNG encode/decode)
+        var skBitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+        using var pixmap = skBitmap.PeekPixels();
+        int rowBytes = skBitmap.Info.RowBytes;
+        rtb.CopyPixels(new AvPixelRect(0, 0, width, height), pixmap.GetPixels(), rowBytes * height, rowBytes);
+
+        return skBitmap;
     }
 
     // Stores the selection result when annotations exist, for use with ENTER key
