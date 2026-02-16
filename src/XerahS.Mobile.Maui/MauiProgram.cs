@@ -73,12 +73,14 @@ public static class MauiProgram
         // ViewModels
         services.AddTransient<MobileUploadViewModel>();
         services.AddTransient<MobileSettingsViewModel>();
+        services.AddTransient<MobileHistoryViewModel>();
         services.AddTransient<MobileAmazonS3ConfigViewModel>();
         services.AddTransient<MobileCustomUploaderConfigViewModel>();
 
         // Pages
         services.AddTransient<MobileUploadPage>();
         services.AddTransient<MobileSettingsPage>();
+        services.AddTransient<MobileHistoryPage>();
         services.AddTransient<MobileAmazonS3ConfigPage>();
         services.AddTransient<MobileCustomUploaderConfigPage>();
     }

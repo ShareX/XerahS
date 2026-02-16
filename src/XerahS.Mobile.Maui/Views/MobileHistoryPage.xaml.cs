@@ -27,23 +27,11 @@ using XerahS.Mobile.Maui.ViewModels;
 
 namespace XerahS.Mobile.Maui.Views;
 
-public partial class MobileUploadPage : ContentPage
+public partial class MobileHistoryPage : ContentPage
 {
-    private readonly MobileUploadViewModel _viewModel;
-
-    public MobileUploadPage()
+    public MobileHistoryPage()
     {
         InitializeComponent();
-        _viewModel = new MobileUploadViewModel();
-        BindingContext = _viewModel;
-
-        // Wire settings navigation via Shell
-        MobileUploadViewModel.OnOpenSettings = async () =>
-            await Shell.Current.GoToAsync("Settings");
-        MobileUploadViewModel.OnOpenHistory = async () =>
-            await Shell.Current.GoToAsync("History");
-
-        // Subscribe to file sharing from platform code
-        App.OnFilesReceived = files => _viewModel.ProcessFiles(files);
+        BindingContext = new MobileHistoryViewModel();
     }
 }

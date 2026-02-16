@@ -58,6 +58,7 @@ public class MobileUploadViewModel : INotifyPropertyChanged
 
     public ICommand CopyUrlCommand { get; }
     public ICommand OpenSettingsCommand { get; }
+    public ICommand OpenHistoryCommand { get; }
 
     private int _pendingCount;
 
@@ -66,10 +67,16 @@ public class MobileUploadViewModel : INotifyPropertyChanged
     /// </summary>
     public static Action? OnOpenSettings { get; set; }
 
+    /// <summary>
+    /// Action to navigate to upload history view - set by MobileUploadPage
+    /// </summary>
+    public static Action? OnOpenHistory { get; set; }
+
     public MobileUploadViewModel()
     {
         CopyUrlCommand = new RelayCommand<string>(CopyUrl);
         OpenSettingsCommand = new RelayCommand(() => OnOpenSettings?.Invoke());
+        OpenHistoryCommand = new RelayCommand(() => OnOpenHistory?.Invoke());
     }
 
     public async void ProcessFiles(string[] filePaths)

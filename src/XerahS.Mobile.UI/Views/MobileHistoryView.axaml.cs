@@ -23,27 +23,14 @@
 
 #endregion License Information (GPL v3)
 
-using XerahS.Mobile.Maui.ViewModels;
+using Avalonia.Controls;
 
-namespace XerahS.Mobile.Maui.Views;
+namespace XerahS.Mobile.UI.Views;
 
-public partial class MobileUploadPage : ContentPage
+public partial class MobileHistoryView : UserControl
 {
-    private readonly MobileUploadViewModel _viewModel;
-
-    public MobileUploadPage()
+    public MobileHistoryView()
     {
         InitializeComponent();
-        _viewModel = new MobileUploadViewModel();
-        BindingContext = _viewModel;
-
-        // Wire settings navigation via Shell
-        MobileUploadViewModel.OnOpenSettings = async () =>
-            await Shell.Current.GoToAsync("Settings");
-        MobileUploadViewModel.OnOpenHistory = async () =>
-            await Shell.Current.GoToAsync("History");
-
-        // Subscribe to file sharing from platform code
-        App.OnFilesReceived = files => _viewModel.ProcessFiles(files);
     }
 }

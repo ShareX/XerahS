@@ -5,13 +5,13 @@
              x:DataType="vm:MobileUploadViewModel">
 
     <Grid RowDefinitions="Auto, *">
-        
-        <!-- Header with Settings Button -->
-        <Grid Grid.Row="0" 
+
+        <!-- Header -->
+        <Grid Grid.Row="0"
               Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
               Height="56"
-              ColumnDefinitions="*, Auto">
-            
+              ColumnDefinitions="*, Auto, Auto">
+
             <!-- Title -->
             <TextBlock Grid.Column="0"
                        Text="XerahS"
@@ -19,15 +19,18 @@
                        FontWeight="Bold"
                        VerticalAlignment="Center"
                        Margin="20,0"/>
-            
-            <!-- Settings Button -->
+
             <Button Grid.Column="1"
-                    Content="⚙"
-                    FontSize="20"
+                    Content="History"
+                    Command="{Binding OpenHistoryCommand}"
+                    Background="Transparent"
+                    Margin="4,0"
+                    ToolTip.Tip="History"/>
+
+            <Button Grid.Column="2"
+                    Content="Settings"
                     Command="{Binding OpenSettingsCommand}"
                     Background="Transparent"
-                    Width="48"
-                    Height="48"
                     Margin="4,0"
                     ToolTip.Tip="Settings"/>
         </Grid>

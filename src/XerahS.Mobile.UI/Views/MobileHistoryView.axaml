@@ -1,0 +1,87 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:XerahS.Mobile.UI.ViewModels"
+             x:Class="XerahS.Mobile.UI.Views.MobileHistoryView"
+             x:DataType="vm:MobileHistoryViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <Grid Grid.Row="0"
+              Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+              Height="56"
+              ColumnDefinitions="Auto,*,Auto,Auto">
+
+            <Button Grid.Column="0"
+                    Content="Back"
+                    Command="{Binding BackCommand}"
+                    Margin="8,0"
+                    VerticalAlignment="Center" />
+
+            <TextBlock Grid.Column="1"
+                       Text="Upload History"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Margin="12,0" />
+
+            <Button Grid.Column="2"
+                    Content="Refresh"
+                    Command="{Binding RefreshCommand}"
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center" />
+
+            <Button Grid.Column="3"
+                    Content="Clear"
+                    Command="{Binding ClearHistoryCommand}"
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center" />
+        </Grid>
+
+        <StackPanel Grid.Row="1" Margin="16,12,16,8" Spacing="8">
+            <TextBox Watermark="Search by file name, host or URL..."
+                     Text="{Binding SearchText, Mode=TwoWay}" />
+            <TextBlock Text="{Binding StatusText}"
+                       FontSize="12"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="2">
+            <ItemsControl ItemsSource="{Binding HistoryItems}" Margin="16,0,16,16">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MobileHistoryItem">
+                        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                                CornerRadius="8"
+                                Padding="12"
+                                Margin="0,0,0,8">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="{Binding FileName}"
+                                           FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding DateText}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                                <TextBlock Text="{Binding Host}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                                <TextBlock Text="{Binding Url}"
+                                           IsVisible="{Binding HasUrl}"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource SystemAccentColor}" />
+
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="Copy URL"
+                                            IsVisible="{Binding HasUrl}"
+                                            Command="{Binding CopyUrlCommand}"
+                                            CommandParameter="{Binding Url}" />
+                                    <Button Content="Delete"
+                                            Command="{Binding DeleteItemCommand}"
+                                            CommandParameter="{Binding .}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+
+</UserControl>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:XerahS.Mobile.Maui.ViewModels"
+             x:Class="XerahS.Mobile.Maui.Views.MobileHistoryPage"
+             x:DataType="vm:MobileHistoryViewModel"
+             Title="Upload History">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Refresh"
+                     Command="{Binding RefreshCommand}"
+                     Order="Primary"/>
+        <ToolbarItem Text="Clear"
+                     Command="{Binding ClearHistoryCommand}"
+                     Order="Secondary"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16">
+        <SearchBar Grid.Row="0"
+                   Placeholder="Search by file name, host or URL..."
+                   Text="{Binding SearchText, Mode=TwoWay}" />
+
+        <Label Grid.Row="1"
+               Text="{Binding StatusText}"
+               FontSize="12"
+               Margin="0,8,0,12"
+               TextColor="{AppThemeBinding Light=#888888, Dark=#AAAAAA}" />
+
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding HistoryItems}"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:MobileHistoryItem">
+                    <Border BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+                            Stroke="Transparent"
+                            Padding="12"
+                            Margin="0,0,0,10">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10"/>
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{Binding FileName}"
+                                   FontAttributes="Bold" />
+                            <Label Text="{Binding DateText}"
+                                   FontSize="12"
+                                   TextColor="{AppThemeBinding Light=#888888, Dark=#AAAAAA}" />
+                            <Label Text="{Binding Host}"
+                                   FontSize="12"
+                                   TextColor="{AppThemeBinding Light=#888888, Dark=#AAAAAA}" />
+                            <Label Text="{Binding Url}"
+                                   IsVisible="{Binding HasUrl}"
+                                   TextColor="{StaticResource Primary}"
+                                   LineBreakMode="WordWrap" />
+
+                            <HorizontalStackLayout Spacing="8">
+                                <Button Text="Copy URL"
+                                        IsVisible="{Binding HasUrl}"
+                                        Command="{Binding CopyUrlCommand}"
+                                        CommandParameter="{Binding Url}" />
+                                <Button Text="Delete"
+                                        Command="{Binding DeleteItemCommand}"
+                                        CommandParameter="{Binding .}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+
+</ContentPage>

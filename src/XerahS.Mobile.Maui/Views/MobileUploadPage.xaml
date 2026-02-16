@@ -8,6 +8,9 @@
              Title="XerahS">
 
     <ContentPage.ToolbarItems>
+        <ToolbarItem Text="History"
+                     Command="{Binding OpenHistoryCommand}"
+                     Order="Primary"/>
         <ToolbarItem Text="Settings"
                      Command="{Binding OpenSettingsCommand}"
                      Order="Primary"/>

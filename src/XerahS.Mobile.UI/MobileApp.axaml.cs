@@ -43,6 +43,7 @@ public partial class MobileApp : Application
 
     private MobileUploadViewModel? _uploadViewModel;
     private MobileSettingsView? _settingsView;
+    private MobileHistoryView? _historyView;
     private ISingleViewApplicationLifetime? _singleView;
 
     public override void Initialize()
@@ -78,6 +79,7 @@ public partial class MobileApp : Application
         };
 
         MobileUploadViewModel.OnOpenSettings = ShowSettingsView;
+        MobileUploadViewModel.OnOpenHistory = ShowHistoryView;
 
         _singleView.MainView = uploadView;
     }
@@ -98,5 +100,22 @@ public partial class MobileApp : Application
         }
 
         _singleView.MainView = _settingsView;
+    }
+
+    private void ShowHistoryView()
+    {
+        if (_singleView == null)
+        {
+            return;
+        }
+
+        var historyViewModel = new MobileHistoryViewModel();
+        _historyView = new MobileHistoryView
+        {
+            DataContext = historyViewModel
+        };
+
+        MobileHistoryViewModel.OnCloseRequested = ShowUploadView;
+        _singleView.MainView = _historyView;
     }
 }
