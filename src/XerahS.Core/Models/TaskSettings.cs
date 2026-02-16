@@ -313,6 +313,7 @@ public class TaskSettingsUpload
     #region Upload / File naming
 
     public bool UseCustomTimeZone = false;
+    [JsonConverter(typeof(XerahS.Common.Converters.TimeZoneInfoJsonConverter))]
     public TimeZoneInfo CustomTimeZone = TimeZoneInfo.Utc;
     public string NameFormatPattern = "%y%mo%dT%h%mi_%ra{10}";
     public string NameFormatPatternActiveWindow = "%y%mo%dT%h%mi_%pn_%ra{10}";

@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using NUnit.Framework;
+using Newtonsoft.Json;
 using XerahS.Core;
 using XerahS.Core.Managers;
 
@@ -61,5 +62,47 @@ public class WatchFolderSettingsTests
 
         Assert.That(clone.WatchFolderList.Count, Is.EqualTo(1));
         Assert.That(clone.WatchFolderList[0].ConvertMovToMp4BeforeProcessing, Is.True);
+    }
+
+    [Test]
+    public void CloneTaskSettings_PreservesCustomTimeZoneId()
+    {
+        TimeZoneInfo customTimeZone = TimeZoneInfo.GetSystemTimeZones()
+            .FirstOrDefault(x => x.Id != TimeZoneInfo.Utc.Id) ?? TimeZoneInfo.Utc;
+
+        var source = new TaskSettings
+        {
+            UploadSettings =
+            {
+                UseCustomTimeZone = true,
+                CustomTimeZone = customTimeZone
+            }
+        };
+
+        TaskSettings clone = WatchFolderManager.CloneTaskSettings(source);
+
+        Assert.That(clone.UploadSettings.UseCustomTimeZone, Is.True);
+        Assert.That(clone.UploadSettings.CustomTimeZone.Id, Is.EqualTo(customTimeZone.Id));
+    }
+
+    [Test]
+    public void TaskSettings_DeserializesLegacyCustomTimeZoneObject()
+    {
+        const string json = """
+                            {
+                              "UploadSettings": {
+                                "UseCustomTimeZone": true,
+                                "CustomTimeZone": {
+                                  "Id": "UTC"
+                                }
+                              }
+                            }
+                            """;
+
+        TaskSettings? settings = JsonConvert.DeserializeObject<TaskSettings>(json);
+
+        Assert.That(settings, Is.Not.Null);
+        Assert.That(settings!.UploadSettings.UseCustomTimeZone, Is.True);
+        Assert.That(settings.UploadSettings.CustomTimeZone.Id, Is.EqualTo(TimeZoneInfo.Utc.Id));
     }
 }
