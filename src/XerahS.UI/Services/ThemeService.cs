@@ -25,6 +25,7 @@
 
 using Avalonia;
 using Avalonia.Styling;
+using Avalonia.Platform; // Added this line
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Platform.Abstractions;
@@ -47,8 +48,13 @@ namespace XerahS.UI.Services
 
                 if (Application.Current != null)
                 {
-                    Application.Current.RequestedThemeVariant = useDarkMode ? ThemeVariant.Dark : ThemeVariant.Light;
-                    DebugHelper.WriteLine($"Applied theme mode: {mode} (Dark: {useDarkMode})");
+                    var targetTheme = useDarkMode ? ShareX.ImageEditor.Helpers.ThemeManager.ShareXDark : ShareX.ImageEditor.Helpers.ThemeManager.ShareXLight;
+                    Application.Current.RequestedThemeVariant = targetTheme;
+                    
+                    // Also update the ImageEditor's ThemeManager so windows subscribed to it get the update
+                    ShareX.ImageEditor.Helpers.ThemeManager.SetTheme(targetTheme);
+                    
+                    DebugHelper.WriteLine($"Applied theme mode: {mode} (Dark: {useDarkMode}) -> {targetTheme.Key}");
                 }
             }
             catch (Exception ex)
@@ -62,13 +68,11 @@ namespace XerahS.UI.Services
         /// </summary>
         public static bool ShouldUseDarkMode(AppThemeMode mode)
         {
-            return mode switch
-            {
-                AppThemeMode.Dark => true,
-                AppThemeMode.Light => false,
-                AppThemeMode.System => GetSystemPrefersDarkMode(),
-                _ => GetSystemPrefersDarkMode()
-            };
+            if (mode == AppThemeMode.Dark) return true;
+            if (mode == AppThemeMode.Light) return false;
+            
+            // For System mode
+            return GetSystemPrefersDarkMode();
         }
 
         /// <summary>
@@ -78,15 +82,18 @@ namespace XerahS.UI.Services
         {
             try
             {
+                // 1. Try PlatformServices header (Windows/MacOS native checks)
                 if (PlatformServices.IsThemeServiceInitialized)
                 {
                     return PlatformServices.Theme.IsDarkModePreferred;
                 }
 
-                // Fallback: check Avalonia's actual theme variant
-                if (Application.Current?.ActualThemeVariant != null)
+                // 2. Fallback: Use Avalonia's built-in platform theme variant detection
+                // This is often more reliable on recent Avalonia versions for system theme
+                var platformTheme = Application.Current?.PlatformSettings?.GetColorValues();
+                if (platformTheme != null)
                 {
-                    return Application.Current.ActualThemeVariant == ThemeVariant.Dark;
+                    return platformTheme.ThemeVariant == PlatformThemeVariant.Dark;
                 }
             }
             catch (Exception ex)
@@ -94,7 +101,7 @@ namespace XerahS.UI.Services
                 DebugHelper.WriteException(ex, "Failed to get system dark mode preference");
             }
 
-            // Default to dark mode
+            // Default fallback
             return true;
         }
 
@@ -106,19 +113,42 @@ namespace XerahS.UI.Services
             try
             {
                 var themeMode = SettingsManager.Settings?.ThemeMode ?? AppThemeMode.System;
-                ApplyTheme(themeMode);
-
-                // Subscribe to system theme changes if using System mode
-                if (themeMode == AppThemeMode.System && PlatformServices.IsThemeServiceInitialized)
+                
+                // Initialize monitoring if supported
+                if (PlatformServices.IsThemeServiceInitialized)
                 {
+                    // Unsubscribe first to avoid double subscription on re-init
+                    PlatformServices.Theme.ThemeChanged -= OnSystemThemeChanged;
                     PlatformServices.Theme.ThemeChanged += OnSystemThemeChanged;
                     PlatformServices.Theme.StartMonitoring();
                 }
+                
+                // Also subscribe to Avalonia's platform color values change for redundancy/cross-platform support
+                if (Application.Current?.PlatformSettings != null)
+                {
+                    Application.Current.PlatformSettings.ColorValuesChanged -= OnPlatformColorValuesChanged;
+                    Application.Current.PlatformSettings.ColorValuesChanged += OnPlatformColorValuesChanged;
+                }
+
+                ApplyTheme(themeMode);
             }
             catch (Exception ex)
             {
                 DebugHelper.WriteException(ex, "Failed to initialize theme service");
             }
+        }
+        
+        private static void OnPlatformColorValuesChanged(object? sender, PlatformColorValues e)
+        {
+            // Similar to OnSystemThemeChanged, but triggered by Avalonia
+            var currentMode = SettingsManager.Settings?.ThemeMode ?? AppThemeMode.System;
+            if (currentMode != AppThemeMode.System)
+            {
+                return;
+            }
+            
+            bool isDark = e.ThemeVariant == PlatformThemeVariant.Dark;
+            UpdateSystemTheme(isDark);
         }
 
         private static void OnSystemThemeChanged(object? sender, ThemeChangedEventArgs e)
@@ -130,14 +160,24 @@ namespace XerahS.UI.Services
                 return;
             }
 
+            UpdateSystemTheme(e.IsDarkMode);
+        }
+        
+        private static void UpdateSystemTheme(bool isDark)
+        {
             try
             {
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
                     if (Application.Current != null)
                     {
-                        Application.Current.RequestedThemeVariant = e.IsDarkMode ? ThemeVariant.Dark : ThemeVariant.Light;
-                        DebugHelper.WriteLine($"System theme changed, applied: {(e.IsDarkMode ? "Dark" : "Light")}");
+                        var targetTheme = isDark ? ShareX.ImageEditor.Helpers.ThemeManager.ShareXDark : ShareX.ImageEditor.Helpers.ThemeManager.ShareXLight;
+                        Application.Current.RequestedThemeVariant = targetTheme;
+                        
+                        // Sync ImageEditor theme manager
+                        ShareX.ImageEditor.Helpers.ThemeManager.SetTheme(targetTheme);
+                        
+                        DebugHelper.WriteLine($"System theme changed, applied: {(isDark ? "Dark" : "Light")}");
                     }
                 });
             }

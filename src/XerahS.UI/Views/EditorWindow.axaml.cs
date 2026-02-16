@@ -34,7 +34,7 @@ namespace XerahS.UI.Views
         {
             InitializeComponent();
 
-            RequestedThemeVariant = ThemeManager.ShareXDark;
+            RequestedThemeVariant = ThemeManager.GetCurrentTheme();
             ThemeManager.ThemeChanged += (s, theme) => RequestedThemeVariant = theme;
         }
 

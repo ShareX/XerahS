@@ -68,7 +68,7 @@ namespace XerahS.UI.Views
             KeyDown += OnKeyDown;
 
             // Set initial theme and subscribe to changes
-            RequestedThemeVariant = ShareX.ImageEditor.Helpers.ThemeManager.ShareXDark;
+            RequestedThemeVariant = ShareX.ImageEditor.Helpers.ThemeManager.GetCurrentTheme();
             ShareX.ImageEditor.Helpers.ThemeManager.ThemeChanged += (s, theme) => RequestedThemeVariant = theme;
 
             // Initial Navigation
