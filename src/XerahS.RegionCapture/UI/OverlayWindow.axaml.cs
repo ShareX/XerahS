@@ -1221,7 +1221,7 @@ public partial class OverlayWindow : Window
 
             // Render the Avalonia visual tree to a bitmap at physical resolution
             var dpi = 96.0 * _monitor.ScaleFactor;
-            var rtb = new RenderTargetBitmap(new PixelSize(width, height), new Vector(dpi, dpi));
+            using var rtb = new RenderTargetBitmap(new PixelSize(width, height), new Vector(dpi, dpi));
             rtb.Render(_annotationCanvas);
 
             // Direct pixel copy from Avalonia RenderTargetBitmap to SKBitmap (avoids PNG encode/decode)
