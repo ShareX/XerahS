@@ -2,14 +2,18 @@
 
 ## I. Executive Summary
 
-**Verdict:** **Highly Feasible** via **MAUI Blazor Hybrid**.
+**Verdict:** **Technically Feasible, but NOT RECOMMENDED for Region Capture.**
 
-The existing `XerahS` solution is well-architected for this migration. The separation of concerns between `Core`/`ViewModels` and `UI` suggests that ~80% of the codebase (the business logic) can be preserved as-is.
+**Critical Recommendation:**
+Since **Region Capture** is the primary purpose of this application, we **DO NOT RECOMMEND** replacing the Desktop Region Capture engine with a Web/Blazor implementation.
+*   **Why?** HTML5/WebViews lack the low-level input control, multi-monitor coordinate precision, and "pixel-perfect" reliability required for a professional capture tool.
+*   **Strategic Shift:** Use Blazor/HTML/CSS for the **Management UI** (Settings, Gallery, History) to achieve your styling goals, but **retain a Native (C#/Avalonia/WinUI)** layer for the actual Region Capture process on Desktop.
 
-**The Plan:**
-1.  **Preserve** the pure C# backend (`Core`, `Services`, `Uploaders`, `ViewModels`).
-2.  **Replace** the Avalonia UI layer for **ALL platforms** (Mobile & Desktop) with a unified **Blazor Hybrid** layer (`Mobile.Web`, `Mobile.Blazor`).
-3.  **Refactor** abstractions to remove the hard dependency on Avalonia, allowing the backend to serve the new Cross-Platform Blazor app on Windows, macOS, Linux, Android, and iOS.
+**The Hybrid Plan (Revised):**
+1.  **Preserve** the pure C# backend.
+2.  **Migrate** the *Management UI* to **Blazor Hybrid** for a unified look.
+3.  **Retain** (or minimally refactor) the **Native Region Capture** mechanism for Desktop to ensure quality does not degrade.
+4.  **Accept** the Web/Canvas capture strategy *only* for Mobile (where desktop-class pixel hunting is less critical).
 
 ---
 
