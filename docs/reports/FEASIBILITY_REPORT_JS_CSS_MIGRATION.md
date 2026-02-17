@@ -1,17 +1,17 @@
-# Feasibility Report: Migrating to JS/CSS Frontend with C# Backend
+# Feasibility Report: Migrating to HTML/CSS Frontend with C# Backend
 
 ## I. Executive Summary
 
 **Verdict:** **Technically Feasible, but NOT RECOMMENDED for Region Capture.**
 
 **Critical Recommendation:**
-Since **Region Capture** is the primary purpose of this application, we **DO NOT RECOMMEND** replacing the Desktop Region Capture engine with a Web/Blazor implementation.
+Since **Region Capture** is the primary purpose of this application, we **DO NOT RECOMMEND** replacing the Desktop Region Capture engine with a purely Web/Blazor implementation.
 *   **Why?** HTML5/WebViews lack the low-level input control, multi-monitor coordinate precision, and "pixel-perfect" reliability required for a professional capture tool.
 *   **Strategic Shift:** Use Blazor/HTML/CSS for the **Management UI** (Settings, Gallery, History) to achieve your styling goals, but **retain a Native (C#/Avalonia/WinUI)** layer for the actual Region Capture process on Desktop.
 
 **The Hybrid Plan (Revised):**
 1.  **Preserve** the pure C# backend.
-2.  **Migrate** the *Management UI* to **Blazor Hybrid** for a unified look.
+2.  **Migrate** the *Management UI* to **Blazor Hybrid** for a unified **HTML/CSS** look.
 3.  **Retain** (or minimally refactor) the **Native Region Capture** mechanism for Desktop to ensure quality does not degrade.
 4.  **Accept** the Web/Canvas capture strategy *only* for Mobile (where desktop-class pixel hunting is less critical).
 
@@ -51,7 +51,7 @@ The following table analyzes **every single `.csproj` file** in `src/` (31 total
 | `XerahS.RegionCapture.csproj`<br>`XerahS.RegionCapture` | 🔴 | Desktop Tool | **REWRITE** | **Action:** See "Region Capture Strategy" below. Heavily desktop-bound (Avalonia.Desktop). Requires a new Cross-Platform "Web Overlay" or "MAUI GraphicsView" solution. |
 | `XerahS.Services.csproj`<br>`XerahS.Services` | 🟢 | Library | **KEEP** | Pure C# service implementations. Reuse 100%. |
 | `XerahS.Services.Abstractions.csproj`<br>`XerahS.Services.Abstractions` | 🟢 | Library | **KEEP** | Service interfaces. Reuse 100%. |
-| `XerahS.UI.csproj`<br>`XerahS.UI` | ⚪ | Desktop UI | **IGNORE/REPLACE** | The main Desktop UI library (Avalonia). Replace with `XerahS.Mobile.Web` for a unified JS/CSS look. |
+| `XerahS.UI.csproj`<br>`XerahS.UI` | ⚪ | Desktop UI | **IGNORE/REPLACE** | The main Desktop UI library (Avalonia). Replace with `XerahS.Mobile.Web` for a unified HTML/CSS look. |
 | `XerahS.Uploaders.csproj`<br>`XerahS.Uploaders` | 🟢 | Library | **KEEP** | **Core Value.** Contains all uploader logic. UI-independent. |
 | `XerahS.ViewModels.csproj`<br>`XerahS.ViewModels` | 🟢 | Library | **KEEP** | **Gold Mine.** Contains the presentation logic. You can bind your new Blazor components directly to these existing ViewModels (ReactiveUI). |
 
@@ -63,7 +63,7 @@ The `XerahS.RegionCapture` project is currently heavily dependent on `Avalonia.D
 **Migration Plan:**
 1.  **Extract Core Logic:** Move non-UI logic (coordinate system, selection modes, geometry calculations) to `XerahS.Core` or a new `XerahS.RegionCapture.Core` library.
 2.  **Cross-Platform Implementation:**
-    *   **Option A (Recommended):** Use a fullscreen **HTML5 `<canvas>`** overlay within the Blazor WebView. This aligns with the request for JS/CSS styling and ensures a consistent rendering experience across **Mobile and Desktop**.
+    *   **Option A (Recommended):** Use a fullscreen **HTML5 `<canvas>`** overlay within the Blazor WebView. This aligns with the request for HTML/CSS styling and ensures a consistent rendering experience across **Mobile and Desktop**.
     *   **Option B (Alternative):** Use a transparent native **MAUI `GraphicsView`** overlay if web canvas performance proves insufficient for high-refresh-rate selection.
 
 ---
@@ -133,7 +133,19 @@ graph TD
 ```
 
 
-## VI. Trade-offs & Concessions
+
+## VI. Alternative C# + CSS Technology Combinations
+
+While **Blazor Hybrid (MAUI)** is recommended, other "C# Logic + CSS UI" combinations exist:
+
+| Technology | Frontend | Backend | Pros | Cons |
+| :--- | :--- | :--- | :--- | :--- |
+| **Photino.NET** | HTML/CSS | .NET Core | Extremely lightweight (Use OS WebView directly). No MAUI dependency. Great Linux support. | No native mobile controls. Purely a WebView wrapper. Minimal API surface. |
+| **Electron.NET** | HTML/CSS | .NET Core | Huge ecosystem (Electron). Full Node.js access. | **Heavy.** Requires Node.js runtime + Chromium. Large distributable size. |
+| **Chromely** | HTML/CSS | .NET Core | Lightweight alternative to Electron. Uses CEF or Edge. | Windows-centric heritage. Linux/macOS support is less mature than Electron. |
+| **Wisej.NET** | QC/JS | .NET Core | "WebForms style" rapid development. Real-time websocket UI. | Primarily for web-hosted apps, though can be wrapped. Different paradigm (Server-side UI state). |
+
+## VII. Trade-offs & Concessions
 
 Migrating to a **Blazor Hybrid (HTML/CSS)** architecture involves the following trade-offs compared to the current Avalonia implementation:
 
@@ -153,7 +165,7 @@ Migrating to a **Blazor Hybrid (HTML/CSS)** architecture involves the following 
     *   **Give Up:** The battle-tested, PInvoke-heavy desktop region capture tool.
     *   **Trade:** This feature requires a **complete rewrite**. The initial HTML5 Canvas replacement may lack some mature features (magnifier smoothing, multi-monitor edge cases) until fully developed.
 
-## VII. Next Steps
+## VIII. Next Steps
 
 1.  **Refactor**: Edit `XerahS.Platform.Abstractions.csproj` to remove the Avalonia dependency.
 2.  **Initialize**: Create the new `XerahS.Mobile.Blazor` and `XerahS.Mobile.Web` projects.
