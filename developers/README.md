@@ -294,7 +294,7 @@ Plugins/myplugin/
 2. Enable debug logging in `UploaderInstanceViewModel.InitializeConfigViewModel()`
 3. Look for `ConfigView created: null` or type loading errors
 
-See also: [Plugin Development Guide](plugin_development_guide.md) for complete plugin setup instructions.
+See also: [Plugin Development Guide](guidelines/plugin_development_guide.md) for complete plugin setup instructions.
 
 ## Contribution
 1.  Review project documentation and existing code patterns
@@ -449,6 +449,6 @@ Avalonia mobile UI now supports runtime adaptive theming for iOS and Android.
 
 Reference docs:
 
-- Architecture: `docs/architecture/MOBILE_THEMING.md`
-- Styling guide: `docs/development/MOBILE_STYLING_GUIDE.md`
-- Validation report: `docs/reports/MOBILE_NATIVE_THEMING_VALIDATION_2026-02-17.md`
+- Architecture: `../docs/architecture/MOBILE_THEMING.md`
+- Styling guide: `guidelines/MOBILE_STYLING_GUIDE.md`
+- Validation report: `../docs/reports/MOBILE_NATIVE_THEMING_VALIDATION_2026-02-17.md`

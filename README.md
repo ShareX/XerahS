@@ -137,7 +137,7 @@ If you see a message saying **"XerahS is damaged and can't be opened"**, it is d
 
 ## 🛠️ Developer Information
 
-See [DEVELOPER_README.md](DEVELOPER_README.md) for architecture details and contribution guidelines.
+See [XerahS Developer Guide](developers/README.md) for architecture details and contribution guidelines.
 
 ## 📄 [License](LICENSE.txt)
 
