@@ -26,6 +26,7 @@
 using XerahS.Common.Utilities;
 
 using XerahS.Common;
+using XerahS.Uploaders.Abstractions;
 
 namespace XerahS.Uploaders
 {
@@ -47,6 +48,24 @@ namespace XerahS.Uploaders
             AllGenericUploaderServices.AddRange(instances.OfType<IGenericUploaderService>());
 
             return instances.ToDictionary(x => x.EnumValue, x => x);
+        }
+
+        public static TConfig? GetServiceSettings<TConfig>(UploadersConfig config, UploaderType type)
+            where TConfig : class, IUploaderConfig
+        {
+            if (config == null)
+            {
+                return null;
+            }
+
+            return config.GetServiceSettings<TConfig>(type);
+        }
+
+        public static bool TryGetServiceSettings<TConfig>(UploadersConfig config, UploaderType type, out TConfig? settings)
+            where TConfig : class, IUploaderConfig
+        {
+            settings = GetServiceSettings<TConfig>(config, type);
+            return settings != null;
         }
     }
 }

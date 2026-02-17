@@ -303,6 +303,7 @@ namespace XerahS.Core
             UploadersConfig.CreateBackup = true;
             UploadersConfig.CreateWeeklyBackup = true;
             UploadersConfig.SupportDPAPIEncryption = true;
+            UploadersConfig.EnsurePolymorphicSettingsInitialized();
             DebugHelper.WriteLine($"[SettingsManager] UploadersConfig load finished: {path}");
         }
 
@@ -374,11 +375,13 @@ namespace XerahS.Core
         /// </summary>
         public static void SaveUploadersConfig()
         {
+            UploadersConfig?.SyncPolymorphicSettingsFromLegacy();
             UploadersConfig?.Save(UploadersConfigFilePath);
         }
 
         public static void SaveUploadersConfigAsync()
         {
+            UploadersConfig?.SyncPolymorphicSettingsFromLegacy();
             UploadersConfig?.SaveAsync(UploadersConfigFilePath);
         }
 

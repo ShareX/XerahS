@@ -24,15 +24,181 @@
 #endregion License Information (GPL v3)
 
 using XerahS.Common;
+using Newtonsoft.Json;
 using ShareX.UploadersLib.FileUploaders;
 using ShareX.UploadersLib.ImageUploaders;
 using ShareX.UploadersLib.TextUploaders;
 using ShareX.UploadersLib.URLShorteners;
+using XerahS.Uploaders.Abstractions;
+using XerahS.Uploaders.Configuration;
 
 namespace XerahS.Uploaders
 {
     public class UploadersConfig : SettingsBase<UploadersConfig>
     {
+        #region Polymorphic uploader settings
+
+        [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto)]
+        public Dictionary<UploaderType, IUploaderConfig> ServiceSettings { get; set; } = new Dictionary<UploaderType, IUploaderConfig>();
+
+        [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto)]
+        public List<CustomUploaderConfig> CustomUploaders { get; set; } = new List<CustomUploaderConfig>();
+
+        public T? GetServiceSettings<T>(UploaderType type) where T : class, IUploaderConfig
+        {
+            if (ServiceSettings != null && ServiceSettings.TryGetValue(type, out IUploaderConfig? settings))
+            {
+                return settings as T;
+            }
+
+            return null;
+        }
+
+        public void SetServiceSettings(UploaderType type, IUploaderConfig settings)
+        {
+            ServiceSettings ??= new Dictionary<UploaderType, IUploaderConfig>();
+            ServiceSettings[type] = settings;
+        }
+
+        public void EnsurePolymorphicSettingsInitialized()
+        {
+            ServiceSettings ??= new Dictionary<UploaderType, IUploaderConfig>();
+            CustomUploaders ??= new List<CustomUploaderConfig>();
+
+            bool hasExistingPolymorphicSettings = ServiceSettings.Count > 0 || CustomUploaders.Count > 0;
+
+            if (hasExistingPolymorphicSettings)
+            {
+                SyncLegacySettingsFromPolymorphic();
+            }
+
+            SyncPolymorphicSettingsFromLegacy();
+        }
+
+        public void SyncPolymorphicSettingsFromLegacy()
+        {
+            ServiceSettings ??= new Dictionary<UploaderType, IUploaderConfig>();
+            CustomUploaders ??= new List<CustomUploaderConfig>();
+
+            Guid ResolveId<TConfig>(UploaderType type) where TConfig : class, IUploaderConfig
+            {
+                if (ServiceSettings.TryGetValue(type, out IUploaderConfig? existing) && existing is TConfig)
+                {
+                    return existing.Id;
+                }
+
+                return Guid.NewGuid();
+            }
+
+            ServiceSettings[UploaderType.Imgur] = new ImgurConfig
+            {
+                Id = ResolveId<ImgurConfig>(UploaderType.Imgur),
+                AccountType = ImgurAccountType,
+                DirectLink = ImgurDirectLink,
+                ThumbnailType = ImgurThumbnailType,
+                UseGIFV = ImgurUseGIFV,
+                OAuth2Info = ImgurOAuth2Info,
+                UploadSelectedAlbum = ImgurUploadSelectedAlbum,
+                SelectedAlbum = ImgurSelectedAlbum,
+                AlbumList = ImgurAlbumList
+            };
+
+            ServiceSettings[UploaderType.Dropbox] = new DropboxConfig
+            {
+                Id = ResolveId<DropboxConfig>(UploaderType.Dropbox),
+                OAuth2Info = DropboxOAuth2Info,
+                UploadPath = DropboxUploadPath,
+                AutoCreateShareableLink = DropboxAutoCreateShareableLink,
+                UseDirectLink = DropboxUseDirectLink
+            };
+
+            ServiceSettings[UploaderType.FTP] = new FtpConfig
+            {
+                Id = ResolveId<FtpConfig>(UploaderType.FTP),
+                AccountList = FTPAccountList.ToList(),
+                SelectedImage = FTPSelectedImage,
+                SelectedText = FTPSelectedText,
+                SelectedFile = FTPSelectedFile
+            };
+
+            ServiceSettings[UploaderType.AmazonS3] = new S3Config
+            {
+                Id = ResolveId<S3Config>(UploaderType.AmazonS3),
+                Settings = AmazonS3Settings
+            };
+
+            List<CustomUploaderConfig> migratedCustomUploaders = new List<CustomUploaderConfig>(CustomUploadersList.Count);
+
+            for (int i = 0; i < CustomUploadersList.Count; i++)
+            {
+                CustomUploaderItem item = CustomUploadersList[i];
+                Guid id = (CustomUploaders.Count > i) ? CustomUploaders[i].Id : Guid.NewGuid();
+                string name = !string.IsNullOrWhiteSpace(item.Name) ? item.Name : $"Custom uploader {i + 1}";
+
+                migratedCustomUploaders.Add(new CustomUploaderConfig
+                {
+                    Id = id,
+                    Name = name,
+                    Item = item
+                });
+            }
+
+            CustomUploaders = migratedCustomUploaders;
+        }
+
+        public void SyncLegacySettingsFromPolymorphic()
+        {
+            ImgurConfig? imgur = GetServiceSettings<ImgurConfig>(UploaderType.Imgur);
+
+            if (imgur != null)
+            {
+                ImgurAccountType = imgur.AccountType;
+                ImgurDirectLink = imgur.DirectLink;
+                ImgurThumbnailType = imgur.ThumbnailType;
+                ImgurUseGIFV = imgur.UseGIFV;
+                ImgurOAuth2Info = imgur.OAuth2Info;
+                ImgurUploadSelectedAlbum = imgur.UploadSelectedAlbum;
+                ImgurSelectedAlbum = imgur.SelectedAlbum;
+                ImgurAlbumList = imgur.AlbumList;
+            }
+
+            DropboxConfig? dropbox = GetServiceSettings<DropboxConfig>(UploaderType.Dropbox);
+
+            if (dropbox != null)
+            {
+                DropboxOAuth2Info = dropbox.OAuth2Info;
+                DropboxUploadPath = dropbox.UploadPath;
+                DropboxAutoCreateShareableLink = dropbox.AutoCreateShareableLink;
+                DropboxUseDirectLink = dropbox.UseDirectLink;
+            }
+
+            FtpConfig? ftp = GetServiceSettings<FtpConfig>(UploaderType.FTP);
+
+            if (ftp != null)
+            {
+                FTPAccountList = ftp.AccountList.ToList();
+                FTPSelectedImage = ftp.SelectedImage;
+                FTPSelectedText = ftp.SelectedText;
+                FTPSelectedFile = ftp.SelectedFile;
+            }
+
+            S3Config? s3 = GetServiceSettings<S3Config>(UploaderType.AmazonS3);
+
+            if (s3 != null)
+            {
+                AmazonS3Settings = s3.Settings;
+            }
+
+            if (CustomUploaders != null && CustomUploaders.Count > 0)
+            {
+                CustomUploadersList = CustomUploaders
+                    .Select(x => x.Item)
+                    .ToList();
+            }
+        }
+
+        #endregion Polymorphic uploader settings
+
         #region Image uploaders
 
         #region Imgur
