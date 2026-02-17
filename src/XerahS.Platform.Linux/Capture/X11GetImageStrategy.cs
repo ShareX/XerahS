@@ -234,7 +234,13 @@ internal sealed class X11GetImageStrategy : ICaptureStrategy
 
         _display = XOpenDisplay(null);
         if (_display == IntPtr.Zero)
-            throw new InvalidOperationException("Cannot open X display");
+        {
+            var displayEnv = Environment.GetEnvironmentVariable("DISPLAY");
+            var waylandEnv = Environment.GetEnvironmentVariable("WAYLAND_DISPLAY");
+            throw new InvalidOperationException(
+                $"Cannot open X display. DISPLAY={displayEnv ?? "<not set>"}, WAYLAND_DISPLAY={waylandEnv ?? "<not set>"}. " +
+                "If running on Wayland, ensure XWayland is available or use Wayland portal capture instead.");
+        }
 
         _rootWindow = XRootWindow(_display, 0);
         _initialized = true;

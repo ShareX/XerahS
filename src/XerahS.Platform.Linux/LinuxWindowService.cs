@@ -43,10 +43,16 @@ namespace XerahS.Platform.Linux
                 {
                     _rootWindow = NativeMethods.XDefaultRootWindow(_display);
                 }
+                else
+                {
+                    DebugHelper.WriteLine("LinuxWindowService: XOpenDisplay returned null (display not available).");
+                    DebugHelper.WriteLine("  This is normal on Wayland without XWayland or in restricted environments.");
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Fallback or log if X11 is not available (e.g. pure Wayland)
+                DebugHelper.WriteException(ex, "LinuxWindowService: Failed to open X display");
+                DebugHelper.WriteLine("  Window management features may be limited.");
                 _display = IntPtr.Zero;
             }
         }

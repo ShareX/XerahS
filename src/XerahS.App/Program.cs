@@ -100,6 +100,12 @@ namespace XerahS.App
 
                 dh.AsyncWrite = true; // Switch back to async
 
+                // Validate display environment on Linux before starting Avalonia
+                if (OperatingSystem.IsLinux())
+                {
+                    ValidateLinuxDisplayEnvironment();
+                }
+
                 // Initialize settings first (UseModernCapture must be available for platform init)
                 XerahS.Core.SettingsManager.LoadInitialSettings();
 
@@ -115,9 +121,96 @@ namespace XerahS.App
             {
                 XerahS.Common.DebugHelper.WriteException(ex, "Critical application startup failure");
                 XerahS.Common.DebugHelper.Flush();
+
+                // Provide helpful guidance for common Linux display issues
+                if (OperatingSystem.IsLinux() && (ex.Message.Contains("XOpenDisplay") || ex.Message.Contains("display")))
+                {
+                    Console.Error.WriteLine("\n" + new string('=', 70));
+                    Console.Error.WriteLine("ERROR: Unable to connect to display server");
+                    Console.Error.WriteLine(new string('=', 70));
+                    
+                    var displayVar = Environment.GetEnvironmentVariable("DISPLAY");
+                    var waylandDisplay = Environment.GetEnvironmentVariable("WAYLAND_DISPLAY");
+                    var isFlatpak = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("FLATPAK_ID")) || 
+                                   System.IO.File.Exists("/.flatpak-info");
+                    
+                    if (isFlatpak)
+                    {
+                        Console.Error.WriteLine("Running inside Flatpak sandbox detected.");
+                        Console.Error.WriteLine("\nSOLUTION: Run from host system using one of these methods:");
+                        Console.Error.WriteLine("  1. Use flatpak-spawn:");
+                        Console.Error.WriteLine("     flatpak-spawn --host bash -c \"export PATH=\\\"$HOME/.dotnet:$PATH\\\" && ");
+                        Console.Error.WriteLine("       cd /home/Public/GitHub/ShareXteam/XerahS && ");
+                        Console.Error.WriteLine("       dotnet run --project src/XerahS.App/XerahS.App.csproj\"");
+                        Console.Error.WriteLine("\n  2. Run from a non-sandboxed terminal (recommended)");
+                    }
+                    else if (string.IsNullOrEmpty(displayVar) && string.IsNullOrEmpty(waylandDisplay))
+                    {
+                        Console.Error.WriteLine("No display environment variables found.");
+                        Console.Error.WriteLine("\nSOLUTION: Set the DISPLAY environment variable:");
+                        Console.Error.WriteLine("  export DISPLAY=:0     # For X11");
+                        Console.Error.WriteLine("  # or check: echo $WAYLAND_DISPLAY");
+                    }
+                    else
+                    {
+                        Console.Error.WriteLine($"DISPLAY={displayVar}");
+                        Console.Error.WriteLine($"WAYLAND_DISPLAY={waylandDisplay}");
+                        Console.Error.WriteLine("\nDisplay variables are set but connection failed.");
+                        Console.Error.WriteLine("Possible issues:");
+                        Console.Error.WriteLine("  - X11 server not running");
+                        Console.Error.WriteLine("  - Permission denied to access display");
+                        Console.Error.WriteLine("  - Running in restricted environment (container/sandbox)");
+                    }
+                    Console.Error.WriteLine(new string('=', 70) + "\n");
+                }
+
 #if DEBUG
                 throw;
 #endif
+            }
+        }
+
+        /// <summary>
+        /// Validates Linux display environment and warns about common issues before Avalonia initialization
+        /// </summary>
+        private static void ValidateLinuxDisplayEnvironment()
+        {
+            var displayVar = Environment.GetEnvironmentVariable("DISPLAY");
+            var waylandDisplay = Environment.GetEnvironmentVariable("WAYLAND_DISPLAY");
+            var xdgSessionType = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE");
+            var flatpakId = Environment.GetEnvironmentVariable("FLATPAK_ID");
+            bool isFlatpak = !string.IsNullOrEmpty(flatpakId) || System.IO.File.Exists("/.flatpak-info");
+
+            XerahS.Common.DebugHelper.WriteLine($"Display environment check:");
+            XerahS.Common.DebugHelper.WriteLine($"  DISPLAY={displayVar ?? "<not set>"}");
+            XerahS.Common.DebugHelper.WriteLine($"  WAYLAND_DISPLAY={waylandDisplay ?? "<not set>"}");
+            XerahS.Common.DebugHelper.WriteLine($"  XDG_SESSION_TYPE={xdgSessionType ?? "<not set>"}");
+            XerahS.Common.DebugHelper.WriteLine($"  Flatpak sandbox: {isFlatpak}");
+
+            if (isFlatpak)
+            {
+                XerahS.Common.DebugHelper.WriteLine("WARNING: Running inside Flatpak sandbox.");
+                XerahS.Common.DebugHelper.WriteLine("  Display access may be restricted. If XerahS fails to start,");
+                XerahS.Common.DebugHelper.WriteLine("  run from a host terminal or use 'flatpak-spawn --host dotnet run ...'");
+            }
+
+            if (string.IsNullOrEmpty(displayVar) && string.IsNullOrEmpty(waylandDisplay))
+            {
+                XerahS.Common.DebugHelper.WriteLine("WARNING: No display environment variables set.");
+                XerahS.Common.DebugHelper.WriteLine("  Attempting to continue, but Avalonia may fail to initialize.");
+                
+                // Try to auto-detect common display values
+                if (xdgSessionType?.ToLower() == "wayland" && string.IsNullOrEmpty(waylandDisplay))
+                {
+                    XerahS.Common.DebugHelper.WriteLine("  Detected Wayland session but WAYLAND_DISPLAY not set.");
+                    XerahS.Common.DebugHelper.WriteLine("  Trying default: wayland-0");
+                    Environment.SetEnvironmentVariable("WAYLAND_DISPLAY", "wayland-0");
+                }
+                else if (string.IsNullOrEmpty(displayVar))
+                {
+                    XerahS.Common.DebugHelper.WriteLine("  DISPLAY not set. Trying default: :0");
+                    Environment.SetEnvironmentVariable("DISPLAY", ":0");
+                }
             }
         }
 
