@@ -1,0 +1,152 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Styles.Resources>
+        <Color x:Key="iOSBlue">#007AFF</Color>
+        <Color x:Key="iOSSystemGrayLight">#E5E5EA</Color>
+        <Color x:Key="iOSSystemGrayDark">#1C1C1E</Color>
+        <Color x:Key="iOSBackgroundLight">#F2F2F7</Color>
+
+        <SolidColorBrush x:Key="iOSBlueBrush" Color="{StaticResource iOSBlue}"/>
+        <SolidColorBrush x:Key="iOSGrayBrush" Color="{StaticResource iOSSystemGrayLight}"/>
+        <SolidColorBrush x:Key="iOSBackgroundBrush" Color="{StaticResource iOSBackgroundLight}"/>
+        <SolidColorBrush x:Key="iOSCardBrush" Color="White"/>
+
+        <FontFamily x:Key="iOSFont">San Francisco, -apple-system, BlinkMacSystemFont, Segoe UI</FontFamily>
+    </Styles.Resources>
+
+    <Style Selector="UserControl[Tag=ios] TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource iOSFont}"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=ios] Button">
+        <Setter Property="FontFamily" Value="{StaticResource iOSFont}"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=ios] TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource iOSFont}"/>
+    </Style>
+
+    <Style Selector="Button.cupertino-primary">
+        <Setter Property="Background" Value="{StaticResource iOSBlueBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="16,12"/>
+        <Setter Property="FontFamily" Value="{StaticResource iOSFont}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="MinHeight" Value="44"/>
+    </Style>
+
+    <Style Selector="Button.cupertino-primary:pressed">
+        <Setter Property="Opacity" Value="0.6"/>
+    </Style>
+
+    <Style Selector="Button.cupertino-secondary">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource iOSBlueBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontFamily" Value="{StaticResource iOSFont}"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="MinHeight" Value="44"/>
+    </Style>
+
+    <Style Selector="Button.cupertino-secondary:pressed">
+        <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+
+    <Style Selector="TextBox.cupertino-input">
+        <Setter Property="Background" Value="{StaticResource iOSGrayBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="FontFamily" Value="{StaticResource iOSFont}"/>
+        <Setter Property="MinHeight" Value="44"/>
+    </Style>
+
+    <Style Selector="Grid.cupertino-navbar">
+        <Setter Property="Background" Value="#F8F8F8"/>
+        <Setter Property="Height" Value="56"/>
+    </Style>
+
+    <Style Selector="TextBlock.cupertino-navbar-title">
+        <Setter Property="FontFamily" Value="{StaticResource iOSFont}"/>
+        <Setter Property="FontSize" Value="17"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style Selector="Border.cupertino-card">
+        <Setter Property="Background" Value="{StaticResource iOSCardBrush}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=ios] Button.adaptive-primary">
+        <Setter Property="Background" Value="{StaticResource iOSBlueBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="16,12"/>
+        <Setter Property="FontFamily" Value="{StaticResource iOSFont}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="MinHeight" Value="44"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=ios] Button.adaptive-primary:pressed">
+        <Setter Property="Opacity" Value="0.6"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=ios] Button.adaptive-secondary">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource iOSBlueBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="MinHeight" Value="44"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=ios] Button.adaptive-secondary:pressed">
+        <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=ios] TextBox.adaptive-input">
+        <Setter Property="Background" Value="{StaticResource iOSGrayBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="MinHeight" Value="44"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=ios] ComboBox.adaptive-input">
+        <Setter Property="MinHeight" Value="44"/>
+        <Setter Property="CornerRadius" Value="10"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=ios] Grid.adaptive-navbar">
+        <Setter Property="Background" Value="#F8F8F8"/>
+        <Setter Property="Height" Value="56"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=ios] TextBlock.adaptive-navbar-title">
+        <Setter Property="FontSize" Value="17"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=ios] Border.adaptive-card">
+        <Setter Property="Background" Value="{StaticResource iOSCardBrush}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=ios] ScrollViewer.adaptive-scroll">
+        <Setter Property="ScrollViewer.IsScrollInertiaEnabled" Value="True"/>
+    </Style>
+
+</Styles>
+
+

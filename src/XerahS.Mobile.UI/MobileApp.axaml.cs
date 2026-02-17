@@ -27,6 +27,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Threading;
 using XerahS.Mobile.UI.ViewModels;
 using XerahS.Mobile.UI.Views;
@@ -35,6 +36,9 @@ namespace XerahS.Mobile.UI;
 
 public partial class MobileApp : Application
 {
+    private const string PlatformTagKey = "PlatformTag";
+    private static readonly Uri AppUri = new("avares://XerahS.Mobile.UI/");
+
     /// <summary>
     /// Callback for platform heads to push shared file paths into the Avalonia UI.
     /// Set after the framework initialization completes.
@@ -45,10 +49,52 @@ public partial class MobileApp : Application
     private MobileSettingsView? _settingsView;
     private MobileHistoryView? _historyView;
     private ISingleViewApplicationLifetime? _singleView;
+    private string _platformTag = "desktop";
 
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        LoadThemeStyles();
+    }
+
+    private void LoadThemeStyles()
+    {
+        LoadStyle("Themes/AdaptiveControls.axaml");
+
+        string? platformThemePath = null;
+
+        if (OperatingSystem.IsIOS())
+        {
+            platformThemePath = "Themes/iOS.axaml";
+            _platformTag = "ios";
+        }
+        else if (OperatingSystem.IsAndroid())
+        {
+            platformThemePath = "Themes/Android.axaml";
+            _platformTag = "android";
+        }
+
+        Resources[PlatformTagKey] = _platformTag;
+
+        if (!string.IsNullOrEmpty(platformThemePath))
+        {
+            LoadStyle(platformThemePath);
+        }
+    }
+
+    private void LoadStyle(string relativePath)
+    {
+        var uri = new Uri($"avares://XerahS.Mobile.UI/{relativePath}");
+
+        if (Styles.OfType<StyleInclude>().Any(x => x.Source == uri))
+        {
+            return;
+        }
+
+        Styles.Add(new StyleInclude(AppUri)
+        {
+            Source = uri
+        });
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -69,7 +115,8 @@ public partial class MobileApp : Application
         _uploadViewModel = new MobileUploadViewModel();
         var uploadView = new MobileUploadView
         {
-            DataContext = _uploadViewModel
+            DataContext = _uploadViewModel,
+            Tag = _platformTag
         };
 
         // Set up callbacks
@@ -88,7 +135,10 @@ public partial class MobileApp : Application
     {
         if (_singleView == null) return;
 
-        _settingsView = new MobileSettingsView();
+        _settingsView = new MobileSettingsView
+        {
+            Tag = _platformTag
+        };
         
         // Hook into the close request
         if (_settingsView.DataContext is MobileSettingsViewModel vm)
@@ -112,7 +162,8 @@ public partial class MobileApp : Application
         var historyViewModel = new MobileHistoryViewModel();
         _historyView = new MobileHistoryView
         {
-            DataContext = historyViewModel
+            DataContext = historyViewModel,
+            Tag = _platformTag
         };
 
         MobileHistoryViewModel.OnCloseRequested = ShowUploadView;
