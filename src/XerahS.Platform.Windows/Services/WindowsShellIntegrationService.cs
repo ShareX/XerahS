@@ -35,8 +35,8 @@ namespace XerahS.Platform.Windows.Services;
 /// </summary>
 public sealed class WindowsShellIntegrationService : IShellIntegrationService
 {
-    private const string ShellPluginExtensionPath = @"Software\Classes\.sxadp";
-    private readonly string ShellPluginExtensionValue = $"{AppResources.AppName}.sxadp";
+    private const string ShellPluginExtensionPath = @"Software\Classes\.xsdp";
+    private readonly string ShellPluginExtensionValue = $"{AppResources.AppName}.xsdp";
     private readonly string ShellPluginAssociatePath;
     private readonly string ShellPluginAssociateValue;
     private readonly string ShellPluginIconPath;
@@ -59,7 +59,7 @@ public sealed class WindowsShellIntegrationService : IShellIntegrationService
     }
 
     /// <summary>
-    /// Check if .sxadp file association is registered
+    /// Check if .xsdp file association is registered
     /// </summary>
     public bool IsPluginExtensionRegistered()
     {
@@ -79,7 +79,7 @@ public sealed class WindowsShellIntegrationService : IShellIntegrationService
     }
 
     /// <summary>
-    /// Register or unregister .sxadp file association
+    /// Register or unregister .xsdp file association
     /// </summary>
     public void SetPluginExtensionRegistration(bool register)
     {
@@ -114,7 +114,7 @@ public sealed class WindowsShellIntegrationService : IShellIntegrationService
         // Notify Windows shell of file association change
         SHChangeNotify(0x08000000, 0x0000, IntPtr.Zero, IntPtr.Zero);
 
-        DebugHelper.WriteLine($"Registered .sxadp file association for {AppResources.AppName}");
+        DebugHelper.WriteLine($"Registered .xsdp file association for {AppResources.AppName}");
     }
 
     private void UnregisterPluginExtension()
@@ -122,7 +122,7 @@ public sealed class WindowsShellIntegrationService : IShellIntegrationService
         RemoveRegistryKey(ShellPluginExtensionPath);
         RemoveRegistryKey(ShellPluginAssociatePath);
 
-        DebugHelper.WriteLine($"Unregistered .sxadp file association for {AppResources.AppName}");
+        DebugHelper.WriteLine($"Unregistered .xsdp file association for {AppResources.AppName}");
     }
 
     // Registry helper methods

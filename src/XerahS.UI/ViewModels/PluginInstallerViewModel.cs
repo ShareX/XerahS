@@ -77,7 +77,7 @@ public partial class PluginInstallerViewModel : ViewModelBase
             {
                 new FilePickerFileType($"{SettingsManager.AppName} Plugin")
                 {
-                    Patterns = new[] { "*.sxadp" }
+                    Patterns = new[] { "*.xsdp" }
                 }
             }
         });

@@ -1,51 +1,64 @@
-# Plugin Development Guide
+# Destination Plugin Development Guide
 
-This guide explains how to create a new uploader plugin for XerahS.
+This is the consolidated reference for creating new destination plugins in XerahS.
 
-## Prerequisites
+It merges the practical parts of:
+- `developers/plugins/guide.md`
+- `developers/plugins/exporter.md`
+- `developers/plugins/implementation_plan.md`
+- `developers/plugins/packaging_system.md`
 
-*   .NET 10.0 SDK
-*   An IDE (Visual Studio, Rider, VS Code)
+and aligns them with the current code contracts under `src/XerahS.Uploaders/PluginSystem`.
 
-## 1. Project Setup
+## 1. What Makes "Browse Files" Work
 
-Create a new Class Library project (`.NET 10.0`) for your plugin. The naming convention is usually `ShareX.MyPlugin.Plugin`.
+`Destination Settings -> Browse Files` (Media Explorer) only works when all of these are true:
 
-### Dependencies
+1. Your provider implements `IUploaderExplorer`.
+2. `ValidateSettings(settingsJson)` returns `true` for the selected instance.
+3. `ListAsync` returns `MediaItem` entries.
+4. `GetThumbnailAsync` returns image bytes for image items (otherwise you only see file icons, not thumbnails).
 
-Your plugin needs to reference the ShareX contracts. Add a reference to the `XerahS.Uploaders` project (or DLL).
+Code path:
+- UI checks `provider is IUploaderExplorer`.
+- Button enabled state depends on `ValidateSettings`.
+- Explorer window calls:
+  - `ListAsync`
+  - `GetThumbnailAsync`
+  - `GetContentAsync`
+  - `DeleteAsync`
 
-**Important**: You must mark shared dependencies as `<Private>false</Private>` so they are *not* copied to your plugin output directory. These assemblies are provided by the host application.
+Practical guidance:
+- Override `ValidateSettings` if your provider needs secrets or required fields. The base implementation only checks JSON deserialization.
+- In each `MediaItem`, set `Name`, `Path`, `MimeType`, and `Url` when possible.
+- Use `MediaItem.Metadata` for provider-specific context required by later calls (`DeleteAsync`, `GetContentAsync`, etc.).
 
-### Recommended `.csproj` Configuration
+## 2. Project Setup
 
-Use the following configuration in your `.csproj` file to ensure correct build output and dependency handling:
+Create a class library plugin project (usually `net10.0`):
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputType>Library</OutputType>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    
-    <!-- Plugin Metadata -->
     <PluginId>myplugin</PluginId>
-    <PluginName>My Custom Uploader</PluginName>
+    <PluginName>My Destination</PluginName>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- ⚠️ CRITICAL: Shared framework dependencies MUST use ExcludeAssets=runtime -->
-    <!-- This prevents duplicate DLLs and ensures config views load properly -->
-    <PackageReference Include="Avalonia" Version="11.2.2">
+    <!-- Match host package versions used by the app -->
+    <PackageReference Include="Avalonia" Version="11.3.12">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.2">
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0">
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4">
@@ -54,13 +67,11 @@ Use the following configuration in your `.csproj` file to ensure correct build o
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Core Contracts (Shared Dependencies) -->
-    <!-- Adjust path if referenced as project, or use NuGet package if available -->
-    <ProjectReference Include="..\..\XerahS.Uploaders\XerahS.Uploaders.csproj">
+    <ProjectReference Include="..\\..\\XerahS.Uploaders\\XerahS.Uploaders.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
-     <ProjectReference Include="..\..\XerahS.Common\XerahS.Common.csproj">
+    <ProjectReference Include="..\\..\\XerahS.Common\\XerahS.Common.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
@@ -71,191 +82,192 @@ Use the following configuration in your `.csproj` file to ensure correct build o
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <!-- Post-build step to copy plugin to the app's Plugins folder for testing -->
-  <Target Name="CopyToPluginsDir" AfterTargets="Build">
-    <PropertyGroup>
-      <PluginOutputDir>$(MSBuildThisFileDirectory)..\..\XerahS.App\bin\$(Configuration)\net10.0-windows\Plugins\$(PluginId)</PluginOutputDir>
-    </PropertyGroup>
-    <ItemGroup>
-      <PluginFiles Include="$(OutputPath)**\*.*" Exclude="$(OutputPath)**\*.pdb;$(OutputPath)**\*.deps.json" />
-    </ItemGroup>
-    <MakeDir Directories="$(PluginOutputDir)" Condition="!Exists('$(PluginOutputDir)')" />
-    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(PluginOutputDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />
-  </Target>
-
 </Project>
+```
 
-> **⚠️ Important**: If you omit `<ExcludeAssets>runtime</ExcludeAssets>` on NuGet packages, your plugin folder will contain 20+ duplicate DLLs and **your config view will not load** in the UI. Always verify your plugin folder has only 4-5 files after building.
+Why `ExcludeAssets=runtime` matters:
+- If you copy framework/shared DLLs into plugin folders, config view loading can break due to assembly identity conflicts.
+- Keep plugin output minimal: plugin DLL, `plugin.json`, and only true plugin-specific dependencies.
 
-## 2. The Manifest (`plugin.json`)
+## 3. Manifest (`plugin.json`)
 
-Create a `plugin.json` file in the root of your project. This file tells ShareX how to load your plugin.
+Minimum valid manifest:
 
 ```json
 {
   "pluginId": "myplugin",
-  "name": "My Custom Uploader",
+  "name": "My Destination",
   "version": "1.0.0",
-  "apiVersion": "1.0",
-  "assembly": "ShareX.MyPlugin.Plugin.dll",
-  "entryPoint": "ShareX.MyPlugin.Plugin.MyProvider",
-  "description": "Uploads files to MyService.",
   "author": "Your Name",
+  "description": "Uploads files to My Service",
+  "apiVersion": "1.0",
+  "entryPoint": "MyPlugin.MyProvider",
+  "assemblyFileName": "MyPlugin.dll",
   "supportedCategories": ["Image", "File"]
 }
 ```
 
-*   **pluginId**: Unique identifier (folder name usually matches this).
-*   **apiVersion**: Must match the host's plugin API version (currently 1.0).
-*   **assembly**: The name of your plugin DLL.
-*   **entryPoint**: The fully qualified name of your provider class.
+Important fields:
+- `pluginId`: must be unique; should match `ProviderId`.
+- `apiVersion`: must be compatible with current plugin API (`1.0`).
+- `entryPoint`: full type name implementing `IUploaderProvider`.
+- `assemblyFileName`: optional but recommended.
+- `supportedCategories`: at least one category required.
+- `supportsExplorer`: optional metadata flag; set `true` when provider implements `IUploaderExplorer`.
 
-## 3. Implementing the Provider
+## 4. Provider Implementation (`IUploaderProvider`)
 
-Create a class that implements `UploaderProviderBase` (or `IUploaderProvider`). This is the entry point for your plugin logic.
+Use `UploaderProviderBase` unless you need full custom behavior:
 
 ```csharp
-using ShareX.Ava.Uploaders;
-using ShareX.Ava.Uploaders.PluginSystem;
 using Newtonsoft.Json;
+using XerahS.Uploaders;
+using XerahS.Uploaders.FileUploaders;
+using XerahS.Uploaders.PluginSystem;
 
-namespace ShareX.MyPlugin.Plugin;
+namespace MyPlugin;
 
-public class MyProvider : UploaderProviderBase
+public sealed class MyProvider : UploaderProviderBase
 {
     public override string ProviderId => "myplugin";
-    public override string Name => "My Custom Uploader";
-    public override string Description => "Uploads files to MyService";
-    public override Version Version => new Version(1, 0, 0);
+    public override string Name => "My Destination";
+    public override string Description => "Uploads files to My Service";
+    public override Version Version => new(1, 0, 0);
     public override UploaderCategory[] SupportedCategories => new[] { UploaderCategory.Image, UploaderCategory.File };
-
-    // This model holds your settings (API keys, etc.)
     public override Type ConfigModelType => typeof(MyConfigModel);
 
     public override Uploader CreateInstance(string settingsJson)
     {
-        var config = JsonConvert.DeserializeObject<MyConfigModel>(settingsJson);
+        var config = JsonConvert.DeserializeObject<MyConfigModel>(settingsJson)
+            ?? throw new InvalidOperationException("Invalid settings JSON");
+
         return new MyUploader(config);
     }
-    
-    // Create the View for Destination Settings
-    public override object? CreateConfigView()
-    {
-        return new Views.MyConfigView();
-    }
 
-    // Create the ViewModel for the View
-    public override IUploaderConfigViewModel? CreateConfigViewModel()
-    {
-        return new ViewModels.MyConfigViewModel();
-    }
-}
-```
-
-## 4. Configuration Model
-
-Define a simple POCO class to hold your settings.
-
-```csharp
-public class MyConfigModel
-{
-    public string ApiKey { get; set; } = "";
-    public bool UseValidation { get; set; } = true;
-}
-```
-
-## 5. Implementing the Uploader
-
-Create a class that inherits from `FileUploader` (or `ImageUploader` / `TextUploader` depending on need).
-
-```csharp
-using ShareX.Ava.Uploaders;
-using ShareX.Ava.Uploaders.FileUploaders;
-
-public class MyUploader : FileUploader
-{
-    private readonly MyConfigModel _config;
-
-    public MyUploader(MyConfigModel config)
-    {
-        _config = config;
-    }
-
-    public override UploadResult Upload(Stream stream, string fileName)
-    {
-        // Implement your upload logic here
-        // Use SendRequest() helper for HTTP calls
-        
-        // Example:
-        // var response = SendRequest(HttpMethod.POST, "https://api.myservice.com/upload", stream, "file", fileName);
-        
-        if (LastResponseInfo.IsSuccess)
+    public override Dictionary<UploaderCategory, string[]> GetSupportedFileTypes() =>
+        new()
         {
-            return new UploadResult 
-            { 
-                IsSuccess = true, 
-                URL = "https://myservice.com/image.png" 
-            };
-        }
-        
-        Errors.Add("Upload failed");
-        return null; // Return null on failure
+            [UploaderCategory.Image] = new[] { "png", "jpg", "jpeg", "gif", "webp" },
+            [UploaderCategory.File] = new[] { "zip", "pdf", "txt" }
+        };
+
+    public override object? CreateConfigView() => new Views.MyConfigView();
+    public override IUploaderConfigViewModel? CreateConfigViewModel() => new ViewModels.MyConfigViewModel();
+
+    public override bool ValidateSettings(string settingsJson)
+    {
+        var cfg = JsonConvert.DeserializeObject<MyConfigModel>(settingsJson);
+        return cfg != null && !string.IsNullOrWhiteSpace(cfg.ApiBaseUrl);
     }
 }
 ```
 
-## 6. Creating the Configuration UI
+## 5. Config UI and Secret Handling
 
-You can include Avalonia UI views in your plugin.
+Config view model contract:
+- Implement `IUploaderConfigViewModel`:
+  - `LoadFromJson`
+  - `ToJson`
+  - `Validate`
 
-**View (`MyConfigView.axaml`):**
-Standard Avalonia UserControl.
+Secrets:
+- Do not store secrets directly in `settingsJson`.
+- Store a generated `SecretKey` in settings.
+- Save actual credentials in `ISecretStore` (`GetSecret`, `SetSecret`, `DeleteSecret`).
+- If your provider or config VM needs host services, implement `IProviderContextAware`.
 
-**ViewModel (`MyConfigViewModel.cs`):**
-Must implement `IUploaderConfigViewModel`.
+## 6. Optional: Media Explorer Support (`IUploaderExplorer`)
+
+Implement `IUploaderExplorer` to enable `Browse Files`.
+
+Required methods:
+- `ListAsync(ExplorerQuery query, ...)`
+- `GetThumbnailAsync(MediaItem item, ...)`
+- `GetContentAsync(MediaItem item, ...)`
+- `DeleteAsync(MediaItem item, ...)`
+- `CreateFolderAsync(...)`
+
+Skeleton:
 
 ```csharp
-public partial class MyConfigViewModel : ObservableObject, IUploaderConfigViewModel
+using XerahS.Uploaders.PluginSystem;
+
+public sealed class MyProvider : UploaderProviderBase, IUploaderExplorer
 {
-    [ObservableProperty] private string _apiKey = "";
+    public bool SupportsFolders => true;
 
-    public void LoadFromJson(string json)
+    public Task<ExplorerPage> ListAsync(ExplorerQuery query, CancellationToken cancellation = default)
     {
-        var config = JsonConvert.DeserializeObject<MyConfigModel>(json);
-        if (config != null) ApiKey = config.ApiKey;
+        // query.SettingsJson has the instance config for each call.
+        // Return files/folders as MediaItem entries.
+        throw new NotImplementedException();
     }
 
-    public string ToJson()
+    public Task<byte[]?> GetThumbnailAsync(MediaItem item, int maxWidthPx = 180, CancellationToken cancellation = default)
     {
-        return JsonConvert.SerializeObject(new MyConfigModel { ApiKey = ApiKey });
+        // Return JPEG/PNG bytes for image items.
+        throw new NotImplementedException();
     }
 
-    public bool Validate()
-    {
-        if (string.IsNullOrEmpty(ApiKey)) return false;
-        return true;
-    }
+    public Task<Stream?> GetContentAsync(MediaItem item, CancellationToken cancellation = default)
+        => Task.FromResult<Stream?>(null);
+
+    public Task<bool> DeleteAsync(MediaItem item, CancellationToken cancellation = default)
+        => Task.FromResult(false);
+
+    public Task<bool> CreateFolderAsync(string parentPath, string folderName, CancellationToken cancellation = default)
+        => Task.FromResult(false);
 }
 ```
 
-## 7. Build and Test
+Explorer-specific data tips:
+- `MediaItem.Url`: used for open/copy URL actions.
+- `MediaItem.ThumbnailUrl`: can be used by your own `GetThumbnailAsync` logic.
+- `MediaItem.Metadata`: include IDs, paths, serialized settings, etc. needed by follow-up calls.
+- Respect paging: set `ExplorerPage.ContinuationToken` when more data exists.
 
-1.  Build your project.
-2.  If you used the post-build event, the plugin will be copied to `XerahS.App/bin/Debug/net10.0-windows/Plugins/myplugin`.
-3.  Run XerahS.
-4.  Go to **Destinations -> Destination Settings**.
-5.  Click **Add from Catalog**.
-6.  Your plugin should appear in the list.
+## 7. Build, Deploy, and Test
 
-## Folder Structure (Deployed)
+Manual local deployment:
 
-Inside `Plugins/`:
+1. Build plugin project.
+2. Create plugin folder:
+   - `<AppOutput>/Plugins/<pluginId>/`
+3. Copy:
+   - plugin DLL
+   - `plugin.json`
+   - plugin-only dependencies
+4. Start XerahS, open Destination Settings, and add plugin from catalog.
 
-```
-Plugins/
-  └── myplugin/
-      ├── plugin.json
-      ├── ShareX.MyPlugin.Plugin.dll
-      └── (Other dependencies not provided by host)
-```
+Quick validation checklist:
+- Provider loads and appears in catalog.
+- Config view renders.
+- Settings round-trip (`LoadFromJson` / `ToJson`) works.
+- Upload works for each declared category.
+- If explorer implemented:
+  - Browse Files button visible.
+  - Browse Files button enabled with valid settings.
+  - `ListAsync` returns items.
+  - image thumbnails appear from `GetThumbnailAsync`.
+
+## 8. Packaging Notes
+
+Packaging support exists via:
+- `src/XerahS.Uploaders/PluginSystem/PluginPackager.cs`
+- `src/XerahS.PluginExporter/Program.cs`
+
+Current behavior in code:
+- Packages are ZIP-based.
+- Max package size is 100 MB.
+- CLI currently resolves `.xsdp` output by default.
+
+Installer UI currently filters for `.xsdp` files. Ensure your packaging workflow uses this extension.
+
+## 9. Reference Implementations
+
+Use these plugins as examples:
+- `src/Plugins/ShareX.AmazonS3.Plugin` (uploader + explorer + secure credential flow)
+- `src/Plugins/ShareX.Imgur.Plugin` (uploader + explorer with album hierarchy)
+- `src/Plugins/ShareX.GitHubGist.Plugin` (text uploader with OAuth token storage)
+- `src/Plugins/ShareX.Paste2.Plugin` (simple text uploader)
+

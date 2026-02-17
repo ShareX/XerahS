@@ -51,7 +51,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 
 ### 1.3 XerahS.PluginExporter (Utility)
 - **File**: [Program.cs](../../src/XerahS.PluginExporter/Program.cs)
-- **Purpose**: Package uploader plugins into `.sxadp` archives
+- **Purpose**: Package uploader plugins into `.xsdp` archives
 - **Usage**: Internal development tool
 
 ---
@@ -121,7 +121,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 ├─────────────────────────────────────────────────────────────────┤
 │  XerahS.Imgur.Plugin (Imgur uploader)                           │
 │  XerahS.AmazonS3.Plugin (S3 uploader)                           │
-│  Third-party *.sxadp plugins (dynamically loaded)               │
+│  Third-party *.xsdp plugins (dynamically loaded)               │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -386,7 +386,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 ### 7.2 Plugin Discovery
 **File**: [PluginDiscovery.cs](../../src/XerahS.Uploaders/PluginSystem/PluginDiscovery.cs)
 
-**Search Path**: `Documents\XerahS\Plugins\*.sxadp`
+**Search Path**: `Documents\XerahS\Plugins\*.xsdp`
 
 **Manifest Format**: `plugin.manifest.json`
 ```json
@@ -428,7 +428,7 @@ Treated as internal plugins (no separate assemblies):
 ### 7.6 Plugin Packaging
 **Tool**: XerahS.PluginExporter
 
-**Format**: `.sxadp` archive (ZIP-based) containing:
+**Format**: `.xsdp` archive (ZIP-based) containing:
 - Plugin DLL + dependencies
 - `plugin.manifest.json`
 - Optional README, license
@@ -556,7 +556,7 @@ Located in [XerahS.UI/Services](../../src/XerahS.UI/Services/)
 ### 10.4 Build Artifacts
 - **XerahS.exe**: Desktop application (Windows)
 - **xerahs**: CLI executable (cross-platform)
-- **Plugins**: `.sxadp` archives auto-deployed to `bin/.../Plugins/`
+- **Plugins**: `.xsdp` archives auto-deployed to `bin/.../Plugins/`
 
 ---
 

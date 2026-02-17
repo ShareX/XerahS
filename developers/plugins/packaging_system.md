@@ -39,25 +39,24 @@ MyEffect.sxie (ZIP archive)
 ## 2. Proposed Solution: `.sxadp` Format
 
 ### Extension Name Recommendation
-**`.sxadp`** = **S**hare**X** **A**valonia **P**lugin
+**`.xsdp`** = **X**erah**S** **D**ata/Distribution **P**ackage
 
 **Rationale**:
-- Follows ShareX naming convention (`.sxie` for Image Effects)
+- Distinct from ShareX's `.sxie`
 - Clear association with XerahS
-- Short, memorable, unique extension
-- Avoids conflicts with existing formats
+- Follows new naming convention
 
-**Alternative considered**: `.sxplugin` (too verbose)
+**Alternative considered**: `.sxadp` (ShareX Avalonia Plugin)
 
 ---
 
 ## 3. Package Structure
 
 ### Archive Format
-`.sxadp` files are **ZIP archives** with the following structure:
+`.xsdp` files are **ZIP archives** with the following structure:
 
 ```
-ImgurUploader.sxadp (ZIP archive)
+ImgurUploader.xsdp (ZIP archive)
 ├── plugin.json                          # Manifest (REQUIRED)
 ├── ShareX.Uploader.Imgur.dll            # Main assembly (REQUIRED)
 ├── Newtonsoft.Json.dll                  # Dependencies (OPTIONAL)
@@ -98,7 +97,7 @@ public static class PluginPackager
     private const string ManifestFileName = "plugin.json";
     
     /// <summary>
-    /// Package a plugin directory into .sxadp file
+    /// Package a plugin directory into .xsdp file
     /// </summary>
     public static string Package(string pluginDirectory, string outputFilePath)
     {
@@ -125,7 +124,7 @@ public static class PluginPackager
     }
     
     /// <summary>
-    /// Extract and install .sxadp package to Plugins directory
+    /// Extract and install .xsdp package to Plugins directory
     /// </summary>
     public static PluginMetadata? InstallPackage(string packageFilePath, string pluginsDirectory)
     {
@@ -178,7 +177,7 @@ public static class PluginPackager
 **Location**: `XerahS.UI/Views/PluginInstallerDialog.axaml`
 
 **Features**:
-- File picker for `.sxadp` files
+- File picker for `.xsdp` files
 - Display plugin metadata (name, version, author, description)
 - Show installation location
 - Install button
@@ -206,7 +205,7 @@ public class PluginInstallerViewModel : ViewModelBase
             Title = "Select Plugin Package",
             Filters = new List<FileDialogFilter>
             {
-                new() { Name = "ShareX Avalonia Plugin", Extensions = { "sxadp" } }
+                new() { Name = "ShareX Avalonia Plugin", Extensions = { "xsdp" } }
             }
         };
         
@@ -261,7 +260,7 @@ public class PluginInstallerViewModel : ViewModelBase
         Margin="0,0,0,10"/>
 ```
 
-**2. Drag & Drop Support** - Allow dragging `.sxadp` files onto main window
+**2. Drag & Drop Support** - Allow dragging `.xsdp` files onto main window
 
 **Location**: `MainWindow.axaml.cs`
 
@@ -271,11 +270,11 @@ private async void OnDrop(object? sender, DragEventArgs e)
     if (e.Data.Contains(DataFormats.Files))
     {
         var files = e.Data.GetFiles();
-        var sxadpFiles = files?.Where(f => f.Path.LocalPath.EndsWith(".sxadp", StringComparison.OrdinalIgnoreCase));
+        var xsdpFiles = files?.Where(f => f.Path.LocalPath.EndsWith(".xsdp", StringComparison.OrdinalIgnoreCase));
         
-        if (sxadpFiles?.Any() == true)
+        if (xsdpFiles?.Any() == true)
         {
-            foreach (var file in sxadpFiles)
+            foreach (var file in xsdpFiles)
             {
                 await InstallPlugin(file.Path.LocalPath);
             }
@@ -284,17 +283,17 @@ private async void OnDrop(object? sender, DragEventArgs e)
 }
 ```
 
-**3. File Association** - Register `.sxadp` extension with Windows
+**3. File Association** - Register `.xsdp` extension with Windows
 
 **Location**: `IntegrationHelpers.cs` (similar to ShareX's `.sxie` registration)
 
 ```csharp
-private static readonly string ShellPluginExtensionPath = @"Software\Classes\.sxadp";
-private static readonly string ShellPluginExtensionValue = "XerahS.sxadp";
+private static readonly string ShellPluginExtensionPath = @"Software\Classes\.xsdp";
+private static readonly string ShellPluginExtensionValue = "XerahS.xsdp";
 
-public static void RegistersxadpExtension()
+public static void RegisterxsdpExtension()
 {
-    // Register .sxadp extension
+    // Register .xsdp extension
     // Associate with XerahS.exe
     // Add "Install Plugin" context menu
 }
@@ -332,19 +331,19 @@ cd ImgurUploader
 # - Dependencies
 
 # 3. Create .sxadp package (using 7-Zip or similar)
-7z a ImgurUploader.sxadp *
+7z a ImgurUploader.xsdp *
 ```
 
 **Option B: CLI Tool (future enhancement)**
 ```bash
-sxadp-pack --input ./ImgurUploader --output ImgurUploader.sxadp
+sxadp-pack --input ./ImgurUploader --output ImgurUploader.xsdp
 ```
 
 **Option C: GUI Packager (future enhancement)**
 - Similar to ShareX's `ImageEffectPackagerForm`
 - Browse for plugin directory
 - Auto-validate manifest
-- Generate `.sxadp` file
+- Generate `.xsdp` file
 
 ---
 
@@ -399,16 +398,16 @@ XerahS/
 ## 9. Example Usage
 
 ### End User Workflow
-1. Download `ImgurUploader.sxadp` from plugin repository
+1. Download `ImgurUploader.xsdp` from plugin repository
 2. Open XerahS → Settings → Uploaders
 3. Click "Install Plugin..." button
-4. Select `ImgurUploader.sxadp` file
+4. Select `ImgurUploader.xsdp` file
 5. Review plugin details
 6. Click "Install"
 7. Plugin appears in Uploaders list
 
 ### Alternative: Drag & Drop
-1. Drag `ImgurUploader.sxadp` onto XerahS window
+1. Drag `ImgurUploader.xsdp` onto XerahS window
 2. Confirm installation prompt
 3. Plugin installed automatically
 
@@ -427,7 +426,7 @@ XerahS/
 
 ## 11. Comparison with ShareX
 
-| Feature | ShareX (.sxie) | XerahS (.sxadp) |
+| Feature | ShareX (.sxie) | XerahS (.xsdp) |
 |---------|----------------|-------------------------|
 | Format | ZIP archive | ZIP archive |
 | Manifest | Config.json (ImageEffectPreset) | plugin.json (PluginManifest) |
@@ -440,8 +439,8 @@ XerahS/
 
 ## 12. Success Criteria
 
-✅ Users can install plugins by double-clicking `.sxadp` files  
-✅ Users can drag & drop `.sxadp` files onto app window  
+✅ Users can install plugins by double-clicking `.xsdp` files  
+✅ Users can drag & drop `.xsdp` files onto app window  
 ✅ Invalid packages are rejected with clear error messages  
 ✅ Installed plugins appear in Uploaders list immediately  
 ✅ Plugins are isolated and don't conflict with each other  

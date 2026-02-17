@@ -1,4 +1,4 @@
-# .sxadp File Association Implementation Plan
+# .xsdp File Association Implementation Plan
 
 **Status**: 📋 Ready for Implementation  
 **Priority**: HIGH - Enables double-click plugin installation  
@@ -55,9 +55,9 @@ public static class IntegrationHelpers
     private static readonly string ApplicationPath = $"\"{Environment.ProcessPath}\"";
     private static readonly string FileIconPath = $"\"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ShareX_File_Icon.ico")}\"";
     
-    // .sxadp (ShareX Avalonia Destination Plugin) file association
-    private static readonly string ShellPluginExtensionPath = @"Software\Classes\.sxadp";
-    private static readonly string ShellPluginExtensionValue = "XerahS.sxadp";
+    // .xsdp (ShareX Avalonia Destination Plugin) file association
+    private static readonly string ShellPluginExtensionPath = @"Software\Classes\.xsdp";
+    private static readonly string ShellPluginExtensionValue = "XerahS.xsdp";
     private static readonly string ShellPluginAssociatePath = $@"Software\Classes\{ShellPluginExtensionValue}";
     private static readonly string ShellPluginAssociateValue = "ShareX Avalonia plugin";
     private static readonly string ShellPluginIconPath = $@"{ShellPluginAssociatePath}\DefaultIcon";
@@ -66,7 +66,7 @@ public static class IntegrationHelpers
     private static readonly string ShellPluginCommandValue = $"{ApplicationPath} -InstallPlugin \"%1\"";
     
     /// <summary>
-    /// Check if .sxadp file association is registered
+    /// Check if .xsdp file association is registered
     /// </summary>
     public static bool CheckPluginExtension()
     {
@@ -84,7 +84,7 @@ public static class IntegrationHelpers
     }
     
     /// <summary>
-    /// Register or unregister .sxadp file association
+    /// Register or unregister .xsdp file association
     /// </summary>
     public static void CreatePluginExtension(bool create)
     {
@@ -119,7 +119,7 @@ public static class IntegrationHelpers
             SHChangeNotify(0x08000000, 0x0000, IntPtr.Zero, IntPtr.Zero);
         }
         
-        DebugHelper.WriteLine("Registered .sxadp file association");
+        DebugHelper.WriteLine("Registered .xsdp file association");
     }
     
     private static void UnregisterPluginExtension()
@@ -127,7 +127,7 @@ public static class IntegrationHelpers
         RegistryHelpers.RemoveRegistry(ShellPluginExtensionPath);
         RegistryHelpers.RemoveRegistry(ShellPluginAssociatePath);
         
-        DebugHelper.WriteLine("Unregistered .sxadp file association");
+        DebugHelper.WriteLine("Unregistered .xsdp file association");
     }
     
     // P/Invoke for shell notification
@@ -243,7 +243,7 @@ private static async Task<bool> HandleCommandLineArgs(string[] args)
         {
             string packagePath = args[i + 1];
             
-            if (File.Exists(packagePath) && packagePath.EndsWith(".sxadp", StringComparison.OrdinalIgnoreCase))
+            if (File.Exists(packagePath) && packagePath.EndsWith(".xsdp", StringComparison.OrdinalIgnoreCase))
             {
                 await InstallPluginFromCommandLine(packagePath);
                 return true; // Command handled
@@ -297,10 +297,10 @@ private static async Task InstallPluginFromCommandLine(string packagePath)
 Add checkbox to Integration/Advanced settings tab:
 
 ```xml
-<CheckBox Content="Associate .sxadp files with XerahS"
+<CheckBox Content="Associate .xsdp files with XerahS"
           IsChecked="{Binding IsPluginExtensionRegistered}"
           Command="{Binding TogglePluginExtensionCommand}"
-          ToolTip.Tip="Allows double-clicking .sxadp files to install plugins"/>
+          ToolTip.Tip="Allows double-clicking .xsdp files to install plugins"/>
 ```
 
 **ViewModel**: `ApplicationSettingsViewModel.cs`
@@ -335,10 +335,10 @@ private void LoadIntegrationSettings()
 **XAML Update**: Show/hide checkbox based on platform support
 
 ```xml
-<CheckBox Content="Associate .sxadp files with XerahS"
+<CheckBox Content="Associate .xsdp files with XerahS"
           IsChecked="{Binding IsPluginExtensionRegistered}"
           IsVisible="{Binding SupportsFileAssociations}"
-          ToolTip.Tip="Allows double-clicking .sxadp files to install plugins"/>
+          ToolTip.Tip="Allows double-clicking .xsdp files to install plugins"/>
 ```
 
 ---
@@ -347,23 +347,23 @@ private void LoadIntegrationSettings()
 
 ### Scenario 1: First-Time Setup
 1. User opens Settings → Integration
-2. Checks "Associate .sxadp files with XerahS"
+2. Checks "Associate .xsdp files with XerahS"
 3. Registry keys are created
-4. `.sxadp` files now show ShareX icon in Explorer
+4. `.xsdp` files now show ShareX icon in Explorer
 
 ### Scenario 2: Installing Plugin
-1. User downloads `ImgurUploader.sxadp`
+1. User downloads `ImgurUploader.xsdp`
 2. Double-clicks the file
-3. XerahS launches with `-InstallPlugin "C:\...\ImgurUploader.sxadp"`
+3. XerahS launches with `-InstallPlugin "C:\...\ImgurUploader.xsdp"`
 4. `PluginInstallerDialog` opens with package pre-loaded
 5. User reviews metadata and clicks "Install"
 6. Plugin is extracted to `Plugins/imgur/`
 7. Success message shown
 
 ### Scenario 3: Uninstall Association
-1. User unchecks "Associate .sxadp files"
+1. User unchecks "Associate .xsdp files"
 2. Registry keys are removed
-3. `.sxadp` files revert to default ZIP icon
+3. `.xsdp` files revert to default ZIP icon
 
 ---
 
@@ -403,7 +403,7 @@ private void LoadIntegrationSettings()
 - [ ] Verify registry changes on toggle
 
 ### Phase 4: Testing (30 min)
-- [ ] Create test `.sxadp` package
+- [ ] Create test `.xsdp` package
 - [ ] Register file association
 - [ ] Double-click test package
 - [ ] Verify installer dialog opens
@@ -425,22 +425,22 @@ private void LoadIntegrationSettings()
 
 2. **Register file association**
    - Open Settings → Integration
-   - Check "Associate .sxadp files"
+   - Check "Associate .xsdp files"
    - Verify no errors in Debug output
 
 3. **Verify registry keys**
    ```powershell
-   reg query "HKCU\Software\Classes\.sxadp"
-   reg query "HKCU\Software\Classes\XerahS.sxadp\shell\open\command"
+   reg query "HKCU\Software\Classes\.xsdp"
+   reg query "HKCU\Software\Classes\XerahS.xsdp\shell\open\command"
    ```
 
 4. **Create test package**
    ```powershell
-   Compress-Archive -Path "Plugins\imgur" -DestinationPath "test.sxadp"
+   Compress-Archive -Path "Plugins\imgur" -DestinationPath "test.xsdp"
    ```
 
 5. **Test double-click**
-   - Double-click `test.sxadp` in Explorer
+   - Double-click `test.xsdp` in Explorer
    - Verify XerahS launches
    - Verify PluginInstallerDialog opens
    - Verify package metadata displays
@@ -448,9 +448,9 @@ private void LoadIntegrationSettings()
    - Verify plugin installs successfully
 
 6. **Test unregister**
-   - Uncheck "Associate .sxadp files"
+   - Uncheck "Associate .xsdp files"
    - Verify registry keys removed
-   - Double-click `.sxadp` file
+   - Double-click `.xsdp` file
    - Verify Windows prompts for app selection
 
 ---
@@ -476,13 +476,13 @@ private void LoadIntegrationSettings()
 
 ---
 
-## 8. Alternative: Always Handle .sxadp
+## 8. Alternative: Always Handle .xsdp
 
-Instead of requiring user to enable file association, automatically handle `.sxadp` files passed as arguments:
+Instead of requiring user to enable file association, automatically handle `.xsdp` files passed as arguments:
 
 ```csharp
 // In Program.cs Main()
-if (args.Length > 0 && args[0].EndsWith(".sxadp"))
+if (args.Length > 0 && args[0].EndsWith(".xsdp"))
 {
     await InstallPluginFromCommandLine(args[0]);
     return;
@@ -490,7 +490,7 @@ if (args.Length > 0 && args[0].EndsWith(".sxadp"))
 ```
 
 Then user can:
-- Right-click `.sxadp` → Open With → XerahS
+- Right-click `.xsdp` → Open With → XerahS
 - Or manually register association via Windows Settings
 
 ---
@@ -499,7 +499,7 @@ Then user can:
 
 - [ ] **Auto-update plugins**: Check for updates on startup
 - [ ] **Plugin repository**: Browse and install from online catalog
-- [ ] **Drag & drop**: Drop `.sxadp` onto main window
+- [ ] **Drag & drop**: Drop `.xsdp` onto main window
 - [ ] **Batch install**: Install multiple plugins at once
 - [ ] **Uninstall UI**: Manage installed plugins
 - [ ] **macOS/Linux support**: Platform-specific file associations
@@ -508,8 +508,8 @@ Then user can:
 
 ## 10. Success Criteria
 
-✅ User can check "Associate .sxadp files" in Settings  
-✅ Double-clicking `.sxadp` file launches XerahS  
+✅ User can check "Associate .xsdp files" in Settings  
+✅ Double-clicking `.xsdp` file launches XerahS  
 ✅ PluginInstallerDialog opens with package pre-loaded  
 ✅ Plugin installs successfully  
 ✅ Registry keys are created/removed correctly  

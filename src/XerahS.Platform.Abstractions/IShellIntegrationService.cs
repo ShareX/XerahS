@@ -31,7 +31,7 @@ namespace XerahS.Platform.Abstractions;
 public interface IShellIntegrationService
 {
     /// <summary>
-    /// Check if the plugin file extension (.sxadp) is registered with the system.
+    /// Check if the plugin file extension (.xsdp) is registered with the system.
     /// </summary>
     bool IsPluginExtensionRegistered();
 

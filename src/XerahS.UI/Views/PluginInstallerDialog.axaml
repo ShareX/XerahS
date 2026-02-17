@@ -19,12 +19,12 @@
             
             <!-- File Selection -->
             <StackPanel Spacing="8">
-                <TextBlock Text="Plugin Package (.sxadp)" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+                <TextBlock Text="Plugin Package (.xsdp)" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
                 <Grid ColumnDefinitions="*, Auto" ColumnSpacing="8">
                     <TextBox Grid.Column="0" 
                              Text="{Binding PackageFilePath}" 
                              IsReadOnly="True"
-                             Watermark="Select a .sxadp file..."
+                             Watermark="Select a .xsdp file..."
                              AutomationProperties.Name="Plugin Package Path"/>
                     <Button Grid.Column="1" 
                             Content="Browse" 
