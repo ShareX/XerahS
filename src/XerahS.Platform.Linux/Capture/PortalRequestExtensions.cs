@@ -41,13 +41,27 @@ internal static class PortalRequestExtensions
         CancellationToken cancellationToken = default)
     {
         var tcs = new TaskCompletionSource<(uint, IDictionary<string, object>)>(TaskCreationOptions.RunContinuationsAsynchronously);
-        await using var registration = cancellationToken.Register(() =>
+        using var registration = cancellationToken.Register(() =>
             tcs.TrySetCanceled(cancellationToken));
-        using var watch = await request.WatchResponseAsync(data =>
-        {
-            DebugHelper.WriteLine($"[XDG Portal] SIGNAL RECEIVED: Response={data.response}, Count={data.results?.Count ?? 0}");
-            tcs.TrySetResult((data.response, data.results ?? new Dictionary<string, object>()));
-        }).ConfigureAwait(false);
+        using var watch = await request.WatchResponseAsync(
+            data =>
+            {
+                DebugHelper.WriteLine($"[XDG Portal] SIGNAL RECEIVED: Response={data.response}, Count={data.results?.Count ?? 0}");
+                tcs.TrySetResult((data.response, data.results ?? new Dictionary<string, object>()));
+            },
+            ex =>
+            {
+                if (ex is DBusException dbusEx)
+                {
+                    DebugHelper.WriteLine($"[XDG Portal] RESPONSE WATCH ERROR: {dbusEx.ErrorName} ({dbusEx.ErrorMessage})");
+                }
+                else
+                {
+                    DebugHelper.WriteLine($"[XDG Portal] RESPONSE WATCH ERROR: {ex.GetType().Name}: {ex.Message}");
+                }
+
+                tcs.TrySetException(ex);
+            }).ConfigureAwait(false);
         return await tcs.Task.ConfigureAwait(false);
     }
 

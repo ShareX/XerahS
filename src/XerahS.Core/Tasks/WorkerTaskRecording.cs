@@ -108,11 +108,28 @@ namespace XerahS.Core.Tasks
                 DebugHelper.WriteLine("Stopping recording...");
                 string? outputPath = await ScreenRecordingManager.Instance.StopRecordingAsync();
                 DebugHelper.WriteLine($"[GIF] StopRecordingAsync returned: {(string.IsNullOrEmpty(outputPath) ? "(null)" : outputPath)} (exists={(!string.IsNullOrEmpty(outputPath) && File.Exists(outputPath))})");
+                string? expectedOutputPath = recordingOptions.OutputPath;
+                bool expectedOutputExists = !string.IsNullOrEmpty(expectedOutputPath) && File.Exists(expectedOutputPath);
+                DebugHelper.WriteLine($"[RecordingFinalize] Expected output path: {(string.IsNullOrEmpty(expectedOutputPath) ? "(null)" : expectedOutputPath)} (exists={expectedOutputExists})");
 
                 if (string.IsNullOrEmpty(outputPath) && !string.IsNullOrEmpty(Info.FilePath) && File.Exists(Info.FilePath))
                 {
                     DebugHelper.WriteLine($"[GIF] StopRecordingAsync returned null but Info.FilePath exists. Recovering path: {Info.FilePath}");
                     outputPath = Info.FilePath;
+                }
+
+                bool hasRecoveredOutput = !string.IsNullOrEmpty(outputPath) && File.Exists(outputPath);
+                if (!hasRecoveredOutput)
+                {
+                    string recoveredPath = string.IsNullOrEmpty(outputPath) ? "(null)" : outputPath;
+                    bool recoveredExists = !string.IsNullOrEmpty(outputPath) && File.Exists(outputPath);
+                    string infoPath = string.IsNullOrEmpty(Info.FilePath) ? "(null)" : Info.FilePath;
+                    bool infoPathExists = !string.IsNullOrEmpty(Info.FilePath) && File.Exists(Info.FilePath);
+                    DebugHelper.WriteLine(
+                        $"[RecordingFinalize] Output file missing after stop. expectedPath={expectedOutputPath ?? "(null)"} " +
+                        $"expectedExists={expectedOutputExists} recoveredPath={recoveredPath} recoveredExists={recoveredExists} " +
+                        $"infoPath={infoPath} infoPathExists={infoPathExists}");
+                    throw new InvalidOperationException("Recording stopped but no output file was produced. Check recording backend logs for details.");
                 }
 
                 if (!string.IsNullOrEmpty(outputPath))

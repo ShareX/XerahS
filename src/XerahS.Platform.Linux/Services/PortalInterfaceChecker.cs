@@ -26,12 +26,19 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
+using Tmds.DBus;
+using XerahS.Common;
 
 namespace XerahS.Platform.Linux.Services;
 
 internal static class PortalInterfaceChecker
 {
+    private const string PortalBusName = "org.freedesktop.portal.Desktop";
+    private static readonly ObjectPath PortalObjectPath = new("/org/freedesktop/portal/desktop");
     private static readonly ConcurrentDictionary<string, bool> Cache = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, PortalProbeResult> ProbeResults = new(StringComparer.Ordinal);
 
     public static bool HasInterface(string interfaceName)
     {
@@ -43,13 +50,82 @@ internal static class PortalInterfaceChecker
         return Cache.GetOrAdd(interfaceName, _ => CheckInterface(interfaceName));
     }
 
+    public static string GetDiagnosticSummary(string interfaceName)
+    {
+        if (ProbeResults.TryGetValue(interfaceName, out var probe))
+        {
+            return $"found={probe.Found}, source={probe.Source}, detail={probe.Detail}";
+        }
+
+        return "not-probed";
+    }
+
     private static bool CheckInterface(string interfaceName)
     {
+        DebugHelper.WriteLine($"PortalInterfaceChecker: Checking for interface '{interfaceName}'...");
+
+        if (TryCheckInterfaceWithDbusIntrospection(interfaceName, out bool foundWithDbus, out string dbusDetail))
+        {
+            RecordProbe(interfaceName, foundWithDbus, "dbus-introspect", dbusDetail);
+            DebugHelper.WriteLine($"PortalInterfaceChecker: Interface '{interfaceName}' found={foundWithDbus} (source=dbus-introspect)");
+            return foundWithDbus;
+        }
+
+        DebugHelper.WriteLine($"PortalInterfaceChecker: D-Bus introspection failed for '{interfaceName}'. Falling back to busctl. Details: {dbusDetail}");
+        bool foundWithBusctl = CheckInterfaceWithBusctl(interfaceName, out string busctlDetail);
+        RecordProbe(interfaceName, foundWithBusctl, "busctl-fallback", $"dbus={dbusDetail}; busctl={busctlDetail}");
+        DebugHelper.WriteLine($"PortalInterfaceChecker: Interface '{interfaceName}' found={foundWithBusctl} (source=busctl-fallback)");
+        return foundWithBusctl;
+    }
+
+    private static bool TryCheckInterfaceWithDbusIntrospection(string interfaceName, out bool found, out string detail)
+    {
+        found = false;
+        detail = string.Empty;
+
         try
         {
-            XerahS.Common.DebugHelper.WriteLine($"PortalInterfaceChecker: Checking for interface '{interfaceName}'...");
+            using var connection = new Connection(Address.Session);
+            connection.ConnectAsync().GetAwaiter().GetResult();
+            var introspectable = connection.CreateProxy<IIntrospectable>(PortalBusName, PortalObjectPath);
+            string xml = introspectable.IntrospectAsync().GetAwaiter().GetResult();
 
-            // Use busctl to check for the interface - more reliable than Tmds.DBus proxy generation
+            if (string.IsNullOrWhiteSpace(xml))
+            {
+                detail = "introspection returned empty XML";
+                return false;
+            }
+
+            found = xml.Contains($"interface name=\"{interfaceName}\"", StringComparison.Ordinal);
+            if (!found)
+            {
+                found = xml.Contains(interfaceName, StringComparison.Ordinal);
+            }
+
+            detail = found ? "interface found in Introspect XML" : "interface not found in Introspect XML";
+            return true;
+        }
+        catch (Exception ex)
+        {
+            detail = $"{ex.GetType().Name}: {ex.Message}";
+            return false;
+        }
+    }
+
+    private static bool CheckInterfaceWithBusctl(string interfaceName, out string detail)
+    {
+        detail = string.Empty;
+        string command = "busctl --user introspect org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop";
+        string cwd = Environment.CurrentDirectory;
+        string pathEnv = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+        string resolvedBusctl = ResolveCommandPath("busctl") ?? "<not found>";
+
+        DebugHelper.WriteLine(
+            $"PortalInterfaceChecker: busctl fallback startup: command=\"{command}\", cwd=\"{cwd}\", " +
+            $"pathSet={!string.IsNullOrWhiteSpace(pathEnv)}, resolved=\"{resolvedBusctl}\"");
+
+        try
+        {
             var startInfo = new ProcessStartInfo
             {
                 FileName = "busctl",
@@ -63,29 +139,83 @@ internal static class PortalInterfaceChecker
             using var process = Process.Start(startInfo);
             if (process == null)
             {
-                XerahS.Common.DebugHelper.WriteLine("PortalInterfaceChecker: Failed to start busctl process");
+                detail = "failed to start busctl process";
+                DebugHelper.WriteLine($"PortalInterfaceChecker: {detail}");
                 return false;
             }
 
             string output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit(5000);
-
-            if (process.ExitCode != 0)
+            string stderr = process.StandardError.ReadToEnd();
+            bool exited = process.WaitForExit(5000);
+            if (!exited)
             {
-                XerahS.Common.DebugHelper.WriteLine($"PortalInterfaceChecker: busctl exited with code {process.ExitCode}");
+                try { process.Kill(); } catch { }
+                detail = "busctl timed out after 5000ms";
+                DebugHelper.WriteLine($"PortalInterfaceChecker: {detail}");
                 return false;
             }
 
-            // busctl output format: "org.freedesktop.portal.ScreenCast          interface -"
-            bool found = output.Contains(interfaceName, StringComparison.Ordinal);
-            XerahS.Common.DebugHelper.WriteLine($"PortalInterfaceChecker: Interface '{interfaceName}' found={found}");
+            DebugHelper.WriteLine($"PortalInterfaceChecker: busctl fallback exitCode={process.ExitCode}");
+            if (!string.IsNullOrWhiteSpace(stderr))
+            {
+                DebugHelper.WriteLine($"PortalInterfaceChecker: busctl fallback stderr: {stderr.Trim()}");
+            }
 
+            if (process.ExitCode != 0)
+            {
+                detail = $"busctl exited with code {process.ExitCode}";
+                return false;
+            }
+
+            bool found = output.Contains(interfaceName, StringComparison.Ordinal);
+            detail = found ? "interface found in busctl output" : "interface not found in busctl output";
             return found;
         }
         catch (Exception ex)
         {
-            XerahS.Common.DebugHelper.WriteLine($"PortalInterfaceChecker: Exception checking '{interfaceName}': {ex.Message}");
+            detail = $"{ex.GetType().Name}: {ex.Message}";
+            DebugHelper.WriteLine($"PortalInterfaceChecker: busctl fallback exception ({ex.GetType().Name}): {ex.Message}");
             return false;
         }
     }
+
+    private static string? ResolveCommandPath(string command)
+    {
+        string? path = Environment.GetEnvironmentVariable("PATH");
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        foreach (string segment in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+        {
+            try
+            {
+                string candidate = Path.Combine(segment, command);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+            catch
+            {
+                // Best effort diagnostics.
+            }
+        }
+
+        return null;
+    }
+
+    private static void RecordProbe(string interfaceName, bool found, string source, string detail)
+    {
+        ProbeResults[interfaceName] = new PortalProbeResult(found, source, detail);
+    }
+
+    private readonly record struct PortalProbeResult(bool Found, string Source, string Detail);
+}
+
+[DBusInterface("org.freedesktop.DBus.Introspectable")]
+internal interface IIntrospectable : IDBusObject
+{
+    Task<string> IntrospectAsync();
 }

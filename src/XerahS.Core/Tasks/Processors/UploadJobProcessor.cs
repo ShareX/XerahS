@@ -175,7 +175,12 @@ namespace XerahS.Core.Tasks.Processors
 
             // Not Auto - use the configured instance directly
             targetInstance ??= instanceManager.GetDefaultInstance(category);
-            
+
+            if (targetInstance == null && category == UploaderCategory.File)
+            {
+                targetInstance = EnsureAutoFileDestinationInstance(instanceManager);
+            }
+
             if (targetInstance != null && InstanceManager.IsAutoProvider(targetInstance.ProviderId))
             {
                 return TryUploadWithFallback(instanceManager, category, info, null);
@@ -189,6 +194,54 @@ namespace XerahS.Core.Tasks.Processors
             }
 
             return TryUploadWithInstance(targetInstance, info);
+        }
+
+        private static UploaderInstance? EnsureAutoFileDestinationInstance(InstanceManager instanceManager)
+        {
+            try
+            {
+                var existingDefault = instanceManager.GetDefaultInstance(UploaderCategory.File);
+                if (existingDefault != null && InstanceManager.IsAutoProvider(existingDefault.ProviderId))
+                {
+                    DebugHelper.WriteLine($"[UploadAutoBootstrap] Reusing existing default auto file instance: {existingDefault.InstanceId}");
+                    return existingDefault;
+                }
+
+                var existingAuto = instanceManager.GetInstancesByCategory(UploaderCategory.File)
+                    .FirstOrDefault(i => InstanceManager.IsAutoProvider(i.ProviderId));
+                if (existingAuto != null)
+                {
+                    instanceManager.SetDefaultInstance(UploaderCategory.File, existingAuto.InstanceId);
+                    DebugHelper.WriteLine($"[UploadAutoBootstrap] Selected existing auto file instance as default: {existingAuto.InstanceId}");
+                    return existingAuto;
+                }
+
+                var autoProvider = ProviderCatalog.GetProvider(ProviderIds.Auto);
+                if (autoProvider == null)
+                {
+                    DebugHelper.WriteLine("[UploadAutoBootstrap] Auto provider is not available; cannot bootstrap File destination.");
+                    return null;
+                }
+
+                var autoInstance = new UploaderInstance
+                {
+                    ProviderId = ProviderIds.Auto,
+                    Category = UploaderCategory.File,
+                    DisplayName = "Auto (File)",
+                    SettingsJson = autoProvider.GetDefaultSettings(UploaderCategory.File),
+                    IsAvailable = true
+                };
+
+                instanceManager.AddInstance(autoInstance);
+                instanceManager.SetDefaultInstance(UploaderCategory.File, autoInstance.InstanceId);
+                DebugHelper.WriteLine($"[UploadAutoBootstrap] Created and selected auto file instance: {autoInstance.InstanceId} (category={UploaderCategory.File})");
+                return autoInstance;
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "[UploadAutoBootstrap] Failed to bootstrap auto file destination");
+                return null;
+            }
         }
 
         /// <summary>

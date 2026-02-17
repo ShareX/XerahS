@@ -1074,8 +1074,12 @@ public sealed class WaylandPortalRecordingService : IRecordingService
     {
         if (HasGStreamerElement("vp9enc"))
         {
-            // VP9 with webm container - deadline=realtime for low latency
-            return ($"vp9enc target-bitrate={bitrateKbps * 1000} deadline=realtime cpu-used=8", "webmmux", ".webm");
+            // Keep VP9 options conservative for compatibility across plugin versions.
+            // Some distributions reject deadline=realtime and fail pipeline creation.
+            string encoderArgs = $"vp9enc target-bitrate={bitrateKbps * 1000} cpu-used=8";
+            DebugHelper.WriteLine("[WaylandPortalRecording] VP9 compatibility profile selected (deadline omitted)");
+            DebugHelper.WriteLine($"[WaylandPortalRecording] VP9 encoder args: {encoderArgs}");
+            return (encoderArgs, "webmmux", ".webm");
         }
 
         // Last resort: Theora (almost always available but lower quality)

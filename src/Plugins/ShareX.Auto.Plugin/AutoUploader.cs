@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using System.IO;
+using XerahS.Common;
 using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
 
@@ -30,6 +32,13 @@ namespace ShareX.Auto.Plugin;
 
 public sealed class AutoUploader : GenericUploader
 {
+    private static readonly UploaderCategory[] FileRoutingPriority =
+    {
+        UploaderCategory.Image,
+        UploaderCategory.Text,
+        UploaderCategory.File
+    };
+
     private readonly UploaderCategory _category;
 
     public AutoUploader(UploaderCategory category)
@@ -40,11 +49,11 @@ public sealed class AutoUploader : GenericUploader
     public override UploadResult Upload(Stream stream, string fileName)
     {
         var instanceManager = InstanceManager.Instance;
-        var targetInstance = instanceManager.ResolveAutoInstance(_category);
+        var (targetInstance, routingError) = ResolveTargetInstance(instanceManager, fileName);
 
         if (targetInstance == null)
         {
-            return CreateErrorResult($"Auto destination could not resolve a default uploader for category {_category}.");
+            return CreateErrorResult(routingError ?? $"Auto destination could not resolve a default uploader for category {_category}.");
         }
 
         var provider = ProviderCatalog.GetProvider(targetInstance.ProviderId);
@@ -79,6 +88,67 @@ public sealed class AutoUploader : GenericUploader
         {
             uploader.ProgressChanged -= progressHandler;
         }
+    }
+
+    private (UploaderInstance? targetInstance, string? errorMessage) ResolveTargetInstance(InstanceManager instanceManager, string fileName)
+    {
+        if (_category != UploaderCategory.File)
+        {
+            return (instanceManager.ResolveAutoInstance(_category), null);
+        }
+
+        string extension = Path.GetExtension(fileName);
+        string normalizedExtension = extension.TrimStart('.');
+        string extensionForLog = string.IsNullOrWhiteSpace(normalizedExtension) ? "<none>" : normalizedExtension;
+
+        foreach (var category in FileRoutingPriority)
+        {
+            if (!ShouldEvaluateCategoryForExtension(category, normalizedExtension))
+            {
+                continue;
+            }
+
+            UploaderInstance? target = null;
+
+            if (!string.IsNullOrWhiteSpace(normalizedExtension))
+            {
+                target = instanceManager.GetDestinationForFile(category, normalizedExtension);
+                if (target != null && InstanceManager.IsAutoProvider(target.ProviderId))
+                {
+                    target = instanceManager.ResolveAutoInstance(category, target.InstanceId);
+                }
+            }
+
+            if (target == null && (category == UploaderCategory.File || !string.IsNullOrWhiteSpace(normalizedExtension)))
+            {
+                target = instanceManager.ResolveAutoInstance(category);
+            }
+
+            if (target != null && !InstanceManager.IsAutoProvider(target.ProviderId))
+            {
+                return (target, null);
+            }
+        }
+
+        return (null,
+            $"Auto destination could not resolve a downstream uploader for file \"{fileName}\" (extension: {extensionForLog}). " +
+            "Checked categories in order: Image, Text, File. Configure at least one non-auto uploader destination.");
+    }
+
+    private static bool ShouldEvaluateCategoryForExtension(UploaderCategory category, string extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension))
+        {
+            return true;
+        }
+
+        return category switch
+        {
+            UploaderCategory.Image => Array.Exists(FileHelpers.ImageFileExtensions, x => x.Equals(extension, StringComparison.OrdinalIgnoreCase)),
+            UploaderCategory.Text => Array.Exists(FileHelpers.TextFileExtensions, x => x.Equals(extension, StringComparison.OrdinalIgnoreCase)),
+            UploaderCategory.File => true,
+            _ => false
+        };
     }
 
     private static UploadResult CreateErrorResult(string message)

@@ -178,14 +178,31 @@ namespace XerahS.App
             var displayVar = Environment.GetEnvironmentVariable("DISPLAY");
             var waylandDisplay = Environment.GetEnvironmentVariable("WAYLAND_DISPLAY");
             var xdgSessionType = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE");
+            var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
             var flatpakId = Environment.GetEnvironmentVariable("FLATPAK_ID");
-            bool isFlatpak = !string.IsNullOrEmpty(flatpakId) || System.IO.File.Exists("/.flatpak-info");
+            var containerEnv = Environment.GetEnvironmentVariable("container");
+            bool flatpakInfoExists = System.IO.File.Exists("/.flatpak-info");
+            bool isFlatpak = !string.IsNullOrEmpty(flatpakId) || flatpakInfoExists;
+            bool isSnap = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SNAP"));
+            bool dockerMarker = System.IO.File.Exists("/.dockerenv");
+            bool containerEnvMarker = System.IO.File.Exists("/run/.containerenv");
+            string? waylandSocketPath = GetWaylandSocketPath(xdgRuntimeDir, waylandDisplay);
+            bool waylandSocketExists = !string.IsNullOrEmpty(waylandSocketPath) && System.IO.File.Exists(waylandSocketPath);
+            string? x11SocketPath = GetX11SocketPath(displayVar);
+            bool x11SocketExists = !string.IsNullOrEmpty(x11SocketPath) && System.IO.File.Exists(x11SocketPath);
 
             XerahS.Common.DebugHelper.WriteLine($"Display environment check:");
+            XerahS.Common.DebugHelper.WriteLine($"  CurrentDirectory={Environment.CurrentDirectory}");
+            XerahS.Common.DebugHelper.WriteLine($"  AppContext.BaseDirectory={AppContext.BaseDirectory}");
             XerahS.Common.DebugHelper.WriteLine($"  DISPLAY={displayVar ?? "<not set>"}");
             XerahS.Common.DebugHelper.WriteLine($"  WAYLAND_DISPLAY={waylandDisplay ?? "<not set>"}");
             XerahS.Common.DebugHelper.WriteLine($"  XDG_SESSION_TYPE={xdgSessionType ?? "<not set>"}");
-            XerahS.Common.DebugHelper.WriteLine($"  Flatpak sandbox: {isFlatpak}");
+            XerahS.Common.DebugHelper.WriteLine($"  XDG_RUNTIME_DIR={xdgRuntimeDir ?? "<not set>"}");
+            XerahS.Common.DebugHelper.WriteLine($"  Flatpak sandbox: {isFlatpak} (FLATPAK_ID={flatpakId ?? "<not set>"}, /.flatpak-info={flatpakInfoExists})");
+            XerahS.Common.DebugHelper.WriteLine($"  Snap sandbox: {isSnap} (SNAP={Environment.GetEnvironmentVariable("SNAP") ?? "<not set>"})");
+            XerahS.Common.DebugHelper.WriteLine($"  Container markers: container={containerEnv ?? "<not set>"}, /.dockerenv={dockerMarker}, /run/.containerenv={containerEnvMarker}");
+            XerahS.Common.DebugHelper.WriteLine($"  Wayland socket path: {waylandSocketPath ?? "<unresolved>"} (exists={waylandSocketExists})");
+            XerahS.Common.DebugHelper.WriteLine($"  X11 socket path: {x11SocketPath ?? "<unresolved>"} (exists={x11SocketExists})");
 
             if (isFlatpak)
             {
@@ -197,21 +214,62 @@ namespace XerahS.App
             if (string.IsNullOrEmpty(displayVar) && string.IsNullOrEmpty(waylandDisplay))
             {
                 XerahS.Common.DebugHelper.WriteLine("WARNING: No display environment variables set.");
-                XerahS.Common.DebugHelper.WriteLine("  Attempting to continue, but Avalonia may fail to initialize.");
-                
-                // Try to auto-detect common display values
-                if (xdgSessionType?.ToLower() == "wayland" && string.IsNullOrEmpty(waylandDisplay))
+                XerahS.Common.DebugHelper.WriteLine("  Continuing without synthetic DISPLAY/WAYLAND_DISPLAY defaults.");
+            }
+            else
+            {
+                if (string.Equals(xdgSessionType, "wayland", StringComparison.OrdinalIgnoreCase) &&
+                    !string.IsNullOrEmpty(waylandDisplay) &&
+                    !waylandSocketExists)
                 {
-                    XerahS.Common.DebugHelper.WriteLine("  Detected Wayland session but WAYLAND_DISPLAY not set.");
-                    XerahS.Common.DebugHelper.WriteLine("  Trying default: wayland-0");
-                    Environment.SetEnvironmentVariable("WAYLAND_DISPLAY", "wayland-0");
+                    XerahS.Common.DebugHelper.WriteLine("WARNING: WAYLAND_DISPLAY is set but resolved socket path does not exist.");
                 }
-                else if (string.IsNullOrEmpty(displayVar))
+
+                if (!string.IsNullOrEmpty(displayVar) && !x11SocketExists)
                 {
-                    XerahS.Common.DebugHelper.WriteLine("  DISPLAY not set. Trying default: :0");
-                    Environment.SetEnvironmentVariable("DISPLAY", ":0");
+                    XerahS.Common.DebugHelper.WriteLine("WARNING: DISPLAY is set but resolved X11 socket path does not exist.");
                 }
             }
+        }
+
+        private static string? GetWaylandSocketPath(string? xdgRuntimeDir, string? waylandDisplay)
+        {
+            if (string.IsNullOrWhiteSpace(xdgRuntimeDir))
+            {
+                return null;
+            }
+
+            string socketName = !string.IsNullOrWhiteSpace(waylandDisplay) ? waylandDisplay : "wayland-0";
+            return System.IO.Path.Combine(xdgRuntimeDir, socketName);
+        }
+
+        private static string? GetX11SocketPath(string? displayVar)
+        {
+            if (string.IsNullOrWhiteSpace(displayVar))
+            {
+                return null;
+            }
+
+            string value = displayVar.Trim();
+            int colonIndex = value.LastIndexOf(':');
+            if (colonIndex < 0 || colonIndex == value.Length - 1)
+            {
+                return null;
+            }
+
+            string displayToken = value[(colonIndex + 1)..];
+            int dotIndex = displayToken.IndexOf('.');
+            if (dotIndex >= 0)
+            {
+                displayToken = displayToken[..dotIndex];
+            }
+
+            if (!int.TryParse(displayToken, out int displayNumber))
+            {
+                return null;
+            }
+
+            return $"/tmp/.X11-unix/X{displayNumber}";
         }
 
         private static void RegisterGlobalExceptionHandlers()
@@ -525,4 +583,3 @@ namespace XerahS.App
         }
     }
 }
-
