@@ -9,7 +9,7 @@
 ## Getting Started for Developers
 
 ### Cloning with Submodules
-XerahS depends on [XerahS.Editor](https://github.com/ShareX/XerahS.Editor), which is included as a Git submodule. To clone the repository with all dependencies:
+XerahS depends on [ShareX/ImageEditor](https://github.com/ShareX/ImageEditor), which is included as a Git submodule. To clone the repository with all dependencies:
 
 ```bash
 git clone --recursive https://github.com/ShareX/XerahS.git
@@ -27,6 +27,12 @@ After cloning with submodules:
 cd XerahS
 dotnet restore
 dotnet build
+```
+
+### Updating Submodules
+To pull the latest changes for the ImageEditor submodule:
+```bash
+git submodule update --remote --merge
 ```
 
 ## Target Framework Reference
@@ -294,7 +300,7 @@ Plugins/myplugin/
 2. Enable debug logging in `UploaderInstanceViewModel.InitializeConfigViewModel()`
 3. Look for `ConfigView created: null` or type loading errors
 
-See also: [Plugin Development Guide](guidelines/plugin_development_guide.md) for complete plugin setup instructions.
+See also: [Plugin Development Guide](plugins/guide.md) for complete plugin setup instructions.
 
 ## Contribution
 1.  Review project documentation and existing code patterns
@@ -308,15 +314,12 @@ See also: [Plugin Development Guide](guidelines/plugin_development_guide.md) for
 ### Prerequisites
 Ensure you have the following installed:
 - [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- XerahS.Editor (required dependency, must be in a sibling folder)
+- ImageEditor submodule (initialized as described above)
 
 ### Clone Repositories
 ```bash
-# Clone the main repository
-git clone https://github.com/ShareX/XerahS.git
-
-# Clone the required dependency (must be in a sibling folder named 'XerahS.Editor')
-git clone https://github.com/ShareX/XerahS.Editor.git
+# Clone the main repository with submodules
+git clone --recursive https://github.com/ShareX/XerahS.git
 ```
 
 ### macOS Native Library (ScreenCaptureKit)
