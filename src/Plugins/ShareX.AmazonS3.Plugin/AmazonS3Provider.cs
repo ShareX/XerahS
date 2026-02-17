@@ -177,6 +177,18 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
         // Don't download files larger than 10 MB for thumbnails
         if (item.SizeBytes > 10 * 1024 * 1024) return null;
 
+        // Prefer provider-supplied public URLs so CDN layers (e.g. custom CNAME/Cloudflare)
+        // can serve thumbnail bytes before falling back to signed S3 object fetch.
+        string? thumbUrl = item.ThumbnailUrl ?? item.Url;
+        if (!string.IsNullOrWhiteSpace(thumbUrl))
+        {
+            byte[]? publicBytes = await DownloadPublicItemBytesAsync(thumbUrl, cancellation);
+            if (publicBytes is { Length: > 0 })
+            {
+                return publicBytes;
+            }
+        }
+
         return await DownloadItemBytesAsync(item, cancellation);
     }
 
@@ -248,6 +260,20 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
         {
             using var request = BuildSignedRequest("GET", host, canonicalUri, "", region, ak, sk, st);
             using var response = await _explorerHttpClient.SendAsync(request, cancellation);
+            if (!response.IsSuccessStatusCode) return null;
+            return await response.Content.ReadAsByteArrayAsync(cancellation);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static async Task<byte[]?> DownloadPublicItemBytesAsync(string url, CancellationToken cancellation)
+    {
+        try
+        {
+            using var response = await _explorerHttpClient.GetAsync(url, cancellation);
             if (!response.IsSuccessStatusCode) return null;
             return await response.Content.ReadAsByteArrayAsync(cancellation);
         }
