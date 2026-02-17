@@ -442,3 +442,13 @@ Platform-specific implementations are in:
 - `XerahS.Mobile.Android`: Android file picker, permissions
 - `XerahS.Mobile.iOS`: iOS file picker, Share Extension bridge
 - `XerahS.Platform.Mobile`: Shared mobile platform abstractions
+
+### Mobile Native Theming
+
+Avalonia mobile UI now supports runtime adaptive theming for iOS and Android.
+
+Reference docs:
+
+- Architecture: `docs/architecture/MOBILE_THEMING.md`
+- Styling guide: `docs/development/MOBILE_STYLING_GUIDE.md`
+- Validation report: `docs/reports/MOBILE_NATIVE_THEMING_VALIDATION_2026-02-17.md`

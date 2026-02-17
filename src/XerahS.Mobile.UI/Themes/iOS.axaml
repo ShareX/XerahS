@@ -2,21 +2,44 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Styles.Resources>
-        <Color x:Key="iOSBlue">#007AFF</Color>
-        <Color x:Key="iOSSystemGrayLight">#E5E5EA</Color>
-        <Color x:Key="iOSSystemGrayDark">#1C1C1E</Color>
-        <Color x:Key="iOSBackgroundLight">#F2F2F7</Color>
+        <ResourceDictionary>
+            <FontFamily x:Key="iOSFont">San Francisco, -apple-system, BlinkMacSystemFont, Segoe UI</FontFamily>
 
-        <SolidColorBrush x:Key="iOSBlueBrush" Color="{StaticResource iOSBlue}"/>
-        <SolidColorBrush x:Key="iOSGrayBrush" Color="{StaticResource iOSSystemGrayLight}"/>
-        <SolidColorBrush x:Key="iOSBackgroundBrush" Color="{StaticResource iOSBackgroundLight}"/>
-        <SolidColorBrush x:Key="iOSCardBrush" Color="White"/>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <Color x:Key="iOSPrimaryColor">#007AFF</Color>
+                    <Color x:Key="iOSBackgroundColor">#F2F2F7</Color>
+                    <Color x:Key="iOSNavbarColor">#F8F8F8</Color>
+                    <Color x:Key="iOSCardColor">#FFFFFF</Color>
+                    <Color x:Key="iOSInputColor">#E5E5EA</Color>
+                    <Color x:Key="iOSTextColor">#1C1C1E</Color>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <Color x:Key="iOSPrimaryColor">#0A84FF</Color>
+                    <Color x:Key="iOSBackgroundColor">#000000</Color>
+                    <Color x:Key="iOSNavbarColor">#1C1C1E</Color>
+                    <Color x:Key="iOSCardColor">#1C1C1E</Color>
+                    <Color x:Key="iOSInputColor">#2C2C2E</Color>
+                    <Color x:Key="iOSTextColor">#E5E5EA</Color>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
 
-        <FontFamily x:Key="iOSFont">San Francisco, -apple-system, BlinkMacSystemFont, Segoe UI</FontFamily>
+            <SolidColorBrush x:Key="iOSPrimaryBrush" Color="{DynamicResource iOSPrimaryColor}"/>
+            <SolidColorBrush x:Key="iOSBackgroundBrush" Color="{DynamicResource iOSBackgroundColor}"/>
+            <SolidColorBrush x:Key="iOSNavbarBrush" Color="{DynamicResource iOSNavbarColor}"/>
+            <SolidColorBrush x:Key="iOSCardBrush" Color="{DynamicResource iOSCardColor}"/>
+            <SolidColorBrush x:Key="iOSInputBrush" Color="{DynamicResource iOSInputColor}"/>
+            <SolidColorBrush x:Key="iOSTextBrush" Color="{DynamicResource iOSTextColor}"/>
+        </ResourceDictionary>
     </Styles.Resources>
+
+    <Style Selector="UserControl[Tag=ios]">
+        <Setter Property="Background" Value="{StaticResource iOSBackgroundBrush}"/>
+    </Style>
 
     <Style Selector="UserControl[Tag=ios] TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource iOSFont}"/>
+        <Setter Property="Foreground" Value="{StaticResource iOSTextBrush}"/>
     </Style>
 
     <Style Selector="UserControl[Tag=ios] Button">
@@ -25,10 +48,11 @@
 
     <Style Selector="UserControl[Tag=ios] TextBox">
         <Setter Property="FontFamily" Value="{StaticResource iOSFont}"/>
+        <Setter Property="Foreground" Value="{StaticResource iOSTextBrush}"/>
     </Style>
 
     <Style Selector="Button.cupertino-primary">
-        <Setter Property="Background" Value="{StaticResource iOSBlueBrush}"/>
+        <Setter Property="Background" Value="{StaticResource iOSPrimaryBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="CornerRadius" Value="10"/>
         <Setter Property="Padding" Value="16,12"/>
@@ -44,7 +68,7 @@
 
     <Style Selector="Button.cupertino-secondary">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource iOSBlueBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource iOSPrimaryBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="FontFamily" Value="{StaticResource iOSFont}"/>
         <Setter Property="Padding" Value="12,8"/>
@@ -56,7 +80,7 @@
     </Style>
 
     <Style Selector="TextBox.cupertino-input">
-        <Setter Property="Background" Value="{StaticResource iOSGrayBrush}"/>
+        <Setter Property="Background" Value="{StaticResource iOSInputBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="10"/>
         <Setter Property="Padding" Value="12,10"/>
@@ -65,7 +89,7 @@
     </Style>
 
     <Style Selector="Grid.cupertino-navbar">
-        <Setter Property="Background" Value="#F8F8F8"/>
+        <Setter Property="Background" Value="{StaticResource iOSNavbarBrush}"/>
         <Setter Property="Height" Value="56"/>
     </Style>
 
@@ -85,7 +109,7 @@
     </Style>
 
     <Style Selector="UserControl[Tag=ios] Button.adaptive-primary">
-        <Setter Property="Background" Value="{StaticResource iOSBlueBrush}"/>
+        <Setter Property="Background" Value="{StaticResource iOSPrimaryBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="CornerRadius" Value="10"/>
         <Setter Property="Padding" Value="16,12"/>
@@ -101,7 +125,7 @@
 
     <Style Selector="UserControl[Tag=ios] Button.adaptive-secondary">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource iOSBlueBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource iOSPrimaryBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="MinHeight" Value="44"/>
@@ -112,7 +136,7 @@
     </Style>
 
     <Style Selector="UserControl[Tag=ios] TextBox.adaptive-input">
-        <Setter Property="Background" Value="{StaticResource iOSGrayBrush}"/>
+        <Setter Property="Background" Value="{StaticResource iOSInputBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="10"/>
         <Setter Property="Padding" Value="12,10"/>
@@ -125,7 +149,7 @@
     </Style>
 
     <Style Selector="UserControl[Tag=ios] Grid.adaptive-navbar">
-        <Setter Property="Background" Value="#F8F8F8"/>
+        <Setter Property="Background" Value="{StaticResource iOSNavbarBrush}"/>
         <Setter Property="Height" Value="56"/>
     </Style>
 
@@ -148,5 +172,3 @@
     </Style>
 
 </Styles>
-
-
