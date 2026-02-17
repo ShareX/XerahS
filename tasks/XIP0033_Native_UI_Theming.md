@@ -527,11 +527,11 @@ After:
 
 Apply adaptive styles to all existing mobile views:
 
-- [ ] `MobileUploadView.axaml` - Primary upload interface
-- [ ] `MobileHistoryView.axaml` - Upload history list
-- [ ] `MobileSettingsView.axaml` - Settings page
-- [ ] `MobileAmazonS3ConfigView.axaml` - S3 uploader config
-- [ ] `MobileCustomUploaderConfigView.axaml` - Custom uploader config
+- [x] `MobileUploadView.axaml` - Primary upload interface
+- [x] `MobileHistoryView.axaml` - Upload history list
+- [x] `MobileSettingsView.axaml` - Settings page
+- [x] `MobileAmazonS3ConfigView.axaml` - S3 uploader config
+- [x] `MobileCustomUploaderConfigView.axaml` - Custom uploader config
 
 **For Each View**:
 1. Replace hardcoded button styles with `adaptive-primary` / `adaptive-secondary`
@@ -690,40 +690,40 @@ No changes to head projects (`XerahS.Mobile.iOS`, `XerahS.Mobile.Android`) requi
 ## Implementation Roadmap
 
 ### Sprint 1: Foundation (3-5 days)
-- [ ] Create `Themes/` folder structure
-- [ ] Implement runtime theme loading in `MobileApp.axaml.cs`
-- [ ] Create `iOS.axaml` with Cupertino base styles
-- [ ] Create `Android.axaml` with Material base styles (basic)
+- [x] Create `Themes/` folder structure
+- [x] Implement runtime theme loading in `MobileApp.axaml.cs`
+- [x] Create `iOS.axaml` with Cupertino base styles
+- [x] Create `Android.axaml` with Material base styles (basic)
 - [ ] Test theme loading on both platforms
 
 ### Sprint 2: iOS Refinement (3-4 days)
-- [ ] Complete all Cupertino control styles (buttons, inputs, cards)
-- [ ] Implement navigation bar styles
+- [x] Complete all Cupertino control styles (buttons, inputs, cards)
+- [x] Implement navigation bar styles
 - [ ] Test on iOS Simulator
-- [ ] Fix layout/spacing issues
+- [x] Fix layout/spacing issues
 - [ ] Validate with iOS HIG (Human Interface Guidelines)
 
 ### Sprint 3: Android Refinement (3-4 days)
-- [ ] Add `Material.Avalonia` NuGet package
-- [ ] Complete Material Design 3 control styles
+- [x] Add `Material.Avalonia` NuGet package
+- [x] Complete Material Design 3 control styles
 - [ ] Implement ripple effects
 - [ ] Test on Android Emulator
 - [ ] Validate with Material Design 3 guidelines
 
 ### Sprint 4: View Refactoring (5-6 days)
-- [ ] Create `AdaptiveControls.axaml`
-- [ ] Refactor `MobileUploadView.axaml` (proof of concept)
-- [ ] Refactor `MobileHistoryView.axaml`
-- [ ] Refactor `MobileSettingsView.axaml`
-- [ ] Refactor config views (S3, Custom Uploader)
+- [x] Create `AdaptiveControls.axaml`
+- [x] Refactor `MobileUploadView.axaml` (proof of concept)
+- [x] Refactor `MobileHistoryView.axaml`
+- [x] Refactor `MobileSettingsView.axaml`
+- [x] Refactor config views (S3, Custom Uploader)
 - [ ] Cross-platform smoke testing
 
 ### Sprint 5: Testing & Polish (3-4 days)
 - [ ] Comprehensive platform-specific testing
 - [ ] Accessibility testing (VoiceOver, TalkBack)
-- [ ] Dark mode validation (if implemented)
+- [x] Dark mode validation (if implemented)
 - [ ] Performance profiling (ensure no regressions)
-- [ ] Documentation updates
+- [x] Documentation updates
 
 ### Sprint 6: Advanced Features (Optional, 4-6 days)
 - [ ] Implement frosted glass on iOS (if Avalonia Mobile supports)
