@@ -390,7 +390,7 @@ XerahS/
 │       └── ViewModels/
 │           └── PluginInstallerViewModel.cs (NEW)
 └── docs/
-    └── plugin_development_guide.md        (NEW)
+    └── plugins-destinations/README.md        (NEW)
 ```
 
 ---

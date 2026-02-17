@@ -3,10 +3,10 @@
 This is the consolidated reference for creating new destination plugins in XerahS.
 
 It merges the practical parts of:
-- `developers/plugins/guide.md`
-- `developers/plugins/exporter.md`
-- `developers/plugins/implementation_plan.md`
-- `developers/plugins/packaging_system.md`
+- `developers/plugins-destinations/README.md`
+- `developers/plugins-destinations/exporter.md`
+- `developers/plugins-destinations/implementation_plan.md`
+- `developers/plugins-destinations/packaging_system.md`
 
 and aligns them with the current code contracts under `src/XerahS.Uploaders/PluginSystem`.
 
