@@ -26,7 +26,9 @@
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Content.Res;
 using Android.OS;
+using Android.Views;
 using Avalonia;
 using Avalonia.Android;
 using ShareX.AmazonS3.Plugin;
@@ -59,6 +61,9 @@ namespace XerahS.Mobile.Android;
     DataMimeType = "text/*")]
 public class MainActivity : AvaloniaMainActivity<MobileApp>
 {
+    private static readonly global::Android.Graphics.Color LightSystemBarColor = global::Android.Graphics.Color.ParseColor("#FFF5F5F5");
+    private static readonly global::Android.Graphics.Color DarkSystemBarColor = global::Android.Graphics.Color.ParseColor("#FF121212");
+
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
         // Initialize platform services for mobile
@@ -85,6 +90,7 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
     protected override void OnCreate(Bundle? savedInstanceState)
     {
         base.OnCreate(savedInstanceState);
+        ApplyNativeSystemBars();
         HandleShareIntent(Intent);
     }
 
@@ -95,6 +101,79 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
         {
             HandleShareIntent(intent);
         }
+    }
+
+    public override void OnConfigurationChanged(Configuration newConfig)
+    {
+        base.OnConfigurationChanged(newConfig);
+        ApplyNativeSystemBars();
+    }
+
+    private void ApplyNativeSystemBars()
+    {
+        var window = Window;
+        if (window == null)
+        {
+            return;
+        }
+
+        var isDarkTheme = (Resources?.Configuration?.UiMode & UiMode.NightMask) == UiMode.NightYes;
+        var targetColor = isDarkTheme ? DarkSystemBarColor : LightSystemBarColor;
+
+        if (!OperatingSystem.IsAndroidVersionAtLeast(35))
+        {
+            window.SetStatusBarColor(targetColor);
+            window.SetNavigationBarColor(targetColor);
+        }
+
+        if (OperatingSystem.IsAndroidVersionAtLeast(30))
+        {
+            var controller = window.InsetsController;
+            if (controller == null)
+            {
+                return;
+            }
+
+            var lightBars = !isDarkTheme;
+            const int mask = (int)WindowInsetsControllerAppearance.LightStatusBars | (int)WindowInsetsControllerAppearance.LightNavigationBars;
+            controller.SetSystemBarsAppearance(lightBars ? mask : 0, mask);
+            return;
+        }
+
+        var decorView = window.DecorView;
+        if (decorView == null)
+        {
+            return;
+        }
+
+        var uiVisibility = decorView.SystemUiFlags;
+
+        if (isDarkTheme)
+        {
+            if (OperatingSystem.IsAndroidVersionAtLeast(23))
+            {
+                uiVisibility &= ~SystemUiFlags.LightStatusBar;
+            }
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(26))
+            {
+                uiVisibility &= ~SystemUiFlags.LightNavigationBar;
+            }
+        }
+        else
+        {
+            if (OperatingSystem.IsAndroidVersionAtLeast(23))
+            {
+                uiVisibility |= SystemUiFlags.LightStatusBar;
+            }
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(26))
+            {
+                uiVisibility |= SystemUiFlags.LightNavigationBar;
+            }
+        }
+
+        decorView.SystemUiFlags = uiVisibility;
     }
 
 #pragma warning disable CA1422 // Validate platform compatibility - these APIs work on all supported Android versions

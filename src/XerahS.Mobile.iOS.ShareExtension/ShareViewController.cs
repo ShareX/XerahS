@@ -41,6 +41,23 @@ public class ShareViewController : SLComposeServiceViewController
     {
         base.ViewDidLoad();
         Title = "XerahS";
+        var tintColor = UIColor.FromRGB(0, 122, 255);
+
+        if (View != null)
+        {
+            View.TintColor = tintColor;
+        }
+
+        var navBar = NavigationController?.NavigationBar;
+        if (navBar != null)
+        {
+            navBar.TintColor = tintColor;
+        }
+
+        if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+        {
+            OverrideUserInterfaceStyle = UIUserInterfaceStyle.Unspecified;
+        }
     }
 
     public override bool IsContentValid()

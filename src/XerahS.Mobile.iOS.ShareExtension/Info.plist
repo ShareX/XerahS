@@ -19,6 +19,8 @@
         <string>com.apple.share-services</string>
         <key>NSExtensionPrincipalClass</key>
         <string>ShareViewController</string>
+        <key>NSExtensionOverridesHostUIAppearance</key>
+        <false/>
         <key>NSExtensionAttributes</key>
         <dict>
             <key>NSExtensionActivationRule</key>

@@ -44,6 +44,8 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
 {
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
+        ApplyNativeAppearanceDefaults();
+
         // Initialize platform services for mobile
         MobilePlatform.Initialize(PlatformType.iOS);
 
@@ -64,6 +66,11 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
         return builder
             .UseiOS()
             .LogToTrace();
+    }
+
+    private static void ApplyNativeAppearanceDefaults()
+    {
+        UIView.Appearance.TintColor = UIColor.FromRGB(0, 122, 255);
     }
 
     [Export("application:openURL:options:")]
