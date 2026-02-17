@@ -431,11 +431,55 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
 
         string encodedKey = EscapeS3Key(key);
         if (config.UseCustomCNAME && !string.IsNullOrEmpty(config.CustomDomain))
-            return $"https://{config.CustomDomain.TrimEnd('/')}/{encodedKey}";
+        {
+            string? customDomainHostPath = NormalizeCustomDomainHostPath(config.CustomDomain);
+            if (!string.IsNullOrWhiteSpace(customDomainHostPath))
+            {
+                return URLHelpers.CombineURL("https://" + customDomainHostPath, encodedKey);
+            }
+        }
 
         return pathStyle
             ? $"https://{endpoint}/{config.BucketName}/{encodedKey}"
             : $"https://{config.BucketName}.{endpoint}/{encodedKey}";
+    }
+
+    private static string? NormalizeCustomDomainHostPath(string customDomain)
+    {
+        if (string.IsNullOrWhiteSpace(customDomain))
+        {
+            return null;
+        }
+
+        string value = customDomain.Trim();
+
+        if (value.StartsWith("https//", StringComparison.OrdinalIgnoreCase))
+        {
+            value = "https://" + value["https//".Length..];
+        }
+        else if (value.StartsWith("http//", StringComparison.OrdinalIgnoreCase))
+        {
+            value = "http://" + value["http//".Length..];
+        }
+        else if (value.StartsWith("//", StringComparison.Ordinal))
+        {
+            value = "https:" + value;
+        }
+
+        value = URLHelpers.FixPrefix(value);
+        if (!Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) || string.IsNullOrWhiteSpace(uri.Host))
+        {
+            return null;
+        }
+
+        string hostPath = uri.Host;
+        string absolutePath = uri.AbsolutePath.Trim('/');
+        if (!string.IsNullOrEmpty(absolutePath))
+        {
+            hostPath = URLHelpers.CombineURL(hostPath, absolutePath);
+        }
+
+        return hostPath;
     }
 
     private S3ConfigModel DeserializeConfig(string? settingsJson)
