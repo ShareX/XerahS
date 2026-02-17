@@ -54,10 +54,14 @@ public static class ProviderExplorerConverters
 /// </summary>
 public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
 {
+    private const string ThumbnailSourceMetadataKey = "thumbnailSource";
+    private const string ThumbnailSourcePublicUrl = "public-url";
+
     private readonly UploaderInstance _instance;
     private readonly IUploaderExplorer _explorer;
     private CancellationTokenSource? _loadCts;
     private CancellationTokenSource? _thumbnailCts;
+    private bool _hasShownBandwidthSavingsNotice;
 
     // Navigation history (list of paths + current index)
     private readonly List<string> _navHistory = new();
@@ -80,6 +84,9 @@ public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasError))]
     private string _errorDetails = "";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasBandwidthSavingsNotice))]
+    private string _bandwidthSavingsNotice = "";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanNavigateBack))]
@@ -88,6 +95,7 @@ public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
     public bool CanNavigateBack => _navIndex > 0;
     public bool CanNavigateForward => _navIndex < _navHistory.Count - 1;
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorDetails);
+    public bool HasBandwidthSavingsNotice => !string.IsNullOrWhiteSpace(BandwidthSavingsNotice);
 
     public UploaderInstance BoundInstance => _instance;
 
@@ -315,7 +323,10 @@ public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
             if (ct.IsCancellationRequested) return;
 
             if (!append)
+            {
                 Items.Clear();
+                ClearBandwidthSavingsNotice();
+            }
 
             foreach (var item in page.Items)
                 Items.Add(new MediaItemViewModel(item));
@@ -366,6 +377,13 @@ public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
                     {
                         using var stream = new MemoryStream(thumbBytes);
                         itemVm.Thumbnail = Bitmap.DecodeToWidth(stream, 180);
+
+                        if (!_hasShownBandwidthSavingsNotice &&
+                            itemVm.Item.Metadata.TryGetValue(ThumbnailSourceMetadataKey, out string? source) &&
+                            string.Equals(source, ThumbnailSourcePublicUrl, StringComparison.Ordinal))
+                        {
+                            SetBandwidthSavingsNotice();
+                        }
                     }
                 }
                 catch (OperationCanceledException)
@@ -541,6 +559,21 @@ public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
     private void ClearError()
     {
         ErrorDetails = string.Empty;
+    }
+
+    private void SetBandwidthSavingsNotice()
+    {
+        if (_hasShownBandwidthSavingsNotice) return;
+
+        _hasShownBandwidthSavingsNotice = true;
+        BandwidthSavingsNotice =
+            "Bandwidth saver: thumbnails were loaded through your public/CDN URL (for example Cloudflare) instead of direct signed S3 downloads.";
+    }
+
+    private void ClearBandwidthSavingsNotice()
+    {
+        _hasShownBandwidthSavingsNotice = false;
+        BandwidthSavingsNotice = string.Empty;
     }
 
     public void Dispose()

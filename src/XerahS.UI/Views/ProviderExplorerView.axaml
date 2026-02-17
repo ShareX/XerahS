@@ -29,7 +29,7 @@
         </MenuFlyout>
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto, Auto, Auto, *, Auto, Auto">
+    <Grid RowDefinitions="Auto, Auto, Auto, *, Auto, Auto, Auto">
 
         <!-- ── Toolbar ── -->
         <Border Grid.Row="0" Padding="16,10"
@@ -331,6 +331,18 @@
         </Border>
 
         <Border Grid.Row="5"
+                Padding="12"
+                Background="#CDEBC8"
+                BorderBrush="#72A86A"
+                BorderThickness="0,1,0,0"
+                IsVisible="{Binding HasBandwidthSavingsNotice}">
+            <TextBlock Text="{Binding BandwidthSavingsNotice}"
+                       Foreground="#000000"
+                       FontSize="12"
+                       TextWrapping="Wrap"/>
+        </Border>
+
+        <Border Grid.Row="6"
                 Padding="12"
                 Background="#FFF4CC"
                 BorderBrush="#D7A550"

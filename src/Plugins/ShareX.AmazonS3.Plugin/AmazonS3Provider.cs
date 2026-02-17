@@ -185,11 +185,18 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer
             byte[]? publicBytes = await DownloadPublicItemBytesAsync(thumbUrl, cancellation);
             if (publicBytes is { Length: > 0 })
             {
+                item.Metadata["thumbnailSource"] = "public-url";
                 return publicBytes;
             }
         }
 
-        return await DownloadItemBytesAsync(item, cancellation);
+        byte[]? signedBytes = await DownloadItemBytesAsync(item, cancellation);
+        if (signedBytes is { Length: > 0 })
+        {
+            item.Metadata["thumbnailSource"] = "signed-s3";
+        }
+
+        return signedBytes;
     }
 
     /// <inheritdoc/>
