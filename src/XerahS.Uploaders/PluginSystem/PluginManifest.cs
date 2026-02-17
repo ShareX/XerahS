@@ -96,6 +96,13 @@ public class PluginManifest
     public string? HomepageUrl { get; set; }
 
     /// <summary>
+    /// Whether this plugin supports the Media Explorer API (browsing remote files).
+    /// When true the plugin's provider also implements <c>IUploaderExplorer</c>.
+    /// This allows the catalog UI to badge explorer-capable plugins without loading the assembly first.
+    /// </summary>
+    public bool SupportsExplorer { get; set; } = false;
+
+    /// <summary>
     /// Validate manifest has required fields
     /// </summary>
     public bool IsValid(out string? error)

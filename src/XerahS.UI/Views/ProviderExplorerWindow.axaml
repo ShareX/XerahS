@@ -1,0 +1,15 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        xmlns:views="using:XerahS.UI.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="XerahS.UI.Views.ProviderExplorerWindow"
+        x:DataType="vm:ProviderExplorerViewModel"
+        Title="{Binding WindowTitle}"
+        Width="1200" Height="800"
+        MinWidth="700" MinHeight="450"
+        WindowStartupLocation="CenterScreen">
+    <views:ProviderExplorerView/>
+</Window>

@@ -1,0 +1,334 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="XerahS.UI.Views.ProviderExplorerView"
+             x:DataType="vm:ProviderExplorerViewModel"
+             x:Name="Root">
+
+    <UserControl.Resources>
+        <!-- Context menu for media items -->
+        <MenuFlyout x:Key="ItemMenuFlyout">
+            <MenuItem Header="Open / Preview"
+                      Command="{Binding $parent[UserControl].DataContext.OpenItemCommand}"
+                      CommandParameter="{Binding}"/>
+            <MenuItem Header="Copy URL"
+                      Command="{Binding $parent[UserControl].DataContext.CopyUrlCommand}"
+                      CommandParameter="{Binding}"
+                      IsVisible="{Binding Item.Url, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+            <MenuItem Header="Download"
+                      Command="{Binding $parent[UserControl].DataContext.DownloadItemCommand}"
+                      CommandParameter="{Binding}"
+                      IsVisible="{Binding !Item.IsFolder}"/>
+            <Separator/>
+            <MenuItem Header="Delete"
+                      Command="{Binding $parent[UserControl].DataContext.DeleteItemCommand}"
+                      CommandParameter="{Binding}"/>
+        </MenuFlyout>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto, Auto, Auto, *, Auto">
+
+        <!-- ── Toolbar ── -->
+        <Border Grid.Row="0" Padding="16,10"
+                Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="⟵"
+                        Command="{Binding NavigateBackCommand}"
+                        IsEnabled="{Binding CanNavigateBack}"
+                        ToolTip.Tip="Back"
+                        AutomationProperties.Name="Navigate Back"/>
+                <Button Content="⟶"
+                        Command="{Binding NavigateForwardCommand}"
+                        IsEnabled="{Binding CanNavigateForward}"
+                        ToolTip.Tip="Forward"
+                        AutomationProperties.Name="Navigate Forward"/>
+                <Button Content="⬆ Up"
+                        Command="{Binding NavigateUpCommand}"
+                        IsEnabled="{Binding !IsLoading}"
+                        ToolTip.Tip="Go up one level"
+                        AutomationProperties.Name="Navigate Up"/>
+                <Separator Classes="vertical" Height="20"/>
+                <Button Content="🔄 Refresh"
+                        Command="{Binding RefreshAsyncCommand}"
+                        IsEnabled="{Binding !IsLoading}"
+                        AutomationProperties.Name="Refresh"/>
+                <Separator Classes="vertical" Height="20"/>
+                <Button Content="{Binding IsGridView, Converter={x:Static vm:HistoryViewModel.ViewToggleConverter}}"
+                        Command="{Binding ToggleViewCommand}"
+                        IsEnabled="{Binding !IsLoading}"
+                        AutomationProperties.Name="Toggle View Mode"/>
+                <ProgressBar IsIndeterminate="True"
+                             Width="80" Height="2"
+                             IsVisible="{Binding IsLoadingThumbnails}"
+                             VerticalAlignment="Center"
+                             AutomationProperties.Name="Loading Thumbnails"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ── Breadcrumb bar ── -->
+        <Border Grid.Row="1" Padding="16,8"
+                Background="{DynamicResource LayerFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1">
+            <ItemsControl ItemsSource="{Binding Breadcrumbs}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="4"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:BreadcrumbPart">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <Button Content="{Binding Label}"
+                                    Command="{Binding $parent[UserControl].DataContext.NavigateToFolderCommand}"
+                                    CommandParameter="{Binding Path}"
+                                    Classes="hyperlink"
+                                    Padding="4,2"
+                                    AutomationProperties.Name="{Binding Label, StringFormat='Navigate to {0}'}"/>
+                            <TextBlock Text="›" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+
+        <!-- ── Search / filter bar ── -->
+        <Border Grid.Row="2" Padding="16,8"
+                Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="*, 16, Auto, 8, Auto, 8, Auto, 8, Auto">
+                <!-- Search box -->
+                <TextBox Grid.Column="0"
+                         Text="{Binding SearchText}"
+                         Watermark="Search files..."
+                         AutomationProperties.Name="Search Files">
+                    <TextBox.KeyBindings>
+                        <KeyBinding Gesture="Return" Command="{Binding SearchAsyncCommand}"/>
+                    </TextBox.KeyBindings>
+                </TextBox>
+
+                <!-- File type filter -->
+                <ComboBox Grid.Column="2"
+                          SelectedItem="{Binding SelectedFileTypeFilter}"
+                          Width="110"
+                          AutomationProperties.Name="File Type Filter">
+                    <ComboBoxItem>All</ComboBoxItem>
+                    <ComboBoxItem>Images</ComboBoxItem>
+                    <ComboBoxItem>Videos</ComboBoxItem>
+                    <ComboBoxItem>Text</ComboBoxItem>
+                </ComboBox>
+
+                <!-- Sort field -->
+                <ComboBox Grid.Column="4"
+                          SelectedItem="{Binding SortBy}"
+                          Width="100"
+                          AutomationProperties.Name="Sort By">
+                    <ComboBoxItem>Date</ComboBoxItem>
+                    <ComboBoxItem>Name</ComboBoxItem>
+                    <ComboBoxItem>Size</ComboBoxItem>
+                </ComboBox>
+
+                <!-- Sort direction -->
+                <Button Grid.Column="6"
+                        Content="{Binding SortDescending, Converter={x:Static vm:ProviderExplorerConverters.SortDirectionConverter}}"
+                        Command="{Binding ToggleViewCommand}"
+                        ToolTip.Tip="Toggle sort direction"
+                        AutomationProperties.Name="Toggle Sort Direction"/>
+
+                <!-- Apply search button -->
+                <Button Grid.Column="8"
+                        Content="Apply"
+                        Command="{Binding SearchAsyncCommand}"
+                        Classes="accent"
+                        AutomationProperties.Name="Apply Search"/>
+            </Grid>
+        </Border>
+
+        <!-- ── Loading overlay ── -->
+        <Border Grid.Row="3"
+                IsVisible="{Binding IsLoading}"
+                Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
+            <StackPanel Spacing="16" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200"/>
+                <TextBlock Text="Loading..." HorizontalAlignment="Center"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ── Grid View ── -->
+        <ScrollViewer Grid.Row="3"
+                      IsVisible="{Binding IsGridView}"
+                      IsEnabled="{Binding !IsLoading}"
+                      Padding="16">
+            <StackPanel Spacing="16">
+                <ItemsControl ItemsSource="{Binding Items}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MediaItemViewModel">
+                            <Border Margin="8" Width="180"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="10"
+                                    Cursor="Hand"
+                                    Tag="{Binding #Root.DataContext}"
+                                    DoubleTapped="OnItemDoubleTapped"
+                                    ContextFlyout="{StaticResource ItemMenuFlyout}"
+                                    AutomationProperties.Name="{Binding Item.Name, StringFormat='Media Item: {0}'}">
+                                <StackPanel Spacing="8">
+                                    <!-- Thumbnail / icon -->
+                                    <Border Height="130"
+                                            Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                                            CornerRadius="4" ClipToBounds="True">
+                                        <Panel>
+                                            <!-- Icon fallback (always present) -->
+                                            <TextBlock Text="{Binding FileTypeIcon}"
+                                                       FontSize="40"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+                                            <!-- Thumbnail overlay when loaded -->
+                                            <Image Source="{Binding Thumbnail}"
+                                                   Stretch="Uniform"
+                                                   IsVisible="{Binding HasThumbnail}"/>
+                                        </Panel>
+                                    </Border>
+                                    <!-- Info -->
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="{Binding Item.Name}"
+                                                   FontWeight="Medium"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   ToolTip.Tip="{Binding Item.Name}"/>
+                                        <TextBlock Text="{Binding SizeDisplay}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{Binding DateDisplay}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Load More button -->
+                <Button Content="Load More..."
+                        Command="{Binding LoadMoreAsyncCommand}"
+                        IsVisible="{Binding HasMoreItems}"
+                        HorizontalAlignment="Center"
+                        Padding="24,8"
+                        AutomationProperties.Name="Load More Items"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ── List View ── -->
+        <ScrollViewer Grid.Row="3"
+                      IsVisible="{Binding !IsGridView}"
+                      IsEnabled="{Binding !IsLoading}"
+                      Padding="0,8">
+            <StackPanel Spacing="0">
+                <!-- Header row -->
+                <Border Padding="16,6"
+                        Background="{DynamicResource LayerFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="40, *, 130, 130">
+                        <TextBlock Grid.Column="1" Text="Name" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Grid.Column="2" Text="Size" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Grid.Column="3" Text="Modified" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    </Grid>
+                </Border>
+
+                <ItemsControl ItemsSource="{Binding Items}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="0"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MediaItemViewModel">
+                            <Border Padding="16,8" Background="Transparent" Cursor="Hand"
+                                    Tag="{Binding #Root.DataContext}"
+                                    DoubleTapped="OnItemDoubleTapped"
+                                    ContextFlyout="{StaticResource ItemMenuFlyout}"
+                                    AutomationProperties.Name="{Binding Item.Name, StringFormat='Media Item: {0}'}">
+                                <Border.Styles>
+                                    <Style Selector="Border:pointerover">
+                                        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                                    </Style>
+                                </Border.Styles>
+                                <Grid ColumnDefinitions="40, *, 130, 130">
+                                    <!-- Icon / Thumbnail -->
+                                    <Border Grid.Column="0" Width="28" Height="28"
+                                            Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                                            CornerRadius="4" ClipToBounds="True">
+                                        <Panel>
+                                            <TextBlock Text="{Binding FileTypeIcon}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       FontSize="16"/>
+                                            <Image Source="{Binding Thumbnail}"
+                                                   Stretch="UniformToFill"
+                                                   IsVisible="{Binding HasThumbnail}"/>
+                                        </Panel>
+                                    </Border>
+                                    <!-- Name -->
+                                    <TextBlock Grid.Column="1" Text="{Binding Item.Name}"
+                                               VerticalAlignment="Center"
+                                               Margin="12,0"
+                                               TextTrimming="CharacterEllipsis"
+                                               ToolTip.Tip="{Binding Item.Name}"/>
+                                    <!-- Size -->
+                                    <TextBlock Grid.Column="2" Text="{Binding SizeDisplay}"
+                                               VerticalAlignment="Center"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <!-- Date -->
+                                    <TextBlock Grid.Column="3" Text="{Binding DateDisplay}"
+                                               VerticalAlignment="Center"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Load More -->
+                <Button Content="Load More..."
+                        Command="{Binding LoadMoreAsyncCommand}"
+                        IsVisible="{Binding HasMoreItems}"
+                        HorizontalAlignment="Center"
+                        Margin="0,8"
+                        Padding="24,8"
+                        AutomationProperties.Name="Load More Items"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ── Status bar ── -->
+        <Border Grid.Row="4" Padding="16,8"
+                Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0">
+            <TextBlock Text="{Binding StatusText}"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       FontSize="12"/>
+        </Border>
+
+    </Grid>
+</UserControl>

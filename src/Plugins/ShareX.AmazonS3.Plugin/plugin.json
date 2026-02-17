@@ -8,6 +8,7 @@
   "entryPoint": "ShareX.AmazonS3.Plugin.AmazonS3Provider",
   "assemblyFileName": "XerahS.AmazonS3.Plugin.dll",
   "supportedCategories": ["Image", "Text", "File"],
+  "supportsExplorer": true,
   "configViewId": "amazons3",
   "dependencies": [],
   "homepageUrl": "https://aws.amazon.com/s3/"

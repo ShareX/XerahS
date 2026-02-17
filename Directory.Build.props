@@ -1,10 +1,12 @@
 <Project>
   <PropertyGroup>
-    <Version>0.15.7</Version>
+    <Version>0.16.0</Version>
     <Product>XerahS</Product>
     <Authors>ShareX Team</Authors>
     <Company>ShareX Team</Company>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Workaround for Fedora .NET package missing prune data -->
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
   </PropertyGroup>
   <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
     <CrossCompile>true</CrossCompile>

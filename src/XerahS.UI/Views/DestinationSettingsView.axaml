@@ -198,6 +198,28 @@
                                 <ContentControl Content="{Binding SelectedCategory.SelectedInstance.ConfigView}"/>
                             </StackPanel>
 
+                            <!-- Media Explorer -->
+                            <StackPanel Spacing="12"
+                                        IsVisible="{Binding SelectedCategory.SelectedInstance.SupportsExplorer}">
+                                <Separator/>
+                                <TextBlock Text="Media Explorer" FontWeight="SemiBold" FontSize="16"/>
+                                <TextBlock Text="Browse and manage files stored with this provider."
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           TextWrapping="Wrap"/>
+                                <Button Content="Browse Files"
+                                        Command="{Binding SelectedCategory.SelectedInstance.OpenExplorerCommand}"
+                                        IsEnabled="{Binding SelectedCategory.SelectedInstance.IsExplorerEnabled}"
+                                        Classes="accent"
+                                        HorizontalAlignment="Left"
+                                        Padding="16,8"
+                                        ToolTip.Tip="Open Media Explorer to browse remote files (requires valid credentials)"
+                                        AutomationProperties.Name="Open Media Explorer"/>
+                                <TextBlock Text="Configure credentials above to enable browsing."
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                           FontSize="11"
+                                           IsVisible="{Binding !SelectedCategory.SelectedInstance.IsExplorerEnabled}"/>
+                            </StackPanel>
+
                         </StackPanel>
                     </ScrollViewer>
                 </Border>

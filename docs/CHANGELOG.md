@@ -10,6 +10,27 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
+## v0.16.0
+
+### Features
+- **Media Explorer**: Add `IUploaderExplorer` interface for provider-side browsing capability `(new)`
+- **Media Explorer**: Implement S3 file browser with ListObjectsV2, thumbnail loading, delete, and content streaming `(new)`
+- **Media Explorer**: Implement Imgur album/image browser with OAuth2 auth, album-as-folder navigation, and delete via deleteHash `(new)`
+- **Media Explorer**: Add `ProviderExplorerViewModel` with navigation history, breadcrumbs, grid/list toggle, search, filter, sort, and pagination `(new)`
+- **Media Explorer**: Add `ProviderExplorerView` and `ProviderExplorerWindow` Avalonia UI for browsing provider files `(new)`
+- **Media Explorer**: Expose "Browse Files" button in DestinationSettingsView for providers supporting `IUploaderExplorer` `(new)`
+
+## v0.15.7
+
+### Fixes
+- **ImageEditor**: Update ImageEditor submodule — reinstate ContextMenu `(bb862c4)`
+- **ImageEditor**: Update ImageEditor context menu flyout fix `(c5618de)`
+- **Capture**: Use direct pixel copy instead of PNG round-trip in RenderAnnotationLayer `(f3e3908)`
+- **Capture**: Hide inline TextBox during annotation layer capture `(b3034be)`
+- **Capture**: Skip forced Measure/Arrange when canvas is already at correct size `(af35c74)`
+- **Capture**: Dispose RenderTargetBitmap after pixel copy `(4048f00)`
+- **Mobile**: Handle TimeZoneInfo serialization in mobile upload settings `(a835153)`
+
 ## v0.15.6
 
 ### Fixes

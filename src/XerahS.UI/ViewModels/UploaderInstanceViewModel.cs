@@ -54,6 +54,7 @@ public partial class UploaderInstanceViewModel : ViewModelBase
     private bool _isAvailable;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsExplorerEnabled))]
     private string _settingsJson = "{}";
 
     [ObservableProperty]
@@ -91,6 +92,21 @@ public partial class UploaderInstanceViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _hasVerificationError;
+
+    /// <summary>
+    /// True if this instance's provider implements <see cref="IUploaderExplorer"/>.
+    /// Controls visibility of the "Browse Files" button in the config panel.
+    /// </summary>
+    [ObservableProperty]
+    private bool _supportsExplorer;
+
+    /// <summary>
+    /// True when <see cref="SupportsExplorer"/> is true AND the provider's
+    /// <c>ValidateSettings</c> returns true for the current <see cref="SettingsJson"/>.
+    /// Controls whether the "Browse Files" button is enabled.
+    /// </summary>
+    public bool IsExplorerEnabled =>
+        SupportsExplorer && (ProviderCatalog.GetProvider(ProviderId)?.ValidateSettings(SettingsJson) == true);
 
     /// <summary>
     /// The actual instance model
@@ -183,6 +199,9 @@ public partial class UploaderInstanceViewModel : ViewModelBase
 
             Common.DebugHelper.WriteLine($"[UploaderInstanceVM] ConfigViewModel created: {ConfigViewModel?.GetType().Name ?? "null"}");
             Common.DebugHelper.WriteLine($"[UploaderInstanceVM] ConfigView created: {ConfigView?.GetType().Name ?? "null"}");
+
+            // Set explorer support flag after provider is resolved
+            SupportsExplorer = provider is IUploaderExplorer;
 
             if (ConfigViewModel is IProviderContextAware contextAware)
             {
@@ -370,6 +389,28 @@ public partial class UploaderInstanceViewModel : ViewModelBase
         catch (Exception ex)
         {
             Common.DebugHelper.WriteException(ex, "Failed to open plugins folder");
+        }
+    }
+
+    /// <summary>
+    /// Opens the Media Explorer window for this provider instance.
+    /// The provider must implement <see cref="IUploaderExplorer"/>.
+    /// </summary>
+    [RelayCommand]
+    private void OpenExplorer()
+    {
+        var provider = ProviderCatalog.GetProvider(ProviderId);
+        if (provider is not IUploaderExplorer explorer) return;
+
+        try
+        {
+            var vm = new ProviderExplorerViewModel(Instance, explorer);
+            var window = new Views.ProviderExplorerWindow { DataContext = vm };
+            window.Show();
+        }
+        catch (Exception ex)
+        {
+            Common.DebugHelper.WriteException(ex, "Failed to open Media Explorer");
         }
     }
 }

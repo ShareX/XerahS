@@ -481,6 +481,34 @@ public static class ProviderCatalog
         }
     }
 
+    /// <summary>
+    /// Get the <see cref="IUploaderExplorer"/> implementation for a provider, or null if not supported.
+    /// </summary>
+    public static IUploaderExplorer? GetExplorer(string providerId)
+    {
+        lock (_lock)
+        {
+            if (_providers.TryGetValue(providerId, out var provider) && provider is IUploaderExplorer explorer)
+            {
+                return explorer;
+            }
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Get all providers that implement <see cref="IUploaderExplorer"/> (support Media Explorer browsing).
+    /// </summary>
+    public static List<IUploaderProvider> GetBrowsableProviders()
+    {
+        lock (_lock)
+        {
+            return _providers.Values
+                .Where(p => p is IUploaderExplorer)
+                .ToList();
+        }
+    }
+
     private static void ApplyContext(IUploaderProvider provider)
     {
         if (_providerContext == null)

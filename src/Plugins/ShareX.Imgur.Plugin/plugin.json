@@ -8,6 +8,7 @@
   "entryPoint": "ShareX.Imgur.Plugin.ImgurProvider",
   "assemblyFileName": "XerahS.Imgur.Plugin.dll",
   "supportedCategories": ["Image", "Text"],
+  "supportsExplorer": true,
   "configViewId": "imgur",
   "dependencies": [],
   "homepageUrl": "https://imgur.com"
