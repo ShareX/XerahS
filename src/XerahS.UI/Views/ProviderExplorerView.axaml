@@ -29,7 +29,7 @@
         </MenuFlyout>
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto, Auto, Auto, *, Auto">
+    <Grid RowDefinitions="Auto, Auto, Auto, *, Auto, Auto">
 
         <!-- ── Toolbar ── -->
         <Border Grid.Row="0" Padding="16,10"
@@ -328,6 +328,26 @@
             <TextBlock Text="{Binding StatusText}"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        FontSize="12"/>
+        </Border>
+
+        <Border Grid.Row="5"
+                Padding="12"
+                Background="#FFF4CC"
+                BorderBrush="#D7A550"
+                BorderThickness="0,1,0,0"
+                IsVisible="{Binding ErrorDetails, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <TextBox Text="{Binding ErrorDetails}"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     MinHeight="72"
+                     MaxHeight="180"
+                     Background="#FFF4CC"
+                     Foreground="#6E1E1E"
+                     BorderThickness="0"
+                     FontFamily="Consolas, Menlo, monospace"
+                     FontSize="12"
+                     ToolTip.Tip="Copy the error details and share with support."/>
         </Border>
 
     </Grid>

@@ -77,6 +77,9 @@ public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
     [ObservableProperty] private string? _continuationToken;
     [ObservableProperty] private bool _hasMoreItems;
     [ObservableProperty] private string _statusText = "";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasError))]
+    private string _errorDetails = "";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanNavigateBack))]
@@ -84,6 +87,7 @@ public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
 
     public bool CanNavigateBack => _navIndex > 0;
     public bool CanNavigateForward => _navIndex < _navHistory.Count - 1;
+    public bool HasError => !string.IsNullOrWhiteSpace(ErrorDetails);
 
     public UploaderInstance BoundInstance => _instance;
 
@@ -215,6 +219,7 @@ public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
         {
             DebugHelper.WriteException(ex, "ProviderExplorerViewModel - DownloadItem failed");
             StatusText = $"Download failed: {ex.Message}";
+            SetError("DownloadItem", ex);
         }
     }
 
@@ -245,6 +250,7 @@ public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
         {
             DebugHelper.WriteException(ex, "ProviderExplorerViewModel - DeleteItem failed");
             StatusText = $"Delete failed: {ex.Message}";
+            SetError("DeleteItem", ex);
         }
     }
 
@@ -300,6 +306,7 @@ public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
         var ct = _loadCts.Token;
 
         IsLoading = true;
+        ClearError();
         try
         {
             var query = BuildQuery();
@@ -325,6 +332,7 @@ public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
         {
             DebugHelper.WriteException(ex, "ProviderExplorerViewModel - LoadPageAsync failed");
             StatusText = $"Error: {ex.Message}";
+            SetError("LoadPageAsync", ex);
         }
         finally
         {
@@ -523,6 +531,16 @@ public partial class ProviderExplorerViewModel : ViewModelBase, IDisposable
         }
 
         return result;
+    }
+
+    private void SetError(string operation, Exception ex)
+    {
+        ErrorDetails = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {operation} failed:{Environment.NewLine}{ex}";
+    }
+
+    private void ClearError()
+    {
+        ErrorDetails = string.Empty;
     }
 
     public void Dispose()
