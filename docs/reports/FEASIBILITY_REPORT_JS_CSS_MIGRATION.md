@@ -79,7 +79,32 @@ The following table outlines how the proposed **Blazor Hybrid** architecture sup
 | **macOS** | ✅ **Full Support** | **MAUI Blazor (Catalyst)** | **Optional.** The new stack *can* fully replace the Avalonia Desktop app if desired, using `WKWebView`. |
 | **Linux** | ⚠️ **Partial** | **Photino** or **Avalonia Hybrid** | **Complex.** MAUI has no official Linux support. To run the new HTML/CSS UI on Linux, we would need to host the Blazor components inside a **Photino** shell or embed a `BlazorWebView` within the existing **Avalonia** app. |
 
-## IV. New Architecture Diagram
+## IV. Current Architecture Diagram
+
+```mermaid
+graph TD
+    subgraph "Frontend (Avalonia Native)"
+        DesktopApp["XerahS.App (Desktop)"] --> DesktopUI["XerahS.UI (Avalonia XAML)"]
+        MobileApp["XerahS.Mobile.* (Android/iOS)"] --> MobileUI["XerahS.Mobile.UI (Avalonia XAML)"]
+    end
+
+    subgraph "Backend (C#)"
+        DesktopUI -.-> ViewModels["XerahS.ViewModels (ReactiveUI)"]
+        MobileUI -.-> ViewModels
+        ViewModels --> Core["XerahS.Core"]
+        Core --> Services["XerahS.Services"]
+        Core --> Uploaders["XerahS.Uploaders"]
+    end
+
+    subgraph "Platform"
+        DesktopApp --> PC["Windows/Linux/macOS APIs"]
+        MobileApp --> Mobile["Android/iOS APIs"]
+        Core --> Abstractions["XerahS.Platform.Abstractions"]
+        Abstractions -.-> Impl["XerahS.Platform.* (Impl)"]
+    end
+```
+
+## V. New Architecture Diagram
 
 ```mermaid
 graph TD
@@ -104,7 +129,7 @@ graph TD
 ```
 
 
-## V. Trade-offs & Concessions
+## VI. Trade-offs & Concessions
 
 Migrating to a **Blazor Hybrid (HTML/CSS)** architecture involves the following trade-offs compared to the current Avalonia implementation:
 
@@ -124,7 +149,7 @@ Migrating to a **Blazor Hybrid (HTML/CSS)** architecture involves the following 
     *   **Give Up:** The battle-tested, PInvoke-heavy desktop region capture tool.
     *   **Trade:** This feature requires a **complete rewrite**. The initial HTML5 Canvas replacement may lack some mature features (magnifier smoothing, multi-monitor edge cases) until fully developed.
 
-## VI. Next Steps
+## VII. Next Steps
 
 1.  **Refactor**: Edit `XerahS.Platform.Abstractions.csproj` to remove the Avalonia dependency.
 2.  **Initialize**: Create the new `XerahS.Mobile.Blazor` and `XerahS.Mobile.Web` projects.
