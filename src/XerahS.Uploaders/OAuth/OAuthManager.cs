@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common.Utilities;
+
 using XerahS.Common;
 using System.Collections.Specialized;
 using System.Security.Cryptography;
@@ -228,7 +230,7 @@ namespace XerahS.Uploaders
 
         private static string GenerateNonce()
         {
-            return GeneralHelpers.GetRandomAlphanumericString(12);
+            return RandomGenerator.GetRandomAlphanumericString(12);
         }
 
         private static string NormalizeUrl(string url)
@@ -267,4 +269,5 @@ namespace XerahS.Uploaders
         }
     }
 }
+
 

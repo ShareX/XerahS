@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common.Utilities;
+
 using XerahS.Common;
 using System.Xml.Linq;
 
@@ -54,7 +56,7 @@ namespace XerahS.Uploaders.FileUploaders
 
         public override UploadResult Upload(Stream stream, string fileName)
         {
-            DropName = "ShareX_" + GeneralHelpers.GetRandomAlphanumericString(10);
+            DropName = "ShareX_" + RandomGenerator.GetRandomAlphanumericString(10);
             DropDescription = "";
             Drop drop = CreateDrop(DropName, DropDescription, false, false, false);
 
@@ -137,3 +139,5 @@ namespace XerahS.Uploaders.FileUploaders
         }
     }
 }
+
+

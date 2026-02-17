@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common.Utilities;
+
 using Newtonsoft.Json;
 using XerahS.Common;
 using System;
@@ -88,7 +90,7 @@ namespace XerahS.Uploaders.FileUploaders
                 ms.Write(cryptoData.Salt, 0, cryptoData.Salt.Length);
                 byte[] encryptedFn = EncryptBytes(cryptoData, fileNameBytes);
                 ms.Write(encryptedFn, 0, encryptedFn.Length);
-                encryptedFileName = GeneralHelpers.BytesToHex(ms.ToArray());
+                encryptedFileName = StringUtils.BytesToHex(ms.ToArray());
             }
             string bytesLengthHex = fullUploadSize.ToString("X4"); // To Hex
             DateTime expiryTime = DateTime.UtcNow.AddDays(30); // Defaults from the web client
@@ -268,4 +270,5 @@ namespace XerahS.Uploaders.FileUploaders
         }
     }
 }
+
 

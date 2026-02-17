@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common.Utilities;
+
 using XerahS.Common;
 
 namespace XerahS.History
@@ -49,7 +51,7 @@ namespace XerahS.History
 
         private HistoryItem CreateMockHistoryItem()
         {
-            string fileName = $"ShareX_{GeneralHelpers.GetRandomAlphanumericString(10)}.png";
+            string fileName = $"ShareX_{RandomGenerator.GetRandomAlphanumericString(10)}.png";
 
             HistoryItem historyItem = new HistoryItem()
             {
@@ -73,3 +75,5 @@ namespace XerahS.History
         }
     }
 }
+
+

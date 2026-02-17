@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common.Utilities;
+
 using XerahS.Common;
 using System.Net;
 using System.Text;
@@ -56,7 +58,7 @@ namespace XerahS.Uploaders
             IPAddress ip = IPAddress.Loopback;
             int port = WebHelpers.GetRandomUnusedPort();
             string redirectURI = string.Format($"http://{ip}:{port}/");
-            string state = GeneralHelpers.GetRandomAlphanumericString(32);
+            string state = RandomGenerator.GetRandomAlphanumericString(32);
 
             OAuth.RedirectURI = redirectURI;
             OAuth.State = state;

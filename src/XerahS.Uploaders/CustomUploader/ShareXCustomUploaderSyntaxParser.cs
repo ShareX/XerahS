@@ -23,13 +23,15 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common.Utilities;
+
 using XerahS.Common;
 
 namespace XerahS.Uploaders
 {
     public class ShareXCustomUploaderSyntaxParser : ShareXSyntaxParser
     {
-        private static IEnumerable<CustomUploaderFunction> Functions = GeneralHelpers.GetInstances<CustomUploaderFunction>();
+        private static IEnumerable<CustomUploaderFunction> Functions = ReflectionHelper.GetInstances<CustomUploaderFunction>();
 
         public string FileName { get; set; } = string.Empty;
         public string Input { get; set; } = string.Empty;
@@ -86,4 +88,5 @@ namespace XerahS.Uploaders
         }
     }
 }
+
 

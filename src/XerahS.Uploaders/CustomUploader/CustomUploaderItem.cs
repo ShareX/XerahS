@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common.Utilities;
+
 using Newtonsoft.Json;
 using XerahS.Common;
 using System.Collections.Specialized;
@@ -99,7 +101,7 @@ namespace XerahS.Uploaders
         {
             return new CustomUploaderItem()
             {
-                Version = GeneralHelpers.GetApplicationVersion(),
+                Version = SystemInfo.GetApplicationVersion(),
                 RequestMethod = HttpMethod.POST,
                 Body = CustomUploaderBody.MultipartFormData
             };
@@ -355,14 +357,14 @@ namespace XerahS.Uploaders
             }
 
             // Legacy ShareX compatibility checks
-            if (string.IsNullOrEmpty(Version) || GeneralHelpers.CompareVersion(Version, "12.3.1") <= 0)
+            if (string.IsNullOrEmpty(Version) || SystemInfo.CompareVersion(Version, "12.3.1") <= 0)
             {
                 throw new Exception("Unsupported custom uploader" + ": " + ToString());
             }
 
             CheckRequestURL();
 
-            if (GeneralHelpers.CompareVersion(Version, "13.7.1") <= 0)
+            if (SystemInfo.CompareVersion(Version, "13.7.1") <= 0)
             {
                 RequestURL = MigrateOldSyntax(RequestURL);
 
@@ -401,7 +403,7 @@ namespace XerahS.Uploaders
                 DeletionURL = MigrateOldSyntax(DeletionURL);
                 ErrorMessage = MigrateOldSyntax(ErrorMessage);
 
-                Version = GeneralHelpers.GetApplicationVersion();
+                Version = SystemInfo.GetApplicationVersion();
             }
         }
 

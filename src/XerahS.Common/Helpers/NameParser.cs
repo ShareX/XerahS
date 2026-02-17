@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common.Utilities;
+
 #nullable enable
 
 using System.Globalization;
@@ -115,24 +117,24 @@ namespace XerahS.Common
                 .Replace(CodeMenuEntryFilename.mon.ToPrefixString(), CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(dt.Month))
                 .Replace(CodeMenuEntryFilename.yy.ToPrefixString(), dt.ToString("yy", CultureInfo.InvariantCulture))
                 .Replace(CodeMenuEntryFilename.y.ToPrefixString(), dt.Year.ToString(CultureInfo.InvariantCulture))
-                .Replace(CodeMenuEntryFilename.mo.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Month))
-                .Replace(CodeMenuEntryFilename.d.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Day));
+                .Replace(CodeMenuEntryFilename.mo.ToPrefixString(), StringUtils.AddZeroes(dt.Month))
+                .Replace(CodeMenuEntryFilename.d.ToPrefixString(), StringUtils.AddZeroes(dt.Day));
 
             string hour;
 
             if (sb.ToString().Contains(CodeMenuEntryFilename.pm.ToPrefixString(), StringComparison.Ordinal))
             {
-                hour = GeneralHelpers.HourTo12(dt.Hour);
+                hour = StringUtils.HourTo12(dt.Hour);
             }
             else
             {
-                hour = GeneralHelpers.AddZeroes(dt.Hour);
+                hour = StringUtils.AddZeroes(dt.Hour);
             }
 
             sb.Replace(CodeMenuEntryFilename.h.ToPrefixString(), hour)
-                .Replace(CodeMenuEntryFilename.mi.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Minute))
-                .Replace(CodeMenuEntryFilename.s.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Second))
-                .Replace(CodeMenuEntryFilename.ms.ToPrefixString(), GeneralHelpers.AddZeroes(dt.Millisecond, 3))
+                .Replace(CodeMenuEntryFilename.mi.ToPrefixString(), StringUtils.AddZeroes(dt.Minute))
+                .Replace(CodeMenuEntryFilename.s.ToPrefixString(), StringUtils.AddZeroes(dt.Second))
+                .Replace(CodeMenuEntryFilename.ms.ToPrefixString(), StringUtils.AddZeroes(dt.Millisecond, 3))
                 .Replace(CodeMenuEntryFilename.wy.ToPrefixString(), ISOWeek.GetWeekOfYear(dt).ToString(CultureInfo.InvariantCulture))
                 .Replace(CodeMenuEntryFilename.w2.ToPrefixString(), CultureInfo.InvariantCulture.DateTimeFormat.GetDayName(dt.DayOfWeek))
                 .Replace(CodeMenuEntryFilename.w.ToPrefixString(), CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(dt.DayOfWeek))
@@ -156,11 +158,11 @@ namespace XerahS.Common
                 {
                     foreach (Tuple<string, int[]> entry in ListEntryWithValues(sb.ToString(), CodeMenuEntryFilename.ib.ToPrefixString(), 2))
                     {
-                        sb.Replace(entry.Item1, GeneralHelpers.AddZeroes(AutoIncrementNumber.ToBase(entry.Item2[0], GeneralHelpers.AlphanumericInverse), entry.Item2[1]));
+                        sb.Replace(entry.Item1, StringUtils.AddZeroes(AutoIncrementNumber.ToBase(entry.Item2[0], RandomGenerator.AlphanumericInverse), entry.Item2[1]));
                     }
                     foreach (Tuple<string, int[]> entry in ListEntryWithValues(sb.ToString(), CodeMenuEntryFilename.ib.ToPrefixString().Replace('b', 'B'), 2))
                     {
-                        sb.Replace(entry.Item1, GeneralHelpers.AddZeroes(AutoIncrementNumber.ToBase(entry.Item2[0], GeneralHelpers.Alphanumeric), entry.Item2[1]));
+                        sb.Replace(entry.Item1, StringUtils.AddZeroes(AutoIncrementNumber.ToBase(entry.Item2[0], RandomGenerator.Alphanumeric), entry.Item2[1]));
                     }
                 }
                 catch
@@ -169,27 +171,27 @@ namespace XerahS.Common
 
                 foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), CodeMenuEntryFilename.iAa.ToPrefixString()))
                 {
-                    sb.Replace(entry.Item1, GeneralHelpers.AddZeroes(AutoIncrementNumber.ToBase(62, GeneralHelpers.Alphanumeric), entry.Item2));
+                    sb.Replace(entry.Item1, StringUtils.AddZeroes(AutoIncrementNumber.ToBase(62, RandomGenerator.Alphanumeric), entry.Item2));
                 }
-                sb.Replace(CodeMenuEntryFilename.iAa.ToPrefixString(), AutoIncrementNumber.ToBase(62, GeneralHelpers.Alphanumeric));
+                sb.Replace(CodeMenuEntryFilename.iAa.ToPrefixString(), AutoIncrementNumber.ToBase(62, RandomGenerator.Alphanumeric));
 
                 foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), CodeMenuEntryFilename.iAa.ToPrefixString().Replace("Aa", "aA")))
                 {
-                    sb.Replace(entry.Item1, GeneralHelpers.AddZeroes(AutoIncrementNumber.ToBase(62, GeneralHelpers.AlphanumericInverse), entry.Item2));
+                    sb.Replace(entry.Item1, StringUtils.AddZeroes(AutoIncrementNumber.ToBase(62, RandomGenerator.AlphanumericInverse), entry.Item2));
                 }
-                sb.Replace(CodeMenuEntryFilename.iAa.ToPrefixString().Replace("Aa", "aA"), AutoIncrementNumber.ToBase(62, GeneralHelpers.AlphanumericInverse));
+                sb.Replace(CodeMenuEntryFilename.iAa.ToPrefixString().Replace("Aa", "aA"), AutoIncrementNumber.ToBase(62, RandomGenerator.AlphanumericInverse));
 
                 foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), CodeMenuEntryFilename.ia.ToPrefixString()))
                 {
-                    sb.Replace(entry.Item1, GeneralHelpers.AddZeroes(AutoIncrementNumber.ToBase(36, GeneralHelpers.Alphanumeric), entry.Item2).ToLowerInvariant());
+                    sb.Replace(entry.Item1, StringUtils.AddZeroes(AutoIncrementNumber.ToBase(36, RandomGenerator.Alphanumeric), entry.Item2).ToLowerInvariant());
                 }
-                sb.Replace(CodeMenuEntryFilename.ia.ToPrefixString(), AutoIncrementNumber.ToBase(36, GeneralHelpers.Alphanumeric).ToLowerInvariant());
+                sb.Replace(CodeMenuEntryFilename.ia.ToPrefixString(), AutoIncrementNumber.ToBase(36, RandomGenerator.Alphanumeric).ToLowerInvariant());
 
                 foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), CodeMenuEntryFilename.ia.ToPrefixString().Replace('a', 'A')))
                 {
-                    sb.Replace(entry.Item1, GeneralHelpers.AddZeroes(AutoIncrementNumber.ToBase(36, GeneralHelpers.Alphanumeric), entry.Item2).ToUpperInvariant());
+                    sb.Replace(entry.Item1, StringUtils.AddZeroes(AutoIncrementNumber.ToBase(36, RandomGenerator.Alphanumeric), entry.Item2).ToUpperInvariant());
                 }
-                sb.Replace(CodeMenuEntryFilename.ia.ToPrefixString().Replace('a', 'A'), AutoIncrementNumber.ToBase(36, GeneralHelpers.Alphanumeric).ToUpperInvariant());
+                sb.Replace(CodeMenuEntryFilename.ia.ToPrefixString().Replace('a', 'A'), AutoIncrementNumber.ToBase(36, RandomGenerator.Alphanumeric).ToUpperInvariant());
 
                 foreach (Tuple<string, int> entry in ListEntryWithValue(sb.ToString(), CodeMenuEntryFilename.ix.ToPrefixString()))
                 {
@@ -250,39 +252,39 @@ namespace XerahS.Common
 
             foreach (Tuple<string, int> entry in ListEntryWithValue(result, CodeMenuEntryFilename.rna.ToPrefixString()))
             {
-                result = result.ReplaceAll(entry.Item1, () => GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Base56).ToString()));
+                result = result.ReplaceAll(entry.Item1, () => StringUtils.RepeatGenerator(entry.Item2, () => RandomGenerator.GetRandomChar(RandomGenerator.Base56).ToString()));
             }
 
             foreach (Tuple<string, int> entry in ListEntryWithValue(result, CodeMenuEntryFilename.rn.ToPrefixString()))
             {
-                result = result.ReplaceAll(entry.Item1, () => GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Numbers).ToString()));
+                result = result.ReplaceAll(entry.Item1, () => StringUtils.RepeatGenerator(entry.Item2, () => RandomGenerator.GetRandomChar(RandomGenerator.Numbers).ToString()));
             }
 
             foreach (Tuple<string, int> entry in ListEntryWithValue(result, CodeMenuEntryFilename.ra.ToPrefixString()))
             {
-                result = result.ReplaceAll(entry.Item1, () => GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Alphanumeric).ToString()));
+                result = result.ReplaceAll(entry.Item1, () => StringUtils.RepeatGenerator(entry.Item2, () => RandomGenerator.GetRandomChar(RandomGenerator.Alphanumeric).ToString()));
             }
 
             foreach (Tuple<string, int> entry in ListEntryWithValue(result, CodeMenuEntryFilename.rx.ToPrefixString()))
             {
-                result = result.ReplaceAll(entry.Item1, () => GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Hexadecimal.ToLowerInvariant()).ToString()));
+                result = result.ReplaceAll(entry.Item1, () => StringUtils.RepeatGenerator(entry.Item2, () => RandomGenerator.GetRandomChar(RandomGenerator.Hexadecimal.ToLowerInvariant()).ToString()));
             }
 
             foreach (Tuple<string, int> entry in ListEntryWithValue(result, CodeMenuEntryFilename.rx.ToPrefixString().Replace('x', 'X')))
             {
-                result = result.ReplaceAll(entry.Item1, () => GeneralHelpers.RepeatGenerator(entry.Item2, () => GeneralHelpers.GetRandomChar(GeneralHelpers.Hexadecimal.ToUpperInvariant()).ToString()));
+                result = result.ReplaceAll(entry.Item1, () => StringUtils.RepeatGenerator(entry.Item2, () => RandomGenerator.GetRandomChar(RandomGenerator.Hexadecimal.ToUpperInvariant()).ToString()));
             }
 
             foreach (Tuple<string, int> entry in ListEntryWithValue(result, CodeMenuEntryFilename.remoji.ToPrefixString()))
             {
-                result = result.ReplaceAll(entry.Item1, () => GeneralHelpers.RepeatGenerator(entry.Item2, () => RandomCrypto.Pick(Emoji.Emojis)));
+                result = result.ReplaceAll(entry.Item1, () => StringUtils.RepeatGenerator(entry.Item2, () => RandomCrypto.Pick(Emoji.Emojis)));
             }
 
-            result = result.ReplaceAll(CodeMenuEntryFilename.rna.ToPrefixString(), () => GeneralHelpers.GetRandomChar(GeneralHelpers.Base56).ToString());
-            result = result.ReplaceAll(CodeMenuEntryFilename.rn.ToPrefixString(), () => GeneralHelpers.GetRandomChar(GeneralHelpers.Numbers).ToString());
-            result = result.ReplaceAll(CodeMenuEntryFilename.ra.ToPrefixString(), () => GeneralHelpers.GetRandomChar(GeneralHelpers.Alphanumeric).ToString());
-            result = result.ReplaceAll(CodeMenuEntryFilename.rx.ToPrefixString(), () => GeneralHelpers.GetRandomChar(GeneralHelpers.Hexadecimal.ToLowerInvariant()).ToString());
-            result = result.ReplaceAll(CodeMenuEntryFilename.rx.ToPrefixString().Replace('x', 'X'), () => GeneralHelpers.GetRandomChar(GeneralHelpers.Hexadecimal.ToUpperInvariant()).ToString());
+            result = result.ReplaceAll(CodeMenuEntryFilename.rna.ToPrefixString(), () => RandomGenerator.GetRandomChar(RandomGenerator.Base56).ToString());
+            result = result.ReplaceAll(CodeMenuEntryFilename.rn.ToPrefixString(), () => RandomGenerator.GetRandomChar(RandomGenerator.Numbers).ToString());
+            result = result.ReplaceAll(CodeMenuEntryFilename.ra.ToPrefixString(), () => RandomGenerator.GetRandomChar(RandomGenerator.Alphanumeric).ToString());
+            result = result.ReplaceAll(CodeMenuEntryFilename.rx.ToPrefixString(), () => RandomGenerator.GetRandomChar(RandomGenerator.Hexadecimal.ToLowerInvariant()).ToString());
+            result = result.ReplaceAll(CodeMenuEntryFilename.rx.ToPrefixString().Replace('x', 'X'), () => RandomGenerator.GetRandomChar(RandomGenerator.Hexadecimal.ToUpperInvariant()).ToString());
             result = result.ReplaceAll(CodeMenuEntryFilename.guid.ToPrefixString().ToLowerInvariant(), () => Guid.NewGuid().ToString().ToLowerInvariant());
             result = result.ReplaceAll(CodeMenuEntryFilename.guid.ToPrefixString().ToUpperInvariant(), () => Guid.NewGuid().ToString().ToUpperInvariant());
             result = result.ReplaceAll(CodeMenuEntryFilename.remoji.ToPrefixString(), () => RandomCrypto.Pick(Emoji.Emojis));
@@ -327,7 +329,7 @@ namespace XerahS.Common
                 return string.Empty;
             }
 
-            string? word = GeneralHelpers.Pick(words.ToList());
+            string? word = RandomGenerator.Pick(words.ToList());
             return word?.Trim() ?? string.Empty;
         }
 
@@ -344,7 +346,7 @@ namespace XerahS.Common
                 throw new InvalidOperationException("File is empty.");
             }
 
-            string? line = GeneralHelpers.Pick(lines.ToList());
+            string? line = RandomGenerator.Pick(lines.ToList());
             return line?.Trim() ?? string.Empty;
         }
 
@@ -438,3 +440,5 @@ namespace XerahS.Common
         }
     }
 }
+
+

@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common.Utilities;
+
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -59,7 +61,7 @@ namespace XerahS.Common
             {
                 if (value is Enum enumValue)
                 {
-                    return GeneralHelpers.GetProperName(enumValue.ToString());
+                    return StringUtils.GetProperName(enumValue.ToString());
                 }
             }
 
@@ -87,7 +89,7 @@ namespace XerahS.Common
             {
                 foreach (Enum e in Enum.GetValues(enumType).OfType<Enum>())
                 {
-                    if (GeneralHelpers.GetProperName(e.ToString()) == stringValue)
+                    if (StringUtils.GetProperName(e.ToString()) == stringValue)
                     {
                         return e;
                     }
@@ -100,7 +102,5 @@ namespace XerahS.Common
         }
     }
 }
-
-
 
 

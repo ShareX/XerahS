@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common.Utilities;
+
 using XerahS.Common;
 
 namespace XerahS.Uploaders
@@ -33,8 +35,8 @@ namespace XerahS.Uploaders
         public string EscapeableCharacter { get; set; } = "%";
         public bool KeepEscapeCharacter { get; set; }
 
-        private string escapeCharacterReserve = GeneralHelpers.GetRandomAlphanumericString(32);
-        private string escapeableCharacterReserve = GeneralHelpers.GetRandomAlphanumericString(32);
+        private string escapeCharacterReserve = RandomGenerator.GetRandomAlphanumericString(32);
+        private string escapeableCharacterReserve = RandomGenerator.GetRandomAlphanumericString(32);
 
         public string Parse(string input, Func<string, string> action)
         {
@@ -55,4 +57,5 @@ namespace XerahS.Uploaders
         }
     }
 }
+
 

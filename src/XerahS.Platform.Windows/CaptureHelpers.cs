@@ -22,6 +22,8 @@
 */
 
 #endregion License Information (GPL v3)
+
+using XerahS.Common.Utilities;
 using System.Drawing;
 using System.Runtime.Versioning;
 using XerahS.Common;
@@ -232,7 +234,7 @@ namespace XerahS.Platform.Windows
                 rect = NativeMethods.GetWindowRect(handle);
             }
 
-            if (!GeneralHelpers.IsWindows10OrGreater() && NativeMethods.IsZoomed(handle))
+            if (!SystemInfo.IsWindows10OrGreater() && NativeMethods.IsZoomed(handle))
             {
                 rect = NativeMethods.MaximizedWindowFix(handle, rect);
             }
@@ -287,3 +289,5 @@ namespace XerahS.Platform.Windows
         }
     }
 }
+
+

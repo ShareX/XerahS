@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common.Utilities;
+
 namespace XerahS.Common
 {
     public abstract class UpdateChecker
@@ -70,7 +72,7 @@ namespace XerahS.Common
             }
 
             if (Status != UpdateStatus.UpdateCheckFailed && CurrentVersion != null && LatestVersion != null && !string.IsNullOrEmpty(DownloadURL) &&
-                (ForceUpdate || GeneralHelpers.CompareVersion(CurrentVersion, LatestVersion, IgnoreRevision) < 0))
+                (ForceUpdate || SystemInfo.CompareVersion(CurrentVersion, LatestVersion, IgnoreRevision) < 0))
             {
                 Status = UpdateStatus.UpdateAvailable;
             }
@@ -107,4 +109,5 @@ namespace XerahS.Common
         }
     }
 }
+
 

@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common.Utilities;
+
 using XerahS.Common;
 
 namespace XerahS.Uploaders
@@ -39,7 +41,7 @@ namespace XerahS.Uploaders
 
         private static Dictionary<T, T2> CacheServices<T, T2>() where T : notnull where T2 : UploaderService<T>
         {
-            IEnumerable<T2> instances = GeneralHelpers.GetInstances<T2>();
+            IEnumerable<T2> instances = ReflectionHelper.GetInstances<T2>();
 
             AllServices.AddRange(instances.OfType<IUploaderService>());
             AllGenericUploaderServices.AddRange(instances.OfType<IGenericUploaderService>());
@@ -48,4 +50,5 @@ namespace XerahS.Uploaders
         }
     }
 }
+
 
