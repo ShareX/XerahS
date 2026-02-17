@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:XerahS.Mobile.UI.ViewModels"
              x:Class="XerahS.Mobile.UI.Views.MobileCustomUploaderConfigView"
@@ -7,13 +7,12 @@
 
     <Grid>
         <!-- State 1: List View -->
-        <ScrollViewer IsVisible="{Binding !IsEditorVisible}">
+        <ScrollViewer IsVisible="{Binding !IsEditorVisible}"
+                      Classes="adaptive-scroll">
             <StackPanel Margin="16" Spacing="16">
 
                 <!-- Header Card -->
-                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                        CornerRadius="12"
-                        Padding="20">
+                <Border Classes="adaptive-card">
                     <StackPanel Spacing="6">
                         <TextBlock Text="Custom Uploader"
                                    FontSize="22"
@@ -26,9 +25,7 @@
                 </Border>
 
                 <!-- Configured Uploaders Card -->
-                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                        CornerRadius="12"
-                        Padding="16">
+                <Border Classes="adaptive-card">
                     <StackPanel Spacing="12">
                         <TextBlock Text="Configured Uploaders"
                                    FontWeight="SemiBold"
@@ -51,7 +48,7 @@
                                                 Background="{DynamicResource SystemAccentColor}"
                                                 Margin="0,0,12,0"
                                                 VerticalAlignment="Center">
-                                            <TextBlock Text="☁"
+                                            <TextBlock Text="&#x2601;"
                                                        FontSize="18"
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"
@@ -94,7 +91,7 @@
                                 Padding="20"
                                 HorizontalAlignment="Stretch">
                             <StackPanel HorizontalAlignment="Center" Spacing="6">
-                                <TextBlock Text="☁"
+                                <TextBlock Text="&#x2601;"
                                            FontSize="28"
                                            HorizontalAlignment="Center"
                                            Opacity="0.5"/>
@@ -112,12 +109,11 @@
                 <StackPanel Spacing="10">
                     <Button Content="Add New Uploader"
                             Command="{Binding AddNewCommand}"
+                            Classes="adaptive-primary"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Height="48"
-                            CornerRadius="10"
-                            Classes="accent"
                             FontWeight="SemiBold"
                             FontSize="15"/>
 
@@ -125,29 +121,29 @@
                         <Button Grid.Column="0"
                                 Content="Edit"
                                 Command="{Binding EditSelectedCommand}"
+                                Classes="adaptive-secondary"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Center"
                                 VerticalContentAlignment="Center"
                                 Height="42"
-                                CornerRadius="10"
                                 FontSize="13"/>
                         <Button Grid.Column="1"
                                 Content="Set Active"
                                 Command="{Binding SetActiveCommand}"
+                                Classes="adaptive-secondary"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Center"
                                 VerticalContentAlignment="Center"
                                 Height="42"
-                                CornerRadius="10"
                                 FontSize="13"/>
                         <Button Grid.Column="2"
                                 Content="Remove"
                                 Command="{Binding RemoveSelectedCommand}"
+                                Classes="adaptive-secondary"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Center"
                                 VerticalContentAlignment="Center"
                                 Height="42"
-                                CornerRadius="10"
                                 FontSize="13"/>
                     </Grid>
                 </StackPanel>
@@ -163,7 +159,8 @@
 
         <!-- State 2: Editor Form -->
         <ScrollViewer IsVisible="{Binding IsEditorVisible}"
-                      x:Name="EditorScrollViewer">
+                      x:Name="EditorScrollViewer"
+                      Classes="adaptive-scroll">
             <StackPanel Margin="16" Spacing="14">
 
                 <!-- Editor Title -->
@@ -174,9 +171,7 @@
 
                 <!-- Section: Basic Information -->
                 <Border x:Name="BasicInfoSection"
-                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                        CornerRadius="12"
-                        Padding="16">
+                        Classes="adaptive-card">
                     <StackPanel Spacing="14">
                         <TextBlock Text="Basic Information"
                                    FontWeight="SemiBold"
@@ -188,7 +183,7 @@
                             <Grid>
                                 <TextBox Text="{Binding EditorName, Mode=TwoWay}"
                                          Watermark="My Custom Uploader"
-                                         CornerRadius="8"/>
+                                         Classes="adaptive-input"/>
                                 <Border BorderBrush="#FF6B6B"
                                         BorderThickness="2"
                                         CornerRadius="8"
@@ -216,9 +211,7 @@
 
                 <!-- Section: HTTP Request -->
                 <Border x:Name="HttpRequestSection"
-                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                        CornerRadius="12"
-                        Padding="16">
+                        Classes="adaptive-card">
                     <StackPanel Spacing="14">
                         <TextBlock Text="HTTP Request"
                                    FontWeight="SemiBold"
@@ -231,14 +224,14 @@
                                 <ComboBox ItemsSource="{Binding HttpMethods}"
                                           SelectedIndex="{Binding SelectedMethodIndex}"
                                           HorizontalAlignment="Stretch"
-                                          CornerRadius="8"/>
+                                          Classes="adaptive-input"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="4">
                                 <TextBlock Text="Request URL" FontSize="13" FontWeight="SemiBold"/>
                                 <Grid>
                                     <TextBox Text="{Binding RequestUrl, Mode=TwoWay}"
                                              Watermark="https://example.com/api/upload"
-                                             CornerRadius="8"/>
+                                             Classes="adaptive-input"/>
                                     <Border BorderBrush="#FF6B6B"
                                             BorderThickness="2"
                                             CornerRadius="8"
@@ -255,9 +248,9 @@
                                 <Button Grid.Column="1"
                                         Content="+ Add"
                                         Command="{Binding AddHeaderCommand}"
+                                        Classes="adaptive-secondary"
                                         Padding="12,4"
                                         FontSize="12"
-                                        CornerRadius="6"
                                         VerticalContentAlignment="Center"
                                         Height="28"/>
                             </Grid>
@@ -273,19 +266,19 @@
                                                 <TextBox Grid.Column="0"
                                                          Text="{Binding Key, Mode=TwoWay}"
                                                          Watermark="Key"
-                                                         CornerRadius="6"
+                                                         Classes="adaptive-input"
                                                          FontSize="13"/>
                                                 <TextBox Grid.Column="1"
                                                          Text="{Binding Value, Mode=TwoWay}"
                                                          Watermark="Value"
-                                                         CornerRadius="6"
+                                                         Classes="adaptive-input"
                                                          FontSize="13"/>
                                                 <Button Grid.Column="2"
-                                                        Content="✕"
+                                                        Content="X"
                                                         Command="{Binding RemoveCommand}"
+                                                        Classes="adaptive-secondary"
                                                         Width="30" Height="30"
                                                         Padding="0"
-                                                        CornerRadius="6"
                                                         FontSize="12"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
@@ -304,9 +297,9 @@
                                 <Button Grid.Column="1"
                                         Content="+ Add"
                                         Command="{Binding AddParameterCommand}"
+                                        Classes="adaptive-secondary"
                                         Padding="12,4"
                                         FontSize="12"
-                                        CornerRadius="6"
                                         VerticalContentAlignment="Center"
                                         Height="28"/>
                             </Grid>
@@ -322,19 +315,19 @@
                                                 <TextBox Grid.Column="0"
                                                          Text="{Binding Key, Mode=TwoWay}"
                                                          Watermark="Key"
-                                                         CornerRadius="6"
+                                                         Classes="adaptive-input"
                                                          FontSize="13"/>
                                                 <TextBox Grid.Column="1"
                                                          Text="{Binding Value, Mode=TwoWay}"
                                                          Watermark="Value"
-                                                         CornerRadius="6"
+                                                         Classes="adaptive-input"
                                                          FontSize="13"/>
                                                 <Button Grid.Column="2"
-                                                        Content="✕"
+                                                        Content="X"
                                                         Command="{Binding RemoveCommand}"
+                                                        Classes="adaptive-secondary"
                                                         Width="30" Height="30"
                                                         Padding="0"
-                                                        CornerRadius="6"
                                                         FontSize="12"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
@@ -349,9 +342,7 @@
                 </Border>
 
                 <!-- Section: Request Body -->
-                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                        CornerRadius="12"
-                        Padding="16">
+                <Border Classes="adaptive-card">
                     <StackPanel Spacing="14">
                         <TextBlock Text="Request Body"
                                    FontWeight="SemiBold"
@@ -364,13 +355,13 @@
                                 <ComboBox ItemsSource="{Binding BodyTypes}"
                                           SelectedIndex="{Binding SelectedBodyTypeIndex}"
                                           HorizontalAlignment="Stretch"
-                                          CornerRadius="8"/>
+                                          Classes="adaptive-input"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="4">
                                 <TextBlock Text="File Form Name" FontSize="13" FontWeight="SemiBold"/>
                                 <TextBox Text="{Binding FileFormName, Mode=TwoWay}"
                                          Watermark="file"
-                                         CornerRadius="8"/>
+                                         Classes="adaptive-input"/>
                             </StackPanel>
                         </Grid>
 
@@ -381,9 +372,9 @@
                                 <Button Grid.Column="1"
                                         Content="+ Add"
                                         Command="{Binding AddArgumentCommand}"
+                                        Classes="adaptive-secondary"
                                         Padding="12,4"
                                         FontSize="12"
-                                        CornerRadius="6"
                                         VerticalContentAlignment="Center"
                                         Height="28"/>
                             </Grid>
@@ -399,19 +390,19 @@
                                                 <TextBox Grid.Column="0"
                                                          Text="{Binding Key, Mode=TwoWay}"
                                                          Watermark="Key"
-                                                         CornerRadius="6"
+                                                         Classes="adaptive-input"
                                                          FontSize="13"/>
                                                 <TextBox Grid.Column="1"
                                                          Text="{Binding Value, Mode=TwoWay}"
                                                          Watermark="Value"
-                                                         CornerRadius="6"
+                                                         Classes="adaptive-input"
                                                          FontSize="13"/>
                                                 <Button Grid.Column="2"
-                                                        Content="✕"
+                                                        Content="X"
                                                         Command="{Binding RemoveCommand}"
+                                                        Classes="adaptive-secondary"
                                                         Width="30" Height="30"
                                                         Padding="0"
-                                                        CornerRadius="6"
                                                         FontSize="12"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
@@ -432,7 +423,7 @@
                                      MinHeight="80"
                                      MaxHeight="150"
                                      Watermark="JSON or XML body content"
-                                     CornerRadius="8"
+                                     Classes="adaptive-input"
                                      FontFamily="Consolas, Monospace"
                                      FontSize="12"/>
                             <TextBlock Text="Use input for file content, filename for file name."
@@ -444,9 +435,7 @@
                 </Border>
 
                 <!-- Section: Response Parsing -->
-                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                        CornerRadius="12"
-                        Padding="16">
+                <Border Classes="adaptive-card">
                     <StackPanel Spacing="14">
                         <StackPanel Spacing="4">
                             <TextBlock Text="Response Parsing"
@@ -463,36 +452,34 @@
                             <TextBlock Text="URL" FontSize="13" FontWeight="SemiBold"/>
                             <TextBox Text="{Binding UrlPattern, Mode=TwoWay}"
                                      Watermark="e.g. json:url or response"
-                                     CornerRadius="8"/>
+                                     Classes="adaptive-input"/>
                         </StackPanel>
 
                         <StackPanel Spacing="4">
                             <TextBlock Text="Thumbnail URL" FontSize="13" FontWeight="SemiBold"/>
                             <TextBox Text="{Binding ThumbnailUrlPattern, Mode=TwoWay}"
                                      Watermark="e.g. json:thumbnail"
-                                     CornerRadius="8"/>
+                                     Classes="adaptive-input"/>
                         </StackPanel>
 
                         <StackPanel Spacing="4">
                             <TextBlock Text="Deletion URL" FontSize="13" FontWeight="SemiBold"/>
                             <TextBox Text="{Binding DeletionUrlPattern, Mode=TwoWay}"
                                      Watermark="e.g. json:delete_url"
-                                     CornerRadius="8"/>
+                                     Classes="adaptive-input"/>
                         </StackPanel>
 
                         <StackPanel Spacing="4">
                             <TextBlock Text="Error Message" FontSize="13" FontWeight="SemiBold"/>
                             <TextBox Text="{Binding ErrorMessagePattern, Mode=TwoWay}"
                                      Watermark="e.g. json:error"
-                                     CornerRadius="8"/>
+                                     Classes="adaptive-input"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
                 <!-- Section: Import from JSON -->
-                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                        CornerRadius="12"
-                        Padding="16">
+                <Border Classes="adaptive-card">
                     <StackPanel Spacing="10">
                         <StackPanel Spacing="2">
                             <TextBlock Text="Import from JSON"
@@ -511,14 +498,14 @@
                                  Watermark="Paste .sxcu JSON content here..."
                                  FontFamily="Consolas, Monospace"
                                  FontSize="12"
-                                 CornerRadius="8"/>
+                                 Classes="adaptive-input"/>
                         <Button Content="Import JSON"
                                 Command="{Binding ImportJsonCommand}"
+                                Classes="adaptive-secondary"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Center"
                                 VerticalContentAlignment="Center"
                                 Height="40"
-                                CornerRadius="8"
                                 FontSize="13"/>
                     </StackPanel>
                 </Border>
@@ -527,22 +514,21 @@
                 <StackPanel Spacing="10" Margin="0,4,0,40">
                     <Button Content="Save"
                             Command="{Binding SaveEditorCommand}"
+                            Classes="adaptive-primary"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Height="48"
-                            CornerRadius="10"
-                            Classes="accent"
                             FontWeight="SemiBold"
                             FontSize="15"/>
 
                     <Button Content="Cancel"
                             Command="{Binding CancelEditorCommand}"
+                            Classes="adaptive-secondary"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Height="42"
-                            CornerRadius="10"
                             FontSize="14"/>
                 </StackPanel>
 

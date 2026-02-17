@@ -1,16 +1,14 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:XerahS.Mobile.UI.ViewModels"
              x:Class="XerahS.Mobile.UI.Views.MobileAmazonS3ConfigView"
              x:DataType="vm:MobileAmazonS3ConfigViewModel">
 
-    <ScrollViewer>
+    <ScrollViewer Classes="adaptive-scroll">
         <StackPanel Margin="16" Spacing="14">
 
             <!-- Header Card -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    CornerRadius="12"
-                    Padding="20">
+            <Border Classes="adaptive-card">
                 <StackPanel Spacing="6">
                     <TextBlock Text="Amazon S3"
                                FontSize="22"
@@ -24,9 +22,7 @@
 
             <!-- Section: Authentication -->
             <Border x:Name="AuthSection"
-                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    CornerRadius="12"
-                    Padding="16">
+                    Classes="adaptive-card">
                 <StackPanel Spacing="14">
                     <TextBlock Text="Authentication"
                                FontWeight="SemiBold"
@@ -38,7 +34,7 @@
                         <Grid>
                             <TextBox Text="{Binding AccessKeyId, Mode=TwoWay}"
                                      Watermark="AKIA..."
-                                     CornerRadius="8"
+                                     Classes="adaptive-input"
                                      FontSize="13"/>
                             <Border BorderBrush="#FF6B6B"
                                     BorderThickness="2"
@@ -53,8 +49,8 @@
                         <Grid>
                             <TextBox Text="{Binding SecretAccessKey, Mode=TwoWay}"
                                      Watermark="Enter your secret key"
-                                     PasswordChar="●"
-                                     CornerRadius="8"
+                                     PasswordChar="*"
+                                     Classes="adaptive-input"
                                      FontSize="13"/>
                             <Border BorderBrush="#FF6B6B"
                                     BorderThickness="2"
@@ -68,9 +64,7 @@
 
             <!-- Section: Bucket Configuration -->
             <Border x:Name="BucketSection"
-                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    CornerRadius="12"
-                    Padding="16">
+                    Classes="adaptive-card">
                 <StackPanel Spacing="14">
                     <TextBlock Text="Bucket Configuration"
                                FontWeight="SemiBold"
@@ -82,7 +76,7 @@
                         <Grid>
                             <TextBox Text="{Binding BucketName, Mode=TwoWay}"
                                      Watermark="my-bucket-name"
-                                     CornerRadius="8"
+                                     Classes="adaptive-input"
                                      FontSize="13"/>
                             <Border BorderBrush="#FF6B6B"
                                     BorderThickness="2"
@@ -98,7 +92,7 @@
                             <ComboBox ItemsSource="{x:Static vm:MobileAmazonS3ConfigViewModel.Regions}"
                                       SelectedIndex="{Binding RegionIndex}"
                                       HorizontalAlignment="Stretch"
-                                      CornerRadius="8">
+                                      Classes="adaptive-input">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate x:DataType="vm:S3RegionOption">
                                         <TextBlock Text="{Binding DisplayName}"/>
@@ -116,9 +110,7 @@
             </Border>
 
             <!-- Section: Upload Options -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    CornerRadius="12"
-                    Padding="16">
+            <Border Classes="adaptive-card">
                 <StackPanel Spacing="14">
                     <TextBlock Text="Upload Options"
                                FontWeight="SemiBold"
@@ -129,7 +121,7 @@
                         <TextBlock Text="Object Prefix" FontSize="13" FontWeight="SemiBold"/>
                         <TextBox Text="{Binding ObjectPrefix, Mode=TwoWay}"
                                  Watermark="ShareX/%y/%mo"
-                                 CornerRadius="8"
+                                 Classes="adaptive-input"
                                  FontSize="13"/>
                         <TextBlock Text="Use %y for year, %mo for month, %d for day"
                                    FontSize="11"
@@ -143,7 +135,7 @@
                         <TextBox Text="{Binding CustomDomain, Mode=TwoWay}"
                                  Watermark="https://cdn.example.com"
                                  IsEnabled="{Binding UseCustomDomain}"
-                                 CornerRadius="8"
+                                 Classes="adaptive-input"
                                  FontSize="13"/>
                     </StackPanel>
 
@@ -153,15 +145,13 @@
             </Border>
 
             <!-- Section: Help -->
-            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    CornerRadius="12"
-                    Padding="16">
+            <Border Classes="adaptive-card">
                 <StackPanel Spacing="10">
                     <TextBlock Text="How to get AWS credentials"
                                FontWeight="SemiBold"
                                FontSize="15"
                                Opacity="0.7"/>
-                    <TextBlock Text="1. Go to AWS Console → IAM → Users"
+                    <TextBlock Text="1. Go to AWS Console -> IAM -> Users"
                                FontSize="13"/>
                     <TextBlock Text="2. Create a user with 'AmazonS3FullAccess' permission"
                                FontSize="13"
@@ -176,22 +166,21 @@
             <StackPanel Spacing="10" Margin="0,4,0,40">
                 <Button Content="Save Configuration"
                         Command="{Binding SaveCommand}"
+                        Classes="adaptive-primary"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
                         Height="48"
-                        CornerRadius="10"
-                        Classes="accent"
                         FontWeight="SemiBold"
                         FontSize="15"/>
 
                 <Button Content="Test Connection"
                         Command="{Binding TestCommand}"
+                        Classes="adaptive-secondary"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
                         Height="42"
-                        CornerRadius="10"
                         FontSize="14"
                         IsVisible="{Binding IsTesting, Converter={x:Static BoolConverters.Not}}"/>
 

@@ -1,58 +1,53 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:XerahS.Mobile.UI.ViewModels"
              x:Class="XerahS.Mobile.UI.Views.MobileSettingsView"
              x:DataType="vm:MobileSettingsViewModel">
 
     <Grid RowDefinitions="Auto, *">
-        
+
         <!-- Header -->
-        <Grid Grid.Row="0" 
-              Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-              Height="56"
+        <Grid Grid.Row="0"
+              Classes="adaptive-navbar"
               ColumnDefinitions="Auto, *, Auto">
-            
+
             <!-- Back Button (shown when in config view or to close settings) -->
             <Button Grid.Column="0"
-                    Content="←"
-                    FontSize="20"
+                    Content="Back"
                     Command="{Binding BackCommand}"
-                    Background="Transparent"
-                    Width="48"
+                    Classes="adaptive-secondary"
+                    Width="72"
                     Height="48"
                     Margin="4,0"/>
-            
+
             <!-- Title -->
             <TextBlock Grid.Column="1"
                        Text="{Binding CurrentViewTitle}"
-                       FontSize="18"
-                       FontWeight="SemiBold"
+                       Classes="adaptive-navbar-title"
                        VerticalAlignment="Center"
                        Margin="16,0"/>
-            
+
             <!-- Refresh Button (only in list view) -->
             <Button Grid.Column="2"
-                    Content="↻"
-                    FontSize="16"
+                    Content="Refresh"
                     Command="{Binding RefreshCommand}"
                     IsVisible="{Binding IsListView}"
-                    Background="Transparent"
-                    Width="48"
+                    Classes="adaptive-secondary"
+                    Width="96"
                     Height="48"
                     Margin="4,0"/>
         </Grid>
 
         <!-- Content Area -->
         <Grid Grid.Row="1">
-            
+
             <!-- Settings List -->
-            <ScrollViewer IsVisible="{Binding IsListView}">
+            <ScrollViewer IsVisible="{Binding IsListView}"
+                          Classes="adaptive-scroll">
                 <StackPanel Margin="16" Spacing="12">
-                    
+
                     <!-- Info Card -->
-                    <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                            CornerRadius="12"
-                            Padding="16">
+                    <Border Classes="adaptive-card">
                         <StackPanel Spacing="8">
                             <TextBlock Text="Upload Destinations"
                                        FontSize="16"
@@ -72,11 +67,11 @@
                                         HorizontalContentAlignment="Stretch"
                                         Padding="0"
                                         Margin="0,4"
-                                        CornerRadius="12"
+                                        Classes="adaptive-secondary"
                                         Click="OnSettingsItemClick">
                                     <Button.Content>
                                         <Grid ColumnDefinitions="Auto, *, Auto">
-                                            
+
                                             <!-- Icon/Status -->
                                             <Border Grid.Column="0"
                                                     Width="48"
@@ -86,13 +81,13 @@
                                                     Margin="12"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center">
-                                                <TextBlock Text="☁"
+                                                <TextBlock Text="&#x2601;"
                                                            FontSize="24"
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center"
                                                            Foreground="White"/>
                                             </Border>
-                                            
+
                                             <!-- Text -->
                                             <StackPanel Grid.Column="1"
                                                         VerticalAlignment="Center"
@@ -105,7 +100,7 @@
                                                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                            TextTrimming="CharacterEllipsis"/>
                                             </StackPanel>
-                                            
+
                                             <!-- Status Badge -->
                                             <Border Grid.Column="2"
                                                     Width="32"
@@ -121,7 +116,7 @@
                                                            VerticalAlignment="Center"
                                                            Foreground="White"/>
                                             </Border>
-                                            
+
                                         </Grid>
                                     </Button.Content>
                                 </Button>

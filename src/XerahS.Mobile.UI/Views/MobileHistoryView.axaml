@@ -7,52 +7,51 @@
     <Grid RowDefinitions="Auto,Auto,*">
 
         <Grid Grid.Row="0"
-              Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-              Height="56"
+              Classes="adaptive-navbar"
               ColumnDefinitions="Auto,*,Auto,Auto">
 
             <Button Grid.Column="0"
                     Content="Back"
                     Command="{Binding BackCommand}"
+                    Classes="adaptive-secondary"
                     Margin="8,0"
                     VerticalAlignment="Center" />
 
             <TextBlock Grid.Column="1"
                        Text="Upload History"
-                       FontSize="18"
-                       FontWeight="SemiBold"
+                       Classes="adaptive-navbar-title"
                        VerticalAlignment="Center"
                        Margin="12,0" />
 
             <Button Grid.Column="2"
                     Content="Refresh"
                     Command="{Binding RefreshCommand}"
+                    Classes="adaptive-secondary"
                     Margin="0,0,8,0"
                     VerticalAlignment="Center" />
 
             <Button Grid.Column="3"
                     Content="Clear"
                     Command="{Binding ClearHistoryCommand}"
+                    Classes="adaptive-secondary"
                     Margin="0,0,8,0"
                     VerticalAlignment="Center" />
         </Grid>
 
         <StackPanel Grid.Row="1" Margin="16,12,16,8" Spacing="8">
             <TextBox Watermark="Search by file name, host or URL..."
+                     Classes="adaptive-input"
                      Text="{Binding SearchText, Mode=TwoWay}" />
             <TextBlock Text="{Binding StatusText}"
                        FontSize="12"
                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
         </StackPanel>
 
-        <ScrollViewer Grid.Row="2">
+        <ScrollViewer Grid.Row="2" Classes="adaptive-scroll">
             <ItemsControl ItemsSource="{Binding HistoryItems}" Margin="16,0,16,16">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:MobileHistoryItem">
-                        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                                CornerRadius="8"
-                                Padding="12"
-                                Margin="0,0,0,8">
+                        <Border Classes="adaptive-card">
                             <StackPanel Spacing="6">
                                 <TextBlock Text="{Binding FileName}"
                                            FontWeight="SemiBold" />
@@ -71,10 +70,12 @@
                                     <Button Content="Copy URL"
                                             IsVisible="{Binding HasUrl}"
                                             Command="{Binding CopyUrlCommand}"
-                                            CommandParameter="{Binding Url}" />
+                                            CommandParameter="{Binding Url}"
+                                            Classes="adaptive-secondary" />
                                     <Button Content="Delete"
                                             Command="{Binding DeleteItemCommand}"
-                                            CommandParameter="{Binding .}" />
+                                            CommandParameter="{Binding .}"
+                                            Classes="adaptive-secondary" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>

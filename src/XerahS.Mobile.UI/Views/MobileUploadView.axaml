@@ -8,35 +8,33 @@
 
         <!-- Header -->
         <Grid Grid.Row="0"
-              Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-              Height="56"
+              Classes="adaptive-navbar"
               ColumnDefinitions="*, Auto, Auto">
 
             <!-- Title -->
             <TextBlock Grid.Column="0"
                        Text="XerahS"
-                       FontSize="20"
-                       FontWeight="Bold"
+                       Classes="adaptive-navbar-title"
                        VerticalAlignment="Center"
                        Margin="20,0"/>
 
             <Button Grid.Column="1"
                     Content="History"
                     Command="{Binding OpenHistoryCommand}"
-                    Background="Transparent"
+                    Classes="adaptive-secondary"
                     Margin="4,0"
                     ToolTip.Tip="History"/>
 
             <Button Grid.Column="2"
                     Content="Settings"
                     Command="{Binding OpenSettingsCommand}"
-                    Background="Transparent"
+                    Classes="adaptive-secondary"
                     Margin="4,0"
                     ToolTip.Tip="Settings"/>
         </Grid>
 
         <!-- Main Content -->
-        <ScrollViewer Grid.Row="1">
+        <ScrollViewer Grid.Row="1" Classes="adaptive-scroll">
             <StackPanel Margin="20" Spacing="16">
 
                 <!-- Subtitle -->
@@ -54,6 +52,7 @@
 
                 <Button Content="Choose Photo or File"
                         Click="OnChooseFilesClick"
+                        Classes="adaptive-primary"
                         HorizontalAlignment="Center"
                         Margin="0,4" />
 
@@ -68,10 +67,7 @@
                               Margin="0,8">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:UploadResultItem">
-                            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                                    CornerRadius="8"
-                                    Padding="16"
-                                    Margin="0,4">
+                            <Border Classes="adaptive-card">
                                 <StackPanel Spacing="8">
 
                                     <!-- File name -->
@@ -95,6 +91,7 @@
                                             IsVisible="{Binding HasUrl}"
                                             Command="{Binding CopyUrlCommand}"
                                             CommandParameter="{Binding Url}"
+                                            Classes="adaptive-secondary"
                                             HorizontalAlignment="Left" />
 
                                 </StackPanel>
