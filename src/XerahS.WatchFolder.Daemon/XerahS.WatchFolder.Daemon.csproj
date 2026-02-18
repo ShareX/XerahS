@@ -7,6 +7,7 @@
     <AssemblyName>xerahs-watchfolder-daemon</AssemblyName>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <SelfContained Condition="'$(Configuration)' == 'Release'">true</SelfContained>
     <DefineConstants Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '')">$(DefineConstants);WINDOWS</DefineConstants>
     <DefineConstants Condition="$(RuntimeIdentifier.StartsWith('osx')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('OSX')))">$(DefineConstants);MACOS</DefineConstants>
     <DefineConstants Condition="$(RuntimeIdentifier.StartsWith('linux')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('Linux')))">$(DefineConstants);LINUX</DefineConstants>
