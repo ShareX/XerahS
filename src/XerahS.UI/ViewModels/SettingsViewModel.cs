@@ -40,6 +40,8 @@ namespace XerahS.UI.ViewModels
     public partial class SettingsViewModel : ViewModelBase
     {
         private const int WatchFolderDaemonStopTimeoutSeconds = 30;
+        private const int WatchFolderDaemonStateRetryCount = 8;
+        private const int WatchFolderDaemonStateRetryDelayMs = 250;
         private bool _isLoading = true;
         private string _lastSavedWatchFolderSignature = string.Empty;
         private bool _suspendWatchFolderAutoSave;
@@ -942,19 +944,30 @@ namespace XerahS.UI.ViewModels
                     return;
                 }
 
+                bool targetRunningState;
                 WatchFolderDaemonResult result;
                 if (WatchFolderDaemonRunning)
                 {
+                    targetRunningState = false;
                     result = await daemonService.StopAsync(scope, TimeSpan.FromSeconds(WatchFolderDaemonStopTimeoutSeconds));
                 }
                 else
                 {
+                    targetRunningState = true;
                     SaveSettings();
                     result = await daemonService.StartAsync(scope, SettingsManager.PersonalFolder, WatchFolderDaemonStartAtStartup);
                 }
 
                 ApplyWatchFolderDaemonOperationResult(result);
-                RefreshWatchFolderDaemonStatusCore(clearLastError: result.Success);
+                if (result.Success)
+                {
+                    await RefreshWatchFolderDaemonStatusWithRetryAsync(targetRunningState, clearLastError: true);
+                }
+                else
+                {
+                    RefreshWatchFolderDaemonStatusCore(clearLastError: false);
+                }
+
                 ApplyWatchFolderRuntimePolicy(watchFolderConfigurationChanged: false, refreshDaemonStatus: false);
             }
             catch (Exception ex)
@@ -966,6 +979,23 @@ namespace XerahS.UI.ViewModels
             finally
             {
                 IsWatchFolderDaemonBusy = false;
+            }
+        }
+
+        private async Task RefreshWatchFolderDaemonStatusWithRetryAsync(bool targetRunningState, bool clearLastError)
+        {
+            for (int attempt = 0; attempt < WatchFolderDaemonStateRetryCount; attempt++)
+            {
+                bool isRunning = RefreshWatchFolderDaemonStatusCore(clearLastError);
+                if (isRunning == targetRunningState)
+                {
+                    return;
+                }
+
+                if (attempt < WatchFolderDaemonStateRetryCount - 1)
+                {
+                    await Task.Delay(WatchFolderDaemonStateRetryDelayMs);
+                }
             }
         }
 
