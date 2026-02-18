@@ -9,7 +9,7 @@ param (
 $PackageIdentifier = "ShareX.XerahS"
 $Publisher = "ShareX Team"
 $PackageName = "XerahS"
-$ShortDescription = "ShareX mod with extra features." # Fallback
+$ShortDescription = "A cross-platform port of ShareX built with Avalonia UI." # Fallback
 $PackageUrl = "https://github.com/ShareX/XerahS"
 $License = "GPL-3.0-only"
 
