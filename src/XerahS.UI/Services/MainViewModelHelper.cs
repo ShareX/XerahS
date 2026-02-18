@@ -39,60 +39,9 @@ public static class MainViewModelHelper
     /// </summary>
     public static void WireUploadRequested(MainViewModel viewModel)
     {
-        viewModel.UploadRequested += async (bitmap) =>
+        viewModel.UploadRequested += () =>
         {
-            DebugHelper.WriteLine("MainViewModelHelper: UploadRequested received");
-            try
-            {
-                // Convert Avalonia Bitmap to SKBitmap for upload pipeline
-                using var skBitmap = ShareX.ImageEditor.Helpers.BitmapConversionHelpers.ToSKBitmap(bitmap);
-                DebugHelper.WriteLine($"MainViewModelHelper: Converted bitmap {skBitmap.Width}x{skBitmap.Height}");
-
-                // Get the default image uploader instance, or first available
-                string? destinationInstanceId = null;
-                var defaultInstance = InstanceManager.Instance.GetDefaultInstance(UploaderCategory.Image);
-                if (defaultInstance != null)
-                {
-                    destinationInstanceId = defaultInstance.InstanceId;
-                    DebugHelper.WriteLine($"MainViewModelHelper: Using default instance: {defaultInstance.DisplayName} ({destinationInstanceId})");
-                }
-                else
-                {
-                    // Fall back to first available image uploader
-                    var imageInstances = InstanceManager.Instance.GetInstancesByCategory(UploaderCategory.Image);
-                    var firstInstance = imageInstances.FirstOrDefault();
-                    if (firstInstance != null)
-                    {
-                        destinationInstanceId = firstInstance.InstanceId;
-                        DebugHelper.WriteLine($"MainViewModelHelper: Using first instance: {firstInstance.DisplayName} ({destinationInstanceId})");
-                    }
-                    else
-                    {
-                        DebugHelper.WriteLine("MainViewModelHelper: No image uploader instances available!");
-                    }
-                }
-
-                // Create task settings with upload enabled and CopyURLToClipboard
-                var taskSettings = new TaskSettings
-                {
-                    Job = WorkflowType.None,
-                    AfterCaptureJob = AfterCaptureTasks.UploadImageToHost,
-                    AfterUploadJob = AfterUploadTasks.CopyURLToClipboard,
-                    DestinationInstanceId = destinationInstanceId
-                };
-
-                DebugHelper.WriteLine($"MainViewModelHelper: TaskSettings created - Job={taskSettings.Job}, AfterCapture={taskSettings.AfterCaptureJob}, AfterUpload={taskSettings.AfterUploadJob}, DestId={taskSettings.DestinationInstanceId}");
-
-                // Start upload task via TaskManager
-                DebugHelper.WriteLine("MainViewModelHelper: Calling TaskManager.StartTask...");
-                await Core.Managers.TaskManager.Instance.StartTask(taskSettings, skBitmap.Copy());
-                DebugHelper.WriteLine("MainViewModelHelper: TaskManager.StartTask completed");
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteLine($"Editor upload failed: {ex.Message}");
-                DebugHelper.WriteException(ex);
-            }
+            _ = HandleUploadRequestedAsync(viewModel);
         };
     }
 
@@ -101,32 +50,104 @@ public static class MainViewModelHelper
     /// </summary>
     public static void WireCopyRequested(MainViewModel viewModel)
     {
-        viewModel.CopyRequested += async (bitmap) =>
+        viewModel.CopyRequested += () =>
         {
-            DebugHelper.WriteLine("MainViewModelHelper: CopyRequested received");
-            try
-            {
-                // Convert Avalonia Bitmap to SKBitmap for clipboard
-                using var skBitmap = ShareX.ImageEditor.Helpers.BitmapConversionHelpers.ToSKBitmap(bitmap);
-                DebugHelper.WriteLine($"MainViewModelHelper: Converted bitmap {skBitmap.Width}x{skBitmap.Height} for clipboard");
+            HandleCopyRequested(viewModel);
+        };
+    }
 
-                // Use the platform clipboard service (set up via EditorClipboardAdapter)
-                if (Platform.Abstractions.PlatformServices.IsInitialized)
+    private static async Task HandleUploadRequestedAsync(MainViewModel viewModel)
+    {
+        DebugHelper.WriteLine("MainViewModelHelper: UploadRequested received");
+
+        try
+        {
+            if (viewModel.PreviewImage == null)
+            {
+                DebugHelper.WriteLine("MainViewModelHelper: UploadRequested ignored because PreviewImage is null.");
+                return;
+            }
+
+            // Convert Avalonia Bitmap to SKBitmap for upload pipeline.
+            using var skBitmap = ShareX.ImageEditor.Helpers.BitmapConversionHelpers.ToSKBitmap(viewModel.PreviewImage);
+            DebugHelper.WriteLine($"MainViewModelHelper: Converted bitmap {skBitmap.Width}x{skBitmap.Height}");
+
+            // Get the default image uploader instance, or first available.
+            string? destinationInstanceId = null;
+            var defaultInstance = InstanceManager.Instance.GetDefaultInstance(UploaderCategory.Image);
+            if (defaultInstance != null)
+            {
+                destinationInstanceId = defaultInstance.InstanceId;
+                DebugHelper.WriteLine($"MainViewModelHelper: Using default instance: {defaultInstance.DisplayName} ({destinationInstanceId})");
+            }
+            else
+            {
+                // Fall back to first available image uploader.
+                var imageInstances = InstanceManager.Instance.GetInstancesByCategory(UploaderCategory.Image);
+                var firstInstance = imageInstances.FirstOrDefault();
+                if (firstInstance != null)
                 {
-                    Platform.Abstractions.PlatformServices.Clipboard.SetImage(skBitmap.Copy());
-                    DebugHelper.WriteLine("MainViewModelHelper: Image copied to clipboard");
+                    destinationInstanceId = firstInstance.InstanceId;
+                    DebugHelper.WriteLine($"MainViewModelHelper: Using first instance: {firstInstance.DisplayName} ({destinationInstanceId})");
                 }
                 else
                 {
-                    DebugHelper.WriteLine("MainViewModelHelper: Platform clipboard not initialized");
+                    DebugHelper.WriteLine("MainViewModelHelper: No image uploader instances available.");
                 }
             }
-            catch (Exception ex)
+
+            var taskSettings = new TaskSettings
             {
-                DebugHelper.WriteLine($"Editor copy to clipboard failed: {ex.Message}");
-                DebugHelper.WriteException(ex);
+                Job = WorkflowType.None,
+                AfterCaptureJob = AfterCaptureTasks.UploadImageToHost,
+                AfterUploadJob = AfterUploadTasks.CopyURLToClipboard,
+                DestinationInstanceId = destinationInstanceId
+            };
+
+            DebugHelper.WriteLine($"MainViewModelHelper: TaskSettings created - Job={taskSettings.Job}, AfterCapture={taskSettings.AfterCaptureJob}, AfterUpload={taskSettings.AfterUploadJob}, DestId={taskSettings.DestinationInstanceId}");
+
+            DebugHelper.WriteLine("MainViewModelHelper: Calling TaskManager.StartTask...");
+            await Core.Managers.TaskManager.Instance.StartTask(taskSettings, skBitmap.Copy());
+            DebugHelper.WriteLine("MainViewModelHelper: TaskManager.StartTask completed");
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteLine($"Editor upload failed: {ex.Message}");
+            DebugHelper.WriteException(ex);
+        }
+    }
+
+    private static void HandleCopyRequested(MainViewModel viewModel)
+    {
+        DebugHelper.WriteLine("MainViewModelHelper: CopyRequested received");
+
+        try
+        {
+            if (viewModel.PreviewImage == null)
+            {
+                DebugHelper.WriteLine("MainViewModelHelper: CopyRequested ignored because PreviewImage is null.");
+                return;
             }
-        };
+
+            // Convert Avalonia Bitmap to SKBitmap for clipboard.
+            using var skBitmap = ShareX.ImageEditor.Helpers.BitmapConversionHelpers.ToSKBitmap(viewModel.PreviewImage);
+            DebugHelper.WriteLine($"MainViewModelHelper: Converted bitmap {skBitmap.Width}x{skBitmap.Height} for clipboard");
+
+            // Use the platform clipboard service (set up via EditorClipboardAdapter).
+            if (Platform.Abstractions.PlatformServices.IsInitialized)
+            {
+                Platform.Abstractions.PlatformServices.Clipboard.SetImage(skBitmap.Copy());
+                DebugHelper.WriteLine("MainViewModelHelper: Image copied to clipboard");
+            }
+            else
+            {
+                DebugHelper.WriteLine("MainViewModelHelper: Platform clipboard not initialized");
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteLine($"Editor copy to clipboard failed: {ex.Message}");
+            DebugHelper.WriteException(ex);
+        }
     }
 }
-
