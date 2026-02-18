@@ -18,6 +18,15 @@ Validates GPL v3 license headers in all staged C# files before allowing a commit
 - Linux/macOS: Uses bash script (`pre-commit.bash`) via launcher (`pre-commit`)
 - Windows: Uses PowerShell script (`pre-commit.ps1`) via launcher (`pre-commit`)
 
+### pre-push
+
+Ensures `ImageEditor` is attached to a branch and auto-pushes branch commits before pushing the superproject.
+
+**What it does:**
+- Runs the same detached `HEAD` recovery logic used by `post-checkout`/`post-merge`
+- If `ImageEditor` is ahead of its upstream, pushes those commits automatically
+- Sets upstream to `origin/<branch>` when possible
+
 ### post-checkout
 
 Ensures `ImageEditor` is not left detached after checkout operations.
@@ -27,6 +36,7 @@ Ensures `ImageEditor` is not left detached after checkout operations.
 - Resolves default branch from `origin/HEAD` (fallback: `develop`, `main`, `master`)
 - Checks out the default branch locally
 - Attempts fast-forward to upstream when available
+- Optional auto-push support when `xerahs.hooks.imageeditorautopush=true`
 
 **Cross-platform execution:**
 - Launcher: `.githooks/sync-imageeditor-head`
@@ -70,8 +80,15 @@ New-Item -ItemType SymbolicLink -Path ".git\hooks\pre-commit" -Target "..\..\. g
 
 Once installed, hooks run automatically on:
 - `git commit` (`pre-commit`)
+- `git push` (`pre-push`)
 - `git checkout`/branch switches (`post-checkout`)
 - `git merge` (`post-merge`)
+
+Optional auto-push on checkout/merge as well:
+
+```bash
+git config xerahs.hooks.imageeditorautopush true
+```
 
 ### Bypassing Hooks (Not Recommended)
 
@@ -145,7 +162,7 @@ Update the file headers to match the expected format:
 2. Check file permissions (Linux/macOS):
    ```bash
    ls -la .githooks/pre-commit
-   ls -la .githooks/post-checkout .githooks/post-merge .githooks/sync-imageeditor-head.bash
+   ls -la .githooks/pre-push .githooks/post-checkout .githooks/post-merge .githooks/sync-imageeditor-head.bash
    chmod +x .githooks/pre-commit  # If not executable
    ```
 
@@ -214,5 +231,5 @@ The same validation runs in CI/CD pipelines. See `.github/workflows/` for integr
 
 ---
 
-**Last Updated:** 2026-01-18
+**Last Updated:** 2026-02-18
 **Maintainer:** XerahS Development Team

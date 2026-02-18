@@ -93,6 +93,7 @@ $hookFiles = @(
     ".githooks/pre-commit",
     ".githooks/pre-commit.bash",
     ".githooks/pre-commit.ps1",
+    ".githooks/pre-push",
     ".githooks/post-checkout",
     ".githooks/post-merge",
     ".githooks/sync-imageeditor-head",
@@ -119,6 +120,7 @@ if ($IsLinux -or $IsMacOS) {
     try {
         chmod +x .githooks/pre-commit
         chmod +x .githooks/pre-commit.bash
+        chmod +x .githooks/pre-push
         chmod +x .githooks/post-checkout
         chmod +x .githooks/post-merge
         chmod +x .githooks/sync-imageeditor-head
@@ -144,6 +146,7 @@ Write-Success "Git hooks setup complete!"
 Write-Host ""
 Write-Info "Active hooks:"
 Write-Host "  * pre-commit - Validates GPL v3 license headers in C# files"
+Write-Host "  * pre-push - Auto-syncs and auto-pushes ImageEditor branch commits"
 Write-Host "  * post-checkout - Ensures ImageEditor is on default branch when detached"
 Write-Host "  * post-merge - Ensures ImageEditor is on default branch when detached"
 Write-Host ""

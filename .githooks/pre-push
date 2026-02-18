@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+
+set -e
+
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+
+if [ -x "$script_dir/sync-imageeditor-head" ]; then
+  XERAHS_IMAGEEDITOR_AUTO_PUSH=1 exec "$script_dir/sync-imageeditor-head"
+else
+  XERAHS_IMAGEEDITOR_AUTO_PUSH=1 exec sh "$script_dir/sync-imageeditor-head"
+fi
