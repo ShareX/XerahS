@@ -11,7 +11,14 @@ build/
 ├── README.md                          # This file
 ├── windows/                           # Windows build scripts
 │   ├── package-windows.ps1           # Main PowerShell build script
-│   └── XerahS-setup.iss              # Inno Setup installer script
+│   ├── XerahS-setup.iss              # Inno Setup installer script
+│   ├── scoop/                        # Scoop manifests
+│   │   └── scoop.json                # Scoop manifest for XerahS
+│   ├── winget/                       # WinGet manifests
+│   │   └── generate-winget.ps1       # Script to generate WinGet manifests
+│   └── chocolatey/                   # Chocolatey packages
+│       ├── xerahs.nuspec             # Chocolatey package definition
+│       └── tools/                    # Chocolatey install/uninstall scripts
 ├── linux/                             # Linux build scripts
 │   ├── package-linux.ps1             # PowerShell wrapper for Linux build (Windows)
 │   ├── package-linux.sh              # Bash script for Linux build (Linux/macOS)
@@ -75,6 +82,12 @@ build/
 ### Requirements
 - Inno Setup 6 (installed at `%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe`)
 - .NET SDK 10.0+
+
+### Package Managers
+The `build/windows` directory also contains resources for submitting XerahS to package managers.
+- **Scoop**: `build/windows/scoop/scoop.json`
+- **WinGet**: `build/windows/winget/generate-winget.ps1` (Generates manifests to `manifests/` subdir)
+- **Chocolatey**: `build/windows/chocolatey/`
 
 ---
 
