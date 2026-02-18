@@ -6,6 +6,14 @@ param (
     [string]$InstallerArm64Sha256
 )
 
+if ([string]::IsNullOrEmpty($InstallerUrl)) {
+    $InstallerUrl = "https://github.com/ShareX/XerahS/releases/download/v$Version/XerahS-$Version-win-x64.exe"
+}
+
+if ([string]::IsNullOrEmpty($InstallerArm64Url)) {
+    $InstallerArm64Url = "https://github.com/ShareX/XerahS/releases/download/v$Version/XerahS-$Version-win-arm64.exe"
+}
+
 $PackageIdentifier = "ShareX.XerahS"
 $Publisher = "ShareX Team"
 $PackageName = "XerahS"
