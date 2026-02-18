@@ -38,15 +38,25 @@ namespace XerahS.Core.Managers
 
         private readonly List<FileSystemWatcher> _watchers = new();
         private readonly ConcurrentDictionary<string, byte> _inFlight = new(StringComparer.OrdinalIgnoreCase);
+        private readonly object _watcherSync = new();
+        private volatile bool _acceptNewFiles = true;
+        private int _activeProcessingCount;
         private bool _isDisposed;
 
         private WatchFolderManager()
         {
         }
 
+        public void StartOrReloadFromCurrentSettings()
+        {
+            UpdateWatchers();
+        }
+
         public void UpdateWatchers()
         {
+            _acceptNewFiles = false;
             StopWatchers();
+            _acceptNewFiles = true;
 
             // TaskSettings access via SettingManager would be needed here
             var settings = SettingsManager.DefaultTaskSettings;
@@ -93,6 +103,11 @@ namespace XerahS.Core.Managers
 
         private void OnFileDetected(WatchFolderSettings settings, string fullPath)
         {
+            if (!_acceptNewFiles)
+            {
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(fullPath))
             {
                 return;
@@ -105,6 +120,7 @@ namespace XerahS.Core.Managers
 
             _ = Task.Run(async () =>
             {
+                Interlocked.Increment(ref _activeProcessingCount);
                 try
                 {
                     await ProcessFileAsync(settings, fullPath);
@@ -112,6 +128,7 @@ namespace XerahS.Core.Managers
                 finally
                 {
                     _inFlight.TryRemove(fullPath, out _);
+                    Interlocked.Decrement(ref _activeProcessingCount);
                 }
             });
         }
@@ -414,14 +431,51 @@ namespace XerahS.Core.Managers
             return SettingsManager.GetWorkflowById(settings.WorkflowId) != null;
         }
 
+        public void Stop()
+        {
+            _acceptNewFiles = false;
+            StopWatchers();
+        }
+
+        public async Task<bool> StopAsync(TimeSpan timeout)
+        {
+            _acceptNewFiles = false;
+            StopWatchers();
+            return await WaitForInFlightTasksAsync(timeout);
+        }
+
+        private async Task<bool> WaitForInFlightTasksAsync(TimeSpan timeout)
+        {
+            if (timeout <= TimeSpan.Zero)
+            {
+                return Interlocked.CompareExchange(ref _activeProcessingCount, 0, 0) == 0;
+            }
+
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            while (stopwatch.Elapsed < timeout)
+            {
+                if (Interlocked.CompareExchange(ref _activeProcessingCount, 0, 0) == 0)
+                {
+                    return true;
+                }
+
+                await Task.Delay(100);
+            }
+
+            return Interlocked.CompareExchange(ref _activeProcessingCount, 0, 0) == 0;
+        }
+
         private void StopWatchers()
         {
-            foreach (var watcher in _watchers)
+            lock (_watcherSync)
             {
-                watcher.EnableRaisingEvents = false;
-                watcher.Dispose();
+                foreach (var watcher in _watchers)
+                {
+                    watcher.EnableRaisingEvents = false;
+                    watcher.Dispose();
+                }
+                _watchers.Clear();
             }
-            _watchers.Clear();
         }
 
         public void Dispose()

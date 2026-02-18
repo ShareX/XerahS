@@ -78,6 +78,8 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
     public bool RunAtStartup = false;
     public bool EnableContextMenuIntegration = false;
     public bool EnableSendToIntegration = false;
+    public WatchFolderDaemonScope WatchFolderDaemonScope = WatchFolderDaemonScope.User;
+    public bool WatchFolderDaemonStartAtStartup = true;
 
     #endregion Settings - General
 

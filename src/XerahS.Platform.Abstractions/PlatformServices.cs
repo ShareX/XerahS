@@ -136,6 +136,13 @@ namespace XerahS.Platform.Abstractions
             set => _startupService = value;
         }
 
+        private static IWatchFolderDaemonService? _watchFolderDaemonService;
+        public static IWatchFolderDaemonService WatchFolderDaemon
+        {
+            get => _watchFolderDaemonService ?? throw new InvalidOperationException("Platform services not initialized. Call Initialize() first.");
+            set => _watchFolderDaemonService = value;
+        }
+
         /// <summary>
         /// Checks if platform services have been initialized
         /// </summary>
@@ -208,7 +215,8 @@ namespace XerahS.Platform.Abstractions
             ISystemService systemService,
             IDiagnosticService diagnosticService,
             IShellIntegrationService? shellIntegrationService = null,
-            INotificationService? notificationService = null)
+            INotificationService? notificationService = null,
+            IWatchFolderDaemonService? watchFolderDaemonService = null)
         {
             _platformInfo = platformInfo ?? throw new ArgumentNullException(nameof(platformInfo));
             _screenService = screenService ?? throw new ArgumentNullException(nameof(screenService));
@@ -223,6 +231,7 @@ namespace XerahS.Platform.Abstractions
             _diagnosticService = diagnosticService ?? throw new ArgumentNullException(nameof(diagnosticService));
             _shellIntegrationService = shellIntegrationService;  // Optional - null means shell integration not available
             _notificationService = notificationService;  // Optional - null means no native notifications
+            _watchFolderDaemonService = watchFolderDaemonService ?? new UnsupportedWatchFolderDaemonService();
         }
 
 
@@ -261,6 +270,7 @@ namespace XerahS.Platform.Abstractions
             _toastService = null;
             _systemService = null;
             _startupService = null;
+            _watchFolderDaemonService = null;
             _diagnosticService = null;
             _shellIntegrationService = null;
             _themeService = null;
