@@ -157,16 +157,15 @@ public partial class WorkflowsViewModel : ViewModelBase
         DebugHelper.WriteLine($"[WorkflowsVM] EditWorkflow invoked. Selected={(SelectedWorkflow != null ? SelectedWorkflow.Model.Id : "null")}, CanEdit={CanEditWorkflow()}, HasRequester={EditHotkeyRequester != null}");
         if (SelectedWorkflow != null && EditHotkeyRequester != null)
         {
-            var changed = await EditHotkeyRequester(SelectedWorkflow.Model);
+            var editedModel = SelectedWorkflow.Model;
+            var changed = await EditHotkeyRequester(editedModel);
             if (changed)
             {
+                // Re-register all workflows so edited hotkeys become active immediately.
+                _manager?.UpdateHotkeys(_manager.Workflows);
                 SaveHotkeys();
-                // Refresh specific item or reload all?
-                // Reloading ensures displayed description updates if Hotkey/Job changed
                 LoadWorkflows();
-                _manager?.NotifyWorkflowsChanged();
-                // Restore selection?
-                // For now, reload clears selection, but cleaner UI
+                SelectedWorkflow = Workflows.FirstOrDefault(w => w.Model == editedModel);
             }
         }
     }

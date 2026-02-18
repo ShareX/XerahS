@@ -168,7 +168,7 @@ public sealed class WorkflowOrchestrator : IWorkflowOrchestrator
         return await tcs.Task;
     }
 
-    private async Task HandleToolWorkflowAsync(WorkflowType workflowType)
+    private async Task HandleToolWorkflowAsync(WorkflowType workflowType, TaskSettings taskSettings)
     {
         await Dispatcher.UIThread.InvokeAsync(async () =>
         {
@@ -184,7 +184,7 @@ public sealed class WorkflowOrchestrator : IWorkflowOrchestrator
             }
             else if (workflowType == WorkflowType.ScrollingCapture)
             {
-                await ScrollingCaptureToolService.HandleWorkflowAsync(workflowType, owner);
+                await ScrollingCaptureToolService.HandleWorkflowAsync(workflowType, owner, taskSettings);
             }
             else if (workflowType == WorkflowType.ImageEditor)
             {

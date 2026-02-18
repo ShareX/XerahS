@@ -38,16 +38,16 @@ namespace XerahS.UI.Services;
 
 public static class ScrollingCaptureToolService
 {
-    public static Task HandleWorkflowAsync(WorkflowType job, Window? owner)
+    public static Task HandleWorkflowAsync(WorkflowType job, Window? owner, TaskSettings? taskSettings = null)
     {
         return job switch
         {
-            WorkflowType.ScrollingCapture => ShowScrollingCaptureWindowAsync(owner),
+            WorkflowType.ScrollingCapture => ShowScrollingCaptureWindowAsync(owner, taskSettings),
             _ => Task.CompletedTask
         };
     }
 
-    private static Task ShowScrollingCaptureWindowAsync(Window? owner)
+    private static Task ShowScrollingCaptureWindowAsync(Window? owner, TaskSettings? taskSettings)
     {
         var viewModel = new ScrollingCaptureViewModel();
         var window = new ScrollingCaptureWindow
@@ -64,7 +64,7 @@ public static class ScrollingCaptureToolService
         // Wire upload callback
         viewModel.UploadRequested = async (image) =>
         {
-            await UploadCapturedImageAsync(image);
+            await UploadCapturedImageAsync(image, taskSettings);
         };
 
         if (CanUseOwner(owner))
@@ -190,15 +190,15 @@ public static class ScrollingCaptureToolService
                owner.ShowInTaskbar;
     }
 
-    private static async Task UploadCapturedImageAsync(SKBitmap image)
+    private static async Task UploadCapturedImageAsync(SKBitmap image, TaskSettings? taskSettings)
     {
         try
         {
-            var taskSettings = SettingsManager.DefaultTaskSettings
+            var effectiveTaskSettings = taskSettings ?? SettingsManager.DefaultTaskSettings
                 ?? new TaskSettings();
 
             // Create a new task to process the captured image through the pipeline
-            await TaskManager.Instance.StartTask(taskSettings, image);
+            await TaskManager.Instance.StartTask(effectiveTaskSettings, image);
         }
         catch (Exception ex)
         {

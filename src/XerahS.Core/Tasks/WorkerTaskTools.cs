@@ -37,7 +37,7 @@ namespace XerahS.Core.Tasks
         /// Delegate to handle tool workflow execution (ColorPicker, QRCode, etc.).
         /// Set by the UI layer to dispatch tool dialogs.
         /// </summary>
-        public static Func<WorkflowType, Task>? HandleToolWorkflowCallback { get; set; }
+        public static Func<WorkflowType, TaskSettings, Task>? HandleToolWorkflowCallback { get; set; }
 
         /// <summary>
         /// Handles tool workflow execution (ColorPicker, QRCode, etc.)
@@ -50,7 +50,7 @@ namespace XerahS.Core.Tasks
             if (HandleToolWorkflowCallback != null)
             {
                 TroubleshootingHelper.Log(Info.TaskSettings.Job.ToString(), "TOOL_WORKFLOW", $"Executing tool workflow via callback: {Info.TaskSettings.Job}");
-                await HandleToolWorkflowCallback(Info.TaskSettings.Job);
+                await HandleToolWorkflowCallback(Info.TaskSettings.Job, Info.TaskSettings);
             }
             else
             {
