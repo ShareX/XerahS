@@ -1,0 +1,19 @@
+PackageIdentifier: ShareX.XerahS
+PackageVersion: 0.16.0
+DefaultLocale: en-US
+ManifestType: singleton
+ManifestVersion: 1.4.0
+Publisher: ShareX Team
+PackageName: XerahS
+License: GPL-3.0-only
+ShortDescription: A cross-platform port of the popular ShareX screen capture and file sharing tool, built with Avalonia UI and .NET 10.
+PackageUrl: https://github.com/ShareX/XerahS
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/ShareX/XerahS/releases/download/v0.16.0/XerahS-0.16.0-win-x64.exe
+    InstallerSha256: 
+    InstallerType: nullsoft
+  - Architecture: arm64
+    InstallerUrl: https://github.com/ShareX/XerahS/releases/download/v0.16.0/XerahS-0.16.0-win-arm64.exe
+    InstallerSha256: 
+    InstallerType: nullsoft
