@@ -178,6 +178,10 @@ namespace XerahS.UI.ViewModels
         private bool _watchFolderDaemonRunning;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(WatchFolderDaemonButtonText))]
+        private bool _watchFolderDaemonInstalled;
+
+        [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(ToggleWatchFolderDaemonCommand))]
         private bool _isWatchFolderDaemonBusy;
 
@@ -193,7 +197,7 @@ namespace XerahS.UI.ViewModels
             WatchFolderDaemonScope.System
         };
 
-        public string WatchFolderDaemonButtonText => WatchFolderDaemonRunning ? "Stop" : "Start";
+        public string WatchFolderDaemonButtonText => WatchFolderDaemonRunning ? "Stop" : (WatchFolderDaemonInstalled ? "Start" : "Install + Start");
 
         public Func<WatchFolderEditViewModel, Task<bool>>? EditWatchFolderRequester { get; set; }
 
@@ -714,6 +718,7 @@ namespace XerahS.UI.ViewModels
                 e.PropertyName != nameof(WatchFolderDaemonSupported) &&
                 e.PropertyName != nameof(ShowWatchFolderDaemonScopeSelector) &&
                 e.PropertyName != nameof(WatchFolderDaemonRunning) &&
+                e.PropertyName != nameof(WatchFolderDaemonInstalled) &&
                 e.PropertyName != nameof(IsWatchFolderDaemonBusy) &&
                 e.PropertyName != nameof(WatchFolderDaemonStatusText) &&
                 e.PropertyName != nameof(WatchFolderDaemonButtonText) &&
@@ -949,7 +954,7 @@ namespace XerahS.UI.ViewModels
                 }
 
                 ApplyWatchFolderDaemonOperationResult(result);
-                RefreshWatchFolderDaemonStatusCore();
+                RefreshWatchFolderDaemonStatusCore(clearLastError: result.Success);
                 ApplyWatchFolderRuntimePolicy(watchFolderConfigurationChanged: false, refreshDaemonStatus: false);
             }
             catch (Exception ex)
@@ -1064,6 +1069,7 @@ namespace XerahS.UI.ViewModels
                 WatchFolderDaemonStatusText = "Platform services are not initialized.";
                 WatchFolderDaemonLastError = string.Empty;
                 WatchFolderDaemonRunning = false;
+                WatchFolderDaemonInstalled = false;
                 return;
             }
 
@@ -1113,7 +1119,7 @@ namespace XerahS.UI.ViewModels
             }
         }
 
-        private bool RefreshWatchFolderDaemonStatusCore()
+        private bool RefreshWatchFolderDaemonStatusCore(bool clearLastError = true)
         {
             try
             {
@@ -1121,6 +1127,7 @@ namespace XerahS.UI.ViewModels
                 {
                     WatchFolderDaemonStatusText = "Watch folder daemon is not supported on this platform.";
                     WatchFolderDaemonRunning = false;
+                    WatchFolderDaemonInstalled = false;
                     return false;
                 }
 
@@ -1131,18 +1138,24 @@ namespace XerahS.UI.ViewModels
                 {
                     WatchFolderDaemonStatusText = $"Scope '{scope}' is not supported.";
                     WatchFolderDaemonRunning = false;
+                    WatchFolderDaemonInstalled = false;
                     return false;
                 }
 
                 WatchFolderDaemonStatus status = RunWatchFolderDaemonCall(() => daemonService.GetStatusAsync(scope));
+                WatchFolderDaemonInstalled = status.Installed;
                 WatchFolderDaemonRunning = status.State == WatchFolderDaemonState.Running;
                 WatchFolderDaemonStatusText = $"{status.State} ({status.Scope}) - {status.Message}";
-                WatchFolderDaemonLastError = string.Empty;
+                if (clearLastError)
+                {
+                    WatchFolderDaemonLastError = string.Empty;
+                }
                 return WatchFolderDaemonRunning;
             }
             catch (Exception ex)
             {
                 WatchFolderDaemonRunning = false;
+                WatchFolderDaemonInstalled = false;
                 WatchFolderDaemonStatusText = "Failed to query daemon status.";
                 WatchFolderDaemonLastError = ex.Message;
                 DebugHelper.WriteException(ex, "SettingsViewModel: failed to query watch folder daemon status.");
@@ -1214,6 +1227,7 @@ namespace XerahS.UI.ViewModels
                 return;
             }
 
+            WatchFolderDaemonStatusText = $"Daemon operation failed ({result.ErrorCode}).";
             WatchFolderDaemonLastError = string.IsNullOrWhiteSpace(result.Message)
                 ? $"Operation failed with error: {result.ErrorCode}"
                 : result.Message;
