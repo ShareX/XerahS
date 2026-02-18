@@ -67,9 +67,9 @@ public static class ScrollingCaptureToolService
             await UploadCapturedImageAsync(image);
         };
 
-        if (owner != null)
+        if (CanUseOwner(owner))
         {
-            window.Show(owner);
+            window.Show(owner!);
         }
         else
         {
@@ -180,6 +180,14 @@ public static class ScrollingCaptureToolService
                 parentWindow.Activate();
             }
         }
+    }
+
+    private static bool CanUseOwner(Window? owner)
+    {
+        return owner != null &&
+               owner.IsVisible &&
+               owner.WindowState != Avalonia.Controls.WindowState.Minimized &&
+               owner.ShowInTaskbar;
     }
 
     private static async Task UploadCapturedImageAsync(SKBitmap image)

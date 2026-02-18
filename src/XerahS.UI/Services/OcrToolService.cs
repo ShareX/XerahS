@@ -94,9 +94,9 @@ public static class OcrToolService
             DataContext = viewModel
         };
 
-        if (owner != null)
+        if (CanUseOwner(owner))
         {
-            window.Show(owner);
+            window.Show(owner!);
         }
         else
         {
@@ -116,6 +116,14 @@ public static class OcrToolService
             DebugHelper.WriteException(ex, "OCR region capture");
             return null;
         }
+    }
+
+    private static bool CanUseOwner(Window? owner)
+    {
+        return owner != null &&
+               owner.IsVisible &&
+               owner.WindowState != Avalonia.Controls.WindowState.Minimized &&
+               owner.ShowInTaskbar;
     }
 
     private static void ShowToast(string title, string text)
