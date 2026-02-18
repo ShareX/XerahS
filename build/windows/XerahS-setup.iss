@@ -69,6 +69,9 @@ Name: "CreateStartupIcon"; Description: "Run {#MyAppName} when Windows starts"; 
 
 [Files]
 Source: "{#MyAppReleaseDirectory}\{#MyAppExeName}"; DestDir: {app}; Flags: ignoreversion
+Source: "{#MyAppRootDirectory}src\XerahS.WatchFolder.Daemon\bin\Release\net10.0-windows10.0.26100.0\xerahs-watchfolder-daemon.exe"; DestDir: {app}; Flags: ignoreversion skipifsourcedoesntexist
+Source: "{#MyAppRootDirectory}src\XerahS.WatchFolder.Daemon\bin\Release\net10.0-windows10.0.26100.0\xerahs-watchfolder-daemon.deps.json"; DestDir: {app}; Flags: ignoreversion skipifsourcedoesntexist
+Source: "{#MyAppRootDirectory}src\XerahS.WatchFolder.Daemon\bin\Release\net10.0-windows10.0.26100.0\xerahs-watchfolder-daemon.runtimeconfig.json"; DestDir: {app}; Flags: ignoreversion skipifsourcedoesntexist
 Source: "{#MyAppReleaseDirectory}\*.dll"; DestDir: {app}; Flags: ignoreversion
 Source: "{#MyAppReleaseDirectory}\*.json"; DestDir: {app}; Flags: ignoreversion
 Source: "{#MyAppReleaseDirectory}\runtimes\win-x64\*"; DestDir: "{app}\runtimes\win-x64"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
@@ -112,6 +115,5 @@ function DesktopIconExists(): Boolean;
 begin
   Result := FileExists(ExpandConstant('{userdesktop}\{#MyAppName}.lnk'));
 end;
-
 
 

@@ -88,6 +88,13 @@
     <Exec Command="/bin/sh -c 'if /usr/libexec/PlistBuddy -c &quot;Print :CFBundleIconName&quot; &quot;$(_MacPlist)&quot; &gt;/dev/null 2&gt;&amp;1; then /usr/libexec/PlistBuddy -c &quot;Set :CFBundleIconName Logo&quot; &quot;$(_MacPlist)&quot;; else /usr/libexec/PlistBuddy -c &quot;Add :CFBundleIconName string Logo&quot; &quot;$(_MacPlist)&quot;; fi'" Condition="Exists('$(_MacPlist)')" />
   </Target>
 
+  <Target Name="PublishWatchFolderDaemon" AfterTargets="Publish">
+    <Message Text="Publishing watch folder daemon..." Importance="High" />
+    <MSBuild Projects="..\XerahS.WatchFolder.Daemon\XerahS.WatchFolder.Daemon.csproj"
+             Targets="Restore;Publish"
+             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);OS=$(OS);CrossCompile=$(CrossCompile);SelfContained=$(SelfContained);PublishSingleFile=true;PublishDir=$(PublishDir);EnableWindowsTargeting=$(EnableWindowsTargeting)" />
+  </Target>
+
   <!-- Bundle Default Plugins -->
   <ItemGroup>
     <_DefaultPlugins Include="..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" PluginId="amazons3" />
@@ -107,4 +114,3 @@
     <MSBuild Projects="%(_DefaultPlugins.Identity)" Targets="Restore;Build" Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);HostTargetFramework=$(TargetFramework)" />
   </Target>
 </Project>
-
