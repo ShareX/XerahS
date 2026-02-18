@@ -161,6 +161,7 @@ foreach ($arch in $archs) {
     if (!(Test-Path $pluginsDir)) { New-Item -ItemType Directory -Force -Path $pluginsDir | Out-Null }
 
     $pluginProjects = Get-ChildItem -Path (Join-Path $root "src\Plugins") -Filter "*.csproj" -Recurse
+    $publishedPluginCount = 0
     foreach ($plugin in $pluginProjects) {
         Write-Host "Publishing Plugin: $($plugin.Name)"
         
@@ -180,9 +181,22 @@ foreach ($arch in $archs) {
         }
 
         $pluginOutput = Join-Path $pluginsDir $pluginId
-        dotnet publish $plugin.FullName -c Release -r $rid --self-contained true -o $pluginOutput > $null
+        if (Test-Path $pluginOutput) {
+            Remove-Item -Recurse -Force $pluginOutput
+        }
+        New-Item -ItemType Directory -Force -Path $pluginOutput | Out-Null
+
+        dotnet publish $plugin.FullName -c Release -r $rid --no-self-contained -p:PublishSingleFile=false -o $pluginOutput > $null
         if ($LASTEXITCODE -ne 0) {
             throw "dotnet publish failed for plugin $($plugin.Name) on $rid with exit code $LASTEXITCODE."
+        }
+
+        if (!(Test-Path (Join-Path $pluginOutput "plugin.json")) -and (Test-Path $pluginJsonPath)) {
+            Copy-Item -Path $pluginJsonPath -Destination (Join-Path $pluginOutput "plugin.json") -Force
+        }
+
+        if (!(Test-Path (Join-Path $pluginOutput "plugin.json"))) {
+            throw "plugin.json missing for plugin '$pluginId' in $pluginOutput"
         }
 
         # Deduplication - remove files that already exist in main app
@@ -194,7 +208,20 @@ foreach ($arch in $archs) {
                 Remove-Item -Path $file.FullName -Force -ErrorAction SilentlyContinue
             }
         }
+
+        $publishedPluginCount++
     }
+
+    if ($publishedPluginCount -eq 0) {
+        throw "No plugins were published for $rid"
+    }
+
+    $manifestCount = @(Get-ChildItem -Path $pluginsDir -Filter "plugin.json" -Recurse -File -ErrorAction SilentlyContinue).Count
+    if ($manifestCount -eq 0) {
+        throw "No plugin manifests found under $pluginsDir after publish."
+    }
+
+    Write-Host "Published $publishedPluginCount plugins to startup Plugins folder: $pluginsDir"
 
     # 2. Package as .tar.gz
     $tarName = "XerahS-$version-mac-$arch.tar.gz"

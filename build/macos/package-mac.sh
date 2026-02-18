@@ -172,6 +172,7 @@ publish_and_package() {
     echo "Publishing Plugins for $rid..."
     mkdir -p "$plugins_dir"
 
+    local plugin_count=0
     while IFS= read -r -d '' plugin_project; do
         local plugin_dir plugin_name plugin_id plugin_out main_app_dir id_match
         plugin_dir=$(dirname "$plugin_project")
@@ -187,12 +188,24 @@ publish_and_package() {
 
         echo "  Publishing $plugin_name ($plugin_id)..."
         plugin_out="$plugins_dir/$plugin_id"
+        rm -rf "$plugin_out"
+        mkdir -p "$plugin_out"
         dotnet publish "$plugin_project" \
             -c Release \
             -r "$rid" \
-            --self-contained true \
+            --no-self-contained \
+            -p:PublishSingleFile=false \
             -p:nodeReuse=false \
             -o "$plugin_out" >/dev/null
+
+        if [ ! -f "$plugin_out/plugin.json" ] && [ -f "$plugin_dir/plugin.json" ]; then
+            cp "$plugin_dir/plugin.json" "$plugin_out/plugin.json"
+        fi
+
+        if [ ! -f "$plugin_out/plugin.json" ]; then
+            echo "Error: plugin.json missing for plugin '$plugin_id' in $plugin_out"
+            exit 1
+        fi
 
         main_app_dir="$app_bundle_path/Contents/MacOS"
         for f in "$plugin_out"/*; do
@@ -204,7 +217,21 @@ publish_and_package() {
                 fi
             fi
         done
+
+        plugin_count=$((plugin_count + 1))
     done < <(find "$ROOT/src/Plugins" -name "*.csproj" -print0)
+
+    if [ "$plugin_count" -eq 0 ]; then
+        echo "Error: No plugins were published for $rid"
+        exit 1
+    fi
+
+    if ! find "$plugins_dir" -mindepth 2 -maxdepth 2 -name "plugin.json" | grep -q .; then
+        echo "Error: No plugin manifests found under $plugins_dir after publish."
+        exit 1
+    fi
+
+    echo "Published $plugin_count plugins to startup Plugins folder: $plugins_dir"
 
     echo "Creating archive: $tar_name"
     if tar --help 2>/dev/null | grep -q -- "--mode"; then

@@ -511,6 +511,11 @@ class Program
     static string BuildRpmSpec(string version, string arch)
     {
         var sb = new StringBuilder();
+        sb.AppendLine("%global debug_package %{nil}");
+        sb.AppendLine("%global _debuginfo_subpackages 0");
+        sb.AppendLine("%global __brp_strip %{nil}");
+        sb.AppendLine("%global __brp_strip_comment_note %{nil}");
+        sb.AppendLine("%global __brp_strip_lto %{nil}");
         sb.AppendLine("Name: xerahs");
         sb.AppendLine($"Version: {version}");
         sb.AppendLine("Release: 1%{?dist}");

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 # Configuration
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -39,27 +39,38 @@ for ARCH in "${ARCHITECTURES[@]}"; do
     PLUGINS_DIR="$PUBLISH_DIR/Plugins"
     mkdir -p "$PLUGINS_DIR"
 
-    # Use find with explicit path to avoid issues with current directory
-    find "$ROOT/src/Plugins" -maxdepth 1 -mindepth 1 -type d | while read PLUGIN_DIR; do
-        PLUGIN_PROJECT=$(find "$PLUGIN_DIR" -name "*.csproj" | head -n 1)
-        if [ -z "$PLUGIN_PROJECT" ]; then
-            continue
-        fi
-        
+    PLUGIN_COUNT=0
+    while IFS= read -r -d '' PLUGIN_PROJECT; do
+        PLUGIN_DIR=$(dirname "$PLUGIN_PROJECT")
         PLUGIN_NAME=$(basename "$PLUGIN_PROJECT" .csproj)
-        
-        # Try to determine plugin ID from plugin.json
+
+        # Determine plugin ID from plugin.json when available
         PLUGIN_ID="$PLUGIN_NAME"
         if [ -f "$PLUGIN_DIR/plugin.json" ]; then
-            ID_MATCH=$(grep -o '"pluginId"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_DIR/plugin.json" | cut -d'"' -f4)
-            if [ ! -z "$ID_MATCH" ]; then
+            ID_MATCH=$(grep -o '"pluginId"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_DIR/plugin.json" | cut -d'"' -f4 || true)
+            if [ -n "${ID_MATCH:-}" ]; then
                 PLUGIN_ID="$ID_MATCH"
             fi
         fi
 
         echo "  Publishing Plugin: $PLUGIN_NAME ($PLUGIN_ID) for $ARCH"
         PLUGIN_OUTPUT="$PLUGINS_DIR/$PLUGIN_ID"
-        dotnet publish "$PLUGIN_PROJECT" -c Release -r "$ARCH" -p:OS=Linux -o "$PLUGIN_OUTPUT" --no-self-contained -p:EnableWindowsTargeting=true > /dev/null
+        rm -rf "$PLUGIN_OUTPUT"
+        mkdir -p "$PLUGIN_OUTPUT"
+
+        dotnet publish "$PLUGIN_PROJECT" \
+            -c Release \
+            -r "$ARCH" \
+            -p:OS=Linux \
+            -o "$PLUGIN_OUTPUT" \
+            --no-self-contained \
+            -p:PublishSingleFile=false \
+            -p:EnableWindowsTargeting=true > /dev/null
+
+        # Ensure plugin.json exists for runtime discovery
+        if [ ! -f "$PLUGIN_OUTPUT/plugin.json" ] && [ -f "$PLUGIN_DIR/plugin.json" ]; then
+            cp "$PLUGIN_DIR/plugin.json" "$PLUGIN_OUTPUT/plugin.json"
+        fi
 
         # Cleanup: Remove files that already exist in the main app directory (deduplication)
         for f in "$PLUGIN_OUTPUT"/*; do
@@ -70,7 +81,26 @@ for ARCH in "${ARCHITECTURES[@]}"; do
                 fi
             fi
         done
-    done
+
+        if [ ! -f "$PLUGIN_OUTPUT/plugin.json" ]; then
+            echo "Error: plugin.json missing for plugin '$PLUGIN_ID' in $PLUGIN_OUTPUT"
+            exit 1
+        fi
+
+        PLUGIN_COUNT=$((PLUGIN_COUNT + 1))
+    done < <(find "$ROOT/src/Plugins" -mindepth 2 -maxdepth 2 -name "*.csproj" -print0)
+
+    if [ "$PLUGIN_COUNT" -eq 0 ]; then
+        echo "Error: No plugins were published for $ARCH."
+        exit 1
+    fi
+
+    if ! find "$PLUGINS_DIR" -mindepth 2 -maxdepth 2 -name "plugin.json" | grep -q .; then
+        echo "Error: No plugin manifests found under $PLUGINS_DIR after publish."
+        exit 1
+    fi
+
+    echo "Published $PLUGIN_COUNT plugins to startup Plugins folder: $PLUGINS_DIR"
 
     # 2. Package
     echo "Packaging ($ARCH)..."
