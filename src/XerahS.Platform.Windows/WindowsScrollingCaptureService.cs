@@ -108,7 +108,7 @@ namespace XerahS.Platform.Windows
             }
 
             return new ScrollBarInfo(
-                Position: scrollInfo.nTrackPos,
+                Position: scrollInfo.nPos,
                 MinRange: scrollInfo.nMin,
                 MaxRange: scrollInfo.nMax,
                 PageSize: (int)scrollInfo.nPage);
