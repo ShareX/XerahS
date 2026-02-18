@@ -23,7 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 using XerahS.Platform.Abstractions;
 
 namespace XerahS.Platform.Windows.Services;
@@ -33,6 +35,7 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
     private const string ServiceName = "XerahSWatchFolder";
     private const string ServiceDisplayName = "XerahS Watch Folder";
     private const int CommandTimeoutMs = 10000;
+    private const int ElevatedCommandTimeoutMs = 180000;
     private const int PollIntervalMs = 300;
 
     public bool IsSupported => true;
@@ -92,11 +95,6 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.UnsupportedScope, "Windows only supports System scope.");
         }
 
-        if (!new WindowsPlatformInfo().IsElevated)
-        {
-            return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.RequiresElevation, "Administrator privileges are required.");
-        }
-
         if (string.IsNullOrWhiteSpace(settingsFolder))
         {
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.ValidationError, "Settings folder is required.");
@@ -108,6 +106,11 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
             return WatchFolderDaemonResult.Fail(
                 WatchFolderDaemonErrorCode.ValidationError,
                 "Daemon executable was not found next to the application.");
+        }
+
+        if (!new WindowsPlatformInfo().IsElevated)
+        {
+            return await StartServiceElevatedAsync(daemonPath, settingsFolder, startAtStartup, cancellationToken);
         }
 
         var ensureResult = await EnsureServiceConfiguredAsync(daemonPath, settingsFolder, startAtStartup, cancellationToken);
@@ -136,15 +139,15 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.UnsupportedScope, "Windows only supports System scope.");
         }
 
-        if (!new WindowsPlatformInfo().IsElevated)
-        {
-            return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.RequiresElevation, "Administrator privileges are required.");
-        }
-
         bool installed = await ServiceExistsAsync(cancellationToken);
         if (!installed)
         {
             return WatchFolderDaemonResult.Ok("Service is not installed.");
+        }
+
+        if (!new WindowsPlatformInfo().IsElevated)
+        {
+            return await StopServiceElevatedAsync(cancellationToken);
         }
 
         var stopResult = await RunScAsync($"stop \"{ServiceName}\"", cancellationToken);
@@ -215,9 +218,7 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
         bool startAtStartup,
         CancellationToken cancellationToken)
     {
-        string escapedDaemonPath = daemonPath.Replace("\"", "\\\"");
-        string escapedSettingsPath = settingsFolder.Replace("\"", "\\\"");
-        string serviceCommand = $"\\\"{escapedDaemonPath}\\\" --service --scope system --settings-folder \\\"{escapedSettingsPath}\\\"";
+        string serviceCommand = BuildServiceCommand(daemonPath, settingsFolder);
         string startupMode = startAtStartup ? "auto" : "demand";
 
         bool exists = await ServiceExistsAsync(cancellationToken);
@@ -241,6 +242,93 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
         }
 
         return WatchFolderDaemonResult.Ok();
+    }
+
+    private static string BuildServiceCommand(string daemonPath, string settingsFolder)
+    {
+        string escapedDaemonPath = daemonPath.Replace("\"", "\\\"");
+        string escapedSettingsPath = settingsFolder.Replace("\"", "\\\"");
+        return $"\\\"{escapedDaemonPath}\\\" --service --scope system --settings-folder \\\"{escapedSettingsPath}\\\"";
+    }
+
+    private static async Task<WatchFolderDaemonResult> StartServiceElevatedAsync(
+        string daemonPath,
+        string settingsFolder,
+        bool startAtStartup,
+        CancellationToken cancellationToken)
+    {
+        string startupMode = startAtStartup ? "auto" : "demand";
+        string serviceCommand = BuildServiceCommand(daemonPath, settingsFolder);
+        string script = string.Join(Environment.NewLine, new[]
+        {
+            "$ErrorActionPreference = 'Stop'",
+            $"$serviceName = '{EscapePowerShellSingleQuotedString(ServiceName)}'",
+            $"$serviceCommand = '{EscapePowerShellSingleQuotedString(serviceCommand)}'",
+            $"$displayName = '{EscapePowerShellSingleQuotedString(ServiceDisplayName)}'",
+            $"$startupMode = '{startupMode}'",
+            string.Empty,
+            "sc.exe query \"$serviceName\" *> $null",
+            "if ($LASTEXITCODE -eq 1060) {",
+            "    sc.exe create \"$serviceName\" binPath= \"$serviceCommand\" start= $startupMode DisplayName= \"$displayName\" *> $null",
+            "} else {",
+            "    sc.exe config \"$serviceName\" binPath= \"$serviceCommand\" start= $startupMode DisplayName= \"$displayName\" *> $null",
+            "}",
+            string.Empty,
+            "if ($LASTEXITCODE -ne 0) {",
+            "    exit $LASTEXITCODE",
+            "}",
+            string.Empty,
+            "sc.exe start \"$serviceName\" *> $null",
+            "if (($LASTEXITCODE -ne 0) -and ($LASTEXITCODE -ne 1056)) {",
+            "    exit $LASTEXITCODE",
+            "}",
+            string.Empty,
+            "exit 0"
+        });
+
+        ElevatedCommandResult elevatedResult = await RunElevatedPowerShellAsync(script, cancellationToken);
+        if (elevatedResult.IsSuccess)
+        {
+            return WatchFolderDaemonResult.Ok("Service started.");
+        }
+
+        if (elevatedResult.WasCanceled)
+        {
+            return WatchFolderDaemonResult.Fail(
+                WatchFolderDaemonErrorCode.RequiresElevation,
+                "Administrator privileges were not granted.");
+        }
+
+        return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.CommandFailed, elevatedResult.Output);
+    }
+
+    private static async Task<WatchFolderDaemonResult> StopServiceElevatedAsync(CancellationToken cancellationToken)
+    {
+        string script = string.Join(Environment.NewLine, new[]
+        {
+            $"$serviceName = '{EscapePowerShellSingleQuotedString(ServiceName)}'",
+            "sc.exe stop \"$serviceName\" *> $null",
+            "if (($LASTEXITCODE -ne 0) -and ($LASTEXITCODE -ne 1060) -and ($LASTEXITCODE -ne 1062)) {",
+            "    exit $LASTEXITCODE",
+            "}",
+            string.Empty,
+            "exit 0"
+        });
+
+        ElevatedCommandResult elevatedResult = await RunElevatedPowerShellAsync(script, cancellationToken);
+        if (elevatedResult.IsSuccess)
+        {
+            return WatchFolderDaemonResult.Ok("Service stopped.");
+        }
+
+        if (elevatedResult.WasCanceled)
+        {
+            return WatchFolderDaemonResult.Fail(
+                WatchFolderDaemonErrorCode.RequiresElevation,
+                "Administrator privileges were not granted.");
+        }
+
+        return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.CommandFailed, elevatedResult.Output);
     }
 
     private async Task<bool> ServiceExistsAsync(CancellationToken cancellationToken)
@@ -303,5 +391,66 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
         }
     }
 
+    private static async Task<ElevatedCommandResult> RunElevatedPowerShellAsync(
+        string script,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            string encodedScript = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "powershell.exe",
+                    Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encodedScript}",
+                    UseShellExecute = true,
+                    Verb = "runas",
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                }
+            };
+
+            process.Start();
+
+            Task waitTask = process.WaitForExitAsync(cancellationToken);
+            Task completedTask = await Task.WhenAny(waitTask, Task.Delay(ElevatedCommandTimeoutMs, cancellationToken));
+            if (completedTask != waitTask)
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                }
+
+                return new ElevatedCommandResult(false, false, "Elevated command timed out.");
+            }
+
+            return process.ExitCode == 0
+                ? new ElevatedCommandResult(true, false, string.Empty)
+                : new ElevatedCommandResult(false, false, $"Elevated command failed with exit code {process.ExitCode}.");
+        }
+        catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
+        {
+            return new ElevatedCommandResult(false, true, "UAC prompt was canceled.");
+        }
+        catch (OperationCanceledException)
+        {
+            return new ElevatedCommandResult(false, false, "Operation was canceled.");
+        }
+        catch (Exception ex)
+        {
+            return new ElevatedCommandResult(false, false, ex.Message);
+        }
+    }
+
+    private static string EscapePowerShellSingleQuotedString(string value)
+    {
+        return value.Replace("'", "''");
+    }
+
     private readonly record struct ScCommandResult(bool IsSuccess, string Output);
+    private readonly record struct ElevatedCommandResult(bool IsSuccess, bool WasCanceled, string Output);
 }

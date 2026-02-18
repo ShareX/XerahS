@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using XerahS.Platform.Abstractions;
 
@@ -32,6 +33,7 @@ public sealed class LinuxWatchFolderDaemonService : IWatchFolderDaemonService
 {
     private const string UnitName = "xerahs-watchfolder.service";
     private const int CommandTimeoutMs = 10000;
+    private const int ElevatedCommandTimeoutMs = 180000;
     private const int PollIntervalMs = 250;
 
     public bool IsSupported => true;
@@ -95,11 +97,6 @@ public sealed class LinuxWatchFolderDaemonService : IWatchFolderDaemonService
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.UnsupportedScope, "Unsupported daemon scope.");
         }
 
-        if (!ValidateMutatingScope(scope, out var scopeValidation))
-        {
-            return scopeValidation;
-        }
-
         if (string.IsNullOrWhiteSpace(settingsFolder))
         {
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.ValidationError, "Settings folder is required.");
@@ -111,6 +108,11 @@ public sealed class LinuxWatchFolderDaemonService : IWatchFolderDaemonService
             return WatchFolderDaemonResult.Fail(
                 WatchFolderDaemonErrorCode.ValidationError,
                 $"Daemon executable was not found: {daemonPath}");
+        }
+
+        if (scope == WatchFolderDaemonScope.System && !new LinuxPlatformInfo().IsElevated)
+        {
+            return await StartSystemScopeWithElevationAsync(daemonPath, settingsFolder, startAtStartup, cancellationToken);
         }
 
         var ensureResult = await EnsureUnitFileAsync(scope, daemonPath, settingsFolder, cancellationToken);
@@ -151,14 +153,14 @@ public sealed class LinuxWatchFolderDaemonService : IWatchFolderDaemonService
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.UnsupportedScope, "Unsupported daemon scope.");
         }
 
-        if (!ValidateMutatingScope(scope, out var scopeValidation))
-        {
-            return scopeValidation;
-        }
-
         if (!File.Exists(GetUnitFilePath(scope)))
         {
             return WatchFolderDaemonResult.Ok("Daemon unit is not installed.");
+        }
+
+        if (scope == WatchFolderDaemonScope.System && !new LinuxPlatformInfo().IsElevated)
+        {
+            return await StopSystemScopeWithElevationAsync(cancellationToken);
         }
 
         var stopResult = await RunSystemctlAsync(scope, $"stop {UnitName}", cancellationToken);
@@ -235,20 +237,6 @@ public sealed class LinuxWatchFolderDaemonService : IWatchFolderDaemonService
         return Path.Combine(configHome, "systemd", "user", UnitName);
     }
 
-    private static bool ValidateMutatingScope(WatchFolderDaemonScope scope, out WatchFolderDaemonResult result)
-    {
-        if (scope == WatchFolderDaemonScope.System && !new LinuxPlatformInfo().IsElevated)
-        {
-            result = WatchFolderDaemonResult.Fail(
-                WatchFolderDaemonErrorCode.RequiresElevation,
-                "Root privileges are required for System scope.");
-            return false;
-        }
-
-        result = WatchFolderDaemonResult.Ok();
-        return true;
-    }
-
     private static async Task<WatchFolderDaemonResult> EnsureUnitFileAsync(
         WatchFolderDaemonScope scope,
         string daemonPath,
@@ -264,27 +252,7 @@ public sealed class LinuxWatchFolderDaemonService : IWatchFolderDaemonService
                 Directory.CreateDirectory(directory);
             }
 
-            string wantedBy = scope == WatchFolderDaemonScope.System ? "multi-user.target" : "default.target";
-            string escapedDaemonPath = daemonPath.Replace("\"", "\\\"");
-            string escapedSettingsFolder = settingsFolder.Replace("\"", "\\\"");
-
-            string content = $"""
-                              [Unit]
-                              Description=XerahS Watch Folder Daemon
-                              After=network.target
-
-                              [Service]
-                              Type=simple
-                              ExecStart="{escapedDaemonPath}" --scope {scope.ToString().ToLowerInvariant()} --settings-folder "{escapedSettingsFolder}"
-                              Restart=on-failure
-                              RestartSec=3
-                              KillSignal=SIGTERM
-                              TimeoutStopSec=30
-
-                              [Install]
-                              WantedBy={wantedBy}
-                              """;
-
+            string content = BuildUnitFileContent(scope, daemonPath, settingsFolder);
             await File.WriteAllTextAsync(unitPath, content, cancellationToken);
             return WatchFolderDaemonResult.Ok();
         }
@@ -292,6 +260,191 @@ public sealed class LinuxWatchFolderDaemonService : IWatchFolderDaemonService
         {
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.CommandFailed, ex.Message);
         }
+    }
+
+    private static async Task<WatchFolderDaemonResult> StartSystemScopeWithElevationAsync(
+        string daemonPath,
+        string settingsFolder,
+        bool startAtStartup,
+        CancellationToken cancellationToken)
+    {
+        string tempUnitPath = Path.GetTempFileName();
+        try
+        {
+            string unitContent = BuildUnitFileContent(WatchFolderDaemonScope.System, daemonPath, settingsFolder);
+            await File.WriteAllTextAsync(tempUnitPath, unitContent, cancellationToken);
+
+            string unitPath = GetUnitFilePath(WatchFolderDaemonScope.System);
+            string enableCommand = startAtStartup ? "enable" : "disable";
+            string script = $"""
+                             set -e
+                             cp '{EscapeShellSingleQuotedString(tempUnitPath)}' '{EscapeShellSingleQuotedString(unitPath)}'
+                             chmod 644 '{EscapeShellSingleQuotedString(unitPath)}'
+                             systemctl daemon-reload
+                             systemctl {enableCommand} '{EscapeShellSingleQuotedString(UnitName)}'
+                             systemctl start '{EscapeShellSingleQuotedString(UnitName)}'
+                             """;
+
+            SystemCommandResult privilegedResult = await RunPrivilegedScriptAsync(script, cancellationToken);
+            if (privilegedResult.IsSuccess)
+            {
+                return WatchFolderDaemonResult.Ok("Daemon started.");
+            }
+
+            if (IsElevationDenied(privilegedResult.Output))
+            {
+                return WatchFolderDaemonResult.Fail(
+                    WatchFolderDaemonErrorCode.RequiresElevation,
+                    "Root privileges were not granted for System scope.");
+            }
+
+            return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.CommandFailed, privilegedResult.Output);
+        }
+        catch (Exception ex)
+        {
+            return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.CommandFailed, ex.Message);
+        }
+        finally
+        {
+            try
+            {
+                File.Delete(tempUnitPath);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    private static async Task<WatchFolderDaemonResult> StopSystemScopeWithElevationAsync(CancellationToken cancellationToken)
+    {
+        SystemCommandResult stopResult = await RunPrivilegedProcessAsync("systemctl", new[] { "stop", UnitName }, cancellationToken);
+        if (!stopResult.IsSuccess &&
+            !stopResult.Output.Contains("not loaded", StringComparison.OrdinalIgnoreCase))
+        {
+            if (IsElevationDenied(stopResult.Output))
+            {
+                return WatchFolderDaemonResult.Fail(
+                    WatchFolderDaemonErrorCode.RequiresElevation,
+                    "Root privileges were not granted for System scope.");
+            }
+
+            return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.CommandFailed, stopResult.Output);
+        }
+
+        return WatchFolderDaemonResult.Ok("Daemon stopped.");
+    }
+
+    private static string BuildUnitFileContent(
+        WatchFolderDaemonScope scope,
+        string daemonPath,
+        string settingsFolder)
+    {
+        string wantedBy = scope == WatchFolderDaemonScope.System ? "multi-user.target" : "default.target";
+        string escapedDaemonPath = daemonPath.Replace("\"", "\\\"");
+        string escapedSettingsFolder = settingsFolder.Replace("\"", "\\\"");
+
+        return $"""
+                [Unit]
+                Description=XerahS Watch Folder Daemon
+                After=network.target
+
+                [Service]
+                Type=simple
+                ExecStart="{escapedDaemonPath}" --scope {scope.ToString().ToLowerInvariant()} --settings-folder "{escapedSettingsFolder}"
+                Restart=on-failure
+                RestartSec=3
+                KillSignal=SIGTERM
+                TimeoutStopSec=30
+
+                [Install]
+                WantedBy={wantedBy}
+                """;
+    }
+
+    private static async Task<SystemCommandResult> RunPrivilegedScriptAsync(
+        string scriptContents,
+        CancellationToken cancellationToken)
+    {
+        string scriptPath = Path.GetTempFileName();
+        try
+        {
+            await File.WriteAllTextAsync(scriptPath, scriptContents, cancellationToken);
+            return await RunPrivilegedProcessAsync("/bin/sh", new[] { scriptPath }, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            return new SystemCommandResult(false, ex.Message);
+        }
+        finally
+        {
+            try
+            {
+                File.Delete(scriptPath);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    private static async Task<SystemCommandResult> RunPrivilegedProcessAsync(
+        string fileName,
+        IReadOnlyList<string> arguments,
+        CancellationToken cancellationToken)
+    {
+        var pkexecArguments = new List<string> { fileName };
+        pkexecArguments.AddRange(arguments);
+
+        SystemCommandResult pkexecResult = await RunProcessWithArgumentsAsync(
+            "pkexec",
+            pkexecArguments,
+            cancellationToken,
+            ElevatedCommandTimeoutMs);
+
+        if (pkexecResult.IsSuccess || !IsExecutableNotFound(pkexecResult.Output))
+        {
+            return pkexecResult;
+        }
+
+        var sudoArguments = new List<string> { fileName };
+        sudoArguments.AddRange(arguments);
+
+        SystemCommandResult sudoResult = await RunProcessWithArgumentsAsync(
+            "sudo",
+            sudoArguments,
+            cancellationToken,
+            ElevatedCommandTimeoutMs);
+
+        if (sudoResult.IsSuccess || !IsExecutableNotFound(sudoResult.Output))
+        {
+            return sudoResult;
+        }
+
+        return new SystemCommandResult(false, "Neither pkexec nor sudo is available for privileged daemon operations.");
+    }
+
+    private static bool IsExecutableNotFound(string output)
+    {
+        return output.Contains("No such file or directory", StringComparison.OrdinalIgnoreCase) ||
+               output.Contains("not found", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsElevationDenied(string output)
+    {
+        return output.Contains("not authorized", StringComparison.OrdinalIgnoreCase) ||
+               output.Contains("authorization failed", StringComparison.OrdinalIgnoreCase) ||
+               output.Contains("authentication failed", StringComparison.OrdinalIgnoreCase) ||
+               output.Contains("permission denied", StringComparison.OrdinalIgnoreCase) ||
+               output.Contains("a terminal is required", StringComparison.OrdinalIgnoreCase) ||
+               output.Contains("no tty present", StringComparison.OrdinalIgnoreCase) ||
+               output.Contains("canceled", StringComparison.OrdinalIgnoreCase) ||
+               output.Contains("cancelled", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string EscapeShellSingleQuotedString(string value)
+    {
+        return value.Replace("'", "'\"'\"'");
     }
 
     private static async Task<SystemCommandResult> RunSystemctlAsync(
@@ -333,6 +486,63 @@ public sealed class LinuxWatchFolderDaemonService : IWatchFolderDaemonService
             Task waitTask = process.WaitForExitAsync(cancellationToken);
 
             Task completedTask = await Task.WhenAny(waitTask, Task.Delay(CommandTimeoutMs, cancellationToken));
+            if (completedTask != waitTask)
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                }
+
+                return new SystemCommandResult(false, $"{fileName} command timed out.");
+            }
+
+            string stdout = await stdoutTask;
+            string stderr = await stderrTask;
+            string combined = string.IsNullOrWhiteSpace(stderr) ? stdout : $"{stdout}{Environment.NewLine}{stderr}";
+
+            return new SystemCommandResult(process.ExitCode == 0, combined.Trim());
+        }
+        catch (Exception ex)
+        {
+            return new SystemCommandResult(false, ex.Message);
+        }
+    }
+
+    private static async Task<SystemCommandResult> RunProcessWithArgumentsAsync(
+        string fileName,
+        IReadOnlyList<string> arguments,
+        CancellationToken cancellationToken,
+        int timeoutMs)
+    {
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+
+            foreach (string argument in arguments)
+            {
+                process.StartInfo.ArgumentList.Add(argument);
+            }
+
+            process.Start();
+
+            Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
+            Task<string> stderrTask = process.StandardError.ReadToEndAsync();
+            Task waitTask = process.WaitForExitAsync(cancellationToken);
+
+            Task completedTask = await Task.WhenAny(waitTask, Task.Delay(timeoutMs, cancellationToken));
             if (completedTask != waitTask)
             {
                 try

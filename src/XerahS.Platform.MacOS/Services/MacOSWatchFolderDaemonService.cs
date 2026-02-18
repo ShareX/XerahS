@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Xml;
@@ -35,6 +36,7 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
 {
     private const string Label = "com.sharexteam.xerahs.watchfolder";
     private const int CommandTimeoutMs = 10000;
+    private const int ElevatedCommandTimeoutMs = 180000;
     private const int PollIntervalMs = 250;
 
     public bool IsSupported => true;
@@ -97,11 +99,6 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.UnsupportedScope, "Unsupported daemon scope.");
         }
 
-        if (!ValidateMutatingScope(scope, out var validationResult))
-        {
-            return validationResult;
-        }
-
         if (string.IsNullOrWhiteSpace(settingsFolder))
         {
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.ValidationError, "Settings folder is required.");
@@ -113,6 +110,11 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
             return WatchFolderDaemonResult.Fail(
                 WatchFolderDaemonErrorCode.ValidationError,
                 $"Daemon executable was not found: {daemonPath}");
+        }
+
+        if (scope == WatchFolderDaemonScope.System && !new MacOSPlatformInfo().IsElevated)
+        {
+            return await StartSystemScopeWithElevationAsync(daemonPath, settingsFolder, startAtStartup, cancellationToken);
         }
 
         var plistWriteResult = await EnsurePlistAsync(scope, daemonPath, settingsFolder, startAtStartup, cancellationToken);
@@ -152,15 +154,15 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.UnsupportedScope, "Unsupported daemon scope.");
         }
 
-        if (!ValidateMutatingScope(scope, out var validationResult))
-        {
-            return validationResult;
-        }
-
         string plistPath = GetPlistPath(scope);
         if (!File.Exists(plistPath))
         {
             return WatchFolderDaemonResult.Ok("launchd plist is not installed.");
+        }
+
+        if (scope == WatchFolderDaemonScope.System && !new MacOSPlatformInfo().IsElevated)
+        {
+            return await StopSystemScopeWithElevationAsync(cancellationToken);
         }
 
         string domainService = GetDomainService(scope);
@@ -206,20 +208,6 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
         }
 
         return await StartAsync(scope, settingsFolder, startAtStartup, cancellationToken);
-    }
-
-    private static bool ValidateMutatingScope(WatchFolderDaemonScope scope, out WatchFolderDaemonResult result)
-    {
-        if (scope == WatchFolderDaemonScope.System && !new MacOSPlatformInfo().IsElevated)
-        {
-            result = WatchFolderDaemonResult.Fail(
-                WatchFolderDaemonErrorCode.RequiresElevation,
-                "Root privileges are required for System scope.");
-            return false;
-        }
-
-        result = WatchFolderDaemonResult.Ok();
-        return true;
     }
 
     private static string ResolveDaemonPath()
@@ -295,37 +283,7 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
                 Directory.CreateDirectory(directory);
             }
 
-            string scopeValue = scope == WatchFolderDaemonScope.System ? "system" : "user";
-            string escapedDaemonPath = SecurityElement.Escape(daemonPath) ?? daemonPath;
-            string escapedSettingsPath = SecurityElement.Escape(settingsFolder) ?? settingsFolder;
-
-            string plistContent = $"""
-                                  <?xml version="1.0" encoding="UTF-8"?>
-                                  <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-                                  <plist version="1.0">
-                                  <dict>
-                                    <key>Label</key>
-                                    <string>{Label}</string>
-                                    <key>ProgramArguments</key>
-                                    <array>
-                                      <string>{escapedDaemonPath}</string>
-                                      <string>--scope</string>
-                                      <string>{scopeValue}</string>
-                                      <string>--settings-folder</string>
-                                      <string>{escapedSettingsPath}</string>
-                                    </array>
-                                    <key>RunAtLoad</key>
-                                    {(startAtStartup ? "<true/>" : "<false/>")}
-                                    <key>KeepAlive</key>
-                                    {(startAtStartup ? "<true/>" : "<false/>")}
-                                    <key>StandardOutPath</key>
-                                    <string>/tmp/xerahs-watchfolder.log</string>
-                                    <key>StandardErrorPath</key>
-                                    <string>/tmp/xerahs-watchfolder.error.log</string>
-                                  </dict>
-                                  </plist>
-                                  """;
-
+            string plistContent = BuildPlistContent(scope, daemonPath, settingsFolder, startAtStartup);
             await File.WriteAllTextAsync(plistPath, plistContent, cancellationToken);
             return WatchFolderDaemonResult.Ok();
         }
@@ -333,6 +291,176 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
         {
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.CommandFailed, ex.Message);
         }
+    }
+
+    private static async Task<WatchFolderDaemonResult> StartSystemScopeWithElevationAsync(
+        string daemonPath,
+        string settingsFolder,
+        bool startAtStartup,
+        CancellationToken cancellationToken)
+    {
+        string tempPlistPath = Path.GetTempFileName();
+        try
+        {
+            string plistContent = BuildPlistContent(WatchFolderDaemonScope.System, daemonPath, settingsFolder, startAtStartup);
+            await File.WriteAllTextAsync(tempPlistPath, plistContent, cancellationToken);
+
+            string systemPlistPath = GetPlistPath(WatchFolderDaemonScope.System);
+            string domainService = GetDomainService(WatchFolderDaemonScope.System);
+            string script = $"""
+                             set -e
+                             cp '{EscapeShellSingleQuotedString(tempPlistPath)}' '{EscapeShellSingleQuotedString(systemPlistPath)}'
+                             chmod 644 '{EscapeShellSingleQuotedString(systemPlistPath)}'
+                             launchctl bootout '{EscapeShellSingleQuotedString(domainService)}' >/dev/null 2>&1 || true
+                             launchctl bootstrap system '{EscapeShellSingleQuotedString(systemPlistPath)}'
+                             launchctl kickstart -k '{EscapeShellSingleQuotedString(domainService)}'
+                             """;
+
+            LaunchCtlResult privilegedResult = await RunPrivilegedShellScriptAsync(script, cancellationToken);
+            if (privilegedResult.IsSuccess)
+            {
+                return WatchFolderDaemonResult.Ok("Daemon started.");
+            }
+
+            if (IsElevationDenied(privilegedResult.Output))
+            {
+                return WatchFolderDaemonResult.Fail(
+                    WatchFolderDaemonErrorCode.RequiresElevation,
+                    "Administrator privileges were not granted for System scope.");
+            }
+
+            return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.CommandFailed, privilegedResult.Output);
+        }
+        catch (Exception ex)
+        {
+            return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.CommandFailed, ex.Message);
+        }
+        finally
+        {
+            try
+            {
+                File.Delete(tempPlistPath);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    private static async Task<WatchFolderDaemonResult> StopSystemScopeWithElevationAsync(CancellationToken cancellationToken)
+    {
+        string domainService = GetDomainService(WatchFolderDaemonScope.System);
+        string script = $"""
+                         launchctl bootout '{EscapeShellSingleQuotedString(domainService)}'
+                         """;
+
+        LaunchCtlResult privilegedResult = await RunPrivilegedShellScriptAsync(script, cancellationToken);
+        if (!privilegedResult.IsSuccess &&
+            !privilegedResult.Output.Contains("Could not find service", StringComparison.OrdinalIgnoreCase))
+        {
+            if (IsElevationDenied(privilegedResult.Output))
+            {
+                return WatchFolderDaemonResult.Fail(
+                    WatchFolderDaemonErrorCode.RequiresElevation,
+                    "Administrator privileges were not granted for System scope.");
+            }
+
+            return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.CommandFailed, privilegedResult.Output);
+        }
+
+        return WatchFolderDaemonResult.Ok("Daemon stopped.");
+    }
+
+    private static string BuildPlistContent(
+        WatchFolderDaemonScope scope,
+        string daemonPath,
+        string settingsFolder,
+        bool startAtStartup)
+    {
+        string scopeValue = scope == WatchFolderDaemonScope.System ? "system" : "user";
+        string escapedDaemonPath = SecurityElement.Escape(daemonPath) ?? daemonPath;
+        string escapedSettingsPath = SecurityElement.Escape(settingsFolder) ?? settingsFolder;
+
+        return $"""
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+                <plist version="1.0">
+                <dict>
+                  <key>Label</key>
+                  <string>{Label}</string>
+                  <key>ProgramArguments</key>
+                  <array>
+                    <string>{escapedDaemonPath}</string>
+                    <string>--scope</string>
+                    <string>{scopeValue}</string>
+                    <string>--settings-folder</string>
+                    <string>{escapedSettingsPath}</string>
+                  </array>
+                  <key>RunAtLoad</key>
+                  {(startAtStartup ? "<true/>" : "<false/>")}
+                  <key>KeepAlive</key>
+                  {(startAtStartup ? "<true/>" : "<false/>")}
+                  <key>StandardOutPath</key>
+                  <string>/tmp/xerahs-watchfolder.log</string>
+                  <key>StandardErrorPath</key>
+                  <string>/tmp/xerahs-watchfolder.error.log</string>
+                </dict>
+                </plist>
+                """;
+    }
+
+    private static async Task<LaunchCtlResult> RunPrivilegedShellScriptAsync(
+        string scriptContents,
+        CancellationToken cancellationToken)
+    {
+        string scriptPath = Path.GetTempFileName();
+        try
+        {
+            await File.WriteAllTextAsync(scriptPath, scriptContents, cancellationToken);
+            string shellCommand = $"/bin/sh '{EscapeShellSingleQuotedString(scriptPath)}'";
+            return await RunMacOSAdministratorCommandAsync(shellCommand, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            return new LaunchCtlResult(false, ex.Message);
+        }
+        finally
+        {
+            try
+            {
+                File.Delete(scriptPath);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    private static async Task<LaunchCtlResult> RunMacOSAdministratorCommandAsync(
+        string shellCommand,
+        CancellationToken cancellationToken)
+    {
+        string appleScript = $"do shell script \"{EscapeAppleScriptString(shellCommand)}\" with administrator privileges";
+        return await RunProcessWithArgumentsAsync("osascript", new[] { "-e", appleScript }, cancellationToken, ElevatedCommandTimeoutMs);
+    }
+
+    private static bool IsElevationDenied(string output)
+    {
+        return output.Contains("User canceled", StringComparison.OrdinalIgnoreCase) ||
+               output.Contains("user cancelled", StringComparison.OrdinalIgnoreCase) ||
+               output.Contains("not authorized", StringComparison.OrdinalIgnoreCase) ||
+               output.Contains("authentication", StringComparison.OrdinalIgnoreCase) ||
+               output.Contains("permission denied", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string EscapeShellSingleQuotedString(string value)
+    {
+        return value.Replace("'", "'\"'\"'");
+    }
+
+    private static string EscapeAppleScriptString(string value)
+    {
+        return value.Replace("\\", "\\\\").Replace("\"", "\\\"");
     }
 
     private static async Task<LaunchCtlResult> RunLaunchCtlAsync(string arguments, CancellationToken cancellationToken)
@@ -370,6 +498,63 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
                 }
 
                 return new LaunchCtlResult(false, "launchctl command timed out.");
+            }
+
+            string stdout = await stdoutTask;
+            string stderr = await stderrTask;
+            string combined = string.IsNullOrWhiteSpace(stderr) ? stdout : $"{stdout}{Environment.NewLine}{stderr}";
+
+            return new LaunchCtlResult(process.ExitCode == 0, combined.Trim());
+        }
+        catch (Exception ex)
+        {
+            return new LaunchCtlResult(false, ex.Message);
+        }
+    }
+
+    private static async Task<LaunchCtlResult> RunProcessWithArgumentsAsync(
+        string fileName,
+        IReadOnlyList<string> arguments,
+        CancellationToken cancellationToken,
+        int timeoutMs)
+    {
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+
+            foreach (string argument in arguments)
+            {
+                process.StartInfo.ArgumentList.Add(argument);
+            }
+
+            process.Start();
+
+            Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
+            Task<string> stderrTask = process.StandardError.ReadToEndAsync();
+            Task waitTask = process.WaitForExitAsync(cancellationToken);
+
+            Task completedTask = await Task.WhenAny(waitTask, Task.Delay(timeoutMs, cancellationToken));
+            if (completedTask != waitTask)
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                }
+
+                return new LaunchCtlResult(false, $"{fileName} command timed out.");
             }
 
             string stdout = await stdoutTask;
