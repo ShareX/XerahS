@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+set -e
+
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+
+if [ -x "$script_dir/sync-imageeditor-head" ]; then
+  exec "$script_dir/sync-imageeditor-head"
+elif command -v sh >/dev/null 2>&1; then
+  exec sh "$script_dir/sync-imageeditor-head"
+fi
+
+exit 0

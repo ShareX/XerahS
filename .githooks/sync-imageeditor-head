@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+
+set -e
+
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+uname_out="$(uname -s 2>/dev/null || echo unknown)"
+
+case "$uname_out" in
+  MINGW*|MSYS*|CYGWIN*)
+    if command -v pwsh >/dev/null 2>&1; then
+      exec pwsh -NoProfile -File "$script_dir/sync-imageeditor-head.ps1"
+    elif command -v powershell >/dev/null 2>&1; then
+      exec powershell -NoProfile -ExecutionPolicy Bypass -File "$script_dir/sync-imageeditor-head.ps1"
+    elif [ -x "$script_dir/sync-imageeditor-head.bash" ]; then
+      exec "$script_dir/sync-imageeditor-head.bash"
+    elif command -v bash >/dev/null 2>&1; then
+      exec bash "$script_dir/sync-imageeditor-head.bash"
+    else
+      echo "PowerShell or bash not found; cannot run ImageEditor sync hook." >&2
+      exit 0
+    fi
+    ;;
+  *)
+    if [ -x "$script_dir/sync-imageeditor-head.bash" ]; then
+      exec "$script_dir/sync-imageeditor-head.bash"
+    elif command -v bash >/dev/null 2>&1; then
+      exec bash "$script_dir/sync-imageeditor-head.bash"
+    elif command -v pwsh >/dev/null 2>&1; then
+      exec pwsh -NoProfile -File "$script_dir/sync-imageeditor-head.ps1"
+    else
+      echo "bash or PowerShell not found; cannot run ImageEditor sync hook." >&2
+      exit 0
+    fi
+    ;;
+esac

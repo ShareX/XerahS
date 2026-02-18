@@ -92,7 +92,12 @@ try {
 $hookFiles = @(
     ".githooks/pre-commit",
     ".githooks/pre-commit.bash",
-    ".githooks/pre-commit.ps1"
+    ".githooks/pre-commit.ps1",
+    ".githooks/post-checkout",
+    ".githooks/post-merge",
+    ".githooks/sync-imageeditor-head",
+    ".githooks/sync-imageeditor-head.bash",
+    ".githooks/sync-imageeditor-head.ps1"
 )
 
 $missingHooks = @()
@@ -114,9 +119,13 @@ if ($IsLinux -or $IsMacOS) {
     try {
         chmod +x .githooks/pre-commit
         chmod +x .githooks/pre-commit.bash
-        Write-Success "Made pre-commit hook executable"
+        chmod +x .githooks/post-checkout
+        chmod +x .githooks/post-merge
+        chmod +x .githooks/sync-imageeditor-head
+        chmod +x .githooks/sync-imageeditor-head.bash
+        Write-Success "Made git hook scripts executable"
     } catch {
-        Write-Warning "Could not set execute permission on pre-commit hook"
+        Write-Warning "Could not set execute permission on one or more hook scripts"
     }
 }
 
@@ -135,6 +144,8 @@ Write-Success "Git hooks setup complete!"
 Write-Host ""
 Write-Info "Active hooks:"
 Write-Host "  * pre-commit - Validates GPL v3 license headers in C# files"
+Write-Host "  * post-checkout - Ensures ImageEditor is on default branch when detached"
+Write-Host "  * post-merge - Ensures ImageEditor is on default branch when detached"
 Write-Host ""
 Write-Info "To test the hooks:"
 Write-Host "  1. Stage a C# file: git add src/SomeFile.cs"

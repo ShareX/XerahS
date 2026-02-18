@@ -18,6 +18,25 @@ Validates GPL v3 license headers in all staged C# files before allowing a commit
 - Linux/macOS: Uses bash script (`pre-commit.bash`) via launcher (`pre-commit`)
 - Windows: Uses PowerShell script (`pre-commit.ps1`) via launcher (`pre-commit`)
 
+### post-checkout
+
+Ensures `ImageEditor` is not left detached after checkout operations.
+
+**What it does:**
+- Detects detached `HEAD` in `ImageEditor`
+- Resolves default branch from `origin/HEAD` (fallback: `develop`, `main`, `master`)
+- Checks out the default branch locally
+- Attempts fast-forward to upstream when available
+
+**Cross-platform execution:**
+- Launcher: `.githooks/sync-imageeditor-head`
+- Linux/macOS: delegates to `.githooks/sync-imageeditor-head.bash`
+- Windows: delegates to `.githooks/sync-imageeditor-head.ps1` (with bash fallback)
+
+### post-merge
+
+Runs the same detached-HEAD recovery logic as `post-checkout` after merges.
+
 ## Installation
 
 ### Option 1: Configure Git to Use .githooks Directory (Recommended)
@@ -49,7 +68,10 @@ New-Item -ItemType SymbolicLink -Path ".git\hooks\pre-commit" -Target "..\..\. g
 
 ## Usage
 
-Once installed, the hooks run automatically on `git commit`.
+Once installed, hooks run automatically on:
+- `git commit` (`pre-commit`)
+- `git checkout`/branch switches (`post-checkout`)
+- `git merge` (`post-merge`)
 
 ### Bypassing Hooks (Not Recommended)
 
@@ -123,6 +145,7 @@ Update the file headers to match the expected format:
 2. Check file permissions (Linux/macOS):
    ```bash
    ls -la .githooks/pre-commit
+   ls -la .githooks/post-checkout .githooks/post-merge .githooks/sync-imageeditor-head.bash
    chmod +x .githooks/pre-commit  # If not executable
    ```
 
