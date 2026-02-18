@@ -28,6 +28,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Newtonsoft.Json;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Hotkeys;
@@ -38,7 +39,10 @@ namespace XerahS.UI.ViewModels
 {
     public partial class SettingsViewModel : ViewModelBase
     {
+        private const int WatchFolderDaemonStopTimeoutSeconds = 30;
         private bool _isLoading = true;
+        private string _lastSavedWatchFolderSignature = string.Empty;
+        private bool _suspendWatchFolderAutoSave;
 
         [ObservableProperty]
         private string _screenshotsFolder = string.Empty;
@@ -155,6 +159,41 @@ namespace XerahS.UI.ViewModels
 
         [ObservableProperty]
         private bool _hasWatchFolders;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ToggleWatchFolderDaemonCommand))]
+        private bool _watchFolderDaemonSupported;
+
+        [ObservableProperty]
+        private bool _showWatchFolderDaemonScopeSelector;
+
+        [ObservableProperty]
+        private WatchFolderDaemonScope _watchFolderDaemonScope;
+
+        [ObservableProperty]
+        private bool _watchFolderDaemonStartAtStartup;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(WatchFolderDaemonButtonText))]
+        private bool _watchFolderDaemonRunning;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ToggleWatchFolderDaemonCommand))]
+        private bool _isWatchFolderDaemonBusy;
+
+        [ObservableProperty]
+        private string _watchFolderDaemonStatusText = "Unknown";
+
+        [ObservableProperty]
+        private string _watchFolderDaemonLastError = string.Empty;
+
+        public WatchFolderDaemonScope[] WatchFolderDaemonScopes { get; } =
+        {
+            WatchFolderDaemonScope.User,
+            WatchFolderDaemonScope.System
+        };
+
+        public string WatchFolderDaemonButtonText => WatchFolderDaemonRunning ? "Stop" : "Start";
 
         public Func<WatchFolderEditViewModel, Task<bool>>? EditWatchFolderRequester { get; set; }
 
@@ -565,6 +604,23 @@ namespace XerahS.UI.ViewModels
             RefreshWatchFolderStatuses();
         }
 
+        partial void OnWatchFolderDaemonScopeChanged(WatchFolderDaemonScope value)
+        {
+            if (_isLoading)
+            {
+                return;
+            }
+
+            WatchFolderDaemonScope normalizedScope = NormalizeWatchFolderDaemonScope(value);
+            if (normalizedScope != value)
+            {
+                WatchFolderDaemonScope = normalizedScope;
+                return;
+            }
+
+            RefreshWatchFolderDaemonStatusCore();
+        }
+
         private void LoadSettings()
         {
             var settings = SettingsManager.Settings;
@@ -625,7 +681,13 @@ namespace XerahS.UI.ViewModels
             HasWatchFolders = WatchFolders.Count > 0;
             WatchFolderEnabled = WatchFolders.Any(folder => folder.Enabled);
             RefreshWatchFolderStatuses();
-            WatchFolderManager.Instance.UpdateWatchers();
+
+            InitializeWatchFolderDaemonSettings(settings);
+            _lastSavedWatchFolderSignature = BuildWatchFolderConfigurationSignature(
+                WatchFolderEnabled,
+                taskSettings.WatchFolderList);
+
+            ApplyWatchFolderRuntimePolicy(watchFolderConfigurationChanged: false, refreshDaemonStatus: true);
 
             // Integration Settings
             SupportsFileAssociations = OperatingSystem.IsWindows();
@@ -648,7 +710,14 @@ namespace XerahS.UI.ViewModels
             if (!_isLoading &&
                 e.PropertyName != nameof(HotkeySettings) &&
                 e.PropertyName != nameof(SelectedWatchFolder) &&
-                e.PropertyName != nameof(HasWatchFolders))
+                e.PropertyName != nameof(HasWatchFolders) &&
+                e.PropertyName != nameof(WatchFolderDaemonSupported) &&
+                e.PropertyName != nameof(ShowWatchFolderDaemonScopeSelector) &&
+                e.PropertyName != nameof(WatchFolderDaemonRunning) &&
+                e.PropertyName != nameof(IsWatchFolderDaemonBusy) &&
+                e.PropertyName != nameof(WatchFolderDaemonStatusText) &&
+                e.PropertyName != nameof(WatchFolderDaemonButtonText) &&
+                e.PropertyName != nameof(WatchFolderDaemonLastError))
             {
                 SaveSettings();
             }
@@ -698,13 +767,24 @@ namespace XerahS.UI.ViewModels
             taskSettings.UploadSettings.URLRegexReplacePattern = URLRegexReplacePattern;
             taskSettings.UploadSettings.URLRegexReplaceReplacement = URLRegexReplaceReplacement;
 
+            settings.WatchFolderDaemonScope = NormalizeWatchFolderDaemonScope(WatchFolderDaemonScope);
+            settings.WatchFolderDaemonStartAtStartup = WatchFolderDaemonStartAtStartup;
+
             WatchFolderEnabled = WatchFolders.Any(folder => folder.Enabled);
+            List<WatchFolderSettings> watchFolderSettings = WatchFolders.Select(item => item.ToSettings()).ToList();
             taskSettings.WatchFolderEnabled = WatchFolderEnabled;
-            taskSettings.WatchFolderList = WatchFolders.Select(item => item.ToSettings()).ToList();
+            taskSettings.WatchFolderList = watchFolderSettings;
+
+            string currentWatchFolderSignature = BuildWatchFolderConfigurationSignature(WatchFolderEnabled, watchFolderSettings);
+            bool watchFolderConfigurationChanged = _lastSavedWatchFolderSignature != currentWatchFolderSignature;
+            _lastSavedWatchFolderSignature = currentWatchFolderSignature;
 
             SettingsManager.SaveApplicationConfig();
             SettingsManager.SaveWorkflowsConfigAsync();
-            WatchFolderManager.Instance.UpdateWatchers();
+
+            ApplyWatchFolderRuntimePolicy(
+                watchFolderConfigurationChanged,
+                refreshDaemonStatus: watchFolderConfigurationChanged);
         }
 
         [RelayCommand]
@@ -789,14 +869,23 @@ namespace XerahS.UI.ViewModels
                 return;
             }
 
-            SelectedWatchFolder.FolderPath = editVm.FolderPath;
-            SelectedWatchFolder.Filter = string.IsNullOrWhiteSpace(editVm.Filter) ? "*.*" : editVm.Filter;
-            SelectedWatchFolder.IncludeSubdirectories = editVm.IncludeSubdirectories;
-            SelectedWatchFolder.MoveFilesToScreenshotsFolder = editVm.MoveFilesToScreenshotsFolder;
-            SelectedWatchFolder.ConvertMovToMp4BeforeProcessing = editVm.ConvertMovToMp4BeforeProcessing;
-            SelectedWatchFolder.Enabled = editVm.Enabled;
-            SelectedWatchFolder.WorkflowId = editVm.SelectedWorkflowId;
-            SelectedWatchFolder.WorkflowName = editVm.SelectedWorkflow?.Name ?? "Unassigned";
+            _suspendWatchFolderAutoSave = true;
+            try
+            {
+                SelectedWatchFolder.FolderPath = editVm.FolderPath;
+                SelectedWatchFolder.Filter = string.IsNullOrWhiteSpace(editVm.Filter) ? "*.*" : editVm.Filter;
+                SelectedWatchFolder.IncludeSubdirectories = editVm.IncludeSubdirectories;
+                SelectedWatchFolder.MoveFilesToScreenshotsFolder = editVm.MoveFilesToScreenshotsFolder;
+                SelectedWatchFolder.ConvertMovToMp4BeforeProcessing = editVm.ConvertMovToMp4BeforeProcessing;
+                SelectedWatchFolder.Enabled = editVm.Enabled;
+                SelectedWatchFolder.WorkflowId = editVm.SelectedWorkflowId;
+                SelectedWatchFolder.WorkflowName = editVm.SelectedWorkflow?.Name ?? "Unassigned";
+            }
+            finally
+            {
+                _suspendWatchFolderAutoSave = false;
+            }
+
             RefreshWatchFolderStatuses();
             SaveSettings();
         }
@@ -820,6 +909,68 @@ namespace XerahS.UI.ViewModels
             return SelectedWatchFolder != null;
         }
 
+        private bool CanToggleWatchFolderDaemon()
+        {
+            return WatchFolderDaemonSupported && !IsWatchFolderDaemonBusy;
+        }
+
+        [RelayCommand(CanExecute = nameof(CanToggleWatchFolderDaemon))]
+        private async Task ToggleWatchFolderDaemon()
+        {
+            if (!TryGetWatchFolderDaemonService(out IWatchFolderDaemonService daemonService))
+            {
+                return;
+            }
+
+            IsWatchFolderDaemonBusy = true;
+            WatchFolderDaemonLastError = string.Empty;
+
+            try
+            {
+                WatchFolderDaemonScope scope = NormalizeWatchFolderDaemonScope(WatchFolderDaemonScope);
+                if (!daemonService.SupportsScope(scope))
+                {
+                    WatchFolderDaemonLastError = $"Selected scope '{scope}' is not supported on this platform.";
+                    WatchFolderDaemonStatusText = "Unsupported scope.";
+                    WatchFolderDaemonRunning = false;
+                    WatchFolderManager.Instance.StartOrReloadFromCurrentSettings();
+                    return;
+                }
+
+                WatchFolderDaemonResult result;
+                if (WatchFolderDaemonRunning)
+                {
+                    result = await daemonService.StopAsync(scope, TimeSpan.FromSeconds(WatchFolderDaemonStopTimeoutSeconds));
+                }
+                else
+                {
+                    SaveSettings();
+                    result = await daemonService.StartAsync(scope, SettingsManager.PersonalFolder, WatchFolderDaemonStartAtStartup);
+                }
+
+                ApplyWatchFolderDaemonOperationResult(result);
+                RefreshWatchFolderDaemonStatusCore();
+                ApplyWatchFolderRuntimePolicy(watchFolderConfigurationChanged: false, refreshDaemonStatus: false);
+            }
+            catch (Exception ex)
+            {
+                WatchFolderDaemonLastError = ex.Message;
+                WatchFolderDaemonStatusText = "Failed to control daemon.";
+                DebugHelper.WriteException(ex, "SettingsViewModel: failed to toggle watch folder daemon.");
+            }
+            finally
+            {
+                IsWatchFolderDaemonBusy = false;
+            }
+        }
+
+        [RelayCommand]
+        private Task RefreshWatchFolderDaemonStatus()
+        {
+            RefreshWatchFolderDaemonStatusCore();
+            return Task.CompletedTask;
+        }
+
         private void RefreshWatchFolderStatuses()
         {
             var workflows = SettingsManager.WorkflowsConfig?.Hotkeys;
@@ -834,6 +985,11 @@ namespace XerahS.UI.ViewModels
         {
             folder.PropertyChanged += (_, e) =>
             {
+                if (_suspendWatchFolderAutoSave)
+                {
+                    return;
+                }
+
                 if (e.PropertyName == nameof(WatchFolderSettingsViewModel.FolderPath) ||
                     e.PropertyName == nameof(WatchFolderSettingsViewModel.Filter) ||
                     e.PropertyName == nameof(WatchFolderSettingsViewModel.IncludeSubdirectories) ||
@@ -895,6 +1051,175 @@ namespace XerahS.UI.ViewModels
             }
 
             return EnumExtensions.GetDescription(workflow.Job);
+        }
+
+        private void InitializeWatchFolderDaemonSettings(ApplicationConfig settings)
+        {
+            if (!PlatformServices.IsInitialized)
+            {
+                WatchFolderDaemonSupported = false;
+                ShowWatchFolderDaemonScopeSelector = false;
+                WatchFolderDaemonScope = NormalizeWatchFolderDaemonScope(settings.WatchFolderDaemonScope);
+                WatchFolderDaemonStartAtStartup = settings.WatchFolderDaemonStartAtStartup;
+                WatchFolderDaemonStatusText = "Platform services are not initialized.";
+                WatchFolderDaemonLastError = string.Empty;
+                WatchFolderDaemonRunning = false;
+                return;
+            }
+
+            IWatchFolderDaemonService daemonService = PlatformServices.WatchFolderDaemon;
+            WatchFolderDaemonSupported = daemonService.IsSupported;
+            ShowWatchFolderDaemonScopeSelector = daemonService.IsSupported &&
+                                                 (PlatformServices.PlatformInfo.IsLinux || PlatformServices.PlatformInfo.IsMacOS);
+
+            WatchFolderDaemonScope = NormalizeWatchFolderDaemonScope(settings.WatchFolderDaemonScope);
+            WatchFolderDaemonStartAtStartup = settings.WatchFolderDaemonStartAtStartup;
+
+            settings.WatchFolderDaemonScope = WatchFolderDaemonScope;
+        }
+
+        private void ApplyWatchFolderRuntimePolicy(bool watchFolderConfigurationChanged, bool refreshDaemonStatus)
+        {
+            bool daemonRunning = refreshDaemonStatus ? RefreshWatchFolderDaemonStatusCore() : WatchFolderDaemonRunning;
+            if (daemonRunning)
+            {
+                WatchFolderManager.Instance.Stop();
+
+                if (watchFolderConfigurationChanged && TryGetWatchFolderDaemonService(out IWatchFolderDaemonService daemonService))
+                {
+                    WatchFolderDaemonScope scope = NormalizeWatchFolderDaemonScope(WatchFolderDaemonScope);
+                    if (daemonService.SupportsScope(scope))
+                    {
+                        WatchFolderDaemonResult restartResult = daemonService.RestartAsync(
+                            scope,
+                            SettingsManager.PersonalFolder,
+                            WatchFolderDaemonStartAtStartup,
+                            TimeSpan.FromSeconds(WatchFolderDaemonStopTimeoutSeconds)).GetAwaiter().GetResult();
+
+                        ApplyWatchFolderDaemonOperationResult(restartResult);
+                    }
+                    else
+                    {
+                        WatchFolderDaemonLastError = $"Selected scope '{scope}' is not supported on this platform.";
+                    }
+
+                    daemonRunning = RefreshWatchFolderDaemonStatusCore();
+                }
+            }
+
+            if (!daemonRunning)
+            {
+                WatchFolderManager.Instance.StartOrReloadFromCurrentSettings();
+            }
+        }
+
+        private bool RefreshWatchFolderDaemonStatusCore()
+        {
+            try
+            {
+                if (!TryGetWatchFolderDaemonService(out IWatchFolderDaemonService daemonService))
+                {
+                    WatchFolderDaemonStatusText = "Watch folder daemon is not supported on this platform.";
+                    WatchFolderDaemonRunning = false;
+                    return false;
+                }
+
+                WatchFolderDaemonScope scope = NormalizeWatchFolderDaemonScope(WatchFolderDaemonScope);
+                WatchFolderDaemonScope = scope;
+
+                if (!daemonService.SupportsScope(scope))
+                {
+                    WatchFolderDaemonStatusText = $"Scope '{scope}' is not supported.";
+                    WatchFolderDaemonRunning = false;
+                    return false;
+                }
+
+                WatchFolderDaemonStatus status = daemonService.GetStatusAsync(scope).GetAwaiter().GetResult();
+                WatchFolderDaemonRunning = status.State == WatchFolderDaemonState.Running;
+                WatchFolderDaemonStatusText = $"{status.State} ({status.Scope}) - {status.Message}";
+                WatchFolderDaemonLastError = string.Empty;
+                return WatchFolderDaemonRunning;
+            }
+            catch (Exception ex)
+            {
+                WatchFolderDaemonRunning = false;
+                WatchFolderDaemonStatusText = "Failed to query daemon status.";
+                WatchFolderDaemonLastError = ex.Message;
+                DebugHelper.WriteException(ex, "SettingsViewModel: failed to query watch folder daemon status.");
+                return false;
+            }
+        }
+
+        private bool TryGetWatchFolderDaemonService(out IWatchFolderDaemonService daemonService)
+        {
+            if (!PlatformServices.IsInitialized)
+            {
+                daemonService = new UnsupportedWatchFolderDaemonService();
+                WatchFolderDaemonSupported = false;
+                return false;
+            }
+
+            daemonService = PlatformServices.WatchFolderDaemon;
+            WatchFolderDaemonSupported = daemonService.IsSupported;
+            return daemonService.IsSupported;
+        }
+
+        private WatchFolderDaemonScope NormalizeWatchFolderDaemonScope(WatchFolderDaemonScope scope)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return WatchFolderDaemonScope.System;
+            }
+
+            if (!PlatformServices.IsInitialized)
+            {
+                return scope;
+            }
+
+            IWatchFolderDaemonService daemonService = PlatformServices.WatchFolderDaemon;
+            if (!daemonService.IsSupported)
+            {
+                return scope;
+            }
+
+            if (daemonService.SupportsScope(scope))
+            {
+                return scope;
+            }
+
+            if (daemonService.SupportsScope(WatchFolderDaemonScope.User))
+            {
+                return WatchFolderDaemonScope.User;
+            }
+
+            if (daemonService.SupportsScope(WatchFolderDaemonScope.System))
+            {
+                return WatchFolderDaemonScope.System;
+            }
+
+            return scope;
+        }
+
+        private void ApplyWatchFolderDaemonOperationResult(WatchFolderDaemonResult result)
+        {
+            if (result.Success)
+            {
+                WatchFolderDaemonLastError = string.Empty;
+                return;
+            }
+
+            WatchFolderDaemonLastError = string.IsNullOrWhiteSpace(result.Message)
+                ? $"Operation failed with error: {result.ErrorCode}"
+                : result.Message;
+        }
+
+        private static string BuildWatchFolderConfigurationSignature(bool watchFolderEnabled, List<WatchFolderSettings> watchFolderSettings)
+        {
+            return JsonConvert.SerializeObject(new
+            {
+                WatchFolderEnabled = watchFolderEnabled,
+                WatchFolderList = watchFolderSettings
+            });
         }
 
         private void ApplyProxyAndResetClient()

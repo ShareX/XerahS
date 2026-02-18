@@ -245,6 +245,57 @@
                                 </StackPanel>
                             </Border>
                         </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Watch Folder Service/Daemon" FontWeight="SemiBold"/>
+                            <Border BorderThickness="1"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    CornerRadius="4"
+                                    Padding="16">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Run watch-folder monitoring in a dedicated background service/daemon using your existing settings."
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               TextWrapping="Wrap"/>
+
+                                    <Grid ColumnDefinitions="Auto, 16, *"
+                                          IsVisible="{Binding ShowWatchFolderDaemonScopeSelector}">
+                                        <TextBlock Grid.Column="0" Text="Scope:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Column="2"
+                                                  ItemsSource="{Binding WatchFolderDaemonScopes}"
+                                                  SelectedItem="{Binding WatchFolderDaemonScope}"
+                                                  Width="180"
+                                                  HorizontalAlignment="Left"
+                                                  AutomationProperties.Name="Watch Folder Daemon Scope"/>
+                                    </Grid>
+
+                                    <CheckBox IsChecked="{Binding WatchFolderDaemonStartAtStartup}"
+                                              Content="Start daemon at startup"
+                                              AutomationProperties.Name="Watch Folder Daemon Startup"/>
+
+                                    <Grid ColumnDefinitions="*, 12, Auto, 8, Auto"
+                                          VerticalAlignment="Center">
+                                        <StackPanel Grid.Column="0" Spacing="4">
+                                            <TextBlock Text="{Binding WatchFolderDaemonStatusText}" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding WatchFolderDaemonLastError}"
+                                                       TextWrapping="Wrap"
+                                                       Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="2"
+                                                Content="Refresh"
+                                                Command="{Binding RefreshWatchFolderDaemonStatusCommand}"
+                                                AutomationProperties.Name="Refresh Watch Folder Daemon Status"/>
+
+                                        <Button Grid.Column="4"
+                                                Content="{Binding WatchFolderDaemonButtonText}"
+                                                Command="{Binding ToggleWatchFolderDaemonCommand}"
+                                                IsEnabled="{Binding WatchFolderDaemonSupported}"
+                                                AutomationProperties.Name="Toggle Watch Folder Daemon"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
