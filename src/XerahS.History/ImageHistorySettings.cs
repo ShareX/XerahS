@@ -31,7 +31,7 @@ namespace XerahS.History
     public class ImageHistorySettings
     {
         public bool RememberWindowState { get; set; } = true;
-        public WindowState WindowState { get; set; } = new WindowState();
+        public WindowPlacementState WindowState { get; set; } = new WindowPlacementState();
         public Size ThumbnailSize { get; set; } = new Size(250, 150);
         public int MaxItemCount { get; set; } = 500;
         public bool AutoLoadMoreItems { get; set; } = true;

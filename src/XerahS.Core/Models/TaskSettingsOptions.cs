@@ -72,9 +72,9 @@ public class ColorPickerOptions
     // TODO: Port ColorPickerOptions
 }
 
-public class WindowState
+public class EditorWindowStateOptions
 {
-    // TODO: Port WindowState
+    // TODO: Port editor window state options
 }
 
 // Option Classes
@@ -138,7 +138,7 @@ public class RegionCaptureOptions
     public ShapeType LastEditorTool { get; set; } = ShapeType.DrawingRectangle;
 
     public ImageEditorStartMode ImageEditorStartMode { get; set; } = ImageEditorStartMode.AutoSize;
-    public WindowState ImageEditorWindowState { get; set; } = new WindowState();
+    public EditorWindowStateOptions ImageEditorWindowState { get; set; } = new EditorWindowStateOptions();
     public bool ZoomToFitOnOpen { get; set; } = false;
     public bool EditorAutoCopyImage { get; set; } = false;
     public bool AutoCloseEditorOnTask { get; set; } = false;

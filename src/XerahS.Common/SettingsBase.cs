@@ -331,6 +331,7 @@ namespace XerahS.Common
                 DebugHelper.WriteLine($"[SettingsBase] {typeName} load started: {filePath}");
 
                 // DEBUG: Log file details
+                /*
                 try
                 {
                     var fileInfo = new FileInfo(filePath);
@@ -340,6 +341,7 @@ namespace XerahS.Common
                 {
                     DebugHelper.WriteLine($"[SettingsBase] Failed to get file info: {ex.Message}");
                 }
+                */
 
                 try
                 {
@@ -365,12 +367,12 @@ namespace XerahS.Common
                                     args.ErrorContext.Handled = true;
                                 };
                                 
-                                DebugHelper.WriteLine($"[SettingsBase] Starting deserialization for {typeName}");
+                                // DebugHelper.WriteLine($"[SettingsBase] Starting deserialization for {typeName}");
                                 settings = serializer.Deserialize<T>(jsonReader) ?? throw new Exception($"{typeName} object is null.");
                             }
 
                             System.Diagnostics.Debug.WriteLine($"{typeName} load finished: {filePath}");
-                            DebugHelper.WriteLine($"[SettingsBase] {typeName} load finished successfully");
+                            // DebugHelper.WriteLine($"[SettingsBase] {typeName} load finished successfully");
 
                             return settings;
                         }

@@ -27,7 +27,7 @@ using System.Drawing;
 
 namespace XerahS.Common
 {
-    public class WindowState
+    public class WindowPlacementState
     {
         public Point Location { get; set; }
         public Size Size { get; set; }
