@@ -153,7 +153,8 @@ public partial class ScrollingCaptureViewModel : ViewModelBase
                 scrollAmount: options.ScrollAmount,
                 startDelayMs: options.StartDelay,
                 scrollDelayMs: options.ScrollDelay,
-                autoScrollTop: options.AutoScrollTop,
+                // Always normalize to the top after window selection before capture starts.
+                autoScrollTop: true,
                 autoIgnoreBottomEdge: options.AutoIgnoreBottomEdge,
                 progress: progress,
                 cancellationToken: _captureCts.Token);
