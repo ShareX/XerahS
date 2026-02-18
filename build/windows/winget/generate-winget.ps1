@@ -9,7 +9,7 @@ param (
 $PackageIdentifier = "ShareX.XerahS"
 $Publisher = "ShareX Team"
 $PackageName = "XerahS"
-$ShortDescription = "ShareX mod with extra features."
+$ShortDescription = "ShareX mod with extra features." # Fallback
 $PackageUrl = "https://github.com/ShareX/XerahS"
 $License = "GPL-3.0-only"
 
@@ -17,6 +17,19 @@ if ([string]::IsNullOrEmpty($PSScriptRoot)) {
     $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 } else {
     $ScriptPath = $PSScriptRoot
+}
+
+$RepoRoot = Resolve-Path (Join-Path $ScriptPath "..\..\..")
+$ReadmePath = Join-Path $RepoRoot "README.md"
+
+if (Test-Path $ReadmePath) {
+    $ReadmeContent = Get-Content $ReadmePath
+    # Find first non-empty line after title
+    $DescriptionLine = $ReadmeContent | Select-Object -Skip 1 | Where-Object { $_ -match "\S" } | Select-Object -First 1
+    if ($DescriptionLine) {
+        # meaningful description found, remove markdown formatting
+        $ShortDescription = $DescriptionLine -replace "\*\*", "" -replace "`r", "" -replace "`n", ""
+    }
 }
 
 
