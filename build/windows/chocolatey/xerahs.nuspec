@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>xerahs</id>
+    <version>1.0.0</version>
+    <title>XerahS</title>
+    <authors>ShareX Team</authors>
+    <projectUrl>https://github.com/ShareX/XerahS</projectUrl>
+    <tags>xerahs sharex screenshot screen-capture</tags>
+    <summary>ShareX mod with extra features.</summary>
+    <description>XerahS is a ShareX mod with extra features.</description>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

@@ -1,0 +1,22 @@
+{
+    "version": "nightly",
+    "description": "ShareX mod with extra features.",
+    "homepage": "https://github.com/ShareX/XerahS",
+    "license": "GPL-3.0-only",
+    "notes": "This is a nightly build.",
+    "url": "https://github.com/ShareX/XerahS/releases/latest/download/XerahS-Portable.zip",
+    "hash": "checkver",
+    "bin": "XerahS.exe",
+    "shortcuts": [
+        [
+            "XerahS.exe",
+            "XerahS"
+        ]
+    ],
+    "checkver": {
+        "github": "https://github.com/ShareX/XerahS"
+    },
+    "autoupdate": {
+        "url": "https://github.com/ShareX/XerahS/releases/download/v$version/XerahS-Portable.zip"
+    }
+}
