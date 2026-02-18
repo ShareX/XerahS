@@ -1090,11 +1090,11 @@ namespace XerahS.UI.ViewModels
                     WatchFolderDaemonScope scope = NormalizeWatchFolderDaemonScope(WatchFolderDaemonScope);
                     if (daemonService.SupportsScope(scope))
                     {
-                        WatchFolderDaemonResult restartResult = daemonService.RestartAsync(
+                        WatchFolderDaemonResult restartResult = RunWatchFolderDaemonCall(() => daemonService.RestartAsync(
                             scope,
                             SettingsManager.PersonalFolder,
                             WatchFolderDaemonStartAtStartup,
-                            TimeSpan.FromSeconds(WatchFolderDaemonStopTimeoutSeconds)).GetAwaiter().GetResult();
+                            TimeSpan.FromSeconds(WatchFolderDaemonStopTimeoutSeconds)));
 
                         ApplyWatchFolderDaemonOperationResult(restartResult);
                     }
@@ -1134,7 +1134,7 @@ namespace XerahS.UI.ViewModels
                     return false;
                 }
 
-                WatchFolderDaemonStatus status = daemonService.GetStatusAsync(scope).GetAwaiter().GetResult();
+                WatchFolderDaemonStatus status = RunWatchFolderDaemonCall(() => daemonService.GetStatusAsync(scope));
                 WatchFolderDaemonRunning = status.State == WatchFolderDaemonState.Running;
                 WatchFolderDaemonStatusText = $"{status.State} ({status.Scope}) - {status.Message}";
                 WatchFolderDaemonLastError = string.Empty;
@@ -1148,6 +1148,12 @@ namespace XerahS.UI.ViewModels
                 DebugHelper.WriteException(ex, "SettingsViewModel: failed to query watch folder daemon status.");
                 return false;
             }
+        }
+
+        private static T RunWatchFolderDaemonCall<T>(Func<Task<T>> daemonCall)
+        {
+            // Avoid UI-thread deadlocks caused by sync-over-async calls in settings workflows.
+            return Task.Run(daemonCall).GetAwaiter().GetResult();
         }
 
         private bool TryGetWatchFolderDaemonService(out IWatchFolderDaemonService daemonService)

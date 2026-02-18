@@ -419,8 +419,13 @@ namespace XerahS.App
                 return false;
             }
 
-            WatchFolderDaemonStatus status = daemonService.GetStatusAsync(scope).GetAwaiter().GetResult();
+            WatchFolderDaemonStatus status = RunWatchFolderDaemonCall(() => daemonService.GetStatusAsync(scope));
             return status.State == WatchFolderDaemonState.Running;
+        }
+
+        private static T RunWatchFolderDaemonCall<T>(Func<Task<T>> daemonCall)
+        {
+            return Task.Run(daemonCall).GetAwaiter().GetResult();
         }
 
         private static WatchFolderDaemonScope ResolveEffectiveWatchFolderDaemonScope()
