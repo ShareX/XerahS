@@ -6,6 +6,26 @@ param (
     [string]$InstallerArm64Sha256
 )
 
+if ([string]::IsNullOrEmpty($PSScriptRoot)) {
+    $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+} else {
+    $ScriptPath = $PSScriptRoot
+}
+
+$RepoRoot = Resolve-Path (Join-Path $ScriptPath "..\..\..")
+
+if ([string]::IsNullOrEmpty($Version)) {
+    $PropsPath = Join-Path $RepoRoot "Directory.Build.props"
+    if (Test-Path $PropsPath) {
+        $PropsContent = [xml](Get-Content $PropsPath)
+        $VersionNode = $PropsContent.SelectSingleNode("//Version")
+        if ($VersionNode) {
+            $Version = $VersionNode.InnerText
+            Write-Host "Auto-detected version: $Version"
+        }
+    }
+}
+
 if ([string]::IsNullOrEmpty($InstallerUrl)) {
     $InstallerUrl = "https://github.com/ShareX/XerahS/releases/download/v$Version/XerahS-$Version-win-x64.exe"
 }
@@ -21,13 +41,7 @@ $ShortDescription = "A cross-platform port of ShareX built with Avalonia UI." # 
 $PackageUrl = "https://github.com/ShareX/XerahS"
 $License = "GPL-3.0-only"
 
-if ([string]::IsNullOrEmpty($PSScriptRoot)) {
-    $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-} else {
-    $ScriptPath = $PSScriptRoot
-}
 
-$RepoRoot = Resolve-Path (Join-Path $ScriptPath "..\..\..")
 $ReadmePath = Join-Path $RepoRoot "README.md"
 
 if (Test-Path $ReadmePath) {
