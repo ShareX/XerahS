@@ -25,25 +25,21 @@
 
 using XerahS.Platform.Abstractions;
 
-namespace XerahS.Platform.Mobile;
+namespace XerahS.WatchFolder.Daemon.Services;
 
-public static class MobilePlatform
+internal sealed class HeadlessToastService : IToastService
 {
-    public static void Initialize(PlatformType platformType = PlatformType.Android)
+    public void ShowToast(ToastConfig config)
     {
-        PlatformServices.Initialize(
-            platformInfo: new MobilePlatformInfo(platformType),
-            screenService: new MobileScreenService(),
-            clipboardService: new MobileClipboardService(),
-            windowService: new MobileWindowService(),
-            screenCaptureService: new MobileScreenCaptureService(),
-            hotkeyService: new MobileHotkeyService(),
-            inputService: new MobileInputService(),
-            fontService: new MobileFontService(),
-            startupService: new UnsupportedStartupService(),
-            systemService: new MobileSystemService(),
-            diagnosticService: new MobileDiagnosticService(),
-            notificationService: new MobileNotificationService(),
-            watchFolderDaemonService: new UnsupportedWatchFolderDaemonService());
+        if (config == null)
+        {
+            return;
+        }
+
+        Console.WriteLine($"[DaemonNotification] {config.Title} {config.Text}");
+    }
+
+    public void CloseActiveToast()
+    {
     }
 }

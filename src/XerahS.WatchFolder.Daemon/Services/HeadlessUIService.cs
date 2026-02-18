@@ -23,27 +23,27 @@
 
 #endregion License Information (GPL v3)
 
+using SkiaSharp;
+using XerahS.Core;
 using XerahS.Platform.Abstractions;
 
-namespace XerahS.Platform.Mobile;
+namespace XerahS.WatchFolder.Daemon.Services;
 
-public static class MobilePlatform
+internal sealed class HeadlessUIService : IUIService
 {
-    public static void Initialize(PlatformType platformType = PlatformType.Android)
+    public Task HideMainWindowAsync() => Task.CompletedTask;
+
+    public Task RestoreMainWindowAsync() => Task.CompletedTask;
+
+    public Task<SKBitmap?> ShowEditorAsync(SKBitmap image) => Task.FromResult<SKBitmap?>(image);
+
+    public Task<(AfterCaptureTasks Capture, AfterUploadTasks Upload, bool Cancel)> ShowAfterCaptureWindowAsync(
+        SKBitmap image,
+        AfterCaptureTasks afterCapture,
+        AfterUploadTasks afterUpload)
     {
-        PlatformServices.Initialize(
-            platformInfo: new MobilePlatformInfo(platformType),
-            screenService: new MobileScreenService(),
-            clipboardService: new MobileClipboardService(),
-            windowService: new MobileWindowService(),
-            screenCaptureService: new MobileScreenCaptureService(),
-            hotkeyService: new MobileHotkeyService(),
-            inputService: new MobileInputService(),
-            fontService: new MobileFontService(),
-            startupService: new UnsupportedStartupService(),
-            systemService: new MobileSystemService(),
-            diagnosticService: new MobileDiagnosticService(),
-            notificationService: new MobileNotificationService(),
-            watchFolderDaemonService: new UnsupportedWatchFolderDaemonService());
+        return Task.FromResult((afterCapture, afterUpload, false));
     }
+
+    public Task ShowAfterUploadWindowAsync(AfterUploadWindowInfo info) => Task.CompletedTask;
 }

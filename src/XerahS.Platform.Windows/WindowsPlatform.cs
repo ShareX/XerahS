@@ -68,7 +68,8 @@ namespace XerahS.Platform.Windows
                 systemService: new Services.WindowsSystemService(),
                 shellIntegrationService: new Services.WindowsShellIntegrationService(),
                 notificationService: new WindowsNotificationService(),
-                diagnosticService: new Services.WindowsDiagnosticService()
+                diagnosticService: new Services.WindowsDiagnosticService(),
+                watchFolderDaemonService: new Services.WindowsWatchFolderDaemonService()
             );
 
             // Register optional scrolling capture service

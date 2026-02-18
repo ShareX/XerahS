@@ -24,6 +24,9 @@
 #endregion License Information (GPL v3)
 
 using Avalonia;
+using XerahS.Core;
+using XerahS.Core.Managers;
+using XerahS.Platform.Abstractions;
 
 namespace XerahS.App
 {
@@ -110,6 +113,7 @@ namespace XerahS.App
                 XerahS.Core.SettingsManager.LoadInitialSettings();
 
                 InitializePlatformServices();
+                ApplyInitialWatchFolderRuntimePolicy();
 
                 // Register callback for post-UI async initialization
                 XerahS.UI.App.PostUIInitializationCallback = InitializeBackgroundServicesAsync;
@@ -376,6 +380,57 @@ namespace XerahS.App
             // Fallback for non-Windows/MacOS (or generic stubs)
             // In future: LinuxPlatform.Initialize()
             System.Diagnostics.Debug.WriteLine("Warning: Platform not fully supported, services may not be fully functional.");
+        }
+
+        private static void ApplyInitialWatchFolderRuntimePolicy()
+        {
+            try
+            {
+                bool daemonRunning = IsWatchFolderDaemonRunning();
+                if (daemonRunning)
+                {
+                    WatchFolderManager.Instance.Stop();
+                    XerahS.Common.DebugHelper.WriteLine("Watch folder daemon is running. In-process watchers remain stopped.");
+                }
+                else
+                {
+                    WatchFolderManager.Instance.StartOrReloadFromCurrentSettings();
+                    XerahS.Common.DebugHelper.WriteLine("Watch folder daemon is not running. In-process watchers started from current settings.");
+                }
+            }
+            catch (Exception ex)
+            {
+                XerahS.Common.DebugHelper.WriteException(ex, "Failed to apply initial watch folder runtime policy.");
+                WatchFolderManager.Instance.StartOrReloadFromCurrentSettings();
+            }
+        }
+
+        private static bool IsWatchFolderDaemonRunning()
+        {
+            IWatchFolderDaemonService daemonService = PlatformServices.WatchFolderDaemon;
+            if (!daemonService.IsSupported)
+            {
+                return false;
+            }
+
+            WatchFolderDaemonScope scope = ResolveEffectiveWatchFolderDaemonScope();
+            if (!daemonService.SupportsScope(scope))
+            {
+                return false;
+            }
+
+            WatchFolderDaemonStatus status = daemonService.GetStatusAsync(scope).GetAwaiter().GetResult();
+            return status.State == WatchFolderDaemonState.Running;
+        }
+
+        private static WatchFolderDaemonScope ResolveEffectiveWatchFolderDaemonScope()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return WatchFolderDaemonScope.System;
+            }
+
+            return SettingsManager.Settings.WatchFolderDaemonScope;
         }
 
         /// <summary>

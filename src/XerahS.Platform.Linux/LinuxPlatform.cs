@@ -81,7 +81,8 @@ namespace XerahS.Platform.Linux
                 startupService: new LinuxStartupService(),
                 systemService: systemService,
                 notificationService: new LinuxNotificationService(),
-                diagnosticService: new Services.LinuxDiagnosticService()
+                diagnosticService: new Services.LinuxDiagnosticService(),
+                watchFolderDaemonService: new LinuxWatchFolderDaemonService()
             );
 
             // Register OCR service stub (Tesseract integration planned)
