@@ -34,7 +34,7 @@ namespace XerahS.Platform.MacOS.Services;
 
 public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
 {
-    private const string Label = "com.sharexteam.xerahs.watchfolder";
+    private const string Label = "com.getsharex.xerahs.watchfolder";
     private const int CommandTimeoutMs = 10000;
     private const int ElevatedCommandTimeoutMs = 180000;
     private const int PollIntervalMs = 250;

@@ -13,7 +13,7 @@
 
     <!-- App identifiers -->
     <ApplicationTitle>XerahS</ApplicationTitle>
-    <ApplicationId>com.sharexteam.xerahs</ApplicationId>
+    <ApplicationId>com.getsharex.xerahs</ApplicationId>
     <ApplicationDisplayVersion>0.15.2</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
 

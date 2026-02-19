@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <ApplicationId>com.sharexteam.xerahs</ApplicationId>
+    <ApplicationId>com.getsharex.xerahs</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>0.14.6</ApplicationDisplayVersion>
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>

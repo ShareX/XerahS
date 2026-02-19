@@ -208,7 +208,7 @@ public class ShareViewController : SLComposeServiceViewController
         const string shareExtensionSuffix = ".share-extension";
         const string shareExtensionAltSuffix = ".shareextension";
 
-        var bundleId = NSBundle.MainBundle.BundleIdentifier ?? "com.sharexteam.xerahs.share-extension";
+        var bundleId = NSBundle.MainBundle.BundleIdentifier ?? "com.getsharex.xerahs.share-extension";
         var appBundleId = bundleId;
 
         if (bundleId.EndsWith(shareExtensionSuffix, StringComparison.Ordinal))

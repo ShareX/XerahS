@@ -5,7 +5,7 @@
     <OutputType>Library</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <ShareExtensionApplicationId Condition="'$(ShareExtensionApplicationId)' == ''">com.sharexteam.xerahs.share-extension</ShareExtensionApplicationId>
+    <ShareExtensionApplicationId Condition="'$(ShareExtensionApplicationId)' == ''">com.getsharex.xerahs.share-extension</ShareExtensionApplicationId>
     <ApplicationId>$(ShareExtensionApplicationId)</ApplicationId>
     <CodesignBundleId>$(ApplicationId)</CodesignBundleId>
     <CodesignProvision>$(ShareExtensionCodesignProvision)</CodesignProvision>
