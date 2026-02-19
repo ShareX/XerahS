@@ -16,7 +16,11 @@ metadata:
     - cross-platform
     - dependency-properties
     - attached-properties
-version: 1.0.0
+    - contextmenu
+    - contextflyout
+    - menuflyout
+    - fluentavalonia
+version: 1.1.0
 last_updated: 2026-02-19
 ---
 
@@ -170,7 +174,9 @@ Every `.axaml` file follows this standard structure:
 
 #### Advanced
 - **Carousel**: Cycling content display
-- **ContextMenu**: Right-click menu
+- **MenuFlyout**: Modern flyout-based context menu (⚠️ **Use this with FluentAvalonia**)
+- **ContextFlyout**: Right-click menu container (⚠️ **Preferred over ContextMenu**)
+- **ContextMenu**: Legacy right-click menu (⚠️ **Avoid with FluentAvalonia theme**)
 - **Menu**: Menu bar
 - **ToolTip**: Hover information
 - **Flyout**: Popup overlay
@@ -669,9 +675,70 @@ public class MyPanel : Panel
 <!-- ToolTip -->
 <Button ToolTip.Tip="Click me!" />
 
-<!-- ContextMenu -->
-<TextBox ContextMenu="{StaticResource MyContextMenu}" />
+<!-- ContextFlyout (Preferred with FluentAvalonia) -->
+<Border>
+    <Border.ContextFlyout>
+        <MenuFlyout>
+            <MenuItem Header="Copy" />
+            <MenuItem Header="Paste" />
+        </MenuFlyout>
+    </Border.ContextFlyout>
+</Border>
 ```
+
+---
+
+## ⚠️ XerahS-Specific: ContextMenu vs ContextFlyout
+
+### Critical Issue with FluentAvalonia Theme
+
+**Problem**: Standard `ContextMenu` controls do **not** render correctly with `FluentAvaloniaTheme`. They use legacy Popup windows which are not fully styled and may appear **unstyled or invisible**.
+
+**Solution**: ✅ **Always use `ContextFlyout` with `MenuFlyout`** instead of `ContextMenu`.
+
+```xml
+<!-- ❌ INCORRECT: May be invisible with FluentAvalonia -->
+<Border.ContextMenu>
+    <ContextMenu>
+        <MenuItem Header="Action" Command="{Binding MyCommand}"/>
+    </ContextMenu>
+</Border.ContextMenu>
+
+<!-- ✅ CORRECT: Use ContextFlyout with MenuFlyout -->
+<Border.ContextFlyout>
+    <MenuFlyout>
+        <MenuItem Header="Action" Command="{Binding MyCommand}"/>
+    </MenuFlyout>
+</Border.ContextFlyout>
+```
+
+### Binding in DataTemplates with Flyouts
+
+**Problem**: When using `ContextFlyout` or `ContextMenu` inside a `DataTemplate`, bindings to the parent ViewModel fail because Popups/Flyouts exist in a **separate visual tree**, detached from the DataTemplate's hierarchy.
+
+**Solution**: Use `$parent[UserControl].DataContext` to reach the main view's DataContext.
+
+```xml
+<DataTemplate x:DataType="local:MyItem">
+    <Border>
+        <Border.ContextFlyout>
+            <MenuFlyout>
+                <!-- ✅ Bind to parent UserControl's DataContext -->
+                <MenuItem Header="Edit" 
+                          Command="{Binding $parent[UserControl].DataContext.EditCommand}"
+                          CommandParameter="{Binding}"/>
+            </MenuFlyout>
+        </Border.ContextFlyout>
+        
+        <TextBlock Text="{Binding Name}" />
+    </Border>
+</DataTemplate>
+```
+
+**Key Points**:
+- Use `$parent[UserControl].DataContext` to access the View's ViewModel from within a flyout
+- `CommandParameter="{Binding}"` passes the current data item (the DataTemplate's DataContext)
+- For shared flyouts, define them in `UserControl.Resources` and reference via `{StaticResource}`
 
 ---
 
@@ -1100,11 +1167,13 @@ public static void SetIsUnwired(Control control, bool value)
 - [ ] Follow nullable reference type rules
 - [ ] Use ReactiveUI for MVVM
 - [ ] Apply consistent styling/theming
+- [ ] ⚠️ **Use `ContextFlyout` + `MenuFlyout`, NOT `ContextMenu`** (FluentAvalonia compatibility)
+- [ ] Use `$parent[UserControl].DataContext` for flyout bindings in DataTemplates
 - [ ] Handle accessibility (tab order, accessible names)
 - [ ] Test on all target platforms
 
 ---
 
 **Last Updated**: February 19, 2026  
-**Version**: 1.0.0  
+**Version**: 1.1.0  
 **Maintained by**: XerahS Development Team
