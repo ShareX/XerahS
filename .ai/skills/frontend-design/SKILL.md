@@ -1,8 +1,18 @@
 ---
 name: frontend-design
 description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.
+tags: [frontend, ui, design, css, react, html]
 license: Complete terms in LICENSE.txt
 ---
+
+## How to Use This Skill
+
+When a user asks to build a UI component, web page, or frontend application:
+1. Read the full guidelines below before generating any code.
+2. Commit to a specific aesthetic direction before writing the first line.
+3. Deliver complete, runnable code — no placeholders, no `// TODO` stubs.
+4. If the tech stack is unspecified, default to vanilla HTML/CSS/JS unless context implies otherwise.
+5. Do not ask for permission to be creative — execute boldly.
 
 This skill guides creation of distinctive, production-grade frontend interfaces that avoid generic "AI slop" aesthetics. Implement real working code with exceptional attention to aesthetic details and creative choices.
 
@@ -39,4 +49,4 @@ Interpret creatively and make unexpected choices that feel genuinely designed fo
 
 **IMPORTANT**: Match implementation complexity to the aesthetic vision. Maximalist designs need elaborate code with extensive animations and effects. Minimalist or refined designs need restraint, precision, and careful attention to spacing, typography, and subtle details. Elegance comes from executing the vision well.
 
-Remember: Claude is capable of extraordinary creative work. Don't hold back, show what can truly be created when thinking outside the box and committing fully to a distinctive vision.
+You are capable of extraordinary creative work. Don't hold back — show what can truly be created when thinking outside the box and committing fully to a distinctive vision.
