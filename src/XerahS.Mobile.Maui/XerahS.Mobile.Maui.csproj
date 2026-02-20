@@ -22,6 +22,16 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21</SupportedOSPlatformVersion>
   </PropertyGroup>
 
+  <!-- Splash Screen -->
+  <ItemGroup>
+    <MauiSplashScreen Include="Resources\Splash\splash.png" Color="#FFFFFF" BaseSize="128,128" />
+  </ItemGroup>
+
+  <!-- Images -->
+  <ItemGroup>
+    <MauiImage Include="Resources\Images\**" />
+  </ItemGroup>
+
   <!-- NuGet Packages -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.30" />
