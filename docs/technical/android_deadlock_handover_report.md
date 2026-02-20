@@ -14,24 +14,20 @@ The root cause of these issues was the synchronous execution of heavy initializa
 - `SettingsManager.LoadInitialSettings()` performed synchronous disk I/O and JSON parsing for various configuration files.
 - `ProviderCatalog.InitializeBuiltInProviders()` used heavy C# Reflection to scan assemblies for uploader providers.
 
-## Fixes Tried (And Failed)
-1. **Naive `Task.Run` in `MainActivity.cs`:** Wrapping the original initialization sequence in `Task.Run` without a loading screen caused a race condition. The UI Views and ViewModels were constructed on the main thread and immediately threw exceptions or behaved unpredictably because the `Settings` and `Providers` were still being loaded in the background.
-2. **`await` inside Initialization without a Splash Screen:** Attempting to make `App.xaml.cs` (MAUI) or `MobileApp.axaml.cs` (Avalonia) asynchronous without providing an initial visual state caused the OS to wait for the initialization to finish before rendering anything, resulting in prolonged white screens and ANR risks.
-3. **Fire-and-forget `InitializeCoreAsync`:** In MAUI `MainActivity.cs`, calling `_ = app.InitializeCoreAsync();` without `Task.Run` still executed the synchronous parts of the method on the UI thread before hitting the first yielding `await`, which continued to block the initial layout pass and display a white screen.
 4. **Async init with Loading Screen + `Task.Run(() => app.InitializeCoreAsync())`:** Adding a `LoadingPage` visible immediately, creating async wrappers `LoadInitialSettingsAsync` and `InitializeBuiltInProvidersAsync`, and kicking off init from `Task.Run` in `MainActivity.OnCreate`. **Still showing white screen.** The `LoadingPage` is not rendering before the block occurs.
+5. **Direct Bundled Provider Registration (No Reflection):** Discovered that `InitializeBuiltInProviders` performs a slow `Assembly.GetTypes()` reflection scan. Replaced this entirely in both MAUI and Avalonia by explicitly instantiating `new AmazonS3Provider()` and registering it directly. This ran instantly within the `Task.Run` block, ensuring **zero** blocking XerahS code on the Main Thread. **Still showing white screen.**
 
 ## Current Status: ⚠️ UNRESOLVED
 
-The white screen is **still occurring** as of 2026-02-20. The `LoadingPage` is not being displayed before the initialization hangs the rendering pipeline.
+The white screen is **still occurring** as of 2026-02-20, despite verifying that absolutely all XerahS initialization logic (settings IO, directory creation, plugin registration) executes instantly on a background thread pool without touching the UI thread. The `LoadingPage` is not being displayed before the initialization finishes.
 
 ### What Is In Place
 - `LoadingPage.xaml` and `LoadingPage.xaml.cs` created for MAUI, with a random 2-letter build ID for deployment verification.
 - `MobileLoadingView.axaml` created for Avalonia.
 - `LoadInitialSettingsAsync()` added to `SettingsManager`.
-- `InitializeBuiltInProvidersAsync()` added to `ProviderCatalog`.
-- `App.xaml.cs` sets `LoadingPage` as the initial window page and has `InitializeCoreAsync()` which swaps to `AppShell` when done.
-- `MainActivity.cs` calls `Task.Run(() => app.InitializeCoreAsync())`.
-- Android logcat error reporting added to both silence `try/catch` blocks to bubble up exceptions.
+- Direct `MobileApp.RegisterBundledProvider()` and `ProviderCatalog.RegisterProvider()` APIs added to bypass `Assembly.GetTypes()` on mobile.
+- `App.xaml.cs` (MAUI) and `MobileApp.axaml.cs` (Avalonia) run ALL initialization inside a single `Task.Run(() => { ... }).ConfigureAwait(false)`.
+- Android logcat error reporting added to bubble up exceptions.
 
 ### Suspected Remaining Causes
 - **MAUI rendering pipeline:** Even with `Task.Run`, MAUI may be waiting for its own internal initialization pipeline to complete before rendering the first page. The `CreateWindow` / MAUI shell setup may be blocking the render thread before `LoadingPage` is ever drawn.

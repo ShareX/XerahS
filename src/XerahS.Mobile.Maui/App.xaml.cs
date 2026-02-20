@@ -60,19 +60,35 @@ public partial class App : Application
 #if ANDROID
             global::Android.Util.Log.Info("XerahS", "InitializeCoreAsync Started.");
 #endif
-            await XerahS.Core.SettingsManager.LoadInitialSettingsAsync();
-            await XerahS.Uploaders.PluginSystem.ProviderCatalog.InitializeBuiltInProvidersAsync(typeof(ShareX.AmazonS3.Plugin.AmazonS3Provider).Assembly);
+            // Run ALL initialization on a background thread.
+            // Do NOT use await inside Task.Run with ConfigureAwait — keep it as a single
+            // synchronous block on a thread pool thread to avoid sync-context re-entry.
+            await Task.Run(() =>
+            {
+                XerahS.Common.PathsManager.EnsureDirectoriesExist();
+                XerahS.Core.SettingsManager.LoadInitialSettings();
+
+                // Directly register bundled providers - NO reflection scanning.
+                // On mobile, all uploaders are bundled with the app so we instantiate them directly.
+                var provider = new ShareX.AmazonS3.Plugin.AmazonS3Provider();
+                XerahS.Uploaders.PluginSystem.ProviderCatalog.RegisterProvider(provider);
+                XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
+
 #if ANDROID
-            global::Android.Util.Log.Info("XerahS", "Initialization completed. Swapping View to AppShell...");
+                global::Android.Util.Log.Info("XerahS", "Background init completed successfully.");
 #endif
-        
+            }).ConfigureAwait(false);
+
+#if ANDROID
+            global::Android.Util.Log.Info("XerahS", "Swapping root page to AppShell...");
+#endif
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 if (Application.Current?.Windows.FirstOrDefault() is Window window)
                 {
                     window.Page = new AppShell();
 #if ANDROID
-                    global::Android.Util.Log.Info("XerahS", "Swapped window.Page to AppShell.");
+                    global::Android.Util.Log.Info("XerahS", "AppShell is now the root page.");
 #endif
                 }
                 else
