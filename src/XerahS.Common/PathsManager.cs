@@ -70,7 +70,7 @@ namespace XerahS.Common
 #if DEBUG
                 if (OperatingSystem.IsIOS() || OperatingSystem.IsAndroid())
                     return Path.Combine(PersonalFolder, AppResources.PluginsFolderName);
-                return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppResources.PluginsFolderName);
+                return Path.Combine(AppContext.BaseDirectory, AppResources.PluginsFolderName);
 #else
                 return Path.Combine(PersonalFolder, AppResources.PluginsFolderName);
 #endif
@@ -116,7 +116,7 @@ namespace XerahS.Common
 
             // 1. App-bundled plugins (BaseDirectory/Plugins)
             // In Release, we also want to check this location adjacent to the executable
-            string appPluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppResources.PluginsFolderName);
+            string appPluginsPath = Path.Combine(AppContext.BaseDirectory, AppResources.PluginsFolderName);
             if (Directory.Exists(appPluginsPath))
             {
                 paths.Add(appPluginsPath);
