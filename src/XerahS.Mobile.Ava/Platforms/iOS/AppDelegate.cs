@@ -35,10 +35,10 @@ using XerahS.Platform.Abstractions;
 using XerahS.Platform.Mobile;
 using XerahS.Uploaders.PluginSystem;
 
-namespace XerahS.Mobile.iOS;
+namespace Ava.Platforms.iOS;
 
 [Register("AppDelegate")]
-#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+#pragma warning disable CA1711
 public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
 #pragma warning restore CA1711
 {
@@ -46,20 +46,13 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
     {
         ApplyNativeAppearanceDefaults();
 
-        // Initialize platform services for mobile
         MobilePlatform.Initialize(PlatformType.iOS);
-
-        // Replace in-memory clipboard with native iOS clipboard
         PlatformServices.Clipboard = new iOSClipboardService();
 
-        // Set personal folder to app's Documents directory
         var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         PathsManager.PersonalFolder = documentsPath;
 
-        // Load settings (UploadersConfig, WorkflowsConfig, etc.)
         XerahS.Core.SettingsManager.LoadInitialSettings();
-
-        // Initialize plugin system - on mobile, plugins are bundled with the app
         XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
         ProviderCatalog.InitializeBuiltInProviders(typeof(AmazonS3Provider).Assembly);
 
@@ -76,13 +69,11 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
     [Export("application:openURL:options:")]
     public new bool OpenUrl(UIApplication application, NSUrl url, NSDictionary options)
     {
-        // Handle custom URL scheme for share extension communication
         if (url.Scheme == "xerahs" && url.Host == "share")
         {
             ProcessSharedFiles();
             return true;
         }
-
         return base.OpenUrl(application, url, options);
     }
 
@@ -91,7 +82,6 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
         var payload = ReadSharedPayload();
         if (payload.Count == 0) return;
 
-        // Copy shared payload files to app cache.
         var localPaths = new List<string>();
         var cachePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
@@ -116,9 +106,7 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
         }
 
         if (localPaths.Count > 0)
-        {
             MobileApp.OnFilesReceived?.Invoke(localPaths.ToArray());
-        }
     }
 
     private static IReadOnlyList<SharedPayloadFile> ReadSharedPayload()
@@ -127,22 +115,17 @@ public partial class AppDelegate : AvaloniaAppDelegate<MobileApp>
         var pasteboard = UIPasteboard.FromName(sharedPasteboardName, create: false) ?? UIPasteboard.General;
         var parsedItems = SharedPayloadService.Parse(pasteboard.String);
         if (parsedItems.Count > 0)
-        {
             pasteboard.String = string.Empty;
-        }
-
         return parsedItems;
     }
 
     private static void EnsureUniqueFileName(ref string filePath)
     {
         if (!File.Exists(filePath)) return;
-
         var dir = Path.GetDirectoryName(filePath)!;
         var name = Path.GetFileNameWithoutExtension(filePath);
         var ext = Path.GetExtension(filePath);
         var counter = 1;
-
         while (File.Exists(filePath))
         {
             filePath = Path.Combine(dir, $"{name}_{counter}{ext}");

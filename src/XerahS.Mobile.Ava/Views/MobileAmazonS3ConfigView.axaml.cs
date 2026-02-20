@@ -49,12 +49,12 @@ public partial class MobileAmazonS3ConfigView : UserControl
         var vm = DataContext as XerahS.Mobile.Core.MobileAmazonS3ConfigViewModel;
         if (vm == null) return;
 
-        Control? target = null;
+        Avalonia.Controls.Control? target = null;
 
         if (vm.HasAccessKeyError || vm.HasSecretKeyError)
-            target = this.FindControl<Border>("AuthSection");
+            target = this.FindControl<Avalonia.Controls.Border>("AuthSection");
         else if (vm.HasBucketError || vm.HasRegionError)
-            target = this.FindControl<Border>("BucketSection");
+            target = this.FindControl<Avalonia.Controls.Border>("BucketSection");
 
         target?.BringIntoView();
     }

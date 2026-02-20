@@ -44,7 +44,7 @@ public class SettingsItem
     public string Description { get; set; } = "";
     public string IconPath { get; set; } = "";
     public bool IsConfigured { get; set; }
-    public Func<Control> CreateView { get; set; } = () => new Border();
+    public Func<Avalonia.Controls.Control> CreateView { get; set; } = () => new Avalonia.Controls.Border();
     public string BadgeText => IsConfigured ? "✓" : "!";
 }
 
@@ -78,8 +78,8 @@ public class MobileSettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    private Control? _currentView;
-    public Control? CurrentView
+    private Avalonia.Controls.Control? _currentView;
+    public Avalonia.Controls.Control? CurrentView
     {
         get => _currentView;
         set { _currentView = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsListView)); OnPropertyChanged(nameof(CurrentViewTitle)); }

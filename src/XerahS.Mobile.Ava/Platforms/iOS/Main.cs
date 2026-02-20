@@ -25,7 +25,7 @@
 
 using UIKit;
 
-namespace XerahS.Mobile.iOS;
+namespace Ava.Platforms.iOS;
 
 public class Application
 {

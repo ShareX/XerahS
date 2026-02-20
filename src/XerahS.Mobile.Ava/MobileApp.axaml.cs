@@ -36,7 +36,7 @@ using Ava.Views;
 
 namespace Ava;
 
-public partial class MobileApp : Application
+public partial class MobileApp : Avalonia.Application
 {
     private const string PlatformTagKey = "PlatformTag";
     private static readonly Uri AppUri = new("avares://XerahS.Mobile.Ava/");
@@ -184,7 +184,7 @@ public partial class MobileApp : Application
     }
 
     /// <summary>Navigates to a view by swapping the navigation root's Content.</summary>
-    private void Navigate(Control view)
+    private void Navigate(Avalonia.Controls.Control view)
     {
         Debug.WriteLine($"[MobileApp] Navigate to {view.GetType().Name}");
         _navigationRoot.Content = view;

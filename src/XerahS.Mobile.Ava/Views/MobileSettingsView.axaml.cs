@@ -47,7 +47,7 @@ public partial class MobileSettingsView : UserControl
 
     private void OnSettingsItemClick(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.DataContext is SettingsItem item)
+        if (sender is Avalonia.Controls.Button button && button.DataContext is SettingsItem item)
         {
             ViewModel.NavigateToConfig(item);
         }

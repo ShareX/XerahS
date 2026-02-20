@@ -27,7 +27,7 @@ using SkiaSharp;
 using UIKit;
 using XerahS.Platform.Abstractions;
 
-namespace XerahS.Mobile.iOS;
+namespace Ava.Platforms.iOS;
 
 public class iOSClipboardService : IClipboardService
 {
@@ -35,20 +35,15 @@ public class iOSClipboardService : IClipboardService
     public bool ContainsText() => !string.IsNullOrEmpty(UIPasteboard.General.String);
     public bool ContainsImage() => false;
     public bool ContainsFileDropList() => false;
-
     public string? GetText() => UIPasteboard.General.String;
     public void SetText(string text) => UIPasteboard.General.String = text;
-
     public SKBitmap? GetImage() => null;
     public void SetImage(SKBitmap image) { }
-
     public string[]? GetFileDropList() => null;
     public void SetFileDropList(string[] files) { }
-
     public object? GetData(string format) => null;
     public void SetData(string format, object data) { }
     public bool ContainsData(string format) => false;
-
     public Task<string?> GetTextAsync() => Task.FromResult(GetText());
     public Task SetTextAsync(string text)
     {

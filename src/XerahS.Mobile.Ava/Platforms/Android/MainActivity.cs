@@ -40,7 +40,7 @@ using XerahS.Platform.Abstractions;
 using XerahS.Platform.Mobile;
 using XerahS.Uploaders.PluginSystem;
 
-namespace XerahS.Mobile.Android;
+namespace Ava.Platforms.Android;
 
 [Activity(
     Label = "XerahS",
@@ -68,16 +68,9 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
 
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
-        // Initialize platform services for mobile
         MobilePlatform.Initialize(PlatformType.Android);
-
-        // Replace in-memory clipboard with native Android clipboard
         PlatformServices.Clipboard = new AndroidClipboardService(this);
-
-        // Set personal folder to app's internal storage
         PathsManager.PersonalFolder = FilesDir!.AbsolutePath;
-
-        // Register bundled providers directly — no reflection/assembly scanning needed on mobile.
         MobileApp.RegisterBundledProvider(new AmazonS3Provider());
 
         return builder
@@ -87,7 +80,6 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
-        // Fix for "already has a visual parent" crash on activity recreation
         if (Avalonia.Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime &&
             singleViewLifetime.MainView is { } mainView &&
             mainView.Parent is ContentControl parent)
@@ -105,9 +97,7 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
     {
         base.OnNewIntent(intent);
         if (intent != null)
-        {
             HandleShareIntent(intent);
-        }
     }
 
     private void StartHeartbeat()
@@ -129,10 +119,7 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
     private void ApplyNativeSystemBars()
     {
         var window = Window;
-        if (window == null)
-        {
-            return;
-        }
+        if (window == null) return;
 
         var isDarkTheme = (Resources?.Configuration?.UiMode & UiMode.NightMask) == UiMode.NightYes;
         var targetColor = isDarkTheme ? DarkSystemBarColor : LightSystemBarColor;
@@ -146,11 +133,7 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
         if (OperatingSystem.IsAndroidVersionAtLeast(30))
         {
             var controller = window.InsetsController;
-            if (controller == null)
-            {
-                return;
-            }
-
+            if (controller == null) return;
             var lightBars = !isDarkTheme;
             const int mask = (int)WindowInsetsControllerAppearance.LightStatusBars | (int)WindowInsetsControllerAppearance.LightNavigationBars;
             controller.SetSystemBarsAppearance(lightBars ? mask : 0, mask);
@@ -158,53 +141,30 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
         }
 
         var decorView = window.DecorView;
-        if (decorView == null)
-        {
-            return;
-        }
-
+        if (decorView == null) return;
         var uiVisibility = decorView.SystemUiFlags;
-
         if (isDarkTheme)
         {
-            if (OperatingSystem.IsAndroidVersionAtLeast(23))
-            {
-                uiVisibility &= ~SystemUiFlags.LightStatusBar;
-            }
-
-            if (OperatingSystem.IsAndroidVersionAtLeast(26))
-            {
-                uiVisibility &= ~SystemUiFlags.LightNavigationBar;
-            }
+            if (OperatingSystem.IsAndroidVersionAtLeast(23)) uiVisibility &= ~SystemUiFlags.LightStatusBar;
+            if (OperatingSystem.IsAndroidVersionAtLeast(26)) uiVisibility &= ~SystemUiFlags.LightNavigationBar;
         }
         else
         {
-            if (OperatingSystem.IsAndroidVersionAtLeast(23))
-            {
-                uiVisibility |= SystemUiFlags.LightStatusBar;
-            }
-
-            if (OperatingSystem.IsAndroidVersionAtLeast(26))
-            {
-                uiVisibility |= SystemUiFlags.LightNavigationBar;
-            }
+            if (OperatingSystem.IsAndroidVersionAtLeast(23)) uiVisibility |= SystemUiFlags.LightStatusBar;
+            if (OperatingSystem.IsAndroidVersionAtLeast(26)) uiVisibility |= SystemUiFlags.LightNavigationBar;
         }
-
         decorView.SystemUiFlags = uiVisibility;
     }
 
-#pragma warning disable CA1422 // Validate platform compatibility - these APIs work on all supported Android versions
+#pragma warning disable CA1422
     private void HandleShareIntent(Intent? intent)
     {
         if (intent == null) return;
-
         var action = intent.Action;
         if (action != Intent.ActionSend && action != Intent.ActionSendMultiple) return;
-
         if (string.IsNullOrEmpty(intent.Type)) return;
 
         var localPaths = new List<string>();
-
         if (action == Intent.ActionSend)
         {
             var uri = intent.GetParcelableExtra(Intent.ExtraStream) as global::Android.Net.Uri;
@@ -231,9 +191,7 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
         }
 
         if (localPaths.Count > 0)
-        {
             MobileApp.OnFilesReceived?.Invoke(localPaths.ToArray());
-        }
     }
 #pragma warning restore CA1422
 
@@ -243,13 +201,10 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
         {
             var fileName = GetFileNameFromUri(uri) ?? $"share_{Guid.NewGuid():N}";
             var cachePath = Path.Combine(CacheDir!.AbsolutePath, fileName);
-
             using var input = ContentResolver!.OpenInputStream(uri);
             if (input == null) return null;
-
             using var output = File.Create(cachePath);
             input.CopyTo(output);
-
             return cachePath;
         }
         catch (Exception ex)
@@ -259,11 +214,10 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
         }
     }
 
-#pragma warning disable CS0618 // Type or member is obsolete - using IOpenableColumns.DisplayName for backward compatibility
+#pragma warning disable CS0618
     private string? GetFileNameFromUri(global::Android.Net.Uri uri)
     {
         string? fileName = null;
-
         if (uri.Scheme == "content")
         {
             using var cursor = ContentResolver!.Query(uri, null, null, null, null);
@@ -271,12 +225,9 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
             {
                 var nameIndex = cursor.GetColumnIndex(global::Android.Provider.IOpenableColumns.DisplayName);
                 if (nameIndex >= 0)
-                {
                     fileName = cursor.GetString(nameIndex);
-                }
             }
         }
-
         return fileName ?? Path.GetFileName(uri.Path);
     }
 #pragma warning restore CS0618

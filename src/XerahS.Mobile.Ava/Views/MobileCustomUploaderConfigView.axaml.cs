@@ -49,12 +49,12 @@ public partial class MobileCustomUploaderConfigView : UserControl
         var vm = DataContext as XerahS.Mobile.Core.MobileCustomUploaderConfigViewModel;
         if (vm == null) return;
 
-        Control? target = null;
+        Avalonia.Controls.Control? target = null;
 
         if (vm.HasNameError || vm.HasDestinationError)
-            target = this.FindControl<Border>("BasicInfoSection");
+            target = this.FindControl<Avalonia.Controls.Border>("BasicInfoSection");
         else if (vm.HasUrlError)
-            target = this.FindControl<Border>("HttpRequestSection");
+            target = this.FindControl<Avalonia.Controls.Border>("HttpRequestSection");
 
         target?.BringIntoView();
     }

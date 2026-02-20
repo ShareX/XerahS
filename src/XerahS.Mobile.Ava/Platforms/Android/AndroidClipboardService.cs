@@ -28,7 +28,7 @@ using Android.OS;
 using SkiaSharp;
 using XerahS.Platform.Abstractions;
 
-namespace XerahS.Mobile.Android;
+namespace Ava.Platforms.Android;
 
 public class AndroidClipboardService : IClipboardService
 {
@@ -46,31 +46,22 @@ public class AndroidClipboardService : IClipboardService
     {
         var cm = GetClipboardManager();
         if (cm == null) return;
-
         if (OperatingSystem.IsAndroidVersionAtLeast(28))
-        {
             cm.ClearPrimaryClip();
-        }
         else
-        {
             cm.PrimaryClip = ClipData.NewPlainText("", "");
-        }
     }
 
     public bool ContainsText() => GetClipboardManager()?.HasPrimaryClip == true;
     public bool ContainsImage() => false;
     public bool ContainsFileDropList() => false;
-
     public string? GetText() => GetClipboardManager()?.PrimaryClip?.GetItemAt(0)?.Text;
 
     public void SetText(string text)
     {
-        // Android ClipboardManager requires calls on the main thread.
 #pragma warning disable CA1416
         if (Looper.MainLooper?.IsCurrentThread == true)
-        {
             SetTextOnMainThread(text);
-        }
         else
         {
             using var handler = new Handler(Looper.MainLooper!);
@@ -84,31 +75,23 @@ public class AndroidClipboardService : IClipboardService
         var clip = ClipData.NewPlainText("XerahS", text);
         var cm = GetClipboardManager();
         if (cm != null)
-        {
             cm.PrimaryClip = clip;
-        }
     }
 
     public SKBitmap? GetImage() => null;
     public void SetImage(SKBitmap image) { }
-
     public string[]? GetFileDropList() => null;
     public void SetFileDropList(string[] files) { }
-
     public object? GetData(string format) => null;
     public void SetData(string format, object data) { }
     public bool ContainsData(string format) => false;
-
     public Task<string?> GetTextAsync() => Task.FromResult(GetText());
 
     public Task SetTextAsync(string text)
     {
-        // Post to main thread without blocking the caller.
 #pragma warning disable CA1416
         if (Looper.MainLooper?.IsCurrentThread == true)
-        {
             SetTextOnMainThread(text);
-        }
         else
         {
             using var handler = new Handler(Looper.MainLooper!);
