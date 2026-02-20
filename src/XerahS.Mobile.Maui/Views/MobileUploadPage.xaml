@@ -26,6 +26,12 @@
                    HorizontalOptions="Center"
                    Margin="0,0,0,10"/>
 
+            <Label Text="Deployment ID: 7b84aa3a-6947-4f40-8f9f-bb61caad120f"
+                   FontSize="12"
+                   TextColor="Red"
+                   HorizontalOptions="Center"
+                   Margin="0,0,0,10"/>
+
             <!-- Status -->
             <Label Text="{Binding StatusText}"
                    HorizontalOptions="Center"

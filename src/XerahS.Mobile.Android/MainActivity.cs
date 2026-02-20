@@ -77,12 +77,8 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
         // Set personal folder to app's internal storage
         PathsManager.PersonalFolder = FilesDir!.AbsolutePath;
 
-        // Load settings (UploadersConfig, WorkflowsConfig, etc.)
-        XerahS.Core.SettingsManager.LoadInitialSettings();
-
-        // Initialize plugin system - on mobile, plugins are bundled with the app
-        XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
-        ProviderCatalog.InitializeBuiltInProviders(typeof(AmazonS3Provider).Assembly);
+        // Pass native platform-specific plugin assemblies to the UI project
+        MobileApp.AdditionalPluginAssemblies = new[] { typeof(AmazonS3Provider).Assembly };
 
         return builder
             .UseAndroid()
