@@ -215,7 +215,7 @@ internal static class PortalInterfaceChecker
 }
 
 [DBusInterface("org.freedesktop.DBus.Introspectable")]
-internal interface IIntrospectable : IDBusObject
+public interface IIntrospectable : IDBusObject
 {
     Task<string> IntrospectAsync();
 }
