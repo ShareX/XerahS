@@ -45,10 +45,17 @@ foreach ($arch in $archs) {
     # Ensure clean
     if (Test-Path $publishOutput) { Remove-Item -Recurse -Force $publishOutput }
 
+    # Kill any lingering build processes before publishing to avoid file lock on ImageEditor.dll
+    Get-Process | Where-Object {
+        $_.Name -like '*VBCSCompiler*' -or $_.Name -like '*MSBuild*'
+    } | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 1
+
     # Enable PublishSingleFile=false to ensure DLLs are present for ISCC *.dll match
     # Pass SkipBundlePlugins=true to avoid path resolution bugs in custom MSBuild targets
-    # Disable nodeReuse to avoid file locking issues
-    dotnet publish $project -c Release -p:OS=Windows_NT -r $arch -p:PublishSingleFile=false -p:SkipBundlePlugins=true -p:nodeReuse=false --self-contained true -o $publishOutput
+    # Disable nodeReuse and UseSharedCompilation to avoid VBCSCompiler file locking on multi-TFM builds
+    # /m:1 forces single-threaded build to prevent parallel TFM race conditions on ImageEditor.dll
+    dotnet publish $project -c Release -p:OS=Windows_NT -r $arch -p:PublishSingleFile=false -p:SkipBundlePlugins=true -p:nodeReuse=false -p:UseSharedCompilation=false --self-contained true -o $publishOutput /m:1
 
     # 1.5 Publish Plugins
     Write-Host "Publishing Plugins..."
@@ -75,7 +82,7 @@ foreach ($arch in $archs) {
         }
 
         $pluginOutput = Join-Path $pluginsDir $pluginId
-        dotnet publish $plugin.FullName -c Release -p:OS=Windows_NT -r $arch -p:nodeReuse=false --self-contained false -o $pluginOutput
+        dotnet publish $plugin.FullName -c Release -p:OS=Windows_NT -r $arch -p:nodeReuse=false -p:UseSharedCompilation=false --self-contained false -o $pluginOutput
 
 
     }

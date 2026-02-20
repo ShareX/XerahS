@@ -43,6 +43,14 @@ Follow these instructions **exactly** and in order to build Linux binaries for X
 
 ## Build Process
 
+### Phase 0: Update ImageEditor Submodule
+
+**Always pull the latest ImageEditor submodule before building** to ensure the embedded image editor is up-to-date.
+
+```bash
+git submodule update --remote --merge ImageEditor
+```
+
 ### Phase 1: Pre-Build Cleanup
 
 **CRITICAL**: Stale `dotnet` and `package-linux.sh` processes are the #1 cause of file lock failures on Linux. **Always kill them before starting.**
@@ -196,6 +204,18 @@ Timestamps should match the current build session.
 - `-p:OS=Linux -p:DefineConstants=LINUX`: Enables Linux-specific code paths
 - `-p:EnableWindowsTargeting=true`: Required when cross-compiling on Linux due to shared project references
 - Plugins publish with `--no-self-contained` to share the runtime with the main app
+
+### Sequential Builds Are Mandatory
+
+**NEVER run two builds at the same time.** ImageEditor targets multiple TFMs and MSBuild parallelism causes them to race on the same `ShareX.ImageEditor.dll` output path.
+
+- **Architectures**: `package-linux.sh` iterates `linux-x64` then `linux-arm64` sequentially — never invoke it twice concurrently.
+- **Internal parallelism**: If `CS2012` / file lock errors appear on ImageEditor, pre-build it separately with `/m:1` to force single-threaded compilation:
+  ```bash
+  dotnet build ImageEditor/src/ShareX.ImageEditor/ShareX.ImageEditor.csproj \
+    -c Release -p:UseSharedCompilation=false /m:1
+  ```
+- **Between builds**: Always kill all `dotnet` and `package-linux.sh` processes and wait for them to exit before starting a new build session.
 
 ### Background Build Caution
 - **Do not background the build script with `&`** unless you redirect output to a log file
