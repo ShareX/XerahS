@@ -70,7 +70,7 @@ public class MainActivity : MauiAppCompatActivity
 
             if (App.Current is App app)
             {
-                Task.Run(() => app.InitializeCoreAsync());
+                _ = app.InitializeCoreAsync();
             }
 
             HandleShareIntent(Intent);
