@@ -77,8 +77,8 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
         // Set personal folder to app's internal storage
         PathsManager.PersonalFolder = FilesDir!.AbsolutePath;
 
-        // Pass native platform-specific plugin assemblies to the UI project
-        MobileApp.AdditionalPluginAssemblies = new[] { typeof(AmazonS3Provider).Assembly };
+        // Register bundled providers directly — no reflection/assembly scanning needed on mobile.
+        MobileApp.RegisterBundledProvider(new AmazonS3Provider());
 
         return builder
             .UseAndroid()

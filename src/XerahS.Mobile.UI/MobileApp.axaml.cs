@@ -48,9 +48,15 @@ public partial class MobileApp : Application
     public static Action<string[]>? OnFilesReceived { get; set; }
 
     /// <summary>
-    /// Assemblies passed from the platform head containing built-in providers
+    /// Providers registered directly by platform heads (no reflection scanning).
+    /// Call RegisterBundledProvider() from MainActivity before the app initializes.
     /// </summary>
-    public static System.Reflection.Assembly[] AdditionalPluginAssemblies { get; set; } = Array.Empty<System.Reflection.Assembly>();
+    private static readonly List<XerahS.Uploaders.PluginSystem.IUploaderProvider> _registeredProviders = new();
+
+    public static void RegisterBundledProvider(XerahS.Uploaders.PluginSystem.IUploaderProvider provider)
+    {
+        if (provider != null) _registeredProviders.Add(provider);
+    }
 
     private MobileUploadViewModel? _uploadViewModel;
     private ISingleViewApplicationLifetime? _singleView;
@@ -135,8 +141,28 @@ public partial class MobileApp : Application
 
         try
         {
-            await XerahS.Core.SettingsManager.LoadInitialSettingsAsync();
-            await XerahS.Uploaders.PluginSystem.ProviderCatalog.InitializeBuiltInProvidersAsync(AdditionalPluginAssemblies);
+            await Task.Run(() =>
+            {
+                XerahS.Common.PathsManager.EnsureDirectoriesExist();
+                XerahS.Core.SettingsManager.LoadInitialSettings();
+
+                // Directly register bundled providers - NO reflection scanning.
+                // On mobile, uploaders are bundled with the app so we instantiate them directly.
+                if (AdditionalPluginAssemblies != null)
+                {
+                    // For each assembly we know about, instantiate providers directly
+                    // rather than scanning with reflection.
+                }
+                foreach (var provider in _registeredProviders)
+                {
+                    XerahS.Uploaders.PluginSystem.ProviderCatalog.RegisterProvider(provider);
+                }
+                XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
+
+#if __ANDROID__
+                global::Android.Util.Log.Info("XerahS", "Avalonia background init completed.");
+#endif
+            }).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
