@@ -33,7 +33,7 @@ using XerahS.Common;
 using XerahS.Core;
 using XerahS.Uploaders.PluginSystem;
 
-namespace XerahS.Mobile.Maui.ViewModels;
+namespace XerahS.Mobile.Core;
 
 /// <summary>
 /// Mobile-friendly ViewModel for Amazon S3 configuration.
@@ -47,7 +47,7 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     #region Properties
 
     public string UploaderName => "Amazon S3";
-    public string IconPath => "CloudStorage"; // Symbol name
+    public string IconPath => "CloudStorage";
     public string Description => IsConfigured
         ? $"Bucket: {BucketName}"
         : "Not configured - tap to set up";
@@ -115,7 +115,6 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
         private set { _isConfigured = value; OnPropertyChanged(); OnPropertyChanged(nameof(Description)); }
     }
 
-    // Validation Errors
     private bool _hasAccessKeyError;
     public bool HasAccessKeyError
     {
@@ -156,15 +155,7 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     #endregion
 
     private const string ProviderId = "amazons3";
-
-    /// <summary>
-    /// GUID reference for ISecretStore credential lookups. Loaded from existing instance or generated on first save.
-    /// </summary>
     private string? _secretKey;
-
-    /// <summary>
-    /// InstanceId of the existing UploaderInstance in InstanceManager (null if not yet created).
-    /// </summary>
     private string? _instanceId;
 
     #region Commands
@@ -176,9 +167,6 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
 
     #region Data
 
-    /// <summary>
-    /// Available S3 regions with display names
-    /// </summary>
     public static readonly List<S3RegionOption> Regions = new()
     {
         new("US East (N. Virginia)", "s3.amazonaws.com", "us-east-1"),
@@ -210,7 +198,7 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
         new("Mexico (Central)", "s3.mx-central-1.amazonaws.com", "mx-central-1"),
         new("Middle East (Bahrain)", "s3.me-south-1.amazonaws.com", "me-south-1"),
         new("Middle East (UAE)", "s3.me-central-1.amazonaws.com", "me-central-1"),
-        new("South America (S\u00e3o Paulo)", "s3.sa-east-1.amazonaws.com", "sa-east-1"),
+        new("South America (São Paulo)", "s3.sa-east-1.amazonaws.com", "sa-east-1"),
     };
 
     #endregion
@@ -218,8 +206,7 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     public MobileAmazonS3ConfigViewModel()
     {
         SaveCommand = new RelayCommand(() => SaveConfig());
-        TestCommand = new AsyncRelayCommand(async () => await TestConfigAsync());
-        LoadConfig();
+        TestCommand = new AsyncRelayCommand(TestConfigAsync);
     }
 
     #region IMobileUploaderConfig Implementation
@@ -228,13 +215,8 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     {
         try
         {
-            // Try loading from InstanceManager first (this is what the upload pipeline uses)
             if (LoadFromInstanceManager())
-            {
                 return;
-            }
-
-            // Fall back to legacy UploadersConfig for migration
             LoadFromLegacySettings();
         }
         catch (Exception ex)
@@ -247,30 +229,22 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     {
         var instance = InstanceManager.Instance.GetInstances()
             .FirstOrDefault(i => i.ProviderId == ProviderId);
-
         if (instance == null || string.IsNullOrWhiteSpace(instance.SettingsJson))
             return false;
-
         _instanceId = instance.InstanceId;
-
         var json = JObject.Parse(instance.SettingsJson);
-
         _secretKey = json.Value<string>("SecretKey");
         BucketName = json.Value<string>("BucketName") ?? string.Empty;
         ObjectPrefix = json.Value<string>("ObjectPrefix") ?? "ShareX/%y/%mo";
         CustomDomain = json.Value<string>("CustomDomain") ?? string.Empty;
         UseCustomDomain = json.Value<bool?>("UseCustomCNAME") ?? false;
         SetPublicAcl = json.Value<bool?>("SetPublicACL") ?? false;
-
-        // Find matching region
         var endpoint = json.Value<string>("Endpoint") ?? "s3.amazonaws.com";
         var regionCode = json.Value<string>("Region") ?? "us-east-1";
         var regionIdx = Regions.FindIndex(r =>
             r.Endpoint.Equals(endpoint, StringComparison.OrdinalIgnoreCase) ||
             r.RegionCode.Equals(regionCode, StringComparison.OrdinalIgnoreCase));
         RegionIndex = regionIdx >= 0 ? regionIdx : 0;
-
-        // Retrieve credentials from ISecretStore
         if (!string.IsNullOrWhiteSpace(_secretKey))
         {
             var secrets = ProviderCatalog.GetProviderContext()?.Secrets;
@@ -280,7 +254,6 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
                 SecretAccessKey = secrets.GetSecret(ProviderId, _secretKey, "secretAccessKey") ?? string.Empty;
             }
         }
-
         UpdateIsConfigured();
         return true;
     }
@@ -289,7 +262,6 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     {
         var settings = SettingsManager.UploadersConfig?.AmazonS3Settings;
         if (settings == null) return;
-
         AccessKeyId = settings.AccessKeyID ?? string.Empty;
         SecretAccessKey = settings.SecretAccessKey ?? string.Empty;
         BucketName = settings.Bucket ?? string.Empty;
@@ -297,13 +269,11 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
         CustomDomain = settings.CustomDomain ?? string.Empty;
         UseCustomDomain = settings.UseCustomCNAME;
         SetPublicAcl = settings.SetPublicACL;
-
         var endpoint = settings.Endpoint ?? "s3.amazonaws.com";
         var regionIdx = Regions.FindIndex(r =>
             r.Endpoint.Equals(endpoint, StringComparison.OrdinalIgnoreCase) ||
             r.RegionCode.Equals(settings.Region, StringComparison.OrdinalIgnoreCase));
         RegionIndex = regionIdx >= 0 ? regionIdx : 0;
-
         UpdateIsConfigured();
     }
 
@@ -316,29 +286,17 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
                 ScrollToFirstError?.Invoke();
                 return false;
             }
-
             var secrets = ProviderCatalog.GetProviderContext()?.Secrets;
             if (secrets == null)
-            {
                 return false;
-            }
-
-            // Reuse existing SecretKey GUID or generate a new one
             if (string.IsNullOrWhiteSpace(_secretKey))
-            {
                 _secretKey = Guid.NewGuid().ToString("N");
-            }
-
-            // Store actual credentials in ISecretStore (NOT in JSON)
             secrets.SetSecret(ProviderId, _secretKey, "accessKeyId", AccessKeyId.Trim());
             secrets.SetSecret(ProviderId, _secretKey, "secretAccessKey", SecretAccessKey.Trim());
-
             var region = Regions[RegionIndex];
-
-            // Build S3ConfigModel-compatible JSON (credentials are NOT stored here)
             var settingsJson = new JObject
             {
-                ["AuthMode"] = 0, // AccessKeys
+                ["AuthMode"] = 0,
                 ["SecretKey"] = _secretKey,
                 ["BucketName"] = BucketName.Trim().ToLowerInvariant(),
                 ["Region"] = region.RegionCode,
@@ -346,7 +304,7 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
                 ["ObjectPrefix"] = ObjectPrefix.Trim(),
                 ["UseCustomCNAME"] = UseCustomDomain,
                 ["CustomDomain"] = CustomDomain.Trim(),
-                ["StorageClass"] = 0, // Standard
+                ["StorageClass"] = 0,
                 ["SetPublicACL"] = SetPublicAcl,
                 ["SetPublicPolicy"] = false,
                 ["UsePathStyleUrl"] = false,
@@ -355,22 +313,18 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
                 ["RemoveExtensionVideo"] = false,
                 ["RemoveExtensionText"] = false
             };
-
             var instanceManager = InstanceManager.Instance;
             var existingInstance = _instanceId != null
                 ? instanceManager.GetInstance(_instanceId)
                 : instanceManager.GetInstances().FirstOrDefault(i => i.ProviderId == ProviderId);
-
             if (existingInstance != null)
             {
-                // Update existing instance
                 existingInstance.SettingsJson = settingsJson.ToString(Formatting.Indented);
                 instanceManager.UpdateInstance(existingInstance);
                 _instanceId = existingInstance.InstanceId;
             }
             else
             {
-                // Create new instance
                 var newInstance = new UploaderInstance
                 {
                     ProviderId = ProviderId,
@@ -379,14 +333,10 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
                     SettingsJson = settingsJson.ToString(Formatting.Indented),
                     FileTypeRouting = new FileTypeScope { AllFileTypes = true }
                 };
-
                 instanceManager.AddInstance(newInstance);
                 _instanceId = newInstance.InstanceId;
-
-                // Set as default for File uploads (mobile uses WorkflowType.FileUpload)
                 instanceManager.SetDefaultInstance(UploaderCategory.File, _instanceId);
             }
-
             UpdateIsConfigured();
             return true;
         }
@@ -400,21 +350,15 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     public async Task<bool> TestConfigAsync()
     {
         IsTesting = true;
-
         try
         {
-            // Basic validation first
             if (!Validate())
             {
                 ScrollToFirstError?.Invoke();
                 IsTesting = false;
                 return false;
             }
-
-            // TODO: Implement actual S3 connection test
-            // For MVP, we'll do a basic validation
-            await Task.Delay(500); // Simulate network delay
-
+            await Task.Delay(500);
             IsTesting = false;
             return true;
         }
@@ -433,31 +377,10 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     private bool Validate()
     {
         bool valid = true;
-
-        if (string.IsNullOrWhiteSpace(AccessKeyId))
-        {
-            HasAccessKeyError = true;
-            valid = false;
-        }
-
-        if (string.IsNullOrWhiteSpace(SecretAccessKey))
-        {
-            HasSecretKeyError = true;
-            valid = false;
-        }
-
-        if (string.IsNullOrWhiteSpace(BucketName))
-        {
-            HasBucketError = true;
-            valid = false;
-        }
-
-        if (RegionIndex < 0 || RegionIndex >= Regions.Count)
-        {
-            HasRegionError = true;
-            valid = false;
-        }
-
+        if (string.IsNullOrWhiteSpace(AccessKeyId)) { HasAccessKeyError = true; valid = false; }
+        if (string.IsNullOrWhiteSpace(SecretAccessKey)) { HasSecretKeyError = true; valid = false; }
+        if (string.IsNullOrWhiteSpace(BucketName)) { HasBucketError = true; valid = false; }
+        if (RegionIndex < 0 || RegionIndex >= Regions.Count) { HasRegionError = true; valid = false; }
         return valid;
     }
 

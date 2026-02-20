@@ -23,34 +23,30 @@
 
 #endregion License Information (GPL v3)
 
-using XerahS.Mobile.Core;
-using XerahS.Mobile.Maui.ViewModels;
+using Avalonia.Data.Converters;
+using Avalonia.Media;
 
-namespace XerahS.Mobile.Maui.Views;
+namespace Ava.ViewModels;
 
-public partial class MobileAmazonS3ConfigPage : ContentPage
+/// <summary>
+/// Converts boolean IsConfigured to a brush color (Green for configured, Orange for not)
+/// </summary>
+public class BoolToConfiguredBrushConverter : IValueConverter
 {
-    public MobileAmazonS3ConfigPage()
+    private static readonly ISolidColorBrush ConfiguredBrush = new SolidColorBrush(Colors.Green);
+    private static readonly ISolidColorBrush NotConfiguredBrush = new SolidColorBrush(Colors.Orange);
+
+    public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
     {
-        InitializeComponent();
-        var vm = new MobileAmazonS3ConfigViewModel();
-        vm.ScrollToFirstError = ScrollToFirstError;
-        BindingContext = vm;
+        if (value is bool isConfigured && isConfigured)
+        {
+            return ConfiguredBrush;
+        }
+        return NotConfiguredBrush;
     }
 
-    private async void ScrollToFirstError()
+    public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
     {
-        var vm = BindingContext as MobileAmazonS3ConfigViewModel;
-        if (vm == null) return;
-
-        View? target = null;
-
-        if (vm.HasAccessKeyError || vm.HasSecretKeyError)
-            target = AuthSection;
-        else if (vm.HasBucketError || vm.HasRegionError)
-            target = BucketSection;
-
-        if (target != null)
-            await MainScrollView.ScrollToAsync(target, ScrollToPosition.MakeVisible, true);
+        throw new NotImplementedException();
     }
 }

@@ -23,34 +23,15 @@
 
 #endregion License Information (GPL v3)
 
-using XerahS.Mobile.Core;
-using XerahS.Mobile.Maui.ViewModels;
+namespace XerahS.Mobile.Core;
 
-namespace XerahS.Mobile.Maui.Views;
-
-public partial class MobileAmazonS3ConfigPage : ContentPage
+/// <summary>
+/// Represents a custom uploader entry in the list.
+/// </summary>
+public class CustomUploaderListItem
 {
-    public MobileAmazonS3ConfigPage()
-    {
-        InitializeComponent();
-        var vm = new MobileAmazonS3ConfigViewModel();
-        vm.ScrollToFirstError = ScrollToFirstError;
-        BindingContext = vm;
-    }
-
-    private async void ScrollToFirstError()
-    {
-        var vm = BindingContext as MobileAmazonS3ConfigViewModel;
-        if (vm == null) return;
-
-        View? target = null;
-
-        if (vm.HasAccessKeyError || vm.HasSecretKeyError)
-            target = AuthSection;
-        else if (vm.HasBucketError || vm.HasRegionError)
-            target = BucketSection;
-
-        if (target != null)
-            await MainScrollView.ScrollToAsync(target, ScrollToPosition.MakeVisible, true);
-    }
+    public string Name { get; set; } = "";
+    public string HostName { get; set; } = "";
+    public int Index { get; set; }
+    public bool IsActive { get; set; }
 }

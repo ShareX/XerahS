@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Ava.Views.MobileLoadingView">
+    <Panel Background="{DynamicResource ThemeBackgroundBrush}">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="20">
+            <ProgressBar IsIndeterminate="True" Width="200" Height="20" />
+            <TextBlock Text="Initializing XerahS..." HorizontalAlignment="Center" Foreground="{DynamicResource ThemeForegroundBrush}" />
+        </StackPanel>
+    </Panel>
+</UserControl>

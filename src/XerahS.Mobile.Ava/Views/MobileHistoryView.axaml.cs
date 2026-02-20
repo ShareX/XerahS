@@ -23,34 +23,14 @@
 
 #endregion License Information (GPL v3)
 
-using XerahS.Mobile.Core;
-using XerahS.Mobile.Maui.ViewModels;
+using Avalonia.Controls;
 
-namespace XerahS.Mobile.Maui.Views;
+namespace Ava.Views;
 
-public partial class MobileAmazonS3ConfigPage : ContentPage
+public partial class MobileHistoryView : UserControl
 {
-    public MobileAmazonS3ConfigPage()
+    public MobileHistoryView()
     {
         InitializeComponent();
-        var vm = new MobileAmazonS3ConfigViewModel();
-        vm.ScrollToFirstError = ScrollToFirstError;
-        BindingContext = vm;
-    }
-
-    private async void ScrollToFirstError()
-    {
-        var vm = BindingContext as MobileAmazonS3ConfigViewModel;
-        if (vm == null) return;
-
-        View? target = null;
-
-        if (vm.HasAccessKeyError || vm.HasSecretKeyError)
-            target = AuthSection;
-        else if (vm.HasBucketError || vm.HasRegionError)
-            target = BucketSection;
-
-        if (target != null)
-            await MainScrollView.ScrollToAsync(target, ScrollToPosition.MakeVisible, true);
     }
 }

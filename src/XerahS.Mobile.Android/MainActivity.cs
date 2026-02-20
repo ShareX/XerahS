@@ -35,7 +35,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using ShareX.AmazonS3.Plugin;
 using XerahS.Common;
-using XerahS.Mobile.UI;
+using Ava;
 using XerahS.Platform.Abstractions;
 using XerahS.Platform.Mobile;
 using XerahS.Uploaders.PluginSystem;

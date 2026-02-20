@@ -29,6 +29,8 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 
+using XerahS.Mobile.Core;
+
 namespace XerahS.Mobile.Maui.ViewModels;
 
 /// <summary>

@@ -19,7 +19,7 @@
     <PackageReference Include="SkiaSharp" Version="2.88.9" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\XerahS.Mobile.UI\XerahS.Mobile.UI.csproj" />
+    <ProjectReference Include="..\XerahS.Mobile.Ava\XerahS.Mobile.Ava.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Mobile\XerahS.Platform.Mobile.csproj" />
     <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />

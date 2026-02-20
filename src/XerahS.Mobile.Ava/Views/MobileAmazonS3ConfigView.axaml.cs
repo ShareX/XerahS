@@ -23,36 +23,39 @@
 
 #endregion License Information (GPL v3)
 
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 using XerahS.Mobile.Core;
-using XerahS.Mobile.Maui.ViewModels;
 
-namespace XerahS.Mobile.Maui.Views;
+namespace Ava.Views;
 
-public partial class MobileCustomUploaderConfigPage : ContentPage
+public partial class MobileAmazonS3ConfigView : UserControl
 {
-    private readonly MobileCustomUploaderConfigViewModel _viewModel;
-
-    public MobileCustomUploaderConfigPage()
+    public MobileAmazonS3ConfigView()
     {
         InitializeComponent();
-        _viewModel = new MobileCustomUploaderConfigViewModel();
-        _viewModel.ScrollToFirstError = ScrollToFirstError;
-        BindingContext = _viewModel;
+        var vm = new XerahS.Mobile.Core.MobileAmazonS3ConfigViewModel();
+        vm.ScrollToFirstError = ScrollToFirstError;
+        DataContext = vm;
     }
 
-    private void OnUploaderSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    private void InitializeComponent()
     {
-        if (e.CurrentSelection.FirstOrDefault() is CustomUploaderListItem item)
-        {
-            _viewModel.SelectedUploaderIndex = _viewModel.CustomUploaders.IndexOf(item);
-        }
+        AvaloniaXamlLoader.Load(this);
     }
 
-    private async void ScrollToFirstError()
+    private void ScrollToFirstError()
     {
-        if (_viewModel.HasNameError || _viewModel.HasDestinationError)
-            await EditorScrollView.ScrollToAsync(BasicInfoSection, ScrollToPosition.MakeVisible, true);
-        else if (_viewModel.HasUrlError)
-            await EditorScrollView.ScrollToAsync(HttpRequestSection, ScrollToPosition.MakeVisible, true);
+        var vm = DataContext as XerahS.Mobile.Core.MobileAmazonS3ConfigViewModel;
+        if (vm == null) return;
+
+        Control? target = null;
+
+        if (vm.HasAccessKeyError || vm.HasSecretKeyError)
+            target = this.FindControl<Border>("AuthSection");
+        else if (vm.HasBucketError || vm.HasRegionError)
+            target = this.FindControl<Border>("BucketSection");
+
+        target?.BringIntoView();
     }
 }

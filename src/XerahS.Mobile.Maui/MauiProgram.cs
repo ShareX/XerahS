@@ -28,6 +28,7 @@ using ShareX.AmazonS3.Plugin;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Uploaders;
+using XerahS.Mobile.Core;
 using XerahS.Mobile.Maui.ViewModels;
 using XerahS.Mobile.Maui.Views;
 using XerahS.Platform.Abstractions;

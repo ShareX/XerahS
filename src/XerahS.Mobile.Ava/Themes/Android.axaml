@@ -1,0 +1,209 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Styles.Resources>
+        <ResourceDictionary>
+            <FontFamily x:Key="MaterialFont">Roboto, Segoe UI</FontFamily>
+
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <Color x:Key="MaterialPrimaryColor">#6366F1</Color>
+                    <Color x:Key="MaterialSecondaryColor">#10B981</Color>
+                    <Color x:Key="MaterialSurfaceColor">#FFFFFF</Color>
+                    <Color x:Key="MaterialBackgroundColor">#F5F5F5</Color>
+                    <Color x:Key="MaterialInputColor">#F3F3F5</Color>
+                    <Color x:Key="MaterialOutlineColor">#B7B7C4</Color>
+                    <Color x:Key="MaterialTextColor">#101828</Color>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <Color x:Key="MaterialPrimaryColor">#A5B4FC</Color>
+                    <Color x:Key="MaterialSecondaryColor">#34D399</Color>
+                    <Color x:Key="MaterialSurfaceColor">#1E1E1E</Color>
+                    <Color x:Key="MaterialBackgroundColor">#121212</Color>
+                    <Color x:Key="MaterialInputColor">#26262A</Color>
+                    <Color x:Key="MaterialOutlineColor">#3A3A3F</Color>
+                    <Color x:Key="MaterialTextColor">#E5E7EB</Color>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <SolidColorBrush x:Key="MaterialPrimaryBrush" Color="{DynamicResource MaterialPrimaryColor}"/>
+            <SolidColorBrush x:Key="MaterialSecondaryBrush" Color="{DynamicResource MaterialSecondaryColor}"/>
+            <SolidColorBrush x:Key="MaterialSurfaceBrush" Color="{DynamicResource MaterialSurfaceColor}"/>
+            <SolidColorBrush x:Key="MaterialBackgroundBrush" Color="{DynamicResource MaterialBackgroundColor}"/>
+            <SolidColorBrush x:Key="MaterialInputBrush" Color="{DynamicResource MaterialInputColor}"/>
+            <SolidColorBrush x:Key="MaterialOutlineBrush" Color="{DynamicResource MaterialOutlineColor}"/>
+            <SolidColorBrush x:Key="MaterialTextBrush" Color="{DynamicResource MaterialTextColor}"/>
+        </ResourceDictionary>
+    </Styles.Resources>
+
+    <Style Selector="UserControl[Tag=android]">
+        <Setter Property="Background" Value="{StaticResource MaterialBackgroundBrush}"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+        <Setter Property="Foreground" Value="{StaticResource MaterialTextBrush}"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] Button">
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+        <Setter Property="Foreground" Value="{StaticResource MaterialTextBrush}"/>
+    </Style>
+
+    <Style Selector="Button.material-primary">
+        <Setter Property="Background" Value="{StaticResource MaterialPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="CornerRadius" Value="24"/>
+        <Setter Property="Padding" Value="24,12"/>
+        <Setter Property="MinHeight" Value="48"/>
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <Style Selector="Button.material-primary:pressed">
+        <Setter Property="Opacity" Value="0.9"/>
+    </Style>
+
+    <Style Selector="Button.material-outlined">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{StaticResource MaterialPrimaryBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="{StaticResource MaterialPrimaryBrush}"/>
+        <Setter Property="CornerRadius" Value="24"/>
+        <Setter Property="Padding" Value="24,12"/>
+        <Setter Property="MinHeight" Value="48"/>
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+    </Style>
+
+    <Style Selector="Button.material-outlined:pressed">
+        <Setter Property="Opacity" Value="0.9"/>
+    </Style>
+
+    <Style Selector="TextBox.material-filled">
+        <Setter Property="Background" Value="{StaticResource MaterialInputBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="14,14"/>
+        <Setter Property="MinHeight" Value="56"/>
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+    </Style>
+
+    <Style Selector="TextBox.material-outlined">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{StaticResource MaterialOutlineBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="14,14"/>
+        <Setter Property="MinHeight" Value="56"/>
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+    </Style>
+
+    <Style Selector="Grid.material-appbar">
+        <Setter Property="Background" Value="{StaticResource MaterialSurfaceBrush}"/>
+        <Setter Property="Height" Value="56"/>
+    </Style>
+
+    <Style Selector="TextBlock.material-appbar-title">
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="56,0,0,0"/>
+    </Style>
+
+    <Style Selector="Border.material-card">
+        <Setter Property="Background" Value="{StaticResource MaterialSurfaceBrush}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+        <Setter Property="BoxShadow" Value="0 2 4 0 #40000000"/>
+    </Style>
+
+    <Style Selector="Border.material-card-elevated">
+        <Setter Property="Background" Value="{StaticResource MaterialSurfaceBrush}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+        <Setter Property="BoxShadow" Value="0 4 8 0 #40000000"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] Button.adaptive-primary">
+        <Setter Property="Background" Value="{StaticResource MaterialPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="CornerRadius" Value="24"/>
+        <Setter Property="Padding" Value="24,12"/>
+        <Setter Property="MinHeight" Value="48"/>
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] Button.adaptive-primary:pressed">
+        <Setter Property="Opacity" Value="0.9"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] Button.adaptive-secondary">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{StaticResource MaterialPrimaryBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="{StaticResource MaterialPrimaryBrush}"/>
+        <Setter Property="CornerRadius" Value="24"/>
+        <Setter Property="Padding" Value="20,10"/>
+        <Setter Property="MinHeight" Value="48"/>
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] Button.adaptive-secondary:pressed">
+        <Setter Property="Opacity" Value="0.9"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] TextBox.adaptive-input">
+        <Setter Property="Background" Value="{StaticResource MaterialInputBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="14,14"/>
+        <Setter Property="MinHeight" Value="56"/>
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] ComboBox.adaptive-input">
+        <Setter Property="MinHeight" Value="56"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] Grid.adaptive-navbar">
+        <Setter Property="Background" Value="{StaticResource MaterialSurfaceBrush}"/>
+        <Setter Property="Height" Value="56"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] TextBlock.adaptive-navbar-title">
+        <Setter Property="FontFamily" Value="{StaticResource MaterialFont}"/>
+        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="16,0,0,0"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] Border.adaptive-card">
+        <Setter Property="Background" Value="{StaticResource MaterialSurfaceBrush}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+        <Setter Property="BoxShadow" Value="0 2 4 0 #40000000"/>
+    </Style>
+
+    <Style Selector="UserControl[Tag=android] ScrollViewer.adaptive-scroll">
+        <Setter Property="ScrollViewer.IsScrollInertiaEnabled" Value="True"/>
+    </Style>
+
+</Styles>

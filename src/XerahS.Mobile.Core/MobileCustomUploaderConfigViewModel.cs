@@ -34,45 +34,7 @@ using XerahS.Uploaders;
 using XerahS.Uploaders.CustomUploader;
 using XerahS.Uploaders.PluginSystem;
 
-namespace XerahS.Mobile.Maui.ViewModels;
-
-/// <summary>
-/// Represents a custom uploader entry in the list.
-/// </summary>
-public class CustomUploaderListItem
-{
-    public string Name { get; set; } = "";
-    public string HostName { get; set; } = "";
-    public int Index { get; set; }
-    public bool IsActive { get; set; }
-}
-
-/// <summary>
-/// Key/value pair for headers, parameters, and arguments collections.
-/// </summary>
-public class KeyValuePairItem : INotifyPropertyChanged
-{
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private string _key = "";
-    public string Key
-    {
-        get => _key;
-        set { _key = value; OnPropertyChanged(); }
-    }
-
-    private string _value = "";
-    public string Value
-    {
-        get => _value;
-        set { _value = value; OnPropertyChanged(); }
-    }
-
-    public ICommand? RemoveCommand { get; set; }
-
-    protected void OnPropertyChanged([CallerMemberName] string? name = null)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-}
+namespace XerahS.Mobile.Core;
 
 /// <summary>
 /// Mobile-friendly ViewModel for Custom Uploader configuration.
@@ -175,7 +137,6 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         set { _editingIndex = value; OnPropertyChanged(); }
     }
 
-    // Basic Information
     private string _editorName = "";
     public string EditorName
     {
@@ -218,8 +179,7 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         set { _isUrlSharingService = value; HasDestinationError = false; OnPropertyChanged(); }
     }
 
-    // HTTP Request
-    private int _selectedMethodIndex = 1; // POST
+    private int _selectedMethodIndex = 1;
     public int SelectedMethodIndex
     {
         get => _selectedMethodIndex;
@@ -247,8 +207,7 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         set { _parameters = value; OnPropertyChanged(); }
     }
 
-    // Request Body
-    private int _selectedBodyTypeIndex = 1; // MultipartFormData
+    private int _selectedBodyTypeIndex = 1;
     public int SelectedBodyTypeIndex
     {
         get => _selectedBodyTypeIndex;
@@ -276,7 +235,6 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         set { _bodyData = value; OnPropertyChanged(); }
     }
 
-    // Response Parsing
     private string _urlPattern = "";
     public string UrlPattern
     {
@@ -305,7 +263,6 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         set { _errorMessagePattern = value; OnPropertyChanged(); }
     }
 
-    // Import JSON
     private string _jsonInput = "";
     public string JsonInput
     {
@@ -313,7 +270,6 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         set { _jsonInput = value; OnPropertyChanged(); }
     }
 
-    // Validation Errors
     private bool _hasNameError;
     public bool HasNameError
     {
@@ -335,24 +291,18 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         set { _hasDestinationError = value; OnPropertyChanged(); }
     }
 
-    /// <summary>
-    /// Set by the view to scroll to the first validation error field.
-    /// </summary>
     public Action? ScrollToFirstError { get; set; }
 
     #endregion
 
     #region Commands
 
-    // List view commands
     public ICommand AddNewCommand { get; }
     public ICommand EditSelectedCommand { get; }
     public ICommand SetActiveCommand { get; }
     public ICommand RemoveSelectedCommand { get; }
     public ICommand SaveCommand { get; }
     public ICommand TestCommand { get; }
-
-    // Editor commands
     public ICommand SaveEditorCommand { get; }
     public ICommand CancelEditorCommand { get; }
     public ICommand ImportJsonCommand { get; }
@@ -367,15 +317,12 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
 
     public MobileCustomUploaderConfigViewModel()
     {
-        // List commands
         AddNewCommand = new RelayCommand(ShowAddNew);
         EditSelectedCommand = new RelayCommand(ShowEditSelected);
         SetActiveCommand = new RelayCommand(SetActive);
         RemoveSelectedCommand = new RelayCommand(RemoveSelected);
         SaveCommand = new RelayCommand(() => SaveConfig());
-        TestCommand = new AsyncRelayCommand(async () => await TestConfigAsync());
-
-        // Editor commands
+        TestCommand = new AsyncRelayCommand(TestConfigAsync);
         SaveEditorCommand = new RelayCommand(SaveFromEditor);
         CancelEditorCommand = new RelayCommand(CancelEditor);
         ImportJsonCommand = new RelayCommand(ImportJson);
@@ -385,8 +332,6 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         RemoveParameterCommand = new RelayCommand<KeyValuePairItem>(item => { if (item != null) Parameters.Remove(item); });
         AddArgumentCommand = new RelayCommand(() => AddKeyValueItem(Arguments));
         RemoveArgumentCommand = new RelayCommand<KeyValuePairItem>(item => { if (item != null) Arguments.Remove(item); });
-
-        LoadConfig();
     }
 
     #region IMobileUploaderConfig Implementation
@@ -397,9 +342,7 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         {
             var list = SettingsManager.UploadersConfig?.CustomUploadersList;
             var activeIndex = SettingsManager.UploadersConfig?.CustomImageUploaderSelected ?? -1;
-
             var items = new ObservableCollection<CustomUploaderListItem>();
-
             if (list != null)
             {
                 for (int i = 0; i < list.Count; i++)
@@ -414,7 +357,6 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
                     });
                 }
             }
-
             CustomUploaders = items;
             UpdateIsConfigured();
         }
@@ -441,20 +383,16 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
     public async Task<bool> TestConfigAsync()
     {
         IsTesting = true;
-
         try
         {
             await Task.Delay(300);
-
             var list = SettingsManager.UploadersConfig?.CustomUploadersList;
             var activeIndex = SettingsManager.UploadersConfig?.CustomImageUploaderSelected ?? -1;
-
             if (list == null || activeIndex < 0 || activeIndex >= list.Count)
             {
                 IsTesting = false;
                 return false;
             }
-
             var item = list[activeIndex];
             var validationError = CustomUploaderRepository.ValidateItem(item);
             if (validationError != null)
@@ -462,7 +400,6 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
                 IsTesting = false;
                 return false;
             }
-
             IsTesting = false;
             return true;
         }
@@ -491,14 +428,11 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
     {
         if (SelectedUploaderIndex < 0 || SelectedUploaderIndex >= CustomUploaders.Count)
             return;
-
         var listItem = CustomUploaders[SelectedUploaderIndex];
         var config = SettingsManager.UploadersConfig;
         if (config == null) return;
-
         var itemIndex = listItem.Index;
         if (itemIndex < 0 || itemIndex >= config.CustomUploadersList.Count) return;
-
         var item = config.CustomUploadersList[itemIndex];
         LoadItemIntoEditor(item);
         EditorTitle = $"Edit: {item}";
@@ -515,11 +449,11 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         IsFileUploader = false;
         IsUrlShortener = false;
         IsUrlSharingService = false;
-        SelectedMethodIndex = 1; // POST
+        SelectedMethodIndex = 1;
         RequestUrl = "";
         Headers = new ObservableCollection<KeyValuePairItem>();
         Parameters = new ObservableCollection<KeyValuePairItem>();
-        SelectedBodyTypeIndex = 1; // MultipartFormData
+        SelectedBodyTypeIndex = 1;
         FileFormName = "file";
         Arguments = new ObservableCollection<KeyValuePairItem>();
         BodyData = "";
@@ -536,72 +470,47 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
     private void LoadItemIntoEditor(CustomUploaderItem item)
     {
         EditorName = item.Name;
-
-        // Destination type flags
         IsImageUploader = item.DestinationType.HasFlag(CustomUploaderDestinationType.ImageUploader);
         IsTextUploader = item.DestinationType.HasFlag(CustomUploaderDestinationType.TextUploader);
         IsFileUploader = item.DestinationType.HasFlag(CustomUploaderDestinationType.FileUploader);
         IsUrlShortener = item.DestinationType.HasFlag(CustomUploaderDestinationType.URLShortener);
         IsUrlSharingService = item.DestinationType.HasFlag(CustomUploaderDestinationType.URLSharingService);
-
-        // HTTP method
         SelectedMethodIndex = (int)item.RequestMethod;
         RequestUrl = item.RequestURL;
-
-        // Headers
         var headers = new ObservableCollection<KeyValuePairItem>();
         if (item.Headers != null)
-        {
             foreach (var kvp in item.Headers)
                 headers.Add(CreateKeyValueItem(kvp.Key, kvp.Value, headers));
-        }
         Headers = headers;
-
-        // Parameters
         var parameters = new ObservableCollection<KeyValuePairItem>();
         if (item.Parameters != null)
-        {
             foreach (var kvp in item.Parameters)
                 parameters.Add(CreateKeyValueItem(kvp.Key, kvp.Value, parameters));
-        }
         Parameters = parameters;
-
-        // Body
         SelectedBodyTypeIndex = (int)item.Body;
         FileFormName = string.IsNullOrEmpty(item.FileFormName) ? "file" : item.FileFormName;
-
-        // Arguments
         var arguments = new ObservableCollection<KeyValuePairItem>();
         if (item.Arguments != null)
-        {
             foreach (var kvp in item.Arguments)
                 arguments.Add(CreateKeyValueItem(kvp.Key, kvp.Value, arguments));
-        }
         Arguments = arguments;
-
         BodyData = item.Data;
-
-        // Response parsing
         UrlPattern = item.URL;
         ThumbnailUrlPattern = item.ThumbnailURL;
         DeletionUrlPattern = item.DeletionURL;
         ErrorMessagePattern = item.ErrorMessage;
-
         JsonInput = "";
     }
 
     private CustomUploaderItem BuildItemFromEditor()
     {
         var item = CustomUploaderItem.Init();
-
         item.Name = EditorName?.Trim() ?? "";
         item.RequestURL = RequestUrl?.Trim() ?? "";
         item.RequestMethod = (XerahS.Uploaders.HttpMethod)SelectedMethodIndex;
         item.Body = (CustomUploaderBody)SelectedBodyTypeIndex;
         item.FileFormName = FileFormName?.Trim() ?? "";
         item.Data = BodyData?.Trim() ?? "";
-
-        // Destination type
         var destType = CustomUploaderDestinationType.None;
         if (IsImageUploader) destType |= CustomUploaderDestinationType.ImageUploader;
         if (IsTextUploader) destType |= CustomUploaderDestinationType.TextUploader;
@@ -609,149 +518,89 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         if (IsUrlShortener) destType |= CustomUploaderDestinationType.URLShortener;
         if (IsUrlSharingService) destType |= CustomUploaderDestinationType.URLSharingService;
         item.DestinationType = destType;
-
-        // Headers
         var headers = new Dictionary<string, string>();
         foreach (var h in Headers)
-        {
             if (!string.IsNullOrWhiteSpace(h.Key))
                 headers[h.Key] = h.Value ?? "";
-        }
         item.Headers = headers.Count > 0 ? headers : null;
-
-        // Parameters
         var parameters = new Dictionary<string, string>();
         foreach (var p in Parameters)
-        {
             if (!string.IsNullOrWhiteSpace(p.Key))
                 parameters[p.Key] = p.Value ?? "";
-        }
         item.Parameters = parameters.Count > 0 ? parameters : null;
-
-        // Arguments
         var arguments = new Dictionary<string, string>();
         foreach (var a in Arguments)
-        {
             if (!string.IsNullOrWhiteSpace(a.Key))
                 arguments[a.Key] = a.Value ?? "";
-        }
         item.Arguments = arguments.Count > 0 ? arguments : null;
-
-        // Response parsing
         item.URL = UrlPattern?.Trim() ?? "";
         item.ThumbnailURL = ThumbnailUrlPattern?.Trim() ?? "";
         item.DeletionURL = DeletionUrlPattern?.Trim() ?? "";
         item.ErrorMessage = ErrorMessagePattern?.Trim() ?? "";
-
         return item;
     }
 
     private bool ValidateEditor()
     {
         bool valid = true;
-
-        if (string.IsNullOrWhiteSpace(EditorName))
-        {
-            HasNameError = true;
-            valid = false;
-        }
-
-        if (string.IsNullOrWhiteSpace(RequestUrl))
-        {
-            HasUrlError = true;
-            valid = false;
-        }
-
+        if (string.IsNullOrWhiteSpace(EditorName)) { HasNameError = true; valid = false; }
+        if (string.IsNullOrWhiteSpace(RequestUrl)) { HasUrlError = true; valid = false; }
         if (!IsImageUploader && !IsTextUploader && !IsFileUploader && !IsUrlShortener && !IsUrlSharingService)
-        {
-            HasDestinationError = true;
-            valid = false;
-        }
-
+        { HasDestinationError = true; valid = false; }
         return valid;
     }
 
     private void SaveFromEditor()
     {
-        if (!ValidateEditor())
-        {
-            ScrollToFirstError?.Invoke();
-            return;
-        }
-
+        if (!ValidateEditor()) { ScrollToFirstError?.Invoke(); return; }
         try
         {
             var item = BuildItemFromEditor();
             var config = SettingsManager.UploadersConfig;
             if (config == null) return;
-
             var pluginsFolder = PathsManager.PluginsFolder;
             if (!Directory.Exists(pluginsFolder))
                 Directory.CreateDirectory(pluginsFolder);
-
             if (IsEditMode && EditingIndex >= 0 && EditingIndex < config.CustomUploadersList.Count)
             {
-                // Update existing
                 var oldItem = config.CustomUploadersList[EditingIndex];
                 config.CustomUploadersList[EditingIndex] = item;
-
-                // Update the .sxcu file
-                var sxcuFiles = Directory.Exists(pluginsFolder)
-                    ? Directory.GetFiles(pluginsFolder, "*.sxcu")
-                    : Array.Empty<string>();
-
+                var sxcuFiles = Directory.Exists(pluginsFolder) ? Directory.GetFiles(pluginsFolder, "*.sxcu") : Array.Empty<string>();
                 string? filePath = null;
                 foreach (var file in sxcuFiles)
                 {
                     var loaded = CustomUploaderRepository.LoadFromFile(file);
                     if (loaded.IsValid && loaded.Item.Name == oldItem.Name && loaded.Item.RequestURL == oldItem.RequestURL)
-                    {
-                        filePath = file;
-                        break;
-                    }
+                    { filePath = file; break; }
                 }
-
                 if (filePath != null)
-                {
                     CustomUploaderRepository.SaveToFile(item, filePath);
-                }
                 else
                 {
                     filePath = Path.Combine(pluginsFolder, item.GetFileName());
                     CustomUploaderRepository.SaveToFile(item, filePath);
                 }
-
-                // Re-activate if this was the active uploader
                 if (EditingIndex == config.CustomImageUploaderSelected)
-                {
                     ActivateCustomUploader(item, filePath, EditingIndex);
-                }
             }
             else
             {
-                // Add new
                 config.CustomUploadersList.Add(item);
-
                 var fileName = item.GetFileName();
                 var filePath = Path.Combine(pluginsFolder, fileName);
-
                 int suffix = 1;
                 while (File.Exists(filePath))
                 {
                     filePath = Path.Combine(pluginsFolder, Path.GetFileNameWithoutExtension(fileName) + $"_{suffix}" + Path.GetExtension(fileName));
                     suffix++;
                 }
-
                 CustomUploaderRepository.SaveToFile(item, filePath);
-
-                // Auto-select if this is the first custom uploader
                 if (config.CustomUploadersList.Count == 1)
                 {
                     config.CustomImageUploaderSelected = 0;
                     ActivateCustomUploader(item, filePath, 0);
                 }
             }
-
             SettingsManager.SaveUploadersConfig();
             IsEditorVisible = false;
             LoadConfig();
@@ -762,22 +611,15 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         }
     }
 
-    private void CancelEditor()
-    {
-        IsEditorVisible = false;
-    }
+    private void CancelEditor() => IsEditorVisible = false;
 
     private void ImportJson()
     {
-        if (string.IsNullOrWhiteSpace(JsonInput))
-            return;
-
+        if (string.IsNullOrWhiteSpace(JsonInput)) return;
         try
         {
             var loaded = CustomUploaderRepository.LoadFromJson(JsonInput);
-            if (!loaded.IsValid)
-                return;
-
+            if (!loaded.IsValid) return;
             LoadItemIntoEditor(loaded.Item);
             JsonInput = "";
         }
@@ -793,39 +635,25 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
 
     private void SetActive()
     {
-        if (SelectedUploaderIndex < 0 || SelectedUploaderIndex >= CustomUploaders.Count)
-            return;
-
+        if (SelectedUploaderIndex < 0 || SelectedUploaderIndex >= CustomUploaders.Count) return;
         try
         {
             var listItem = CustomUploaders[SelectedUploaderIndex];
             var config = SettingsManager.UploadersConfig;
             if (config == null) return;
-
             var itemIndex = listItem.Index;
             if (itemIndex < 0 || itemIndex >= config.CustomUploadersList.Count) return;
-
             var item = config.CustomUploadersList[itemIndex];
             config.CustomImageUploaderSelected = itemIndex;
-
-            // Find the .sxcu file for this uploader
             var pluginsFolder = PathsManager.PluginsFolder;
-            var sxcuFiles = Directory.Exists(pluginsFolder)
-                ? Directory.GetFiles(pluginsFolder, "*.sxcu")
-                : Array.Empty<string>();
-
+            var sxcuFiles = Directory.Exists(pluginsFolder) ? Directory.GetFiles(pluginsFolder, "*.sxcu") : Array.Empty<string>();
             string? filePath = null;
             foreach (var file in sxcuFiles)
             {
                 var loaded = CustomUploaderRepository.LoadFromFile(file);
                 if (loaded.IsValid && loaded.Item.Name == item.Name && loaded.Item.RequestURL == item.RequestURL)
-                {
-                    filePath = file;
-                    break;
-                }
+                { filePath = file; break; }
             }
-
-            // If no .sxcu file found, save one
             if (filePath == null)
             {
                 if (!Directory.Exists(pluginsFolder))
@@ -833,7 +661,6 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
                 filePath = Path.Combine(pluginsFolder, item.GetFileName());
                 CustomUploaderRepository.SaveToFile(item, filePath);
             }
-
             ActivateCustomUploader(item, filePath, itemIndex);
             SettingsManager.SaveUploadersConfig();
             LoadConfig();
@@ -848,16 +675,12 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
     {
         try
         {
-            // Register provider in catalog
             var loadedUploader = new LoadedCustomUploader(item, filePath);
             var provider = new CustomUploaderProvider(loadedUploader);
             ProviderCatalog.RegisterProvider(provider);
-
-            // Create or find instance in InstanceManager
             var instanceManager = InstanceManager.Instance;
             var existingInstances = instanceManager.GetInstancesByCategory(UploaderCategory.Image);
             var existing = existingInstances.FirstOrDefault(i => i.ProviderId == provider.ProviderId);
-
             if (existing == null)
             {
                 var instance = new UploaderInstance
@@ -868,10 +691,8 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
                     SettingsJson = provider.GetDefaultSettings(UploaderCategory.Image)
                 };
                 instanceManager.AddInstance(instance);
-                existing = instanceManager.GetInstancesByCategory(UploaderCategory.Image)
-                    .FirstOrDefault(i => i.ProviderId == provider.ProviderId);
+                existing = instanceManager.GetInstancesByCategory(UploaderCategory.Image).FirstOrDefault(i => i.ProviderId == provider.ProviderId);
             }
-
             if (existing != null)
             {
                 instanceManager.SetDefaultInstance(UploaderCategory.Image, existing.InstanceId);
@@ -887,25 +708,17 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
 
     private void RemoveSelected()
     {
-        if (SelectedUploaderIndex < 0 || SelectedUploaderIndex >= CustomUploaders.Count)
-            return;
-
+        if (SelectedUploaderIndex < 0 || SelectedUploaderIndex >= CustomUploaders.Count) return;
         try
         {
             var listItem = CustomUploaders[SelectedUploaderIndex];
             var config = SettingsManager.UploadersConfig;
             if (config == null) return;
-
             var itemIndex = listItem.Index;
             if (itemIndex < 0 || itemIndex >= config.CustomUploadersList.Count) return;
-
             var item = config.CustomUploadersList[itemIndex];
             var wasActive = itemIndex == config.CustomImageUploaderSelected;
-
-            // Remove from list
             config.CustomUploadersList.RemoveAt(itemIndex);
-
-            // Try to delete the .sxcu file
             var pluginsFolder = PathsManager.PluginsFolder;
             if (Directory.Exists(pluginsFolder))
             {
@@ -920,24 +733,15 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
                     }
                 }
             }
-
-            // Adjust selected index
             if (config.CustomUploadersList.Count == 0)
-            {
                 config.CustomImageUploaderSelected = 0;
-            }
             else if (itemIndex <= config.CustomImageUploaderSelected)
-            {
                 config.CustomImageUploaderSelected = Math.Max(0, config.CustomImageUploaderSelected - 1);
-            }
-
-            // If the removed uploader was active, clear the destination
             if (wasActive)
             {
                 SettingsManager.DefaultTaskSettings.DestinationInstanceId = null;
                 SettingsManager.SaveWorkflowsConfig();
             }
-
             SettingsManager.SaveUploadersConfig();
             LoadConfig();
         }

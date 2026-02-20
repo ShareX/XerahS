@@ -23,34 +23,33 @@
 
 #endregion License Information (GPL v3)
 
-using XerahS.Mobile.Core;
-using XerahS.Mobile.Maui.ViewModels;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
+using Ava.ViewModels;
 
-namespace XerahS.Mobile.Maui.Views;
+namespace Ava.Views;
 
-public partial class MobileAmazonS3ConfigPage : ContentPage
+public partial class MobileSettingsView : UserControl
 {
-    public MobileAmazonS3ConfigPage()
+    public MobileSettingsViewModel ViewModel => (MobileSettingsViewModel)DataContext!;
+
+    public MobileSettingsView()
     {
         InitializeComponent();
-        var vm = new MobileAmazonS3ConfigViewModel();
-        vm.ScrollToFirstError = ScrollToFirstError;
-        BindingContext = vm;
+        DataContext = new MobileSettingsViewModel();
     }
 
-    private async void ScrollToFirstError()
+    private void InitializeComponent()
     {
-        var vm = BindingContext as MobileAmazonS3ConfigViewModel;
-        if (vm == null) return;
+        AvaloniaXamlLoader.Load(this);
+    }
 
-        View? target = null;
-
-        if (vm.HasAccessKeyError || vm.HasSecretKeyError)
-            target = AuthSection;
-        else if (vm.HasBucketError || vm.HasRegionError)
-            target = BucketSection;
-
-        if (target != null)
-            await MainScrollView.ScrollToAsync(target, ScrollToPosition.MakeVisible, true);
+    private void OnSettingsItemClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.DataContext is SettingsItem item)
+        {
+            ViewModel.NavigateToConfig(item);
+        }
     }
 }

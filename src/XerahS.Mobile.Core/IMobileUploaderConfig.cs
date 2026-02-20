@@ -23,7 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-namespace XerahS.Mobile.Maui.ViewModels;
+namespace XerahS.Mobile.Core;
 
 /// <summary>
 /// Interface for mobile-friendly uploader configuration view models.

@@ -23,34 +23,35 @@
 
 #endregion License Information (GPL v3)
 
-using XerahS.Mobile.Core;
-using XerahS.Mobile.Maui.ViewModels;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
-namespace XerahS.Mobile.Maui.Views;
+namespace XerahS.Mobile.Core;
 
-public partial class MobileAmazonS3ConfigPage : ContentPage
+/// <summary>
+/// Key/value pair for headers, parameters, and arguments collections.
+/// </summary>
+public class KeyValuePairItem : INotifyPropertyChanged
 {
-    public MobileAmazonS3ConfigPage()
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private string _key = "";
+    public string Key
     {
-        InitializeComponent();
-        var vm = new MobileAmazonS3ConfigViewModel();
-        vm.ScrollToFirstError = ScrollToFirstError;
-        BindingContext = vm;
+        get => _key;
+        set { _key = value; OnPropertyChanged(); }
     }
 
-    private async void ScrollToFirstError()
+    private string _value = "";
+    public string Value
     {
-        var vm = BindingContext as MobileAmazonS3ConfigViewModel;
-        if (vm == null) return;
-
-        View? target = null;
-
-        if (vm.HasAccessKeyError || vm.HasSecretKeyError)
-            target = AuthSection;
-        else if (vm.HasBucketError || vm.HasRegionError)
-            target = BucketSection;
-
-        if (target != null)
-            await MainScrollView.ScrollToAsync(target, ScrollToPosition.MakeVisible, true);
+        get => _value;
+        set { _value = value; OnPropertyChanged(); }
     }
+
+    public ICommand? RemoveCommand { get; set; }
+
+    protected void OnPropertyChanged([CallerMemberName] string? name = null)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
