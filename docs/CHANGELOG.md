@@ -10,6 +10,11 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
+## v0.16.2
+
+### Fixes
+- **ImageEditor**: Fix critical startup crash (`XamlLoadException: No precompiled XAML found for XerahS.UI.App`) caused by incompatible `MultiBinding` on `Bounds` in precompiled Avalonia XAML
+
 ## v0.16.1
 
 ### Fixes
