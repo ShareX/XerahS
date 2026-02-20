@@ -244,6 +244,19 @@ namespace XerahS.Core
             XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
         }
 
+        public static async Task LoadInitialSettingsAsync()
+        {
+            EnsureDirectoriesExist();
+            await Task.Run(() =>
+            {
+                LoadApplicationConfig();
+                LoadUploadersConfig();
+                LoadWorkflowsConfig();
+            });
+            InitializeRecentTasks();
+            XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
+        }
+
         /// <summary>
         /// Load application config from file using SettingsBase mechanism
         /// </summary>

@@ -40,6 +40,54 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(new AppShell());
+        try
+        {
+            return new Window(new Views.LoadingPage());
+        }
+        catch (System.Exception ex)
+        {
+#if ANDROID
+            global::Android.Util.Log.Error("XerahS", "CreateWindow Crash: " + ex.ToString());
+#endif
+            throw;
+        }
+    }
+
+    public async Task InitializeCoreAsync()
+    {
+        try
+        {
+#if ANDROID
+            global::Android.Util.Log.Info("XerahS", "InitializeCoreAsync Started.");
+#endif
+            await XerahS.Core.SettingsManager.LoadInitialSettingsAsync();
+            await XerahS.Uploaders.PluginSystem.ProviderCatalog.InitializeBuiltInProvidersAsync(typeof(ShareX.AmazonS3.Plugin.AmazonS3Provider).Assembly);
+#if ANDROID
+            global::Android.Util.Log.Info("XerahS", "Initialization completed. Swapping View to AppShell...");
+#endif
+        
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (Application.Current?.Windows.FirstOrDefault() is Window window)
+                {
+                    window.Page = new AppShell();
+#if ANDROID
+                    global::Android.Util.Log.Info("XerahS", "Swapped window.Page to AppShell.");
+#endif
+                }
+                else
+                {
+#if ANDROID
+                    global::Android.Util.Log.Error("XerahS", "Could not find Window to swap to AppShell.");
+#endif
+                }
+            });
+        }
+        catch (System.Exception ex)
+        {
+#if ANDROID
+            global::Android.Util.Log.Error("XerahS", "Init Crash: " + ex.ToString());
+#endif
+        }
     }
 }

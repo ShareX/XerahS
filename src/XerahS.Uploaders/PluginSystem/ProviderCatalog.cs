@@ -247,6 +247,14 @@ public static class ProviderCatalog
     }
 
     /// <summary>
+    /// Initialize built-in providers asynchronously
+    /// </summary>
+    public static Task InitializeBuiltInProvidersAsync(params System.Reflection.Assembly[] additionalAssemblies)
+    {
+        return Task.Run(() => InitializeBuiltInProviders(additionalAssemblies));
+    }
+
+    /// <summary>
     /// Initialize built-in providers by scanning the current assembly and additional assemblies.
     /// On mobile, plugin assemblies are bundled with the app and passed here instead of using LoadPlugins().
     /// </summary>

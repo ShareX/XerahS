@@ -59,17 +59,27 @@ public class MainActivity : MauiAppCompatActivity
 {
     protected override void OnCreate(Bundle? savedInstanceState)
     {
-        base.OnCreate(savedInstanceState);
+        try
+        {
+            base.OnCreate(savedInstanceState);
 
-        // Full initialization sequence (needs Activity context for FilesDir and ClipboardService)
-        MobilePlatform.Initialize(PlatformType.Android);
-        PlatformServices.Clipboard = new AndroidClipboardService(this);
-        PathsManager.PersonalFolder = FilesDir!.AbsolutePath;
-        SettingsManager.LoadInitialSettings();
-        ProviderContextManager.EnsureProviderContext();
-        ProviderCatalog.InitializeBuiltInProviders(typeof(AmazonS3Provider).Assembly);
+            // Full initialization sequence (needs Activity context for FilesDir and ClipboardService)
+            MobilePlatform.Initialize(PlatformType.Android);
+            PlatformServices.Clipboard = new AndroidClipboardService(this);
+            PathsManager.PersonalFolder = FilesDir!.AbsolutePath;
 
-        HandleShareIntent(Intent);
+            if (App.Current is App app)
+            {
+                Task.Run(() => app.InitializeCoreAsync());
+            }
+
+            HandleShareIntent(Intent);
+        }
+        catch (Exception ex)
+        {
+            global::Android.Util.Log.Error("XerahS", "MainActivity OnCreate Crash: " + ex.ToString());
+            throw;
+        }
     }
 
     protected override void OnNewIntent(Intent? intent)

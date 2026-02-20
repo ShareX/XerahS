@@ -25,6 +25,7 @@
 
 using System.Diagnostics;
 using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -46,6 +47,11 @@ public partial class MobileApp : Application
     /// </summary>
     public static Action<string[]>? OnFilesReceived { get; set; }
 
+    /// <summary>
+    /// Assemblies passed from the platform head containing built-in providers
+    /// </summary>
+    public static System.Reflection.Assembly[] AdditionalPluginAssemblies { get; set; } = Array.Empty<System.Reflection.Assembly>();
+
     private MobileUploadViewModel? _uploadViewModel;
     private ISingleViewApplicationLifetime? _singleView;
     private string _platformTag = "desktop";
@@ -53,12 +59,13 @@ public partial class MobileApp : Application
     // A single, persistent ContentControl that acts as the app's navigation host.
     // We set ISingleViewApplicationLifetime.MainView to this ONCE and never touch MainView again.
     // Navigation is done by swapping _navigationRoot.Content, which reliably triggers re-render.
-    private readonly ContentControl _navigationRoot = new()
+    private readonly TransitioningContentControl _navigationRoot = new()
     {
         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
         HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
         VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
+        PageTransition = new CrossFade(TimeSpan.FromMilliseconds(200))
     };
 
     public override void Initialize()
@@ -114,10 +121,45 @@ public partial class MobileApp : Application
             _singleView = singleView;
             // Set the navigation root once and never swap MainView again.
             _singleView.MainView = _navigationRoot;
-            ShowUploadView();
+            
+            // Start initialization async
+            _ = InitializeCoreAsync();
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private async Task InitializeCoreAsync()
+    {
+        Navigate(new MobileLoadingView());
+
+        try
+        {
+            await XerahS.Core.SettingsManager.LoadInitialSettingsAsync();
+            await XerahS.Uploaders.PluginSystem.ProviderCatalog.InitializeBuiltInProvidersAsync(AdditionalPluginAssemblies);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[Init] Error: {ex}");
+#if __ANDROID__
+            global::Android.Util.Log.Error("XerahS", "Init Crash Avalonia: " + ex.ToString());
+#endif
+        }
+
+        // After initialization, navigate to the main view
+        Dispatcher.UIThread.Post(() =>
+        {
+            try
+            {
+                ShowUploadView();
+            }
+            catch (Exception ex)
+            {
+#if __ANDROID__
+                global::Android.Util.Log.Error("XerahS", "ShowUploadView Crash Avalonia: " + ex.ToString());
+#endif
+            }
+        });
     }
 
     /// <summary>Navigates to a view by swapping the navigation root's Content.</summary>
