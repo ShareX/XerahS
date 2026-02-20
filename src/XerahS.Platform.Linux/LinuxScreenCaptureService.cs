@@ -26,9 +26,9 @@
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using XerahS.Platform.Linux.Capture;
+using XerahS.Platform.Linux.Capture.Cli;
 using XerahS.Platform.Linux.Capture.Contracts;
 using XerahS.Platform.Linux.Capture.Detection;
-using XerahS.Platform.Linux.Capture.Helpers;
 using XerahS.Platform.Linux.Capture.Orchestration;
 using XerahS.Platform.Linux.Capture.Providers;
 using XerahS.Platform.Linux.Capture.Gnome;
@@ -36,13 +36,7 @@ using XerahS.Platform.Linux.Capture.Kde;
 using XerahS.Platform.Linux.Capture.Portal;
 using XerahS.Platform.Linux.Capture.Wayland;
 using XerahS.Platform.Linux.Capture.X11;
-using XerahS.Platform.Linux.Services;
 using SkiaSharp;
-using Microsoft.Win32.SafeHandles;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Threading;
-using Tmds.DBus;
 
 namespace XerahS.Platform.Linux
 {
@@ -151,75 +145,13 @@ namespace XerahS.Platform.Linux
             }
         }
 
-        async Task<SKBitmap?> ILinuxCaptureRuntime.TryCliCaptureAsync(
+        Task<SKBitmap?> ILinuxCaptureRuntime.TryCliCaptureAsync(
             LinuxCaptureKind kind,
             string? desktop,
             IWindowService? windowService,
             CaptureOptions? options)
         {
-            switch (kind)
-            {
-                case LinuxCaptureKind.Region:
-                {
-                    var x11Result = await TryCaptureWithDesktopNativeToolAsync(desktop).ConfigureAwait(false);
-                    if (x11Result != null)
-                    {
-                        return x11Result;
-                    }
-
-                    return await TryCaptureWithGenericToolsAsync(desktop).ConfigureAwait(false);
-                }
-                case LinuxCaptureKind.FullScreen:
-                {
-                    var x11Result = await CaptureWithGnomeScreenshotAsync().ConfigureAwait(false);
-                    if (x11Result != null) return x11Result;
-
-                    x11Result = await CaptureWithSpectacleAsync().ConfigureAwait(false);
-                    if (x11Result != null) return x11Result;
-
-                    x11Result = await CaptureWithScrotAsync().ConfigureAwait(false);
-                    if (x11Result != null) return x11Result;
-
-                    x11Result = await CaptureWithImportAsync().ConfigureAwait(false);
-                    return x11Result;
-                }
-                case LinuxCaptureKind.ActiveWindow:
-                {
-                    if (windowService == null)
-                    {
-                        return null;
-                    }
-
-                    var handle = windowService.GetForegroundWindow();
-
-                    var x11Result = await CaptureWindowWithGnomeScreenshotAsync().ConfigureAwait(false);
-                    if (x11Result != null) return x11Result;
-
-                    x11Result = await CaptureWindowWithSpectacleAsync().ConfigureAwait(false);
-                    if (x11Result != null) return x11Result;
-
-                    x11Result = await CaptureWindowWithScrotAsync().ConfigureAwait(false);
-                    if (x11Result != null) return x11Result;
-
-                    if (handle == IntPtr.Zero)
-                    {
-                        x11Result = await CaptureWithGnomeScreenshotAsync().ConfigureAwait(false);
-                        if (x11Result != null) return x11Result;
-
-                        x11Result = await CaptureWithSpectacleAsync().ConfigureAwait(false);
-                        if (x11Result != null) return x11Result;
-
-                        x11Result = await CaptureWithScrotAsync().ConfigureAwait(false);
-                        if (x11Result != null) return x11Result;
-
-                        return await CaptureWithImportAsync().ConfigureAwait(false);
-                    }
-
-                    return null;
-                }
-                default:
-                    return null;
-            }
+            return CliCaptureExecutor.TryCaptureAsync(kind, desktop, windowService, IsWayland);
         }
 
         public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
@@ -241,118 +173,6 @@ namespace XerahS.Platform.Linux
             }
 
             return result.Bitmap;
-        }
-
-        /// <summary>
-        /// Try the native screenshot tool for the detected desktop environment
-        /// </summary>
-        private async Task<SKBitmap?> TryCaptureWithDesktopNativeToolAsync(string? desktop)
-        {
-            SKBitmap? result;
-
-            switch (desktop)
-            {
-                case "GNOME":
-                case "CINNAMON":
-                case "MATE":
-                    // GNOME and GNOME-based: gnome-screenshot
-                    result = await CaptureWithToolInteractiveAsync("gnome-screenshot", "-a -f");
-                    if (result != null)
-                    {
-                        DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with gnome-screenshot");
-                        return result;
-                    }
-                    break;
-
-                case "KDE":
-                case "LXQT":
-                    // KDE Plasma: spectacle
-                    result = await CaptureWithToolInteractiveAsync("spectacle", "-b -n -r -o");
-                    if (result != null)
-                    {
-                        DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with spectacle");
-                        return result;
-                    }
-                    break;
-
-                case "XFCE":
-                    // XFCE: xfce4-screenshooter
-                    result = await CaptureWithToolInteractiveAsync("xfce4-screenshooter", "-r -s");
-                    if (result != null)
-                    {
-                        DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with xfce4-screenshooter");
-                        return result;
-                    }
-                    break;
-
-                case "HYPRLAND":
-                case "SWAY":
-                    // wlroots-based: prefer grim+slurp (handled in main method)
-                    break;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Try generic screenshot tools that work across multiple DEs
-        /// </summary>
-        private async Task<SKBitmap?> TryCaptureWithGenericToolsAsync(string? alreadyTriedDesktop)
-        {
-            SKBitmap? result;
-
-            // Try tools that weren't already tried based on desktop
-            if (alreadyTriedDesktop != "GNOME" && alreadyTriedDesktop != "CINNAMON" && alreadyTriedDesktop != "MATE")
-            {
-                result = await CaptureWithToolInteractiveAsync("gnome-screenshot", "-a -f");
-                if (result != null)
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with gnome-screenshot");
-                    return result;
-                }
-            }
-
-            if (alreadyTriedDesktop != "KDE" && alreadyTriedDesktop != "LXQT")
-            {
-                result = await CaptureWithToolInteractiveAsync("spectacle", "-b -n -r -o");
-                if (result != null)
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with spectacle");
-                    return result;
-                }
-            }
-
-            if (alreadyTriedDesktop != "XFCE")
-            {
-                result = await CaptureWithToolInteractiveAsync("xfce4-screenshooter", "-r -s");
-                if (result != null)
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with xfce4-screenshooter");
-                    return result;
-                }
-            }
-
-            // X11-only tools (won't work on pure Wayland but worth trying)
-            if (!IsWayland)
-            {
-                // scrot -s: select mode (X11 only)
-                result = await CaptureWithToolInteractiveAsync("scrot", "-s");
-                if (result != null)
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with scrot");
-                    return result;
-                }
-
-                // import (ImageMagick): interactive selection (X11 only)
-                result = await CaptureWithToolInteractiveAsync("import", "");
-                if (result != null)
-                {
-                    DebugHelper.WriteLine("LinuxScreenCaptureService: Region captured with import");
-                    return result;
-                }
-            }
-
-            return null;
         }
 
         private static void LogCaptureDecisionTrace(string captureName, CaptureDecisionTrace trace)
@@ -534,73 +354,6 @@ namespace XerahS.Platform.Linux
         public Task<CursorInfo?> CaptureCursorAsync()
         {
             return Task.FromResult<CursorInfo?>(null);
-        }
-
-        private async Task<SKBitmap?> CaptureWindowWithGnomeScreenshotAsync()
-        {
-            // -w = window, -b = include border
-            return await CaptureWithToolAsync("gnome-screenshot", "-w -b");
-        }
-
-        private async Task<SKBitmap?> CaptureWindowWithSpectacleAsync()
-        {
-            // -a = active window, -b = background/decorations, -n = non-notify
-            return await CaptureWithToolAsync("spectacle", "-a -b -n -o");
-        }
-
-        private async Task<SKBitmap?> CaptureWindowWithScrotAsync()
-        {
-            // -u = currently focused window, -b = border
-            return await CaptureWithToolAsync("scrot", "-u -b");
-        }
-
-        /// <summary>
-        /// Capture using gnome-screenshot (GNOME desktop)
-        /// </summary>
-        private async Task<SKBitmap?> CaptureWithGnomeScreenshotAsync()
-        {
-            return await CaptureWithToolAsync("gnome-screenshot", "-f");
-        }
-
-        /// <summary>
-        /// Capture using spectacle (KDE desktop)
-        /// </summary>
-        private async Task<SKBitmap?> CaptureWithSpectacleAsync()
-        {
-            return await CaptureWithToolAsync("spectacle", "-b -n -o");
-        }
-
-        /// <summary>
-        /// Capture using scrot (lightweight, widely available)
-        /// </summary>
-        private async Task<SKBitmap?> CaptureWithScrotAsync()
-        {
-            return await CaptureWithToolAsync("scrot", "");
-        }
-
-        /// <summary>
-        /// Capture using import from ImageMagick (fallback)
-        /// </summary>
-        private async Task<SKBitmap?> CaptureWithImportAsync()
-        {
-            return await CaptureWithToolAsync("import", "-window root");
-        }
-
-        /// <summary>
-        /// Helper for interactive region selection with extended timeout (60 seconds).
-        /// Used for tools like gnome-screenshot -a, spectacle -r, scrot -s.
-        /// </summary>
-        private static Task<SKBitmap?> CaptureWithToolInteractiveAsync(string toolName, string argsPrefix)
-        {
-            return LinuxCliToolRunner.RunAsync(toolName, argsPrefix, LinuxCliToolRunner.InteractiveTimeoutMs);
-        }
-
-        /// <summary>
-        /// Generic helper to run a screenshot tool and load the result.
-        /// </summary>
-        private static Task<SKBitmap?> CaptureWithToolAsync(string toolName, string argsPrefix, int timeoutMs = 10000)
-        {
-            return LinuxCliToolRunner.RunAsync(toolName, argsPrefix, timeoutMs);
         }
 
     }
