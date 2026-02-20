@@ -6,7 +6,7 @@ Document the top three structural pain points identified in `src` that require r
 
 ---
 
-## Pain Point 1: God class – `LinuxScreenCaptureService` (~2,146 lines)
+## Pain Point 1: God class – `LinuxScreenCaptureService` (~2,146 lines) — **Refactored (XIP0035)**
 
 **What:** A single class implements the entire Linux capture stack (Portal, KDE, GNOME, X11, CLI tools, slurp, grim, etc.) with provider list hardcoded in the constructor and 50+ methods in one file.
 
@@ -14,7 +14,15 @@ Document the top three structural pain points identified in `src` that require r
 
 **Why it hurts:** Every new capture path or bugfix touches the same type; unit testing individual strategies is difficult; reuse and platform abstraction are limited.
 
-**Refactor direction:** Extract each capture strategy into its own type (e.g. `ILinuxCaptureStrategy` or existing provider pattern). Keep `LinuxScreenCaptureService` as a thin coordinator. Use injection or a registry for providers. Move shared helpers into small, testable utilities.
+**Refactor direction (implemented):** Extracted each capture strategy into its own type. `LinuxScreenCaptureService` is now a thin coordinator (~365 lines). Shared helpers and strategies live in:
+- `Capture/Helpers/LinuxCliToolRunner.cs` – run screenshot CLI tools (testable).
+- `Capture/X11/X11ScreenCapture.cs` – X11 XGetImage fullscreen capture.
+- `Capture/Portal/PortalScreenCapture.cs` – XDG Portal screenshot (D-Bus).
+- `Capture/Kde/KdeDbusScreenCapture.cs` – KDE ScreenShot2 D-Bus.
+- `Capture/Gnome/GnomeDbusScreenCapture.cs` – GNOME Shell Screenshot D-Bus.
+- `Capture/Wayland/WaylandCliCapture.cs` – grim, slurp, grimblast, hyprshot.
+- `Capture/Cli/CliCaptureExecutor.cs` – gnome-screenshot, spectacle, scrot, import, xfce4-screenshooter.
+Provider list remains in the coordinator constructor; strategies are invoked via existing `ILinuxCaptureRuntime` and providers.
 
 ---
 
