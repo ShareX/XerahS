@@ -163,8 +163,17 @@ public static partial class TaskHelpers
     }
 
     /// <summary>
-    /// Determines if the workflow type is a capture operation.
+    /// Determines if the workflow type is a screenshot capture operation that warrants hiding
+    /// the main window before capture (so the app does not appear in the shot).
     /// </summary>
+    /// <remarks>
+    /// Screen-recording workflows are intentionally excluded. Unlike screenshots, a recording
+    /// session opens a long-lived portal (XDG ScreenCast / PipeWire on Wayland) that requires
+    /// the parent window surface to remain alive during stream negotiation. Hiding the window
+    /// before the portal handshake completes invalidates the parent surface and causes
+    /// GStreamer's PipeWire source to receive empty/incompatible format caps, resulting in
+    /// a "not-negotiated" error and an immediate recording failure.
+    /// </remarks>
     private static bool IsCaptureWorkflow(WorkflowType job)
     {
         return job switch
@@ -174,14 +183,6 @@ public static partial class TaskHelpers
             WorkflowType.RectangleRegion => true,
             WorkflowType.RectangleTransparent => true,
             WorkflowType.CustomWindow => true,
-            WorkflowType.ScreenRecorder => true,
-            WorkflowType.ScreenRecorderActiveWindow => true,
-            WorkflowType.ScreenRecorderCustomRegion => true,
-            WorkflowType.ScreenRecorderGIF => true,
-            WorkflowType.ScreenRecorderGIFActiveWindow => true,
-            WorkflowType.ScreenRecorderGIFCustomRegion => true,
-            WorkflowType.StartScreenRecorder => true,
-            WorkflowType.StartScreenRecorderGIF => true,
             WorkflowType.ScrollingCapture => true,
             WorkflowType.OCR => true,
             WorkflowType.ActiveMonitor => true,
