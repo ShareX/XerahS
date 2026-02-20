@@ -10,6 +10,11 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ## Unreleased
 
+## v0.16.1
+
+### Fixes
+- **ImageEditor**: Optimize Black & White filter, Smart Eraser, and canvas zooming performance
+
 ## v0.16.0
 
 ### Features
