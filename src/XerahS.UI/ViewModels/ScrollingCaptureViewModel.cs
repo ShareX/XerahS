@@ -201,8 +201,11 @@ public partial class ScrollingCaptureViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Stops an in-progress capture. Callable from the Stop button or from the stop hotkey (Escape / Scrolling Capture hotkey again).
+    /// </summary>
     [RelayCommand]
-    private void StopCapture()
+    public void StopCapture()
     {
         _captureCts?.Cancel();
     }

@@ -148,11 +148,6 @@ public partial class MobileApp : Application
 
                 // Directly register bundled providers - NO reflection scanning.
                 // On mobile, uploaders are bundled with the app so we instantiate them directly.
-                if (AdditionalPluginAssemblies != null)
-                {
-                    // For each assembly we know about, instantiate providers directly
-                    // rather than scanning with reflection.
-                }
                 foreach (var provider in _registeredProviders)
                 {
                     XerahS.Uploaders.PluginSystem.ProviderCatalog.RegisterProvider(provider);
@@ -179,10 +174,10 @@ public partial class MobileApp : Application
             {
                 ShowUploadView();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 #if __ANDROID__
-                global::Android.Util.Log.Error("XerahS", "ShowUploadView Crash Avalonia: " + ex.ToString());
+                global::Android.Util.Log.Error("XerahS", "ShowUploadView Crash Avalonia");
 #endif
             }
         });

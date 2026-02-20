@@ -101,6 +101,9 @@ namespace XerahS.RegionCapture
                 var stopwatch = new Stopwatch();
                 int frameIndex = 0;
                 int maxFrames = 100; // Safety limit
+                int lastResultHeight = 0;
+                int noProgressCount = 0;
+                const int NoProgressLimit = 3; // Stop if height unchanged for this many frames
 
                 while (frameIndex < maxFrames && !cancellationToken.IsCancellationRequested)
                 {
@@ -129,6 +132,7 @@ namespace XerahS.RegionCapture
                         // First frame - use as initial result
                         stitchedResult = currentFrame.Copy();
                         previousFrame = currentFrame;
+                        lastResultHeight = stitchedResult?.Height ?? 0;
                     }
                     else
                     {
@@ -165,6 +169,25 @@ namespace XerahS.RegionCapture
                             {
                                 result.Status = ScrollingCaptureStatus.PartiallySuccessful;
                             }
+
+                            // No-progress detection: stop if stitched height hasn't increased for several frames
+                            // (avoids infinite loop when scroll bar never reports bottom or content keeps changing)
+                            int currentHeight = stitchedResult?.Height ?? 0;
+                            if (currentHeight <= lastResultHeight + 2)
+                            {
+                                noProgressCount++;
+                                if (noProgressCount >= NoProgressLimit)
+                                {
+                                    DebugHelper.WriteLine("ScrollingCapture: No height progress - stopping to avoid infinite loop.");
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                noProgressCount = 0;
+                            }
+
+                            lastResultHeight = currentHeight;
                         }
 
                         previousFrame?.Dispose();

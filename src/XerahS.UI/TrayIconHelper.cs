@@ -545,7 +545,7 @@ public class TrayIconHelper : INotifyPropertyChanged
 
         // Toggle behavior: if a recording is active and this is a recording workflow,
         // stop the existing recording instead of trying to start a new one
-        if (IsRecordingActive && Core.Helpers.TaskHelpers.IsScreenRecordStartJob(workflow.Job))
+        if (IsRecordingActive && Core.TaskHelpers.IsScreenRecordStartJob(workflow.Job))
         {
             DebugHelper.WriteLine("Tray: Recording already active, stopping existing recording");
             await StopRecordingAsync();
@@ -556,7 +556,7 @@ public class TrayIconHelper : INotifyPropertyChanged
         // The XDG ScreenCast portal requires a valid parent window surface during
         // PipeWire stream negotiation; hiding it invalidates the session.
         bool hideWindow = true;
-        if (OperatingSystem.IsLinux() && Core.Helpers.TaskHelpers.IsScreenRecordStartJob(workflow.Job))
+        if (OperatingSystem.IsLinux() && Core.TaskHelpers.IsScreenRecordStartJob(workflow.Job))
         {
             hideWindow = false;
         }
@@ -652,14 +652,14 @@ public class TrayIconHelper : INotifyPropertyChanged
             default:
                 // Toggle behavior: if a recording is active and this is a recording action,
                 // stop the existing recording instead of trying to start a new one
-                if (IsRecordingActive && Core.Helpers.TaskHelpers.IsScreenRecordStartJob(action))
+                if (IsRecordingActive && Core.TaskHelpers.IsScreenRecordStartJob(action))
                 {
                     DebugHelper.WriteLine("Tray action: Recording already active, stopping existing recording");
                     await StopRecordingAsync();
                     return;
                 }
 
-                bool hideWindow = !OperatingSystem.IsLinux() || !Core.Helpers.TaskHelpers.IsScreenRecordStartJob(action);
+                bool hideWindow = !OperatingSystem.IsLinux() || !Core.TaskHelpers.IsScreenRecordStartJob(action);
 
                 var workflow = SettingsManager.WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Job == action);
                 if (workflow != null)
