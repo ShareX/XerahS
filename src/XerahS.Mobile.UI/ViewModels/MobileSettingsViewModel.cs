@@ -26,8 +26,10 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using XerahS.Mobile.UI.Views;
 
 namespace XerahS.Mobile.UI.ViewModels;
@@ -106,61 +108,103 @@ public class MobileSettingsViewModel : INotifyPropertyChanged
         InitializeSettingsItems();
     }
 
-    private void InitializeSettingsItems()
+    private async void InitializeSettingsItems()
     {
-        var items = new List<SettingsItem>();
-
-        // Amazon S3 - the primary mobile uploader
-        var s3Vm = new MobileAmazonS3ConfigViewModel();
-        items.Add(new SettingsItem
+        await Task.Run(() =>
         {
-            Title = s3Vm.UploaderName,
-            Description = s3Vm.Description,
-            IconPath = s3Vm.IconPath,
-            IsConfigured = s3Vm.IsConfigured,
-            CreateView = () => new MobileAmazonS3ConfigView()
+            var items = new List<SettingsItem>();
+
+            try
+            {
+                // Amazon S3 - the primary mobile uploader
+                var s3Vm = new MobileAmazonS3ConfigViewModel();
+                s3Vm.LoadConfig();
+                items.Add(new SettingsItem
+                {
+                    Title = s3Vm.UploaderName,
+                    Description = s3Vm.Description,
+                    IconPath = s3Vm.IconPath,
+                    IsConfigured = s3Vm.IsConfigured,
+                    CreateView = () => 
+                    {
+                        var view = new MobileAmazonS3ConfigView();
+                        // Ensure config is loaded when view is created (if not already via VM)
+                        if (view.DataContext is MobileAmazonS3ConfigViewModel vm)
+                        {
+                            vm.LoadConfig();
+                        }
+                        return view;
+                    }
+                });
+
+                // Custom Uploader - add/manage custom image uploaders via .sxcu JSON
+                var customVm = new MobileCustomUploaderConfigViewModel();
+                customVm.LoadConfig();
+                items.Add(new SettingsItem
+                {
+                    Title = customVm.UploaderName,
+                    Description = customVm.Description,
+                    IconPath = customVm.IconPath,
+                    IsConfigured = customVm.IsConfigured,
+                    CreateView = () => new MobileCustomUploaderConfigView()
+                });
+            }
+            catch (Exception ex)
+            {
+                // Log but don't crash
+                 System.Diagnostics.Debug.WriteLine($"Error loading settings: {ex}");
+            }
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                SettingsItems = new ObservableCollection<SettingsItem>(items);
+            });
         });
-
-        // Future uploaders can be added here following the same pattern:
-        // var dropboxVm = new MobileDropboxConfigViewModel();
-        // items.Add(new SettingsItem { ... });
-
-        // Custom Uploader - add/manage custom image uploaders via .sxcu JSON
-        var customVm = new MobileCustomUploaderConfigViewModel();
-        items.Add(new SettingsItem
-        {
-            Title = customVm.UploaderName,
-            Description = customVm.Description,
-            IconPath = customVm.IconPath,
-            IsConfigured = customVm.IsConfigured,
-            CreateView = () => new MobileCustomUploaderConfigView()
-        });
-
-        SettingsItems = new ObservableCollection<SettingsItem>(items);
     }
 
-    public void RefreshItems()
+    public async void RefreshItems()
     {
-        // Reload each item to update IsConfigured status
-        foreach (var item in SettingsItems)
+        await Task.Run(() =>
         {
-            if (item.Title == "Amazon S3")
+            try
             {
-                var vm = new MobileAmazonS3ConfigViewModel();
-                item.IsConfigured = vm.IsConfigured;
-                item.Description = vm.Description;
+                // Reload each item to update IsConfigured status
+                foreach (var item in SettingsItems)
+                {
+                    if (item.Title == "Amazon S3")
+                    {
+                        var vm = new MobileAmazonS3ConfigViewModel();
+                        vm.LoadConfig();
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            item.IsConfigured = vm.IsConfigured;
+                            item.Description = vm.Description;
+                        });
+                    }
+                    else if (item.Title == "Custom Uploader")
+                    {
+                        var vm = new MobileCustomUploaderConfigViewModel();
+                        vm.LoadConfig();
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            item.IsConfigured = vm.IsConfigured;
+                            item.Description = vm.Description;
+                        });
+                    }
+                }
             }
-            else if (item.Title == "Custom Uploader")
+            catch (Exception ex)
             {
-                var vm = new MobileCustomUploaderConfigViewModel();
-                item.IsConfigured = vm.IsConfigured;
-                item.Description = vm.Description;
+                System.Diagnostics.Debug.WriteLine($"Error refreshing items: {ex}");
             }
-        }
-        
-        // Force refresh
-        var temp = SettingsItems.ToList();
-        SettingsItems = new ObservableCollection<SettingsItem>(temp);
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                // Force refresh
+                var temp = SettingsItems.ToList();
+                SettingsItems = new ObservableCollection<SettingsItem>(temp);
+            });
+        });
     }
 
     public void NavigateToConfig(SettingsItem item)

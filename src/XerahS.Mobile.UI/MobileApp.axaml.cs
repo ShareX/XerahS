@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -46,10 +47,19 @@ public partial class MobileApp : Application
     public static Action<string[]>? OnFilesReceived { get; set; }
 
     private MobileUploadViewModel? _uploadViewModel;
-    private MobileSettingsView? _settingsView;
-    private MobileHistoryView? _historyView;
     private ISingleViewApplicationLifetime? _singleView;
     private string _platformTag = "desktop";
+
+    // A single, persistent ContentControl that acts as the app's navigation host.
+    // We set ISingleViewApplicationLifetime.MainView to this ONCE and never touch MainView again.
+    // Navigation is done by swapping _navigationRoot.Content, which reliably triggers re-render.
+    private readonly ContentControl _navigationRoot = new()
+    {
+        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
+        HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+        VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
+    };
 
     public override void Initialize()
     {
@@ -102,16 +112,24 @@ public partial class MobileApp : Application
         if (ApplicationLifetime is ISingleViewApplicationLifetime singleView)
         {
             _singleView = singleView;
+            // Set the navigation root once and never swap MainView again.
+            _singleView.MainView = _navigationRoot;
             ShowUploadView();
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
+    /// <summary>Navigates to a view by swapping the navigation root's Content.</summary>
+    private void Navigate(Control view)
+    {
+        Debug.WriteLine($"[MobileApp] Navigate to {view.GetType().Name}");
+        _navigationRoot.Content = view;
+        Debug.WriteLine($"[MobileApp] Navigation complete → {view.GetType().Name}");
+    }
+
     private void ShowUploadView()
     {
-        if (_singleView == null) return;
-
         _uploadViewModel = new MobileUploadViewModel();
         var uploadView = new MobileUploadView
         {
@@ -119,54 +137,58 @@ public partial class MobileApp : Application
             Tag = _platformTag
         };
 
-        // Set up callbacks
+        // Set up platform callbacks
         OnFilesReceived = (paths) =>
         {
             Dispatcher.UIThread.Post(() => _uploadViewModel.ProcessFiles(paths));
         };
 
-        MobileUploadViewModel.OnOpenSettings = ShowSettingsView;
-        MobileUploadViewModel.OnOpenHistory = ShowHistoryView;
+        MobileUploadViewModel.OnOpenSettings = () =>
+        {
+            Debug.WriteLine("[MobileApp] OnOpenSettings invoked");
+            ShowSettingsView();
+        };
+        MobileUploadViewModel.OnOpenHistory = () =>
+        {
+            Debug.WriteLine("[MobileApp] OnOpenHistory invoked");
+            ShowHistoryView();
+        };
 
-        _singleView.MainView = uploadView;
+        Navigate(uploadView);
     }
 
     private void ShowSettingsView()
     {
-        if (_singleView == null) return;
+        Debug.WriteLine("[MobileApp] ShowSettingsView called");
 
-        _settingsView = new MobileSettingsView
+        var settingsView = new MobileSettingsView
         {
             Tag = _platformTag
         };
-        
-        // Hook into the close request
-        if (_settingsView.DataContext is MobileSettingsViewModel vm)
+
+        // Hook into the back/close request from the settings view model
+        if (settingsView.DataContext is MobileSettingsViewModel vm)
         {
-            vm.RequestCloseSettings += () =>
-            {
-                ShowUploadView();
-            };
+            vm.RequestCloseSettings += ShowUploadView;
         }
 
-        _singleView.MainView = _settingsView;
+        Navigate(settingsView);
+        Debug.WriteLine("[MobileApp] ShowSettingsView complete");
     }
 
     private void ShowHistoryView()
     {
-        if (_singleView == null)
-        {
-            return;
-        }
+        Debug.WriteLine("[MobileApp] ShowHistoryView called");
 
         var historyViewModel = new MobileHistoryViewModel();
-        _historyView = new MobileHistoryView
+        var historyView = new MobileHistoryView
         {
             DataContext = historyViewModel,
             Tag = _platformTag
         };
 
         MobileHistoryViewModel.OnCloseRequested = ShowUploadView;
-        _singleView.MainView = _historyView;
+        Navigate(historyView);
+        Debug.WriteLine("[MobileApp] ShowHistoryView complete");
     }
 }

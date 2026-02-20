@@ -218,7 +218,8 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
     {
         SaveCommand = new RelayCommand(_ => SaveConfig());
         TestCommand = new RelayCommand(async _ => await TestConfigAsync());
-        LoadConfig();
+        // Note: LoadConfig() is NOT called here. MobileSettingsViewModel calls it
+        // on a background thread to avoid blocking the UI.
     }
 
     #region IMobileUploaderConfig Implementation

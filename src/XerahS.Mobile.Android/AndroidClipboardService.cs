@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using Android.Content;
+using Android.OS;
 using SkiaSharp;
 using XerahS.Platform.Abstractions;
 
@@ -64,6 +65,22 @@ public class AndroidClipboardService : IClipboardService
 
     public void SetText(string text)
     {
+        // Android ClipboardManager requires calls on the main thread.
+#pragma warning disable CA1416
+        if (Looper.MainLooper?.IsCurrentThread == true)
+        {
+            SetTextOnMainThread(text);
+        }
+        else
+        {
+            using var handler = new Handler(Looper.MainLooper!);
+            handler.Post(() => SetTextOnMainThread(text));
+        }
+#pragma warning restore CA1416
+    }
+
+    private void SetTextOnMainThread(string text)
+    {
         var clip = ClipData.NewPlainText("XerahS", text);
         var cm = GetClipboardManager();
         if (cm != null)
@@ -83,9 +100,21 @@ public class AndroidClipboardService : IClipboardService
     public bool ContainsData(string format) => false;
 
     public Task<string?> GetTextAsync() => Task.FromResult(GetText());
+
     public Task SetTextAsync(string text)
     {
-        SetText(text);
+        // Post to main thread without blocking the caller.
+#pragma warning disable CA1416
+        if (Looper.MainLooper?.IsCurrentThread == true)
+        {
+            SetTextOnMainThread(text);
+        }
+        else
+        {
+            using var handler = new Handler(Looper.MainLooper!);
+            handler.Post(() => SetTextOnMainThread(text));
+        }
+#pragma warning restore CA1416
         return Task.CompletedTask;
     }
 }

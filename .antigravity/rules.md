@@ -1,1 +1,1 @@
-../AGENTS.md
+../.ai/instructions.md

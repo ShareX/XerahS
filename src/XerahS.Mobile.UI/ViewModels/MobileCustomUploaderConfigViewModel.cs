@@ -385,7 +385,7 @@ public class MobileCustomUploaderConfigViewModel : IMobileUploaderConfig, INotif
         AddArgumentCommand = new RelayCommand(_ => AddKeyValueItem(Arguments));
         RemoveArgumentCommand = new RelayCommand<KeyValuePairItem>(item => { if (item != null) Arguments.Remove(item); });
 
-        LoadConfig();
+        // LoadConfig(); // Removed; called by MobileSettingsViewModel async
     }
 
     #region IMobileUploaderConfig Implementation
