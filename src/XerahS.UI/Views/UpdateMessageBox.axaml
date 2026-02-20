@@ -5,11 +5,12 @@
         x:DataType="vm:UpdateMessageBoxViewModel"
         Title="Update Available"
         Icon="/Assets/Logo.ico"
-        Width="420" Height="280"
+        Width="420"
+        SizeToContent="Height"
         CanResize="False"
         WindowStartupLocation="CenterOwner">
 
-    <Grid Margin="24" RowDefinitions="Auto, *, Auto">
+    <Grid Margin="24" RowDefinitions="Auto, Auto, Auto">
 
         <!-- Header -->
         <TextBlock Grid.Row="0"
