@@ -31,6 +31,8 @@ using Android.OS;
 using Android.Views;
 using Avalonia;
 using Avalonia.Android;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using ShareX.AmazonS3.Plugin;
 using XerahS.Common;
 using XerahS.Mobile.UI;
@@ -89,9 +91,18 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
+        // Fix for "already has a visual parent" crash on activity recreation
+        if (Avalonia.Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime &&
+            singleViewLifetime.MainView is { } mainView &&
+            mainView.Parent is ContentControl parent)
+        {
+            parent.Content = null;
+        }
+
         base.OnCreate(savedInstanceState);
         ApplyNativeSystemBars();
         HandleShareIntent(Intent);
+        StartHeartbeat();
     }
 
     protected override void OnNewIntent(Intent? intent)
@@ -101,6 +112,16 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
         {
             HandleShareIntent(intent);
         }
+    }
+
+    private void StartHeartbeat()
+    {
+        var timer = new Avalonia.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1)
+        };
+        timer.Tick += (s, e) => global::Android.Util.Log.Debug("XerahS", $"[Heartbeat] UI Thread is alive at {DateTime.Now:HH:mm:ss}");
+        timer.Start();
     }
 
     public override void OnConfigurationChanged(Configuration newConfig)

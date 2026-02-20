@@ -48,8 +48,8 @@ When a bug or feature is identified or provided by user, follow this process:
 
 ### Development
 - [Coding Standards & License Headers](docs/development/CODING_STANDARDS.md) (Strict Nullability)
-- [Release & Versioning](.github/skills/xerahs-workflow/SKILL.md)
-- [Building Windows Executables](.github/skills/build-windows-exe/SKILL.md)
+- [Release & Versioning](.ai/skills/xerahs-workflow/SKILL.md)
+- [Building Windows Executables](.ai/skills/build-windows-exe/SKILL.md)
 - [Testing Guidelines](docs/development/TESTING.md)
 - [Documentation Standards](docs/development/DOCUMENTATION_STANDARDS.md)
 
