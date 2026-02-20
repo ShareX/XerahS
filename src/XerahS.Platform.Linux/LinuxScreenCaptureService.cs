@@ -28,6 +28,7 @@ using XerahS.Platform.Abstractions;
 using XerahS.Platform.Linux.Capture;
 using XerahS.Platform.Linux.Capture.Contracts;
 using XerahS.Platform.Linux.Capture.Detection;
+using XerahS.Platform.Linux.Capture.Helpers;
 using XerahS.Platform.Linux.Capture.Orchestration;
 using XerahS.Platform.Linux.Capture.Providers;
 using XerahS.Platform.Linux.Services;
@@ -1297,67 +1298,17 @@ namespace XerahS.Platform.Linux
         /// Helper for interactive region selection with extended timeout (60 seconds).
         /// Used for tools like gnome-screenshot -a, spectacle -r, scrot -s.
         /// </summary>
-        private async Task<SKBitmap?> CaptureWithToolInteractiveAsync(string toolName, string argsPrefix)
+        private static Task<SKBitmap?> CaptureWithToolInteractiveAsync(string toolName, string argsPrefix)
         {
-            return await CaptureWithToolAsync(toolName, argsPrefix, timeoutMs: 60000);
+            return LinuxCliToolRunner.RunAsync(toolName, argsPrefix, LinuxCliToolRunner.InteractiveTimeoutMs);
         }
 
         /// <summary>
-        /// Generic helper to run a screenshot tool and load the result
+        /// Generic helper to run a screenshot tool and load the result.
         /// </summary>
-        private async Task<SKBitmap?> CaptureWithToolAsync(string toolName, string argsPrefix, int timeoutMs = 10000)
+        private static Task<SKBitmap?> CaptureWithToolAsync(string toolName, string argsPrefix, int timeoutMs = 10000)
         {
-            var tempFile = Path.Combine(Path.GetTempPath(), $"sharex_screenshot_{Guid.NewGuid():N}.png");
-
-            try
-            {
-                var arguments = string.IsNullOrEmpty(argsPrefix)
-                    ? $"\"{tempFile}\""
-                    : $"{argsPrefix} \"{tempFile}\"";
-
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = toolName,
-                    Arguments = arguments,
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                };
-
-                using var process = Process.Start(startInfo);
-                if (process == null) return null;
-
-                // Wait for the screenshot (default 10s, interactive 60s)
-                var completed = await Task.Run(() => process.WaitForExit(timeoutMs));
-                if (!completed)
-                {
-                    try { process.Kill(); } catch { }
-                    return null;
-                }
-
-                if (process.ExitCode != 0 || !File.Exists(tempFile))
-                {
-                    return null;
-                }
-
-                DebugHelper.WriteLine($"LinuxScreenCaptureService: Screenshot captured with {toolName}");
-
-                using var stream = File.OpenRead(tempFile);
-                return SKBitmap.Decode(stream);
-            }
-            catch
-            {
-                // Tool not available or failed - silently continue to next fallback
-                return null;
-            }
-            finally
-            {
-                if (File.Exists(tempFile))
-                {
-                    try { File.Delete(tempFile); } catch { }
-                }
-            }
+            return LinuxCliToolRunner.RunAsync(toolName, argsPrefix, timeoutMs);
         }
 
         #region XDG Portal Screenshot
