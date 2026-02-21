@@ -10,6 +10,19 @@
 		A1000001 /* XerahSMobileApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002 /* XerahSMobileApp.swift */; };
 		A1000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000004 /* ContentView.swift */; };
 		A1000005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000006 /* Assets.xcassets */; };
+		B1000001 /* UploadQueueItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002 /* UploadQueueItem.swift */; };
+		B1000003 /* HistoryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004 /* HistoryEntry.swift */; };
+		B1000005 /* ApplicationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006 /* ApplicationConfig.swift */; };
+		B1000007 /* UploadResultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000008 /* UploadResultItem.swift */; };
+		B1000009 /* Paths.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A0 /* Paths.swift */; };
+		B10000A1 /* SettingsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A2 /* SettingsRepository.swift */; };
+		B10000A3 /* QueueRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A4 /* QueueRepository.swift */; };
+		B10000A5 /* HistoryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A6 /* HistoryRepository.swift */; };
+		B10000A7 /* UploadOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A8 /* UploadOutcome.swift */; };
+		B10000A9 /* CustomUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B0 /* CustomUploader.swift */; };
+		B10000B1 /* S3Uploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B2 /* S3Uploader.swift */; };
+		B10000B3 /* UploadQueueWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B4 /* UploadQueueWorker.swift */; };
+		B10000B5 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000B6 /* libsqlite3.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,6 +31,19 @@
 		A1000004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1000006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B1000002 /* UploadQueueItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadQueueItem.swift; sourceTree = "<group>"; };
+		B1000004 /* HistoryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryEntry.swift; sourceTree = "<group>"; };
+		B1000006 /* ApplicationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationConfig.swift; sourceTree = "<group>"; };
+		B1000008 /* UploadResultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadResultItem.swift; sourceTree = "<group>"; };
+		B10000A0 /* Paths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Paths.swift; sourceTree = "<group>"; };
+		B10000A2 /* SettingsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRepository.swift; sourceTree = "<group>"; };
+		B10000A4 /* QueueRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueRepository.swift; sourceTree = "<group>"; };
+		B10000A6 /* HistoryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryRepository.swift; sourceTree = "<group>"; };
+		B10000A8 /* UploadOutcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadOutcome.swift; sourceTree = "<group>"; };
+		B10000B0 /* CustomUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomUploader.swift; sourceTree = "<group>"; };
+		B10000B2 /* S3Uploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S3Uploader.swift; sourceTree = "<group>"; };
+		B10000B4 /* UploadQueueWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadQueueWorker.swift; sourceTree = "<group>"; };
+		B10000B6 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -25,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B10000B5 /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -44,10 +71,62 @@
 			children = (
 				A1000002 /* XerahSMobileApp.swift */,
 				A1000004 /* ContentView.swift */,
+				B0FFFFF0 /* Core */,
 				A1000006 /* Assets.xcassets */,
 				A1000007 /* Info.plist */,
 			);
 			path = XerahSMobile;
+			sourceTree = "<group>";
+		};
+		B0FFFFF0 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				B0FFFFF1 /* Domain */,
+				B0FFFFF2 /* Common */,
+				B0FFFFF3 /* Data */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		B0FFFFF1 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				B1000002 /* UploadQueueItem.swift */,
+				B1000004 /* HistoryEntry.swift */,
+				B1000006 /* ApplicationConfig.swift */,
+				B1000008 /* UploadResultItem.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		B0FFFFF2 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				B10000A0 /* Paths.swift */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		B0FFFFF3 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				B10000A2 /* SettingsRepository.swift */,
+				B10000A4 /* QueueRepository.swift */,
+				B10000A6 /* HistoryRepository.swift */,
+				B10000B4 /* UploadQueueWorker.swift */,
+				B0FFFFF4 /* Upload */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		B0FFFFF4 /* Upload */ = {
+			isa = PBXGroup;
+			children = (
+				B10000A8 /* UploadOutcome.swift */,
+				B10000B0 /* CustomUploader.swift */,
+				B10000B2 /* S3Uploader.swift */,
+			);
+			path = Upload;
 			sourceTree = "<group>";
 		};
 		A0FFFFFE /* Products */ = {
@@ -124,6 +203,18 @@
 			files = (
 				A1000001 /* XerahSMobileApp.swift in Sources */,
 				A1000003 /* ContentView.swift in Sources */,
+				B1000001 /* UploadQueueItem.swift in Sources */,
+				B1000003 /* HistoryEntry.swift in Sources */,
+				B1000005 /* ApplicationConfig.swift in Sources */,
+				B1000007 /* UploadResultItem.swift in Sources */,
+				B1000009 /* Paths.swift in Sources */,
+				B10000A1 /* SettingsRepository.swift in Sources */,
+				B10000A3 /* QueueRepository.swift in Sources */,
+				B10000A5 /* HistoryRepository.swift in Sources */,
+				B10000A7 /* UploadOutcome.swift in Sources */,
+				B10000A9 /* CustomUploader.swift in Sources */,
+				B10000B1 /* S3Uploader.swift in Sources */,
+				B10000B3 /* UploadQueueWorker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
