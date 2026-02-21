@@ -48,13 +48,17 @@ class S3Uploader {
             }
             val s3 = AmazonS3Client(credentials).apply { setRegion(region) }
             val key = "uploads/${file.name}"
-            val request = PutObjectRequest(config.bucketName, key, file)
-                .withCannedAcl(CannedAccessControlList.PublicRead)
+            val request = PutObjectRequest(config.bucketName, key, file).apply {
+                if (config.setPublicAcl) withCannedAcl(CannedAccessControlList.PublicRead)
+            }
             s3.putObject(request)
-            val url = if (config.customEndpoint.isNotBlank()) {
-                "${config.customEndpoint.trimEnd('/')}/$key"
-            } else {
-                "https://${config.bucketName}.s3.${config.region}.amazonaws.com/$key"
+            val url = when {
+                config.useCustomDomain && config.customDomain.isNotBlank() ->
+                    "${config.customDomain.trim().trimEnd('/')}/$key"
+                config.customEndpoint.isNotBlank() ->
+                    "${config.customEndpoint.trim().trimEnd('/')}/$key"
+                else ->
+                    "https://${config.bucketName}.s3.${config.region}.amazonaws.com/$key"
             }
             UploadOutcome.Success(url)
         } catch (e: Exception) {

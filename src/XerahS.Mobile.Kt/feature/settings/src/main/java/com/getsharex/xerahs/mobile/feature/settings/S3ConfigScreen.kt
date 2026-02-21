@@ -22,6 +22,7 @@
 package com.getsharex.xerahs.mobile.feature.settings
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +41,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -73,6 +76,10 @@ fun S3ConfigScreen(
     val bucket by viewModel.bucketName.collectAsState()
     val regionIndex by viewModel.regionIndex.collectAsState()
     val customEndpoint by viewModel.customEndpoint.collectAsState()
+    val useCustomDomain by viewModel.useCustomDomain.collectAsState()
+    val customDomain by viewModel.customDomain.collectAsState()
+    val signedPayload by viewModel.signedPayload.collectAsState()
+    val setPublicAcl by viewModel.setPublicAcl.collectAsState()
     val validationError by viewModel.validationError.collectAsState()
 
     var regionExpanded by remember { mutableStateOf(false) }
@@ -119,7 +126,8 @@ fun S3ConfigScreen(
             onValueChange = { viewModel.setBucketName(it); viewModel.clearValidationError() },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Bucket Name") },
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None)
         )
         Spacer(modifier = Modifier.height(8.dp))
         ExposedDropdownMenuBox(
@@ -157,8 +165,59 @@ fun S3ConfigScreen(
             onValueChange = { viewModel.setCustomEndpoint(it) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Custom Endpoint (optional)") },
+            supportingText = { Text("Override S3 API endpoint for MinIO or other S3-compatible storage. Leave blank for AWS.") },
             singleLine = true
         )
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = useCustomDomain,
+                onCheckedChange = { viewModel.setUseCustomDomain(it) }
+            )
+            Text("Use Custom Domain (CDN)")
+        }
+        if (useCustomDomain) {
+            Spacer(modifier = Modifier.height(4.dp))
+            OutlinedTextField(
+                value = customDomain,
+                onValueChange = { viewModel.setCustomDomain(it) },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Custom domain URL") },
+                placeholder = { Text("https://cdn.example.com") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None)
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = signedPayload,
+                onCheckedChange = { viewModel.setSignedPayload(it) }
+            )
+            Text("Signed payload")
+        }
+        Text(
+            text = "Recommended: sign request body (avoids 403 when bucket blocks public ACLs)",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = setPublicAcl,
+                onCheckedChange = { viewModel.setSetPublicAcl(it) }
+            )
+            Text("Make uploads public (public-read ACL)")
+        }
         Spacer(modifier = Modifier.height(24.dp))
         Button(
             onClick = {
