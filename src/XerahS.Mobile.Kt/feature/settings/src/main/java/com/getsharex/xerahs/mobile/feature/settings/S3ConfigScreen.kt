@@ -3,23 +3,60 @@ package com.getsharex.xerahs.mobile.feature.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenu
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.getsharex.xerahs.mobile.core.data.SettingsRepository
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun S3ConfigScreen(
+    settingsRepository: SettingsRepository?,
     onBack: () -> Unit
 ) {
+    if (settingsRepository == null) {
+        Button(onClick = onBack) { Text("Back") }
+        return
+    }
+    val viewModel: S3ConfigViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
+                S3ConfigViewModel(settingsRepository) as T
+        }
+    )
+    val accessKey by viewModel.accessKeyId.collectAsState()
+    val secretKey by viewModel.secretAccessKey.collectAsState()
+    val bucket by viewModel.bucketName.collectAsState()
+    val regionIndex by viewModel.regionIndex.collectAsState()
+    val customEndpoint by viewModel.customEndpoint.collectAsState()
+    val validationError by viewModel.validationError.collectAsState()
+
+    var regionExpanded by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         Button(onClick = onBack) { Text("Back") }
         Spacer(modifier = Modifier.height(16.dp))
@@ -27,9 +64,83 @@ fun S3ConfigScreen(
             text = "Amazon S3",
             style = MaterialTheme.typography.titleLarge
         )
-        Text(
-            text = "S3 configuration form will be implemented in Phase 7.",
-            style = MaterialTheme.typography.bodyMedium
+        if (validationError != null) {
+            Text(
+                text = validationError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = accessKey,
+            onValueChange = { viewModel.setAccessKeyId(it); viewModel.clearValidationError() },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Access Key ID") },
+            singleLine = true
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = secretKey,
+            onValueChange = { viewModel.setSecretAccessKey(it); viewModel.clearValidationError() },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Secret Access Key") },
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = bucket,
+            onValueChange = { viewModel.setBucketName(it); viewModel.clearValidationError() },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Bucket Name") },
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ExposedDropdownMenuBox(
+            expanded = regionExpanded,
+            onExpandedChange = { regionExpanded = it }
+        ) {
+            OutlinedTextField(
+                value = S3ConfigViewModel.REGIONS.getOrNull(regionIndex)?.displayName ?: "",
+                onValueChange = {},
+                readOnly = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
+                label = { Text("Region") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = regionExpanded) }
+            )
+            ExposedDropdownMenu(
+                expanded = regionExpanded,
+                onDismissRequest = { regionExpanded = false }
+            ) {
+                S3ConfigViewModel.REGIONS.forEachIndexed { index, option ->
+                    DropdownMenuItem(
+                        text = { Text(option.displayName) },
+                        onClick = {
+                            viewModel.setRegionIndex(index)
+                            regionExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = customEndpoint,
+            onValueChange = { viewModel.setCustomEndpoint(it) },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Custom Endpoint (optional)") },
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = {
+                if (viewModel.save()) onBack()
+            }
+        ) {
+            Text("Save")
+        }
     }
 }
