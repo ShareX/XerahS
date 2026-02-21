@@ -1,5 +1,5 @@
 //
-//  LoadingScreen.swift
+//  ShareGroup.swift
 //  XerahS Mobile (Swift)
 //
 //  XerahS - The Avalonia UI implementation of ShareX
@@ -22,25 +22,19 @@
 //  Optionally you can also view the license at <http://www.gnu.org/licenses/>.
 //
 
-import SwiftUI
+import Foundation
 
-struct LoadingScreen: View {
-    var onInitComplete: () -> Void
+/// App Group used by the Share Extension to pass file paths to the main app.
+enum ShareGroup {
+    static let appGroupId = "group.com.getsharex.xerahs"
+    static let pendingPathsKey = "PendingSharedPaths"
 
-    var body: some View {
-        VStack(spacing: 24) {
-            Text("XerahS")
-                .font(.largeTitle)
-            ProgressView()
-                .scaleEffect(1.5)
-            Text("Initializing XerahS…")
-                .font(.body)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                onInitComplete()
-            }
-        }
+    /// Reads and clears pending shared file paths from the Share Extension. Call on launch and when opened via xerahs://share.
+    static func consumePendingPaths() -> [String] {
+        guard let defaults = UserDefaults(suiteName: appGroupId) else { return [] }
+        let paths = (defaults.array(forKey: pendingPathsKey) as? [String]) ?? []
+        defaults.removeObject(forKey: pendingPathsKey)
+        defaults.synchronize()
+        return paths
     }
 }

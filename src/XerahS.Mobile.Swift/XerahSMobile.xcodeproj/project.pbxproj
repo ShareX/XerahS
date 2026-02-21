@@ -32,6 +32,9 @@
 		C10000A3 /* S3ConfigScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A4 /* S3ConfigScreen.swift */; };
 		C10000A5 /* CustomUploaderConfigScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A6 /* CustomUploaderConfigScreen.swift */; };
 		C10000A7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A8 /* RootView.swift */; };
+		D1000001 /* ShareGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000002 /* ShareGroup.swift */; };
+		D1000003 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000004 /* ShareViewController.swift */; };
+		D1000005 /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D1000000 /* ShareExtension.appex */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,6 +65,12 @@
 		C10000A4 /* S3ConfigScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S3ConfigScreen.swift; sourceTree = "<group>"; };
 		C10000A6 /* CustomUploaderConfigScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomUploaderConfigScreen.swift; sourceTree = "<group>"; };
 		C10000A8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		D1000000 /* ShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D1000002 /* ShareGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareGroup.swift; sourceTree = "<group>"; };
+		D1000004 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		D1000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D1000007 /* ShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShareExtension.entitlements; sourceTree = "<group>"; };
+		D1000008 /* XerahSMobile.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = XerahSMobile.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,8 +89,19 @@
 			isa = PBXGroup;
 			children = (
 				A0FFFFF7 /* XerahSMobile */,
+				D0FFFFF0 /* ShareExtension */,
 				A0FFFFFE /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		D0FFFFF0 /* ShareExtension */ = {
+			isa = PBXGroup;
+			children = (
+				D1000004 /* ShareViewController.swift */,
+				D1000006 /* Info.plist */,
+				D1000007 /* ShareExtension.entitlements */,
+			);
+			path = ShareExtension;
 			sourceTree = "<group>";
 		};
 		A0FFFFF7 /* XerahSMobile */ = {
@@ -96,6 +116,7 @@
 				B0FFFFF0 /* Core */,
 				A1000006 /* Assets.xcassets */,
 				A1000007 /* Info.plist */,
+				D1000008 /* XerahSMobile.entitlements */,
 			);
 			path = XerahSMobile;
 			sourceTree = "<group>";
@@ -178,6 +199,7 @@
 			isa = PBXGroup;
 			children = (
 				B10000A0 /* Paths.swift */,
+				D1000002 /* ShareGroup.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -208,6 +230,7 @@
 			isa = PBXGroup;
 			children = (
 				A1000000 /* XerahSMobile.app */,
+				D1000000 /* ShareExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -222,15 +245,34 @@
 				A0FFFFF9 /* Sources */,
 				A0FFFFFC /* Frameworks */,
 				A0FFFFFD /* Resources */,
+				A0FFFFFB /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				D1000009 /* PBXTargetDependency */,
 			);
 			name = XerahSMobile;
 			productName = XerahSMobile;
 			productReference = A1000000 /* XerahSMobile.app */;
 			productType = "com.apple.product-type.application";
+		};
+		D0FFFFFA /* ShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D1000010 /* Build configuration list for PBXNativeTarget "ShareExtension" */;
+			buildPhases = (
+				D0FFFFF9 /* Sources */,
+				D0FFFFFC /* Frameworks */,
+				D0FFFFFD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ShareExtension;
+			productName = ShareExtension;
+			productReference = D1000000 /* ShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -256,9 +298,48 @@
 			projectRoot = "";
 			targets = (
 				A0FFFFFA /* XerahSMobile */,
+				D0FFFFFA /* ShareExtension */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D0FFFFFD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D0FFFFFC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D1000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D0FFFFFA /* ShareExtension */;
+			targetProxy = D100000A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		D100000A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D0FFFFFA;
+			remoteInfo = ShareExtension;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		A0FFFFFD /* Resources */ = {
@@ -266,6 +347,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1000005 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D0FFFFFD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,10 +387,33 @@
 				C10000A3 /* S3ConfigScreen.swift in Sources */,
 				C10000A5 /* CustomUploaderConfigScreen.swift in Sources */,
 				C10000A7 /* RootView.swift in Sources */,
+				D1000001 /* ShareGroup.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D0FFFFF9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D1000003 /* ShareViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A0FFFFFB /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D1000005 /* ShareExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
 		A1000008 /* Debug */ = {
@@ -359,6 +470,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = XerahSMobile/XerahSMobile.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -384,6 +496,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = XerahSMobile/XerahSMobile.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -398,6 +511,54 @@
 				MARKETING_VERSION = 0.16.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.getsharex.xerahs.mobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D100000B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.getsharex.xerahs.mobile.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D100000C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.getsharex.xerahs.mobile.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -421,6 +582,15 @@
 			buildConfigurations = (
 				A1000008 /* Debug */,
 				A1000009 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D1000010 /* Build configuration list for PBXNativeTarget "ShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D100000B /* Debug */,
+				D100000C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

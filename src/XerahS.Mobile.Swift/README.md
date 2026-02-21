@@ -28,6 +28,9 @@ xcodebuild -project XerahSMobile.xcodeproj -scheme XerahSMobile -destination 'pl
 
 ## Share from other apps
 
-Receiving shared files from the system share sheet requires an **iOS Share Extension** (separate target) that writes shared items into a container the main app can read, then opens the main app with those paths. The main app already supports `pendingSharedPaths` for when it is opened with initial file URLs; a future Share Extension can populate this (e.g. via App Group or URL scheme).
+**Share with XerahS** is implemented: you can select a photo or PDF (or other file) in Photos/Files, tap **Share**, choose **XerahS**, and the app will open and upload the file(s) and show the URL(s).
+
+- A **Share Extension** target (`ShareExtension`) receives shared items from the system share sheet, copies them into the app group container (`group.com.getsharex.xerahs`), stores paths in shared UserDefaults, and opens the main app via `xerahs://share`.
+- The main app reads pending paths on launch and when opened via that URL, passes them to the Upload screen, which enqueues and uploads them (S3 or custom uploader).
 
 Copyright (c) 2007-2026 ShareX Team.

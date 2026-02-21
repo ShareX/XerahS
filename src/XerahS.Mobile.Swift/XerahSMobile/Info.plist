@@ -47,5 +47,18 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.getsharex.xerahs</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>xerahs</string>
+			</array>
+			<key>CFBundleRoleEditor</key>
+			<string>Editor</string>
+		</dict>
+	</array>
 </dict>
 </plist>
