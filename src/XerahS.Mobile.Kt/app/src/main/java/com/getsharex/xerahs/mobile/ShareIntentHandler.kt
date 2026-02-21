@@ -24,8 +24,11 @@ package com.getsharex.xerahs.mobile
 import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import java.io.File
 import java.util.UUID
+
+private const val TAG = "ShareIntentHandler"
 
 object ShareIntentHandler {
 
@@ -33,7 +36,9 @@ object ShareIntentHandler {
         if (intent == null) return null
         val action = intent.action
         if (action != Intent.ACTION_SEND && action != Intent.ACTION_SEND_MULTIPLE) return null
-        if (intent.type.isNullOrEmpty()) return null
+        // Allow type to be null; many share senders (e.g. Photos) set data in ClipData only
+        val type = intent.type
+        if (type.isNullOrEmpty() && intent.clipData == null) return null
 
         val app = activity.application as? XerahSApplication ?: return null
         val cacheDir = app.cacheDir ?: return null
@@ -42,16 +47,28 @@ object ShareIntentHandler {
         when (action) {
             Intent.ACTION_SEND -> {
                 @Suppress("DEPRECATION")
-                val uri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                var uri: Uri? = intent.getParcelableExtra(Intent.EXTRA_STREAM)
+                if (uri == null && intent.clipData != null && intent.clipData!!.itemCount > 0) {
+                    uri = intent.clipData!!.getItemAt(0).uri
+                }
                 if (uri != null) {
                     copyUriToCache(activity, uri, cacheDir)?.let { localPaths.add(it) }
+                        ?: Log.w(TAG, "copyUriToCache failed for $uri")
+                } else {
+                    Log.w(TAG, "ACTION_SEND: no URI in EXTRA_STREAM or clipData")
                 }
             }
             Intent.ACTION_SEND_MULTIPLE -> {
-                val uris = intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
+                @Suppress("DEPRECATION")
+                var uris = intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
+                if (uris.isNullOrEmpty() && intent.clipData != null) {
+                    uris = ArrayList((0 until intent.clipData!!.itemCount).map { intent.clipData!!.getItemAt(it).uri })
+                }
                 uris?.forEach { uri ->
                     copyUriToCache(activity, uri, cacheDir)?.let { localPaths.add(it) }
+                        ?: Log.w(TAG, "copyUriToCache failed for $uri")
                 }
+                if (uris.isNullOrEmpty()) Log.w(TAG, "ACTION_SEND_MULTIPLE: no URIs in EXTRA_STREAM or clipData")
             }
         }
 

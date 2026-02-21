@@ -1,15 +1,21 @@
 ---
 name: build-android
-description: Build and deploy XerahS Android apps (Avalonia and MAUI) to emulator/device via adb. Handles file locks, EmbedAssembliesIntoApk, init white-screen, single-node builds (-m:1), and cold-boot emulator. Never wait more than 5 minutes for a build—if it exceeds that, treat as failure and fix locks or parallelism.
+description: Build and deploy XerahS Android apps (Kotlin/Mobile.Kt, Avalonia, MAUI) to emulator/device via adb. Covers JAVA_HOME for Gradle, Compose KeyboardOptions/foundation, file locks, EmbedAssembliesIntoApk, init white-screen, single-node builds (-m:1), and cold-boot emulator. Never wait more than 5 minutes for a build—if it exceeds that, treat as failure and fix locks or parallelism.
 metadata:
   keywords:
     - build
     - android
+    - kotlin
+    - mobile.kt
+    - gradle
+    - compose
     - maui
     - avalonia
     - adb
     - apk
     - deploy
+    - JAVA_HOME
+    - KeyboardOptions
     - file-lock
     - EmbedAssembliesIntoApk
     - white-screen
@@ -21,7 +27,7 @@ metadata:
     - m:1
 ---
 
-You are an expert Android build and deploy specialist for XerahS mobile (Avalonia and MAUI).
+You are an expert Android build and deploy specialist for XerahS mobile (Kotlin/Mobile.Kt, Avalonia, and MAUI).
 
 Follow these instructions when building or deploying Android apps. **Never let a build wait more than 5 minutes** without concluding something is wrong (locks, stuck process, or wrong command).
 
@@ -38,9 +44,12 @@ Follow these instructions when building or deploying Android apps. **Never let a
     <ava>build/android/build-and-deploy-android-ava.ps1</ava>
   </scripts>
   <package_id>com.getsharex.xerahs</package_id>
-  <adb_default>%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe (or ANDROID_HOME)</adb_default>
+  <package_id_kt>com.getsharex.xerahs.mobile</package_id_kt>
+  <adb_default>%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe (adb is often not in PATH; use full path)</adb_default>
   <maui_apk>src\XerahS.Mobile.Maui\bin\Debug\net10.0-android\com.getsharex.xerahs-Signed.apk</maui_apk>
   <ava_apk_dir>src\XerahS.Mobile.Ava\bin\Debug\net10.0-android</ava_apk_dir>
+  <kt_project_root>src\XerahS.Mobile.Kt</kt_project_root>
+  <kt_apk>src\XerahS.Mobile.Kt\app\build\outputs\apk\debug\app-debug.apk</kt_apk>
 </context>
 
 ## 5-minute build rule (critical)
@@ -55,6 +64,57 @@ Follow these instructions when building or deploying Android apps. **Never let a
    - **Parallelism**: Use `-m:1` so only one project builds at a time and ImageEditor/plugin DLLs are not raced.
 
 Do **not** increase the timeout to 10+ minutes. Fix locks and parallelism instead.
+
+---
+
+## Kotlin (XerahS.Mobile.Kt): prerequisites and first-build lessons
+
+The Kotlin app uses **Gradle** (not dotnet). The project root is **`src/XerahS.Mobile.Kt`** (where `settings.gradle.kts` and `gradlew.bat` live).
+
+### 1. JAVA_HOME is required
+
+**First build often fails with:** `JAVA_HOME is not set and no 'java' command could be found in your PATH`.
+
+- Gradle needs a JDK. On Windows, **adb** and **java** are often not in PATH; the IDE uses the embedded JBR.
+- **Fix:** Set `JAVA_HOME` to the JDK used by Android Studio before running Gradle, then run the build in the same process (e.g. one PowerShell command that sets env and invokes gradlew):
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+cd "src\XerahS.Mobile.Kt"
+.\gradlew.bat assembleDebug
+```
+
+- If the repo is under a path with spaces (e.g. `ShareX Team\XerahS`), use quoted paths and ensure `cd` is to the Kotlin project root.
+
+### 2. Compose KeyboardOptions: correct import and dependency
+
+**Symptom:** `Unresolved reference: KeyboardOptions` when compiling a module that uses `KeyboardOptions` in a Compose `TextField`/`OutlinedTextField`.
+
+- **Wrong:** `import androidx.compose.ui.text.input.KeyboardOptions` — that package does not expose `KeyboardOptions` in the way the compiler resolves for the dependency set in use.
+- **Right:** `import androidx.compose.foundation.text.KeyboardOptions`. `KeyboardCapitalization` stays `androidx.compose.ui.text.input.KeyboardCapitalization`; `KeyboardType` is `androidx.compose.ui.text.input.KeyboardType`.
+
+- **Module dependency:** The module that uses `KeyboardOptions` (e.g. `feature:settings`) must depend on **Compose Foundation**, or the build will still fail with "Unresolved reference: KeyboardOptions". In that module’s `build.gradle.kts`:
+
+```kotlin
+implementation(libs.compose.foundation)
+```
+
+- **URL / no auto-capitalize:** For URL or domain fields, use `KeyboardType.Uri` together with `KeyboardCapitalization.None` so the soft keyboard does not auto-capitalize; some IMEs ignore capitalization when the type is already `Uri`.
+
+### 3. adb not in PATH
+
+**Symptom:** `The term 'adb' is not recognized` when running install or logcat from a script or terminal.
+
+- Use the full path to adb, e.g. `$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe`, or set `ANDROID_HOME` / `PATH` so that `adb` is found. The build skill assumes adb is invoked via full path when PATH is not configured.
+
+### 4. Kotlin build and deploy (summary)
+
+| Step | Command / path |
+|------|----------------|
+| Project root | `src\XerahS.Mobile.Kt` |
+| Build | Set `JAVA_HOME` then `.\gradlew.bat assembleDebug` |
+| APK | `app\build\outputs\apk\debug\app-debug.apk` |
+| Install | `adb install -r <path-to-app-debug.apk>` |
 
 ---
 
@@ -143,6 +203,26 @@ Avalonia Android had a bug where **`parent.Content = null`** in MainActivity cle
 
 ## Build and deploy commands
 
+### Kotlin (XerahS.Mobile.Kt)
+
+Set JAVA_HOME and build from the Kotlin project root (see "Kotlin: prerequisites and first-build lessons" above). Then install with adb (full path if adb is not in PATH).
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+cd "src\XerahS.Mobile.Kt"   # or full path, e.g. C:\...\XerahS\src\XerahS.Mobile.Kt
+.\gradlew.bat assembleDebug
+```
+
+Install and optionally launch:
+
+```powershell
+$adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+& $adb install -r "src\XerahS.Mobile.Kt\app\build\outputs\apk\debug\app-debug.apk"
+& $adb shell monkey -p com.getsharex.xerahs.mobile -c android.intent.category.LAUNCHER 1
+```
+
+If the first build fails with JAVA_HOME or KeyboardOptions, apply the fixes in the Kotlin section above before retrying.
+
 ### MAUI (recommended: use script)
 
 ```powershell
@@ -185,9 +265,10 @@ $apk = (Get-ChildItem "src\XerahS.Mobile.Ava\bin\Debug\net10.0-android\*.apk" | 
 
 ## Success criteria
 
-- Build completes in **under 5 minutes** (typically 2–3 min with `-m:1` and no locks).
+- Build completes in **under 5 minutes** (typically 2–3 min with `-m:1` and no locks for .NET; Kotlin Gradle builds often 1–2 min once JAVA_HOME is set).
 - No "file in use", XA0142/XAWAS7024, or CompileAvaloniaXamlTask copy errors.
 - A device or emulator is present when the script runs the install step (`adb devices`); otherwise use manual install/launch after starting the emulator.
+- **Kotlin:** JAVA_HOME set; no "Unresolved reference: KeyboardOptions" (use `foundation.text.KeyboardOptions` and add `compose.foundation` to the module); APK installs via `adb install -r` and app runs.
 - MAUI: APK installs via `adb install -r` and app runs past the loading screen (no white screen, no "No assemblies found" crash).
 - Avalonia: APK installs and app shows loading then main UI (no blank screen from host Content cleared).
 
@@ -199,4 +280,5 @@ $apk = (Get-ChildItem "src\XerahS.Mobile.Ava\bin\Debug\net10.0-android\*.apk" | 
 - `build/android/README.md` — Prerequisites, env (JAVA_HOME, Android SDK)
 - `build/android/build-and-deploy-android-maui.ps1` — MAUI build/deploy script (uses `-m:1`)
 - `build/android/build-and-deploy-android-ava.ps1` — Avalonia build/deploy script (uses `-m:1`)
+- `.ai/skills/build-android/SKILL.md` — This skill; Kotlin JAVA_HOME, Compose KeyboardOptions/foundation, adb path
 - `.ai/skills/build-linux-binary/SKILL.md` — Same `/m:1` and "never run two builds" guidance for Linux
