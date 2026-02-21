@@ -23,4 +23,7 @@ class XerahSApplication : Application() {
 
     /** Paths from share intent (or other) to process when Upload screen is ready. Cleared after consumed. */
     val pendingSharedPaths: MutableList<Array<String>> = mutableListOf()
+
+    /** Set by NavGraph so MainActivity can navigate to Upload when share intent arrives while app is running. */
+    var navController: androidx.navigation.NavController? = null
 }
