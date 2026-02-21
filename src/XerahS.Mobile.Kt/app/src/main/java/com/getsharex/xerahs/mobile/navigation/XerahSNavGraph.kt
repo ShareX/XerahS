@@ -89,7 +89,10 @@ fun XerahSNavGraph(
             )
         }
         composable(Screen.CustomUploaderConfig.route) {
-            CustomUploaderConfigScreen(onBack = { navController.popBackStack() })
+            CustomUploaderConfigScreen(
+                settingsRepository = app?.settingsRepository,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }
