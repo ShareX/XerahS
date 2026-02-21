@@ -1,6 +1,9 @@
 # Coding Standards & Best Practices
 
 ## License Headers
+All source files must include a license header: **C#** (GPL v3 block) and **Swift** (short header). The pre-commit hook validates both.
+
+### C# (`.cs`)
 All `.cs` files must include the GPL v3 license header.
 
 ```csharp
@@ -28,6 +31,18 @@ All `.cs` files must include the GPL v3 license header.
 */
 
 #endregion License Information (GPL v3)
+```
+
+### Swift (`.swift`)
+All `.swift` files (e.g. in `src/XerahS.Mobile.Swift`) must include the short license header.
+
+```swift
+//
+//  FileName.swift
+//  XerahS Mobile (Swift)
+//
+//  Copyright (c) 2007-2026 ShareX Team.
+//
 ```
 
 ## Nullability Best Practices
