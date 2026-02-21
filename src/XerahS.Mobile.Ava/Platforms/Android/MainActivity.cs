@@ -62,6 +62,9 @@ namespace Ava.Platforms.Android;
     DataMimeType = "text/*")]
 public class MainActivity : AvaloniaMainActivity<MobileApp>
 {
+    /// <summary>Current activity instance for use by MobileToastService (Android Toast must run with a context).</summary>
+    public static Activity? CurrentActivity { get; private set; }
+
     private static readonly global::Android.Graphics.Color LightSystemBarColor = global::Android.Graphics.Color.ParseColor("#FFF5F5F5");
     private static readonly global::Android.Graphics.Color DarkSystemBarColor = global::Android.Graphics.Color.ParseColor("#FF121212");
 
@@ -80,9 +83,16 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
     protected override void OnCreate(Bundle? savedInstanceState)
     {
         base.OnCreate(savedInstanceState);
+        CurrentActivity = this;
         ApplyNativeSystemBars();
         HandleShareIntent(Intent);
         StartHeartbeat();
+    }
+
+    protected override void OnDestroy()
+    {
+        CurrentActivity = null;
+        base.OnDestroy();
     }
 
     protected override void OnNewIntent(Intent? intent)

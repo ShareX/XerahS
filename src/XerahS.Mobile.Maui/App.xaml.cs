@@ -23,6 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Mobile.Maui.Services;
+using XerahS.Platform.Abstractions;
+
 namespace XerahS.Mobile.Maui;
 
 public partial class App : Application
@@ -84,6 +87,8 @@ public partial class App : Application
 #endif
             MainThread.BeginInvokeOnMainThread(() =>
             {
+                PlatformServices.RegisterToastService(new MauiToastService());
+
                 if (Application.Current?.Windows.FirstOrDefault() is Window window)
                 {
                     window.Page = new AppShell();

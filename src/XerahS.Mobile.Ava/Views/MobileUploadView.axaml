@@ -82,7 +82,7 @@
 
                                     <!-- Error (if failed) -->
                                     <TextBlock Text="{Binding Error}"
-                                               IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                               IsVisible="{Binding HasError}"
                                                Foreground="Red"
                                                TextWrapping="Wrap" />
 
@@ -93,6 +93,15 @@
                                             CommandParameter="{Binding Url}"
                                             Classes="adaptive-secondary"
                                             HorizontalAlignment="Left" />
+
+                                    <!-- Copy Error button -->
+                                    <Button Content="Copy Error"
+                                            IsVisible="{Binding HasError}"
+                                            Command="{Binding CopyErrorCommand}"
+                                            CommandParameter="{Binding Error}"
+                                            Classes="adaptive-secondary"
+                                            HorizontalAlignment="Left"
+                                            ToolTip.Tip="Copy error message to clipboard" />
 
                                 </StackPanel>
                             </Border>

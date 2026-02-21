@@ -31,8 +31,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Threading;
+using Ava.Services;
 using Ava.ViewModels;
 using Ava.Views;
+using XerahS.Platform.Abstractions;
 
 namespace Ava;
 
@@ -220,6 +222,8 @@ public partial class MobileApp : Avalonia.Application
 
     private void ShowUploadView()
     {
+        PlatformServices.RegisterToastService(new MobileToastService());
+
         _uploadViewModel = new MobileUploadViewModel();
         var uploadView = new MobileUploadView
         {

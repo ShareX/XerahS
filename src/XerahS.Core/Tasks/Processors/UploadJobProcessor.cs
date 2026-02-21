@@ -83,7 +83,7 @@ namespace XerahS.Core.Tasks.Processors
                     {
                         DebugHelper.WriteLine($"Upload failed: {errorMsg}");
                     
-                        if (PlatformServices.IsInitialized && PlatformServices.Toast != null)
+                        if (PlatformServices.IsInitialized && PlatformServices.IsToastServiceInitialized)
                         {
                             PlatformServices.Toast.ShowToast(new Platform.Abstractions.ToastConfig
                             {
