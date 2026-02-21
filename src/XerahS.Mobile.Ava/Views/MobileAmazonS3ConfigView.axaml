@@ -139,7 +139,14 @@
                                  FontSize="13"/>
                     </StackPanel>
 
-                    <CheckBox Content="Make uploads publicly accessible"
+                    <CheckBox Content="Signed payload"
+                              IsChecked="{Binding SignedPayload}"/>
+                    <TextBlock Text="Recommended: sign request body (avoids 403 when bucket blocks public ACLs)"
+                               FontSize="11"
+                               Opacity="0.7"
+                               Margin="0,2,0,0"
+                               TextWrapping="Wrap"/>
+                    <CheckBox Content="Make uploads public (public-read ACL)"
                               IsChecked="{Binding SetPublicAcl}"/>
                 </StackPanel>
             </Border>

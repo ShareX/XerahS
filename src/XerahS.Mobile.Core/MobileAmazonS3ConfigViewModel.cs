@@ -101,11 +101,18 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
         set { _useCustomDomain = value; OnPropertyChanged(); }
     }
 
-    private bool _setPublicAcl = true;
+    private bool _setPublicAcl = false;
     public bool SetPublicAcl
     {
         get => _setPublicAcl;
         set { _setPublicAcl = value; OnPropertyChanged(); }
+    }
+
+    private bool _signedPayload = true;
+    public bool SignedPayload
+    {
+        get => _signedPayload;
+        set { _signedPayload = value; OnPropertyChanged(); }
     }
 
     private bool _isConfigured;
@@ -239,6 +246,7 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
         CustomDomain = json.Value<string>("CustomDomain") ?? string.Empty;
         UseCustomDomain = json.Value<bool?>("UseCustomCNAME") ?? false;
         SetPublicAcl = json.Value<bool?>("SetPublicACL") ?? false;
+        SignedPayload = json.Value<bool?>("SignedPayload") ?? true;
         var endpoint = json.Value<string>("Endpoint") ?? "s3.amazonaws.com";
         var regionCode = json.Value<string>("Region") ?? "us-east-1";
         var regionIdx = Regions.FindIndex(r =>
@@ -269,6 +277,7 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
         CustomDomain = settings.CustomDomain ?? string.Empty;
         UseCustomDomain = settings.UseCustomCNAME;
         SetPublicAcl = settings.SetPublicACL;
+        SignedPayload = settings.SignedPayload;
         var endpoint = settings.Endpoint ?? "s3.amazonaws.com";
         var regionIdx = Regions.FindIndex(r =>
             r.Endpoint.Equals(endpoint, StringComparison.OrdinalIgnoreCase) ||
@@ -308,7 +317,7 @@ public class MobileAmazonS3ConfigViewModel : IMobileUploaderConfig, INotifyPrope
                 ["SetPublicACL"] = SetPublicAcl,
                 ["SetPublicPolicy"] = false,
                 ["UsePathStyleUrl"] = false,
-                ["SignedPayload"] = true,
+                ["SignedPayload"] = SignedPayload,
                 ["RemoveExtensionImage"] = false,
                 ["RemoveExtensionVideo"] = false,
                 ["RemoveExtensionText"] = false
