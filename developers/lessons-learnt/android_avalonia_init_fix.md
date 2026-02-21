@@ -49,8 +49,17 @@ base.OnCreate(savedInstanceState);
 - **Yield before init:** A short `await Task.Delay(100)` after navigating to the loading view gives the UI thread a chance to render the loading screen before the background init runs.
 - **Build and deploy:** `build/android/build-and-deploy-android-ava.ps1` builds the Avalonia Android app, installs via adb, and launches it on the emulator/device (launch via `adb shell monkey -p com.getsharex.xerahs -c android.intent.category.LAUNCHER 1` to avoid relying on the exact MainActivity class name).
 
+## MAUI equivalent (no host-Content bug)
+
+MAUI does not use a single host `ContentControl` the same way; there is no equivalent "clear parent content" bug. The handover report did document **MAUI white screen** where the loading page was not rendering before init. For MAUI Android we apply the same principle: **let the loading page render before starting heavy init**.
+
+- In `XerahS.Mobile.Maui/Platforms/Android/MainActivity.cs`, do **not** call `app.InitializeCoreAsync()` immediately after `base.OnCreate`. Instead, defer the start by ~150 ms (e.g. `Task.Run` + `Task.Delay(150)` + `MainThread.BeginInvokeOnMainThread` to call `InitializeCoreAsync`). That allows `OnCreate` to return and the first frame of `LoadingPage` to paint before background init runs.
+- Use consistent Android logcat tags in `App.InitializeCoreAsync` (e.g. `[Init] Loading page visible; starting background init.`, `[Init] Background init completed.`, `[Init] AppShell is now the root page.`) so init can be traced in logcat.
+
 ## References
 
 - `docs/technical/android_deadlock_handover_report.md` — earlier init/deadlock investigation (async init, loading page, no reflection); status was UNRESOLVED until the host-Content fix.
 - `src/XerahS.Mobile.Ava/Platforms/Android/MainActivity.cs` — remove any code that clears the parent of `MainView`.
 - `src/XerahS.Mobile.Ava/MobileApp.axaml.cs` — `InitializeCoreAsync` and navigation flow.
+- `src/XerahS.Mobile.Maui/Platforms/Android/MainActivity.cs` — defer init start; do not clear any host content.
+- `src/XerahS.Mobile.Maui/App.xaml.cs` — `InitializeCoreAsync` and logging.

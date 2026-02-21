@@ -68,9 +68,15 @@ public class MainActivity : MauiAppCompatActivity
             PlatformServices.Clipboard = new AndroidClipboardService(this);
             PathsManager.PersonalFolder = FilesDir!.AbsolutePath;
 
+            // Defer init so LoadingPage can render (see developers/lessons-learnt/android_avalonia_init_fix.md).
             if (App.Current is App app)
             {
-                _ = app.InitializeCoreAsync();
+                var appRef = app;
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(150);
+                    MainThread.BeginInvokeOnMainThread(() => _ = appRef.InitializeCoreAsync());
+                });
             }
 
             HandleShareIntent(Intent);
