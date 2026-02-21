@@ -12,6 +12,7 @@ import com.getsharex.xerahs.mobile.ui.screens.PlaceholderHistoryScreen
 import com.getsharex.xerahs.mobile.ui.screens.PlaceholderSettingsScreen
 import com.getsharex.xerahs.mobile.feature.upload.UploadScreen
 import com.getsharex.xerahs.mobile.ui.screens.PlaceholderUploadScreen
+import com.getsharex.xerahs.mobile.feature.history.HistoryScreen
 
 @Composable
 fun XerahSNavGraph(
@@ -54,7 +55,15 @@ fun XerahSNavGraph(
             }
         }
         composable(Screen.History.route) {
-            PlaceholderHistoryScreen(onBack = { navController.popBackStack() })
+            val historyRepo = app?.historyRepository
+            if (historyRepo != null) {
+                HistoryScreen(
+                    historyRepository = historyRepo,
+                    onBack = { navController.popBackStack() }
+                )
+            } else {
+                PlaceholderHistoryScreen(onBack = { navController.popBackStack() })
+            }
         }
         composable(Screen.Settings.route) {
             PlaceholderSettingsScreen(onBack = { navController.popBackStack() })
