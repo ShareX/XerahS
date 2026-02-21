@@ -26,7 +26,7 @@ Provider list remains in the coordinator constructor; strategies are invoked via
 
 ---
 
-## Pain Point 2: Static service locator and no dependency injection
+## Pain Point 2: Static service locator and no dependency injection — **Refactored (XIP0035)**
 
 **What:** Platform and app services are exposed via static `PlatformServices` and wired by manually constructing concrete types. No DI container or constructor injection.
 
@@ -37,7 +37,11 @@ Provider list remains in the coordinator constructor; strategies are invoked via
 
 **Why it hurts:** Hard to test, implicit initialization order, hidden dependencies, every new service requires changes in both `Program.cs` and `PlatformServices`.
 
-**Refactor direction:** Introduce a DI container (e.g. `Microsoft.Extensions.DependencyInjection`) and a single composition root. Register `IScreenCaptureService`, `IClipboardService`, etc. with platform-specific implementations; inject into ViewModels and UI. Keep `PlatformServices` only as a thin bridge during migration if needed.
+**Refactor direction (implemented):** Introduced a single composition root and a root service provider. Platform and app services are registered in one place and exposed via `PlatformServices.RootProvider` for constructor injection and gradual migration.
+
+- **Composition root:** `src/XerahS.UI/Services/CompositionRoot.cs` – builds the service provider from current `PlatformServices` state after platform init and after UI/Toast/ImageEncoder are registered; called from `App.axaml.cs` `OnFrameworkInitializationCompleted`.
+- **Thin bridge:** `PlatformServices.RootProvider` and `SetRootProvider(IServiceProvider)`; optional getters `GetShellIntegrationIfAvailable()`, `GetNotificationIfAvailable()` for optional services. Existing `PlatformServices.*` static access remains for migration; new code can resolve via `PlatformServices.RootProvider?.GetService(typeof(IScreenCaptureService))` or equivalent.
+- No extra package: uses a minimal `RootServiceProvider` (type-to-instance map) so no `Microsoft.Extensions.DependencyInjection` dependency is required.
 
 ---
 
