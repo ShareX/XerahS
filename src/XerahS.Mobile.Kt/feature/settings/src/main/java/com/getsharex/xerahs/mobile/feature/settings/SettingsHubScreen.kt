@@ -34,10 +34,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -54,6 +59,7 @@ fun SettingsHubScreen(
     val config = settingsRepository.load()
     val s3Configured = config.s3Config.isConfigured
     val customCount = config.customUploaders.size
+    var convertHeicToPng by remember { mutableStateOf(config.convertHeicToPng) }
 
     Column(
         modifier = Modifier
@@ -79,6 +85,40 @@ fun SettingsHubScreen(
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
         ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Upload options",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = convertHeicToPng,
+                            onCheckedChange = {
+                                convertHeicToPng = it
+                                settingsRepository.setConvertHeicToPng(it)
+                            }
+                        )
+                        Text(
+                            text = "Convert HEIC/HEIF images to PNG before upload",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    Text(
+                        text = "So images display in browsers instead of prompting download.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors()

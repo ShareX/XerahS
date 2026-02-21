@@ -78,4 +78,11 @@ final class SettingsRepository {
         c.defaultDestinationInstanceId = id
         save(c)
     }
+
+    func getConvertHeicToPng() -> Bool { load().convertHeicToPng }
+    func setConvertHeicToPng(_ value: Bool) {
+        var c = load()
+        c.convertHeicToPng = value
+        save(c)
+    }
 }

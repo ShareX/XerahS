@@ -30,6 +30,8 @@ struct SettingsHubScreen: View {
     var onNavigateToS3: () -> Void
     var onNavigateToCustomUploader: () -> Void
 
+    @State private var convertHeicToPng: Bool = true
+
     private var config: ApplicationConfig { settingsRepository.load() }
 
     var body: some View {
@@ -46,6 +48,31 @@ struct SettingsHubScreen: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Upload options")
+                            .font(.headline)
+                        Text("Convert HEIC/HEIF images to PNG before upload so they display in browsers instead of prompting download.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+
+                    Toggle(isOn: Binding(
+                        get: { convertHeicToPng },
+                        set: { newValue in
+                            convertHeicToPng = newValue
+                            settingsRepository.setConvertHeicToPng(newValue)
+                        }
+                    )) {
+                        Text("Convert HEIC/HEIF to PNG before upload")
+                            .font(.subheadline)
+                    }
+                    .padding(16)
+                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+                    .onAppear { convertHeicToPng = settingsRepository.getConvertHeicToPng() }
+
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Upload Destinations")
                             .font(.headline)

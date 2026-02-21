@@ -30,6 +30,8 @@ struct ApplicationConfig: Codable {
     var defaultDestinationInstanceId: String?
     var s3Config: S3Config = S3Config()
     var customUploaders: [CustomUploaderEntry] = []
+    /// Convert HEIC/HEIF images to PNG before upload (global; applies to S3 and custom uploaders). Default true.
+    var convertHeicToPng: Bool = true
 }
 
 struct S3Config: Codable, Equatable {

@@ -28,7 +28,9 @@ package com.getsharex.xerahs.mobile.core.domain
 data class ApplicationConfig(
     var defaultDestinationInstanceId: String? = null,
     var s3Config: S3Config = S3Config(),
-    var customUploaders: List<CustomUploaderEntry> = emptyList()
+    var customUploaders: List<CustomUploaderEntry> = emptyList(),
+    /** Convert HEIC/HEIF images to PNG before upload so they display in browsers instead of prompting download. */
+    var convertHeicToPng: Boolean = true
 )
 
 data class S3Config(

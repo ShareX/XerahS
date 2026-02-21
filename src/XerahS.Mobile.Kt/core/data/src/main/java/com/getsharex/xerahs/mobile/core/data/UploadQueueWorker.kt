@@ -101,11 +101,12 @@ class UploadQueueWorker(
         val fileName = File(filePath).name
         if (!File(filePath).exists()) return UploadResultItem(fileName, false, null, "File not found")
         val config = settingsRepository.load()
+        val pathToUpload = convertHeicToPngIfNeeded(filePath, config.convertHeicToPng)
         val destId = config.defaultDestinationInstanceId
 
         when {
             config.s3Config.isConfigured && (destId == null || destId == "amazons3" || destId.startsWith("amazons3")) -> {
-                val outcome = s3Uploader.uploadFile(filePath, config.s3Config)
+                val outcome = s3Uploader.uploadFile(pathToUpload, config.s3Config)
                 return when (outcome) {
                     is UploadOutcome.Success -> UploadResultItem(fileName, true, outcome.url, null)
                     is UploadOutcome.Failure -> UploadResultItem(fileName, false, null, outcome.error)
@@ -113,7 +114,7 @@ class UploadQueueWorker(
             }
             config.customUploaders.isNotEmpty() -> {
                 val entry = config.customUploaders.find { it.id == destId } ?: config.customUploaders.first()
-                val outcome = customUploader.uploadFile(filePath, entry)
+                val outcome = customUploader.uploadFile(pathToUpload, entry)
                 return when (outcome) {
                     is UploadOutcome.Success -> UploadResultItem(fileName, true, outcome.url, null)
                     is UploadOutcome.Failure -> UploadResultItem(fileName, false, null, outcome.error)

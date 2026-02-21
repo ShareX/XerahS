@@ -22,6 +22,7 @@
 		B10000A9 /* CustomUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B0 /* CustomUploader.swift */; };
 		B10000B1 /* S3Uploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B2 /* S3Uploader.swift */; };
 		B10000B3 /* UploadQueueWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B4 /* UploadQueueWorker.swift */; };
+		B10000B7 /* HeicToPngConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B8 /* HeicToPngConverter.swift */; };
 		B10000B5 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000B6 /* libsqlite3.tbd */; };
 		C1000001 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000002 /* AppState.swift */; };
 		C1000003 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000004 /* Screen.swift */; };
@@ -55,6 +56,7 @@
 		B10000B0 /* CustomUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomUploader.swift; sourceTree = "<group>"; };
 		B10000B2 /* S3Uploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S3Uploader.swift; sourceTree = "<group>"; };
 		B10000B4 /* UploadQueueWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadQueueWorker.swift; sourceTree = "<group>"; };
+		B10000B8 /* HeicToPngConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeicToPngConverter.swift; sourceTree = "<group>"; };
 		B10000B6 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		C1000002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		C1000004 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
@@ -211,6 +213,7 @@
 				B10000A4 /* QueueRepository.swift */,
 				B10000A6 /* HistoryRepository.swift */,
 				B10000B4 /* UploadQueueWorker.swift */,
+				B10000B8 /* HeicToPngConverter.swift */,
 				B0FFFFF4 /* Upload */,
 			);
 			path = Data;
@@ -378,6 +381,7 @@
 				B10000A9 /* CustomUploader.swift in Sources */,
 				B10000B1 /* S3Uploader.swift in Sources */,
 				B10000B3 /* UploadQueueWorker.swift in Sources */,
+				B10000B7 /* HeicToPngConverter.swift in Sources */,
 				C1000001 /* AppState.swift in Sources */,
 				C1000003 /* Screen.swift in Sources */,
 				C1000005 /* LoadingScreen.swift in Sources */,

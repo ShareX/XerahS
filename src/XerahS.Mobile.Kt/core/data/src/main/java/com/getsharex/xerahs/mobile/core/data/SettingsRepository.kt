@@ -72,4 +72,10 @@ class SettingsRepository(
         val c = load()
         save(c.copy(defaultDestinationInstanceId = id))
     }
+
+    fun getConvertHeicToPng(): Boolean = load().convertHeicToPng
+    fun setConvertHeicToPng(value: Boolean) {
+        val c = load()
+        save(c.copy(convertHeicToPng = value))
+    }
 }

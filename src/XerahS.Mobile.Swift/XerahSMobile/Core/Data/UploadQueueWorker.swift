@@ -102,17 +102,18 @@ final class UploadQueueWorker: ObservableObject {
             return UploadResultItem(fileName: fileName, success: false, url: nil, error: "File not found")
         }
         let config = settingsRepository.load()
+        let pathToUpload = convertHeicToPngIfNeeded(filePath: filePath, convertEnabled: config.convertHeicToPng)
         let destId = config.defaultDestinationInstanceId
 
         if config.s3Config.isConfigured && (destId == nil || destId == "amazons3" || (destId?.hasPrefix("amazons3") ?? false)) {
-            switch s3Uploader.uploadFile(filePath: filePath, config: config.s3Config) {
+            switch s3Uploader.uploadFile(filePath: pathToUpload, config: config.s3Config) {
             case .success(let url): return UploadResultItem(fileName: fileName, success: true, url: url, error: nil)
             case .failure(let error): return UploadResultItem(fileName: fileName, success: false, url: nil, error: error)
             }
         }
         if !config.customUploaders.isEmpty {
             let entry = config.customUploaders.first { $0.id == destId } ?? config.customUploaders[0]
-            switch customUploader.uploadFile(filePath: filePath, entry: entry) {
+            switch customUploader.uploadFile(filePath: pathToUpload, entry: entry) {
             case .success(let url): return UploadResultItem(fileName: fileName, success: true, url: url, error: nil)
             case .failure(let error): return UploadResultItem(fileName: fileName, success: false, url: nil, error: error)
             }
