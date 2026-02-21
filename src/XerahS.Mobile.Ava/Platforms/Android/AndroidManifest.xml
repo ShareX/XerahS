@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <application
         android:label="XerahS"
-        android:icon="@drawable/icon"
+        android:icon="@drawable/logo"
         android:theme="@style/MyTheme.NoActionBar"
         android:allowBackup="true">
     </application>

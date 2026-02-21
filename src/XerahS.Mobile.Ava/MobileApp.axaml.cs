@@ -137,25 +137,42 @@ public partial class MobileApp : Avalonia.Application
 
     private async Task InitializeCoreAsync()
     {
+#if __ANDROID__
+        global::Android.Util.Log.Info("XerahS", "[Init] Showing loading view.");
+#endif
         Navigate(new MobileLoadingView());
+
+        // Allow the loading view to render one frame before blocking a thread on init.
+        await Task.Delay(100);
 
         try
         {
+#if __ANDROID__
+            global::Android.Util.Log.Info("XerahS", "[Init] Starting background init (PathsManager, Settings, Providers).");
+#endif
             await Task.Run(() =>
             {
+#if __ANDROID__
+                global::Android.Util.Log.Debug("XerahS", "[Init] EnsureDirectoriesExist...");
+#endif
                 XerahS.Common.PathsManager.EnsureDirectoriesExist();
+#if __ANDROID__
+                global::Android.Util.Log.Debug("XerahS", "[Init] LoadInitialSettings...");
+#endif
                 XerahS.Core.SettingsManager.LoadInitialSettings();
 
                 // Directly register bundled providers - NO reflection scanning.
-                // On mobile, uploaders are bundled with the app so we instantiate them directly.
                 foreach (var provider in _registeredProviders)
                 {
                     XerahS.Uploaders.PluginSystem.ProviderCatalog.RegisterProvider(provider);
                 }
+#if __ANDROID__
+                global::Android.Util.Log.Debug("XerahS", "[Init] EnsureProviderContext...");
+#endif
                 XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
 
 #if __ANDROID__
-                global::Android.Util.Log.Info("XerahS", "Avalonia background init completed.");
+                global::Android.Util.Log.Info("XerahS", "[Init] Background init completed.");
 #endif
             }).ConfigureAwait(false);
         }
@@ -163,21 +180,31 @@ public partial class MobileApp : Avalonia.Application
         {
             Debug.WriteLine($"[Init] Error: {ex}");
 #if __ANDROID__
-            global::Android.Util.Log.Error("XerahS", "Init Crash Avalonia: " + ex.ToString());
+            global::Android.Util.Log.Error("XerahS", "[Init] Exception: " + ex.ToString());
 #endif
         }
 
+#if __ANDROID__
+        global::Android.Util.Log.Info("XerahS", "[Init] Posting ShowUploadView to UI thread.");
+#endif
         // After initialization, navigate to the main view
         Dispatcher.UIThread.Post(() =>
         {
             try
             {
-                ShowUploadView();
-            }
-            catch (Exception)
-            {
 #if __ANDROID__
-                global::Android.Util.Log.Error("XerahS", "ShowUploadView Crash Avalonia");
+                global::Android.Util.Log.Info("XerahS", "[Init] ShowUploadView starting.");
+#endif
+                ShowUploadView();
+#if __ANDROID__
+                global::Android.Util.Log.Info("XerahS", "[Init] ShowUploadView done.");
+#endif
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Init] ShowUploadView error: {ex}");
+#if __ANDROID__
+                global::Android.Util.Log.Error("XerahS", "[Init] ShowUploadView crash: " + ex.ToString());
 #endif
             }
         });

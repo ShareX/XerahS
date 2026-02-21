@@ -31,7 +31,6 @@ using Android.OS;
 using Android.Views;
 using Avalonia;
 using Avalonia.Android;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using ShareX.AmazonS3.Plugin;
 using XerahS.Common;
@@ -45,7 +44,7 @@ namespace Ava.Platforms.Android;
 [Activity(
     Label = "XerahS",
     Theme = "@style/MyTheme.NoActionBar",
-    Icon = "@drawable/icon",
+    Icon = "@drawable/logo",
     MainLauncher = true,
     LaunchMode = LaunchMode.SingleTop,
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
@@ -80,13 +79,6 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
-        if (Avalonia.Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime &&
-            singleViewLifetime.MainView is { } mainView &&
-            mainView.Parent is ContentControl parent)
-        {
-            parent.Content = null;
-        }
-
         base.OnCreate(savedInstanceState);
         ApplyNativeSystemBars();
         HandleShareIntent(Intent);

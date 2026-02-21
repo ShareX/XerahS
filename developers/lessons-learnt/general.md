@@ -7,6 +7,7 @@ This document serves as a centralized knowledge base for technical challenges, a
 1.  [UI & FluentAvalonia](#ui--fluentavalonia)
 2.  [Build & Configuration](#build--configuration)
 3.  [Plugin System](#plugin-system)
+4.  [Android / Avalonia](#android--avalonia)
 
 ---
 
@@ -133,3 +134,17 @@ This forces the build system to include the correct Windows SDK reference assemb
     ```
 
     **Why**: Plugin build targets that copy outputs to the host's bin folder (e.g., `$(TargetFramework)\Plugins\`) will use the plugin's TFM in the path. If the plugin targets `net10.0` but the host outputs to `net10.0-windows10.0.19041.0`, plugins end up in the wrong folder and fail to load at runtime. This causes provider settings UI to not appear.
+
+---
+
+## Android / Avalonia
+
+### Avalonia Android: App Stuck at "Initializing..." or Blank Screen
+
+**Context**: XerahS.Mobile.Ava (Avalonia UI on Android) showed a perpetual loading screen or blank screen even though initialization and navigation logic ran correctly.
+
+**Root cause**: In `MainActivity.OnCreate`, code was setting `parent.Content = null` where `parent` was the host `ContentControl` that contains Avalonia's `MainView`. That removed the entire Avalonia UI from the visual tree, so nothing (loading view or main view) was visible.
+
+**Lesson**: Do **not** clear the content of the control that hosts `ISingleViewApplicationLifetime.MainView`. If the app seems stuck on loading or blank but logs show init and navigation completing, look for platform code (e.g. in the Activity) that modifies the host's `Content`.
+
+**Details**: See [android_avalonia_init_fix.md](android_avalonia_init_fix.md).
