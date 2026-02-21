@@ -35,18 +35,28 @@ final class S3Uploader {
         let bucket = config.bucketName
         let region = config.region
 
+        // Request always goes to S3 API (bucket.s3.region or custom endpoint), not to custom domain CDN.
         let host: String
-        let urlString: String
+        let requestUrlString: String
         if !config.customEndpoint.isEmpty {
             let base = config.customEndpoint.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
             host = base.replacingOccurrences(of: "https://", with: "").replacingOccurrences(of: "http://", with: "")
-            urlString = "https://\(host)/\(bucket)/\(key)"
+            requestUrlString = "https://\(host)/\(bucket)/\(key)"
         } else {
             host = "\(bucket).s3.\(region).amazonaws.com"
-            urlString = "https://\(host)/\(key)"
+            requestUrlString = "https://\(host)/\(key)"
+        }
+        // Result URL shown to user: custom domain (CDN) if set, else the request URL.
+        let resultUrlString: String
+        if config.useCustomDomain && !config.customDomain.isEmpty {
+            let base = config.customDomain.trimmingCharacters(in: .whitespacesAndNewlines).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            let baseUrl = base.hasPrefix("http") ? base : "https://\(base)"
+            resultUrlString = "\(baseUrl)/\(key)"
+        } else {
+            resultUrlString = requestUrlString
         }
 
-        guard let url = URL(string: urlString) else { return .failure(error: "Invalid URL") }
+        guard let url = URL(string: requestUrlString) else { return .failure(error: "Invalid URL") }
         guard let data = try? Data(contentsOf: fileUrl) else { return .failure(error: "Cannot read file") }
 
         let now = Date()
@@ -67,16 +77,22 @@ final class S3Uploader {
         request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         request.setValue(payloadHash, forHTTPHeaderField: "x-amz-content-sha256")
         request.setValue(amzDate, forHTTPHeaderField: "x-amz-date")
+        if config.setPublicAcl {
+            request.setValue("public-read", forHTTPHeaderField: "x-amz-acl")
+        }
 
-        let signedHeaders = "content-type;host;x-amz-content-sha256;x-amz-date"
+        let (signedHeaders, canonicalHeaders): (String, String) = if config.setPublicAcl {
+            ("content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date",
+             "content-type:\(contentType)\nhost:\(host)\nx-amz-acl:public-read\nx-amz-content-sha256:\(payloadHash)\nx-amz-date:\(amzDate)")
+        } else {
+            ("content-type;host;x-amz-content-sha256;x-amz-date",
+             "content-type:\(contentType)\nhost:\(host)\nx-amz-content-sha256:\(payloadHash)\nx-amz-date:\(amzDate)")
+        }
         let canonicalRequest = [
             "PUT",
             "/\(key)",
             "",
-            "content-type:\(contentType)",
-            "host:\(host)",
-            "x-amz-content-sha256:\(payloadHash)",
-            "x-amz-date:\(amzDate)",
+            canonicalHeaders,
             "",
             signedHeaders,
             payloadHash
@@ -110,7 +126,7 @@ final class S3Uploader {
             }
             let code = (response as? HTTPURLResponse)?.statusCode ?? 0
             if code >= 200 && code < 300 {
-                outcome = .success(url: urlString)
+                outcome = .success(url: resultUrlString)
             } else {
                 outcome = .failure(error: "S3 returned HTTP \(code)")
             }

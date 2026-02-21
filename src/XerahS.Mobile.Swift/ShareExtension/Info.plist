@@ -27,7 +27,7 @@
 				<key>NSExtensionActivationSupportsImageWithMaxCount</key>
 				<integer>10</integer>
 				<key>NSExtensionActivationSupportsMovieWithMaxCount</key>
-				<integer>0</integer>
+				<integer>10</integer>
 				<key>NSExtensionActivationSupportsWebURLWithMaxCount</key>
 				<integer>0</integer>
 				<key>NSExtensionActivationSupportsFileWithMaxCount</key>

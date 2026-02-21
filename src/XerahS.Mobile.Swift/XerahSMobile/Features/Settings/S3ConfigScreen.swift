@@ -73,6 +73,7 @@ struct S3ConfigScreen: View {
 
                 TextField("Bucket Name", text: $viewModel.bucketName)
                     .textFieldStyle(.roundedBorder)
+                    .autocapitalization(.none)
                     .onChange(of: viewModel.bucketName) { _, _ in viewModel.clearValidationError() }
 
                 Picker("Region", selection: $viewModel.regionIndex) {
@@ -85,6 +86,23 @@ struct S3ConfigScreen: View {
                 TextField("Custom Endpoint (optional)", text: $viewModel.customEndpoint)
                     .textFieldStyle(.roundedBorder)
                     .autocapitalization(.none)
+                Text("Override S3 API endpoint for MinIO or other S3-compatible storage. Leave blank for AWS.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Toggle("Use Custom Domain (CDN)", isOn: $viewModel.useCustomDomain)
+                if viewModel.useCustomDomain {
+                    TextField("Custom domain URL", text: $viewModel.customDomain, prompt: Text("https://cdn.example.com"))
+                        .textFieldStyle(.roundedBorder)
+                        .autocapitalization(.none)
+                }
+
+                Toggle("Signed payload", isOn: $viewModel.signedPayload)
+                Text("Recommended: sign request body (avoids 403 when bucket blocks public ACLs).")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Toggle("Make uploads public (public-read ACL)", isOn: $viewModel.setPublicAcl)
 
                 Button("Save") {
                     if viewModel.save() { onBack() }
@@ -103,6 +121,10 @@ final class S3ConfigViewModel: ObservableObject {
     @Published var bucketName: String = ""
     @Published var regionIndex: Int = 0
     @Published var customEndpoint: String = ""
+    @Published var useCustomDomain: Bool = false
+    @Published var customDomain: String = ""
+    @Published var signedPayload: Bool = true
+    @Published var setPublicAcl: Bool = false
     @Published var validationError: String?
 
     private let settingsRepository: SettingsRepository
@@ -117,6 +139,10 @@ final class S3ConfigViewModel: ObservableObject {
         secretAccessKey = config.secretAccessKey
         bucketName = config.bucketName
         customEndpoint = config.customEndpoint
+        useCustomDomain = config.useCustomDomain
+        customDomain = config.customDomain
+        signedPayload = config.signedPayload
+        setPublicAcl = config.setPublicAcl
         regionIndex = s3Regions.firstIndex(where: { $0.id == config.region }) ?? 0
     }
 
@@ -136,6 +162,10 @@ final class S3ConfigViewModel: ObservableObject {
         config.bucketName = bucket
         config.region = region
         config.customEndpoint = customEndpoint.trimmingCharacters(in: .whitespacesAndNewlines)
+        config.useCustomDomain = useCustomDomain
+        config.customDomain = customDomain.trimmingCharacters(in: .whitespacesAndNewlines)
+        config.signedPayload = signedPayload
+        config.setPublicAcl = setPublicAcl
         settingsRepository.saveS3Config(config)
         return true
     }

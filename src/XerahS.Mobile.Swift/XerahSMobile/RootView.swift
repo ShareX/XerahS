@@ -38,7 +38,7 @@ struct RootView: View {
     private func copyToClipboard(_ text: String) {
         UIPasteboard.general.string = text
         copyFeedback = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { copyFeedback = false }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { copyFeedback = false }
     }
 
     var body: some View {
@@ -49,16 +49,18 @@ struct RootView: View {
                 mainNav
             }
         }
-        .overlay {
+        .overlay(alignment: .bottom) {
             if copyFeedback {
-                Text("Copied")
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(.ultraThinMaterial, in: Capsule())
-                    .transition(.opacity)
+                Text("Copied to clipboard")
+                    .font(.subheadline)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
+                    .padding(.bottom, 32)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: copyFeedback)
+        .animation(.easeInOut(duration: 0.25), value: copyFeedback)
     }
 
     private var mainNav: some View {

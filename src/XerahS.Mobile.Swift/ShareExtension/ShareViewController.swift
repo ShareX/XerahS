@@ -53,6 +53,9 @@ final class ShareViewController: UIViewController {
             UTType.jpeg.identifier,
             UTType.png.identifier,
             UTType.pdf.identifier,
+            UTType.movie.identifier,
+            UTType.mpeg4Movie.identifier,
+            UTType.quickTimeMovie.identifier,
             UTType.data.identifier,
             "public.file-url",
             "public.url"

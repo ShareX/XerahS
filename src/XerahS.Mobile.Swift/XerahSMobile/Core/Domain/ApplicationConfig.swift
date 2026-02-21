@@ -39,6 +39,13 @@ struct S3Config: Codable, Equatable {
     var region: String = ""
     var customEndpoint: String = ""
     var usePathStyle: Bool = false
+    /// Use custom domain (CDN) for result URLs.
+    var useCustomDomain: Bool = false
+    var customDomain: String = ""
+    /// Sign request body; recommended when bucket blocks public ACLs. Default true.
+    var signedPayload: Bool = true
+    /// Set public-read ACL on uploaded objects. Default false.
+    var setPublicAcl: Bool = false
 
     var isConfigured: Bool {
         !accessKeyId.isEmpty && !secretAccessKey.isEmpty && !bucketName.isEmpty && !region.isEmpty
