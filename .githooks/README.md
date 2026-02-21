@@ -6,17 +6,21 @@ This directory contains Git hooks for the XerahS project to enforce code quality
 
 ### pre-commit
 
-Validates license headers in all staged **C#** and **Swift** source files before allowing a commit.
+Validates **GPL v3** license headers in all staged **C#**, **Swift**, and **Kotlin** source files. All require the **full GPL v3 license text** (same as C#), not just a short copyright line.
 
 **C# (`.cs`):**
 - Presence of `#region License Information (GPL v3)` tag
 - Correct project name: "XerahS - The Avalonia UI implementation of ShareX"
 - Current copyright year: "Copyright (c) 2007-YYYY ShareX Team"
-- GPL v3 license text
+- Full GPL v3 license text
 
 **Swift (`.swift`), e.g. `src/XerahS.Mobile.Swift`:**
 - Line with "XerahS Mobile (Swift)"
-- Current copyright: "Copyright (c) 2007-YYYY ShareX Team." (or without trailing period)
+- Current copyright and **full GPL v3 license text** (as `//` line comments)
+
+**Kotlin (`.kt`), e.g. `src/XerahS.Mobile.Kt`:**
+- Block comment at top with project name, copyright, and **full GPL v3 license text**
+- Must appear before the `package` declaration
 
 See `developers/guidelines/CODING_STANDARDS.md` for exact header formats.
 
@@ -143,20 +147,9 @@ If the pre-commit hook detects violations:
 #endregion License Information (GPL v3)
 ```
 
-### Swift files
+### Swift / Kotlin files
 
-Add the short header at the top of each `.swift` file (see `developers/guidelines/CODING_STANDARDS.md`):
-
-```swift
-//
-//  FileName.swift
-//  XerahS Mobile (Swift)
-//
-//  Copyright (c) 2007-YYYY ShareX Team.
-//
-```
-
-Then re-stage and commit: `git add <files>` and `git commit`.
+Add the **full GPL v3 license text** at the top of each `.swift` or `.kt` file (see `developers/guidelines/CODING_STANDARDS.md` for the exact block). Swift uses `//` line comments; Kotlin uses a `/* ... */` block comment before the `package` line. Then re-stage and commit: `git add <files>` and `git commit`.
 
 ## Troubleshooting
 

@@ -1,7 +1,7 @@
 # Coding Standards & Best Practices
 
 ## License Headers
-All source files must include a license header: **C#** (GPL v3 block) and **Swift** (short header). The pre-commit hook validates both.
+All source files must include the **full GPL v3 license text** in the appropriate comment style: **C#** (`#region` + block), **Swift** (line comments), **Kotlin** (block comment). The pre-commit hook validates C#, Swift, and Kotlin.
 
 ### C# (`.cs`)
 All `.cs` files must include the GPL v3 license header.
@@ -34,15 +34,60 @@ All `.cs` files must include the GPL v3 license header.
 ```
 
 ### Swift (`.swift`)
-All `.swift` files (e.g. in `src/XerahS.Mobile.Swift`) must include the short license header.
+All `.swift` files (e.g. in `src/XerahS.Mobile.Swift`) must include the full GPL v3 text as line comments.
 
 ```swift
 //
 //  FileName.swift
 //  XerahS Mobile (Swift)
 //
-//  Copyright (c) 2007-2026 ShareX Team.
+//  XerahS - The Avalonia UI implementation of ShareX
+//  Copyright (c) 2007-2026 ShareX Team
 //
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; either version 2
+//  of the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
+//  Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+//
+```
+
+### Kotlin (`.kt`)
+All `.kt` files (e.g. in `src/XerahS.Mobile.Kt`) must include the full GPL v3 text as a block comment at the top of the file, before the `package` declaration.
+
+```kotlin
+/*
+ * XerahS - The Avalonia UI implementation of ShareX
+ * Copyright (c) 2007-2026 ShareX Team
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+ */
+
+package com.getsharex.xerahs.mobile...
 ```
 
 ## Nullability Best Practices

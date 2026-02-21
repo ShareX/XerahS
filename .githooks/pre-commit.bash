@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Pre-commit hook to validate license headers in C# and Swift files
-# Checks staged .cs (GPL v3) and .swift (short header) for proper license headers
+# Pre-commit hook to validate GPL v3 license headers in C#, Swift, and Kotlin files
+# All require full GPL v3 license text. See developers/guidelines/CODING_STANDARDS.md
 #
 # To install: git config core.hooksPath .githooks
 # To bypass: git commit --no-verify
@@ -22,9 +22,10 @@ EXPECTED_COPYRIGHT="Copyright (c) 2007-$CURRENT_YEAR ShareX Team"
 EXPECTED_GPL_START="This program is free software"
 EXPECTED_SWIFT_PROJECT="XerahS Mobile (Swift)"
 
-# Get list of staged C# and Swift files
+# Get list of staged C#, Swift, and Kotlin files
 STAGED_CS_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.cs$' || true)
 STAGED_SWIFT_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.swift$' || true)
+STAGED_KT_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.kt$' || true)
 
 VIOLATIONS=0
 VIOLATION_FILES=()
@@ -49,15 +50,16 @@ if [ -n "$STAGED_CS_FILES" ]; then
     done
 fi
 
-# --- Swift files ---
+# --- Swift files (full GPL v3 text required) ---
 if [ -n "$STAGED_SWIFT_FILES" ]; then
     echo "Checking license headers in staged Swift files..."
     for FILE in $STAGED_SWIFT_FILES; do
         if [ ! -f "$FILE" ]; then continue; fi
-        HEADER=$(head -n 20 "$FILE")
+        HEADER=$(head -n 35 "$FILE")
         MISSING=()
         echo "$HEADER" | grep -qE "Copyright \(c\) 2007-$CURRENT_YEAR ShareX Team\.?" || MISSING+=("copyright year $CURRENT_YEAR")
-        echo "$HEADER" | grep -q "$EXPECTED_SWIFT_PROJECT" || MISSING+=("XerahS Mobile (Swift)")
+        echo "$HEADER" | grep -qE "XerahS Mobile \(Swift\)|XerahS Share Extension" || MISSING+=("XerahS Mobile (Swift) or XerahS Share Extension")
+        echo "$HEADER" | grep -q "$EXPECTED_GPL_START" || MISSING+=("GPL v3 license text")
         if [ ${#MISSING[@]} -gt 0 ]; then
             VIOLATIONS=$((VIOLATIONS + 1))
             VIOLATION_FILES+=("$FILE")
@@ -67,8 +69,27 @@ if [ -n "$STAGED_SWIFT_FILES" ]; then
     done
 fi
 
-if [ -z "$STAGED_CS_FILES" ] && [ -z "$STAGED_SWIFT_FILES" ]; then
-    echo -e "${GREEN}OK: No C# or Swift files to check${NC}"
+# --- Kotlin files (full GPL v3 text required) ---
+if [ -n "$STAGED_KT_FILES" ]; then
+    echo "Checking license headers in staged Kotlin files..."
+    for FILE in $STAGED_KT_FILES; do
+        if [ ! -f "$FILE" ]; then continue; fi
+        HEADER=$(head -n 35 "$FILE")
+        MISSING=()
+        echo "$HEADER" | grep -q "$EXPECTED_PROJECT" || MISSING+=("project name")
+        echo "$HEADER" | grep -q "$EXPECTED_COPYRIGHT" || MISSING+=("copyright year $CURRENT_YEAR")
+        echo "$HEADER" | grep -q "$EXPECTED_GPL_START" || MISSING+=("GPL v3 license text")
+        if [ ${#MISSING[@]} -gt 0 ]; then
+            VIOLATIONS=$((VIOLATIONS + 1))
+            VIOLATION_FILES+=("$FILE")
+            echo -e "${RED}FAIL: $FILE${NC}"
+            echo -e "  Missing: ${MISSING[*]}"
+        fi
+    done
+fi
+
+if [ -z "$STAGED_CS_FILES" ] && [ -z "$STAGED_SWIFT_FILES" ] && [ -z "$STAGED_KT_FILES" ]; then
+    echo -e "${GREEN}OK: No C#, Swift, or Kotlin files to check${NC}"
     exit 0
 fi
 
@@ -83,8 +104,7 @@ if [ $VIOLATIONS -gt 0 ]; then
         echo -e "  ${YELLOW}->${NC} $FILE"
     done
     echo ""
-    echo "C#: Use #region License Information (GPL v3) with full GPL text. See developers/guidelines/CODING_STANDARDS.md"
-    echo "Swift: Use short header with 'XerahS Mobile (Swift)' and 'Copyright (c) 2007-$CURRENT_YEAR ShareX Team.'"
+    echo "C# / Swift / Kotlin: All require full GPL v3 license text. See developers/guidelines/CODING_STANDARDS.md"
     echo ""
     echo -e "${YELLOW}To bypass this check (NOT RECOMMENDED):${NC}"
     echo "  git commit --no-verify"
@@ -96,5 +116,7 @@ CS_COUNT=0
 for _ in $STAGED_CS_FILES; do CS_COUNT=$((CS_COUNT + 1)); done
 SWIFT_COUNT=0
 for _ in $STAGED_SWIFT_FILES; do SWIFT_COUNT=$((SWIFT_COUNT + 1)); done
-echo -e "${GREEN}OK: All staged C# and Swift files have valid license headers (C#: $CS_COUNT, Swift: $SWIFT_COUNT)${NC}"
+KT_COUNT=0
+for _ in $STAGED_KT_FILES; do KT_COUNT=$((KT_COUNT + 1)); done
+echo -e "${GREEN}OK: All staged C#, Swift, and Kotlin files have valid GPL v3 license headers (C#: $CS_COUNT, Swift: $SWIFT_COUNT, Kotlin: $KT_COUNT)${NC}"
 exit 0

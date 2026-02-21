@@ -1,6 +1,6 @@
 #
-# Pre-commit hook to validate license headers in C# and Swift files (PowerShell version)
-# Checks staged .cs (GPL v3) and .swift (short header) for proper license headers
+# Pre-commit hook to validate GPL v3 license headers in C#, Swift, and Kotlin files (PowerShell version)
+# All require full GPL v3 license text. See developers/guidelines/CODING_STANDARDS.md
 #
 # To install: git config core.hooksPath .githooks
 # To bypass: git commit --no-verify
@@ -14,13 +14,13 @@ $EXPECTED_PROJECT = "XerahS - The Avalonia UI implementation of ShareX"
 $EXPECTED_COPYRIGHT = "Copyright (c) 2007-$CURRENT_YEAR ShareX Team"
 $EXPECTED_GPL_START = "This program is free software"
 
-# Swift: copyright line may have trailing period
-$EXPECTED_SWIFT_COPYRIGHT = "Copyright (c) 2007-$CURRENT_YEAR ShareX Team"
+# Swift: copyright line may have trailing period; must include full GPL text
 $EXPECTED_SWIFT_PROJECT = "XerahS Mobile (Swift)"
 
-# Get list of staged C# and Swift files
+# Get list of staged C#, Swift, and Kotlin files
 $STAGED_CS_FILES = git diff --cached --name-only --diff-filter=ACM | Where-Object { $_ -match '\.cs$' }
 $STAGED_SWIFT_FILES = git diff --cached --name-only --diff-filter=ACM | Where-Object { $_ -match '\.swift$' }
+$STAGED_KT_FILES = git diff --cached --name-only --diff-filter=ACM | Where-Object { $_ -match '\.kt$' }
 
 $TOTAL_VIOLATIONS = 0
 $VIOLATION_FILES = @()
@@ -45,16 +45,17 @@ if ($STAGED_CS_FILES) {
     }
 }
 
-# --- Swift files ---
+# --- Swift files (full GPL v3 text required) ---
 if ($STAGED_SWIFT_FILES) {
     Write-Host "Checking license headers in staged Swift files..."
     foreach ($FILE in $STAGED_SWIFT_FILES) {
         if (-not (Test-Path $FILE)) { continue }
-        $HEADER = (Get-Content $FILE -TotalCount 20) -join [Environment]::NewLine
+        $HEADER = (Get-Content $FILE -TotalCount 35) -join [Environment]::NewLine
         $MISSING = @()
-        # Copyright with or without trailing period
         if ($HEADER -notmatch "Copyright \(c\) 2007-$CURRENT_YEAR ShareX Team\.?") { $MISSING += "copyright year $CURRENT_YEAR" }
-        if ($HEADER -notmatch [regex]::Escape($EXPECTED_SWIFT_PROJECT)) { $MISSING += "XerahS Mobile (Swift)" }
+        # Accept "XerahS Mobile (Swift)" or "XerahS Share Extension"
+        if ($HEADER -notmatch "XerahS Mobile \(Swift\)" -and $HEADER -notmatch "XerahS Share Extension") { $MISSING += "XerahS Mobile (Swift) or XerahS Share Extension" }
+        if ($HEADER -notmatch [regex]::Escape($EXPECTED_GPL_START)) { $MISSING += "GPL v3 license text" }
         if ($MISSING.Count -gt 0) {
             $TOTAL_VIOLATIONS++
             $VIOLATION_FILES += $FILE
@@ -64,8 +65,27 @@ if ($STAGED_SWIFT_FILES) {
     }
 }
 
-if (-not $STAGED_CS_FILES -and -not $STAGED_SWIFT_FILES) {
-    Write-Host "OK: No C# or Swift files to check" -ForegroundColor Green
+# --- Kotlin files (full GPL v3 text required) ---
+if ($STAGED_KT_FILES) {
+    Write-Host "Checking license headers in staged Kotlin files..."
+    foreach ($FILE in $STAGED_KT_FILES) {
+        if (-not (Test-Path $FILE)) { continue }
+        $HEADER = (Get-Content $FILE -TotalCount 35) -join [Environment]::NewLine
+        $MISSING = @()
+        if ($HEADER -notmatch [regex]::Escape($EXPECTED_PROJECT)) { $MISSING += "project name" }
+        if ($HEADER -notmatch [regex]::Escape($EXPECTED_COPYRIGHT)) { $MISSING += "copyright year $CURRENT_YEAR" }
+        if ($HEADER -notmatch [regex]::Escape($EXPECTED_GPL_START)) { $MISSING += "GPL v3 license text" }
+        if ($MISSING.Count -gt 0) {
+            $TOTAL_VIOLATIONS++
+            $VIOLATION_FILES += $FILE
+            Write-Host "FAIL: $FILE" -ForegroundColor Red
+            Write-Host "  Missing: $($MISSING -join ', ')" -ForegroundColor Yellow
+        }
+    }
+}
+
+if (-not $STAGED_CS_FILES -and -not $STAGED_SWIFT_FILES -and -not $STAGED_KT_FILES) {
+    Write-Host "OK: No C#, Swift, or Kotlin files to check" -ForegroundColor Green
     exit 0
 }
 
@@ -80,8 +100,7 @@ if ($TOTAL_VIOLATIONS -gt 0) {
         Write-Host "  -> $FILE" -ForegroundColor Yellow
     }
     Write-Host ""
-    Write-Host "C#: Use #region License Information (GPL v3) with full GPL text. See developers/guidelines/CODING_STANDARDS.md"
-    Write-Host "Swift: Use short header with 'XerahS Mobile (Swift)' and 'Copyright (c) 2007-$CURRENT_YEAR ShareX Team.'"
+    Write-Host "C# / Swift / Kotlin: All require full GPL v3 license text. See developers/guidelines/CODING_STANDARDS.md"
     Write-Host ""
     Write-Host "To bypass this check (NOT RECOMMENDED):" -ForegroundColor Yellow
     Write-Host "  git commit --no-verify"
@@ -91,5 +110,6 @@ if ($TOTAL_VIOLATIONS -gt 0) {
 
 $csCount = if ($STAGED_CS_FILES) { ($STAGED_CS_FILES | Measure-Object).Count } else { 0 }
 $swiftCount = if ($STAGED_SWIFT_FILES) { ($STAGED_SWIFT_FILES | Measure-Object).Count } else { 0 }
-Write-Host "OK: All staged C# and Swift files have valid license headers (C#: $csCount, Swift: $swiftCount)" -ForegroundColor Green
+$ktCount = if ($STAGED_KT_FILES) { ($STAGED_KT_FILES | Measure-Object).Count } else { 0 }
+Write-Host "OK: All staged C#, Swift, and Kotlin files have valid GPL v3 license headers (C#: $csCount, Swift: $swiftCount, Kotlin: $ktCount)" -ForegroundColor Green
 exit 0
