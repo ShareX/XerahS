@@ -24,10 +24,18 @@ package com.getsharex.xerahs.mobile.navigation
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.widget.Toast
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.launch
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -49,13 +57,24 @@ fun XerahSNavGraph(
     val context = LocalContext.current
     val app = context.applicationContext as? XerahSApplication
     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     val onCopyToClipboard: (String) -> Unit = { text ->
         clipboardManager?.setPrimaryClip(ClipData.newPlainText("url", text))
-        Toast.makeText(context, "Copied", Toast.LENGTH_SHORT).show()
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                message = "Copied to clipboard",
+                duration = SnackbarDuration.Short
+            )
+        }
     }
 
     val hasPendingShare = app?.pendingSharedPaths?.isNotEmpty() == true
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { paddingValues ->
     NavHost(
+        modifier = Modifier.padding(paddingValues),
         navController = navController,
         startDestination = if (hasPendingShare) Screen.Upload.route else Screen.Loading.route
     ) {
@@ -127,5 +146,6 @@ fun XerahSNavGraph(
                 onBack = { navController.popBackStack() }
             )
         }
+    }
     }
 }
