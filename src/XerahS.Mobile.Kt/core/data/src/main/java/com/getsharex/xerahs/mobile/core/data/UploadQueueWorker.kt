@@ -42,13 +42,14 @@ class UploadQueueWorker(
                 val item = queueRepository.dequeue() ?: break
                 val fileName = File(item.filePath).name
                 val result = uploadOne(item.filePath)
-                if (result.success && result.url != null) {
+                val resultUrl = result.url
+                if (result.success && resultUrl != null) {
                     historyRepository.insertEntry(
                         fileName = fileName,
                         filePath = item.filePath,
                         type = "File",
                         host = "upload",
-                        url = result.url
+                        url = resultUrl
                     )
                 }
                 _itemCompleted.value = result

@@ -22,6 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -111,10 +114,10 @@ private fun CustomUploaderEditDialog(
     onDismiss: () -> Unit,
     onSave: (CustomUploaderEntry) -> Unit
 ) {
-    var name by androidx.compose.runtime.mutableStateOf(entry.name)
-    var requestUrl by androidx.compose.runtime.mutableStateOf(entry.requestUrl)
-    var fileFormName by androidx.compose.runtime.mutableStateOf(entry.fileFormName)
-    var body by androidx.compose.runtime.mutableStateOf(entry.body)
+    var name by remember { mutableStateOf(entry.name) }
+    var requestUrl by remember { mutableStateOf(entry.requestUrl) }
+    var fileFormName by remember { mutableStateOf(entry.fileFormName) }
+    var body by remember { mutableStateOf(entry.body) }
 
     AlertDialog(
         onDismissRequest = onDismiss,

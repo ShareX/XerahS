@@ -9,10 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.getsharex.xerahs.mobile.core.data.SettingsRepository
 import androidx.lifecycle.viewmodel.compose.viewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun S3ConfigScreen(
     settingsRepository: SettingsRepository?,
@@ -111,7 +113,7 @@ fun S3ConfigScreen(
                 label = { Text("Region") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = regionExpanded) }
             )
-            ExposedDropdownMenu(
+            DropdownMenu(
                 expanded = regionExpanded,
                 onDismissRequest = { regionExpanded = false }
             ) {

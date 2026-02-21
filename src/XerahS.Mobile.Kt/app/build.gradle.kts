@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.navigation.compose)
+    implementation(libs.gson)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

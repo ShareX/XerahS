@@ -50,3 +50,23 @@ src/XerahS.Mobile.iOS.ShareExtension/ShareExtension.BundleId.plist
 .claude/settings.local.json
 .claude/settings.local.json
 /temp_debug_logs
+
+# Kotlin / Android / Gradle (e.g. src/XerahS.Mobile.Kt)
+*.class
+.gradle/
+**/build/
+local.properties
+.idea/
+*.iml
+.kotlin/
+captures/
+**/captures/
+externalNativeBuild/
+**/externalNativeBuild/
+.cxx/
+*.hprof
+*.apk
+*.ap_
+*.aab
+out/
+**/out/

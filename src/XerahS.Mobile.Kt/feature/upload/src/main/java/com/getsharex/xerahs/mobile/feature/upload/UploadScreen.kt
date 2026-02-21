@@ -97,10 +97,12 @@ fun UploadScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
             results.forEach { item ->
+                val itemUrl = item.url
+                val itemError = item.error
                 ResultCard(
                     item = item,
-                    onCopyUrl = if (item.hasUrl && item.url != null) ({ onCopyToClipboard(item.url) }) else null,
-                    onCopyError = if (!item.success && item.error != null) ({ onCopyToClipboard(item.error) }) else null
+                    onCopyUrl = if (item.hasUrl && itemUrl != null) ({ onCopyToClipboard(itemUrl) }) else null,
+                    onCopyError = if (!item.success && itemError != null) ({ onCopyToClipboard(itemError) }) else null
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -114,6 +116,8 @@ private fun ResultCard(
     onCopyUrl: ((String) -> Unit)? = null,
     onCopyError: ((String) -> Unit)? = null
 ) {
+    val url = item.url
+    val err = item.error
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors()
@@ -123,24 +127,24 @@ private fun ResultCard(
                 text = item.fileName,
                 style = MaterialTheme.typography.titleSmall
             )
-            if (item.hasUrl && item.url != null) {
+            if (item.hasUrl && url != null) {
                 Text(
-                    text = item.url,
+                    text = url,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
                 if (onCopyUrl != null) {
-                    OutlinedButton(onClick = { onCopyUrl(item.url) }) { Text("Copy URL") }
+                    OutlinedButton(onClick = { onCopyUrl(url) }) { Text("Copy URL") }
                 }
             }
-            if (!item.success && item.error != null) {
+            if (!item.success && err != null) {
                 Text(
-                    text = item.error,
+                    text = err,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )
                 if (onCopyError != null) {
-                    OutlinedButton(onClick = { onCopyError(item.error) }) { Text("Copy Error") }
+                    OutlinedButton(onClick = { onCopyError(err) }) { Text("Copy Error") }
                 }
             }
         }
