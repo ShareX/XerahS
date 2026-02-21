@@ -24,7 +24,7 @@ if ($doClean) {
 }
 
 Write-Host "Building XerahS.Mobile.Ava (Debug, net10.0-android)..." -ForegroundColor Cyan
-dotnet build $projectPath -f net10.0-android -c Debug
+dotnet build $projectPath -f net10.0-android -c Debug -m:1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Build failed." -ForegroundColor Red
     exit 1
