@@ -68,13 +68,14 @@ public class MainActivity : MauiAppCompatActivity
             PlatformServices.Clipboard = new AndroidClipboardService(this);
             PathsManager.PersonalFolder = FilesDir!.AbsolutePath;
 
-            // Defer init so LoadingPage can render (see developers/lessons-learnt/android_avalonia_init_fix.md).
+            // Defer init so LoadingPage can render before heavy init (see developers/lessons-learnt/android_avalonia_init_fix.md).
+            // 400ms allows the first frame to paint, especially with EmbedAssembliesIntoApk (slower startup).
             if (App.Current is App app)
             {
                 var appRef = app;
                 _ = Task.Run(async () =>
                 {
-                    await Task.Delay(150);
+                    await Task.Delay(400);
                     MainThread.BeginInvokeOnMainThread(() => _ = appRef.InitializeCoreAsync());
                 });
             }

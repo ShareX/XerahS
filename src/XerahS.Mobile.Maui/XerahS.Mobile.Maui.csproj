@@ -14,12 +14,15 @@
     <!-- App identifiers -->
     <ApplicationTitle>XerahS</ApplicationTitle>
     <ApplicationId>com.getsharex.xerahs</ApplicationId>
-    <ApplicationDisplayVersion>0.15.2</ApplicationDisplayVersion>
+    <ApplicationDisplayVersion>0.16.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
 
     <!-- Platform minimum versions -->
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21</SupportedOSPlatformVersion>
+
+    <!-- Android: embed assemblies in APK so adb install works (Debug default uses Fast Deployment and omits them) -->
+    <EmbedAssembliesIntoApk Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">true</EmbedAssembliesIntoApk>
   </PropertyGroup>
 
   <!-- Splash Screen -->

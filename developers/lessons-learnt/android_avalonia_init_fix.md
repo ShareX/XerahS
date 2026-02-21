@@ -53,7 +53,7 @@ base.OnCreate(savedInstanceState);
 
 MAUI does not use a single host `ContentControl` the same way; there is no equivalent "clear parent content" bug. The handover report did document **MAUI white screen** where the loading page was not rendering before init. For MAUI Android we apply the same principle: **let the loading page render before starting heavy init**.
 
-- In `XerahS.Mobile.Maui/Platforms/Android/MainActivity.cs`, do **not** call `app.InitializeCoreAsync()` immediately after `base.OnCreate`. Instead, defer the start by ~150 ms (e.g. `Task.Run` + `Task.Delay(150)` + `MainThread.BeginInvokeOnMainThread` to call `InitializeCoreAsync`). That allows `OnCreate` to return and the first frame of `LoadingPage` to paint before background init runs.
+- In `XerahS.Mobile.Maui/Platforms/Android/MainActivity.cs`, do **not** call `app.InitializeCoreAsync()` immediately after `base.OnCreate`. Instead, defer the start by ~400 ms (e.g. `Task.Run` + `Task.Delay(400)` + `MainThread.BeginInvokeOnMainThread` to call `InitializeCoreAsync`). That allows `OnCreate` to return and the first frame of `LoadingPage` to paint before background init runs. (150 ms was too short with `EmbedAssembliesIntoApk`, causing a white screen.)
 - Use consistent Android logcat tags in `App.InitializeCoreAsync` (e.g. `[Init] Loading page visible; starting background init.`, `[Init] Background init completed.`, `[Init] AppShell is now the root page.`) so init can be traced in logcat.
 
 ## References
