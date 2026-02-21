@@ -1,14 +1,23 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 
-$root = Resolve-Path "$PSScriptRoot\..\.."
-$project = Join-Path $root "src\XerahS.App\XerahS.App.csproj"
-$issScript = Join-Path $root "build\windows\XerahS-setup.iss"
+# This script builds Windows installers and requires Windows plus Inno Setup.
+if ($env:OS -ne "Windows_NT") {
+    $platform = if ($IsCoreClr) { [System.Environment]::OSVersion.Platform } else { "Unknown" }
+    Write-Error "package-windows.ps1 requires Windows (Inno Setup). Current OS: $platform. Run this script on Windows."
+    exit 1
+}
+
+# Use Join-Path for cross-platform path construction (works on PowerShell Core on any OS; script will exit above on non-Windows).
+$root = Resolve-Path (Join-Path (Join-Path $PSScriptRoot "..") "..")
+$project = Join-Path (Join-Path (Join-Path $root "src") "XerahS.App") "XerahS.App.csproj"
+$issScript = Join-Path (Join-Path (Join-Path $root "build") "windows") "XerahS-setup.iss"
 $outputDir = Join-Path $root "dist"
 
 if (!(Test-Path $outputDir)) { New-Item -ItemType Directory -Force -Path $outputDir | Out-Null }
 
-# Find ISCC (Inno Setup Compiler)
-$isccPath = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+# Find ISCC (Inno Setup Compiler) - Windows only
+$programFilesX86 = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::ProgramFilesX86)
+$isccPath = Join-Path (Join-Path $programFilesX86 "Inno Setup 6") "ISCC.exe"
 if (!(Test-Path $isccPath)) {
     Write-Error "Inno Setup Compiler (ISCC.exe) not found at: $isccPath"
 }
@@ -40,7 +49,7 @@ foreach ($arch in $archs) {
     Write-Host "-------------------------------------------"
 
     # 1. Publish
-    $publishOutput = Join-Path $root "build\publish-temp-$arch"
+    $publishOutput = Join-Path (Join-Path $root "build") "publish-temp-$arch"
     Write-Host "Publishing to $publishOutput..."
     # Ensure clean
     if (Test-Path $publishOutput) { Remove-Item -Recurse -Force $publishOutput }
@@ -62,7 +71,7 @@ foreach ($arch in $archs) {
     $pluginsDir = Join-Path $publishOutput "Plugins"
     if (!(Test-Path $pluginsDir)) { New-Item -ItemType Directory -Force -Path $pluginsDir | Out-Null }
 
-    $pluginProjects = Get-ChildItem -Path (Join-Path $root "src\Plugins") -Filter "*.csproj" -Recurse
+    $pluginProjects = Get-ChildItem -Path (Join-Path (Join-Path $root "src") "Plugins") -Filter "*.csproj" -Recurse
     foreach ($plugin in $pluginProjects) {
         Write-Host "Publishing Plugin: $($plugin.Name)"
         
