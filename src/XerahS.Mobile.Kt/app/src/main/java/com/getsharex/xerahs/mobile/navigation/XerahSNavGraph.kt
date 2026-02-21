@@ -13,6 +13,9 @@ import com.getsharex.xerahs.mobile.ui.screens.PlaceholderSettingsScreen
 import com.getsharex.xerahs.mobile.feature.upload.UploadScreen
 import com.getsharex.xerahs.mobile.ui.screens.PlaceholderUploadScreen
 import com.getsharex.xerahs.mobile.feature.history.HistoryScreen
+import com.getsharex.xerahs.mobile.feature.settings.SettingsHubScreen
+import com.getsharex.xerahs.mobile.feature.settings.S3ConfigScreen
+import com.getsharex.xerahs.mobile.feature.settings.CustomUploaderConfigScreen
 
 @Composable
 fun XerahSNavGraph(
@@ -66,7 +69,24 @@ fun XerahSNavGraph(
             }
         }
         composable(Screen.Settings.route) {
-            PlaceholderSettingsScreen(onBack = { navController.popBackStack() })
+            val settingsRepo = app?.settingsRepository
+            if (settingsRepo != null) {
+                SettingsHubScreen(
+                    settingsRepository = settingsRepo,
+                    onBack = { navController.popBackStack() },
+                    onNavigateToS3 = { navController.navigate(Screen.S3Config.route) },
+                    onNavigateToCustomUploader = { navController.navigate(Screen.CustomUploaderConfig.route) },
+                    onRefresh = { }
+                )
+            } else {
+                PlaceholderSettingsScreen(onBack = { navController.popBackStack() })
+            }
+        }
+        composable(Screen.S3Config.route) {
+            S3ConfigScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screen.CustomUploaderConfig.route) {
+            CustomUploaderConfigScreen(onBack = { navController.popBackStack() })
         }
     }
 }
