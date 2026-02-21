@@ -34,18 +34,25 @@ public partial class ImageThumbnailerWindow : Window
 {
     private ImageThumbnailerViewModel? _viewModel;
 
-    public ImageThumbnailerWindow()
+    /// <summary>
+    /// Constructs the window with the ViewModel so that DataContext is set before
+    /// InitializeComponent(), avoiding binding evaluation with null DataContext (crash on open).
+    /// </summary>
+    public ImageThumbnailerWindow(ImageThumbnailerViewModel viewModel)
     {
+        _viewModel = viewModel;
+        DataContext = viewModel;
         InitializeComponent();
     }
 
     public ImageThumbnailerViewModel? ViewModel => _viewModel;
 
+    /// <summary>
+    /// Wires up events. Call once after construction.
+    /// </summary>
     public void Initialize(ImageThumbnailerViewModel viewModel)
     {
         _viewModel = viewModel;
-        DataContext = viewModel;
-
         viewModel.FilePickerRequested += OnFilePickerRequested;
         viewModel.FolderPickerRequested += OnFolderPickerRequested;
     }

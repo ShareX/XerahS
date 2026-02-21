@@ -64,7 +64,16 @@ public partial class ImageThumbnailerViewModel : ViewModelBase
 
     public ImageThumbnailerViewModel()
     {
-        string screenshotsFolder = TaskHelpers.GetScreenshotsFolder();
+        string screenshotsFolder;
+        try
+        {
+            screenshotsFolder = TaskHelpers.GetScreenshotsFolder();
+        }
+        catch
+        {
+            screenshotsFolder = XerahS.Common.PathsManager.ScreenshotsFolder;
+        }
+
         OutputFolder = Path.Combine(screenshotsFolder, "Thumbnails");
     }
 

@@ -68,7 +68,7 @@ public static class MediaToolsToolService
                 ShowWindow(_thumbnailerWindow, owner, () =>
                 {
                     var vm = new ImageThumbnailerViewModel();
-                    var w = new ImageThumbnailerWindow();
+                    var w = new ImageThumbnailerWindow(vm);
                     w.Initialize(vm);
                     return w;
                 }, w => _thumbnailerWindow = w, "ImageThumbnailer");
