@@ -1,5 +1,9 @@
 package com.getsharex.xerahs.mobile.navigation
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
@@ -23,6 +27,11 @@ fun XerahSNavGraph(
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as? XerahSApplication
+    val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+    val onCopyToClipboard: (String) -> Unit = { text ->
+        clipboardManager?.setPrimaryClip(ClipData.newPlainText("url", text))
+        Toast.makeText(context, "Copied", Toast.LENGTH_SHORT).show()
+    }
 
     NavHost(
         navController = navController,
@@ -48,6 +57,7 @@ fun XerahSNavGraph(
                     onOpenHistory = { navController.navigate(Screen.History.route) },
                     onOpenSettings = { navController.navigate(Screen.Settings.route) },
                     onPickFiles = null,
+                    onCopyToClipboard = onCopyToClipboard,
                     initialPaths = pending
                 )
             } else {
@@ -62,7 +72,8 @@ fun XerahSNavGraph(
             if (historyRepo != null) {
                 HistoryScreen(
                     historyRepository = historyRepo,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onCopyToClipboard = onCopyToClipboard
                 )
             } else {
                 PlaceholderHistoryScreen(onBack = { navController.popBackStack() })
