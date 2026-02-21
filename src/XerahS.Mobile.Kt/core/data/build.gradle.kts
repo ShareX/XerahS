@@ -27,4 +27,6 @@ dependencies {
     implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)
     implementation(libs.gson)
+    implementation(libs.okhttp)
+    implementation("com.amazonaws:aws-android-sdk-s3:2.22.1")
 }
