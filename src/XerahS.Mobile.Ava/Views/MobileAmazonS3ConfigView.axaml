@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:input="using:Avalonia.Input.TextInput"
              xmlns:vm="using:XerahS.Mobile.Core"
              x:Class="Ava.Views.MobileAmazonS3ConfigView"
              x:DataType="vm:MobileAmazonS3ConfigViewModel">
@@ -35,7 +36,8 @@
                             <TextBox Text="{Binding AccessKeyId, Mode=TwoWay}"
                                      Watermark="AKIA..."
                                      Classes="adaptive-input"
-                                     FontSize="13"/>
+                                     FontSize="13"
+                                     input:TextInputOptions.AutoCapitalization="False"/>
                             <Border BorderBrush="#FF6B6B"
                                     BorderThickness="2"
                                     CornerRadius="8"
@@ -77,7 +79,8 @@
                             <TextBox Text="{Binding BucketName, Mode=TwoWay}"
                                      Watermark="my-bucket-name"
                                      Classes="adaptive-input"
-                                     FontSize="13"/>
+                                     FontSize="13"
+                                     input:TextInputOptions.AutoCapitalization="False"/>
                             <Border BorderBrush="#FF6B6B"
                                     BorderThickness="2"
                                     CornerRadius="8"
@@ -122,7 +125,8 @@
                         <TextBox Text="{Binding ObjectPrefix, Mode=TwoWay}"
                                  Watermark="ShareX/%y/%mo"
                                  Classes="adaptive-input"
-                                 FontSize="13"/>
+                                 FontSize="13"
+                                 input:TextInputOptions.AutoCapitalization="False"/>
                         <TextBlock Text="Use %y for year, %mo for month, %d for day"
                                    FontSize="11"
                                    Opacity="0.5"
@@ -136,7 +140,8 @@
                                  Watermark="https://cdn.example.com"
                                  IsEnabled="{Binding UseCustomDomain}"
                                  Classes="adaptive-input"
-                                 FontSize="13"/>
+                                 FontSize="13"
+                                 input:TextInputOptions.AutoCapitalization="False"/>
                     </StackPanel>
 
                     <CheckBox Content="Signed payload"
