@@ -82,6 +82,13 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
+        // When activity is re-created (e.g. Share intent), detach the navigation root from the
+        // previous activity's visual tree so Avalonia can attach it to this activity's host.
+        if (Avalonia.Application.Current is MobileApp mobileApp)
+        {
+            mobileApp.DetachNavigationRootFromVisualTree();
+        }
+
         base.OnCreate(savedInstanceState);
         CurrentActivity = this;
         ApplyNativeSystemBars();
@@ -193,7 +200,7 @@ public class MainActivity : AvaloniaMainActivity<MobileApp>
         }
 
         if (localPaths.Count > 0)
-            MobileApp.OnFilesReceived?.Invoke(localPaths.ToArray());
+            MobileApp.EnqueueSharedPaths(localPaths.ToArray());
     }
 #pragma warning restore CA1422
 

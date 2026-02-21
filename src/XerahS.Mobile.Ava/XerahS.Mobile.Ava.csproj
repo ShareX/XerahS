@@ -8,8 +8,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ApplicationTitle>XerahS</ApplicationTitle>
-    <ApplicationDisplayVersion>0.16.0</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>0.16.4</ApplicationDisplayVersion>
+    <ApplicationVersion>2</ApplicationVersion>
     <!-- Android -->
     <ApplicationId Condition="'$(TargetFramework)' == 'net10.0-android'">com.getsharex.xerahs</ApplicationId>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21</SupportedOSPlatformVersion>

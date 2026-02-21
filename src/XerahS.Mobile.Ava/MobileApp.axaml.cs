@@ -28,9 +28,11 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Presenters;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Ava.Services;
 using Ava.ViewModels;
 using Ava.Views;
@@ -48,6 +50,34 @@ public partial class MobileApp : Avalonia.Application
     /// Set after the framework initialization completes.
     /// </summary>
     public static Action<string[]>? OnFilesReceived { get; set; }
+
+    /// <summary>
+    /// Pending shared file paths received before the upload view is ready (e.g. when app is launched via Share intent).
+    /// Drained in ShowUploadView().
+    /// </summary>
+    private static readonly List<string[]> _pendingSharedPaths = new();
+    private static readonly object _pendingLock = new();
+
+    /// <summary>
+    /// Called from Android MainActivity when a share intent is received. Delivers paths immediately if
+    /// the upload view is ready; otherwise queues them for when ShowUploadView() runs.
+    /// </summary>
+    public static void EnqueueSharedPaths(string[] paths)
+    {
+        if (paths == null || paths.Length == 0) return;
+        lock (_pendingLock)
+        {
+            if (OnFilesReceived != null)
+            {
+                OnFilesReceived.Invoke(paths);
+                return;
+            }
+            _pendingSharedPaths.Add(paths);
+        }
+#if __ANDROID__
+        global::Android.Util.Log.Debug("XerahS", $"[Share] Queued {paths.Length} file(s) for when upload view is ready.");
+#endif
+    }
 
     /// <summary>
     /// Providers registered directly by platform heads (no reflection scanning).
@@ -212,6 +242,25 @@ public partial class MobileApp : Avalonia.Application
         });
     }
 
+    /// <summary>
+    /// Detaches the navigation root from its current visual parent so it can be re-attached
+    /// when the Android activity is re-created (e.g. when launched via Share intent).
+    /// Call from MainActivity.OnCreate before base.OnCreate when the app is already running.
+    /// </summary>
+    public void DetachNavigationRootFromVisualTree()
+    {
+        try
+        {
+            var parent = _navigationRoot.GetVisualParent();
+            if (parent is ContentPresenter cp)
+                cp.Content = null;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[MobileApp] DetachNavigationRootFromVisualTree: {ex.Message}");
+        }
+    }
+
     /// <summary>Navigates to a view by swapping the navigation root's Content.</summary>
     private void Navigate(Avalonia.Controls.Control view)
     {
@@ -236,6 +285,14 @@ public partial class MobileApp : Avalonia.Application
         {
             Dispatcher.UIThread.Post(() => _uploadViewModel.ProcessFiles(paths));
         };
+
+        // Process any files that were shared before the app was ready (e.g. launch via Share intent)
+        lock (_pendingLock)
+        {
+            foreach (var pending in _pendingSharedPaths)
+                Dispatcher.UIThread.Post(() => _uploadViewModel.ProcessFiles(pending));
+            _pendingSharedPaths.Clear();
+        }
 
         MobileUploadViewModel.OnOpenSettings = () =>
         {
