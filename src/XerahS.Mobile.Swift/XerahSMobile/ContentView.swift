@@ -7,15 +7,19 @@
 
 import SwiftUI
 
+/// Placeholder root; app uses RootView with environmentObject(AppState).
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Text("XerahS")
-                .font(.largeTitle)
-            Text("Share & Upload")
-                .font(.subheadline)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        RootView()
+            .environmentObject(AppState(
+                settingsRepository: SettingsRepository(),
+                historyRepository: HistoryRepository(),
+                uploadQueueWorker: UploadQueueWorker(
+                    settingsRepository: SettingsRepository(),
+                    queueRepository: QueueRepository(),
+                    historyRepository: HistoryRepository()
+                )
+            ))
     }
 }
 

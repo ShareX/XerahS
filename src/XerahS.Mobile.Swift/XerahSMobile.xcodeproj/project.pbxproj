@@ -23,6 +23,15 @@
 		B10000B1 /* S3Uploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B2 /* S3Uploader.swift */; };
 		B10000B3 /* UploadQueueWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B4 /* UploadQueueWorker.swift */; };
 		B10000B5 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000B6 /* libsqlite3.tbd */; };
+		C1000001 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000002 /* AppState.swift */; };
+		C1000003 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000004 /* Screen.swift */; };
+		C1000005 /* LoadingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000006 /* LoadingScreen.swift */; };
+		C1000007 /* UploadScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000008 /* UploadScreen.swift */; };
+		C1000009 /* HistoryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A0 /* HistoryScreen.swift */; };
+		C10000A1 /* SettingsHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A2 /* SettingsHubScreen.swift */; };
+		C10000A3 /* S3ConfigScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A4 /* S3ConfigScreen.swift */; };
+		C10000A5 /* CustomUploaderConfigScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A6 /* CustomUploaderConfigScreen.swift */; };
+		C10000A7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A8 /* RootView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +53,15 @@
 		B10000B2 /* S3Uploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S3Uploader.swift; sourceTree = "<group>"; };
 		B10000B4 /* UploadQueueWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadQueueWorker.swift; sourceTree = "<group>"; };
 		B10000B6 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		C1000002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		C1000004 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
+		C1000006 /* LoadingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingScreen.swift; sourceTree = "<group>"; };
+		C1000008 /* UploadScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadScreen.swift; sourceTree = "<group>"; };
+		C10000A0 /* HistoryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryScreen.swift; sourceTree = "<group>"; };
+		C10000A2 /* SettingsHubScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsHubScreen.swift; sourceTree = "<group>"; };
+		C10000A4 /* S3ConfigScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S3ConfigScreen.swift; sourceTree = "<group>"; };
+		C10000A6 /* CustomUploaderConfigScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomUploaderConfigScreen.swift; sourceTree = "<group>"; };
+		C10000A8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,11 +89,68 @@
 			children = (
 				A1000002 /* XerahSMobileApp.swift */,
 				A1000004 /* ContentView.swift */,
+				C1000002 /* AppState.swift */,
+				C10000A8 /* RootView.swift */,
+				C0FFFFF0 /* Navigation */,
+				C0FFFFF1 /* Features */,
 				B0FFFFF0 /* Core */,
 				A1000006 /* Assets.xcassets */,
 				A1000007 /* Info.plist */,
 			);
 			path = XerahSMobile;
+			sourceTree = "<group>";
+		};
+		C0FFFFF0 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				C1000004 /* Screen.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		C0FFFFF1 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				C0FFFFF2 /* Loading */,
+				C0FFFFF3 /* Upload */,
+				C0FFFFF4 /* History */,
+				C0FFFFF5 /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		C0FFFFF2 /* Loading */ = {
+			isa = PBXGroup;
+			children = (
+				C1000006 /* LoadingScreen.swift */,
+			);
+			path = Loading;
+			sourceTree = "<group>";
+		};
+		C0FFFFF3 /* Upload */ = {
+			isa = PBXGroup;
+			children = (
+				C1000008 /* UploadScreen.swift */,
+			);
+			path = Upload;
+			sourceTree = "<group>";
+		};
+		C0FFFFF4 /* History */ = {
+			isa = PBXGroup;
+			children = (
+				C10000A0 /* HistoryScreen.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		C0FFFFF5 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				C10000A2 /* SettingsHubScreen.swift */,
+				C10000A4 /* S3ConfigScreen.swift */,
+				C10000A6 /* CustomUploaderConfigScreen.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 		B0FFFFF0 /* Core */ = {
@@ -215,6 +290,15 @@
 				B10000A9 /* CustomUploader.swift in Sources */,
 				B10000B1 /* S3Uploader.swift in Sources */,
 				B10000B3 /* UploadQueueWorker.swift in Sources */,
+				C1000001 /* AppState.swift in Sources */,
+				C1000003 /* Screen.swift in Sources */,
+				C1000005 /* LoadingScreen.swift in Sources */,
+				C1000007 /* UploadScreen.swift in Sources */,
+				C1000009 /* HistoryScreen.swift in Sources */,
+				C10000A1 /* SettingsHubScreen.swift in Sources */,
+				C10000A3 /* S3ConfigScreen.swift in Sources */,
+				C10000A5 /* CustomUploaderConfigScreen.swift in Sources */,
+				C10000A7 /* RootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -29,7 +29,7 @@ struct S3Config: Codable, Equatable {
 }
 
 /// One custom uploader (.sxcu-style). Persisted in config or as separate files.
-struct CustomUploaderEntry: Codable, Identifiable, Equatable {
+struct CustomUploaderEntry: Codable, Equatable, Identifiable {
     var id: String = ""
     var name: String = ""
     var requestUrl: String = ""
