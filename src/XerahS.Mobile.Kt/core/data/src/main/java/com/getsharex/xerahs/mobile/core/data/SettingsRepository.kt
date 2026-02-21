@@ -5,7 +5,6 @@ import com.getsharex.xerahs.mobile.core.domain.ApplicationConfig
 import com.getsharex.xerahs.mobile.core.domain.CustomUploaderEntry
 import com.getsharex.xerahs.mobile.core.domain.S3Config
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import java.io.File
 
 private const val CONFIG_FILE_NAME = "ApplicationConfig.json"
