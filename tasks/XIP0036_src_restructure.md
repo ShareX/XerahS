@@ -49,16 +49,16 @@ flowchart LR
 
 **How to execute:** Implement with **extreme caution** in **stages** (one git commit per stage), starting with the least risky moves. See [Staged implementation (extreme caution)](#staged-implementation-extreme-caution) below. The [Execution order](#execution-order-mechanical-only) section is a single-pass reference only.
 
-**Desktop stack (works together)** — all under `src/desktop/`:
+**Desktop stack** — under `src/desktop/`: core/, app/, cli/, tools/, plugins/. **Platform** (shared by desktop and mobile-experimental) is under `src/platform/` (sibling to desktop), not under desktop, so that XerahS.Platform.Mobile is not under a "desktop" path.
 
-| Folder under `src/desktop/` | Projects to move here |
-| --------------------------- | --------------------- |
-| **core/**                   | XerahS.Core, XerahS.Common, XerahS.Services.Abstractions, XerahS.Services, XerahS.ViewModels, XerahS.History, XerahS.Indexer, XerahS.Uploaders, XerahS.Media |
-| **platform/**               | XerahS.Platform.Abstractions, XerahS.Platform.Windows, XerahS.Platform.Linux, XerahS.Platform.MacOS, XerahS.Platform.Mobile |
-| **app/**                    | XerahS.App, XerahS.UI, XerahS.Bootstrap, XerahS.RegionCapture (the desktop application — **not** src/desktop/desktop/) |
-| **cli/**                    | XerahS.CLI (product that shares core; sibling to app, not under tools) |
-| **tools/**                  | XerahS.WatchFolder.Daemon, XerahS.PluginExporter, XerahS.Audits.Tool |
-| **plugins/**                | Plugin folders with **short names** (no ShareX. prefix): AmazonS3.Plugin, Imgur.Plugin, Paste2.Plugin, GitHubGist.Plugin, Auto.Plugin |
+| Folder under `src/` | Projects / contents |
+| ------------------- | -------------------- |
+| **desktop/core/**   | XerahS.Core, XerahS.Common, XerahS.Services.Abstractions, XerahS.Services, XerahS.ViewModels, XerahS.History, XerahS.Indexer, XerahS.Uploaders, XerahS.Media |
+| **platform/**       | XerahS.Platform.Abstractions, XerahS.Platform.Windows, XerahS.Platform.Linux, XerahS.Platform.MacOS, XerahS.Platform.Mobile (shared; used by desktop app and mobile-experimental) |
+| **desktop/app/**    | XerahS.App, XerahS.UI, XerahS.Bootstrap, XerahS.RegionCapture (the desktop application) |
+| **desktop/cli/**    | XerahS.CLI (product that shares core; sibling to app, not under tools) |
+| **desktop/tools/**  | XerahS.WatchFolder.Daemon, XerahS.PluginExporter, XerahS.Audits.Tool |
+| **desktop/plugins/** | Plugin folders with **short names** (no ShareX. prefix): AmazonS3.Plugin, Imgur.Plugin, Paste2.Plugin, GitHubGist.Plugin, Auto.Plugin |
 
 **Experimental .NET mobile** — under **src/mobile-experimental/** (sibling to desktop and mobile):
 
@@ -76,6 +76,7 @@ flowchart LR
 After moves, paths look like:
 
 - `src/desktop/core/XerahS.Core/XerahS.Core.csproj`
+- `src/platform/XerahS.Platform.Abstractions/...` (shared by desktop and mobile-experimental)
 - `src/desktop/app/XerahS.App/XerahS.App.csproj`
 - `src/desktop/cli/XerahS.CLI/XerahS.CLI.csproj`
 - `src/mobile-experimental/XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj`
