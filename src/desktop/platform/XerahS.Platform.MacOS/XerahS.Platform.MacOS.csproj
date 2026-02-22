@@ -15,10 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\desktop\core\XerahS.Common\XerahS.Common.csproj" />
-    <ProjectReference Include="..\desktop\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
-    <ProjectReference Include="..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
-    <ProjectReference Include="..\desktop\core\XerahS.Media\XerahS.Media.csproj" />
+    <ProjectReference Include="..\..\core\XerahS.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
+    <ProjectReference Include="..\..\core\XerahS.Media\XerahS.Media.csproj" />
   </ItemGroup>
 
 </Project>

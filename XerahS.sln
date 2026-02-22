@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.GitHubGist.Plugin", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.PluginExporter", "src\XerahS.PluginExporter\XerahS.PluginExporter.csproj", "{F0A1664B-87CC-42C3-B152-654CC1331525}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.MacOS", "src\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj", "{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.MacOS", "src\desktop\platform\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj", "{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ImageEditor", "ImageEditor", "{9CDEF635-2B92-7BC4-7BA3-E0B4A4C557C7}"
 EndProject
