@@ -40,9 +40,18 @@ namespace XerahS.Common
         private const int MaxArgumentsLength = 100;
         private const int ConnectTimeout = 5000;
 
-        // private readonly MutexManager mutex; // MutexManager removed temporarily or replace with System.Threading.Mutex
-        private readonly Mutex? mutex;
+        private Mutex? mutex;
+        private bool ownsMutex;
+        private FileStream? lockFileStream;
+        private string? lockFilePath;
         private CancellationTokenSource? cts;
+
+        private enum LockAcquireResult
+        {
+            Acquired,
+            AlreadyHeldByAnotherInstance,
+            Unavailable
+        }
 
         public SingleInstanceManager(string mutexName, string pipeName, string[] args) : this(mutexName, pipeName, true, args)
         {
@@ -54,18 +63,7 @@ namespace XerahS.Common
             PipeName = pipeName;
             IsSingleInstance = isSingleInstance;
 
-            // mutex = new MutexManager(MutexName, 0);
-            try
-            {
-                bool createdNew;
-                // Global mutex name needs to be handled carefully on non-Windows but for now simple mutex
-                mutex = new Mutex(true, MutexName, out createdNew);
-                IsFirstInstance = createdNew;
-            }
-            catch
-            {
-                IsFirstInstance = true; // Fallback?
-            }
+            IsFirstInstance = !IsSingleInstance || TryAcquirePrimaryLock();
 
             if (IsSingleInstance)
             {
@@ -78,6 +76,7 @@ namespace XerahS.Common
                 else
                 {
                     RedirectArgumentsToFirstInstance(args);
+                    ReleaseInstanceLocks();
                 }
             }
         }
@@ -141,6 +140,116 @@ namespace XerahS.Common
             }
         }
 
+        private bool TryAcquirePrimaryLock()
+        {
+            var mutexResult = TryAcquireNamedMutex();
+            var fileResult = TryAcquireLockFile();
+
+            if (mutexResult == LockAcquireResult.AlreadyHeldByAnotherInstance ||
+                fileResult == LockAcquireResult.AlreadyHeldByAnotherInstance)
+            {
+                DebugHelper.WriteLine("SingleInstanceManager: Existing instance detected (mutex and/or lock file held).");
+                return false;
+            }
+
+            if (mutexResult == LockAcquireResult.Acquired && fileResult == LockAcquireResult.Acquired)
+            {
+                DebugHelper.WriteLine($"SingleInstanceManager: Acquired mutex '{MutexName}' and lock file '{lockFilePath}'.");
+                return true;
+            }
+
+            if (mutexResult == LockAcquireResult.Acquired && fileResult == LockAcquireResult.Unavailable)
+            {
+                DebugHelper.WriteLine($"SingleInstanceManager: Lock file unavailable; proceeding with named mutex '{MutexName}' only.");
+                return true;
+            }
+
+            if (mutexResult == LockAcquireResult.Unavailable && fileResult == LockAcquireResult.Acquired)
+            {
+                DebugHelper.WriteLine($"SingleInstanceManager: Named mutex unavailable; proceeding with lock file '{lockFilePath}' only.");
+                return true;
+            }
+
+            DebugHelper.WriteLine("SingleInstanceManager: Could not acquire single-instance lock (mutex + lock file unavailable). Allowing startup as fallback.");
+            return true;
+        }
+
+        private LockAcquireResult TryAcquireNamedMutex()
+        {
+            try
+            {
+                mutex = new Mutex(false, MutexName);
+
+                try
+                {
+                    ownsMutex = mutex.WaitOne(0, false);
+                    if (ownsMutex)
+                    {
+                        return LockAcquireResult.Acquired;
+                    }
+                }
+                catch (AbandonedMutexException)
+                {
+                    ownsMutex = true;
+                    return LockAcquireResult.Acquired;
+                }
+
+                mutex.Dispose();
+                mutex = null;
+                return LockAcquireResult.AlreadyHeldByAnotherInstance;
+            }
+            catch (Exception e)
+            {
+                DebugHelper.WriteException(e, $"SingleInstanceManager: Failed to acquire named mutex '{MutexName}'.");
+                mutex = null;
+                ownsMutex = false;
+                return LockAcquireResult.Unavailable;
+            }
+        }
+
+        private LockAcquireResult TryAcquireLockFile()
+        {
+            try
+            {
+                lockFilePath = GetLockFilePath();
+                lockFileStream = new FileStream(lockFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+
+                string marker = $"{Environment.ProcessId}{Environment.NewLine}";
+                lockFileStream.SetLength(0);
+                byte[] bytes = Encoding.UTF8.GetBytes(marker);
+                lockFileStream.Write(bytes, 0, bytes.Length);
+                lockFileStream.Flush(true);
+                lockFileStream.Position = 0;
+
+                return LockAcquireResult.Acquired;
+            }
+            catch (IOException ioEx)
+            {
+                DebugHelper.WriteLine($"SingleInstanceManager: Lock file appears held by another instance: {ioEx.Message}");
+                lockFileStream = null;
+                return LockAcquireResult.AlreadyHeldByAnotherInstance;
+            }
+            catch (Exception e)
+            {
+                DebugHelper.WriteException(e, "SingleInstanceManager: Failed to acquire lock file fallback.");
+                lockFileStream = null;
+                return LockAcquireResult.Unavailable;
+            }
+        }
+
+        private string GetLockFilePath()
+        {
+            string tempPath = Path.GetTempPath();
+            var sb = new StringBuilder(MutexName.Length);
+
+            foreach (char c in MutexName)
+            {
+                sb.Append(char.IsLetterOrDigit(c) ? char.ToLowerInvariant(c) : '_');
+            }
+
+            return Path.Combine(tempPath, $"{sb}.instance.lock");
+        }
+
         private void RedirectArgumentsToFirstInstance(string[] args)
         {
             try
@@ -174,7 +283,29 @@ namespace XerahS.Common
                 cts.Dispose();
             }
 
+            ReleaseInstanceLocks();
+        }
+
+        private void ReleaseInstanceLocks()
+        {
+            if (ownsMutex && mutex != null)
+            {
+                try
+                {
+                    mutex.ReleaseMutex();
+                }
+                catch (ApplicationException)
+                {
+                    // Ignore release failures when mutex ownership was already lost.
+                }
+            }
+
+            ownsMutex = false;
             mutex?.Dispose();
+            mutex = null;
+
+            lockFileStream?.Dispose();
+            lockFileStream = null;
         }
     }
 }

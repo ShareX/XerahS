@@ -127,7 +127,8 @@ namespace XerahS.App
                 XerahS.Common.DebugHelper.Flush();
 
                 // Provide helpful guidance for common Linux display issues
-                if (OperatingSystem.IsLinux() && (ex.Message.Contains("XOpenDisplay") || ex.Message.Contains("display")))
+                bool isLinuxDisplayError = IsLinuxDisplayError(ex);
+                if (isLinuxDisplayError)
                 {
                     Console.Error.WriteLine("\n" + new string('=', 70));
                     Console.Error.WriteLine("ERROR: Unable to connect to display server");
@@ -169,9 +170,24 @@ namespace XerahS.App
                 }
 
 #if DEBUG
-                throw;
+                if (!isLinuxDisplayError)
+                {
+                    throw;
+                }
 #endif
             }
+        }
+
+        private static bool IsLinuxDisplayError(Exception ex)
+        {
+            if (!OperatingSystem.IsLinux())
+            {
+                return false;
+            }
+
+            return ex.Message.Contains("XOpenDisplay", StringComparison.OrdinalIgnoreCase) ||
+                   ex.Message.Contains("display", StringComparison.OrdinalIgnoreCase) ||
+                   ex.ToString().Contains("Avalonia.X11", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
