@@ -39,11 +39,11 @@
 
   <!-- Reference host assemblies (don't copy, use host's version) -->
   <ItemGroup>
-    <ProjectReference Include="..\..\desktop\core\XerahS.Uploaders\XerahS.Uploaders.csproj">
+    <ProjectReference Include="..\..\core\XerahS.Uploaders\XerahS.Uploaders.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
-    <ProjectReference Include="..\..\desktop\core\XerahS.Common\XerahS.Common.csproj">
+    <ProjectReference Include="..\..\core\XerahS.Common\XerahS.Common.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>

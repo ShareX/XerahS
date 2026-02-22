@@ -33,7 +33,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Services", "src\desk
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{58D3A2C3-F96F-5E57-2C6B-ECE59D6A18FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Imgur.Plugin", "src\Plugins\ShareX.Imgur.Plugin\XerahS.Imgur.Plugin.csproj", "{3C6F3C12-78FE-40CD-A300-86F9DEAF047F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Imgur.Plugin", "src\desktop\plugins\Imgur.Plugin\XerahS.Imgur.Plugin.csproj", "{3C6F3C12-78FE-40CD-A300-86F9DEAF047F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.AmazonS3.Plugin", "src\desktop\plugins\AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj", "{21ADE7E5-729D-437E-9337-357875682C52}"
 EndProject
