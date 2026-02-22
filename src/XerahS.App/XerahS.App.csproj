@@ -36,7 +36,7 @@
     <!-- Audits tool is only needed for Debug builds (development/auditing) -->
     <ProjectReference Include="..\XerahS.Audits.Tool\XerahS.Audits.Tool.csproj" Condition="'$(Configuration)' == 'Debug'" />
     <ProjectReference Include="..\XerahS.UI\XerahS.UI.csproj" />
-    <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
+    <ProjectReference Include="..\desktop\core\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\XerahS.WatchFolder.Daemon\XerahS.WatchFolder.Daemon.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '')" />
     <ProjectReference Include="..\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="$(RuntimeIdentifier.StartsWith('osx')) Or ('$(OS)' != 'Windows_NT' And '$(RuntimeIdentifier)' == '')" />

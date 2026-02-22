@@ -181,12 +181,26 @@ Implement in **multiple stages**, each with its own **git commit** and **verify*
 | **1** | Native mobile | **Most isolated**: Kotlin not in .sln; Swift same. No .NET ProjectReferences. Only folder moves + docs/scripts. | `[XIP0036] Stage 1: move native mobile to src/mobile/android, src/mobile/ios` |
 | **2** | Experimental .NET mobile | Isolated from desktop app. Move 4 projects; update .sln + their ProjectReferences (point to still-flat Core). | `[XIP0036] Stage 2: move experimental mobile to src/mobile-experimental` |
 | **3** | CLI | Single product under new `src/desktop/cli/`. Rest of desktop still flat; only CLI and .sln paths change. | `[XIP0036] Stage 3: move CLI to src/desktop/cli` |
-| **4** | Desktop core | Core is shared by everyone. Move 9 projects; update .sln and **every** ProjectReference to any of them (app, cli, experimental, tools, plugins). | `[XIP0036] Stage 4: move core to src/desktop/core` |
+| **4** | Desktop core (9 mini-stages) | One project per commit. Create `src/desktop/core/` on first move; each mini-stage: move one project, update .sln and **every** ProjectReference to that project. | See table below. |
 | **5** | Desktop platform | Move 5 projects; update .sln and all ProjectReferences to platform projects. | `[XIP0036] Stage 5: move platform to src/desktop/platform` |
 | **6** | Desktop app | Move App, UI, Bootstrap, RegionCapture; update .sln, ProjectReferences, and ImageEditor path from UI. | `[XIP0036] Stage 6: move desktop app to src/desktop/app` |
 | **7** | Desktop tools | Move 3 projects (WatchFolder.Daemon, PluginExporter, Audits.Tool); update .sln and ProjectReferences. | `[XIP0036] Stage 7: move tools to src/desktop/tools` |
 | **8** | Desktop plugins | Move `src/Plugins` to `src/desktop/plugins`; update .sln and all ProjectReferences to plugins. Optional: rename ShareX.* → XerahS.*. | `[XIP0036] Stage 8: move plugins to src/desktop/plugins` |
 | **9** | Docs/skills/scripts | Update .ai/skills (build-windows-exe, build-android, build-linux-binary), .githooks, scripts, docs. Optional: rename test folder. | `[XIP0036] Stage 9: update docs and skill paths for reorg` |
+
+**Stage 4 mini-stages (one commit per core project)** — Create `src/desktop/core/` when moving the first project. For each row: move that project into `src/desktop/core/`, update .sln path for it, update every .csproj that references it (app, cli, mobile-experimental, tools, plugins, other core projects), then commit.
+
+| Mini-stage | Project | Commit message idea |
+| ---------- | ------- | -------------------- |
+| **4a** | XerahS.Core | `[XIP0036] Stage 4a: move XerahS.Core to src/desktop/core` |
+| **4b** | XerahS.Common | `[XIP0036] Stage 4b: move XerahS.Common to src/desktop/core` |
+| **4c** | XerahS.Services.Abstractions | `[XIP0036] Stage 4c: move XerahS.Services.Abstractions to src/desktop/core` |
+| **4d** | XerahS.Services | `[XIP0036] Stage 4d: move XerahS.Services to src/desktop/core` |
+| **4e** | XerahS.ViewModels | `[XIP0036] Stage 4e: move XerahS.ViewModels to src/desktop/core` |
+| **4f** | XerahS.History | `[XIP0036] Stage 4f: move XerahS.History to src/desktop/core` |
+| **4g** | XerahS.Indexer | `[XIP0036] Stage 4g: move XerahS.Indexer to src/desktop/core` |
+| **4h** | XerahS.Uploaders | `[XIP0036] Stage 4h: move XerahS.Uploaders to src/desktop/core` |
+| **4i** | XerahS.Media | `[XIP0036] Stage 4i: move XerahS.Media to src/desktop/core` |
 
 **Per-stage workflow**
 
@@ -204,7 +218,7 @@ Implement in **multiple stages**, each with its own **git commit** and **verify*
 - **After Stage 1**: Kotlin at `src/mobile/android/`, Swift at `src/mobile/ios/`. No .sln changes. Docs/scripts: replace `XerahS.Mobile.Kt` path with `mobile/android`, `XerahS.Mobile.Swift` with `mobile/ios`.
 - **After Stage 2**: Experimental at `src/mobile-experimental/`. Their ProjectReferences: `..\..\XerahS.Core\`, `..\..\XerahS.Common\`, etc. (two levels up to src; rest still flat).
 - **After Stage 3**: CLI at `src/desktop/cli/XerahS.CLI/`. CLI’s ProjectReferences: `..\..\..\XerahS.Core\` etc. (three levels up to src; core still flat).
-- **After Stage 4**: Core at `src/desktop/core/`. All referrers (app, cli, experimental, tools, plugins) use e.g. `..\..\desktop\core\XerahS.Core\` or `..\core\XerahS.Core\` from under desktop, or `..\..\core\XerahS.Core\` from app/cli.
+- **After Stage 4 (4a–4i)**: Each core project moved one at a time. After 4a: only XerahS.Core is under `src/desktop/core/`; referrers use `..\..\core\XerahS.Core\` (from app/cli) or `..\..\..\core\XerahS.Core\` (from mobile-experimental) or `..\core\XerahS.Core\` (from other core projects). Repeat for 4b–4i; by 4i all core is at `src/desktop/core/`.
 - **Stages 5–8**: Same idea: update .sln and every ProjectReference that points to the moved projects. ImageEditor path from UI (Stage 6): `..\..\..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj`.
 
 ---

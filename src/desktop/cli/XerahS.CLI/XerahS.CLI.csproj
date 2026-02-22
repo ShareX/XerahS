@@ -16,7 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\XerahS.Bootstrap\XerahS.Bootstrap.csproj" />
-    <ProjectReference Include="..\..\..\XerahS.Core\XerahS.Core.csproj" />
+    <ProjectReference Include="..\..\..\core\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\..\..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
     <ProjectReference Include="..\..\..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />

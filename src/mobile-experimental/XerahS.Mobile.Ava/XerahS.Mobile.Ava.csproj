@@ -53,7 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Mobile.Core\XerahS.Mobile.Core.csproj" />
-    <ProjectReference Include="..\..\XerahS.Core\XerahS.Core.csproj" />
+    <ProjectReference Include="..\..\desktop\core\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\..\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\..\XerahS.Uploaders\XerahS.Uploaders.csproj" />
