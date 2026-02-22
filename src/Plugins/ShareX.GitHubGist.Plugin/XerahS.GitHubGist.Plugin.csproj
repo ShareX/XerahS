@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\XerahS.Uploaders\XerahS.Uploaders.csproj">
+    <ProjectReference Include="..\..\desktop\core\XerahS.Uploaders\XerahS.Uploaders.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>

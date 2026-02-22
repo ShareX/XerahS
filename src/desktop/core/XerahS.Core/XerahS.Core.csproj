@@ -10,7 +10,7 @@
     <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\XerahS.History\XerahS.History.csproj" />
-    <ProjectReference Include="..\..\XerahS.Uploaders\XerahS.Uploaders.csproj" />
+    <ProjectReference Include="..\XerahS.Uploaders\XerahS.Uploaders.csproj" />
     <ProjectReference Include="..\XerahS.Indexer\XerahS.Indexer.csproj" />
 
     <ProjectReference Include="..\..\..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj" GlobalPropertiesToRemove="OS;Platform" />

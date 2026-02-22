@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\desktop\core\XerahS.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FluentFTP" Version="53.0.2" />
