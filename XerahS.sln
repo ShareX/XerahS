@@ -41,7 +41,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Paste2.Plugin", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.GitHubGist.Plugin", "src\Plugins\ShareX.GitHubGist.Plugin\XerahS.GitHubGist.Plugin.csproj", "{2A8FD247-3218-4294-9321-4034C2DC6A36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.PluginExporter", "src\XerahS.PluginExporter\XerahS.PluginExporter.csproj", "{F0A1664B-87CC-42C3-B152-654CC1331525}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.PluginExporter", "src\desktop\tools\XerahS.PluginExporter\XerahS.PluginExporter.csproj", "{F0A1664B-87CC-42C3-B152-654CC1331525}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.MacOS", "src\desktop\platform\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj", "{E948629F-A1FC-42D2-A9BF-E5A55689BAA6}"
 EndProject
@@ -67,7 +67,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "XerahS.Tests", "XerahS.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Tests", "tests\XerahS.Tests\XerahS.Tests.csproj", "{378EDF0A-940F-48D5-B20F-647CC9F00B2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Audits.Tool", "src\XerahS.Audits.Tool\XerahS.Audits.Tool.csproj", "{0BA6546E-93E1-4DF9-800E-B9E3F4FBAC65}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Audits.Tool", "src\desktop\tools\XerahS.Audits.Tool\XerahS.Audits.Tool.csproj", "{0BA6546E-93E1-4DF9-800E-B9E3F4FBAC65}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Auto.Plugin", "src\Plugins\ShareX.Auto.Plugin\XerahS.Auto.Plugin.csproj", "{1CEDB548-E301-3D5B-9DE1-FE24C2043240}"
 EndProject
