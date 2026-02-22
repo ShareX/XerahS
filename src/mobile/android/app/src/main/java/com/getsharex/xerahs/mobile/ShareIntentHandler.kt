@@ -52,7 +52,7 @@ object ShareIntentHandler {
                     uri = intent.clipData!!.getItemAt(0).uri
                 }
                 if (uri != null) {
-                    copyUriToCache(activity, uri, cacheDir)?.let { localPaths.add(it) }
+                    copyUriToCache(activity, uri, cacheDir, type)?.let { localPaths.add(it) }
                         ?: Log.w(TAG, "copyUriToCache failed for $uri")
                 } else {
                     Log.w(TAG, "ACTION_SEND: no URI in EXTRA_STREAM or clipData")
@@ -65,7 +65,7 @@ object ShareIntentHandler {
                     uris = ArrayList((0 until intent.clipData!!.itemCount).map { intent.clipData!!.getItemAt(it).uri })
                 }
                 uris?.forEach { uri ->
-                    copyUriToCache(activity, uri, cacheDir)?.let { localPaths.add(it) }
+                    copyUriToCache(activity, uri, cacheDir, type)?.let { localPaths.add(it) }
                         ?: Log.w(TAG, "copyUriToCache failed for $uri")
                 }
                 if (uris.isNullOrEmpty()) Log.w(TAG, "ACTION_SEND_MULTIPLE: no URIs in EXTRA_STREAM or clipData")
@@ -75,9 +75,13 @@ object ShareIntentHandler {
         return if (localPaths.isEmpty()) null else localPaths.toTypedArray()
     }
 
-    private fun copyUriToCache(activity: MainActivity, uri: Uri, cacheDir: File): String? {
+    private fun copyUriToCache(activity: MainActivity, uri: Uri, cacheDir: File, mimeType: String? = null): String? {
         return try {
-            val fileName = getFileNameFromUri(activity, uri) ?: "share_${UUID.randomUUID().toString().take(8)}"
+            var fileName = getFileNameFromUri(activity, uri)
+            if (fileName.isNullOrBlank()) {
+                val ext = extensionFromMimeType(mimeType)
+                fileName = "share_${UUID.randomUUID().toString().take(8)}${if (ext != null) ".$ext" else ""}"
+            }
             val cachePath = File(cacheDir, fileName)
             activity.contentResolver.openInputStream(uri)?.use { input ->
                 cachePath.outputStream().use { output ->
@@ -100,5 +104,26 @@ object ShareIntentHandler {
             }
         }
         return uri.lastPathSegment?.substringAfterLast('/')
+    }
+
+    private fun extensionFromMimeType(mimeType: String?): String? {
+        if (mimeType.isNullOrBlank()) return null
+        return when (mimeType) {
+            "application/pdf" -> "pdf"
+            "video/mp4", "video/x-m4v" -> "mp4"
+            "video/3gpp" -> "3gp"
+            "audio/mpeg" -> "mp3"
+            "audio/mp4", "audio/x-m4a" -> "m4a"
+            "audio/wav", "audio/x-wav" -> "wav"
+            "audio/ogg" -> "ogg"
+            "audio/webm" -> "weba"
+            "image/jpeg" -> "jpg"
+            "image/png" -> "png"
+            "image/gif" -> "gif"
+            "image/webp" -> "webp"
+            "text/plain" -> "txt"
+            "text/html" -> "html"
+            else -> mimeType.substringAfterLast('/').takeIf { it != "*" && it.isNotBlank() }?.take(4)
+        }
     }
 }
