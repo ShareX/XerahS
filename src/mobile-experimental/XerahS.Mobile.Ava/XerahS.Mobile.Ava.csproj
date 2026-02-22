@@ -58,7 +58,7 @@
     <ProjectReference Include="..\..\desktop\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\..\desktop\core\XerahS.Uploaders\XerahS.Uploaders.csproj" />
     <ProjectReference Include="..\..\desktop\platform\XerahS.Platform.Mobile\XerahS.Platform.Mobile.csproj" />
-    <ProjectReference Include="..\..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" />
+    <ProjectReference Include="..\..\desktop\plugins\AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" />
   </ItemGroup>
   <!-- iOS Share Extension (Apple requirement: separate extension project) -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-ios' And '$(EnableShareExtension)' == 'true'">

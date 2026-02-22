@@ -58,7 +58,7 @@ flowchart LR
 | **app/**                    | XerahS.App, XerahS.UI, XerahS.Bootstrap, XerahS.RegionCapture (the desktop application — **not** src/desktop/desktop/) |
 | **cli/**                    | XerahS.CLI (product that shares core; sibling to app, not under tools) |
 | **tools/**                  | XerahS.WatchFolder.Daemon, XerahS.PluginExporter, XerahS.Audits.Tool |
-| **plugins/**                | Current Plugins contents; optionally rename ShareX.* → XerahS.* to match .csproj |
+| **plugins/**                | Plugin folders with **short names** (no ShareX. prefix): AmazonS3.Plugin, Imgur.Plugin, Paste2.Plugin, GitHubGist.Plugin, Auto.Plugin |
 
 **Experimental .NET mobile** — under **src/mobile-experimental/** (sibling to desktop and mobile):
 
@@ -79,7 +79,7 @@ After moves, paths look like:
 - `src/desktop/app/XerahS.App/XerahS.App.csproj`
 - `src/desktop/cli/XerahS.CLI/XerahS.CLI.csproj`
 - `src/mobile-experimental/XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj`
-- `src/desktop/plugins/XerahS.Imgur.Plugin/...` (if plugin folders renamed)
+- `src/desktop/plugins/Imgur.Plugin/...` (short path; .csproj remains XerahS.Imgur.Plugin.csproj)
 - `src/mobile/android/` — Kotlin app (app/, core/, feature/, build.gradle.kts, etc.)
 - `src/mobile/ios/` — Swift app
 
@@ -141,11 +141,11 @@ XerahS/
     │   │   ├── XerahS.PluginExporter/
     │   │   └── XerahS.Audits.Tool/
     │   ├── plugins/
-    │   │   ├── XerahS.Imgur.Plugin/         (or ShareX.Imgur.Plugin if not renamed)
-    │   │   ├── XerahS.AmazonS3.Plugin/
-    │   │   ├── XerahS.Paste2.Plugin/
-    │   │   ├── XerahS.GitHubGist.Plugin/
-    │       │   └── XerahS.Auto.Plugin/
+    │   │   ├── AmazonS3.Plugin/
+    │   │   ├── Imgur.Plugin/
+    │   │   ├── Paste2.Plugin/
+    │   │   ├── GitHubGist.Plugin/
+    │   │   └── Auto.Plugin/
     │
     ├── mobile-experimental/       (experimental .NET mobile — Ava, Maui, etc.)
     │   ├── XerahS.Mobile.Core/
@@ -185,7 +185,7 @@ Implement in **multiple stages**, each with its own **git commit** and **verify*
 | **5** | Desktop platform (5 mini-stages) | One project per commit. Create `src/desktop/platform/` on first move; each mini-stage: move one project, update .sln and every ProjectReference to it. | See Stage 5 table below. |
 | **6** | Desktop app (4 mini-stages) | One project per commit. Create `src/desktop/app/` on first move; each mini-stage: move one project, update .sln and every ProjectReference; UI move updates ImageEditor path. | See Stage 6 table below. |
 | **7** | Desktop tools (3 mini-stages) | One project per commit. Create `src/desktop/tools/` on first move; each mini-stage: move one project, update .sln and every ProjectReference. | See Stage 7 table below. |
-| **8** | Desktop plugins | Move `src/Plugins` to `src/desktop/plugins`; update .sln and all ProjectReferences to plugins. Optional: rename ShareX.* → XerahS.*. | `[XIP0036] Stage 8: move plugins to src/desktop/plugins` |
+| **8** | Desktop plugins (5 mini-stages) | One plugin per commit. Create `src/desktop/plugins/` on first move; each mini-stage: move one plugin folder and **drop ShareX. prefix** (e.g. ShareX.AmazonS3.Plugin → plugins/AmazonS3.Plugin), update .sln path and solution folder name, update App _DefaultPlugins, mobile-experimental refs, and plugin’s own ProjectReferences to core. | See Stage 8 table below. |
 | **9** | Docs/skills/scripts | Update .ai/skills (build-windows-exe, build-android, build-linux-binary), .githooks, scripts, docs. Optional: rename test folder. | `[XIP0036] Stage 9: update docs and skill paths for reorg` |
 
 **Stage 4 mini-stages (one commit per core project)** — Create `src/desktop/core/` when moving the first project. For each row: move that project into `src/desktop/core/`, update .sln path for it, update every .csproj that references it (app, cli, mobile-experimental, tools, plugins, other core projects), then commit.
@@ -228,6 +228,16 @@ Implement in **multiple stages**, each with its own **git commit** and **verify*
 | **7a** | XerahS.WatchFolder.Daemon | `[XIP0036] Stage 7a: move XerahS.WatchFolder.Daemon to src/desktop/tools` |
 | **7b** | XerahS.PluginExporter | `[XIP0036] Stage 7b: move XerahS.PluginExporter to src/desktop/tools` |
 | **7c** | XerahS.Audits.Tool | `[XIP0036] Stage 7c: move XerahS.Audits.Tool to src/desktop/tools` |
+
+**Stage 8 mini-stages (one commit per plugin, move + shorten path)** — Create `src/desktop/plugins/` when moving the first plugin. For each row: move that plugin from `src/Plugins/ShareX.X.Plugin` to `src/desktop/plugins/X.Plugin` (drop ShareX. prefix so path is shorter, e.g. AmazonS3.Plugin, Imgur.Plugin). Update .sln project path and any solution folder display name (e.g. ShareX.AmazonS3.Plugin → AmazonS3.Plugin), update XerahS.App _DefaultPlugins, mobile-experimental ProjectReferences if they reference that plugin, and the plugin’s own ProjectReferences to core (`..\..\core\...`). Then commit.
+
+| Mini-stage | From folder | To folder | Commit message idea |
+| ---------- | ----------- | --------- | -------------------- |
+| **8a** | ShareX.AmazonS3.Plugin | plugins/AmazonS3.Plugin | `[XIP0036] Stage 8a: move plugin to src/desktop/plugins/AmazonS3.Plugin` |
+| **8b** | ShareX.Imgur.Plugin | plugins/Imgur.Plugin | `[XIP0036] Stage 8b: move plugin to src/desktop/plugins/Imgur.Plugin` |
+| **8c** | ShareX.Paste2.Plugin | plugins/Paste2.Plugin | `[XIP0036] Stage 8c: move plugin to src/desktop/plugins/Paste2.Plugin` |
+| **8d** | ShareX.GitHubGist.Plugin | plugins/GitHubGist.Plugin | `[XIP0036] Stage 8d: move plugin to src/desktop/plugins/GitHubGist.Plugin` |
+| **8e** | ShareX.Auto.Plugin | plugins/Auto.Plugin | `[XIP0036] Stage 8e: move plugin to src/desktop/plugins/Auto.Plugin` |
 
 **Status:** Stages 5a–5e (platform), 6a–6d (app), 7a–7c (tools) completed — one commit per mini-stage.
 
@@ -275,7 +285,7 @@ Single-pass reference (for comparison or if doing a single big reorg later). Eac
 
 **9.** **Move Tools projects** — `git mv` into `src/desktop/tools/`: XerahS.WatchFolder.Daemon, XerahS.PluginExporter, XerahS.Audits.Tool (XerahS.CLI already moved to src/desktop/cli/ in step 5).
 
-**10.** **Move Plugins** — Move entire `src/Plugins/` contents into `src/desktop/plugins/` (or `git mv src/Plugins src/desktop/plugins` if you replace the folder). Optionally rename plugin subfolders ShareX.* → XerahS.*; then update solution and ProjectReferences (steps 11 and 12).
+**10.** **Move Plugins** — For each plugin: move `src/Plugins/ShareX.X.Plugin` to `src/desktop/plugins/X.Plugin` (drop ShareX. prefix for shorter path). Update solution and ProjectReferences (steps 11 and 12).
 
 **11.** **Update [XerahS.sln](XerahS.sln)**
   Change every `Project(...)` path from `src\...` to `src\desktop\core\...`, `src\desktop\app\...`, `src\desktop\cli\XerahS.CLI\...`, etc. ImageEditor and tests paths stay the same. Kotlin app is under `src\mobile\android\` (not in .sln); Swift under `src\mobile\ios\` if in solution. Solution folder nesting can mirror desktop (core, platform, app, cli, tools, plugins) and mobile-experimental.
@@ -285,12 +295,12 @@ Single-pass reference (for comparison or if doing a single big reorg later). Eac
   - From `src/desktop/app/XerahS.App/`: `..\..\core\XerahS.Core\`, `..\..\platform\XerahS.Platform.Windows\`, `..\..\tools\XerahS.WatchFolder.Daemon\`
   - From `src/desktop/app/XerahS.UI/`: ImageEditor = `..\..\..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj` (four levels up to repo root)
   - From `src/desktop/cli/XerahS.CLI/`: `..\..\core\XerahS.Core\`, `..\..\platform\XerahS.Platform.Windows\`, `..\..\app\XerahS.Bootstrap\` etc. (same level as app; one level up to desktop, then into core/platform/app).
-  - From `src/mobile-experimental/`: `..\desktop\core\XerahS.Core\`, `..\desktop\plugins\XerahS.AmazonS3.Plugin\` etc. (one level up to src, then into desktop).
+  - From `src/mobile-experimental/`: `..\desktop\core\XerahS.Core\`, `..\desktop\plugins\AmazonS3.Plugin\` etc. (one level up to src, then into desktop; plugin folders use short names).
 
 **13.** **Update Directory.Build.props under plugins (if needed)**
   If [src/Plugins/](src/Plugins/) had a Directory.Build.props, move or recreate it under `src/desktop/plugins/` as needed.
 
-**14.** **Optional: rename plugin subfolders** — Under `src/desktop/plugins/`, rename ShareX.* → XerahS.*. Then update solution and all ProjectReferences that point to Plugins.
+**14.** **Plugin folder names** — Under `src/desktop/plugins/`, use short folder names (e.g. AmazonS3.Plugin, Imgur.Plugin) by dropping the ShareX. prefix when moving. Update solution and all ProjectReferences accordingly.
 
 **15.** **Update build-windows-exe SKILL.md** — Update hardcoded paths to `src\desktop\...`; ImageEditor paths unchanged.
 
@@ -328,7 +338,7 @@ XerahS.CLI lives in **src/desktop/cli/** (product sibling to app, shares desktop
 
 - **Scope**: All .NET projects move under `src/desktop/` (one extra path segment); many .csproj ProjectReferences and the .sln must be updated; .ai/skills and docs that hardcode paths must be updated. Experimental .NET mobile moves to `src/mobile-experimental/`; Android and iOS to `src/mobile/android/` and `src/mobile/ios/`.
 - **Risk**: Missing a ProjectReference or solution path causes build failure; do a full `dotnet build` and fix any broken references. Prefer a single commit (or a short series) so you can revert easily.
-- **Plugin folder renames**: Optional (step 13). If you rename ShareX.* → XerahS.* under `src/desktop/plugins/`, update every ProjectReference that points to Plugins and the solution.
+- **Plugin folder names**: Stage 8 moves and renames in one go: ShareX.X.Plugin → src/desktop/plugins/X.Plugin (shorter path). Update every ProjectReference and the solution.
 
 ---
 

@@ -117,7 +117,7 @@
 
   <!-- Bundle Default Plugins -->
   <ItemGroup>
-    <_DefaultPlugins Include="..\..\..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" PluginId="amazons3" />
+    <_DefaultPlugins Include="..\..\plugins\AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" PluginId="amazons3" />
     <_DefaultPlugins Include="..\..\..\Plugins\ShareX.Imgur.Plugin\XerahS.Imgur.Plugin.csproj" PluginId="imgur" />
     <_DefaultPlugins Include="..\..\..\Plugins\ShareX.Paste2.Plugin\XerahS.Paste2.Plugin.csproj" PluginId="paste2" />
     <_DefaultPlugins Include="..\..\..\Plugins\ShareX.GitHubGist.Plugin\XerahS.GitHubGist.Plugin.csproj" PluginId="gist" />

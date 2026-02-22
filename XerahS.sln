@@ -35,7 +35,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{58D3
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Imgur.Plugin", "src\Plugins\ShareX.Imgur.Plugin\XerahS.Imgur.Plugin.csproj", "{3C6F3C12-78FE-40CD-A300-86F9DEAF047F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.AmazonS3.Plugin", "src\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj", "{21ADE7E5-729D-437E-9337-357875682C52}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.AmazonS3.Plugin", "src\desktop\plugins\AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj", "{21ADE7E5-729D-437E-9337-357875682C52}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Paste2.Plugin", "src\Plugins\ShareX.Paste2.Plugin\XerahS.Paste2.Plugin.csproj", "{ABF33802-49DC-43DD-8319-938DF8FE5661}"
 EndProject
@@ -81,7 +81,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Mobile.iOS.ShareExte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Mobile.Maui", "src\mobile-experimental\XerahS.Mobile.Maui\XerahS.Mobile.Maui.csproj", "{74BC5937-4C8B-4973-8071-79C755AF5F63}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ShareX.AmazonS3.Plugin", "ShareX.AmazonS3.Plugin", "{D26098F8-6C21-5B24-61C6-2D6B7CBD65FC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AmazonS3.Plugin", "AmazonS3.Plugin", "{D26098F8-6C21-5B24-61C6-2D6B7CBD65FC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
