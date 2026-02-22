@@ -16,7 +16,7 @@
     <ProjectReference Include="..\..\..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj" GlobalPropertiesToRemove="OS;Platform" />
 
     <ProjectReference Include="..\..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
-    <ProjectReference Include="..\..\XerahS.Media\XerahS.Media.csproj" />
+    <ProjectReference Include="..\XerahS.Media\XerahS.Media.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NETStandard.Library" Version="2.0.0" />

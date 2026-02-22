@@ -23,7 +23,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Indexer", "src\deskt
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Uploaders", "src\desktop\core\XerahS.Uploaders\XerahS.Uploaders.csproj", "{EE2C5D43-DAFA-42A1-AB21-35B0D175CABD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Media", "src\XerahS.Media\XerahS.Media.csproj", "{AD3064B1-3E03-48CA-BF35-9F0633C53A37}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Media", "src\desktop\core\XerahS.Media\XerahS.Media.csproj", "{AD3064B1-3E03-48CA-BF35-9F0633C53A37}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Services.Abstractions", "src\desktop\core\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj", "{EFCD5F4F-9CE6-4516-8DB4-4B7CC2D70560}"
 EndProject

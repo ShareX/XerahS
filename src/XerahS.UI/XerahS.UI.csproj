@@ -20,7 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\desktop\core\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\desktop\core\XerahS.Common\XerahS.Common.csproj" />
-    <ProjectReference Include="..\XerahS.Media\XerahS.Media.csproj" />
+    <ProjectReference Include="..\desktop\core\XerahS.Media\XerahS.Media.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\desktop\core\XerahS.Indexer\XerahS.Indexer.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT' And !$(RuntimeIdentifier.StartsWith('osx')) And !$(RuntimeIdentifier.StartsWith('linux')) And '$(CrossCompile)' != 'true'" />
