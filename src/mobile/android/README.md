@@ -1,8 +1,8 @@
-# XerahS Mobile (iOS)
+# XerahS Mobile (Android)
 
-XerahS Mobile lets you share files from your iPhone or iPad and upload them quickly.
+XerahS Mobile lets you share files from your phone and upload them quickly.
 
-- Requires iOS 17.0 or newer.
+- Requires Android 8.0 or newer.
 
 ## What You Can Do
 
@@ -16,15 +16,10 @@ XerahS Mobile lets you share files from your iPhone or iPad and upload them quic
 - View upload history.
 - Search, copy, delete, or clear history entries.
 
-## Share from Other Apps
-
-- In Photos, Files, and other apps, tap **Share** and choose **XerahS**.
-- XerahS supports sharing multiple items at once (up to 10 per share action).
-
 ## How To Use
 
 1. Open XerahS and set up an upload destination in **Settings**.
-2. Share file(s) to XerahS from another app.
+2. In Photos, Files, or another app, tap **Share** and choose **XerahS**.
 3. XerahS uploads your file(s) and shows the result links.
 4. Open **History** any time to find previous uploads.
 
