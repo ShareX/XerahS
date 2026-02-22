@@ -53,7 +53,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShareX.ImageEditor", "Image
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.Linux", "src\desktop\platform\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj", "{326B5A95-16A2-4E7A-A320-8E253D5970E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Bootstrap", "src\XerahS.Bootstrap\XerahS.Bootstrap.csproj", "{AF70A291-5C9F-4307-A7DA-CA065FB1A60E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Bootstrap", "src\desktop\app\XerahS.Bootstrap\XerahS.Bootstrap.csproj", "{AF70A291-5C9F-4307-A7DA-CA065FB1A60E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.CLI", "src\desktop\cli\XerahS.CLI\XerahS.CLI.csproj", "{A23ABD44-C0EA-4BD9-AE7B-1A3ACF94051D}"
 EndProject
