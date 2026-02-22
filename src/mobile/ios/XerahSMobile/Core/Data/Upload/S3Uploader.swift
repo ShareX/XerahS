@@ -22,6 +22,7 @@
 //  Optionally you can also view the license at <http://www.gnu.org/licenses/>.
 //
 
+import CryptoKit
 import Foundation
 
 /// Upload a file to S3 using AWS Signature V4 and PUT. Returns the object URL on success.
@@ -107,11 +108,11 @@ final class S3Uploader {
         ].joined(separator: "\n")
 
         let kSecret = "AWS4\(config.secretAccessKey)"
-        let kDate = HMAC.sha256(key: kSecret.data(using: .utf8)!, data: dateStamp.data(using: .utf8)!)
-        let kRegion = HMAC.sha256(key: kDate, data: region.data(using: .utf8)!)
-        let kService = HMAC.sha256(key: kRegion, data: "s3".data(using: .utf8)!)
-        let kSigning = HMAC.sha256(key: kService, data: "aws4_request".data(using: .utf8)!)
-        let signature = HMAC.sha256Hex(key: kSigning, data: stringToSign.data(using: .utf8)!)
+        let kDate = HmacUtil.sha256(key: kSecret.data(using: .utf8)!, data: dateStamp.data(using: .utf8)!)
+        let kRegion = HmacUtil.sha256(key: kDate, data: region.data(using: .utf8)!)
+        let kService = HmacUtil.sha256(key: kRegion, data: "s3".data(using: .utf8)!)
+        let kSigning = HmacUtil.sha256(key: kService, data: "aws4_request".data(using: .utf8)!)
+        let signature = HmacUtil.sha256Hex(key: kSigning, data: stringToSign.data(using: .utf8)!)
 
         let auth = "AWS4-HMAC-SHA256 Credential=\(config.accessKeyId)/\(credScope), SignedHeaders=\(signedHeaders), Signature=\(signature)"
         request.setValue(auth, forHTTPHeaderField: "Authorization")
@@ -138,7 +139,6 @@ final class S3Uploader {
     }
 }
 
-import CryptoKit
 extension Data {
     var sha256Hex: String {
         let hash = SHA256.hash(data: self)
@@ -148,10 +148,10 @@ extension Data {
 extension String {
     var sha256Hex: String { Data(utf8).sha256Hex }
 }
-enum HMAC {
+enum HmacUtil {
     static func sha256(key: Data, data: Data) -> Data {
         let symKey = SymmetricKey(data: key)
-        let signature = HMAC<SHA256>.authenticationCode(for: data, using: symKey)
+        let signature = CryptoKit.HMAC<SHA256>.authenticationCode(for: data, using: symKey)
         return Data(signature)
     }
     static func sha256Hex(key: Data, data: Data) -> String {

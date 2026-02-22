@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>XerahS.WatchFolder.Daemon</RootNamespace>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\..'))\</RepoRoot>
     <TargetFramework>net10.0</TargetFramework>
     <TargetFramework Condition="'$(OS)' == 'Windows_NT' And !$(RuntimeIdentifier.StartsWith('linux')) And !$(RuntimeIdentifier.StartsWith('osx'))">net10.0-windows10.0.26100.0</TargetFramework>
     <OutputType>Exe</OutputType>
@@ -27,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('osx')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('OSX')))">
-    <Content Include="..\..\..\..\native\macos\libscreencapturekit_bridge.dylib">
+    <Content Include="$(RepoRoot)native/macos/libscreencapturekit_bridge.dylib">
       <Link>libscreencapturekit_bridge.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

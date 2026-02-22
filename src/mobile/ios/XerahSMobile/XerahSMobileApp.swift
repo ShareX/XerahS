@@ -52,11 +52,11 @@ struct XerahSMobileApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(appState)
-        }
-        .onOpenURL { url in
-            if url.scheme == "xerahs" {
-                appState.pendingSharedPaths = ShareGroup.consumePendingPaths()
-            }
+                .onOpenURL { url in
+                    if url.scheme == "xerahs" {
+                        appState.pendingSharedPaths = ShareGroup.consumePendingPaths()
+                    }
+                }
         }
     }
 }
