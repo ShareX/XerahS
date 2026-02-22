@@ -37,7 +37,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Imgur.Plugin", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.AmazonS3.Plugin", "src\desktop\plugins\AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj", "{21ADE7E5-729D-437E-9337-357875682C52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Paste2.Plugin", "src\Plugins\ShareX.Paste2.Plugin\XerahS.Paste2.Plugin.csproj", "{ABF33802-49DC-43DD-8319-938DF8FE5661}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Paste2.Plugin", "src\desktop\plugins\Paste2.Plugin\XerahS.Paste2.Plugin.csproj", "{ABF33802-49DC-43DD-8319-938DF8FE5661}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.GitHubGist.Plugin", "src\Plugins\ShareX.GitHubGist.Plugin\XerahS.GitHubGist.Plugin.csproj", "{2A8FD247-3218-4294-9321-4034C2DC6A36}"
 EndProject
