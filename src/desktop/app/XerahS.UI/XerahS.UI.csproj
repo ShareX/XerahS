@@ -25,7 +25,7 @@
     <ProjectReference Include="..\..\core\XerahS.Indexer\XerahS.Indexer.csproj" />
     <ProjectReference Include="..\..\..\platform\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT' And !$(RuntimeIdentifier.StartsWith('osx')) And !$(RuntimeIdentifier.StartsWith('linux')) And '$(CrossCompile)' != 'true'" />
     <ProjectReference Include="..\..\platform\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="$(RuntimeIdentifier.StartsWith('osx')) Or '$(CrossCompile)' == 'true'" />
-    <ProjectReference Include="..\..\platform\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="$(RuntimeIdentifier.StartsWith('linux'))" />
+    <ProjectReference Include="..\..\..\platform\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="$(RuntimeIdentifier.StartsWith('linux'))" />
     <ProjectReference Include="..\..\core\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
     <ProjectReference Include="..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
     <ProjectReference Include="..\..\..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj" GlobalPropertiesToRemove="OS;Platform" />
