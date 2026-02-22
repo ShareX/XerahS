@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Common", "src\deskto
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.Abstractions", "src\desktop\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj", "{2A91F8A0-7FA8-4A01-97D1-4C31F7C8FA11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.Windows", "src\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj", "{5FD4583A-B0F8-4A3C-A5E7-4656A9D7AA6B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.Platform.Windows", "src\desktop\platform\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj", "{5FD4583A-B0F8-4A3C-A5E7-4656A9D7AA6B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.History", "src\desktop\core\XerahS.History\XerahS.History.csproj", "{4EDCA378-8B9C-4EA7-B483-2F53798375EF}"
 EndProject
