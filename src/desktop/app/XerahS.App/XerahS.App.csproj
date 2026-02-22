@@ -121,7 +121,7 @@
     <_DefaultPlugins Include="..\..\plugins\Imgur.Plugin\XerahS.Imgur.Plugin.csproj" PluginId="imgur" />
     <_DefaultPlugins Include="..\..\plugins\Paste2.Plugin\XerahS.Paste2.Plugin.csproj" PluginId="paste2" />
     <_DefaultPlugins Include="..\..\plugins\GitHubGist.Plugin\XerahS.GitHubGist.Plugin.csproj" PluginId="gist" />
-    <_DefaultPlugins Include="..\..\..\Plugins\ShareX.Auto.Plugin\XerahS.Auto.Plugin.csproj" PluginId="auto" />
+    <_DefaultPlugins Include="..\..\plugins\Auto.Plugin\XerahS.Auto.Plugin.csproj" PluginId="auto" />
   </ItemGroup>
 
   <Target Name="BundlePlugins" AfterTargets="Publish" Condition="'$(SkipBundlePlugins)' != 'true'">
