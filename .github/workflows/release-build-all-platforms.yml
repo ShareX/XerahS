@@ -1,0 +1,172 @@
+name: Release Build (All Platforms)
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate-version:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: version
+        name: Resolve version
+        shell: bash
+        run: |
+          VERSION=$(grep -oPm1 '(?<=<Version>)[^<]+' Directory.Build.props | tr -d '[:space:]')
+          if [[ -z "$VERSION" ]]; then
+            echo "Failed to resolve <Version> from Directory.Build.props"
+            exit 1
+          fi
+
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" && "$VERSION" != "$TAG_VERSION" ]]; then
+            echo "Tag version '$TAG_VERSION' does not match Directory.Build.props version '$VERSION'"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  build-windows:
+    needs: validate-version
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          $isccPath = Join-Path ${env:ProgramFiles(x86)} "Inno Setup 6\ISCC.exe"
+          if (!(Test-Path $isccPath)) {
+            choco install innosetup --no-progress -y
+          }
+          if (!(Test-Path $isccPath)) {
+            throw "Inno Setup Compiler (ISCC.exe) was not found after installation."
+          }
+
+      - name: Build Windows packages
+        shell: pwsh
+        run: .\build\windows\package-windows.ps1
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          if-no-files-found: error
+          path: |
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-win-x64.exe
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-win-arm64.exe
+
+  build-macos:
+    needs: validate-version
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build macOS packages
+        shell: bash
+        run: |
+          chmod +x ./build/macos/package-mac.sh
+          ./build/macos/package-mac.sh
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release
+          if-no-files-found: error
+          path: |
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-mac-arm64.tar.gz
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-mac-x64.tar.gz
+
+  build-linux:
+    needs: validate-version
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install RPM tooling
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
+      - name: Build Linux packages
+        shell: bash
+        run: |
+          chmod +x ./build/linux/package-linux.sh
+          ./build/linux/package-linux.sh
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          if-no-files-found: error
+          path: |
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-linux-x64.tar.gz
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-linux-x64.deb
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-linux-x64.rpm
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-linux-arm64.tar.gz
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-linux-arm64.deb
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-linux-arm64.rpm
+
+  release:
+    if: github.ref_type == 'tag'
+    needs:
+      - validate-version
+      - build-windows
+      - build-macos
+      - build-linux
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Upload assets to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-assets/XerahS-${{ needs.validate-version.outputs.version }}-win-x64.exe
+            release-assets/XerahS-${{ needs.validate-version.outputs.version }}-win-arm64.exe
+            release-assets/XerahS-${{ needs.validate-version.outputs.version }}-mac-arm64.tar.gz
+            release-assets/XerahS-${{ needs.validate-version.outputs.version }}-mac-x64.tar.gz
+            release-assets/XerahS-${{ needs.validate-version.outputs.version }}-linux-x64.tar.gz
+            release-assets/XerahS-${{ needs.validate-version.outputs.version }}-linux-x64.deb
+            release-assets/XerahS-${{ needs.validate-version.outputs.version }}-linux-x64.rpm
+            release-assets/XerahS-${{ needs.validate-version.outputs.version }}-linux-arm64.tar.gz
+            release-assets/XerahS-${{ needs.validate-version.outputs.version }}-linux-arm64.deb
+            release-assets/XerahS-${{ needs.validate-version.outputs.version }}-linux-arm64.rpm
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
