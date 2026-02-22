@@ -34,6 +34,7 @@
 		C10000A5 /* CustomUploaderConfigScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A6 /* CustomUploaderConfigScreen.swift */; };
 		C10000A7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A8 /* RootView.swift */; };
 		D1000001 /* ShareGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000002 /* ShareGroup.swift */; };
+		E1000001 /* UploadFileNameGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000002 /* UploadFileNameGenerator.swift */; };
 		D1000003 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000004 /* ShareViewController.swift */; };
 		D1000005 /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D1000000 /* ShareExtension.appex */; };
 /* End PBXBuildFile section */
@@ -93,6 +94,7 @@
 		C10000A8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		D1000000 /* ShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1000002 /* ShareGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareGroup.swift; sourceTree = "<group>"; };
+		E1000002 /* UploadFileNameGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadFileNameGenerator.swift; sourceTree = "<group>"; };
 		D1000004 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		D1000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D1000007 /* ShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShareExtension.entitlements; sourceTree = "<group>"; };
@@ -188,6 +190,7 @@
 			children = (
 				B10000A0 /* Paths.swift */,
 				D1000002 /* ShareGroup.swift */,
+				E1000002 /* UploadFileNameGenerator.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -394,6 +397,7 @@
 				C10000A5 /* CustomUploaderConfigScreen.swift in Sources */,
 				C10000A7 /* RootView.swift in Sources */,
 				D1000001 /* ShareGroup.swift in Sources */,
+				E1000001 /* UploadFileNameGenerator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -32,7 +32,8 @@ final class S3Uploader {
         guard config.isConfigured else { return .failure(error: "S3 is not configured") }
         guard FileManager.default.fileExists(atPath: filePath) else { return .failure(error: "File not found") }
         let fileUrl = URL(fileURLWithPath: filePath)
-        let key = "uploads/\(fileUrl.lastPathComponent)"
+        let uploadName = UploadFileNameGenerator.uploadFileName(for: filePath)
+        let key = "uploads/\(uploadName)"
         let bucket = config.bucketName
         let region = config.region
 

@@ -39,6 +39,7 @@ final class CustomUploader {
         guard let url = URL(string: entry.requestUrl) else { return .failure(error: "Invalid URL") }
         let fileUrl = URL(fileURLWithPath: filePath)
         let formName = entry.fileFormName.isEmpty ? "file" : entry.fileFormName
+        let uploadFileName = UploadFileNameGenerator.uploadFileName(for: filePath)
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -48,7 +49,7 @@ final class CustomUploader {
 
         var body = Data()
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"\(formName)\"; filename=\"\(fileUrl.lastPathComponent)\"\r\n\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"\(formName)\"; filename=\"\(uploadFileName)\"\r\n\r\n".data(using: .utf8)!)
         if let fileData = try? Data(contentsOf: fileUrl) { body.append(fileData) }
         body.append("\r\n".data(using: .utf8)!)
         if !entry.body.isEmpty {
