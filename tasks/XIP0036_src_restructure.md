@@ -1,6 +1,6 @@
 ---
 name: XerahS file reorganisation
-overview: "Mechanical reorganisation by 'what works together': put the whole .NET stack under src/desktop/ (core/, platform/, app/, tools/, plugins/, experimental/) — desktop app lives in src/desktop/app/, not src/desktop/desktop/. Native mobile stays separate: src/android/ (Kotlin), src/ios/ (Swift). Optionally align plugin folder names with .csproj. No content edits—only moves and path updates."
+overview: "Mechanical reorganisation by 'what works together': put the whole .NET stack under src/desktop/ (core/, platform/, app/, tools/, plugins/, experimental/) — desktop app lives in src/desktop/app/, not src/desktop/desktop/. Native mobile under one parent: src/mobile/android/ (Kotlin), src/mobile/ios/ (Swift), so src/mobile/ gives context for both platforms (agentic-friendly). Optionally align plugin folder names with .csproj. No content edits—only moves and path updates."
 todos: []
 isProject: false
 ---
@@ -22,7 +22,7 @@ Project references use relative paths (e.g. `..\XerahS.Core\`, `..\Plugins\Share
 
 ## Recommended structure (under `src/` only)
 
-Organise by **what works together**: the .NET solution lives under **src/desktop/**; native mobile is separate under **src/android/** and **src/ios/**. ImageEditor and `tests/` stay at repo root.
+Organise by **what works together**: the .NET solution lives under **src/desktop/**; native mobile under **src/mobile/** with **android/** and **ios/** so one folder (`src/mobile/`) gives context for both platforms (agentic-friendly). ImageEditor and `tests/` stay at repo root.
 
 ```mermaid
 flowchart LR
@@ -35,8 +35,10 @@ flowchart LR
       plugins[plugins/]
       experimental[experimental/]
     end
-    android[android/]
-    ios[ios/]
+    subgraph mobile [mobile/]
+      android[android/]
+      ios[ios/]
+    end
   end
   subgraph root [unchanged]
     IE[ImageEditor/]
@@ -55,12 +57,12 @@ flowchart LR
 | **plugins/**                | Current Plugins contents; optionally rename ShareX.* → XerahS.* to match .csproj |
 | **experimental/**           | XerahS.Mobile.Core, XerahS.Mobile.Ava, XerahS.Mobile.Maui, XerahS.Mobile.iOS.ShareExtension |
 
-**Native mobile (separate stack)** — top-level under `src/`:
+**Native mobile (separate stack)** — under **src/mobile/** so one path gives context for both platforms:
 
-| Folder under `src/` | Contents |
-| ------------------- | -------- |
-| **android/**        | Kotlin app (current **XerahS.Mobile.Kt** tree; folder name **android**, not XerahS.Mobile.Kt) |
-| **ios/**            | Swift app (current **XerahS.Mobile.Swift**; folder name **ios**, not XerahS.Mobile.Swift) |
+| Folder under `src/mobile/` | Contents |
+| -------------------------- | -------- |
+| **android/**               | Kotlin app (current **XerahS.Mobile.Kt** tree; folder name **android**, not XerahS.Mobile.Kt) |
+| **ios/**                   | Swift app (current **XerahS.Mobile.Swift**; folder name **ios**, not XerahS.Mobile.Swift) |
 
 After moves, paths look like:
 
@@ -68,8 +70,93 @@ After moves, paths look like:
 - `src/desktop/app/XerahS.App/XerahS.App.csproj`
 - `src/desktop/experimental/XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj`
 - `src/desktop/plugins/XerahS.Imgur.Plugin/...` (if plugin folders renamed)
-- `src/android/` — Kotlin app (app/, core/, feature/, build.gradle.kts, etc.)
-- `src/ios/` — Swift app
+- `src/mobile/android/` — Kotlin app (app/, core/, feature/, build.gradle.kts, etc.)
+- `src/mobile/ios/` — Swift app
+
+### Target folder tree (after reorg)
+
+Full folder structure at repo root and under `src/` so the layout is clear:
+
+```
+XerahS/
+├── .ai/
+├── .github/
+├── .githooks/
+├── .cursorrules
+├── .gitignore
+├── AGENTS.md
+├── Directory.Build.props
+├── README.md
+├── XerahS.sln
+├── ImageEditor/                    (unchanged; submodule)
+│   ├── src/
+│   │   ├── ShareX.ImageEditor/
+│   │   └── ShareX.ImageEditor.Loader/
+│   └── ShareX.ImageEditor.sln
+├── docs/
+├── developers/
+├── scripts/
+├── tasks/
+├── tests/
+│   ├── XerahS.Tests/
+│   └── ShareX.Avalonia.Tests/      (optional: rename to XerahS.Avalonia.Tests)
+│
+└── src/
+    ├── desktop/                    (.NET stack — works together)
+    │   ├── core/
+    │   │   ├── XerahS.Core/
+    │   │   ├── XerahS.Common/
+    │   │   ├── XerahS.Services.Abstractions/
+    │   │   ├── XerahS.Services/
+    │   │   ├── XerahS.ViewModels/
+    │   │   ├── XerahS.History/
+    │   │   ├── XerahS.Indexer/
+    │   │   ├── XerahS.Uploaders/
+    │   │   └── XerahS.Media/
+    │   ├── platform/
+    │   │   ├── XerahS.Platform.Abstractions/
+    │   │   ├── XerahS.Platform.Windows/
+    │   │   ├── XerahS.Platform.Linux/
+    │   │   ├── XerahS.Platform.MacOS/
+    │   │   └── XerahS.Platform.Mobile/
+    │   ├── app/                     (desktop application — not desktop/desktop)
+    │   │   ├── XerahS.App/
+    │   │   ├── XerahS.UI/
+    │   │   ├── XerahS.Bootstrap/
+    │   │   └── XerahS.RegionCapture/
+    │   ├── tools/
+    │   │   ├── XerahS.CLI/
+    │   │   ├── XerahS.WatchFolder.Daemon/
+    │   │   ├── XerahS.PluginExporter/
+    │   │   └── XerahS.Audits.Tool/
+    │   ├── plugins/
+    │   │   ├── XerahS.Imgur.Plugin/         (or ShareX.Imgur.Plugin if not renamed)
+    │   │   ├── XerahS.AmazonS3.Plugin/
+    │   │   ├── XerahS.Paste2.Plugin/
+    │   │   ├── XerahS.GitHubGist.Plugin/
+    │   │   └── XerahS.Auto.Plugin/
+    │   └── experimental/
+    │       ├── XerahS.Mobile.Core/
+    │       ├── XerahS.Mobile.Ava/
+    │       ├── XerahS.Mobile.Maui/
+    │       └── XerahS.Mobile.iOS.ShareExtension/
+    │
+    └── mobile/                     (native apps — one folder = both platforms)
+        ├── android/                (Kotlin; ex XerahS.Mobile.Kt)
+        │   ├── app/
+        │   ├── core/
+        │   │   ├── common/
+        │   │   ├── data/
+        │   │   └── domain/
+        │   ├── feature/
+        │   │   ├── upload/
+        │   │   ├── history/
+        │   │   └── settings/
+        │   ├── build.gradle.kts
+        │   └── settings.gradle.kts
+        └── ios/                    (Swift; ex XerahS.Mobile.Swift)
+            └── ...
+```
 
 ---
 
@@ -78,7 +165,7 @@ After moves, paths look like:
 Each step is numbered so you can say e.g. "skip step 5" or "tweak step 3".
 
 **1.** **Create directories**
-  `src/desktop/`, `src/desktop/core/`, `src/desktop/platform/`, `src/desktop/app/`, `src/desktop/tools/`, `src/desktop/plugins/`, `src/desktop/experimental/`, `src/android/`, `src/ios/`.
+  `src/desktop/`, `src/desktop/core/`, `src/desktop/platform/`, `src/desktop/app/`, `src/desktop/tools/`, `src/desktop/plugins/`, `src/desktop/experimental/`, `src/mobile/`, `src/mobile/android/`, `src/mobile/ios/`.
 
 **2.** **Move Core projects** — `git mv` into `src/desktop/core/`: XerahS.Core, XerahS.Common, XerahS.Services.Abstractions, XerahS.Services, XerahS.ViewModels, XerahS.History, XerahS.Indexer, XerahS.Uploaders, XerahS.Media.
 
@@ -86,9 +173,9 @@ Each step is numbered so you can say e.g. "skip step 5" or "tweak step 3".
 
 **4.** **Move desktop app** — `git mv` into `src/desktop/app/`: XerahS.App, XerahS.UI, XerahS.Bootstrap, XerahS.RegionCapture (the application; **not** a folder named desktop).
 
-**5.** **Move Kotlin app** — `git mv src/XerahS.Mobile.Kt src/android` (folder name **android**, not XerahS.Mobile.Kt).
+**5.** **Move Kotlin app** — `git mv src/XerahS.Mobile.Kt src/mobile/android` (folder name **android**, not XerahS.Mobile.Kt).
 
-**6.** **Move Swift app** — `git mv src/XerahS.Mobile.Swift src/ios` (folder name **ios**, not XerahS.Mobile.Swift).
+**6.** **Move Swift app** — `git mv src/XerahS.Mobile.Swift src/mobile/ios` (folder name **ios**, not XerahS.Mobile.Swift).
 
 **7.** **Move experimental mobile** — `git mv` into `src/desktop/experimental/`: XerahS.Mobile.Core, XerahS.Mobile.Ava, XerahS.Mobile.Maui, XerahS.Mobile.iOS.ShareExtension.
 
@@ -97,7 +184,7 @@ Each step is numbered so you can say e.g. "skip step 5" or "tweak step 3".
 **9.** **Move Plugins** — Move entire `src/Plugins/` contents into `src/desktop/plugins/` (or `git mv src/Plugins src/desktop/plugins` if you replace the folder). Optionally rename plugin subfolders ShareX.* → XerahS.*; then update solution and ProjectReferences (steps 10 and 11).
 
 **10.** **Update [XerahS.sln](XerahS.sln)**
-  Change every `Project(...)` path from `src\...` to `src\desktop\core\...`, `src\desktop\app\...`, etc. ImageEditor and tests paths stay the same. Kotlin app is under `src\android\` (not in .sln); Swift under `src\ios\` if in solution. Solution folder nesting can mirror desktop (core, platform, app, tools, plugins, experimental).
+  Change every `Project(...)` path from `src\...` to `src\desktop\core\...`, `src\desktop\app\...`, etc. ImageEditor and tests paths stay the same. Kotlin app is under `src\mobile\android\` (not in .sln); Swift under `src\mobile\ios\` if in solution. Solution folder nesting can mirror desktop (core, platform, app, tools, plugins, experimental).
 
 **11.** **Update all .csproj `ProjectReference` paths**
   Each reference must reflect the new relative path. All .NET projects are under `src/desktop/`; path depth depends on referrer. Examples:
@@ -112,11 +199,11 @@ Each step is numbered so you can say e.g. "skip step 5" or "tweak step 3".
 
 **14.** **Update build-windows-exe SKILL.md** — Update hardcoded paths to `src\desktop\...`; ImageEditor paths unchanged.
 
-**15.** **Update build-android SKILL.md** — Update paths to `src\android\` for Kotlin app; `src\desktop\experimental\...` if MAUI/Avalonia mobile referenced; plugin paths if step 13 done.
+**15.** **Update build-android SKILL.md** — Update paths to `src\mobile\android\` for Kotlin app; `src\desktop\experimental\...` if MAUI/Avalonia mobile referenced; plugin paths if step 13 done.
 
-**16.** **Update build-linux-binary SKILL.md** — Update any `src/` paths to `src/desktop/...` or `src/android/`, `src/ios/`.
+**16.** **Update build-linux-binary SKILL.md** — Update any `src/` paths to `src/desktop/...` or `src/mobile/android/`, `src/mobile/ios/`.
 
-**17.** **Update other scripts/docs** — Search `.githooks/`, `scripts/`, docs for old `src\XerahS.*` or `src\Plugins` paths and fix to `src\desktop\...`, `src\android\`, `src\ios\`.
+**17.** **Update other scripts/docs** — Search `.githooks/`, `scripts/`, docs for old `src\XerahS.*` or `src\Plugins` paths and fix to `src\desktop\...`, `src\mobile\android\`, `src\mobile\ios\`.
 
 **18.** **Optional: rename test folder** — `tests/ShareX.Avalonia.Tests` → `tests/XerahS.Avalonia.Tests` and update solution + references.
 
@@ -132,7 +219,7 @@ Leave at repo root. Submodule and workflows assume `ImageEditor/`.
 - **Solution and project file content**  
 Only path strings in .sln and ProjectReference Include; no code or TFMs.
 - **Kotlin and Swift (folder names)**  
-Move Kotlin app to **src/android/** (folder name **android**, not XerahS.Mobile.Kt). Move Swift app to **src/ios/** (folder name **ios**, not XerahS.Mobile.Swift). Gradle/settings.gradle.kts are self-contained; no path changes inside the Kotlin project. Update any docs/scripts that reference `XerahS.Mobile.Kt` or `XerahS.Mobile.Swift` to `src/android` and `src/ios`.
+Move Kotlin app to **src/mobile/android/** (folder name **android**, not XerahS.Mobile.Kt). Move Swift app to **src/mobile/ios/** (folder name **ios**, not XerahS.Mobile.Swift). One parent **src/mobile/** gives context for both platforms (agentic-friendly). Gradle/settings.gradle.kts are self-contained; no path changes inside the Kotlin project. Update any docs/scripts that reference `XerahS.Mobile.Kt` or `XerahS.Mobile.Swift` to `src/mobile/android` and `src/mobile/ios`.
 - **No src/desktop/desktop/**  
 The desktop application lives in **src/desktop/app/** (App, UI, Bootstrap, RegionCapture), not in a subfolder named `desktop`.
 
@@ -140,7 +227,7 @@ The desktop application lives in **src/desktop/app/** (App, UI, Bootstrap, Regio
 
 ## Risk and scope
 
-- **Scope**: All .NET projects move under `src/desktop/` (one extra path segment); many .csproj ProjectReferences and the .sln must be updated; .ai/skills and docs that hardcode paths must be updated. Android and iOS move to `src/android/` and `src/ios/`.
+- **Scope**: All .NET projects move under `src/desktop/` (one extra path segment); many .csproj ProjectReferences and the .sln must be updated; .ai/skills and docs that hardcode paths must be updated. Android and iOS move to `src/mobile/android/` and `src/mobile/ios/`.
 - **Risk**: Missing a ProjectReference or solution path causes build failure; do a full `dotnet build` and fix any broken references. Prefer a single commit (or a short series) so you can revert easily.
 - **Plugin folder renames**: Optional (step 13). If you rename ShareX.* → XerahS.* under `src/desktop/plugins/`, update every ProjectReference that points to Plugins and the solution.
 
@@ -150,7 +237,7 @@ The desktop application lives in **src/desktop/app/** (App, UI, Bootstrap, Regio
 
 If you prefer minimal change:
 
-- **Only** add `src/android/` and `src/ios/` (move Kotlin and Swift there); optionally add `src/desktop/experimental/` and move the four experimental mobile projects. Leave Core, Platform, App, Tools, Plugins **flat** under `src/` (no `src/desktop/`).
+- **Only** add `src/mobile/android/` and `src/mobile/ios/` (move Kotlin and Swift there); optionally add `src/desktop/experimental/` and move the four experimental mobile projects. Leave Core, Platform, App, Tools, Plugins **flat** under `src/` (no `src/desktop/`).
 - Or **only rename** plugin directories ShareX.* → XerahS.* and optionally the test folder; no moves.
 
 That reduces the scope and rebase impact on open PRs.
