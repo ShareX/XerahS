@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\..\core\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\..\core\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
   </ItemGroup>

@@ -21,7 +21,7 @@
     <ProjectReference Include="..\..\core\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\..\core\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\..\core\XerahS.Media\XerahS.Media.csproj" />
-    <ProjectReference Include="..\..\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\..\core\XerahS.Indexer\XerahS.Indexer.csproj" />
     <ProjectReference Include="..\..\platform\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT' And !$(RuntimeIdentifier.StartsWith('osx')) And !$(RuntimeIdentifier.StartsWith('linux')) And '$(CrossCompile)' != 'true'" />
     <ProjectReference Include="..\..\platform\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="$(RuntimeIdentifier.StartsWith('osx')) Or '$(CrossCompile)' == 'true'" />
