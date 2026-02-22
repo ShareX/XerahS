@@ -196,105 +196,10 @@ public class ScreenRecordingManager
             DebugHelper.WriteLine($"ScreenRecordingManager: Generated default output path: {options.OutputPath}");
         }
 
-        Exception? lastError = null;
         bool preferFallback = ShouldForceFallback(options);
         RecordingOptions optionsToStart = PrepareRecordingOptions(options, isResume: false);
 
-        for (int attempt = 0; attempt < 2; attempt++)
-        {
-            bool useFallback = preferFallback || attempt == 1;
-            IRecordingService recordingService;
-
-            // Create service and assign state within single lock to prevent race condition
-            lock (_lock)
-            {
-                if (_currentRecording != null)
-                {
-                    throw new InvalidOperationException("A recording is already in progress. Stop the current recording before starting a new one.");
-                }
-
-                try
-                {
-                    recordingService = CreateRecordingService(useFallback);
-                    _currentRecording = recordingService;
-                    _currentOptions = optionsToStart;
-                    _stopSignal = new TaskCompletionSource<bool>();
-                }
-                catch
-                {
-                    // Rollback state on service creation failure
-                    _currentRecording = null;
-                    _currentOptions = null;
-                    _stopSignal = null;
-                    throw;
-                }
-            }
-
-        try
-        {
-            Console.WriteLine($"[ScreenRecordingManager] Attempt {attempt + 1}: useFallback={useFallback}");
-            TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Attempt {attempt + 1}: useFallback={useFallback}");
-            WireRecordingEvents(recordingService);
-            
-            Console.WriteLine($"[ScreenRecordingManager] Starting {(useFallback ? "fallback (FFmpeg)" : "native")} recording - Mode={optionsToStart.Mode}, Codec={optionsToStart.Settings?.Codec}, FPS={optionsToStart.Settings?.FPS}");
-            DebugHelper.WriteLine($"ScreenRecordingManager: Starting {(useFallback ? "fallback (FFmpeg)" : "native")} recording - Mode={optionsToStart.Mode}, Codec={optionsToStart.Settings?.Codec}, FPS={optionsToStart.Settings?.FPS}");
-            
-            Console.WriteLine("[ScreenRecordingManager] Calling recordingService.StartRecordingAsync");
-            TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Calling recordingService.StartRecordingAsync");
-            await recordingService.StartRecordingAsync(optionsToStart);
-            
-            Console.WriteLine("[ScreenRecordingManager] Recording started successfully");
-            TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Recording started successfully");
-
-            // Track fallback status and notify UI
-            IsUsingFallback = useFallback;
-            RecordingStarted?.Invoke(this, new RecordingStartedEventArgs(useFallback, optionsToStart));
-
-            return;
-        }
-            catch (Exception ex) when (!useFallback && CanFallbackFrom(ex))
-            {
-                Console.WriteLine($"[ScreenRecordingManager] Native recording failed: {ex.Message}, attempting FFmpeg fallback");
-                TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Native recording failed: {ex.Message}, attempting FFmpeg fallback");
-                DebugHelper.WriteException(ex, "ScreenRecordingManager: Native recording failed, attempting FFmpeg fallback...");
-                lastError = ex;
-                CleanupCurrentRecording(recordingService);
-                preferFallback = true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ScreenRecordingManager] Recording failed with unrecoverable error: {ex.Message}");
-                TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Recording failed with unrecoverable error: {ex.Message}");
-
-                if (recordingService != null)
-                {
-                    try
-                    {
-                        CleanupCurrentRecording(recordingService);
-                    }
-                    catch (Exception cleanupEx)
-                    {
-                        DebugHelper.WriteException(cleanupEx, "ScreenRecordingManager: Error during recording cleanup");
-                    }
-                }
-
-                lock (_lock)
-                {
-                    _currentOptions = null;
-                    _currentRecording = null;
-                }
-                throw;
-            }
-        }
-
-        lock (_lock)
-        {
-            _currentOptions = null;
-            _currentRecording = null;
-        }
-
-        Console.WriteLine("[ScreenRecordingManager] Recording failed and no fallback recording service is available.");
-        throw lastError ?? new InvalidOperationException("Recording failed and no fallback recording service is available.");
+        await StartRecordingCoreAsync(optionsToStart, preferFallback);
     }
 
     /// <summary>
@@ -425,81 +330,177 @@ public class ScreenRecordingManager
         return new XerahS.RegionCapture.ScreenRecording.ScreenRecorderService();
     }
 
-        private static bool ShouldForceFallback(RecordingOptions options)
+    private static bool ShouldForceFallback(RecordingOptions options)
+    {
+        var settings = options.Settings;
+
+        // Detect Wayland - FFmpeg x11grab doesn't work on Wayland
+        bool isWayland = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE")?.Equals("wayland", StringComparison.OrdinalIgnoreCase) == true;
+        bool hasNativeFactory = ScreenRecorderService.NativeRecordingServiceFactory != null;
+
+        DebugHelper.WriteLine($"ShouldForceFallback: isWayland={isWayland}, hasNativeFactory={hasNativeFactory}, UseModernCapture={options.UseModernCapture}");
+
+        // Check UseModernCapture override: if false, force FFmpeg fallback
+        // BUT on Wayland, FFmpeg x11grab doesn't work, so prefer native recording if available
+        if (!options.UseModernCapture)
         {
-            var settings = options.Settings;
-
-            // Detect Wayland - FFmpeg x11grab doesn't work on Wayland
-            bool isWayland = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE")?.Equals("wayland", StringComparison.OrdinalIgnoreCase) == true;
-            bool hasNativeFactory = ScreenRecorderService.NativeRecordingServiceFactory != null;
-
-            DebugHelper.WriteLine($"ShouldForceFallback: isWayland={isWayland}, hasNativeFactory={hasNativeFactory}, UseModernCapture={options.UseModernCapture}");
-
-            // Check UseModernCapture override: if false, force FFmpeg fallback
-            // BUT on Wayland, FFmpeg x11grab doesn't work, so prefer native recording if available
-            if (!options.UseModernCapture)
+            if (isWayland && hasNativeFactory)
             {
-                if (isWayland && hasNativeFactory)
-                {
-                    TroubleshootingHelper.Log("ScreenRecorder", "NATIVE", "UseModernCapture is disabled but on Wayland with portal available -> using native (x11grab won't work)");
-                    return false; // Use native on Wayland even if UseModernCapture is false
-                }
-
-                if (isWayland && !hasNativeFactory)
-                {
-                    DebugHelper.WriteLine("WARNING: On Wayland but NativeRecordingServiceFactory is null - portal recording not initialized!");
-                }
-
-                TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "UseModernCapture is disabled -> forcing FFmpeg fallback");
-                return true;
+                TroubleshootingHelper.Log("ScreenRecorder", "NATIVE", "UseModernCapture is disabled but on Wayland with portal available -> using native (x11grab won't work)");
+                return false; // Use native on Wayland even if UseModernCapture is false
             }
 
-            if (settings?.ForceFFmpeg == true)
+            if (isWayland && !hasNativeFactory)
             {
-                // On Wayland, warn that ForceFFmpeg won't work and fall back to native if available
-                if (isWayland && ScreenRecorderService.NativeRecordingServiceFactory != null)
-                {
-                    TroubleshootingHelper.Log("ScreenRecorder", "NATIVE", "ForceFFmpeg requested but on Wayland -> using native (x11grab won't work)");
-                    return false;
-                }
-
-                TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "ForceFFmpeg setting is enabled -> using FFmpeg");
-                return true;
+                DebugHelper.WriteLine("WARNING: On Wayland but NativeRecordingServiceFactory is null - portal recording not initialized!");
             }
 
-            // Audio capture currently routes through FFmpeg fallback
-            if (settings is not null && (settings.CaptureSystemAudio || settings.CaptureMicrophone))
-            {
-                if (isWayland && ScreenRecorderService.NativeRecordingServiceFactory != null)
-                {
-                    TroubleshootingHelper.Log("ScreenRecorder", "NATIVE", "Audio capture requested on Wayland -> using native portal backend");
-                    return false;
-                }
-
-                TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "Audio capture requested -> using FFmpeg");
-                return true;
-            }
-
-            // Check if we have a native recording service factory (complete IRecordingService)
-            if (ScreenRecorderService.NativeRecordingServiceFactory != null)
-            {
-                TroubleshootingHelper.Log("ScreenRecorder", "NATIVE", "NativeRecordingServiceFactory available -> using native");
-                return false; // Use native, not fallback
-            }
-
-            // If native capture factory is not configured (e.g. macOS without native), must use fallback
-            if (ScreenRecorderService.CaptureSourceFactory == null)
-            {
-                TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "Native CaptureSourceFactory not set -> forcing FFmpeg fallback");
-                return true;
-            }
-
-            return false;
+            TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "UseModernCapture is disabled -> forcing FFmpeg fallback");
+            return true;
         }
+
+        if (settings?.ForceFFmpeg == true)
+        {
+            // On Wayland, warn that ForceFFmpeg won't work and fall back to native if available
+            if (isWayland && ScreenRecorderService.NativeRecordingServiceFactory != null)
+            {
+                TroubleshootingHelper.Log("ScreenRecorder", "NATIVE", "ForceFFmpeg requested but on Wayland -> using native (x11grab won't work)");
+                return false;
+            }
+
+            TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "ForceFFmpeg setting is enabled -> using FFmpeg");
+            return true;
+        }
+
+        // Audio capture currently routes through FFmpeg fallback
+        if (settings is not null && (settings.CaptureSystemAudio || settings.CaptureMicrophone))
+        {
+            if (isWayland && ScreenRecorderService.NativeRecordingServiceFactory != null)
+            {
+                TroubleshootingHelper.Log("ScreenRecorder", "NATIVE", "Audio capture requested on Wayland -> using native portal backend");
+                return false;
+            }
+
+            TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "Audio capture requested -> using FFmpeg");
+            return true;
+        }
+
+        // Check if we have a native recording service factory (complete IRecordingService)
+        if (ScreenRecorderService.NativeRecordingServiceFactory != null)
+        {
+            TroubleshootingHelper.Log("ScreenRecorder", "NATIVE", "NativeRecordingServiceFactory available -> using native");
+            return false; // Use native, not fallback
+        }
+
+        // If native capture factory is not configured (e.g. macOS without native), must use fallback
+        if (ScreenRecorderService.CaptureSourceFactory == null)
+        {
+            TroubleshootingHelper.Log("ScreenRecorder", "FALLBACK", "Native CaptureSourceFactory not set -> forcing FFmpeg fallback");
+            return true;
+        }
+
+        return false;
+    }
 
     private static bool CanFallbackFrom(Exception ex)
     {
         return ex is PlatformNotSupportedException || ex is COMException;
+    }
+
+    /// <summary>
+    /// Core recording start logic shared by both initial start and resume-after-pause.
+    /// Attempts native recording first, then falls back to FFmpeg if the native attempt
+    /// throws a recoverable exception.
+    /// </summary>
+    private async Task StartRecordingCoreAsync(RecordingOptions optionsToStart, bool preferFallback)
+    {
+        Exception? lastError = null;
+
+        for (int attempt = 0; attempt < 2; attempt++)
+        {
+            bool useFallback = preferFallback || attempt == 1;
+            IRecordingService recordingService;
+
+            // Create service and assign state within single lock to prevent race condition
+            lock (_lock)
+            {
+                if (_currentRecording != null)
+                {
+                    throw new InvalidOperationException("A recording is already in progress. Stop the current recording before starting a new one.");
+                }
+
+                try
+                {
+                    recordingService = CreateRecordingService(useFallback);
+                    _currentRecording = recordingService;
+                    _currentOptions = optionsToStart;
+                    _stopSignal = new TaskCompletionSource<bool>();
+                }
+                catch
+                {
+                    // Rollback state on service creation failure
+                    _currentRecording = null;
+                    _currentOptions = null;
+                    _stopSignal = null;
+                    throw;
+                }
+            }
+
+            try
+            {
+                TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Attempt {attempt + 1}: useFallback={useFallback}");
+                WireRecordingEvents(recordingService);
+
+                DebugHelper.WriteLine($"ScreenRecordingManager: Starting {(useFallback ? "fallback (FFmpeg)" : "native")} recording - Mode={optionsToStart.Mode}, Codec={optionsToStart.Settings?.Codec}, FPS={optionsToStart.Settings?.FPS}");
+
+                TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", "Calling recordingService.StartRecordingAsync");
+                await recordingService.StartRecordingAsync(optionsToStart);
+
+                TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", "Recording started successfully");
+
+                // Track fallback status and notify UI
+                IsUsingFallback = useFallback;
+                RecordingStarted?.Invoke(this, new RecordingStartedEventArgs(useFallback, optionsToStart));
+
+                return;
+            }
+            catch (Exception ex) when (!useFallback && CanFallbackFrom(ex))
+            {
+                TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Native recording failed: {ex.Message}, attempting FFmpeg fallback");
+                DebugHelper.WriteException(ex, "ScreenRecordingManager: Native recording failed, attempting FFmpeg fallback...");
+                lastError = ex;
+                CleanupCurrentRecording(recordingService);
+                preferFallback = true;
+            }
+            catch (Exception ex)
+            {
+                TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Recording failed with unrecoverable error: {ex.Message}");
+
+                try
+                {
+                    CleanupCurrentRecording(recordingService);
+                }
+                catch (Exception cleanupEx)
+                {
+                    DebugHelper.WriteException(cleanupEx, "ScreenRecordingManager: Error during recording cleanup");
+                }
+
+                lock (_lock)
+                {
+                    _currentOptions = null;
+                    _currentRecording = null;
+                }
+                throw;
+            }
+        }
+
+        lock (_lock)
+        {
+            _currentOptions = null;
+            _currentRecording = null;
+        }
+
+        throw lastError ?? new InvalidOperationException("Recording failed and no fallback recording service is available.");
     }
 
     private void WireRecordingEvents(IRecordingService recordingService)
@@ -620,102 +621,10 @@ public class ScreenRecordingManager
     {
         await EnsureRecordingInitialized();
 
-        Exception? lastError = null;
         bool preferFallback = ShouldForceFallback(options);
         RecordingOptions optionsToStart = PrepareRecordingOptions(options, isResume);
 
-        for (int attempt = 0; attempt < 2; attempt++)
-        {
-            bool useFallback = preferFallback || attempt == 1;
-            IRecordingService recordingService;
-
-            lock (_lock)
-            {
-                if (_currentRecording != null)
-                {
-                    throw new InvalidOperationException("A recording is already in progress. Stop the current recording before starting a new one.");
-                }
-
-                try
-                {
-                    recordingService = CreateRecordingService(useFallback);
-                    _currentRecording = recordingService;
-                    _currentOptions = optionsToStart;
-                    _stopSignal = new TaskCompletionSource<bool>();
-                }
-                catch
-                {
-                    _currentRecording = null;
-                    _currentOptions = null;
-                    _stopSignal = null;
-                    throw;
-                }
-            }
-
-            try
-            {
-                Console.WriteLine($"[ScreenRecordingManager] Attempt {attempt + 1}: useFallback={useFallback}");
-                TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Attempt {attempt + 1}: useFallback={useFallback}");
-                WireRecordingEvents(recordingService);
-
-                Console.WriteLine($"[ScreenRecordingManager] Starting {(useFallback ? "fallback (FFmpeg)" : "native")} recording - Mode={optionsToStart.Mode}, Codec={optionsToStart.Settings?.Codec}, FPS={optionsToStart.Settings?.FPS}");
-                DebugHelper.WriteLine($"ScreenRecordingManager: Starting {(useFallback ? "fallback (FFmpeg)" : "native")} recording - Mode={optionsToStart.Mode}, Codec={optionsToStart.Settings?.Codec}, FPS={optionsToStart.Settings?.FPS}");
-
-                Console.WriteLine("[ScreenRecordingManager] Calling recordingService.StartRecordingAsync");
-                TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Calling recordingService.StartRecordingAsync");
-                await recordingService.StartRecordingAsync(optionsToStart);
-
-                Console.WriteLine("[ScreenRecordingManager] Recording started successfully");
-                TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Recording started successfully");
-
-                IsUsingFallback = useFallback;
-                RecordingStarted?.Invoke(this, new RecordingStartedEventArgs(useFallback, optionsToStart));
-
-                return;
-            }
-            catch (Exception ex) when (!useFallback && CanFallbackFrom(ex))
-            {
-                Console.WriteLine($"[ScreenRecordingManager] Native recording failed: {ex.Message}, attempting FFmpeg fallback");
-                TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Native recording failed: {ex.Message}, attempting FFmpeg fallback");
-                DebugHelper.WriteException(ex, "ScreenRecordingManager: Native recording failed, attempting FFmpeg fallback...");
-                lastError = ex;
-                CleanupCurrentRecording(recordingService);
-                preferFallback = true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ScreenRecordingManager] Recording failed with unrecoverable error: {ex.Message}");
-                TroubleshootingHelper.Log("ScreenRecorder", "MANAGER", $"Recording failed with unrecoverable error: {ex.Message}");
-
-                if (recordingService != null)
-                {
-                    try
-                    {
-                        CleanupCurrentRecording(recordingService);
-                    }
-                    catch (Exception cleanupEx)
-                    {
-                        DebugHelper.WriteException(cleanupEx, "ScreenRecordingManager: Error during recording cleanup");
-                    }
-                }
-
-                lock (_lock)
-                {
-                    _currentOptions = null;
-                    _currentRecording = null;
-                }
-                throw;
-            }
-        }
-
-        lock (_lock)
-        {
-            _currentOptions = null;
-            _currentRecording = null;
-        }
-
-        Console.WriteLine("[ScreenRecordingManager] Recording failed and no fallback recording service is available.");
-        throw lastError ?? new InvalidOperationException("Recording failed and no fallback recording service is available.");
+        await StartRecordingCoreAsync(optionsToStart, preferFallback);
     }
 
     private async Task StopRecordingCoreAsync(bool signalStop)
@@ -762,12 +671,12 @@ public class ScreenRecordingManager
                 if (!File.Exists(resolvedOutput))
                 {
                     DebugHelper.WriteLine($"ScreenRecordingManager: Output not found yet, waiting: {resolvedOutput}");
-                    bool appeared = await WaitForFileAsync(resolvedOutput, TimeSpan.FromSeconds(5)); // Increased from 2s to 5s
+                    bool appeared = await WaitForFileAsync(resolvedOutput, TimeSpan.FromSeconds(5));
                     DebugHelper.WriteLine($"ScreenRecordingManager: Output wait completed. Found={appeared} Path={resolvedOutput}");
 
                     if (!appeared)
                     {
-                        // Debugging: List files in the directory to see what's actually there
+                        // List files in the directory to aid debugging
                         try
                         {
                             string? dir = Path.GetDirectoryName(resolvedOutput);

@@ -78,36 +78,34 @@ Created `WatchFolderDaemonServiceBase` in `XerahS.Platform.Abstractions/Services
 
 ---
 
-## Pain Point 3: `ScreenRecordingManager` — Duplicated Logic & State Complexity (1,003 lines)
+## Pain Point 3: `ScreenRecordingManager` — Duplicated Logic & State Complexity (1,003 lines) ✅ REFACTORED
 
-### What
+> **Status:** Completed
+> **Approach:** Extract shared recording core + remove Console.WriteLine debug spam
 
-The recording lifecycle manager has two nearly identical entry points and excessive mutable state.
+### What was done
 
-### Where
+Consolidated the two nearly-identical recording start methods and removed all `Console.WriteLine` debug statements:
 
-`src/desktop/core/XerahS.Core/Managers/ScreenRecordingManager.cs` (1,003 lines)
+1. **Extracted `StartRecordingCoreAsync`** — The 2-attempt recording loop (lock → create service → wire events → start → fallback on failure) was copy-pasted between `StartRecordingAsync` and `StartRecordingInternalAsync`. Now both call a single shared `StartRecordingCoreAsync(optionsToStart, preferFallback)` method.
 
-### Why it hurts
+2. **Removed 14 `Console.WriteLine` calls** — Each had a proper `DebugHelper.WriteLine` or `TroubleshootingHelper.Log` call right next to it, making them purely redundant debug spam.
 
-- **95% code duplication:** `StartRecordingAsync()` (lines 172-298) and `StartRecordingInternalAsync()` (lines 619-719) are copy-pasted variants.
-- **11 private state fields** track session state (`_isPaused`, `_abortRequested`, `_isFinalized`, `_cachedFinalPath`, etc.) with multiple lock acquisition points — deadlock risk.
-- **71-line conditional chain:** `ShouldForceFallback()` (lines 428-498) has 7+ branches making backend selection logic impenetrable.
-- **Debug spam:** `Console.WriteLine` statements in production code (lines 235-268).
+3. **Simplified `StartRecordingInternalAsync`** — Reduced from ~100 lines to 6 lines (init check + fallback decision + prepare options + delegate to core).
 
-### Refactor direction
+**Line count:** 1,003 → ~870 lines (~130 lines removed)
 
-1. Extract `RecordingSession` state object to encapsulate the 11 fields.
-2. Consolidate the two start methods into a single method with a `restartSegment` parameter.
-3. Replace `ShouldForceFallback()` with a strategy/decision-table pattern.
-4. Remove `Console.WriteLine` debug statements.
+### Remaining opportunities (not addressed)
+- Extract `RecordingSession` state object to encapsulate the 11 mutable fields
+- Replace `ShouldForceFallback()` with a strategy/decision-table pattern
+- These are lower-priority and would benefit from broader test coverage first
 
 ---
 
 ## Priority Matrix
 
-| Pain Point | Impact on Velocity | Maintenance Risk | Estimated Effort | Priority |
-|---|---|---|---|---|
-| 1. God ViewModels | **Critical** (most-touched files) | High | 2-3 days | P0 |
-| 2. Platform duplication | High | **Critical** (bug propagation) | 2-3 days | P1 |
-| 3. ScreenRecordingManager | Medium | High (deadlock risk) | 1-2 days | P2 |
+| Pain Point | Impact on Velocity | Maintenance Risk | Estimated Effort | Priority | Status |
+|---|---|---|---|---|---|
+| 1. God ViewModels | **Critical** (most-touched files) | High | 2-3 days | P0 | ✅ Done |
+| 2. Platform duplication | High | **Critical** (bug propagation) | 2-3 days | P1 | ✅ Done |
+| 3. ScreenRecordingManager | Medium | High (deadlock risk) | 1-2 days | P2 | ✅ Done |
