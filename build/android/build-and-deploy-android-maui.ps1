@@ -3,7 +3,7 @@
 $ErrorActionPreference = "Stop"
 
 $root = Resolve-Path "$PSScriptRoot\..\.."
-$projectPath = Join-Path $root "src\XerahS.Mobile.Maui\XerahS.Mobile.Maui.csproj"
+$projectPath = Join-Path $root "src\mobile-experimental\XerahS.Mobile.Maui\XerahS.Mobile.Maui.csproj"
 $packageId = "com.getsharex.xerahs"
 
 # Android SDK platform-tools (adb)
@@ -31,7 +31,7 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-$baseDir = Join-Path $root "src\XerahS.Mobile.Maui\bin\Debug\net10.0-android"
+$baseDir = Join-Path $root "src\mobile-experimental\XerahS.Mobile.Maui\bin\Debug\net10.0-android"
 $apk = Get-ChildItem -Path $baseDir -Filter "*.apk" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
 if ([string]::IsNullOrEmpty($apk)) {
     Write-Host "Error: No APK found under $baseDir" -ForegroundColor Red

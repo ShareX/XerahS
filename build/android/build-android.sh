@@ -35,38 +35,25 @@ JAVA_VERSION=$(java -version 2>&1 | head -1 | awk -F '"' '{print $2}')
 echo "  Java Version: $JAVA_VERSION"
 echo ""
 
-# Define Projects to Build
-MOBILE_UI_PROJECT="$ROOT/src/XerahS.Mobile.UI/XerahS.Mobile.UI.csproj"
-MOBILE_ANDROID_PROJECT="$ROOT/src/XerahS.Mobile.Android/XerahS.Mobile.Android.csproj"
-MOBILE_MAUI_PROJECT="$ROOT/src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj"
+# Define Projects to Build (mobile-experimental: Avalonia and MAUI Android apps)
+MOBILE_AVA_PROJECT="$ROOT/src/mobile-experimental/XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj"
+MOBILE_MAUI_PROJECT="$ROOT/src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj"
 
 echo "=========================================="
-echo "Building XerahS.Mobile.UI (Shared Library)"
+echo "Building XerahS.Mobile.Ava (Avalonia Android)"
 echo "=========================================="
-dotnet build "$MOBILE_UI_PROJECT" -c Release
+dotnet build "$MOBILE_AVA_PROJECT" -c Release -f net10.0-android
 if [ $? -eq 0 ]; then
-    echo "✅ XerahS.Mobile.UI built successfully"
-else
-    echo "❌ XerahS.Mobile.UI build failed"
-    exit 1
-fi
-
-echo ""
-echo "=========================================="
-echo "Building XerahS.Mobile.Android"
-echo "=========================================="
-dotnet build "$MOBILE_ANDROID_PROJECT" -c Release -f net10.0-android
-if [ $? -eq 0 ]; then
-    echo "✅ XerahS.Mobile.Android built successfully"
+    echo "✅ XerahS.Mobile.Ava built successfully"
     
     # Copy APK to dist if it exists
-    APK_SOURCE="$ROOT/src/XerahS.Mobile.Android/bin/Release/net10.0-android/com.sharexteam.xerahs-Signed.apk"
+    APK_SOURCE="$ROOT/src/mobile-experimental/XerahS.Mobile.Ava/bin/Release/net10.0-android/com.getsharex.xerahs-Signed.apk"
     if [ -f "$APK_SOURCE" ]; then
         cp "$APK_SOURCE" "$OUTPUT_DIR/XerahS-$VERSION-Android.apk"
         echo "   APK copied to: $OUTPUT_DIR/XerahS-$VERSION-Android.apk"
     fi
 else
-    echo "❌ XerahS.Mobile.Android build failed"
+    echo "❌ XerahS.Mobile.Ava build failed"
     exit 1
 fi
 
@@ -79,7 +66,7 @@ if [ $? -eq 0 ]; then
     echo "✅ XerahS.Mobile.Maui (Android) built successfully"
     
     # Copy MAUI APK to dist if it exists
-    MAUI_APK_SOURCE="$ROOT/src/XerahS.Mobile.Maui/bin/Release/net10.0-android/com.sharexteam.xerahs-Signed.apk"
+    MAUI_APK_SOURCE="$ROOT/src/mobile-experimental/XerahS.Mobile.Maui/bin/Release/net10.0-android/com.getsharex.xerahs-Signed.apk"
     if [ -f "$MAUI_APK_SOURCE" ]; then
         cp "$MAUI_APK_SOURCE" "$OUTPUT_DIR/XerahS-$VERSION-MAUI-Android.apk"
         echo "   APK copied to: $OUTPUT_DIR/XerahS-$VERSION-MAUI-Android.apk"

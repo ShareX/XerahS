@@ -1,8 +1,8 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 
 $root = Resolve-Path "$PSScriptRoot\..\.."
-$project = Join-Path $root "src\XerahS.App\XerahS.App.csproj"
-$uiProject = Join-Path $root "src\XerahS.UI\XerahS.UI.csproj"
+$project = Join-Path $root "src\desktop\app\XerahS.App\XerahS.App.csproj"
+$uiProject = Join-Path $root "src\desktop\app\XerahS.UI\XerahS.UI.csproj"
 $outputDir = Join-Path $root "dist"
 if (!(Test-Path $outputDir)) { New-Item -ItemType Directory -Force -Path $outputDir | Out-Null }
 
@@ -13,7 +13,7 @@ $version = $version.Trim()
 Write-Host "Building XerahS version $version for Linux..."
 
 # 1. Clean & Publish
-$publishDir = Join-Path $root "src\XerahS.App\bin\Release\net10.0\linux-x64\publish"
+$publishDir = Join-Path $root "src\desktop\app\XerahS.App\bin\Release\net10.0\linux-x64\publish"
 if (Test-Path $publishDir) { Remove-Item -Recurse -Force $publishDir }
 
 Write-Host "Running dotnet publish..."
@@ -24,7 +24,7 @@ Write-Host "Publishing Plugins..."
 $pluginsDir = Join-Path $publishDir "Plugins"
 if (!(Test-Path $pluginsDir)) { New-Item -ItemType Directory -Force -Path $pluginsDir | Out-Null }
 
-$pluginProjects = Get-ChildItem -Path (Join-Path $root "src\Plugins") -Filter "*.csproj" -Recurse
+$pluginProjects = Get-ChildItem -Path (Join-Path $root "src\desktop\plugins") -Filter "*.csproj" -Recurse
 foreach ($plugin in $pluginProjects) {
     Write-Host "Publishing Plugin: $($plugin.Name)"
     

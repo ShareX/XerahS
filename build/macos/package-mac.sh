@@ -3,10 +3,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 ROOT="$SCRIPT_DIR/../.."
-PROJECT="$ROOT/src/XerahS.App/XerahS.App.csproj"
+PROJECT="$ROOT/src/desktop/app/XerahS.App/XerahS.App.csproj"
 DIST_DIR="$ROOT/dist"
 NATIVE_LIB="$ROOT/native/macos/libscreencapturekit_bridge.dylib"
-ICON_SOURCE="$ROOT/src/XerahS.UI/Assets/Logo.icns"
+ICON_SOURCE="$ROOT/src/desktop/app/XerahS.UI/Assets/Logo.icns"
 
 mkdir -p "$DIST_DIR"
 
@@ -143,7 +143,7 @@ PY
 publish_and_package() {
     local arch="$1"
     local rid="osx-$arch"
-    local publish_dir="$ROOT/src/XerahS.App/bin/Release/net10.0/$rid/publish"
+    local publish_dir="$ROOT/src/desktop/app/XerahS.App/bin/Release/net10.0/$rid/publish"
     local app_bundle_path="$publish_dir/XerahS.app"
     local plugins_dir="$app_bundle_path/Contents/MacOS/Plugins"
     local tar_name="XerahS-$VERSION-mac-$arch.tar.gz"
@@ -219,7 +219,7 @@ publish_and_package() {
         done
 
         plugin_count=$((plugin_count + 1))
-    done < <(find "$ROOT/src/Plugins" -name "*.csproj" -print0)
+    done < <(find "$ROOT/src/desktop/plugins" -name "*.csproj" -print0)
 
     if [ "$plugin_count" -eq 0 ]; then
         echo "Error: No plugins were published for $rid"

@@ -111,7 +111,7 @@ The `build/windows` directory also contains resources for submitting XerahS to p
 │     • Runtime: linux-x64                                                │
 │     • Single file: true                                                 │
 │     • Self-contained: true                                              │
-│     → src/XerahS.App/bin/Release/net10.0/linux-x64/publish/             │
+│     → src/desktop/app/XerahS.App/bin/Release/net10.0/linux-x64/publish/ │
 │                              ↓                                          │
 │  3. Publish Plugins to Plugins/ subfolder                               │
 │     • Same process as Windows                                           │
@@ -268,19 +268,13 @@ The `-p:CrossCompile=true` flag enables building macOS/Linux binaries from Windo
 │     • Set JAVA_HOME to JDK 21                                           │
 │     • Verify Java version                                               │
 │                              ↓                                          │
-│  3. Build XerahS.Mobile.UI (shared library)                             │
-│     • dotnet build -c Release                                           │
-│     → src/XerahS.Mobile.UI/bin/Release/net10.0/                         │
-│                              ↓                                          │
-│  4. Build XerahS.Mobile.Android (Avalonia)                              │
+│  3. Build XerahS.Mobile.Ava (Avalonia Android)                          │
 │     • dotnet build -c Release -f net10.0-android                        │
-│     • Produces APK if configured for signing                            │
-│     → src/XerahS.Mobile.Android/bin/Release/net10.0-android/            │
+│     → src/mobile-experimental/XerahS.Mobile.Ava/bin/.../net10.0-android/ │
 │                              ↓                                          │
-│  5. Build XerahS.Mobile.Maui (MAUI/Android)                             │
+│  4. Build XerahS.Mobile.Maui (MAUI/Android)                             │
 │     • dotnet build -c Release -f net10.0-android                        │
-│     • Produces APK if configured for signing                            │
-│     → src/XerahS.Mobile.Maui/bin/Release/net10.0-android/               │
+│     → src/mobile-experimental/XerahS.Mobile.Maui/bin/.../net10.0-android/│
 │                              ↓                                          │
 │  6. Copy APKs to dist/android/                                          │
 │     • XerahS-{version}-Android.apk                                      │
@@ -336,16 +330,16 @@ All platforms use the same plugin discovery and build logic:
 │                    Plugin Build Flow                            │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  src/Plugins/                                                   │
-│  ├── ShareX.AmazonS3.Plugin/                                    │
-│  │   ├── XerahS.AmazonS3.Plugin.csproj                          │
-│  │   └── plugin.json                                            │
-│  ├── ShareX.Auto.Plugin/                                        │
-│  │   └── plugin.json                                            │
-│  └── ...                                                        │
-│                                                                 │
-│  Build script:                                                  │
-│  1. Find all .csproj in src/Plugins/                            │
+│  src/desktop/plugins/                                            │
+│  ├── AmazonS3.Plugin/                                            │
+│  │   ├── XerahS.AmazonS3.Plugin.csproj                           │
+│  │   └── plugin.json                                             │
+│  ├── Auto.Plugin/                                                │
+│  │   └── plugin.json                                             │
+│  └── ...                                                         │
+│                                                                  │
+│  Build script:                                                   │
+│  1. Find all .csproj in src/desktop/plugins/                     │
 │  2. Read plugin.json → extract "pluginId"                       │
 │  3. dotnet publish to Plugins/{pluginId}/                       │
 │  4. Remove files that already exist in main app                 │

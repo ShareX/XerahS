@@ -162,7 +162,7 @@ dotnet clean "src\mobile-experimental\XerahS.Mobile.Maui\XerahS.Mobile.Maui.cspr
 dotnet clean "src\mobile-experimental\XerahS.Mobile.Ava\XerahS.Mobile.Ava.csproj" -f net10.0-android -c Debug -v minimal
 ```
 
-If clean still fails, manually remove `obj` folders that are locked (e.g. `ImageEditor\src\ShareX.ImageEditor\obj`, `src\Plugins\ShareX.AmazonS3.Plugin\obj`, `src\mobile-experimental\XerahS.Mobile.Ava\obj\Debug\net10.0-android`, or the MAUI `obj\Debug\net10.0-android` if the APK is locked).
+If clean still fails, manually remove `obj` folders that are locked (e.g. `ImageEditor\src\ShareX.ImageEditor\obj`, `src\desktop\plugins\AmazonS3.Plugin\obj`, `src\mobile-experimental\XerahS.Mobile.Ava\obj\Debug\net10.0-android`, or the MAUI `obj\Debug\net10.0-android` if the APK is locked).
 
 ---
 

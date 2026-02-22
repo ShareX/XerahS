@@ -28,7 +28,7 @@ Install Android platform SDK for API level 36:
 ```bash
 export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
 export PATH="$JAVA_HOME/bin:$PATH"
-dotnet build src/XerahS.Mobile.Android/XerahS.Mobile.Android.csproj \
+dotnet build src/mobile-experimental/XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj \
   -t:InstallAndroidDependencies \
   -f net10.0-android \
   "-p:AndroidSdkDirectory=/home/$USER/Android/Sdk" \
@@ -47,19 +47,14 @@ export PATH="$JAVA_HOME/bin:$PATH"
 
 ### Build Commands
 
-#### XerahS.Mobile.UI (Shared Library)
+#### XerahS.Mobile.Ava (Avalonia Android)
 ```bash
-dotnet build src/XerahS.Mobile.UI/XerahS.Mobile.UI.csproj
-```
-
-#### XerahS.Mobile.Android
-```bash
-dotnet build src/XerahS.Mobile.Android/XerahS.Mobile.Android.csproj
+dotnet build src/mobile-experimental/XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj -f net10.0-android
 ```
 
 #### XerahS.Mobile.Maui (Android Target)
 ```bash
-dotnet build src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj
+dotnet build src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
 ```
 
 ### Build Script
@@ -110,10 +105,8 @@ does not have a 16 KB page size.
 
 ## Build Results
 
-✅ **XerahS.Mobile.UI** - Builds successfully  
-✅ **XerahS.Mobile.Android** - Builds successfully (2 warnings)  
-✅ **XerahS.Mobile.Maui** (Android) - Builds successfully (2 warnings)  
-❌ **XerahS.Mobile.iOS** - Requires macOS  
+✅ **XerahS.Mobile.Ava** (Avalonia Android) - Builds successfully  
+✅ **XerahS.Mobile.Maui** (Android) - Builds successfully  
 ❌ **XerahS.Mobile.iOS.ShareExtension** - Requires macOS
 
 ## Troubleshooting
@@ -140,7 +133,7 @@ java -version  # Should show 21.x.x
 Install Android dependencies:
 
 ```bash
-dotnet build src/XerahS.Mobile.Android/XerahS.Mobile.Android.csproj \
+dotnet build src/mobile-experimental/XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj \
   -t:InstallAndroidDependencies \
   -f net10.0-android \
   "-p:AcceptAndroidSDKLicenses=true"

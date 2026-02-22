@@ -141,7 +141,7 @@ git submodule update --remote --merge ImageEditor
 3. **Publish ARM64 manually**:
    ```powershell
    $root = 'ShareX Team\XerahS'
-   $project = "$root\src\XerahS.App\XerahS.App.csproj"
+   $project = "$root\src\desktop\app\XerahS.App\XerahS.App.csproj"
    $publishOutput = "$root\build\publish-temp-win-arm64"
    
    dotnet publish $project -c Release -p:OS=Windows_NT -r win-arm64 -p:PublishSingleFile=false -p:SkipBundlePlugins=true -p:UseSharedCompilation=false --self-contained true -o $publishOutput
@@ -152,7 +152,7 @@ git submodule update --remote --merge ImageEditor
    $pluginsDir = "$publishOutput\Plugins"
    New-Item -ItemType Directory -Force -Path $pluginsDir | Out-Null
    
-   Get-ChildItem "$root\src\Plugins" -Filter "*.csproj" -Recurse | ForEach-Object {
+   Get-ChildItem "$root\src\desktop\plugins" -Filter "*.csproj" -Recurse | ForEach-Object {
      $pluginId = $_.BaseName
      $pluginJsonPath = Join-Path $_.Directory.FullName "plugin.json"
      if (Test-Path $pluginJsonPath) {

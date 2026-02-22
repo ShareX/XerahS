@@ -113,7 +113,13 @@ XerahS/
 │   └── ShareX.Avalonia.Tests/      (optional: rename to XerahS.Avalonia.Tests)
 │
 └── src/
-    ├── desktop/                    (.NET stack — works together)
+    ├── platform/                    (shared by desktop and mobile-experimental)
+    │   ├── XerahS.Platform.Abstractions/
+    │   ├── XerahS.Platform.Windows/
+    │   ├── XerahS.Platform.Linux/
+    │   ├── XerahS.Platform.MacOS/
+    │   └── XerahS.Platform.Mobile/
+    ├── desktop/                     (.NET desktop stack)
     │   ├── core/
     │   │   ├── XerahS.Core/
     │   │   ├── XerahS.Common/
@@ -124,13 +130,7 @@ XerahS/
     │   │   ├── XerahS.Indexer/
     │   │   ├── XerahS.Uploaders/
     │   │   └── XerahS.Media/
-    │   ├── platform/
-    │   │   ├── XerahS.Platform.Abstractions/
-    │   │   ├── XerahS.Platform.Windows/
-    │   │   ├── XerahS.Platform.Linux/
-    │   │   ├── XerahS.Platform.MacOS/
-    │   │   └── XerahS.Platform.Mobile/
-    │   ├── app/                     (desktop application — not desktop/desktop)
+    │   ├── app/                     (desktop application)
     │   │   ├── XerahS.App/
     │   │   ├── XerahS.UI/
     │   │   ├── XerahS.Bootstrap/

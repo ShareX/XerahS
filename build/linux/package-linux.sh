@@ -4,7 +4,7 @@ set -euo pipefail
 # Configuration
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ROOT="$SCRIPT_DIR/../.."
-PROJECT="$ROOT/src/XerahS.App/XerahS.App.csproj"
+PROJECT="$ROOT/src/desktop/app/XerahS.App/XerahS.App.csproj"
 OUTPUT_DIR="$ROOT/dist"
 
 if [ ! -d "$OUTPUT_DIR" ]; then
@@ -25,7 +25,7 @@ for ARCH in "${ARCHITECTURES[@]}"; do
     echo "=========================================="
     
     # 1. Clean & Publish
-    PUBLISH_DIR="$ROOT/src/XerahS.App/bin/Release/net10.0/$ARCH/publish"
+    PUBLISH_DIR="$ROOT/src/desktop/app/XerahS.App/bin/Release/net10.0/$ARCH/publish"
     
     if [ -d "$PUBLISH_DIR" ]; then
         rm -rf "$PUBLISH_DIR"
@@ -88,7 +88,7 @@ for ARCH in "${ARCHITECTURES[@]}"; do
         fi
 
         PLUGIN_COUNT=$((PLUGIN_COUNT + 1))
-    done < <(find "$ROOT/src/Plugins" -mindepth 2 -maxdepth 2 -name "*.csproj" -print0)
+    done < <(find "$ROOT/src/desktop/plugins" -mindepth 2 -maxdepth 2 -name "*.csproj" -print0)
 
     if [ "$PLUGIN_COUNT" -eq 0 ]; then
         echo "Error: No plugins were published for $ARCH."

@@ -59,7 +59,7 @@ MAUI does not use a single host `ContentControl` the same way; there is no equiv
 ## References
 
 - `docs/technical/android_deadlock_handover_report.md` — earlier init/deadlock investigation (async init, loading page, no reflection); status was UNRESOLVED until the host-Content fix.
-- `src/XerahS.Mobile.Ava/Platforms/Android/MainActivity.cs` — remove any code that clears the parent of `MainView`.
-- `src/XerahS.Mobile.Ava/MobileApp.axaml.cs` — `InitializeCoreAsync` and navigation flow.
-- `src/XerahS.Mobile.Maui/Platforms/Android/MainActivity.cs` — defer init start; do not clear any host content.
-- `src/XerahS.Mobile.Maui/App.xaml.cs` — `InitializeCoreAsync` and logging.
+- `src/mobile-experimental/XerahS.Mobile.Ava/Platforms/Android/MainActivity.cs` — remove any code that clears the parent of `MainView`.
+- `src/mobile-experimental/XerahS.Mobile.Ava/MobileApp.axaml.cs` — `InitializeCoreAsync` and navigation flow.
+- `src/mobile-experimental/XerahS.Mobile.Maui/Platforms/Android/MainActivity.cs` — defer init start; do not clear any host content.
+- `src/mobile-experimental/XerahS.Mobile.Maui/App.xaml.cs` — `InitializeCoreAsync` and logging.

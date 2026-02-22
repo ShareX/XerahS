@@ -152,7 +152,7 @@ bash build/linux/package-linux.sh
 
 **Fix**: This is usually a transient retry (MSBuild will retry automatically). If it becomes fatal:
 ```bash
-rm -rf src/XerahS.Uploaders/obj/Release
+rm -rf src/desktop/core/XerahS.Uploaders/obj/Release
 bash build/linux/package-linux.sh
 ```
 
@@ -164,10 +164,10 @@ bash build/linux/package-linux.sh
 
 **Check**:
 ```bash
-find src/Plugins -mindepth 2 -maxdepth 2 -name "*.csproj"
+find src/desktop/plugins -mindepth 2 -maxdepth 2 -name "*.csproj"
 ```
 
-Each plugin project under `src/Plugins/` needs a `plugin.json` in the same directory.
+Each plugin project under `src/desktop/plugins/` needs a `plugin.json` in the same directory.
 
 ---
 
@@ -243,8 +243,8 @@ Timestamps should match the current build session.
 |---------|----------|
 | `XamlLoadException: No precompiled XAML found` at startup | Check namespaces of all new converter classes — must match `xmlns:converters` in `.axaml` |
 | `AVLN9999: file used by another process` | Kill all `dotnet publish` and `package-linux.sh` processes, retry |
-| `MSB3026: Could not copy XerahS.Uploaders.dll` | Usually transient; if fatal, delete `src/XerahS.Uploaders/obj/Release` and retry |
-| `Error: No plugins were published` | Check `src/Plugins/` structure and `plugin.json` presence in each plugin directory |
+| `MSB3026: Could not copy XerahS.Uploaders.dll` | Usually transient; if fatal, delete `src/desktop/core/XerahS.Uploaders/obj/Release` and retry |
+| `Error: No plugins were published` | Check `src/desktop/plugins/` structure and `plugin.json` presence in each plugin directory |
 | ARM64 cross-compile fails | Ensure `linux-arm64` .NET SDK cross-compile support is installed; Fedora needs `dotnet-sdk-10.0` |
 | `rpmbuild: command not found` | RPM skipped (not fatal); install with `sudo dnf install rpm-build` if needed |
 | Build succeeds but app segfaults | SkiaSharp native library issue; **never bump SkiaSharp beyond 2.88.9** |
@@ -255,5 +255,5 @@ Timestamps should match the current build session.
 - Build script: [build/linux/package-linux.sh](../../../build/linux/package-linux.sh)
 - Packaging tool: [build/linux/XerahS.Packaging/](../../../build/linux/XerahS.Packaging/)
 - Version config: [Directory.Build.props](../../../Directory.Build.props)
-- Main app project: [src/XerahS.App/XerahS.App.csproj](../../../src/XerahS.App/XerahS.App.csproj)
+- Main app project: [src/desktop/app/XerahS.App/XerahS.App.csproj](../../../src/desktop/app/XerahS.App/XerahS.App.csproj)
 - Converters namespace reference: `ShareX.ImageEditor.Converters` (match all new converter classes to this)

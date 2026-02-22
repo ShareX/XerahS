@@ -9,7 +9,7 @@ if ($env:OS -ne "Windows_NT") {
 
 # Use Join-Path for cross-platform path construction (works on PowerShell Core on any OS; script will exit above on non-Windows).
 $root = Resolve-Path (Join-Path (Join-Path $PSScriptRoot "..") "..")
-$project = Join-Path (Join-Path (Join-Path $root "src") "XerahS.App") "XerahS.App.csproj"
+$project = Join-Path (Join-Path (Join-Path (Join-Path (Join-Path $root "src") "desktop") "app") "XerahS.App") "XerahS.App.csproj"
 $issScript = Join-Path (Join-Path (Join-Path $root "build") "windows") "XerahS-setup.iss"
 $outputDir = Join-Path $root "dist"
 
@@ -71,7 +71,7 @@ foreach ($arch in $archs) {
     $pluginsDir = Join-Path $publishOutput "Plugins"
     if (!(Test-Path $pluginsDir)) { New-Item -ItemType Directory -Force -Path $pluginsDir | Out-Null }
 
-    $pluginProjects = Get-ChildItem -Path (Join-Path (Join-Path $root "src") "Plugins") -Filter "*.csproj" -Recurse
+    $pluginProjects = Get-ChildItem -Path (Join-Path (Join-Path (Join-Path $root "src") "desktop") "plugins") -Filter "*.csproj" -Recurse
     foreach ($plugin in $pluginProjects) {
         Write-Host "Publishing Plugin: $($plugin.Name)"
         

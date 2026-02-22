@@ -2,7 +2,7 @@
 $ErrorActionPreference = "Stop"
 
 $root = Resolve-Path "$PSScriptRoot\..\.."
-$project = Join-Path $root "src\XerahS.App\XerahS.App.csproj"
+$project = Join-Path $root "src\desktop\app\XerahS.App\XerahS.App.csproj"
 $outputDir = Join-Path $root "dist"
 
 if (!(Test-Path $outputDir)) { New-Item -ItemType Directory -Force -Path $outputDir | Out-Null }
@@ -135,7 +135,7 @@ foreach ($arch in $archs) {
     $rid = "osx-$arch"
     
     # 1. Publish
-    $publishDir = Join-Path $root "src\XerahS.App\bin\Release\net10.0\$rid\publish"
+    $publishDir = Join-Path $root "src\desktop\app\XerahS.App\bin\Release\net10.0\$rid\publish"
     Write-Host "Publishing to $publishDir..."
     
     # Ensure clean
@@ -160,7 +160,7 @@ foreach ($arch in $archs) {
     $pluginsDir = Join-Path $appBundlePath "Contents\MacOS\Plugins"
     if (!(Test-Path $pluginsDir)) { New-Item -ItemType Directory -Force -Path $pluginsDir | Out-Null }
 
-    $pluginProjects = Get-ChildItem -Path (Join-Path $root "src\Plugins") -Filter "*.csproj" -Recurse
+    $pluginProjects = Get-ChildItem -Path (Join-Path $root "src\desktop\plugins") -Filter "*.csproj" -Recurse
     $publishedPluginCount = 0
     foreach ($plugin in $pluginProjects) {
         Write-Host "Publishing Plugin: $($plugin.Name)"
