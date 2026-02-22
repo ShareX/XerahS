@@ -40,6 +40,15 @@ Follow these instructions **exactly** and in order to build Windows executables 
 
 ## Build Process
 
+### Phase 0: Update ImageEditor Submodule
+
+**Always pull the latest ImageEditor submodule before building** to ensure the embedded image editor is up-to-date.
+
+```powershell
+cd 'ShareX Team\XerahS'
+git submodule update --remote --merge ImageEditor
+```
+
 ### Phase 1: Pre-Build Cleanup
 
 **CRITICAL**: File locking is the #1 cause of Windows build failures. Always clean before building.
@@ -183,6 +192,14 @@ Follow these instructions **exactly** and in order to build Windows executables 
    ```
 
 ## Important Notes
+
+### Sequential Builds Are Mandatory
+
+**NEVER run two builds at the same time.** ImageEditor targets multiple TFMs (`net9.0`, `net10.0`, `net9.0-windows10.0.26100.0`, `net10.0-windows10.0.26100.0`) and MSBuild parallelism causes all of them to race on the same `ShareX.ImageEditor.dll` output path, producing `CS2012` file lock errors.
+
+- **Architectures**: `package-windows.ps1` already iterates `win-x64` then `win-arm64` sequentially via `foreach` — never invoke it twice concurrently.
+- **Internal parallelism**: Controlled by `/m:1` on the `dotnet publish` call, which forces single-threaded MSBuild and eliminates the intra-build race.
+- **Between builds**: Always run `dotnet build-server shutdown` and kill VBCSCompiler between consecutive build sessions.
 
 ### Why File Locking Happens
 - **VBCSCompiler**: Roslyn compiler server caches assemblies for faster builds

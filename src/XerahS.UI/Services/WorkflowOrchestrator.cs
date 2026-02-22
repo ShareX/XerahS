@@ -412,11 +412,19 @@ public sealed class WorkflowOrchestrator : IWorkflowOrchestrator
         {
             DebugHelper.WriteLine("Screen Recording active - flagging Stop Signal to existing task...");
             Core.Managers.ScreenRecordingManager.Instance.SignalStop();
+            return;
         }
-        else
+
+        // Scrolling capture: same hotkey stops an in-progress capture
+        if (settings.Job == Core.WorkflowType.ScrollingCapture &&
+            ScrollingCaptureToolService.CurrentCapture?.IsCapturing == true)
         {
-            await Core.Helpers.TaskHelpers.ExecuteWorkflow(settings, settings.Id);
+            DebugHelper.WriteLine("Scrolling Capture active - stopping capture.");
+            ScrollingCaptureToolService.StopCurrentCapture();
+            return;
         }
+
+        await Core.Helpers.TaskHelpers.ExecuteWorkflow(settings, settings.Id);
     }
 
     private void OnWorkflowTaskCompleted(object? sender, Core.Tasks.WorkerTask task)

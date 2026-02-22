@@ -175,6 +175,16 @@ namespace XerahS.Platform.Abstractions
         /// </summary>
         public static bool IsThemeServiceInitialized => _themeService != null;
 
+        /// <summary>
+        /// Returns shell integration service if available (null when not supported on platform).
+        /// </summary>
+        public static IShellIntegrationService? GetShellIntegrationIfAvailable() => _shellIntegrationService;
+
+        /// <summary>
+        /// Returns notification service if available (null when not supported on platform).
+        /// </summary>
+        public static INotificationService? GetNotificationIfAvailable() => _notificationService;
+
         private static IScrollingCaptureService? _scrollingCaptureService;
 
         /// <summary>
@@ -253,11 +263,28 @@ namespace XerahS.Platform.Abstractions
             _imageEncoderService = imageEncoderService ?? throw new ArgumentNullException(nameof(imageEncoderService));
         }
 
+        private static IServiceProvider? _rootProvider;
+
+        /// <summary>
+        /// Root DI container built from platform and app services. Set after composition root runs.
+        /// Use for constructor injection and gradual migration away from static access.
+        /// </summary>
+        public static IServiceProvider? RootProvider => _rootProvider;
+
+        /// <summary>
+        /// Sets the root service provider (called by composition root after building the container).
+        /// </summary>
+        public static void SetRootProvider(IServiceProvider provider)
+        {
+            _rootProvider = provider ?? throw new ArgumentNullException(nameof(provider));
+        }
+
         /// <summary>
         /// Resets all platform services (mainly for testing)
         /// </summary>
         public static void Reset()
         {
+            _rootProvider = null;
             _platformInfo = null;
             _screenService = null;
             _clipboardService = null;

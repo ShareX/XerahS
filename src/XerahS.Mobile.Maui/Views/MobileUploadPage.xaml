@@ -74,7 +74,7 @@
 
                                 <!-- Error (if failed) -->
                                 <Label Text="{Binding Error}"
-                                       IsVisible="{Binding Error, Converter={StaticResource IsNotNullOrEmptyConverter}}"
+                                       IsVisible="{Binding HasError}"
                                        TextColor="{StaticResource ErrorRed}"
                                        LineBreakMode="WordWrap"/>
 
@@ -84,6 +84,14 @@
                                         Command="{Binding CopyUrlCommand}"
                                         CommandParameter="{Binding Url}"
                                         HorizontalOptions="Start"/>
+
+                                <!-- Copy Error button -->
+                                <Button Text="Copy Error"
+                                        IsVisible="{Binding HasError}"
+                                        Command="{Binding CopyErrorCommand}"
+                                        CommandParameter="{Binding Error}"
+                                        HorizontalOptions="Start"
+                                        ToolTipProperties.Text="Copy error message to clipboard"/>
 
                             </VerticalStackLayout>
                         </Border>

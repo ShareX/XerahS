@@ -23,6 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Mobile.Maui.Services;
+using XerahS.Platform.Abstractions;
+
 namespace XerahS.Mobile.Maui;
 
 public partial class App : Application
@@ -58,7 +61,7 @@ public partial class App : Application
         try
         {
 #if ANDROID
-            global::Android.Util.Log.Info("XerahS", "InitializeCoreAsync Started.");
+            global::Android.Util.Log.Info("XerahS", "[Init] Loading page visible; starting background init.");
 #endif
             // Run ALL initialization on a background thread.
             // Do NOT use await inside Task.Run with ConfigureAwait — keep it as a single
@@ -75,26 +78,28 @@ public partial class App : Application
                 XerahS.Core.Uploaders.ProviderContextManager.EnsureProviderContext();
 
 #if ANDROID
-                global::Android.Util.Log.Info("XerahS", "Background init completed successfully.");
+                global::Android.Util.Log.Info("XerahS", "[Init] Background init completed.");
 #endif
             }).ConfigureAwait(false);
 
 #if ANDROID
-            global::Android.Util.Log.Info("XerahS", "Swapping root page to AppShell...");
+            global::Android.Util.Log.Info("XerahS", "[Init] Posting swap to AppShell on main thread.");
 #endif
             MainThread.BeginInvokeOnMainThread(() =>
             {
+                PlatformServices.RegisterToastService(new MauiToastService());
+
                 if (Application.Current?.Windows.FirstOrDefault() is Window window)
                 {
                     window.Page = new AppShell();
 #if ANDROID
-                    global::Android.Util.Log.Info("XerahS", "AppShell is now the root page.");
+                    global::Android.Util.Log.Info("XerahS", "[Init] AppShell is now the root page.");
 #endif
                 }
                 else
                 {
 #if ANDROID
-                    global::Android.Util.Log.Error("XerahS", "Could not find Window to swap to AppShell.");
+                    global::Android.Util.Log.Error("XerahS", "[Init] Could not find Window to swap to AppShell.");
 #endif
                 }
             });
@@ -102,7 +107,7 @@ public partial class App : Application
         catch (System.Exception ex)
         {
 #if ANDROID
-            global::Android.Util.Log.Error("XerahS", "Init Crash: " + ex.ToString());
+            global::Android.Util.Log.Error("XerahS", "[Init] Exception: " + ex.ToString());
 #endif
         }
     }

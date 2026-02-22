@@ -6,13 +6,23 @@ This directory contains Git hooks for the XerahS project to enforce code quality
 
 ### pre-commit
 
-Validates GPL v3 license headers in all staged C# files before allowing a commit.
+Validates **GPL v3** license headers in all staged **C#**, **Swift**, and **Kotlin** source files. All require the **full GPL v3 license text** (same as C#), not just a short copyright line.
 
-**What it checks:**
+**C# (`.cs`):**
 - Presence of `#region License Information (GPL v3)` tag
 - Correct project name: "XerahS - The Avalonia UI implementation of ShareX"
-- Current copyright year: "Copyright (c) 2007-2026 ShareX Team"
-- GPL v3 license text
+- Current copyright year: "Copyright (c) 2007-YYYY ShareX Team"
+- Full GPL v3 license text
+
+**Swift (`.swift`), e.g. `src/XerahS.Mobile.Swift`:**
+- Line with "XerahS Mobile (Swift)"
+- Current copyright and **full GPL v3 license text** (as `//` line comments)
+
+**Kotlin (`.kt`), e.g. `src/XerahS.Mobile.Kt`:**
+- Block comment at top with project name, copyright, and **full GPL v3 license text**
+- Must appear before the `package` declaration
+
+See `developers/guidelines/CODING_STANDARDS.md` for exact header formats.
 
 **Supported platforms:**
 - Linux/macOS: Uses bash script (`pre-commit.bash`) via launcher (`pre-commit`)
@@ -104,24 +114,11 @@ git commit --no-verify
 
 If the pre-commit hook detects violations:
 
-### Option 1: Automatic Fix
+### C# files
 
-Run the license header fix script:
+**Option 1 – Automatic:** Run `pwsh docs/scripts/fix_license_headers.ps1`, then re-stage and commit.
 
-```powershell
-pwsh docs/scripts/fix_license_headers.ps1
-```
-
-Then re-stage the fixed files:
-
-```bash
-git add <files>
-git commit
-```
-
-### Option 2: Manual Fix
-
-Update the file headers to match the expected format:
+**Option 2 – Manual:** Update the file headers to match the expected format:
 
 ```csharp
 #region License Information (GPL v3)
@@ -149,6 +146,10 @@ Update the file headers to match the expected format:
 
 #endregion License Information (GPL v3)
 ```
+
+### Swift / Kotlin files
+
+Add the **full GPL v3 license text** at the top of each `.swift` or `.kt` file (see `developers/guidelines/CODING_STANDARDS.md` for the exact block). Swift uses `//` line comments; Kotlin uses a `/* ... */` block comment before the `package` line. Then re-stage and commit: `git add <files>` and `git commit`.
 
 ## Troubleshooting
 

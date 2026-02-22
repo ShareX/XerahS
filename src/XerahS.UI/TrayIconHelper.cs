@@ -186,6 +186,8 @@ public class TrayIconHelper : INotifyPropertyChanged
 
     /// <summary>
     /// Handles recording status changes to update tray icon, menu, and border window.
+    /// Only rebuilds the tray menu when the recording active state actually transitions
+    /// (e.g. Idle->Recording or Recording->Idle), not on every duration tick.
     /// </summary>
     private void OnRecordingStatusChanged(object? sender, RecordingStatusEventArgs e)
     {
@@ -193,17 +195,27 @@ public class TrayIconHelper : INotifyPropertyChanged
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
             var previousStatus = _currentRecordingStatus;
+            bool wasActive = IsRecordingActive;
+
             _currentRecordingStatus = e.Status;
 
-            DebugHelper.WriteLine($"TrayIconHelper: Recording status changed from {previousStatus} to {e.Status}");
+            bool isNowActive = IsRecordingActive;
 
-            // Notify property changes for icon and tooltip
+            // Lightweight property updates (icon/tooltip) are fine on every tick
             OnPropertyChanged(nameof(CurrentTrayIcon));
             OnPropertyChanged(nameof(TrayToolTipText));
-            OnPropertyChanged(nameof(IsRecordingActive));
 
-            // Rebuild menu to add/remove recording-specific items
-            BuildTrayMenu();
+            // Only rebuild the menu when recording active state transitions or
+            // when pause/resume changes the menu items (status category changes)
+            bool stateChanged = wasActive != isNowActive;
+            bool pauseToggled = (previousStatus == RecordingStatus.Paused) != (e.Status == RecordingStatus.Paused);
+
+            if (stateChanged || pauseToggled)
+            {
+                DebugHelper.WriteLine($"TrayIconHelper: Recording state changed from {previousStatus} to {e.Status}, rebuilding menu");
+                OnPropertyChanged(nameof(IsRecordingActive));
+                BuildTrayMenu();
+            }
 
             // Hide border window when recording ends (Idle or Error)
             if (e.Status is RecordingStatus.Idle or RecordingStatus.Error)
@@ -527,12 +539,29 @@ public class TrayIconHelper : INotifyPropertyChanged
 
     private async void ExecuteWorkflow(WorkflowSettings workflow)
     {
-        if (workflow != null)
+        if (workflow == null) return;
+
+        DebugHelper.WriteLine($"Tray: Execute workflow (ID: {workflow.Id}): {workflow}");
+
+        // Toggle behavior: if a recording is active and this is a recording workflow,
+        // stop the existing recording instead of trying to start a new one
+        if (IsRecordingActive && Core.TaskHelpers.IsScreenRecordStartJob(workflow.Job))
         {
-            DebugHelper.WriteLine($"Tray: Execute workflow (ID: {workflow.Id}): {workflow}");
-            // Hide main window for tray-triggered captures (user clicked tray menu)
-            await Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id, hideMainWindow: true);
+            DebugHelper.WriteLine("Tray: Recording already active, stopping existing recording");
+            await StopRecordingAsync();
+            return;
         }
+
+        // On Linux (Wayland), don't hide the main window for recording workflows.
+        // The XDG ScreenCast portal requires a valid parent window surface during
+        // PipeWire stream negotiation; hiding it invalidates the session.
+        bool hideWindow = true;
+        if (OperatingSystem.IsLinux() && Core.TaskHelpers.IsScreenRecordStartJob(workflow.Job))
+        {
+            hideWindow = false;
+        }
+
+        await Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id, hideMainWindow: hideWindow);
     }
 
     private void OpenMainWindow()
@@ -621,17 +650,25 @@ public class TrayIconHelper : INotifyPropertyChanged
                 OpenMainWindow();
                 break;
             default:
-                // For tray click actions, execute first matching workflow
-                // Hide main window for tray-triggered captures (user clicked tray icon)
+                // Toggle behavior: if a recording is active and this is a recording action,
+                // stop the existing recording instead of trying to start a new one
+                if (IsRecordingActive && Core.TaskHelpers.IsScreenRecordStartJob(action))
+                {
+                    DebugHelper.WriteLine("Tray action: Recording already active, stopping existing recording");
+                    await StopRecordingAsync();
+                    return;
+                }
+
+                bool hideWindow = !OperatingSystem.IsLinux() || !Core.TaskHelpers.IsScreenRecordStartJob(action);
+
                 var workflow = SettingsManager.WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Job == action);
                 if (workflow != null)
                 {
-                    await Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id, hideMainWindow: true);
+                    await Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id, hideMainWindow: hideWindow);
                 }
                 else
                 {
-                    // Fallback for actions that aren't workflow-based
-                    await Core.Helpers.TaskHelpers.ExecuteJob(action, new TaskSettings { Job = action }, hideMainWindow: true);
+                    await Core.Helpers.TaskHelpers.ExecuteJob(action, new TaskSettings { Job = action }, hideMainWindow: hideWindow);
                 }
                 break;
         }

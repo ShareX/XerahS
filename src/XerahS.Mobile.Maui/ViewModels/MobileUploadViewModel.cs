@@ -55,6 +55,7 @@ public class MobileUploadViewModel : INotifyPropertyChanged
     public ObservableCollection<UploadResultItem> Results { get; } = new();
 
     public ICommand CopyUrlCommand { get; }
+    public ICommand CopyErrorCommand { get; }
     public ICommand OpenSettingsCommand { get; }
     public ICommand OpenHistoryCommand { get; }
     public IAsyncRelayCommand PickFilesCommand { get; }
@@ -80,6 +81,7 @@ public class MobileUploadViewModel : INotifyPropertyChanged
         _uploadQueueService.ItemCompleted += OnQueueItemCompleted;
 
         CopyUrlCommand = new RelayCommand<string>(CopyUrl);
+        CopyErrorCommand = new RelayCommand<string>(CopyError);
         OpenSettingsCommand = new RelayCommand(() => OnOpenSettings?.Invoke());
         OpenHistoryCommand = new RelayCommand(() => OnOpenHistory?.Invoke());
         PickFilesCommand = new AsyncRelayCommand(PickFilesAsync);
@@ -163,7 +165,8 @@ public class MobileUploadViewModel : INotifyPropertyChanged
             Success = success,
             Url = url,
             Error = error,
-            CopyUrlCommand = CopyUrlCommand
+            CopyUrlCommand = CopyUrlCommand,
+            CopyErrorCommand = CopyErrorCommand
         });
     }
 
@@ -262,6 +265,20 @@ public class MobileUploadViewModel : INotifyPropertyChanged
         }
     }
 
+    private void CopyError(string? error)
+    {
+        if (string.IsNullOrEmpty(error)) return;
+
+        try
+        {
+            PlatformServices.Clipboard.SetText(error);
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "[Mobile] CopyError");
+        }
+    }
+
     protected void OnPropertyChanged([CallerMemberName] string? name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
@@ -273,5 +290,7 @@ public class UploadResultItem
     public string? Url { get; set; }
     public string? Error { get; set; }
     public bool HasUrl => !string.IsNullOrEmpty(Url);
+    public bool HasError => !string.IsNullOrEmpty(Error);
     public ICommand? CopyUrlCommand { get; set; }
+    public ICommand? CopyErrorCommand { get; set; }
 }

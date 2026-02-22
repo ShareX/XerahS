@@ -38,6 +38,12 @@ namespace XerahS.UI.Services;
 
 public static class ScrollingCaptureToolService
 {
+    /// <summary>
+    /// The view model of the currently open scrolling capture window, if any.
+    /// Used so the Scrolling Capture hotkey can stop an in-progress capture.
+    /// </summary>
+    internal static ScrollingCaptureViewModel? CurrentCapture { get; private set; }
+
     public static Task HandleWorkflowAsync(WorkflowType job, Window? owner, TaskSettings? taskSettings = null)
     {
         return job switch
@@ -47,6 +53,17 @@ public static class ScrollingCaptureToolService
         };
     }
 
+    /// <summary>
+    /// Stops the current scrolling capture if one is active (e.g. when user presses the same hotkey again).
+    /// </summary>
+    internal static void StopCurrentCapture()
+    {
+        if (CurrentCapture?.IsCapturing == true)
+        {
+            CurrentCapture.StopCapture();
+        }
+    }
+
     private static Task ShowScrollingCaptureWindowAsync(Window? owner, TaskSettings? taskSettings)
     {
         var viewModel = new ScrollingCaptureViewModel();
@@ -54,6 +71,9 @@ public static class ScrollingCaptureToolService
         {
             DataContext = viewModel
         };
+
+        CurrentCapture = viewModel;
+        window.Closed += (_, _) => CurrentCapture = null;
 
         // Wire window selection callback
         viewModel.SelectWindowRequested = async () =>

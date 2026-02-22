@@ -1,0 +1,605 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A1000001 /* XerahSMobileApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002 /* XerahSMobileApp.swift */; };
+		A1000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000004 /* ContentView.swift */; };
+		A1000005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000006 /* Assets.xcassets */; };
+		B1000001 /* UploadQueueItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002 /* UploadQueueItem.swift */; };
+		B1000003 /* HistoryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004 /* HistoryEntry.swift */; };
+		B1000005 /* ApplicationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006 /* ApplicationConfig.swift */; };
+		B1000007 /* UploadResultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000008 /* UploadResultItem.swift */; };
+		B1000009 /* Paths.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A0 /* Paths.swift */; };
+		B10000A1 /* SettingsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A2 /* SettingsRepository.swift */; };
+		B10000A3 /* QueueRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A4 /* QueueRepository.swift */; };
+		B10000A5 /* HistoryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A6 /* HistoryRepository.swift */; };
+		B10000A7 /* UploadOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A8 /* UploadOutcome.swift */; };
+		B10000A9 /* CustomUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B0 /* CustomUploader.swift */; };
+		B10000B1 /* S3Uploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B2 /* S3Uploader.swift */; };
+		B10000B3 /* UploadQueueWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B4 /* UploadQueueWorker.swift */; };
+		B10000B7 /* HeicToPngConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B8 /* HeicToPngConverter.swift */; };
+		B10000B5 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000B6 /* libsqlite3.tbd */; };
+		C1000001 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000002 /* AppState.swift */; };
+		C1000003 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000004 /* Screen.swift */; };
+		C1000005 /* LoadingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000006 /* LoadingScreen.swift */; };
+		C1000007 /* UploadScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000008 /* UploadScreen.swift */; };
+		C1000009 /* HistoryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A0 /* HistoryScreen.swift */; };
+		C10000A1 /* SettingsHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A2 /* SettingsHubScreen.swift */; };
+		C10000A3 /* S3ConfigScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A4 /* S3ConfigScreen.swift */; };
+		C10000A5 /* CustomUploaderConfigScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A6 /* CustomUploaderConfigScreen.swift */; };
+		C10000A7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000A8 /* RootView.swift */; };
+		D1000001 /* ShareGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000002 /* ShareGroup.swift */; };
+		D1000003 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000004 /* ShareViewController.swift */; };
+		D1000005 /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D1000000 /* ShareExtension.appex */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A1000000 /* XerahSMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XerahSMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000002 /* XerahSMobileApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XerahSMobileApp.swift; sourceTree = "<group>"; };
+		A1000004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A1000006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B1000002 /* UploadQueueItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadQueueItem.swift; sourceTree = "<group>"; };
+		B1000004 /* HistoryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryEntry.swift; sourceTree = "<group>"; };
+		B1000006 /* ApplicationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationConfig.swift; sourceTree = "<group>"; };
+		B1000008 /* UploadResultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadResultItem.swift; sourceTree = "<group>"; };
+		B10000A0 /* Paths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Paths.swift; sourceTree = "<group>"; };
+		B10000A2 /* SettingsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRepository.swift; sourceTree = "<group>"; };
+		B10000A4 /* QueueRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueRepository.swift; sourceTree = "<group>"; };
+		B10000A6 /* HistoryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryRepository.swift; sourceTree = "<group>"; };
+		B10000A8 /* UploadOutcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadOutcome.swift; sourceTree = "<group>"; };
+		B10000B0 /* CustomUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomUploader.swift; sourceTree = "<group>"; };
+		B10000B2 /* S3Uploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S3Uploader.swift; sourceTree = "<group>"; };
+		B10000B4 /* UploadQueueWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadQueueWorker.swift; sourceTree = "<group>"; };
+		B10000B8 /* HeicToPngConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeicToPngConverter.swift; sourceTree = "<group>"; };
+		B10000B6 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		C1000002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		C1000004 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
+		C1000006 /* LoadingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingScreen.swift; sourceTree = "<group>"; };
+		C1000008 /* UploadScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadScreen.swift; sourceTree = "<group>"; };
+		C10000A0 /* HistoryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryScreen.swift; sourceTree = "<group>"; };
+		C10000A2 /* SettingsHubScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsHubScreen.swift; sourceTree = "<group>"; };
+		C10000A4 /* S3ConfigScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S3ConfigScreen.swift; sourceTree = "<group>"; };
+		C10000A6 /* CustomUploaderConfigScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomUploaderConfigScreen.swift; sourceTree = "<group>"; };
+		C10000A8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		D1000000 /* ShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D1000002 /* ShareGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareGroup.swift; sourceTree = "<group>"; };
+		D1000004 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		D1000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D1000007 /* ShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShareExtension.entitlements; sourceTree = "<group>"; };
+		D1000008 /* XerahSMobile.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = XerahSMobile.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A0FFFFFC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000B5 /* libsqlite3.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A0FFFFF6 = {
+			isa = PBXGroup;
+			children = (
+				A0FFFFF7 /* XerahSMobile */,
+				D0FFFFF0 /* ShareExtension */,
+				A0FFFFFE /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D0FFFFF0 /* ShareExtension */ = {
+			isa = PBXGroup;
+			children = (
+				D1000004 /* ShareViewController.swift */,
+				D1000006 /* Info.plist */,
+				D1000007 /* ShareExtension.entitlements */,
+			);
+			path = ShareExtension;
+			sourceTree = "<group>";
+		};
+		A0FFFFF7 /* XerahSMobile */ = {
+			isa = PBXGroup;
+			children = (
+				A1000002 /* XerahSMobileApp.swift */,
+				A1000004 /* ContentView.swift */,
+				C1000002 /* AppState.swift */,
+				C10000A8 /* RootView.swift */,
+				C0FFFFF0 /* Navigation */,
+				C0FFFFF1 /* Features */,
+				B0FFFFF0 /* Core */,
+				A1000006 /* Assets.xcassets */,
+				A1000007 /* Info.plist */,
+				D1000008 /* XerahSMobile.entitlements */,
+			);
+			path = XerahSMobile;
+			sourceTree = "<group>";
+		};
+		C0FFFFF0 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				C1000004 /* Screen.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		C0FFFFF1 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				C0FFFFF2 /* Loading */,
+				C0FFFFF3 /* Upload */,
+				C0FFFFF4 /* History */,
+				C0FFFFF5 /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		C0FFFFF2 /* Loading */ = {
+			isa = PBXGroup;
+			children = (
+				C1000006 /* LoadingScreen.swift */,
+			);
+			path = Loading;
+			sourceTree = "<group>";
+		};
+		C0FFFFF3 /* Upload */ = {
+			isa = PBXGroup;
+			children = (
+				C1000008 /* UploadScreen.swift */,
+			);
+			path = Upload;
+			sourceTree = "<group>";
+		};
+		C0FFFFF4 /* History */ = {
+			isa = PBXGroup;
+			children = (
+				C10000A0 /* HistoryScreen.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		C0FFFFF5 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				C10000A2 /* SettingsHubScreen.swift */,
+				C10000A4 /* S3ConfigScreen.swift */,
+				C10000A6 /* CustomUploaderConfigScreen.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		B0FFFFF0 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				B0FFFFF1 /* Domain */,
+				B0FFFFF2 /* Common */,
+				B0FFFFF3 /* Data */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		B0FFFFF1 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				B1000002 /* UploadQueueItem.swift */,
+				B1000004 /* HistoryEntry.swift */,
+				B1000006 /* ApplicationConfig.swift */,
+				B1000008 /* UploadResultItem.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		B0FFFFF2 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				B10000A0 /* Paths.swift */,
+				D1000002 /* ShareGroup.swift */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		B0FFFFF3 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				B10000A2 /* SettingsRepository.swift */,
+				B10000A4 /* QueueRepository.swift */,
+				B10000A6 /* HistoryRepository.swift */,
+				B10000B4 /* UploadQueueWorker.swift */,
+				B10000B8 /* HeicToPngConverter.swift */,
+				B0FFFFF4 /* Upload */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		B0FFFFF4 /* Upload */ = {
+			isa = PBXGroup;
+			children = (
+				B10000A8 /* UploadOutcome.swift */,
+				B10000B0 /* CustomUploader.swift */,
+				B10000B2 /* S3Uploader.swift */,
+			);
+			path = Upload;
+			sourceTree = "<group>";
+		};
+		A0FFFFFE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000 /* XerahSMobile.app */,
+				D1000000 /* ShareExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A0FFFFFA /* XerahSMobile */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1000010 /* Build configuration list for PBXNativeTarget "XerahSMobile" */;
+			buildPhases = (
+				A0FFFFF9 /* Sources */,
+				A0FFFFFC /* Frameworks */,
+				A0FFFFFD /* Resources */,
+				A0FFFFFB /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D1000009 /* PBXTargetDependency */,
+			);
+			name = XerahSMobile;
+			productName = XerahSMobile;
+			productReference = A1000000 /* XerahSMobile.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D0FFFFFA /* ShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D1000010 /* Build configuration list for PBXNativeTarget "ShareExtension" */;
+			buildPhases = (
+				D0FFFFF9 /* Sources */,
+				D0FFFFFC /* Frameworks */,
+				D0FFFFFD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ShareExtension;
+			productName = ShareExtension;
+			productReference = D1000000 /* ShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A0FFFFF5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+			};
+			buildConfigurationList = A1000012 /* Build configuration list for PBXProject "XerahSMobile" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A0FFFFF6;
+			productRefGroup = A0FFFFFE /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A0FFFFFA /* XerahSMobile */,
+				D0FFFFFA /* ShareExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D0FFFFFD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D0FFFFFC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D1000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D0FFFFFA /* ShareExtension */;
+			targetProxy = D100000A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		D100000A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D0FFFFFA;
+			remoteInfo = ShareExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A0FFFFFD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000005 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D0FFFFFD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A0FFFFF9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000001 /* XerahSMobileApp.swift in Sources */,
+				A1000003 /* ContentView.swift in Sources */,
+				B1000001 /* UploadQueueItem.swift in Sources */,
+				B1000003 /* HistoryEntry.swift in Sources */,
+				B1000005 /* ApplicationConfig.swift in Sources */,
+				B1000007 /* UploadResultItem.swift in Sources */,
+				B1000009 /* Paths.swift in Sources */,
+				B10000A1 /* SettingsRepository.swift in Sources */,
+				B10000A3 /* QueueRepository.swift in Sources */,
+				B10000A5 /* HistoryRepository.swift in Sources */,
+				B10000A7 /* UploadOutcome.swift in Sources */,
+				B10000A9 /* CustomUploader.swift in Sources */,
+				B10000B1 /* S3Uploader.swift in Sources */,
+				B10000B3 /* UploadQueueWorker.swift in Sources */,
+				B10000B7 /* HeicToPngConverter.swift in Sources */,
+				C1000001 /* AppState.swift in Sources */,
+				C1000003 /* Screen.swift in Sources */,
+				C1000005 /* LoadingScreen.swift in Sources */,
+				C1000007 /* UploadScreen.swift in Sources */,
+				C1000009 /* HistoryScreen.swift in Sources */,
+				C10000A1 /* SettingsHubScreen.swift in Sources */,
+				C10000A3 /* S3ConfigScreen.swift in Sources */,
+				C10000A5 /* CustomUploaderConfigScreen.swift in Sources */,
+				C10000A7 /* RootView.swift in Sources */,
+				D1000001 /* ShareGroup.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D0FFFFF9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D1000003 /* ShareViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A0FFFFFB /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D1000005 /* ShareExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A1000008 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A1000009 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_OPTIMIZATION_LEVEL = s;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A100000B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = XerahSMobile/XerahSMobile.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = XerahSMobile/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.getsharex.xerahs.mobile;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A100000C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = XerahSMobile/XerahSMobile.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = XerahSMobile/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.getsharex.xerahs.mobile;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D100000B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.getsharex.xerahs.mobile.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D100000C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.getsharex.xerahs.mobile.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1000010 /* Build configuration list for PBXNativeTarget "XerahSMobile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A100000B /* Debug */,
+				A100000C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1000012 /* Build configuration list for PBXProject "XerahSMobile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000008 /* Debug */,
+				A1000009 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D1000010 /* Build configuration list for PBXNativeTarget "ShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D100000B /* Debug */,
+				D100000C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A0FFFFF5 /* Project object */;
+}

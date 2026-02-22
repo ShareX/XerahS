@@ -1,14 +1,23 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 
-$root = Resolve-Path "$PSScriptRoot\..\.."
-$project = Join-Path $root "src\XerahS.App\XerahS.App.csproj"
-$issScript = Join-Path $root "build\windows\XerahS-setup.iss"
+# This script builds Windows installers and requires Windows plus Inno Setup.
+if ($env:OS -ne "Windows_NT") {
+    $platform = if ($IsCoreClr) { [System.Environment]::OSVersion.Platform } else { "Unknown" }
+    Write-Error "package-windows.ps1 requires Windows (Inno Setup). Current OS: $platform. Run this script on Windows."
+    exit 1
+}
+
+# Use Join-Path for cross-platform path construction (works on PowerShell Core on any OS; script will exit above on non-Windows).
+$root = Resolve-Path (Join-Path (Join-Path $PSScriptRoot "..") "..")
+$project = Join-Path (Join-Path (Join-Path $root "src") "XerahS.App") "XerahS.App.csproj"
+$issScript = Join-Path (Join-Path (Join-Path $root "build") "windows") "XerahS-setup.iss"
 $outputDir = Join-Path $root "dist"
 
 if (!(Test-Path $outputDir)) { New-Item -ItemType Directory -Force -Path $outputDir | Out-Null }
 
-# Find ISCC (Inno Setup Compiler)
-$isccPath = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+# Find ISCC (Inno Setup Compiler) - Windows only
+$programFilesX86 = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::ProgramFilesX86)
+$isccPath = Join-Path (Join-Path $programFilesX86 "Inno Setup 6") "ISCC.exe"
 if (!(Test-Path $isccPath)) {
     Write-Error "Inno Setup Compiler (ISCC.exe) not found at: $isccPath"
 }
@@ -40,22 +49,29 @@ foreach ($arch in $archs) {
     Write-Host "-------------------------------------------"
 
     # 1. Publish
-    $publishOutput = Join-Path $root "build\publish-temp-$arch"
+    $publishOutput = Join-Path (Join-Path $root "build") "publish-temp-$arch"
     Write-Host "Publishing to $publishOutput..."
     # Ensure clean
     if (Test-Path $publishOutput) { Remove-Item -Recurse -Force $publishOutput }
 
+    # Kill any lingering build processes before publishing to avoid file lock on ImageEditor.dll
+    Get-Process | Where-Object {
+        $_.Name -like '*VBCSCompiler*' -or $_.Name -like '*MSBuild*'
+    } | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 1
+
     # Enable PublishSingleFile=false to ensure DLLs are present for ISCC *.dll match
     # Pass SkipBundlePlugins=true to avoid path resolution bugs in custom MSBuild targets
-    # Disable nodeReuse to avoid file locking issues
-    dotnet publish $project -c Release -p:OS=Windows_NT -r $arch -p:PublishSingleFile=false -p:SkipBundlePlugins=true -p:nodeReuse=false --self-contained true -o $publishOutput
+    # Disable nodeReuse and UseSharedCompilation to avoid VBCSCompiler file locking on multi-TFM builds
+    # /m:1 forces single-threaded build to prevent parallel TFM race conditions on ImageEditor.dll
+    dotnet publish $project -c Release -p:OS=Windows_NT -r $arch -p:PublishSingleFile=false -p:SkipBundlePlugins=true -p:nodeReuse=false -p:UseSharedCompilation=false --self-contained true -o $publishOutput /m:1
 
     # 1.5 Publish Plugins
     Write-Host "Publishing Plugins..."
     $pluginsDir = Join-Path $publishOutput "Plugins"
     if (!(Test-Path $pluginsDir)) { New-Item -ItemType Directory -Force -Path $pluginsDir | Out-Null }
 
-    $pluginProjects = Get-ChildItem -Path (Join-Path $root "src\Plugins") -Filter "*.csproj" -Recurse
+    $pluginProjects = Get-ChildItem -Path (Join-Path (Join-Path $root "src") "Plugins") -Filter "*.csproj" -Recurse
     foreach ($plugin in $pluginProjects) {
         Write-Host "Publishing Plugin: $($plugin.Name)"
         
@@ -75,7 +91,7 @@ foreach ($arch in $archs) {
         }
 
         $pluginOutput = Join-Path $pluginsDir $pluginId
-        dotnet publish $plugin.FullName -c Release -p:OS=Windows_NT -r $arch -p:nodeReuse=false --self-contained false -o $pluginOutput
+        dotnet publish $plugin.FullName -c Release -p:OS=Windows_NT -r $arch -p:nodeReuse=false -p:UseSharedCompilation=false --self-contained false -o $pluginOutput
 
 
     }

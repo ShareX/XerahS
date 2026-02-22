@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Mobile.Core;
 using XerahS.Mobile.Maui.ViewModels;
 
 namespace XerahS.Mobile.Maui.Views;

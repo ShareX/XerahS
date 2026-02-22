@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Ava</RootNamespace>
+    <!-- On macOS build both Android and iOS, on other platforms only Android -->
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">net10.0-android;net10.0-ios</TargetFrameworks>
+    <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('osx'))">net10.0-android</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationTitle>XerahS</ApplicationTitle>
+    <ApplicationDisplayVersion>0.16.4</ApplicationDisplayVersion>
+    <ApplicationVersion>2</ApplicationVersion>
+    <!-- Android -->
+    <ApplicationId Condition="'$(TargetFramework)' == 'net10.0-android'">com.getsharex.xerahs</ApplicationId>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21</SupportedOSPlatformVersion>
+    <EmbedAssembliesIntoApk Condition="'$(TargetFramework)' == 'net10.0-android'">true</EmbedAssembliesIntoApk>
+    <AndroidUseFastDeployment Condition="'$(TargetFramework)' == 'net10.0-android'">false</AndroidUseFastDeployment>
+    <!-- iOS -->
+    <ApplicationId Condition="'$(TargetFramework)' == 'net10.0-ios'">com.sharexteam.xerahs</ApplicationId>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <EnableShareExtension Condition="'$(TargetFramework)' == 'net10.0-ios' And '$(EnableShareExtension)' == ''">true</EnableShareExtension>
+  </PropertyGroup>
+  <!-- Exclude platform-specific code when building for the other platform -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
+    <Compile Remove="Platforms\iOS\**\*" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
+    <Compile Remove="Platforms\Android\**\*" />
+  </ItemGroup>
+  <!-- Android manifest and resources -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
+    <AndroidManifest Include="Platforms\Android\AndroidManifest.xml" />
+    <AndroidResource Include="Platforms\Android\Resources\**\*" />
+  </ItemGroup>
+  <!-- iOS plist and entitlements -->
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\Logo.png" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
+    <None Include="Platforms\iOS\Info.plist" Link="Info.plist" />
+    <None Include="Platforms\iOS\Entitlements.plist" Link="Entitlements.plist" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
+    <CodesignEntitlements>Platforms\iOS\Entitlements.plist</CodesignEntitlements>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Android" Version="11.3.9" Condition="'$(TargetFramework)' == 'net10.0-android'" />
+    <PackageReference Include="Avalonia.iOS" Version="11.3.9" Condition="'$(TargetFramework)' == 'net10.0-ios'" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12" />
+    <PackageReference Include="Material.Avalonia" Version="3.7.4" />
+    <PackageReference Include="Material.Icons.Avalonia" Version="2.1.10" />
+    <PackageReference Include="SkiaSharp" Version="2.88.9" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XerahS.Mobile.Core\XerahS.Mobile.Core.csproj" />
+    <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
+    <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\XerahS.Uploaders\XerahS.Uploaders.csproj" />
+    <ProjectReference Include="..\XerahS.Platform.Mobile\XerahS.Platform.Mobile.csproj" />
+    <ProjectReference Include="..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" />
+  </ItemGroup>
+  <!-- iOS Share Extension (Apple requirement: separate extension project) -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-ios' And '$(EnableShareExtension)' == 'true'">
+    <ProjectReference Include="..\XerahS.Mobile.iOS.ShareExtension\XerahS.Mobile.iOS.ShareExtension.csproj">
+      <IsAppExtension>true</IsAppExtension>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

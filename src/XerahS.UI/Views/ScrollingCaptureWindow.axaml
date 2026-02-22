@@ -51,6 +51,11 @@
             <TextBlock Text="{Binding StatusText}"
                        Foreground="White"
                        HorizontalAlignment="Center" />
+            <TextBlock Text="Press Escape or the Scrolling Capture hotkey again to stop."
+                       Foreground="#B0FFFFFF"
+                       FontSize="12"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center" />
           </StackPanel>
         </Border>
       </Panel>
