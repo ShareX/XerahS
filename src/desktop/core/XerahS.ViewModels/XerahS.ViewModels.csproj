@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\desktop\core\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
-    <ProjectReference Include="..\desktop\core\XerahS.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
+    <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
