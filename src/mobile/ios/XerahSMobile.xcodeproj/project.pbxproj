@@ -22,8 +22,8 @@
 		B10000A9 /* CustomUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B0 /* CustomUploader.swift */; };
 		B10000B1 /* S3Uploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B2 /* S3Uploader.swift */; };
 		B10000B3 /* UploadQueueWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B4 /* UploadQueueWorker.swift */; };
-		B10000B7 /* HeicToPngConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B8 /* HeicToPngConverter.swift */; };
 		B10000B5 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000B6 /* libsqlite3.tbd */; };
+		B10000B7 /* HeicToPngConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B8 /* HeicToPngConverter.swift */; };
 		C1000001 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000002 /* AppState.swift */; };
 		C1000003 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000004 /* Screen.swift */; };
 		C1000005 /* LoadingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000006 /* LoadingScreen.swift */; };
@@ -37,6 +37,30 @@
 		D1000003 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000004 /* ShareViewController.swift */; };
 		D1000005 /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D1000000 /* ShareExtension.appex */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D100000A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D0FFFFFA;
+			remoteInfo = ShareExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A0FFFFFB /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D1000005 /* ShareExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A1000000 /* XerahSMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XerahSMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -56,8 +80,8 @@
 		B10000B0 /* CustomUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomUploader.swift; sourceTree = "<group>"; };
 		B10000B2 /* S3Uploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S3Uploader.swift; sourceTree = "<group>"; };
 		B10000B4 /* UploadQueueWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadQueueWorker.swift; sourceTree = "<group>"; };
-		B10000B8 /* HeicToPngConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeicToPngConverter.swift; sourceTree = "<group>"; };
 		B10000B6 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		B10000B8 /* HeicToPngConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeicToPngConverter.swift; sourceTree = "<group>"; };
 		C1000002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		C1000004 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
 		C1000006 /* LoadingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingScreen.swift; sourceTree = "<group>"; };
@@ -84,26 +108,32 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D0FFFFFC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		279FE8072F4AD75400815EE9 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				B10000B6 /* libsqlite3.tbd */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		A0FFFFF6 = {
 			isa = PBXGroup;
 			children = (
 				A0FFFFF7 /* XerahSMobile */,
 				D0FFFFF0 /* ShareExtension */,
 				A0FFFFFE /* Products */,
+				279FE8072F4AD75400815EE9 /* Recovered References */,
 			);
-			sourceTree = "<group>";
-		};
-		D0FFFFF0 /* ShareExtension */ = {
-			isa = PBXGroup;
-			children = (
-				D1000004 /* ShareViewController.swift */,
-				D1000006 /* Info.plist */,
-				D1000007 /* ShareExtension.entitlements */,
-			);
-			path = ShareExtension;
 			sourceTree = "<group>";
 		};
 		A0FFFFF7 /* XerahSMobile */ = {
@@ -123,57 +153,13 @@
 			path = XerahSMobile;
 			sourceTree = "<group>";
 		};
-		C0FFFFF0 /* Navigation */ = {
+		A0FFFFFE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C1000004 /* Screen.swift */,
+				A1000000 /* XerahSMobile.app */,
+				D1000000 /* ShareExtension.appex */,
 			);
-			path = Navigation;
-			sourceTree = "<group>";
-		};
-		C0FFFFF1 /* Features */ = {
-			isa = PBXGroup;
-			children = (
-				C0FFFFF2 /* Loading */,
-				C0FFFFF3 /* Upload */,
-				C0FFFFF4 /* History */,
-				C0FFFFF5 /* Settings */,
-			);
-			path = Features;
-			sourceTree = "<group>";
-		};
-		C0FFFFF2 /* Loading */ = {
-			isa = PBXGroup;
-			children = (
-				C1000006 /* LoadingScreen.swift */,
-			);
-			path = Loading;
-			sourceTree = "<group>";
-		};
-		C0FFFFF3 /* Upload */ = {
-			isa = PBXGroup;
-			children = (
-				C1000008 /* UploadScreen.swift */,
-			);
-			path = Upload;
-			sourceTree = "<group>";
-		};
-		C0FFFFF4 /* History */ = {
-			isa = PBXGroup;
-			children = (
-				C10000A0 /* HistoryScreen.swift */,
-			);
-			path = History;
-			sourceTree = "<group>";
-		};
-		C0FFFFF5 /* Settings */ = {
-			isa = PBXGroup;
-			children = (
-				C10000A2 /* SettingsHubScreen.swift */,
-				C10000A4 /* S3ConfigScreen.swift */,
-				C10000A6 /* CustomUploaderConfigScreen.swift */,
-			);
-			path = Settings;
+			name = Products;
 			sourceTree = "<group>";
 		};
 		B0FFFFF0 /* Core */ = {
@@ -229,13 +215,67 @@
 			path = Upload;
 			sourceTree = "<group>";
 		};
-		A0FFFFFE /* Products */ = {
+		C0FFFFF0 /* Navigation */ = {
 			isa = PBXGroup;
 			children = (
-				A1000000 /* XerahSMobile.app */,
-				D1000000 /* ShareExtension.appex */,
+				C1000004 /* Screen.swift */,
 			);
-			name = Products;
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		C0FFFFF1 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				C0FFFFF2 /* Loading */,
+				C0FFFFF3 /* Upload */,
+				C0FFFFF4 /* History */,
+				C0FFFFF5 /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		C0FFFFF2 /* Loading */ = {
+			isa = PBXGroup;
+			children = (
+				C1000006 /* LoadingScreen.swift */,
+			);
+			path = Loading;
+			sourceTree = "<group>";
+		};
+		C0FFFFF3 /* Upload */ = {
+			isa = PBXGroup;
+			children = (
+				C1000008 /* UploadScreen.swift */,
+			);
+			path = Upload;
+			sourceTree = "<group>";
+		};
+		C0FFFFF4 /* History */ = {
+			isa = PBXGroup;
+			children = (
+				C10000A0 /* HistoryScreen.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		C0FFFFF5 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				C10000A2 /* SettingsHubScreen.swift */,
+				C10000A4 /* S3ConfigScreen.swift */,
+				C10000A6 /* CustomUploaderConfigScreen.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		D0FFFFF0 /* ShareExtension */ = {
+			isa = PBXGroup;
+			children = (
+				D1000004 /* ShareViewController.swift */,
+				D1000006 /* Info.plist */,
+				D1000007 /* ShareExtension.entitlements */,
+			);
+			path = ShareExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -285,7 +325,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 2620;
 			};
 			buildConfigurationList = A1000012 /* Build configuration list for PBXProject "XerahSMobile" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -305,44 +345,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		D0FFFFFD /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		D0FFFFFC /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		D1000009 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D0FFFFFA /* ShareExtension */;
-			targetProxy = D100000A /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
-/* Begin PBXContainerItemProxy section */
-		D100000A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A0FFFFF5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D0FFFFFA;
-			remoteInfo = ShareExtension;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		A0FFFFFD /* Resources */ = {
@@ -405,19 +407,13 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		A0FFFFFB /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				D1000005 /* ShareExtension.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
+/* Begin PBXTargetDependency section */
+		D1000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D0FFFFFA /* ShareExtension */;
+			targetProxy = D100000A /* PBXContainerItemProxy */;
 		};
-/* End PBXCopyFilesBuildPhase section */
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A1000008 /* Debug */ = {
@@ -428,20 +424,47 @@
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -455,15 +478,42 @@
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -477,9 +527,11 @@
 				CODE_SIGN_ENTITLEMENTS = XerahSMobile/XerahSMobile.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 5299HQVVA5;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = XerahSMobile/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = XerahS;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -503,9 +555,11 @@
 				CODE_SIGN_ENTITLEMENTS = XerahSMobile/XerahSMobile.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 5299HQVVA5;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = XerahSMobile/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = XerahS;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -527,9 +581,10 @@
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 5299HQVVA5;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = XerahS;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -551,9 +606,10 @@
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 5299HQVVA5;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = XerahS;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
