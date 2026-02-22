@@ -531,7 +531,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = XerahSMobile/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = XerahS;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -559,7 +559,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = XerahSMobile/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = XerahS;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
