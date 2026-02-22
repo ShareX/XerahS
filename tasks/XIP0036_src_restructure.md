@@ -182,9 +182,9 @@ Implement in **multiple stages**, each with its own **git commit** and **verify*
 | **2** | Experimental .NET mobile | Isolated from desktop app. Move 4 projects; update .sln + their ProjectReferences (point to still-flat Core). | `[XIP0036] Stage 2: move experimental mobile to src/mobile-experimental` |
 | **3** | CLI | Single product under new `src/desktop/cli/`. Rest of desktop still flat; only CLI and .sln paths change. | `[XIP0036] Stage 3: move CLI to src/desktop/cli` |
 | **4** | Desktop core (9 mini-stages) | One project per commit. Create `src/desktop/core/` on first move; each mini-stage: move one project, update .sln and **every** ProjectReference to that project. | See table below. |
-| **5** | Desktop platform | Move 5 projects; update .sln and all ProjectReferences to platform projects. | `[XIP0036] Stage 5: move platform to src/desktop/platform` |
-| **6** | Desktop app | Move App, UI, Bootstrap, RegionCapture; update .sln, ProjectReferences, and ImageEditor path from UI. | `[XIP0036] Stage 6: move desktop app to src/desktop/app` |
-| **7** | Desktop tools | Move 3 projects (WatchFolder.Daemon, PluginExporter, Audits.Tool); update .sln and ProjectReferences. | `[XIP0036] Stage 7: move tools to src/desktop/tools` |
+| **5** | Desktop platform (5 mini-stages) | One project per commit. Create `src/desktop/platform/` on first move; each mini-stage: move one project, update .sln and every ProjectReference to it. | See Stage 5 table below. |
+| **6** | Desktop app (4 mini-stages) | One project per commit. Create `src/desktop/app/` on first move; each mini-stage: move one project, update .sln and every ProjectReference; UI move updates ImageEditor path. | See Stage 6 table below. |
+| **7** | Desktop tools (3 mini-stages) | One project per commit. Create `src/desktop/tools/` on first move; each mini-stage: move one project, update .sln and every ProjectReference. | See Stage 7 table below. |
 | **8** | Desktop plugins | Move `src/Plugins` to `src/desktop/plugins`; update .sln and all ProjectReferences to plugins. Optional: rename ShareX.* → XerahS.*. | `[XIP0036] Stage 8: move plugins to src/desktop/plugins` |
 | **9** | Docs/skills/scripts | Update .ai/skills (build-windows-exe, build-android, build-linux-binary), .githooks, scripts, docs. Optional: rename test folder. | `[XIP0036] Stage 9: update docs and skill paths for reorg` |
 
@@ -201,6 +201,33 @@ Implement in **multiple stages**, each with its own **git commit** and **verify*
 | **4g** | XerahS.Indexer | `[XIP0036] Stage 4g: move XerahS.Indexer to src/desktop/core` |
 | **4h** | XerahS.Uploaders | `[XIP0036] Stage 4h: move XerahS.Uploaders to src/desktop/core` |
 | **4i** | XerahS.Media | `[XIP0036] Stage 4i: move XerahS.Media to src/desktop/core` |
+
+**Stage 5 mini-stages (one commit per platform project)** — Create `src/desktop/platform/` when moving the first project. For each row: move that project into `src/desktop/platform/`, update .sln path, update every .csproj that references it, then commit.
+
+| Mini-stage | Project | Commit message idea |
+| ---------- | ------- | -------------------- |
+| **5a** | XerahS.Platform.Abstractions | `[XIP0036] Stage 5a: move XerahS.Platform.Abstractions to src/desktop/platform` |
+| **5b** | XerahS.Platform.Windows | `[XIP0036] Stage 5b: move XerahS.Platform.Windows to src/desktop/platform` |
+| **5c** | XerahS.Platform.Linux | `[XIP0036] Stage 5c: move XerahS.Platform.Linux to src/desktop/platform` |
+| **5d** | XerahS.Platform.MacOS | `[XIP0036] Stage 5d: move XerahS.Platform.MacOS to src/desktop/platform` |
+| **5e** | XerahS.Platform.Mobile | `[XIP0036] Stage 5e: move XerahS.Platform.Mobile to src/desktop/platform` |
+
+**Stage 6 mini-stages (one commit per app project)** — Create `src/desktop/app/` when moving the first project. For each row: move that project into `src/desktop/app/`, update .sln path, update every .csproj that references it; for UI (6b) also update ImageEditor path to `..\..\..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj`, then commit.
+
+| Mini-stage | Project | Commit message idea |
+| ---------- | ------- | -------------------- |
+| **6a** | XerahS.Bootstrap | `[XIP0036] Stage 6a: move XerahS.Bootstrap to src/desktop/app` |
+| **6b** | XerahS.UI | `[XIP0036] Stage 6b: move XerahS.UI to src/desktop/app` |
+| **6c** | XerahS.RegionCapture | `[XIP0036] Stage 6c: move XerahS.RegionCapture to src/desktop/app` |
+| **6d** | XerahS.App | `[XIP0036] Stage 6d: move XerahS.App to src/desktop/app` |
+
+**Stage 7 mini-stages (one commit per tools project)** — Create `src/desktop/tools/` when moving the first project. For each row: move that project into `src/desktop/tools/`, update .sln path, update every .csproj that references it, then commit.
+
+| Mini-stage | Project | Commit message idea |
+| ---------- | ------- | -------------------- |
+| **7a** | XerahS.WatchFolder.Daemon | `[XIP0036] Stage 7a: move XerahS.WatchFolder.Daemon to src/desktop/tools` |
+| **7b** | XerahS.PluginExporter | `[XIP0036] Stage 7b: move XerahS.PluginExporter to src/desktop/tools` |
+| **7c** | XerahS.Audits.Tool | `[XIP0036] Stage 7c: move XerahS.Audits.Tool to src/desktop/tools` |
 
 **Per-stage workflow**
 

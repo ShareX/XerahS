@@ -20,7 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Bootstrap\XerahS.Bootstrap.csproj" />
     <ProjectReference Include="..\desktop\core\XerahS.Core\XerahS.Core.csproj" />
-    <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\desktop\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '')" />
     <ProjectReference Include="..\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="$(RuntimeIdentifier.StartsWith('osx')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('OSX')))" />
     <ProjectReference Include="..\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="$(RuntimeIdentifier.StartsWith('linux')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('Linux')))" />

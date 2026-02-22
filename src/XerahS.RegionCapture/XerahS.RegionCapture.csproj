@@ -36,7 +36,7 @@
   <ItemGroup>
     <ProjectReference Include="..\desktop\core\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\desktop\core\XerahS.Media\XerahS.Media.csproj" />
-    <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\desktop\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <!-- XIP-0023: ShareX.ImageEditor integration -->
     <ProjectReference Include="..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj"
                       GlobalPropertiesToRemove="OS;Platform" />
