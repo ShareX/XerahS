@@ -1,6 +1,6 @@
 ---
 name: XerahS file reorganisation
-overview: "Mechanical reorganisation by 'what works together': put the .NET desktop stack under src/desktop/ (core/, platform/, app/, cli/, tools/, plugins/) — desktop app in src/desktop/app/, CLI in src/desktop/cli/ (shares core; product sibling to app, not under tools). Experimental .NET mobile in src/mobile-experimental/. Native mobile under src/mobile/android/ and src/mobile/ios/. Optionally align plugin folder names with .csproj. No content edits—only moves and path updates."
+overview: "Mechanical reorganisation by 'what works together': put the .NET desktop stack under src/desktop/ (core/, platform/, app/, cli/, tools/, plugins/) — desktop app in src/desktop/app/, CLI in src/desktop/cli/ (shares core; product sibling to app, not under tools). Experimental .NET mobile in src/mobile-experimental/. Native mobile under src/mobile/android/ and src/mobile/ios/. Optionally align plugin folder names with .csproj. No namespace or source code changes—only moves and path updates in .sln, .csproj, and path-dependent config/docs."
 todos: []
 isProject: false
 ---
@@ -46,6 +46,8 @@ flowchart LR
     tests[tests/]
   end
 ```
+
+**How to execute:** Implement with **extreme caution** in **stages** (one git commit per stage), starting with the least risky moves. See [Staged implementation (extreme caution)](#staged-implementation-extreme-caution) below. The [Execution order](#execution-order-mechanical-only) section is a single-pass reference only.
 
 **Desktop stack (works together)** — all under `src/desktop/`:
 
@@ -170,9 +172,46 @@ XerahS/
 
 ---
 
+## Staged implementation (extreme caution)
+
+Implement in **multiple stages**, each with its own **git commit** and **verify** (`dotnet build XerahS.sln`). Start with the **least risky** moves (most isolated) so a bad step is easy to revert. Order below is by isolation and dependency: mobile first (no .sln), then experimental, then CLI, then desktop in dependency order (core → platform → app → tools → plugins).
+
+| Stage | What moves | Why this order | Commit message idea |
+| ----- | ---------- | ----------------- | -------------------- |
+| **1** | Native mobile | **Most isolated**: Kotlin not in .sln; Swift same. No .NET ProjectReferences. Only folder moves + docs/scripts. | `[XIP0036] Stage 1: move native mobile to src/mobile/android, src/mobile/ios` |
+| **2** | Experimental .NET mobile | Isolated from desktop app. Move 4 projects; update .sln + their ProjectReferences (point to still-flat Core). | `[XIP0036] Stage 2: move experimental mobile to src/mobile-experimental` |
+| **3** | CLI | Single product under new `src/desktop/cli/`. Rest of desktop still flat; only CLI and .sln paths change. | `[XIP0036] Stage 3: move CLI to src/desktop/cli` |
+| **4** | Desktop core | Core is shared by everyone. Move 9 projects; update .sln and **every** ProjectReference to any of them (app, cli, experimental, tools, plugins). | `[XIP0036] Stage 4: move core to src/desktop/core` |
+| **5** | Desktop platform | Move 5 projects; update .sln and all ProjectReferences to platform projects. | `[XIP0036] Stage 5: move platform to src/desktop/platform` |
+| **6** | Desktop app | Move App, UI, Bootstrap, RegionCapture; update .sln, ProjectReferences, and ImageEditor path from UI. | `[XIP0036] Stage 6: move desktop app to src/desktop/app` |
+| **7** | Desktop tools | Move 3 projects (WatchFolder.Daemon, PluginExporter, Audits.Tool); update .sln and ProjectReferences. | `[XIP0036] Stage 7: move tools to src/desktop/tools` |
+| **8** | Desktop plugins | Move `src/Plugins` to `src/desktop/plugins`; update .sln and all ProjectReferences to plugins. Optional: rename ShareX.* → XerahS.*. | `[XIP0036] Stage 8: move plugins to src/desktop/plugins` |
+| **9** | Docs/skills/scripts | Update .ai/skills (build-windows-exe, build-android, build-linux-binary), .githooks, scripts, docs. Optional: rename test folder. | `[XIP0036] Stage 9: update docs and skill paths for reorg` |
+
+**Per-stage workflow**
+
+1. Create only the directories needed for this stage.
+2. Move only the projects/folders for this stage (use `git mv`).
+3. Update [XerahS.sln](XerahS.sln) paths for moved projects.
+4. Update all .csproj `ProjectReference` paths that point to moved projects (or that are inside moved projects and point out).
+5. If this stage touches mobile/android: update [.ai/skills/build-android/SKILL.md](.ai/skills/build-android/SKILL.md) and any scripts that reference the old path.
+6. Run `dotnet build XerahS.sln` (and mobile build if relevant); fix any broken references.
+7. `git add` → `git commit` with the stage message above.
+8. Proceed to next stage only when build is green.
+
+**Path reference by stage**
+
+- **After Stage 1**: Kotlin at `src/mobile/android/`, Swift at `src/mobile/ios/`. No .sln changes. Docs/scripts: replace `XerahS.Mobile.Kt` path with `mobile/android`, `XerahS.Mobile.Swift` with `mobile/ios`.
+- **After Stage 2**: Experimental at `src/mobile-experimental/`. Their ProjectReferences: `..\..\XerahS.Core\`, `..\..\XerahS.Common\`, etc. (two levels up to src; rest still flat).
+- **After Stage 3**: CLI at `src/desktop/cli/XerahS.CLI/`. CLI’s ProjectReferences: `..\..\..\XerahS.Core\` etc. (three levels up to src; core still flat).
+- **After Stage 4**: Core at `src/desktop/core/`. All referrers (app, cli, experimental, tools, plugins) use e.g. `..\..\desktop\core\XerahS.Core\` or `..\core\XerahS.Core\` from under desktop, or `..\..\core\XerahS.Core\` from app/cli.
+- **Stages 5–8**: Same idea: update .sln and every ProjectReference that points to the moved projects. ImageEditor path from UI (Stage 6): `..\..\..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj`.
+
+---
+
 ## Execution order (mechanical only)
 
-Each step is numbered so you can say e.g. "skip step 5" or "tweak step 3".
+Single-pass reference (for comparison or if doing a single big reorg later). Each step is numbered so you can say e.g. "skip step 5" or "tweak step 3".
 
 **1.** **Create directories**
   `src/desktop/`, `src/desktop/core/`, `src/desktop/platform/`, `src/desktop/app/`, `src/desktop/cli/`, `src/desktop/tools/`, `src/desktop/plugins/`, `src/mobile-experimental/`, `src/mobile/`, `src/mobile/android/`, `src/mobile/ios/`.
@@ -229,8 +268,10 @@ Each step is numbered so you can say e.g. "skip step 5" or "tweak step 3".
 
 - **ImageEditor/**  
 Leave at repo root. Submodule and workflows assume `ImageEditor/`.
+- **C# namespaces and source code**  
+**Out of scope.** Do not change `namespace` or `using` in any .cs file. Folder moves do not require namespace renames.
 - **Solution and project file content**  
-Only path strings in .sln and ProjectReference Include; no code or TFMs.
+Only path strings in .sln and ProjectReference Include; no code, TFMs, or other .csproj content.
 - **Kotlin and Swift (folder names)**  
 Move Kotlin app to **src/mobile/android/** (folder name **android**, not XerahS.Mobile.Kt). Move Swift app to **src/mobile/ios/** (folder name **ios**, not XerahS.Mobile.Swift). One parent **src/mobile/** gives context for both platforms (agentic-friendly). Gradle/settings.gradle.kts are self-contained; no path changes inside the Kotlin project. Update any docs/scripts that reference `XerahS.Mobile.Kt` or `XerahS.Mobile.Swift` to `src/mobile/android` and `src/mobile/ios`.
 - **No src/desktop/desktop/**  
