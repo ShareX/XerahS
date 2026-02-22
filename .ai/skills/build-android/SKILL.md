@@ -48,8 +48,8 @@ Follow these instructions when building or deploying Android apps. **Never let a
   <adb_default>%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe (adb is often not in PATH; use full path)</adb_default>
   <maui_apk>src\XerahS.Mobile.Maui\bin\Debug\net10.0-android\com.getsharex.xerahs-Signed.apk</maui_apk>
   <ava_apk_dir>src\XerahS.Mobile.Ava\bin\Debug\net10.0-android</ava_apk_dir>
-  <kt_project_root>src\XerahS.Mobile.Kt</kt_project_root>
-  <kt_apk>src\XerahS.Mobile.Kt\app\build\outputs\apk\debug\app-debug.apk</kt_apk>
+  <kt_project_root>src\mobile\android</kt_project_root>
+  <kt_apk>src\mobile\android\app\build\outputs\apk\debug\app-debug.apk</kt_apk>
 </context>
 
 ## 5-minute build rule (critical)
@@ -67,9 +67,9 @@ Do **not** increase the timeout to 10+ minutes. Fix locks and parallelism instea
 
 ---
 
-## Kotlin (XerahS.Mobile.Kt): prerequisites and first-build lessons
+## Kotlin (src/mobile/android): prerequisites and first-build lessons
 
-The Kotlin app uses **Gradle** (not dotnet). The project root is **`src/XerahS.Mobile.Kt`** (where `settings.gradle.kts` and `gradlew.bat` live).
+The Kotlin app uses **Gradle** (not dotnet). The project root is **`src/mobile/android`** (where `settings.gradle.kts` and `gradlew.bat` live).
 
 ### 1. JAVA_HOME is required
 
@@ -80,7 +80,7 @@ The Kotlin app uses **Gradle** (not dotnet). The project root is **`src/XerahS.M
 
 ```powershell
 $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
-cd "src\XerahS.Mobile.Kt"
+cd "src\mobile\android"
 .\gradlew.bat assembleDebug
 ```
 
@@ -111,7 +111,7 @@ implementation(libs.compose.foundation)
 
 | Step | Command / path |
 |------|----------------|
-| Project root | `src\XerahS.Mobile.Kt` |
+| Project root | `src\mobile\android` |
 | Build | Set `JAVA_HOME` then `.\gradlew.bat assembleDebug` |
 | APK | `app\build\outputs\apk\debug\app-debug.apk` |
 | Install | `adb install -r <path-to-app-debug.apk>` |
@@ -203,13 +203,13 @@ Avalonia Android had a bug where **`parent.Content = null`** in MainActivity cle
 
 ## Build and deploy commands
 
-### Kotlin (XerahS.Mobile.Kt)
+### Kotlin (src/mobile/android)
 
 Set JAVA_HOME and build from the Kotlin project root (see "Kotlin: prerequisites and first-build lessons" above). Then install with adb (full path if adb is not in PATH).
 
 ```powershell
 $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
-cd "src\XerahS.Mobile.Kt"   # or full path, e.g. C:\...\XerahS\src\XerahS.Mobile.Kt
+cd "src\mobile\android"   # or full path, e.g. C:\...\XerahS\src\mobile\android
 .\gradlew.bat assembleDebug
 ```
 
@@ -217,7 +217,7 @@ Install and optionally launch:
 
 ```powershell
 $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
-& $adb install -r "src\XerahS.Mobile.Kt\app\build\outputs\apk\debug\app-debug.apk"
+& $adb install -r "src\mobile\android\app\build\outputs\apk\debug\app-debug.apk"
 & $adb shell monkey -p com.getsharex.xerahs.mobile -c android.intent.category.LAUNCHER 1
 ```
 

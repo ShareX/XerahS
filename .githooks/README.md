@@ -14,11 +14,11 @@ Validates **GPL v3** license headers in all staged **C#**, **Swift**, and **Kotl
 - Current copyright year: "Copyright (c) 2007-YYYY ShareX Team"
 - Full GPL v3 license text
 
-**Swift (`.swift`), e.g. `src/XerahS.Mobile.Swift`:**
+**Swift (`.swift`), e.g. `src/mobile/ios`:**
 - Line with "XerahS Mobile (Swift)"
 - Current copyright and **full GPL v3 license text** (as `//` line comments)
 
-**Kotlin (`.kt`), e.g. `src/XerahS.Mobile.Kt`:**
+**Kotlin (`.kt`), e.g. `src/mobile/android`:**
 - Block comment at top with project name, copyright, and **full GPL v3 license text**
 - Must appear before the `package` declaration
 

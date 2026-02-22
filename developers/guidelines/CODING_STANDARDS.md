@@ -34,7 +34,7 @@ All `.cs` files must include the GPL v3 license header.
 ```
 
 ### Swift (`.swift`)
-All `.swift` files (e.g. in `src/XerahS.Mobile.Swift`) must include the full GPL v3 text as line comments.
+All `.swift` files (e.g. in `src/mobile/ios`) must include the full GPL v3 text as line comments.
 
 ```swift
 //
@@ -63,7 +63,7 @@ All `.swift` files (e.g. in `src/XerahS.Mobile.Swift`) must include the full GPL
 ```
 
 ### Kotlin (`.kt`)
-All `.kt` files (e.g. in `src/XerahS.Mobile.Kt`) must include the full GPL v3 text as a block comment at the top of the file, before the `package` declaration.
+All `.kt` files (e.g. in `src/mobile/android`) must include the full GPL v3 text as a block comment at the top of the file, before the `package` declaration.
 
 ```kotlin
 /*

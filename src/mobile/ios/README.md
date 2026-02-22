@@ -1,6 +1,6 @@
 # XerahS Mobile (Swift)
 
-Native iOS app for XerahS, built with **Swift** and **SwiftUI**. Mirrors the feature set of the Android app ([XerahS.Mobile.Kt](../XerahS.Mobile.Kt)).
+Native iOS app for XerahS, built with **Swift** and **SwiftUI**. Mirrors the feature set of the Android app ([android](../android)).
 
 - **Language**: Swift 5
 - **UI**: SwiftUI
