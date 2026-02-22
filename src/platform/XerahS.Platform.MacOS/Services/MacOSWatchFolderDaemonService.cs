@@ -24,7 +24,6 @@
 #endregion License Information (GPL v3)
 
 using System.Diagnostics;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Xml;
@@ -32,21 +31,18 @@ using XerahS.Platform.Abstractions;
 
 namespace XerahS.Platform.MacOS.Services;
 
-public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
+public sealed class MacOSWatchFolderDaemonService : WatchFolderDaemonServiceBase
 {
     private const string Label = "com.getsharex.xerahs.watchfolder";
-    private const int CommandTimeoutMs = 10000;
-    private const int ElevatedCommandTimeoutMs = 180000;
-    private const int PollIntervalMs = 250;
 
-    public bool IsSupported => true;
+    public override bool IsSupported => true;
 
-    public bool SupportsScope(WatchFolderDaemonScope scope)
+    public override bool SupportsScope(WatchFolderDaemonScope scope)
     {
         return scope == WatchFolderDaemonScope.User || scope == WatchFolderDaemonScope.System;
     }
 
-    public async Task<WatchFolderDaemonStatus> GetStatusAsync(WatchFolderDaemonScope scope, CancellationToken cancellationToken = default)
+    public override async Task<WatchFolderDaemonStatus> GetStatusAsync(WatchFolderDaemonScope scope, CancellationToken cancellationToken = default)
     {
         if (!SupportsScope(scope))
         {
@@ -88,7 +84,7 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
         };
     }
 
-    public async Task<WatchFolderDaemonResult> StartAsync(
+    public override async Task<WatchFolderDaemonResult> StartAsync(
         WatchFolderDaemonScope scope,
         string settingsFolder,
         bool startAtStartup,
@@ -104,7 +100,10 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.ValidationError, "Settings folder is required.");
         }
 
-        string daemonPath = ResolveDaemonPath();
+        string daemonPath = ResolveDaemonPath(
+            new[] { "xerahs-watchfolder-daemon", "XerahS.WatchFolder.Daemon" },
+            "xerahs-watchfolder-daemon");
+
         if (!File.Exists(daemonPath))
         {
             return WatchFolderDaemonResult.Fail(
@@ -144,7 +143,7 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
         return WatchFolderDaemonResult.Ok("Daemon started.");
     }
 
-    public async Task<WatchFolderDaemonResult> StopAsync(
+    public override async Task<WatchFolderDaemonResult> StopAsync(
         WatchFolderDaemonScope scope,
         TimeSpan gracefulTimeout,
         CancellationToken cancellationToken = default)
@@ -188,49 +187,10 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
                 return WatchFolderDaemonResult.Ok("Daemon stopped.");
             }
 
-            await Task.Delay(PollIntervalMs, cancellationToken);
+            await Task.Delay(DefaultPollIntervalMs, cancellationToken);
         }
 
         return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.CommandFailed, "Daemon did not stop before timeout.");
-    }
-
-    public async Task<WatchFolderDaemonResult> RestartAsync(
-        WatchFolderDaemonScope scope,
-        string settingsFolder,
-        bool startAtStartup,
-        TimeSpan gracefulTimeout,
-        CancellationToken cancellationToken = default)
-    {
-        var stopResult = await StopAsync(scope, gracefulTimeout, cancellationToken);
-        if (!stopResult.Success && stopResult.ErrorCode != WatchFolderDaemonErrorCode.CommandFailed)
-        {
-            return stopResult;
-        }
-
-        return await StartAsync(scope, settingsFolder, startAtStartup, cancellationToken);
-    }
-
-    private static string ResolveDaemonPath()
-    {
-        string? processPath = Environment.ProcessPath;
-        string? processDirectory = string.IsNullOrWhiteSpace(processPath) ? null : Path.GetDirectoryName(processPath);
-        if (string.IsNullOrWhiteSpace(processDirectory))
-        {
-            processDirectory = AppContext.BaseDirectory;
-        }
-
-        if (string.IsNullOrWhiteSpace(processDirectory))
-        {
-            return "xerahs-watchfolder-daemon";
-        }
-
-        string[] candidates =
-        {
-            Path.Combine(processDirectory, "xerahs-watchfolder-daemon"),
-            Path.Combine(processDirectory, "XerahS.WatchFolder.Daemon")
-        };
-
-        return candidates.FirstOrDefault(File.Exists) ?? candidates[0];
     }
 
     private static string GetDomain(WatchFolderDaemonScope scope)
@@ -316,7 +276,9 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
                              launchctl kickstart -k '{EscapeShellSingleQuotedString(domainService)}'
                              """;
 
-            LaunchCtlResult privilegedResult = await RunPrivilegedShellScriptAsync(script, cancellationToken);
+            CommandResult privilegedResult = await RunPrivilegedShellScriptAsync(
+                script, RunMacOSAdministratorCommandAsync, cancellationToken);
+
             if (privilegedResult.IsSuccess)
             {
                 return WatchFolderDaemonResult.Ok("Daemon started.");
@@ -354,7 +316,9 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
                          launchctl bootout '{EscapeShellSingleQuotedString(domainService)}'
                          """;
 
-        LaunchCtlResult privilegedResult = await RunPrivilegedShellScriptAsync(script, cancellationToken);
+        CommandResult privilegedResult = await RunPrivilegedShellScriptAsync(
+            script, RunMacOSAdministratorCommandAsync, cancellationToken);
+
         if (!privilegedResult.IsSuccess &&
             !privilegedResult.Output.Contains("Could not find service", StringComparison.OrdinalIgnoreCase))
         {
@@ -409,39 +373,14 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
                 """;
     }
 
-    private static async Task<LaunchCtlResult> RunPrivilegedShellScriptAsync(
-        string scriptContents,
+    private static async Task<CommandResult> RunMacOSAdministratorCommandAsync(
+        string fileName,
+        string[] arguments,
         CancellationToken cancellationToken)
     {
-        string scriptPath = Path.GetTempFileName();
-        try
-        {
-            await File.WriteAllTextAsync(scriptPath, scriptContents, cancellationToken);
-            string shellCommand = $"/bin/sh '{EscapeShellSingleQuotedString(scriptPath)}'";
-            return await RunMacOSAdministratorCommandAsync(shellCommand, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            return new LaunchCtlResult(false, ex.Message);
-        }
-        finally
-        {
-            try
-            {
-                File.Delete(scriptPath);
-            }
-            catch
-            {
-            }
-        }
-    }
-
-    private static async Task<LaunchCtlResult> RunMacOSAdministratorCommandAsync(
-        string shellCommand,
-        CancellationToken cancellationToken)
-    {
+        string shellCommand = $"{fileName} '{EscapeShellSingleQuotedString(string.Join("' '", arguments))}'";
         string appleScript = $"do shell script \"{EscapeAppleScriptString(shellCommand)}\" with administrator privileges";
-        return await RunProcessWithArgumentsAsync("osascript", new[] { "-e", appleScript }, cancellationToken, ElevatedCommandTimeoutMs);
+        return await RunProcessWithArgumentsAsync("osascript", new[] { "-e", appleScript }, cancellationToken, DefaultElevatedCommandTimeoutMs);
     }
 
     private static bool IsElevationDenied(string output)
@@ -453,124 +392,16 @@ public sealed class MacOSWatchFolderDaemonService : IWatchFolderDaemonService
                output.Contains("permission denied", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string EscapeShellSingleQuotedString(string value)
-    {
-        return value.Replace("'", "'\"'\"'");
-    }
-
     private static string EscapeAppleScriptString(string value)
     {
         return value.Replace("\\", "\\\\").Replace("\"", "\\\"");
     }
 
-    private static async Task<LaunchCtlResult> RunLaunchCtlAsync(string arguments, CancellationToken cancellationToken)
+    private static Task<CommandResult> RunLaunchCtlAsync(string arguments, CancellationToken cancellationToken)
     {
-        try
-        {
-            using var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "launchctl",
-                    Arguments = arguments,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
-            };
-
-            process.Start();
-
-            Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
-            Task<string> stderrTask = process.StandardError.ReadToEndAsync();
-            Task waitTask = process.WaitForExitAsync(cancellationToken);
-
-            Task completedTask = await Task.WhenAny(waitTask, Task.Delay(CommandTimeoutMs, cancellationToken));
-            if (completedTask != waitTask)
-            {
-                try
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-                catch
-                {
-                }
-
-                return new LaunchCtlResult(false, "launchctl command timed out.");
-            }
-
-            string stdout = await stdoutTask;
-            string stderr = await stderrTask;
-            string combined = string.IsNullOrWhiteSpace(stderr) ? stdout : $"{stdout}{Environment.NewLine}{stderr}";
-
-            return new LaunchCtlResult(process.ExitCode == 0, combined.Trim());
-        }
-        catch (Exception ex)
-        {
-            return new LaunchCtlResult(false, ex.Message);
-        }
-    }
-
-    private static async Task<LaunchCtlResult> RunProcessWithArgumentsAsync(
-        string fileName,
-        IReadOnlyList<string> arguments,
-        CancellationToken cancellationToken,
-        int timeoutMs)
-    {
-        try
-        {
-            using var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
-            };
-
-            foreach (string argument in arguments)
-            {
-                process.StartInfo.ArgumentList.Add(argument);
-            }
-
-            process.Start();
-
-            Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
-            Task<string> stderrTask = process.StandardError.ReadToEndAsync();
-            Task waitTask = process.WaitForExitAsync(cancellationToken);
-
-            Task completedTask = await Task.WhenAny(waitTask, Task.Delay(timeoutMs, cancellationToken));
-            if (completedTask != waitTask)
-            {
-                try
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-                catch
-                {
-                }
-
-                return new LaunchCtlResult(false, $"{fileName} command timed out.");
-            }
-
-            string stdout = await stdoutTask;
-            string stderr = await stderrTask;
-            string combined = string.IsNullOrWhiteSpace(stderr) ? stdout : $"{stdout}{Environment.NewLine}{stderr}";
-
-            return new LaunchCtlResult(process.ExitCode == 0, combined.Trim());
-        }
-        catch (Exception ex)
-        {
-            return new LaunchCtlResult(false, ex.Message);
-        }
+        return RunProcessAsync("launchctl", arguments, cancellationToken, DefaultCommandTimeoutMs);
     }
 
     [DllImport("libc")]
     private static extern uint getuid();
-
-    private readonly record struct LaunchCtlResult(bool IsSuccess, string Output);
 }

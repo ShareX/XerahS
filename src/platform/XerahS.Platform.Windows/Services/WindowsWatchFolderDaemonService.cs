@@ -30,19 +30,16 @@ using XerahS.Platform.Abstractions;
 
 namespace XerahS.Platform.Windows.Services;
 
-public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
+public sealed class WindowsWatchFolderDaemonService : WatchFolderDaemonServiceBase
 {
     private const string ServiceName = "XerahSWatchFolder";
     private const string ServiceDisplayName = "XerahS Watch Folder";
-    private const int CommandTimeoutMs = 10000;
-    private const int ElevatedCommandTimeoutMs = 180000;
-    private const int PollIntervalMs = 300;
 
-    public bool IsSupported => true;
+    public override bool IsSupported => true;
 
-    public bool SupportsScope(WatchFolderDaemonScope scope) => scope == WatchFolderDaemonScope.System;
+    public override bool SupportsScope(WatchFolderDaemonScope scope) => scope == WatchFolderDaemonScope.System;
 
-    public async Task<WatchFolderDaemonStatus> GetStatusAsync(WatchFolderDaemonScope scope, CancellationToken cancellationToken = default)
+    public override async Task<WatchFolderDaemonStatus> GetStatusAsync(WatchFolderDaemonScope scope, CancellationToken cancellationToken = default)
     {
         if (!SupportsScope(scope))
         {
@@ -84,7 +81,7 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
         };
     }
 
-    public async Task<WatchFolderDaemonResult> StartAsync(
+    public override async Task<WatchFolderDaemonResult> StartAsync(
         WatchFolderDaemonScope scope,
         string settingsFolder,
         bool startAtStartup,
@@ -100,7 +97,10 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
             return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.ValidationError, "Settings folder is required.");
         }
 
-        string daemonPath = ResolveDaemonPath();
+        string daemonPath = ResolveDaemonPath(
+            new[] { "xerahs-watchfolder-daemon.exe", "XerahS.WatchFolder.Daemon.exe" },
+            "xerahs-watchfolder-daemon.exe");
+
         if (string.IsNullOrEmpty(daemonPath) || !File.Exists(daemonPath))
         {
             return WatchFolderDaemonResult.Fail(
@@ -129,7 +129,7 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
         return WatchFolderDaemonResult.Ok("Service started.");
     }
 
-    public async Task<WatchFolderDaemonResult> StopAsync(
+    public override async Task<WatchFolderDaemonResult> StopAsync(
         WatchFolderDaemonScope scope,
         TimeSpan gracefulTimeout,
         CancellationToken cancellationToken = default)
@@ -167,49 +167,10 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
                 return WatchFolderDaemonResult.Ok("Service stopped.");
             }
 
-            await Task.Delay(PollIntervalMs, cancellationToken);
+            await Task.Delay(DefaultPollIntervalMs, cancellationToken);
         }
 
         return WatchFolderDaemonResult.Fail(WatchFolderDaemonErrorCode.CommandFailed, "Service did not stop before timeout.");
-    }
-
-    public async Task<WatchFolderDaemonResult> RestartAsync(
-        WatchFolderDaemonScope scope,
-        string settingsFolder,
-        bool startAtStartup,
-        TimeSpan gracefulTimeout,
-        CancellationToken cancellationToken = default)
-    {
-        var stopResult = await StopAsync(scope, gracefulTimeout, cancellationToken);
-        if (!stopResult.Success && stopResult.ErrorCode != WatchFolderDaemonErrorCode.CommandFailed)
-        {
-            return stopResult;
-        }
-
-        return await StartAsync(scope, settingsFolder, startAtStartup, cancellationToken);
-    }
-
-    private static string ResolveDaemonPath()
-    {
-        string? processPath = Environment.ProcessPath;
-        string? processDirectory = string.IsNullOrWhiteSpace(processPath) ? null : Path.GetDirectoryName(processPath);
-        if (string.IsNullOrWhiteSpace(processDirectory))
-        {
-            processDirectory = AppContext.BaseDirectory;
-        }
-
-        if (string.IsNullOrWhiteSpace(processDirectory))
-        {
-            return string.Empty;
-        }
-
-        string[] candidates =
-        {
-            Path.Combine(processDirectory, "xerahs-watchfolder-daemon.exe"),
-            Path.Combine(processDirectory, "XerahS.WatchFolder.Daemon.exe")
-        };
-
-        return candidates.FirstOrDefault(File.Exists) ?? candidates[0];
     }
 
     private async Task<WatchFolderDaemonResult> EnsureServiceConfiguredAsync(
@@ -222,7 +183,7 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
         string startupMode = startAtStartup ? "auto" : "demand";
 
         bool exists = await ServiceExistsAsync(cancellationToken);
-        ScCommandResult result;
+        CommandResult result;
         if (exists)
         {
             result = await RunScAsync(
@@ -342,53 +303,9 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
         return !queryResult.Output.Contains("FAILED 1060", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static async Task<ScCommandResult> RunScAsync(string arguments, CancellationToken cancellationToken)
+    private static Task<CommandResult> RunScAsync(string arguments, CancellationToken cancellationToken)
     {
-        try
-        {
-            using var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "sc.exe",
-                    Arguments = arguments,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
-            };
-
-            process.Start();
-
-            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
-            Task<string> errorTask = process.StandardError.ReadToEndAsync();
-            Task waitTask = process.WaitForExitAsync(cancellationToken);
-
-            Task completedTask = await Task.WhenAny(waitTask, Task.Delay(CommandTimeoutMs, cancellationToken));
-            if (completedTask != waitTask)
-            {
-                try
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-                catch
-                {
-                }
-
-                return new ScCommandResult(false, "sc.exe command timed out.");
-            }
-
-            string output = await outputTask;
-            string error = await errorTask;
-            string combined = string.IsNullOrWhiteSpace(error) ? output : $"{output}{Environment.NewLine}{error}";
-
-            return new ScCommandResult(process.ExitCode == 0, combined.Trim());
-        }
-        catch (Exception ex)
-        {
-            return new ScCommandResult(false, ex.Message);
-        }
+        return RunProcessAsync("sc.exe", arguments, cancellationToken, DefaultCommandTimeoutMs);
     }
 
     private static async Task<ElevatedCommandResult> RunElevatedPowerShellAsync(
@@ -414,7 +331,7 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
             process.Start();
 
             Task waitTask = process.WaitForExitAsync(cancellationToken);
-            Task completedTask = await Task.WhenAny(waitTask, Task.Delay(ElevatedCommandTimeoutMs, cancellationToken));
+            Task completedTask = await Task.WhenAny(waitTask, Task.Delay(DefaultElevatedCommandTimeoutMs, cancellationToken));
             if (completedTask != waitTask)
             {
                 try
@@ -451,6 +368,5 @@ public sealed class WindowsWatchFolderDaemonService : IWatchFolderDaemonService
         return value.Replace("'", "''");
     }
 
-    private readonly record struct ScCommandResult(bool IsSuccess, string Output);
     private readonly record struct ElevatedCommandResult(bool IsSuccess, bool WasCanceled, string Output);
 }

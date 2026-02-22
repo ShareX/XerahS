@@ -6,77 +6,75 @@ Comprehensive audit of `src/` identifying the three highest-impact structural pa
 
 ---
 
-## Pain Point 1: God ViewModels — `TaskSettingsViewModel` (1,403 lines) & `SettingsViewModel` (1,293 lines)
+## Pain Point 1: God ViewModels — `TaskSettingsViewModel` (1,403 lines) & `SettingsViewModel` (1,293 lines) ✅ REFACTORED
 
-### What
+> **Status:** Completed in commit `86286af`
+> **Approach:** Partial-class decomposition + `HashSet<string>` auto-save exclusion
 
-Two monolithic ViewModels in `src/desktop/app/XerahS.UI/ViewModels/` that violate Single Responsibility Principle, each managing 8+ unrelated concerns in a single class.
+### What was done
 
-### Where
+Split both monolithic ViewModels into navigable partial-class files with zero XAML changes and zero behavioral changes:
 
-| File | Lines | Properties/Methods | Regions |
-|------|-------|--------------------|---------|
-| `TaskSettingsViewModel.cs` | 1,403 | 124+ | 8 (`#region` blocks) |
-| `SettingsViewModel.cs` | 1,293 | 117+ | mixed concerns |
+**TaskSettingsViewModel** (1,403 → 9 files):
+| File | Contents | Lines |
+|------|----------|-------|
+| `TaskSettingsViewModel.cs` | Core: constructor, Model, Job, enum collections | ~100 |
+| `TaskSettingsViewModel.Capture.cs` | Capture settings properties | ~180 |
+| `TaskSettingsViewModel.FFmpeg.cs` | FFmpeg detection/download/diagnostics | ~290 |
+| `TaskSettingsViewModel.Upload.cs` | File naming/upload settings | ~120 |
+| `TaskSettingsViewModel.AfterCapture.cs` | After-capture flag properties | ~90 |
+| `TaskSettingsViewModel.AfterUpload.cs` | After-upload flag properties | ~70 |
+| `TaskSettingsViewModel.General.cs` | Sound, toast, notification properties | ~200 |
+| `TaskSettingsViewModel.Image.cs` | Image format, quality, thumbnails | ~80 |
+| `TaskSettingsViewModel.IndexFolder.cs` | Browse commands + indexer properties | ~230 |
 
-### Why it hurts
+**SettingsViewModel** (1,293 → 7 files):
+| File | Contents | Lines |
+|------|----------|-------|
+| `SettingsViewModel.cs` | Core: constructor, LoadSettings, SaveSettings, OnPropertyChanged | ~260 |
+| `SettingsViewModel.WatchFolders.cs` | Watch folder list management | ~200 |
+| `SettingsViewModel.WatchFolderDaemon.cs` | Daemon lifecycle orchestration | ~350 |
+| `SettingsViewModel.TaskSettings.cs` | Task settings forwarding properties | ~200 |
+| `SettingsViewModel.AppSettings.cs` | Tray actions, history, OS integration | ~180 |
+| `SettingsViewModel.Proxy.cs` | Proxy properties + change handlers | ~80 |
+| `SettingsViewModel.Integration.cs` | Plugin, file associations, startup | ~50 |
 
-- **Navigability:** Every settings-related change requires scrolling through 1,400-line files.
-- **Boilerplate explosion:** `TaskSettingsViewModel` repeats an identical 10-line property wrapper 100+ times (~800 lines of pure ceremony).
-- **Hidden subsystems:** `SettingsViewModel` embeds ~350 lines of watch folder daemon orchestration (start/stop/retry/scope normalization) that should be a standalone service/ViewModel.
-- **Fragile auto-save:** `SettingsViewModel.OnPropertyChanged` checks 12+ property name exclusions to decide when to auto-save — violates Open/Closed Principle and breaks every time a transient property is added.
-- **Duplicate concerns:** Both ViewModels expose AfterCapture/AfterUpload flag properties with identical bit-flag logic.
-
-### XAML Bindings Impacted
-
-| XAML View | DataType | Tab Structure |
-|-----------|----------|---------------|
-| `TaskSettingsPanel.axaml` | `TaskSettingsViewModel` | Capture, Index Folder, File, Upload, Notifications, Advanced |
-| `TaskImageSettingsPanel.axaml` | `TaskSettingsViewModel` | Image settings |
-| `TaskVideoSettingsPanel.axaml` | `TaskSettingsViewModel` | Video/recording settings |
-| `ApplicationSettingsView.axaml` | `SettingsViewModel` | General, Theme, Paths, Watch Folders, Integration, History, Proxy, Advanced |
-| `SettingsView.axaml` | `SettingsViewModel` | Landing page |
-| `DestinationSettingsView.axaml` | `SettingsViewModel` | Destination settings |
-| `HotkeySettingsView.axaml` | `SettingsViewModel` | Hotkey settings |
-
-### Refactor direction
-
-**TaskSettingsViewModel:** Split into child ViewModels exposed as properties. Extract `FFmpegSettingsViewModel` (most complex: 7 private fields + 3 async commands + 5 helper methods). Remaining regions become partial-class files or child ViewModels as complexity warrants.
-
-**SettingsViewModel:** Extract `WatchFolderDaemonViewModel` (~350 lines of daemon lifecycle orchestration). Replace `OnPropertyChanged` exclusion list with attribute-based or set-based auto-save filtering.
+**OnPropertyChanged fix:** Replaced 12-condition exclusion chain with `HashSet<string> AutoSaveExclusions`.
 
 ---
 
-## Pain Point 2: Platform Service Duplication — Watch Folder Daemon (~1,700 lines across 3 files)
+## Pain Point 2: Platform Service Duplication — Watch Folder Daemon (~1,700 lines across 3 files) ✅ REFACTORED
 
-### What
+> **Status:** Completed
+> **Approach:** Extract `WatchFolderDaemonServiceBase` abstract class with shared process execution utilities
 
-Three nearly identical `IWatchFolderDaemonService` implementations across Windows, macOS, and Linux with ~95% shared logic.
+### What was done
 
-### Where
+Created `WatchFolderDaemonServiceBase` in `XerahS.Platform.Abstractions/Services/` and refactored all three platform implementations to inherit from it.
 
-| File | Lines |
-|------|-------|
-| `src/platform/XerahS.Platform.Windows/Services/WindowsWatchFolderDaemonService.cs` | 576 |
-| `src/platform/XerahS.Platform.MacOS/Services/MacOSWatchFolderDaemonService.cs` | 576 |
-| `src/platform/XerahS.Platform.Linux/Services/LinuxWatchFolderDaemonService.cs` | 572 |
+**Base class provides (~200 lines):**
+- `RestartAsync` — concrete implementation (stop then start), previously copy-pasted in all 3 files
+- `ResolveDaemonPath` — unified daemon path resolution with platform-specific executable candidate arrays
+- `RunProcessAsync` — core process runner (captures stdout/stderr, handles timeout), replaces 3 identical implementations
+- `RunProcessWithArgumentsAsync` — variant using ArgumentList for safe argument passing
+- `EscapeShellSingleQuotedString` — shared by macOS and Linux
+- `RunPrivilegedShellScriptAsync` — temp-file-based privileged script execution pattern shared by macOS and Linux
+- `CommandResult` — unified record struct replacing `ScCommandResult`, `LaunchCtlResult`, `SystemCommandResult`
 
-### Why it hurts
+**Line count changes:**
+| File | Before | After | Saved |
+|------|--------|-------|-------|
+| `WatchFolderDaemonServiceBase.cs` (new) | — | ~200 | — |
+| `WindowsWatchFolderDaemonService.cs` | 457 | ~310 | ~147 |
+| `MacOSWatchFolderDaemonService.cs` | 576 | ~370 | ~206 |
+| `LinuxWatchFolderDaemonService.cs` | 572 | ~340 | ~232 |
+| **Total** | **1,605** | **~1,220** | **~385 net** |
 
-- **Bug duplication risk:** A fix in one OS must be manually replicated to two others.
-- **Review burden:** Reviewers must diff all three files to verify consistency.
-- **Shared logic:** `RestartAsync()`, `StopAsync()` polling loop, `GetStatusAsync()`, and error handling patterns are ~95% identical.
-
-### Refactor direction
-
-Extract `WatchFolderDaemonServiceBase` abstract class with template methods. Platform subclasses override only:
-- `RunDaemonCommand()`
-- `GetDaemonPath()`
-- Platform-specific process management
-
-**Estimated savings:** ~1,000 lines of duplicated boilerplate.
-
-Same pattern also affects hotkey services (Windows 479, Linux 462, macOS 509, Wayland Portal 646 lines).
+**Key improvements:**
+- Bug fixes in process execution only need to be made once in the base class
+- Unified `CommandResult` type eliminates 3 structurally-identical record structs
+- Platform subclasses focus purely on platform-specific logic (sc.exe/launchctl/systemctl, elevation, config files)
+- Same pattern can be applied to hotkey services (Windows 479, Linux 462, macOS 509, Wayland Portal 646 lines)
 
 ---
 
