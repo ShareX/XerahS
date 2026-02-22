@@ -142,7 +142,7 @@ To ensure stability and user control, the **"Use Modern Capture"** option in Tas
 cd native/macos && make
 
 # Build the .NET solution
-dotnet build XerahS.sln
+dotnet build src/XerahS.sln
 ```
 
 ### Manual Testing (macOS 12.3+)

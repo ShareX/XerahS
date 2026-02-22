@@ -156,7 +156,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
 }
 ```
 
-3. Build with: `dotnet build XerahS.sln`
+3. Build with: `dotnet build src/XerahS.sln`
 
 ### Option 2: Use CsWinRT with Proper Setup
 

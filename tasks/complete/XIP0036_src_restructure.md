@@ -9,7 +9,7 @@ isProject: false
 
 ## Current state
 
-- **Root**: [XerahS.sln](XerahS.sln), [Directory.Build.props](Directory.Build.props), [ImageEditor/](ImageEditor/) (own solution, submodule), [tests/](tests/), docs/, .github/, .ai/, .githooks/, etc.
+- **Root**: [src/XerahS.sln](src/XerahS.sln), [Directory.Build.props](Directory.Build.props), [ImageEditor/](ImageEditor/) (own solution, submodule), [tests/](tests/), docs/, .github/, .ai/, .githooks/, etc.
 - **src/** (flat): ~28 C# projects plus:
   - [src/desktop/plugins/](src/desktop/plugins/) with 5 plugins (short folder names, e.g. AmazonS3.Plugin; **XerahS.*** .csproj names)
   - [src/mobile/android/](src/mobile/android/) (Kotlin/Gradle; not in .sln)
@@ -98,7 +98,6 @@ XerahS/
 ├── AGENTS.md
 ├── Directory.Build.props
 ├── README.md
-├── XerahS.sln
 ├── ImageEditor/                    (unchanged; submodule)
 │   ├── src/
 │   │   ├── ShareX.ImageEditor/
@@ -113,6 +112,7 @@ XerahS/
 │   └── ShareX.Avalonia.Tests/      (optional: rename to XerahS.Avalonia.Tests)
 │
 └── src/
+    ├── XerahS.sln
     ├── platform/                    (shared by desktop and mobile-experimental)
     │   ├── XerahS.Platform.Abstractions/
     │   ├── XerahS.Platform.Windows/
@@ -175,7 +175,7 @@ XerahS/
 
 ## Staged implementation (extreme caution)
 
-Implement in **multiple stages**, each with its own **git commit** and **verify** (`dotnet build XerahS.sln`). Start with the **least risky** moves (most isolated) so a bad step is easy to revert. Order below is by isolation and dependency: mobile first (no .sln), then experimental, then CLI, then desktop in dependency order (core → platform → app → tools → plugins).
+Implement in **multiple stages**, each with its own **git commit** and **verify** (`dotnet build src/XerahS.sln`). Start with the **least risky** moves (most isolated) so a bad step is easy to revert. Order below is by isolation and dependency: mobile first (no .sln), then experimental, then CLI, then desktop in dependency order (core → platform → app → tools → plugins).
 
 | Stage | What moves | Why this order | Commit message idea |
 | ----- | ---------- | ----------------- | -------------------- |
@@ -246,7 +246,7 @@ Implement in **multiple stages**, each with its own **git commit** and **verify*
 
 1. Create only the directories needed for this stage.
 2. Move only the projects/folders for this stage (use `git mv`).
-3. Update [XerahS.sln](XerahS.sln) paths for moved projects.
+3. Update [XerahS.sln](src/XerahS.sln) paths for moved projects.
 4. Update all .csproj `ProjectReference` paths that point to moved projects (or that are inside moved projects and point out).
 5. If this stage touches mobile/android: update [.ai/skills/build-android/SKILL.md](.ai/skills/build-android/SKILL.md) and any scripts that reference the old path.
 6. Run `dotnet build XerahS.sln` (and mobile build if relevant); fix any broken references.
@@ -288,8 +288,8 @@ Single-pass reference (for comparison or if doing a single big reorg later). Eac
 
 **10.** **Move Plugins** — For each plugin: move `src/Plugins/ShareX.X.Plugin` to `src/desktop/plugins/X.Plugin` (drop ShareX. prefix for shorter path). Update solution and ProjectReferences (steps 11 and 12).
 
-**11.** **Update [XerahS.sln](XerahS.sln)**
-  Change every `Project(...)` path from `src\...` to `src\desktop\core\...`, `src\desktop\app\...`, `src\desktop\cli\XerahS.CLI\...`, etc. ImageEditor and tests paths stay the same. Kotlin app is under `src\mobile\android\` (not in .sln); Swift under `src\mobile\ios\` if in solution. Solution folder nesting can mirror desktop (core, platform, app, cli, tools, plugins) and mobile-experimental.
+**11.** **Update [XerahS.sln](src/XerahS.sln)**
+  Change every `Project(...)` path from `src\...` to `desktop\core\...`, `desktop\app\...`, `desktop\cli\XerahS.CLI\...`, etc. (paths relative to `src/` where the .sln lives). ImageEditor and tests use `..\ImageEditor\...`, `..\tests\...`. Kotlin app is under `src\mobile\android\` (not in .sln); Swift under `src\mobile\ios\` if in solution. Solution folder nesting can mirror desktop (core, platform, app, cli, tools, plugins) and mobile-experimental.
 
 **12.** **Update all .csproj `ProjectReference` paths**
   Each reference must reflect the new relative path. Path depth depends on referrer. Examples:
@@ -313,7 +313,7 @@ Single-pass reference (for comparison or if doing a single big reorg later). Eac
 
 **19.** **Optional: rename test folder** — `tests/ShareX.Avalonia.Tests` → `tests/XerahS.Avalonia.Tests` and update solution + references.
 
-**20.** **Verify** — Run `dotnet build XerahS.sln` from repo root (0 errors); build Android/iOS if in use.
+**20.** **Verify** — Run `dotnet build src/XerahS.sln` from repo root (0 errors); build Android/iOS if in use.
 
 ---
 

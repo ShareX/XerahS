@@ -333,7 +333,7 @@ else
 
 ```bash
 cd "c:\Users\liveu\source\repos\ShareX Team\XerahS"
-dotnet build XerahS.sln
+dotnet build src/XerahS.sln
 ```
 
 Expected: No compilation errors
@@ -450,7 +450,7 @@ cd "c:\Users\liveu\source\repos\ShareX Team\XerahS"
 dotnet restore
 dotnet build src/XerahS.ScreenCapture/XerahS.ScreenCapture.csproj
 dotnet build src/platform/XerahS.Platform.Windows/XerahS.Platform.Windows.csproj
-dotnet build XerahS.sln
+dotnet build src/XerahS.sln
 ```
 
 Expected output: Build succeeded, 0 errors
