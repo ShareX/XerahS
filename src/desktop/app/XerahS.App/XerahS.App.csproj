@@ -37,7 +37,7 @@
     <ProjectReference Include="..\..\XerahS.Audits.Tool\XerahS.Audits.Tool.csproj" Condition="'$(Configuration)' == 'Debug'" />
     <ProjectReference Include="..\XerahS.UI\XerahS.UI.csproj" />
     <ProjectReference Include="..\..\core\XerahS.Core\XerahS.Core.csproj" />
-    <ProjectReference Include="..\..\XerahS.WatchFolder.Daemon\XerahS.WatchFolder.Daemon.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\tools\XerahS.WatchFolder.Daemon\XerahS.WatchFolder.Daemon.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\platform\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '')" />
     <ProjectReference Include="..\..\platform\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="$(RuntimeIdentifier.StartsWith('osx')) Or ('$(OS)' != 'Windows_NT' And '$(RuntimeIdentifier)' == '')" />
     <ProjectReference Include="..\..\platform\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="$(RuntimeIdentifier.StartsWith('linux')) Or ('$(OS)' != 'Windows_NT' And '$(RuntimeIdentifier)' == '')" />
@@ -91,7 +91,7 @@
 
   <Target Name="PublishWatchFolderDaemon" AfterTargets="Publish">
     <Message Text="Publishing watch folder daemon..." Importance="High" />
-    <MSBuild Projects="..\..\XerahS.WatchFolder.Daemon\XerahS.WatchFolder.Daemon.csproj"
+    <MSBuild Projects="..\..\..\tools\XerahS.WatchFolder.Daemon\XerahS.WatchFolder.Daemon.csproj"
              Targets="Restore;Publish"
              Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier);OS=$(OS);CrossCompile=$(CrossCompile);SelfContained=$(SelfContained);PublishSingleFile=true;PublishDir=$(PublishDir);EnableWindowsTargeting=$(EnableWindowsTargeting)" />
   </Target>
@@ -100,7 +100,7 @@
     <Message Text="Copying watch folder daemon artifacts to app output..." Importance="High" />
 
     <PropertyGroup>
-      <_WatchFolderDaemonBuildDir>$(MSBuildThisFileDirectory)..\..\XerahS.WatchFolder.Daemon\bin\$(Configuration)\$(TargetFramework)\</_WatchFolderDaemonBuildDir>
+      <_WatchFolderDaemonBuildDir>$(MSBuildThisFileDirectory)..\..\..\tools\XerahS.WatchFolder.Daemon\bin\$(Configuration)\$(TargetFramework)\</_WatchFolderDaemonBuildDir>
       <_WatchFolderDaemonBuildDir Condition="'$(RuntimeIdentifier)' != ''">$(_WatchFolderDaemonBuildDir)$(RuntimeIdentifier)\</_WatchFolderDaemonBuildDir>
     </PropertyGroup>
 
