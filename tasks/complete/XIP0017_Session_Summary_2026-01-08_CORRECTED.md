@@ -73,7 +73,7 @@ tasks/
 
 ### Modified Files:
 ```
-src/XerahS.Platform.Windows/
+src/platform/XerahS.Platform.Windows/
 └── WindowsPlatform.cs                 [MODIFIED]
     Lines 115-120: FallbackServiceFactory registration
 

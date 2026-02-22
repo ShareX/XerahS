@@ -32,12 +32,12 @@ Key principles: keep provider logic in the uploader layer, keep UI in Avalonia, 
 Define the explorer interface and models in the uploader plugin system, plus catalog helpers to discover explorer-capable providers.
 
 **Key Files:**
-- `src/XerahS.Uploaders/PluginSystem/IUploaderExplorer.cs`
-- `src/XerahS.Uploaders/PluginSystem/MediaItem.cs`
-- `src/XerahS.Uploaders/PluginSystem/ExplorerQuery.cs`
-- `src/XerahS.Uploaders/PluginSystem/ExplorerPage.cs`
-- `src/XerahS.Uploaders/PluginSystem/ProviderCatalog.cs`
-- `src/XerahS.Uploaders/PluginSystem/PluginManifest.cs`
+- `src/desktop/core/XerahS.Uploaders/PluginSystem/IUploaderExplorer.cs`
+- `src/desktop/core/XerahS.Uploaders/PluginSystem/MediaItem.cs`
+- `src/desktop/core/XerahS.Uploaders/PluginSystem/ExplorerQuery.cs`
+- `src/desktop/core/XerahS.Uploaders/PluginSystem/ExplorerPage.cs`
+- `src/desktop/core/XerahS.Uploaders/PluginSystem/ProviderCatalog.cs`
+- `src/desktop/core/XerahS.Uploaders/PluginSystem/PluginManifest.cs`
 
 **Code Example:**
 ```csharp
@@ -62,7 +62,7 @@ public interface IUploaderExplorer
 Implement `IUploaderExplorer` for Amazon S3 using `ListObjectsV2`, `GetObject`, and `DeleteObject`. Support folder-like navigation via `Prefix` and `Delimiter`.
 
 **Key Files:**
-- `src/Plugins/ShareX.AmazonS3.Plugin/AmazonS3Provider.cs`
+- `src/desktop/plugins/AmazonS3.Plugin/AmazonS3Provider.cs`
 
 **Rules:**
 - Reuse existing S3 signing and request utilities.
@@ -73,11 +73,11 @@ Implement `IUploaderExplorer` for Amazon S3 using `ListObjectsV2`, `GetObject`, 
 Add a per-instance "Browse Files" entry point in Destination Settings and implement the explorer window and view model using patterns from `HistoryViewModel`.
 
 **Key Files:**
-- `src/XerahS.UI/ViewModels/UploaderInstanceViewModel.cs`
-- `src/XerahS.UI/Views/DestinationSettingsView.axaml`
-- `src/XerahS.UI/ViewModels/ProviderExplorerViewModel.cs`
-- `src/XerahS.UI/Views/ProviderExplorerView.axaml`
-- `src/XerahS.UI/Views/ProviderExplorerWindow.axaml`
+- `src/desktop/app/XerahS.UI/ViewModels/UploaderInstanceViewModel.cs`
+- `src/desktop/app/XerahS.UI/Views/DestinationSettingsView.axaml`
+- `src/desktop/app/XerahS.UI/ViewModels/ProviderExplorerViewModel.cs`
+- `src/desktop/app/XerahS.UI/Views/ProviderExplorerView.axaml`
+- `src/desktop/app/XerahS.UI/Views/ProviderExplorerWindow.axaml`
 
 **Rules:**
 - Bind each explorer window to a specific `UploaderInstance`; do not add a provider selector to the explorer UI.
@@ -88,8 +88,8 @@ Add a per-instance "Browse Files" entry point in Destination Settings and implem
 Implement an Imgur explorer using the existing album APIs. Add search, sort, and download workflows, and refine responsive layout for mobile.
 
 **Key Files:**
-- `src/Plugins/ShareX.Imgur.Plugin/ImgurProvider.cs`
-- `src/XerahS.UI/ViewModels/ProviderExplorerViewModel.cs`
+- `src/desktop/plugins/Imgur.Plugin/ImgurProvider.cs`
+- `src/desktop/app/XerahS.UI/ViewModels/ProviderExplorerViewModel.cs`
 
 **Rules:**
 - Prefer Imgur thumbnail URLs when available.

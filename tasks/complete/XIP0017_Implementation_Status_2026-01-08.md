@@ -25,32 +25,32 @@ SIP0017 Stage 1 (MVP Silent Recording) is **fully implemented and operational**.
 
 | Component | Status | Location |
 |-----------|--------|----------|
-| **Interfaces** | ✅ Complete | [src/XerahS.ScreenCapture/ScreenRecording/IRecordingService.cs](../src/XerahS.ScreenCapture/ScreenRecording/IRecordingService.cs) |
-| **Models & Enums** | ✅ Complete | [src/XerahS.ScreenCapture/ScreenRecording/RecordingModels.cs](../src/XerahS.ScreenCapture/ScreenRecording/RecordingModels.cs)<br>[src/XerahS.ScreenCapture/ScreenRecording/RecordingEnums.cs](../src/XerahS.ScreenCapture/ScreenRecording/RecordingEnums.cs) |
-| **Orchestrator** | ✅ Complete | [src/XerahS.ScreenCapture/ScreenRecording/ScreenRecorderService.cs](../src/XerahS.ScreenCapture/ScreenRecording/ScreenRecorderService.cs) |
+| **Interfaces** | ✅ Complete | [src/platform/XerahS.Platform.Windows/Recording/IRecordingService.cs](../src/platform/XerahS.Platform.Windows/Recording/IRecordingService.cs) |
+| **Models & Enums** | ✅ Complete | [src/platform/XerahS.Platform.Windows/Recording/RecordingModels.cs](../src/platform/XerahS.Platform.Windows/Recording/RecordingModels.cs)<br>[src/platform/XerahS.Platform.Windows/Recording/RecordingEnums.cs](../src/platform/XerahS.Platform.Windows/Recording/RecordingEnums.cs) |
+| **Orchestrator** | ✅ Complete | [src/platform/XerahS.Platform.Windows/Recording/ScreenRecorderService.cs](../src/platform/XerahS.Platform.Windows/Recording/ScreenRecorderService.cs) |
 
 ### Platform-Specific Implementations (100% Complete)
 
 #### Windows Modern Path
 | Component | Status | Location |
 |-----------|--------|----------|
-| **Windows.Graphics.Capture** | ✅ Complete | [src/XerahS.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs](../src/XerahS.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs) |
-| **Media Foundation Encoder** | ✅ Complete | [src/XerahS.Platform.Windows/Recording/MediaFoundationEncoder.cs](../src/XerahS.Platform.Windows/Recording/MediaFoundationEncoder.cs) |
-| **Platform Registration** | ✅ Complete | [src/XerahS.Platform.Windows/WindowsPlatform.cs](../src/XerahS.Platform.Windows/WindowsPlatform.cs):95-123 |
+| **Windows.Graphics.Capture** | ✅ Complete | [src/platform/XerahS.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs](../src/platform/XerahS.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs) |
+| **Media Foundation Encoder** | ✅ Complete | [src/platform/XerahS.Platform.Windows/Recording/MediaFoundationEncoder.cs](../src/platform/XerahS.Platform.Windows/Recording/MediaFoundationEncoder.cs) |
+| **Platform Registration** | ✅ Complete | [src/platform/XerahS.Platform.Windows/WindowsPlatform.cs](../src/platform/XerahS.Platform.Windows/WindowsPlatform.cs):95-123 |
 
 #### FFmpeg Fallback Path
 | Component | Status | Location |
 |-----------|--------|----------|
-| **FFmpegRecordingService** | ✅ Complete | [src/XerahS.ScreenCapture/ScreenRecording/FFmpegRecordingService.cs](../src/XerahS.ScreenCapture/ScreenRecording/FFmpegRecordingService.cs) |
-| **FFmpegCLIManager** | ✅ Existing | [src/XerahS.Media/FFmpegCLIManager.cs](../src/XerahS.Media/FFmpegCLIManager.cs) |
-| **FFmpeg Options** | ✅ Existing | [src/XerahS.ScreenCapture/ScreenRecording/FFmpegOptions.cs](../src/XerahS.ScreenCapture/ScreenRecording/FFmpegOptions.cs) |
+| **FFmpegRecordingService** | ✅ Complete | [src/platform/XerahS.Platform.Windows/Recording/FFmpegRecordingService.cs](../src/platform/XerahS.Platform.Windows/Recording/FFmpegRecordingService.cs) |
+| **FFmpegCLIManager** | ✅ Existing | [src/desktop/core/XerahS.Media/FFmpegCLIManager.cs](../src/desktop/core/XerahS.Media/FFmpegCLIManager.cs) |
+| **FFmpeg Options** | ✅ Existing | [src/platform/XerahS.Platform.Windows/Recording/FFmpegOptions.cs](../src/platform/XerahS.Platform.Windows/Recording/FFmpegOptions.cs) |
 
 ### UI Integration (100% Complete)
 
 | Component | Status | Location |
 |-----------|--------|----------|
-| **RecordingViewModel** | ✅ Complete | [src/XerahS.UI/ViewModels/RecordingViewModel.cs](../src/XerahS.UI/ViewModels/RecordingViewModel.cs) |
-| **Hotkey Definitions** | ✅ Complete | [src/XerahS.Core/Enums.cs](../src/XerahS.Core/Enums.cs):220-241 |
+| **RecordingViewModel** | ✅ Complete | [src/desktop/app/XerahS.UI/ViewModels/RecordingViewModel.cs](../src/desktop/app/XerahS.UI/ViewModels/RecordingViewModel.cs) |
+| **Hotkey Definitions** | ✅ Complete | [src/desktop/core/XerahS.Core/Enums.cs](../src/desktop/core/XerahS.Core/Enums.cs):220-241 |
 | **Start/Stop Commands** | ✅ Complete | RecordingViewModel:173-224 |
 
 ---
@@ -288,7 +288,7 @@ dotnet restore XerahS.sln
 dotnet build XerahS.sln --configuration Release
 
 # Run application
-dotnet run --project src/XerahS.App/XerahS.App.csproj
+dotnet run --project src/desktop/app/XerahS.App/XerahS.App.csproj
 ```
 
 ### Known Build Issues
@@ -333,23 +333,23 @@ src/XerahS.ScreenCapture/ScreenRecording/
 ├── FFmpegOptions.cs                   [EXISTING] FFmpeg configuration
 └── FFmpegCaptureDevice.cs             [EXISTING] Capture device definitions
 
-src/XerahS.Platform.Windows/Recording/
+src/platform/XerahS.Platform.Windows/Recording/
 ├── WindowsGraphicsCaptureSource.cs    [EXISTING] WGC implementation
 └── MediaFoundationEncoder.cs          [EXISTING] Media Foundation encoder
 
-src/XerahS.UI/ViewModels/
+src/desktop/app/XerahS.UI/ViewModels/
 └── RecordingViewModel.cs              [EXISTING] UI ViewModel
 ```
 
 ### Modified Files
 ```
-src/XerahS.Platform.Windows/
+src/platform/XerahS.Platform.Windows/
 └── WindowsPlatform.cs                 [MODIFIED] Added FallbackServiceFactory
 
 src/XerahS.ScreenCapture/
 └── XerahS.ScreenCapture.csproj [MODIFIED] Added Media project reference
 
-src/XerahS.App/
+src/desktop/app/XerahS.App/
 └── Program.cs                         [EXISTING] Already calls InitializeRecording()
 ```
 

@@ -108,7 +108,7 @@ This service will run during application startup, alongside `PluginDiscovery`.
 
 ### 3.4 Integration with ProviderCatalog
 
-Modify `src/XerahS.Uploaders/PluginSystem/ProviderCatalog.cs` to accept a secondary source of providers.
+Modify `src/desktop/core/XerahS.Uploaders/PluginSystem/ProviderCatalog.cs` to accept a secondary source of providers.
 
 ```csharp
 public void Refresh()
@@ -140,12 +140,12 @@ A new UI component is required to create and edit these JSON files.
 
 ### Phase 1: Foundation (Backend) ✅ COMPLETE
 - [x] Implement `CustomUploaderProvider` adapter in `XerahS.Uploaders`.
-  - File: `src/XerahS.Uploaders/CustomUploader/CustomUploaderProvider.cs`
+  - File: `src/desktop/core/XerahS.Uploaders/CustomUploader/CustomUploaderProvider.cs`
   - Implements `IUploaderProvider` interface
   - Generates stable provider IDs with `custom_` prefix
   - Converts `CustomUploaderDestinationType` to `UploaderCategory[]`
 - [x] Implement `CustomUploaderRepository` (renamed from CustomUploaderDiscovery).
-  - File: `src/XerahS.Uploaders/CustomUploader/CustomUploaderRepository.cs`
+  - File: `src/desktop/core/XerahS.Uploaders/CustomUploader/CustomUploaderRepository.cs`
   - Discovers `.sxcu` and `.json` files from Plugins directory
   - Validates, loads, saves custom uploader definitions
   - Supports hot-reload via `ReloadFile()` method
@@ -158,7 +158,7 @@ A new UI component is required to create and edit these JSON files.
 
 ### Phase 2: Execution Logic ✅ COMPLETE
 - [x] Ensure `CustomUploaderExecutor` correctly processes the `CustomUploaderItem` logic.
-  - File: `src/XerahS.Uploaders/CustomUploader/CustomUploaderExecutor.cs`
+  - File: `src/desktop/core/XerahS.Uploaders/CustomUploader/CustomUploaderExecutor.cs`
   - Unified execution engine for all uploader categories
   - Supports: FileUpload, TextUpload, UrlShortener, UrlSharing modes
   - Handles all body types: MultipartFormData, FormURLEncoded, JSON, XML, Binary
@@ -168,8 +168,8 @@ A new UI component is required to create and edit these JSON files.
 
 ### Phase 3: Creator UI ✅ COMPLETE
 - [x] Create `CustomUploaderEditorView` (Avalonia).
-  - File: `src/XerahS.UI/Views/CustomUploaderEditorDialog.axaml`
-  - ViewModel: `src/XerahS.UI/ViewModels/CustomUploaderEditorViewModel.cs`
+  - File: `src/desktop/app/XerahS.UI/Views/CustomUploaderEditorDialog.axaml`
+  - ViewModel: `src/desktop/app/XerahS.UI/ViewModels/CustomUploaderEditorViewModel.cs`
   - Form-based editor with sections: Basic Info, HTTP Request, Body, Response Parsing
   - Grid-based layout with consistent spacing following UI design guidelines
   - Full validation with error display
@@ -194,27 +194,27 @@ A new UI component is required to create and edit these JSON files.
 ### New Files Created
 | File | Description |
 |------|-------------|
-| `src/XerahS.Uploaders/CustomUploader/CustomUploaderRepository.cs` | Discovery, loading, validation, and saving of .sxcu files |
-| `src/XerahS.Uploaders/CustomUploader/CustomUploaderExecutor.cs` | Unified HTTP execution engine for all uploader categories |
-| `src/XerahS.Uploaders/CustomUploader/CustomUploaderProvider.cs` | IUploaderProvider adapter for CustomUploaderItem |
-| `src/XerahS.UI/Views/CustomUploaderEditorDialog.axaml` | Avalonia UI dialog for creating/editing custom uploaders |
-| `src/XerahS.UI/Views/CustomUploaderEditorDialog.axaml.cs` | Code-behind with file picker implementations |
-| `src/XerahS.UI/ViewModels/CustomUploaderEditorViewModel.cs` | ViewModel with validation, commands, and data binding |
+| `src/desktop/core/XerahS.Uploaders/CustomUploader/CustomUploaderRepository.cs` | Discovery, loading, validation, and saving of .sxcu files |
+| `src/desktop/core/XerahS.Uploaders/CustomUploader/CustomUploaderExecutor.cs` | Unified HTTP execution engine for all uploader categories |
+| `src/desktop/core/XerahS.Uploaders/CustomUploader/CustomUploaderProvider.cs` | IUploaderProvider adapter for CustomUploaderItem |
+| `src/desktop/app/XerahS.UI/Views/CustomUploaderEditorDialog.axaml` | Avalonia UI dialog for creating/editing custom uploaders |
+| `src/desktop/app/XerahS.UI/Views/CustomUploaderEditorDialog.axaml.cs` | Code-behind with file picker implementations |
+| `src/desktop/app/XerahS.UI/ViewModels/CustomUploaderEditorViewModel.cs` | ViewModel with validation, commands, and data binding |
 | `tests/ShareX.Avalonia.Tests/CustomUploader/CustomUploaderRepositoryTests.cs` | Unit tests for ShareX .sxcu compatibility |
 | `tests/ShareX.Avalonia.Tests/CustomUploader/SampleUploaders/*.sxcu` | Sample .sxcu test files (Imgur, Pastebin, TinyURL) |
 
 ### Modified Files
 | File | Changes |
 |------|---------|
-| `src/XerahS.Uploaders/PluginSystem/ProviderCatalog.cs` | Added `LoadCustomUploaders()`, `IsCustomUploader()`, `GetCustomUploaderProviders()`, `ReloadCustomUploader()`, `RemoveCustomUploader()` methods |
+| `src/desktop/core/XerahS.Uploaders/PluginSystem/ProviderCatalog.cs` | Added `LoadCustomUploaders()`, `IsCustomUploader()`, `GetCustomUploaderProviders()`, `ReloadCustomUploader()`, `RemoveCustomUploader()` methods |
 
 ### Existing Files (Unchanged but Used)
 | File | Description |
 |------|-------------|
-| `src/XerahS.Uploaders/CustomUploader/CustomUploaderItem.cs` | Data model for custom uploader configuration |
-| `src/XerahS.Uploaders/CustomUploader/CustomUploaderInput.cs` | Input context for syntax parsing |
-| `src/XerahS.Uploaders/CustomUploader/ShareXCustomUploaderSyntaxParser.cs` | Syntax parser for {json:}, {regex:}, etc. |
-| `src/XerahS.Uploaders/CustomUploader/Functions/*.cs` | Individual syntax function implementations |
+| `src/desktop/core/XerahS.Uploaders/CustomUploader/CustomUploaderItem.cs` | Data model for custom uploader configuration |
+| `src/desktop/core/XerahS.Uploaders/CustomUploader/CustomUploaderInput.cs` | Input context for syntax parsing |
+| `src/desktop/core/XerahS.Uploaders/CustomUploader/ShareXCustomUploaderSyntaxParser.cs` | Syntax parser for {json:}, {regex:}, etc. |
+| `src/desktop/core/XerahS.Uploaders/CustomUploader/Functions/*.cs` | Individual syntax function implementations |
 
 ## 6. Technical Considerations
 

@@ -10,7 +10,7 @@ Document the top three structural pain points identified in `src` that require r
 
 **What:** A single class implements the entire Linux capture stack (Portal, KDE, GNOME, X11, CLI tools, slurp, grim, etc.) with provider list hardcoded in the constructor and 50+ methods in one file.
 
-**Where:** `src/XerahS.Platform.Linux/LinuxScreenCaptureService.cs`
+**Where:** `src/platform/XerahS.Platform.Linux/LinuxScreenCaptureService.cs`
 
 **Why it hurts:** Every new capture path or bugfix touches the same type; unit testing individual strategies is difficult; reuse and platform abstraction are limited.
 
@@ -32,14 +32,14 @@ Provider list remains in the coordinator constructor; strategies are invoked via
 
 **Where:**  
 
-- `src/XerahS.Platform.Abstractions/PlatformServices.cs`  
-- `src/XerahS.App/Program.cs` (e.g. `InitializePlatformServices()`, `InitializeBackgroundServicesAsync()`)
+- `src/platform/XerahS.Platform.Abstractions/PlatformServices.cs`  
+- `src/desktop/app/XerahS.App/Program.cs` (e.g. `InitializePlatformServices()`, `InitializeBackgroundServicesAsync()`)
 
 **Why it hurts:** Hard to test, implicit initialization order, hidden dependencies, every new service requires changes in both `Program.cs` and `PlatformServices`.
 
 **Refactor direction (implemented):** Introduced a single composition root and a root service provider. Platform and app services are registered in one place and exposed via `PlatformServices.RootProvider` for constructor injection and gradual migration.
 
-- **Composition root:** `src/XerahS.UI/Services/CompositionRoot.cs` – builds the service provider from current `PlatformServices` state after platform init and after UI/Toast/ImageEncoder are registered; called from `App.axaml.cs` `OnFrameworkInitializationCompleted`.
+- **Composition root:** `src/desktop/app/XerahS.UI/Services/CompositionRoot.cs` – builds the service provider from current `PlatformServices` state after platform init and after UI/Toast/ImageEncoder are registered; called from `App.axaml.cs` `OnFrameworkInitializationCompleted`.
 - **Thin bridge:** `PlatformServices.RootProvider` and `SetRootProvider(IServiceProvider)`; optional getters `GetShellIntegrationIfAvailable()`, `GetNotificationIfAvailable()` for optional services. Existing `PlatformServices.*` static access remains for migration; new code can resolve via `PlatformServices.RootProvider?.GetService(typeof(IScreenCaptureService))` or equivalent.
 - No extra package: uses a minimal `RootServiceProvider` (type-to-instance map) so no `Microsoft.Extensions.DependencyInjection` dependency is required.
 
@@ -51,8 +51,8 @@ Provider list remains in the coordinator constructor; strategies are invoked via
 
 **Where:**  
 
-- `src/XerahS.Mobile.UI/ViewModels/` (Avalonia)  
-- `src/XerahS.Mobile.Maui/ViewModels/` (MAUI)
+- `src/mobile-experimental/XerahS.Mobile.Ava/ViewModels/` (Avalonia)  
+- `src/mobile-experimental/XerahS.Mobile.Maui/ViewModels/` (MAUI)
 
 **Why it hurts:** Bug fixes and features must be done in two places; codebases can diverge; ~1,500+ lines duplicated.
 

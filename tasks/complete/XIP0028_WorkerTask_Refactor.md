@@ -1,4 +1,4 @@
-﻿---
+---
 id: XIP0028
 title: Refactor WorkerTask and Consolidate Tool Workflows
 status: Complete
@@ -35,7 +35,7 @@ Refactor the XerahS codebase to:
 
 ### Step 1: Make WorkerTask Partial
 
-**File:** `src/XerahS.Core/Tasks/WorkerTask.cs`
+**File:** `src/desktop/core/XerahS.Core/Tasks/WorkerTask.cs`
 
 Change the class declaration from `public class WorkerTask` to `public partial class WorkerTask`
 
@@ -43,7 +43,7 @@ Change the class declaration from `public class WorkerTask` to `public partial c
 
 ### Step 2: Create Split Files
 
-Create in `src/XerahS.Core/Tasks/`:
+Create in `src/desktop/core/XerahS.Core/Tasks/`:
 
 **WorkerTaskCapture.cs** - Screen capture logic
 **WorkerTaskRecording.cs** - Screen recording logic  
@@ -76,7 +76,7 @@ Remove the `isColorPickerJob` and `isQrJob` special handling blocks from `Hotkey
 ## File Structure After Refactor
 
 ```
-src/XerahS.Core/Tasks/
+src/desktop/core/XerahS.Core/Tasks/
 ├── WorkerTask.cs              (core orchestration)
 ├── WorkerTaskCapture.cs       (screen capture workflows)
 ├── WorkerTaskRecording.cs     (screen recording workflows)
@@ -86,14 +86,14 @@ src/XerahS.Core/Tasks/
 
 ## Related Files
 
-- `src/XerahS.Core/Tasks/WorkerTask.cs`
-- `src/XerahS.Core/Tasks/WorkerTaskCapture.cs` (to create)
-- `src/XerahS.Core/Tasks/WorkerTaskRecording.cs` (to create)
-- `src/XerahS.Core/Tasks/WorkerTaskUpload.cs` (to create)
-- `src/XerahS.Core/Tasks/WorkerTaskTools.cs` (to create)
-- `src/XerahS.UI/App.axaml.cs` (remove special handling)
-- `src/XerahS.UI/Services/ColorPickerToolService.cs` (keep, call from WorkerTask)
-- `src/XerahS.UI/Services/QrCodeToolService.cs` (keep, call from WorkerTask)
+- `src/desktop/core/XerahS.Core/Tasks/WorkerTask.cs`
+- `src/desktop/core/XerahS.Core/Tasks/WorkerTaskCapture.cs` (to create)
+- `src/desktop/core/XerahS.Core/Tasks/WorkerTaskRecording.cs` (to create)
+- `src/desktop/core/XerahS.Core/Tasks/WorkerTaskUpload.cs` (to create)
+- `src/desktop/core/XerahS.Core/Tasks/WorkerTaskTools.cs` (to create)
+- `src/desktop/app/XerahS.UI/App.axaml.cs` (remove special handling)
+- `src/desktop/app/XerahS.UI/Services/ColorPickerToolService.cs` (keep, call from WorkerTask)
+- `src/desktop/app/XerahS.UI/Services/QrCodeToolService.cs` (keep, call from WorkerTask)
 
 ## Dependencies
 

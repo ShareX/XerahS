@@ -8,10 +8,10 @@
 ### 1. UI Integration Components Created
 | File | Purpose |
 |------|---------|
-| [RecordingViewModel.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.UI/ViewModels/RecordingViewModel.cs) | Start/Stop commands, status tracking, duration display |
-| [RecordingToolbarView.axaml](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.UI/Views/RecordingToolbarView.axaml) | Recording indicator, timer, buttons |
-| [RecordingView.axaml](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.UI/Views/RecordingView.axaml) | Full recording page with instructions |
-| [BoolToRecordingColorConverter.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.UI/Converters/BoolToRecordingColorConverter.cs) | Recording indicator color converter |
+| [RecordingViewModel.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/app/XerahS.UI/ViewModels/RecordingViewModel.cs) | Start/Stop commands, status tracking, duration display |
+| [RecordingToolbarView.axaml](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/app/XerahS.UI/Views/RecordingToolbarView.axaml) | Recording indicator, timer, buttons |
+| [RecordingView.axaml](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/app/XerahS.UI/Views/RecordingView.axaml) | Full recording page with instructions |
+| [BoolToRecordingColorConverter.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/app/XerahS.UI/Converters/BoolToRecordingColorConverter.cs) | Recording indicator color converter |
 
 ### 2. CsWinRT/COM Interop Fixes
 
@@ -49,10 +49,10 @@ The Platform.Windows project had build failures due to:
 
 | File | Change |
 |------|--------|
-| [XerahS.Platform.Windows.csproj](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.Platform.Windows/XerahS.Platform.Windows.csproj) | TFM to `net10.0-windows10.0.19041.0`, removed CsWinRT manual config |
-| [XerahS.App.csproj](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.App/XerahS.App.csproj) | TFM aligned with Platform.Windows |
-| [WindowsGraphicsCaptureSource.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs) | Added COM interfaces, fixed surface conversion |
-| [MediaFoundationEncoder.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.Platform.Windows/Recording/MediaFoundationEncoder.cs) | Fixed Bitrate uint cast |
+| [XerahS.Platform.Windows.csproj](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/platform/XerahS.Platform.Windows/XerahS.Platform.Windows.csproj) | TFM to `net10.0-windows10.0.19041.0`, removed CsWinRT manual config |
+| [XerahS.App.csproj](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/app/XerahS.App/XerahS.App.csproj) | TFM aligned with Platform.Windows |
+| [WindowsGraphicsCaptureSource.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/platform/XerahS.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs) | Added COM interfaces, fixed surface conversion |
+| [MediaFoundationEncoder.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/platform/XerahS.Platform.Windows/Recording/MediaFoundationEncoder.cs) | Fixed Bitrate uint cast |
 
 ## Build Status
 ```
@@ -65,7 +65,7 @@ Build succeeded with 4 warning(s)
 ### 1. Launch Application
 Run the application from Visual Studio or the terminal:
 ```bash
-dotnet run --project src/XerahS.App/XerahS.App.csproj
+dotnet run --project src/desktop/app/XerahS.App/XerahS.App.csproj
 ```
 
 ### 2. Navigate to Recording

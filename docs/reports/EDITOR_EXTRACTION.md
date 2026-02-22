@@ -63,8 +63,8 @@ The following projects were removed after migration:
 
 - `src/XerahS.Annotations/` → Consolidated into ShareX.Editor
 - `src/XerahS.ImageEffects/` → Consolidated into ShareX.Editor
-- `src/XerahS.UI/ViewModels/MainViewModel.cs` → Moved to ShareX.Editor
-- `src/XerahS.UI/Views/EditorView.axaml*` → Moved to ShareX.Editor
+- `src/desktop/app/XerahS.UI/ViewModels/MainViewModel.cs` → Moved to ShareX.Editor
+- `src/desktop/app/XerahS.UI/Views/EditorView.axaml*` → Moved to ShareX.Editor
 
 ## Namespace Changes
 
@@ -99,9 +99,9 @@ var editorWindow = new EditorWindow
 ```
 
 **Key Files**:
-- [XerahS.UI/Views/EditorWindow.axaml](../../src/XerahS.UI/Views/EditorWindow.axaml) - Window host
-- [XerahS.UI/Services/AvaloniaUIService.cs](../../src/XerahS.UI/Services/AvaloniaUIService.cs) - Editor launch service
-- [XerahS.UI/Services/EditorClipboardAdapter.cs](../../src/XerahS.UI/Services/EditorClipboardAdapter.cs) - Clipboard integration
+- [XerahS.UI/Views/EditorWindow.axaml](../../src/desktop/app/XerahS.UI/Views/EditorWindow.axaml) - Window host
+- [XerahS.UI/Services/AvaloniaUIService.cs](../../src/desktop/app/XerahS.UI/Services/AvaloniaUIService.cs) - Editor launch service
+- [XerahS.UI/Services/EditorClipboardAdapter.cs](../../src/desktop/app/XerahS.UI/Services/EditorClipboardAdapter.cs) - Clipboard integration
 
 ### XerahS Integration
 

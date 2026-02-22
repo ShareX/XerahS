@@ -124,15 +124,15 @@
 
 **Files created/modified:**
 
-1. **[NEW]** `src/XerahS.UI/ViewModels/RecordingViewModel.cs`
+1. **[NEW]** `src/desktop/app/XerahS.UI/ViewModels/RecordingViewModel.cs`
    - Manages recording state
    - Exposes `StartRecordingCommand`, `StopRecordingCommand`
    - Binds to `ScreenRecorderService`
 
-2. **[MODIFY]** `src/XerahS.UI/ViewModels/MainViewModel.cs`
+2. **[MODIFY]** `src/desktop/app/XerahS.UI/ViewModels/MainViewModel.cs`
    - Add recording commands or reference to RecordingViewModel
 
-3. **[NEW]** `src/XerahS.UI/Views/RecordingToolbarView.axaml`
+3. **[NEW]** `src/desktop/app/XerahS.UI/Views/RecordingToolbarView.axaml`
    - Floating toolbar with Start/Stop button
    - Timer display during recording
    - Status indicator
@@ -156,7 +156,7 @@
    - Uses `FFmpegCLIManager` pattern
    - Wraps existing `FFmpegOptions`
 
-2. **[MODIFY]** `src/XerahS.Platform.Windows/WindowsPlatform.cs`
+2. **[MODIFY]** `src/platform/XerahS.Platform.Windows/WindowsPlatform.cs`
    - Uncomment and complete `FallbackServiceFactory` registration
 
 ---
@@ -232,7 +232,7 @@ dotnet build XerahS.sln
    - Builds `RecordingOptions` from `TaskSettings.CaptureSettings.ScreenRecordingSettings`
    - Added helper methods: `HandleStartRecordingAsync`, `HandleStopRecordingAsync`, `HandleAbortRecordingAsync`
 
-3. ✅ **[MODIFY]** `src/XerahS.UI/ViewModels/RecordingViewModel.cs`
+3. ✅ **[MODIFY]** `src/desktop/app/XerahS.UI/ViewModels/RecordingViewModel.cs`
    - Refactored to use `ScreenRecordingManager.Instance` instead of private `ScreenRecorderService`
    - Ensures UI and workflow recording use same state
    - Single source of truth for recording status

@@ -23,9 +23,9 @@ The new region capture backend has been successfully integrated into the UI laye
    - Monitor configuration change events
 
 3. **UI Integration** (Phase 5)
-   - [RegionCaptureService.cs](../src/XerahS.UI/Services/RegionCaptureService.cs) - UI-layer wrapper
-   - [RegionCaptureWindowNew.cs](../src/XerahS.UI/Views/RegionCapture/RegionCaptureWindowNew.cs) - New backend methods as partial class
-   - [RegionCaptureWindow.axaml.cs](../src/XerahS.UI/Views/RegionCapture/RegionCaptureWindow.axaml.cs) - Modified to delegate to new backend when enabled
+   - [RegionCaptureService.cs](../src/desktop/app/XerahS.UI/Services/RegionCaptureService.cs) - UI-layer wrapper
+   - [RegionCaptureWindowNew.cs](../src/desktop/app/XerahS.UI/Views/RegionCapture/RegionCaptureWindowNew.cs) - New backend methods as partial class
+   - [RegionCaptureWindow.axaml.cs](../src/desktop/app/XerahS.UI/Views/RegionCapture/RegionCaptureWindow.axaml.cs) - Modified to delegate to new backend when enabled
    - Feature flag: `USE_NEW_BACKEND` constant (currently `false`)
    - Cleanup/disposal in `OnClosed()`
 
@@ -43,7 +43,7 @@ The new region capture backend has been successfully integrated into the UI laye
 The platform-specific backends have been created but require API compatibility fixes:
 
 1. **Vortice.DXGI API Changes**
-   - File: [DxgiCaptureStrategy.cs](../src/XerahS.Platform.Windows/Capture/DxgiCaptureStrategy.cs)
+   - File: [DxgiCaptureStrategy.cs](../src/platform/XerahS.Platform.Windows/Capture/DxgiCaptureStrategy.cs)
    - Issue: Type naming and API signatures changed between Vortice versions
    - Errors:
      - `D3D11.D3D11CreateDevice()` signature mismatch
@@ -52,7 +52,7 @@ The platform-specific backends have been created but require API compatibility f
    - Required: Update to match Vortice.Direct3D11 v3.7.0 and Vortice.DXGI v3.7.0 APIs
 
 2. **Project References**
-   - Platform backend project references are commented out in [XerahS.UI.csproj](../src/XerahS.UI/XerahS.UI.csproj)
+   - Platform backend project references are commented out in [XerahS.UI.csproj](../src/desktop/app/XerahS.UI/XerahS.UI.csproj)
    - Uncomment when backends compile successfully
 
 ## Build Status
@@ -92,7 +92,7 @@ When `USE_NEW_BACKEND = false` (current state):
 
 ### Files Modified
 
-1. **[RegionCaptureWindow.axaml.cs](../src/XerahS.UI/Views/RegionCapture/RegionCaptureWindow.axaml.cs)**
+1. **[RegionCaptureWindow.axaml.cs](../src/desktop/app/XerahS.UI/Views/RegionCapture/RegionCaptureWindow.axaml.cs)**
    - Added backend initialization call in constructor (lines 93-101)
    - Added backend check in `OnOpened()` (lines 202-208)
    - Added delegation in `OnPointerPressed()` (lines 627-632)
@@ -101,12 +101,12 @@ When `USE_NEW_BACKEND = false` (current state):
    - Added `OnClosed()` for cleanup (lines 1137-1143)
    - Fixed duplicate code block (removed lines 922-948)
 
-2. **[RegionCaptureWindowNew.cs](../src/XerahS.UI/Views/RegionCapture/RegionCaptureWindowNew.cs)**
+2. **[RegionCaptureWindowNew.cs](../src/desktop/app/XerahS.UI/Views/RegionCapture/RegionCaptureWindowNew.cs)**
    - Created as partial class with new backend methods
    - Platform backend initialization commented out until compilation issues resolved
    - All new coordinate conversion and event handling methods ready to use
 
-3. **[XerahS.UI.csproj](../src/XerahS.UI/XerahS.UI.csproj)**
+3. **[XerahS.UI.csproj](../src/desktop/app/XerahS.UI/XerahS.UI.csproj)**
    - Platform backend project references commented out (lines 20-24)
 
 ## Next Steps

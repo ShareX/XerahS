@@ -20,8 +20,8 @@ Fixed 3 critical resource management and thread safety issues in core orchestrat
 
 ### Issue COMMON-001: Logger Resource Leak (BLOCKER)
 
-**File**: [Logger.cs](../../src/XerahS.Common/Logger.cs)
-**File**: [DebugHelper.cs](../../src/XerahS.Common/DebugHelper.cs)
+**File**: [Logger.cs](../../src/desktop/core/XerahS.Common/Logger.cs)
+**File**: [DebugHelper.cs](../../src/desktop/core/XerahS.Common/DebugHelper.cs)
 
 **Problem**:
 Logger class never implemented IDisposable, causing file handle leaks and potential message loss on application shutdown. In long-running instances, this could exhaust file handles. On crashes, queued messages were lost.
@@ -89,7 +89,7 @@ public static void Shutdown()
 
 ### Issue CORE-002: WorkerTask CancellationTokenSource Leak (BLOCKER)
 
-**File**: [WorkerTask.cs](../../src/XerahS.Core/Tasks/WorkerTask.cs)
+**File**: [WorkerTask.cs](../../src/desktop/core/XerahS.Core/Tasks/WorkerTask.cs)
 
 **Problem**:
 Each `WorkerTask` created a `CancellationTokenSource` but never disposed it. Since WorkerTask is created for every capture/upload operation, this resulted in 1 leaked native handle per task. After 1000+ operations, system could experience handle exhaustion.
@@ -138,7 +138,7 @@ Each `WorkerTask` created a `CancellationTokenSource` but never disposed it. Sin
 
 ### Issue CORE-001: ScreenRecordingManager Race Condition (BLOCKER)
 
-**File**: [ScreenRecordingManager.cs](../../src/XerahS.Core/Managers/ScreenRecordingManager.cs)
+**File**: [ScreenRecordingManager.cs](../../src/desktop/core/XerahS.Core/Managers/ScreenRecordingManager.cs)
 
 **Problem**:
 Recording state was managed in two separate lock scopes:
@@ -321,7 +321,7 @@ Fixed 4 HIGH severity issues in core task management, error handling, and thread
 
 ### Issue CORE-004: Silent History Save Failures (HIGH)
 
-**File**: [WorkerTask.cs](../../src/XerahS.Core/Tasks/WorkerTask.cs)
+**File**: [WorkerTask.cs](../../src/desktop/core/XerahS.Core/Tasks/WorkerTask.cs)
 
 **Problem**:
 Database save failures were silently caught with only log messages. User never notified when recording completed successfully but history record failed to save due to disk full, database corruption, or SQLite BUSY errors.
@@ -341,7 +341,7 @@ Database save failures were silently caught with only log messages. User never n
 
 ### Issue COMMON-002: Logger MessageFormat Thread Safety (HIGH)
 
-**File**: [Logger.cs](../../src/XerahS.Common/Logger.cs)
+**File**: [Logger.cs](../../src/desktop/core/XerahS.Common/Logger.cs)
 
 **Problem**:
 `MessageFormat` property could be changed by one thread while `string.Format()` was executing on another thread, causing FormatException and lost log messages.
@@ -361,7 +361,7 @@ Database save failures were silently caught with only log messages. User never n
 
 ### Issue CORE-005: Unbounded Task Collection Growth (HIGH)
 
-**File**: [TaskManager.cs](../../src/XerahS.Core/Managers/TaskManager.cs)
+**File**: [TaskManager.cs](../../src/desktop/core/XerahS.Core/Managers/TaskManager.cs)
 
 **Problem**:
 `ConcurrentBag<WorkerTask>` grew unbounded - tasks added but never removed. After 10,000 captures, 10,000 WorkerTask objects remained in memory, each potentially holding SKBitmap references preventing garbage collection.
@@ -405,7 +405,7 @@ lock (_tasksLock)
 
 ### Issue CORE-006: Platform Services Null Check (HIGH)
 
-**File**: [WorkerTask.cs](../../src/XerahS.Core/Tasks/WorkerTask.cs)
+**File**: [WorkerTask.cs](../../src/desktop/core/XerahS.Core/Tasks/WorkerTask.cs)
 
 **Problem**:
 When PlatformServices not initialized (e.g., hotkey pressed during app startup), task marked as "Stopped" with no user feedback. Silent failure left users confused about why capture didn't work.
@@ -494,7 +494,7 @@ Fixed 7 additional HIGH severity issues covering null safety, error handling, re
 
 ### Issue CORE-003: SettingsManager Null Safety (HIGH)
 
-**File**: [SettingsManager.cs](../../src/XerahS.Core/Managers/SettingsManager.cs:184-193)
+**File**: [SettingsManager.cs](../../src/desktop/core/XerahS.Core/Managers/SettingsManager.cs:184-193)
 
 **Problem**:
 `GetFirstWorkflow()` returns nullable `WorkflowSettings?` but many callsites don't check for null, risking NullReferenceException at runtime when workflow config is missing or corrupt.
@@ -523,7 +523,7 @@ public static WorkflowSettings GetFirstWorkflowOrDefault(WorkflowType workflowTy
 
 ### Issue BOOTSTRAP-001: Path Null Check & Elevation Logging (HIGH)
 
-**File**: [ShareXBootstrap.cs](../../src/XerahS.Bootstrap/ShareXBootstrap.cs:112-149)
+**File**: [ShareXBootstrap.cs](../../src/desktop/app/XerahS.Bootstrap/ShareXBootstrap.cs:112-149)
 
 **Problem**:
 1. `Path.GetDirectoryName(logPath)` can return null for root paths, but null-forgiving operator `!` doesn't prevent exception
@@ -563,7 +563,7 @@ catch (Exception ex)
 
 ### Issue HISTORY-001: SQLite Transaction Safety (HIGH)
 
-**File**: [HistoryManagerSQLite.cs](../../src/XerahS.History/HistoryManagerSQLite.cs:186-224)
+**File**: [HistoryManagerSQLite.cs](../../src/desktop/core/XerahS.History/HistoryManagerSQLite.cs:186-224)
 
 **Problem**:
 Transaction never explicitly committed - relied on `using` disposal semantics which are undefined on exception. No rollback on failure, risking partial writes and database corruption.
@@ -613,7 +613,7 @@ using (SqliteTransaction transaction = connection.BeginTransaction())
 
 ### Issue APP-001: Recording Initialization Error Notification (HIGH)
 
-**File**: [Program.cs](../../src/XerahS.App/Program.cs:224-246)
+**File**: [Program.cs](../../src/desktop/app/XerahS.App/Program.cs:224-246)
 
 **Problem**:
 Background recording initialization failures logged but user never notified. Recording attempts later fail with cryptic errors, difficult to diagnose without log inspection.
@@ -657,7 +657,7 @@ catch (Exception ex)
 
 ### Issue CORE-007: MemoryStream Disposal Documentation (HIGH)
 
-**File**: [TaskHelpers.cs](../../src/XerahS.Core/Helpers/TaskHelpers.cs:480-513)
+**File**: [TaskHelpers.cs](../../src/desktop/core/XerahS.Core/Helpers/TaskHelpers.cs:480-513)
 
 **Problem**:
 `SaveImageAsStream()` returns `MemoryStream` but:
@@ -711,7 +711,7 @@ public static MemoryStream? SaveImageAsStream(...)
 
 ### Issue CORE-008: SKBitmap Disposal in Recording Path (HIGH)
 
-**File**: [WorkerTask.cs](../../src/XerahS.Core/Tasks/WorkerTask.cs:420-495)
+**File**: [WorkerTask.cs](../../src/desktop/core/XerahS.Core/Tasks/WorkerTask.cs:420-495)
 
 **Problem**:
 If `Info.Metadata.Image` was set from previous capture, it's never cleared before recording starts. Recording doesn't produce image, but stale SKBitmap:
@@ -747,7 +747,7 @@ case WorkflowType.StartScreenRecorder:
 
 ### Issue SETTINGS-001: File.Copy Exception Handling (HIGH)
 
-**File**: [SettingsManager.cs](../../src/XerahS.Core/Managers/SettingsManager.cs:407-427, 450-470)
+**File**: [SettingsManager.cs](../../src/desktop/core/XerahS.Core/Managers/SettingsManager.cs:407-427, 450-470)
 
 **Problem**:
 1. Race condition: File created between `!File.Exists` check and `File.Copy`
@@ -846,7 +846,7 @@ Fixed 7 additional HIGH severity issues covering null safety, error handling, re
 
 ### Issue CORE-003: SettingsManager Null Safety (HIGH)
 
-**File**: [SettingsManager.cs](../../src/XerahS.Core/Managers/SettingsManager.cs:184-193)
+**File**: [SettingsManager.cs](../../src/desktop/core/XerahS.Core/Managers/SettingsManager.cs:184-193)
 
 **Problem**:
 `GetFirstWorkflow()` returns nullable `WorkflowSettings?` but many callsites don't check for null, risking NullReferenceException at runtime when workflow config is missing or corrupt.
@@ -875,7 +875,7 @@ public static WorkflowSettings GetFirstWorkflowOrDefault(WorkflowType workflowTy
 
 ### Issue BOOTSTRAP-001: Path Null Check & Elevation Logging (HIGH)
 
-**File**: [ShareXBootstrap.cs](../../src/XerahS.Bootstrap/ShareXBootstrap.cs:112-149)
+**File**: [ShareXBootstrap.cs](../../src/desktop/app/XerahS.Bootstrap/ShareXBootstrap.cs:112-149)
 
 **Problem**:
 1. `Path.GetDirectoryName(logPath)` can return null for root paths, but null-forgiving operator `!` doesn't prevent exception
@@ -915,7 +915,7 @@ catch (Exception ex)
 
 ### Issue HISTORY-001: SQLite Transaction Safety (HIGH)
 
-**File**: [HistoryManagerSQLite.cs](../../src/XerahS.History/HistoryManagerSQLite.cs:186-224)
+**File**: [HistoryManagerSQLite.cs](../../src/desktop/core/XerahS.History/HistoryManagerSQLite.cs:186-224)
 
 **Problem**:
 Transaction never explicitly committed - relied on `using` disposal semantics which are undefined on exception. No rollback on failure, risking partial writes and database corruption.
@@ -965,7 +965,7 @@ using (SqliteTransaction transaction = connection.BeginTransaction())
 
 ### Issue APP-001: Recording Initialization Error Notification (HIGH)
 
-**File**: [Program.cs](../../src/XerahS.App/Program.cs:224-246)
+**File**: [Program.cs](../../src/desktop/app/XerahS.App/Program.cs:224-246)
 
 **Problem**:
 Background recording initialization failures logged but user never notified. Recording attempts later fail with cryptic errors, difficult to diagnose without log inspection.
@@ -1009,7 +1009,7 @@ catch (Exception ex)
 
 ### Issue CORE-007: MemoryStream Disposal Documentation (HIGH)
 
-**File**: [TaskHelpers.cs](../../src/XerahS.Core/Helpers/TaskHelpers.cs:480-513)
+**File**: [TaskHelpers.cs](../../src/desktop/core/XerahS.Core/Helpers/TaskHelpers.cs:480-513)
 
 **Problem**:
 `SaveImageAsStream()` returns `MemoryStream` but:
@@ -1063,7 +1063,7 @@ public static MemoryStream? SaveImageAsStream(...)
 
 ### Issue CORE-008: SKBitmap Disposal in Recording Path (HIGH)
 
-**File**: [WorkerTask.cs](../../src/XerahS.Core/Tasks/WorkerTask.cs:420-495)
+**File**: [WorkerTask.cs](../../src/desktop/core/XerahS.Core/Tasks/WorkerTask.cs:420-495)
 
 **Problem**:
 If `Info.Metadata.Image` was set from previous capture, it's never cleared before recording starts. Recording doesn't produce image, but stale SKBitmap:
@@ -1099,7 +1099,7 @@ case WorkflowType.StartScreenRecorder:
 
 ### Issue SETTINGS-001: File.Copy Exception Handling (HIGH)
 
-**File**: [SettingsManager.cs](../../src/XerahS.Core/Managers/SettingsManager.cs:407-427, 450-470)
+**File**: [SettingsManager.cs](../../src/desktop/core/XerahS.Core/Managers/SettingsManager.cs:407-427, 450-470)
 
 **Problem**:
 1. Race condition: File created between `!File.Exists` check and `File.Copy`

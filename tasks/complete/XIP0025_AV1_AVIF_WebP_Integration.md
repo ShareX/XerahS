@@ -15,7 +15,7 @@ Integrate AV1 (video), AVIF (image), and WebP (image) support into XerahS. This 
 ## Proposed Changes
 
 ### XerahS.Common
-#### [MODIFY] [Enums.cs](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.Common/Enums.cs)
+#### [MODIFY] [Enums.cs](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/core/XerahS.Common/Enums.cs)
 - Update `EImageFormat`: Add `WEBP` and `AVIF`.
 - Update `ConverterVideoCodecs` (if located here, likely in `XerahS.Media`) to include `AV1`? (Actually verified it is in `XerahS.Media`).
 
@@ -48,15 +48,15 @@ Integrate AV1 (video), AVIF (image), and WebP (image) support into XerahS. This 
 - Routes the save request to the appropriate encoder based on format.
 
 ### XerahS.Common
-#### [MODIFY] [Enums.cs](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.Common/Enums.cs)
+#### [MODIFY] [Enums.cs](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/core/XerahS.Common/Enums.cs)
 - Update `EImageFormat`: Add `WEBP` and `AVIF`.
 - (No dependency on Media here; ImageHelpers stays pure Skia).
 
 ### XerahS.Media
-#### [MODIFY] [Enums.cs](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.Media/Enums.cs)
+#### [MODIFY] [Enums.cs](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/core/XerahS.Media/Enums.cs)
 - Ensure `ConverterVideoCodecs` has `av1` with appropriate description.
 
-#### [MODIFY] [VideoConverterOptions.cs](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.Media/VideoConverterOptions.cs)
+#### [MODIFY] [VideoConverterOptions.cs](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/core/XerahS.Media/VideoConverterOptions.cs)
 - Verify `av1` case uses `libsvtav1` or `libaom-av1` correctly.
 - Add `avif` to `GetFileExtension` if generic converter supports it.
 

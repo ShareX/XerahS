@@ -37,7 +37,7 @@ ShareX (WinForms) stores uploader configurations in `UploadersConfig.json`. Shar
 
 ### Phase 1: Import Backend Logic
 
-**File**: `src/XerahS.Uploaders/UploadersConfigImporter.cs` (NEW)
+**File**: `src/desktop/core/XerahS.Uploaders/UploadersConfigImporter.cs` (NEW)
 
 ```csharp
 using System;
@@ -385,7 +385,7 @@ public class ImportResult
 
 ### Phase 2: UI Integration
 
-**File**: `src/XerahS.UI/ViewModels/DestinationSettingsViewModel.cs`
+**File**: `src/desktop/app/XerahS.UI/ViewModels/DestinationSettingsViewModel.cs`
 
 Add import command:
 
@@ -454,7 +454,7 @@ private async Task ShowMessageDialog(string title, string message)
 }
 ```
 
-**File**: `src/XerahS.UI/Views/DestinationSettingsView.axaml`
+**File**: `src/desktop/app/XerahS.UI/Views/DestinationSettingsView.axaml`
 
 Add import button to the top of the view (find appropriate location in the existing layout):
 

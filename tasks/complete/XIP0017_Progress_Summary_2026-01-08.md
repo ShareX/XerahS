@@ -109,7 +109,7 @@
 src/XerahS.ScreenCapture/ScreenRecording/
 └── FFmpegRecordingService.cs                    ✅ [NEW]
 
-src/XerahS.Platform.Windows/Recording/
+src/platform/XerahS.Platform.Windows/Recording/
 └── WasapiAudioCapture.cs                        ⏳ [NEW - IN PROGRESS]
 
 tasks/
@@ -119,7 +119,7 @@ tasks/
 
 **Modified Files:**
 ```
-src/XerahS.Platform.Windows/
+src/platform/XerahS.Platform.Windows/
 └── WindowsPlatform.cs                           ✅ [MODIFIED]
     Lines 115-120: Added FallbackServiceFactory
 

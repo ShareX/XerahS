@@ -71,17 +71,17 @@ If you're adding new features or fixing bugs:
 If you're completing platform-specific APIs:
 
 **Windows** (WinRT Graphics Capture):
-- File: `src/XerahS.Platform.Windows/Capture/WinRTCaptureStrategy.cs`
+- File: `src/platform/XerahS.Platform.Windows/Capture/WinRTCaptureStrategy.cs`
 - Status: Stub implementation
 - Requirements: Windows.Graphics.Capture API integration
 
 **macOS** (ScreenCaptureKit):
-- File: `src/XerahS.Platform.macOS/Capture/ScreenCaptureKitStrategy.cs`
+- File: `src/platform/XerahS.Platform.MacOS/Capture/ScreenCaptureKitStrategy.cs`
 - Status: Stub implementation
 - Requirements: Objective-C bridge (`libscreencapturekit_bridge.dylib`)
 
 **Linux** (Wayland Portal):
-- File: `src/XerahS.Platform.Linux/Capture/WaylandPortalStrategy.cs`
+- File: `src/platform/XerahS.Platform.Linux/Capture/WaylandPortalStrategy.cs`
 - Status: Stub implementation
 - Requirements: D-Bus library integration
 
@@ -313,12 +313,12 @@ When reporting capture issues, include:
 - [Implementation Summary](./IMPLEMENTATION_SUMMARY.md)
 
 ### Source Files
-- [IRegionCaptureBackend](../src/XerahS.Platform.Abstractions/Capture/IRegionCaptureBackend.cs)
-- [CoordinateTransform](../src/XerahS.Core/Services/CoordinateTransform.cs)
-- [RegionCaptureOrchestrator](../src/XerahS.Core/Services/RegionCaptureOrchestrator.cs)
-- [Windows Backend](../src/XerahS.Platform.Windows/Capture/WindowsRegionCaptureBackend.cs)
-- [macOS Backend](../src/XerahS.Platform.macOS/Capture/MacOSRegionCaptureBackend.cs)
-- [Linux Backend](../src/XerahS.Platform.Linux/Capture/LinuxRegionCaptureBackend.cs)
+- [IRegionCaptureBackend](../src/platform/XerahS.Platform.Abstractions/Capture/IRegionCaptureBackend.cs)
+- [CoordinateTransform](../src/desktop/core/XerahS.Core/Services/CoordinateTransform.cs)
+- [RegionCaptureOrchestrator](../src/desktop/core/XerahS.Core/Services/RegionCaptureOrchestrator.cs)
+- [Windows Backend](../src/platform/XerahS.Platform.Windows/Capture/WindowsRegionCaptureBackend.cs)
+- [macOS Backend](../src/platform/XerahS.Platform.MacOS/Capture/MacOSRegionCaptureBackend.cs)
+- [Linux Backend](../src/platform/XerahS.Platform.Linux/Capture/LinuxRegionCaptureBackend.cs)
 
 ### Test Files
 - [Coordinate Tests](../tests/XerahS.Tests/Services/CoordinateTransformTests.cs)

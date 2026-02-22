@@ -36,8 +36,8 @@ The XerahS (XerahS) region capture backend has been **completely redesigned** to
 - **20 unit tests**: All passing, covering edge cases
 
 **Files**:
-- `src/XerahS.Platform.Abstractions/Capture/CoordinateTypes.cs`
-- `src/XerahS.Core/Services/CoordinateTransform.cs`
+- `src/platform/XerahS.Platform.Abstractions/Capture/CoordinateTypes.cs`
+- `src/desktop/core/XerahS.Core/Services/CoordinateTransform.cs`
 - `tests/XerahS.Tests/Services/CoordinateTransformTests.cs`
 
 #### Platform Abstraction
@@ -46,11 +46,11 @@ The XerahS (XerahS) region capture backend has been **completely redesigned** to
 - **BackendCapabilities**: Feature detection and version reporting
 
 **Files**:
-- `src/XerahS.Platform.Abstractions/Capture/IRegionCaptureBackend.cs`
-- `src/XerahS.Platform.Abstractions/Capture/MonitorInfo.cs`
-- `src/XerahS.Platform.Abstractions/Capture/BackendCapabilities.cs`
-- `src/XerahS.Platform.Abstractions/Capture/CapturedBitmap.cs`
-- `src/XerahS.Platform.Abstractions/Capture/RegionCaptureOptions.cs`
+- `src/platform/XerahS.Platform.Abstractions/Capture/IRegionCaptureBackend.cs`
+- `src/platform/XerahS.Platform.Abstractions/Capture/MonitorInfo.cs`
+- `src/platform/XerahS.Platform.Abstractions/Capture/BackendCapabilities.cs`
+- `src/platform/XerahS.Platform.Abstractions/Capture/CapturedBitmap.cs`
+- `src/platform/XerahS.Platform.Abstractions/Capture/RegionCaptureOptions.cs`
 
 ### 2. Windows Backend (90% Complete)
 
@@ -466,7 +466,7 @@ This implementation provides a **production-ready foundation** for pixel-perfect
 - [Architecture Documentation](./REGION_CAPTURE_ARCHITECTURE.md)
 - [Migration Guide](./MIGRATION_GUIDE.md)
 - [Coordinate Transform Unit Tests](../tests/XerahS.Tests/Services/CoordinateTransformTests.cs)
-- [IRegionCaptureBackend Interface](../src/XerahS.Platform.Abstractions/Capture/IRegionCaptureBackend.cs)
+- [IRegionCaptureBackend Interface](../src/platform/XerahS.Platform.Abstractions/Capture/IRegionCaptureBackend.cs)
 
 ---
 

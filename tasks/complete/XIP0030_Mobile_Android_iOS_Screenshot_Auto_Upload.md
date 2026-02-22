@@ -90,7 +90,7 @@ Create a platform-neutral service with no UI dependencies.
 
 ### 2.1 Service Definition
 
-`src/XerahS.Core/Services/ShareImportService.cs`:
+`src/desktop/core/XerahS.Core/Services/ShareImportService.cs`:
 
 ```csharp
 namespace XerahS.Core.Services;
@@ -185,7 +185,7 @@ public sealed record ShareImportResult(
 
 ### 3.1 Settings Model
 
-`src/XerahS.Core/Models/ShareImportSettings.cs`:
+`src/desktop/core/XerahS.Core/Models/ShareImportSettings.cs`:
 
 ```csharp
 namespace XerahS.Core.Models;
@@ -219,7 +219,7 @@ public ShareImportSettings ShareImport { get; set; } = new();
 
 ### 4.1 Update Android Manifest
 
-`src/XerahS.App/Platforms/Android/AndroidManifest.xml`:
+`src/desktop/app/XerahS.App/Platforms/Android/AndroidManifest.xml`:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -256,7 +256,7 @@ public ShareImportSettings ShareImport { get; set; } = new();
 
 ### 4.2 Handle Share Intent in MainActivity
 
-`src/XerahS.App/Platforms/Android/MainActivity.cs`:
+`src/desktop/app/XerahS.App/Platforms/Android/MainActivity.cs`:
 
 ```csharp
 using Android.App;
@@ -398,7 +398,7 @@ Enable for:
 
 ### 5.2 Create Share Extension Project
 
-`src/XerahS.ShareExtension.iOS/XerahS.ShareExtension.iOS.csproj`:
+`src/mobile-experimental/XerahS.Mobile.iOS.ShareExtension/XerahS.ShareExtension.iOS.csproj`:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -412,7 +412,7 @@ Enable for:
 
 ### 5.3 Share Extension ViewController
 
-`src/XerahS.ShareExtension.iOS/ShareViewController.cs`:
+`src/mobile-experimental/XerahS.Mobile.iOS.ShareExtension/ShareViewController.cs`:
 
 ```csharp
 using Foundation;
@@ -514,7 +514,7 @@ public record HandoffItem(string RelativePath);
 
 ### 5.4 Main iOS App Process Handoff Manifests
 
-`src/XerahS.App/Platforms/iOS/HandoffProcessor.cs`:
+`src/desktop/app/XerahS.App/Platforms/iOS/HandoffProcessor.cs`:
 
 ```csharp
 using Foundation;
@@ -601,7 +601,7 @@ public class HandoffProcessor
 
 ### 6.1 Share Results ViewModel
 
-`src/XerahS.App/ViewModels/ShareImportResultsViewModel.cs`:
+`src/desktop/app/XerahS.App/ViewModels/ShareImportResultsViewModel.cs`:
 
 ```csharp
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -656,7 +656,7 @@ public class ShareResultItem
 
 ### 6.2 Share Results View
 
-`src/XerahS.App/Views/ShareImportResultsView.axaml`:
+`src/desktop/app/XerahS.App/Views/ShareImportResultsView.axaml`:
 
 ```xml
 <Window xmlns="https://github.com/avaloniaui"
@@ -728,7 +728,7 @@ public class ShareResultItem
 
 ### 7.1 Clipboard Service
 
-`src/XerahS.Platform.Abstractions/Services/IClipboardService.cs`:
+`src/platform/XerahS.Platform.Abstractions/Services/IClipboardService.cs`:
 
 ```csharp
 namespace XerahS.Platform.Abstractions.Services;

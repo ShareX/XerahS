@@ -18,7 +18,7 @@ The user requires a mechanism to robustly test the "Screen Recorder" workflow (s
 ## Proposed Changes
 
 ### 1. New Command: `VerifyRecordingCommand`
-Create a new command class `src/XerahS.CLI/Commands/VerifyRecordingCommand.cs`.
+Create a new command class `src/desktop/cli/XerahS.CLI/Commands/VerifyRecordingCommand.cs`.
 
 **Command Syntax:**
 ```bash
@@ -73,11 +73,11 @@ xerahs verify-recording [workflow-id] [options]
 
 ### 3. File Updates
 
-#### [NEW] `src/XerahS.CLI/Commands/VerifyRecordingCommand.cs`
+#### [NEW] `src/desktop/cli/XerahS.CLI/Commands/VerifyRecordingCommand.cs`
 - Implement the `VerifyRecordingCommand` class.
 - Reuse `RegionCaptureVerifier` code for monitor discovery and random rect generation (refactor `RegionCaptureVerifier` to `XerahS.Common` or duplicate minimal logic).
 
-#### [MODIFY] `src/XerahS.CLI/Program.cs`
+#### [MODIFY] `src/desktop/cli/XerahS.CLI/Program.cs`
 - Register the new command: `rootCommand.Add(VerifyRecordingCommand.Create());`
 
 ## Verification Plan

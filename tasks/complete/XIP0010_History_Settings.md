@@ -36,7 +36,7 @@ XerahS has a placeholder "History" tab in `ApplicationSettingsView.axaml` (line 
 
 ### 1. Update History Tab in ApplicationSettingsView
 
-**File**: `src/XerahS.UI/Views/ApplicationSettingsView.axaml`
+**File**: `src/desktop/app/XerahS.UI/Views/ApplicationSettingsView.axaml`
 
 Replace the placeholder with the actual settings UI:
 
@@ -89,7 +89,7 @@ Replace the placeholder with the actual settings UI:
 
 ### 2. Add Properties to SettingsViewModel
 
-**File**: `src/XerahS.UI/ViewModels/SettingsViewModel.cs`
+**File**: `src/desktop/app/XerahS.UI/ViewModels/SettingsViewModel.cs`
 
 Add these properties that bind to `ApplicationConfig`:
 
@@ -169,7 +169,7 @@ public bool RecentTasksTrayMenuMostRecentFirst
 
 ### 3. Ensure ApplicationConfig Has HistoryCheckURL
 
-**File**: `src/XerahS.Core/Models/ApplicationConfig.cs`
+**File**: `src/desktop/core/XerahS.Core/Models/ApplicationConfig.cs`
 
 Verify/add this property (may already exist):
 

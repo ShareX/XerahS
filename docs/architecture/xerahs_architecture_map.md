@@ -23,7 +23,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 ## 1. Entry Points & Responsibilities
 
 ### 1.1 XerahS.App (Desktop Application)
-- **File**: [Program.cs](../../src/XerahS.App/Program.cs)
+- **File**: [Program.cs](../../src/desktop/app/XerahS.App/Program.cs)
 - **Purpose**: Main GUI application with full Avalonia UI
 - **Target Framework**: `net10.0-windows10.0.26100.0`
 - **Initialization Flow**:
@@ -35,7 +35,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 - **Key Dependencies**: XerahS.UI, XerahS.Core, Platform implementations
 
 ### 1.2 XerahS.CLI (Command-Line Interface)
-- **File**: [Program.cs](../../src/XerahS.CLI/Program.cs)
+- **File**: [Program.cs](../../src/desktop/cli/XerahS.CLI/Program.cs)
 - **Purpose**: Headless CLI for automation and scripting
 - **Target Framework**: `net10.0-windows10.0.26100.0`
 - **Commands**:
@@ -50,7 +50,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 - **Key Dependencies**: XerahS.Bootstrap, XerahS.Core, System.CommandLine
 
 ### 1.3 XerahS.PluginExporter (Utility)
-- **File**: [Program.cs](../../src/XerahS.PluginExporter/Program.cs)
+- **File**: [Program.cs](../../src/desktop/tools/XerahS.PluginExporter/Program.cs)
 - **Purpose**: Package uploader plugins into `.xsdp` archives
 - **Usage**: Internal development tool
 
@@ -137,7 +137,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 ## 3. Platform Abstraction Layer
 
 ### 3.1 Central Service Locator
-**File**: [PlatformServices.cs](../../src/XerahS.Platform.Abstractions/PlatformServices.cs)
+**File**: [PlatformServices.cs](../../src/platform/XerahS.Platform.Abstractions/PlatformServices.cs)
 
 **Pattern**: Static service locator with lazy initialization validation
 
@@ -163,7 +163,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 
 ### 3.2 Platform Implementations
 
-#### Windows ([XerahS.Platform.Windows](../../src/XerahS.Platform.Windows/))
+#### Windows ([XerahS.Platform.Windows](../../src/platform/XerahS.Platform.Windows/))
 **Initializer**: `WindowsPlatform.Initialize()`
 
 **Key Services**:
@@ -182,7 +182,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 
 **Recording Strategy**: Native WGC + Media Foundation, fallback to FFmpeg if unavailable
 
-#### macOS ([XerahS.Platform.MacOS](../../src/XerahS.Platform.MacOS/))
+#### macOS ([XerahS.Platform.MacOS](../../src/platform/XerahS.Platform.MacOS/))
 **Initializer**: `MacOSPlatform.Initialize()`
 
 **Key Services**:
@@ -191,7 +191,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 
 **Recording Strategy**: FFmpeg-based (native AVFoundation API pending)
 
-#### Linux ([XerahS.Platform.Linux](../../src/XerahS.Platform.Linux/))
+#### Linux ([XerahS.Platform.Linux](../../src/platform/XerahS.Platform.Linux/))
 **Initializer**: `LinuxPlatform.Initialize()`
 
 **Status**: Stub implementations, planned for future expansion
@@ -218,7 +218,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 **Machine-Specific Override**: Optional `UploadersConfig-<HOSTNAME>.json` when `UseMachineSpecificUploadersConfig` enabled
 
 ### 4.2 Settings Manager
-**File**: [SettingsManager.cs](../../src/XerahS.Core/Managers/SettingsManager.cs)
+**File**: [SettingsManager.cs](../../src/desktop/core/XerahS.Core/Managers/SettingsManager.cs)
 
 **Responsibilities**:
 - Centralized configuration loading/saving
@@ -237,7 +237,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 
 ### 4.3 Security & Encryption
 - **DPAPI Encryption**: Used for sensitive uploader credentials (Windows-only)
-- **File**: [Encryption.cs](../../src/XerahS.Common/Encryption.cs)
+- **File**: [Encryption.cs](../../src/desktop/core/XerahS.Common/Encryption.cs)
 - **Fallback**: Plain JSON on non-Windows platforms (future: cross-platform encryption)
 
 ---
@@ -245,14 +245,14 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 ## 5. Logging Pipeline
 
 ### 5.1 Initialization
-**File**: [DebugHelper.cs](../../src/XerahS.Common/DebugHelper.cs)
+**File**: [DebugHelper.cs](../../src/desktop/core/XerahS.Common/DebugHelper.cs)
 
 **Setup**: `DebugHelper.Init(logPath)` creates singleton `Logger` instance
 
 **Default Path**: `Documents\XerahS\Logs\yyyy-MM\XerahS-yyyyMMdd.log`
 
 ### 5.2 Logger Implementation
-**File**: [Logger.cs](../../src/XerahS.Common/Logger.cs)
+**File**: [Logger.cs](../../src/desktop/core/XerahS.Common/Logger.cs)
 
 **Features**:
 - Async write queue for non-blocking I/O (configurable: `Logger.AsyncWrite`)
@@ -366,7 +366,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 ### XerahS.Bootstrap
 **Purpose**: Shared initialization logic for App and CLI
 
-**File**: [ShareXBootstrap.cs](../../src/XerahS.Bootstrap/ShareXBootstrap.cs)
+**File**: [ShareXBootstrap.cs](../../src/desktop/app/XerahS.Bootstrap/ShareXBootstrap.cs)
 
 **Operations**:
 1. Platform service initialization (OS detection + registration)
@@ -381,10 +381,10 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 ### 7.1 Design Pattern
 **Pattern**: Dynamic provider-based plugin system with assembly isolation
 
-**Interface**: [IUploaderProvider](../../src/XerahS.Uploaders/PluginSystem/IUploaderProvider.cs)
+**Interface**: [IUploaderProvider](../../src/desktop/core/XerahS.Uploaders/PluginSystem/IUploaderProvider.cs)
 
 ### 7.2 Plugin Discovery
-**File**: [PluginDiscovery.cs](../../src/XerahS.Uploaders/PluginSystem/PluginDiscovery.cs)
+**File**: [PluginDiscovery.cs](../../src/desktop/core/XerahS.Uploaders/PluginSystem/PluginDiscovery.cs)
 
 **Search Path**: `Documents\XerahS\Plugins\*.xsdp`
 
@@ -402,7 +402,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 ```
 
 ### 7.3 Plugin Loading
-**File**: [PluginLoader.cs](../../src/XerahS.Uploaders/PluginSystem/PluginLoader.cs)
+**File**: [PluginLoader.cs](../../src/desktop/core/XerahS.Uploaders/PluginSystem/PluginLoader.cs)
 
 **Mechanism**: `AssemblyLoadContext` per plugin for isolation
 
@@ -443,7 +443,7 @@ Treated as internal plugins (no separate assemblies):
 **Dependency Injection**: Manual service locator via `PlatformServices`
 
 ### 8.2 Views (AXAML)
-Located in [XerahS.UI/Views](../../src/XerahS.UI/Views/)
+Located in [XerahS.UI/Views](../../src/desktop/app/XerahS.UI/Views/)
 
 | View | Purpose |
 |------|---------|
@@ -460,7 +460,7 @@ Located in [XerahS.UI/Views](../../src/XerahS.UI/Views/)
 | ProviderCatalogDialog.axaml | Plugin instance manager |
 
 ### 8.3 ViewModels
-Located in [XerahS.UI/ViewModels](../../src/XerahS.UI/ViewModels/)
+Located in [XerahS.UI/ViewModels](../../src/desktop/app/XerahS.UI/ViewModels/)
 
 | ViewModel | Responsibilities |
 |-----------|-----------------|
@@ -476,7 +476,7 @@ Located in [XerahS.UI/ViewModels](../../src/XerahS.UI/ViewModels/)
 | RecordingViewModel | Screen recording state management |
 
 ### 8.4 UI Services
-Located in [XerahS.UI/Services](../../src/XerahS.UI/Services/)
+Located in [XerahS.UI/Services](../../src/desktop/app/XerahS.UI/Services/)
 
 | Service | Purpose |
 |---------|---------|

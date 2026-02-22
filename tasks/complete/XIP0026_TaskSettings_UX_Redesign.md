@@ -14,7 +14,7 @@ We will also restructure handling of Destinations, File Naming, and Upload setti
 ## Proposed Changes
 
 ### XerahS.UI
-#### [MODIFY] [WorkflowEditorView.axaml](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.UI/Views/WorkflowEditorView.axaml)
+#### [MODIFY] [WorkflowEditorView.axaml](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/app/XerahS.UI/Views/WorkflowEditorView.axaml)
 - **Rename** "Settings" TabItem header to "Task Settings".
 - **Remove** "Destinations" TabItem completely (merged into `TaskSettingsPanel`).
 - **Add** "Image Settings" TabItem (index 1):
@@ -26,12 +26,12 @@ We will also restructure handling of Destinations, File Naming, and Upload setti
     - Visibility: Bound to `IsScreenRecordJob` (ViewModel property).
     - Content: `views:TaskVideoSettingsPanel`
 
-#### [MODIFY] [WorkflowEditorViewModel.cs](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.UI/ViewModels/WorkflowEditorViewModel.cs)
+#### [MODIFY] [WorkflowEditorViewModel.cs](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/app/XerahS.UI/ViewModels/WorkflowEditorViewModel.cs)
 - `AvailableDestinations` and `SelectedDestination` logic remains here, but we need to ensure `TaskSettingsViewModel` can access or bind to it if we move the UI.
 - *Alternatively*, we can pass `WorkflowEditorViewModel` itself to `TaskSettingsPanel` as a parent context, or move the logic properties to `TaskSettingsViewModel` (which might be cleaner but harder refactor).
 - **Decision**: Keep logic in `WorkflowEditorViewModel`, but in `TaskSettingsPanel.axaml`, we will bind to `$parent[Window].DataContext.AvailableDestinations` or similar relative binding since `TaskSettingsPanel` is a child of the Window.
 
-#### [MODIFY] [TaskSettingsViewModel.cs](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.UI/ViewModels/TaskSettingsViewModel.cs)
+#### [MODIFY] [TaskSettingsViewModel.cs](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/app/XerahS.UI/ViewModels/TaskSettingsViewModel.cs)
 - Add boolean helper properties:
     - `public bool IsScreenCaptureJob`
     - `public bool IsScreenRecordJob`
@@ -48,7 +48,7 @@ We will also restructure handling of Destinations, File Naming, and Upload setti
 - Bind to existing `TaskSettingsViewModel`.
 - **Add Codec Selection**: explicit dropdown for Video Codec (AV1, H.264, GIF, etc.).
 
-#### [MODIFY] [TaskSettingsPanel.axaml](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.UI/Views/TaskSettingsPanel.axaml)
+#### [MODIFY] [TaskSettingsPanel.axaml](file:///C:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/app/XerahS.UI/Views/TaskSettingsPanel.axaml)
 - **Reorder & Refactor Tabs**:
     1.  **Capture** (Header="Capture"): Move to Index 0.
         - Contains: Cursor, Delay, Window Title, Client Area, etc.

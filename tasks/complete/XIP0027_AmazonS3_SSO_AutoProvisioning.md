@@ -26,11 +26,11 @@ In SSO mode, the user selects the bucket location (Endpoint / Region) and provid
    - Use temporary role credentials (access key, secret key, session token).
 
 ## Key Files
-- `src/Plugins/ShareX.AmazonS3.Plugin/S3ConfigModel.cs`
-- `src/Plugins/ShareX.AmazonS3.Plugin/AmazonS3Uploader.cs`
-- `src/Plugins/ShareX.AmazonS3.Plugin/AmazonS3Provider.cs`
-- `src/Plugins/ShareX.AmazonS3.Plugin/ViewModels/AmazonS3ConfigViewModel.cs`
-- `src/Plugins/ShareX.AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml`
+- `src/desktop/plugins/AmazonS3.Plugin/S3ConfigModel.cs`
+- `src/desktop/plugins/AmazonS3.Plugin/AmazonS3Uploader.cs`
+- `src/desktop/plugins/AmazonS3.Plugin/AmazonS3Provider.cs`
+- `src/desktop/plugins/AmazonS3.Plugin/ViewModels/AmazonS3ConfigViewModel.cs`
+- `src/desktop/plugins/AmazonS3.Plugin/Views/AmazonS3ConfigView.axaml`
 
 ## Verification Plan
 1. **Access Keys Regression**:

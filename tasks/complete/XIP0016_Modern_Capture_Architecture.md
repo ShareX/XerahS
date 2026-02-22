@@ -127,9 +127,9 @@ To ensure stability and user control, the **"Use Modern Capture"** option in Tas
 - **[NEW]** `native/macos/Makefile` - Build script for dylib
 
 ### C# Service
-- **[NEW]** `src/XerahS.Platform.MacOS/Native/ScreenCaptureKitInterop.cs` - P/Invoke declarations
-- **[NEW]** `src/XerahS.Platform.MacOS/MacOSScreenCaptureKitService.cs` - Native capture service
-- **[MODIFY]** `src/XerahS.Platform.MacOS/MacOSPlatform.cs` - Register new service with fallback logic
+- **[NEW]** `src/platform/XerahS.Platform.MacOS/Native/ScreenCaptureKitInterop.cs` - P/Invoke declarations
+- **[NEW]** `src/platform/XerahS.Platform.MacOS/MacOSScreenCaptureKitService.cs` - Native capture service
+- **[MODIFY]** `src/platform/XerahS.Platform.MacOS/MacOSPlatform.cs` - Register new service with fallback logic
 
 ### CI/CD
 - **[NEW]** `.github/workflows/macos-build.yml` - Automated build for native library and solution

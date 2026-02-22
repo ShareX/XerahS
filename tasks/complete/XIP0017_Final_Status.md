@@ -185,9 +185,9 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
 ## Files Modified
 
 **Modified:**
-- `src/XerahS.Platform.Windows/WindowsPlatform.cs` - Added InitializeRecording()
-- `src/XerahS.App/Program.cs` - Added InitializeRecording() call
-- `src/XerahS.Platform.Windows/XerahS.Platform.Windows.csproj` - Added ScreenCapture reference
+- `src/platform/XerahS.Platform.Windows/WindowsPlatform.cs` - Added InitializeRecording()
+- `src/desktop/app/XerahS.App/Program.cs` - Added InitializeRecording() call
+- `src/platform/XerahS.Platform.Windows/XerahS.Platform.Windows.csproj` - Added ScreenCapture reference
 
 **Created:**
 - 6 new files in `XerahS.ScreenCapture/ScreenRecording/`

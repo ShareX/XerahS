@@ -78,7 +78,7 @@ XerahS.Mobile.UI/
 
 ### 1.2 Modify `MobileApp.axaml.cs` for Runtime Theme Loading
 
-**File**: `src/XerahS.Mobile.UI/MobileApp.axaml.cs`
+**File**: `src/mobile-experimental/XerahS.Mobile.Ava/MobileApp.axaml.cs`
 
 **Changes Required**:
 
@@ -130,7 +130,7 @@ private void LoadPlatformTheme()
 
 ### 2.1 Create `iOS.axaml` Resource Dictionary
 
-**File**: `src/XerahS.Mobile.UI/Themes/iOS.axaml`
+**File**: `src/mobile-experimental/XerahS.Mobile.Ava/Themes/iOS.axaml`
 
 **Cupertino Design Principles**:
 - **Typography**: San Francisco font family (system default on iOS)
@@ -251,7 +251,7 @@ private void LoadPlatformTheme()
 
 ### 3.1 Add Material.Avalonia NuGet Package
 
-**File**: `src/XerahS.Mobile.UI/XerahS.Mobile.UI.csproj`
+**File**: `src/mobile-experimental/XerahS.Mobile.Ava/XerahS.Mobile.UI.csproj`
 
 Add package reference:
 
@@ -264,7 +264,7 @@ Add package reference:
 
 ### 3.2 Create `Android.axaml` Resource Dictionary
 
-**File**: `src/XerahS.Mobile.UI/Themes/Android.axaml`
+**File**: `src/mobile-experimental/XerahS.Mobile.Ava/Themes/Android.axaml`
 
 **Material Design 3 Principles**:
 - **Typography**: Roboto font family
@@ -378,7 +378,7 @@ Add package reference:
 
 ### 4.1 Create Adaptive Control Template Helpers
 
-**File**: `src/XerahS.Mobile.UI/Themes/AdaptiveControls.axaml`
+**File**: `src/mobile-experimental/XerahS.Mobile.Ava/Themes/AdaptiveControls.axaml`
 
 This resource dictionary provides PLATFORM-AGNOSTIC style class names that automatically map to the correct platform theme.
 
@@ -464,7 +464,7 @@ Avalonia's `Classes` property supports conditional application based on boolean 
 
 ### 4.2 Refactor `MobileUploadView.axaml` (Proof of Concept)
 
-**File**: `src/XerahS.Mobile.UI/Views/MobileUploadView.axaml`
+**File**: `src/mobile-experimental/XerahS.Mobile.Ava/Views/MobileUploadView.axaml`
 
 **Current State** (Generic Fluent):
 ```xml
@@ -808,10 +808,10 @@ No changes to head projects (`XerahS.Mobile.iOS`, `XerahS.Mobile.Android`) requi
 ## Deliverables
 
 ### Code Deliverables
-1. `src/XerahS.Mobile.UI/Themes/iOS.axaml` - Complete Cupertino resource dictionary
-2. `src/XerahS.Mobile.UI/Themes/Android.axaml` - Complete Material Design 3 resource dictionary
-3. `src/XerahS.Mobile.UI/Themes/AdaptiveControls.axaml` - Platform-agnostic adaptive styles
-4. `src/XerahS.Mobile.UI/MobileApp.axaml.cs` - Runtime theme loading logic
+1. `src/mobile-experimental/XerahS.Mobile.Ava/Themes/iOS.axaml` - Complete Cupertino resource dictionary
+2. `src/mobile-experimental/XerahS.Mobile.Ava/Themes/Android.axaml` - Complete Material Design 3 resource dictionary
+3. `src/mobile-experimental/XerahS.Mobile.Ava/Themes/AdaptiveControls.axaml` - Platform-agnostic adaptive styles
+4. `src/mobile-experimental/XerahS.Mobile.Ava/MobileApp.axaml.cs` - Runtime theme loading logic
 5. Refactored XAML views (5 files):
    - `MobileUploadView.axaml`
    - `MobileHistoryView.axaml`
@@ -856,7 +856,7 @@ No changes to head projects (`XerahS.Mobile.iOS`, `XerahS.Mobile.Android`) requi
 
 If needed, create a helper class for cleaner platform checks:
 
-**File**: `src/XerahS.Mobile.UI/Helpers/PlatformHelper.cs`
+**File**: `src/mobile-experimental/XerahS.Mobile.Ava/Helpers/PlatformHelper.cs`
 
 ```csharp
 namespace XerahS.Mobile.UI.Helpers;
@@ -891,7 +891,7 @@ if (PlatformHelper.IsIOS)
 
 ## Appendix B: Example Refactored View (Full)
 
-**File**: `src/XerahS.Mobile.UI/Views/MobileUploadView.axaml`
+**File**: `src/mobile-experimental/XerahS.Mobile.Ava/Views/MobileUploadView.axaml`
 
 ```xml
 <UserControl xmlns="https://github.com/avaloniaui"

@@ -53,7 +53,7 @@ Many properties appear "unused" but are **actually required** for:
 ### XerahS.Core
 
 #### TaskSettings.cs
-**File:** [src/XerahS.Core/Settings/TaskSettings.cs](../../src/XerahS.Core/Settings/TaskSettings.cs)
+**File:** [src/desktop/core/XerahS.Core/Settings/TaskSettings.cs](../../../src/desktop/core/XerahS.Core/Settings/TaskSettings.cs)
 
 | Property | Type | Status | Notes |
 |----------|------|--------|-------|
@@ -63,7 +63,7 @@ Many properties appear "unused" but are **actually required** for:
 | `ShowToastNotificationAfterTaskCompleted` | bool | ⚠️ Serialization | Toast notifications not implemented |
 
 #### ApplicationConfig.cs
-**File:** [src/XerahS.Core/Settings/ApplicationConfig.cs](../../src/XerahS.Core/Settings/ApplicationConfig.cs)
+**File:** [src/desktop/core/XerahS.Core/Settings/ApplicationConfig.cs](../../../src/desktop/core/XerahS.Core/Settings/ApplicationConfig.cs)
 
 | Property | Type | Status | Notes |
 |----------|------|--------|-------|
@@ -75,7 +75,7 @@ Many properties appear "unused" but are **actually required** for:
 ### XerahS.Uploaders
 
 #### APIKeys.cs
-**File:** [src/XerahS.Uploaders/APIKeys/APIKeys.cs](../../src/XerahS.Uploaders/APIKeys/APIKeys.cs)
+**File:** [src/desktop/core/XerahS.Uploaders/APIKeys/APIKeys.cs](../../../src/desktop/core/XerahS.Uploaders/APIKeys/APIKeys.cs)
 
 | Member | Type | Status | Notes |
 |--------|------|--------|-------|
@@ -88,7 +88,7 @@ Many properties appear "unused" but are **actually required** for:
 | `VgymeAPIKey` | Field (string) | ✅ Safe to remove | Vgyme uploader not implemented |
 
 #### UploadersConfig.cs
-**File:** [src/XerahS.Uploaders/UploadersConfig.cs](../../src/XerahS.Uploaders/UploadersConfig.cs)
+**File:** [src/desktop/core/XerahS.Uploaders/UploadersConfig.cs](../../../src/desktop/core/XerahS.Uploaders/UploadersConfig.cs)
 
 | Property | Type | Status | Notes |
 |----------|------|--------|-------|
@@ -102,7 +102,7 @@ Many properties appear "unused" but are **actually required** for:
 ### XerahS.RegionCapture
 
 #### RegionCaptureOptions.cs
-**File:** [src/XerahS.RegionCapture/RegionCaptureOptions.cs](../../src/XerahS.RegionCapture/RegionCaptureOptions.cs)
+**File:** [src/desktop/app/XerahS.RegionCapture/RegionCaptureOptions.cs](../../../src/desktop/app/XerahS.RegionCapture/RegionCaptureOptions.cs)
 
 | Property | Type | Status | Notes |
 |----------|------|--------|-------|
@@ -114,7 +114,7 @@ Many properties appear "unused" but are **actually required** for:
 ### XerahS.UI
 
 #### ThemeManager.cs
-**File:** [src/XerahS.UI/ThemeManager.cs](../../src/XerahS.UI/ThemeManager.cs)
+**File:** [src/desktop/app/XerahS.UI/ThemeManager.cs](../../../src/desktop/app/XerahS.UI/ThemeManager.cs)
 
 | Property | Type | Status | Notes |
 |----------|------|--------|-------|
@@ -126,7 +126,7 @@ Many properties appear "unused" but are **actually required** for:
 ### XerahS.Common
 
 #### AppResources.cs
-**File:** [src/XerahS.Common/AppResources.cs](../../src/XerahS.Common/AppResources.cs)
+**File:** [src/desktop/core/XerahS.Common/AppResources.cs](../../../src/desktop/core/XerahS.Common/AppResources.cs)
 
 | Property | Type | Status | Notes |
 |----------|------|--------|-------|

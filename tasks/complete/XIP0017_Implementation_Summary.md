@@ -57,7 +57,7 @@ Successfully implemented the core components for modern screen recording using W
 
 #### XerahS.Platform.Windows Project
 
-**`/src/XerahS.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs`**
+**`/src/platform/XerahS.Platform.Windows/Recording/WindowsGraphicsCaptureSource.cs`**
 - Implements `ICaptureSource` using Windows.Graphics.Capture API
 - Requires Windows 10 version 1803+ (build 17134)
 - Static `IsSupported` property for version detection
@@ -69,7 +69,7 @@ Successfully implemented the core components for modern screen recording using W
 - COM interop for Direct3D surface access
 - Proper resource disposal and thread safety
 
-**`/src/XerahS.Platform.Windows/Recording/MediaFoundationEncoder.cs`**
+**`/src/platform/XerahS.Platform.Windows/Recording/MediaFoundationEncoder.cs`**
 - Implements `IVideoEncoder` using Media Foundation IMFSinkWriter
 - H.264 codec in MP4 container
 - Hardware encoding hint enabled (MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS)
@@ -153,7 +153,7 @@ public XerahS.ScreenCapture.Recording.ScreenRecordingSettings NativeRecordingSet
 
 ### Step 3: Initialize Platform Factories
 
-**File:** `src/XerahS.Platform.Windows/WindowsPlatform.cs`
+**File:** `src/platform/XerahS.Platform.Windows/WindowsPlatform.cs`
 
 Add to initialization method:
 ```csharp
@@ -186,7 +186,7 @@ WindowsPlatform.InitializeRecording(); // Add this line
 
 **Option A:** Add to PlatformServices (recommended for consistency)
 
-**File:** `src/XerahS.Platform.Abstractions/PlatformServices.cs`
+**File:** `src/platform/XerahS.Platform.Abstractions/PlatformServices.cs`
 
 ```csharp
 public static class PlatformServices
@@ -209,7 +209,7 @@ using var recorder = new ScreenRecorderService();
 
 ### Step 5: Wire Up UI Commands (Example)
 
-**File:** `src/XerahS.UI/ViewModels/MainViewModel.cs` or relevant ViewModel
+**File:** `src/desktop/app/XerahS.UI/ViewModels/MainViewModel.cs` or relevant ViewModel
 
 ```csharp
 using XerahS.ScreenCapture.Recording;
@@ -439,7 +439,7 @@ None - all new files created. Integration requires manual edits to:
 ### Add Required NuGet Package
 
 ```bash
-cd "src/XerahS.Platform.Windows"
+cd "src/platform/XerahS.Platform.Windows"
 dotnet add package Microsoft.Windows.SDK.Contracts --version 10.0.22621.48
 ```
 
@@ -449,7 +449,7 @@ dotnet add package Microsoft.Windows.SDK.Contracts --version 10.0.22621.48
 cd "c:\Users\liveu\source\repos\ShareX Team\XerahS"
 dotnet restore
 dotnet build src/XerahS.ScreenCapture/XerahS.ScreenCapture.csproj
-dotnet build src/XerahS.Platform.Windows/XerahS.Platform.Windows.csproj
+dotnet build src/platform/XerahS.Platform.Windows/XerahS.Platform.Windows.csproj
 dotnet build XerahS.sln
 ```
 
@@ -458,7 +458,7 @@ Expected output: Build succeeded, 0 errors
 ### Run
 
 ```bash
-dotnet run --project src/XerahS.App/XerahS.App.csproj
+dotnet run --project src/desktop/app/XerahS.App/XerahS.App.csproj
 ```
 
 ---

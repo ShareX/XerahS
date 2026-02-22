@@ -24,7 +24,7 @@ Fix duplicate/broken GIF generation implementation and ensure high-quality GIF o
 
 ### XerahS.Media
 
-#### [NEW] [VideoHelpers.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.Media/VideoHelpers.cs)
+#### [NEW] [VideoHelpers.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/core/XerahS.Media/VideoHelpers.cs)
 - Implementing video metadata reading and thumbnail extraction.
 - **Approach**: Wrapper around existing `FFmpegCLIManager` to avoid code duplication.
 - Features: `GetVideoInfo` (using `FFmpegCLIManager`), `TakeSnapshot` (using `FFmpegCLIManager` or `Process` directly if needed for simplicity).
@@ -32,7 +32,7 @@ Fix duplicate/broken GIF generation implementation and ensure high-quality GIF o
 
 ### XerahS.Core
 
-#### [MODIFY] [WorkerTask.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.Core/Tasks/WorkerTask.cs)
+#### [MODIFY] [WorkerTask.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/core/XerahS.Core/Tasks/WorkerTask.cs)
 - Add case handlers for `ScreenRecorderGIF`, `StartScreenRecorderGIF`, `ScreenRecorderGIFActiveWindow`, `ScreenRecorderGIFCustomRegion`.
 - In `HandleStartRecordingAsync`, detect if job is GIF.
 - After recording stops, call `VideoHelpers.ConvertToGif`.
@@ -41,7 +41,7 @@ Fix duplicate/broken GIF generation implementation and ensure high-quality GIF o
 
 ### XerahS.CLI
 
-#### [NEW] [VerifyGifRecordingCommand.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/XerahS.CLI/Commands/VerifyGifRecordingCommand.cs)
+#### [NEW] [VerifyGifRecordingCommand.cs](file:///c:/Users/liveu/source/repos/ShareX%20Team/XerahS/src/desktop/cli/XerahS.CLI/Commands/VerifyGifRecordingCommand.cs)
 - Command to verify GIF recording workflow.
 - Arguments: `--duration` (default 5s), `--output` (optional).
 - Logic:

@@ -11,8 +11,8 @@ isProject: false
 
 - **Root**: [XerahS.sln](XerahS.sln), [Directory.Build.props](Directory.Build.props), [ImageEditor/](ImageEditor/) (own solution, submodule), [tests/](tests/), docs/, .github/, .ai/, .githooks/, etc.
 - **src/** (flat): ~28 C# projects plus:
-  - [src/Plugins/](src/Plugins/) with 5 plugins in **ShareX.*** folders but **XerahS.*** .csproj names
-  - [src/XerahS.Mobile.Kt/](src/XerahS.Mobile.Kt/) (Kotlin/Gradle; not in .sln)
+  - [src/desktop/plugins/](src/desktop/plugins/) with 5 plugins (short folder names, e.g. AmazonS3.Plugin; **XerahS.*** .csproj names)
+  - [src/mobile/android/](src/mobile/android/) (Kotlin/Gradle; not in .sln)
 - **ImageEditor**: At root; githooks and [.github/workflows/imageeditor-submodule-enforce.yml](.github/workflows/imageeditor-submodule-enforce.yml) assume `ImageEditor/`; **do not move**.
 - **tests/**: [tests/XerahS.Tests/](tests/XerahS.Tests/), [tests/ShareX.Avalonia.Tests/](tests/ShareX.Avalonia.Tests/) (naming inconsistency).
 
@@ -299,7 +299,7 @@ Single-pass reference (for comparison or if doing a single big reorg later). Eac
   - From `src/mobile-experimental/`: `..\desktop\core\XerahS.Core\`, `..\desktop\plugins\AmazonS3.Plugin\` etc. (one level up to src, then into desktop; plugin folders use short names).
 
 **13.** **Update Directory.Build.props under plugins (if needed)**
-  If [src/Plugins/](src/Plugins/) had a Directory.Build.props, move or recreate it under `src/desktop/plugins/` as needed.
+  If [src/desktop/plugins/](src/desktop/plugins/) had a Directory.Build.props, move or recreate it under `src/desktop/plugins/` as needed.
 
 **14.** **Plugin folder names** — Under `src/desktop/plugins/`, use short folder names (e.g. AmazonS3.Plugin, Imgur.Plugin) by dropping the ShareX. prefix when moving. Update solution and all ProjectReferences accordingly.
 
