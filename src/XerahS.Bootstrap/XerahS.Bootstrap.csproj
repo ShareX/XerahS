@@ -10,7 +10,7 @@
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(DefineConstants);LINUX</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\desktop\core\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\desktop\core\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />

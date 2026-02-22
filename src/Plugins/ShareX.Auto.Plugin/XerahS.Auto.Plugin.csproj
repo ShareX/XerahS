@@ -26,7 +26,7 @@
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
-    <ProjectReference Include="..\..\XerahS.Common\XerahS.Common.csproj">
+    <ProjectReference Include="..\..\desktop\core\XerahS.Common\XerahS.Common.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>

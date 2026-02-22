@@ -34,7 +34,7 @@
   <!-- Keep full RegionCapture API available in net10.0 so cross-compiled hosts can still reference tool surfaces. -->
 
   <ItemGroup>
-    <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\desktop\core\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\XerahS.Media\XerahS.Media.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <!-- XIP-0023: ShareX.ImageEditor integration -->
