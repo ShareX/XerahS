@@ -11,6 +11,6 @@
     <PackageReference Include="System.Drawing.Common" Version="10.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
+    <ProjectReference Include="..\desktop\core\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
   </ItemGroup>
 </Project>

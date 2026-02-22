@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\desktop\core\XerahS.Common\XerahS.Common.csproj" />
-    <ProjectReference Include="..\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
+    <ProjectReference Include="..\desktop\core\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
