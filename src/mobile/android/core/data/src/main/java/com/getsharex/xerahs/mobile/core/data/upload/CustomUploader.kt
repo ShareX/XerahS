@@ -62,9 +62,10 @@ class CustomUploader(
 
     private fun buildRequest(entry: CustomUploaderEntry, file: File): Request {
         val formName = entry.fileFormName.ifBlank { "file" }
+        val uploadFileName = UploadFileNameGenerator.uploadFileName(file.absolutePath)
         val multipart = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
-            .addFormDataPart(formName, file.name, file.asRequestBody(null))
+            .addFormDataPart(formName, uploadFileName, file.asRequestBody(null))
         if (entry.body.isNotBlank()) multipart.addFormDataPart("body", entry.body)
         val body = multipart.build()
         val builder = Request.Builder().url(entry.requestUrl).post(body)
