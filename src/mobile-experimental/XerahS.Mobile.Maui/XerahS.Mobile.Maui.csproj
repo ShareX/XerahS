@@ -46,12 +46,12 @@
   <!-- Project References -->
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Mobile.Core\XerahS.Mobile.Core.csproj" />
-    <ProjectReference Include="..\XerahS.Platform.Mobile\XerahS.Platform.Mobile.csproj" />
-    <ProjectReference Include="..\XerahS.Core\XerahS.Core.csproj" />
-    <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
-    <ProjectReference Include="..\XerahS.Uploaders\XerahS.Uploaders.csproj" />
-    <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
-    <ProjectReference Include="..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" />
+    <ProjectReference Include="..\..\XerahS.Platform.Mobile\XerahS.Platform.Mobile.csproj" />
+    <ProjectReference Include="..\..\XerahS.Core\XerahS.Core.csproj" />
+    <ProjectReference Include="..\..\XerahS.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\..\XerahS.Uploaders\XerahS.Uploaders.csproj" />
+    <ProjectReference Include="..\..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Plugins\ShareX.AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" />
   </ItemGroup>
 
   <!-- iOS Share Extension -->

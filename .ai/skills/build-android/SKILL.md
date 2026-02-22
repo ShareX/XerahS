@@ -46,8 +46,8 @@ Follow these instructions when building or deploying Android apps. **Never let a
   <package_id>com.getsharex.xerahs</package_id>
   <package_id_kt>com.getsharex.xerahs.mobile</package_id_kt>
   <adb_default>%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe (adb is often not in PATH; use full path)</adb_default>
-  <maui_apk>src\XerahS.Mobile.Maui\bin\Debug\net10.0-android\com.getsharex.xerahs-Signed.apk</maui_apk>
-  <ava_apk_dir>src\XerahS.Mobile.Ava\bin\Debug\net10.0-android</ava_apk_dir>
+  <maui_apk>src\mobile-experimental\XerahS.Mobile.Maui\bin\Debug\net10.0-android\com.getsharex.xerahs-Signed.apk</maui_apk>
+  <ava_apk_dir>src\mobile-experimental\XerahS.Mobile.Ava\bin\Debug\net10.0-android</ava_apk_dir>
   <kt_project_root>src\mobile\android</kt_project_root>
   <kt_apk>src\mobile\android\app\build\outputs\apk\debug\app-debug.apk</kt_apk>
 </context>
@@ -157,12 +157,12 @@ dotnet build $projectPath -f net10.0-android -c Debug -m:1
 After stopping the locking process:
 
 ```powershell
-dotnet clean "src\XerahS.Mobile.Maui\XerahS.Mobile.Maui.csproj" -f net10.0-android -c Debug -v minimal
+dotnet clean "src\mobile-experimental\XerahS.Mobile.Maui\XerahS.Mobile.Maui.csproj" -f net10.0-android -c Debug -v minimal
 # For Avalonia:
-dotnet clean "src\XerahS.Mobile.Ava\XerahS.Mobile.Ava.csproj" -f net10.0-android -c Debug -v minimal
+dotnet clean "src\mobile-experimental\XerahS.Mobile.Ava\XerahS.Mobile.Ava.csproj" -f net10.0-android -c Debug -v minimal
 ```
 
-If clean still fails, manually remove `obj` folders that are locked (e.g. `ImageEditor\src\ShareX.ImageEditor\obj`, `src\Plugins\ShareX.AmazonS3.Plugin\obj`, `src\XerahS.Mobile.Ava\obj\Debug\net10.0-android`, or the MAUI `obj\Debug\net10.0-android` if the APK is locked).
+If clean still fails, manually remove `obj` folders that are locked (e.g. `ImageEditor\src\ShareX.ImageEditor\obj`, `src\Plugins\ShareX.AmazonS3.Plugin\obj`, `src\mobile-experimental\XerahS.Mobile.Ava\obj\Debug\net10.0-android`, or the MAUI `obj\Debug\net10.0-android` if the APK is locked).
 
 ---
 
@@ -250,13 +250,13 @@ Use when the APK is already built but deploy failed (e.g. no device at script ru
 **MAUI:**
 ```powershell
 $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
-& $adb install -r "src\XerahS.Mobile.Maui\bin\Debug\net10.0-android\com.getsharex.xerahs-Signed.apk"
+& $adb install -r "src\mobile-experimental\XerahS.Mobile.Maui\bin\Debug\net10.0-android\com.getsharex.xerahs-Signed.apk"
 & $adb shell monkey -p com.getsharex.xerahs -c android.intent.category.LAUNCHER 1
 ```
 
 **Avalonia:**
 ```powershell
-$apk = (Get-ChildItem "src\XerahS.Mobile.Ava\bin\Debug\net10.0-android\*.apk" | Select-Object -First 1).FullName
+$apk = (Get-ChildItem "src\mobile-experimental\XerahS.Mobile.Ava\bin\Debug\net10.0-android\*.apk" | Select-Object -First 1).FullName
 & $adb install -r $apk
 & $adb shell monkey -p com.getsharex.xerahs -c android.intent.category.LAUNCHER 1
 ```
