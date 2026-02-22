@@ -65,3 +65,31 @@ data class CustomUploaderEntry(
     var fileFormName: String = "file",
     var urlExpression: String = ""  // regex or template to extract URL from response
 )
+
+/** Stable id for the built-in S3 destination. Used as defaultDestinationInstanceId when user selects Amazon S3. */
+const val AMAZON_S3_DESTINATION_ID = "amazons3"
+
+/** Human-readable label for the currently selected upload destination, or null if none configured/selected. */
+fun ApplicationConfig.activeDestinationDisplayName(): String? {
+    val id = defaultDestinationInstanceId
+    if (id == AMAZON_S3_DESTINATION_ID || (id?.startsWith("amazons3") == true)) {
+        return if (s3Config.isConfigured) "Amazon S3" else null
+    }
+    if (id != null) {
+        val custom = customUploaders.firstOrNull { it.id == id }
+        if (custom != null) return if (custom.name.isNotBlank()) custom.name else custom.id
+    }
+    if (s3Config.isConfigured) return "Amazon S3"
+    val first = customUploaders.firstOrNull() ?: return null
+    return if (first.name.isNotBlank()) first.name else first.id
+}
+
+/** All selectable destinations: (displayName, instanceId). Order: S3 first (if configured), then custom uploaders. */
+fun ApplicationConfig.selectableDestinations(): List<Pair<String, String>> {
+    val list = mutableListOf<Pair<String, String>>()
+    if (s3Config.isConfigured) list.add("Amazon S3" to AMAZON_S3_DESTINATION_ID)
+    customUploaders.filter { it.id.isNotBlank() }.forEach { entry ->
+        list.add((if (entry.name.isNotBlank()) entry.name else entry.id) to entry.id)
+    }
+    return list
+}

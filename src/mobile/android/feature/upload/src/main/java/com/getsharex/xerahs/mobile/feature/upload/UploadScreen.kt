@@ -44,8 +44,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.getsharex.xerahs.mobile.core.data.SettingsRepository
 import com.getsharex.xerahs.mobile.core.data.UploadQueueWorker
 import com.getsharex.xerahs.mobile.core.domain.UploadResultItem
+import com.getsharex.xerahs.mobile.core.domain.activeDestinationDisplayName
 
 @Composable
 fun UploadScreen(
@@ -55,6 +57,7 @@ fun UploadScreen(
     onPickFiles: (() -> Unit)? = null,
     onCopyToClipboard: (String) -> Unit = {},
     initialPaths: Array<String>? = null,
+    settingsRepository: SettingsRepository? = null,
     viewModel: UploadViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
         factory = object : androidx.lifecycle.ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -104,6 +107,14 @@ fun UploadScreen(
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(8.dp))
+            settingsRepository?.load()?.activeDestinationDisplayName()?.let { label ->
+                Text(
+                    text = "Uploading to: $label",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+            }
             Text(
                 text = statusText,
                 style = MaterialTheme.typography.bodyMedium

@@ -99,7 +99,8 @@ fun XerahSNavGraph(
                     onOpenSettings = { navController.navigate(Screen.Settings.route) },
                     onPickFiles = null,
                     onCopyToClipboard = onCopyToClipboard,
-                    initialPaths = pending
+                    initialPaths = pending,
+                    settingsRepository = app.settingsRepository
                 )
             } else {
                 PlaceholderUploadScreen(

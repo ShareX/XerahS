@@ -37,6 +37,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -47,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.getsharex.xerahs.mobile.core.data.SettingsRepository
+import com.getsharex.xerahs.mobile.core.domain.selectableDestinations
 
 @Composable
 fun SettingsHubScreen(
@@ -60,6 +62,9 @@ fun SettingsHubScreen(
     val s3Configured = config.s3Config.isConfigured
     val customCount = config.customUploaders.size
     var convertHeicToPng by remember { mutableStateOf(config.convertHeicToPng) }
+    var selectedDestinationId by remember(config.defaultDestinationInstanceId) {
+        mutableStateOf(config.defaultDestinationInstanceId)
+    }
 
     Column(
         modifier = Modifier
@@ -116,6 +121,57 @@ fun SettingsHubScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Active upload destination",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Choose where shared files will be uploaded. This destination is used when you share to XerahS.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    val options = config.selectableDestinations()
+                    val effectiveId = selectedDestinationId ?: config.defaultDestinationInstanceId ?: options.firstOrNull()?.second
+                    if (options.isEmpty()) {
+                        Text(
+                            text = "No destination configured. Set up Amazon S3 or a custom uploader below.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        options.forEach { (displayName, instanceId) ->
+                            val isSelected = effectiveId == instanceId
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = isSelected,
+                                    onClick = {
+                                        selectedDestinationId = instanceId
+                                        settingsRepository.setDefaultDestinationInstanceId(instanceId)
+                                    }
+                                )
+                                Text(
+                                    text = displayName,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))

@@ -24,6 +24,7 @@ package com.getsharex.xerahs.mobile.feature.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.getsharex.xerahs.mobile.core.data.SettingsRepository
+import com.getsharex.xerahs.mobile.core.domain.AMAZON_S3_DESTINATION_ID
 import com.getsharex.xerahs.mobile.core.domain.S3Config
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -126,6 +127,9 @@ class S3ConfigViewModel(
             setPublicAcl = _setPublicAcl.value
         )
         settingsRepository.saveS3Config(config)
+        if (settingsRepository.getDefaultDestinationInstanceId() == null) {
+            settingsRepository.setDefaultDestinationInstanceId(AMAZON_S3_DESTINATION_ID)
+        }
         _saveSuccess.value = true
         return true
     }
