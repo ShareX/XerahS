@@ -64,3 +64,34 @@ struct CustomUploaderEntry: Codable, Equatable, Identifiable {
     var fileFormName: String = "file"
     var urlExpression: String = ""  // regex or template to extract URL from response
 }
+
+// MARK: - Active upload destination
+
+/// Stable id for the built-in S3 destination. Used as defaultDestinationInstanceId when user selects Amazon S3.
+let kAmazonS3DestinationId = "amazons3"
+
+extension ApplicationConfig {
+    /// Human-readable label for the currently selected upload destination, or nil if none configured/selected.
+    func activeDestinationDisplayName() -> String? {
+        let id = defaultDestinationInstanceId
+        if id == kAmazonS3DestinationId || (id?.hasPrefix("amazons3") ?? false) {
+            return s3Config.isConfigured ? "Amazon S3" : nil
+        }
+        if let id = id, let custom = customUploaders.first(where: { $0.id == id }) {
+            return custom.name.isEmpty ? custom.id : custom.name
+        }
+        if s3Config.isConfigured { return "Amazon S3" }
+        if let first = customUploaders.first { return first.name.isEmpty ? first.id : first.name }
+        return nil
+    }
+
+    /// All selectable destinations: (displayName, instanceId). Order: S3 first (if configured), then custom uploaders.
+    func selectableDestinations() -> [(displayName: String, instanceId: String)] {
+        var list: [(String, String)] = []
+        if s3Config.isConfigured { list.append(("Amazon S3", kAmazonS3DestinationId)) }
+        for entry in customUploaders where !entry.id.isEmpty {
+            list.append((entry.name.isEmpty ? entry.id : entry.name, entry.id))
+        }
+        return list
+    }
+}

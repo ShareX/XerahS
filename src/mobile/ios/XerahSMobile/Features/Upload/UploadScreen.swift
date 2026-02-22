@@ -31,6 +31,8 @@ struct UploadScreen: View {
     var onOpenSettings: () -> Void
     var onCopyToClipboard: (String) -> Void
     var initialPaths: [String]?
+    /// Human-readable label for the active upload destination (e.g. "Amazon S3"). Shown so user knows where files will go.
+    var activeDestinationLabel: String? = nil
 
     @State private var statusText = "Share files to XerahS to upload them."
     @State private var isUploading = false
@@ -53,6 +55,11 @@ struct UploadScreen: View {
                 VStack(alignment: .center, spacing: 12) {
                     Text("Share & Upload")
                         .font(.headline)
+                    if let label = activeDestinationLabel {
+                        Text("Uploading to: \(label)")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                     Text(statusText)
                         .font(.body)
                         .multilineTextAlignment(.center)

@@ -74,12 +74,14 @@ struct RootView: View {
 
     private var uploadRoot: some View {
         let pending = appState.pendingSharedPaths
+        let activeLabel = appState.settingsRepository.load().activeDestinationDisplayName()
         return UploadScreen(
             worker: appState.uploadQueueWorker,
             onOpenHistory: { navPath.append(.history) },
             onOpenSettings: { navPath.append(.settings) },
             onCopyToClipboard: copyToClipboard,
-            initialPaths: pending.isEmpty ? nil : pending
+            initialPaths: pending.isEmpty ? nil : pending,
+            activeDestinationLabel: activeLabel
         )
         .onAppear {
             if !pending.isEmpty {

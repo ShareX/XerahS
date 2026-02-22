@@ -167,6 +167,9 @@ final class S3ConfigViewModel: ObservableObject {
         config.signedPayload = signedPayload
         config.setPublicAcl = setPublicAcl
         settingsRepository.saveS3Config(config)
+        if settingsRepository.getDefaultDestinationInstanceId() == nil {
+            settingsRepository.setDefaultDestinationInstanceId(kAmazonS3DestinationId)
+        }
         return true
     }
 

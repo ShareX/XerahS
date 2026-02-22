@@ -31,6 +31,7 @@ struct SettingsHubScreen: View {
     var onNavigateToCustomUploader: () -> Void
 
     @State private var convertHeicToPng: Bool = true
+    @State private var selectedDestinationId: String? = nil
 
     private var config: ApplicationConfig { settingsRepository.load() }
 
@@ -48,6 +49,7 @@ struct SettingsHubScreen: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
+                    activeDestinationSection
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Upload options")
                             .font(.headline)
@@ -117,6 +119,56 @@ struct SettingsHubScreen: View {
                     .buttonStyle(.plain)
                 }
                 .padding(.horizontal)
+            }
+        }
+        .onAppear { selectedDestinationId = config.defaultDestinationInstanceId }
+    }
+
+    private var activeDestinationSection: some View {
+        Group {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Active upload destination")
+                    .font(.headline)
+                Text("Choose where shared files will be uploaded. This destination is used when you share to XerahS.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+
+            let options = config.selectableDestinations()
+            let effectiveId = selectedDestinationId ?? config.defaultDestinationInstanceId ?? options.first?.instanceId
+            if options.isEmpty {
+                Text("No destination configured. Set up Amazon S3 or a custom uploader below.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+            } else {
+                ForEach(Array(options.enumerated()), id: \.offset) { _, pair in
+                    let isSelected = effectiveId == pair.instanceId
+                    Button {
+                        selectedDestinationId = pair.instanceId
+                        settingsRepository.setDefaultDestinationInstanceId(pair.instanceId)
+                    } label: {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(pair.displayName)
+                                    .font(.subheadline.weight(.medium))
+                            }
+                            Spacer()
+                            if isSelected {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                            }
+                        }
+                        .padding(16)
+                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
     }
