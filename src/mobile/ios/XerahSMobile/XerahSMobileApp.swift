@@ -24,6 +24,32 @@
 
 import SwiftUI
 
+/// One-time migration: when using App Group, copy Settings, queue, and History from legacy Application Support if present.
+private func migrateSettingsFromAppSupportIfNeeded(appSupport: URL) {
+    let fm = FileManager.default
+    if let settingsFolder = Paths.settingsFolder {
+        let legacySettings = appSupport.appendingPathComponent("Settings", isDirectory: true)
+        for name in ["ApplicationConfig.json", "MobileUploadQueue.json"] {
+            let dest = settingsFolder.appendingPathComponent(name)
+            guard !fm.fileExists(atPath: dest.path) else { continue }
+            let src = legacySettings.appendingPathComponent(name)
+            guard fm.fileExists(atPath: src.path) else { continue }
+            try? fm.createDirectory(at: settingsFolder, withIntermediateDirectories: true)
+            try? fm.copyItem(at: src, to: dest)
+        }
+    }
+    if let historyFolder = Paths.historyFolder {
+        let legacyHistory = appSupport.appendingPathComponent("History", isDirectory: true)
+        let dbName = "History.db"
+        let dest = historyFolder.appendingPathComponent(dbName)
+        guard !fm.fileExists(atPath: dest.path) else { return }
+        let src = legacyHistory.appendingPathComponent(dbName)
+        guard fm.fileExists(atPath: src.path) else { return }
+        try? fm.createDirectory(at: historyFolder, withIntermediateDirectories: true)
+        try? fm.copyItem(at: src, to: dest)
+    }
+}
+
 @main
 struct XerahSMobileApp: App {
     @StateObject private var appState: AppState = {
@@ -31,8 +57,10 @@ struct XerahSMobileApp: App {
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
             .appendingPathComponent(Bundle.main.bundleIdentifier ?? "XerahSMobile", isDirectory: true)
         let caches = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        Paths.configure(applicationSupport: appSupport, caches: caches)
+        let appGroupContainer = fileManager.containerURL(forSecurityApplicationGroupIdentifier: ShareGroup.appGroupId)
+        Paths.configure(applicationSupport: appSupport, caches: caches, appGroupContainer: appGroupContainer)
         Paths.ensureDirectoriesExist()
+        migrateSettingsFromAppSupportIfNeeded(appSupport: appSupport)
         let settingsRepo = SettingsRepository()
         let queueRepo = QueueRepository()
         let historyRepo = HistoryRepository()

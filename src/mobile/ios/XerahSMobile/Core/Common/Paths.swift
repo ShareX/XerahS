@@ -26,6 +26,7 @@ import Foundation
 
 /// Paths for settings, history DB, and cache. Call `configure(with:)` from app launch, then `ensureDirectoriesExist()`.
 /// Matches C# PathsManager: PersonalFolder = base, Settings = PersonalFolder/Settings, History = PersonalFolder/History/History.db.
+/// On iOS, pass appGroupContainer so settings and history live in the App Group and are available when the app is opened from the Share Extension.
 enum Paths {
     private static let settingsFolderName = "Settings"
     private static let historyFolderName = "History"
@@ -37,9 +38,16 @@ enum Paths {
     private(set) static var cacheDir: URL?
 
     /// Call from app startup. Pass applicationSupport and caches URLs from FileManager.
-    static func configure(applicationSupport: URL, caches: URL) {
-        settingsFolder = applicationSupport.appendingPathComponent(settingsFolderName, isDirectory: true)
-        historyFolder = applicationSupport.appendingPathComponent(historyFolderName, isDirectory: true)
+    /// On iOS, pass appGroupContainer (e.g. from FileManager.containerURL(forSecurityApplicationGroupIdentifier:)) so config is in the shared container.
+    static func configure(applicationSupport: URL, caches: URL, appGroupContainer: URL? = nil) {
+        let base: URL
+        if let group = appGroupContainer {
+            base = group
+        } else {
+            base = applicationSupport
+        }
+        settingsFolder = base.appendingPathComponent(settingsFolderName, isDirectory: true)
+        historyFolder = base.appendingPathComponent(historyFolderName, isDirectory: true)
         historyFilePath = historyFolder?.appendingPathComponent(historyFileName).path
         cacheDir = caches
     }
