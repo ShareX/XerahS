@@ -17,7 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\core\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
-    <ProjectReference Include="..\..\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
+    <ProjectReference Include="..\..\app\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
     <ProjectReference Include="..\..\core\XerahS.Media\XerahS.Media.csproj" />
   </ItemGroup>
 

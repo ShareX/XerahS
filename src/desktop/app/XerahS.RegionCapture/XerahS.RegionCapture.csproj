@@ -34,11 +34,11 @@
   <!-- Keep full RegionCapture API available in net10.0 so cross-compiled hosts can still reference tool surfaces. -->
 
   <ItemGroup>
-    <ProjectReference Include="..\desktop\core\XerahS.Common\XerahS.Common.csproj" />
-    <ProjectReference Include="..\desktop\core\XerahS.Media\XerahS.Media.csproj" />
-    <ProjectReference Include="..\desktop\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\..\core\XerahS.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\..\core\XerahS.Media\XerahS.Media.csproj" />
+    <ProjectReference Include="..\..\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
     <!-- XIP-0023: ShareX.ImageEditor integration -->
-    <ProjectReference Include="..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj"
+    <ProjectReference Include="..\..\..\..\ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj"
                       GlobalPropertiesToRemove="OS;Platform" />
   </ItemGroup>
 

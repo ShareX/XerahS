@@ -59,7 +59,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.CLI", "src\desktop\c
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.WatchFolder.Daemon", "src\XerahS.WatchFolder.Daemon\XerahS.WatchFolder.Daemon.csproj", "{9A3FA828-611D-40F1-8810-F017B26CCC5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.RegionCapture", "src\XerahS.RegionCapture\XerahS.RegionCapture.csproj", "{EACDC9A6-2E3B-460C-A076-4D752051A02E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XerahS.RegionCapture", "src\desktop\app\XerahS.RegionCapture\XerahS.RegionCapture.csproj", "{EACDC9A6-2E3B-460C-A076-4D752051A02E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
