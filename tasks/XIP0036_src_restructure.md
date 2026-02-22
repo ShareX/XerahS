@@ -229,6 +229,8 @@ Implement in **multiple stages**, each with its own **git commit** and **verify*
 | **7b** | XerahS.PluginExporter | `[XIP0036] Stage 7b: move XerahS.PluginExporter to src/desktop/tools` |
 | **7c** | XerahS.Audits.Tool | `[XIP0036] Stage 7c: move XerahS.Audits.Tool to src/desktop/tools` |
 
+**Status:** Stages 5a–5e (platform), 6a–6d (app), 7a–7c (tools) completed — one commit per mini-stage.
+
 **Per-stage workflow**
 
 1. Create only the directories needed for this stage.

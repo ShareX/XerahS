@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\core\XerahS.Uploaders\XerahS.Uploaders.csproj" />
+    <ProjectReference Include="..\..\core\XerahS.Uploaders\XerahS.Uploaders.csproj" />
   </ItemGroup>
 
 </Project>

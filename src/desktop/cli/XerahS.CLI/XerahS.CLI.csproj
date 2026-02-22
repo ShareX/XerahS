@@ -15,13 +15,13 @@
     <PackageReference Include="System.CommandLine" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\app\XerahS.Bootstrap\XerahS.Bootstrap.csproj" />
-    <ProjectReference Include="..\..\..\core\XerahS.Core\XerahS.Core.csproj" />
-    <ProjectReference Include="..\..\..\app\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
-    <ProjectReference Include="..\..\..\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\platform\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />
-    <ProjectReference Include="..\..\..\platform\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="'$(OS)' != 'Windows_NT'" />
-    <ProjectReference Include="..\..\..\platform\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+    <ProjectReference Include="..\..\app\XerahS.Bootstrap\XerahS.Bootstrap.csproj" />
+    <ProjectReference Include="..\..\core\XerahS.Core\XerahS.Core.csproj" />
+    <ProjectReference Include="..\..\app\XerahS.RegionCapture\XerahS.RegionCapture.csproj" />
+    <ProjectReference Include="..\..\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\..\platform\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(OS)' == 'Windows_NT'" />
+    <ProjectReference Include="..\..\platform\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+    <ProjectReference Include="..\..\platform\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="'$(OS)' != 'Windows_NT'" />
   </ItemGroup>
 
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
