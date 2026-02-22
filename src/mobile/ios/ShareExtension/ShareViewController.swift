@@ -48,17 +48,31 @@ final class ShareViewController: UIViewController {
         let inbox = groupContainer.appendingPathComponent("ShareInbox", isDirectory: true)
         try? FileManager.default.createDirectory(at: inbox, withIntermediateDirectories: true)
 
+        // Order: file-url first (preserves name), then URL, then specific types, then generic data so any file is accepted.
         let supportedTypes: [String] = [
+            "public.file-url",
+            "public.url",
             UTType.image.identifier,
             UTType.jpeg.identifier,
             UTType.png.identifier,
+            UTType.gif.identifier,
+            UTType.webP.identifier,
+            UTType.heic.identifier,
             UTType.pdf.identifier,
             UTType.movie.identifier,
             UTType.mpeg4Movie.identifier,
             UTType.quickTimeMovie.identifier,
+            UTType.avi.identifier,
+            UTType.audio.identifier,
+            UTType.mp3.identifier,
+            UTType.mpeg4Audio.identifier,
+            UTType.wav.identifier,
+            UTType.plainText.identifier,
+            UTType.utf8PlainText.identifier,
+            UTType.content.identifier,
             UTType.data.identifier,
-            "public.file-url",
-            "public.url"
+            "public.data",
+            "public.content"
         ]
         var savedPaths: [String] = []
         let group = DispatchGroup()
