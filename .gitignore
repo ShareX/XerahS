@@ -86,6 +86,8 @@ xcuserdata/
 *.moved-aside
 DerivedData/
 **/DerivedData/
+.DerivedData/
+**/.DerivedData/
 *.hmap
 *.ipa
 *.dSYM.zip
