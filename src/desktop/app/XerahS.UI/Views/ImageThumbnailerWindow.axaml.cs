@@ -35,6 +35,18 @@ public partial class ImageThumbnailerWindow : Window
     private ImageThumbnailerViewModel? _viewModel;
 
     /// <summary>
+    /// Parameterless constructor for XAML loader / design time (satisfies AVLN3001).
+    /// Runtime use prefers <see cref="ImageThumbnailerWindow(ImageThumbnailerViewModel)"/>.
+    /// </summary>
+    public ImageThumbnailerWindow()
+    {
+        var vm = new ImageThumbnailerViewModel();
+        _viewModel = vm;
+        DataContext = vm;
+        InitializeComponent();
+    }
+
+    /// <summary>
     /// Constructs the window with the ViewModel so that DataContext is set before
     /// InitializeComponent(), avoiding binding evaluation with null DataContext (crash on open).
     /// </summary>
