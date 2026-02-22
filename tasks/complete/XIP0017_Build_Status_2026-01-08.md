@@ -117,7 +117,7 @@ The user's system does not have:
 
 3. Build solution:
    ```bash
-   dotnet build XerahS.sln
+   dotnet build src/desktop/XerahS.sln
    ```
 
 **Pros:**

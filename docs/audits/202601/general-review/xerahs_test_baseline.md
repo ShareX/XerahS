@@ -48,7 +48,7 @@
 ## Test Execution Status
 
 ### Execution Attempt
-**Result**: Tests were NOT executed via `dotnet test XerahS.sln`
+**Result**: Tests were NOT executed via `dotnet test src/desktop/XerahS.sln`
 **Reason**: Test project is not included in the solution file
 
 ### Test Discovery
@@ -107,12 +107,12 @@ Based on file discovery:
 ### High Priority
 1. **Add test project to solution**
    ```bash
-   dotnet sln XerahS.sln add tests\XerahS.Tests\XerahS.Tests.csproj
+   dotnet sln src/desktop/XerahS.sln add tests\XerahS.Tests\XerahS.Tests.csproj
    ```
 
 2. **Execute baseline test run** after adding to solution
    ```bash
-   dotnet test XerahS.sln -c Debug --logger "console;verbosity=detailed"
+   dotnet test src/desktop/XerahS.sln -c Debug --logger "console;verbosity=detailed"
    ```
 
 ### Medium Priority

@@ -1,4 +1,4 @@
-﻿# Mobile Native Theming Validation Report
+# Mobile Native Theming Validation Report
 
 Date: 2026-02-17
 Scope: Sprint 5 testing and polish for XIP0033
@@ -45,7 +45,7 @@ Device/simulator verification status:
 
 ## Risks and Notes
 
-- Full `dotnet build XerahS.sln` can fail if desktop app binaries are file-locked by a running process; targeted mobile builds were used for this sprint validation.
+- Full `dotnet build src/desktop/XerahS.sln` can fail if desktop app binaries are file-locked by a running process; targeted mobile builds were used for this sprint validation.
 
 ## Next Actions
 

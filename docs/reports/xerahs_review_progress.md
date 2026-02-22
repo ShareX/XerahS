@@ -195,13 +195,13 @@
 1. **Add test project to solution**:
    ```bash
    dotnet sln add tests\XerahS.Tests\XerahS.Tests.csproj
-   dotnet test XerahS.sln
+   dotnet test src/desktop/XerahS.sln
    ```
 
 2. **Verify cross-platform build** (if Linux/macOS available):
    ```bash
-   dotnet build XerahS.sln -c Debug -r linux-x64
-   dotnet build XerahS.sln -c Debug -r osx-arm64
+   dotnet build src/desktop/XerahS.sln -c Debug -r linux-x64
+   dotnet build src/desktop/XerahS.sln -c Debug -r osx-arm64
    ```
 
 3. **Clean up audit artifacts** (root directory):

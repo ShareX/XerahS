@@ -5,8 +5,8 @@ Create a `.xsdp` plugin package from a plugin project folder.
 ## Usage
 
 ```bash
-dotnet run --project src/XerahS.PluginExporter -- <pluginDirectory> [outputPath]
-dotnet run --project src/XerahS.PluginExporter -- <pluginDirectory> -o <outputPath>
+dotnet run --project src/desktop/tools/XerahS.PluginExporter -- <pluginDirectory> [outputPath]
+dotnet run --project src/desktop/tools/XerahS.PluginExporter -- <pluginDirectory> -o <outputPath>
 ```
 
 ## Arguments
@@ -20,15 +20,15 @@ dotnet run --project src/XerahS.PluginExporter -- <pluginDirectory> -o <outputPa
 ## Examples
 
 ```bash
-dotnet run --project src/XerahS.PluginExporter -- "C:\Path\To\ShareX.AmazonS3.Plugin"
+dotnet run --project src/desktop/tools/XerahS.PluginExporter -- "C:\Path\To\ShareX.AmazonS3.Plugin"
 ```
 
 ```bash
-dotnet run --project src/XerahS.PluginExporter -- "C:\Path\To\ShareX.AmazonS3.Plugin" -o "C:\Output\ShareX.AmazonS3.Plugin.xsdp"
+dotnet run --project src/desktop/tools/XerahS.PluginExporter -- "C:\Path\To\ShareX.AmazonS3.Plugin" -o "C:\Output\ShareX.AmazonS3.Plugin.xsdp"
 ```
 
 ```bash
-dotnet run --project src/XerahS.PluginExporter -- "C:\Path\To\ShareX.AmazonS3.Plugin" -o "C:\Output"
+dotnet run --project src/desktop/tools/XerahS.PluginExporter -- "C:\Path\To\ShareX.AmazonS3.Plugin" -o "C:\Output"
 ```
 
 ## Notes

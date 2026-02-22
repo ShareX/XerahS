@@ -155,7 +155,7 @@ powershell -ExecutionPolicy Bypass -File fix_all_headers.ps1
 ```
 
 ### Verification Build
-**Command**: `dotnet build XerahS.sln -c Debug`
+**Command**: `dotnet build src/desktop/XerahS.sln -c Debug`
 
 **Result**:
 - ✅ Build succeeded

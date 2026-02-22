@@ -3,7 +3,7 @@
 **Date**: 2026-01-18
 **Reviewer**: Senior C# Solution Reviewer
 **Branch**: feature/SIP0016-modern-capture
-**Solution**: XerahS.sln
+**Solution**: src/desktop/XerahS.sln
 
 ---
 

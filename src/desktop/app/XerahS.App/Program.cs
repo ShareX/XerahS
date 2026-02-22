@@ -146,7 +146,7 @@ namespace XerahS.App
                         Console.Error.WriteLine("  1. Use flatpak-spawn:");
                         Console.Error.WriteLine("     flatpak-spawn --host bash -c \"export PATH=\\\"$HOME/.dotnet:$PATH\\\" && ");
                         Console.Error.WriteLine("       cd /home/Public/GitHub/ShareXteam/XerahS && ");
-                        Console.Error.WriteLine("       dotnet run --project src/XerahS.App/XerahS.App.csproj\"");
+                        Console.Error.WriteLine("       dotnet run --project src/desktop/app/XerahS.App/XerahS.App.csproj\"");
                         Console.Error.WriteLine("\n  2. Run from a non-sandboxed terminal (recommended)");
                     }
                     else if (string.IsNullOrEmpty(displayVar) && string.IsNullOrEmpty(waylandDisplay))

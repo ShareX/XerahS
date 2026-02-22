@@ -189,13 +189,13 @@ All 3 BLOCKER issues are **resource management and thread safety** problems in c
 ### After Each Batch
 1. **Build Verification**
    ```bash
-   dotnet build XerahS.sln -c Debug
-   dotnet build XerahS.sln -c Release
+   dotnet build src/desktop/XerahS.sln -c Debug
+   dotnet build src/desktop/XerahS.sln -c Release
    ```
 
 2. **Unit Tests**
    ```bash
-   dotnet test XerahS.sln --no-build
+   dotnet test src/desktop/XerahS.sln --no-build
    ```
 
 3. **Manual Smoke Tests**

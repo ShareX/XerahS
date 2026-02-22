@@ -33,7 +33,7 @@ Before committing and pushing:
 ```bash
 git pull --recurse-submodules
 git submodule update --init --recursive
-dotnet build XerahS.sln
+dotnet build src/desktop/XerahS.sln
 ```
 
 Only continue when build succeeds with 0 errors.

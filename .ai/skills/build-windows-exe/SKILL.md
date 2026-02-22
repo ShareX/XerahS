@@ -66,7 +66,7 @@ git submodule update --remote --merge ImageEditor
 2. **Clean the solution**:
    ```powershell
    cd 'ShareX Team\XerahS'
-   dotnet clean --nologo -c Release
+   dotnet clean src/desktop/XerahS.sln --nologo -c Release
    ```
 
 3. **If file locks persist, delete the problematic obj folder**:

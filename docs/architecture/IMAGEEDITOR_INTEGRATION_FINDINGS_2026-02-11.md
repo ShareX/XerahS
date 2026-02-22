@@ -95,7 +95,7 @@ Without migration support, previously saved settings/presets referencing old typ
 - Add mapping for legacy persisted settings where needed.
 
 ### Phase 6: Validation
-- Full `dotnet build XerahS.sln` with zero errors.
+- Full `dotnet build src/desktop/XerahS.sln` with zero errors.
 - Run affected test suites (`tests/XerahS.Tests` editor/effects/serializer areas).
 
 ## Risk Assessment

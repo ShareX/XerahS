@@ -21,7 +21,7 @@ Implement one global Start/Stop control in the **Watch Folders** tab to manage a
    - `bool WatchFolderDaemonStartAtStartup = true;`
 
 ## Headless Daemon Runtime
-1. Add new project `src/XerahS.WatchFolder.Daemon/XerahS.WatchFolder.Daemon.csproj` and include it in `XerahS/XerahS.sln`.
+1. Add new project `src/XerahS.WatchFolder.Daemon/XerahS.WatchFolder.Daemon.csproj` and include it in `src/desktop/XerahS.sln`.
 2. Implement `Program.cs` to run headless watcher loop using existing settings (`--settings-folder` argument supported).
 3. Implement Windows-service-compatible hosting in the daemon binary so SCM can run it as a true service.
 4. Implement POSIX signal/stop handling for graceful shutdown.

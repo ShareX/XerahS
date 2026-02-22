@@ -9,7 +9,7 @@ isProject: false
 
 ## Current state
 
-- **Root**: [src/XerahS.sln](src/XerahS.sln), [Directory.Build.props](Directory.Build.props), [ImageEditor/](ImageEditor/) (own solution, submodule), [tests/](tests/), docs/, .github/, .ai/, .githooks/, etc.
+- **Root**: [src/desktop/XerahS.sln](src/desktop/XerahS.sln), [Directory.Build.props](Directory.Build.props), [ImageEditor/](ImageEditor/) (own solution, submodule), [tests/](tests/), docs/, .github/, .ai/, .githooks/, etc.
 - **src/** (flat): ~28 C# projects plus:
   - [src/desktop/plugins/](src/desktop/plugins/) with 5 plugins (short folder names, e.g. AmazonS3.Plugin; **XerahS.*** .csproj names)
   - [src/mobile/android/](src/mobile/android/) (Kotlin/Gradle; not in .sln)
@@ -112,14 +112,8 @@ XerahS/
 │   └── ShareX.Avalonia.Tests/      (optional: rename to XerahS.Avalonia.Tests)
 │
 └── src/
-    ├── XerahS.sln
-    ├── platform/                    (shared by desktop and mobile-experimental)
-    │   ├── XerahS.Platform.Abstractions/
-    │   ├── XerahS.Platform.Windows/
-    │   ├── XerahS.Platform.Linux/
-    │   ├── XerahS.Platform.MacOS/
-    │   └── XerahS.Platform.Mobile/
     ├── desktop/                     (.NET desktop stack)
+    │   ├── XerahS.sln
     │   ├── core/
     │   │   ├── XerahS.Core/
     │   │   ├── XerahS.Common/
@@ -146,8 +140,13 @@ XerahS/
     │   │   ├── Imgur.Plugin/
     │   │   ├── Paste2.Plugin/
     │   │   ├── GitHubGist.Plugin/
-    │   │   └── Auto.Plugin/
-    │
+    │       │   └── Auto.Plugin/
+    ├── platform/                    (shared by desktop and mobile-experimental)
+    │   ├── XerahS.Platform.Abstractions/
+    │   ├── XerahS.Platform.Windows/
+    │   ├── XerahS.Platform.Linux/
+    │   ├── XerahS.Platform.MacOS/
+    │   └── XerahS.Platform.Mobile/
     ├── mobile-experimental/       (experimental .NET mobile — Ava, Maui, etc.)
     │   ├── XerahS.Mobile.Core/
     │   ├── XerahS.Mobile.Ava/
@@ -175,7 +174,7 @@ XerahS/
 
 ## Staged implementation (extreme caution)
 
-Implement in **multiple stages**, each with its own **git commit** and **verify** (`dotnet build src/XerahS.sln`). Start with the **least risky** moves (most isolated) so a bad step is easy to revert. Order below is by isolation and dependency: mobile first (no .sln), then experimental, then CLI, then desktop in dependency order (core → platform → app → tools → plugins).
+Implement in **multiple stages**, each with its own **git commit** and **verify** (`dotnet build src/desktop/XerahS.sln`). Start with the **least risky** moves (most isolated) so a bad step is easy to revert. Order below is by isolation and dependency: mobile first (no .sln), then experimental, then CLI, then desktop in dependency order (core → platform → app → tools → plugins).
 
 | Stage | What moves | Why this order | Commit message idea |
 | ----- | ---------- | ----------------- | -------------------- |
@@ -249,7 +248,7 @@ Implement in **multiple stages**, each with its own **git commit** and **verify*
 3. Update [XerahS.sln](src/XerahS.sln) paths for moved projects.
 4. Update all .csproj `ProjectReference` paths that point to moved projects (or that are inside moved projects and point out).
 5. If this stage touches mobile/android: update [.ai/skills/build-android/SKILL.md](.ai/skills/build-android/SKILL.md) and any scripts that reference the old path.
-6. Run `dotnet build XerahS.sln` (and mobile build if relevant); fix any broken references.
+6. Run `dotnet build src/desktop/XerahS.sln` (and mobile build if relevant); fix any broken references.
 7. `git add` → `git commit` with the stage message above.
 8. Proceed to next stage only when build is green.
 
@@ -313,7 +312,7 @@ Single-pass reference (for comparison or if doing a single big reorg later). Eac
 
 **19.** **Optional: rename test folder** — `tests/ShareX.Avalonia.Tests` → `tests/XerahS.Avalonia.Tests` and update solution + references.
 
-**20.** **Verify** — Run `dotnet build src/XerahS.sln` from repo root (0 errors); build Android/iOS if in use.
+**20.** **Verify** — Run `dotnet build src/desktop/XerahS.sln` from repo root (0 errors); build Android/iOS if in use.
 
 ---
 

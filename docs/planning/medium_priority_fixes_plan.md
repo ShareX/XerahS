@@ -371,8 +371,8 @@ This document outlines the implementation plan for 18 MEDIUM priority issues ide
 
 After each batch:
 ```bash
-dotnet build XerahS.sln -c Debug
-dotnet build XerahS.sln -c Release
+dotnet build src/desktop/XerahS.sln -c Debug
+dotnet build src/desktop/XerahS.sln -c Release
 ```
 
 Expected: 0 errors, 0 warnings

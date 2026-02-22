@@ -282,10 +282,10 @@ These are intentional limitations for Stage 1 MVP:
 
 ```bash
 # Restore dependencies
-dotnet restore src/XerahS.sln
+dotnet restore src/desktop/XerahS.sln
 
 # Build solution
-dotnet build src/XerahS.sln --configuration Release
+dotnet build src/desktop/XerahS.sln --configuration Release
 
 # Run application
 dotnet run --project src/desktop/app/XerahS.App/XerahS.App.csproj

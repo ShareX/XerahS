@@ -165,7 +165,7 @@
 
 ### Automated Build
 ```bash
-dotnet build src/XerahS.sln
+dotnet build src/desktop/XerahS.sln
 ```
 
 ### Manual Testing (Stage 1 MVP)

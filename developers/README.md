@@ -333,7 +333,7 @@ ls -l libscreencapturekit_bridge.dylib
 ### Build the Solution
 ```bash
 cd XerahS
-dotnet build XerahS.sln
+dotnet build src/desktop/XerahS.sln
 ```
 
 ### Run the Application
