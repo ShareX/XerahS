@@ -18,7 +18,7 @@
       <!-- Use the host app's TFM when passed from BuildPlugins, otherwise fall back to plugin's own TFM -->
       <_AppTargetFramework Condition="'$(HostTargetFramework)' != ''">$(HostTargetFramework)</_AppTargetFramework>
       <_AppTargetFramework Condition="'$(HostTargetFramework)' == ''">$(TargetFramework)</_AppTargetFramework>
-      <PluginOutputDir>$(MSBuildThisFileDirectory)..\XerahS.App\bin\$(Configuration)\$(_AppTargetFramework)\Plugins\$(PluginId)</PluginOutputDir>
+      <PluginOutputDir>$(MSBuildThisFileDirectory)..\app\XerahS.App\bin\$(Configuration)\$(_AppTargetFramework)\Plugins\$(PluginId)</PluginOutputDir>
     </PropertyGroup>
     <ItemGroup>
       <PluginFiles Include="$(OutputPath)$(AssemblyName).dll" />

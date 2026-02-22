@@ -239,7 +239,7 @@ Implement in **multiple stages**, each with its own **git commit** and **verify*
 | **8d** | ShareX.GitHubGist.Plugin | plugins/GitHubGist.Plugin | `[XIP0036] Stage 8d: move plugin to src/desktop/plugins/GitHubGist.Plugin` |
 | **8e** | ShareX.Auto.Plugin | plugins/Auto.Plugin | `[XIP0036] Stage 8e: move plugin to src/desktop/plugins/Auto.Plugin` |
 
-**Status:** Stages 5a–5e (platform), 6a–6d (app), 7a–7c (tools) completed — one commit per mini-stage.
+**Status:** Stages 5a–5e (platform), 6a–6d (app), 7a–7c (tools), 8a–8e (plugins, short paths) completed — one commit per mini-stage.
 
 **Per-stage workflow**
 
