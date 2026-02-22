@@ -46,7 +46,7 @@
   <!-- Project References -->
   <ItemGroup>
     <ProjectReference Include="..\XerahS.Mobile.Core\XerahS.Mobile.Core.csproj" />
-    <ProjectReference Include="..\..\XerahS.Platform.Mobile\XerahS.Platform.Mobile.csproj" />
+    <ProjectReference Include="..\..\desktop\platform\XerahS.Platform.Mobile\XerahS.Platform.Mobile.csproj" />
     <ProjectReference Include="..\..\desktop\core\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\..\desktop\core\XerahS.Common\XerahS.Common.csproj" />
     <ProjectReference Include="..\..\desktop\core\XerahS.Uploaders\XerahS.Uploaders.csproj" />
