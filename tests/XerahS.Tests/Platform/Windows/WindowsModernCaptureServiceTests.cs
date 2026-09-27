@@ -34,6 +34,7 @@ namespace XerahS.Tests.Platform.Windows;
 
 public class WindowsModernCaptureServiceTests
 {
+#if WINDOWS
     [TestCase(false, false)]
     [TestCase(true, true)]
     public void ShouldUseModernCapture_UsesResolvedCaptureOption(bool configuredValue, bool expected)
@@ -48,6 +49,7 @@ public class WindowsModernCaptureServiceTests
     {
         Assert.That(WindowsModernCaptureService.ShouldUseModernCapture(null), Is.True);
     }
+#endif
 
     [Test]
     public void DisposableContextDictionary_ReplaceDisposesPreviousContextForSameKey()
