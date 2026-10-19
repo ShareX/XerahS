@@ -65,4 +65,29 @@ public class AvaloniaUIServiceEditorCloseTests
 
         Assert.That(result, Is.False);
     }
+
+    [Test]
+    public void IsTaskCancelRequested_ReturnsTrue_ForTaskModeCancel()
+    {
+        bool result = AvaloniaUIService.IsTaskCancelRequested(
+            taskMode: true,
+            closeRequestedByViewModel: true,
+            taskResult: MainViewModel.EditorTaskResult.Cancel);
+
+        Assert.That(result, Is.True);
+    }
+
+    [TestCase(true, true, MainViewModel.EditorTaskResult.ContinueNoSave)]
+    [TestCase(true, true, MainViewModel.EditorTaskResult.Continue)]
+    [TestCase(false, true, MainViewModel.EditorTaskResult.Cancel)]
+    [TestCase(true, false, MainViewModel.EditorTaskResult.Cancel)]
+    public void IsTaskCancelRequested_ReturnsFalse_WhenNotTaskModeCancel(
+        bool taskMode,
+        bool closeRequestedByViewModel,
+        MainViewModel.EditorTaskResult taskResult)
+    {
+        bool result = AvaloniaUIService.IsTaskCancelRequested(taskMode, closeRequestedByViewModel, taskResult);
+
+        Assert.That(result, Is.False);
+    }
 }

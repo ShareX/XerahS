@@ -78,6 +78,15 @@ namespace XerahS.Platform.Abstractions
         }
 
         /// <summary>
+        /// Shows the image editor and reports whether the user cancelled the task (Esc / Cancel in task mode).
+        /// </summary>
+        async Task<EditorSessionOutcome> ShowEditorSessionWithOutcomeAsync(SKBitmap image, bool taskMode = false)
+        {
+            ImageEditorSessionResult? result = await ShowEditorSessionAsync(image, taskMode: taskMode);
+            return new EditorSessionOutcome(result, Cancelled: false);
+        }
+
+        /// <summary>
         /// Shows the video editor for the given video file. Returns the exported output path
         /// if the user completed export, or null if cancelled.
         /// </summary>

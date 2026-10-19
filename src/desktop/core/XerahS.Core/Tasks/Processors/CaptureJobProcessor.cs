@@ -136,7 +136,14 @@ namespace XerahS.Core.Tasks.Processors
                 }
                 else if (info.Metadata?.Image != null && PlatformServices.UI != null)
                 {
-                    editorResult = await PlatformServices.UI.ShowEditorSessionAsync(info.Metadata.Image, taskMode: true);
+                    EditorSessionOutcome outcome = await PlatformServices.UI.ShowEditorSessionWithOutcomeAsync(info.Metadata.Image, taskMode: true);
+                    if (outcome.Cancelled)
+                    {
+                        DebugHelper.WriteLine("Editor cancelled; aborting workflow.");
+                        return false;
+                    }
+
+                    editorResult = outcome.Result;
                     if (editorResult?.RenderedImage != null)
                     {
                         if (info.Metadata.Image != editorResult.RenderedImage)
