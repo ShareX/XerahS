@@ -1,7 +1,7 @@
 <Project>
   <Import Project="Directory.Build.props.user" Condition="Exists('Directory.Build.props.user')" />
   <PropertyGroup>
-    <Version>0.31.4</Version>
+    <Version>0.31.5</Version>
     <Product>XerahS</Product>
     <Authors>ShareX Team</Authors>
     <Company>ShareX Team</Company>
