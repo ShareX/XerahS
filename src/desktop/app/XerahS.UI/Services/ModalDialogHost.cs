@@ -39,12 +39,20 @@ public static class ModalDialogHost
         EnsureMainWindowVisible();
 
         var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+        // A modal opened from another modal (e.g. the effect browser from the workflow editor)
+        // hands the overlay back to it on close instead of closing the whole overlay.
+        var parent = mainVm.ModalContent;
 
         void Complete(T result)
         {
             mainVm.PropertyChanged -= OnModalPropertyChanged;
             if (mainVm.ModalContent == viewModel)
-                mainVm.CloseModalCommand.Execute(null);
+            {
+                if (parent != null)
+                    mainVm.ModalContent = parent;
+                else
+                    mainVm.CloseModalCommand.Execute(null);
+            }
             tcs.TrySetResult(result);
         }
 
