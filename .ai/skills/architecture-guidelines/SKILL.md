@@ -1,5 +1,5 @@
 ---
-name: ShareX Architecture and Porting
+name: architecture-guidelines
 description: Apply XerahS platform abstractions when adding native integrations or porting ShareX code.
 ---
 

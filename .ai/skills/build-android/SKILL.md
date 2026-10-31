@@ -33,7 +33,7 @@ Follow these instructions when building or deploying Android apps. Treat elapsed
 
 <task>
   <goal>Build XerahS.Mobile.Ava or XerahS.Mobile.Maui for Android and deploy via adb.</goal>
-  <goal>Avoid file locks by using single-node builds and killing lingering dotnet processes.</goal>
+  <goal>Avoid file locks by using single-node builds and releasing only verified task-owned lock holders.</goal>
   <goal>If a build is genuinely stalled, stop and fix locks, parallelism, or stale processes before retrying.</goal>
   <goal>Ensure MAUI APK works when installed via adb (EmbedAssembliesIntoApk).</goal>
 </task>
@@ -55,21 +55,6 @@ Follow these instructions when building or deploying Android apps. Treat elapsed
 ## Shared Build Guardrails
 
 Before Android-specific work, follow [build-common](../build-common/SKILL.md) for shared stalled-build recovery, no-concurrent-build, `-m:1`, TFM, and SkiaSharp rules. This Android skill owns Android-specific prerequisites, emulator/device handling, APK output paths, and deploy commands.
-
-## Stalled-build recovery
-
-If an Android build stops making progress:
-
-1. **Treat it as stalled** — inspect output and process state.
-2. **Stop the build** (cancel or let the command timeout).
-3. **Fix the cause** before retrying:
-   - **Lingering processes**: A previous `dotnet` build may be holding the APK or DLLs. Find and stop the process (see "Pre-build: release locks" below).
-   - **Clean failing**: If `dotnet clean` fails with "file in use", the lock is often the APK or a DLL; the error message names the process (e.g. ".NET Host (PID)").
-   - **Parallelism**: Use `-m:1` so only one project builds at a time and `ShareX.ImageEditor`/plugin DLLs are not raced.
-
-Do not impose an arbitrary timeout. Fix locks and parallelism when the evidence indicates they are the cause.
-
----
 
 ## Kotlin (src/mobile/android): prerequisites and first-build lessons
 
@@ -132,24 +117,11 @@ File locks are the main cause of Android build failures. **Before building**, en
 - **Build fails** with `CompileAvaloniaXamlTask` / `Cannot open '...ShareX.ImageEditor.dll' for writing` or `...XerahS.AmazonS3.Plugin.dll ... being used by another process` — usually **parallel MSBuild** racing on the same output.
 - **Build fails** with `XA0142` / `llvm-objcopy.EXE: error: permission denied` or **`XAWAS7024: The file is locked by: ".NET Host (PID)"** on paths like `obj\Debug\net10.0-android\android-arm64\wrapped\lib_*.dll.so` — a previous build’s .NET Host is still holding wrapped assembly outputs. Stop that PID, then clean and rebuild.
 
-### 2. Stop the process holding the lock
+### 2. Release the lock and build single-node
 
-Verify that the PID in the error belongs to this task's build and checkout. Cancel that build first; stop only the verified lock holder if cancellation leaves it running. Do not copy a PID from an example or kill processes merely because they are old. See [build-common](../build-common/SKILL.md).
+Stop only the verified task-owned lock holder, as in [build-common](../build-common/SKILL.md). Never run two Android or solution builds at once: `ShareX.ImageEditor` and the AmazonS3 plugin share outputs and wrapped `.so` files. Both `build-and-deploy-android-maui.ps1` and `build-and-deploy-android-ava.ps1` use `-m:1`; do not remove it. Manual builds use `dotnet build <project> -f net10.0-android -c Debug -m:1`.
 
-### 3. Use single-node build to avoid races (required)
-
-**NEVER run two Android (or solution) builds at the same time.** `ShareX.ImageEditor` and the AmazonS3 plugin share outputs that the Avalonia XAML task and MSBuild copy; parallel MSBuild nodes race on the same DLLs and Android wrapped `.so` files and cause lock errors. **That is why the Android build feels slow:** we must use **`-m:1`** (single node), so the build runs sequentially with no parallelism.
-
-- **MAUI**: The script `build-and-deploy-android-maui.ps1` already uses **`-m:1`**. Do not remove it.
-- **Avalonia**: The script `build-and-deploy-android-ava.ps1` uses **`-m:1`** by default. Do not remove it.
-
-Example:
-
-```powershell
-dotnet build $projectPath -f net10.0-android -c Debug -m:1
-```
-
-### 4. Clean after releasing locks
+### 3. Clean after releasing locks
 
 After stopping the locking process:
 

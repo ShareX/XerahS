@@ -76,7 +76,8 @@ errors.md
 # Local packaging output
 dist/
 .flatpak-builder/
-.claude/
+.claude/*
+!.claude/skills
 .SRCINFO
 artifacts/
 *.deb

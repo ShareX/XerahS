@@ -134,36 +134,6 @@ Aim for **50–90% fewer lines** than raw `git log` output.
 
 ## Draft → Final (agent rewrite)
 
-The script draft for `v0.23.121..HEAD` at `0.23.129` might look like:
-
-```markdown
-### Features
-- **Linux — Notifications (XIP0079 P2)**: notification action buttons via portal and notify-send
-- **macOS — Packaging (XIP0078 P2)**: env-gated codesign/notarize/DMG pipeline, ad-hoc signing default in package-mac.sh
-...
-### Documentation
-- **Blog**: Blog drafts (2026 series, add/update)
-```
-
-**Publish** after rewriting to release-note prose:
-
-```markdown
-## v0.23.129
-
-### Features
-- **Linux — Hotkeys (XIP0079 P1)**: Surface global-hotkey delivery state in Settings → Hotkeys with a warning banner when portal bind is degraded.
-- **Linux — Notifications (XIP0079 P2)**: After-upload toasts support real action buttons; async `notify-send` fallback; no UI-thread blocking.
-- **Linux — Clipboard (XIP0079 P3)**: Probe `wl-copy` / `xclip`; settings warnings; `.rpm` recommends clipboard tools; **Persist clipboard after exit** for Wayland.
-
-### Fixes
-- **Linux — Mixed-DPI (XIP0079 P4)**: Cumulative monitor layout for vertically stacked mixed-DPI Wayland displays.
-
-### Documentation
-- **Linux (XIP0079 P5)**: Rewrite `developers/linux/INSTALL.md` for Ubuntu/Fedora/Arch; update `KNOWN_ISSUES.md`.
-
----
-```
-
 Actions on every draft:
 
 1. Turn commit subjects into **what changed for users**.
@@ -172,22 +142,6 @@ Actions on every draft:
 4. Split macOS (XIP0078) and Linux (XIP0079) into separate version sections when they shipped as different tags.
 
 ---
-
-### Good — platform improvement release (`v0.23.129`)
-
-```markdown
-## v0.23.129
-
-### Features
-- **Linux — Hotkeys (XIP0079 P1)**: Surface global-hotkey delivery state in Settings → Hotkeys with a warning banner when portal bind is degraded.
-- **Linux — Notifications (XIP0079 P2)**: After-upload toasts support real action buttons; async `notify-send` fallback; no UI-thread blocking.
-- **Linux — Clipboard (XIP0079 P3)**: Probe `wl-copy` / `xclip`; settings warnings; `.rpm` recommends clipboard tools; **Persist clipboard after exit** for Wayland.
-
-### Documentation
-- **Linux (XIP0079 P5)**: Rewrite `developers/linux/INSTALL.md` for Ubuntu/Fedora/Arch; update `KNOWN_ISSUES.md`.
-
----
-```
 
 ### Bad — commit log (never publish)
 
@@ -210,7 +164,6 @@ Actions on every draft:
 - Commit hashes are omitted by default to keep the changelog readable. Use `-IncludeHashes` only for temporary audit/debug drafts, not normal release notes.
 - **Default consolidation**: `Get-ConsolidationBucket` in `scripts/update-changelog.ps1` merges commits that match the same similarity bucket (for example: **ShareX.ImageEditor**, **2026 blog** draft series including Refresh commits, **XIP/IEIP/KFIP** docs, **OpenClaw/CLI**, **MCP history**, **OCR onboarding**, **FFmpeg/media**, **Linux pipe-drain**, **settings/backup**, **hourly-review meta is skipped entirely**). Extend that function when new repetitive patterns appear.
 - **Skip agent meta commits**: `Test-SkipChangelogCommit` excludes hourly review tracker/state updates, version-only bumps, and sweep/audit log commits from user-facing release notes. Do not re-add these during manual review.
-- **Mandatory final compression pass**: even when the script consolidates automatically, scan each category for adjacent or near-duplicate entries with the same component, feature area, document series, platform, dependency, or bug theme. Merge those into one readable bullet unless doing so would hide contributor attribution or combine unrelated behavior. Target roughly 50-80% line reduction versus raw commit output.
 - **Single unreleased heading**: fold duplicate prerelease sections (for example v0.23.105, v0.23.98) into one heading for the current `Directory.Build.props` version. Keep `# Changelog` and the intro block at the **top** of the file, not mid-file.
 - Always **manually review** for wording, missed merges, and contributor attribution (`#PR`, `@user`) before publishing.
 
@@ -231,11 +184,6 @@ When rebuilding noisy sections (as in v0.23.117 → v0.23.27 rollup):
 2. Group by **user-facing theme**, not by patch version.
 3. Keep version headers for releases that matter; merge trivial patches.
 4. Preserve `v0.22.236`+ summarized style for older stable releases.
-
-### Version headings
-
-- Untagged: `## v0.23.129`
-- Tagged: `## [v0.22.236](https://github.com/ShareX/XerahS/releases/tag/v0.22.236)`
 
 ---
 

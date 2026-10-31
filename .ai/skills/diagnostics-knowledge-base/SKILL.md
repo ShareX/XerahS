@@ -1,6 +1,6 @@
 ---
 name: diagnostics-knowledge-base
-description: Work the XerahS crash-report knowledge base on Neon as a fix queue (claim an issue, fix it, tick it off), or query, import into and annotate it (users' shared logs, crash signatures, root causes, fixes, storage). Use when fixing or triaging XerahS failures, asking what users hit, or recording a fix.
+description: Work, query, import into or annotate the XerahS crash-report knowledge base on Neon (fix queue, crash signatures, users' shared diagnostics). Use only when the task names the knowledge base, the fix queue, shared user reports, or recording a fix there.
 ---
 
 # Diagnostics knowledge base
