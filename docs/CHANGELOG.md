@@ -27,6 +27,7 @@ First ShareX/XerahS release since v0.31.4, so it also includes the v0.33.x chang
 
 - **Image editor**: Pressing Esc in the after-capture editor now cancels the task instead of continuing with the unedited image (#299, @farzamfallahi).
 - **Dialogs**: Closing a dialog opened from another dialog returns to the parent, so choosing an effect no longer closes the workflow editor (#304, @SusieeTheLinuxUser).
+- **Region capture**: The Emoji tool no longer appears in the Region Capture toolbar, where it did nothing. It stays in the image editor (#307).
 - **Upload Content**: Queued items upload instead of reopening the Upload Content window and reporting "Upload failed".
 - **File uploads**: Generic file uploads use the task's name pattern and keep their extension, so files with the same name no longer overwrite one URL.
 - **xerahscli**: `xerahscli upload` no longer replaces a working default uploader the user chose.
