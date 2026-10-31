@@ -26,7 +26,7 @@
                            FontSize="11"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 <TextBox Text="{Binding TextFileExceptionsText}"
-                         Watermark="html, htm"
+                         PlaceholderText="html, htm"
                          AutomationProperties.Name="Text file types that are not routed as text files"/>
             </StackPanel>
 

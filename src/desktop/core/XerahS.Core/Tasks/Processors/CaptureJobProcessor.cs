@@ -144,8 +144,15 @@ namespace XerahS.Core.Tasks.Processors
                 }
                 else if (info.Metadata?.Image != null && PlatformServices.UI != null)
                 {
-                    editorResult = await PlatformServices.UI.ShowEditorSessionAsync(info.Metadata.Image, taskMode: true);
-                    if (editorResult == null)
+                    EditorSessionOutcome outcome = await PlatformServices.UI.ShowEditorSessionWithOutcomeAsync(info.Metadata.Image, taskMode: true);
+                    if (outcome.Cancelled)
+                    {
+                        DebugHelper.WriteLine("Editor cancelled; aborting workflow.");
+                        return false;
+                    }
+
+                    editorResult = outcome.Result;
+                    if (editorResult?.RenderedImage == null)
                     {
                         // Cancelled or failed editor exports must not upload the unannotated input.
                         DebugHelper.WriteLine("Annotation editor returned no image; stopping after-capture tasks.");

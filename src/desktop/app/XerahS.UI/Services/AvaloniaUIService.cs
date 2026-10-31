@@ -120,22 +120,44 @@ namespace XerahS.UI.Services
             return result?.RenderedImage;
         }
 
-        public Task<ImageEditorSessionResult?> ShowEditorSessionAsync(SKBitmap image, string? sourceFilePath = null,
-            bool taskMode = false, IReadOnlyList<Annotation>? annotations = null, bool restoredAnnotations = false)
-            => ShowEditorSessionCoreAsync(image, sourceFilePath, taskMode, annotations, restoredAnnotations, false);
+        public async Task<ImageEditorSessionResult?> ShowEditorSessionAsync(
+            SKBitmap image,
+            string? sourceFilePath = null,
+            bool taskMode = false,
+            IReadOnlyList<Annotation>? annotations = null,
+            bool restoredAnnotations = false)
+        {
+            EditorSessionOutcome outcome = await ShowEditorSessionCoreAsync(
+                image, sourceFilePath, taskMode, annotations, restoredAnnotations);
+            return outcome.Result;
+        }
 
-        public Task<ImageEditorSessionResult?> ShowPrivacyEditorAsync(SKBitmap image)
-            => ShowEditorSessionCoreAsync(image, null, true, null, false, true);
+        public async Task<ImageEditorSessionResult?> ShowPrivacyEditorAsync(SKBitmap image)
+        {
+            EditorSessionOutcome outcome = await ShowEditorSessionCoreAsync(
+                image, taskMode: true, privacyReview: true);
+            return outcome.Result;
+        }
 
-        private async Task<ImageEditorSessionResult?> ShowEditorSessionCoreAsync(SKBitmap image, string? sourceFilePath,
-            bool taskMode, IReadOnlyList<Annotation>? annotations, bool restoredAnnotations, bool privacyReview)
+        public Task<EditorSessionOutcome> ShowEditorSessionWithOutcomeAsync(SKBitmap image, bool taskMode = false)
+        {
+            return ShowEditorSessionCoreAsync(image, taskMode: taskMode);
+        }
+
+        private async Task<EditorSessionOutcome> ShowEditorSessionCoreAsync(
+            SKBitmap image,
+            string? sourceFilePath = null,
+            bool taskMode = false,
+            IReadOnlyList<Annotation>? annotations = null,
+            bool restoredAnnotations = false,
+            bool privacyReview = false)
         {
             if (_taskManager == null)
             {
                 throw new InvalidOperationException("AvaloniaUIService requires an IDesktopTaskManager before showing the editor.");
             }
 
-            var tcs = new TaskCompletionSource<ImageEditorSessionResult?>();
+            var tcs = new TaskCompletionSource<EditorSessionOutcome>();
             var restoredAnnotationSnapshot = annotations?.Select(annotation => annotation.Clone()).ToList();
 
             await Dispatcher.UIThread.InvokeAsync(() =>
@@ -204,7 +226,8 @@ namespace XerahS.UI.Services
                 {
                     if (ShouldReturnNullForEditorClose(taskMode, editorWindow.IsCloseRequestedByViewModel, editorViewModel.TaskResult))
                     {
-                        tcs.TrySetResult(null);
+                        bool cancelled = IsTaskCancelRequested(taskMode, editorWindow.IsCloseRequestedByViewModel, editorViewModel.TaskResult);
+                        tcs.TrySetResult(new EditorSessionOutcome(null, cancelled));
                         return;
                     }
 
@@ -217,24 +240,25 @@ namespace XerahS.UI.Services
                             var snapshot = editorView.GetSnapshot();
                             if (snapshot == null)
                             {
-                                tcs.TrySetResult(null);
+                                tcs.TrySetResult(new EditorSessionOutcome(null, Cancelled: false));
                             }
                             else
                             {
                                 var source = editorView.GetSource();
                                 var annotationSnapshot = editorView.GetAnnotationSnapshot().ToList();
-                                tcs.TrySetResult(new ImageEditorSessionResult(snapshot, source, annotationSnapshot));
+                                tcs.TrySetResult(new EditorSessionOutcome(
+                                    new ImageEditorSessionResult(snapshot, source, annotationSnapshot), Cancelled: false));
                             }
                         }
                         else
                         {
-                            tcs.TrySetResult(null);
+                            tcs.TrySetResult(new EditorSessionOutcome(null, Cancelled: false));
                         }
                     }
                     catch (Exception ex)
                     {
                         DebugHelper.WriteException(ex, "Failed to get editor snapshot");
-                        tcs.TrySetResult(null);
+                        tcs.TrySetResult(new EditorSessionOutcome(null, Cancelled: false));
                     }
                 };
 
@@ -259,6 +283,16 @@ namespace XerahS.UI.Services
                 || taskResult == MainViewModel.EditorTaskResult.Cancel;
 
             return taskMode && continueWithoutSave;
+        }
+
+        internal static bool IsTaskCancelRequested(
+            bool taskMode,
+            bool closeRequestedByViewModel,
+            MainViewModel.EditorTaskResult taskResult)
+        {
+            return taskMode
+                && closeRequestedByViewModel
+                && taskResult == MainViewModel.EditorTaskResult.Cancel;
         }
 
         public async Task<string?> ShowVideoEditorAsync(string videoPath, string? ffmpegPath)
