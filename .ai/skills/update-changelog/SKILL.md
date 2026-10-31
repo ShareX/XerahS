@@ -351,5 +351,5 @@ The script's `Get-ConsolidationBucket` merges repetitive patterns. Extend when n
 
 ## Related
 
-- Release sequence: `.ai/skills/publish-release/SKILL.md` (step 2: update changelog)
+- Release sequence: `.ai/skills/publish-release/SKILL.md` runs this skill as Step 2. Use the post-bump release version for `-Version` and the target repo's latest tag for `-FromTag`; `run-release-sequence.sh` aborts the bump if `docs/CHANGELOG.md` lacks that version's section.
 - Maintenance: `.ai/skills/run-maintenance/SKILL.md`
