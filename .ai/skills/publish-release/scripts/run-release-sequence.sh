@@ -14,7 +14,9 @@ Run release flow in strict order:
 Sequence options:
   --skip-maintenance          Skip step 1 maintenance execution (explicit bypass)
   --assume-maintenance-done   Backward-compatible alias for --skip-maintenance
-  --assume-changelog-done     Skip interactive confirmation for step 2
+  --assume-changelog-done     Skip the step 2 draft/prompt (docs/CHANGELOG.md must already
+                              contain the section for the release version)
+  --skip-changelog            Explicit bypass of step 2 and its changelog section check
   --monitor                   Monitor tag release workflow after step 3
   --monitor-interval <sec>    Poll interval in seconds (default: 120)
   --release-wait <minutes>    How long to wait for the GitHub release before release notes (default: 30)
@@ -136,6 +138,103 @@ resolve_version_from_props() {
     exit 1
   fi
   echo "$version"
+}
+
+passthrough_flag_value() {
+  local flag="$1"
+  local i
+  for ((i = 0; i < ${#PASSTHROUGH_ARGS[@]}; i++)); do
+    if [[ "${PASSTHROUGH_ARGS[$i]}" == "$flag" && $((i + 1)) -lt ${#PASSTHROUGH_ARGS[@]} ]]; then
+      echo "${PASSTHROUGH_ARGS[$((i + 1))]}"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Resolve the version the bump step will produce, so the changelog section matches the tag.
+# Prompts once for the bump type when neither --bump nor --no-bump was passed, then passes
+# the answer through so bump-version-commit-tag.sh does not prompt again.
+# Sets RELEASE_TARGET_VERSION (call directly, not in a subshell).
+resolve_release_target_version() {
+  local current bump major minor patch
+  current="$(resolve_version_from_props "Directory.Build.props")"
+  if passthrough_has_flag "--no-bump"; then
+    RELEASE_TARGET_VERSION="$current"
+    return 0
+  fi
+  bump="$(passthrough_flag_value "--bump" || true)"
+  if [[ -z "$bump" ]]; then
+    read -r -p "Select bump type [x=major, y=minor, z=patch] (default z): " bump </dev/tty
+    bump="${bump:-z}"
+    PASSTHROUGH_ARGS+=("--bump" "$bump")
+  fi
+  if [[ ! "$current" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "Error: unsupported version format '$current'. Expected X.Y.Z" >&2
+    exit 1
+  fi
+  IFS='.' read -r major minor patch <<< "$current"
+  case "$(printf '%s' "$bump" | tr '[:upper:]' '[:lower:]')" in
+    x|major) RELEASE_TARGET_VERSION="$((major + 1)).0.0" ;;
+    y|minor) RELEASE_TARGET_VERSION="${major}.$((minor + 1)).0" ;;
+    z|patch) RELEASE_TARGET_VERSION="${major}.${minor}.$((patch + 1))" ;;
+    *)
+      echo "Error: invalid bump type '$bump'. Use x/y/z (or major/minor/patch)." >&2
+      exit 1
+      ;;
+  esac
+}
+
+changelog_has_version_section() {
+  local changelog="$1"
+  local version="$2"
+  local escaped="${version//./\\.}"
+  grep -Eq "^## (\[v${escaped}\]|v${escaped})([^0-9.]|$)" "$changelog"
+}
+
+# Step 2: update-changelog skill. Generates the draft for the release range, waits for the
+# agent/maintainer rewrite, then refuses to continue until docs/CHANGELOG.md has the section.
+run_changelog_step() {
+  local target_version="$1"
+  local changelog="docs/CHANGELOG.md"
+  local draft_script="$repo_root/.ai/skills/update-changelog/scripts/update-changelog.sh"
+  local draft_path="dist/changelog/draft-v${target_version}.md"
+
+  if [[ $SKIP_CHANGELOG -eq 1 ]]; then
+    echo "Step 2 skipped by request (--skip-changelog)."
+    return 0
+  fi
+  if [[ ! -f "$changelog" ]]; then
+    echo "Step 2 skipped: $changelog is absent."
+    return 0
+  fi
+
+  echo "Step 2: update-changelog skill for v${target_version} ($changelog_skill)"
+  if [[ $ASSUME_CHANGELOG_DONE -eq 0 ]]; then
+    if command -v pwsh >/dev/null 2>&1 || command -v powershell >/dev/null 2>&1; then
+      mkdir -p "$(dirname "$draft_path")"
+      if bash "$draft_script" --version "$target_version" --output-path "$draft_path"; then
+        echo "Draft written to $draft_path. Rewrite it into release-note prose per the skill,"
+        echo "then add it to $changelog as '## v${target_version}'."
+      else
+        echo "Warning: changelog draft script failed; write the section by hand per the skill." >&2
+      fi
+    else
+      echo "PowerShell not found; skipping the draft script. Write the section by hand per the skill."
+    fi
+    read -r -p "Type 'done' after finishing step 2: " response </dev/tty
+    if [[ "$response" != "done" ]]; then
+      echo "Aborted: changelog step not confirmed."
+      exit 1
+    fi
+  fi
+
+  if ! changelog_has_version_section "$changelog" "$target_version"; then
+    echo "Error: $changelog has no '## v${target_version}' section. Run $changelog_skill first" >&2
+    echo "       (or pass --skip-changelog to bypass explicitly)." >&2
+    exit 1
+  fi
+  echo "Step 2 verified: $changelog contains v${target_version}."
 }
 
 passthrough_has_flag() {
@@ -447,6 +546,7 @@ verify_release_assets() {
 
 SKIP_MAINTENANCE=0
 ASSUME_CHANGELOG_DONE=0
+SKIP_CHANGELOG=0
 MONITOR=0
 MONITOR_INTERVAL=120
 RELEASE_WAIT_MINUTES=30
@@ -471,6 +571,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --assume-changelog-done)
       ASSUME_CHANGELOG_DONE=1
+      shift
+      ;;
+    --skip-changelog)
+      SKIP_CHANGELOG=1
       shift
       ;;
     --monitor)
@@ -624,15 +728,9 @@ else
   echo "Step 1 skipped by request (--skip-maintenance)."
 fi
 
-if [[ $ASSUME_CHANGELOG_DONE -eq 0 ]]; then
-  echo "Step 2 required: run changelog update skill second:"
-  echo "  $changelog_skill"
-  read -r -p "Type 'done' after finishing step 2: " response
-  if [[ "$response" != "done" ]]; then
-    echo "Aborted: changelog step not confirmed."
-    exit 1
-  fi
-fi
+RELEASE_TARGET_VERSION=""
+resolve_release_target_version
+run_changelog_step "$RELEASE_TARGET_VERSION"
 
 echo "Step 3: running bump/tag automation..."
 run_build_precheck

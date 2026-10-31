@@ -10,6 +10,34 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
+## v0.33.6
+
+First ShareX/XerahS release since v0.31.4, so it also includes the v0.33.x changes in the sections below.
+
+### Features
+
+- **Statistics**: A new Statistics window (sidebar, View > Statistics or the History toolbar) shows upload totals, the image, recording and file split, daily and seven-day activity, streaks, a calendar, hourly activity and breakdowns by weekday, application, destination and file type.
+- **Region capture**: Optional "Dim all, except the current selection" with an adjustable dim strength. Off by default.
+- **Upload Content**: Upload a file from a URL. XerahS downloads it (http/https, up to 512 MB) and queues it as a file. GitHub blob and raw links fetch the raw file, and private files use a GitHub token kept in the OS keyring.
+- **File routing**: File destinations can claim "Text files" (Markdown, plain text, code, JSON, YAML, CSV) or specific extensions while another destination stays the catch-all. Each destination has an "Except these types" list, and web pages (html, htm, xhtml, xht) are excepted by default.
+- **Amazon S3**: "Browse the whole bucket in Media Explorer" lets Media Explorer list and upload from the bucket root instead of the object prefix. Off by default.
+- **KovaForge Docs**: New upload destination for text, Markdown, images and files.
+
+### Fixes
+
+- **Image editor**: Pressing Esc in the after-capture editor now cancels the task instead of continuing with the unedited image (#299, @farzamfallahi).
+- **Dialogs**: Closing a dialog opened from another dialog returns to the parent, so choosing an effect no longer closes the workflow editor (#304, @SusieeTheLinuxUser).
+- **Upload Content**: Queued items upload instead of reopening the Upload Content window and reporting "Upload failed".
+- **File uploads**: Generic file uploads use the task's name pattern and keep their extension, so files with the same name no longer overwrite one URL.
+- **xerahscli**: `xerahscli upload` no longer replaces a working default uploader the user chose.
+
+### Build
+
+- **Web**: Update next, zod, vitest and vite for high and critical security advisories.
+- **CI**: The scheduled platform drift check skips environments without Cloudflare configuration instead of failing.
+
+---
+
 ## v0.33.5
 
 Includes the macOS startup and update-dialog fixes from v0.33.4. Both native macOS launch checks passed for that build; its final Chocolatey job hit GitHub's anonymous API rate limit.

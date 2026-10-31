@@ -11,9 +11,11 @@ Windows portable ZIPs are part of every normal tagged release alongside the EXE/
 
 ## Overview
 
-Use this skill to run release steps in strict order:
+Use this skill to run release steps in strict order. Agents: write the changelog section (Step 2) **before** running the primary command with `--assume-changelog-done`; the script refuses to bump/tag without it.
+
+Steps:
 - Step 1: Execute maintenance prep first (`git pull --recurse-submodules` and `git submodule update --init --recursive`), then reattach `ShareX.ImageEditor` to `develop` and fast-forward it from `origin/develop`. Uncommitted local changes in the working tree are auto-committed with message `[skill] Auto-commit uncommitted changes before release maintenance` before the pull. Submodule local changes still block the sequence and must be committed/stashed manually.
-- Step 2: Run `.ai/skills/update-changelog/SKILL.md` second (optional only if `docs/CHANGELOG.md` is intentionally absent)
+- Step 2: Run the `update-changelog` skill (`.ai/skills/update-changelog/SKILL.md`) for the **release version** (the post-bump version, not the current `Directory.Build.props` value). See "Step 2 performs" below. The sequence script blocks Step 3 until `docs/CHANGELOG.md` has that version's section.
 - Step 3: Verify build, then execute bump/commit/push/tag automation
 - Step 4: Monitor the tag-triggered release workflow every 2 minutes
 - Step 5: If failure occurs, inspect logs, fix the root cause in code or workflow first (do not skip the fix and retry the same version), commit and push the fix, then retry with the next patch version. If the failure is in the `build-flatpak` job, verify all plugin DLLs are present in the staging directory; the workflow now includes a plugin re-validation step but a code fix in `package-linux.sh` may also be needed. Repeat until workflow succeeds.
@@ -36,6 +38,13 @@ Release channel policy (default):
 - `ShareX/XerahS` -> always **Pre-release** (`prerelease: true`, not latest)
 - `KovaForge/XerahS` -> **Release** / latest (`prerelease: false`, `make_latest: true`)
 - Override with `--set-prerelease` or `--no-prerelease` when intentionally forcing the opposite channel.
+
+Step 2 performs (update-changelog integration):
+- Resolves the release version from `Directory.Build.props` plus `--bump` (prompts once for the bump type if neither `--bump` nor `--no-bump` was passed, then reuses it in Step 3).
+- Without `--assume-changelog-done`: writes a draft with `.ai/skills/update-changelog/scripts/update-changelog.sh --version <release-version> --output-path dist/changelog/draft-v<release-version>.md` (needs `pwsh`; skipped with a message otherwise), then waits for `done`.
+- The agent follows the update-changelog skill: lower bound is the latest tag **on the target repo** (pass `--from-tag`; local `git describe` can pick a stale tag on fork or shallow checkouts), rewrite the draft into release-note prose, add `## v<release-version>` under the preamble, fold any untagged intermediate sections into it or keep them if they shipped on the other repo.
+- Always verifies `docs/CHANGELOG.md` contains `## v<release-version>` (or the linked form) and aborts otherwise. `--assume-changelog-done` only skips the draft and prompt; it does not skip this check. Use `--skip-changelog` for an explicit bypass, or when `docs/CHANGELOG.md` is absent.
+- Do not commit the changelog separately: Step 3 stages all changes, so the changelog ships in the `[vX.Y.Z] [CI] Release vX.Y.Z` commit.
 
 Step 3 performs:
 - Pre-check: Run `dotnet build src/desktop/XerahS.sln`; do not proceed if build fails.
@@ -191,7 +200,8 @@ On environments where `bash` is not in PATH, execute the sequence manually:
    - Abort if `ShareX.ImageEditor` has local changes, cannot fast-forward, or remains detached. If this updates the recorded submodule commit, commit and push the submodule before committing the parent XerahS gitlink.
 
 2. Step 2 - Changelog
-   - Run `.ai/skills/update-changelog/SKILL.md`.
+   - Compute the release version first (Step 3 rules below), then run `.ai/skills/update-changelog/SKILL.md` for that version with `-FromTag <latest tag on target repo>`.
+   - Confirm `docs/CHANGELOG.md` has `## v<new-version>` before continuing.
    - Skip only if `docs/CHANGELOG.md` is intentionally absent or the user confirms skip.
 
 3. Step 3 - Bump, commit, push, tag
@@ -259,7 +269,7 @@ Default bump when unspecified: patch (`z`). Default commit type token: `CI`.
 1. Require completion of `run-maintenance` first.
    - Script behavior: executes maintenance commands automatically unless explicitly bypassed with `--skip-maintenance` (or legacy alias `--assume-maintenance-done`).
    - Uncommitted local working-tree changes are auto-committed before the pull; submodule changes still block and require manual resolution.
-2. Require completion of `update-changelog` second (skip only if `docs/CHANGELOG.md` is intentionally absent or user confirms).
+2. Require completion of `update-changelog` second for the release version; the script verifies the `## v<release-version>` section exists (skip only with `--skip-changelog`, if `docs/CHANGELOG.md` is intentionally absent, or user confirms).
 3. Before bump, run `dotnet build src/desktop/XerahS.sln`; abort on failure.
 4. Run `scripts/bump-version-commit-tag.sh` (or PowerShell/manual equivalent when bash unavailable).
 5. After tag push, monitor the release workflow every 120 seconds until complete.
@@ -291,7 +301,7 @@ Default bump when unspecified: patch (`z`). Default commit type token: `CI`.
 ## Agent usage (Cursor / Codex)
 
 When executing this skill:
-1. Run sequence: maintenance -> changelog -> build verify -> bump/commit/push/tag.
+1. Run sequence: maintenance -> changelog (update-changelog skill for the release version, then `--assume-changelog-done`) -> build verify -> bump/commit/push/tag.
 2. Use bash scripts if bash exists; otherwise use PowerShell/manual flow.
 3. Default bump is patch (`z`) when unspecified.
 4. Monitor tag workflow every 120 seconds until completion.
@@ -330,7 +340,7 @@ One line per failed release iteration. Read before tagging; append a line for ev
 - Windows/PowerShell: bash may be unavailable; manual fallback must be first-class.
 - Windows/PowerShell: avoid `if (git rev-parse <tag>)` for local tag existence checks; use `git show-ref --verify --quiet refs/tags/<tag>` and inspect `$LASTEXITCODE`.
 - Build before bump: avoid tagging broken trees.
-- Changelog optional: do not block if `docs/CHANGELOG.md` is intentionally absent unless user requires it.
+- Changelog: Step 2 blocks the bump until `docs/CHANGELOG.md` has the release version's section; it is skipped only when the file is absent or `--skip-changelog` is passed.
 - Version sync: update every tracked `Directory.Build.props` with `<Version>`, sync `build/windows/chocolatey/xerahs.nuspec`, and prepend a new `<release version="X.Y.Z" date="YYYY-MM-DD">` entry to the `<releases>` block in `flatpak/com.xerahs.XerahS.metainfo.xml`. The metainfo insertion uses a generic "See CHANGELOG.md for details." placeholder description; edit it in the resulting commit before pushing if a hand-written note is preferred.
 - **Windows packaging produces 6 assets per release**: EXE, MSI, and portable ZIP for each of x64 and ARM64. `build/windows/package-windows.ps1` uses the same self-contained publish payload for all three formats. Portable mode is enabled only in the ZIP; installer payloads must remain free of `portable.txt`.
 - **ShareX.ImageEditor submodule must stay on `develop`**: after `git submodule update --init --recursive`, immediately run `git -C ShareX.ImageEditor fetch origin --prune`, `git -C ShareX.ImageEditor checkout develop`, and `git -C ShareX.ImageEditor pull --ff-only origin develop`. `git submodule update` checks out the parent-recorded commit and can leave a detached HEAD; do not proceed with release work until `git -C ShareX.ImageEditor status --short --branch` confirms `develop...origin/develop`.
