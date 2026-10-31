@@ -77,7 +77,7 @@ errors.md
 dist/
 .flatpak-builder/
 .claude/*
-!.claude/skills
+!.claude/skills/
 .SRCINFO
 artifacts/
 *.deb
