@@ -1,3 +1,3 @@
 # Claude compatibility shim
 
-Use the repository rules in [AGENTS.md](AGENTS.md). Load a specialized `.ai/skills/` workflow only when its description matches the task.
+Use the repository rules in [AGENTS.md](AGENTS.md), including its skill discovery section.

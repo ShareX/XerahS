@@ -26,7 +26,7 @@ If the user only pastes a partial log, work from that first. Read more log conte
 
 ## Workflow
 
-0. Check the knowledge base first ([diagnostics-knowledge-base](../diagnostics-knowledge-base/SKILL.md)).
+0. If Neon access to the [diagnostics knowledge base](../diagnostics-knowledge-base/SKILL.md) is configured in this environment, check it first. Otherwise skip this step.
    - `diagnostics.search()` the exception type, logger tag, or last message before a silent exit.
    - A matching signature may already carry the root cause, fix, and fixed-in version, plus other users' reports with system data and monitor layouts.
 

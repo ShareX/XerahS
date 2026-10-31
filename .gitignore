@@ -77,6 +77,8 @@ errors.md
 dist/
 .flatpak-builder/
 .claude/
+# Local agent skill links to .ai/skills (scripts/link-agent-skills.sh)
+.agents/skills
 .SRCINFO
 artifacts/
 *.deb

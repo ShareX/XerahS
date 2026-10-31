@@ -151,19 +151,9 @@ Check for another build sharing these outputs. If locks occur, follow [build-com
 
 ## Important Notes
 
-### Sequential Builds Are Mandatory
+### Locks and sequencing
 
-**NEVER run two builds at the same time.** `ShareX.ImageEditor` targets multiple TFMs (`net9.0`, `net10.0`, `net9.0-windows10.0.26100.0`, `net10.0-windows10.0.26100.0`) and MSBuild parallelism causes all of them to race on the same `ShareX.ImageEditor.dll` output path, producing `CS2012` file lock errors.
-
-- **Architectures**: `package-windows.ps1` already iterates `win-x64` then `win-arm64` sequentially via `foreach` — never invoke it twice concurrently.
-- **Internal parallelism**: Controlled by `/m:1` on the `dotnet publish` call, which forces single-threaded MSBuild and eliminates the intra-build race.
-- **Between builds**: Always run `dotnet build-server shutdown` and kill VBCSCompiler between consecutive build sessions.
-
-### Why File Locking Happens
-- **VBCSCompiler**: Roslyn compiler server caches assemblies for faster builds
-- **Parallel builds**: Multiple projects trying to write the same DLL simultaneously
-- **Running XerahS instances**: The Watch Folder daemon loads DLLs from Debug folder
-- **Avalonia designer**: May hold references to compiled DLLs
+Shared rules are in [build-common](../build-common/SKILL.md). Windows specifics: `ShareX.ImageEditor` multi-targets four TFMs that race on one DLL output, so `CS2012` is the usual symptom. `package-windows.ps1` already runs `win-x64` then `win-arm64` sequentially with `/m:1`; never run it twice at once. Other lock holders are VBCSCompiler, a running XerahS (the Watch Folder daemon loads Debug DLLs), and the Avalonia designer. A `CS2012` during a retry can still end in success, so check that `XerahS.exe` and the installers were actually created with fresh timestamps.
 
 ### Key Build Parameters
 - `-p:UseSharedCompilation=false`: Disables VBCSCompiler server
@@ -171,24 +161,10 @@ Check for another build sharing these outputs. If locks occur, follow [build-com
 - `/m:1`: Forces single-threaded build (slower but no race conditions)
 - `-p:SkipBundlePlugins=true`: Avoids custom MSBuild target path resolution bugs
 
-### Build Error Handling
-- **Don't panic if you see CS2012 errors**: The build may still succeed
-- **Always check if XerahS.exe was created**: The error might be during a retry
-- **`ShareX.ImageEditor` is the usual culprit**: It has parallel TFM builds (net9.0, net10.0, with/without Windows SDK)
-- **ARM64 builds are more prone to locking**: They run after x64 which may leave processes
-
-### Best Practices
-1. **Always run Phase 1 cleanup first**
-2. **Monitor the build output for "file may be locked by" messages**
-3. **Check actual file creation, not just exit codes**
-4. **Keep VBCSCompiler killed during builds**
-5. **Close any running XerahS instances before building**
-
 ## Success Criteria
 - ✅ Both win-x64 and win-arm64 .exe installers created
 - ✅ Files are ~55-60 MB in size
 - ✅ Timestamps are recent (within build session)
-- ✅ No lingering build processes (VBCSCompiler, dotnet, MSBuild)
 - ✅ Dist folder contains the expected installer files
 
 ## Troubleshooting
@@ -196,7 +172,7 @@ Check for another build sharing these outputs. If locks occur, follow [build-com
 | Symptom | Solution |
 |---------|----------|
 | "XerahS.exe" does not exist (Inno Setup) | The main app didn't publish; check for earlier build errors |
-| CS2012 file lock error | Kill VBCSCompiler, delete obj folder, rebuild with `/m:1` |
+| CS2012 file lock error | Follow Phase 3 and [build-common](../build-common/SKILL.md) |
 | Installer created but old timestamp | Build failed silently; check logs in `iscc_log_win-{arch}.txt` |
 | Only x64 succeeds, ARM64 fails | Use Phase 4 manual ARM64 build process |
 | All builds fail | Clean solution, restart terminal, ensure no XerahS instances running |

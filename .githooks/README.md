@@ -62,6 +62,10 @@ Ensures `ShareX.ImageEditor` is not left detached after checkout operations.
 
 Runs the same detached-HEAD recovery logic as `post-checkout` after merges.
 
+### Agent skill links (post-checkout, post-merge)
+
+Both hooks run `scripts/link-agent-skills.sh --quiet`, which creates gitignored `.claude/skills` and `.agents/skills` links to `.ai/skills` when missing (directory junctions on Windows). Existing folders are never replaced. Run `scripts/link-agent-skills.sh --check` or `scripts/link-agent-skills.ps1 -Check` to see the state.
+
 ## Installation
 
 ### Option 1: Configure Git to Use .githooks Directory (Recommended)
