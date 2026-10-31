@@ -19,7 +19,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       release_title: ${{ steps.version.outputs.release_title }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - id: version
         name: Resolve version
@@ -61,13 +61,13 @@ jobs:
         arch: [win-x64, win-arm64]
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: recursive
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
@@ -120,7 +120,7 @@ jobs:
           }
 
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-release-${{ matrix.arch }}
           if-no-files-found: error
@@ -131,7 +131,7 @@ jobs:
 
       - name: Upload Windows build log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-build-log-${{ matrix.arch }}
           if-no-files-found: warn
@@ -141,13 +141,13 @@ jobs:
     needs: validate-version
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: recursive
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
@@ -192,7 +192,7 @@ jobs:
             --output-log build/logs/macos-startup.log
 
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-release
           if-no-files-found: error
@@ -202,7 +202,7 @@ jobs:
 
       - name: Upload macOS build log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-build-log
           if-no-files-found: warn
@@ -225,7 +225,7 @@ jobs:
           pacman -Syu --noconfirm --needed git base-devel cmake ninja pkgconf qt6-base layer-shell-qt \
             wayland wayland-protocols libdeflate
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -238,7 +238,7 @@ jobs:
           OMASNAP_REQUIRED=1 ./build/linux/build-omasnap.sh "$RUNNER_TEMP/omasnap-stage"
 
       - name: Upload OmaSnap stage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: omasnap-linux-x64
           if-no-files-found: error
@@ -259,13 +259,13 @@ jobs:
             artifact_name: linux-release-arm64
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: recursive
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
@@ -280,7 +280,7 @@ jobs:
       - name: Download optional OmaSnap stage
         if: matrix.rid == 'linux-x64'
         continue-on-error: true
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: omasnap-linux-x64
           path: ${{ runner.temp }}/omasnap-stage
@@ -363,7 +363,7 @@ jobs:
           rm -rf "$WORKDIR"
 
       - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact_name }}
           if-no-files-found: error
@@ -375,7 +375,7 @@ jobs:
 
       - name: Upload Linux build log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-build-log-${{ matrix.rid }}
           if-no-files-found: warn
@@ -389,13 +389,13 @@ jobs:
     # bundle only. To add ARM64: switch to ubuntu-24.04-arm and add QEMU user
     # static (binfmt-support) for cross-building.
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: recursive
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
@@ -492,7 +492,7 @@ jobs:
             com.xerahs.XerahS
 
       - name: Upload Flatpak bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: flatpak-release
           if-no-files-found: error
@@ -501,7 +501,7 @@ jobs:
 
       - name: Upload Flatpak build log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: flatpak-build-log
           if-no-files-found: warn
@@ -517,10 +517,10 @@ jobs:
       - build-flatpak
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: release-assets
           merge-multiple: true
@@ -537,7 +537,7 @@ jobs:
             --metadata-output release-assets/release-metadata.json
 
       - name: Upload assets to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: ${{ needs.validate-version.outputs.release_title }}
           # ShareX/XerahS: always pre-release. KovaForge/XerahS: full release (latest).
@@ -572,7 +572,7 @@ jobs:
       - release
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: recursive
@@ -609,14 +609,14 @@ jobs:
             -SourceDirectory "dist\chocolatey"
 
       - name: Upload Chocolatey artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chocolatey-package-${{ needs.validate-version.outputs.version }}
           if-no-files-found: error
           path: dist/chocolatey/xerahs.${{ needs.validate-version.outputs.version }}.nupkg
 
       - name: Upload Chocolatey package to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ needs.validate-version.outputs.version }}
           # Keep Chocolatey upload aligned with the same repo release policy.
@@ -634,16 +634,16 @@ jobs:
       - release
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Download linux-x64 artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-release-x64
           path: dist
 
       - name: Download linux-arm64 artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-release-arm64
           path: dist
