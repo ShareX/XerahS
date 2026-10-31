@@ -11,6 +11,23 @@ namespace XerahS.Tests.RegionCapture;
 public class RegionCaptureAnnotationViewModelTests
 {
     [Test]
+    public void EmojiTool_IsHiddenAndCannotBeSelected()
+    {
+        var viewModel = new RegionCaptureAnnotationViewModel
+        {
+            ActiveTool = EditorTool.Rectangle
+        };
+
+        viewModel.SelectToolCommand.Execute(EditorTool.Emoji);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.VisibleToolbarItems.Any(item => item.Tool == EditorTool.Emoji), Is.False);
+            Assert.That(viewModel.ActiveTool, Is.EqualTo(EditorTool.Rectangle));
+        });
+    }
+
+    [Test]
     public void RectangleTool_Shows_RectangleOptions()
     {
         var viewModel = new RegionCaptureAnnotationViewModel
