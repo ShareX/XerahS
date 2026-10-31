@@ -1,6 +1,6 @@
 # Agent configuration
 
-[AGENTS.md](../AGENTS.md) holds always-on repository policy, including the Git wrapper rules. Host compatibility files point there. `.claude/skills/README.md` points Claude Code here.
+[AGENTS.md](../AGENTS.md) holds always-on repository policy, including the Git wrapper rules. Host compatibility files point there. `scripts/link-agent-skills.sh` (or `.ps1`) creates gitignored `.claude/skills` and `.agents/skills` links here; the post-checkout and post-merge hooks run it.
 
 - `skills/*/SKILL.md`: on-demand repository workflows. Descriptions should identify the trigger, not advertise general competence.
 - `skills/*/references/` and `assets/`: supporting material loaded when needed.
