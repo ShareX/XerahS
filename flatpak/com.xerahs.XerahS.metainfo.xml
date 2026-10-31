@@ -42,6 +42,11 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.33.6" date="2026-10-31">
+      <description>
+        <p>Add a Statistics window, region selection dimming, upload from URL and file routing by type; fix nested dialogs, Esc in the after-capture editor and Upload Content queueing.</p>
+      </description>
+    </release>
     <release version="0.33.5" date="2026-10-20">
       <description>
         <p>Fix macOS tray startup and update dialog opacity; authenticate release packaging requests.</p>
