@@ -51,10 +51,10 @@ jobs:
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Initialize build submodules at pinned commits
         run: git submodule update --init ShareX.ImageEditor Omacut
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
       - name: Build desktop solution with warnings as errors
@@ -88,7 +88,7 @@ jobs:
           print(f"Verified {passed} executed, passing recording tests.")
       - name: Upload recording test results
         if: always() && matrix.run_tests
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: recording-tests-${{ matrix.rid }}
           path: artifacts/test-results/*.trx
