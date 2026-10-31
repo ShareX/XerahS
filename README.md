@@ -91,10 +91,27 @@ dotnet run --project src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0
 
 ## 🚀 Getting Started
 
+### Downloads and update channels
+
+| Channel | Repository | Use it for |
+|---|---|---|
+| Upstream releases | [ShareX/XerahS releases](https://github.com/ShareX/XerahS/releases) | Official upstream release builds. |
+| KovaForge development builds | [KovaForge/XerahS releases](https://github.com/KovaForge/XerahS/releases) | This fork's newer fixes and development changes; availability and versions can differ from upstream. |
+
+These are two repositories of XerahS, with separate release histories. A larger
+version number in the fork does not mean the upstream website is out of date.
+For fixes committed to this repository, use a KovaForge build that includes the
+commit, or build this fork from source; the same fix may not yet be released upstream.
+
+In **Settings > Application > Updates**, `Release` checks `ShareX/XerahS`.
+`PreRelease` checks the selected source (KovaForge by default); you can also choose
+ShareX, both repositories, or a custom source. Choose the source deliberately when
+switching builds. Committing a fix does not publish a downloadable release.
+
 ### Cloning the Repository
 XerahS requires the `ShareX.ImageEditor` and `Omacut` submodules. `Omacut` is the [KovaForge fork of omacut](https://github.com/KovaForge/omacut): a native Avalonia video trimmer that powers the video editor. Clone with:
 ```bash
-git clone --recursive https://github.com/ShareX/XerahS.git
+git clone --recursive https://github.com/KovaForge/XerahS.git
 ```
 
 If you already cloned without `--recursive`, initialize the submodules:
@@ -126,6 +143,9 @@ sudo dnf copr enable sharex/xerahs && sudo dnf install xerahs
 
 ### Arch Linux (AUR)
 Arch Linux users can install the latest development version via the community-maintained AUR package [`xerahs-git`](https://aur.archlinux.org/packages/xerahs-git) (maintained by @unicxrn).
+
+The fork also maintains a [repository-owned Arch recipe](docs/linux/aur.md) and packaging CI.
+The public AUR listing is separate; its ownership and recipe must be updated by its maintainer.
 
 This package builds directly from the source code and automatically handles dependencies, including the .NET 10 SDK. It can be installed using an AUR helper like `yay`:
 ```bash

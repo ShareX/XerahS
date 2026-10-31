@@ -204,6 +204,46 @@ public sealed class FFmpegCLIManagerTests
 
     private static bool ProcessHasExited(int pid)
     {
+        // On Linux, when a parent and its child are both killed in quick succession (as
+        // FFmpegCLIManager.Close() does), the child becomes a zombie because the parent
+        // is dead and cannot wait() to reap it. Process.GetProcessById() returns zombies
+        // and reports HasExited == false, which would race against init's reaper and
+        // flake the test. Read /proc/<pid>/status directly: State "Z" (zombie) or "X"
+        // (dead) both mean the process has terminated, even if the PID is still in the
+        // table. Falls back to the managed Process API on non-Linux or if /proc is
+        // unavailable.
+        if (OperatingSystem.IsLinux())
+        {
+            string statusPath = $"/proc/{pid}/status";
+            try
+            {
+                foreach (string line in File.ReadAllLines(statusPath))
+                {
+                    if (line.StartsWith("State:", StringComparison.Ordinal))
+                    {
+                        // Format: "State:\t<letter> (<name>)"
+                        // We only care about the first letter: R/S/D/Z/T/X/I/K/P
+                        // Z = zombie, X = dead. Both mean the process has terminated.
+                        int letterIndex = line.IndexOf('\t') + 1;
+                        if (letterIndex > 0 && letterIndex < line.Length)
+                        {
+                            char state = line[letterIndex];
+                            return state == 'Z' || state == 'X' || state == 'K';
+                        }
+                        return false;
+                    }
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                return true;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return true;
+            }
+        }
+
         try
         {
             using Process process = Process.GetProcessById(pid);

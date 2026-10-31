@@ -1,12 +1,11 @@
 import { randomUUID } from "node:crypto";
 
-import { rpc } from "@/lib/database";
+import { rpc, serviceDatabaseClient } from "@/lib/database";
 import { getServerEnv } from "@/lib/env";
 import { requireCronAuthorization } from "@/lib/internal-auth";
 import { json } from "@/lib/responses";
 import { handleApi } from "@/lib/route-handler";
 import { retrieveCanonicalStripeEntitlement } from "@/lib/stripe-entitlement";
-import { createServiceRoleClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,7 +26,7 @@ function errorCode(error: unknown): string {
 async function reconcile(request: Request) {
   return handleApi(request, async () => {
     requireCronAuthorization(request);
-    const service = createServiceRoleClient();
+    const service = serviceDatabaseClient();
     const targets = await rpc<ReconciliationTarget[]>(
       service,
       "list_stripe_reconciliation_targets",

@@ -124,6 +124,16 @@ public sealed class UploadQueueService
         return addedCount;
     }
 
+    public void ResumePendingReviews()
+    {
+        lock (_queueLock)
+        {
+            foreach (var item in _queue) item.ReviewRequired = false;
+            SaveQueueSnapshotLocked();
+        }
+        StartProcessingIfNeeded();
+    }
+
     public int PendingCount
     {
         get
@@ -150,7 +160,7 @@ public sealed class UploadQueueService
     {
         lock (_queueLock)
         {
-            if (_isProcessing || _queue.Count == 0)
+            if (_isProcessing || !_queue.Any(item => !item.ReviewRequired))
             {
                 return;
             }
@@ -173,7 +183,7 @@ public sealed class UploadQueueService
 
                 lock (_queueLock)
                 {
-                    if (_queue.Count == 0)
+                    if (!_queue.Any(queued => !queued.ReviewRequired))
                     {
                         _isProcessing = false;
                         SaveQueueSnapshotLocked();
@@ -181,6 +191,7 @@ public sealed class UploadQueueService
                     }
 
                     item = _queue.Dequeue();
+                    if (item.ReviewRequired) { _queue.Enqueue(item); continue; }
                     SaveQueueSnapshotLocked();
                 }
 
@@ -190,6 +201,10 @@ public sealed class UploadQueueService
                 }
 
                 var result = await ProcessItemAsync(item).ConfigureAwait(false);
+                if (item.ReviewRequired)
+                {
+                    lock (_queueLock) { _queue.Enqueue(item); SaveQueueSnapshotLocked(); }
+                }
                 ItemCompleted?.Invoke(this, result);
                 RaiseStateChanged();
             }
@@ -227,7 +242,7 @@ public sealed class UploadQueueService
 
                 try
                 {
-                    using var task = CreateWorkerTask(item.FilePath);
+                    using var task = CreateWorkerTask(item.FilePath, item.PrivacyRequired);
                     await task.StartAsync().ConfigureAwait(false);
 
                     var url = task.Info?.Result?.URL;
@@ -236,6 +251,12 @@ public sealed class UploadQueueService
                         return new UploadQueueItemCompletedEventArgs(fileName, success: true, url: url, error: null);
                     }
 
+                    if (task.Info?.PrivacyReviewRequired == true)
+                    {
+                        item.ReviewRequired = true;
+                        item.PrivacyRequired = true;
+                        return new UploadQueueItemCompletedEventArgs(fileName, false, null, "Privacy review required. Resume from XerahS.");
+                    }
                     lastError = task.Error?.Message ?? task.Info?.Result?.Response ?? "Upload failed";
                 }
                 catch (Exception ex)
@@ -263,7 +284,7 @@ public sealed class UploadQueueService
     /// </summary>
     internal static void TryDeleteOwnedTempFile(UploadQueueItem item)
     {
-        if (item == null || !item.IsOwnedTempFile || string.IsNullOrWhiteSpace(item.FilePath))
+        if (item == null || item.ReviewRequired || !item.IsOwnedTempFile || string.IsNullOrWhiteSpace(item.FilePath))
         {
             return;
         }
@@ -281,10 +302,11 @@ public sealed class UploadQueueService
         }
     }
 
-    private static WorkerTask CreateWorkerTask(string filePath)
+    private static WorkerTask CreateWorkerTask(string filePath, bool privacyRequired = false)
     {
-        var taskSettings = WatchFolderManager.CloneTaskSettings(SettingsManager.DefaultTaskSettings);
+        var taskSettings = WatchFolderManager.CloneTaskSettings(SettingsManager.GetFirstWorkflow(WorkflowType.FileUpload)?.TaskSettings ?? SettingsManager.DefaultTaskSettings);
         taskSettings.Job = WorkflowType.FileUpload;
+        if (privacyRequired) taskSettings.PrivacySettings.Enabled = true;
         taskSettings.AfterUploadJob = AfterUploadTasks.CopyURLToClipboard;
 
         var task = WorkerTask.Create(taskSettings);
@@ -408,12 +430,15 @@ public sealed class UploadQueueItem
 {
     public string FilePath { get; set; } = string.Empty;
     public DateTime EnqueuedUtc { get; set; }
+    public bool ReviewRequired { get; set; }
+    public bool PrivacyRequired { get; set; }
 
     /// <summary>
     /// When true, the queue owns this path and will best-effort delete it after
     /// processing completes. Not persisted across process restarts (snapshots
     /// deserialize this as false) so a restart never auto-deletes a stale path.
     /// </summary>
+    [JsonIgnore]
     public bool IsOwnedTempFile { get; set; }
 }
 

@@ -1,10 +1,9 @@
 import { z } from "zod";
 
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
 import { rpc, type GalleryItem } from "@/lib/database";
 import { json } from "@/lib/responses";
 import { handleApi } from "@/lib/route-handler";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,7 +32,7 @@ export async function GET(request: Request) {
     const result = await rpc<{
       items: GalleryItem[];
       nextCursor: string | null;
-    }>(await createSupabaseServerClient(request), "list_my_gallery_items", {
+    }>(await createUserDatabaseClient(request), "list_my_gallery_items", {
       p_cursor: query.cursor,
       p_limit: query.limit,
       p_kind: query.kind,

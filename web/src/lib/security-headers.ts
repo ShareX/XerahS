@@ -7,12 +7,7 @@ const staticHeaders: Readonly<Record<string, string>> = {
     "accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), picture-in-picture=(), publickey-credentials-create=(self), publickey-credentials-get=(self), usb=()",
 };
 
-export function contentSecurityPolicy(
-  nonce: string,
-  supabaseUrl: string,
-): string {
-  const supabaseOrigin = new URL(supabaseUrl).origin;
-  const websocketOrigin = supabaseOrigin.replace(/^http/, "ws");
+export function contentSecurityPolicy(nonce: string): string {
   return [
     "default-src 'self'",
     "base-uri 'none'",
@@ -24,7 +19,8 @@ export function contentSecurityPolicy(
     "img-src 'self' data: blob: https:",
     "media-src 'self' blob: https:",
     "font-src 'self'",
-    `connect-src 'self' ${supabaseOrigin} ${websocketOrigin}`,
+    // Auth and data are same-origin (/api/auth, /api/v1).
+    "connect-src 'self'",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
     "upgrade-insecure-requests",
@@ -34,7 +30,6 @@ export function contentSecurityPolicy(
 export function applySecurityHeaders(
   headers: Headers,
   nonce: string,
-  supabaseUrl: string,
   production: boolean,
 ): void {
   for (const [name, value] of Object.entries(staticHeaders))
@@ -43,7 +38,7 @@ export function applySecurityHeaders(
     production
       ? "Content-Security-Policy"
       : "Content-Security-Policy-Report-Only",
-    contentSecurityPolicy(nonce, supabaseUrl),
+    contentSecurityPolicy(nonce),
   );
   if (production)
     headers.set(

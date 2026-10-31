@@ -50,6 +50,7 @@ public partial class ToastWindow : OverlayWindow
     private Border? _urlOverlay;
     private Border? _flyoutHost;
     private Border? _actionsPanel;
+    private Border? _outputChip;
 
     public ToastWindow()
     {
@@ -68,6 +69,7 @@ public partial class ToastWindow : OverlayWindow
         _urlOverlay = this.FindControl<Border>("UrlOverlay");
         _flyoutHost = this.FindControl<Border>("FlyoutHost");
         _actionsPanel = this.FindControl<Border>("ActionsPanel");
+        _outputChip = this.FindControl<Border>("OutputChip");
         if (_flyoutHost != null && _viewModel != null)
         {
             _flyoutHost.Tag = new ToastMenuContext(_viewModel);
@@ -124,6 +126,7 @@ public partial class ToastWindow : OverlayWindow
 
         _viewModel.CloseRequested += OnCloseRequested;
         _viewModel.OpacityChanged += OnOpacityChanged;
+        _viewModel.HoverChanged += OnHoverChanged;
     }
 
     private void AdjustPositionToScreenBounds()
@@ -275,6 +278,10 @@ public partial class ToastWindow : OverlayWindow
 
     private async void OnPointerMoved(object? sender, PointerEventArgs e)
     {
+        // Motion over the toast means the pointer is inside, even if the platform lost the
+        // enter or reported a leave that was not real (X11/XWayland on Linux).
+        _viewModel?.OnPointerMovedInside();
+
         if (!_isDragging || _config == null) return;
 
         var point = e.GetCurrentPoint(this);
@@ -320,27 +327,31 @@ public partial class ToastWindow : OverlayWindow
     private void OnPointerEntered(object? sender, PointerEventArgs e)
     {
         _viewModel?.OnMouseEnter();
-
-        // Show header overlay when there is a URL or a local file path fallback.
-        if (_urlOverlay != null && _viewModel?.HasHeaderText == true)
-        {
-            _urlOverlay.Opacity = 1;
-        }
-
-        SetActionsPanelVisible(true);
     }
 
     private void OnPointerExited(object? sender, PointerEventArgs e)
     {
         _viewModel?.OnMouseLeave();
+    }
 
-        // Hide URL overlay
+    // The hover toolbar, output chip and header overlay all follow the view model's hover
+    // state, the same signal that holds off the auto-hide. On Linux a leave is confirmed
+    // after a short grace period, so a false X11 leave no longer hides the toolbar either.
+    private void OnHoverChanged(object? sender, bool hovered)
+    {
+        ApplyHoverVisuals(hovered);
+    }
+
+    private void ApplyHoverVisuals(bool hovered)
+    {
+        // Show header overlay when there is a URL or a local file path fallback.
         if (_urlOverlay != null)
         {
-            _urlOverlay.Opacity = 0;
+            _urlOverlay.Opacity = hovered && _viewModel?.HasHeaderText == true ? 1 : 0;
         }
 
-        SetActionsPanelVisible(false);
+        SetActionsPanelVisible(hovered);
+        SetOutputChipVisible(!hovered);
     }
 
     private void SetActionsPanelVisible(bool visible)
@@ -352,6 +363,14 @@ public partial class ToastWindow : OverlayWindow
 
         _actionsPanel.Opacity = visible ? 1 : 0;
         _actionsPanel.IsHitTestVisible = visible;
+    }
+
+    private void SetOutputChipVisible(bool visible)
+    {
+        if (_outputChip != null)
+        {
+            _outputChip.Opacity = visible ? 1 : 0;
+        }
     }
 
     private void OnFlyoutOpened(object? sender, EventArgs e)
@@ -392,6 +411,7 @@ public partial class ToastWindow : OverlayWindow
         {
             _viewModel.CloseRequested -= OnCloseRequested;
             _viewModel.OpacityChanged -= OnOpacityChanged;
+            _viewModel.HoverChanged -= OnHoverChanged;
             _viewModel.Dispose();
         }
 

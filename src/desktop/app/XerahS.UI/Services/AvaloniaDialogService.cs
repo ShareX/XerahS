@@ -81,6 +81,15 @@ namespace XerahS.UI.Services
                 debugSource: nameof(MediaBrowserViewModel));
         }
 
+        public Task ShowShareLogsAsync(ShareLogsViewModel viewModel)
+        {
+            return ModalDialogHost.ShowAsync(
+                viewModel,
+                set => viewModel.CloseRequested = _ => set(true),
+                dismissResult: true,
+                debugSource: nameof(ShareLogsViewModel));
+        }
+
         public Task ShowQrCodeGeneratorAsync(QrCodeGeneratorViewModel viewModel)
         {
             return ModalDialogHost.ShowAsync(

@@ -89,12 +89,6 @@ namespace XerahS.UI.ViewModels
         }
 
         [RelayCommand]
-        private void Upload()
-        {
-            // Placeholder for upload functionality
-        }
-
-        [RelayCommand]
         private void OpenLogsFolder()
         {
             try

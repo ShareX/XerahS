@@ -5,6 +5,7 @@ on:
     paths:
       - "src/desktop/app/XerahS.UI/**"
       - "ShareX.ImageEditor/**"
+      - "ShareX.ImageEditor"
       - "build/ci/check_compiled_bindings_guardrails.py"
       - ".github/workflows/compiled-bindings-guardrails.yml"
   push:
@@ -13,6 +14,7 @@ on:
     paths:
       - "src/desktop/app/XerahS.UI/**"
       - "ShareX.ImageEditor/**"
+      - "ShareX.ImageEditor"
       - "build/ci/check_compiled_bindings_guardrails.py"
       - ".github/workflows/compiled-bindings-guardrails.yml"
   workflow_dispatch:
@@ -23,6 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           submodules: recursive
 
       - name: Setup .NET
@@ -31,7 +34,16 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Verify template typing guardrail
-        run: python3 build/ci/check_compiled_bindings_guardrails.py --repo-root .
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [[ "$EVENT_NAME" == "pull_request" ]] && git diff --quiet "$BASE_SHA" HEAD -- ShareX.ImageEditor; then
+            echo "The ImageEditor pin is unchanged; verify templates owned by this XerahS PR."
+            python3 build/ci/check_compiled_bindings_guardrails.py --repo-root . --include 'src/desktop/app/XerahS.UI/**/*.axaml'
+          else
+            python3 build/ci/check_compiled_bindings_guardrails.py --repo-root .
+          fi
 
       - name: Build XerahS.UI with warnings as errors
         run: dotnet build src/desktop/app/XerahS.UI/XerahS.UI.csproj -warnaserror

@@ -54,14 +54,14 @@ public class HostPrivilegeCommandTests
             startInfo,
             HostPrivilegeKind.Pkexec,
             "echo hello",
-            userIdentity: "alice",
-            helperName: "xerahs-quick-setup");
+            userId: "1000",
+            helperName: "xerahs-quick-setup",
+            devicePaths: new[] { "/dev/input/event3", "/dev/input/event7" });
 
-        Assert.That(startInfo.ArgumentList[0], Is.EqualTo("/bin/sh"));
-        Assert.That(startInfo.ArgumentList[1], Is.EqualTo("-c"));
-        Assert.That(startInfo.ArgumentList[2], Is.EqualTo("echo hello"));
-        Assert.That(startInfo.ArgumentList[3], Is.EqualTo("xerahs-quick-setup"));
-        Assert.That(startInfo.ArgumentList[4], Is.EqualTo("alice"));
+        Assert.That(startInfo.ArgumentList, Is.EqualTo(new[]
+        {
+            "/bin/sh", "-c", "echo hello", "xerahs-quick-setup", "1000", "/dev/input/event3", "/dev/input/event7"
+        }));
     }
 
     [Test]
@@ -72,10 +72,11 @@ public class HostPrivilegeCommandTests
             startInfo,
             HostPrivilegeKind.Run0,
             "echo hello",
-            userIdentity: "alice",
-            helperName: "xerahs-quick-setup");
+            userId: "1000",
+            helperName: "xerahs-quick-setup",
+            devicePaths: new[] { "/dev/input/event3" });
 
-        Assert.That(startInfo.ArgumentList[0], Is.EqualTo("--description=XerahS temporary input setup"));
+        Assert.That(startInfo.ArgumentList[0], Is.EqualTo("--description=XerahS keyboard access for global hotkeys"));
         Assert.That(startInfo.ArgumentList[1], Is.EqualTo("/bin/sh"));
     }
 
@@ -88,7 +89,8 @@ public class HostPrivilegeCommandTests
                 startInfo,
                 HostPrivilegeKind.None,
                 "echo hello",
-                userIdentity: "alice",
-                helperName: "xerahs-quick-setup"));
+                userId: "1000",
+                helperName: "xerahs-quick-setup",
+                devicePaths: new[] { "/dev/input/event3" }));
     }
 }

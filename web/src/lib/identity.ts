@@ -2,9 +2,8 @@ import "server-only";
 
 import { createHmac } from "node:crypto";
 
-import { rpc } from "@/lib/database";
+import { rpc, serviceDatabaseClient } from "@/lib/database";
 import { getServerEnv } from "@/lib/env";
-import { createServiceRoleClient } from "@/lib/supabase/server";
 
 const normalizationVersion = 1;
 const hmacKeyVersion = 1;
@@ -23,7 +22,7 @@ export async function registerVerifiedIdentity(
   const identityHmac = createHmac("sha256", secret)
     .update(normalizeVerifiedIdentity(verifiedEmail), "utf8")
     .digest("hex");
-  await rpc(createServiceRoleClient(), "register_verified_identity", {
+  await rpc(serviceDatabaseClient(), "register_verified_identity", {
     p_user_id: userId,
     p_identity_hmac: `\\x${identityHmac}`,
     p_normalization_version: normalizationVersion,

@@ -56,5 +56,31 @@ internal static class DxgiCropRectHelper
         return cropRect.Width > 0 && cropRect.Height > 0;
     }
 
+    /// <summary>
+    /// Maps a crop rectangle made by <see cref="TryCreateCropRect"/> back to desktop coordinates, so only the
+    /// outputs under it need to be captured. This is exact only when the duplicated outputs cover the same size
+    /// as the reported virtual screen (crop scale 1:1). Otherwise the caller must capture the whole desktop and crop.
+    /// </summary>
+    /// <param name="cropRect">Crop rectangle in the pixel space of a whole-desktop capture.</param>
+    /// <param name="desktopBounds">Union of the duplicated outputs, in desktop coordinates.</param>
+    /// <param name="virtualBounds">Virtual screen bounds used to make <paramref name="cropRect"/>.</param>
+    public static bool TryMapCropToDesktop(SKRectI cropRect, Rectangle desktopBounds, Rectangle virtualBounds, out Rectangle desktopRect)
+    {
+        desktopRect = Rectangle.Empty;
+
+        if (desktopBounds.Width != virtualBounds.Width || desktopBounds.Height != virtualBounds.Height ||
+            cropRect.Width <= 0 || cropRect.Height <= 0)
+        {
+            return false;
+        }
+
+        desktopRect = new Rectangle(
+            desktopBounds.X + cropRect.Left,
+            desktopBounds.Y + cropRect.Top,
+            cropRect.Width,
+            cropRect.Height);
+        return true;
+    }
+
     private static bool IsFinite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
 }

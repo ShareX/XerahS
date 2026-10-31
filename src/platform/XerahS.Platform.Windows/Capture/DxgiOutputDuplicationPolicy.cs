@@ -19,10 +19,18 @@ namespace XerahS.Platform.Windows.Capture;
 internal static class DxgiOutputDuplicationPolicy
 {
     /// <summary>
-    /// Vortice's DuplicateOutput1 marshaller can access-violate (0xC0000005) on Windows
-    /// ARM64 GPU drivers instead of returning DXGI_ERROR. That cannot be caught in .NET,
-    /// so region capture must never call it there.
+    /// DuplicateOutput1 can access-violate (0xC0000005) inside the native call instead of
+    /// returning a DXGI error. .NET cannot catch that, so the process dies without a log line.
+    /// It was first seen on ARM64 GPU drivers, then on an x64 multi-monitor SDR desktop where
+    /// every call returned E_INVALIDARG until one of them crashed.
+    /// <para>
+    /// Only call it when it can help: an HDR (PQ/BT.2020) output on an architecture where it
+    /// has not been ruled out, and only until it has failed once in this process. SDR outputs
+    /// get the same BGRA8 surface from DuplicateOutput.
+    /// </para>
     /// </summary>
-    internal static bool ShouldUseDuplicateOutput1(Architecture architecture) =>
-        architecture is Architecture.X64 or Architecture.X86;
+    internal static bool ShouldUseDuplicateOutput1(Architecture architecture, bool isHdrOutput, bool failedThisSession) =>
+        architecture is Architecture.X64 or Architecture.X86 &&
+        isHdrOutput &&
+        !failedThisSession;
 }

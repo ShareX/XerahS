@@ -373,29 +373,6 @@ namespace XerahS.Platform.Windows
         SB_ENDSCROLL = 8
     }
 
-    public enum WindowShowStyle : uint
-    {
-        Hide = 0,
-        ShowNormal = 1,
-        ShowMinimized = 2,
-        ShowMaximized = 3,
-        Maximize = 3,
-        ShowNormalNoActivate = 4,
-        Show = 5,
-        Minimize = 6,
-        ShowMinNoActivate = 7,
-        ShowNoActivate = 8,
-        Restore = 9,
-        ShowDefault = 10,
-        ForceMinimize = 11
-    }
-
-    public enum DWM_EC : uint
-    {
-        DWM_EC_DISABLECOMPOSITION = 0,
-        DWM_EC_ENABLECOMPOSITION = 1
-    }
-
     public enum DWMWINDOWATTRIBUTE : uint
     {
         DWMWA_NCRENDERING_ENABLED = 1,
@@ -502,13 +479,4 @@ namespace XerahS.Platform.Windows
         SWP_SHOWWINDOW = 0x0040
     }
 
-    public enum BitmapCompressionMode : uint
-    {
-        BI_RGB = 0,
-        BI_RLE8 = 1,
-        BI_RLE4 = 2,
-        BI_BITFIELDS = 3,
-        BI_JPEG = 4,
-        BI_PNG = 5
-    }
 }

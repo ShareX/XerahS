@@ -76,6 +76,10 @@ public class TaskInfo
     public EDataType DataType { get; set; }
     public TaskMetadata Metadata { get; set; }
 
+    internal bool PrivacyReviewRequired { get; set; }
+
+    internal Services.Privacy.PrivacyUploadApproval? PrivacyApproval { get; set; }
+
     internal string? ResolvedUploaderHost { get; set; }
 
     /// <summary>Uploader instance that produced the successful upload (recorded in History for "Delete from host").</summary>

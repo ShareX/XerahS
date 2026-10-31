@@ -1,11 +1,10 @@
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
 import { rpc } from "@/lib/database";
 import { enforceSameOriginMutation } from "@/lib/request";
 import { json, pending } from "@/lib/responses";
 import { handleApi } from "@/lib/route-handler";
 import { registerVerifiedIdentity } from "@/lib/identity";
 import { attemptImmediateLedgerDispatch } from "@/lib/ledger/dispatcher";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,11 +24,11 @@ export async function POST(request: Request) {
       verifiedEmail: true,
     });
     await registerVerifiedIdentity(user.id, user.email);
-    const supabase = await createSupabaseServerClient(request);
-    let result = await rpc<TrialResult>(supabase, "start_my_trial");
+    const database = await createUserDatabaseClient(request);
+    let result = await rpc<TrialResult>(database, "start_my_trial");
     if (!result.replicated) {
       await attemptImmediateLedgerDispatch(1);
-      result = await rpc<TrialResult>(supabase, "start_my_trial");
+      result = await rpc<TrialResult>(database, "start_my_trial");
     }
     return result.status === "active" || result.replicated
       ? json({ status: result.status }, { status: 201 })

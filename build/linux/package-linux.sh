@@ -1,6 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
+# Builds stay serial (-m:1, BuildInParallel=false) to avoid shared-output races, but the Roslyn
+# compiler server stays on: it only reuses the compiler process, and cold-starting csc for every
+# project roughly doubled build time. The MSBuild server remains off, as before.
+export DOTNET_CLI_USE_MSBUILD_SERVER=0
+
 # Configuration
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ROOT="$SCRIPT_DIR/../.."
@@ -23,9 +28,7 @@ restore_project_assets_for_os() {
     dotnet restore "$project_path" \
         "${DOTNET_RESTORE_SOURCE_ARGS[@]}" \
         -p:OS="$os_value" \
-        --disable-build-servers \
         -p:nodeReuse=false \
-        -p:UseSharedCompilation=false \
         -p:BuildInParallel=false \
         -m:1
 }
@@ -45,9 +48,7 @@ restore_project_assets_for_publish() {
         -p:SelfContained=true \
         -p:PublishSingleFile=true \
         -p:EnableWindowsTargeting=true \
-        --disable-build-servers \
         -p:nodeReuse=false \
-        -p:UseSharedCompilation=false \
         -p:BuildInParallel=false \
         -m:1
 }
@@ -65,9 +66,7 @@ restore_project_assets_for_runtime() {
         -p:RuntimeIdentifiers="$runtime_identifier" \
         -p:DefineConstants=LINUX \
         -p:EnableWindowsTargeting=true \
-        --disable-build-servers \
         -p:nodeReuse=false \
-        -p:UseSharedCompilation=false \
         -p:BuildInParallel=false \
         -m:1
 }
@@ -105,9 +104,7 @@ restore_scoped_intermediate_assets() {
 dotnet_publish_serial() {
     dotnet publish "$@" \
         "${DOTNET_RESTORE_SOURCE_ARGS[@]}" \
-        --disable-build-servers \
         -p:nodeReuse=false \
-        -p:UseSharedCompilation=false \
         -p:BuildInParallel=false \
         -m:1
 }
@@ -163,6 +160,23 @@ publish_single_plugin() {
         # Ensure plugin.json exists for runtime discovery.
         if [ ! -f "$plugin_output/plugin.json" ] && [ -f "$plugin_dir/plugin.json" ]; then
             cp "$plugin_dir/plugin.json" "$plugin_output/plugin.json"
+        fi
+
+        # The main app is a single-file bundle, so the loose-file check below finds almost
+        # nothing to remove. Strip every library the bundle already carries at the same
+        # version (XerahS.*, ShareX.ImageEditor, SkiaSharp/HarfBuzz natives, ...) using the
+        # app's deps.json; the plugin then resolves them from the app.
+        strip_host_provided_plugin_assets "$plugin_output" "$(dirname "$publish_dir")/XerahS.deps.json" "$plugin_id"
+
+        # Content files of shared libraries (XerahS.Common's Resources/*.txt) ship with the app too.
+        if [ -d "$plugin_output/Resources" ]; then
+            local resource
+            while IFS= read -r -d '' resource; do
+                if cmp -s "$resource" "$publish_dir/Resources/$(basename "$resource")"; then
+                    rm "$resource"
+                fi
+            done < <(find "$plugin_output/Resources" -maxdepth 1 -type f -print0)
+            rmdir "$plugin_output/Resources" 2>/dev/null || true
         fi
 
         # Cleanup: remove files that already exist in the main app directory.
@@ -258,6 +272,11 @@ append_omasnap() {
 
     if [ -z "$stage_dir" ]; then
         temp_stage="$(mktemp -d)"
+        # Local runs reuse one OmaSnap build folder so it only recompiles what changed.
+        # CI (CI=true) builds OmaSnap in its own job and keeps a fresh build every time.
+        if [ -z "${CI:-}" ] && [ -z "${OMASNAP_BUILD_DIR:-}" ]; then
+            export OMASNAP_BUILD_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/xerahs/omasnap-build"
+        fi
         if [ "$allow_missing" = "1" ]; then
             "$ROOT/build/linux/build-omasnap.sh" "$temp_stage"
         else
@@ -328,6 +347,95 @@ smoke_test_omaxerahs_history() {
     fi
 
     echo "  omaxerahs SQLite smoke test passed."
+}
+
+# Remove from a plugin folder every library that the single-file main app already
+# bundles at the same version, and drop those libraries from the plugin's deps.json.
+# Without this each plugin carried its own ShareX.ImageEditor, XerahS.* assemblies and
+# libSkiaSharp/libHarfBuzzSharp (about 18 MB per plugin); PluginFolderCleaner then moved
+# the native ones into _quarantine on first start. With the entries gone, the plugin's
+# AssemblyLoadContext finds no private copy and falls back to the app's.
+strip_host_provided_plugin_assets() {
+    local plugin_output="$1"
+    local host_deps="$2"
+    local plugin_id="$3"
+
+    if [ ! -f "$host_deps" ]; then
+        echo "Error: main app deps.json not found at $host_deps; cannot deduplicate plugin '$plugin_id'." >&2
+        return 1
+    fi
+
+    local deps_path
+    deps_path=$(find "$plugin_output" -maxdepth 1 -name '*.deps.json' -print -quit 2>/dev/null || true)
+    if [ -z "$deps_path" ]; then
+        return 0
+    fi
+
+    python3 - "$plugin_output" "$deps_path" "$host_deps" "$plugin_id" <<'PY'
+import json
+import os
+import sys
+
+plugin_dir, deps_path, host_deps_path, plugin_id = sys.argv[1:5]
+
+with open(host_deps_path, "r", encoding="utf-8") as handle:
+    host_libraries = set(json.load(handle).get("libraries", {}).keys())
+with open(deps_path, "r", encoding="utf-8") as handle:
+    deps = json.load(handle)
+
+own_name = os.path.basename(deps_path)[: -len(".deps.json")]
+targets = deps.get("targets", {})
+libraries = deps.get("libraries", {})
+
+# Library keys are "Name/Version"; only an exact match is provided by the host.
+shared = {key for key in libraries if key in host_libraries and key.split("/")[0] != own_name}
+if not shared:
+    sys.exit(0)
+
+removed_bytes = 0
+removed_files = set()
+for target in targets.values():
+    if not isinstance(target, dict):
+        continue
+    for key in shared:
+        info = target.get(key)
+        if not isinstance(info, dict):
+            continue
+        for group in ("runtime", "native", "resources"):
+            for declared_path in (info.get(group) or {}):
+                for candidate in (os.path.join(plugin_dir, declared_path),
+                                  os.path.join(plugin_dir, os.path.basename(declared_path))):
+                    if os.path.isfile(candidate) and candidate not in removed_files:
+                        removed_bytes += os.path.getsize(candidate)
+                        removed_files.add(candidate)
+                        os.remove(candidate)
+        del target[key]
+
+shared_names = {key.split("/")[0] for key in shared}
+for target in targets.values():
+    if not isinstance(target, dict):
+        continue
+    for info in target.values():
+        dependencies = info.get("dependencies") if isinstance(info, dict) else None
+        if isinstance(dependencies, dict):
+            for name in shared_names & dependencies.keys():
+                del dependencies[name]
+
+for key in shared:
+    libraries.pop(key, None)
+
+# Remove directories emptied by the deletions (runtimes/<rid>/native, culture folders).
+for root, dirs, files in os.walk(plugin_dir, topdown=False):
+    if root != plugin_dir and not os.listdir(root):
+        os.rmdir(root)
+
+with open(deps_path, "w", encoding="utf-8") as handle:
+    json.dump(deps, handle, indent=2)
+    handle.write("\n")
+
+print("  %s: using %d app-provided libraries, removed %d files (%.1f MB)" % (
+    plugin_id, len(shared), len(removed_files), removed_bytes / 1048576.0))
+PY
 }
 
 # Rewrite every runtime/native/resources asset path inside the plugin's deps.json
@@ -532,7 +640,7 @@ for ARCH in "${ARCHITECTURES[@]}"; do
     fi
 
     echo "Running dotnet publish ($ARCH)..."
-    dotnet build-server shutdown >/dev/null 2>&1 || true
+    bash "$SCRIPT_DIR/shutdown-build-servers.sh"
     dotnet_publish_serial "$PROJECT" \
         -c Release \
         -r "$ARCH" \
@@ -578,6 +686,7 @@ for ARCH in "${ARCHITECTURES[@]}"; do
     export PLUGINS_DIR PUBLISH_DIR ARCH
     export -f dotnet_publish_serial
     export -f publish_single_plugin
+    export -f strip_host_provided_plugin_assets
     export -f rewrite_plugin_deps_json
     export -f validate_plugin_dependencies
 
@@ -592,7 +701,7 @@ for ARCH in "${ARCHITECTURES[@]}"; do
 
     echo "Published $PLUGIN_COUNT plugins to startup Plugins folder: $PLUGINS_DIR"
     find "$PUBLISH_DIR" \( -name '*.pdb' -o -name 'DirectML*.dll' -o -name 'DirectML*.pdb' -o -name 'onnxruntime.dll' -o -name 'onnxruntime_providers_shared.dll' -o -name 'libe_sqlite3.a' \) -delete
-    dotnet build-server shutdown >/dev/null 2>&1 || true
+    bash "$SCRIPT_DIR/shutdown-build-servers.sh"
 
     # 2. Package
     echo "Packaging ($ARCH)..."

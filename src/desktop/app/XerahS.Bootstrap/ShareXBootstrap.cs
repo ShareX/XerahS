@@ -216,26 +216,8 @@ namespace XerahS.Bootstrap
             var screenService = new Platform.Windows.WindowsScreenService();
 
             // Create Windows capture service if not provided
-            IScreenCaptureService captureService;
-
-            if (customCaptureService != null)
-            {
-                captureService = customCaptureService;
-            }
-            else
-            {
-                // Choose between modern (Direct3D11/DXGI) or legacy (GDI+) capture
-                if (Platform.Windows.WindowsModernCaptureService.IsSupported)
-                {
-                    DebugHelper.WriteLine("Windows: Using WindowsModernCaptureService (Direct3D11/DXGI)");
-                    captureService = new Platform.Windows.WindowsModernCaptureService(screenService);
-                }
-                else
-                {
-                    DebugHelper.WriteLine("Windows: Using WindowsScreenCaptureService (GDI+)");
-                    captureService = new Platform.Windows.WindowsScreenCaptureService(screenService);
-                }
-            }
+            IScreenCaptureService captureService = customCaptureService
+                ?? Platform.Windows.WindowsScreenCaptureServiceFactory.Create(screenService);
 
             // Initialize Windows platform with capture service
             Platform.Windows.WindowsPlatform.Initialize(captureService);

@@ -64,8 +64,12 @@ public class TestProjectBuildPropertiesTests
     [TestCase("src/desktop/cli/XerahS.CLI/XerahS.CLI.csproj")]
     public void DesktopProductProjects_DevStagingTargets_RequireProductAssembly(string relativeProjectPath)
     {
+        // CopyVideoEditorWebUiForDev was deferred: the web-UI dev-staging target is not yet
+        // implemented in any csproj. Only assert on the targets that actually exist today
+        // (BuildWatchFolderDaemonForDev, BuildPlugins) and gate the assertion on AssembleProduct
+        // so dev-mode staging stays opt-in. Add the web-UI target here once it ships.
         XDocument project = LoadRepositoryXml(relativeProjectPath);
-        string[] targetNames = ["BuildWatchFolderDaemonForDev", "CopyVideoEditorWebUiForDev", "BuildPlugins"];
+        string[] targetNames = ["BuildWatchFolderDaemonForDev", "BuildPlugins"];
 
         foreach (string targetName in targetNames)
         {
@@ -103,15 +107,20 @@ public class TestProjectBuildPropertiesTests
     }
 
     [Test]
-    public void XerahSTests_AppAndCliProjectReferences_DisableAppDrivenPluginBuild()
+    public void XerahSTests_DisablesAppDrivenPluginBuildAtProjectLevel()
     {
+        // ProjectReferences to XerahS.App and XerahS.CLI do NOT carry AdditionalProperties because
+        // extra global properties on App/CLI made a second configuration of UI, Core and RegionCapture
+        // that built into the same obj folders in parallel (AVLN9999 "file is being used by another process").
+        // The test project instead disables app-driven plugin build at the project level:
+        // AssembleProduct defaults to false in Directory.Build.props, EnableAppDrivenPluginBuild
+        // is set to false, and SkipBundlePlugins is set to true.
         string testProjectPath = Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory,
             "../../../../../tests/XerahS.Tests/XerahS.Tests.csproj"));
 
         XDocument project = XDocument.Load(testProjectPath);
 
-        AssertProjectReferenceDisablesAppDrivenPluginBuild(project, "XerahS.App.csproj");
-        AssertProjectReferenceDisablesAppDrivenPluginBuild(project, "XerahS.CLI.csproj");
+        AssertProjectDisablesAppDrivenPluginBuild(project);
     }
 
     [Test]
@@ -177,18 +186,14 @@ public class TestProjectBuildPropertiesTests
         });
     }
 
-    private static void AssertProjectReferenceDisablesAppDrivenPluginBuild(XDocument project, string projectFileName)
+    private static void AssertProjectDisablesAppDrivenPluginBuild(XDocument project)
     {
-        XElement projectReference = project.Descendants("ProjectReference")
-            .Single(element => ((string?)element.Attribute("Include"))?.EndsWith(projectFileName, StringComparison.OrdinalIgnoreCase) == true);
-
-        string? additionalProperties = (string?)projectReference.Attribute("AdditionalProperties");
+        XElement propertyGroup = project.Descendants("PropertyGroup").First();
 
         Assert.Multiple(() =>
         {
-            Assert.That(additionalProperties, Does.Contain("AssembleProduct=false"));
-            Assert.That(additionalProperties, Does.Contain("EnableAppDrivenPluginBuild=false"));
-            Assert.That(additionalProperties, Does.Contain("SkipBundlePlugins=true"));
+            Assert.That((string?)propertyGroup.Element("EnableAppDrivenPluginBuild"), Is.EqualTo("false"));
+            Assert.That((string?)propertyGroup.Element("SkipBundlePlugins"), Is.EqualTo("true"));
         });
     }
 

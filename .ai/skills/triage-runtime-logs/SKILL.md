@@ -26,6 +26,10 @@ If the user only pastes a partial log, work from that first. Read more log conte
 
 ## Workflow
 
+0. Check the knowledge base first ([diagnostics-knowledge-base](../diagnostics-knowledge-base/SKILL.md)).
+   - `diagnostics.search()` the exception type, logger tag, or last message before a silent exit.
+   - A matching signature may already carry the root cause, fix, and fixed-in version, plus other users' reports with system data and monitor layouts.
+
 1. Collapse the log into distinct signatures.
    - Group duplicates by exception type, logger prefix, config path, or repeated message text.
    - Treat repeated per-row or per-hotkey errors as one root cause until proven otherwise.
@@ -61,6 +65,7 @@ If the user only pastes a partial log, work from that first. Read more log conte
 
 8. Record durable lessons when warranted.
    - Add a concise prevention rule to `developers/lessons-learnt/general.md` or a topic file when the bug exposed a reusable guardrail.
+   - Import the user's log if it is not in the knowledge base yet, then tick the issue off with `diagnostics.mark_fixed` (or `annotate_signature` when it is not fixed).
 
 ## Working Rules
 

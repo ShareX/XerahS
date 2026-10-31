@@ -57,6 +57,8 @@ public partial class AfterCaptureViewModel : ViewModelBase
     [ObservableProperty]
     private AfterCaptureGoal _selectedGoal;
 
+    [ObservableProperty] private bool _privacyMode;
+
     public bool Cancelled { get; private set; } = true;
 
     public AfterCaptureQuickAction QuickAction { get; private set; }

@@ -1,7 +1,11 @@
 [CmdletBinding()]
 param(
     # Publish and package ZIPs without requiring Inno Setup or WiX.
-    [switch]$PortableOnly
+    [switch]$PortableOnly,
+
+    # Architectures to package. CI runs one per job in parallel; local runs default to both.
+    [ValidateSet("win-x64", "win-arm64")]
+    [string[]]$Architectures = @("win-x64", "win-arm64")
 )
 
 $ErrorActionPreference = "Stop"
@@ -144,7 +148,7 @@ function Invoke-ScopedIntermediateRestores {
 
 Invoke-ScopedIntermediateRestores
 
-$archs = @("win-x64", "win-arm64")
+$archs = $Architectures
 
 foreach ($arch in $archs) {
     Write-Host "`n-------------------------------------------"

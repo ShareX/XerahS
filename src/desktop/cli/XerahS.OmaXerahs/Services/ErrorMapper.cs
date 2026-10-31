@@ -118,6 +118,11 @@ internal static class ErrorMapper
             return CliErrorCodes.Incompatible;
         }
 
+        if (ContainsAny(message, "file not found", "may have been moved", "no such file"))
+        {
+            return CliErrorCodes.InvalidPath;
+        }
+
         return CliErrorCodes.Provider;
     }
 

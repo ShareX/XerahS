@@ -24,6 +24,16 @@
 
 import CryptoKit
 import Foundation
+import UniformTypeIdentifiers
+
+/// MIME type for an upload, from its file extension (any case). Hosts serve objects with the type they
+/// were uploaded with, so application/octet-stream makes browsers download images instead of showing them.
+enum UploadContentType {
+    static func forFile(atPath path: String) -> String {
+        let ext = (path as NSString).pathExtension.lowercased()
+        return UTType(filenameExtension: ext)?.preferredMIMEType ?? "application/octet-stream"
+    }
+}
 
 /// Upload a file to S3 using AWS Signature V4 and PUT. Returns the object URL on success.
 /// For production, consider AWS SDK for Swift; this is a minimal implementation.
@@ -86,7 +96,7 @@ final class S3Uploader {
         dateStampFormatter.dateFormat = "yyyyMMdd"
         let dateStamp = dateStampFormatter.string(from: now)
         let payloadHash = config.signedPayload ? fileData.sha256Hex : "UNSIGNED-PAYLOAD"
-        let contentType = "application/octet-stream"
+        let contentType = UploadContentType.forFile(atPath: filePath)
 
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"

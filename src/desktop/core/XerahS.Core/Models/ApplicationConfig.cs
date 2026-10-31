@@ -134,6 +134,7 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
 
     // OS Integration (platform-agnostic naming)
     public bool RunAtStartup = false;
+    public bool NetworkMonitorEnabled = false;
     public bool EnableContextMenuIntegration = false;
     public bool EnableSendToIntegration = false;
     public SendToFolderPolicy SendToFolderPolicy = SendToFolderPolicy.IncludeTopLevelFiles;

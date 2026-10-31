@@ -62,7 +62,7 @@ public static class NetworkMonitorToolService
             }
         }
 
-        var viewModel = new NetworkMonitorViewModel();
+        var viewModel = new NetworkMonitorViewModel(keepMonitoring: () => SettingsManager.Settings.NetworkMonitorEnabled);
         _window = new NetworkMonitorWindow
         {
             DataContext = viewModel
@@ -130,7 +130,7 @@ public static class NetworkMonitorToolService
             }
         };
 
-        if (owner != null)
+        if (owner is { IsVisible: true })
         {
             _window.Show(owner);
         }

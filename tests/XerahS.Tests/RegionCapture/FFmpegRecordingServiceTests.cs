@@ -28,6 +28,7 @@ using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 using XerahS.Common;
+using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture.ScreenRecording;
 
 namespace XerahS.Tests.RegionCapture;
@@ -70,6 +71,40 @@ public sealed class FFmpegRecordingServiceTests
             Assert.That(args, Does.Contain($"\"{expectedOutputPath}\""));
             Assert.That(Directory.Exists(Path.GetDirectoryName(expectedOutputPath)!), Is.True);
         });
+    }
+
+    [Test]
+    public void WindowsFallback_MapsWasapiMicrophoneIds_AndMixesBothRequestedSources()
+    {
+        var settings = new ScreenRecordingSettings { CaptureSystemAudio = true, CaptureMicrophone = true, MicrophoneDeviceId = "endpoint-mic" };
+        string args = string.Join(" ", FFmpegRecordingService.BuildWindowsAudioArguments(settings, new Devices()));
+        Assert.Multiple(() =>
+        {
+            Assert.That(args, Does.Contain("Stereo Mix"));
+            Assert.That(args, Does.Contain("USB Microphone"));
+            Assert.That(args, Does.Not.Contain("endpoint-mic"));
+            Assert.That(args, Does.Contain("amix=inputs=2"));
+            Assert.That(args, Does.Contain("-map \"[mixed]\""));
+        });
+    }
+
+    [Test]
+    public void WindowsFallback_DefaultMicrophoneUsesTheActualDefault_AndMissingSelectionsFail()
+    {
+        var settings = new ScreenRecordingSettings { CaptureMicrophone = true };
+        Assert.That(string.Join(" ", FFmpegRecordingService.BuildWindowsAudioArguments(settings, new Devices())), Does.Contain("USB Microphone"));
+        settings.MicrophoneDeviceId = "missing";
+        Assert.Throws<ArgumentException>(() => FFmpegRecordingService.BuildWindowsAudioArguments(settings, new Devices()));
+        settings.CaptureMicrophone = false; settings.CaptureSystemAudio = true; settings.SystemAudioDeviceId = "other-output";
+        Assert.Throws<NotSupportedException>(() => FFmpegRecordingService.BuildWindowsAudioArguments(settings, new Devices()));
+    }
+
+    private sealed class Devices : IRecordingDeviceService
+    {
+        public IReadOnlyList<RecordingDevice> GetMicrophones() => [new("endpoint-mic", "USB Microphone")];
+        public IReadOnlyList<RecordingDevice> GetSystemAudioDevices() => [new("default-output", "Speakers")];
+        public RecordingDevice? GetDefaultMicrophone() => GetMicrophones()[0];
+        public RecordingDevice? GetDefaultSystemAudioDevice() => GetSystemAudioDevices()[0];
     }
 
     private static string InvokeBuildFFmpegArguments(FFmpegRecordingService service, RecordingOptions options)

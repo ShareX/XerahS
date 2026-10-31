@@ -27,9 +27,10 @@ jobs:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      # Direct (unpooled) connection to this environment's branch of the
+      # Neon project xerahs-cloud, used only for migrations.
+      DATABASE_URL_UNPOOLED: ${{ secrets.NEON_DATABASE_URL_UNPOOLED }}
+      XERAHS_DESKTOP_OAUTH_CLIENT_ID: ${{ vars.XERAHS_DESKTOP_OAUTH_CLIENT_ID }}
       APP_ENV: production
       APP_ORIGIN: ${{ vars.APP_ORIGIN }}
     steps:
@@ -43,19 +44,13 @@ jobs:
           node-version: 24.19.0
           cache: pnpm
           cache-dependency-path: web/pnpm-lock.yaml
-      - uses: supabase/setup-cli@v1
-        with:
-          version: 2.115.0
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
-      - run: supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
-      - run: supabase db lint --linked --level warning --fail-on error
-      - run: supabase db push --include-all
-      - run: node scripts/render-supabase-config.mjs
-      - run: supabase config push --project-ref "$SUPABASE_PROJECT_ID"
+      - run: node scripts/db-migrate.ts --dir db/cloud/migrations
+      - run: node scripts/register-desktop-oauth-client.ts
       - run: pnpm dlx vercel@59.4.0 pull --yes --environment=production --token="$VERCEL_TOKEN"
       - run: pnpm dlx vercel@59.4.0 build --prod --token="$VERCEL_TOKEN"
       - id: known-good

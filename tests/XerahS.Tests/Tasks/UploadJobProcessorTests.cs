@@ -237,6 +237,20 @@ public class UploadJobProcessorTests
         }
     }
 
+    [TestCase("selected", "capture.png", true)]
+    [TestCase("different", "capture.png", false)]
+    [TestCase("selected", "capture.jpg", false)]
+    public void ResolveRequestedInstance_AllowsOnlyExplicitlyRoutedFile(string allowedId, string path, bool expected)
+    {
+        var instance = CreateInstance("Routed File", category: UploaderCategory.File);
+        instance.InstanceId = "selected";
+        instance.FileTypeRouting = new FileTypeScope { FileExtensions = [".PNG"] };
+        InstanceManager.Instance.AddInstance(instance);
+        var result = UploadJobProcessor.ResolveRequestedInstance(InstanceManager.Instance, instance.InstanceId,
+            UploaderCategory.Image, false, allowedId, path);
+        Assert.That(result != null, Is.EqualTo(expected));
+    }
+
     [Test]
     public void ResolveRequestedInstance_ReturnsNullWhenCategoryMismatchesAndFallbackDisabled()
     {

@@ -181,6 +181,8 @@ internal static class OverlayRegionCaptureSession
         return new XerahS.RegionCapture.RegionCaptureOptions
         {
             ShowCursor = options?.ShowCursor ?? false,
+            DimOpacity = regionOptions?.UseDimming == false ? 0 : Math.Clamp(regionOptions?.BackgroundDimStrength ?? 20, 0, 100) / 100.0,
+            DimAllExceptSelection = regionOptions?.DimAllExceptSelection ?? false,
             BackgroundImage = backgroundImage,
             UseTransparentOverlay = useFastOverlay,
             EditorOptions = RegionCaptureAnnotationOptionsStore.GetEditorOptions(options?.WorkflowId),

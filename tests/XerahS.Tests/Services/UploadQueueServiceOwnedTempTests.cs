@@ -35,6 +35,25 @@ namespace XerahS.Tests.Services;
 public sealed class UploadQueueServiceOwnedTempTests
 {
     [Test]
+    public void PendingPrivacyReviewPreservesOwnedSourceFile()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"privacy-pending-{Guid.NewGuid():N}.png");
+        File.WriteAllText(path, "synthetic source");
+        try
+        {
+            UploadQueueService.TryDeleteOwnedTempFile(new UploadQueueItem { FilePath = path, IsOwnedTempFile = true, ReviewRequired = true });
+            Assert.That(File.Exists(path), Is.True);
+            string json = Newtonsoft.Json.JsonConvert.SerializeObject(new UploadQueueItem
+                { FilePath = path, IsOwnedTempFile = true, ReviewRequired = true, PrivacyRequired = true });
+            var restored = Newtonsoft.Json.JsonConvert.DeserializeObject<UploadQueueItem>(json)!;
+            Assert.That(restored.ReviewRequired, Is.True);
+            Assert.That(restored.PrivacyRequired, Is.True);
+            Assert.That(restored.IsOwnedTempFile, Is.False);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Test]
     public void TryDeleteOwnedTempFile_DeletesExistingOwnedFile()
     {
         string path = Path.Combine(Path.GetTempPath(), "xerahs_mobile_" + Guid.NewGuid().ToString("N") + ".bin");

@@ -111,6 +111,13 @@ class Program
         CreateTarball(publishDir, tarballPath);
         Console.WriteLine($"Created portable tarball: {tarballName}");
 
+        // Local deploys only need the tarball; CI leaves this unset and builds every format.
+        if (string.Equals(Environment.GetEnvironmentVariable("XERAHS_TARBALL_ONLY"), "1", StringComparison.Ordinal))
+        {
+            Console.WriteLine("Skipped .deb, .rpm and AppImage (XERAHS_TARBALL_ONLY=1).");
+            return;
+        }
+
         // 2. Create .deb
         string debName = $"XerahS-{version}-{arch}.deb";
         string debPath = Path.Combine(outputDir, debName);
@@ -883,12 +890,12 @@ File.CreateSymbolicLink(symlinkPath, "../lib/xerahs/XerahS");
     static bool IsExecutablePayloadPath(string path)
     {
         string normalized = path.Replace('\\', '/');
-        return normalized.EndsWith("/xerahs", StringComparison.OrdinalIgnoreCase) ||
-               normalized.EndsWith("/XerahS", StringComparison.OrdinalIgnoreCase) ||
-               normalized.EndsWith("/xerahs-watchfolder-daemon", StringComparison.OrdinalIgnoreCase) ||
-               normalized.EndsWith("/xerahs-watchfolder-daemon.exe", StringComparison.OrdinalIgnoreCase) ||
-               normalized.EndsWith("/omaxerahs", StringComparison.OrdinalIgnoreCase) ||
-               normalized.EndsWith("/omaxerahs.exe", StringComparison.OrdinalIgnoreCase);
+        string fileName = Path.GetFileName(normalized);
+        return fileName.Equals("xerahs", StringComparison.OrdinalIgnoreCase) ||
+               fileName.Equals("xerahs-watchfolder-daemon", StringComparison.OrdinalIgnoreCase) ||
+               fileName.Equals("xerahs-watchfolder-daemon.exe", StringComparison.OrdinalIgnoreCase) ||
+               fileName.Equals("omaxerahs", StringComparison.OrdinalIgnoreCase) ||
+               fileName.Equals("omaxerahs.exe", StringComparison.OrdinalIgnoreCase);
     }
 
     static void WriteArEntry(Stream stream, string name, byte[] content)

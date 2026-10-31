@@ -42,6 +42,9 @@ public class S3ConfigModel
 
     public string ObjectPrefix { get; set; } = "ShareX/%y/%mo";
 
+    /// <summary>Media Explorer starts at the bucket root instead of the static part of <see cref="ObjectPrefix"/>.</summary>
+    public bool ExplorerBrowseWholeBucket { get; set; } = false;
+
     public bool UseCustomCNAME { get; set; } = false;
 
     public string CustomDomain { get; set; } = string.Empty;

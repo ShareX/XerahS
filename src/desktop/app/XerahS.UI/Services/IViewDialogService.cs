@@ -16,6 +16,7 @@ namespace XerahS.UI.Services
         Task ShowFFmpegOptionsAsync(FFmpegOptionsViewModel viewModel);
         Task ShowMediaBrowserAsync(MediaBrowserViewModel viewModel);
         Task ShowQrCodeGeneratorAsync(QrCodeGeneratorViewModel viewModel);
+        Task ShowShareLogsAsync(ShareLogsViewModel viewModel);
         Task<bool> ShowWatchFolderEditorAsync(WatchFolderEditViewModel viewModel);
         Task<OpenImageChoice> ShowOpenImageChoiceAsync();
         Task<string?> ShowFilePickerAsync(string title, IEnumerable<string>? filters = null);

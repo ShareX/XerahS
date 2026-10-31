@@ -206,6 +206,7 @@
                         IsEnabled="False"
                         IsVisible="{Binding IsCopyUrlGoal}"
                         AutomationProperties.Name="Upload Image to Host"/>
+              <CheckBox Content="Privacy mode: scan and redact before upload" IsChecked="{Binding PrivacyMode}" IsEnabled="{Binding UploadImageToHost}"/>
               <CheckBox Content="Copy URL to clipboard"
                         IsChecked="{Binding CopyURLToClipboard}"
                         IsEnabled="False"

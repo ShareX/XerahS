@@ -1,11 +1,10 @@
 import { z } from "zod";
 
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
 import { rpc } from "@/lib/database";
 import { enforceSameOriginMutation, readJson } from "@/lib/request";
 import { json } from "@/lib/responses";
 import { handleApi } from "@/lib/route-handler";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +23,7 @@ export async function POST(request: Request) {
     });
     const input = profileSchema.parse(await readJson(request));
     const profile = await rpc(
-      await createSupabaseServerClient(request),
+      await createUserDatabaseClient(request),
       "create_gallery_profile",
       {
         p_slug: input.slug,

@@ -856,6 +856,8 @@ Doctor is category-specific **image** readiness. It must not create Paste2/img.f
 
 ### Fail-closed Image routing (no File fallback)
 
+> **Superseded 2026-10-04 (v0.32.4).** `omaxerahs` now routes like the XerahS app: an Image-category destination first, then File-category destinations (`AllowCrossCategoryFallback = true`). `doctor` reports ready when a usable Image destination exists or, failing that, a usable non-Auto File destination, and adds `image.category` (`"Image"` or `"File"`) to say which. Reason: users who configured only a File destination (for example Amazon S3) could upload screenshots from XerahS but saw the Omarchy bar stuck on Not Ready. The section below records the original v1 design.
+
 Setting `taskInfo.DataType = EDataType.Image` is **necessary but not sufficient**. `UploadJobProcessor.UploadWithPluginSystem` already switches Image → `UploaderCategory.Image`, then three later paths still send work to File:
 
 1. No Image instance → `"No Image uploader configured; falling back to File-category instances."` → `TryUploadWithFallback`.

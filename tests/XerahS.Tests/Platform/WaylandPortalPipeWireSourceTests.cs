@@ -36,14 +36,24 @@ namespace XerahS.Tests.Platform;
 public class WaylandPortalPipeWireSourceTests
 {
     [Test]
-    public void UsesThePortalRemoteAndTargetObjectWhenAvailable() =>
-        Assert.That(WaylandPortalRecordingService.BuildPipeWireSource(106, 95, supportsTargetObject: true),
-            Is.EqualTo("pipewiresrc fd=95 target-object=106 do-timestamp=true"));
+    public void UsesThePortalRemoteAndPassesTheNodeIdAsPath() =>
+        Assert.That(WaylandPortalRecordingService.BuildPipeWireSource(106, 95),
+            Is.EqualTo("pipewiresrc fd=95 path=106 do-timestamp=true"));
 
     [Test]
-    public void FallsBackToPathOnOlderPipeWire() =>
-        Assert.That(WaylandPortalRecordingService.BuildPipeWireSource(106, 95, supportsTargetObject: false),
-            Is.EqualTo("pipewiresrc fd=95 path=106 do-timestamp=true"));
+    public void NeverPassesTheNodeIdAsTargetObject()
+    {
+        // target-object takes an object name or serial. A portal node ID there matches nothing,
+        // and pipewiresrc autoconnects to the default video source: the webcam, not the screen.
+        Assert.That(WaylandPortalRecordingService.BuildPipeWireSource(106, 95), Does.Not.Contain("target-object"));
+    }
+
+    [TestCase(1935, 1208, 1920, 1080, true)]  // window stream, webcam frames (the reported bug)
+    [TestCase(1935, 1208, 2419, 1510, false)] // same window at 1.25x scaling
+    [TestCase(3072, 1728, 3840, 2160, false)] // full screen at 1.25x scaling
+    [TestCase(0, 0, 1920, 1080, false)]       // portal did not report a size
+    public void DetectsAStreamWithADifferentShape(int portalWidth, int portalHeight, int frameWidth, int frameHeight, bool differs) =>
+        Assert.That(WaylandPortalRecordingService.StreamShapeDiffers(portalWidth, portalHeight, frameWidth, frameHeight), Is.EqualTo(differs));
 
     [Test]
     public void KeepsTheLegacyFormWithoutARemote() =>

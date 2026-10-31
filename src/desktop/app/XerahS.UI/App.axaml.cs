@@ -56,6 +56,7 @@ public partial class App : Application
     private static readonly TimeSpan ClipboardViewerAutoOpenCooldown = TimeSpan.FromSeconds(2);
     private IWorkflowOrchestrator? _workflowOrchestrator;
     private ITrayIconController? _trayIconController;
+    private RecordingEnterStopHotkey? _recordingEnterStopHotkey;
     private string _baseTitle = AppResources.ProductNameWithVersion;
     private EventHandler? _clipboardChangedHandler;
     private DateTime _lastClipboardViewerAutoOpenUtc = DateTime.MinValue;
@@ -209,9 +210,6 @@ public partial class App : Application
                 }
             });
 
-            // Wire up UploadRequested for embedded editor in MainWindow
-            Services.MainViewModelHelper.WireUploadRequested(mainViewModel, taskManager);
-
             // Wire up CopyRequested for embedded editor in MainWindow (use edited snapshot when on Editor tab)
             Services.MainViewModelHelper.WireCopyRequested(mainViewModel, () =>
             {
@@ -224,7 +222,7 @@ public partial class App : Application
                 return null;
             });
 
-            // Wire up SaveRequested / SaveAsRequested for embedded editor in MainWindow
+            // Use the flattened editor image for upload, save and pin actions.
             Func<SkiaSharp.SKBitmap?> getEmbeddedSnapshot = () =>
             {
                 if (desktop.MainWindow is Views.MainWindow mw)
@@ -235,6 +233,7 @@ public partial class App : Application
                 }
                 return null;
             };
+            Services.MainViewModelHelper.WireUploadRequested(mainViewModel, taskManager, getEmbeddedSnapshot);
             Services.MainViewModelHelper.WireSaveRequested(mainViewModel, getEmbeddedSnapshot, () => desktop.MainWindow);
             Services.MainViewModelHelper.WireSaveAsRequested(mainViewModel, getEmbeddedSnapshot, () => desktop.MainWindow);
             Services.MainViewModelHelper.WirePinRequested(mainViewModel, getEmbeddedSnapshot);
@@ -312,6 +311,7 @@ public partial class App : Application
             _trayIconController = new TrayIconController();
             _workflowOrchestrator.Start(desktop, _baseTitle);
             TrayIconHelper.Instance.Initialize(screenRecordingCoordinator);
+            _recordingEnterStopHotkey = new RecordingEnterStopHotkey(screenRecordingCoordinator, PlatformServices.Hotkey);
             _trayIconController.Initialize();
             InitializeClipboardMonitor(desktop.MainWindow);
             IdleMemoryTrimmer.Initialize(desktop, taskManager);
@@ -324,6 +324,8 @@ public partial class App : Application
                     _clipboardChangedHandler = null;
                 }
                 PlatformServices.ClipboardMonitor.Stop();
+                _recordingEnterStopHotkey?.Dispose();
+                _recordingEnterStopHotkey = null;
                 // OOBE/first-run planning:
                 // Keep `IsFirstTimeRun=true` during the first session so UI (e.g. migration buttons) can show,
                 // then persist it as completed when the app exits.
@@ -434,9 +436,9 @@ public partial class App : Application
             var wizard = new XerahS.UI.Onboarding.OnboardingWizardWindow();
             var result = await wizard.ShowDialogAsync(owner);
 
-            if (result.Completed || result.Skipped)
+            if (result.Completed)
             {
-                DebugHelper.WriteLine("[Onboarding] Wizard completed or skipped, marking first-time run complete.");
+                DebugHelper.WriteLine("[Onboarding] Wizard completed, marking first-time run complete.");
                 SettingsManager.Settings.MarkFirstTimeRunCompleted(persist: false);
             }
         }

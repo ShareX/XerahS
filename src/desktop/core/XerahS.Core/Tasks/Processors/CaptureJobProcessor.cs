@@ -32,6 +32,7 @@ using XerahS.Uploaders.PluginSystem;
 using ShareX.ImageEditor.Core.Persistence;
 using ShareX.ImageEditor.Hosting;
 using XerahS.Core.Services;
+using XerahS.Core.Services.Privacy;
 using SkiaSharp;
 
 namespace XerahS.Core.Tasks.Processors
@@ -64,6 +65,7 @@ namespace XerahS.Core.Tasks.Processors
             ImageEditorSessionResult? editorResult = null;
             string? annotationSidecarPath = null;
             bool annotationSidecarSaveAttempted = false;
+            bool imageChanged = false;
 
             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.ShowAfterCaptureWindow))
             {
@@ -74,10 +76,13 @@ namespace XerahS.Core.Tasks.Processors
                 else
                 {
                     var originalAfterCapture = settings.AfterCaptureJob;
-                    var result = await PlatformServices.UI.ShowAfterCaptureWindowAsync(
+                    bool originalPrivacyMode = settings.PrivacySettings.Enabled;
+                    var choices = await PlatformServices.UI.ShowAfterCaptureWindowWithPrivacyAsync(
                         info.Metadata.Image,
                         settings.AfterCaptureJob,
-                        settings.AfterUploadJob);
+                        settings.AfterUploadJob, settings.PrivacySettings.Enabled);
+                    var result = choices.Tasks;
+                    settings.PrivacySettings.Enabled = choices.PrivacyEnabled;
                     if (result.Cancel)
                     {
                         DebugHelper.WriteLine("After capture window cancelled; aborting workflow.");
@@ -86,6 +91,7 @@ namespace XerahS.Core.Tasks.Processors
 
                     settings.AfterCaptureJob = GetAfterCaptureTasksForRun(result);
                     settings.AfterUploadJob = result.Upload;
+                    if (originalPrivacyMode != settings.PrivacySettings.Enabled) PersistPrivacyModeSetting(settings.WorkflowId, settings.PrivacySettings.Enabled);
                     info.SuppressCompletionNotification = result.QuickAction != AfterCaptureQuickAction.None;
 
                     // Persist "Show after capture window" setting if user unchecked it
@@ -116,6 +122,7 @@ namespace XerahS.Core.Tasks.Processors
                     }
 
                     info.Metadata.Image = processed;
+                    imageChanged = true;
                 }
             }
 
@@ -132,6 +139,7 @@ namespace XerahS.Core.Tasks.Processors
                     {
                         info.Metadata!.Image!.Dispose();
                         info.Metadata.Image = hostedAnnotation.Annotated;
+                        imageChanged = true;
                     }
                 }
                 else if (info.Metadata?.Image != null && PlatformServices.UI != null)
@@ -144,18 +152,45 @@ namespace XerahS.Core.Tasks.Processors
                     }
 
                     editorResult = outcome.Result;
-                    if (editorResult?.RenderedImage != null)
+                    if (editorResult?.RenderedImage == null)
                     {
-                        if (info.Metadata.Image != editorResult.RenderedImage)
-                        {
-                            info.Metadata.Image.Dispose();
-                        }
-                        info.Metadata.Image = editorResult.RenderedImage;
+                        // Cancelled or failed editor exports must not upload the unannotated input.
+                        DebugHelper.WriteLine("Annotation editor returned no image; stopping after-capture tasks.");
+                        return false;
                     }
+                    if (info.Metadata.Image != editorResult.RenderedImage)
+                    {
+                        info.Metadata.Image.Dispose();
+                    }
+                    info.Metadata.Image = editorResult.RenderedImage;
+                    imageChanged = true;
+                }
+                else
+                {
+                    DebugHelper.WriteLine("Annotation editor is unavailable; stopping after-capture tasks.");
+                    return false;
                 }
             }
 
-            if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.SaveImageToFile))
+            if (PrivacyUploadGuard.IsRequired(info))
+            {
+                // Source/annotation sidecars must never survive this upload path.
+                if (editorResult?.SourceImage != null && !ReferenceEquals(editorResult.SourceImage, info.Metadata?.Image)) editorResult.SourceImage.Dispose();
+                editorResult = null;
+                if (!await PrivacyUploadGuard.PrepareAsync(info, token)) return false;
+            }
+
+            if (imageChanged && info.PrivacyApproval == null)
+            {
+                // FilePath may still identify an imported/pre-edit image. Force downstream
+                // saving/uploading to materialize the current pixels without overwriting the input.
+                // Keep the original path until privacy review has checked its source format.
+                info.FilePath = string.Empty;
+            }
+
+            bool editedFileNeeded = imageChanged && (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyFileToClipboard)
+                || settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyFilePathToClipboard));
+            if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.SaveImageToFile) || editedFileNeeded)
             {
                 await SaveImageToFileAsync(info);
                 annotationSidecarPath = await SaveAnnotationSidecarAsync(info, editorResult);
@@ -173,7 +208,7 @@ namespace XerahS.Core.Tasks.Processors
 
             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost))
             {
-                await UploadImageAsync(info);
+                await UploadImageAsync(info, token);
                 if (!annotationSidecarSaveAttempted)
                 {
                     annotationSidecarPath = await SaveAnnotationSidecarAsync(info, editorResult);
@@ -470,6 +505,7 @@ namespace XerahS.Core.Tasks.Processors
 
         private async Task SaveImageToFileAsync(TaskInfo info)
         {
+            if (info.PrivacyApproval != null) return; // Guard already saved the exact approved PNG.
             if (info.Metadata?.Image == null) return;
 
             SkiaSharp.SKBitmap bmp = info.Metadata.Image;
@@ -501,8 +537,13 @@ namespace XerahS.Core.Tasks.Processors
             await Task.CompletedTask;
         }
 
-        private async Task UploadImageAsync(TaskInfo info)
+        private async Task UploadImageAsync(TaskInfo info, CancellationToken token)
         {
+            if (PrivacyUploadGuard.IsRequired(info))
+            {
+                HandleUploadResult(info, await new UploadJobProcessor().UploadCaptureImageAsync(info, token));
+                return;
+            }
             if (string.IsNullOrEmpty(info.FilePath) && info.Metadata?.Image != null)
             {
                 info.FilePath = TaskHelpers.SaveImageAsFile(info.Metadata.Image, info.TaskSettings) ?? string.Empty;
@@ -546,7 +587,7 @@ namespace XerahS.Core.Tasks.Processors
             var ocrService = PlatformServices.Ocr;
             if (ocrService == null || !ocrService.IsSupported)
             {
-                DebugHelper.WriteLine("OCR skipped: OCR is not supported on this platform.");
+                DebugHelper.WriteLine($"OCR skipped: {ocrService?.UnavailableReason ?? "OCR is not supported on this platform."}");
                 return;
             }
 
@@ -850,6 +891,23 @@ namespace XerahS.Core.Tasks.Processors
         /// Persists the "Show after capture window" setting change back to the workflow configuration.
         /// Uses synchronous save to ensure settings are written before app exit.
         /// </summary>
+        private static void PersistPrivacyModeSetting(string? workflowId, bool enabled)
+        {
+            try
+            {
+                var workflow = !string.IsNullOrEmpty(workflowId) ? SettingsManager.GetWorkflowById(workflowId) : null;
+                var settings = workflow?.TaskSettings ?? SettingsManager.DefaultTaskSettings;
+                if (settings == null) return;
+                settings.PrivacySettings.Enabled = enabled;
+                SettingsManager.SaveWorkflowsConfig();
+                DebugHelper.WriteLine($"Persisted PrivacySettings.Enabled={enabled} to workflow '{workflowId}'");
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to persist privacy mode setting");
+            }
+        }
+
         private static void PersistShowAfterCaptureWindowSetting(string? workflowId, bool showWindow)
         {
             try

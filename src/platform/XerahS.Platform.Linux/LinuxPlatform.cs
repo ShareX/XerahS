@@ -81,7 +81,12 @@ namespace XerahS.Platform.Linux
             bool hasGlobalShortcuts = usePortalServices && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.GlobalShortcuts");
             bool hasInputCapture = usePortalServices && PortalInterfaceChecker.HasInterface("org.freedesktop.portal.InputCapture");
 
-            IHotkeyService hotkeyService = CreateHotkeyService(environment, hasGlobalShortcuts);
+            var hotkeyService = new SwitchableHotkeyService(CreateHotkeyService(environment, hasGlobalShortcuts));
+
+            // Quick Setup needs /dev/input, which Flatpak and Snap sandboxes do not expose.
+            PlatformServices.HotkeyAccessSetup = environment.IsSandboxed
+                ? null
+                : new Services.QuickSetup.LinuxInputQuickSetupService(hotkeyService, backendForced: IsHotkeyBackendForced());
 
             IInputService inputService = hasInputCapture
                 ? new WaylandPortalInputService()
@@ -135,9 +140,14 @@ namespace XerahS.Platform.Linux
         /// The backend can be forced with the XERAHS_LINUX_HOTKEY_BACKEND environment variable
         /// (values: evdev, portal, x11) for diagnostics and troubleshooting.
         /// </summary>
+        private static string? GetForcedHotkeyBackend() =>
+            Environment.GetEnvironmentVariable("XERAHS_LINUX_HOTKEY_BACKEND")?.Trim().ToLowerInvariant();
+
+        private static bool IsHotkeyBackendForced() => !string.IsNullOrEmpty(GetForcedHotkeyBackend());
+
         private static IHotkeyService CreateHotkeyService(LinuxRuntimeEnvironment environment, bool hasGlobalShortcuts)
         {
-            string? forced = Environment.GetEnvironmentVariable("XERAHS_LINUX_HOTKEY_BACKEND")?.Trim().ToLowerInvariant();
+            string? forced = GetForcedHotkeyBackend();
 
             if (forced == "portal")
             {
@@ -169,7 +179,7 @@ namespace XerahS.Platform.Linux
                 }
 
                 DebugHelper.WriteLine("Linux hotkeys: evdev backend requested but no readable keyboard devices found. " +
-                    "Grant input access (input group / udev rule) or run 'xerahs doctor --linux-input'.");
+                    "Use Settings > Advanced > Global Hotkeys > Grant keyboard access, join the input group, or run 'xerahs doctor --linux-input'.");
 
                 if (evdevForced)
                 {

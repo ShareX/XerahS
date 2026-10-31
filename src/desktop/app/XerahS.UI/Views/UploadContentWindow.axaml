@@ -56,6 +56,11 @@
                   Classes="source-button accent"
                   Command="{Binding AddURLCommand}"
                   AutomationProperties.Name="Add URL to upload queue" />
+          <Button Content="From URL..."
+                  Classes="source-button accent"
+                  Command="{Binding AddFromURLCommand}"
+                  ToolTip.Tip="Download a file from a URL (including GitHub file links) and upload the file"
+                  AutomationProperties.Name="Download a file from a URL and add it to the upload queue" />
         </WrapPanel>
       </Grid>
     </Border>

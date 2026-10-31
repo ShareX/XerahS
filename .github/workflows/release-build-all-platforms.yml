@@ -54,6 +54,11 @@ jobs:
 
   build-windows:
     needs: validate-version
+    # One job per architecture, in parallel. Both used to run back to back in one job (~17 min).
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [win-x64, win-arm64]
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
@@ -105,10 +110,10 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path build/logs | Out-Null
-          $logPath = "build/logs/windows-build.log"
+          $logPath = "build/logs/windows-${{ matrix.arch }}-build.log"
           Start-Transcript -Path $logPath -Force | Out-Null
           try {
-            .\build\windows\package-windows.ps1
+            .\build\windows\package-windows.ps1 -Architectures ${{ matrix.arch }}
           }
           finally {
             Stop-Transcript | Out-Null
@@ -117,23 +122,20 @@ jobs:
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-release
+          name: windows-release-${{ matrix.arch }}
           if-no-files-found: error
           path: |
-            dist/XerahS-${{ needs.validate-version.outputs.version }}-win-x64.exe
-            dist/XerahS-${{ needs.validate-version.outputs.version }}-win-arm64.exe
-            dist/XerahS-${{ needs.validate-version.outputs.version }}-win-x64.msi
-            dist/XerahS-${{ needs.validate-version.outputs.version }}-win-arm64.msi
-            dist/XerahS-${{ needs.validate-version.outputs.version }}-win-x64-portable.zip
-            dist/XerahS-${{ needs.validate-version.outputs.version }}-win-arm64-portable.zip
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-${{ matrix.arch }}.exe
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-${{ matrix.arch }}.msi
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-${{ matrix.arch }}-portable.zip
 
       - name: Upload Windows build log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-log
+          name: windows-build-log-${{ matrix.arch }}
           if-no-files-found: warn
-          path: build/logs/windows-build.log
+          path: build/logs/windows-${{ matrix.arch }}-build.log
 
   build-macos:
     needs: validate-version
@@ -172,6 +174,23 @@ jobs:
             rm -f "$ARCHIVE_LIST"
           done
 
+      - name: Smoke test native macOS startup
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -s build/ci -p 'test_smoke_desktop_startup.py'
+          case "$(uname -m)" in
+            arm64) ARCH=arm64 ;;
+            x86_64) ARCH=x64 ;;
+            *) echo "Unsupported macOS runner architecture" >&2; exit 1 ;;
+          esac
+          SMOKE_ROOT="$(mktemp -d)"
+          trap 'rm -rf "$SMOKE_ROOT"' EXIT
+          tar -xzf "dist/XerahS-${{ needs.validate-version.outputs.version }}-mac-${ARCH}.tar.gz" -C "$SMOKE_ROOT"
+          python3 -B build/ci/smoke_desktop_startup.py \
+            --app-bundle "$SMOKE_ROOT/XerahS.app" \
+            --output-log build/logs/macos-startup.log
+
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -187,7 +206,9 @@ jobs:
         with:
           name: macos-build-log
           if-no-files-found: warn
-          path: build/logs/macos-build.log
+          path: |
+            build/logs/macos-build.log
+            build/logs/macos-startup.log
 
   # OmaSnap capture engine (XIP0088), bundled in the Linux x64 tarball so XerahS works out of
   # the box on Omarchy/Hyprland. Ubuntu 24.04 ships Qt 6.4, so OmaSnap is built in an Arch
@@ -565,8 +586,14 @@ jobs:
 
           choco --version
 
+      - name: Test Chocolatey release metadata
+        shell: pwsh
+        run: .\build\windows\chocolatey\test-release-metadata.ps1
+
       - name: Sync and pack Chocolatey package
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           .\build\windows\chocolatey\Sync-ChocolateyPackage.ps1 `
             -Version "${{ needs.validate-version.outputs.version }}" `

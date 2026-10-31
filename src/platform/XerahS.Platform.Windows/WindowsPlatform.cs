@@ -45,20 +45,7 @@ namespace XerahS.Platform.Windows
             var clipboardService = new WindowsClipboardService();
             var clipboardMonitorService = new WindowsClipboardMonitorService(clipboardService);
 
-            // If no service provided, use modern DXGI capture if supported, otherwise GDI+
-            if (screenCaptureService == null)
-            {
-                if (WindowsModernCaptureService.IsSupported)
-                {
-                    DebugHelper.WriteLine("Modern DXGI screen capture is supported. Using WindowsModernCaptureService.");
-                    screenCaptureService = new WindowsModernCaptureService(screenService);
-                }
-                else
-                {
-                    DebugHelper.WriteLine("Modern DXGI screen capture is NOT supported (requires Windows 8+). Using legacy GDI+ WindowsScreenCaptureService.");
-                    screenCaptureService = new WindowsScreenCaptureService(screenService);
-                }
-            }
+            screenCaptureService ??= WindowsScreenCaptureServiceFactory.Create(screenService);
 
             PlatformServices.Initialize(
                 platformInfo: new WindowsPlatformInfo(),
@@ -143,6 +130,20 @@ namespace XerahS.Platform.Windows
                     XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "Setting EncoderFactory...");
                     XerahS.RegionCapture.ScreenRecording.ScreenRecorderService.EncoderFactory =
                         () => new Recording.MediaFoundationEncoder();
+
+                    // Preferred native path: GPU-resident capture/encode with WASAPI audio and native pause/resume.
+                    // The capture source + encoder pair above stays registered for builds older than 2004.
+                    if (Recording.WindowsNativeRecordingService.IsSupported)
+                    {
+                        PlatformServices.RecordingDevices = new Recording.WindowsRecordingDeviceService();
+                        XerahS.RegionCapture.ScreenRecording.ScreenRecorderService.NativeRecordingServiceFactory =
+                            () => new Recording.WindowsNativeRecordingService();
+                        XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "GPU native recorder (WindowsNativeRecordingService) registered");
+                    }
+                    else
+                    {
+                        XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "GPU native recorder unavailable; using WGC capture source + Media Foundation encoder");
+                    }
 
                     XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "INIT", "✓ Factories registered successfully");
                 }

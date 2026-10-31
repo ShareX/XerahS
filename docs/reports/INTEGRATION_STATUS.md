@@ -1,5 +1,7 @@
 # Region Capture Backend Integration Status
 
+> **Historical (v0.31.4):** the `IRegionCaptureBackend` stack this report describes was never wired into the app and has been removed on every platform, together with the guides linked below. For Windows capture see [Windows Screen Capture Architecture](../architecture/WINDOWS_SCREEN_CAPTURE.md).
+
 ## Overview
 
 The new region capture backend has been successfully integrated into the UI layer with a feature flag approach. The core architecture is complete, but the platform-specific backends require API compatibility fixes before the new system can be enabled.

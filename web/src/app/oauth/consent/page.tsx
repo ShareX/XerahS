@@ -4,20 +4,18 @@ import { redirect } from "next/navigation";
 import { ConsentDecisionForm } from "@/components/consent-decision-form";
 import { MfaControls } from "@/components/mfa-controls";
 import { requireAuthenticatedUser } from "@/lib/auth";
+import { API_AUDIENCE, DESKTOP_CLIENT_ID } from "@/lib/better-auth";
 import { getPublicEnv, getServerEnv } from "@/lib/env";
 import { ApiError } from "@/lib/errors";
 import {
-  assertDesktopAuthorization,
-  assertDesktopOAuthRedirect,
-  authorizationIdSchema,
   desktopOAuthRedirectUris,
+  parseDesktopAuthorizationQuery,
 } from "@/lib/oauth-validation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 interface ConsentPageProps {
-  searchParams: Promise<{ authorization_id?: string | string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 function ConsentError({ children }: { children: React.ReactNode }) {
@@ -33,18 +31,40 @@ function ConsentError({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default async function ConsentPage({ searchParams }: ConsentPageProps) {
-  const rawAuthorizationId = (await searchParams).authorization_id;
-  const parsed = authorizationIdSchema.safeParse(
-    Array.isArray(rawAuthorizationId)
-      ? rawAuthorizationId[0]
-      : rawAuthorizationId,
-  );
-  if (!parsed.success)
-    return <ConsentError>The authorization request is invalid.</ConsentError>;
+function toSearchParams(
+  input: Record<string, string | string[] | undefined>,
+): URLSearchParams {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(input)) {
+    for (const item of Array.isArray(value)
+      ? value
+      : value === undefined
+        ? []
+        : [value])
+      params.append(key, item);
+  }
+  return params;
+}
 
-  const authorizationId = parsed.data;
-  const consentPath = `/oauth/consent?authorization_id=${encodeURIComponent(authorizationId)}`;
+export default async function ConsentPage({ searchParams }: ConsentPageProps) {
+  const query = toSearchParams(await searchParams);
+  let request: ReturnType<typeof parseDesktopAuthorizationQuery>;
+  try {
+    request = parseDesktopAuthorizationQuery(query, {
+      clientId: DESKTOP_CLIENT_ID,
+      redirectUris: desktopOAuthRedirectUris(getServerEnv().APP_ORIGIN),
+      audience: API_AUDIENCE,
+    });
+  } catch {
+    return (
+      <ConsentError>
+        The authorization request is invalid or has expired. Start again from
+        XerahS.
+      </ConsentError>
+    );
+  }
+
+  const consentPath = `/oauth/consent?${request.oauthQuery}`;
   let user: Awaited<ReturnType<typeof requireAuthenticatedUser>>;
   try {
     user = await requireAuthenticatedUser(undefined, { verifiedEmail: true });
@@ -78,57 +98,28 @@ export default async function ConsentPage({ searchParams }: ConsentPageProps) {
     );
   }
 
-  const env = getServerEnv();
-  const clientId = env.XERAHS_DESKTOP_OAUTH_CLIENT_ID;
-  if (!clientId)
-    return (
-      <ConsentError>Desktop authorization is not configured.</ConsentError>
-    );
-  const redirectUris = desktopOAuthRedirectUris(env.APP_ORIGIN);
-  const supabase = await createSupabaseServerClient();
-  const { data, error } =
-    await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
-  if (error || !data)
-    return <ConsentError>The authorization request has expired.</ConsentError>;
-
-  if (!("authorization_id" in data)) {
-    redirect(assertDesktopOAuthRedirect(data.redirect_url, redirectUris).href);
-  }
-
-  try {
-    assertDesktopAuthorization(data, {
-      clientId,
-      redirectUris,
-      userId: user.id,
-    });
-  } catch {
-    return (
-      <ConsentError>The authorization request is not permitted.</ConsentError>
-    );
-  }
-
-  const scopes = data.scope.trim().split(/\s+/);
   return (
     <section className="card auth-card stack">
       <p className="eyebrow">Desktop authorization</p>
-      <h2>Connect {data.client.name}</h2>
+      <h2>Connect XerahS desktop</h2>
       <p className="lead">
         Allow the XerahS desktop application to use your owner-only cloud
-        gallery as {data.user.email}?
+        gallery as {user.email}?
       </p>
       <div>
-        <strong>Requested identity information</strong>
+        <strong>Requested access</strong>
         <ul>
-          {scopes.map((scope) => (
+          {request.scopes.map((scope) => (
             <li key={scope}>{scope}</li>
           ))}
         </ul>
       </div>
       <p className="status">
         The desktop application can act with the same owner permissions as this
-        session. Approve only if you started this request from XerahS.
+        session until you sign out everywhere. Approve only if you started this
+        request from XerahS.
       </p>
-      <ConsentDecisionForm authorizationId={authorizationId} />
+      <ConsentDecisionForm oauthQuery={request.oauthQuery} />
     </section>
   );
 }

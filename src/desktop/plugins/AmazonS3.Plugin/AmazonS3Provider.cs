@@ -288,7 +288,7 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer, IUpload
 
         string host = pathStyle ? endpoint : $"{config.BucketName}.{endpoint}";
 
-        string prefix = S3ExplorerListHelper.ResolveListPrefix(config.ObjectPrefix, query.FolderPath);
+        string prefix = S3ExplorerListHelper.ResolveListPrefix(S3ExplorerListHelper.GetExplorerRootPrefix(config), query.FolderPath);
 
         // Build query parameters sorted alphabetically for canonical form
         var qp = new SortedDictionary<string, string>
@@ -435,7 +435,7 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer, IUpload
     {
         ValidateExplorerName(folderName);
         return RunExplorerOperationAsync(context, (operations, config) =>
-            operations.CreateFolderAsync(S3ExplorerListHelper.ResolveListPrefix(config.ObjectPrefix, parentPath) + folderName + "/", cancellation));
+            operations.CreateFolderAsync(S3ExplorerListHelper.ResolveListPrefix(S3ExplorerListHelper.GetExplorerRootPrefix(config), parentPath) + folderName + "/", cancellation));
     }
 
     /// <inheritdoc/>
@@ -443,7 +443,7 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer, IUpload
     {
         ValidateExplorerName(fileName);
         return RunExplorerOperationAsync(context, (operations, config) =>
-            operations.UploadAsync(S3ExplorerListHelper.ResolveListPrefix(config.ObjectPrefix, folderPath) + fileName, content, cancellation));
+            operations.UploadAsync(S3ExplorerListHelper.ResolveListPrefix(S3ExplorerListHelper.GetExplorerRootPrefix(config), folderPath) + fileName, content, cancellation));
     }
 
     /// <inheritdoc/>
@@ -690,7 +690,7 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer, IUpload
                 {
                     Id = pfx,
                     Name = name,
-                    Path = S3ExplorerListHelper.GetExplorerPath(pfx, config.ObjectPrefix),
+                    Path = S3ExplorerListHelper.GetExplorerPath(pfx, S3ExplorerListHelper.GetExplorerRootPrefix(config)),
                     IsFolder = true,
                     Metadata = BuildItemMetadata(metadataTemplate, pfx)
                 });
@@ -717,7 +717,7 @@ public class AmazonS3Provider : UploaderProviderBase, IUploaderExplorer, IUpload
                 {
                     Id = key,
                     Name = name,
-                    Path = S3ExplorerListHelper.GetExplorerPath(key, config.ObjectPrefix),
+                    Path = S3ExplorerListHelper.GetExplorerPath(key, S3ExplorerListHelper.GetExplorerRootPrefix(config)),
                     SizeBytes = size,
                     ModifiedAt = modified,
                     MimeType = mime,

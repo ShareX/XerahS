@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "purpose": "Hot state for recurring XerahS hourly review selection. Keep this file small and machine-readable; archive raw detail separately.",
-  "last_updated": "2026-09-29 08:06 AWST",
+  "last_updated": "2026-10-25 00:08 AWST",
   "selection_rules": [
     "Read this JSON first, then the short current tracker only if human context is needed.",
     "Prefer the stalest high-priority area that is not blocked by a larger prerequisite.",
@@ -1748,6 +1748,644 @@
       "item": "xerahs-bugfix consumer queue",
       "commit": null,
       "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. HEAD (fbc5de74de) == declan/develop (0ed380fa5c); origin/develop (0ed380fa5c) is 1 behind (preserved pre-staged v0.31.0 work from prior session). upstream/develop (1f4249d5bb) is already an ancestor of HEAD: True (Step 3 non-negotiable verified; merge no-op since prior tick landed 56404db6). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop: True; single-remote sync verified). Working tree porcelain: empty. recently_pivoted 48/200. last_runs 99 -> 100 rows. No code change this tick; no pivot to drain.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-09-29 16:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 2b9ec379 (v0.31.3) == declan/develop; Step 3 fetched upstream/develop 9712850d (v0.31.4 + v0.32.0 Linux hotkey + v0.31.4 capture refactors: 65d44f6a merge upstream/develop; 2f2fcd6e Show Linux hotkey delivery; 66a8f6f6 Wire Linux Quick Setup; f901c05f WGC docs; fbf9a356 GDI bitmap deselect; c33da964 WGC staging texture; da7dfd8f Remove unreferenced capture scaffolding; 45fe90ad Remove dead Windows legacy helpers; 50e3aae4 Remove IRegionCaptureBackend stack; 81abc3e9 Rebuild Windows capture as layered backend chain; f68af14c PR #291; 9712850d v0.31.4 release). Local fast-forwarded to upstream tip, then push rejected non-fast-forward (v1.1.26 pitfall): another Declan session had pushed 10 commits to declan/develop while this cron was running its upstream merge. Resolved with --no-ff merge 211a0536 of declan/develop (audit-trail preserved; only Directory.Build.props version-bump overlap with no state JSON / tracker conflict). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop; single-remote sync verified; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 101 -> 102 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-09-30 00:05 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD c039113c == declan/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD c039113c == declan/develop c039113c (already up to date); origin/develop 46c1ac1f is 24 commits behind. Submodule ShareX.ImageEditor clean at d7c027fa9b92 (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule so single-remote sync verified). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 102 -> 103 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.16 deferred-file cleanup triggered because there are no deferred files; no Step 10 blockers hit).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-09-30 08:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD b90fa0a7 (2 commits ahead of declan/develop 3568914e). Step 2 pushed 3568914e..b90fa0a7 to declan/develop ([v0.32.0] Neon schema + Better Auth). After push HEAD == declan/develop == b90fa0a7. Step 3 fetched upstream/develop 9712850d; already an ancestor of HEAD (merge-base == upstream, merge no-op). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop; no upstream remote inside submodule). Working tree porcelain: untracked web/skills-lock.json only (not staged). No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 103 -> 104 rows (+1 vs HEAD, XIP0077 +0/+1). No code change this tick; no pivot to drain.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-09-30 16:08 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "status": "no-op",
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 9426c905 (v0.32.0) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: untracked web/skills-lock.json only (left unstaged). No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 104 -> 105 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run."
+    },
+    {
+      "ts": "2026-10-01 00:09 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "status": "no-op",
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD fc681561 (v0.32.3) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 105 -> 106 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run."
+    },
+    {
+      "ts": "2026-10-01 18:41 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "status": "no-op",
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 0322feda (v0.32.3) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 0322feda == declan/develop 0322feda (already up to date); origin/develop advanced fc681561..0322feda on fetch and now equals HEAD. Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 106 -> 107 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run."
+    },
+    {
+      "ts": "2026-10-02 00:09 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "status": "no-op",
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 1283e4b9 (v0.32.3) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 107 -> 108 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-02 08:13 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "status": "no-op",
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 293b1e24 (v0.32.3) == declan/develop. origin/develop is 1283e4b9 (ahead-of-origin by 1 empty-queue audit from prior tick; expected). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 108 -> 109 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-02 16:09 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "status": "no-op",
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD f0ccae03 (v0.32.3) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD f0ccae03 == declan/develop f0ccae03 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 109 -> 110 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-03 00:13 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "status": "no-op",
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD a4c6dc43 (v0.32.3) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD a4c6dc43 == declan/develop a4c6dc43 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 110 -> 111 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-03 08:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "status": "no-op",
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 8048507f (v0.32.3) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 8048507f == declan/develop 8048507f (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 111 -> 112 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-03 16:09 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 44257a94 (v0.32.4) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 44257a94 == declan/develop 44257a94 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 112 -> 113 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-04 00:10 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 4a830ac3 (v0.32.4) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 4a830ac3 == declan/develop 4a830ac3 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 113 -> 114 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-04 08:05 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 41cfd3be (v0.32.4) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 41cfd3be == declan/develop 41cfd3be (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 114 -> 115 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-04 16:08 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD b88df52a (v0.32.5) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD b88df52a == declan/develop b88df52a (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 115 -> 116 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-05 00:09 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 228b3922 (v0.32.5) == declan/develop. origin/develop is b88df52a (ahead-of-origin by 1 empty-queue audit from prior tick; expected). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 228b3922 == declan/develop 228b3922 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 116 -> 117 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-05 08:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 4c200040 (v0.32.5) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 4c200040 == declan/develop 4c200040 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 117 -> 118 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-05 16:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 584bceda (v0.32.5) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 584bceda == declan/develop 584bceda (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 118 -> 119 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-06 00:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with local HEAD f1be20d3 (v0.32.6) one commit ahead of declan/develop 3157103f; Step 2 pushed f1be20d3 to declan/develop (never force). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, left-right 68 0, no merge needed). Fork sync: after push, HEAD f1be20d3 == declan/develop f1be20d3. origin/develop remains at 3157103f (per-agent remote is the push target; not a blocker). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 119 -> 120 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-06 08:05 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD af55192b (v0.32.6) == declan/develop af55192b. origin/develop is also at af55192b after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD af55192b == declan/develop af55192b (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261006-080549.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 120 -> 121 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-06 16:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD e011b311 (v0.32.6) == declan/develop e011b311. origin/develop fetched this tick from af55192b to e011b311 (caught up with local). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, 70 KovaForge commits ahead, no merge needed). Fork sync: HEAD e011b311 == declan/develop e011b311 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261006-160644.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 121 -> 122 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-07 00:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD bb418b2d (v0.32.6) == declan/develop bb418b2d. origin/develop is also at bb418b2d after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD bb418b2d == declan/develop bb418b2d (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261007-000633.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 122 -> 123 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-07 08:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 9d50aac0 (v0.32.6) == declan/develop 9d50aac0. origin/develop is also at 9d50aac0 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD 9d50aac0 == declan/develop 9d50aac0 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261007-080630.patch. Linux project + tests Release build succeeded (0/0); filtered WaylandRecordingFallbackTests aborted because testhost requires Microsoft.AspNetCore.App 10.0 and this omarchy host only has Microsoft.NETCore.App (DOTNET_ROOT overlay does not satisfy testhost). No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 123 -> 124 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain."
+    },
+    {
+      "ts": "2026-10-07 16:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD fea75179 (v0.32.6) == declan/develop fea75179. origin/develop is also at fea75179 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD fea75179 == declan/develop fea75179 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261007-160651.patch. Linux project + tests Release build succeeded (0/0); testhost still requires Microsoft.AspNetCore.App 10.0 and this omarchy host only has Microsoft.NETCore.App (DOTNET_ROOT overlay does not satisfy testhost; no test run this tick). No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 124 -> 125 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-08 00:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD dfd632c7 (v0.32.6) == declan/develop dfd632c7. origin/develop is also at dfd632c7 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD dfd632c7 == declan/develop dfd632c7 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261008-000628.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 125 -> 126 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-08 08:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 28639a8e (v0.32.6) == declan/develop 28639a8e. origin/develop is also at 28639a8e after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD 28639a8e == declan/develop 28639a8e (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261008-080700.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 126 -> 127 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-08 16:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 37b252b3 (v0.32.6) == declan/develop 37b252b3. origin/develop is also at 37b252b3 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD 37b252b3 == declan/develop 37b252b3 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261008-160655.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 127 -> 128 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-09 00:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 9c66eaaf (v0.32.6) == declan/develop 9c66eaaf. origin/develop is also at 9c66eaaf after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, 77 KovaForge commits ahead, no merge needed). Fork sync: HEAD 9c66eaaf == declan/develop 9c66eaaf (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261009-000658.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 128 -> 129 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-09 08:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 6a1f8816 (v0.32.6) == declan/develop 6a1f8816. origin/develop is also at 6a1f8816 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD 6a1f8816 == declan/develop 6a1f8816 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests) was stashed for this tick as wip-cron-20261009-000655-declan-preserving-FFmpegEncodingBridge-WaylandRecordingFallbackTests and restored after the audit commit; not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261009-000655.patch. No deferred-last-runs files. Preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 129 -> 130 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-09 16:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD af1be7f0 (v0.32.6) == declan/develop af1be7f0. origin/develop is also at af1be7f0 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, 79 KovaForge commits ahead, no merge needed). Fork sync: HEAD af1be7f0 == declan/develop af1be7f0 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests) was stashed for this tick as wip-preserved-20261009T080654Z-declan-preserving-2-file-WIP-I420-RawWidth and restored after the audit commit; not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261009T080654Z.patch. No deferred-last-runs files. Preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 130 -> 131 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-10 00:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 190a391c (v0.32.6) == declan/develop 190a391c. origin/develop is also at 190a391c after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, 80 KovaForge commits ahead, no merge needed). Fork sync: HEAD 190a391c == declan/develop 190a391c (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests) was stashed for this tick as xerahs-bugfix-20261009T160712Z-pre-sync-wip-ffmpeg-wayland and restored after the audit commit; not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261009T160712Z.patch. No deferred-last-runs files. Preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 131 -> 132 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-10 08:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 7ee5fcc3 (v0.32.6) == declan/develop 7ee5fcc3. origin/develop is also at 7ee5fcc3 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, 81 KovaForge commits ahead, no merge needed). Fork sync: HEAD 7ee5fcc3 == declan/develop 7ee5fcc3 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests) was stashed for this tick as xerahs-bugfix 20261010T000702Z preserve-wip FFmpegEncodingBridge I420 and restored after the audit commit; not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261010T000702Z.patch. No deferred-last-runs files. Preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 132 -> 133 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers)."
+    },
+    {
+      "ts": "2026-10-10 16:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD c4455992 (v0.32.6) == declan/develop c4455992. origin/develop is also at c4455992 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, 82 KovaForge commits ahead, no merge needed). Fork sync: HEAD c4455992 == declan/develop c4455992 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests) was stashed for this tick as wip-preserved-20261010-160759-declan-preserving-2-file-I420-WIP-during-empty-queue-audit and restored after the audit commit; not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261010T160759Z.patch. No deferred-last-runs files. Preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 133 -> 134 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-12 08:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates in next_candidates; queue 0 -> 0. Tick started with HEAD 6cdd03ca0 (v0.33.1) == declan/develop 6cdd03ca0. Step 3 fetched upstream/develop 9712850d2 and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD == declan/develop (6cdd03ca0); origin/develop also at 6cdd03ca0 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9 (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree clean; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs +1 vs HEAD (within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-12 16:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates; queue 0 -> 0. Empty-queue audit tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-13 00:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates in next_candidates. Fork sync HEAD == declan/develop (01f059fb). upstream/develop (9712850d) already ancestor of HEAD. ShareX.ImageEditor clean (d7c027fa9 == origin/develop). recently_pivoted FIFO at 48 / 200. No fixes to land; tracker + last_runs refreshed per v1.1.9 empty-queue audit contract. HEAD last_runs delta: 136 -> 137 (+1, within XIP0077 +0/+1 cap).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-13 08:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "queue empty after Step 5a; no code change this tick",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-13 16:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "queue empty after Step 5a; no code change this tick; tick 20261013-160742",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-14 00:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at a1453779, upstream/develop 9712850d is ancestor of HEAD). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa). No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-14 08:08 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop at c54e1590, upstream/develop already ancestor, 113 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved 12-file WIP as stash wip-preserved-20261014-080611-declan-preserving-12-file-WIP-during-upstream-merge (not popped). No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-14 16:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at ba367240, upstream/develop already ancestor, 114 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-15 00:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop at 75787cc1, origin/develop ba367240 is 1 behind, upstream/develop already ancestor, 115 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-15 08:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at fe40c247, upstream/develop 9712850d already ancestor, 119 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved unstaged iOS WIP (26 files under src/mobile/ios, not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-15 16:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at b5b0e107, upstream/develop 9712850d already ancestor, 120 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved unstaged iOS WIP (26 files under src/mobile/ios, not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-16 00:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at 11924a7f, upstream/develop 9712850d already ancestor, 130 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved unstaged teammate WIP (src/mobile/ios + web/, not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-16 08:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at 43e90646, upstream/develop 9712850d already ancestor, 131 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved unstaged teammate WIP (src/mobile/ios + web/, not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-16 16:10 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at c4b32117, upstream/develop 9712850d already ancestor, 132 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved unstaged teammate WIP (src/mobile/ios + web/, not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-17 00:10 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at 46c5d618, upstream/develop 9712850d already ancestor, 133 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved unstaged teammate WIP (src/mobile/ios + web/, not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-17 08:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at 10dc361b, upstream/develop 9712850d already ancestor, 134 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved unstaged teammate WIP (src/mobile/ios + web/, not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-17 16:11 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at 0a7b2899, upstream/develop 9712850d already ancestor, 137 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved unstaged teammate WIP (src/mobile/ios + web/, not discarded, not stashed, not committed). Also left unstaged local dirty tree on LinuxProcessTree.cs / FFmpegCLIManager.cs / two test files (reverses HEAD 0a7b2899; not discarded). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-18 00:08 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at bc15f80e, upstream/develop 9712850d already ancestor, 138 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved unstaged teammate WIP (src/mobile/ios + web/, not discarded, not stashed, not committed). Also left unstaged local dirty tree on LinuxProcessTree.cs / FFmpegCLIManager.cs / two test files (reverses HEAD 0a7b2899; not discarded). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-18 08:05 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at 08c41ed1, upstream/develop 9712850d already ancestor, 139 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved unstaged teammate WIP (src/mobile/ios + web/, not discarded, not stashed, not committed). Also left unstaged local dirty tree on LinuxProcessTree.cs / FFmpegCLIManager.cs / two test files (reverses HEAD 0a7b2899; not discarded). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-18 16:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at 8005f99e, upstream/develop 9712850d already ancestor, 140 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved unstaged teammate WIP (src/mobile/ios + web/, not discarded, not stashed, not committed). Also left unstaged local dirty tree on LinuxProcessTree.cs / FFmpegCLIManager.cs / two test files (reverses HEAD 0a7b2899; not discarded). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-19 00:08 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at 81069ae6, upstream/develop 9712850d already ancestor, 143 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at d7c027fa; no upstream remote). Preserved unstaged teammate WIP (src/mobile/ios + web/, not discarded, not stashed, not committed). Also left unstaged local dirty tree on LinuxProcessTree.cs / FFmpegCLIManager.cs / FFmpeg desktop files / two test files (reverses HEAD 0a7b2899; not discarded). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-19 08:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at ec5803ba, upstream/develop 9712850d already ancestor, 157 KovaForge commits ahead). ShareX.ImageEditor origin/develop fast-forwarded d7c027fa -> fc2a4f36 (no upstream remote). Parent gitlink left uncommitted to preserve existing dirty index/WIP. Preserved teammate WIP (src/mobile/ios + web/ + 32 previously staged files, not discarded, not stashed, not committed). Also left remaining worktree dirty files (not discarded). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-19 16:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a found zero candidates in next_candidates; fork + upstream sync no-op (HEAD == declan/develop == origin/develop at ce025207, upstream/develop 9712850d already ancestor, 158 KovaForge commits ahead). ShareX.ImageEditor submodule clean (HEAD == origin/develop at fc2a4f36; no upstream remote). Preserved unstaged teammate WIP (src/mobile/ios + web/ + remaining dirty tree, not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-20 00:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates in next_candidates; fork sync no-op (HEAD == declan/develop at f282227f, origin/develop at ae9a5cc7). upstream/develop (9712850d) already ancestor of HEAD (162 KovaForge commits ahead, 0 incoming). ShareX.ImageEditor submodule clean (fc2a4f36 == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. Preserved unstaged teammate WIP (101 files including src/mobile/ios, web/, build/linux, README, docs/, .github/workflows, tests/) left as found (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-20 08:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates in next_candidates; fork sync no-op (HEAD == declan/develop == origin/develop at 5aa3463f). upstream/develop (9712850d) already ancestor of HEAD (165 KovaForge commits ahead, 0 incoming). ShareX.ImageEditor submodule fast-forwarded fc2a4f3 -> f34dd43 (no upstream remote on submodule); HEAD tree gitlink already at f34dd43 so no parent pointer update needed. Since last audit (f282227f, v0.33.3) three non-audit commits landed on declan/develop: dbf65ef4 ([Fix] Keep the update prompt opaque), 6608ea49 ([v0.33.4] Preserve native tray menu identity), 5aa3463f ([v0.33.5] Authenticate Chocolatey release metadata requests); plus audit-cycle merge db02e57a and prior-tick audit 53990817. recently_pivoted FIFO at 48 / 200. Preserved unstaged teammate WIP (109 files: build/, docs/, .github/workflows, src/desktop/app, src/desktop/plugins, tests/, etc.) left as found (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-20 18:20 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates in next_candidates; fork sync no-op (HEAD == declan/develop == origin/develop at 4a100f7f). upstream/develop (9712850d) already ancestor of HEAD (167 KovaForge commits ahead, 0 incoming). ShareX.ImageEditor submodule clean (f34dd43 == origin/develop; no upstream remote on submodule); parent gitlink already at f34dd43 so no submodule pointer update needed. Since last audit (5aa3463f, v0.33.5) one non-audit commit landed on declan/develop: 4a100f7f (this empty-queue audit + tracker/state JSON refresh). recently_pivoted FIFO at 48 / 200. Preserved unstaged teammate WIP (109 files: build/, docs/, .github/workflows, src/desktop/app, src/desktop/plugins, src/mobile/ios + web/, tests/, etc.) left as found (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-21 00:08 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates (next_candidates empty at HEAD); fork sync up to date, upstream/develop already an ancestor, submodule clean.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-21 08:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates (next_candidates empty at HEAD); fork sync up to date, upstream/develop already an ancestor, submodule clean.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-21 16:09 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates (next_candidates empty at HEAD); fork sync up to date at 1915e566, upstream/develop 9712850d already an ancestor (171 KovaForge commits ahead, 0 incoming), submodule ShareX.ImageEditor clean at f34dd43.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-22 00:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates (next_candidates empty at HEAD); fork sync no-op (HEAD == declan/develop == origin/develop at 65665a63). upstream/develop (9712850d) already ancestor of HEAD (172 KovaForge commits ahead, 0 incoming). ShareX.ImageEditor submodule clean at f34dd43 == origin/develop (no upstream remote on submodule); parent gitlink already at f34dd43 so no pointer update. recently_pivoted FIFO at 48 / 200. Preserved unstaged teammate WIP (Directory.Build.props disk 0.33.2 vs HEAD 0.33.5 plus bulk src/docs/build/web/mobile files) left as found (not discarded, not stashed, not committed). Older stashes left untouched. No deferred-last-runs files. No code fixes landed this tick.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-22 08:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero candidates (next_candidates empty at HEAD); fork sync no-op (HEAD == declan/develop == origin/develop at 596b451c). upstream/develop 9712850d already an ancestor (175 KovaForge commits ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches origin/develop; parent gitlink unchanged (no upstream remote inside submodule). No picks, no pivots. last_runs 164 -> 165 (+1 audit row). recently_pivoted FIFO at 48 / 200. Preserved unstaged teammate WIP (109 files: bulk-stale checkout vs HEAD 0.33.5, disk Directory.Build.props 0.33.2) left as found (not discarded, not stashed, not committed). Older stashes left untouched. No deferred-last-runs files.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-22 16:15 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero next_candidates (queue 0 -> 0); no fixes, no pivots this tick. HEAD 046e33ef == declan/develop == origin/develop; upstream/develop 9712850d already an ancestor.",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-23 00:07 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero next_candidates (queue 0 -> 0); no fixes, no pivots this tick. Deleted stale deferred-last-runs files if any. HEAD c1d15cce == declan/develop == origin/develop; upstream/develop 9712850d already an ancestor. ShareX.ImageEditor clean at f34dd43 == origin/develop (no upstream remote in submodule).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-23 08:05 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero next_candidates (queue 0 -> 0); no fixes, no pivots this tick. Deleted stale deferred-last-runs files if any. HEAD 9deee676 == declan/develop == origin/develop; upstream/develop 9712850d already an ancestor (183 KovaForge commits ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43 == origin/develop (no upstream remote in submodule).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-23 16:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero next_candidates (queue 0 -> 0); no fixes, no pivots this tick. Deleted stale deferred-last-runs files if any. HEAD f9a7e0c2 == declan/develop == origin/develop; upstream/develop 9712850d already an ancestor (184 KovaForge commits ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43 == origin/develop (no upstream remote in submodule).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-24 00:06 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero next_candidates (queue 0 -> 0); no fixes, no pivots this tick. Deleted stale deferred-last-runs files if any. HEAD 64c733a7 == declan/develop == origin/develop; upstream/develop 9712850d already an ancestor (185 KovaForge commits ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43 == origin/develop (no upstream remote in submodule).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-24 08:05 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero next_candidates (queue 0 -> 0); no fixes, no pivots this tick. Deleted stale deferred-last-runs files if any. HEAD c0c11c29 == declan/develop == origin/develop; upstream/develop 9712850d already an ancestor (186 KovaForge commits ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43 == origin/develop (no upstream remote in submodule).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-24 16:09 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero next_candidates (queue 0 -> 0); no fixes, no pivots this tick. Deleted stale deferred-last-runs files if any. HEAD f03e33ce == declan/develop == origin/develop; upstream/develop 9712850d already an ancestor (189 KovaForge commits ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43 == origin/develop (no upstream remote in submodule).",
+      "status": "no-op"
+    },
+    {
+      "ts": "2026-10-25 00:08 AWST",
+      "agent": "declan",
+      "outcome": "no-op",
+      "item": "xerahs-bugfix consumer queue",
+      "commit": null,
+      "summary": "Step 5a categoriser found zero next_candidates (queue 0 -> 0); no fixes, no pivots this tick. Deleted stale deferred-last-runs files if any. HEAD 63b85d75 == declan/develop == origin/develop; upstream/develop 9712850d already an ancestor (190 KovaForge commits ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43 == origin/develop (no upstream remote in submodule).",
       "status": "no-op"
     }
   ],

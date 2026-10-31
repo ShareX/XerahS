@@ -59,6 +59,14 @@ Use the packaging script below. If the host buffers output, capture a log and in
 bash build/linux/package-linux.sh > build_output.log 2>&1
 ```
 
+For a local install or test build, build one architecture and only the tarball:
+
+```bash
+XERAHS_ARCHITECTURES=linux-x64 XERAHS_TARBALL_ONLY=1 bash build/linux/package-linux.sh > build_output.log 2>&1
+```
+
+`XERAHS_TARBALL_ONLY=1` skips the .deb, .rpm and AppImage. Local runs reuse an OmaSnap build folder (`${XDG_CACHE_HOME:-~/.cache}/xerahs/omasnap-build`, override with `OMASNAP_BUILD_DIR`), so OmaSnap only recompiles what changed. CI sets neither and still builds every format with a clean OmaSnap build.
+
 Verify the exit code and resulting artifacts. Judge stalls from output and process activity, not a fixed timeout.
 
 ### Phase 3: Handle Common Failures

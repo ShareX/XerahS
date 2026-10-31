@@ -1,6 +1,4 @@
 using NUnit.Framework;
-using ShareX.Avalonia.Platform.Abstractions.Capture;
-using XerahS.Platform.MacOS.Capture;
 using XerahS.Platform.Abstractions;
 using XerahS.Platform.MacOS;
 
@@ -38,49 +36,6 @@ public class MacOSRegionSelectorPreferenceTests
             "screencapture: cannot run two interactive screen captures at a time");
 
         Assert.That(isBusy, Is.True);
-    }
-
-    [Test]
-    public void CliRegionFallbackArguments_DefaultToCaptureSound()
-    {
-        string arguments = CliCaptureStrategy.BuildCaptureArguments(1, 2, 3, 4, "/tmp/capture.png", new RegionCaptureOptions());
-
-        Assert.That(arguments, Does.Contain("-R1,2,3,4"));
-        Assert.That(arguments, Does.Not.Contain("-x"));
-    }
-
-    [Test]
-    public void CliRegionFallbackArguments_SuppressSound_WhenMacOSCaptureSoundIsDisabled()
-    {
-        string arguments = CliCaptureStrategy.BuildCaptureArguments(
-            1,
-            2,
-            3,
-            4,
-            "/tmp/capture.png",
-            new RegionCaptureOptions
-            {
-                MacOSPlayCaptureSound = false
-            });
-
-        Assert.That(arguments, Does.Contain("-x"));
-        Assert.That(arguments, Does.Contain("-R1,2,3,4"));
-    }
-
-    [Test]
-    public void CliRegionFallbackLogicalConversion_ExpandsScaledBoundsOutward()
-    {
-        var region = CliCaptureStrategy.ConvertToLogicalCaptureRegion(
-            new PhysicalRectangle(3, 5, 10, 12),
-            2);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(region.X, Is.EqualTo(1));
-            Assert.That(region.Y, Is.EqualTo(2));
-            Assert.That(region.Width, Is.EqualTo(6));
-            Assert.That(region.Height, Is.EqualTo(7));
-        });
     }
 
     [TestCase(MacOSInteractiveRegionSelectorPreference.Automatic)]

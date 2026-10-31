@@ -72,6 +72,18 @@ public interface IPausableRecordingService
     Task ResumeRecordingAsync();
 }
 
+/// <summary>A backend that can finish successfully before the user presses Stop.</summary>
+public interface IRecordingCompletionSource
+{
+    event EventHandler? RecordingEnded;
+}
+
+/// <summary>Optional native resume at a new desktop position, preserving output dimensions.</summary>
+public interface IMovableRecordingService : IPausableRecordingService
+{
+    Task ResumeRecordingAsync(System.Drawing.Rectangle region);
+}
+
 /// <summary>
 /// Platform-specific capture source interface
 /// Windows: WindowsGraphicsCaptureSource (WGC)
@@ -121,28 +133,4 @@ public interface IVideoEncoder : IDisposable
     /// Finalize encoding and close the file
     /// </summary>
     void FinalizeEncoding();
-}
-
-/// <summary>
-/// Audio capture interface (Stage 6)
-/// Windows: WasapiAudioCapture
-/// Linux: PulseAudio
-/// macOS: CoreAudio
-/// </summary>
-public interface IAudioCapture : IDisposable
-{
-    /// <summary>
-    /// Start capturing audio
-    /// </summary>
-    void Start();
-
-    /// <summary>
-    /// Stop capturing audio
-    /// </summary>
-    void Stop();
-
-    /// <summary>
-    /// Fired when audio data is available
-    /// </summary>
-    event EventHandler<AudioBufferEventArgs> AudioDataAvailable;
 }

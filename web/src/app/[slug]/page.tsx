@@ -1,10 +1,9 @@
 import Link from "next/link";
 
 import { Gallery } from "@/components/gallery";
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
 import { getAccountSummary, rpc, type GalleryItem } from "@/lib/database";
 import { ApiError } from "@/lib/errors";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +71,7 @@ function GalleryUnavailableWall() {
 async function loadProfileData(): Promise<ProfileState> {
   try {
     await requireAuthenticatedUser(undefined, { strong: true });
-    const client = await createSupabaseServerClient();
+    const client = await createUserDatabaseClient();
     const [summary, page] = await Promise.all([
       getAccountSummary(client),
       rpc<{ items: GalleryItem[]; nextCursor: string | null }>(

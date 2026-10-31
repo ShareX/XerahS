@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using XerahS.Common;
+using XerahS.Common.Platform.Linux;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -128,7 +129,19 @@ namespace XerahS.Media
                 {
                     try
                     {
-                        process.Kill(entireProcessTree: true);
+                        if (OperatingSystem.IsLinux())
+                        {
+                            // .NET 10 Process.Kill(entireProcessTree: true) on Linux does not
+                            // reliably tear down descendant processes (probed 2026-10-17: parent
+                            // dies, child survives). Walk /proc and SIGKILL each descendant
+                            // individually so we never signal unrelated processes that share a
+                            // PGID with a descendant.
+                            LinuxProcessTree.KillProcessTree(process.Id);
+                        }
+                        else
+                        {
+                            process.Kill(entireProcessTree: true);
+                        }
                     }
                     catch (InvalidOperationException)
                     {

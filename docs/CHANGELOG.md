@@ -10,6 +10,81 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
+## v0.33.5
+
+Includes the macOS startup and update-dialog fixes from v0.33.4. Both native macOS launch checks passed for that build; its final Chocolatey job hit GitHub's anonymous API rate limit.
+
+### Build
+
+- **Release reliability**: Authenticate GitHub metadata requests during Chocolatey packaging so shared runner API quotas do not prevent publication of the package.
+
+---
+
+## v0.33.4
+
+### Fixes
+
+- **macOS startup**: Keep the tray's native menu instance stable when initializing or rebuilding its items. This fixes the v0.33.3 startup crash reporting "The menu being updated does not match" and retains UI-thread updates for Linux.
+- **Update dialogs**: Keep the update prompt opaque while the image editor is open. App dialogs use the shell's dialog surface; editor dialogs retain their own overlay.
+
+### Build
+
+- **macOS verification**: Start the packaged app twice on the native CI runner with an isolated profile. Require tray initialization, loaded plugins and a live process before publishing the archives.
+
+---
+
+## v0.33.3
+
+### Features
+
+- **Privacy mode**: Review sensitive content detected by the configured AI provider before an image upload, apply redaction, or open the annotation editor for manual changes.
+- **Recording controls**: Stop an active screen recording with Enter.
+
+### Fixes
+
+- **Annotation workflows**: Save, copy and upload the flattened annotated image when continuing from the editor. Cancel and window close now stop the workflow before its save, copy and upload tasks.
+- **Editor colors**: Preserve red, blue and alpha channels when converting between Avalonia and Skia images, including macOS RGBA images.
+- **Linux startup and logout**: Open the clipboard viewer safely when the main window is hidden, avoid activating background opens, and disable X11 session registration that can block logout.
+- **Network Monitor**: Make background monitoring opt-in, with settings and manual-session controls that stop probes when monitoring is disabled.
+- **Wayland recording**: Drain recorder output pipes, preserve playable fragments after interruption, and report forced shutdown or unusable output as failure before upload. Retain fatal errors through concurrent stop and completion paths.
+- **Windows cursor recovery**: Keep the recovery marker when cursor restoration fails so exit or next startup can retry.
+- **Upload reliability**: Handle moved watch-folder screenshots and let the CLI use file destinations that also accept images.
+- **Cloud and iOS**: Improve Cloud sign-in and TOTP setup, iOS credential storage, share-extension history and import handling, destination imports and uploaded file content types.
+
+### Build and downloads
+
+- **FFmpeg**: Use verified BtbN FFmpeg 9.0 stable builds for managed downloads.
+- **Arch Linux**: Maintain the AUR recipe and metadata in the repository, enforce pinned recursive dependencies, and verify packaging in a clean Arch CI container. Bound build-server shutdown so packaging can finish after a stalled shutdown client.
+- **Download channels**: Explain the separate ShareX upstream and KovaForge release histories and update sources.
+
+### Known limitations
+
+- The original intermittent Wayland/PipeWire stall and Windows capture crash still need reproduction; this release fixes recording failure handling and cursor recovery without claiming those underlying failures are eliminated.
+- Native macOS color and KDE/XFCE logout confirmation remain outstanding. The public AUR listing and separately hosted website require their own updates.
+- iOS and Cloud changes are source changes; this desktop release does not publish an iOS app or deploy Cloud.
+
+---
+
+## v0.33.1
+
+### Features
+- **Windows recording (XIP0089)**: Record H.264/AAC through the native GPU pipeline, with system audio, microphone audio or both. Select audio devices and gains, record secondary displays and spanning regions, and choose direct window or popup-inclusive capture.
+- **Windows recording**: Pause and resume within one recording, exclude paused time from the media timeline, and move a paused region between displays while retaining its output size. Native settings expose hardware-encoder requirements, low latency and capture-border preferences.
+- **Recording verification**: Inspect existing recordings without loading application settings, or record and verify a workflow through the CLI. JSON reports check codecs, audio formats, stream durations and active recording time.
+
+### Fixes
+- **Recording reliability**: Complete workflows when a captured window closes or changes size, release failed native sessions before FFmpeg fallback, preserve existing output files, and handle repeated stop and concurrent abort safely. Runtime audio failure warns and continues video with silence.
+- **Windows audio fallback**: Map selected microphone endpoints to FFmpeg device names and mix both requested audio sources instead of dropping the microphone when system audio is enabled.
+- **Linux Wayland recording**: Record the selected desktop, window or region instead of a webcam, and pack raw I420 frames correctly for FFmpeg to avoid corrupted output.
+
+### Build
+- **Packaging and verification**: Preserve Linux executable permissions regardless of output path. Add Windows x64/ARM64 compilation and Windows/Linux recording regression checks, including rejection of empty test runs.
+
+### Known limitations
+- **Windows recording**: Live GPU, device-removal and 30-minute audible A/V acceptance checks remain outstanding. HDR, camera overlays and process-specific loopback are deferred. FFmpeg system-audio fallback still requires Stereo Mix; hardware-encoder requirements apply to the native backend.
+
+---
+
 ## v0.29.1
 
 ### Features

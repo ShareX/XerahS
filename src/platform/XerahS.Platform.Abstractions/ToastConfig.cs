@@ -57,6 +57,12 @@ public class ToastConfig
     public SizeI Size { get; set; } = new SizeI(400, 300);
 
     /// <summary>
+    /// Where the task's output ended up. Drives the small output chip on the toast.
+    /// None (the default) shows no chip.
+    /// </summary>
+    public ToastOutputKind OutputKind { get; set; } = ToastOutputKind.None;
+
+    /// <summary>
     /// Path to thumbnail image file (optional). 
     /// The UI layer will load this as an Avalonia Bitmap.
     /// </summary>
@@ -161,4 +167,52 @@ public enum ToastClickAction
     Upload,
     PinToScreen,
     DeleteFile
+}
+
+/// <summary>
+/// Where a completed task's output ended up, shown as a chip on the toast.
+/// </summary>
+public enum ToastOutputKind
+{
+    /// <summary>No chip (failed tasks and non-result toasts).</summary>
+    None,
+    /// <summary>Uploaded; a link exists.</summary>
+    Uploaded,
+    /// <summary>Saved locally only; no upload was attempted.</summary>
+    Local,
+    /// <summary>Upload was attempted but no link came back; the local file is kept.</summary>
+    UploadFailedLocal,
+    /// <summary>Copied to the clipboard only; no file and no link.</summary>
+    ClipboardOnly
+}
+
+/// <summary>
+/// Pure rules for picking a <see cref="ToastOutputKind"/>.
+/// </summary>
+public static class ToastOutputClassifier
+{
+    public static ToastOutputKind Resolve(
+        bool isError,
+        string? url,
+        bool fileExists,
+        bool uploadAttempted,
+        bool copiedToClipboard)
+    {
+        if (isError)
+        {
+            return ToastOutputKind.None;
+        }
+
+        if (!string.IsNullOrWhiteSpace(url))
+        {
+            return ToastOutputKind.Uploaded;
+        }
+
+        if (fileExists)
+        {
+            return uploadAttempted ? ToastOutputKind.UploadFailedLocal : ToastOutputKind.Local;
+        }
+
+        return copiedToClipboard ? ToastOutputKind.ClipboardOnly : ToastOutputKind.None;
+    }
 }

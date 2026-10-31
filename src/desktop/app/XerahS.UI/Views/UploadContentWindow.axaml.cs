@@ -51,6 +51,8 @@ public partial class UploadContentWindow : SurfaceWindow
         viewModel.FolderPickerRequested += OnFolderPickerRequested;
         viewModel.TextInputRequested += OnTextInputRequested;
         viewModel.URLInputRequested += OnURLInputRequested;
+        viewModel.DownloadURLInputRequested += OnDownloadURLInputRequested;
+        viewModel.GitHubTokenRequested = PromptForGitHubTokenAsync;
 
         var dropTarget = this.FindControl<Border>("DropTarget");
         if (dropTarget != null)
@@ -202,6 +204,52 @@ public partial class UploadContentWindow : SurfaceWindow
         }
     }
 
+    private async void OnDownloadURLInputRequested(object? sender, EventArgs e)
+    {
+        var viewModel = new XerahS.UI.ViewModels.SimplePromptViewModel
+        {
+            Title = "Upload from URL",
+            Message = "XerahS downloads the file and uploads it to your file destination. GitHub file links are fetched as the raw file.",
+            Label = "https://...",
+            ShowCancel = true,
+            ShowInput = true,
+            PrimaryButtonText = "Download"
+        };
+
+        var ok = await XerahS.UI.Services.ModalDialogHost.ShowAsync(
+            viewModel,
+            set => viewModel.CloseRequested = set,
+            dismissResult: false,
+            debugSource: "UploadContent.Upload from URL");
+
+        if (_viewModel != null && ok && !string.IsNullOrWhiteSpace(viewModel.AcceptedInput))
+        {
+            await _viewModel.AddDownloadItemAsync(viewModel.AcceptedInput);
+        }
+    }
+
+    private async Task<string?> PromptForGitHubTokenAsync(string reason)
+    {
+        var viewModel = new XerahS.UI.ViewModels.SimplePromptViewModel
+        {
+            Title = "GitHub token",
+            Message = reason + " Enter a token with read access to the repository contents. It is saved in your keyring.",
+            Label = "GitHub token",
+            ShowCancel = true,
+            ShowInput = true,
+            IsPassword = true,
+            PrimaryButtonText = "Download"
+        };
+
+        var ok = await XerahS.UI.Services.ModalDialogHost.ShowAsync(
+            viewModel,
+            set => viewModel.CloseRequested = set,
+            dismissResult: false,
+            debugSource: "UploadContent.GitHub token");
+
+        return ok ? viewModel.AcceptedInput : null;
+    }
+
     private void OnCloseClick(object? sender, RoutedEventArgs e)
     {
         Close();
@@ -217,6 +265,8 @@ public partial class UploadContentWindow : SurfaceWindow
             _viewModel.FolderPickerRequested -= OnFolderPickerRequested;
             _viewModel.TextInputRequested -= OnTextInputRequested;
             _viewModel.URLInputRequested -= OnURLInputRequested;
+            _viewModel.DownloadURLInputRequested -= OnDownloadURLInputRequested;
+            _viewModel.GitHubTokenRequested = null;
 
             _viewModel.Dispose();
             _viewModel = null;

@@ -34,8 +34,10 @@ using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Managers;
 using XerahS.Core.Tasks;
+using XerahS.Core.Uploaders;
 using XerahS.Platform.Abstractions;
 using XerahS.Uploaders;
+using XerahS.Uploaders.PluginSystem;
 using BitmapConversionHelpers = ShareX.ImageEditor.Presentation.Rendering.BitmapConversionHelpers;
 
 namespace XerahS.UI.ViewModels;
@@ -81,6 +83,8 @@ public partial class UploadQueueItem : ObservableObject
     private bool _isFailed;
 
     public string? FilePath { get; set; }
+    /// <summary>The URL a downloaded file came from; Retry downloads it again if the download failed.</summary>
+    public string? SourceUrl { get; set; }
     public string? TextContent { get; set; }
     public SKBitmap? Image { get; set; }
 
@@ -164,6 +168,14 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
     public event EventHandler? FolderPickerRequested;
     public event EventHandler? TextInputRequested;
     public event EventHandler? URLInputRequested;
+    public event EventHandler? DownloadURLInputRequested;
+
+    /// <summary>Asks the user for a GitHub token when a GitHub file needs one; null means cancelled.</summary>
+    public Func<string, Task<string?>>? GitHubTokenRequested { get; set; }
+
+    internal const string DownloadSecretProviderId = "upload-from-url";
+    internal const string DownloadSecretKey = "github";
+    internal const string DownloadSecretName = "token";
 
     public UploadContentViewModel(IDesktopTaskManager taskManager)
     {
@@ -289,6 +301,120 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
     private void AddURL()
     {
         URLInputRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    [RelayCommand]
+    private void AddFromURL()
+    {
+        DownloadURLInputRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Downloads <paramref name="url"/> and queues the file, so it uploads to the file destination
+    /// (and follows file-type routing) instead of being shortened or shared as a link.
+    /// </summary>
+    public async Task AddDownloadItemAsync(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return;
+
+        url = url.Trim();
+        var item = new UploadQueueItem
+        {
+            DisplayName = url.Length > 60 ? url.Substring(0, 57) + "..." : url,
+            Description = "Downloading...",
+            DataType = EDataType.File,
+            SourceUrl = url,
+            Status = UploadQueueItemStatus.Uploading
+        };
+
+        Items.Add(item);
+        SelectedItem = item;
+        await DownloadItemAsync(item);
+    }
+
+    private async Task DownloadItemAsync(UploadQueueItem item)
+    {
+        item.Status = UploadQueueItemStatus.Uploading;
+        item.Description = "Downloading...";
+        item.ErrorMessage = null;
+        UpdateStatus();
+
+        string folder = Path.Combine(Path.GetTempPath(), "XerahS", "Downloads");
+        ISecretStore? secrets = TryGetSecretStore();
+        string? token = secrets?.GetSecret(DownloadSecretProviderId, DownloadSecretKey, DownloadSecretName);
+
+        UrlDownloadResult result;
+        try
+        {
+            result = await UrlDownloadHelper.DownloadAsync(item.SourceUrl!, folder, token);
+
+            if (!result.Success && result.GitHubTokenRequired && GitHubTokenRequested != null)
+            {
+                string? entered = await GitHubTokenRequested(result.ErrorMessage ?? "A GitHub token is needed.");
+                if (!string.IsNullOrWhiteSpace(entered))
+                {
+                    result = await UrlDownloadHelper.DownloadAsync(item.SourceUrl!, folder, entered);
+                    if (result.Success)
+                    {
+                        SaveGitHubToken(secrets, entered.Trim());
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "UploadContent: Download from URL failed.");
+            result = UrlDownloadResult.Failed(ex.Message);
+        }
+
+        if (result.Success && result.FilePath != null)
+        {
+            var fileInfo = new FileInfo(result.FilePath);
+            item.FilePath = result.FilePath;
+            item.DisplayName = fileInfo.Name;
+            item.Description = $"{FormatFileSize(fileInfo.Length)} from URL";
+            item.ResolvedUploadName = ResolveUploadNamePreview(result.FilePath);
+            item.Status = UploadQueueItemStatus.Pending;
+            DebugHelper.WriteLine($"UploadContent: Downloaded {fileInfo.Length} bytes from URL as '{fileInfo.Name}'.");
+        }
+        else
+        {
+            item.Description = "Download failed";
+            item.ErrorMessage = result.ErrorMessage ?? "Download failed";
+            item.Status = UploadQueueItemStatus.Failed;
+        }
+
+        if (ReferenceEquals(SelectedItem, item))
+        {
+            UpdateSelectedPreview();
+        }
+
+        UpdateStatus();
+    }
+
+    private static ISecretStore? TryGetSecretStore()
+    {
+        try
+        {
+            return ProviderContextManager.EnsureProviderContext().Secrets;
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "UploadContent: Secret store unavailable.");
+            return null;
+        }
+    }
+
+    private static void SaveGitHubToken(ISecretStore? secrets, string token)
+    {
+        // Keep the token only in an operating-system keyring; with the fallback store it is used once.
+        if (secrets is not ISecretStoreInfo { IsFallback: false })
+        {
+            DebugHelper.WriteLine("UploadContent: GitHub token not saved because no OS keyring is available.");
+            return;
+        }
+
+        secrets.SetSecret(DownloadSecretProviderId, DownloadSecretKey, DownloadSecretName, token);
     }
 
     public UploadQueueItem? AddFileItem(string filePath)
@@ -608,6 +734,12 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         item.ErrorMessage = null;
         item.ProgressPercent = 0;
         item.ResultURL = null;
+
+        if (item.FilePath == null && item.SourceUrl != null)
+        {
+            await DownloadItemAsync(item);
+            return;
+        }
 
         await UploadItemAsync(item);
         UpdateStatus();

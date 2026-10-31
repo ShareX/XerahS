@@ -1,0 +1,17 @@
+# xtool (https://xtool.sh) build of XerahSMobile. Run it through XtoolSupport/xtool-dev.sh, which
+# generates the Info.plists below from the Xcode project's plists and build settings.
+# xtool re-signs under XTL-<id>.-prefixed bundle and App Group IDs; see AppIdentifiers.swift.
+version: 1
+bundleID: com.xerahs.xerahs.mobile
+product: XerahSMobile
+infoPath: XtoolSupport/.generated/XerahSMobile-Info.plist
+entitlementsPath: XerahSMobile/XerahSMobile.entitlements
+iconPath: XerahSMobile/Assets.xcassets/AppIcon.appiconset/AppIcon.png
+resources:
+  # Asset catalogs need actool; ship the logo loose so Image("Logo") still resolves.
+  - XerahSMobile/Assets.xcassets/Logo.imageset/Logo.png
+extensions:
+  - product: ShareExtension
+    bundleID: com.xerahs.xerahs.mobile.ShareExtension
+    infoPath: XtoolSupport/.generated/ShareExtension-Info.plist
+    entitlementsPath: ShareExtension/ShareExtension.entitlements

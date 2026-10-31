@@ -1,12 +1,11 @@
 import { ApiError } from "@/lib/errors";
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
 import { rpc } from "@/lib/database";
 import { getServerEnv } from "@/lib/env";
 import { enforceSameOriginMutation, readJson } from "@/lib/request";
 import { json } from "@/lib/responses";
 import { handleApi } from "@/lib/route-handler";
 import { getStripeClient, integrationIdentifier } from "@/lib/stripe";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { planSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -38,9 +37,9 @@ export async function POST(request: Request) {
         "Billing is not configured.",
       );
 
-    const supabase = await createSupabaseServerClient(request);
+    const database = await createUserDatabaseClient(request);
     const context = await rpc<CheckoutContext>(
-      supabase,
+      database,
       "prepare_my_stripe_checkout",
       { p_plan: plan },
     );
@@ -51,7 +50,7 @@ export async function POST(request: Request) {
         { email: user.email, metadata: { xerahs_user_id: user.id } },
         { idempotencyKey: context.customerIdempotencyKey },
       );
-      customerId = await rpc<string>(supabase, "attach_my_stripe_customer", {
+      customerId = await rpc<string>(database, "attach_my_stripe_customer", {
         p_customer_id: customer.id,
       });
     }
@@ -86,7 +85,7 @@ export async function POST(request: Request) {
         "integration_unavailable",
         "Stripe did not return a Checkout URL.",
       );
-    await rpc(supabase, "finalize_my_stripe_checkout", {
+    await rpc(database, "finalize_my_stripe_checkout", {
       p_attempt_id: context.attemptId,
       p_session_id: session.id,
     });

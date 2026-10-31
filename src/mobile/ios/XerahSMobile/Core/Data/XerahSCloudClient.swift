@@ -17,7 +17,16 @@ import Security
 
 enum XerahSCloudConfiguration {
     static let apiBaseURL = URL(string: "https://cloud.xerahs.com/")!
-    static let oauthAuthority = URL(string: "https://cvnywevwxmajyzhhpvzl.supabase.co/")!
+    // The Cloud site is its own OAuth server (Better Auth under /api/auth), like the desktop app.
+    static let oauthAuthority = URL(string: "https://cloud.xerahs.com/")!
+    static let authorizePath = "api/auth/oauth2/authorize"
+    static let tokenPath = "api/auth/oauth2/token"
+    static let jwksPath = "api/auth/jwks"
+    static let scopes = "openid email profile offline_access"
+    /// Token issuer: the authority's origin, without a path.
+    static let issuer = "https://cloud.xerahs.com"
+    /// Audience (RFC 8707 resource) of access tokens: the owner API.
+    static let apiAudience = "https://cloud.xerahs.com/api/v1"
     static let clientID = "8d8adf92-86c4-4036-a4c9-09901230f2c4"
     static let oauthRedirectURL = URL(string: "https://cloud.xerahs.com/auth/desktop/callback")!
     static let callbackScheme = "xerahs"
@@ -26,7 +35,7 @@ enum XerahSCloudConfiguration {
 
 enum XerahSCloudSettings {
     private static let autoPublishKey = "XerahSCloud.AutoPublish"
-    private static let appGroupID = "group.com.xerahs.xerahs"
+    private static let appGroupID = AppIdentifiers.appGroupId
 
     static var automaticallyPublishesEligibleUploads: Bool {
         get { UserDefaults(suiteName: appGroupID)?.bool(forKey: autoPublishKey) ?? false }
@@ -126,7 +135,7 @@ struct XerahSCloudError: LocalizedError {
 
 enum XerahSCloudCredentialStore {
     private static let service = "com.xerahs.xerahs.mobile.cloud"
-    private static let accessGroup = "7C5AS6VPUH.com.xerahs.xerahs.mobile"
+    private static let accessGroup = AppIdentifiers.keychainAccessGroup
     private static let refreshAccount = "oauth.refresh-token"
     private static let subjectAccount = "oauth.owner-subject"
 
@@ -239,16 +248,20 @@ final class XerahSCloudClient {
         let nonce = randomBase64URL(byteCount: 32)
         let verifier = randomBase64URL(byteCount: 64)
         let challenge = Data(SHA256.hash(data: Data(verifier.utf8))).base64URLEncodedString()
-        var components = URLComponents(url: XerahSCloudConfiguration.oauthAuthority.appendingPathComponent("auth/v1/oauth/authorize"), resolvingAgainstBaseURL: false)!
+        var components = URLComponents(url: XerahSCloudConfiguration.oauthAuthority.appendingPathComponent(XerahSCloudConfiguration.authorizePath), resolvingAgainstBaseURL: false)!
         components.queryItems = [
             URLQueryItem(name: "client_id", value: XerahSCloudConfiguration.clientID),
             URLQueryItem(name: "redirect_uri", value: XerahSCloudConfiguration.oauthRedirectURL.absoluteString),
             URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "scope", value: "openid email profile"),
+            URLQueryItem(name: "scope", value: XerahSCloudConfiguration.scopes),
             URLQueryItem(name: "state", value: state),
             URLQueryItem(name: "nonce", value: nonce),
             URLQueryItem(name: "code_challenge", value: challenge),
-            URLQueryItem(name: "code_challenge_method", value: "S256")
+            URLQueryItem(name: "code_challenge_method", value: "S256"),
+            // JWT access tokens for the owner API, and always show the consent page:
+            // approving creates the revocable app grant.
+            URLQueryItem(name: "resource", value: XerahSCloudConfiguration.apiAudience),
+            URLQueryItem(name: "prompt", value: "consent")
         ]
         let expiresAt = Date().addingTimeInterval(600)
         lock.withLock {
@@ -416,7 +429,8 @@ final class XerahSCloudClient {
             "grant_type": "authorization_code", "code": code,
             "client_id": XerahSCloudConfiguration.clientID,
             "redirect_uri": XerahSCloudConfiguration.oauthRedirectURL.absoluteString,
-            "code_verifier": verifier
+            "code_verifier": verifier,
+            "resource": XerahSCloudConfiguration.apiAudience
         ], expectedNonce: expectedNonce, expectedSubject: nil)
     }
 
@@ -427,7 +441,8 @@ final class XerahSCloudClient {
         do {
             return try await tokenRequest(fields: [
                 "grant_type": "refresh_token", "refresh_token": stored.refreshToken,
-                "client_id": XerahSCloudConfiguration.clientID
+                "client_id": XerahSCloudConfiguration.clientID,
+                "resource": XerahSCloudConfiguration.apiAudience
             ], expectedNonce: nil, expectedSubject: stored.subject)
         } catch {
             if let cloudError = error as? XerahSCloudError, let status = cloudError.statusCode, (400..<500).contains(status) { signOut() }
@@ -436,7 +451,7 @@ final class XerahSCloudClient {
     }
 
     private func tokenRequest(fields: [String: String], expectedNonce: String?, expectedSubject: String?) async throws -> XerahSCloudSession {
-        let url = XerahSCloudConfiguration.oauthAuthority.appendingPathComponent("auth/v1/oauth/token")
+        let url = XerahSCloudConfiguration.oauthAuthority.appendingPathComponent(XerahSCloudConfiguration.tokenPath)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -461,6 +476,8 @@ final class XerahSCloudClient {
               token.expiresIn > 0, token.expiresIn <= 3600 else { throw cloudSecurityError("OAuth", "The access-token lifetime is outside the accepted policy.") }
         let accessClaims = try await verifiedJWTClaims(token.accessToken)
         let subject = try validateAccessClaims(accessClaims)
+        let responseExpiry = Date().addingTimeInterval(TimeInterval(token.expiresIn))
+        let tokenExpiry = numberClaim("exp", accessClaims).map(Date.init(timeIntervalSince1970:)) ?? responseExpiry
         if let expectedSubject, subject != expectedSubject { throw cloudSecurityError("OAuth", "Session refresh attempted to switch accounts.") }
         if let expectedNonce {
             guard let idToken = token.idToken else { throw cloudSecurityError("OAuth", "The sign-in response did not contain an ID token.") }
@@ -473,7 +490,7 @@ final class XerahSCloudClient {
             try validateCommonClaims(claims, expectedAudience: XerahSCloudConfiguration.clientID)
             guard stringClaim("sub", claims) == subject else { throw cloudSecurityError("OAuth", "The refreshed OpenID subject did not match.") }
         }
-        return XerahSCloudSession(accessToken: token.accessToken, refreshToken: token.refreshToken, ownerSubject: subject, expiresAt: Date().addingTimeInterval(TimeInterval(token.expiresIn)))
+        return XerahSCloudSession(accessToken: token.accessToken, refreshToken: token.refreshToken, ownerSubject: subject, expiresAt: min(responseExpiry, tokenExpiry))
     }
 
     private func acceptInteractiveSession(_ session: XerahSCloudSession) throws {
@@ -579,7 +596,7 @@ final class XerahSCloudClient {
     }
 
     private func validateAccessClaims(_ claims: [String: Any]) throws -> String {
-        try validateCommonClaims(claims, expectedAudience: "authenticated")
+        try validateCommonClaims(claims, expectedAudience: XerahSCloudConfiguration.apiAudience)
         guard stringClaim("client_id", claims) == XerahSCloudConfiguration.clientID,
               stringClaim("aal", claims) == "aal2",
               let subject = stringClaim("sub", claims), !subject.isEmpty,
@@ -592,7 +609,7 @@ final class XerahSCloudClient {
     }
 
     private func validateCommonClaims(_ claims: [String: Any], expectedAudience: String) throws {
-        let issuer = XerahSCloudConfiguration.oauthAuthority.appendingPathComponent("auth/v1").absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let issuer = XerahSCloudConfiguration.issuer
         let now = Date().timeIntervalSince1970
         guard stringClaim("iss", claims)?.trimmingCharacters(in: CharacterSet(charactersIn: "/")) == issuer,
               hasAudience(claims, expected: expectedAudience),
@@ -635,7 +652,7 @@ final class XerahSCloudClient {
               let signature = Data(base64URLEncoded: String(parts[2])) else {
             throw cloudSecurityError("OAuth", "The token server returned a malformed JWT.")
         }
-        let jwksURL = XerahSCloudConfiguration.oauthAuthority.appendingPathComponent("auth/v1/.well-known/jwks.json")
+        let jwksURL = XerahSCloudConfiguration.oauthAuthority.appendingPathComponent(XerahSCloudConfiguration.jwksPath)
         let (jwksData, response) = try await urlSession.data(from: jwksURL)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
             throw cloudSecurityError("OAuth", "The signing-key endpoint could not be verified.")

@@ -197,9 +197,13 @@ public static class LinuxInputDiagnostics
             return tips.ToArray();
         }
 
+        tips.Add("Quickest fix: in XerahS open Settings > Advanced > Global Hotkeys and click 'Grant keyboard access'. " +
+                 "It asks for your password once and gives read access to keyboards only, until the next reboot.");
+
         if (!inInputGroup)
         {
-            tips.Add("Add your user to the 'input' group:  sudo usermod -aG input $USER  (then log out and back in).");
+            tips.Add("Permanent fix: add your user to the 'input' group:  sudo usermod -aG input $USER  (then log out and back in). " +
+                     "On NixOS add \"input\" to users.users.<you>.extraGroups instead.");
         }
 
         tips.Add("Install the XerahS udev rule so input devices are group-readable, then reload:");

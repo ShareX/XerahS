@@ -232,7 +232,7 @@ internal static class InputDeviceEnumerator
         return byteIndex < mask.Length && (mask[byteIndex] & (1 << bitIndex)) != 0;
     }
 
-    private static bool IsVirtualDevice(string devicePath, string deviceName)
+    internal static bool IsVirtualDevice(string devicePath, string deviceName)
     {
         if (deviceName.Contains("Virtual", StringComparison.OrdinalIgnoreCase) ||
             deviceName.Contains("uinput", StringComparison.OrdinalIgnoreCase) ||

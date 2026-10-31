@@ -51,7 +51,7 @@ public static class OcrToolService
 
         if (ocrService == null || !ocrService.IsSupported)
         {
-            ShowToast("OCR", "OCR is not supported on this platform.");
+            ShowToast("OCR", ocrService?.UnavailableReason ?? "OCR is not supported on this platform.");
             return;
         }
 

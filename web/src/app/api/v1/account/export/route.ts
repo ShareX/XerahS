@@ -1,8 +1,8 @@
-import { requireAuthenticatedUser } from "@/lib/auth";
-import { getAccountSummary } from "@/lib/database";
+import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
+import { getAccountSummary, query } from "@/lib/database";
+import { ApiError } from "@/lib/errors";
 import { enforceSameOriginMutation } from "@/lib/request";
 import { handleApi } from "@/lib/route-handler";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,22 +15,24 @@ export async function POST(request: Request) {
       recent: true,
       verifiedEmail: true,
     });
-    const client = await createSupabaseServerClient(request);
-    const [summary, profile, gallery] = await Promise.all([
+    const client = await createUserDatabaseClient(request);
+    // Both reads run as the user under RLS, like the PostgREST selects they replace.
+    const [summary, profiles, galleryItems] = await Promise.all([
       getAccountSummary(client),
-      client
-        .from("profiles")
-        .select("slug,time_zone,created_at,updated_at")
-        .single(),
-      client
-        .from("gallery_items")
-        .select(
-          "id,client_item_id,url,thumbnail_url,kind,file_name,title,captured_at,published_at,host,content_type",
-        )
-        .order("captured_at", { ascending: false }),
+      query<Record<string, unknown>>(
+        client,
+        "select slug, time_zone, created_at, updated_at from public.profiles",
+      ),
+      query<Record<string, unknown>>(
+        client,
+        `select id, client_item_id, url, thumbnail_url, kind, file_name, title, captured_at, published_at, host, content_type
+           from public.gallery_items order by captured_at desc`,
+      ),
     ]);
-    if (profile.error) throw profile.error;
-    if (gallery.error) throw gallery.error;
+    if (profiles.length !== 1)
+      throw new ApiError(404, "not_found", "The profile was not found.");
+    const profile = { data: profiles[0] };
+    const gallery = { data: galleryItems };
 
     const body = JSON.stringify(
       {

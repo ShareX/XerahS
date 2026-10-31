@@ -1,7 +1,6 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.Versioning;
-using ShareX.Avalonia.Platform.Abstractions.Capture;
 using SkiaSharp;
 
 namespace XerahS.Platform.Windows.Capture;
@@ -12,15 +11,18 @@ internal static class DxgiCursorCompositionHelper
 {
     private const int DefaultCursorExtent = 32;
 
+    /// <summary>Largest cursor Windows draws (accessibility size 15 of a 256px cursor).</summary>
+    private const int MaxSystemCursorExtent = 256;
+
     public static CursorOverlayPlacement CreatePlacement(
         bool includeCursor,
         bool cursorVisible,
         Point cursorPosition,
         Point hotspot,
         Size cursorSize,
-        PhysicalRectangle captureRegion)
+        Rectangle captureRegion)
     {
-        if (!includeCursor || !cursorVisible || captureRegion.IsEmpty)
+        if (!includeCursor || !cursorVisible || captureRegion.Width <= 0 || captureRegion.Height <= 0)
             return default;
 
         int width = cursorSize.Width > 0 ? cursorSize.Width : DefaultCursorExtent;
@@ -38,17 +40,6 @@ internal static class DxgiCursorCompositionHelper
         return new CursorOverlayPlacement(true, new Point(drawX, drawY));
     }
 
-    public static PhysicalRectangle CreateCaptureRegion(int left, int top, int right, int bottom)
-    {
-        int width = right - left;
-        int height = bottom - top;
-
-        if (width <= 0 || height <= 0)
-            return default;
-
-        return new PhysicalRectangle(left, top, width, height);
-    }
-
     [SupportedOSPlatform("windows")]
     public static bool TryCompositeCursor(
         SKBitmap bitmap,
@@ -56,7 +47,7 @@ internal static class DxgiCursorCompositionHelper
         Point cursorPosition,
         Point hotspot,
         Size cursorSize,
-        PhysicalRectangle captureRegion,
+        Rectangle captureRegion,
         Action<IntPtr, Point> drawCursor)
     {
         var placement = CreatePlacement(
@@ -70,14 +61,22 @@ internal static class DxgiCursorCompositionHelper
         if (!placement.ShouldDraw)
             return false;
 
-        using var overlay = new Bitmap(bitmap.Width, bitmap.Height, PixelFormat.Format32bppArgb);
+        // Draw into a cursor-sized overlay rather than a capture-sized one: the cost no longer scales with the
+        // capture area, and no PNG round trip is needed to hand the pixels to Skia.
+        int overlayWidth = cursorSize.Width > 0 ? cursorSize.Width : MaxSystemCursorExtent;
+        int overlayHeight = cursorSize.Height > 0 ? cursorSize.Height : MaxSystemCursorExtent;
+        var cursorOrigin = new Point(
+            captureRegion.X + placement.DrawOffset.X,
+            captureRegion.Y + placement.DrawOffset.Y);
+
+        using var overlay = new Bitmap(overlayWidth, overlayHeight, PixelFormat.Format32bppArgb);
         using (var graphics = Graphics.FromImage(overlay))
         {
             graphics.Clear(Color.Transparent);
             IntPtr hdc = graphics.GetHdc();
             try
             {
-                drawCursor(hdc, new Point(captureRegion.X, captureRegion.Y));
+                drawCursor(hdc, cursorOrigin);
             }
             finally
             {
@@ -85,16 +84,30 @@ internal static class DxgiCursorCompositionHelper
             }
         }
 
-        using var stream = new MemoryStream();
-        overlay.Save(stream, ImageFormat.Png);
-        stream.Position = 0;
-        using var cursorBitmap = SKBitmap.Decode(stream);
-        if (cursorBitmap == null)
-            return false;
+        using var cursorBitmap = new SKBitmap(new SKImageInfo(overlayWidth, overlayHeight, SKColorType.Bgra8888, SKAlphaType.Unpremul));
+        BitmapData data = overlay.LockBits(
+            new Rectangle(0, 0, overlayWidth, overlayHeight),
+            ImageLockMode.ReadOnly,
+            PixelFormat.Format32bppArgb);
+        try
+        {
+            BgraRowCopyHelper.CopyRows(
+                data.Scan0,
+                data.Stride,
+                cursorBitmap.GetPixels(),
+                cursorBitmap.RowBytes,
+                overlayWidth * 4,
+                overlayHeight);
+        }
+        finally
+        {
+            overlay.UnlockBits(data);
+        }
+        cursorBitmap.NotifyPixelsChanged();
 
         using var canvas = new SKCanvas(bitmap);
         using var paint = new SKPaint { BlendMode = SKBlendMode.SrcOver };
-        canvas.DrawBitmap(cursorBitmap, 0, 0, SKSamplingOptions.Default, paint);
+        canvas.DrawBitmap(cursorBitmap, placement.DrawOffset.X, placement.DrawOffset.Y, SKSamplingOptions.Default, paint);
 
         return true;
     }

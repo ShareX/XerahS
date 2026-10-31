@@ -1,13 +1,12 @@
 <Project>
   <Import Project="Directory.Build.props.user" Condition="Exists('Directory.Build.props.user')" />
   <PropertyGroup>
-    <Version>0.31.5</Version>
+    <Version>0.33.6</Version>
     <Product>XerahS</Product>
     <Authors>ShareX Team</Authors>
     <Company>ShareX Team</Company>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <BuildInParallel>false</BuildInParallel>
-    <UseSharedCompilation>false</UseSharedCompilation>
     <!-- Compile/test lanes stay side-effect free. Product lanes opt in explicitly. -->
     <AssembleProduct Condition="'$(AssembleProduct)' == ''">false</AssembleProduct>
     <BuildWebUI Condition="'$(BuildWebUI)' == ''">$(AssembleProduct)</BuildWebUI>

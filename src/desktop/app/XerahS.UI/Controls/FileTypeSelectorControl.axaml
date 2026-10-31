@@ -9,9 +9,27 @@
         <CheckBox Content="Handle all file types for this category"
                   IsChecked="{Binding IsAllFileTypes}"
                   FontWeight="SemiBold"/>
+        <TextBlock Text="Types that another destination claims below still go to that destination."
+                   FontSize="11"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                   Margin="0,-6,0,0"/>
 
         <!-- File Type Selector (disabled when All File Types is checked) -->
         <StackPanel Spacing="5" IsEnabled="{Binding !IsAllFileTypes}">
+            <CheckBox Content="Text files (Markdown, plain text, code, JSON, YAML, CSV, ...)"
+                      IsChecked="{Binding IsTextFiles}"
+                      IsVisible="{Binding ShowTextFilesOption}"
+                      FontWeight="SemiBold"/>
+            <StackPanel Spacing="3" IsVisible="{Binding ShowTextFileExceptions}">
+                <TextBlock Text="Except these types (they stay on the file destination):"
+                           FontSize="11"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <TextBox Text="{Binding TextFileExceptionsText}"
+                         PlaceholderText="html, htm"
+                         AutomationProperties.Name="Text file types that are not routed as text files"/>
+            </StackPanel>
+
             <TextBlock Text="Specific File Types:" FontWeight="SemiBold"/>
             <TextBlock Text="Select which file types this instance should handle"
                        FontSize="11"

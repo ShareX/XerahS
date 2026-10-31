@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:XerahS.UI.ViewModels"
+             x:Class="XerahS.UI.Views.PrivacyReviewView"
+             x:DataType="vm:PrivacyReviewViewModel" MinWidth="680" MaxWidth="1100">
+  <StackPanel Margin="24" Spacing="12">
+    <TextBlock Text="Review sensitive data before upload" FontSize="22" FontWeight="SemiBold"/>
+    <TextBlock Text="{Binding Destination}" TextWrapping="Wrap"/>
+    <TextBlock Text="{Binding ScanSummary}" TextWrapping="Wrap"/>
+    <TextBlock Text="{Binding Findings}" TextWrapping="Wrap"/>
+    <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+      <StackPanel Spacing="6"><TextBlock Text="Original — local preview"/><Image Source="{Binding OriginalPreview}" Height="300" Stretch="Uniform"/></StackPanel>
+      <StackPanel Grid.Column="1" Spacing="6"><TextBlock Text="Image to upload"/><Image Source="{Binding Preview}" Height="300" Stretch="Uniform"/></StackPanel>
+    </Grid>
+    <StackPanel Orientation="Horizontal" Spacing="12" IsEnabled="{Binding !Busy}">
+      <TextBlock Text="Automatic redaction" VerticalAlignment="Center"/>
+      <ComboBox ItemsSource="{Binding Effects}" SelectedItem="{Binding Effect}" IsEnabled="{Binding CanChangeEffect}" MinWidth="130"/>
+      <Button Content="Annotate / review manually" Command="{Binding AnnotateCommand}"/>
+    </StackPanel>
+    <TextBlock Text="AI can miss sensitive data. Blur and pixelation can leave text readable; use Mask for credentials and payment details. The uploaded PNG contains flattened pixels only." TextWrapping="Wrap"/>
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" IsEnabled="{Binding !Busy}">
+      <Button Content="Cancel" Command="{Binding CancelCommand}"/>
+      <Button Content="Keep locally" Command="{Binding KeepLocalCommand}"/>
+      <Button Content="Approve image and upload" Command="{Binding UploadCommand}" IsEnabled="{Binding CanUpload}" Classes="accent"/>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

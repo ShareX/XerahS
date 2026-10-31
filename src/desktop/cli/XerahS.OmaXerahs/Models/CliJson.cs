@@ -105,6 +105,9 @@ internal sealed class DoctorImageInfo
     public string? ProviderId { get; init; }
     public string? InstanceId { get; init; }
     public string? DisplayName { get; init; }
+
+    /// <summary>"Image", or "File" when no Image destination exists and uploads fall back to a File destination.</summary>
+    public string? Category { get; init; }
 }
 
 internal sealed class DoctorSecretStoreInfo

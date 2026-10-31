@@ -335,6 +335,22 @@ public sealed class EvdevGlobalHotkeyService : IHotkeyService
         }
     }
 
+    public HotkeyDiagnostics GetDiagnostics()
+    {
+        bool listening;
+        lock (_readerLock)
+        {
+            listening = _listening;
+        }
+
+        return listening
+            ? new HotkeyDiagnostics(HotkeyBackendState.Native, "Direct keyboard access (evdev)", null)
+            : new HotkeyDiagnostics(
+                HotkeyBackendState.Unavailable,
+                "Direct keyboard access (evdev)",
+                "XerahS cannot read any keyboard, so global hotkeys do not work. Run 'xerahs doctor --linux-input' for details.");
+    }
+
     public void Dispose()
     {
         if (_disposed)

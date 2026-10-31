@@ -23,10 +23,6 @@
 
 #endregion License Information (GPL v3)
 
-using System;
-using System.IO;
-using System.Text.Json;
-
 namespace XerahS.Common
 {
     public sealed class FFmpegDownloadResult
@@ -52,81 +48,57 @@ namespace XerahS.Common
 
     public static class FFmpegDownloader
     {
-        public const string DefaultOwner = "ShareX";
-        public const string DefaultRepo = "FFmpeg";
-        private const string FFprobeFallbackOwner = "System233";
-        private const string FFprobeFallbackRepo = "ffmpeg-msvc-prebuilt";
+        public const string DefaultOwner = "BtbN";
+        public const string DefaultRepo = "FFmpeg-Builds";
 
         public static Task<FFmpegDownloadResult> DownloadLatestToToolsAsync(IProgress<double>? progress = null, CancellationToken cancellationToken = default)
-        {
-            return DownloadLatestAsync(PathsManager.ToolsArchitectureFolder, progress, cancellationToken);
-        }
+            => DownloadLatestAsync(PathsManager.ToolsArchitectureFolder, progress, cancellationToken);
 
         public static async Task<FFmpegDownloadResult> DownloadLatestAsync(string destinationFolder, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(destinationFolder))
-            {
                 return FFmpegDownloadResult.CreateFailure("Destination folder was not provided.");
-            }
-
             if (cancellationToken.IsCancellationRequested)
-            {
                 return FFmpegDownloadResult.CreateFailure("FFmpeg download was canceled.");
+
+            var checker = new FFmpegUpdateChecker();
+            if (checker.GetExpectedAssetName() == null)
+            {
+                string guidance = OperatingSystem.IsMacOS()
+                    ? "Install FFmpeg and ffprobe with Homebrew (brew install ffmpeg), or configure a custom executable path."
+                    : "Install FFmpeg and ffprobe for your operating system and CPU, then configure a custom executable path.";
+                return FFmpegDownloadResult.CreateFailure(
+                    $"BtbN does not publish FFmpeg builds for this platform ({checker.Architecture}). {guidance}",
+                    checker.GetExpectedDownloadUrl());
             }
 
-            Directory.CreateDirectory(destinationFolder);
-
-            string? downloadedArchive = null;
-            FileDownloader? downloader = null;
+            string workFolder = Path.Combine(Path.GetTempPath(), $"xerahs-ffmpeg-{Guid.NewGuid():N}");
             Action? detachProgressHandlers = null;
-
             try
             {
-                FFmpegUpdateChecker updateChecker = new FFmpegUpdateChecker(DefaultOwner, DefaultRepo, FFmpegUpdateChecker.ResolveArchitecture());
-                // Propagate cancellation into GitHub URL discovery so a cancel
-                // mid-lookup does not continue into the archive download.
-                string? downloadUrl = await updateChecker.GetLatestDownloadURL(true, cancellationToken);
+                string? downloadUrl = await checker.GetLatestDownloadURL(true, cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (string.IsNullOrWhiteSpace(downloadUrl) || checker.FileName == null || checker.ChecksumsURL == null)
+                    return FFmpegDownloadResult.CreateFailure("The BtbN FFmpeg build and checksum manifest could not be resolved.", checker.GetExpectedDownloadUrl());
 
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return FFmpegDownloadResult.CreateFailure("FFmpeg download was canceled.");
-                }
+                byte[] checksums = await HttpClientFactory.Create().GetByteArrayAsync(checker.ChecksumsURL, cancellationToken).ConfigureAwait(false);
+                string? expectedHash = FFmpegReleaseVerifier.FindHash(checksums, checker.FileName);
+                if (expectedHash == null)
+                    return FFmpegDownloadResult.CreateFailure("The FFmpeg archive is missing from BtbN's checksum manifest and was not installed.", downloadUrl);
 
-                if (string.IsNullOrWhiteSpace(downloadUrl))
-                {
-                    string expectedUrl = BuildExpectedDownloadUrl(updateChecker);
-                    return FFmpegDownloadResult.CreateFailure("FFmpeg download URL could not be resolved.", expectedUrl);
-                }
-
-                string versionToken = updateChecker.LatestVersion != null ? updateChecker.LatestVersion.ToString() : "latest";
-                string fileName = updateChecker.FileName ?? $"ffmpeg-{versionToken}-{updateChecker.GetExpectedAssetSuffix()}";
-                downloadedArchive = Path.Combine(Path.GetTempPath(), fileName);
-
-                downloader = new FileDownloader(downloadUrl, downloadedArchive);
+                Directory.CreateDirectory(workFolder);
+                string archivePath = Path.Combine(workFolder, checker.FileName);
+                var downloader = new FileDownloader(downloadUrl, archivePath);
                 detachProgressHandlers = AttachProgressHandlers(downloader, progress);
-                bool downloadSuccess = await downloader.StartDownload(cancellationToken);
+                bool downloaded = await downloader.StartDownload(cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!downloaded || !File.Exists(archivePath))
+                    return FFmpegDownloadResult.CreateFailure("FFmpeg download failed.", downloadUrl);
+
+                string installedPath = await InstallArchiveAsync(archivePath, expectedHash, destinationFolder, checker.Architecture, cancellationToken).ConfigureAwait(false);
                 progress?.Report(100);
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return FFmpegDownloadResult.CreateFailure("FFmpeg download was canceled.");
-                }
-
-                if (!downloadSuccess || !File.Exists(downloadedArchive))
-                {
-                    return FFmpegDownloadResult.CreateFailure("FFmpeg download failed.");
-                }
-
-                ExtractFFmpegBinaries(downloadedArchive, destinationFolder);
-
-                string ffmpegPath = PathsManager.GetFFmpegPath();
-
-                if (string.IsNullOrWhiteSpace(ffmpegPath))
-                {
-                    return FFmpegDownloadResult.CreateFailure("FFmpeg was downloaded but could not be located.");
-                }
-
-                return FFmpegDownloadResult.CreateSuccess(ffmpegPath);
+                DebugHelper.WriteLine($"[FFmpeg] Installed {DefaultOwner}/{DefaultRepo} {checker.FileName} (SHA-256 verified) to {destinationFolder}");
+                return FFmpegDownloadResult.CreateSuccess(installedPath);
             }
             catch (OperationCanceledException)
             {
@@ -134,287 +106,39 @@ namespace XerahS.Common
             }
             catch (Exception ex)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return FFmpegDownloadResult.CreateFailure("FFmpeg download was canceled.");
-                }
                 DebugHelper.WriteException(ex, "FFmpeg download failed.");
-                return FFmpegDownloadResult.CreateFailure("FFmpeg download failed.");
+                return FFmpegDownloadResult.CreateFailure($"FFmpeg download failed: {ex.Message}", checker.GetExpectedDownloadUrl());
             }
             finally
             {
                 detachProgressHandlers?.Invoke();
-
-                if (!string.IsNullOrWhiteSpace(downloadedArchive) && File.Exists(downloadedArchive))
-                {
-                    try
-                    {
-                        File.Delete(downloadedArchive);
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    DebugHelper.WriteLine("FFmpeg download was canceled.");
-                }
+                try { if (Directory.Exists(workFolder)) Directory.Delete(workFolder, recursive: true); }
+                catch (Exception ex) { DebugHelper.WriteException(ex, "Could not remove the FFmpeg temporary download folder."); }
             }
         }
 
-        public static async Task<string?> DownloadFFprobeFallbackAsync(
-            string destinationFolder,
-            IProgress<double>? progress = null,
-            CancellationToken cancellationToken = default)
+        internal static async Task<string> InstallArchiveAsync(string archivePath, string expectedHash, string destinationFolder,
+            FFmpegArchitecture architecture, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(destinationFolder))
-            {
-                return null;
-            }
-
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return null;
-            }
-
-            string ffprobeBinary = OperatingSystem.IsWindows() ? "ffprobe.exe" : "ffprobe";
-            if (!OperatingSystem.IsWindows())
-            {
-                return null;
-            }
-
-            Directory.CreateDirectory(destinationFolder);
-
-            string? downloadedArchive = null;
-            FileDownloader? downloader = null;
-            Action? detachProgressHandlers = null;
-
-            try
-            {
-                string? downloadUrl = await GetFFprobeFallbackDownloadUrlAsync(cancellationToken);
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return null;
-                }
-
-                if (string.IsNullOrWhiteSpace(downloadUrl))
-                {
-                    return null;
-                }
-
-                downloadedArchive = Path.Combine(
-                    Path.GetTempPath(),
-                    Path.GetFileName(new Uri(downloadUrl).AbsolutePath));
-
-                downloader = new FileDownloader(downloadUrl, downloadedArchive);
-                detachProgressHandlers = AttachProgressHandlers(downloader, progress);
-                bool downloadSuccess = await downloader.StartDownload(cancellationToken);
-                progress?.Report(100);
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return null;
-                }
-
-                if (!downloadSuccess || !File.Exists(downloadedArchive))
-                {
-                    return null;
-                }
-
-                ExtractExecutables(downloadedArchive, destinationFolder, ffprobeBinary);
-
-                string extractedFFprobePath = Path.Combine(destinationFolder, ffprobeBinary);
-                return File.Exists(extractedFFprobePath) ? extractedFFprobePath : null;
-            }
-            catch (OperationCanceledException)
-            {
-                return null;
-            }
-            catch (Exception ex)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return null;
-                }
-                DebugHelper.WriteException(ex, "FFprobe fallback download failed.");
-                return null;
-            }
-            finally
-            {
-                detachProgressHandlers?.Invoke();
-
-                if (!string.IsNullOrWhiteSpace(downloadedArchive) && File.Exists(downloadedArchive))
-                {
-                    try
-                    {
-                        File.Delete(downloadedArchive);
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    DebugHelper.WriteLine("FFprobe fallback download was canceled.");
-                }
-            }
-        }
-
-        private static void ExtractFFmpegBinaries(string archivePath, string destinationFolder)
-        {
-            string ffmpegBinary = OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg";
-            string ffprobeBinary = OperatingSystem.IsWindows() ? "ffprobe.exe" : "ffprobe";
-
-            ExtractExecutables(archivePath, destinationFolder, ffmpegBinary, ffprobeBinary);
-        }
-
-        private static void EnsureExecutable(string path)
-        {
-            if (OperatingSystem.IsWindows())
-            {
-                return;
-            }
-
-            try
-            {
-                File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                                            UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-                                            UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex, "Failed to set FFmpeg executable permissions.");
-            }
+            if (!await FFmpegReleaseVerifier.IsFileHashValidAsync(archivePath, expectedHash, cancellationToken).ConfigureAwait(false))
+                throw new InvalidDataException("The FFmpeg archive does not match BtbN's SHA-256 checksum and was not installed.");
+            return await FFmpegPackageInstaller.InstallAsync(archivePath, destinationFolder, architecture, cancellationToken).ConfigureAwait(false);
         }
 
         private static Action? AttachProgressHandlers(FileDownloader downloader, IProgress<double>? progress)
         {
-            if (progress == null)
-            {
-                return null;
-            }
-
+            if (progress == null) return null;
             void ReportProgress()
             {
                 if (downloader.FileSize > 0)
-                {
-                    progress.Report(Math.Clamp(downloader.DownloadPercentage, 0, 100));
-                }
+                    progress.Report(Math.Clamp(downloader.DownloadPercentage * 0.9, 0, 90));
             }
-
             downloader.FileSizeReceived += ReportProgress;
             downloader.ProgressChanged += ReportProgress;
-
             return () =>
             {
                 downloader.FileSizeReceived -= ReportProgress;
                 downloader.ProgressChanged -= ReportProgress;
-            };
-        }
-
-        private static string BuildExpectedDownloadUrl(FFmpegUpdateChecker updateChecker)
-        {
-            string versionToken = updateChecker.LatestVersion != null ? updateChecker.LatestVersion.ToString() : "{version}";
-            string suffix = updateChecker.GetExpectedAssetSuffix();
-            string fileName = $"ffmpeg-{versionToken}-{suffix}";
-            return $"https://github.com/{updateChecker.Owner}/{updateChecker.Repo}/releases/download/v{versionToken}/{fileName}";
-        }
-
-        private static void ExtractExecutables(string archivePath, string destinationFolder, params string[] executableNames)
-        {
-            HashSet<string> executableSet = new HashSet<string>(executableNames, StringComparer.OrdinalIgnoreCase);
-
-            ZipManager.Extract(
-                archivePath,
-                destinationFolder,
-                retainDirectoryStructure: false,
-                filter: entry => executableSet.Contains(entry.Name));
-
-            foreach (string executableName in executableNames)
-            {
-                string extractedExecutablePath = Path.Combine(destinationFolder, executableName);
-                if (File.Exists(extractedExecutablePath))
-                {
-                    EnsureExecutable(extractedExecutablePath);
-                }
-            }
-        }
-
-        private static Task<string?> GetFFprobeFallbackDownloadUrlAsync()
-        {
-            return GetFFprobeFallbackDownloadUrlAsync(CancellationToken.None);
-        }
-
-        private static async Task<string?> GetFFprobeFallbackDownloadUrlAsync(CancellationToken cancellationToken)
-        {
-            string response = await WebHelpers.DownloadStringAsync(
-                $"https://api.github.com/repos/{FFprobeFallbackOwner}/{FFprobeFallbackRepo}/releases/latest",
-                cancellationToken);
-            if (string.IsNullOrWhiteSpace(response))
-            {
-                return null;
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            using JsonDocument document = JsonDocument.Parse(response);
-            if (!document.RootElement.TryGetProperty("assets", out JsonElement assetsElement))
-            {
-                return null;
-            }
-
-            string[] preferredSuffixes = GetFFprobeFallbackAssetSuffixes();
-
-            foreach (string suffix in preferredSuffixes)
-            {
-                foreach (JsonElement assetElement in assetsElement.EnumerateArray())
-                {
-                    if (!assetElement.TryGetProperty("name", out JsonElement nameElement) ||
-                        !assetElement.TryGetProperty("browser_download_url", out JsonElement urlElement))
-                    {
-                        continue;
-                    }
-
-                    string? assetName = nameElement.GetString();
-                    if (!string.IsNullOrWhiteSpace(assetName) &&
-                        assetName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return urlElement.GetString();
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private static string[] GetFFprobeFallbackAssetSuffixes()
-        {
-            return FFmpegUpdateChecker.ResolveArchitecture() switch
-            {
-                FFmpegArchitecture.winArm64 =>
-                [
-                    "-gpl-arm64-static.zip",
-                    "-lgpl-arm64-static.zip",
-                    "-gpl-arm64-shared.zip",
-                    "-lgpl-arm64-shared.zip"
-                ],
-                FFmpegArchitecture.win64 =>
-                [
-                    "-gpl-amd64-static.zip",
-                    "-lgpl-amd64-static.zip",
-                    "-gpl-amd64-shared.zip",
-                    "-lgpl-amd64-shared.zip"
-                ],
-                _ =>
-                [
-                    "-gpl-x86-static.zip",
-                    "-lgpl-x86-static.zip",
-                    "-gpl-x86-shared.zip",
-                    "-lgpl-x86-shared.zip"
-                ]
             };
         }
     }

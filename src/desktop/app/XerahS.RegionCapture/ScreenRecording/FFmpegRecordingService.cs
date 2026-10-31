@@ -26,6 +26,7 @@
 using System.Diagnostics;
 using XerahS.Media;
 using XerahS.Common;
+using XerahS.Platform.Abstractions;
 
 namespace XerahS.RegionCapture.ScreenRecording;
 
@@ -266,6 +267,45 @@ public class FFmpegRecordingService : IRecordingService
         return PathsManager.GetFFmpegPath();
     }
 
+    // MMDevice endpoint IDs are native WASAPI settings. DirectShow needs a friendly microphone name.
+    // This pure builder is also used to verify that fallback never drops one of two requested sources.
+    internal static IReadOnlyList<string> BuildWindowsAudioArguments(ScreenRecordingSettings settings, IRecordingDeviceService? devices)
+    {
+        List<string> args = [];
+        if (settings.CaptureSystemAudio)
+        {
+            if (!string.IsNullOrWhiteSpace(settings.SystemAudioDeviceId) &&
+                devices?.GetDefaultSystemAudioDevice()?.Id != settings.SystemAudioDeviceId)
+                throw new NotSupportedException("FFmpeg's Stereo Mix fallback cannot select a WASAPI output endpoint. Use the default output or native recording.");
+            args.Add("-thread_queue_size 512 -f dshow -i audio=\"Stereo Mix\"");
+        }
+        if (settings.CaptureMicrophone)
+        {
+            string? name = settings.MicrophoneDeviceId;
+            if (devices != null)
+            {
+                var selected = string.IsNullOrWhiteSpace(name) ? devices.GetDefaultMicrophone()
+                    : devices.GetMicrophones().FirstOrDefault(device => device.Id == name || device.Name == name);
+                if (selected == null) throw new ArgumentException("The selected microphone is no longer available.");
+                name = selected.Name;
+            }
+            name ??= "@device_cm_{33D9A762-90C8-11D0-BD43-00A0C911CE86}\\wave_{00000000-0000-0000-0000-000000000000}";
+            // Names are passed inside a quoted ProcessStartInfo argument, not through a shell.
+            if (name.Contains('"')) throw new ArgumentException("FFmpeg cannot use this microphone name. Select native recording.");
+            args.Add($"-thread_queue_size 512 -f dshow -i audio=\"{name}\"");
+        }
+        if (settings.CaptureSystemAudio && settings.CaptureMicrophone)
+        {
+            string systemGain = settings.SystemAudioGain.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string micGain = settings.MicrophoneGain.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            args.Add($"-filter_complex \"[1:a]volume={systemGain}[system];[2:a]volume={micGain}[mic];[system][mic]amix=inputs=2:duration=longest:normalize=0[mixed]\"");
+            args.Add("-map 0:v -map \"[mixed]\"");
+        }
+        else if (settings.CaptureSystemAudio || settings.CaptureMicrophone)
+            args.Add("-map 0:v -map 1:a");
+        return args;
+    }
+
     private string BuildFFmpegArguments(RecordingOptions options)
     {
         var settings = options.Settings ?? new ScreenRecordingSettings();
@@ -292,11 +332,17 @@ public class FFmpegRecordingService : IRecordingService
                          args.Add("-draw_mouse 0");
                     }
 
-                    if (options.Mode == CaptureMode.Region && options.Region.Width > 0 && options.Region.Height > 0)
+                    var region = options.Region;
+                    if (options.Mode == CaptureMode.Screen && !string.IsNullOrWhiteSpace(settings.DisplayId))
+                        region = PlatformServices.Screen.GetAllScreens().FirstOrDefault(screen => screen.DeviceName == settings.DisplayId)?.Bounds
+                            ?? throw new ArgumentException("The selected recording display is no longer available.");
+                    if (options.Mode == CaptureMode.Window && options.TargetWindowHandle != IntPtr.Zero)
+                        region = PlatformServices.Window.GetWindowBounds(options.TargetWindowHandle);
+                    if (region.Width > 0 && region.Height > 0)
                     {
-                        args.Add($"-offset_x {options.Region.X}");
-                        args.Add($"-offset_y {options.Region.Y}");
-                        args.Add($"-video_size {options.Region.Width}x{options.Region.Height}");
+                        args.Add($"-offset_x {region.X}");
+                        args.Add($"-offset_y {region.Y}");
+                        args.Add($"-video_size {region.Width & ~1}x{region.Height & ~1}");
                     }
 
                     args.Add("-i desktop");
@@ -364,26 +410,7 @@ public class FFmpegRecordingService : IRecordingService
         {
             if (OperatingSystem.IsWindows())
             {
-                if (settings.CaptureSystemAudio)
-                {
-                    args.Add("-f dshow");
-                    args.Add("-i audio=\"Stereo Mix\"");
-                    DebugHelper.WriteLine("FFmpeg: Capturing system audio via Stereo Mix (dshow)");
-                    DebugHelper.WriteLine("  Note: Requires 'Stereo Mix' to be enabled in Windows Sound settings");
-                }
-                else if (settings.CaptureMicrophone)
-                {
-                    args.Add("-f dshow");
-                    if (!string.IsNullOrEmpty(settings.MicrophoneDeviceId))
-                    {
-                        args.Add($"-i audio=\"{settings.MicrophoneDeviceId}\"");
-                    }
-                    else
-                    {
-                        args.Add("-i audio=\"@device_cm_{33D9A762-90C8-11D0-BD43-00A0C911CE86}\\wave_{00000000-0000-0000-0000-000000000000}\"");
-                    }
-                    DebugHelper.WriteLine("FFmpeg: Capturing microphone audio via dshow");
-                }
+                args.AddRange(BuildWindowsAudioArguments(settings, PlatformServices.RecordingDevices));
             }
             else if (OperatingSystem.IsLinux())
             {
@@ -411,7 +438,7 @@ public class FFmpegRecordingService : IRecordingService
         }
 
         // === Stream mapping — required when there are multiple inputs ===
-        if (hasAudio)
+        if (hasAudio && !OperatingSystem.IsWindows())
         {
             args.Add("-map 0:v");
             args.Add("-map 1:a");

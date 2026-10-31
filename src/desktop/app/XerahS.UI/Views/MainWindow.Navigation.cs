@@ -46,6 +46,7 @@ namespace XerahS.UI.Views
     public partial class MainWindow
     {
         private NavigationNode? _captureNavigationNode;
+        private StatisticsView? _statisticsWindow;
         private string _navigationSearchText = string.Empty;
         private bool _navigationFilterUpdateQueued;
         private bool _navigationSearchIndexEnriched;
@@ -235,6 +236,17 @@ namespace XerahS.UI.Views
                 case "History":
                     contentFrame.Content = new HistoryView();
                     return true;
+                case "Statistics":
+                    if (_statisticsWindow == null)
+                    {
+                        _statisticsWindow = new StatisticsView();
+                        _statisticsWindow.Closed += (_, _) => _statisticsWindow = null;
+                    }
+                    if (!_statisticsWindow.IsVisible) _statisticsWindow.Show(this);
+                    if (_statisticsWindow.WindowState == WindowState.Minimized) _statisticsWindow.WindowState = WindowState.Normal;
+                    _statisticsWindow.Activate();
+                    openedExternalWindow = true;
+                    return true;
                 case "Workflows":
                     contentFrame.Content = new WorkflowsView();
                     return true;
@@ -290,6 +302,7 @@ namespace XerahS.UI.Views
             NavigationNodes.Add(CreateNode("Recording", "Recording", HostIcons.NavigationRecording, NavigationNodeKind.Page));
             NavigationNodes.Add(CreateNode("Editor", "Editor", HostIcons.NavigationEditor, NavigationNodeKind.Page));
             NavigationNodes.Add(CreateNode("History", "History", HostIcons.NavigationHistory, NavigationNodeKind.Page));
+            NavigationNodes.Add(CreateNode("Statistics", "Statistics", HostIcons.NavigationStatistics, NavigationNodeKind.Action));
             NavigationNodes.Add(CreateNode("Workflows", "Workflows", HostIcons.NavigationWorkflows, NavigationNodeKind.Page));
             NavigationNodes.Add(CreateUploadNode());
             NavigationNodes.Add(CreateToolsNode());
@@ -355,6 +368,8 @@ namespace XerahS.UI.Views
         {
             NavigateTo("History");
         }
+
+        public void NavigateToStatistics() => NavigateTo("Statistics");
 
         public void NavigateToAbout()
         {

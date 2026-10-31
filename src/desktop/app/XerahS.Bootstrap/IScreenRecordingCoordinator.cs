@@ -41,12 +41,15 @@ namespace XerahS.Bootstrap
         bool IsPaused { get; }
         bool IsUsingFallback { get; }
         RecordingRuntimeCapabilities CurrentCapabilities { get; }
+        RecordingOptions? CurrentOptions => null;
         Task? PlatformInitializationTask { get; set; }
 
         Task StartRecordingAsync(RecordingOptions options);
         Task<string?> StopRecordingAsync();
         Task AbortRecordingAsync();
         Task TogglePauseResumeAsync();
+        Task ResumeRecordingAtAsync(System.Drawing.Rectangle region) =>
+            Task.FromException(new NotSupportedException("This recorder cannot move a paused region."));
         void SignalStop();
 
         /// <summary>Discard the current take and start recording again with the same settings.</summary>

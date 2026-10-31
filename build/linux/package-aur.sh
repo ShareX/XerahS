@@ -16,16 +16,6 @@ if ! command -v bsdtar >/dev/null 2>&1; then
     exit 1
 fi
 
-if ! command -v node >/dev/null 2>&1; then
-    echo "Error: node is required to build XerahS for Arch packaging." >&2
-    exit 1
-fi
-
-if ! command -v npm >/dev/null 2>&1; then
-    echo "Error: npm is required to build XerahS for Arch packaging." >&2
-    exit 1
-fi
-
 mkdir -p "$OUTPUT_DIR"
 
 export XERAHS_REPO_ROOT="$ROOT"

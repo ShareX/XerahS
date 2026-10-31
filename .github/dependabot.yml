@@ -1,0 +1,23 @@
+# Security advisories against web/ dependencies arrive as pull requests here
+# instead of failing the next unrelated push at `pnpm audit` in Web CI.
+version: 2
+updates:
+  - package-ecosystem: npm # pnpm lockfile
+    directory: /web
+    target-branch: develop
+    schedule:
+      interval: daily
+    # Security updates only; routine version bumps stay manual.
+    open-pull-requests-limit: 0
+    labels: [dependencies, web]
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ["*"]
+    labels: [dependencies, ci]

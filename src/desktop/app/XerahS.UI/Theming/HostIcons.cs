@@ -37,6 +37,7 @@ namespace XerahS.UI.Theming
         public const string NavigationRecording = LucideIcons.film;
         public const string NavigationEditor = LucideIcons.pencil;
         public const string NavigationHistory = LucideIcons.hard_drive;
+        public const string NavigationStatistics = LucideIcons.chart_column;
         public const string NavigationWorkflows = LucideIcons.combine;
         public const string NavigationUpload = LucideIcons.cloud_upload;
         public const string NavigationTools = LucideIcons.wand_sparkles;
@@ -57,5 +58,7 @@ namespace XerahS.UI.Theming
         public const string ActionAbort = LucideIcons.x;
         public const string ActionRestart = LucideIcons.rotate_ccw;
         public const string StatusWarning = LucideIcons.triangle_alert;
+        public const string OnboardingTheme = LucideIcons.sun_moon;
+        public const string OnboardingHotkeys = LucideIcons.keyboard;
     }
 }

@@ -1,10 +1,6 @@
 import "server-only";
 
-import {
-  assertProductionConfiguration,
-  getPublicEnv,
-  getServerEnv,
-} from "@/lib/env";
+import { assertProductionConfiguration, getServerEnv } from "@/lib/env";
 
 type DependencyState = "ready" | "unavailable";
 
@@ -12,12 +8,10 @@ export async function healthResponse(): Promise<Response> {
   try {
     assertProductionConfiguration();
     const server = getServerEnv();
-    const publicEnv = getPublicEnv();
     const configured = {
-      supabase: Boolean(
-        publicEnv.NEXT_PUBLIC_SUPABASE_URL &&
-        publicEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-      ),
+      database: Boolean(server.DATABASE_URL),
+      auth: Boolean(server.BETTER_AUTH_SECRET),
+      email: Boolean(server.RESEND_API_KEY && server.EMAIL_FROM),
       oauth: Boolean(server.XERAHS_DESKTOP_OAUTH_CLIENT_ID),
       stripe: Boolean(
         server.STRIPE_SECRET_KEY &&

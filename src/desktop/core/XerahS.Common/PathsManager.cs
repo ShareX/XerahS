@@ -239,7 +239,26 @@ namespace XerahS.Common
             ? Path.Combine(LinuxXdgDirectories.Detect().DataDirectory, "Tools")
             : Path.Combine(PersonalFolder, "Tools");
 
-        public static string ToolsArchitectureFolder => Path.Combine(ToolsFolder, GetArchitectureFolderName());
+        public static string ToolsArchitectureFolder => Path.Combine(ToolsFolder, GetToolsArchitectureFolderName());
+
+        /// <summary>
+        /// Stable local tools folder name (win-x64, linux-arm64, ...), independent of download asset naming.
+        /// Plugins keep <see cref="GetArchitectureFolderName"/>, where Linux is still "linux64".
+        /// </summary>
+        public static string GetToolsArchitectureFolderName() => GetToolsArchitectureFolderName(RuntimeInformation.OSArchitecture);
+
+        public static string GetToolsArchitectureFolderName(Architecture architecture)
+        {
+            if (OperatingSystem.IsLinux())
+            {
+                return architecture == Architecture.Arm64 ? "linux-arm64" : "linux-x64";
+            }
+
+            return GetArchitectureFolderName();
+        }
+
+        // Before 0.32.3 every Linux CPU shared Tools/linux64.
+        private static string LegacyLinuxToolsFolder => Path.Combine(ToolsFolder, "linux64");
         public static string PluginsFolder => UseLinuxXdgLayout
             ? Path.Combine(LinuxXdgDirectories.Detect().DataDirectory, AppResources.PluginsFolderName)
             : Path.Combine(PersonalFolder, AppResources.PluginsFolderName);
@@ -355,6 +374,17 @@ namespace XerahS.Common
                         DebugHelper.WriteLine($"[{toolName}] Found {toolName} at: {toolsExecutableNoExt}");
                         return toolsExecutableNoExt;
                     }
+                }
+            }
+
+            if (OperatingSystem.IsLinux())
+            {
+                string legacyLinuxExecutablePath = Path.Combine(LegacyLinuxToolsFolder, executableName);
+                DebugHelper.WriteLine($"[{toolName}] Checking legacy architecture tools path: {legacyLinuxExecutablePath}");
+                if (File.Exists(legacyLinuxExecutablePath))
+                {
+                    DebugHelper.WriteLine($"[{toolName}] Found {toolName} at: {legacyLinuxExecutablePath}");
+                    return legacyLinuxExecutablePath;
                 }
             }
 

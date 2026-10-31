@@ -31,6 +31,4 @@ namespace XerahS.UI.Onboarding;
 public sealed class OnboardingResult
 {
     public bool Completed { get; set; }
-    public bool Skipped { get; set; }
-    public OnboardingState State { get; set; } = new();
 }

@@ -64,15 +64,20 @@ namespace XerahS.Platform.Windows
                             IntPtr hBitmap = CreateCompatibleBitmap(screenDC, width, height);
                             if (hBitmap == IntPtr.Zero) return null;
 
+                            IntPtr oldBitmap = IntPtr.Zero;
                             try
                             {
                                 // Select bitmap into DC
-                                IntPtr oldBitmap = SelectObject(memDC, hBitmap);
+                                oldBitmap = SelectObject(memDC, hBitmap);
+                                if (oldBitmap == IntPtr.Zero) return null;
 
                                 // BitBlt from screen to memory DC
                                 bool success = BitBlt(memDC, 0, 0, width, height, screenDC, x, y, SRCCOPY);
-
                                 if (!success) return null;
+
+                                // A bitmap must be deselected before GDI+ reads it or GDI deletes it.
+                                SelectObject(memDC, oldBitmap);
+                                oldBitmap = IntPtr.Zero;
 
                                 // Convert to SKBitmap
                                 using var bitmap = System.Drawing.Image.FromHbitmap(hBitmap);
@@ -80,13 +85,15 @@ namespace XerahS.Platform.Windows
                                 bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                                 stream.Seek(0, SeekOrigin.Begin);
 
-                                // Restore old bitmap
-                                SelectObject(memDC, oldBitmap);
-
                                 return SKBitmap.Decode(stream);
                             }
                             finally
                             {
+                                if (oldBitmap != IntPtr.Zero)
+                                {
+                                    SelectObject(memDC, oldBitmap);
+                                }
+
                                 DeleteObject(hBitmap);
                             }
                         }

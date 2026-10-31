@@ -178,7 +178,7 @@ namespace XerahS.Core.Tasks
             {
                 Status = TaskStatus.Failed;
                 Error = ex;
-                DebugHelper.WriteLine($"Task failed: {ex.Message}");
+                DebugHelper.WriteException(ex, "Task failed");
 
                 // Show error toast to user for any task failure
                 try

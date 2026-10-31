@@ -25,6 +25,7 @@
 using System.IO;
 using System.Text;
 using XerahS.Common;
+using XerahS.Core.Services.Privacy;
 using XerahS.Core;
 using XerahS.Core.Managers;
 using XerahS.History;
@@ -111,20 +112,129 @@ namespace XerahS.Core.Tasks.Processors
             return true;
         }
 
+        internal Task<UploadResult?> UploadCaptureImageAsync(TaskInfo info, CancellationToken token) => UploadAsync(info, token);
+
         private async Task<UploadResult?> UploadAsync(TaskInfo info, CancellationToken token)
         {
+            if (!await PrivacyUploadGuard.PrepareAsync(info, token).ConfigureAwait(false)) return info.Result;
             if ((info.DataType is EDataType.Image or EDataType.File) && !string.IsNullOrEmpty(info.FilePath))
             {
                 FileReadinessStatus readiness = await FileReadiness.WaitUntilReadyAsync(info.FilePath, cancellationToken: token).ConfigureAwait(false);
                 if (readiness != FileReadinessStatus.Ready)
                 {
-                    string message = FileReadiness.Describe(readiness, info.FilePath);
-                    DebugHelper.WriteLine($"[UploadTrace {info.CorrelationId}] Upload skipped: {message}");
-                    return new UploadResult { IsSuccess = false, Response = message };
+                    if (readiness == FileReadinessStatus.Missing)
+                    {
+                        string sourcePath = info.FilePath;
+                        UploadResult? recorded = AdoptRecordedUpload(
+                            info,
+                            WatchedFileUploadRecovery.FindRecordedUpload(sourcePath, DateTime.Now - WatchedFileUploadRecovery.RecentWindow));
+                        if (recorded != null)
+                        {
+                            return recorded;
+                        }
+
+                        string? movedPath = WatchedFileUploadRecovery.FindMovedPath(sourcePath);
+                        if (movedPath != null)
+                        {
+                            recorded = AdoptRecordedUpload(info, WatchedFileUploadRecovery.FindRecordedUpload(sourcePath));
+                            if (recorded != null)
+                            {
+                                return recorded;
+                            }
+
+                            DebugHelper.WriteLine($"[UploadTrace {info.CorrelationId}] Source was moved to {movedPath}. Waiting for the watch-folder upload.");
+                            recorded = await WaitForRecordedUploadAsync(info, sourcePath, token).ConfigureAwait(false);
+                            if (recorded != null)
+                            {
+                                return recorded;
+                            }
+
+                            info.FilePath = movedPath;
+                            readiness = await FileReadiness.WaitUntilReadyAsync(movedPath, TimeSpan.FromSeconds(3), token).ConfigureAwait(false);
+                            if (readiness == FileReadinessStatus.Ready)
+                            {
+                                DebugHelper.WriteLine($"[UploadTrace {info.CorrelationId}] Watch-folder upload was not recorded. Uploading {movedPath}.");
+                            }
+                        }
+                    }
+
+                    if (readiness != FileReadinessStatus.Ready)
+                    {
+                        string message = FileReadiness.Describe(readiness, info.FilePath);
+                        DebugHelper.WriteLine($"[UploadTrace {info.CorrelationId}] Upload skipped: {message}");
+                        return new UploadResult { IsSuccess = false, Response = message };
+                    }
                 }
             }
 
+            ApplyNamingConvention(info);
+
             return await StartUploadAsync(info, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Generic file uploads keep their source name, so different files sent with the same name
+        /// end up at one constant URL. Apply the task's name pattern (as screenshots do) and keep the extension.
+        /// </summary>
+        private static void ApplyNamingConvention(TaskInfo info)
+        {
+            if (info.DataType != EDataType.File || string.IsNullOrEmpty(info.FilePath) || PrivacyUploadGuard.IsRequired(info))
+            {
+                return;
+            }
+
+            try
+            {
+                string extension = Path.GetExtension(info.FilePath);
+                string newName = TaskHelpers.GetFileName(info.TaskSettings, extension, info.Metadata);
+                if (!string.IsNullOrWhiteSpace(newName))
+                {
+                    DebugHelper.WriteLine($"[UploadTrace {info.CorrelationId}] Renaming upload \"{info.FileName}\" -> \"{newName}\"");
+                    info.SetFileName(newName);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to apply upload naming convention; keeping original file name");
+            }
+        }
+
+        private static UploadResult? AdoptRecordedUpload(TaskInfo info, HistoryItem? recorded)
+        {
+            UploadResult? result = WatchedFileUploadRecovery.ToAdoptedResult(recorded);
+            if (result == null || recorded == null)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrEmpty(recorded.FilePath))
+            {
+                info.FilePath = recorded.FilePath;
+            }
+
+            DebugHelper.WriteLine($"[UploadTrace {info.CorrelationId}] Upload already recorded for {Path.GetFileName(recorded.FilePath)}: {result.URL}");
+            return result;
+        }
+
+        private static async Task<UploadResult?> WaitForRecordedUploadAsync(TaskInfo info, string sourcePath, CancellationToken token)
+        {
+            DateTime deadline = DateTime.UtcNow + WatchedFileUploadRecovery.InFlightGrace;
+            DateTime notBefore = DateTime.Now - WatchedFileUploadRecovery.RecentWindow;
+            while (true)
+            {
+                UploadResult? recorded = AdoptRecordedUpload(info, WatchedFileUploadRecovery.FindRecordedUpload(sourcePath, notBefore));
+                if (recorded != null)
+                {
+                    return recorded;
+                }
+
+                if (DateTime.UtcNow >= deadline)
+                {
+                    return null;
+                }
+
+                await Task.Delay(TimeSpan.FromMilliseconds(250), token).ConfigureAwait(false);
+            }
         }
 
         private Task<UploadResult?> StartUploadAsync(TaskInfo info, CancellationToken token)
@@ -175,7 +285,7 @@ namespace XerahS.Core.Tasks.Processors
 
             if (!string.IsNullOrEmpty(targetInstanceId))
             {
-                targetInstance = ResolveRequestedInstance(instanceManager, targetInstanceId, category, allowCrossCategoryFallback);
+                targetInstance = ResolveRequestedInstance(instanceManager, targetInstanceId, category, allowCrossCategoryFallback, info.TaskSettings.RoutedImageFileDestinationId, info.FileName);
             }
 
             // Check if Auto destination is selected
@@ -186,6 +296,11 @@ namespace XerahS.Core.Tasks.Processors
 
             // Not Auto - use the configured instance directly
             targetInstance ??= ResolveDefaultInstance(instanceManager, category);
+
+            if (allowCrossCategoryFallback)
+            {
+                targetInstance = ApplyFileTypeRoute(instanceManager, category, targetInstance, info.FileName);
+            }
 
             if (targetInstance == null && category == UploaderCategory.File)
             {
@@ -214,6 +329,8 @@ namespace XerahS.Core.Tasks.Processors
             }
 
             var primaryResult = await TryUploadWithInstanceAsync(targetInstance, info, token).ConfigureAwait(false);
+
+            if (info.PrivacyReviewRequired) return primaryResult;
 
             if (IsSuccessfulUploadResult(primaryResult))
             {
@@ -245,7 +362,9 @@ namespace XerahS.Core.Tasks.Processors
             InstanceManager instanceManager,
             string targetInstanceId,
             UploaderCategory category,
-            bool allowCrossCategoryFallback = true)
+            bool allowCrossCategoryFallback = true,
+            string? routedImageFileDestinationId = null,
+            string? fileName = null)
         {
             var targetInstance = instanceManager.GetInstance(targetInstanceId);
             if (targetInstance == null)
@@ -256,7 +375,12 @@ namespace XerahS.Core.Tasks.Processors
 
             if (!InstanceManager.IsAutoProvider(targetInstance.ProviderId) && targetInstance.Category != category)
             {
-                if (!allowCrossCategoryFallback)
+                bool explicitlyRoutedImage = category == UploaderCategory.Image && targetInstance.Category == UploaderCategory.File &&
+                    string.Equals(targetInstance.InstanceId, routedImageFileDestinationId, StringComparison.Ordinal) &&
+                    !string.IsNullOrWhiteSpace(fileName) && targetInstance.FileTypeRouting != null &&
+                    (targetInstance.FileTypeRouting.AllFileTypes || (targetInstance.FileTypeRouting.FileExtensions ?? []).Any(ext =>
+                        string.Equals(ext?.Trim().TrimStart('.'), Path.GetExtension(fileName).TrimStart('.'), StringComparison.OrdinalIgnoreCase)));
+                if (!allowCrossCategoryFallback && !explicitlyRoutedImage)
                 {
                     DebugHelper.WriteLine($"Configured destination category mismatch. Expected {category}, got {targetInstance.Category}. Rejecting instance.");
                     return null;
@@ -272,6 +396,55 @@ namespace XerahS.Core.Tasks.Processors
             }
 
             return targetInstance;
+        }
+
+        /// <summary>
+        /// Hands a file to the destination that claims its type (a listed extension or "Text files") when the
+        /// chosen destination only covers it as a catch-all, so e.g. .md goes to a docs host while the
+        /// default stays object storage. Auto destinations already route by type.
+        /// </summary>
+        internal static UploaderInstance? ApplyFileTypeRoute(
+            InstanceManager instanceManager,
+            UploaderCategory category,
+            UploaderInstance? targetInstance,
+            string? fileName)
+        {
+            if (category != UploaderCategory.File || string.IsNullOrWhiteSpace(fileName) ||
+                (targetInstance != null && InstanceManager.IsAutoProvider(targetInstance.ProviderId)))
+            {
+                return targetInstance;
+            }
+
+            string extension = Path.GetExtension(fileName);
+            if (targetInstance != null && ClaimsFileTypeSpecifically(targetInstance, extension))
+            {
+                return targetInstance;
+            }
+
+            var specialist = instanceManager.GetSpecificDestinationForFile(category, extension);
+            if (specialist == null ||
+                (targetInstance != null && string.Equals(specialist.InstanceId, targetInstance.InstanceId, StringComparison.OrdinalIgnoreCase)))
+            {
+                return targetInstance;
+            }
+
+            DebugHelper.WriteLine(
+                $"File type route: '{extension}' goes to {specialist.DisplayName} ({specialist.InstanceId}) " +
+                $"instead of {targetInstance?.DisplayName ?? "(no destination)"}.");
+            return specialist;
+        }
+
+        private static bool ClaimsFileTypeSpecifically(UploaderInstance instance, string extension)
+        {
+            var routing = instance.FileTypeRouting;
+            if (routing == null || routing.AllFileTypes)
+            {
+                return false;
+            }
+
+            string ext = extension.Trim().TrimStart('.');
+            return (routing.FileExtensions ?? []).Any(e => string.Equals(e?.Trim().TrimStart('.'), ext, StringComparison.OrdinalIgnoreCase)) ||
+                routing.ClaimsAsTextFile(ext);
         }
 
         private static bool AllowsCrossCategoryFallback(TaskInfo info)
@@ -346,6 +519,7 @@ namespace XerahS.Core.Tasks.Processors
         /// </summary>
         private static async Task<UploadResult?> TryUploadWithFallbackAsync(InstanceManager instanceManager, UploaderCategory category, TaskInfo info, string? excludeInstanceId, CancellationToken token, HashSet<string>? attemptedInstanceIds = null)
         {
+            if (info.PrivacyReviewRequired) return info.Result;
             attemptedInstanceIds ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             
             DebugHelper.WriteLine($"Auto destination selected; trying uploaders with fallback for category {category}.");
@@ -400,6 +574,7 @@ namespace XerahS.Core.Tasks.Processors
                     DebugHelper.WriteLine($"Trying uploader: {instance.DisplayName} ({instance.ProviderId})");
 
                     var result = await TryUploadWithInstanceAsync(instance, info, token).ConfigureAwait(false);
+                    if (info.PrivacyReviewRequired) return result;
 
                     if (result != null && !result.IsError && !string.IsNullOrEmpty(result.URL))
                     {
@@ -511,6 +686,12 @@ namespace XerahS.Core.Tasks.Processors
             TaskInfo info,
             CancellationToken token)
         {
+            // Freeze the reviewed destination settings before creating a plugin. A concurrent UI edit
+            // cannot redirect an approved image after the final guard check.
+            instance = new UploaderInstance { InstanceId = instance.InstanceId, ProviderId = instance.ProviderId,
+                Category = instance.Category, DisplayName = instance.DisplayName, SettingsJson = instance.SettingsJson,
+                IsAvailable = instance.IsAvailable };
+            if (!await PrivacyUploadGuard.ConfirmDestinationAsync(info, instance, token).ConfigureAwait(false)) return info.Result;
             var provider = ProviderCatalog.GetProvider(instance.ProviderId);
             if (provider == null)
             {
@@ -531,7 +712,7 @@ namespace XerahS.Core.Tasks.Processors
 
             try
             {
-                await using Stream? content = OpenUploadContent(info, out string fileName, out UploaderCategory category);
+                await using Stream? content = OpenUploadContent(info, instance, out string fileName, out UploaderCategory category);
                 if (content == null)
                 {
                     return new UploadResult { IsSuccess = false, Response = "No content to upload." };
@@ -583,8 +764,14 @@ namespace XerahS.Core.Tasks.Processors
             }
         }
 
-        private static Stream? OpenUploadContent(TaskInfo info, out string fileName, out UploaderCategory category)
+        private static Stream? OpenUploadContent(TaskInfo info, UploaderInstance instance, out string fileName, out UploaderCategory category)
         {
+            if (PrivacyUploadGuard.IsRequired(info))
+            {
+                fileName = Path.GetFileName(info.PrivacyApproval?.FilePath ?? throw new InvalidOperationException("Privacy review required."));
+                category = UploaderCategory.Image;
+                return PrivacyUploadGuard.OpenApprovedContent(info, instance);
+            }
             if (!string.IsNullOrEmpty(info.FilePath))
             {
                 fileName = string.IsNullOrWhiteSpace(info.FileName) ? Path.GetFileName(info.FilePath) : info.FileName;
@@ -684,6 +871,14 @@ namespace XerahS.Core.Tasks.Processors
             {
                 var historyPath = SettingsManager.GetHistoryFilePath();
                 using var historyManager = new HistoryManagerSQLite(historyPath);
+
+                string sourceName = Path.GetFileName(info.FilePath ?? string.Empty);
+                HistoryItem? alreadyRecorded = historyManager.FindBySourceFileName(sourceName);
+                if (alreadyRecorded != null && string.Equals(alreadyRecorded.URL, url, StringComparison.Ordinal))
+                {
+                    DebugHelper.WriteLine($"History already records {url} for {sourceName}");
+                    return;
+                }
 
                 var historyItem = CreateHistoryItem(info, url);
 

@@ -321,8 +321,6 @@ public class ScreenRecorderService : IRecordingService
     {
         if (_disposed || _status != RecordingStatus.Recording) return;
         
-        System.Console.WriteLine("SRS: OnFrameCaptured called"); // Low-level trace
-
         FrameData? croppedFrame = null;
         int frameIndex = System.Threading.Interlocked.Increment(ref _debugFrameIndex);
         try

@@ -38,6 +38,30 @@ internal static class BgraRowCopyHelper
         }
     }
 
+    /// <summary>
+    /// Forces the alpha byte of every BGRA pixel to 0xFF. Screen surfaces are opaque, but GDI and
+    /// Desktop Duplication leave the alpha byte undefined (often zero).
+    /// </summary>
+    public static unsafe void SetOpaque(IntPtr destinationBase, int destinationStride, int widthInPixels, int height)
+    {
+        if (destinationBase == IntPtr.Zero) throw new ArgumentNullException(nameof(destinationBase));
+        if (widthInPixels < 0) throw new ArgumentOutOfRangeException(nameof(widthInPixels));
+        if (height < 0) throw new ArgumentOutOfRangeException(nameof(height));
+        if (widthInPixels == 0 || height == 0) return;
+
+        int normalizedStride = ValidateStride(destinationStride, widthInPixels * 4, nameof(destinationStride));
+        byte* topRow = NormalizeTopRow((byte*)destinationBase.ToPointer(), destinationStride, height);
+
+        for (int y = 0; y < height; y++)
+        {
+            uint* pixel = (uint*)(topRow + (y * normalizedStride));
+            for (int x = 0; x < widthInPixels; x++)
+            {
+                pixel[x] |= 0xFF000000u;
+            }
+        }
+    }
+
     private static unsafe byte* NormalizeTopRow(byte* basePointer, int stride, int height)
     {
         if (stride >= 0)

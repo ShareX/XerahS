@@ -43,6 +43,12 @@
         <Style Selector="Button.toast-action:pressed">
             <Setter Property="RenderTransform" Value="scale(0.97)"/>
         </Style>
+        <Style Selector="Border.output-chip TextBlock">
+            <Setter Property="Foreground" Value="#F2FFFFFF"/>
+        </Style>
+        <Style Selector="Border.output-chip.warning TextBlock">
+            <Setter Property="Foreground" Value="#FBBF24"/>
+        </Style>
     </Window.Styles>
 
     <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -98,6 +104,41 @@
                            Margin="12,0"
                            VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis"/>
+            </Border>
+
+            <!-- Output chip: where the result ended up (Online / Local / Not uploaded / Clipboard).
+                 Fades out while the hover toolbar is showing; never moves. -->
+            <Border x:Name="OutputChip"
+                    Classes="output-chip"
+                    Classes.warning="{Binding IsOutputChipWarning}"
+                    IsVisible="{Binding HasOutputChip}"
+                    IsHitTestVisible="False"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,8,8"
+                    Height="22"
+                    Padding="8,0"
+                    CornerRadius="11"
+                    Background="#E61B1B1B"
+                    BorderBrush="#33FFFFFF"
+                    BorderThickness="1"
+                    AutomationProperties.Name="{Binding OutputChipAccessibleName}">
+                <Border.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.12"/>
+                    </Transitions>
+                </Border.Transitions>
+                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                    <TextBlock Classes="IconGlyph"
+                               Text="{Binding OutputChipIcon}"
+                               FontSize="14"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding OutputChipLabel}"
+                               IsVisible="{Binding ShowOutputChipLabel}"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
             </Border>
 
             <!-- Transparent overlay for shared HistoryItemMenuFlyout (context menu); fills grid so right-click works -->

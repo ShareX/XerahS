@@ -56,12 +56,55 @@ public partial class ToastViewModel : ObservableObject, IDisposable
     private double _opacityDecrement;
     private bool _isDurationEnd;
     private bool _isMouseInside;
+    private bool _isHovered;
+    private readonly DispatcherTimer _leaveGraceTimer;
+    private readonly DispatcherTimer _deferredCloseTimer;
     private bool _isMenuOpen;
     private bool _isFileDragActive;
     private bool _disposed;
 
     public event EventHandler? CloseRequested;
     public event EventHandler<double>? OpacityChanged;
+
+    /// <summary>
+    /// Raised when the hover state used by the view (hover toolbar, output chip, header
+    /// overlay) changes. This is the single hover signal for the toast: the fade/close logic
+    /// and every hover visual follow it, so they can never disagree.
+    /// </summary>
+    public event EventHandler<bool>? HoverChanged;
+
+    public bool IsHovered => _isHovered;
+
+    /// <summary>
+    /// How long a pointer-leave is held back before it counts, on platforms where
+    /// <see cref="UseLeaveGrace"/> is on.
+    /// </summary>
+    internal static readonly TimeSpan DefaultLeaveGrace = TimeSpan.FromMilliseconds(250);
+
+    // On Linux, Avalonia talks X11 (XWayland under Hyprland and other Wayland compositors).
+    // X11 crossing events there are not as dependable as Win32's WM_MOUSELEAVE: a leave can
+    // be reported while the pointer is still over the toast (e.g. our own tooltip/menu popup
+    // windows mapping, or the compositor moving pointer focus as it re-focuses/restacks the
+    // window), and the matching enter only comes back on the next pointer motion. On Windows a
+    // false leave was harmless because the fade it started was cancelled by the next enter;
+    // on Linux the toast closed outright. So on Linux a leave is debounced, and a pending
+    // close can still be cancelled by hovering again.
+    internal bool UseLeaveGrace { get; set; } = OperatingSystem.IsLinux();
+
+    // On Linux the compositor can override per-window Opacity, so there is no visible fade.
+    // Instead the toast stays fully visible for FadeDuration and then closes; hovering again
+    // during that time cancels the close, just as hovering during the fade does on Windows.
+    internal bool UseDeferredClose { get; set; } = OperatingSystem.IsLinux();
+
+    internal TimeSpan LeaveGrace
+    {
+        get => _leaveGraceTimer.Interval;
+        set => _leaveGraceTimer.Interval = value;
+    }
+
+    internal bool IsMouseInside => _isMouseInside;
+    internal bool IsLeavePending => _leaveGraceTimer.IsEnabled;
+    internal bool IsDeferredCloseRunning => _deferredCloseTimer.IsEnabled;
 
     [ObservableProperty]
     private Bitmap? _image;
@@ -101,9 +144,72 @@ public partial class ToastViewModel : ObservableObject, IDisposable
     public double ActionButtonSize { get; }
     public double ActionButtonIconSize => ActionButtonSize / 2d;
     public Avalonia.CornerRadius ActionButtonCornerRadius => new(Math.Clamp(ActionButtonSize / 4d, 4, 16));
-    public Avalonia.Thickness TextContentMargin => HasActionButtons
-        ? new Avalonia.Thickness(12, 12, 12, ActionButtonSize + 20)
-        : new Avalonia.Thickness(12);
+    public Avalonia.Thickness TextContentMargin
+    {
+        get
+        {
+            double bottom = HasActionButtons ? ActionButtonSize + 20 : 12;
+            if (HasOutputChip)
+            {
+                // Keep text clear of the output chip in the bottom-right corner.
+                bottom = Math.Max(bottom, 12 + OutputChipReservedHeight);
+            }
+
+            return new Avalonia.Thickness(12, 12, 12, bottom);
+        }
+    }
+
+    internal const double OutputChipReservedHeight = 30;
+    internal const int OutputChipLabelMinWidth = 180;
+
+    public ToastOutputKind OutputKind => _config.OutputKind;
+    public bool HasOutputChip => OutputKind != ToastOutputKind.None;
+    public string OutputChipIcon => GetOutputChipIcon(OutputKind);
+    public string OutputChipLabel => GetOutputChipLabel(OutputKind);
+    public bool ShowOutputChipLabel => _config.Size.Width >= OutputChipLabelMinWidth;
+    public bool IsOutputChipWarning => OutputKind == ToastOutputKind.UploadFailedLocal;
+    public string OutputChipAccessibleName => $"Output: {OutputChipLabel}";
+
+    internal static string GetOutputChipIcon(ToastOutputKind kind) => kind switch
+    {
+        ToastOutputKind.Uploaded => LucideIcons.link,
+        ToastOutputKind.Local => LucideIcons.hard_drive,
+        ToastOutputKind.UploadFailedLocal => LucideIcons.cloud_off,
+        ToastOutputKind.ClipboardOnly => LucideIcons.clipboard,
+        _ => string.Empty
+    };
+
+    internal static string GetOutputChipLabel(ToastOutputKind kind) => kind switch
+    {
+        ToastOutputKind.Uploaded => "Online",
+        ToastOutputKind.Local => "Local",
+        ToastOutputKind.UploadFailedLocal => "Not uploaded",
+        ToastOutputKind.ClipboardOnly => "Clipboard",
+        _ => string.Empty
+    };
+
+    /// <summary>
+    /// Hover header text: the link or local path, prefixed so it says what it is.
+    /// </summary>
+    internal static string? FormatHeaderText(ToastOutputKind kind, string? url, string? filePath)
+    {
+        if (!string.IsNullOrWhiteSpace(url))
+        {
+            return kind == ToastOutputKind.None ? url : $"Link: {url}";
+        }
+
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            return null;
+        }
+
+        return kind switch
+        {
+            ToastOutputKind.UploadFailedLocal => $"Upload failed, saved to: {filePath}",
+            ToastOutputKind.Local => $"Saved to: {filePath}",
+            _ => filePath
+        };
+    }
 
     // Commands for context menu (shared with History - same MenuFlyout)
     public ICommand EditImageCommand { get; }
@@ -154,7 +260,7 @@ public partial class ToastViewModel : ObservableObject, IDisposable
         Url = config.URL;
         HasImage = Image != null;
         HasUrl = !string.IsNullOrEmpty(config.URL);
-        HeaderText = !string.IsNullOrWhiteSpace(config.URL) ? config.URL : config.FilePath;
+        HeaderText = FormatHeaderText(config.OutputKind, config.URL, config.FilePath);
         HasHeaderText = !string.IsNullOrWhiteSpace(HeaderText);
         ErrorDetails = config.ErrorDetails;
         HasErrors = !string.IsNullOrWhiteSpace(config.ErrorDetails);
@@ -207,6 +313,15 @@ public partial class ToastViewModel : ObservableObject, IDisposable
             Interval = TimeSpan.FromMilliseconds(_fadeInterval)
         };
         _fadeTimer.Tick += OnFadeTick;
+
+        _leaveGraceTimer = new DispatcherTimer { Interval = DefaultLeaveGrace };
+        _leaveGraceTimer.Tick += OnLeaveGraceTick;
+
+        _deferredCloseTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(Math.Max(config.FadeDuration, 0.05f))
+        };
+        _deferredCloseTimer.Tick += OnDeferredCloseTick;
 
         // Start duration timer if auto-hide is enabled. A zero display duration means the
         // toast should begin fading immediately instead of staying visible forever.
@@ -320,6 +435,7 @@ public partial class ToastViewModel : ObservableObject, IDisposable
     {
         _isMenuOpen = true;
         _fadeTimer.Stop();
+        _deferredCloseTimer.Stop();
 
         // Reset opacity
         _opacity = 1.0;
@@ -342,24 +458,89 @@ public partial class ToastViewModel : ObservableObject, IDisposable
 
     public void OnMouseEnter()
     {
+        bool wasPending = _leaveGraceTimer.IsEnabled;
+        _leaveGraceTimer.Stop();
+        _deferredCloseTimer.Stop();
+
+        if (!_isMouseInside)
+        {
+            DebugHelper.WriteLine("Toast hover: pointer entered");
+        }
+        else if (wasPending)
+        {
+            DebugHelper.WriteLine("Toast hover: pointer back inside, ignoring the pending leave");
+        }
+
         _isMouseInside = true;
         _fadeTimer.Stop();
 
         // Reset opacity
         _opacity = 1.0;
         OpacityChanged?.Invoke(this, _opacity);
+
+        SetHovered(true);
     }
 
     public void OnMouseLeave()
     {
+        if (UseLeaveGrace && _isMouseInside)
+        {
+            DebugHelper.WriteLine($"Toast hover: pointer left, confirming in {(int)_leaveGraceTimer.Interval.TotalMilliseconds} ms");
+            _leaveGraceTimer.Stop();
+            _leaveGraceTimer.Start();
+            return;
+        }
+
+        CommitMouseLeave();
+    }
+
+    /// <summary>
+    /// Pointer motion over the toast proves the pointer is inside, even if the platform lost
+    /// the enter event or reported a leave that was not real.
+    /// </summary>
+    public void OnPointerMovedInside()
+    {
+        if (!_isMouseInside || _leaveGraceTimer.IsEnabled)
+        {
+            OnMouseEnter();
+        }
+    }
+
+    private void OnLeaveGraceTick(object? sender, EventArgs e)
+    {
+        _leaveGraceTimer.Stop();
+        CommitMouseLeave();
+    }
+
+    private void CommitMouseLeave()
+    {
+        _leaveGraceTimer.Stop();
+        if (_isMouseInside)
+        {
+            DebugHelper.WriteLine("Toast hover: pointer left");
+        }
+
         _isMouseInside = false;
+        SetHovered(false);
         CheckFade();
+    }
+
+    private void SetHovered(bool hovered)
+    {
+        if (_isHovered == hovered)
+        {
+            return;
+        }
+
+        _isHovered = hovered;
+        HoverChanged?.Invoke(this, hovered);
     }
 
     public void OnFileDragStarted()
     {
         _isFileDragActive = true;
         _fadeTimer.Stop();
+        _deferredCloseTimer.Stop();
         _opacity = 1.0;
         OpacityChanged?.Invoke(this, _opacity);
     }
@@ -367,7 +548,9 @@ public partial class ToastViewModel : ObservableObject, IDisposable
     public void OnFileDragEnded(bool pointerInside)
     {
         _isFileDragActive = false;
+        _leaveGraceTimer.Stop();
         _isMouseInside = pointerInside;
+        SetHovered(pointerInside);
         CheckFade();
     }
 
@@ -433,14 +616,21 @@ public partial class ToastViewModel : ObservableObject, IDisposable
             return;
         }
 
-        // On Linux/Wayland the compositor's own fade animation (e.g. Hyprland's
-        // default-opacity tag) can override Avalonia's per-window Opacity, so the
-        // visual fade never happens and the toast sticks around even though the
-        // close request fires. Skip the fade on Linux and just close — the
-        // duration has already elapsed, so the user has seen the toast.
-        if (OperatingSystem.IsLinux() || _config.FadeDuration <= 0)
+        if (_config.FadeDuration <= 0)
         {
             CloseRequested?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
+        // On Linux/Wayland the compositor's own fade animation (e.g. Hyprland's
+        // default-opacity tag) can override Avalonia's per-window Opacity, so the
+        // visual fade never happens. Keep the toast fully visible for the fade time
+        // and then close; hovering again in that time cancels the close, the same way
+        // hovering during the fade does on Windows.
+        if (UseDeferredClose)
+        {
+            _deferredCloseTimer.Stop();
+            _deferredCloseTimer.Start();
             return;
         }
 
@@ -449,10 +639,18 @@ public partial class ToastViewModel : ObservableObject, IDisposable
         _fadeTimer.Start();
     }
 
+    private void OnDeferredCloseTick(object? sender, EventArgs e)
+    {
+        _deferredCloseTimer.Stop();
+        CloseRequested?.Invoke(this, EventArgs.Empty);
+    }
+
     private void ExecuteAction(ToastClickAction action)
     {
         _durationTimer.Stop();
         _fadeTimer.Stop();
+        _leaveGraceTimer.Stop();
+        _deferredCloseTimer.Stop();
 
         switch (action)
         {
@@ -785,6 +983,8 @@ public partial class ToastViewModel : ObservableObject, IDisposable
         {
             _durationTimer.Stop();
             _fadeTimer.Stop();
+            _leaveGraceTimer.Stop();
+            _deferredCloseTimer.Stop();
             _historyViewModel?.Dispose();
             _disposed = true;
         }

@@ -1,0 +1,17 @@
+{
+  "pluginId": "kovaforge",
+  "name": "KovaForge Docs",
+  "version": "1.0.0",
+  "author": "KovaForge",
+  "description": "Share text, Markdown, images, and files through KovaForge Docs and copy a link that anyone can open until you revoke it",
+  "apiVersion": "1.0",
+  "entryPoint": "ShareX.KovaForge.Plugin.KovaForgeProvider",
+  "assemblyFileName": "XerahS.KovaForge.Plugin.dll",
+  "supportedCategories": ["Image", "Text", "File"],
+  "supportsExplorer": false,
+  "supportsCancellation": true,
+  "supportsProgress": true,
+  "configViewId": "kovaforge",
+  "dependencies": [],
+  "homepageUrl": "https://kovaforge.org/"
+}

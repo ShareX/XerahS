@@ -2,11 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 
-export function ConsentDecisionForm({
-  authorizationId,
-}: {
-  authorizationId: string;
-}) {
+export function ConsentDecisionForm({ oauthQuery }: { oauthQuery: string }) {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -19,7 +15,7 @@ export function ConsentDecisionForm({
     setMessage("");
     try {
       const body = new FormData();
-      body.set("authorization_id", authorizationId);
+      body.set("oauth_query", oauthQuery);
       body.set("decision", decision);
       const response = await fetch("/api/oauth/decision", {
         method: "POST",

@@ -1,6 +1,6 @@
 import type Stripe from "stripe";
 
-import { rpc } from "@/lib/database";
+import { rpc, serviceDatabaseClient } from "@/lib/database";
 import { ApiError } from "@/lib/errors";
 import { getServerEnv } from "@/lib/env";
 import { empty } from "@/lib/responses";
@@ -12,7 +12,6 @@ import {
   stripeCustomerId,
   subscriptionIdFromEvent,
 } from "@/lib/stripe-entitlement";
-import { createServiceRoleClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -53,7 +52,7 @@ async function applyDispute(event: Stripe.Event): Promise<void> {
     : null;
   if (!customerId) throw new Error("Stripe dispute customer is missing.");
   const suspended = dispute.status !== "won";
-  await rpc(createServiceRoleClient(), "apply_stripe_dispute", {
+  await rpc(serviceDatabaseClient(), "apply_stripe_dispute", {
     p_event_id: event.id,
     p_event_type: event.type,
     p_created_at: new Date(event.created * 1_000).toISOString(),
@@ -64,7 +63,7 @@ async function applyDispute(event: Stripe.Event): Promise<void> {
 }
 
 async function processEvent(event: Stripe.Event): Promise<void> {
-  const service = createServiceRoleClient();
+  const service = serviceDatabaseClient();
   const createdAt = new Date(event.created * 1_000).toISOString();
   if (event.type.startsWith("checkout.session.")) {
     const metadata = checkoutMetadata(event);
@@ -154,7 +153,7 @@ export async function POST(request: Request) {
         eventType: event.type,
         errorCode,
       });
-      await rpc(createServiceRoleClient(), "record_stripe_webhook_failure", {
+      await rpc(serviceDatabaseClient(), "record_stripe_webhook_failure", {
         p_event_id: event.id,
         p_event_type: event.type,
         p_created_at: new Date(event.created * 1_000).toISOString(),

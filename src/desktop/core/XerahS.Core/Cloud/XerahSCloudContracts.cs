@@ -31,9 +31,21 @@ public sealed class XerahSCloudOptions
     /// Authorized XerahS Cloud public client. PKCE public clients have no secret.
     /// </summary>
     internal static readonly Uri CloudApiBaseAddress = new("https://cloud.xerahs.com/");
-    internal static readonly Uri CloudOAuthAuthority = new("https://cvnywevwxmajyzhhpvzl.supabase.co/");
+    // The XerahS Cloud site is its own OAuth server (Better Auth, /api/auth).
+    internal static readonly Uri CloudOAuthAuthority = new("https://cloud.xerahs.com/");
     internal const string CloudOAuthClientId = "8d8adf92-86c4-4036-a4c9-09901230f2c4";
     internal static readonly Uri CloudOAuthRedirectUri = new("https://cloud.xerahs.com/auth/desktop/callback");
+
+    internal const string AuthorizePath = "/api/auth/oauth2/authorize";
+    internal const string TokenPath = "/api/auth/oauth2/token";
+    internal const string JwksPath = "/api/auth/jwks";
+    internal const string DesktopScopes = "openid email profile offline_access";
+
+    /// <summary>Token issuer: the authority's origin, without a path.</summary>
+    internal static string Issuer(Uri authority) => authority.GetLeftPart(UriPartial.Authority);
+
+    /// <summary>Audience (RFC 8707 resource) of desktop access tokens: the owner API.</summary>
+    internal static string ApiAudience(Uri authority) => Issuer(authority) + "/api/v1";
 
     public static XerahSCloudOptions FromEnvironment() =>
         FromValues(

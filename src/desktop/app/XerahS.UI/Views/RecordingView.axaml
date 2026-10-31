@@ -5,6 +5,7 @@
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:theming="clr-namespace:XerahS.UI.Theming"
+                xmlns:platform="using:XerahS.Platform.Abstractions"
                 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
                 x:Class="XerahS.UI.Views.RecordingView"
                 x:DataType="vm:RecordingViewModel">
@@ -35,6 +36,11 @@
                         
                         <!-- Inline Recording Toolbar -->
                         <views:RecordingToolbarView DataContext="{Binding}"/>
+                        <Button Content="Move region and resume"
+                                Command="{Binding MoveRecordingRegionCommand}"
+                                IsVisible="{Binding CanMoveRecordingRegion}"
+                                HorizontalAlignment="Left"
+                                ToolTip.Tip="Select a new top-left position. The recording keeps its current dimensions."/>
                         
                         <!-- Last Error Display -->
                         <Border IsVisible="{Binding LastError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
@@ -129,6 +135,42 @@
                                       AutomationProperties.Name="Recording Intent Selection"/>
 
                         </Grid>
+
+                        <Expander Header="Native Windows recording settings" IsVisible="{Binding HasNativeRecordingSettings}">
+                            <StackPanel Spacing="12" Margin="0,12,0,0" IsEnabled="{Binding CanStart}">
+                                <TextBlock Text="Display (full-screen recordings)"/>
+                                <ComboBox ItemsSource="{Binding RecordingDisplays}" SelectedItem="{Binding SelectedRecordingDisplay}" HorizontalAlignment="Stretch">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="platform:ScreenInfo"><TextBlock Text="{Binding DeviceName}"/></DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock Text="System audio device"/>
+                                <ComboBox ItemsSource="{Binding SystemAudioDevices}" SelectedItem="{Binding SelectedSystemAudioDevice}" HorizontalAlignment="Stretch">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="platform:RecordingDevice"><TextBlock Text="{Binding Name}"/></DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock Text="System audio gain (1 = normal volume)"/>
+                                <NumericUpDown Value="{Binding SystemAudioGain}" Minimum="0" Maximum="4" Increment="0.1"/>
+                                <TextBlock Text="Microphone device"/>
+                                <ComboBox ItemsSource="{Binding MicrophoneDevices}" SelectedItem="{Binding SelectedMicrophoneDevice}" HorizontalAlignment="Stretch">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="platform:RecordingDevice"><TextBlock Text="{Binding Name}"/></DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock Text="Microphone gain (1 = normal volume)"/>
+                                <NumericUpDown Value="{Binding MicrophoneGain}" Minimum="0" Maximum="4" Increment="0.1"/>
+                                <TextBlock Text="Window recording mode"/>
+                                <ComboBox ItemsSource="{Binding WindowRecordingModes}" SelectedItem="{Binding WindowRecordingMode}" HorizontalAlignment="Stretch"/>
+                                <TextBlock Text="IncludePopups records the desktop under the window, including menus. WindowOnly captures the window while covered and excludes popups." TextWrapping="Wrap"/>
+                                <CheckBox Content="Require a hardware video encoder" IsChecked="{Binding RequireHardwareEncoder}"/>
+                                <CheckBox Content="Use low-latency encoding and microphone capture" IsChecked="{Binding LowLatency}"/>
+                                <CheckBox Content="Hide the Windows capture border when permitted" IsChecked="{Binding HideCaptureBorder}"/>
+                                <CheckBox Content="Use FFmpeg for recording" IsChecked="{Binding ForceFfmpeg}"/>
+                                <TextBlock Text="Audio device choices and gains apply to native recording. Leave FFmpeg unchecked to use native H.264 with audio. Other codecs use FFmpeg automatically." TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding RecordingDeviceError}" TextWrapping="Wrap" IsVisible="{Binding RecordingDeviceError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                            </StackPanel>
+                        </Expander>
 
                         <TextBlock Text="{Binding CodecAvailabilityMessage}"
                                    Theme="{StaticResource CaptionTextBlockStyle}"

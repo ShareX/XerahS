@@ -23,471 +23,89 @@
 
 #endregion License Information (GPL v3)
 
+using SkiaSharp;
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using XerahS.Platform.Windows.Capture;
-using SkiaSharp;
-using System.Drawing;
-using System.Runtime.InteropServices;
-using System.Threading;
+using XerahS.Platform.Windows.Capture.Backends;
+using XerahS.Platform.Windows.Capture.Engine;
 
 namespace XerahS.Platform.Windows
 {
     /// <summary>
-    /// Windows-specific screen capture implementation using GDI
+    /// Windows screen capture through GDI BitBlt only. Works on every Windows version.
+    /// Also the base of <see cref="WindowsModernCaptureService"/>: this facade only translates
+    /// <see cref="IScreenCaptureService"/> calls into capture requests for a <see cref="ScreenCaptureEngine"/>.
     /// </summary>
     public class WindowsScreenCaptureService : IScreenCaptureService
     {
-        private readonly IScreenService _screenService;
+        private readonly ScreenCaptureEngine _engine;
+        private readonly bool _windowCapturesClampToDesktop;
 
         public WindowsScreenCaptureService(IScreenService screenService)
+            : this(new ScreenCaptureEngine(new[] { new GdiScreenCaptureBackend(screenService) }), windowCapturesClampToDesktop: false)
         {
-            _screenService = screenService;
         }
 
-        /// <summary>
-        /// Captures a specific region of the screen using GDI BitBlt for physical pixel accuracy.
-        /// Uses raw GDI to ensure consistent behavior across DPI settings and multi-monitor setups.
-        /// </summary>
-        public async Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null)
+        /// <param name="engine">Backend chain that serves every capture.</param>
+        /// <param name="windowCapturesClampToDesktop">
+        /// True to capture windows as screen rectangles clamped to the desktop; false to read their bounds as-is.
+        /// </param>
+        private protected WindowsScreenCaptureService(ScreenCaptureEngine engine, bool windowCapturesClampToDesktop)
         {
-            return await Task.Run(() =>
-            {
-                bool cursorHidden = false;
-                try
-                {
-                    // Validate and clamp capture region to screen bounds.
-                    // Use outward rounding so fractional capture coordinates match the DXGI path
-                    // and avoid truncating a caller-selected edge.
-                    if (!GdiCaptureRectHelper.TryCreateCaptureRect(rect, _screenService.GetVirtualScreenBounds(), out Rectangle captureRect))
-                    {
-                        DebugHelper.WriteLine("Capture region outside screen bounds");
-                        return null;
-                    }
-
-                    int x = captureRect.X;
-                    int y = captureRect.Y;
-                    int width = captureRect.Width;
-                    int height = captureRect.Height;
-
-                    if (options?.ShowCursor == false)
-                    {
-                        cursorHidden = HideSystemCursors();
-                        if (cursorHidden)
-                        {
-                            Thread.Sleep(150);
-                        }
-                    }
-
-                    // Get screen DC (entire virtual desktop)
-                    IntPtr screenDC = GetDC(IntPtr.Zero);
-                    if (screenDC == IntPtr.Zero)
-                    {
-                        DebugHelper.WriteLine("WindowsScreenCaptureService: Failed to get screen DC");
-                        return null;
-                    }
-
-                    try
-                    {
-                        // Create compatible DC and bitmap
-                        IntPtr memDC = CreateCompatibleDC(screenDC);
-                        if (memDC == IntPtr.Zero)
-                        {
-                            DebugHelper.WriteLine("WindowsScreenCaptureService: Failed to create compatible DC");
-                            return null;
-                        }
-
-                        try
-                        {
-                            IntPtr hBitmap = CreateCompatibleBitmap(screenDC, width, height);
-                            if (hBitmap == IntPtr.Zero)
-                            {
-                                DebugHelper.WriteLine("WindowsScreenCaptureService: Failed to create compatible bitmap");
-                                return null;
-                            }
-
-                            IntPtr oldBitmap = IntPtr.Zero;
-                            try
-                            {
-                                // Select bitmap into DC before writing into it.
-                                oldBitmap = SelectObject(memDC, hBitmap);
-                                if (oldBitmap == IntPtr.Zero)
-                                {
-                                    DebugHelper.WriteLine("WindowsScreenCaptureService: Failed to select bitmap into capture DC");
-                                    return null;
-                                }
-
-                                // BitBlt from screen to memory DC (physical pixels)
-                                bool success = BitBlt(memDC, 0, 0, width, height, screenDC, x, y, SRCCOPY);
-
-                                if (!success)
-                                {
-                                    DebugHelper.WriteLine("WindowsScreenCaptureService: BitBlt failed");
-                                    return null;
-                                }
-
-                                if (options?.ShowCursor == true)
-                                {
-                                    var cursor = new CursorData();
-                                    cursor.DrawCursor(memDC, new System.Drawing.Point(x, y));
-                                }
-
-                                // Convert to SKBitmap
-                                using var bitmap = System.Drawing.Image.FromHbitmap(hBitmap);
-                                using var stream = new MemoryStream();
-                                bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-                                stream.Seek(0, SeekOrigin.Begin);
-
-                                var captured = SKBitmap.Decode(stream);
-                                if (captured is null)
-                                {
-                                    return null;
-                                }
-
-                                return HdrScreenshotColorCorrector.ApplyIfEnabled(
-                                    captured,
-                                    captureRect,
-                                    options?.HDRScreenshotColorCorrection ?? true);
-                            }
-                            finally
-                            {
-                                if (oldBitmap != IntPtr.Zero)
-                                {
-                                    SelectObject(memDC, oldBitmap);
-                                }
-
-                                DeleteObject(hBitmap);
-                            }
-                        }
-                        finally
-                        {
-                            DeleteDC(memDC);
-                        }
-                    }
-                    finally
-                    {
-                        ReleaseDC(IntPtr.Zero, screenDC);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    DebugHelper.WriteException(ex, "WindowsScreenCaptureService: Capture failed");
-                    return null;
-                }
-                finally
-                {
-                    if (cursorHidden)
-                    {
-                        RestoreSystemCursors();
-                    }
-                }
-            });
+            _engine = engine ?? throw new ArgumentNullException(nameof(engine));
+            _windowCapturesClampToDesktop = windowCapturesClampToDesktop;
         }
 
         /// <summary>
         /// Shows the region selector UI and returns the selected rectangle.
         /// This is a platform stub - actual UI is handled by the UI layer.
         /// </summary>
-        public Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
-        {
-            // This method should only be called from the UI layer wrapper
-            return Task.FromResult(SKRectI.Empty);
-        }
+        public Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null) => Task.FromResult(SKRectI.Empty);
 
         /// <summary>
-        /// Captures a region of the screen.
-        /// On Windows platform layer, this just falls back to fullscreen or throws,
-        /// as UI interaction should be handled by the UI layer wrapper.
+        /// Captures a region of the screen. Without the UI layer's region selector this captures the full screen.
         /// </summary>
-        public async Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null)
+        public Task<SKBitmap?> CaptureRegionAsync(CaptureOptions? options = null) => CaptureFullScreenAsync(options);
+
+        public Task<SKBitmap?> CaptureRectAsync(SKRect rect, CaptureOptions? options = null) =>
+            _engine.CaptureAsync(ScreenCaptureRequest.ForRectangle(rect, options));
+
+        public Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null) =>
+            _engine.CaptureAsync(ScreenCaptureRequest.ForVirtualDesktop(options));
+
+        public Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null)
         {
-            // Default to fullscreen if called directly without UI wrapper
-            return await CaptureFullScreenAsync(options);
+            ArgumentNullException.ThrowIfNull(windowService);
+            return CaptureWindowAsync(windowService.GetForegroundWindow(), windowService, options);
         }
 
-        /// <summary>
-        /// Captures the entire screen
-        /// </summary>
-        public async Task<SKBitmap?> CaptureFullScreenAsync(CaptureOptions? options = null)
+        public Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
         {
-            return await Task.Run(() =>
+            ArgumentNullException.ThrowIfNull(windowService);
+            if (windowHandle == IntPtr.Zero) return Task.FromResult<SKBitmap?>(null);
+
+            System.Drawing.Rectangle bounds;
+            try
             {
-                bool cursorHidden = false;
-                try
-                {
-                    var bounds = _screenService.GetVirtualScreenBounds();
-                    if (options?.ShowCursor == false)
-                    {
-                        cursorHidden = HideSystemCursors();
-                        if (cursorHidden)
-                        {
-                            Thread.Sleep(150);
-                        }
-                    }
-
-                    using (var bitmap = new Bitmap(bounds.Width, bounds.Height))
-                    {
-                        using (var graphics = Graphics.FromImage(bitmap))
-                        {
-                            graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
-
-                            if (options?.ShowCursor == true)
-                            {
-                                var cursor = new CursorData();
-                                cursor.DrawCursor(bitmap, new System.Drawing.Point(bounds.X, bounds.Y));
-                            }
-                        }
-
-                        return ConvertAndCorrect(bitmap, bounds, options);
-                    }
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-                finally
-                {
-                    if (cursorHidden)
-                    {
-                        RestoreSystemCursors();
-                    }
-                }
-            });
-        }
-
-        /// <summary>
-        /// Captures the active window
-        /// </summary>
-        public async Task<SKBitmap?> CaptureActiveWindowAsync(IWindowService windowService, CaptureOptions? options = null)
-        {
-            return await Task.Run(() =>
+                // Read current window bounds (fresh, not stale)
+                bounds = windowService.GetWindowBounds(windowHandle);
+            }
+            catch (Exception ex)
             {
-                bool cursorHidden = false;
-                try
-                {
-                    var hwnd = windowService.GetForegroundWindow();
-                    if (hwnd == IntPtr.Zero) return null;
-
-                    var bounds = windowService.GetWindowBounds(hwnd);
-                    if (bounds.Width <= 0 || bounds.Height <= 0) return null;
-
-                    if (options?.ShowCursor == false)
-                    {
-                        cursorHidden = HideSystemCursors();
-                        if (cursorHidden)
-                        {
-                            Thread.Sleep(150);
-                        }
-                    }
-
-                    using (var bitmap = new Bitmap(bounds.Width, bounds.Height))
-                    {
-                        using (var graphics = Graphics.FromImage(bitmap))
-                        {
-                            graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
-                        }
-
-                        if (options?.ShowCursor == true)
-                        {
-                            var cursor = new CursorData();
-                            cursor.DrawCursor(bitmap, new System.Drawing.Point(bounds.X, bounds.Y));
-                        }
-
-                        return ConvertAndCorrect(bitmap, bounds, options);
-                    }
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-                finally
-                {
-                    if (cursorHidden)
-                    {
-                        RestoreSystemCursors();
-                    }
-                }
-            });
-        }
-
-        /// <summary>
-        /// Captures a specific window by its handle
-        /// </summary>
-        public async Task<SKBitmap?> CaptureWindowAsync(IntPtr windowHandle, IWindowService windowService, CaptureOptions? options = null)
-        {
-            return await Task.Run(() =>
-            {
-                bool cursorHidden = false;
-                try
-                {
-                    if (windowHandle == IntPtr.Zero) return null;
-
-                    // Get current window bounds (fresh, not stale)
-                    var bounds = windowService.GetWindowBounds(windowHandle);
-                    if (bounds.Width <= 0 || bounds.Height <= 0) return null;
-
-                    if (options?.ShowCursor == false)
-                    {
-                        cursorHidden = HideSystemCursors();
-                        if (cursorHidden)
-                        {
-                            Thread.Sleep(150);
-                        }
-                    }
-
-                    using (var bitmap = new Bitmap(bounds.Width, bounds.Height))
-                    {
-                        using (var graphics = Graphics.FromImage(bitmap))
-                        {
-                            graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
-                        }
-
-                        if (options?.ShowCursor == true)
-                        {
-                            var cursor = new CursorData();
-                            cursor.DrawCursor(bitmap, new System.Drawing.Point(bounds.X, bounds.Y));
-                        }
-
-                        return ConvertAndCorrect(bitmap, bounds, options);
-                    }
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-                finally
-                {
-                    if (cursorHidden)
-                    {
-                        RestoreSystemCursors();
-                    }
-                }
-            });
-        }
-
-        /// <summary>
-        /// Captures the current mouse cursor
-        /// </summary>
-        public async Task<CursorInfo?> CaptureCursorAsync()
-        {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    var cursor = new CursorData();
-                    if (!cursor.IsVisible || cursor.Handle == IntPtr.Zero) return null;
-
-                    var position = cursor.Position;
-                    var hotspot = cursor.Hotspot;
-                    int width = cursor.Size.Width > 0 ? cursor.Size.Width : 32;
-                    int height = cursor.Size.Height > 0 ? cursor.Size.Height : 32;
-
-                    // Create a 32-bit ARGB bitmap for proper transparency
-                    using var bitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                    using (var g = System.Drawing.Graphics.FromImage(bitmap))
-                    {
-                        // Clear to transparent
-                        g.Clear(System.Drawing.Color.Transparent);
-                        
-                        // Get HDC and draw cursor
-                        IntPtr hdc = g.GetHdc();
-                        try
-                        {
-                            // Draw the cursor icon at (0,0)
-                            DrawIconEx(hdc, 0, 0, cursor.Handle, width, height, 0, IntPtr.Zero, DI_NORMAL);
-                        }
-                        finally
-                        {
-                            g.ReleaseHdc(hdc);
-                        }
-                    }
-
-                    // Convert to SKBitmap
-                    using var stream = new MemoryStream();
-                    bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-                    stream.Seek(0, SeekOrigin.Begin);
-                    var skBitmap = SKBitmap.Decode(stream);
-
-                    return new CursorInfo(skBitmap, position, hotspot);
-                }
-                catch
-                {
-                    return null;
-                }
-            });
-        }
-
-        private const int DI_NORMAL = 0x0003;
-
-        [DllImport("user32.dll")]
-        private static extern bool DrawIconEx(IntPtr hdc, int xLeft, int yTop, IntPtr hIcon, int cxWidth, int cyHeight, int istepIfAniCur, IntPtr hbrFlickerFreeDraw, int diFlags);
-
-        private static SKBitmap? ConvertAndCorrect(Bitmap bitmap, Rectangle captureBounds, CaptureOptions? options)
-        {
-            var captured = ToSKBitmap(bitmap);
-            if (captured is null)
-            {
-                return null;
+                DebugHelper.WriteException(ex, "Screen capture: failed to read window bounds");
+                return Task.FromResult<SKBitmap?>(null);
             }
 
-            return HdrScreenshotColorCorrector.ApplyIfEnabled(
-                captured,
-                captureBounds,
-                options?.HDRScreenshotColorCorrection ?? true);
+            if (bounds.Width <= 0 || bounds.Height <= 0) return Task.FromResult<SKBitmap?>(null);
+
+            ScreenCaptureRequest request = _windowCapturesClampToDesktop
+                ? ScreenCaptureRequest.ForRectangle(new SKRect(bounds.X, bounds.Y, bounds.Right, bounds.Bottom), options)
+                : ScreenCaptureRequest.ForWindowBounds(bounds, options);
+
+            return _engine.CaptureAsync(request);
         }
 
-        private static SKBitmap? ToSKBitmap(Bitmap bitmap)
-        {
-            using (var stream = new MemoryStream())
-            {
-                bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-                stream.Seek(0, SeekOrigin.Begin);
-
-                // SKBitmap.Decode creates a copy of pixel data, safe to dispose stream after
-                var skBitmap = SKBitmap.Decode(stream);
-
-                if (skBitmap == null)
-                {
-                    DebugHelper.WriteLine("Failed to decode bitmap to SKBitmap");
-                }
-
-                return skBitmap;
-            }
-        }
-
-        #region Native Methods
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetDC(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-        private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
-
-        [DllImport("gdi32.dll")]
-        private static extern IntPtr CreateCompatibleDC(IntPtr hDC);
-
-        [DllImport("gdi32.dll")]
-        private static extern IntPtr CreateCompatibleBitmap(IntPtr hDC, int nWidth, int nHeight);
-
-        [DllImport("gdi32.dll")]
-        private static extern IntPtr SelectObject(IntPtr hDC, IntPtr hObject);
-
-        [DllImport("gdi32.dll")]
-        private static extern bool BitBlt(IntPtr hdcDest, int nXDest, int nYDest, int nWidth, int nHeight,
-            IntPtr hdcSrc, int nXSrc, int nYSrc, int dwRop);
-
-        [DllImport("gdi32.dll")]
-        private static extern bool DeleteDC(IntPtr hDC);
-
-        [DllImport("gdi32.dll")]
-        private static extern bool DeleteObject(IntPtr hObject);
-
-        private const int SRCCOPY = 0x00CC0020;
-
-        private static bool HideSystemCursors() => SystemCursorGuard.TryHide();
-
-        private static void RestoreSystemCursors() => SystemCursorGuard.Restore();
-
-        #endregion
+        public Task<CursorInfo?> CaptureCursorAsync() => Task.Run(CursorImageCapture.Capture);
     }
 }

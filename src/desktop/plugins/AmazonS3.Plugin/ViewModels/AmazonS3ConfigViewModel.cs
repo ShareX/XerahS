@@ -128,6 +128,9 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
     private bool _removeExtensionText = false;
 
     [ObservableProperty]
+    private bool _explorerBrowseWholeBucket = false;
+
+    [ObservableProperty]
     private int _multipartThresholdMiB = 50;
 
     [ObservableProperty]
@@ -800,6 +803,7 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
                 RemoveExtensionImage = config.RemoveExtensionImage;
                 RemoveExtensionVideo = config.RemoveExtensionVideo;
                 RemoveExtensionText = config.RemoveExtensionText;
+                ExplorerBrowseWholeBucket = config.ExplorerBrowseWholeBucket;
                 MultipartThresholdMiB = ConvertBytesToMiB(config.MultipartThresholdBytes, 50);
                 MultipartPartSizeMiB = config.MultipartPartSizeBytes <= 0
                     ? 10
@@ -880,6 +884,7 @@ public partial class AmazonS3ConfigViewModel : ObservableObject, IUploaderConfig
             RemoveExtensionImage = RemoveExtensionImage,
             RemoveExtensionVideo = RemoveExtensionVideo,
             RemoveExtensionText = RemoveExtensionText,
+            ExplorerBrowseWholeBucket = ExplorerBrowseWholeBucket,
             MultipartThresholdBytes = ConvertMiBToBytes(MultipartThresholdMiB),
             MultipartPartSizeBytes = ConvertMiBToBytes(MultipartPartSizeMiB),
             MultipartMaxConcurrency = MultipartMaxConcurrency,

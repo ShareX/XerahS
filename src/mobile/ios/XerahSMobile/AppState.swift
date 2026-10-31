@@ -27,6 +27,16 @@ import CommonCrypto
 import CryptoKit
 import Foundation
 
+/// Result of an .sxcu or .xsdc import, shown as an alert so it is not missed (a toast raised while
+/// the passphrase sheet closes is easy to overlook, which led to importing twice).
+struct ImportResultAlert: Identifiable {
+    let id = UUID()
+    let succeeded: Bool
+    let message: String
+
+    var title: String { succeeded ? "Import complete" : "Import failed" }
+}
+
 struct PendingDestinationConfigImport: Identifiable {
     let id = UUID()
     let data: Data
@@ -43,8 +53,8 @@ final class AppState: ObservableObject {
     /// Paths from share intent to process when Upload screen is ready. Consumed once.
     @Published var pendingSharedPaths: [String] = []
     @Published var pendingNavigation: Screen?
-    @Published var bannerMessage: String?
     @Published var pendingDestinationConfigImport: PendingDestinationConfigImport?
+    @Published var importResultAlert: ImportResultAlert?
 
     init(
         settingsRepository: SettingsRepository,
@@ -79,9 +89,18 @@ final class AppState: ObservableObject {
             return
         }
 
+        consumePendingShareItems()
+    }
+
+    /// Picks up imports and failed uploads queued by the Share Extension. Share extensions cannot
+    /// open the app themselves, so this also runs whenever the app becomes active.
+    func consumePendingShareItems() {
         importPendingSxcuFiles()
         importPendingXsdcFiles()
-        pendingSharedPaths = ShareGroup.consumePendingPaths()
+        let paths = ShareGroup.consumePendingPaths()
+        if !paths.isEmpty {
+            pendingSharedPaths += paths
+        }
     }
 
     private func importPendingSxcuFiles() {
@@ -107,11 +126,16 @@ final class AppState: ObservableObject {
         }
 
         guard let data = try? Data(contentsOf: url) else {
-            publishImportResult(message: "Failed to read .sxcu file.", navigate: false)
+            publishImportResult(message: "Failed to read .sxcu file.", navigate: false, isError: true)
             return
         }
 
         importSxcuData(data, sourceLabel: url.lastPathComponent)
+    }
+
+    /// Starts importing a destination config picked in the app; asks for its passphrase.
+    func importDestinationConfig(from url: URL) {
+        queueXsdcFile(from: url)
     }
 
     private func queueXsdcFile(from url: URL) {
@@ -123,7 +147,7 @@ final class AppState: ObservableObject {
         }
 
         guard let data = try? Data(contentsOf: url) else {
-            publishImportResult(message: "Failed to read .xsdc file.", navigate: false)
+            publishImportResult(message: "Failed to read .xsdc file.", navigate: false, isError: true)
             return
         }
 
@@ -141,7 +165,7 @@ final class AppState: ObservableObject {
             pendingDestinationConfigImport = nil
             publishImportResult(message: "Imported destination config: \(imported)", navigate: true, screen: .s3Config)
         } catch {
-            publishImportResult(message: "Failed to import \(pending.sourceLabel): \(error.localizedDescription)", navigate: false)
+            publishImportResult(message: "Failed to import \(pending.sourceLabel): \(error.localizedDescription)", navigate: false, isError: true)
         }
     }
 
@@ -156,7 +180,7 @@ final class AppState: ObservableObject {
             let targetUrl = URL(string: rawTarget),
             ["https", "http"].contains(targetUrl.scheme?.lowercased() ?? "")
         else {
-            publishImportResult(message: "Invalid import link. Missing or invalid remote .sxcu URL.", navigate: false)
+            publishImportResult(message: "Invalid import link. Missing or invalid remote .sxcu URL.", navigate: false, isError: true)
             return
         }
 
@@ -165,7 +189,7 @@ final class AppState: ObservableObject {
                 let (data, _) = try await URLSession.shared.data(from: targetUrl)
                 importSxcuData(data, sourceLabel: targetUrl.lastPathComponent.isEmpty ? targetUrl.absoluteString : targetUrl.lastPathComponent)
             } catch {
-                publishImportResult(message: "Failed to download .sxcu: \(error.localizedDescription)", navigate: false)
+                publishImportResult(message: "Failed to download .sxcu: \(error.localizedDescription)", navigate: false, isError: true)
             }
         }
     }
@@ -174,7 +198,7 @@ final class AppState: ObservableObject {
         let decoder = JSONDecoder()
 
         guard let definition = try? decoder.decode(SxcuDefinition.self, from: data) else {
-            publishImportResult(message: "The file \(sourceLabel) is not a valid .sxcu definition.", navigate: false)
+            publishImportResult(message: "The file \(sourceLabel) is not a valid .sxcu definition.", navigate: false, isError: true)
             return
         }
 
@@ -197,12 +221,15 @@ final class AppState: ObservableObject {
         publishImportResult(message: "Imported custom uploader: \(imported.displayName)", navigate: true)
     }
 
-    private func publishImportResult(message: String, navigate: Bool, screen: Screen = .customUploaderConfig) {
+    private func publishImportResult(message: String, navigate: Bool, screen: Screen = .customUploaderConfig, isError: Bool = false) {
         DispatchQueue.main.async {
-            self.bannerMessage = message
             if navigate {
                 self.pendingNavigation = screen
             }
+        }
+        // After any sheet (such as the passphrase sheet) has finished dismissing.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            self.importResultAlert = ImportResultAlert(succeeded: !isError, message: message)
         }
     }
 }

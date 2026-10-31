@@ -50,16 +50,11 @@ public static class VideoEditorFfprobeResolver
         }
 
         string downloadFolder = Path.GetDirectoryName(normalizedFfmpegPath) ?? PathsManager.ToolsArchitectureFolder;
-        messageSink?.Invoke($"FFprobe missing. Downloading tools package to: {downloadFolder}");
+        messageSink?.Invoke($"FFprobe missing. Downloading the FFmpeg package to: {downloadFolder}");
 
         FFmpegDownloadResult downloadResult = await FFmpegDownloader.DownloadLatestAsync(
             downloadFolder,
             cancellationToken: cancellationToken);
-        if (!downloadResult.Success)
-        {
-            messageSink?.Invoke(
-                $"Primary FFmpeg package download did not complete cleanly: {downloadResult.ErrorMessage ?? "unknown error"}");
-        }
 
         string downloadedProbePath = ResolvePath(normalizedFfmpegPath);
         if (!string.IsNullOrWhiteSpace(downloadedProbePath))
@@ -67,17 +62,9 @@ public static class VideoEditorFfprobeResolver
             return downloadedProbePath;
         }
 
-        messageSink?.Invoke("Primary FFmpeg package did not contain ffprobe. Downloading ffprobe from the online fallback source...");
-
-        string? fallbackProbePath = await FFmpegDownloader.DownloadFFprobeFallbackAsync(
-            downloadFolder,
-            cancellationToken: cancellationToken);
-        if (!string.IsNullOrWhiteSpace(fallbackProbePath))
-        {
-            return VideoEditorFfmpegResolver.NormalizePath(fallbackProbePath);
-        }
-
-        throw new InvalidOperationException("FFprobe was downloaded but could not be located.");
+        string detail = downloadResult.ErrorMessage ?? "FFprobe could not be downloaded or located.";
+        messageSink?.Invoke(detail);
+        throw new InvalidOperationException(detail);
     }
 
     public static string ResolvePath(string ffmpegPath)

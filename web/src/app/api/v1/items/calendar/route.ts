@@ -1,8 +1,7 @@
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
 import { rpc } from "@/lib/database";
 import { json } from "@/lib/responses";
 import { handleApi } from "@/lib/route-handler";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { monthSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -15,7 +14,7 @@ export async function GET(request: Request) {
       new URL(request.url).searchParams.get("month"),
     );
     const days = await rpc<Array<{ day: string; count: number }>>(
-      await createSupabaseServerClient(request),
+      await createUserDatabaseClient(request),
       "get_my_gallery_calendar",
       { p_month: month },
     );

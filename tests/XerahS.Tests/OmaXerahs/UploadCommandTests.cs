@@ -24,6 +24,8 @@
 #endregion License Information (GPL v3)
 
 using NUnit.Framework;
+using XerahS.Core;
+using XerahS.Uploaders.PluginSystem;
 using XerahS.OmaXerahs.Commands;
 using XerahS.OmaXerahs.Models;
 
@@ -32,6 +34,21 @@ namespace XerahS.Tests.OmaXerahs;
 [TestFixture]
 public class UploadCommandTests
 {
+    [TestCase(UploaderCategory.Image)]
+    [TestCase(UploaderCategory.File)]
+    public void CreateUploadTaskSettings_PinsOnlyTheInspectedDestination(UploaderCategory category)
+    {
+        var source = new TaskSettings { AfterCaptureJob = AfterCaptureTasks.UploadImageToHost };
+        var instance = new UploaderInstance { Category = category, InstanceId = "selected" };
+        var settings = UploadCommand.CreateUploadTaskSettings(source, instance);
+        Assert.That(settings.DestinationInstanceId, Is.EqualTo("selected"));
+        Assert.That(settings.AllowCrossCategoryFallback, Is.False);
+        Assert.That(settings.RoutedImageFileDestinationId, Is.EqualTo(category == UploaderCategory.File ? "selected" : null));
+        Assert.That(settings.AfterCaptureJob, Is.EqualTo(AfterCaptureTasks.None));
+        Assert.That(source.AfterCaptureJob, Is.EqualTo(AfterCaptureTasks.UploadImageToHost));
+        Assert.That(settings.GeneralSettings, Is.Not.SameAs(source.GeneralSettings));
+    }
+
     [Test]
     public void TryValidateImagePath_RejectsMissingPathAsUsage()
     {
@@ -63,9 +80,21 @@ public class UploadCommandTests
     }
 
     [Test]
-    public void TryValidateImagePath_RejectsMissingFileAsInvalidPath()
+    public void TryValidateImagePath_DefersAMissingImageSoAWatchFolderMoveCanBeFollowed()
     {
-        string missing = Path.Combine(Path.GetTempPath(), "omaxerahs-missing-" + Guid.NewGuid().ToString("N") + ".png");
+        string missing = Path.Combine(Path.GetTempPath(), "screenshot-missing-" + Guid.NewGuid().ToString("N") + ".png");
+
+        bool ok = UploadCommand.TryValidateImagePath(missing, out string canonical, out string errorCode, out string errorMessage);
+
+        Assert.That(ok, Is.True, errorMessage);
+        Assert.That(errorCode, Is.Empty);
+        Assert.That(canonical, Is.EqualTo(Path.GetFullPath(missing)));
+    }
+
+    [Test]
+    public void TryValidateImagePath_RejectsMissingNonImageAsInvalidPath()
+    {
+        string missing = Path.Combine(Path.GetTempPath(), "omaxerahs-missing-" + Guid.NewGuid().ToString("N") + ".txt");
 
         bool ok = UploadCommand.TryValidateImagePath(missing, out _, out string errorCode, out _);
 

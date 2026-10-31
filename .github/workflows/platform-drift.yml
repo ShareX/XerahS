@@ -15,9 +15,7 @@ jobs:
       matrix:
         include:
           - environment: xerahs-cloud-staging
-            allow_missing_config: true
           - environment: xerahs-cloud-production
-            allow_missing_config: false
     environment: ${{ matrix.environment }}
     runs-on: ubuntu-latest
     env:
@@ -29,11 +27,23 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24.19.0
+      # The drift check only means something for an environment that actually
+      # runs the Cloudflare R2 ledger. R2_LEDGER_BUCKET is optional in
+      # web/src/lib/env.ts and the ledger stays disabled while it is unset, so
+      # production has no ledger bucket and no drift-check configuration at all.
+      # Enforcing production unconditionally failed every scheduled run on the
+      # missing-variable assertion in web/scripts/verify-cloudflare-r2.mjs,
+      # before any Cloudflare call. Both environments therefore follow the
+      # staging precedent from ebe39dc4 ("[v0.31.0] [Build] Skip unconfigured
+      # staging platform drift check"): enforce the desired state when the
+      # environment is configured, skip with a notice when it is not.
+      # Provisioning a production ledger bucket and wiring its secrets is a
+      # separate owner decision (Mike); until then this skip is expected.
       - name: Verify Cloudflare R2 desired state
-        if: ${{ !matrix.allow_missing_config || (env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.R2_BUCKET != '') }}
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.R2_BUCKET != '' }}
         shell: bash
         run: node web/scripts/verify-cloudflare-r2.mjs
       - name: Skip unconfigured Cloudflare R2 drift check
-        if: ${{ matrix.allow_missing_config && (env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == '' || env.R2_BUCKET == '') }}
+        if: ${{ env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == '' || env.R2_BUCKET == '' }}
         shell: bash
         run: echo "::notice::Skipping Cloudflare R2 drift check for ${{ matrix.environment }} until its GitHub environment configuration is connected."

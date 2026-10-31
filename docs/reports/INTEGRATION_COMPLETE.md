@@ -1,5 +1,7 @@
 # Region Capture Backend Integration - 100% COMPLETE ✅
 
+> **Historical (v0.31.4):** the `IRegionCaptureBackend` stack this report describes was never wired into the app and has been removed on every platform, together with the guides linked below. For Windows capture see [Windows Screen Capture Architecture](../architecture/WINDOWS_SCREEN_CAPTURE.md).
+
 ## Executive Summary
 
 The complete redesign of the region capture backend for XerahS (XerahS) has been **successfully completed** and is now **fully operational**. The new backend replaces the old DPI handling system with a modern, cross-platform architecture featuring per-monitor DPI awareness, hardware-accelerated capture, and clean separation of concerns.

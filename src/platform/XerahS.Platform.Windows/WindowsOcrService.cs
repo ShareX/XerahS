@@ -52,16 +52,22 @@ public class WindowsOcrService : IOcrService
         try
         {
             float scaleFactor = GetEffectiveScaleFactor(image, options.ScaleFactor);
-            string text = await Task.Run(async () =>
+            options.CancellationToken.ThrowIfCancellationRequested();
+            var result = await Task.Run(async () =>
             {
                 using var scaledBitmap = ScaleBitmap(image, scaleFactor);
-                return await RecognizeInternal(scaledBitmap, options.Language, options.SingleLine);
+                return (Recognition: await RecognizeInternal(scaledBitmap, options.Language, options.SingleLine), Width: scaledBitmap.Width, Height: scaledBitmap.Height);
             });
 
             return new AbsOcrResult
             {
-                Text = text,
-                Success = true
+                Text = result.Recognition.Text,
+                Success = true,
+                SourceWidth = image.Width,
+                SourceHeight = image.Height,
+                GeometryComplete = options.IncludeGeometry && result.Recognition.GeometryComplete,
+                Words = options.IncludeGeometry ? result.Recognition.Words.Select(word => word with
+                { X = word.X * image.Width / result.Width, Y = word.Y * image.Height / result.Height, Width = word.Width * image.Width / result.Width, Height = word.Height * image.Height / result.Height }).ToArray() : []
             };
         }
         catch (Exception ex)
@@ -103,7 +109,7 @@ public class WindowsOcrService : IOcrService
         return Math.Min(requested, maximumSupportedScale);
     }
 
-    private static async Task<string> RecognizeInternal(SKBitmap bitmap, string languageTag, bool singleLine)
+    private static async Task<AbsOcrResult> RecognizeInternal(SKBitmap bitmap, string languageTag, bool singleLine)
     {
         var language = new Language(languageTag);
 
@@ -158,7 +164,14 @@ public class WindowsOcrService : IOcrService
         }
 
         string separator = singleLine ? " " : Environment.NewLine;
-        return string.Join(separator, lines);
+        bool unrotated = !ocrResult.TextAngle.HasValue || Math.Abs(ocrResult.TextAngle.Value) < 0.01;
+        return new AbsOcrResult
+        {
+            Text = string.Join(separator, lines), Success = true, GeometryComplete = unrotated,
+            Words = unrotated ? ocrResult.Lines.SelectMany((line, index) => line.Words.Select(word =>
+                new OcrWordRegion(word.Text, index.ToString(), word.BoundingRect.X, word.BoundingRect.Y,
+                    word.BoundingRect.Width, word.BoundingRect.Height))).ToArray() : []
+        };
     }
 }
 

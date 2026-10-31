@@ -1,0 +1,1 @@
+../../XerahSMobile/Core/Data/Upload/UploadOutcome.swift

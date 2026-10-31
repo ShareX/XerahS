@@ -40,6 +40,7 @@ final class ShareExtensionUploadService {
     private let customUploader = CustomUploader()
     private let decoder = JSONDecoder()
     private let cloudClient = XerahSCloudClient()
+    private let historyRepository = HistoryRepository()
 
     func uploadFiles(_ filePaths: [String]) async -> [ShareExtensionUploadResult] {
         guard var config = loadConfig() else {
@@ -57,19 +58,34 @@ final class ShareExtensionUploadService {
         var results: [ShareExtensionUploadResult] = []
         for path in filePaths {
             let uploaded = uploadFile(filePath: path, config: config)
-            guard uploaded.succeeded,
-                  XerahSCloudSettings.automaticallyPublishesEligibleUploads,
-                  cloudClient.hasStoredCredential,
-                  let expectedOwner = cloudClient.currentOwnerSubject, !expectedOwner.isEmpty,
-                  let rawURL = uploaded.url, let url = URL(string: rawURL),
-                  XerahSCloudClient.eligibleMetadata(fileName: (path as NSString).lastPathComponent) != nil else {
+            let fileName = (path as NSString).lastPathComponent
+            guard uploaded.succeeded, let rawURL = uploaded.url else {
                 results.append(uploaded)
                 continue
             }
+            // Same History entry and Cloud tags as the app's upload queue, so shared uploads show up
+            // in History and a failed Cloud publish can be retried there.
+            var tags: [String: String?] = [:]
+            defer {
+                _ = historyRepository.insertEntry(fileName: fileName, filePath: path, type: "File", host: "upload", url: rawURL, tags: tags)
+            }
+            guard XerahSCloudSettings.automaticallyPublishesEligibleUploads,
+                  cloudClient.hasStoredCredential,
+                  let expectedOwner = cloudClient.currentOwnerSubject, !expectedOwner.isEmpty,
+                  let url = URL(string: rawURL),
+                  XerahSCloudClient.eligibleMetadata(fileName: fileName) != nil else {
+                results.append(uploaded)
+                continue
+            }
+            let clientItemID = XerahSCloudClient.stableClientItemID(filePath: path)
+            tags["XerahSCloudClientItemId"] = clientItemID.uuidString.lowercased()
+            tags["XerahSCloudOwnerSubject"] = expectedOwner
             do {
-                try await cloudClient.publish(clientItemID: XerahSCloudClient.stableClientItemID(filePath: path), publicURL: url, fileName: (path as NSString).lastPathComponent, expectedOwnerSubject: expectedOwner)
+                try await cloudClient.publish(clientItemID: clientItemID, publicURL: url, fileName: fileName, expectedOwnerSubject: expectedOwner)
+                tags["XerahSCloudPublishState"] = "published"
                 results.append(uploaded)
             } catch {
+                tags["XerahSCloudPublishState"] = "failed"
                 results.append(ShareExtensionUploadResult(
                     filePath: uploaded.filePath,
                     url: uploaded.url,

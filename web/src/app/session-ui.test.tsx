@@ -15,12 +15,18 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
 }));
 
+vi.mock("@/lib/env", () => ({
+  getPublicEnv: () => ({ NEXT_PUBLIC_PASSKEYS_ENABLED: false }),
+}));
+
 const user = {
   id: "account-id",
   email: "owner@example.com",
+  emailVerified: true,
   aal: "aal2" as const,
   sessionId: "session-id",
   authenticatedAt: new Date("2026-08-27T00:00:00Z"),
+  strongMethod: "totp",
 };
 
 describe("session-aware account UI", () => {

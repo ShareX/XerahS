@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: XerahS Cloud API
   version: 1.0.0
-  description: Owner-only API for XIP0085. Auth is a Supabase browser session cookie or desktop bearer token.
+  description: Owner-only API for XIP0085. Auth is a Better Auth browser session cookie or an ES256 desktop bearer token from /api/auth/oauth2/token.
 servers:
   - url: https://cloud.xerahs.com
 security:

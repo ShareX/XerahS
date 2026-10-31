@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -51,6 +52,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
     private Process? _gstreamerProcess;
     private int? _gstreamerPid;
     private Task? _ffmpegTask;
+    private bool _usingFFmpegEncodingBridge;
     private RecordingOptions? _currentOptions;
     private RecordingStatus _status = RecordingStatus.Idle;
     private readonly Stopwatch _stopwatch = new();
@@ -271,7 +273,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             if (!nativeOk)
             {
                 DebugHelper.WriteLine("[WaylandPortalRecording] No usable FFmpeg encoder for the fallback; using GStreamer's last-resort encoder.");
-                GStreamerPluginAdvisor.Notify(advice, usedFfmpegFallback: false);
+                GStreamerPluginAdvisor.Notify(advice, usedFfmpegFallback: false, hasUsableFFmpegEncoder: plan != null);
             }
 
             return false;
@@ -282,9 +284,12 @@ public sealed class WaylandPortalRecordingService : IRecordingService
         {
             // Raw frames need an exact size; without one, use GStreamer's own encoders.
             DebugHelper.WriteLine("[WaylandPortalRecording] Could not determine the stream's frame size; not using the FFmpeg bridge.");
-            GStreamerPluginAdvisor.Notify(advice, usedFfmpegFallback: false);
+            // FFmpeg itself is fine here, so a download would not help.
+            GStreamerPluginAdvisor.Notify(advice, usedFfmpegFallback: false, hasUsableFFmpegEncoder: true);
             return false;
         }
+
+        WarnIfStreamShapeDiffers(frameWidth, frameHeight);
 
         string? crop = null;
         int width = frameWidth;
@@ -319,14 +324,26 @@ public sealed class WaylandPortalRecordingService : IRecordingService
 
         string captureArgs = FFmpegEncodingBridge.BuildCaptureArgs(sourceElement, width, height, crop);
         string encodeArgs = FFmpegEncodingBridge.BuildEncodeArgs(width, height, settings.FPS, plan, pulseDevice, outputPath);
-        DebugHelper.WriteLine($"[WaylandPortalRecording] Using GStreamer capture + FFmpeg encoding ({plan.VideoEncoder}{(pulseDevice != null ? " + " + plan.AudioEncoder : string.Empty)}), frame {frameWidth}x{frameHeight}");
+        DebugHelper.WriteLine($"[WaylandPortalRecording] Using GStreamer capture + FFmpeg encoding ({plan.VideoEncoder}{(pulseDevice != null ? " + " + plan.AudioEncoder : string.Empty)}), frame {FFmpegEncodingBridge.RawWidth(width)}x{FFmpegEncodingBridge.Even(height)} (source {frameWidth}x{frameHeight})");
         DebugHelper.WriteLine($"[WaylandPortalRecording] Capture: gst-launch-1.0 {captureArgs}");
         DebugHelper.WriteLine($"[WaylandPortalRecording] Encode: {ffmpegPath} {encodeArgs}");
 
-        GStreamerPluginAdvisor.Notify(advice, usedFfmpegFallback: true);
-        _gstreamerOutputPath = outputPath;
-        _ffmpegTask = Task.Run(() => RunFFmpegEncodingBridge(captureArgs, ffmpegPath, encodeArgs, outputPath));
+        GStreamerPluginAdvisor.Notify(advice, usedFfmpegFallback: true, hasUsableFFmpegEncoder: true);
+        StartFFmpegEncodingBridge(captureArgs, ffmpegPath, encodeArgs, outputPath, width, height);
         return true;
+    }
+
+    internal Task StartFFmpegEncodingBridge(string captureArgs, string ffmpegPath, string encodeArgs, string outputPath, int width, int height)
+    {
+        lock (_lock)
+        {
+            // The worker takes the same lock before publishing Recording, so stop always sees
+            // both its task and its child process, even if the hotkey arrives during startup.
+            _gstreamerOutputPath = outputPath;
+            _usingFFmpegEncodingBridge = true;
+            _ffmpegTask = Task.Run(() => RunFFmpegEncodingBridge(captureArgs, ffmpegPath, encodeArgs, outputPath, width, height));
+            return _ffmpegTask;
+        }
     }
 
     private static bool HasNativeGStreamerEncoding(VideoCodec codec)
@@ -341,6 +358,33 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             VideoCodec.HEVC => ((HasGStreamerElement("x265enc") || HasGStreamerElement("nvh265enc")) && mp4) || vp9,
             _ => h264 || vp9,
         };
+    }
+
+    /// <summary>
+    /// Logs when the negotiated stream does not have the shape the portal reported. Scaling changes
+    /// the size but not the aspect ratio, so a different ratio means pipewiresrc may be reading
+    /// another source (for example the webcam after a failed target match).
+    /// </summary>
+    private void WarnIfStreamShapeDiffers(int frameWidth, int frameHeight)
+    {
+        if (StreamShapeDiffers(_pipewireSourceWidth, _pipewireSourceHeight, frameWidth, frameHeight))
+        {
+            DebugHelper.WriteLine(
+                $"[WaylandPortalRecording] Warning: stream frames are {frameWidth}x{frameHeight} but the portal reported " +
+                $"{_pipewireSourceWidth}x{_pipewireSourceHeight}; the recording may not show the selected screen or window.");
+        }
+    }
+
+    internal static bool StreamShapeDiffers(int portalWidth, int portalHeight, int frameWidth, int frameHeight)
+    {
+        if (portalWidth <= 0 || portalHeight <= 0 || frameWidth <= 0 || frameHeight <= 0)
+        {
+            return false;
+        }
+
+        double portalRatio = (double)portalWidth / portalHeight;
+        double frameRatio = (double)frameWidth / frameHeight;
+        return Math.Abs(portalRatio - frameRatio) / portalRatio > 0.05;
     }
 
     /// <summary>
@@ -363,13 +407,14 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             {
                 Task<string> stdout = probe.StandardOutput.ReadToEndAsync();
                 Task<string> stderr = probe.StandardError.ReadToEndAsync();
-                if (!probe.WaitForExit(6000))
+                bool completed = probe.WaitForExit(6000);
+                if (!completed)
                 {
                     try { probe.Kill(entireProcessTree: true); } catch { }
                 }
 
                 string output = stdout.GetAwaiter().GetResult() + stderr.GetAwaiter().GetResult();
-                if (FFmpegEncodingBridge.ParseProbedSize(output) is { } size)
+                if (completed && probe.ExitCode == 0 && FFmpegEncodingBridge.ParseProbedSize(output) is { Width: > 0, Height: > 0 } size)
                 {
                     DebugHelper.WriteLine($"[WaylandPortalRecording] Stream frame size: {size.Width}x{size.Height}");
                     return size;
@@ -387,7 +432,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
     }
 
     /// <summary>Pumps raw frames from GStreamer into FFmpeg until GStreamer reaches EOS (stop).</summary>
-    private void RunFFmpegEncodingBridge(string captureArgs, string ffmpegPath, string encodeArgs, string outputPath)
+    private void RunFFmpegEncodingBridge(string captureArgs, string ffmpegPath, string encodeArgs, string outputPath, int width, int height)
     {
         Process? gst = null;
         Process? ffmpeg = null;
@@ -396,36 +441,40 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             lock (_lock)
             {
                 if (_stopRequested) return;
+
+                ffmpeg = Process.Start(new ProcessStartInfo(ffmpegPath, encodeArgs)
+                {
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }) ?? throw new InvalidOperationException("Could not start FFmpeg.");
+
+                gst = StartWithInheritedRemote(new ProcessStartInfo("gst-launch-1.0", captureArgs)
+                {
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }) ?? throw new InvalidOperationException("Could not start GStreamer.");
+                // Publish the process before StopRecordingAsync can take its snapshot. Otherwise
+                // a quick stop can miss the child and leave the bridge waiting on a live pipe.
+                _gstreamerProcess = gst;
+                _gstreamerPid = gst.Id;
                 _stopwatch.Restart();
                 UpdateStatus(RecordingStatus.Recording);
             }
 
-            ffmpeg = Process.Start(new ProcessStartInfo(ffmpegPath, encodeArgs)
-            {
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            }) ?? throw new InvalidOperationException("Could not start FFmpeg.");
             Task<string> ffmpegErrors = ffmpeg.StandardError.ReadToEndAsync();
             _ = ffmpeg.StandardOutput.ReadToEndAsync();
-
-            gst = StartWithInheritedRemote(new ProcessStartInfo("gst-launch-1.0", captureArgs)
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            }) ?? throw new InvalidOperationException("Could not start GStreamer.");
-            _gstreamerProcess = gst;
-            try { _gstreamerPid = gst.Id; } catch { }
             Task<string> gstErrors = gst.StandardError.ReadToEndAsync();
 
             bool encoderDied = false;
+            long framesCopied = 0;
             try
             {
-                gst.StandardOutput.BaseStream.CopyTo(ffmpeg.StandardInput.BaseStream, 1 << 20);
+                framesCopied = FFmpegEncodingBridge.CopyRawFrames(gst.StandardOutput.BaseStream, ffmpeg.StandardInput.BaseStream, width, height);
             }
             catch (IOException)
             {
@@ -444,12 +493,13 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             {
                 DebugHelper.WriteLine("[WaylandPortalRecording] FFmpeg did not finish in time; killing it.");
                 try { ffmpeg.Kill(entireProcessTree: true); } catch { }
+                ffmpeg.WaitForExit();
             }
 
             string gstOutput = gstErrors.GetAwaiter().GetResult().Trim();
             string ffmpegOutput = ffmpegErrors.GetAwaiter().GetResult().Trim();
             bool fileWritten = File.Exists(outputPath) && new FileInfo(outputPath).Length > 0;
-            DebugHelper.WriteLine($"[WaylandPortalRecording] Bridge finished: gst={gst.ExitCode} ffmpeg={ffmpeg.ExitCode} output={(fileWritten ? new FileInfo(outputPath).Length + " bytes" : "missing")}");
+            DebugHelper.WriteLine($"[WaylandPortalRecording] Bridge finished: gst={gst.ExitCode} ffmpeg={ffmpeg.ExitCode} frames={framesCopied} output={(fileWritten ? new FileInfo(outputPath).Length + " bytes" : "missing")}");
             if (gst.ExitCode != 0 && !_stopRequested && gstOutput.Length > 0)
             {
                 DebugHelper.WriteLine("[WaylandPortalRecording] GStreamer capture stderr:\n" + gstOutput);
@@ -460,13 +510,17 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                 DebugHelper.WriteLine("[WaylandPortalRecording] FFmpeg stderr:\n" + ffmpegOutput);
             }
 
-            if (!_stopRequested && gst.ExitCode != 0 && !fileWritten)
+            if (!_stopRequested && gst.ExitCode != 0)
             {
                 HandleFatalError(new Exception($"GStreamer capture failed.\n{gstOutput}"), true);
             }
-            else if (ffmpeg.ExitCode != 0 && !fileWritten)
+            else if (ffmpeg.ExitCode != 0)
             {
                 HandleFatalError(new Exception($"FFmpeg encoding failed.\n{ffmpegOutput}"), true);
+            }
+            else if (!fileWritten)
+            {
+                HandleFatalError(new Exception("Recording finished without a video file."), true);
             }
         }
         catch (Exception ex)
@@ -498,16 +552,20 @@ public sealed class WaylandPortalRecordingService : IRecordingService
         lock (SpawnWithRemoteLock)
         {
             int flags = NativeFcntl.fcntl(fd, NativeFcntl.F_GETFD, 0);
-            bool cleared = flags >= 0 && NativeFcntl.fcntl(fd, NativeFcntl.F_SETFD, flags & ~NativeFcntl.FD_CLOEXEC) == 0;
+            if (flags < 0 || NativeFcntl.fcntl(fd, NativeFcntl.F_SETFD, flags & ~NativeFcntl.FD_CLOEXEC) != 0)
+            {
+                throw new Win32Exception(Marshal.GetLastPInvokeError(), "Could not pass the selected screen's PipeWire connection to GStreamer.");
+            }
+
             try
             {
                 return Process.Start(startInfo);
             }
             finally
             {
-                if (cleared)
+                if (NativeFcntl.fcntl(fd, NativeFcntl.F_SETFD, flags) != 0)
                 {
-                    NativeFcntl.fcntl(fd, NativeFcntl.F_SETFD, flags);
+                    DebugHelper.WriteLine($"[WaylandPortalRecording] Could not restore close-on-exec on portal remote fd {fd}.");
                 }
             }
         }
@@ -566,8 +624,11 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             _gstreamerProcess = process;
             try { _gstreamerPid = process.Id; } catch { }
 
+            // Drain both pipes concurrently: an unread stdout pipe can stall gst-launch.
+            Task stdoutDrain = process.StandardOutput.BaseStream.CopyToAsync(Stream.Null);
             stderrOutput = process.StandardError.ReadToEnd();
             process.WaitForExit();
+            stdoutDrain.GetAwaiter().GetResult();
 
             if (process.ExitCode != 0)
             {
@@ -586,6 +647,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                         var fileInfo = new FileInfo(_gstreamerOutputPath);
                         if (fileInfo.Exists && fileInfo.Length > 0)
                         {
+                            RecordingOutputValidator.EnsureUsable(fileInfo.FullName);
                             DebugHelper.WriteLine(
                                 $"[WaylandPortalRecording] GStreamer exited with error but segment file exists " +
                                 $"({fileInfo.Length} bytes). Treating as external stop (partial recording recovered).");
@@ -724,8 +786,10 @@ public sealed class WaylandPortalRecordingService : IRecordingService
 
                 _gstreamerProcess = process;  // Reuse this field for the process reference
                 try { _gstreamerPid = process.Id; } catch { }
+                Task stdoutDrain = process.StandardOutput.BaseStream.CopyToAsync(Stream.Null);
                 string output = process.StandardError.ReadToEnd();
                 process.WaitForExit();
+                stdoutDrain.GetAwaiter().GetResult();
 
                 if (process.ExitCode != 0 && !_stopRequested)
                 {
@@ -747,6 +811,8 @@ public sealed class WaylandPortalRecordingService : IRecordingService
         Process? gstreamer;
         int? gstreamerPid;
         Task? ffmpegTask;
+        bool usingFFmpegEncodingBridge;
+        bool forcedTermination = false;
 
         lock (_lock)
         {
@@ -765,6 +831,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             gstreamer = _gstreamerProcess;
             gstreamerPid = _gstreamerPid;
             ffmpegTask = _ffmpegTask;
+            usingFFmpegEncodingBridge = _usingFFmpegEncodingBridge;
         }
 
         try
@@ -777,7 +844,8 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             }
 
             // Stop GStreamer by sending EOS (End of Stream) via SIGINT
-            if (gstreamerPid.HasValue)
+            // A completed bridge has disposed its child processes. Never signal a stale PID.
+            if (gstreamerPid.HasValue && ffmpegTask is not { IsCompleted: true })
             {
                 try
                 {
@@ -789,37 +857,55 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                     // Wait for GStreamer to finish writing and exit
                     if (gstreamer != null && !gstreamer.WaitForExit(10000))
                     {
+                        forcedTermination = true;
                         DebugHelper.WriteLine("[WaylandPortalRecording] GStreamer did not exit in time, force killing...");
                         try { Process.Start("kill", $"-9 {gstreamerPid.Value}")?.WaitForExit(1000); } catch { }
                     }
-                    else if (gstreamer != null)
+                    else if (gstreamer != null && ffmpegTask is not { IsCompleted: true })
                     {
                         DebugHelper.WriteLine($"[WaylandPortalRecording] GStreamer exited with code {gstreamer.ExitCode}");
                     }
                 }
+                catch (ObjectDisposedException) when (ffmpegTask is { IsCompleted: true })
+                {
+                    DebugHelper.WriteLine("[WaylandPortalRecording] Recording worker already finalized its processes.");
+                }
                 catch (Exception ex)
                 {
                     DebugHelper.WriteLine($"[WaylandPortalRecording] Error stopping GStreamer: {ex.Message}");
+                    forcedTermination = true;
                     // If SIGINT fails, try force kill
                     try { Process.Start("kill", $"-9 {gstreamerPid.Value}")?.WaitForExit(1000); } catch { }
                 }
             }
-            else if (gstreamer != null)
+            else if (gstreamer != null && ffmpegTask is not { IsCompleted: true })
             {
+                forcedTermination = true;
                 // Fallback: no stored PID, try Kill() directly
                 try { gstreamer.Kill(); } catch { }
             }
 
             if (ffmpegTask != null)
             {
-                // The FFmpeg bridge finishes encoding after GStreamer's EOS, so allow it time to
-                // flush and write the MP4 index.
-                await Task.WhenAny(ffmpegTask, Task.Delay(TimeSpan.FromSeconds(30))).ConfigureAwait(false);
+                if (usingFFmpegEncodingBridge)
+                {
+                    // Do not return the file while the bridge is still encoding or writing its
+                    // MP4 index. The bridge owns the encoder's shutdown timeout and cleanup.
+                    await ffmpegTask.ConfigureAwait(false);
+                }
+                else
+                {
+                    try { await ffmpegTask.WaitAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false); }
+                    catch (TimeoutException) { ffmpeg?.Close(); throw; }
+                }
             }
+            if (forcedTermination)
+                throw new TimeoutException("Recording backend did not finalize normally and was force-stopped. Partial output has been kept for recovery.");
         }
         catch (Exception ex)
         {
             HandleFatalError(ex, false);
+            throw;
         }
         finally
         {
@@ -828,6 +914,8 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             lock (_lock)
             {
                 _ffmpeg = null;
+                _ffmpegTask = null;
+                _usingFFmpegEncodingBridge = false;
                 _gstreamerProcess = null;
                 _gstreamerPid = null;
                 _currentOptions = null;
@@ -1394,42 +1482,18 @@ public sealed class WaylandPortalRecordingService : IRecordingService
     /// The pipewiresrc element for a portal stream. With the portal's PipeWire remote fd the
     /// stream negotiates like any portal client (OBS, browsers); without it, pipewiresrc reaches
     /// the node over the default daemon connection, where Hyprland window streams fail with
-    /// "no more input formats". target-object replaces the deprecated path property.
+    /// "no more input formats".
+    /// The portal returns a node ID, so it goes in <c>path</c> (deprecated, but the property that
+    /// takes a node ID). <c>target-object</c> matches an object name or serial instead; a node ID
+    /// there matches nothing, and pipewiresrc then autoconnects to the default video source,
+    /// which records the webcam instead of the screen.
     /// </summary>
-    internal static string BuildPipeWireSource(uint nodeId, int remoteFd, bool? supportsTargetObject = null)
+    internal static string BuildPipeWireSource(uint nodeId, int remoteFd)
     {
-        if (remoteFd < 0)
-        {
-            return $"pipewiresrc path={nodeId} do-timestamp=true";
-        }
-
-        bool targetObject = supportsTargetObject ?? PipeWireSrcSupportsTargetObject.Value;
-        return targetObject
-            ? $"pipewiresrc fd={remoteFd} target-object={nodeId} do-timestamp=true"
+        return remoteFd < 0
+            ? $"pipewiresrc path={nodeId} do-timestamp=true"
             : $"pipewiresrc fd={remoteFd} path={nodeId} do-timestamp=true";
     }
-
-    private static readonly Lazy<bool> PipeWireSrcSupportsTargetObject = new(() =>
-    {
-        try
-        {
-            using var process = Process.Start(new ProcessStartInfo("gst-inspect-1.0", "pipewiresrc")
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            });
-            if (process == null) return false;
-            string output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit(3000);
-            return output.Contains("target-object", StringComparison.Ordinal);
-        }
-        catch
-        {
-            return false;
-        }
-    });
 
     private int RemoteFd => _pipewireRemote is { IsInvalid: false, IsClosed: false } handle
         ? (int)handle.DangerousGetHandle()
@@ -1577,7 +1641,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
 
             // Use a named muxer so both video and audio branches can connect
             pipeline.Add("!");
-            pipeline.Add($"{actualMuxer} name=mux");
+            pipeline.Add($"{ConfigureGStreamerMuxer(actualMuxer)} name=mux");
             pipeline.Add("!");
             pipeline.Add($"filesink location=\"{finalOutputPath}\"");
 
@@ -1597,7 +1661,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
         {
             // Simple pipeline without named muxer
             pipeline.Add("!");
-            pipeline.Add(muxerElement);
+            pipeline.Add(ConfigureGStreamerMuxer(muxerElement));
             pipeline.Add("!");
             pipeline.Add($"filesink location=\"{finalOutputPath}\"");
         }
@@ -1606,6 +1670,11 @@ public sealed class WaylandPortalRecordingService : IRecordingService
 
         return (string.Join(" ", pipeline), finalOutputPath);
     }
+
+    // Periodic fragments keep the MP4 initialization metadata on disk before EOS.
+    // This limits damage from a compositor failure or a forced process termination.
+    internal static string ConfigureGStreamerMuxer(string muxer) =>
+        muxer == "mp4mux" ? "mp4mux fragment-duration=1000" : muxer;
 
     /// <summary>
     /// Returns a compatible (audioEncoder, muxer, extension) tuple.

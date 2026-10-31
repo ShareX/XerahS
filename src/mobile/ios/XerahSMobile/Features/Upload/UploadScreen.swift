@@ -28,6 +28,7 @@ import Combine
 struct UploadScreen: View {
     @ObservedObject var worker: UploadQueueWorker
     @StateObject private var historyViewModel: HistoryViewModel
+    @Environment(\.scenePhase) private var scenePhase
     var onCopyToClipboard: (String) -> Void
     var onAutoShareUploadFinished: ([UploadResultItem]) -> Void
     var onInitialPathsConsumed: () -> Void
@@ -168,6 +169,10 @@ struct UploadScreen: View {
         }
         .onChange(of: initialPaths) { _, newValue in
             enqueueInitialPathsIfNeeded(newValue)
+        }
+        // The Share Extension records its uploads while XerahS is in the background.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { historyViewModel.refresh() }
         }
     }
 

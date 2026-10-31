@@ -294,7 +294,7 @@ public sealed class XerahSMcpRuntime : IXerahSMcpRuntime
             throw new InvalidOperationException(task.Error?.Message ?? "Upload failed.");
         }
 
-        var fileInfo = new FileInfo(absolutePath);
+        var fileInfo = new FileInfo(task.Info.FilePath);
         return new JsonObject
         {
             ["url"] = url,

@@ -35,6 +35,7 @@
     <PackageVersion Include="NUnit.Analyzers" Version="4.14.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.2.0" />
     <PackageVersion Include="ReactiveUI" Version="24.0.0" />
+    <PackageVersion Include="SharpCompress" Version="1.0.0" />
     <PackageVersion Include="SharpHook" Version="7.1.3" />
     <!-- SkiaSharp 4.x migration (XIP-0081): 3.x is EOL; 4.x is the stable line. Avalonia 12.1.1 keeps SkiaSharp 3.119.4 native-only references, but the host projects use 4.x directly. We must also pin SkiaSharp.NativeAssets.Linux to 4.151.0 here so the matching native lib (libSkiaSharp.so version 151.x) is bundled instead of Avalonia's transitive 3.119.4 (which ships native 119.x and causes a managed/native version mismatch at startup: SkiaSharp 4.151.0 expects [151.0, 152.0)). -->
     <PackageVersion Include="SkiaSharp" Version="4.151.0" />
@@ -55,6 +56,7 @@
     <PackageVersion Include="Vortice.Direct2D1" Version="3.8.3" />
     <PackageVersion Include="Vortice.Direct3D11" Version="3.8.3" />
     <PackageVersion Include="Vortice.DXGI" Version="3.8.3" />
+    <PackageVersion Include="Vortice.MediaFoundation" Version="3.8.3" />
     <PackageVersion Include="ZXing.Net.Bindings.SkiaSharp" Version="0.16.22" />
   </ItemGroup>
 </Project>

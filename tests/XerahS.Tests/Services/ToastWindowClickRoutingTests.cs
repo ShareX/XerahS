@@ -341,9 +341,9 @@ public class ToastWindowClickRoutingTests
 
         using var viewModel = new ToastViewModel(config);
 
-        // On Linux the fade is bypassed (compositor fade overrides per-window opacity,
-        // so we just close when duration elapses). The drag-pause behavior is therefore
-        // trivially satisfied — there is no fade timer to pause.
+        // On Linux there is no visual fade (the compositor overrides per-window opacity);
+        // a deferred close stands in for it, so the opacity fade timer never runs there.
+        // ToastHoverTests covers the Linux hover/close behaviour.
         if (OperatingSystem.IsLinux())
         {
             Assert.That(viewModel.IsFadeTimerRunning, Is.False);

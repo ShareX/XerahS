@@ -2,7 +2,6 @@ using System.Globalization;
 using Avalonia.Data;
 using NUnit.Framework;
 using XerahS.UI.Converters;
-using XerahS.UI.Onboarding;
 using XerahS.UI.ViewModels;
 
 namespace XerahS.Tests.UI;
@@ -16,12 +15,7 @@ public class OneWayConverterConvertBackTests
         EnumToDescriptionConverter.Instance,
         BoolToRecordingColorConverter.Instance,
         HotkeyStatusColorConverter.Instance,
-        BoolToFontWeightConverter.Instance,
-        LessThanConverter.Instance,
-        SubtractOneConverter.Instance,
-        StringNotEmptyConverter.Instance,
-        BoolToSuccessErrorBrushConverter.Instance,
-        BoolToStringConverter.Instance
+        BoolToFontWeightConverter.Instance
     ];
 
     [TestCaseSource(nameof(DoNothingConverters))]

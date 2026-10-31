@@ -29,11 +29,16 @@ namespace XerahS.Platform.Abstractions;
 
 /// <summary>
 /// Platform-agnostic OCR (Optical Character Recognition) service.
-/// Windows uses native Windows.Media.Ocr, other platforms can use Tesseract or native APIs.
+/// Windows uses native Windows.Media.Ocr; Linux uses the system Tesseract.
 /// </summary>
 public interface IOcrService
 {
     bool IsSupported { get; }
+
+    /// <summary>
+    /// Why OCR is unavailable and how to fix it (for example, which package to install), or null when it is available.
+    /// </summary>
+    string? UnavailableReason => null;
 
     Task<OcrResult> RecognizeAsync(SKBitmap image, OcrOptions options);
 
@@ -50,11 +55,19 @@ public class OcrOptions
     public string Language { get; set; } = "en";
     public float ScaleFactor { get; set; } = 2f;
     public bool SingleLine { get; set; }
+    public bool IncludeGeometry { get; set; }
+    public CancellationToken CancellationToken { get; set; }
 }
+
+public sealed record OcrWordRegion(string Text, string LineId, double X, double Y, double Width, double Height, double? Confidence = null);
 
 public class OcrResult
 {
     public string Text { get; set; } = string.Empty;
+    public int SourceWidth { get; set; }
+    public int SourceHeight { get; set; }
+    public bool GeometryComplete { get; set; }
+    public IReadOnlyList<OcrWordRegion> Words { get; set; } = [];
     public bool Success { get; set; }
     public string? ErrorMessage { get; set; }
 }

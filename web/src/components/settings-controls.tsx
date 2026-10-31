@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { authClient, authErrorMessage } from "@/lib/auth-client";
 
 interface Props {
   strongAuth: boolean;
@@ -45,13 +45,24 @@ export function SettingsControls({ strongAuth, trialStatus }: Props) {
   async function signOut(scope: "local" | "global") {
     setBusy(true);
     setMessage("");
-    const { error } = await createSupabaseBrowserClient().auth.signOut({
-      scope,
-    });
-    if (error) {
-      setBusy(false);
-      setMessage(error.message);
-      return;
+    if (scope === "global") {
+      // Ends every browser session and revokes desktop authorizations.
+      const response = await fetch("/api/v1/security/sign-out-everywhere", {
+        method: "POST",
+        headers: { Origin: location.origin },
+      });
+      if (!response.ok) {
+        setBusy(false);
+        setMessage("Signing out everywhere failed. Try again.");
+        return;
+      }
+    } else {
+      const { error } = await authClient.signOut();
+      if (error) {
+        setBusy(false);
+        setMessage(authErrorMessage(error));
+        return;
+      }
     }
     location.replace("/");
   }
@@ -129,7 +140,7 @@ export function SettingsControls({ strongAuth, trialStatus }: Props) {
       <h2>Actions</h2>
       {!strongAuth && (
         <p className="error">
-          Complete a TOTP challenge in your Supabase Auth session before using
+          Complete an authenticator challenge in this session before using
           protected gallery and billing actions.
         </p>
       )}

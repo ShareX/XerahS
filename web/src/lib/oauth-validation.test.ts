@@ -1,56 +1,89 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  assertDesktopAuthorization,
   assertDesktopOAuthRedirect,
   desktopOAuthRedirectUris,
-  type OAuthAuthorizationDetails,
+  parseDesktopAuthorizationQuery,
 } from "@/lib/oauth-validation";
 
+const now = Date.parse("2026-10-01T00:00:00Z");
 const expected = {
-  clientId: "ad6062b4-3ab9-4b97-9cde-05038e4cc885",
+  clientId: "xerahs-desktop",
   redirectUris: [
     "https://cloud.xerahs.com/auth/desktop/callback",
     "https://staging.xerahs.com/auth/desktop/callback",
   ],
-  userId: "3443a3bf-b72e-4ae2-a1c6-d5c01ab32579",
+  audience: "https://cloud.xerahs.com/api/v1",
+  now,
 };
+const issuer = "https://cloud.xerahs.com";
 
-function details(
-  changes: Partial<OAuthAuthorizationDetails> = {},
-): OAuthAuthorizationDetails {
-  return {
-    authorization_id: "valid-authorization-id",
+function query(changes: Record<string, string | null> = {}): URLSearchParams {
+  const values: Record<string, string> = {
+    response_type: "code",
+    client_id: expected.clientId,
     redirect_uri: expected.redirectUris[0]!,
-    client: { id: expected.clientId, name: "XerahS Desktop" },
-    user: { id: expected.userId, email: "owner@example.com" },
-    scope: "openid email profile",
-    ...changes,
+    scope: "openid email profile offline_access",
+    state: "state-value",
+    code_challenge: "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+    code_challenge_method: "S256",
+    resource: expected.audience,
+    prompt: "consent",
+    exp: String(now / 1_000 + 300),
+    sig: "signature",
   };
+  for (const [key, value] of Object.entries(changes)) {
+    if (value === null) delete values[key];
+    else values[key] = value;
+  }
+  return new URLSearchParams(values);
 }
 
 describe("desktop OAuth consent validation", () => {
-  it("accepts only the configured client, user, relay, and exact scopes", () => {
-    expect(() => assertDesktopAuthorization(details(), expected)).not.toThrow();
+  it("accepts only the desktop client's exact authorization request", () => {
+    const parsed = parseDesktopAuthorizationQuery(query(), expected);
+    expect(parsed.clientId).toBe("xerahs-desktop");
+    expect(parsed.oauthQuery).toContain("sig=signature");
     expect(() =>
-      assertDesktopAuthorization(
-        details({ scope: "profile openid email" }),
+      parseDesktopAuthorizationQuery(
+        query({ scope: "profile openid offline_access email" }),
+        expected,
+      ),
+    ).not.toThrow();
+    expect(() =>
+      parseDesktopAuthorizationQuery(
+        query({ redirect_uri: expected.redirectUris[1]! }),
         expected,
       ),
     ).not.toThrow();
   });
 
-  it.each([
-    details({ client: { id: crypto.randomUUID(), name: "Other" } }),
-    details({ user: { id: crypto.randomUUID(), email: "owner@example.com" } }),
-    details({ redirect_uri: "https://evil.example/callback" }),
-    details({ redirect_uri: `${expected.redirectUris[0]}?next=evil` }),
-    details({ scope: "openid email profile phone" }),
-    details({ scope: "openid email email" }),
-  ])("rejects mismatched authorization details", (authorization) => {
+  it.each<Record<string, string | null>>([
+    { client_id: "other" },
+    { redirect_uri: "https://evil.example/callback" },
+    { redirect_uri: `${expected.redirectUris[0]}?next=evil` },
+    { scope: "openid email profile" },
+    { scope: "openid email profile offline_access phone" },
+    { scope: "openid email email offline_access" },
+    { response_type: "token" },
+    { code_challenge_method: "plain" },
+    { code_challenge: null },
+    { resource: "https://evil.example/api" },
+    { prompt: "none" },
+    { sig: null },
+    { exp: String(now / 1_000 - 1) },
+  ])("rejects %o", (change) => {
     expect(() =>
-      assertDesktopAuthorization(authorization, expected),
+      parseDesktopAuthorizationQuery(query(change), expected),
     ).toThrowError("not permitted");
+  });
+
+  it("rejects duplicated parameters", () => {
+    const params = query();
+    params.append("client_id", "other");
+    expect(() => parseDesktopAuthorizationQuery(params, expected)).toThrowError(
+      "not permitted",
+    );
   });
 
   it("restricts OAuth redirects to the exact desktop relay", () => {
@@ -60,41 +93,29 @@ describe("desktop OAuth consent validation", () => {
     expect(desktopOAuthRedirectUris("http://localhost:3000")).toEqual([
       "http://localhost:3000/auth/desktop/callback",
     ]);
-    expect(() =>
-      assertDesktopAuthorization(
-        details({ redirect_uri: expected.redirectUris[1] }),
-        expected,
-      ),
-    ).not.toThrow();
     expect(
       assertDesktopOAuthRedirect(
-        `${expected.redirectUris[0]}?code=one&state=two`,
+        `${expected.redirectUris[0]}?code=one&state=two&iss=${encodeURIComponent(issuer)}`,
         expected.redirectUris,
+        issuer,
       ).pathname,
     ).toBe("/auth/desktop/callback");
     expect(
       assertDesktopOAuthRedirect(
         `${expected.redirectUris[1]}?error=access_denied&error_description=Denied&state=two`,
         expected.redirectUris,
+        issuer,
       ).searchParams.get("error"),
     ).toBe("access_denied");
-    expect(() =>
-      assertDesktopOAuthRedirect(
-        "https://evil.example/callback?code=one",
-        expected.redirectUris,
-      ),
-    ).toThrowError("not permitted");
-    expect(() =>
-      assertDesktopOAuthRedirect(
-        `${expected.redirectUris[0]}?code=one`,
-        expected.redirectUris,
-      ),
-    ).toThrowError("not permitted");
-    expect(() =>
-      assertDesktopOAuthRedirect(
-        `${expected.redirectUris[0]}?code=one&state=two&next=https://evil.example`,
-        expected.redirectUris,
-      ),
-    ).toThrowError("not permitted");
+    for (const bad of [
+      "https://evil.example/callback?code=one&state=two",
+      `${expected.redirectUris[0]}?code=one`,
+      `${expected.redirectUris[0]}?code=one&state=two&next=https://evil.example`,
+      `${expected.redirectUris[0]}?code=one&state=two&iss=https://evil.example`,
+    ]) {
+      expect(() =>
+        assertDesktopOAuthRedirect(bad, expected.redirectUris, issuer),
+      ).toThrowError("not permitted");
+    }
   });
 });

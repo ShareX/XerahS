@@ -55,6 +55,9 @@ namespace XerahS.UI.Services
                 toastService,
                 imageEncoderService);
 
+            Core.Services.Privacy.PrivacyServices.AnalysisProviderFactory = XerahS.Assistant.Services.AssistantPrivacyAnalysisProvider.CreateActive;
+            Core.Services.Privacy.PrivacyServices.ReviewService = new AvaloniaPrivacyReviewService(uiService);
+
             return DesktopHostComposition.CreateServiceProvider(hostServices, services =>
             {
                 services.AddSingleton<IViewDialogService, AvaloniaDialogService>();

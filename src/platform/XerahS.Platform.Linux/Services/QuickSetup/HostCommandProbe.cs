@@ -7,67 +7,96 @@ namespace XerahS.Platform.Linux.Services.QuickSetup;
 internal static class HostCommandProbe
 {
     /// <summary>
-    /// Returns true if <paramref name="name"/> resolves to an executable file
-    /// on PATH (or as an absolute path).
+    /// Searched after PATH. Desktop launchers often start XerahS with a minimal PATH, and NixOS keeps
+    /// setuid wrappers in <c>/run/wrappers/bin</c> and system tools in <c>/run/current-system/sw/bin</c>.
+    /// </summary>
+    internal static readonly string[] WellKnownDirectories =
+    {
+        "/run/wrappers/bin",
+        "/run/current-system/sw/bin",
+        "/usr/local/sbin",
+        "/usr/local/bin",
+        "/usr/sbin",
+        "/usr/bin",
+        "/sbin",
+        "/bin",
+    };
+
+    /// <summary>
+    /// Returns true if <paramref name="name"/> resolves to an executable file on PATH, in a well-known
+    /// system directory, or as an absolute path.
     /// </summary>
     public static ValueTask<bool> CommandExistsAsync(string name, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-
-        if (Path.IsPathRooted(name))
-        {
-            return ValueTask.FromResult(File.Exists(name));
-        }
-
-        string? path = FindOnPath(name);
-        return ValueTask.FromResult(!string.IsNullOrEmpty(path));
+        return ValueTask.FromResult(ResolveCommand(name) != null);
     }
 
     /// <summary>
-    /// Returns true if <c>pkexec</c> is present AND its setuid-root bit is
-    /// set. Without setuid, polkit cannot authorize it, so we treat it as
-    /// absent. We do not call pkexec here — that would prompt the user.
+    /// Returns true if a <c>pkexec</c> with its setuid-root bit exists. Without setuid, polkit cannot
+    /// authorise it, so it counts as absent. pkexec is never run here, because that would prompt the user.
     /// </summary>
     public static ValueTask<bool> PkexecIsUsableAsync(CancellationToken cancellationToken = default)
     {
-        string? path = FindOnPath("pkexec") ?? "/usr/bin/pkexec";
-        if (!File.Exists(path))
+        return ValueTask.FromResult(ResolveSetuidCommand("pkexec") != null);
+    }
+
+    /// <summary>Absolute path of the command to launch for <paramref name="kind"/>, or null.</summary>
+    public static string? ResolveLauncher(HostPrivilegeKind kind) => kind switch
+    {
+        // NixOS puts a non-setuid pkexec on PATH next to the setuid wrapper; only the wrapper works.
+        HostPrivilegeKind.Pkexec => ResolveSetuidCommand("pkexec"),
+        HostPrivilegeKind.Run0 => ResolveCommand("run0"),
+        _ => null,
+    };
+
+    public static string? ResolveCommand(string name)
+    {
+        if (Path.IsPathRooted(name))
         {
-            return ValueTask.FromResult(false);
+            return File.Exists(name) ? name : null;
         }
 
-        try
+        return Candidates(name).FirstOrDefault(File.Exists);
+    }
+
+    private static string? ResolveSetuidCommand(string name)
+    {
+        return Candidates(name).FirstOrDefault(IsSetuidRoot);
+    }
+
+    private static IEnumerable<string> Candidates(string name)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        string? pathEnv = Environment.GetEnvironmentVariable("PATH");
+        IEnumerable<string> directories = (pathEnv ?? string.Empty)
+            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Concat(WellKnownDirectories);
+
+        foreach (string directory in directories)
         {
-            // Read the file's mode via stat() and check for setuid bit (04000).
-            var info = new FileInfo(path);
-            // FileInfo doesn't expose Unix mode; use Mono.Unix-style fallback via Interop.
-            // The simpler portable check: FileAccess via Process probe is heavyweight,
-            // so we use statx-equivalent via System.IO's UnixFileMode (net7+).
-            return ValueTask.FromResult((info.UnixFileMode & UnixFileMode.SetUser) != 0);
-        }
-        catch
-        {
-            return ValueTask.FromResult(false);
+            string candidate = Path.Combine(directory, name);
+            if (seen.Add(candidate))
+            {
+                yield return candidate;
+            }
         }
     }
 
-    private static string? FindOnPath(string name)
+    private static bool IsSetuidRoot(string path)
     {
-        string? pathEnv = Environment.GetEnvironmentVariable("PATH");
-        if (string.IsNullOrEmpty(pathEnv))
+        try
         {
-            return null;
-        }
-
-        foreach (string dir in pathEnv.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
-        {
-            string candidate = Path.Combine(dir, name);
-            if (File.Exists(candidate))
+            if (OperatingSystem.IsWindows() || !File.Exists(path))
             {
-                return candidate;
+                return false;
             }
-        }
 
-        return null;
+            return (File.GetUnixFileMode(path) & UnixFileMode.SetUser) != 0;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

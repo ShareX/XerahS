@@ -1,3 +1,28 @@
+#region License Information (GPL v3)
+
+/*
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
+
 #nullable enable
 
 using System;
@@ -59,40 +84,5 @@ public class FFmpegDownloaderCancellationTests
         FFmpegDownloadResult result = await FFmpegDownloader.DownloadLatestAsync("   ", progress: null, CancellationToken.None);
         Assert.That(result.Success, Is.False);
         Assert.That(result.ErrorMessage, Is.EqualTo("Destination folder was not provided."));
-    }
-
-    [Test]
-    public async Task DownloadFFprobeFallbackAsync_PreCancelledToken_ReturnsNullWithoutCreatingDestination()
-    {
-        // Arrange: use a temp folder that should NOT be created when cancellation is honoured up front.
-        string destinationFolder = Path.Combine(Path.GetTempPath(), "xerahs-ffprobe-cancel-" + Guid.NewGuid().ToString("N"));
-        Assert.That(Directory.Exists(destinationFolder), Is.False, "Test precondition: destination must not exist.");
-
-        using CancellationTokenSource cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        try
-        {
-            // Act
-            string? result = await FFmpegDownloader.DownloadFFprobeFallbackAsync(destinationFolder, progress: null, cts.Token);
-
-            // Assert
-            Assert.That(result, Is.Null, "Pre-cancelled token must return null without doing any I/O.");
-            Assert.That(Directory.Exists(destinationFolder), Is.False, "Early-cancel path must not create the destination folder.");
-        }
-        finally
-        {
-            if (Directory.Exists(destinationFolder))
-            {
-                try { Directory.Delete(destinationFolder, recursive: true); } catch { }
-            }
-        }
-    }
-
-    [Test]
-    public async Task DownloadFFprobeFallbackAsync_EmptyDestination_ReturnsNull()
-    {
-        string? result = await FFmpegDownloader.DownloadFFprobeFallbackAsync("", progress: null, CancellationToken.None);
-        Assert.That(result, Is.Null);
     }
 }

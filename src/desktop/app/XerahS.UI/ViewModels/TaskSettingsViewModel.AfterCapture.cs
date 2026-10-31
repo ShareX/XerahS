@@ -56,6 +56,22 @@ namespace XerahS.UI.ViewModels
             }
         }
 
+        public bool PrivacyMode
+        {
+            get => _settings.PrivacySettings.Enabled;
+            set { _settings.PrivacySettings.Enabled = value; OnPropertyChanged(); }
+        }
+        public string PrivacyCustomPatterns
+        {
+            get => string.Join(Environment.NewLine, _settings.PrivacySettings.CustomPatterns ?? []);
+            set
+            {
+                _settings.PrivacySettings.CustomPatterns = value.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+                OnPropertyChanged();
+            }
+        }
+        public bool PrivacyModeAvailable => UploadImageToHost || _settings.Job == WorkflowType.FileUpload;
+
         public bool UploadImageToHost
         {
             get => _settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost);
@@ -64,6 +80,7 @@ namespace XerahS.UI.ViewModels
                 if (UploadImageToHost != value)
                 {
                     UpdateAfterCaptureTask(AfterCaptureTasks.UploadImageToHost, value);
+                    OnPropertyChanged(nameof(PrivacyModeAvailable));
                     OnPropertyChanged();
                 }
             }

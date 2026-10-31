@@ -176,7 +176,7 @@ namespace XerahS.Bootstrap
             services.TryAddSingleton<IXerahSCloudSessionStore, XerahSCloudSessionStore>();
             services.TryAddSingleton<IXerahSCloudClock, SystemXerahSCloudClock>();
             services.TryAddSingleton<IXerahSCloudTokenValidator>(sp =>
-                new SupabaseXerahSCloudTokenValidator(httpClient: null, sp.GetRequiredService<IXerahSCloudClock>()));
+                new XerahSCloudTokenValidator(httpClient: null, sp.GetRequiredService<IXerahSCloudClock>()));
             services.TryAddSingleton<IXerahSCloudOAuthTokenExchange>(sp =>
                 new XerahSCloudOAuthTokenExchange(
                     httpClient: null,

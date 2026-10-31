@@ -73,6 +73,7 @@ Source: "{#MyAppReleaseDirectory}\xerahs-watchfolder-daemon.exe"; DestDir: {app}
 Source: "{#MyAppReleaseDirectory}\xerahs-watchfolder-daemon.deps.json"; DestDir: {app}; Flags: ignoreversion skipifsourcedoesntexist
 Source: "{#MyAppReleaseDirectory}\xerahs-watchfolder-daemon.runtimeconfig.json"; DestDir: {app}; Flags: ignoreversion skipifsourcedoesntexist
 Source: "{#MyAppReleaseDirectory}\*.dll"; DestDir: {app}; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\*.resources.dll"; DestDir: {app}; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 Source: "{#MyAppReleaseDirectory}\*.json"; DestDir: {app}; Flags: ignoreversion
 Source: "{#MyAppReleaseDirectory}\runtimes\win-x64\*"; DestDir: "{app}\runtimes\win-x64"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 Source: "{#MyAppReleaseDirectory}\runtimes\win-arm64\*"; DestDir: "{app}\runtimes\win-arm64"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist

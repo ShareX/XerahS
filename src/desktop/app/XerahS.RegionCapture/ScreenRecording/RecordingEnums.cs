@@ -123,6 +123,20 @@ public enum RecordingBackend
 }
 
 /// <summary>
+/// How Window mode records on backends that can choose (currently the native Windows recorder).
+/// </summary>
+public enum WindowRecordingMode
+{
+    /// <summary>Record the desktop area under the window as it moves, including its menus, dialogs and tooltips.</summary>
+    [Description("Window area, including popups and menus")]
+    IncludePopups = 0,
+
+    /// <summary>Record only the window itself, even when other windows cover it. Popup windows are not included.</summary>
+    [Description("Window only (works while covered)")]
+    WindowOnly = 1
+}
+
+/// <summary>
 /// Linux-specific screen recording backend preference.
 /// </summary>
 public enum LinuxRecordingBackendPreference

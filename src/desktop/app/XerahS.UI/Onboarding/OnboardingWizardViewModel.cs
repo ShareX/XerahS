@@ -23,345 +23,169 @@
 
 #endregion License Information (GPL v3)
 
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using XerahS.Common;
 using XerahS.Core;
-using XerahS.Core.Hotkeys;
-using XerahS.Platform.Abstractions;
-using XerahS.UI.Onboarding.ViewModels.Steps;
+using XerahS.UI.Services;
+using XerahS.UI.Theming;
 using XerahS.UI.ViewModels;
-using XerahS.Uploaders.PluginSystem;
 
 namespace XerahS.UI.Onboarding;
 
 /// <summary>
-/// Main ViewModel for the Onboarding Wizard.
-/// Manages state machine, navigation, and settings persistence.
+/// First-run wizard: a theme choice followed by short pointers to where workflows,
+/// hotkeys and destinations are configured. It does not configure any of those itself.
 /// </summary>
 public partial class OnboardingWizardViewModel : ViewModelBase
 {
     private readonly TaskCompletionSource<OnboardingResult> _completionSource = new();
 
     [ObservableProperty]
-    private ObservableCollection<StepViewModelBase> _steps = new();
+    [NotifyPropertyChangedFor(nameof(IsThemeStep))]
+    [NotifyPropertyChangedFor(nameof(CurrentAdvice))]
+    [NotifyPropertyChangedFor(nameof(CanGoBack))]
+    [NotifyPropertyChangedFor(nameof(StepCounterText))]
+    private int _currentStepIndex;
 
-    [ObservableProperty]
-    private StepViewModelBase? _currentStep;
+    public IReadOnlyList<OnboardingAdvice> Advice { get; } =
+    [
+        new(
+            HostIcons.NavigationWorkflows,
+            "Workflows",
+            "Everything XerahS captures starts from a workflow.",
+            "Sidebar → Workflows   (or menu: Workflows → Manage Workflows)",
+            [
+                "A workflow is one job, such as region capture, window capture or screen recording, plus what happens after it.",
+                "Use Add New to create one, or select a workflow and click Edit to change it.",
+                "Run any workflow from Workflows → Run Workflow, or pin it to the tray menu."
+            ]),
+        new(
+            HostIcons.OnboardingHotkeys,
+            "Hotkeys",
+            "Hotkeys are set inside each workflow.",
+            "Workflows → Edit a workflow → Task tab → Hotkey",
+            [
+                "Each workflow carries its own hotkey, so pick the workflow first, then its shortcut.",
+                "Click the hotkey box and press the keys you want. Escape cancels.",
+                "A workflow without a hotkey still works from the menu and the tray."
+            ]),
+        new(
+            HostIcons.NavigationUpload,
+            "Destinations",
+            "Choose where your captures get uploaded.",
+            "Sidebar → Settings → Destination Settings",
+            [
+                "Add the upload services you use and sign in or enter their keys there.",
+                "Then pick where each workflow sends files: Edit a workflow → Task Settings → Upload → Destinations.",
+                "Auto tries your configured uploaders in order until one succeeds."
+            ])
+    ];
 
-    [ObservableProperty]
-    private int _currentStepIndex = -1;
+    public IReadOnlyList<OnboardingThemeOption> ThemeOptions { get; } =
+    [
+        new(AppThemeMode.Dark, "Dark"),
+        new(AppThemeMode.Light, "Light")
+    ];
 
-    [ObservableProperty]
-    private bool _canGoBack;
+    public int StepCount => Advice.Count + 1;
 
-    [ObservableProperty]
-    private bool _isLastStep;
+    public bool IsThemeStep => CurrentStepIndex == 0;
 
-    [ObservableProperty]
-    private string _nextButtonText = "Next";
+    public OnboardingAdvice? CurrentAdvice => CurrentStepIndex > 0 ? Advice[CurrentStepIndex - 1] : null;
 
-    public bool CanSkipAll => true;
+    public bool CanGoBack => CurrentStepIndex > 0;
 
-    public bool HasCurrentStep => CurrentStep != null;
-
-    public int CurrentStepDisplayIndex => CurrentStepIndex >= 0 ? CurrentStepIndex + 1 : 0;
-
-    public OnboardingState State { get; } = new();
+    public string StepCounterText => $"{CurrentStepIndex + 1} of {StepCount}";
 
     public Task<OnboardingResult> CompletionTask => _completionSource.Task;
 
-    public OnboardingWizardViewModel()
+    public bool UseSystemTheme
     {
-        InitializeSteps();
-        CurrentStepIndex = 0;
-    }
-
-    private void InitializeSteps()
-    {
-        Steps.Add(new WelcomeStepViewModel());
-        Steps.Add(new SaveLocationStepViewModel());
-        Steps.Add(new HotkeyStepViewModel());
-        Steps.Add(new UploadStepViewModel());
-        Steps.Add(new CompleteStepViewModel());
-
-        for (int i = 0; i < Steps.Count; i++)
+        get => SettingsManager.Settings.ThemeMode == AppThemeMode.System;
+        set
         {
-            Steps[i].StepIndex = i;
+            if (value == UseSystemTheme)
+            {
+                return;
+            }
+
+            // Leaving system mode keeps whatever variant is on screen so the switch does not flash.
+            SetThemeMode(value
+                ? AppThemeMode.System
+                : ThemeService.ShouldUseDarkMode(AppThemeMode.System) ? AppThemeMode.Dark : AppThemeMode.Light);
         }
     }
 
-    partial void OnCurrentStepIndexChanged(int value)
-    {
-        CurrentStep = value >= 0 && value < Steps.Count ? Steps[value] : null;
-        OnPropertyChanged(nameof(CurrentStepDisplayIndex));
-        UpdateNavigationState();
-    }
+    public bool CanChooseTheme => !UseSystemTheme;
 
-    partial void OnCurrentStepChanged(StepViewModelBase? value)
+    public OnboardingThemeOption? SelectedTheme
     {
-        OnPropertyChanged(nameof(HasCurrentStep));
-
-        if (value != null)
+        get
         {
-            value.LoadFromState(State);
+            AppThemeMode effective = ThemeService.ShouldUseDarkMode(SettingsManager.Settings.ThemeMode)
+                ? AppThemeMode.Dark
+                : AppThemeMode.Light;
+            return ThemeOptions.FirstOrDefault(option => option.Mode == effective);
+        }
+        set
+        {
+            if (value != null && !UseSystemTheme && value.Mode != SettingsManager.Settings.ThemeMode)
+            {
+                SetThemeMode(value.Mode);
+            }
         }
     }
 
-    private void UpdateNavigationState()
+    private void SetThemeMode(AppThemeMode mode)
     {
-        CanGoBack = CurrentStepIndex > 0;
-        IsLastStep = Steps.Count > 0 && CurrentStepIndex == Steps.Count - 1;
-        NextButtonText = IsLastStep ? "Done" : "Next";
+        SettingsManager.Settings.ThemeMode = mode;
+        ThemeService.ApplyTheme(mode);
+        OnPropertyChanged(nameof(UseSystemTheme));
+        OnPropertyChanged(nameof(CanChooseTheme));
+        OnPropertyChanged(nameof(SelectedTheme));
     }
 
     [RelayCommand]
-    private void Next()
+    private void Ok()
     {
-        if (CurrentStep == null)
+        if (CurrentStepIndex < StepCount - 1)
         {
-            return;
-        }
-
-        if (!CurrentStep.Validate())
-        {
-            return;
-        }
-
-        SaveCurrentStepToState();
-
-        if (IsLastStep)
-        {
-            _ = CompleteWizardAsync();
+            CurrentStepIndex++;
         }
         else
         {
-            CurrentStepIndex++;
+            Complete();
         }
     }
 
     [RelayCommand]
     private void Back()
     {
-        if (CurrentStepIndex <= 0)
+        if (CanGoBack)
         {
-            return;
-        }
-
-        SaveCurrentStepToState();
-        CurrentStepIndex--;
-    }
-
-    [RelayCommand]
-    private void Skip()
-    {
-        if (CurrentStep == null || !CurrentStep.CanSkip)
-        {
-            return;
-        }
-
-        CurrentStep.MarkSkipped();
-        State.SkippedSteps.Add(CurrentStepIndex);
-        SaveCurrentStepToState();
-
-        if (IsLastStep)
-        {
-            _ = CompleteWizardAsync();
-        }
-        else
-        {
-            CurrentStepIndex++;
+            CurrentStepIndex--;
         }
     }
 
-    [RelayCommand]
-    private void SkipAll()
-    {
-        for (int i = CurrentStepIndex; i < Steps.Count; i++)
-        {
-            State.SkippedSteps.Add(i);
-        }
-
-        _ = CompleteWizardAsync();
-    }
-
-    public void SaveCurrentStepToState()
-    {
-        CurrentStep?.SaveToState(State);
-    }
-
-    public void LoadFromState(OnboardingState state)
-    {
-        State.ScreenshotsFolder = state.ScreenshotsFolder;
-        State.CreateDateSubfolders = state.CreateDateSubfolders;
-        State.PrimaryCaptureHotkey = state.PrimaryCaptureHotkey;
-        State.AdditionalHotkeys = new List<HotkeyInfo>(state.AdditionalHotkeys);
-        State.SelectedUploaderId = state.SelectedUploaderId;
-        State.SkippedSteps = new HashSet<int>(state.SkippedSteps);
-        State.LastCompletedStepIndex = state.LastCompletedStepIndex;
-
-        CurrentStep?.LoadFromState(State);
-    }
-
-    public Task CompleteAsync()
-    {
-        return CompleteWizardAsync();
-    }
-
-    private async Task CompleteWizardAsync()
+    private void Complete()
     {
         if (_completionSource.Task.IsCompleted)
         {
             return;
         }
 
-        SaveCurrentStepToState();
-        State.LastCompletedStepIndex = CurrentStepIndex;
-
-        await CommitSettingsAsync(State);
-
-        OnboardingResult result = new()
-        {
-            Completed = true,
-            Skipped = State.SkippedSteps.Count == Steps.Count,
-            State = State
-        };
-
-        _completionSource.TrySetResult(result);
-    }
-
-    /// <summary>
-    /// Commits the onboarding state to application settings.
-    /// </summary>
-    public async Task CommitSettingsAsync(OnboardingState state)
-    {
         try
         {
-            IReadOnlyDictionary<UploaderCategory, UploaderInstance>? selectedUploaderInstances = null;
-
-            if (!string.IsNullOrEmpty(state.SelectedUploaderId) &&
-                !state.SkippedSteps.Contains(OnboardingStepIndices.Upload) &&
-                !string.Equals(state.SelectedUploaderId, "local", StringComparison.OrdinalIgnoreCase))
-            {
-                selectedUploaderInstances = OnboardingFileUploaderHelper.EnsureFileUploaderInstances(state.SelectedUploaderId);
-            }
-
-            if (!string.IsNullOrEmpty(state.ScreenshotsFolder) && !state.SkippedSteps.Contains(OnboardingStepIndices.SaveLocation))
-            {
-                SettingsManager.Settings.CustomScreenshotsPath = state.ScreenshotsFolder;
-                SettingsManager.Settings.UseCustomScreenshotsPath = true;
-                SettingsManager.Settings.UseSaveImageSubFolderPattern = state.CreateDateSubfolders;
-                SettingsManager.Settings.SaveImageSubFolderPattern = state.CreateDateSubfolders ? "%y-%mo" : string.Empty;
-                DebugHelper.WriteLine($"[OnboardingWizard] Setting screenshots folder: {state.ScreenshotsFolder}");
-            }
-
-            if (state.PrimaryCaptureHotkey != null && !state.SkippedSteps.Contains(OnboardingStepIndices.Hotkeys))
-            {
-                WorkflowManager? workflowManager = GetWorkflowManager();
-                if (workflowManager != null)
-                {
-                    WorkflowSettings primaryWorkflow = workflowManager.Workflows
-                        .FirstOrDefault(workflow => workflow.Job == WorkflowType.RectangleRegion)
-                        ?? new WorkflowSettings(WorkflowType.RectangleRegion, state.PrimaryCaptureHotkey);
-
-                    primaryWorkflow.HotkeyInfo = state.PrimaryCaptureHotkey;
-                    primaryWorkflow.EnsureId();
-                    ApplyOnboardingDestination(primaryWorkflow, selectedUploaderInstances);
-
-                    if (!workflowManager.Workflows.Contains(primaryWorkflow))
-                    {
-                        workflowManager.Workflows.Add(primaryWorkflow);
-                    }
-
-                    IReadOnlyList<WorkflowType> secondaryJobs = GetSecondaryOnboardingWorkflowJobs();
-
-                    for (int i = 0; i < Math.Min(state.AdditionalHotkeys.Count, secondaryJobs.Count); i++)
-                    {
-                        HotkeyInfo hotkey = state.AdditionalHotkeys[i];
-                        WorkflowType job = secondaryJobs[i];
-
-                        WorkflowSettings workflow = workflowManager.Workflows
-                            .FirstOrDefault(existingWorkflow => existingWorkflow.Job == job && existingWorkflow != primaryWorkflow)
-                            ?? new WorkflowSettings(job, hotkey);
-
-                        workflow.HotkeyInfo = hotkey;
-                        workflow.EnsureId();
-                        ApplyOnboardingDestination(workflow, selectedUploaderInstances);
-
-                        if (!workflowManager.Workflows.Contains(workflow))
-                        {
-                            workflowManager.Workflows.Add(workflow);
-                        }
-                    }
-
-                    workflowManager.UpdateHotkeys(workflowManager.Workflows);
-                }
-            }
-
-            if (!string.IsNullOrEmpty(state.SelectedUploaderId) && !state.SkippedSteps.Contains(OnboardingStepIndices.Upload))
-            {
-                DebugHelper.WriteLine($"[OnboardingWizard] Setting upload destination: {state.SelectedUploaderId}");
-            }
-
             SettingsManager.Settings.MarkFirstTimeRunCompleted(persist: false);
             SettingsManager.SaveAllSettings();
-
-            DebugHelper.WriteLine("[OnboardingWizard] Settings committed successfully.");
         }
         catch (Exception ex)
         {
-            DebugHelper.WriteException(ex, "[OnboardingWizard] Failed to commit settings");
-            throw;
+            DebugHelper.WriteException(ex, "[OnboardingWizard] Failed to save settings");
         }
 
-        await Task.CompletedTask;
-    }
-
-    private static void ApplyOnboardingDestination(
-        WorkflowSettings workflow,
-        IReadOnlyDictionary<UploaderCategory, UploaderInstance>? selectedUploaderInstances)
-    {
-        if (selectedUploaderInstances == null)
-        {
-            return;
-        }
-
-        string category = workflow.Job.GetHotkeyCategory();
-        UploaderCategory? destinationCategory = category switch
-        {
-            EnumExtensions.WorkflowType_Category_ScreenCapture => UploaderCategory.File,
-            EnumExtensions.WorkflowType_Category_ScreenRecord => UploaderCategory.File,
-            EnumExtensions.WorkflowType_Category_Upload => UploaderCategory.File,
-            EnumExtensions.WorkflowType_Category_Tools => workflow.Job == WorkflowType.OCR ? UploaderCategory.Text : UploaderCategory.File,
-            _ => null
-        };
-
-        if (destinationCategory.HasValue &&
-            selectedUploaderInstances.TryGetValue(destinationCategory.Value, out UploaderInstance? instance))
-        {
-            workflow.TaskSettings.SetDestinationInstanceId(workflow.Job, instance.InstanceId);
-        }
-    }
-
-    internal static IReadOnlyList<WorkflowType> GetSecondaryOnboardingWorkflowJobs()
-    {
-        return
-        [
-            WorkflowType.ActiveWindow,
-            WorkflowType.PrintScreen,
-            WorkflowType.OCR
-        ];
-    }
-
-    private WorkflowManager? GetWorkflowManager()
-    {
-        if (global::Avalonia.Application.Current is App app)
-        {
-            return app.WorkflowManager;
-        }
-
-        return null;
+        _completionSource.TrySetResult(new OnboardingResult { Completed = true });
     }
 
     /// <summary>
@@ -369,13 +193,15 @@ public partial class OnboardingWizardViewModel : ViewModelBase
     /// </summary>
     public void Cancel()
     {
-        OnboardingResult result = new()
-        {
-            Completed = false,
-            Skipped = false,
-            State = State
-        };
-
-        _completionSource.TrySetResult(result);
+        _completionSource.TrySetResult(new OnboardingResult { Completed = false });
     }
 }
+
+public sealed record OnboardingAdvice(
+    string Icon,
+    string Title,
+    string Subtitle,
+    string Location,
+    IReadOnlyList<string> Tips);
+
+public sealed record OnboardingThemeOption(AppThemeMode Mode, string DisplayName);

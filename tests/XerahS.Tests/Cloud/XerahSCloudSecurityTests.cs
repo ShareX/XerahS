@@ -126,6 +126,10 @@ public sealed class XerahSCloudSecurityTests
             Assert.That(exchange.LastNonce, Is.EqualTo(attempt.Nonce));
             Assert.That(sessions.Current?.OwnerSubject, Is.EqualTo("owner-a"));
             Assert.That(attempt.AuthorizationUri.Query, Does.Contain("code_challenge_method=S256"));
+            Assert.That(attempt.AuthorizationUri.AbsolutePath, Is.EqualTo("/api/auth/oauth2/authorize"));
+            Assert.That(attempt.AuthorizationUri.Query, Does.Contain("resource=https%3A%2F%2Fcloud.example.test%2Fapi%2Fv1"));
+            Assert.That(attempt.AuthorizationUri.Query, Does.Contain("prompt=consent"));
+            Assert.That(attempt.AuthorizationUri.Query, Does.Contain("offline_access"));
         });
     }
 
@@ -196,13 +200,13 @@ public sealed class XerahSCloudSecurityTests
         {
             Content = new StringContent(jwks, Encoding.UTF8, "application/json")
         });
-        var validator = new SupabaseXerahSCloudTokenValidator(
+        var validator = new XerahSCloudTokenValidator(
             new HttpClient(handler),
             new FakeClock(now));
         string accessToken = CreateJwt(rsa, new
         {
-            iss = "https://project.supabase.co/auth/v1",
-            aud = "authenticated",
+            iss = "https://cloud.example.test",
+            aud = new[] { "https://cloud.example.test/api/v1", "https://cloud.example.test/api/auth/oauth2/userinfo" },
             sub = "owner-a",
             client_id = "desktop-public-client",
             session_id = "session-a",
@@ -212,7 +216,7 @@ public sealed class XerahSCloudSecurityTests
         });
         string idToken = CreateJwt(rsa, new
         {
-            iss = "https://project.supabase.co/auth/v1",
+            iss = "https://cloud.example.test",
             aud = "desktop-public-client",
             sub = "owner-a",
             nonce = "expected-nonce",
@@ -256,7 +260,7 @@ public sealed class XerahSCloudSecurityTests
                 }
             }
         });
-        var validator = new SupabaseXerahSCloudTokenValidator(
+        var validator = new XerahSCloudTokenValidator(
             new HttpClient(new StubHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(jwks, Encoding.UTF8, "application/json")
@@ -264,8 +268,8 @@ public sealed class XerahSCloudSecurityTests
             new FakeClock(now));
         string accessToken = CreateJwt(rsa, new
         {
-            iss = "https://project.supabase.co/auth/v1",
-            aud = "authenticated",
+            iss = "https://cloud.example.test",
+            aud = new[] { "https://cloud.example.test/api/v1", "https://cloud.example.test/api/auth/oauth2/userinfo" },
             sub = "owner-a",
             client_id = "desktop-public-client",
             session_id = "session-a",
@@ -274,7 +278,7 @@ public sealed class XerahSCloudSecurityTests
         });
         string idToken = CreateJwt(rsa, new
         {
-            iss = "https://project.supabase.co/auth/v1",
+            iss = "https://cloud.example.test",
             aud = "desktop-public-client",
             sub = "owner-a",
             nonce = "attacker-nonce",
@@ -294,7 +298,7 @@ public sealed class XerahSCloudSecurityTests
     [Test]
     public void TokenValidator_RejectsAccessTokenLifetimeAboveOneHour()
     {
-        var validator = new SupabaseXerahSCloudTokenValidator(
+        var validator = new XerahSCloudTokenValidator(
             new HttpClient(new StubHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK))),
             new FakeClock(DateTimeOffset.UtcNow));
 
@@ -331,7 +335,7 @@ public sealed class XerahSCloudSecurityTests
                 }
             }
         });
-        var validator = new SupabaseXerahSCloudTokenValidator(
+        var validator = new XerahSCloudTokenValidator(
             new HttpClient(new StubHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(jwks, Encoding.UTF8, "application/json")
@@ -339,8 +343,8 @@ public sealed class XerahSCloudSecurityTests
             new FakeClock(now));
         string accessToken = CreateJwt(rsa, new
         {
-            iss = "https://project.supabase.co/auth/v1",
-            aud = "authenticated",
+            iss = "https://cloud.example.test",
+            aud = new[] { "https://cloud.example.test/api/v1", "https://cloud.example.test/api/auth/oauth2/userinfo" },
             sub = "owner-a",
             client_id = "desktop-public-client",
             session_id = "session-a",
@@ -349,7 +353,7 @@ public sealed class XerahSCloudSecurityTests
         });
         string idToken = CreateJwt(rsa, new
         {
-            iss = "https://project.supabase.co/auth/v1",
+            iss = "https://cloud.example.test",
             aud = "desktop-public-client",
             sub = "owner-a",
             nonce = "expected-nonce",
@@ -584,7 +588,7 @@ public sealed class XerahSCloudSecurityTests
     private static XerahSCloudOptions CreateOptions() => new()
     {
         FeatureEnabled = true,
-        OAuthAuthority = new Uri("https://project.supabase.co/"),
+        OAuthAuthority = new Uri("https://cloud.example.test/"),
         OAuthClientId = "desktop-public-client"
     };
 

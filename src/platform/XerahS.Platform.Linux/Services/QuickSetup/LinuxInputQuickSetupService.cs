@@ -1,103 +1,153 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 ShareX Team.
-// Top-level entry point that ties the launcher, script builder, and executor
-// together with an IsAvailable probe so the evdev hotkey backend can decide
-// whether to attempt setup before declaring itself unavailable.
+// Linux implementation of IHotkeyAccessSetupService: grants the user read
+// access to their keyboards through polkit, then moves hotkeys to evdev.
+using XerahS.Platform.Abstractions;
+
 namespace XerahS.Platform.Linux.Services.QuickSetup;
 
-internal sealed class LinuxInputQuickSetupService
+internal sealed class LinuxInputQuickSetupService : IHotkeyAccessSetupService
 {
+    private const string UnexpectedFailureMessage =
+        "Quick Setup could not be launched. Check that a polkit authentication agent is running and try again.";
+
+    private readonly SwitchableHotkeyService _hotkeys;
+    private readonly bool _backendForced;
     private readonly IPrivilegedHostCommandLauncher _launcher;
     private readonly LinuxQuickSetupExecutor _executor;
-    private readonly Func<bool> _inputDevicesAlreadyReadable;
+    private readonly Func<IReadOnlyList<string>> _findKeyboardsNeedingAccess;
+    private readonly Func<bool> _evdevAvailable;
+    private readonly Func<IHotkeyService> _createEvdevService;
+    private readonly Func<LinuxDistroFamily> _detectDistro;
+    private readonly SemaphoreSlim _runLock = new(1, 1);
+    private IHotkeyService? _evdevService;
 
-    /// <summary>
-    /// Production constructor — uses the real launcher/executor and probes
-    /// <c>/dev/input/event*</c> directly to short-circuit when input access
-    /// is already granted (e.g. Fedora's udev rule + input group).
-    /// </summary>
-    public LinuxInputQuickSetupService()
+    /// <param name="hotkeys">The hotkey service registered with the platform.</param>
+    /// <param name="backendForced">True when XERAHS_LINUX_HOTKEY_BACKEND pins the backend.</param>
+    public LinuxInputQuickSetupService(SwitchableHotkeyService hotkeys, bool backendForced)
         : this(
-            launcher: new DirectPolkitHostCommandLauncher(),
-            inputDevicesAlreadyReadable: InputDevicesReadableByCurrentUser)
+            hotkeys,
+            backendForced,
+            new DirectPolkitHostCommandLauncher(),
+            new LinuxQuickSetupExecutor(),
+            KeyboardDeviceLocator.FindKeyboardsNeedingAccess,
+            EvdevGlobalHotkeyService.IsAvailable,
+            () => new EvdevGlobalHotkeyService(),
+            LinuxDistroGuidance.Detect)
     {
     }
 
     internal LinuxInputQuickSetupService(
+        SwitchableHotkeyService hotkeys,
+        bool backendForced,
         IPrivilegedHostCommandLauncher launcher,
-        Func<bool>? inputDevicesAlreadyReadable = null)
+        LinuxQuickSetupExecutor executor,
+        Func<IReadOnlyList<string>> findKeyboardsNeedingAccess,
+        Func<bool> evdevAvailable,
+        Func<IHotkeyService> createEvdevService,
+        Func<LinuxDistroFamily> detectDistro)
     {
+        _hotkeys = hotkeys ?? throw new ArgumentNullException(nameof(hotkeys));
+        _backendForced = backendForced;
         _launcher = launcher ?? throw new ArgumentNullException(nameof(launcher));
-        _executor = new LinuxQuickSetupExecutor();
-        _inputDevicesAlreadyReadable = inputDevicesAlreadyReadable ?? InputDevicesReadableByCurrentUser;
+        _executor = executor ?? throw new ArgumentNullException(nameof(executor));
+        _findKeyboardsNeedingAccess = findKeyboardsNeedingAccess ?? throw new ArgumentNullException(nameof(findKeyboardsNeedingAccess));
+        _evdevAvailable = evdevAvailable ?? throw new ArgumentNullException(nameof(evdevAvailable));
+        _createEvdevService = createEvdevService ?? throw new ArgumentNullException(nameof(createEvdevService));
+        _detectDistro = detectDistro ?? throw new ArgumentNullException(nameof(detectDistro));
     }
 
     /// <summary>
-    /// True if the current process can already read at least one keyboard
-    /// input device — i.e. ACL/group access is already in place and Quick
-    /// Setup is unnecessary. Skips the polkit prompt entirely in that case.
+    /// Offered only when the active backend reports a delivery problem, the backend is not pinned, and
+    /// either keyboards are waiting for access or access already exists and only the switch is missing.
+    /// A working portal or X11 session never prompts for keyboard access.
     /// </summary>
-    public bool IsInputAccessAlreadyGranted() => _inputDevicesAlreadyReadable();
-
-    /// <summary>
-    /// True if a usable privilege-escalation command exists on the host
-    /// (pkexec with setuid bit, or run0 from systemd 256+).
-    /// </summary>
-    public async ValueTask<bool> CanRunAsync(CancellationToken cancellationToken = default)
+    public bool IsSetupRecommended
     {
-        var (isAvailable, _) = await _launcher.IsAvailableAsync(cancellationToken).ConfigureAwait(false);
-        return isAvailable;
-    }
-
-    /// <summary>
-    /// Run the Quick Setup script. Returns a structured result so callers
-    /// can decide whether to surface a UI banner or retry the evdev probe.
-    /// </summary>
-    public Task<QuickSetupResult> RunAsync(
-        LinuxQuickSetupScriptOptions scriptOptions,
-        CancellationToken cancellationToken = default)
-    {
-        return _executor.RunAsync(
-            launcher: _launcher,
-            scriptOptions: scriptOptions,
-            logContext: "LinuxInputQuickSetupService",
-            unexpectedFailureMessage: "Quick Setup could not be launched. Check that a polkit agent is available and try again.",
-            cancellationToken: cancellationToken);
-    }
-
-    private static bool InputDevicesReadableByCurrentUser()
-    {
-        try
+        get
         {
-            if (!Directory.Exists("/dev/input"))
+            if (_backendForced || UsesEvdev)
             {
                 return false;
             }
 
-            foreach (string path in Directory.EnumerateFiles("/dev/input", "event*"))
+            if (string.IsNullOrWhiteSpace(_hotkeys.GetDiagnostics().UserFacingWarning))
             {
-                try
-                {
-                    using FileStream fs = File.OpenRead(path);
-                    return true;
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    // Try the next device.
-                }
-                catch (IOException)
-                {
-                    // /dev/input/event* on Linux is a character device; File.OpenRead
-                    // may throw IOException for ENODEV/EACCES depending on .NET version.
-                    // Treat as "not readable" and continue.
-                }
+                return false;
             }
-        }
-        catch
-        {
-            // /dev/input unreadable or missing entirely.
-        }
 
-        return false;
+            return _evdevAvailable() || _findKeyboardsNeedingAccess().Count > 0;
+        }
+    }
+
+    public string SetupDescription =>
+        "Let XerahS read your keyboard directly so hotkeys work in every app. " +
+        "Your system will ask for an administrator password once. " +
+        "Only keyboards are granted, read-only, until the next reboot.";
+
+    public async Task<HotkeyAccessSetupResult> RunSetupAsync(CancellationToken cancellationToken = default)
+    {
+        await _runLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            IReadOnlyList<string> keyboards = _findKeyboardsNeedingAccess();
+
+            if (keyboards.Count == 0)
+            {
+                if (_evdevAvailable())
+                {
+                    SwitchToEvdev();
+                    return new HotkeyAccessSetupResult(true, "XerahS can already read your keyboard. Hotkeys now use it directly.");
+                }
+
+                return new HotkeyAccessSetupResult(false, "No keyboard was found that needs access. Run 'xerahs doctor --linux-input' for details.");
+            }
+
+            QuickSetupResult result = await _executor.RunAsync(
+                _launcher,
+                keyboards,
+                logContext: nameof(LinuxInputQuickSetupService),
+                unexpectedFailureMessage: UnexpectedFailureMessage,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            if (!result.Success)
+            {
+                return new HotkeyAccessSetupResult(false, result.Message);
+            }
+
+            if (!_evdevAvailable())
+            {
+                return new HotkeyAccessSetupResult(
+                    false,
+                    $"{result.Message} XerahS still cannot read a keyboard. Run 'xerahs doctor --linux-input' for details.");
+            }
+
+            SwitchToEvdev();
+            return new HotkeyAccessSetupResult(
+                true,
+                $"{result.Message} Hotkeys now work everywhere. {LinuxDistroGuidance.PersistentAccessHint(_detectDistro())}");
+        }
+        finally
+        {
+            _runLock.Release();
+        }
+    }
+
+    private bool UsesEvdev
+    {
+        get
+        {
+            IHotkeyService backend = _hotkeys.Backend;
+            return backend is EvdevGlobalHotkeyService || ReferenceEquals(backend, _evdevService);
+        }
+    }
+
+    private void SwitchToEvdev()
+    {
+        if (!UsesEvdev)
+        {
+            _evdevService = _createEvdevService();
+            _hotkeys.SwitchTo(_evdevService);
+        }
     }
 }

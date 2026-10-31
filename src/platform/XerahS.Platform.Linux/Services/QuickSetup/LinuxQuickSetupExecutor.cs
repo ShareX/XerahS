@@ -30,19 +30,27 @@ internal sealed class LinuxQuickSetupExecutor
 
     public async Task<QuickSetupResult> RunAsync(
         IPrivilegedHostCommandLauncher launcher,
-        LinuxQuickSetupScriptOptions scriptOptions,
+        IReadOnlyList<string> keyboardDevicePaths,
         string logContext,
         string unexpectedFailureMessage,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(launcher);
+        ArgumentNullException.ThrowIfNull(keyboardDevicePaths);
 
         var identity = _identityResolver();
         if (identity is null)
         {
             return new QuickSetupResult(
                 Success: false,
-                Message: "Could not determine a valid host identity for session setup.");
+                Message: "Could not determine which user to grant keyboard access to.");
+        }
+
+        if (keyboardDevicePaths.Count == 0)
+        {
+            return new QuickSetupResult(
+                Success: false,
+                Message: "No keyboard devices need access. Run 'xerahs doctor --linux-input' for details.");
         }
 
         var (isAvailable, failureMessage) = await launcher.IsAvailableAsync(cancellationToken).ConfigureAwait(false);
@@ -54,25 +62,26 @@ internal sealed class LinuxQuickSetupExecutor
         }
 
         var startInfo = launcher.CreateStartInfo(
-            LinuxQuickSetupScriptBuilder.Build(scriptOptions),
-            identity.Specifier);
+            LinuxQuickSetupScriptBuilder.Build(),
+            identity.Specifier,
+            keyboardDevicePaths);
 
         try
         {
             var (exitCode, stdout, stderr) = await _runProcessAsync(startInfo, cancellationToken).ConfigureAwait(false);
             if (exitCode == 0)
             {
-                XerahS.Common.DebugHelper.WriteLine($"[{logContext}] Session helper completed successfully for {identity.LogDisplay}");
+                XerahS.Common.DebugHelper.WriteLine($"[{logContext}] Keyboard access granted to {identity.LogDisplay}");
                 return new QuickSetupResult(
                     Success: true,
-                    Message: BuildSuccessMessage(stdout, identity.Specifier));
+                    Message: BuildSuccessMessage(stdout, identity.UserName));
             }
 
             string errorText = FirstNonEmptyLine(stderr) ?? FirstNonEmptyLine(stdout) ?? "Unknown host setup error.";
-            XerahS.Common.DebugHelper.WriteLine($"[{logContext}] Session helper failed (ExitCode={exitCode}): {errorText}");
+            XerahS.Common.DebugHelper.WriteLine($"[{logContext}] Quick Setup failed (ExitCode={exitCode}): {errorText}");
             return new QuickSetupResult(
                 Success: false,
-                Message: BuildFailureMessage(exitCode, errorText));
+                Message: BuildFailureMessage(exitCode, errorText, stderr, LinuxDistroGuidance.Detect()));
         }
         catch (OperationCanceledException)
         {
@@ -80,7 +89,7 @@ internal sealed class LinuxQuickSetupExecutor
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            XerahS.Common.DebugHelper.WriteException(ex, $"[{logContext}] Failed to run session helper command");
+            XerahS.Common.DebugHelper.WriteException(ex, $"[{logContext}] Failed to run Quick Setup");
             return new QuickSetupResult(
                 Success: false,
                 Message: unexpectedFailureMessage);
@@ -106,22 +115,33 @@ internal sealed class LinuxQuickSetupExecutor
         return null;
     }
 
-    private static string BuildSuccessMessage(string stdout, string identity)
+    private static string BuildSuccessMessage(string stdout, string userName)
     {
         string? counts = FirstNonEmptyLine(stdout);
         return counts is null
-            ? $"Granted {identity} read access to input devices."
-            : $"Granted {identity} input access ({counts}).";
+            ? $"Granted {userName} read access to the keyboard."
+            : $"Granted {userName} read access to the keyboard ({counts}).";
     }
 
-    private static string BuildFailureMessage(int exitCode, string errorText)
+    internal static string BuildFailureMessage(int exitCode, string errorText, string stderr, LinuxDistroFamily family)
     {
+        // polkit reports a missing agent in the text, not the exit code (pkexec 127, run0 1).
+        if (stderr.Contains("authentication agent", StringComparison.OrdinalIgnoreCase))
+        {
+            return "No polkit authentication agent is running, so the password prompt could not open. " +
+                   "Start one (for example hyprpolkitagent, polkit-gnome, polkit-kde-agent or lxqt-policykit) and retry.";
+        }
+
         return exitCode switch
         {
-            22 => $"setfacl is missing on the host ({errorText}). Install the 'acl' package and retry.",
-            24 => $"uinput device is missing ({errorText}). Load the uinput kernel module and retry.",
-            25 => $"No /dev/input/event* devices were found ({errorText}).",
-            126 or 127 => $"Host privilege command refused authorization ({errorText}). Check that a polkit agent is running and that the user is in the wheel/administrators group.",
+            LinuxQuickSetupScriptBuilder.MissingSetfaclExitCode =>
+                $"setfacl is not installed. To fix it, {LinuxDistroGuidance.InstallHint(family, QuickSetupPackage.Acl)}, then retry.",
+            LinuxQuickSetupScriptBuilder.InvalidUserExitCode or LinuxQuickSetupScriptBuilder.InvalidDeviceExitCode =>
+                $"Quick Setup refused its input ({errorText}). Nothing was changed.",
+            LinuxQuickSetupScriptBuilder.NoDevicesExitCode =>
+                $"No keyboard devices could be granted ({errorText}). Run 'xerahs doctor --linux-input' for details.",
+            126 => "Authentication was cancelled. Nothing was changed.",
+            127 => $"Authentication failed or is not allowed for this user ({errorText}). Administrator rights are needed.",
             _ => $"Quick Setup failed (exit {exitCode}): {errorText}",
         };
     }

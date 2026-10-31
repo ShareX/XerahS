@@ -155,6 +155,33 @@ namespace XerahS.UI.ViewModels
             }
         }
 
+        public int RegionCaptureBackgroundDimStrength
+        {
+            get => _settings.CaptureSettings.RegionCaptureOptions.BackgroundDimStrength;
+            set
+            {
+                int clamped = Math.Clamp(value, 0, 100);
+                if (_settings.CaptureSettings.RegionCaptureOptions.BackgroundDimStrength != clamped)
+                {
+                    _settings.CaptureSettings.RegionCaptureOptions.BackgroundDimStrength = clamped;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool RegionCaptureDimAllExceptSelection
+        {
+            get => _settings.CaptureSettings.RegionCaptureOptions.DimAllExceptSelection;
+            set
+            {
+                if (_settings.CaptureSettings.RegionCaptureOptions.DimAllExceptSelection != value)
+                {
+                    _settings.CaptureSettings.RegionCaptureOptions.DimAllExceptSelection = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public bool RegionCaptureShowMagnifier
         {
             get => _settings.CaptureSettings.RegionCaptureOptions.ShowMagnifier;

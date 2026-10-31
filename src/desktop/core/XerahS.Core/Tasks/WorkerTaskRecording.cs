@@ -158,6 +158,9 @@ namespace XerahS.Core.Tasks
                     outputPath = Info.FilePath;
                 }
 
+                if (!string.IsNullOrEmpty(outputPath) && File.Exists(outputPath))
+                    RecordingOutputValidator.EnsureUsable(outputPath);
+
                 bool hasRecoveredOutput = !string.IsNullOrEmpty(outputPath) && File.Exists(outputPath);
                 if (!hasRecoveredOutput)
                 {

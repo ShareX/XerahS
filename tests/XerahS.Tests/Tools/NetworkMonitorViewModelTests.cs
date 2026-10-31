@@ -98,6 +98,35 @@ public class NetworkMonitorViewModelTests
         Assert.That(viewModel.StatusDetails, Is.EqualTo("Waiting for a reply from Custom host."));
     }
 
+    [Test]
+    public void BackgroundMonitoring_IsOptIn_ForNewAndExistingSettings()
+    {
+        Assert.That(new XerahS.Core.ApplicationConfig().NetworkMonitorEnabled, Is.False);
+        var existing = Newtonsoft.Json.JsonConvert.DeserializeObject<XerahS.Core.ApplicationConfig>("{}");
+        Assert.That(existing!.NetworkMonitorEnabled, Is.False);
+    }
+
+    [AvaloniaTest]
+    [TestCase(false)]
+    [TestCase(true)]
+    public void ClosingWindow_StopsProbesUnlessBackgroundMonitoringWasEnabled(bool backgroundEnabled)
+    {
+        using NetworkMonitorHost host = new(new BlockingProbe(), persist: false);
+        var viewModel = new NetworkMonitorViewModel(host, () => backgroundEnabled);
+        Assert.That(host.Monitor.IsMonitoring, Is.True, "Opening the diagnostic explicitly starts a temporary session.");
+        viewModel.Dispose();
+        Assert.That(host.Monitor.IsMonitoring, Is.EqualTo(backgroundEnabled));
+    }
+
+    [AvaloniaTest]
+    public void StopCommand_CanStopEvenAnOptedInBackgroundSession()
+    {
+        using NetworkMonitorHost host = new(new BlockingProbe(), persist: false);
+        using var viewModel = new NetworkMonitorViewModel(host, () => true);
+        viewModel.StopCommand.Execute(null);
+        Assert.That(host.Monitor.IsMonitoring, Is.False);
+    }
+
     private sealed class StableProbe(long latencyMs) : INetworkProbe
     {
         public Task<NetworkProbeResult> ProbeAsync(string host, int timeoutMs, CancellationToken cancellationToken)

@@ -1,12 +1,11 @@
 import { z } from "zod";
 
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
 import { rpc } from "@/lib/database";
 import { enforceSameOriginMutation, readJson } from "@/lib/request";
 import { pending } from "@/lib/responses";
 import { handleApi } from "@/lib/route-handler";
 import { attemptImmediateLedgerDispatch } from "@/lib/ledger/dispatcher";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,7 +27,7 @@ export async function DELETE(request: Request) {
         ? suppliedKey
         : crypto.randomUUID();
     const operationId = await rpc<string>(
-      await createSupabaseServerClient(request),
+      await createUserDatabaseClient(request),
       "request_gallery_account_deletion",
       { p_idempotency_key: idempotencyKey },
     );

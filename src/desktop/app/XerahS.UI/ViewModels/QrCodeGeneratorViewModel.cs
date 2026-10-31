@@ -55,6 +55,9 @@ public partial class QrCodeGeneratorViewModel : ViewModelBase, IDisposable
     /// </summary>
     public Action<bool>? CloseRequested { get; set; }
 
+    [RelayCommand]
+    private void Close() => CloseRequested?.Invoke(true);
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(GenerateCommand))]
     private string _inputText = string.Empty;

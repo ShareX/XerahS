@@ -39,6 +39,12 @@ namespace XerahS.CLI
         {
             try
             {
+                // Existing-file inspection needs neither a desktop session nor saved configuration.
+                // Avoid bootstrap logging so stdout is a machine-readable JSON report.
+                if (args.FirstOrDefault() == "verify-recording" &&
+                    args.Any(arg => arg == "--input" || arg.StartsWith("--input=", StringComparison.Ordinal)))
+                    return await VerifyRecordingCommand.Create(null).Parse(args.Skip(1).ToArray()).InvokeAsync();
+
                 if (CloudCommand.TryForwardCallback(args, out int callbackExitCode))
                 {
                     return callbackExitCode;

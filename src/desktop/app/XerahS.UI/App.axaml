@@ -122,6 +122,9 @@
         <DataTemplate DataType="vm:WatchFolderEditViewModel" x:DataType="vm:WatchFolderEditViewModel">
             <views:WatchFolderDialog/>
         </DataTemplate>
+        <DataTemplate DataType="vm:PrivacyReviewViewModel" x:DataType="vm:PrivacyReviewViewModel">
+            <views:PrivacyReviewView/>
+        </DataTemplate>
         <DataTemplate DataType="vm:SimplePromptViewModel" x:DataType="vm:SimplePromptViewModel">
             <views:SimplePromptView/>
         </DataTemplate>

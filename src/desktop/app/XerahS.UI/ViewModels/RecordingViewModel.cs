@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using System.IO;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -70,6 +71,7 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
     private bool _isRecording;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(MoveRecordingRegionCommand))]
     private bool _isPaused;
 
     [ObservableProperty]
@@ -112,6 +114,47 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
 
     [ObservableProperty]
     private bool _captureMicrophone = false;
+
+    [ObservableProperty]
+    private RecordingDevice? _selectedSystemAudioDevice;
+
+    [ObservableProperty]
+    private RecordingDevice? _selectedMicrophoneDevice;
+
+    [ObservableProperty]
+    private ScreenInfo? _selectedRecordingDisplay;
+
+    [ObservableProperty]
+    private float _systemAudioGain = 1;
+
+    [ObservableProperty]
+    private float _microphoneGain = 1;
+
+    [ObservableProperty]
+    private WindowRecordingMode _windowRecordingMode;
+
+    [ObservableProperty]
+    private bool _requireHardwareEncoder;
+
+    [ObservableProperty]
+    private bool _lowLatency = true;
+
+    [ObservableProperty]
+    private bool _hideCaptureBorder = true;
+
+    [ObservableProperty]
+    private bool _forceFfmpeg;
+
+    [ObservableProperty]
+    private string? _recordingDeviceError;
+
+
+    public bool HasNativeRecordingSettings => PlatformServices.RecordingDevices != null;
+    public ObservableCollection<RecordingDevice> SystemAudioDevices { get; } = new();
+    public ObservableCollection<RecordingDevice> MicrophoneDevices { get; } = new();
+    public ObservableCollection<ScreenInfo> RecordingDisplays { get; } = new();
+    public IReadOnlyList<WindowRecordingMode> WindowRecordingModes { get; } = Enum.GetValues<WindowRecordingMode>();
+    public bool CanMoveRecordingRegion => IsPaused && _screenRecordingCoordinator.CurrentCapabilities.SupportsRegionMove;
 
     [ObservableProperty]
     private RecordingIntent _recordingIntent = RecordingIntent.Default;
@@ -236,6 +279,7 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         Current = this;
 
         InitializeWorkflow();
+        _ = InitializeNativeRecordingSettingsAsync();
 
         // Subscribe to global recording manager events
         // Note: Border window is now managed by TrayIconHelper for all recording types
@@ -322,7 +366,26 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
                     _durationTimer.Stop();
                     break;
             }
+            OnPropertyChanged(nameof(CanMoveRecordingRegion));
         });
+    }
+
+    [RelayCommand(CanExecute = nameof(CanMoveRecordingRegion))]
+    private async Task MoveRecordingRegionAsync()
+    {
+        if (_screenRecordingCoordinator.CurrentOptions is not { Mode: CaptureMode.Region } options) return;
+        try
+        {
+            var selected = await PlatformServices.ScreenCapture.SelectRegionAsync();
+            if (selected.IsEmpty) return;
+            var region = new System.Drawing.Rectangle(selected.Left, selected.Top, options.Region.Width, options.Region.Height);
+            await _screenRecordingCoordinator.ResumeRecordingAtAsync(region);
+        }
+        catch (Exception ex)
+        {
+            LastError = ex.Message;
+            DebugHelper.WriteException(ex, "Moving the paused recording region");
+        }
     }
 
     private void OnErrorOccurred(object? sender, RecordingErrorEventArgs e)
@@ -559,6 +622,13 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         CaptureSystemAudio = recordingSettings.CaptureSystemAudio;
         CaptureMicrophone = recordingSettings.CaptureMicrophone;
         RecordingIntent = recordingSettings.RecordingIntent;
+        SystemAudioGain = recordingSettings.SystemAudioGain;
+        MicrophoneGain = recordingSettings.MicrophoneGain;
+        WindowRecordingMode = recordingSettings.WindowRecordingMode;
+        RequireHardwareEncoder = recordingSettings.RequireHardwareEncoder;
+        LowLatency = recordingSettings.LowLatency;
+        HideCaptureBorder = recordingSettings.HideCaptureBorder;
+        ForceFfmpeg = recordingSettings.ForceFFmpeg;
         OutputFilePath = null;
         _initialized = true;
     }
@@ -574,7 +644,74 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         recordingSettings.CaptureSystemAudio = CaptureSystemAudio;
         recordingSettings.CaptureMicrophone = CaptureMicrophone;
         recordingSettings.RecordingIntent = RecordingIntent;
-        recordingSettings.ForceFFmpeg = CaptureSystemAudio || CaptureMicrophone;
+        recordingSettings.ForceFFmpeg = ForceFfmpeg;
+        if (HasNativeRecordingSettings)
+        {
+            recordingSettings.SystemAudioDeviceId = SelectedSystemAudioDevice?.Id;
+            recordingSettings.MicrophoneDeviceId = SelectedMicrophoneDevice?.Id;
+            recordingSettings.DisplayId = SelectedRecordingDisplay?.DeviceName;
+            recordingSettings.SystemAudioGain = SystemAudioGain;
+            recordingSettings.MicrophoneGain = MicrophoneGain;
+            recordingSettings.WindowRecordingMode = WindowRecordingMode;
+            recordingSettings.RequireHardwareEncoder = RequireHardwareEncoder;
+            recordingSettings.LowLatency = LowLatency;
+            recordingSettings.HideCaptureBorder = HideCaptureBorder;
+        }
+    }
+
+    private void LoadNativeRecordingDevices()
+    {
+        if (PlatformServices.RecordingDevices is not { } devices) return;
+        var settings = _taskSettings.CaptureSettings.ScreenRecordingSettings;
+        SystemAudioDevices.Add(new RecordingDevice(null, "Default output"));
+        MicrophoneDevices.Add(new RecordingDevice(null, "Default microphone"));
+        try
+        {
+            foreach (var device in devices.GetSystemAudioDevices()) SystemAudioDevices.Add(device);
+            foreach (var device in devices.GetMicrophones()) MicrophoneDevices.Add(device);
+            foreach (var display in PlatformServices.Screen.GetAllScreens()) RecordingDisplays.Add(display);
+        }
+        catch (Exception ex)
+        {
+            RecordingDeviceError = $"Could not load recording devices: {ex.Message}";
+            DebugHelper.WriteException(ex, "Loading native recording devices");
+        }
+
+        SelectedSystemAudioDevice = RestoreAudioDevice(SystemAudioDevices, settings.SystemAudioDeviceId);
+        SelectedMicrophoneDevice = RestoreAudioDevice(MicrophoneDevices, settings.MicrophoneDeviceId);
+        var selectedDisplay = RecordingDisplays.FirstOrDefault(display => display.DeviceName == settings.DisplayId);
+        if (selectedDisplay == null && !string.IsNullOrWhiteSpace(settings.DisplayId))
+        {
+            selectedDisplay = new ScreenInfo { DeviceName = settings.DisplayId };
+            RecordingDisplays.Add(selectedDisplay);
+            RecordingDeviceError = "The selected display is unavailable. Choose an available display before recording.";
+        }
+        SelectedRecordingDisplay = selectedDisplay ?? RecordingDisplays.FirstOrDefault(display => display.IsPrimary);
+    }
+
+    private static RecordingDevice RestoreAudioDevice(IList<RecordingDevice> devices, string? id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return devices[0];
+        var selected = devices.FirstOrDefault(device => device.Id == id || device.Name == id);
+        if (selected != null) return selected;
+        selected = new RecordingDevice(id, $"Unavailable device ({id})");
+        devices.Add(selected);
+        return selected;
+    }
+
+    private async Task InitializeNativeRecordingSettingsAsync()
+    {
+        try
+        {
+            if (_screenRecordingCoordinator.PlatformInitializationTask is { } initialization) await initialization;
+            if (_disposed) return;
+            LoadNativeRecordingDevices();
+            OnPropertyChanged(nameof(HasNativeRecordingSettings));
+        }
+        catch (Exception ex)
+        {
+            RecordingDeviceError = $"Native recording settings are unavailable: {ex.Message}";
+        }
     }
 
     private CaptureMode ResolveCaptureMode()
@@ -627,14 +764,53 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
     {
         if (!_initialized) return;
         _taskSettings.CaptureSettings.ScreenRecordingSettings.CaptureSystemAudio = value;
-        _taskSettings.CaptureSettings.ScreenRecordingSettings.ForceFFmpeg = value || CaptureMicrophone;
     }
 
     partial void OnCaptureMicrophoneChanged(bool value)
     {
         if (!_initialized) return;
         _taskSettings.CaptureSettings.ScreenRecordingSettings.CaptureMicrophone = value;
-        _taskSettings.CaptureSettings.ScreenRecordingSettings.ForceFFmpeg = value || CaptureSystemAudio;
+    }
+
+    partial void OnSelectedSystemAudioDeviceChanged(RecordingDevice? value)
+    {
+        if (_initialized) _taskSettings.CaptureSettings.ScreenRecordingSettings.SystemAudioDeviceId = value?.Id;
+    }
+    partial void OnSelectedMicrophoneDeviceChanged(RecordingDevice? value)
+    {
+        if (_initialized) _taskSettings.CaptureSettings.ScreenRecordingSettings.MicrophoneDeviceId = value?.Id;
+    }
+    partial void OnSelectedRecordingDisplayChanged(ScreenInfo? value)
+    {
+        if (_initialized) _taskSettings.CaptureSettings.ScreenRecordingSettings.DisplayId = value?.DeviceName;
+    }
+    partial void OnSystemAudioGainChanged(float value)
+    {
+        if (_initialized) _taskSettings.CaptureSettings.ScreenRecordingSettings.SystemAudioGain = value;
+    }
+    partial void OnMicrophoneGainChanged(float value)
+    {
+        if (_initialized) _taskSettings.CaptureSettings.ScreenRecordingSettings.MicrophoneGain = value;
+    }
+    partial void OnWindowRecordingModeChanged(WindowRecordingMode value)
+    {
+        if (_initialized) _taskSettings.CaptureSettings.ScreenRecordingSettings.WindowRecordingMode = value;
+    }
+    partial void OnRequireHardwareEncoderChanged(bool value)
+    {
+        if (_initialized) _taskSettings.CaptureSettings.ScreenRecordingSettings.RequireHardwareEncoder = value;
+    }
+    partial void OnLowLatencyChanged(bool value)
+    {
+        if (_initialized) _taskSettings.CaptureSettings.ScreenRecordingSettings.LowLatency = value;
+    }
+    partial void OnHideCaptureBorderChanged(bool value)
+    {
+        if (_initialized) _taskSettings.CaptureSettings.ScreenRecordingSettings.HideCaptureBorder = value;
+    }
+    partial void OnForceFfmpegChanged(bool value)
+    {
+        if (_initialized) _taskSettings.CaptureSettings.ScreenRecordingSettings.ForceFFmpeg = value;
     }
 
     partial void OnRecordingIntentChanged(RecordingIntent value)

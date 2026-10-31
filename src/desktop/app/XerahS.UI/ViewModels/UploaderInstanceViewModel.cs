@@ -51,6 +51,7 @@ public partial class UploaderInstanceViewModel : ViewModelBase
     private string _displayName = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowTextFilesOption))]
     private UploaderCategory _category;
 
     [ObservableProperty]
@@ -94,6 +95,18 @@ public partial class UploaderInstanceViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isAllFileTypes;
+
+    [ObservableProperty]
+    private bool _isTextFiles;
+
+    /// <summary>Comma-separated extensions that "Text files" must not claim.</summary>
+    [ObservableProperty]
+    private string _textFileExceptionsText = string.Empty;
+
+    public bool ShowTextFileExceptions => ShowTextFilesOption && IsTextFiles;
+
+    /// <summary>"Text files" only routes file uploads; text and image uploads have their own categories.</summary>
+    public bool ShowTextFilesOption => Category == UploaderCategory.File;
 
     [ObservableProperty]
     private ObservableCollection<string> _selectedFileExtensions = new();
@@ -201,7 +214,13 @@ public partial class UploaderInstanceViewModel : ViewModelBase
 
     private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(IsAllFileTypes) || e.PropertyName == nameof(SelectedFileExtensions))
+        if (e.PropertyName == nameof(IsTextFiles))
+        {
+            OnPropertyChanged(nameof(ShowTextFileExceptions));
+        }
+
+        if (e.PropertyName == nameof(IsAllFileTypes) || e.PropertyName == nameof(IsTextFiles) ||
+            e.PropertyName == nameof(TextFileExceptionsText) || e.PropertyName == nameof(SelectedFileExtensions))
         {
             UpdateFileTypeScope();
             UpdateFileTypeScopeDisplay();
@@ -335,6 +354,8 @@ public partial class UploaderInstanceViewModel : ViewModelBase
     {
         // Load current file type scope from instance
         IsAllFileTypes = Instance.FileTypeRouting.AllFileTypes;
+        IsTextFiles = Instance.FileTypeRouting.TextFiles;
+        TextFileExceptionsText = string.Join(", ", Instance.FileTypeRouting.EffectiveTextFileExceptions);
 
         SelectedFileExtensions.Clear();
         foreach (var ext in Instance.FileTypeRouting.FileExtensions)
@@ -395,6 +416,8 @@ public partial class UploaderInstanceViewModel : ViewModelBase
     private void UpdateFileTypeScope()
     {
         Instance.FileTypeRouting.AllFileTypes = IsAllFileTypes;
+        Instance.FileTypeRouting.TextFiles = !IsAllFileTypes && IsTextFiles;
+        Instance.FileTypeRouting.TextFileExceptions = ParseExtensionList(TextFileExceptionsText);
         Instance.FileTypeRouting.FileExtensions.Clear();
 
         if (!IsAllFileTypes)
@@ -408,15 +431,29 @@ public partial class UploaderInstanceViewModel : ViewModelBase
         InstanceManager.Instance.UpdateInstance(Instance);
     }
 
+    internal static List<string> ParseExtensionList(string? text) =>
+        (text ?? string.Empty)
+            .Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(x => x.TrimStart('.').ToLowerInvariant())
+            .Where(x => x.Length > 0)
+            .Distinct()
+            .ToList();
+
     private void UpdateFileTypeScopeDisplay()
     {
         if (IsAllFileTypes)
         {
             FileTypeScopeDisplay = "All File Types";
         }
-        else if (SelectedFileExtensions.Any())
+        else if (IsTextFiles || SelectedFileExtensions.Any())
         {
-            FileTypeScopeDisplay = string.Join(", ", SelectedFileExtensions.OrderBy(x => x));
+            var parts = SelectedFileExtensions.OrderBy(x => x).ToList();
+            if (IsTextFiles)
+            {
+                parts.Insert(0, "Text files");
+            }
+
+            FileTypeScopeDisplay = string.Join(", ", parts);
         }
         else
         {

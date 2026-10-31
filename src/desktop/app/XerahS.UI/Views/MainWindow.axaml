@@ -67,6 +67,7 @@
                 <MenuItem Header="_View">
                     <MenuItem Header="_Editor" Command="{Binding NavigateMenuCommand}" CommandParameter="Editor"/>
                     <MenuItem Header="_History" Command="{Binding NavigateMenuCommand}" CommandParameter="History"/>
+                    <MenuItem Header="_Statistics" Command="{Binding NavigateMenuCommand}" CommandParameter="Statistics"/>
                     <Separator/>
                     <MenuItem Header="_Reset Zoom" Command="{Binding #MainWindowRoot.DataContext.ResetZoomCommand}" InputGesture="Ctrl+0"/>
                     <MenuItem Header="Zoom _In" Command="{Binding #MainWindowRoot.DataContext.ZoomInCommand}" InputGesture="Ctrl++"/>
@@ -224,7 +225,8 @@
                             VerticalAlignment="Center" HorizontalAlignment="Center"
                             Margin="20"
                             BoxShadow="0 4 20 0 #40000000">
-                        <ContentControl Content="{Binding ModalContent}"/>
+                        <ContentControl x:Name="ShellModalContentHost"
+                                        Content="{Binding ShellModalContent}"/>
                     </Border>
                 </Grid>
             </ScrollViewer>

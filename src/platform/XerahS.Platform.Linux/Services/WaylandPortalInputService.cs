@@ -57,7 +57,7 @@ public sealed class WaylandPortalInputService : IInputService
 
     public WaylandPortalInputService()
     {
-        if (!WaylandPortalStrategy.IsSupported())
+        if (!LinuxRuntimeEnvironment.Detect().RequiresPortalServices)
         {
             return;
         }

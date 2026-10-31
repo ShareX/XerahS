@@ -51,7 +51,6 @@ public class ViewLocator : IDataTemplate
             [typeof(DebugViewModel)] = static () => new DebugView(),
             [typeof(DestinationSettingsViewModel)] = static () => new DestinationSettingsView(),
             [typeof(HistoryViewModel)] = static () => new HistoryView(),
-            [typeof(HotkeySettingsViewModel)] = static () => new HotkeySettingsView(),
             [typeof(IndexFolderViewModel)] = static () => new IndexFolderPanel(),
             [typeof(ProviderCatalogViewModel)] = static () => new ProviderCatalogView(),
             [typeof(MediaBrowserViewModel)] = static () => new MediaBrowserView(),
@@ -66,12 +65,14 @@ public class ViewLocator : IDataTemplate
             [typeof(ImageEffectsViewModel)] = static () => new ImageEffectsBrowserDialog(),
             [typeof(FFmpegOptionsViewModel)] = static () => new FFmpegOptionsWindow(),
             [typeof(QrCodeGeneratorViewModel)] = static () => new QrCodeGeneratorDialog(),
+            [typeof(ShareLogsViewModel)] = static () => new ShareLogsDialog(),
             [typeof(WatchFolderEditViewModel)] = static () => new WatchFolderDialog(),
             [typeof(OpenImageChoiceViewModel)] = static () => new OpenImageChoiceDialog(),
             [typeof(WindowSelectorViewModel)] = static () => new WindowSelectorDialog(),
             [typeof(UpdateMessageBoxViewModel)] = static () => new UpdateMessageBox(),
             [typeof(AfterCaptureViewModel)] = static () => new AfterCaptureWindow(),
             [typeof(SendToPromptViewModel)] = static () => new SendToPromptWindow(),
+            [typeof(PrivacyReviewViewModel)] = static () => new PrivacyReviewView(),
             [typeof(SimplePromptViewModel)] = static () => new SimplePromptView(),
         };
 

@@ -164,11 +164,14 @@ public enum AssistantModelMessageRole
     Tool
 }
 
+public sealed record AssistantImageAttachment(string MediaType, ReadOnlyMemory<byte> Data);
+
 public sealed record AssistantMessage(
     AssistantModelMessageRole Role,
     string Text,
     string? ToolCallId = null,
-    string? ToolName = null);
+    string? ToolName = null,
+    IReadOnlyList<AssistantImageAttachment>? Images = null);
 
 public sealed record AssistantToolDefinition(
     string Name,
@@ -186,7 +189,8 @@ public sealed record AssistantModelRequest(
     IReadOnlyList<AssistantMessage> Messages,
     IReadOnlyList<AssistantToolDefinition> Tools,
     AssistantPrivacyScope PrivacyScope,
-    bool AllowImageContent);
+    bool AllowImageContent,
+    int MaxOutputTokens = 80);
 
 public enum AssistantModelResultKind
 {

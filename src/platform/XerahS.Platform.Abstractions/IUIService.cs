@@ -77,6 +77,12 @@ namespace XerahS.Platform.Abstractions
             return new ImageEditorSessionResult(renderedImage, sourceImage, annotationSnapshot);
         }
 
+        Task<ImageEditorSessionResult?> ShowPrivacyEditorAsync(SKBitmap image) => Task.FromResult<ImageEditorSessionResult?>(null);
+
+        async Task<((AfterCaptureTasks Capture, AfterUploadTasks Upload, bool Cancel, AfterCaptureQuickAction QuickAction) Tasks, bool PrivacyEnabled)>
+            ShowAfterCaptureWindowWithPrivacyAsync(SKBitmap image, AfterCaptureTasks capture, AfterUploadTasks upload, bool privacyEnabled)
+            => (await ShowAfterCaptureWindowAsync(image, capture, upload), privacyEnabled);
+
         /// <summary>
         /// Shows the image editor and reports whether the user cancelled the task (Esc / Cancel in task mode).
         /// </summary>

@@ -154,10 +154,10 @@ internal static class FFmpegEncodingBridge
         $"-v {sourceElement} num-buffers=1 ! videoconvert ! video/x-raw,format=I420 ! fakesink";
 
     /// <summary>
-    /// GStreamer side: portal stream → (crop) → fixed even size I420 on stdout. The size must be the
-    /// stream's own negotiated size (or the crop of it): a different size propagates upstream as a
-    /// preference the portal stream rejects (not-negotiated). videoscale then only absorbs a window
-    /// being resized mid-recording, keeping the raw frames at the size ffmpeg expects.
+    /// GStreamer side: portal stream → (crop) → fixed, tightly packed I420 on stdout. Align the
+    /// width to eight pixels and the height to two so GStreamer's plane strides match FFmpeg's
+    /// rawvideo layout. videoscale handles alignment and window resizes while keeping the frames
+    /// at the fixed size FFmpeg expects.
     /// </summary>
     public static string BuildCaptureArgs(string sourceElement, int width, int height, string? cropElement = null)
     {
@@ -175,7 +175,7 @@ internal static class FFmpegEncodingBridge
 
         parts.AddRange([
             "!", "videoscale",
-            "!", string.Create(CultureInfo.InvariantCulture, $"video/x-raw,format=I420,width={Even(width)},height={Even(height)},pixel-aspect-ratio=1/1"),
+            "!", string.Create(CultureInfo.InvariantCulture, $"video/x-raw,format=I420,width={RawWidth(width)},height={Even(height)},pixel-aspect-ratio=1/1"),
             "!", "fdsink fd=1 sync=false",
         ]);
         return string.Join(" ", parts);
@@ -191,7 +191,7 @@ internal static class FFmpegEncodingBridge
             "-use_wallclock_as_timestamps", "1",
             "-thread_queue_size", "1024",
             "-f", "rawvideo", "-pix_fmt", "yuv420p",
-            "-video_size", string.Create(CultureInfo.InvariantCulture, $"{Even(width)}x{Even(height)}"),
+            "-video_size", string.Create(CultureInfo.InvariantCulture, $"{RawWidth(width)}x{Even(height)}"),
             "-framerate", rate.ToString(CultureInfo.InvariantCulture),
             "-i", "pipe:0",
         };
@@ -219,6 +219,45 @@ internal static class FFmpegEncodingBridge
     }
 
     internal static int Even(int value) => Math.Max(2, value & ~1);
+
+    /// <summary>
+    /// Width of the raw I420 frames piped from GStreamer to ffmpeg. GStreamer pads every I420 plane
+    /// row to a multiple of 4 bytes (Y stride = round_up_4(width), U/V stride = round_up_4(width / 2)),
+    /// while ffmpeg's rawvideo demuxer expects tightly packed rows. Any width that is not a multiple
+    /// of 8 therefore made ffmpeg read rows at the wrong stride (diagonally sheared picture) and frames
+    /// of the wrong size (planes drifting into green/magenta garbage), e.g. a 1610 px wide window.
+    /// A multiple of 8 keeps both strides unpadded, so both sides agree on the frame layout.
+    /// </summary>
+    internal static int RawWidth(int value) => Math.Max(8, value & ~7);
+
+    /// <summary>
+    /// Forward complete I420 frames only. A raw pipe carries no size or stride metadata, so an
+    /// empty or incomplete stream must fail instead of producing an apparently successful file.
+    /// </summary>
+    internal static long CopyRawFrames(Stream source, Stream destination, int width, int height)
+    {
+        int frameBytes = checked(RawWidth(width) * Even(height) * 3 / 2);
+        byte[] frame = new byte[frameBytes];
+        long frames = 0;
+        int read;
+        while ((read = source.ReadAtLeast(frame, frameBytes, throwOnEndOfStream: false)) != 0)
+        {
+            if (read != frameBytes)
+            {
+                throw new InvalidDataException($"Incomplete I420 frame: received {read} of {frameBytes} bytes. Check the capture size and plane strides.");
+            }
+
+            destination.Write(frame);
+            frames++;
+        }
+
+        if (frames == 0)
+        {
+            throw new InvalidDataException("The selected screen or window did not deliver any video frames.");
+        }
+
+        return frames;
+    }
 
     private static string Quote(string value) => "\"" + value.Replace("\"", "\\\"") + "\"";
 }

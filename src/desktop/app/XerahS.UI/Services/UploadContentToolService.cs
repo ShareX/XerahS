@@ -114,6 +114,7 @@ public static class UploadContentToolService
                     _window.WindowState = WindowState.Normal;
                 }
 
+                _window.ShowActivated = !background;
                 _window.Show();
 
                 if (!background)
@@ -130,7 +131,7 @@ public static class UploadContentToolService
         }
 
         var viewModel = UiViewModelFactoryAccessor.GetRequired().CreateUploadContentViewModel();
-        _window = new UploadContentWindow();
+        _window = new UploadContentWindow { ShowActivated = !background };
         _window.Initialize(viewModel);
 
         _window.Closed += (_, _) =>
@@ -138,7 +139,8 @@ public static class UploadContentToolService
             _window = null;
         };
 
-        if (owner != null)
+        // A tray-hidden main window is not a valid Avalonia owner (issue #296).
+        if (owner is { IsVisible: true })
         {
             _window.Show(owner);
         }

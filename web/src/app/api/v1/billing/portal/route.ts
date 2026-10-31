@@ -1,12 +1,11 @@
 import { ApiError } from "@/lib/errors";
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
 import { rpc } from "@/lib/database";
 import { getServerEnv } from "@/lib/env";
 import { enforceSameOriginMutation } from "@/lib/request";
 import { json } from "@/lib/responses";
 import { handleApi } from "@/lib/route-handler";
 import { getStripeClient } from "@/lib/stripe";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,7 +26,7 @@ export async function POST(request: Request) {
         "Billing is not configured.",
       );
     const customerId = await rpc<string>(
-      await createSupabaseServerClient(request),
+      await createUserDatabaseClient(request),
       "get_my_stripe_customer_id",
     );
     if (!customerId)

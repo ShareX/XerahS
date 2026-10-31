@@ -1,0 +1,95 @@
+name: Native Recording
+
+on:
+  pull_request:
+    branches: [develop]
+    paths:
+      - 'src/desktop/**'
+      - 'src/platform/**'
+      - 'tests/**'
+      - 'Directory.*.props'
+      - 'ShareX.ImageEditor'
+      - 'Omacut'
+      - '.github/workflows/native-recording.yml'
+  push:
+    branches: [develop]
+    paths:
+      - 'src/desktop/**'
+      - 'src/platform/**'
+      - 'tests/**'
+      - 'Directory.*.props'
+      - 'ShareX.ImageEditor'
+      - 'Omacut'
+      - '.github/workflows/native-recording.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-recording-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  recording:
+    name: recording-${{ matrix.rid }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # NUnit enforces the test assembly's Windows 10.0.26100 minimum.
+          - os: windows-2025
+            rid: win-x64
+            run_tests: true
+          - os: windows-2025
+            rid: win-arm64
+            run_tests: false
+          - os: ubuntu-24.04
+            rid: linux-x64
+            run_tests: true
+    runs-on: ${{ matrix.os }}
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize build submodules at pinned commits
+        run: git submodule update --init ShareX.ImageEditor Omacut
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build desktop solution with warnings as errors
+        run: dotnet build src/desktop/XerahS.sln -c Release -m:1 -p:UseSharedCompilation=false
+      - name: Compile native Windows recorder for the target architecture
+        if: runner.os == 'Windows'
+        run: dotnet build src/platform/XerahS.Platform.Windows/XerahS.Platform.Windows.csproj -c Release -r ${{ matrix.rid }} -m:1 -p:UseSharedCompilation=false
+      - name: Run recording regression tests
+        if: matrix.run_tests
+        run: >-
+          dotnet test tests/XerahS.Tests/XerahS.Tests.csproj -c Release --no-build
+          --filter "FullyQualifiedName~WindowsNativeRecording|FullyQualifiedName~NativeRecordingMapping|FullyQualifiedName~ScreenRecordingManagerLifecycle|FullyQualifiedName~RecordingMediaInspector|FullyQualifiedName~RecordingViewModelAudioRouting|FullyQualifiedName~ScreenRecorderServiceTests|FullyQualifiedName~FFmpegRecordingServiceTests|FullyQualifiedName~RegionCropperTests"
+          --logger "trx;LogFileName=recording-${{ matrix.rid }}.trx"
+          --results-directory artifacts/test-results
+      - name: Require executed and passing recording tests
+        if: matrix.run_tests
+        shell: python
+        run: |
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          results = Path("artifacts/test-results/recording-${{ matrix.rid }}.trx")
+          namespace = {"t": "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
+          counters = ET.parse(results).find("t:ResultSummary/t:Counters", namespace)
+          if counters is None:
+              raise SystemExit("Recording test report has no result counters.")
+          total = int(counters.get("total", "0"))
+          passed = int(counters.get("passed", "0"))
+          if total == 0 or passed != total:
+              raise SystemExit(f"Recording tests must execute and all pass: {passed}/{total} passed.")
+          print(f"Verified {passed} executed, passing recording tests.")
+      - name: Upload recording test results
+        if: always() && matrix.run_tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: recording-tests-${{ matrix.rid }}
+          path: artifacts/test-results/*.trx
+          if-no-files-found: ignore

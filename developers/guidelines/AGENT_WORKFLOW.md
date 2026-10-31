@@ -17,8 +17,10 @@ Use sub-agents when supported and useful for independent work. Assign disjoint w
 Verify the smallest relevant surface and report concrete results. For normal code/config changes, the standard desktop build is:
 
 ```text
-dotnet build src/desktop/XerahS.sln -m:1 -p:nodeReuse=false -p:UseSharedCompilation=false
+dotnet build src/desktop/XerahS.sln
 ```
+
+`Directory.Build.rsp` already makes it serial (`-m:1 -nr:false`). The Roslyn compiler server stays on; turning it off (`-p:UseSharedCompilation=false`) roughly doubles build time and is only needed for the Windows file-lock workaround in `build-windows-exe`.
 
 Do not stop a build solely because a fixed amount of time elapsed; packaging may take longer. If progress is genuinely stalled, use `.ai/skills/build-common/SKILL.md`. Keep warnings-as-errors, the explicit Windows TFM, and the centrally managed SkiaSharp versions from `AGENTS.md`.
 

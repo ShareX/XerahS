@@ -27,15 +27,16 @@ using System.Runtime.InteropServices;
 
 namespace XerahS.Common
 {
+    /// <summary>Selects BtbN's static GPL release-branch builds, never master or shared builds.</summary>
     public class FFmpegUpdateChecker : GitHubUpdateChecker
     {
-        public FFmpegArchitecture Architecture { get; private set; }
+        // Follow the selected stable release branch, independently of master auto-builds.
+        public const string ReleaseBranch = "9.0";
+        public FFmpegArchitecture Architecture { get; }
+        public string? ChecksumsURL { get; private set; }
 
-        public FFmpegUpdateChecker(string owner, string repo) : base(owner, repo)
-        {
-            Architecture = ResolveArchitecture();
-        }
-
+        public FFmpegUpdateChecker() : this(FFmpegDownloader.DefaultOwner, FFmpegDownloader.DefaultRepo) { }
+        public FFmpegUpdateChecker(string owner, string repo) : this(owner, repo, ResolveArchitecture()) { }
         public FFmpegUpdateChecker(string owner, string repo, FFmpegArchitecture architecture) : base(owner, repo)
         {
             Architecture = architecture;
@@ -43,90 +44,69 @@ namespace XerahS.Common
 
         protected override bool UpdateReleaseInfo(GitHubRelease? release, bool isPortable, bool isBrowserDownloadURL)
         {
-            if (release != null)
-            {
-                string? tagName = release.tag_name;
+            FileName = string.Empty;
+            DownloadURL = ChecksumsURL = null;
+            LatestVersion = null;
+            IsPreRelease = false;
+            string? expectedName = GetExpectedAssetName();
+            if (expectedName == null || release == null || release.draft || release.prerelease || release.assets == null)
+                return false;
 
-                if (!string.IsNullOrEmpty(tagName))
-                {
-                    string actualTagName = tagName!;
+            // BtbN's floating tag is "latest", with dated releases named "autobuild-...".
+            if (release.tag_name != "latest" && release.tag_name?.StartsWith("autobuild-", StringComparison.Ordinal) != true)
+                return false;
 
-                    if (actualTagName.Length > 1 && actualTagName.StartsWith("v", StringComparison.Ordinal))
-                    {
-                        if (Version.TryParse(actualTagName.Substring(1), out Version? version))
-                        {
-                            LatestVersion = version;
-                        }
+            var archive = release.assets.FirstOrDefault(a => a.name == expectedName);
+            var checksums = release.assets.FirstOrDefault(a => a.name == FFmpegReleaseVerifier.ChecksumsFileName);
+            string? url = isBrowserDownloadURL ? archive?.browser_download_url : archive?.url;
+            if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(checksums?.browser_download_url))
+                return false;
 
-                        if (release.assets != null && release.assets.Length > 0)
-                        {
-                            string endsWith = GetExpectedAssetSuffix();
-
-                            foreach (GitHubAsset asset in release.assets)
-                            {
-                                if (asset != null && !string.IsNullOrEmpty(asset.name) &&
-                                    asset.name.EndsWith(endsWith, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    FileName = asset.name;
-
-                                    if (isBrowserDownloadURL)
-                                    {
-                                        DownloadURL = asset.browser_download_url;
-                                    }
-                                    else
-                                    {
-                                        DownloadURL = asset.url;
-                                    }
-
-                                    IsPreRelease = release.prerelease;
-
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return false;
+            FileName = expectedName;
+            DownloadURL = url;
+            ChecksumsURL = checksums.browser_download_url;
+            LatestVersion = Version.Parse(ReleaseBranch + ".0");
+            return true;
         }
 
-        public static FFmpegArchitecture ResolveArchitecture()
+        public static FFmpegArchitecture ResolveArchitecture() => ResolveArchitecture(
+            OperatingSystem.IsWindows() ? OSPlatform.Windows : OperatingSystem.IsLinux() ? OSPlatform.Linux : OSPlatform.OSX,
+            RuntimeInformation.OSArchitecture);
+
+        internal static FFmpegArchitecture ResolveArchitecture(OSPlatform platform, System.Runtime.InteropServices.Architecture architecture)
         {
-            if (OperatingSystem.IsWindows())
-            {
-                return RuntimeInformation.OSArchitecture switch
+            if (platform == OSPlatform.Windows)
+                return architecture switch
                 {
-                    System.Runtime.InteropServices.Architecture.Arm64 => FFmpegArchitecture.winArm64,
                     System.Runtime.InteropServices.Architecture.X64 => FFmpegArchitecture.win64,
-                    _ => FFmpegArchitecture.win32
+                    System.Runtime.InteropServices.Architecture.Arm64 => FFmpegArchitecture.winArm64,
+                    System.Runtime.InteropServices.Architecture.X86 => FFmpegArchitecture.win32,
+                    _ => FFmpegArchitecture.unsupported
                 };
-            }
-
-            if (OperatingSystem.IsMacOS())
-            {
-                return FFmpegArchitecture.macos64;
-            }
-
-            if (OperatingSystem.IsLinux())
-            {
-                return FFmpegArchitecture.linux64;
-            }
-
-            return FFmpegArchitecture.win64;
+            if (platform == OSPlatform.Linux)
+                return architecture switch
+                {
+                    System.Runtime.InteropServices.Architecture.X64 => FFmpegArchitecture.linux64,
+                    System.Runtime.InteropServices.Architecture.Arm64 => FFmpegArchitecture.linuxArm64,
+                    _ => FFmpegArchitecture.unsupported
+                };
+            return platform == OSPlatform.OSX ? FFmpegArchitecture.macos64 : FFmpegArchitecture.unsupported;
         }
 
-        public string GetExpectedAssetSuffix()
+        public string? GetExpectedAssetSuffix() => Architecture switch
         {
-            return Architecture switch
-            {
-                FFmpegArchitecture.win64 => "win-x64.zip",
-                FFmpegArchitecture.win32 => "win-x86.zip",
-                FFmpegArchitecture.winArm64 => "win-arm64.zip",
-                FFmpegArchitecture.macos64 => "macos64.zip",
-                FFmpegArchitecture.linux64 => "linux64.zip",
-                _ => "win-x64.zip"
-            };
-        }
+            FFmpegArchitecture.win64 => $"win64-gpl-{ReleaseBranch}.zip",
+            FFmpegArchitecture.winArm64 => $"winarm64-gpl-{ReleaseBranch}.zip",
+            FFmpegArchitecture.linux64 => $"linux64-gpl-{ReleaseBranch}.tar.xz",
+            FFmpegArchitecture.linuxArm64 => $"linuxarm64-gpl-{ReleaseBranch}.tar.xz",
+            _ => null
+        };
+
+        public string? GetExpectedAssetName() => GetExpectedAssetSuffix() is { } suffix
+            ? $"ffmpeg-n{ReleaseBranch}-latest-{suffix}" : null;
+
+        public string GetExpectedDownloadUrl() => GetExpectedAssetName() is { } name
+            ? $"https://github.com/{Owner}/{Repo}/releases/download/latest/{name}"
+            : $"https://github.com/{Owner}/{Repo}/releases";
     }
 }

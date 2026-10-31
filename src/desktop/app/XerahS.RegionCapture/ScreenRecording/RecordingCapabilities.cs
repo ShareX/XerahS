@@ -51,7 +51,8 @@ public enum RecordingPauseBehavior
 /// </summary>
 public readonly record struct RecordingRuntimeCapabilities(
     RecordingPauseBehavior PauseBehavior,
-    bool RequiresPersistentSession = false)
+    bool RequiresPersistentSession = false,
+    bool SupportsRegionMove = false)
 {
     public static RecordingRuntimeCapabilities None { get; } =
         new(RecordingPauseBehavior.Unsupported);

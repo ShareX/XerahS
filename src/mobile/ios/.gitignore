@@ -1,0 +1,6 @@
+# xtool build output and generated state
+/xtool/
+/.build/
+/.bsp/
+/.sourcekit-lsp/
+/XtoolSupport/.generated/

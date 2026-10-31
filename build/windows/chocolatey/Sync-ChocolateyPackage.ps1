@@ -138,8 +138,22 @@ function Get-ReleaseMetadata {
     $tag = "v$ReleaseVersion"
     $uri = "https://api.github.com/repos/$Owner/$Name/releases/tags/$tag"
 
+    $headers = @{
+        'User-Agent' = 'XerahS-Chocolatey-Sync'
+        'Accept' = 'application/vnd.github+json'
+    }
+    # Hosted runners share anonymous API quotas. Use the job token when supplied;
+    # retain anonymous access for manual runs that do not have a GitHub token.
+    $apiToken = $env:GH_TOKEN
+    if ([string]::IsNullOrWhiteSpace($apiToken)) {
+        $apiToken = $env:GITHUB_TOKEN
+    }
+    if (-not [string]::IsNullOrWhiteSpace($apiToken)) {
+        $headers['Authorization'] = 'Bearer ' + $apiToken.Trim()
+    }
+
     try {
-        return Invoke-RestMethod -Uri $uri -Headers @{ 'User-Agent' = 'XerahS-Chocolatey-Sync' }
+        return Invoke-RestMethod -Uri $uri -Headers $headers
     } catch {
         throw "Failed to fetch GitHub release metadata for $tag from $uri. $($_.Exception.Message)"
     }

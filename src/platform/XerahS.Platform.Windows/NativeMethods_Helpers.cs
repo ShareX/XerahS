@@ -33,15 +33,9 @@ namespace XerahS.Platform.Windows
     [SupportedOSPlatform("windows")]
     public static partial class NativeMethods
     {
-        public static string GetForegroundWindowText()
-        {
-            IntPtr handle = GetForegroundWindow();
-            return GetWindowText(handle);
-        }
-
         public static string GetWindowText(IntPtr handle)
         {
-            if (handle.ToInt32() > 0)
+            if (handle != IntPtr.Zero)
             {
                 try
                 {
@@ -66,46 +60,9 @@ namespace XerahS.Platform.Windows
             return string.Empty;
         }
 
-        public static Process? GetForegroundWindowProcess()
-        {
-            IntPtr handle = GetForegroundWindow();
-            return GetProcessByWindowHandle(handle);
-        }
-
-        public static string GetForegroundWindowProcessName()
-        {
-            Process? process = GetForegroundWindowProcess();
-            using (process)
-            {
-                return process?.ProcessName ?? string.Empty;
-            }
-        }
-
-        public static Process? GetProcessByWindowHandle(IntPtr hwnd)
-        {
-            if (hwnd.ToInt32() > 0)
-            {
-                try
-                {
-                    GetWindowThreadProcessId(hwnd, out uint processID);
-
-                    if (processID != 0)
-                    {
-                        return Process.GetProcessById((int)processID);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine(e);
-                }
-            }
-
-            return null;
-        }
-
         public static string GetClassName(IntPtr handle)
         {
-            if (handle.ToInt32() > 0)
+            if (handle != IntPtr.Zero)
             {
                 StringBuilder sb = new StringBuilder(256);
 

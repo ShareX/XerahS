@@ -5,6 +5,8 @@
         x:Class="XerahS.UI.Views.UpdateMessageBox"
         x:DataType="vm:UpdateMessageBoxViewModel">
 
+    <!-- Same fill as the shell card, so the prompt stays opaque without a second frame. -->
+    <Border Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
     <Grid Margin="24" RowDefinitions="Auto, Auto, Auto">
 
         <!-- Header -->
@@ -72,4 +74,5 @@
         </StackPanel>
 
     </Grid>
+    </Border>
 </UserControl>

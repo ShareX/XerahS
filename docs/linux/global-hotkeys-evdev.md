@@ -31,6 +31,38 @@ You can force a backend with an environment variable (mainly for troubleshooting
 XERAHS_LINUX_HOTKEY_BACKEND=evdev   # or: portal, x11
 ```
 
+## Quick Setup (one click, no terminal)
+
+When hotkeys fall back to a degraded backend (for example X11 grabs that only fire
+while XerahS is focused on Wayland), **Settings > Advanced > Global Hotkeys** shows a
+**Grant keyboard access** button. It:
+
+1. Finds keyboards through `/sys/class/input` (readable by every user), so mice,
+   touchpads, cameras and game controllers are never touched.
+2. Asks for your password once through polkit (`pkexec`, or systemd `run0` where
+   pkexec is not setuid).
+3. Adds a read-only ACL for your numeric user id to those keyboards only
+   (`setfacl -m u:<uid>:r /dev/input/eventN`).
+4. Switches hotkeys to evdev immediately, with no restart.
+
+The grant lasts until the device node is recreated (reboot or replugging the
+keyboard). For permanent access use the `input` group or the udev rule below.
+Quick Setup is not offered while a working portal or X11 backend is in use, when
+`XERAHS_LINUX_HOTKEY_BACKEND` pins a backend, or in Flatpak and Snap sandboxes.
+
+| Distro | Notes |
+|---|---|
+| Arch, Omarchy, Manjaro, EndeavourOS, CachyOS | `polkit` and `acl` are normally present. Minimal Hyprland or Sway setups need a polkit agent such as `hyprpolkitagent` or `polkit-gnome`. |
+| Debian, Ubuntu, Mint, Pop!_OS | Install `pkexec` and `acl` on minimal installs. |
+| Fedora, RHEL, Rocky, Alma | Works out of the box. |
+| openSUSE | Works out of the box. |
+| NixOS | Uses the setuid wrapper in `/run/wrappers/bin`. Needs `security.polkit.enable = true;` and `pkgs.acl` in `environment.systemPackages`. For permanent access add `"input"` to `users.users.<you>.extraGroups`. |
+| Alpine, postmarketOS | Needs `polkit` with elogind and `acl` (`apk add polkit acl`). The script runs under busybox `sh`. |
+| Void, Gentoo, Solus | Install `polkit` and `acl` with the distro package manager. |
+
+If something is missing, the error message names the exact install command for your
+distro.
+
 ## Permissions
 
 Reading `/dev/input/event*` requires permission. On most distributions these

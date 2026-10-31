@@ -312,6 +312,19 @@ namespace XerahS.UI.ViewModels
             }
         }
 
+        public bool NetworkMonitorEnabled
+        {
+            get => SettingsManager.Settings.NetworkMonitorEnabled;
+            set
+            {
+                if (SettingsManager.Settings.NetworkMonitorEnabled == value) return;
+                SettingsManager.Settings.NetworkMonitorEnabled = value;
+                OnPropertyChanged();
+                if (value) XerahS.Common.NetworkMonitor.NetworkMonitorHost.Shared.EnsureStarted();
+                else XerahS.Common.NetworkMonitor.NetworkMonitorHost.Shared.Stop();
+            }
+        }
+
         public bool EnableClipboardContentViewer
         {
             get => SettingsManager.Settings.ShowClipboardContentViewer;

@@ -42,34 +42,35 @@ internal static class HostPrivilegeCommand
             return (HostPrivilegeKind.Run0, string.Empty);
         }
 
+        string polkitHint = LinuxDistroGuidance.InstallHint(LinuxDistroGuidance.Detect(), QuickSetupPackage.Polkit);
         return (HostPrivilegeKind.None, hasPkexec
-            ? "pkexec is installed but its setuid-root wrapper is disabled, and systemd run0 is unavailable. Enable pkexec (restore mode 4755 on /usr/bin/pkexec) or install systemd 256+ and retry."
-            : "Neither pkexec nor systemd run0 is available on the host. Install polkit or systemd 256+ and retry.");
+            ? "pkexec is installed but is not setuid root, and systemd run0 (systemd 256+) is unavailable. Restore pkexec's setuid bit (chmod 4755) and retry."
+            : $"Neither pkexec nor systemd run0 is available. To use Quick Setup, {polkitHint}.");
     }
 
     /// <summary>
-    /// Append the launcher-specific args to a <see cref="ProcessStartInfo"/>
-    /// so that the embedded shell script runs with the privilege-escalation
-    /// tool's auth flow. <paramref name="hostScript"/> is the inline script
-    /// body that <c>/bin/sh -c</c> will run; <paramref name="identity"/>
-    /// provides the username to grant ACL to.
+    /// Appends the launcher-specific arguments so that <c>/bin/sh -c <paramref name="hostScript"/></c>
+    /// runs as root with <c>$0</c> = <paramref name="helperName"/>, <c>$1</c> = <paramref name="userId"/>
+    /// and the device paths after it.
     /// </summary>
     public static void AddArguments(
         ProcessStartInfo startInfo,
         HostPrivilegeKind commandKind,
         string hostScript,
-        string userIdentity,
-        string helperName)
+        string userId,
+        string helperName,
+        IReadOnlyList<string> devicePaths)
     {
         ArgumentNullException.ThrowIfNull(startInfo);
         ArgumentException.ThrowIfNullOrWhiteSpace(hostScript);
-        ArgumentException.ThrowIfNullOrWhiteSpace(userIdentity);
+        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
         ArgumentException.ThrowIfNullOrWhiteSpace(helperName);
+        ArgumentNullException.ThrowIfNull(devicePaths);
 
         if (commandKind == HostPrivilegeKind.Run0)
         {
             // run0 (systemd 256+) takes --description for the auth prompt.
-            startInfo.ArgumentList.Add("--description=XerahS temporary input setup");
+            startInfo.ArgumentList.Add("--description=XerahS keyboard access for global hotkeys");
         }
         else if (commandKind != HostPrivilegeKind.Pkexec)
         {
@@ -80,14 +81,10 @@ internal static class HostPrivilegeCommand
         startInfo.ArgumentList.Add("-c");
         startInfo.ArgumentList.Add(hostScript);
         startInfo.ArgumentList.Add(helperName);     // $0
-        startInfo.ArgumentList.Add(userIdentity);   // $1
+        startInfo.ArgumentList.Add(userId);         // $1
+        foreach (string devicePath in devicePaths)
+        {
+            startInfo.ArgumentList.Add(devicePath); // $2...
+        }
     }
-
-    public static string GetFileName(HostPrivilegeKind commandKind) => commandKind switch
-    {
-        HostPrivilegeKind.Pkexec => "pkexec",
-        HostPrivilegeKind.Run0 => "run0",
-        HostPrivilegeKind.None => throw new InvalidOperationException("No host privilege command was selected."),
-        _ => throw new InvalidOperationException("No host privilege command was selected."),
-    };
 }

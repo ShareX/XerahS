@@ -132,6 +132,11 @@
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
                                     <CheckBox IsChecked="{Binding RegionCaptureShowScreenCrosshair}" Content="Show screen-wide crosshair"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="Background dim strength (%)" VerticalAlignment="Center"/>
+                                        <NumericUpDown Value="{Binding RegionCaptureBackgroundDimStrength}" Minimum="0" Maximum="100" Increment="1" FormatString="0" MinWidth="120" AutomationProperties.Name="Background dim strength (%)"/>
+                                    </StackPanel>
+                                    <CheckBox IsChecked="{Binding RegionCaptureDimAllExceptSelection}" Content="Dim all, except the current selection"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -149,6 +154,11 @@
                                     <CheckBox IsChecked="{Binding SaveImageToFile}" Content="Save image to file"/>
                                     <CheckBox IsChecked="{Binding CopyImageToClipboard}" Content="Copy image to clipboard"/>
                                     <CheckBox IsChecked="{Binding UploadImageToHost}" Content="Upload image to host" FontWeight="SemiBold"/>
+                                    <CheckBox IsChecked="{Binding PrivacyMode}" IsEnabled="{Binding PrivacyModeAvailable}" Content="Privacy mode: scan and redact before upload"
+                                              ToolTip.Tip="Uses the active AI connection after consent, then lets you review or annotate. Runs only for image uploads."/>
+                                    <TextBox Text="{Binding PrivacyCustomPatterns}" AcceptsReturn="True" MinHeight="60" IsVisible="{Binding PrivacyMode}" IsEnabled="{Binding PrivacyModeAvailable}"
+                                             PlaceholderText="Optional local sensitivity patterns, one .NET regex per line"
+                                             ToolTip.Tip="Up to 16 rules, 500 characters each. Local OCR only; invalid rules require manual review."/>
                                     <CheckBox IsChecked="{Binding ApplyImageEffects}" Content="Apply image effects"/>
                                     <CheckBox IsChecked="{Binding AnnotateMedia}" Content="Annotate media"/>
                                     <CheckBox IsChecked="{Binding ShowAfterCaptureWindow}" Content="Show after capture window"/>

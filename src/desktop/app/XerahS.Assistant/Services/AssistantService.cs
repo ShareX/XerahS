@@ -522,7 +522,7 @@ public sealed class AssistantService : IAssistantService
 
         if (PlatformServices.Ocr == null || !PlatformServices.Ocr.IsSupported)
         {
-            return AssistantResponse.Error("OCR is not available on this platform.");
+            return AssistantResponse.Error(PlatformServices.Ocr?.UnavailableReason ?? "OCR is not available on this platform.");
         }
 
         if (!File.Exists(action.FilePath))

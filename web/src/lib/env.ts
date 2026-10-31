@@ -12,7 +12,13 @@ const serverSchema = z.object({
     .default("development"),
   APP_ORIGIN: z.url().default("http://localhost:3000"),
   XERAHS_DESKTOP_OAUTH_CLIENT_ID: z.uuid().optional(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(20).optional(),
+  DATABASE_URL: z
+    .string()
+    .regex(/^postgres(?:ql)?:\/\//)
+    .optional(),
+  BETTER_AUTH_SECRET: z.string().min(32).optional(),
+  RESEND_API_KEY: z.string().min(8).optional(),
+  EMAIL_FROM: z.string().min(3).optional(),
   STRIPE_SECRET_KEY: z.string().min(8).optional(),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
   STRIPE_PRICE_MONTHLY: z.string().startsWith("price_").optional(),
@@ -40,8 +46,6 @@ const serverSchema = z.object({
 });
 
 const publicSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.url(),
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(20),
   NEXT_PUBLIC_PASSKEYS_ENABLED: booleanString.default(false),
 });
 
@@ -64,9 +68,6 @@ export function getServerEnv(): ServerEnv {
 
 export function getPublicEnv(): PublicEnv {
   cachedPublic ??= publicSchema.parse({
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     NEXT_PUBLIC_PASSKEYS_ENABLED: process.env.NEXT_PUBLIC_PASSKEYS_ENABLED,
   });
   return cachedPublic;
@@ -77,7 +78,10 @@ export function assertProductionConfiguration(): void {
   if (env.APP_ENV !== "production" && env.APP_ENV !== "staging") return;
 
   const required: Array<keyof ServerEnv> = [
-    "SUPABASE_SERVICE_ROLE_KEY",
+    "DATABASE_URL",
+    "BETTER_AUTH_SECRET",
+    "RESEND_API_KEY",
+    "EMAIL_FROM",
     "XERAHS_DESKTOP_OAUTH_CLIENT_ID",
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",

@@ -330,7 +330,10 @@ set_release_stable() {
   gh release edit "$tag_name" --repo "$gh_repo" --prerelease=false --latest >/dev/null
 
   is_prerelease="$(gh release view "$tag_name" --repo "$gh_repo" --json isPrerelease --jq '.isPrerelease')"
-  is_latest="$(gh release view "$tag_name" --repo "$gh_repo" --json isLatest --jq '.isLatest')"
+  # gh release view has no isLatest field (gh 2.101); ask the API which release is latest.
+  if [[ "$(gh api "repos/$gh_repo/releases/latest" --jq '.tag_name')" == "$tag_name" ]]; then
+    is_latest="true"
+  fi
   release_url="$(gh release view "$tag_name" --repo "$gh_repo" --json url --jq '.url')"
 
   if [[ "$is_prerelease" == "true" ]]; then

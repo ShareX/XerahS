@@ -61,6 +61,7 @@ public sealed class RegionCaptureControl : UserControl
 
     // Rendering configuration
     private readonly double _dimOpacity;
+    private readonly bool _dimAllExceptSelection;
     private readonly uint _crosshairColor;
     private readonly uint _crosshairLineColor;
     private readonly bool _showScreenCrosshair;
@@ -161,6 +162,7 @@ public sealed class RegionCaptureControl : UserControl
         _stateMachine.SelectionChanged += OnSelectionChanged;
 
         _dimOpacity = options.DimOpacity;
+        _dimAllExceptSelection = options.DimAllExceptSelection;
         _mode = options.Mode;
         bool requestedWindowSnapping = options.EnableWindowSnapping && _mode != RegionCaptureMode.ScreenColorPicker;
         _windowPreselectionCapability = WindowDetectionService.GetWindowPreselectionCapability();
@@ -649,28 +651,20 @@ public sealed class RegionCaptureControl : UserControl
             clearRect = PhysicalRectToLocal(_hoveredWindow.SnapBounds);
         }
 
-        // Draw dimmed background with cutout using geometry clipping
-        if (clearRect is { } rect && rect.Width > 0 && rect.Height > 0)
+        // Hover outlines remain visible even when their interior stays dimmed.
+        bool hasHighlight = clearRect is { Width: > 0, Height: > 0 };
+        bool undimHighlight = hasHighlight && (!_dimAllExceptSelection || _state != CaptureState.Hovering);
+        if (undimHighlight && clearRect is { } cutout)
         {
-            // Draw dimmed background using 4 rectangles to avoid expensive geometry operations
-            // This is significantly faster than CombinedGeometry
-            
-            // Top
-            if (rect.Top > 0)
-                context.DrawRectangle(DimBrush, null, new Rect(0, 0, bounds.Width, rect.Top));
+            DrawDimmedOutside(context, bounds, cutout);
+        }
+        else
+        {
+            context.DrawRectangle(DimBrush, null, bounds);
+        }
 
-            // Bottom
-            if (rect.Bottom < bounds.Height)
-                context.DrawRectangle(DimBrush, null, new Rect(0, rect.Bottom, bounds.Width, bounds.Height - rect.Bottom));
-
-            // Left (clamped between Top and Bottom)
-            if (rect.Left > 0)
-                context.DrawRectangle(DimBrush, null, new Rect(0, rect.Top, rect.Left, rect.Height));
-
-            // Right (clamped between Top and Bottom)
-            if (rect.Right < bounds.Width)
-                context.DrawRectangle(DimBrush, null, new Rect(rect.Right, rect.Top, bounds.Width - rect.Right, rect.Height));
-
+        if (hasHighlight && clearRect is { } rect)
+        {
             // Draw the selection/snap border with shadow effect
             if (_state == CaptureState.Dragging || _state == CaptureState.Selected)
             {
@@ -709,12 +703,6 @@ public sealed class RegionCaptureControl : UserControl
                 DrawWindowTitle(context, rect, _hoveredWindow.DisplayTitle);
             }
         }
-        else
-        {
-            // No selection, just draw full dim overlay
-            context.DrawRectangle(DimBrush, null, bounds);
-        }
-
         // Draw crosshair at cursor position
         DrawCrosshair(context, bounds);
 
@@ -726,6 +714,29 @@ public sealed class RegionCaptureControl : UserControl
 
         // Draw ghost cursor if available and configured
         DrawGhostCursor(context);
+    }
+
+    private void DrawDimmedOutside(DrawingContext context, Rect bounds, Rect rect)
+    {
+        // Draw dimmed background using 4 rectangles to avoid expensive geometry operations
+        // This is significantly faster than CombinedGeometry
+
+        // Top
+        if (rect.Top > 0)
+            context.DrawRectangle(DimBrush, null, new Rect(0, 0, bounds.Width, rect.Top));
+
+        // Bottom
+        if (rect.Bottom < bounds.Height)
+            context.DrawRectangle(DimBrush, null, new Rect(0, rect.Bottom, bounds.Width, bounds.Height - rect.Bottom));
+
+        // Left (clamped between Top and Bottom)
+        if (rect.Left > 0)
+            context.DrawRectangle(DimBrush, null, new Rect(0, rect.Top, rect.Left, rect.Height));
+
+        // Right (clamped between Top and Bottom)
+        if (rect.Right < bounds.Width)
+            context.DrawRectangle(DimBrush, null, new Rect(rect.Right, rect.Top, bounds.Width - rect.Right, rect.Height));
+
     }
 
     private void DrawGhostCursor(DrawingContext context)

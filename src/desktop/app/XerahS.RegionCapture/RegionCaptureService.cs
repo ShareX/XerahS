@@ -125,6 +125,9 @@ public sealed record RegionCaptureOptions
     /// </summary>
     public double DimOpacity { get; init; } = 0.7;
 
+    /// <summary>Keep hovered windows dimmed; only an actual selection is undimmed.</summary>
+    public bool DimAllExceptSelection { get; init; } = false;
+
     /// <summary>
     /// Color of the selection border.
     /// </summary>

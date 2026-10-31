@@ -52,6 +52,7 @@ namespace XerahS.Bootstrap
         public bool IsPaused => manager.IsPaused;
         public bool IsUsingFallback => manager.IsUsingFallback;
         public RecordingRuntimeCapabilities CurrentCapabilities => manager.CurrentCapabilities;
+        public RecordingOptions? CurrentOptions => manager.CurrentOptions;
 
         public Task? PlatformInitializationTask
         {
@@ -63,6 +64,7 @@ namespace XerahS.Bootstrap
         public Task<string?> StopRecordingAsync() => manager.StopRecordingAsync();
         public Task AbortRecordingAsync() => manager.AbortRecordingAsync();
         public Task TogglePauseResumeAsync() => manager.TogglePauseResumeAsync();
+        public Task ResumeRecordingAtAsync(System.Drawing.Rectangle region) => manager.ResumeRecordingAtAsync(region);
         public void SignalStop() => manager.SignalStop();
         public void RequestRestart() => manager.RequestRestart();
     }

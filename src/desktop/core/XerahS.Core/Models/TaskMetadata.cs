@@ -26,6 +26,8 @@
 using XerahS.Common;
 using XerahS.Platform.Abstractions;
 using SkiaSharp;
+using System.ComponentModel;
+using System.Diagnostics;
 
 namespace XerahS.Core;
 
@@ -72,7 +74,19 @@ public class TaskMetadata : IDisposable
         if (windowInfo != null)
         {
             WindowTitle = windowInfo.Title;
-            // ProcessName is not available in abstraction; could be obtained via ProcessId if needed
+            ProcessName = null;
+            if (windowInfo.ProcessId is > 0 and <= int.MaxValue)
+            {
+                try
+                {
+                    using var process = Process.GetProcessById((int)windowInfo.ProcessId);
+                    ProcessName = process.ProcessName;
+                }
+                catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or Win32Exception or NotSupportedException)
+                {
+                    // A window can outlive its process lookup; metadata must not prevent capture.
+                }
+            }
         }
     }
 

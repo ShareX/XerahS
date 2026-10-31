@@ -206,6 +206,7 @@ internal sealed class FakeViewDialogService : IViewDialogService
     public Task ShowFFmpegOptionsAsync(FFmpegOptionsViewModel viewModel) => Task.CompletedTask;
     public Task ShowMediaBrowserAsync(MediaBrowserViewModel viewModel) => Task.CompletedTask;
     public Task ShowQrCodeGeneratorAsync(QrCodeGeneratorViewModel viewModel) => Task.CompletedTask;
+    public Task ShowShareLogsAsync(ShareLogsViewModel viewModel) => Task.CompletedTask;
     public Task<bool> ShowWatchFolderEditorAsync(WatchFolderEditViewModel viewModel) => Task.FromResult(false);
     public Task<OpenImageChoice> ShowOpenImageChoiceAsync() => Task.FromResult(OpenImageChoice.Cancel);
     public Task<string?> ShowFilePickerAsync(string title, IEnumerable<string>? filters = null) => Task.FromResult<string?>(null);

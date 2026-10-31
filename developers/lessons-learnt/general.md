@@ -161,6 +161,7 @@ Without the `.Desktop` package, the `WebView` control may fail to initialize or 
 
 ## Build & Configuration
 
+- Never assume `XerahS.Platform.Windows` changes are unverifiable on Linux; always compile them with `-p:OS=Windows_NT -p:EnableWindowsTargeting=true -p:CsWinRTGenerateProjection=false` (restore first with the same properties) because the project otherwise skips compilation off Windows and `cswinrt.exe` cannot run there.
 - Never register Windows autostart in both the installer Startup folder and the runtime Run key; keep one authoritative entry, migrate the legacy entry, and treat its single-instance relay as passive because duplicate login launches can otherwise restore a window that startup just hid to the tray.
 - Never keep the existing patch/minor version when implementing a brand-new product feature that did not previously exist; always bump the app minor version in root `Directory.Build.props` first and use that bumped version in the commit prefix because new feature surfaces should start a new minor release line.
 - Never infer the GitHub release target with bare `gh repo view` on a KovaForge fork checkout; always resolve from the `origin` remote URL (including `git@github-<alias>:Owner/Repo.git`) or pass `--repo owner/name`, because `gh` often returns upstream `ShareX/XerahS` instead of `KovaForge/XerahS`.

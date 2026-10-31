@@ -28,9 +28,14 @@ internal static class DxgiOutputDuplicationHelper
         Format.B8G8R8A8_UNorm
     ];
 
+    private static volatile bool _duplicateOutput1Failed;
+
     public static IDXGIOutputDuplication Create(IDXGIOutput output, ID3D11Device device)
     {
-        if (DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(RuntimeInformation.ProcessArchitecture))
+        if (DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(
+            RuntimeInformation.ProcessArchitecture,
+            HdrToneMapContext.IsHdrOutput(output),
+            _duplicateOutput1Failed))
         {
             try
             {
@@ -39,13 +44,11 @@ internal static class DxgiOutputDuplicationHelper
             }
             catch (Exception ex)
             {
-                DebugHelper.WriteLine($"DxgiOutputDuplicationHelper: DuplicateOutput1 failed, using DuplicateOutput. {ex.Message}");
+                // A failure here tends to repeat, and a repeat can be an uncatchable AV. Stop trying.
+                _duplicateOutput1Failed = true;
+                DebugHelper.WriteLine(
+                    $"DxgiOutputDuplicationHelper: DuplicateOutput1 failed, using DuplicateOutput for the rest of this session. {ex.Message}");
             }
-        }
-        else
-        {
-            DebugHelper.WriteLine(
-                $"DxgiOutputDuplicationHelper: Skipping DuplicateOutput1 on {RuntimeInformation.ProcessArchitecture}; using DuplicateOutput.");
         }
 
         using var output1 = output.QueryInterface<IDXGIOutput1>();

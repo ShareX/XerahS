@@ -95,6 +95,8 @@ namespace XerahS.UI.Views
             InitializeComponent();
             DataContextChanged += OnMainWindowDataContextChanged;
             KeyDown += OnKeyDown;
+            // Tunnel so Esc closes a modal dialog even when a control inside it has focus.
+            AddHandler(KeyDownEvent, OnModalEscapeKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
             ApplyInitialWindowPlacement();
 
             if (this.FindControl<ContentControl>("ContentFrame") is ContentControl contentFrame)
@@ -182,17 +184,17 @@ namespace XerahS.UI.Views
         private void UpdateShellModalVisibility()
         {
             Grid? overlay = this.FindControl<Grid>("MainWindowModalOverlay");
-            ContentControl? contentFrame = this.FindControl<ContentControl>("ContentFrame");
-
             if (overlay == null)
             {
                 return;
             }
 
-            bool isEditorContent = contentFrame?.Content is EditorView;
             bool isModalOpen = _mainViewModel?.IsModalOpen == true;
+            bool editorOwnsModal = MainViewModel.IsEditorOwnedModal(_mainViewModel?.ModalContent);
 
-            overlay.IsVisible = isModalOpen && !isEditorContent;
+            // Editor dialogs bring their own surface. App dialogs (update prompt and the
+            // rest) use this overlay's opaque card, including while the editor page is open.
+            overlay.IsVisible = isModalOpen && !editorOwnsModal;
         }
 
         private void NavigateFromMenuTag(string? navTag)
@@ -527,9 +529,17 @@ namespace XerahS.UI.Views
                     {
                         var wizard = new XerahS.UI.Onboarding.OnboardingWizardWindow();
                         var result = await wizard.ShowDialogAsync(this);
-                        if (result.Completed || result.Skipped)
+
+                        // The settings page may have been pre-warmed before the wizard changed the theme;
+                        // sync it so its next auto-save does not write the old theme back.
+                        if (_applicationSettingsView?.DataContext is SettingsViewModel settingsViewModel)
                         {
-                            XerahS.Common.DebugHelper.WriteLine("[Onboarding] Wizard completed or skipped, marking first-time run complete.");
+                            settingsViewModel.ThemeMode = SettingsManager.Settings.ThemeMode;
+                        }
+
+                        if (result.Completed)
+                        {
+                            XerahS.Common.DebugHelper.WriteLine("[Onboarding] Wizard completed, marking first-time run complete.");
                             SettingsManager.Settings.MarkFirstTimeRunCompleted(persist: false);
                         }
                     }

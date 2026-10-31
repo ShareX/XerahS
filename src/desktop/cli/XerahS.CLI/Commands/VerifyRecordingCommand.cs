@@ -25,6 +25,7 @@
 
 using System.CommandLine;
 using System.Drawing;
+using System.Text.Json;
 using XerahS.Bootstrap;
 using XerahS.Common;
 using XerahS.Core;
@@ -45,9 +46,14 @@ public static class VerifyRecordingCommand
     private const int DefaultIterations = 1;
     private const int DefaultRegionSize = 500;
 
-    public static Command Create(IScreenRecordingCoordinator recordingCoordinator)
+    public static Command Create(IScreenRecordingCoordinator? recordingCoordinator)
     {
         var cmd = new Command("verify-recording", "Automated screen recording verification test");
+        var inputOption = new Option<string?>("--input") { Description = "Inspect an existing recording with ffprobe; print stream and duration JSON" };
+        var nativeOption = new Option<bool>("--native") { Description = "Require the native recorder and validate H.264/AAC output; fallback fails verification" };
+        var pauseOption = new Option<int>("--pause-seconds") { Description = "Pause halfway through the active recording duration" };
+        var audioCountOption = new Option<int?>("--expected-audio-streams") { Description = "Expected audio stream count when inspecting an existing recording (0 or 1)" };
+        var expectedDurationOption = new Option<double?>("--expected-duration") { Description = "Expected active duration for --input, in seconds (1s tolerance)" };
 
         var workflowIdArg = new Argument<string?>("workflow-id")
         { 
@@ -92,9 +98,19 @@ public static class VerifyRecordingCommand
         cmd.Add(debugOption);
         cmd.Add(outputDirOption);
         cmd.Add(regionSizeOption);
+        cmd.Add(inputOption);
+        cmd.Add(nativeOption);
+        cmd.Add(pauseOption);
+        cmd.Add(audioCountOption);
+        cmd.Add(expectedDurationOption);
 
         cmd.SetAction((parseResult) =>
         {
+            if (parseResult.GetValue(inputOption) is string input)
+            {
+                return InspectFileAsync(input, parseResult.GetValue(nativeOption), parseResult.GetValue(audioCountOption),
+                    parseResult.GetValue(expectedDurationOption)).GetAwaiter().GetResult();
+            }
             var workflowId = parseResult.GetValue(workflowIdArg);
             var randomRegion = parseResult.GetValue(randomRegionOption);
             var duration = parseResult.GetValue(durationOption);
@@ -109,12 +125,28 @@ public static class VerifyRecordingCommand
             if (iterations == 0) iterations = DefaultIterations;
             if (regionSize == 0) regionSize = DefaultRegionSize;
 
-            Environment.ExitCode = RunVerificationAsync(
-                recordingCoordinator, workflowId!, randomRegion, duration, iterations, debug, outputDir, regionSize
+            return RunVerificationAsync(
+                recordingCoordinator ?? throw new InvalidOperationException("A recording coordinator is required to capture video."),
+                workflowId!, randomRegion, duration, iterations, debug, outputDir, regionSize,
+                parseResult.GetValue(nativeOption), parseResult.GetValue(pauseOption)
             ).GetAwaiter().GetResult();
         });
 
         return cmd;
+    }
+
+    private static async Task<int> InspectFileAsync(string input, bool native, int? audioCount, double? duration)
+    {
+        try
+        {
+            if (audioCount is < 0 or > 1 || duration is <= 0) throw new ArgumentException("Expected audio count must be 0 or 1 and expected duration must be positive.");
+            var report = await RecordingMediaInspector.InspectAsync(input);
+            var errors = report.Validate(native, audioCount, duration);
+            Console.WriteLine(JsonSerializer.Serialize(new { Input = Path.GetFullPath(input), Media = report, Errors = errors },
+                new JsonSerializerOptions { WriteIndented = true }));
+            return errors.Count == 0 ? 0 : 1;
+        }
+        catch (Exception ex) { Console.Error.WriteLine($"Inspection failed: {ex.Message}"); return 2; }
     }
 
     private static async Task<int> RunVerificationAsync(
@@ -125,7 +157,9 @@ public static class VerifyRecordingCommand
         int iterations,
         bool debug,
         string? outputDir,
-        int regionSize)
+        int regionSize,
+        bool native,
+        int pauseSeconds)
     {
         try
         {
@@ -138,7 +172,9 @@ public static class VerifyRecordingCommand
                 Iterations = iterations,
                 Debug = debug,
                 OutputDir = outputDir ?? Path.Combine(PathsManager.CaptureTroubleshootingFolder, "RecordingVerify"),
-                RegionSize = regionSize
+                RegionSize = regionSize,
+                Native = native,
+                PauseSeconds = pauseSeconds
             };
 
             Console.WriteLine("=== XerahS Recording Verification ===");
@@ -187,12 +223,17 @@ internal class RecordingVerifier
     public bool Debug { get; set; }
     public string OutputDir { get; set; } = string.Empty;
     public int RegionSize { get; set; } = 500;
+    public bool Native { get; set; }
+    public int PauseSeconds { get; set; }
 
     private Random _random = new();
     private Rectangle _virtualDesktop;
 
     public async Task<RecordingVerificationResult> RunAsync()
     {
+        if (Duration <= 0 || Iterations <= 0 || RegionSize < 2 || PauseSeconds < 0)
+            throw new ArgumentException("Duration and iterations must be positive, region size at least 2, and pause seconds nonnegative.");
+        if (RecordingCoordinator.PlatformInitializationTask is { } initialization) await initialization;
         Directory.CreateDirectory(OutputDir);
 
         // Discover virtual desktop
@@ -218,13 +259,7 @@ internal class RecordingVerifier
             throw new InvalidOperationException($"Workflow not found: {WorkflowId}. Use 'xerahs list workflows' to see available workflows.");
         }
 
-        // Check modern capture setting
-        bool useModernCapture = workflow.TaskSettings?.CaptureSettings?.UseModernCapture ?? true;
-        if (useModernCapture)
-        {
-            Console.WriteLine("WARNING: Workflow has UseModernCapture=true. This test targets FFmpeg (legacy) mode.");
-            Console.WriteLine("Consider setting UseModernCapture=false in the workflow for proper FFmpeg testing.");
-        }
+        Console.WriteLine(Native ? "Backend: native required (fallback is a failure)." : "Backend: FFmpeg.");
 
         var result = new RecordingVerificationResult { Total = Iterations };
 
@@ -265,25 +300,18 @@ internal class RecordingVerifier
                 Console.WriteLine($"  Random region: {region.Value.X},{region.Value.Y} {region.Value.Width}x{region.Value.Height}");
             }
 
-            // Initialize platform services
-            RecordingCoordinator.PlatformInitializationTask = Task.CompletedTask;
-            SettingsManager.LoadAllSettings();
-
             // Create recording options
+            var settings = workflow.TaskSettings?.CaptureSettings?.ScreenRecordingSettings.Copy() ?? new ScreenRecordingSettings();
+            settings.ForceFFmpeg = !Native;
+            if (Native) settings.Codec = VideoCodec.H264;
+            settings.FPS = workflow.TaskSettings?.CaptureSettings?.ScreenRecordFPS ?? settings.FPS;
             var recordingOptions = new RecordingOptions
             {
                 Mode = region.HasValue ? CaptureMode.Region : CaptureMode.Screen,
                 Region = region ?? Rectangle.Empty,
                 OutputPath = GetDefaultRecordingPath(iteration),
-                UseModernCapture = workflow.TaskSettings?.CaptureSettings?.UseModernCapture ?? false,
-                Settings = new ScreenRecordingSettings
-                {
-                    FPS = workflow.TaskSettings?.CaptureSettings?.ScreenRecordFPS ?? 30,
-                    Codec = VideoCodec.H264,
-                    BitrateKbps = 4000,
-                    ShowCursor = true,
-                    ForceFFmpeg = true // Always use FFmpeg for this test
-                }
+                UseModernCapture = Native,
+                Settings = settings
             };
 
             if (Debug)
@@ -297,9 +325,20 @@ internal class RecordingVerifier
             // Start recording
             Console.WriteLine($"  Starting recording...");
             await RecordingCoordinator.StartRecordingAsync(recordingOptions);
+            if (Native && RecordingCoordinator.IsUsingFallback)
+                throw new InvalidOperationException("Native recording fell back to FFmpeg.");
 
             Console.WriteLine($"  Recording for {Duration} seconds...");
-            await Task.Delay(Duration * 1000);
+            if (PauseSeconds > 0)
+            {
+                if (!RecordingCoordinator.CurrentCapabilities.SupportsPauseResume) throw new NotSupportedException("The selected backend does not support pause/resume.");
+                await Task.Delay(TimeSpan.FromSeconds(Duration / 2d));
+                await RecordingCoordinator.TogglePauseResumeAsync();
+                await Task.Delay(TimeSpan.FromSeconds(PauseSeconds));
+                await RecordingCoordinator.TogglePauseResumeAsync();
+                await Task.Delay(TimeSpan.FromSeconds(Duration / 2d));
+            }
+            else await Task.Delay(TimeSpan.FromSeconds(Duration));
 
             // Stop recording
             Console.WriteLine($"  Stopping recording...");
@@ -331,6 +370,12 @@ internal class RecordingVerifier
             result.Passed = true;
             result.OutputPath = finalPath;
             result.FileSize = fileInfo.Length;
+            var report = await RecordingMediaInspector.InspectAsync(finalPath);
+            var errors = report.Validate(Native, settings.CaptureSystemAudio || settings.CaptureMicrophone ? 1 : 0, Duration);
+            await File.WriteAllTextAsync(finalPath + ".verification.json", JsonSerializer.Serialize(
+                new { Native, Duration, PauseSeconds, Media = report, Errors = errors }, new JsonSerializerOptions { WriteIndented = true }));
+            result.Passed = errors.Count == 0;
+            result.FailureReason = string.Join(" ", errors);
         }
         catch (Exception ex)
         {
@@ -340,6 +385,10 @@ internal class RecordingVerifier
             {
                 DebugHelper.WriteException(ex);
             }
+        }
+        finally
+        {
+            if (RecordingCoordinator.IsRecording) await RecordingCoordinator.AbortRecordingAsync();
         }
 
         return result;

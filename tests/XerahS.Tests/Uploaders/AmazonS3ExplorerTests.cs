@@ -32,6 +32,25 @@ namespace XerahS.Tests.Uploaders;
 public class AmazonS3ExplorerTests
 {
     [Test]
+    public void GetExplorerRootPrefix_WholeBucket_ListsFromBucketRoot()
+    {
+        var config = new S3ConfigModel { ObjectPrefix = "ShareX/%y/%mo", ExplorerBrowseWholeBucket = true };
+        string? root = S3ExplorerListHelper.GetExplorerRootPrefix(config);
+
+        Assert.That(S3ExplorerListHelper.ResolveListPrefix(root, ""), Is.EqualTo(""));
+        Assert.That(S3ExplorerListHelper.ResolveListPrefix(root, "2014/05/"), Is.EqualTo("2014/05/"));
+        Assert.That(S3ExplorerListHelper.GetExplorerPath("ShareX/2026/10/a.png", root), Is.EqualTo("ShareX/2026/10/a.png"));
+    }
+
+    [Test]
+    public void GetExplorerRootPrefix_Default_KeepsUploadFolder()
+    {
+        var config = new S3ConfigModel { ObjectPrefix = "ShareX/%y/%mo" };
+
+        Assert.That(S3ExplorerListHelper.ResolveListPrefix(S3ExplorerListHelper.GetExplorerRootPrefix(config), ""), Is.EqualTo("ShareX/"));
+    }
+
+    [Test]
     public void ResolveListPrefix_EmptyFolder_UsesStaticObjectPrefix()
     {
         string prefix = S3ExplorerListHelper.ResolveListPrefix("ShareX/%y/%mo", "");

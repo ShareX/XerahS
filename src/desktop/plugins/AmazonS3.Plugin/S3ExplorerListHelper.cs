@@ -35,6 +35,10 @@ internal sealed record S3RegionRedirect(string? Region, string? EndpointHost);
 /// </summary>
 internal static class S3ExplorerListHelper
 {
+    /// <summary>The prefix Media Explorer treats as its root: none for the whole bucket, otherwise the upload prefix.</summary>
+    public static string? GetExplorerRootPrefix(S3ConfigModel config) =>
+        config.ExplorerBrowseWholeBucket ? null : config.ObjectPrefix;
+
     public static string ResolveListPrefix(string? objectPrefix, string? folderPath)
     {
         string root = EnsureTrailingSlash(ExtractStaticPrefix(objectPrefix));

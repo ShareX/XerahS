@@ -140,14 +140,16 @@ public partial class NetworkMonitorViewModel : ViewModelBase, IDisposable
     private static readonly IBrush PausedBrush = new SolidColorBrush(Color.FromRgb(120, 120, 128));
 
     private readonly NetworkMonitorHost _host;
+    private readonly Func<bool> _keepMonitoring;
     private readonly DispatcherTimer _refreshTimer;
     private readonly DateTime _sessionStarted = DateTime.Now;
     private int _pingAnimationVersion;
     private bool _disposed;
 
-    public NetworkMonitorViewModel(NetworkMonitorHost? host = null)
+    public NetworkMonitorViewModel(NetworkMonitorHost? host = null, Func<bool>? keepMonitoring = null)
     {
         _host = host ?? NetworkMonitorHost.Shared;
+        _keepMonitoring = keepMonitoring ?? (() => false);
         TimeRangeOptions =
         [
             new NetworkMonitorTimeRangeOption(NetworkMonitorTimeRange.Last5Minutes),
@@ -367,6 +369,7 @@ public partial class NetworkMonitorViewModel : ViewModelBase, IDisposable
         }
 
         _disposed = true;
+        if (!_keepMonitoring()) _host.Stop();
         _refreshTimer.Stop();
         _refreshTimer.Tick -= OnRefreshTick;
         _host.Monitor.ProbeStarted -= OnProbeStarted;

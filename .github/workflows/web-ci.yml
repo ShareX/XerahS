@@ -6,6 +6,11 @@ on:
   push:
     branches: [develop]
     paths: ["web/**", ".github/workflows/web-ci.yml"]
+  # Daily, so a newly published advisory fails here (and Dependabot opens the
+  # fix) before it can fail someone's unrelated push.
+  schedule:
+    - cron: "23 20 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -19,8 +24,8 @@ jobs:
     env:
       APP_ENV: development
       APP_ORIGIN: http://localhost:3000
-      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_000000000000000000000000
+      # Not a secret: lets the build load the Better Auth config.
+      BETTER_AUTH_SECRET: ci-build-placeholder-not-used-at-runtime-0000
       NEXT_PUBLIC_PASSKEYS_ENABLED: "false"
       LEDGER_USE_LOCAL_FAKE: "true"
     steps:
@@ -44,19 +49,79 @@ jobs:
       - run: pnpm test
       - run: pnpm build
 
-  database:
+  diagnostics-database:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: web
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
     steps:
       - uses: actions/checkout@v5
-      - uses: supabase/setup-cli@v1
+      - uses: actions/setup-node@v5
         with:
-          version: 2.115.0
-      - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector
-      - run: supabase db reset
-      - run: supabase db lint --local --level warning --fail-on error
-      - run: supabase test db
-      - if: always()
-        run: supabase stop --no-backup
+          node-version: 24.19.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+          run_install: false
+      - run: pnpm install --frozen-lockfile
+      # Applies every migration once, in order, and records it.
+      - run: node scripts/db-migrate.ts --dir db/diagnostics/migrations
+      # A second run must be a no-op.
+      - run: node scripts/db-migrate.ts --dir db/diagnostics/migrations
+      - run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f db/diagnostics/tests/diagnostics_test.sql
+
+  database:
+    # XerahS Cloud schema on plain Postgres: the Supabase compatibility layer,
+    # the XIP0085 migrations, the local seed and the pgTAP suite.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install pgTAP in the Postgres service
+        run: docker exec ${{ job.services.postgres.id }} bash -c "apt-get update -qq && apt-get install -y -qq postgresql-17-pgtap"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.19.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+          run_install: false
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/db-migrate.ts --dir db/cloud/migrations
+      - run: node scripts/db-migrate.ts --dir db/cloud/migrations
+      - run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f db/cloud/seed.sql
+      - name: pgTAP
+        run: |
+          out=$(psql "$DATABASE_URL" -X -At -f db/cloud/tests/xip0085_schema.test.sql)
+          echo "$out"
+          ! echo "$out" | grep -q "^not ok"
+          echo "$out" | grep -q "^ok 36 "
+      - run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f db/cloud/tests/better_auth_mirror.test.sql

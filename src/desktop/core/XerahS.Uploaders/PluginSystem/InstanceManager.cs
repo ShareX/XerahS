@@ -306,6 +306,8 @@ public class InstanceManager
                 FileTypeRouting = new FileTypeScope
                 {
                     AllFileTypes = source.FileTypeRouting.AllFileTypes,
+                    TextFiles = source.FileTypeRouting.TextFiles,
+                    TextFileExceptions = source.FileTypeRouting.TextFileExceptions?.ToList(),
                     FileExtensions = source.FileTypeRouting.FileExtensions.ToList()
                 },
                 CreatedAt = createdAt,
@@ -418,6 +420,7 @@ public class InstanceManager
 
     /// <summary>
     /// Get the destination instance for a specific file based on category and extension.
+    /// Precedence: an explicit extension, then "Text files", then the "All File Types" catch-all.
     /// Returns null if no match found.
     /// </summary>
     /// <param name="category">Upload category</param>
@@ -432,27 +435,39 @@ public class InstanceManager
                 return null;
             }
 
-            var instances = GetInstancesByCategory(category);
+            return GetSpecificDestinationForFile(category, ext) ??
+                GetInstancesByCategory(category).FirstOrDefault(i => i.IsAvailable && GetFileTypeRouting(i).AllFileTypes);
+        }
+    }
 
-            // 1. Try exact file extension match first
-            var exactMatch = instances.FirstOrDefault(i =>
-                i.IsAvailable &&
-                !GetFileTypeRouting(i).AllFileTypes &&
-                GetFileTypeRouting(i).FileExtensions.Any(e => e.Equals(ext, StringComparison.OrdinalIgnoreCase)));
+    /// <summary>
+    /// Get the instance that claims this extension explicitly or through "Text files", ignoring the
+    /// "All File Types" catch-all. Used to let a specialist take a file over from the default destination.
+    /// </summary>
+    public UploaderInstance? GetSpecificDestinationForFile(UploaderCategory category, string? fileExtension)
+    {
+        lock (_lock)
+        {
+            var ext = NormalizeFileExtension(fileExtension);
+            if (ext == null)
+            {
+                return null;
+            }
 
-            if (exactMatch != null)
-                return exactMatch;
+            var instances = GetInstancesByCategory(category)
+                .Where(i => i.IsAvailable && !IsAutoProvider(i.ProviderId) && !GetFileTypeRouting(i).AllFileTypes)
+                .ToList();
 
-            // 2. Fallback to "All File Types" instance
-            var allTypesMatch = instances.FirstOrDefault(i => i.IsAvailable && GetFileTypeRouting(i).AllFileTypes);
-
-            return allTypesMatch;
+            return instances.FirstOrDefault(i =>
+                    GetFileTypeRouting(i).FileExtensions.Any(e => e.Equals(ext, StringComparison.OrdinalIgnoreCase))) ??
+                instances.FirstOrDefault(i => GetFileTypeRouting(i).ClaimsAsTextFile(ext));
         }
     }
 
     /// <summary>
     /// Check if a specific file type can be added to an instance in a category.
-    /// Returns false if type is already handled by another instance or if any instance has "All File Types".
+    /// Returns false if another instance already lists that extension. An "All File Types" instance
+    /// does not block it: it stays the catch-all for everything else.
     /// </summary>
     /// <param name="category">Upload category</param>
     /// <param name="excludeInstanceId">Instance ID to exclude from check (when editing existing instance)</param>
@@ -467,22 +482,15 @@ public class InstanceManager
                 return false;
             }
 
-            var otherInstances = _configuration.Instances
-                .Where(i => i.Category == category && i.IsAvailable && !InstanceIdsEqual(i.InstanceId, excludeInstanceId));
-
-            // Cannot add if any available other instance has "All File Types"
-            if (otherInstances.Any(i => GetFileTypeRouting(i).AllFileTypes))
-                return false;
-
-            // Cannot add if file type is already handled by another instance
-            return !otherInstances.Any(i =>
+            return !GetOtherRoutedInstances(category, excludeInstanceId).Any(i =>
+                !GetFileTypeRouting(i).AllFileTypes &&
                 GetFileTypeRouting(i).FileExtensions.Any(e => e.Equals(ext, StringComparison.OrdinalIgnoreCase)));
         }
     }
 
     /// <summary>
     /// Check if an instance can set "All File Types" for its category.
-    /// Returns false if other instances exist in the same category.
+    /// Returns false if another instance is already the catch-all.
     /// </summary>
     /// <param name="category">Upload category</param>
     /// <param name="currentInstanceId">Instance ID requesting "All File Types"</param>
@@ -490,17 +498,13 @@ public class InstanceManager
     {
         lock (_lock)
         {
-            var otherInstances = _configuration.Instances
-                .Where(i => i.Category == category && i.IsAvailable && !InstanceIdsEqual(i.InstanceId, currentInstanceId));
-
-            // Can only set "All File Types" if no other available instances exist in this category
-            return !otherInstances.Any();
+            return !GetOtherRoutedInstances(category, currentInstanceId).Any(i => GetFileTypeRouting(i).AllFileTypes);
         }
     }
 
     /// <summary>
     /// Get file types that are already handled by other instances in a category.
-    /// Used for UI to show which types are unavailable.
+    /// Used for UI to show which types are unavailable. The "All File Types" catch-all blocks nothing.
     /// </summary>
     /// <param name="category">Upload category</param>
     /// <param name="excludeInstanceId">Instance ID to exclude from check</param>
@@ -510,23 +514,17 @@ public class InstanceManager
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            var otherInstances = _configuration.Instances
-                .Where(i => i.Category == category && i.IsAvailable && !InstanceIdsEqual(i.InstanceId, excludeInstanceId));
-
-            foreach (var instance in otherInstances)
+            foreach (var instance in GetOtherRoutedInstances(category, excludeInstanceId))
             {
                 var routing = GetFileTypeRouting(instance);
-
                 if (routing.AllFileTypes)
                 {
-                    result["*"] = instance.DisplayName;
+                    continue;
                 }
-                else
+
+                foreach (var ext in routing.FileExtensions)
                 {
-                    foreach (var ext in routing.FileExtensions)
-                    {
-                        result[ext] = instance.DisplayName;
-                    }
+                    result[ext] = instance.DisplayName;
                 }
             }
 
@@ -542,43 +540,47 @@ public class InstanceManager
     {
         lock (_lock)
         {
-            var otherInstances = _configuration.Instances
-                .Where(i => i.Category == instance.Category && i.IsAvailable && !InstanceIdsEqual(i.InstanceId, instance.InstanceId));
-
+            var otherInstances = GetOtherRoutedInstances(instance.Category, instance.InstanceId).ToList();
             var instanceRouting = GetFileTypeRouting(instance);
 
             if (instanceRouting.AllFileTypes)
             {
-                if (otherInstances.Any())
+                var otherCatchAll = otherInstances.FirstOrDefault(i => GetFileTypeRouting(i).AllFileTypes);
+                return otherCatchAll == null
+                    ? null
+                    : $"Cannot set 'All File Types' - '{otherCatchAll.DisplayName}' already handles all other file types in {instance.Category}";
+            }
+
+            if (instanceRouting.TextFiles)
+            {
+                var otherTextFiles = otherInstances.FirstOrDefault(i =>
+                    !GetFileTypeRouting(i).AllFileTypes && GetFileTypeRouting(i).TextFiles);
+                if (otherTextFiles != null)
                 {
-                    return $"Cannot set 'All File Types' - {otherInstances.Count()} other instance(s) exist in {instance.Category} category";
+                    return $"Text files are already handled by '{otherTextFiles.DisplayName}'";
                 }
             }
-            else
+
+            foreach (var ext in instanceRouting.FileExtensions)
             {
-                // Check for "All File Types" conflicts
-                var allTypesInstance = otherInstances.FirstOrDefault(i => GetFileTypeRouting(i).AllFileTypes);
-                if (allTypesInstance != null)
-                {
-                    return $"Cannot add file types - '{allTypesInstance.DisplayName}' handles all file types in {instance.Category}";
-                }
+                var conflictingInstance = otherInstances.FirstOrDefault(i =>
+                    !GetFileTypeRouting(i).AllFileTypes &&
+                    GetFileTypeRouting(i).FileExtensions.Any(e => e.Equals(ext, StringComparison.OrdinalIgnoreCase)));
 
-                // Check for specific file type conflicts
-                foreach (var ext in instanceRouting.FileExtensions)
+                if (conflictingInstance != null)
                 {
-                    var conflictingInstance = otherInstances.FirstOrDefault(i =>
-                        GetFileTypeRouting(i).FileExtensions.Any(e => e.Equals(ext, StringComparison.OrdinalIgnoreCase)));
-
-                    if (conflictingInstance != null)
-                    {
-                        return $"File type '{ext}' is already handled by '{conflictingInstance.DisplayName}'";
-                    }
+                    return $"File type '{ext}' is already handled by '{conflictingInstance.DisplayName}'";
                 }
             }
 
             return null; // Valid
         }
     }
+
+    private IEnumerable<UploaderInstance> GetOtherRoutedInstances(UploaderCategory category, string? excludeInstanceId) =>
+        _configuration.Instances.Where(i =>
+            i.Category == category && i.IsAvailable && !IsAutoProvider(i.ProviderId) &&
+            !InstanceIdsEqual(i.InstanceId, excludeInstanceId));
 
     #endregion
 

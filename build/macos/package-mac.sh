@@ -1,6 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
+# Builds stay serial (-m:1, BuildInParallel=false) to avoid shared-output races, but the Roslyn
+# compiler server stays on: it only reuses the compiler process, and cold-starting csc for every
+# project roughly doubled build time. The MSBuild server remains off, as before.
+export DOTNET_CLI_USE_MSBUILD_SERVER=0
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 ROOT="$SCRIPT_DIR/../.."
 PROJECT="$ROOT/src/desktop/app/XerahS.App/XerahS.App.csproj"
@@ -35,9 +40,7 @@ restore_project_assets_for_os() {
 
     dotnet restore "$project_path" \
         -p:OS="$os_value" \
-        --disable-build-servers \
         -p:nodeReuse=false \
-        -p:UseSharedCompilation=false \
         -p:BuildInParallel=false \
         -m:1
 }
@@ -62,9 +65,7 @@ restore_scoped_intermediate_assets() {
 
 dotnet_publish_serial() {
     dotnet publish "$@" \
-        --disable-build-servers \
         -p:nodeReuse=false \
-        -p:UseSharedCompilation=false \
         -p:BuildInParallel=false \
         -m:1
 }

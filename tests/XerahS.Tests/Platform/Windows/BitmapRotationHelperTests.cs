@@ -240,7 +240,7 @@ public class BitmapRotationHelperTests
 
     /// <summary>
     /// Pure mapping of DMDO_* integer value to clockwise degrees.
-    /// Mirrors the switch in WindowsModernCaptureService.TryGetDisplaySettingsRotation.
+    /// Mirrors the switch in DxgiOutputEnumerator.TryGetDisplaySettingsRotation.
     /// Both DEVMODE and DXGI define rotation in clockwise degrees from natural orientation.
     /// </summary>
     private static int DmDisplayOrientationToDegreesCw(int dmDisplayOrientation) =>

@@ -261,7 +261,8 @@ public static class MainViewModelHelper
                 DebugHelper.WriteLine($"MainViewModelHelper: Using edited snapshot {imageToUpload.Width}x{imageToUpload.Height} for upload");
             }
 
-            if (imageToUpload == null && viewModel.PreviewImage != null)
+            // A failed rendered export must not silently publish the clean preview.
+            if (imageToUpload == null && getEditedSnapshot == null && !viewModel.HasAnnotations && viewModel.PreviewImage != null)
             {
                 imageToUpload = BitmapConversionHelpers.ToSKBitmap(viewModel.PreviewImage);
                 if (imageToUpload != null)

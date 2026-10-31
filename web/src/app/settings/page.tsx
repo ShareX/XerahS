@@ -3,11 +3,10 @@ import Link from "next/link";
 import { MfaControls } from "@/components/mfa-controls";
 import { ProfileSetup } from "@/components/profile-setup";
 import { SettingsControls } from "@/components/settings-controls";
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
 import { getAccountSummary } from "@/lib/database";
 import { getPublicEnv, getServerEnv } from "@/lib/env";
 import { ApiError } from "@/lib/errors";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +20,7 @@ async function loadSettingsData(): Promise<SettingsData | null> {
     const user = await requireAuthenticatedUser();
     let summary: Awaited<ReturnType<typeof getAccountSummary>> | null = null;
     try {
-      summary = await getAccountSummary(await createSupabaseServerClient());
+      summary = await getAccountSummary(await createUserDatabaseClient());
     } catch {
       // New verified users have no application profile until onboarding completes.
     }

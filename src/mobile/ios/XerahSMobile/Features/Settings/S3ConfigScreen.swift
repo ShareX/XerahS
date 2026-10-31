@@ -23,6 +23,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct S3RegionOption: Identifiable {
     let id: String
@@ -46,10 +47,26 @@ private let s3Regions: [S3RegionOption] = [
 
 struct S3ConfigScreen: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var appState: AppState
     @ObservedObject var viewModel: S3ConfigViewModel
+    @State private var isImportingDestinationConfig = false
+
+    private static let destinationConfigTypes: [UTType] = [
+        UTType("com.xerahs.xerahs.xsdc") ?? .json, .json, .data
+    ]
 
     var body: some View {
         Form {
+            Section {
+                Button {
+                    isImportingDestinationConfig = true
+                } label: {
+                    Label("Import .xsdc File", systemImage: "square.and.arrow.down")
+                }
+            } footer: {
+                Text("Export an Amazon S3 destination from XerahS on desktop as .xsdc, then import it here with its passphrase.")
+            }
+
             if let err = viewModel.validationError {
                 Section {
                     Label(err, systemImage: "exclamationmark.triangle.fill")
@@ -121,6 +138,15 @@ struct S3ConfigScreen: View {
             }
         }
         .onAppear { viewModel.load() }
+        .fileImporter(isPresented: $isImportingDestinationConfig, allowedContentTypes: Self.destinationConfigTypes) { result in
+            if case .success(let url) = result {
+                appState.importDestinationConfig(from: url)
+            }
+        }
+        // The passphrase sheet clears the pending import once it finishes; show what was imported.
+        .onChange(of: appState.pendingDestinationConfigImport == nil) { _, finished in
+            if finished { viewModel.load() }
+        }
     }
 }
 

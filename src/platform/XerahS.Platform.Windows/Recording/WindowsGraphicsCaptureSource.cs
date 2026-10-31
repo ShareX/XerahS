@@ -29,7 +29,7 @@ using WGC = global::Windows.Graphics.Capture;
 using WD3D = global::Windows.Graphics.DirectX.Direct3D11;
 using XerahS.RegionCapture.ScreenRecording;
 using Vortice.Direct3D11;
-using Vortice.DXGI;
+using XerahS.Platform.Windows.Capture.Wgc;
 
 namespace XerahS.Platform.Windows.Recording;
 
@@ -43,6 +43,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
     private WGC.Direct3D11CaptureFramePool? _framePool;
     private WGC.GraphicsCaptureSession? _session;
     private ID3D11Device? _d3dDevice;
+    private ID3D11Texture2D? _stagingTexture;
     private WD3D.IDirect3DDevice? _device;
     private readonly object _lock = new();
     private bool _isCapturing;
@@ -238,8 +239,8 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
             try
             {
                 // Create Direct3D device
-                _d3dDevice = CreateD3DDevice();
-                _device = CreateDirect3DDeviceFromD3D11Device(_d3dDevice);
+                _d3dDevice = Direct3D11Interop.CreateHardwareDevice();
+                _device = Direct3D11Interop.CreateWinRTDevice(_d3dDevice);
 
                 // Create capture item from window handle
                 _captureItem = CaptureHelper.CreateItemForWindow(hwnd);
@@ -292,13 +293,13 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
             {
                 System.Console.WriteLine("[WGC] Creating D3D11 device (on Capture Thread)...");
                 XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "Creating D3D11 device (on Capture Thread)...");
-                _d3dDevice = CreateD3DDevice();
+                _d3dDevice = Direct3D11Interop.CreateHardwareDevice();
                 System.Console.WriteLine("[WGC] ✓ D3D device created successfully");
                 XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "✓ D3D device created successfully");
 
                 System.Console.WriteLine("[WGC] Creating IDirect3DDevice from D3D11...");
                 XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "Creating IDirect3DDevice from D3D11...");
-                _device = CreateDirect3DDeviceFromD3D11Device(_d3dDevice);
+                _device = Direct3D11Interop.CreateWinRTDevice(_d3dDevice);
                 System.Console.WriteLine("[WGC] ✓ IDirect3DDevice created successfully");
                 XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INIT", "✓ IDirect3DDevice created successfully");
 
@@ -407,7 +408,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
         });
     }
 
-    private async void OnFrameArrived(WGC.Direct3D11CaptureFramePool sender, object args)
+    private void OnFrameArrived(WGC.Direct3D11CaptureFramePool sender, object args)
     {
         if (_disposed || !_isCapturing) return;
 
@@ -415,135 +416,80 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
         if ((_frameCount % 30) == 0)
         {
              XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC", $"OnFrameArrived! Frame {_frameCount}");
-             System.Console.WriteLine($"WGC: OnFrameArrived! Frame {_frameCount}");
         }
 
         try
         {
             using var frame = sender.TryGetNextFrame();
-            if (frame == null) return;
+            if (frame?.Surface == null) return;
 
-            // Get Direct3D surface
-            var surface = frame.Surface;
-            if (surface == null) return;
+            // Read the frame back through a reused staging texture. The frame pool raises this event on the
+            // capture thread that owns the device, so the immediate context is never used concurrently.
+            using ID3D11Texture2D texture = Direct3D11Interop.GetTexture(frame.Surface);
+            Texture2DDescription description = texture.Description;
+            ID3D11Texture2D staging = GetStagingTexture(description);
+            ID3D11DeviceContext context = _d3dDevice!.ImmediateContext;
+            context.CopyResource(staging, texture);
 
-            // Use SoftwareBitmap to get access to pixel data (Standard WinRT way, robust to interop issues)
-            using var softwareBitmap = await global::Windows.Graphics.Imaging.SoftwareBitmap.CreateCopyFromSurfaceAsync(surface);
-            
-            int width = softwareBitmap.PixelWidth;
-            int height = softwareBitmap.PixelHeight;
-            uint size = (uint)(width * height * 4);
-            
-            // Create IBuffer
-            var buffer = new global::Windows.Storage.Streams.Buffer(size);
-            buffer.Length = size; // Must set length to receive data
-            softwareBitmap.CopyToBuffer(buffer);
-            
-            // Get pointer via IBufferByteAccess
-            var bufferUnknown = Marshal.GetIUnknownForObject(buffer);
-            IntPtr dataPtr;
-            
+            MappedSubresource mapped = context.Map(staging, 0, MapMode.Read);
             try
             {
-                var iidBytes = typeof(IBufferByteAccess).GUID;
-                if (Marshal.QueryInterface(bufferUnknown, in iidBytes, out var pByteAccess) != 0)
+                var frameData = new FrameData
                 {
-                    throw new InvalidCastException("Failed to query IBufferByteAccess");
-                }
-                
-                try
-                {
-                    var byteAccess = (IBufferByteAccess)Marshal.GetObjectForIUnknown(pByteAccess);
-                    byteAccess.Buffer(out dataPtr);
-                }
-                finally
-                {
-                    Marshal.Release(pByteAccess);
-                }
+                    DataPtr = mapped.DataPointer,
+                    Stride = (int)mapped.RowPitch,
+                    Width = (int)description.Width,
+                    Height = (int)description.Height,
+                    Timestamp = (long)(frame.SystemRelativeTime.TotalMilliseconds * 10000),
+                    Format = PixelFormat.Bgra32
+                };
+
+                // Handlers are synchronous and must finish with the pointer before the texture is unmapped.
+                FrameArrived?.Invoke(this, new FrameArrivedEventArgs(frameData));
             }
             finally
             {
-                Marshal.Release(bufferUnknown);
+                context.Unmap(staging, 0);
             }
-
-            // Calculate stride
-            int stride = width * 4; // Buffer is tightly packed
-            
-            // Create FrameData (DataPtr is valid only because buffer is alive in this scope? Reference counting?)
-            // IBuffer object 'buffer' is managed wrapper. As long as 'buffer' is alive, dataPtr should be valid.
-            // But we didn't use 'using var buffer'. 'buffer' will be GC'd?
-            // No, we should invoke event BEFORE buffer is GC'd.
-            
-            var frameData = new FrameData
-            {
-                DataPtr = dataPtr,
-                Stride = stride,
-                Width = width,
-                Height = height,
-                Timestamp = (long)(frame.SystemRelativeTime.TotalMilliseconds * 10000),
-                Format = PixelFormat.Bgra32
-            };
-
-            // Raise event synchronously so we can use the pointer
-            FrameArrived?.Invoke(this, new FrameArrivedEventArgs(frameData));
-            
-            // End of method, buffer is eligible for GC.
-            // But FrameArrived handlers are synchronous, right?
-            // Yes.
-            // Wait, IBuffer is a COM object.
-            // dataPtr points to its internal memory.
-            // If buffer wrapper is GC'd, the COM object might be released.
-            // I should ensure buffer stays alive.
-            GC.KeepAlive(buffer);
         }
         catch (Exception ex)
         {
             // Log error but don't crash capture thread
-            System.Console.WriteLine($"WGC Error processing captured frame: {ex.Message}");
+            XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC", $"Error processing captured frame: {ex.Message}");
         }
 
         Interlocked.Increment(ref _frameCount);
     }
 
-    private static ID3D11Device CreateD3DDevice()
+    private ID3D11Texture2D GetStagingTexture(Texture2DDescription source)
     {
-        var result = D3D11.D3D11CreateDevice(
-            null,
-            Vortice.Direct3D.DriverType.Hardware,
-            DeviceCreationFlags.BgraSupport,
-            null!,
-            out var device,
-            out _,
-            out _);
-
-        if (result.Failure || device == null)
+        if (_stagingTexture != null)
         {
-            throw new InvalidOperationException($"Failed to create Direct3D11 device: {result}");
+            Texture2DDescription current = _stagingTexture.Description;
+            if (current.Width == source.Width && current.Height == source.Height && current.Format == source.Format)
+            {
+                return _stagingTexture;
+            }
+
+            _stagingTexture.Dispose();
+            _stagingTexture = null;
         }
 
-        return device;
-    }
-
-    private static WD3D.IDirect3DDevice CreateDirect3DDeviceFromD3D11Device(ID3D11Device d3dDevice)
-    {
-        // Use Windows.Graphics.Capture interop to create IDirect3DDevice
-        var dxgiDevice = d3dDevice.QueryInterface<IDXGIDevice>();
-        return CreateDirect3DDeviceFromDXGIDevice(dxgiDevice);
-    }
-
-    [DllImport("d3d11.dll", EntryPoint = "CreateDirect3D11DeviceFromDXGIDevice", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-    private static extern uint CreateDirect3D11DeviceFromDXGIDevice(IntPtr dxgiDevice, out IntPtr graphicsDevice);
-
-    private static WD3D.IDirect3DDevice CreateDirect3DDeviceFromDXGIDevice(IDXGIDevice dxgiDevice)
-    {
-        var hr = CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.NativePointer, out var pUnknown);
-        if (hr != 0)
+        _stagingTexture = _d3dDevice!.CreateTexture2D(new Texture2DDescription
         {
-            throw new COMException("Failed to create Direct3D11 device from DXGI device", (int)hr);
-        }
+            Width = source.Width,
+            Height = source.Height,
+            MipLevels = 1,
+            ArraySize = 1,
+            Format = source.Format,
+            SampleDescription = new Vortice.DXGI.SampleDescription(1, 0),
+            Usage = ResourceUsage.Staging,
+            BindFlags = BindFlags.None,
+            CPUAccessFlags = CpuAccessFlags.Read,
+            MiscFlags = ResourceOptionFlags.None
+        });
 
-        // Use CsWinRT marshaling for proper WinRT type projection
-        return WinRT.MarshalInterface<WD3D.IDirect3DDevice>.FromAbi(pUnknown);
+        return _stagingTexture;
     }
 
     private static IntPtr GetPrimaryMonitorHandle()
@@ -590,6 +536,8 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
                         _session = null;
                         _captureItem = null;
                         _device = null;
+                        _stagingTexture?.Dispose();
+                        _stagingTexture = null;
                         _d3dDevice?.Dispose();
                         _d3dDevice = null;
                         return Task.CompletedTask;
@@ -619,182 +567,3 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
         GC.SuppressFinalize(this);
     }
 }
-
-/// <summary>
-/// COM interface for accessing DXGI interfaces from WinRT Direct3D objects
-/// This interface must be defined manually as it's not provided by the WinRT SDK
-/// </summary>
-[ComImport]
-[Guid("A9B3D012-3DF2-4EE3-B8D1-8695F457D3C1")]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IDirect3DDxgiInterfaceAccess
-{
-    [PreserveSig]
-    int GetInterface([In] ref Guid iid, out IntPtr p);
-}
-
-
-/// <summary>
-/// Helper class for creating GraphicsCaptureItem from HWND/HMONITOR
-/// Uses IGraphicsCaptureItemInterop COM interface (works without Windows App SDK)
-/// </summary>
-internal static class CaptureHelper
-{
-    private static readonly Guid GraphicsCaptureItemGuid = new("79C3F95B-31F7-4EC2-A464-632EF5D30760");
-    
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetDesktopWindow();
-
-    public static WGC.GraphicsCaptureItem? CreateItemForWindow(IntPtr hwnd)
-    {
-        try
-        {
-            var interop = GraphicsCaptureItemInterop.GetInterop();
-            if (interop == null) return null;
-            
-            var guid = GraphicsCaptureItemGuid;
-            var hr = interop.CreateForWindow(hwnd, ref guid, out var itemPtr);
-            if (hr != 0 || itemPtr == IntPtr.Zero) return null;
-            
-            // Use CsWinRT marshaling - properly handles WinRT type projection from COM interface pointer
-            return WinRT.MarshalInterface<WGC.GraphicsCaptureItem>.FromAbi(itemPtr);
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    public static WGC.GraphicsCaptureItem? CreateItemForMonitor(IntPtr hmonitor)
-    {
-        System.Console.WriteLine($"[WGC_INTEROP] CreateItemForMonitor called with handle: 0x{hmonitor:X}");
-        XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INTEROP", $"CreateItemForMonitor called with handle: 0x{hmonitor:X}");
-
-        var interop = GraphicsCaptureItemInterop.GetInterop();
-        if (interop == null)
-        {
-            System.Console.WriteLine("[WGC_INTEROP] ✗ GetInterop() returned null - WGC activation factory not available");
-            XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INTEROP", "✗ GetInterop() returned null - WGC activation factory not available");
-            throw new InvalidOperationException("Failed to get IGraphicsCaptureItemInterop activation factory. Windows.Graphics.Capture may not be supported.");
-        }
-
-        System.Console.WriteLine("[WGC_INTEROP] ✓ Interop factory obtained, calling CreateForMonitor...");
-        XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INTEROP", "✓ Interop factory obtained, calling CreateForMonitor...");
-        var guid = GraphicsCaptureItemGuid;
-        var hr = interop.CreateForMonitor(hmonitor, ref guid, out var itemPtr);
-
-        System.Console.WriteLine($"[WGC_INTEROP] CreateForMonitor returned HRESULT: 0x{hr:X8}, itemPtr=0x{itemPtr:X}");
-        XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INTEROP", $"CreateForMonitor returned HRESULT: 0x{hr:X8}, itemPtr=0x{itemPtr:X}");
-
-        if (hr != 0)
-        {
-            System.Console.WriteLine($"[WGC_INTEROP] ✗ CreateForMonitor FAILED with HRESULT 0x{hr:X8}");
-            XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INTEROP", $"✗ CreateForMonitor FAILED with HRESULT 0x{hr:X8}");
-            throw new InvalidOperationException($"CreateForMonitor failed with HRESULT 0x{hr:X8}. Monitor handle: 0x{hmonitor:X}");
-        }
-
-        if (itemPtr == IntPtr.Zero)
-        {
-            System.Console.WriteLine("[WGC_INTEROP] ✗ CreateForMonitor returned null pointer");
-            XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INTEROP", "✗ CreateForMonitor returned null pointer");
-            throw new InvalidOperationException($"CreateForMonitor returned null for monitor handle 0x{hmonitor:X}");
-        }
-
-        // Use CsWinRT marshaling - properly handles WinRT type projection from COM interface pointer
-        System.Console.WriteLine("[WGC_INTEROP] Marshaling IntPtr to GraphicsCaptureItem using CsWinRT...");
-        XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INTEROP", "Marshaling IntPtr to GraphicsCaptureItem using CsWinRT...");
-        var item = WinRT.MarshalInterface<WGC.GraphicsCaptureItem>.FromAbi(itemPtr);
-        System.Console.WriteLine($"[WGC_INTEROP] ✓ GraphicsCaptureItem created successfully: {item.DisplayName}");
-        XerahS.Common.TroubleshootingHelper.Log("ScreenRecorder", "WGC_INTEROP", $"✓ GraphicsCaptureItem created successfully: {item.DisplayName}");
-        return item;
-    }
-}
-
-/// <summary>
-/// COM interface for creating GraphicsCaptureItem from Win32 handles
-/// This avoids the need for Windows App SDK WindowId/DisplayId types
-/// NOTE: Uses IntPtr for output because WinRT marshaling doesn't work with COM interop attributes
-/// </summary>
-[ComImport]
-[Guid("3628E81B-3CAC-4C60-B7F4-23CE0E0C3356")]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IGraphicsCaptureItemInterop
-{
-    [PreserveSig]
-    int CreateForWindow(
-        IntPtr window,
-        [In] ref Guid riid,
-        out IntPtr result);
-
-    [PreserveSig]
-    int CreateForMonitor(
-        IntPtr monitor,
-        [In] ref Guid riid,
-        out IntPtr result);
-}
-
-/// <summary>
-/// Helper to get the IGraphicsCaptureItemInterop activation factory
-/// </summary>
-internal static class GraphicsCaptureItemInterop
-{
-    private static IGraphicsCaptureItemInterop? _interop;
-
-    public static IGraphicsCaptureItemInterop? GetInterop()
-    {
-        if (_interop != null) return _interop;
-
-        try
-        {
-            // Get the activation factory for GraphicsCaptureItem
-            var hString = WindowsRuntimeMarshal.StringToHString("Windows.Graphics.Capture.GraphicsCaptureItem");
-            var iid = typeof(IGraphicsCaptureItemInterop).GUID;
-            var hr = RoGetActivationFactory(hString, ref iid, out var factory);
-            WindowsRuntimeMarshal.FreeHString(hString);
-            
-            if (hr != 0) return null;
-            
-            _interop = (IGraphicsCaptureItemInterop?)Marshal.GetObjectForIUnknown(factory);
-            Marshal.Release(factory);
-            
-            return _interop;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    [DllImport("combase.dll", PreserveSig = true)]
-    private static extern int RoGetActivationFactory(
-        IntPtr activatableClassId,
-        [In] ref Guid iid,
-        out IntPtr factory);
-}
-
-/// <summary>
-/// Helper for WinRT string marshaling
-/// </summary>
-internal static class WindowsRuntimeMarshal
-{
-    [DllImport("combase.dll", PreserveSig = true)]
-    private static extern int WindowsCreateString(
-        [MarshalAs(UnmanagedType.LPWStr)] string sourceString,
-        int length,
-        out IntPtr hstring);
-
-    [DllImport("combase.dll", PreserveSig = true)]
-    private static extern int WindowsDeleteString(IntPtr hstring);
-
-    public static IntPtr StringToHString(string str)
-    {
-        WindowsCreateString(str, str.Length, out var hstring);
-        return hstring;
-    }
-
-    public static void FreeHString(IntPtr hstring)
-    {
-        WindowsDeleteString(hstring);
-    }
-}
-

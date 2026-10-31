@@ -105,11 +105,34 @@ public class ScreenRecordingSettings
     /// <summary>Microphone device ID for audio capture</summary>
     public string? MicrophoneDeviceId { get; set; }
 
+    /// <summary>Windows WASAPI render endpoint. Null uses the default output.</summary>
+    public string? SystemAudioDeviceId { get; set; }
+
+    public float SystemAudioGain { get; set; } = 1;
+    public float MicrophoneGain { get; set; } = 1;
+
+    /// <summary>Display device name for Screen mode. Null uses the primary display.</summary>
+    public string? DisplayId { get; set; }
+
+    public bool LowLatency { get; set; } = true;
+    public bool HideCaptureBorder { get; set; } = true;
+
     /// <summary>
     /// Capture mouse cursor in recording
     /// Stage 2: Window &amp; Region Parity
     /// </summary>
     public bool ShowCursor { get; set; } = true;
+
+    /// <summary>
+    /// Window mode behaviour for the native Windows recorder.
+    /// Default keeps the established popup-inclusive behaviour.
+    /// </summary>
+    public WindowRecordingMode WindowRecordingMode { get; set; } = WindowRecordingMode.IncludePopups;
+
+    /// <summary>
+    /// Native Windows recorder: fail (and fall back to FFmpeg) instead of using a software H.264 encoder.
+    /// </summary>
+    public bool RequireHardwareEncoder { get; set; } = false;
 
     /// <summary>
     /// Force FFmpeg mode instead of native recording
@@ -230,28 +253,6 @@ public class FrameArrivedEventArgs : EventArgs
     public FrameArrivedEventArgs(FrameData frame)
     {
         Frame = frame;
-    }
-}
-
-/// <summary>
-/// Event arguments for audio buffer notifications (Stage 6)
-/// </summary>
-public class AudioBufferEventArgs : EventArgs
-{
-    /// <summary>Audio data buffer</summary>
-    public byte[] Buffer { get; }
-
-    /// <summary>Number of bytes recorded in this buffer</summary>
-    public int BytesRecorded { get; }
-
-    /// <summary>Timestamp in 100-nanosecond units</summary>
-    public long Timestamp { get; }
-
-    public AudioBufferEventArgs(byte[] buffer, int bytesRecorded, long timestamp)
-    {
-        Buffer = buffer;
-        BytesRecorded = bytesRecorded;
-        Timestamp = timestamp;
     }
 }
 

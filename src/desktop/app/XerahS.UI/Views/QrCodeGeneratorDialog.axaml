@@ -16,13 +16,22 @@
         <Grid ColumnDefinitions="2*,Auto,*" RowDefinitions="Auto,*" RowSpacing="24" ColumnSpacing="16">
 
             <!-- Header -->
-            <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Spacing="4">
-                <TextBlock Text="QR Code Generator" Theme="{StaticResource TitleTextBlockStyle}"/>
-                <TextBlock Text="Enter text or paste from clipboard to generate a QR code."
-                           Theme="{StaticResource CaptionTextBlockStyle}"
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                           TextWrapping="Wrap"/>
-            </StackPanel>
+            <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="QR Code Generator" Theme="{StaticResource TitleTextBlockStyle}"/>
+                    <TextBlock Text="Enter text or paste from clipboard to generate a QR code."
+                               Theme="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+                <!-- The overlay's backdrop is not an obvious way out (e.g. on tiling window managers). -->
+                <Button Grid.Column="1"
+                        Content="Close"
+                        Command="{Binding CloseCommand}"
+                        VerticalAlignment="Top"
+                        MinWidth="88"
+                        AutomationProperties.Name="Close QR Code Generator"/>
+            </Grid>
 
             <!-- Input Area -->
             <Border Grid.Row="1"

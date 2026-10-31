@@ -194,17 +194,21 @@ public sealed class XerahSCloudOAuthCoordinator : IXerahSCloudOAuthCoordinator
         string challenge = Base64UrlEncode(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
         DateTimeOffset expiresAt = _clock.UtcNow.Add(AttemptLifetime);
 
-        Uri authorizationEndpoint = new(_options.OAuthAuthority, "/auth/v1/oauth/authorize");
+        Uri authorizationEndpoint = new(_options.OAuthAuthority, XerahSCloudOptions.AuthorizePath);
         string query = string.Join('&', new Dictionary<string, string>
         {
             ["client_id"] = _options.OAuthClientId,
             ["redirect_uri"] = _options.OAuthRedirectUri.AbsoluteUri,
             ["response_type"] = "code",
-            ["scope"] = "openid email profile",
+            ["scope"] = XerahSCloudOptions.DesktopScopes,
             ["state"] = state,
             ["nonce"] = nonce,
             ["code_challenge"] = challenge,
-            ["code_challenge_method"] = "S256"
+            ["code_challenge_method"] = "S256",
+            // JWT access tokens for the owner API, and always show the consent page:
+            // approving creates the revocable desktop grant.
+            ["resource"] = XerahSCloudOptions.ApiAudience(_options.OAuthAuthority),
+            ["prompt"] = "consent"
         }.Select(pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
 
         var attempt = new XerahSCloudOAuthAttempt(
@@ -329,7 +333,7 @@ public sealed class XerahSCloudOAuthTokenExchange : IXerahSCloudOAuthTokenExchan
             throw new XerahSCloudException("XerahS Cloud OAuth is not configured.");
         }
 
-        Uri tokenEndpoint = new(_options.OAuthAuthority, "/auth/v1/oauth/token");
+        Uri tokenEndpoint = new(_options.OAuthAuthority, XerahSCloudOptions.TokenPath);
         using var request = new HttpRequestMessage(HttpMethod.Post, tokenEndpoint)
         {
             Content = new FormUrlEncodedContent(new Dictionary<string, string>
@@ -338,7 +342,8 @@ public sealed class XerahSCloudOAuthTokenExchange : IXerahSCloudOAuthTokenExchan
                 ["code"] = code,
                 ["client_id"] = _options.OAuthClientId,
                 ["redirect_uri"] = _options.OAuthRedirectUri.AbsoluteUri,
-                ["code_verifier"] = codeVerifier
+                ["code_verifier"] = codeVerifier,
+                ["resource"] = XerahSCloudOptions.ApiAudience(_options.OAuthAuthority)
             })
         };
 
@@ -377,14 +382,15 @@ public sealed class XerahSCloudOAuthTokenExchange : IXerahSCloudOAuthTokenExchan
             throw new XerahSCloudException("XerahS Cloud OAuth is not configured.");
         }
 
-        Uri tokenEndpoint = new(_options.OAuthAuthority, "/auth/v1/oauth/token");
+        Uri tokenEndpoint = new(_options.OAuthAuthority, XerahSCloudOptions.TokenPath);
         using var request = new HttpRequestMessage(HttpMethod.Post, tokenEndpoint)
         {
             Content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 ["grant_type"] = "refresh_token",
                 ["refresh_token"] = refreshToken,
-                ["client_id"] = _options.OAuthClientId
+                ["client_id"] = _options.OAuthClientId,
+                ["resource"] = XerahSCloudOptions.ApiAudience(_options.OAuthAuthority)
             })
         };
 

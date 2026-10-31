@@ -126,6 +126,84 @@ public class EditorCloseConfirmationTests
         }
     }
 
+    [Test]
+    public void AppModal_IsHostedByShell_NotByEditorOverlay()
+    {
+        var viewModel = new MainViewModel(new ImageEditorOptions());
+        var appDialog = new object();
+
+        viewModel.ModalContent = appDialog;
+        viewModel.IsModalOpen = true;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.IsEditorModalOpen, Is.False);
+            Assert.That(viewModel.EditorModalContent, Is.Null);
+            Assert.That(viewModel.ShellModalContent, Is.SameAs(appDialog));
+        });
+    }
+
+    [Test]
+    public void EditorModal_IsHostedByEditorOverlay_NotByShell()
+    {
+        var viewModel = new MainViewModel(new ImageEditorOptions());
+        var dialog = new ConfirmationDialogViewModel(() => { }, () => { }, () => { });
+
+        viewModel.ModalContent = dialog;
+        viewModel.IsModalOpen = true;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.IsEditorModalOpen, Is.True);
+            Assert.That(viewModel.EditorModalContent, Is.SameAs(dialog));
+            Assert.That(viewModel.ShellModalContent, Is.Null);
+        });
+    }
+
+    [AvaloniaTest]
+    public void MainWindow_Shows_Shell_ModalOverlay_For_App_Dialog_While_Editor_Is_Open()
+    {
+        var viewModel = new MainViewModel(new ImageEditorOptions());
+        var taskManager = new FakeDesktopTaskManager();
+        var appDialog = new object();
+        var window = new MainWindow(taskManager)
+        {
+            Width = 1200,
+            Height = 800,
+            DataContext = viewModel
+        };
+
+        try
+        {
+            window.Show();
+            viewModel.ModalContent = appDialog;
+            viewModel.IsModalOpen = true;
+
+            var contentFrame = window.FindControl<ContentControl>("ContentFrame");
+            var overlay = window.FindControl<Grid>("MainWindowModalOverlay");
+            var shellHost = window.FindControl<ContentControl>("ShellModalContentHost");
+            var editor = contentFrame?.Content as EmbeddedEditorView;
+            var editorOverlay = editor?.FindControl<Border>("EditorModalOverlay");
+            var editorHost = editor?.FindControl<ContentControl>("EditorModalContentHost");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(contentFrame?.Content, Is.TypeOf<EmbeddedEditorView>());
+                Assert.That(overlay?.IsVisible, Is.True);
+                Assert.That(shellHost?.Content, Is.SameAs(appDialog));
+                Assert.That(editorOverlay?.IsVisible, Is.False);
+                Assert.That(editorHost?.Content, Is.Null);
+            });
+        }
+        finally
+        {
+            if (window.IsVisible)
+            {
+                window.Close();
+            }
+        }
+    }
+
     [AvaloniaTest]
     public void MainWindow_Shows_Shell_ModalOverlay_For_NonEditor_Content()
     {

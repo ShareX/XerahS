@@ -107,6 +107,7 @@ public class RegionCaptureOptions
     public bool DetectControls { get; set; } = true;
     public bool UseDimming { get; set; } = true;
     public int BackgroundDimStrength { get; set; } = 20;
+    public bool DimAllExceptSelection { get; set; } = false;
     public bool UseCustomInfoText { get; set; } = false;
     public string CustomInfoText { get; set; } = "X: $x, Y: $y$nR: $r, G: $g, B: $b$nHex: $hex";
     public List<SnapSize> SnapSizes { get; set; } = new List<SnapSize>()

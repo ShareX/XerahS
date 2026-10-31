@@ -48,13 +48,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--include",
         action="append",
-        default=[
+        help="Glob pattern(s) to scan instead of the default UI and ImageEditor scopes. Can be provided multiple times.",
+    )
+    args = parser.parse_args()
+    if args.include is None:
+        args.include = [
             "src/desktop/app/XerahS.UI/**/*.axaml",
             "ShareX.ImageEditor/src/ShareX.ImageEditor/Presentation/**/*.axaml",
-        ],
-        help="Glob pattern(s) to scan. Can be provided multiple times.",
-    )
-    return parser.parse_args()
+        ]
+    return args
 
 
 def main() -> int:

@@ -1,13 +1,12 @@
 import { createHmac, randomBytes, randomUUID } from "node:crypto";
 
 import { requireAuthenticatedUser } from "@/lib/auth";
-import { rpc } from "@/lib/database";
+import { rpc, serviceDatabaseClient } from "@/lib/database";
 import { ApiError } from "@/lib/errors";
 import { getServerEnv } from "@/lib/env";
 import { enforceSameOriginMutation } from "@/lib/request";
 import { json } from "@/lib/responses";
 import { handleApi } from "@/lib/route-handler";
-import { createServiceRoleClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,16 +42,12 @@ export async function POST(request: Request) {
     const hashes = codes.map(
       (code) => `\\x${createHmac("sha256", pepper).update(code).digest("hex")}`,
     );
-    await rpc<number>(
-      createServiceRoleClient(),
-      "replace_recovery_code_batch",
-      {
-        p_user_id: user.id,
-        p_batch_id: randomUUID(),
-        p_code_hmacs: hashes,
-        p_pepper_version: 1,
-      },
-    );
+    await rpc<number>(serviceDatabaseClient(), "replace_recovery_code_batch", {
+      p_user_id: user.id,
+      p_batch_id: randomUUID(),
+      p_code_hmacs: hashes,
+      p_pepper_version: 1,
+    });
 
     return json(
       { codes },

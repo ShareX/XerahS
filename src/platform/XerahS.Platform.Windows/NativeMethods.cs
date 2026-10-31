@@ -32,17 +32,6 @@ namespace XerahS.Platform.Windows
     [SupportedOSPlatform("windows")]
     public static partial class NativeMethods
     {
-        [DllImport("winmm.dll", EntryPoint = "timeGetDevCaps")]
-        public static extern uint TimeGetDevCaps(ref TimeCaps ptc, uint cbtc);
-
-        [DllImport("winmm.dll", EntryPoint = "timeBeginPeriod")]
-        public static extern uint TimeBeginPeriod(uint uPeriod);
-
-        [DllImport("winmm.dll", EntryPoint = "timeEndPeriod")]
-        public static extern uint TimeEndPeriod(uint uPeriod);
-
-        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
 
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -69,9 +58,6 @@ namespace XerahS.Platform.Windows
 
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
-
-        [DllImport("user32.dll")]
-        public static extern short GetKeyState(VirtualKeyCode nVirtKey);
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetForegroundWindow();
@@ -152,20 +138,9 @@ namespace XerahS.Platform.Windows
         [DllImport("user32.dll")]
         public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hMod, uint dwThreadId);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool UnhookWindowsHookEx(IntPtr hhk);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
-
 [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 public static extern IntPtr GetModuleHandle(string? lpModuleName);
 
-        public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetDC(IntPtr hWnd);
@@ -206,9 +181,6 @@ public static extern IntPtr GetModuleHandle(string? lpModuleName);
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string? lpszClass, string? lpszWindow);
 
         [DllImport("dwmapi.dll")]
         public static extern int DwmIsCompositionEnabled(out bool pfEnabled);
@@ -255,9 +227,6 @@ public static extern IntPtr GetModuleHandle(string? lpModuleName);
 
         [DllImport("user32.dll")]
         public static extern bool IsZoomed(IntPtr hWnd);
-
-        [DllImport("dwmapi.dll")]
-        public static extern int DwmEnableComposition(DWM_EC uCompositionAction);
 
         public static System.Drawing.Rectangle MaximizedWindowFix(IntPtr handle, System.Drawing.Rectangle rect)
         {
@@ -318,9 +287,6 @@ public static extern IntPtr GetModuleHandle(string? lpModuleName);
         [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
 
-        [DllImport("user32.dll")]
-        private static extern uint GetDpiForWindow(IntPtr hwnd);
-
         /// <summary>
         /// Gets the DPI scale factor for the monitor containing the specified point.
         /// Returns 1.0 if the API call fails or on unsupported OS versions.
@@ -328,30 +294,6 @@ public static extern IntPtr GetModuleHandle(string? lpModuleName);
         /// <param name="x">X coordinate in physical screen pixels</param>
         /// <param name="y">Y coordinate in physical screen pixels</param>
         /// <returns>Scale factor (e.g., 1.0, 1.25, 1.5, 2.0)</returns>
-        public static double GetMonitorScaleFactorFromPoint(int x, int y)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || Environment.OSVersion.Version.Major < 6)
-                return 1.0;
-
-            try
-            {
-                var pt = new POINT { X = x, Y = y };
-                var hMonitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
-                if (hMonitor == IntPtr.Zero)
-                    return 1.0;
-
-                if (GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out _) == 0)
-                {
-                    return dpiX / 96.0;
-                }
-            }
-            catch
-            {
-                // Silently fail on older Windows versions
-            }
-            return 1.0;
-        }
-
         /// <summary>
         /// Gets the DPI scale factor for a specific monitor handle.
         /// Returns 1.0 if the API call fails.
@@ -382,28 +324,6 @@ public static extern IntPtr GetModuleHandle(string? lpModuleName);
         /// </summary>
         /// <param name="hwnd">Window handle</param>
         /// <returns>Scale factor (e.g., 1.0, 1.25, 1.5, 2.0)</returns>
-        public static double GetWindowScaleFactor(IntPtr hwnd)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || hwnd == IntPtr.Zero)
-                return 1.0;
-
-            try
-            {
-                // Try GetDpiForWindow first (Windows 10 1607+)
-                uint dpi = GetDpiForWindow(hwnd);
-                if (dpi > 0)
-                    return dpi / 96.0;
-
-                // Fallback to MonitorFromWindow + GetDpiForMonitor
-                var hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-                return GetMonitorScaleFactor(hMonitor);
-            }
-            catch
-            {
-                return 1.0;
-            }
-        }
-
         /// <summary>
         /// Gets the raw DPI values for a monitor (for troubleshooting/logging).
         /// </summary>
@@ -412,54 +332,7 @@ public static extern IntPtr GetModuleHandle(string? lpModuleName);
         /// <param name="dpiX">Output: Horizontal DPI</param>
         /// <param name="dpiY">Output: Vertical DPI</param>
         /// <returns>True if successful, false otherwise</returns>
-        public static bool TryGetMonitorDpi(int x, int y, out uint dpiX, out uint dpiY)
-        {
-            dpiX = 96;
-            dpiY = 96;
-
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return false;
-
-            try
-            {
-                var pt = new POINT { X = x, Y = y };
-                var hMonitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
-                if (hMonitor == IntPtr.Zero)
-                    return false;
-
-                return GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out dpiX, out dpiY) == 0;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
         #endregion DPI APIs for Troubleshooting
-
-        public static System.Drawing.Icon? GetFileIcon(string filePath, bool isSmallIcon)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return null;
-
-            try
-            {
-                SHFILEINFO shfi = new SHFILEINFO();
-                uint flags = (uint)(SHGFI.Icon | (isSmallIcon ? SHGFI.SmallIcon : SHGFI.LargeIcon));
-
-                SHGetFileInfo(filePath, 0, ref shfi, (uint)Marshal.SizeOf(shfi), flags);
-
-                if (shfi.hIcon == IntPtr.Zero) return null;
-
-                using (var tempIcon = System.Drawing.Icon.FromHandle(shfi.hIcon))
-                {
-                    var icon = (System.Drawing.Icon)tempIcon.Clone();
-                    DestroyIcon(shfi.hIcon);
-                    return icon;
-                }
-            }
-            catch { return null; }
-        }
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -554,54 +427,6 @@ public static extern IntPtr GetModuleHandle(string? lpModuleName);
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct BITMAPV5HEADER
-    {
-        public uint bV5Size;
-        public int bV5Width;
-        public int bV5Height;
-        public ushort bV5Planes;
-        public ushort bV5BitCount;
-        public uint bV5Compression;
-        public uint bV5SizeImage;
-        public int bV5XPelsPerMeter;
-        public int bV5YPelsPerMeter;
-        public uint bV5ClrUsed;
-        public uint bV5ClrImportant;
-        public uint bV5RedMask;
-        public uint bV5GreenMask;
-        public uint bV5BlueMask;
-        public uint bV5AlphaMask;
-        public uint bV5CSType;
-        public IntPtr bV5Endpoints; // CIEXYZTRIPLE
-        public uint bV5GammaRed;
-        public uint bV5GammaGreen;
-        public uint bV5GammaBlue;
-        public uint bV5Intent;
-        public uint bV5ProfileData;
-        public uint bV5ProfileSize;
-        public uint bV5Reserved;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct TimeCaps
-    {
-        public uint wPeriodMin;
-        public uint wPeriodMax;
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    public struct SHFILEINFO
-    {
-        public IntPtr hIcon;
-        public int iIcon;
-        public uint dwAttributes;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-        public string szDisplayName;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
-        public string szTypeName;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
     public struct CURSORINFO
     {
         public int cbSize;
@@ -668,16 +493,6 @@ public static extern IntPtr GetModuleHandle(string? lpModuleName);
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct KBDLLHOOKSTRUCT
-    {
-        public int vkCode;
-        public int scanCode;
-        public int flags;
-        public int time;
-        public IntPtr dwExtraInfo;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
     public struct RECT
     {
         public int Left;
@@ -698,24 +513,4 @@ public static extern IntPtr GetModuleHandle(string? lpModuleName);
         public int Y;
     }
 
-    [Flags]
-    public enum SHGFI : uint
-    {
-        Icon = 0x000000100,
-        DisplayName = 0x000000200,
-        TypeName = 0x000000400,
-        Attributes = 0x000000800,
-        IconLocation = 0x000001000,
-        ExeType = 0x000002000,
-        SysIconIndex = 0x000004000,
-        LinkOverlay = 0x000008000,
-        Selected = 0x000010000,
-        Attr_Specified = 0x000020000,
-        LargeIcon = 0x000000000,
-        SmallIcon = 0x000000001,
-        OpenIcon = 0x000000002,
-        ShellIconSize = 0x000000004,
-        PIDL = 0x000000008,
-        UseFileAttributes = 0x000000010
-    }
 }

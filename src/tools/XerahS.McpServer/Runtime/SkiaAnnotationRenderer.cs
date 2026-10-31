@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json.Nodes;
 using SkiaSharp;
+using XerahS.Core.Services.Privacy;
 
 namespace XerahS.McpServer.Runtime;
 
@@ -207,70 +208,19 @@ internal static class SkiaAnnotationRenderer
         canvas.DrawPath(path, paint);
     }
 
-    private static void ApplyBlur(SKBitmap bitmap, JsonObject parameters)
+    private static void ApplyBlur(SKBitmap bitmap, JsonObject parameters) =>
+        ApplyRedaction(bitmap, parameters, PrivacyRedactionEffect.Blur, ReadFloat(parameters, "radius", 12f));
+
+    private static void ApplyPixelate(SKBitmap bitmap, JsonObject parameters) =>
+        ApplyRedaction(bitmap, parameters, PrivacyRedactionEffect.Pixelate, ReadFloat(parameters, "pixel_size", 10f));
+
+    private static void ApplyRedaction(SKBitmap bitmap, JsonObject parameters, PrivacyRedactionEffect effect, float strength)
     {
         var rect = ClampRect(ReadRect(parameters), bitmap.Width, bitmap.Height);
-        if (rect.Width <= 0 || rect.Height <= 0)
-        {
-            return;
-        }
-
-        using var snapshot = bitmap.Copy();
-        using var image = SKImage.FromBitmap(snapshot);
-        using var subset = image.Subset(SKRectI.Round(rect));
-        using var surface = SKSurface.Create(new SKImageInfo((int)rect.Width, (int)rect.Height));
-        using var paint = new SKPaint
-        {
-            ImageFilter = SKImageFilter.CreateBlur(
-                ReadFloat(parameters, "radius", 12f),
-                ReadFloat(parameters, "radius", 12f)),
-            IsAntialias = true
-        };
-
-        surface.Canvas.Clear(SKColors.Transparent);
-        surface.Canvas.DrawImage(subset, 0, 0, SKSamplingOptions.Default, paint);
-        using var filtered = surface.Snapshot();
-        using var canvas = new SKCanvas(bitmap);
-        canvas.DrawImage(filtered, rect.Left, rect.Top, SKSamplingOptions.Default);
-    }
-
-    private static void ApplyPixelate(SKBitmap bitmap, JsonObject parameters)
-    {
-        var rect = ClampRect(ReadRect(parameters), bitmap.Width, bitmap.Height);
-        if (rect.Width <= 0 || rect.Height <= 0)
-        {
-            return;
-        }
-
-        var pixelSize = Math.Max(2, (int)ReadFloat(parameters, "pixel_size", 10f));
-        var bounds = SKRectI.Round(rect);
-
-        using var snapshot = bitmap.Copy();
-        using var image = SKImage.FromBitmap(snapshot);
-        using var subset = image.Subset(bounds);
-
-        var downscaleWidth = Math.Max(1, bounds.Width / pixelSize);
-        var downscaleHeight = Math.Max(1, bounds.Height / pixelSize);
-
-        using var lowResSurface = SKSurface.Create(new SKImageInfo(downscaleWidth, downscaleHeight));
-        lowResSurface.Canvas.Clear(SKColors.Transparent);
-        lowResSurface.Canvas.DrawImage(
-            subset,
-            new SKRect(0, 0, bounds.Width, bounds.Height),
-            new SKRect(0, 0, downscaleWidth, downscaleHeight),
-            new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None));
-        using var lowRes = lowResSurface.Snapshot();
-
-        using var surface = SKSurface.Create(new SKImageInfo(bounds.Width, bounds.Height));
-        surface.Canvas.Clear(SKColors.Transparent);
-        surface.Canvas.DrawImage(lowRes,
-            new SKRect(0, 0, downscaleWidth, downscaleHeight),
-            new SKRect(0, 0, bounds.Width, bounds.Height),
-            new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None));
-
-        using var output = surface.Snapshot();
-        using var canvas = new SKCanvas(bitmap);
-        canvas.DrawImage(output, rect.Left, rect.Top, SKSamplingOptions.Default);
+        if (rect.Width <= 0 || rect.Height <= 0) return;
+        if (!float.IsFinite(strength)) throw new ArgumentException("Invalid redaction strength.");
+        RegionRedactionRenderer.Apply(bitmap, new SKRectI((int)Math.Floor(rect.Left), (int)Math.Floor(rect.Top),
+            (int)Math.Ceiling(rect.Right), (int)Math.Ceiling(rect.Bottom)), effect, (int)Math.Clamp(strength, 1, 100));
     }
 
     private static void DrawStep(SKCanvas canvas, JsonObject parameters)

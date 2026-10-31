@@ -87,7 +87,7 @@ public sealed class CloudCommandTests
         Assert.Multiple(() =>
         {
             Assert.That(exitCode, Is.EqualTo(0));
-            Assert.That(openedUrl, Does.Contain("/auth/v1/oauth/authorize"));
+            Assert.That(openedUrl, Does.Contain("/api/auth/oauth2/authorize"));
             Assert.That(coordinator.LastCallback, Is.EqualTo(callback));
             Assert.That(client.AccountCalls, Is.EqualTo(1));
         });
@@ -126,7 +126,7 @@ public sealed class CloudCommandTests
         public Uri? LastCallback { get; private set; }
 
         public XerahSCloudOAuthAttempt Begin() => new(
-            new Uri("https://cvnywevwxmajyzhhpvzl.supabase.co/auth/v1/oauth/authorize?client_id=test"),
+            new Uri("https://cloud.xerahs.com/api/auth/oauth2/authorize?client_id=test"),
             "state",
             "nonce",
             "verifier",

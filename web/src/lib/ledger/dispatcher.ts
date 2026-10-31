@@ -2,13 +2,12 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
-import { rpc } from "@/lib/database";
+import { rpc, serviceDatabaseClient } from "@/lib/database";
 import { getServerEnv } from "@/lib/env";
 import { ledgerKey, signLedgerPayload } from "@/lib/ledger/canonical";
 import { FakeLedgerStore } from "@/lib/ledger/fake";
 import { R2LedgerStore } from "@/lib/ledger/r2";
 import type { LedgerOutboxEvent, LedgerStore } from "@/lib/ledger/types";
-import { createServiceRoleClient } from "@/lib/supabase/server";
 
 const fakeStore = new FakeLedgerStore();
 
@@ -73,7 +72,7 @@ function errorCode(error: unknown): string {
 export async function dispatchLedgerBatch(
   limit = 25,
 ): Promise<{ claimed: number; replicated: number; failed: number }> {
-  const service = createServiceRoleClient();
+  const service = serviceDatabaseClient();
   const workerId = randomUUID();
   const claimed = await rpc<ClaimedLedgerEvent[]>(
     service,

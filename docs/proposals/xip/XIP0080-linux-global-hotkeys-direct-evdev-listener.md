@@ -107,6 +107,11 @@ Initial end-to-end implementation lives on the `linux-hotkey-rewrite` branch:
   packaging tool. Setup guide: `docs/linux/global-hotkeys-evdev.md`.
 - Tests: `tests/XerahS.Tests/Platform/Linux/EvdevHotkeyTests.cs`.
 
+- Quick Setup: `src/platform/XerahS.Platform.Linux/Services/QuickSetup/`
+  (`LinuxInputQuickSetupService` implements `IHotkeyAccessSetupService`; the platform
+  hotkey service is a `SwitchableHotkeyService` so a successful grant moves hotkeys to
+  evdev without a restart). Surfaced in Settings > Advanced > Global Hotkeys.
+
 Sandboxed (Flatpak) sessions intentionally retain the portal path because raw
 `/dev/input` access is not granted there.
 

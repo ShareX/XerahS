@@ -168,7 +168,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 
 **Key Services**:
 - **WindowsScreenCaptureService**: GDI+ based capture (fallback)
-- **WindowsModernCaptureService**: Direct3D11/DXGI capture (Windows 8+, hardware-accelerated)
+- **WindowsModernCaptureService**: Direct3D11/DXGI capture (Windows 8+, hardware-accelerated). Backend chain: [WINDOWS_SCREEN_CAPTURE.md](WINDOWS_SCREEN_CAPTURE.md)
 - **WindowsGraphicsCaptureSource**: Windows.Graphics.Capture API (Windows 10 1803+)
 - **MediaFoundationEncoder**: Native H264/H265 encoding via Media Foundation
 - **WindowsHotkeyService**: Win32 global hotkey hooks
@@ -310,7 +310,6 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 - `IHotkeyService` - Global hotkey registration
 - `IClipboardService` - Clipboard operations
 - `IWindowService` - Window management (enumerate, focus)
-- `IRegionCaptureBackend` - Region selector UI contract
 
 **Models**: `HotkeyInfo`, `MonitorInfo`, `CaptureOptions`, `ToastConfig`
 

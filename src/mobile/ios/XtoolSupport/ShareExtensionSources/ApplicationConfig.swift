@@ -1,0 +1,1 @@
+../../XerahSMobile/Core/Domain/ApplicationConfig.swift

@@ -1,5 +1,6 @@
 import { AuthForm } from "@/components/auth-form";
 import { getOptionalAuthenticatedUser } from "@/lib/auth";
+import { getPublicEnv } from "@/lib/env";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -16,9 +17,13 @@ function safeNext(value: string | string[] | undefined): string {
 export default async function AuthPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string | string[] }>;
+  searchParams: Promise<{
+    next?: string | string[];
+    verified?: string | string[];
+  }>;
 }) {
-  const next = safeNext((await searchParams).next);
+  const input = await searchParams;
+  const next = safeNext(input.next);
   if (await getOptionalAuthenticatedUser()) redirect(next);
   return (
     <section className="card auth-card">
@@ -28,7 +33,15 @@ export default async function AuthPage({
         Use your verified email and password. Your gallery requires a completed
         strong-authentication challenge.
       </p>
-      <AuthForm next={next} />
+      {input.verified === "1" && (
+        <p className="status">
+          Your email address is verified. Sign in to continue.
+        </p>
+      )}
+      <AuthForm
+        next={next}
+        passkeysEnabled={getPublicEnv().NEXT_PUBLIC_PASSKEYS_ENABLED}
+      />
     </section>
   );
 }

@@ -50,7 +50,7 @@ public sealed class WaylandPortalSystemService : ISystemService, IDisposable
     {
         _allowNativeFallback = allowNativeFallback;
 
-        if (!allowNativeFallback || WaylandPortalStrategy.IsSupported())
+        if (!allowNativeFallback || LinuxRuntimeEnvironment.Detect().RequiresPortalServices)
         {
             InitializePortal();
         }

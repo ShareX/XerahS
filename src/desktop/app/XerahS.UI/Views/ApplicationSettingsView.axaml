@@ -110,6 +110,9 @@
                                         </Grid>
                                     </Grid>
 
+                                    <TextBlock Text="Release checks ShareX/XerahS. PreRelease checks the selected source; KovaForge/XerahS contains this fork's development builds. Versions and availability can differ between repositories."
+                                               TextWrapping="Wrap" FontSize="12" Opacity="0.8"/>
+
                                     <Grid ColumnDefinitions="Auto, 16, *">
                                         <Button Grid.Column="0"
                                                 Content="{Binding ManualUpdateButtonText}"
@@ -401,6 +404,10 @@
                                 <StackPanel Spacing="16">
                                     <CheckBox IsChecked="{Binding RunAtStartup}" 
                                               Content="Run at system startup" AutomationProperties.Name="Run at Startup"/>
+                                    <CheckBox IsChecked="{Binding NetworkMonitorEnabled}"
+                                              Content="Run Network Monitor in the background"
+                                              ToolTip.Tip="Periodically pings external hosts to monitor connectivity, including at startup. Disabled by default. You can also use Tools > Network Monitor for a temporary session."
+                                              AutomationProperties.Name="Background Network Monitor"/>
                                     <CheckBox IsChecked="{Binding EnableContextMenuIntegration}" 
                                               Content="Add 'Upload with XerahS' to context menu"
                                               IsEnabled="{Binding SupportsContextMenuIntegration}"
@@ -1096,6 +1103,37 @@
                                                   Content="Keep clipboard contents after XerahS exits (Wayland: uses wl-copy)"
                                                   AutomationProperties.Name="Persist Clipboard After Exit"/>
                                         <TextBlock Text="Background workflows (CLI, watch-folder daemon) need wl-clipboard or xclip. The .deb and .rpm packages recommend these tools."
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding IsLinuxPlatform}">
+                            <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True"
+                                        DataContext="{Binding HotkeyDelivery}"
+                                        x:DataType="vm:HotkeyDeliveryViewModel">
+                                <TextBlock Text="Global Hotkeys" FontWeight="SemiBold"/>
+                                <Border BorderThickness="1"
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        CornerRadius="4" Padding="16">
+                                    <StackPanel Spacing="12">
+                                        <TextBlock Text="{Binding BackendName, StringFormat='Delivered by: {0}'}" TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding WarningText}"
+                                                   IsVisible="{Binding ShowWarning}"
+                                                   TextWrapping="Wrap"/>
+                                        <StackPanel Spacing="8" IsVisible="{Binding ShowAccessSetup}">
+                                            <TextBlock Text="{Binding AccessSetupDescription}" TextWrapping="Wrap"/>
+                                            <Button Content="Grant keyboard access"
+                                                    HorizontalAlignment="Left"
+                                                    Command="{Binding GrantKeyboardAccessCommand}"
+                                                    AutomationProperties.Name="Grant Keyboard Access For Global Hotkeys"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding AccessSetupStatus}"
+                                                   IsVisible="{Binding HasAccessSetupStatus}"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                    TextWrapping="Wrap"/>

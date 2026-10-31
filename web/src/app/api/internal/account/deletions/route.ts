@@ -1,11 +1,10 @@
 import { randomUUID } from "node:crypto";
 
-import { rpc } from "@/lib/database";
+import { rpc, serviceDatabaseClient } from "@/lib/database";
 import { requireCronAuthorization } from "@/lib/internal-auth";
 import { json } from "@/lib/responses";
 import { handleApi } from "@/lib/route-handler";
 import { getStripeClient } from "@/lib/stripe";
-import { createServiceRoleClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +36,7 @@ function alreadyMissing(error: unknown): boolean {
 async function processDeletions(request: Request) {
   return handleApi(request, async () => {
     requireCronAuthorization(request);
-    const service = createServiceRoleClient();
+    const service = serviceDatabaseClient();
     const workerId = randomUUID();
     const claimed = await rpc<ClaimedDeletion[]>(
       service,

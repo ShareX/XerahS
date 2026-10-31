@@ -34,14 +34,27 @@ public class DxgiOutputDuplicationPolicyTests
     [Test]
     public void ShouldUseDuplicateOutput1_FalseOnArm64()
     {
-        Assert.That(DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(Architecture.Arm64), Is.False);
-        Assert.That(DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(Architecture.Arm), Is.False);
+        Assert.That(DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(Architecture.Arm64, isHdrOutput: true, failedThisSession: false), Is.False);
+        Assert.That(DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(Architecture.Arm, isHdrOutput: true, failedThisSession: false), Is.False);
     }
 
     [Test]
-    public void ShouldUseDuplicateOutput1_TrueOnIntel()
+    public void ShouldUseDuplicateOutput1_TrueOnIntelHdrOutput()
     {
-        Assert.That(DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(Architecture.X64), Is.True);
-        Assert.That(DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(Architecture.X86), Is.True);
+        Assert.That(DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(Architecture.X64, isHdrOutput: true, failedThisSession: false), Is.True);
+        Assert.That(DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(Architecture.X86, isHdrOutput: true, failedThisSession: false), Is.True);
+    }
+
+    [Test]
+    public void ShouldUseDuplicateOutput1_FalseOnSdrOutput()
+    {
+        // Regression: x64 SDR multi-monitor desktop crashed in DuplicateOutput1 (0.31.3, 2026-09-29 log).
+        Assert.That(DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(Architecture.X64, isHdrOutput: false, failedThisSession: false), Is.False);
+    }
+
+    [Test]
+    public void ShouldUseDuplicateOutput1_FalseAfterFailureThisSession()
+    {
+        Assert.That(DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(Architecture.X64, isHdrOutput: true, failedThisSession: true), Is.False);
     }
 }

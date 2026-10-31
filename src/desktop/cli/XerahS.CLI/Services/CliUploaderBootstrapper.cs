@@ -161,12 +161,20 @@ internal static class CliUploaderBootstrapper
         if (preferred == null) return;
 
         var current = manager.GetDefaultInstance(category);
-        if (current != null && IsUsable(current) && !InstanceManager.IsAutoProvider(current.ProviderId) &&
-            (!IsPreferred(preferred.ProviderId, category) || IsPreferred(current.ProviderId, category))) return;
+        if (!ShouldReplaceDefault(current != null, current != null && IsUsable(current),
+                current != null && InstanceManager.IsAutoProvider(current.ProviderId))) return;
 
         manager.SetDefaultInstance(category, preferred.InstanceId);
         report.Repaired.Add($"Default {category} uploader -> {preferred.DisplayName}");
     }
+
+    /// <summary>
+    /// Only fills a missing, unusable or Auto default. A working default the user chose (for example
+    /// KovaForge Docs for text) is kept; replacing it with the built-in preference silently sent
+    /// uploads to a public paste site.
+    /// </summary>
+    internal static bool ShouldReplaceDefault(bool hasDefault, bool defaultIsUsable, bool defaultIsAuto) =>
+        !hasDefault || !defaultIsUsable || defaultIsAuto;
 
     private static bool IsPreferred(string providerId, UploaderCategory category) => category switch
     {

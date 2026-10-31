@@ -23,30 +23,13 @@
 
 #endregion License Information (GPL v3)
 
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
-using Avalonia.Platform.Storage;
-using XerahS.Common;
-using XerahS.Core;
-using XerahS.Core.Hotkeys;
-using XerahS.UI.Onboarding.ViewModels.Steps;
-using XerahS.UI.ViewModels;
-using XerahS.UI.Views;
-using XerahS.Uploaders.PluginSystem;
 
 namespace XerahS.UI.Onboarding;
 
-/// <summary>
-/// The main onboarding wizard window.
-/// </summary>
 public partial class OnboardingWizardWindow : Window
 {
-    private bool _openSettingsAfterClose;
-    private bool _takeFirstScreenshotAfterClose;
-
     public OnboardingWizardViewModel ViewModel { get; }
 
     public OnboardingWizardWindow()
@@ -54,8 +37,6 @@ public partial class OnboardingWizardWindow : Window
         ViewModel = new OnboardingWizardViewModel();
         InitializeComponent();
         DataContext = ViewModel;
-
-        SetupStepCallbacks();
     }
 
     private void InitializeComponent()
@@ -63,191 +44,18 @@ public partial class OnboardingWizardWindow : Window
         AvaloniaXamlLoader.Load(this);
     }
 
-    private T? GetStep<T>() where T : StepViewModelBase =>
-        ViewModel.Steps.OfType<T>().FirstOrDefault();
-
-    private void SetupStepCallbacks()
-    {
-        if (GetStep<SaveLocationStepViewModel>() is { } saveStep)
-        {
-            saveStep.BrowseFolderCallback = PickFolderAsync;
-        }
-
-        if (GetStep<HotkeyStepViewModel>() is { } hotkeyStep)
-        {
-            hotkeyStep.TestCaptureCallback = ExecuteRegionCaptureAsync;
-        }
-
-        if (GetStep<UploadStepViewModel>() is { } uploadStep)
-        {
-            uploadStep.ConfigureUploaderCallback = ConfigureUploaderAsync;
-        }
-
-        if (GetStep<CompleteStepViewModel>() is { } completeStep)
-        {
-            completeStep.TakeFirstScreenshotCallback = async () =>
-            {
-                try
-                {
-                    DebugHelper.WriteLine("[Onboarding] Take first screenshot requested");
-                    _takeFirstScreenshotAfterClose = true;
-                    await ViewModel.CompleteAsync();
-                }
-                catch (Exception ex)
-                {
-                    DebugHelper.WriteException(ex, "[Onboarding] Failed to take first screenshot");
-                }
-            };
-
-            completeStep.OpenSettingsCallback = async () =>
-            {
-                try
-                {
-                    DebugHelper.WriteLine("[Onboarding] Open settings requested");
-                    _openSettingsAfterClose = true;
-                    await ViewModel.CompleteAsync();
-                }
-                catch (Exception ex)
-                {
-                    DebugHelper.WriteException(ex, "[Onboarding] Failed to open settings");
-                }
-            };
-        }
-    }
-
-    private async Task<string?> PickFolderAsync()
-    {
-        IStorageProvider? storageProvider = StorageProvider;
-        if (storageProvider == null)
-        {
-            return null;
-        }
-
-        IReadOnlyList<IStorageFolder> folders = await storageProvider.OpenFolderPickerAsync(
-            new FolderPickerOpenOptions
-            {
-                Title = "Select Screenshots Folder",
-                AllowMultiple = false,
-            });
-
-        if (folders.Count == 0)
-        {
-            return null;
-        }
-
-        try
-        {
-            return folders[0].TryGetLocalPath();
-        }
-        catch (Exception ex)
-        {
-            DebugHelper.WriteException(ex, "[Onboarding] Failed to resolve selected folder path");
-            return null;
-        }
-    }
-
-    private async Task ConfigureUploaderAsync(UploaderOption option)
-    {
-        UploaderInstance instance = OnboardingFileUploaderHelper.EnsureFileUploaderInstance(option.Id);
-        UploaderInstanceViewModel instanceViewModel = new(instance);
-
-        object configView = instanceViewModel.ConfigView ?? new TextBlock
-        {
-            Text = "This file uploader does not expose a configuration view.",
-            TextWrapping = TextWrapping.Wrap
-        };
-
-        OnboardingUploaderConfigDialogViewModel dialogViewModel = new(instanceViewModel.DisplayName, configView);
-        OnboardingUploaderConfigDialog dialog = new()
-        {
-            DataContext = dialogViewModel
-        };
-
-        dialogViewModel.CloseRequested = dialog.Close;
-        
-        {
-            var closed = new TaskCompletionSource();
-            dialog.Closed += (_, _) => closed.TrySetResult();
-            dialog.Show(this);
-            await closed.Task;
-        }
-
-
-        OnboardingFileUploaderHelper.EnsureFileUploaderInstances(
-            option.Id,
-            instance.SettingsJson,
-            updateExistingSupportedCategories: true);
-    }
-
-    private async Task ExecuteRegionCaptureAsync()
-    {
-        WorkflowSettings workflow = GetRegionCaptureWorkflow();
-
-        WindowState previousWindowState = WindowState;
-        bool wasVisible = IsVisible;
-
-        try
-        {
-            if (wasVisible)
-            {
-                WindowState = WindowState.Minimized;
-                await Task.Delay(150);
-            }
-
-            await XerahS.Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id, hideMainWindow: true);
-        }
-        finally
-        {
-            if (wasVisible)
-            {
-                WindowState = previousWindowState;
-                Activate();
-            }
-        }
-    }
-
-    private static WorkflowSettings GetRegionCaptureWorkflow()
-    {
-        WorkflowSettings? workflow = null;
-
-        if (Application.Current is App app)
-        {
-            workflow = app.WorkflowManager?.Workflows.FirstOrDefault(w => w.Job == WorkflowType.RectangleRegion);
-        }
-
-        workflow ??= SettingsManager.GetFirstWorkflow(WorkflowType.RectangleRegion);
-        workflow ??= new WorkflowSettings(WorkflowType.RectangleRegion, new XerahS.Platform.Abstractions.HotkeyInfo());
-        workflow.TaskSettings.Job = WorkflowType.RectangleRegion;
-        workflow.EnsureId();
-
-        return workflow;
-    }
-
-    private void OnOnboardingHotkeyChanged(object? sender, EventArgs e)
-    {
-        if (sender is Control { DataContext: HotkeyItemViewModel hotkeyItem })
-        {
-            hotkeyItem.Refresh();
-        }
-
-        if (ViewModel.CurrentStep is HotkeyStepViewModel hotkeyStep)
-        {
-            hotkeyStep.RefreshFromHotkeyItems();
-        }
-    }
-
     /// <summary>
-    /// Shows the wizard as a modal dialog and returns the result.
+    /// Shows the wizard over <paramref name="owner"/> and returns once it closes.
     /// </summary>
     public async Task<OnboardingResult> ShowDialogAsync(Window owner)
     {
         Task<OnboardingResult> completionTask = ViewModel.CompletionTask;
-        _ = completionTask.ContinueWith(task =>
+        _ = completionTask.ContinueWith(_ =>
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(Close);
         }, TaskScheduler.Default);
 
-        Closing += (sender, e) =>
+        Closing += (_, _) =>
         {
             if (!ViewModel.CompletionTask.IsCompleted)
             {
@@ -255,26 +63,10 @@ public partial class OnboardingWizardWindow : Window
             }
         };
 
-        
-        {
-            var closed = new TaskCompletionSource();
-            Closed += (_, _) => closed.TrySetResult();
-            Show(owner);
-            await closed.Task;
-        }
-
-
-        if (_takeFirstScreenshotAfterClose)
-        {
-            await ExecuteRegionCaptureAsync();
-        }
-
-        if (_openSettingsAfterClose &&
-            Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop &&
-            desktop.MainWindow is MainWindow mainWindow)
-        {
-            mainWindow.NavigateToSettings();
-        }
+        TaskCompletionSource closed = new();
+        Closed += (_, _) => closed.TrySetResult();
+        Show(owner);
+        await closed.Task;
 
         return await completionTask;
     }

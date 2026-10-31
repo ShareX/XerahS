@@ -54,10 +54,15 @@ internal sealed record GStreamerPluginAdvice(
     public bool HasMissing => MissingElements.Count > 0;
 }
 
+/// <summary>What the user is told about a recording's encoder path, if anything.</summary>
+internal sealed record RecordingEncoderNotice(string Title, string Text, bool DownloadFFmpeg);
+
 /// <summary>
-/// Works out which GStreamer elements are missing for a recording codec, maps them to the host
-/// distribution's package names, and tells the user once per session (XerahS then records via
-/// the FFmpeg encoding fallback, so recording still works in the meantime).
+/// Works out which GStreamer elements are missing for a recording codec and decides what, if
+/// anything, the user needs to hear. Nothing here ever asks for sudo: GStreamer only has to
+/// capture (pipewiresrc ships with PipeWire) and FFmpeg does the encoding. When no usable FFmpeg
+/// encoder exists, XerahS downloads a static FFmpeg into the user's own tools folder.
+/// Package names per distribution are still worked out for the debug log (support).
 /// </summary>
 internal static class GStreamerPluginAdvisor
 {
@@ -161,55 +166,85 @@ internal static class GStreamerPluginAdvisor
     }
 
     /// <summary>
-    /// Tells the user (once per app session) which plugins to install. Clicking the toast copies
-    /// the install command.
+    /// What to tell the user. Null when recording works as intended (FFmpeg encoding, or native
+    /// GStreamer encoders), or when nothing the user can do without admin rights would help.
     /// </summary>
-    internal static void Notify(GStreamerPluginAdvice advice, bool usedFfmpegFallback)
+    internal static RecordingEncoderNotice? BuildNotice(bool usedFfmpegFallback, bool hasUsableFFmpegEncoder, bool userFFmpegAlreadyDownloaded)
     {
-        if (!advice.HasMissing || Interlocked.Exchange(ref _notified, 1) == 1)
+        if (usedFfmpegFallback || hasUsableFFmpegEncoder || userFFmpegAlreadyDownloaded)
+        {
+            return null;
+        }
+
+        return new RecordingEncoderNotice(
+            "Getting FFmpeg for screen recording",
+            "This recording uses a basic fallback encoder because no FFmpeg with H.264 or VP9 was found. " +
+            "XerahS is downloading FFmpeg into its own tools folder (one time, about 150 MB, no administrator " +
+            "rights needed). Your next recording will use it.",
+            DownloadFFmpeg: true);
+    }
+
+    /// <summary>
+    /// Logs the missing GStreamer elements (with the host's package names, for support) and, when
+    /// recording is degraded, fetches FFmpeg in the background. At most once per app session.
+    /// </summary>
+    internal static void Notify(GStreamerPluginAdvice advice, bool usedFfmpegFallback, bool hasUsableFFmpegEncoder)
+    {
+        if (advice.HasMissing)
+        {
+            string packages = advice.MissingPackages.Count > 0 ? $" (packages: {string.Join(' ', advice.MissingPackages)})" : string.Empty;
+            DebugHelper.WriteLine(
+                $"[GStreamerPluginAdvisor] GStreamer lacks {string.Join(", ", advice.MissingElements)} on {advice.HostName}{packages}; " +
+                (usedFfmpegFallback ? "FFmpeg encodes instead." : "using the fallback path."));
+        }
+
+        bool userFFmpegPresent = File.Exists(Path.Combine(PathsManager.ToolsArchitectureFolder, "ffmpeg"));
+        RecordingEncoderNotice? notice = BuildNotice(usedFfmpegFallback, hasUsableFFmpegEncoder, userFFmpegPresent);
+        if (notice == null || Interlocked.Exchange(ref _notified, 1) == 1)
         {
             return;
         }
 
-        string lead = usedFfmpegFallback
-            ? "Recording with FFmpeg encoding because GStreamer is missing"
-            : "GStreamer is missing";
-        string text = $"{lead} {string.Join(", ", advice.MissingElements)} on {advice.HostName}.";
-        if (advice.InstallCommand != null)
-        {
-            text += $"\n\nInstall: {advice.InstallCommand}\n(click to copy)";
-        }
-        else if (advice.MissingPackages.Count > 0)
-        {
-            text += $"\n\nPackages: {string.Join(' ', advice.MissingPackages)}";
-        }
+        DebugHelper.WriteLine("[GStreamerPluginAdvisor] " + notice.Text);
+        ShowToast(notice.Title, notice.Text);
 
-        if (advice.Note != null)
+        if (notice.DownloadFFmpeg)
         {
-            text += "\n" + advice.Note;
+            _ = Task.Run(async () =>
+            {
+                FFmpegDownloadResult result = await FFmpegDownloader.DownloadLatestToToolsAsync().ConfigureAwait(false);
+                DebugHelper.WriteLine(result.Success
+                    ? $"[GStreamerPluginAdvisor] FFmpeg downloaded to {result.FFmpegPath}"
+                    : $"[GStreamerPluginAdvisor] FFmpeg download failed: {result.ErrorMessage}");
+                ShowToast(
+                    result.Success ? "FFmpeg is ready" : "FFmpeg download failed",
+                    result.Success
+                        ? "Your next screen recording will use FFmpeg."
+                        : $"{result.ErrorMessage} You can retry from the recording's Video Settings (Download FFmpeg).");
+            });
         }
+    }
 
-        DebugHelper.WriteLine("[GStreamerPluginAdvisor] " + text.Replace('\n', ' '));
-
+    private static void ShowToast(string title, string text)
+    {
         try
         {
             if (PlatformServices.IsToastServiceInitialized)
             {
                 PlatformServices.Toast.ShowToast(new ToastConfig
                 {
-                    Title = "GStreamer plugins missing",
+                    Title = title,
                     Text = text,
-                    URL = advice.InstallCommand,
-                    LeftClickAction = advice.InstallCommand != null ? ToastClickAction.CopyUrl : ToastClickAction.CloseNotification,
-                    Duration = 12f,
-                    Size = new SizeI(560, 220),
+                    LeftClickAction = ToastClickAction.CloseNotification,
+                    Duration = 10f,
+                    Size = new SizeI(560, 180),
                     AutoHide = true,
                 });
             }
         }
         catch (Exception ex)
         {
-            DebugHelper.WriteException(ex, "Could not show the GStreamer plugin notice");
+            DebugHelper.WriteException(ex, "Could not show the recording notice");
         }
     }
 }

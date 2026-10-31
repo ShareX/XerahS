@@ -7634,3 +7634,913 @@ M build/linux/aur/xerahs-git/PKGBUILD
 - Build/test: n/a (no code change this tick; upstream merges are infrastructure)
 - Commit: <filled at Step 7b commit time>
 - Follow-up: producer xerahs-review (nadia-daily) repopulates next_candidates on its 6h producer tick when clawpatch emits fresh findings. Preserved stashes (ModalOpenService teammate WIP + WaylandPortalHotkeyService app-id passthrough) are not in next_candidates and not auto-applied.
+
+### 2026-09-29 16:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: Step 5a categoriser found zero real-bug candidates and zero pivots; queue remains 0. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries.
+- Status: no-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change)
+- Commit: see Step 7b commit below
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Step 3 upstream merge non-negotiable: fetched upstream/develop (9712850d, v0.31.4 + v0.32.0 Linux hotkey) and fast-forwarded local; declan/develop had advanced in parallel (push rejection per v1.1.26), merged with --no-ff to preserve audit trail.
+
+### 2026-09-30 00:05 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD c039113c == declan/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD c039113c == declan/develop c039113c (already up to date); origin/develop 46c1ac1f is 24 commits behind. Submodule ShareX.ImageEditor clean at d7c027fa9b92 (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule so single-remote sync verified). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 102 -> 103 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.16 deferred-file cleanup triggered because there are no deferred files; no Step 10 blockers hit).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: see Step 7b commit below
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+
+### 2026-09-30 08:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD b90fa0a7 (2 commits ahead of declan/develop 3568914e). Step 2 pushed 3568914e..b90fa0a7 to declan/develop ([v0.32.0] Neon schema + Better Auth). After that push HEAD == declan/develop == b90fa0a7. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: untracked web/skills-lock.json only (left unstaged). No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 103 -> 104 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-09-30 16:08 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 9426c905 == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 9426c905 == declan/develop 9426c905 (already up to date); origin/develop 9426c905 equal after fetch. Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: untracked web/skills-lock.json only (left unstaged, prior-tick precedent). No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 104 -> 105 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-01 00:09 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD fc681561 (v0.32.3) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD fc681561 == declan/develop fc681561 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 105 -> 106 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-01 18:41 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 0322feda (v0.32.3) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 0322feda == declan/develop 0322feda (already up to date); origin/develop advanced fc681561..0322feda on fetch and now equals HEAD. Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 106 -> 107 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-02 00:09 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 1283e4b9 (v0.32.3) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 1283e4b9 == declan/develop 1283e4b9 (already up to date); origin/develop equal after fetch. Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 107 -> 108 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-02 08:13 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 293b1e24 (v0.32.3) == declan/develop. origin/develop is 1283e4b9 (ahead-of-origin by 1 empty-queue audit from prior tick; expected). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 108 -> 109 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-02 16:09 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD f0ccae03 (v0.32.3) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD f0ccae03 == declan/develop f0ccae03 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 109 -> 110 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-03 00:13 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD a4c6dc43 (v0.32.3) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD a4c6dc43 == declan/develop a4c6dc43 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 110 -> 111 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-03 08:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 8048507f (v0.32.3) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 8048507f == declan/develop 8048507f (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 111 -> 112 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-03 16:09 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 44257a94 (v0.32.4) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 44257a94 == declan/develop 44257a94 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 112 -> 113 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-04 00:10 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 4a830ac3 (v0.32.4) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 4a830ac3 == declan/develop 4a830ac3 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 113 -> 114 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-04 08:05 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 41cfd3be (v0.32.4) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 41cfd3be == declan/develop 41cfd3be (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 114 -> 115 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+### 2026-10-04 16:08 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD b88df52a (v0.32.5) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD b88df52a == declan/develop b88df52a (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 115 -> 116 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-05 00:09 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 228b3922 (v0.32.5) == declan/develop. origin/develop is b88df52a (ahead-of-origin by 1 empty-queue audit from prior tick; expected). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 228b3922 == declan/develop 228b3922 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 116 -> 117 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-05 08:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 4c200040 (v0.32.5) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 4c200040 == declan/develop 4c200040 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 117 -> 118 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-05 16:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 584bceda (v0.32.5) == declan/develop == origin/develop. Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, no merge needed). Fork sync: HEAD 584bceda == declan/develop 584bceda (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 118 -> 119 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-06 00:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with local HEAD f1be20d3 (v0.32.6) one commit ahead of declan/develop 3157103f; Step 2 pushed f1be20d3 to declan/develop (never force). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, left-right 68 0, no merge needed). Fork sync: after push, HEAD f1be20d3 == declan/develop f1be20d3. origin/develop remains at 3157103f (per-agent remote is the push target; not a blocker). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree porcelain: empty. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 119 -> 120 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-06 08:05 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD af55192b (v0.32.6) == declan/develop af55192b. origin/develop is also at af55192b after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD af55192b == declan/develop af55192b (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261006-080549.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 120 -> 121 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-06 16:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD e011b311 (v0.32.6) == declan/develop e011b311. origin/develop fetched this tick from af55192b to e011b311 (caught up with local). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, 70 KovaForge commits ahead, no merge needed). Fork sync: HEAD e011b311 == declan/develop e011b311 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261006-160644.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 121 -> 122 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-07 00:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD bb418b2d (v0.32.6) == declan/develop bb418b2d. origin/develop is also at bb418b2d after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD bb418b2d == declan/develop bb418b2d (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261007-000633.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 122 -> 123 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.35, no efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch this tick)
+
+### 2026-10-07 08:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 9d50aac0 (v0.32.6) == declan/develop 9d50aac0. origin/develop is also at 9d50aac0 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD 9d50aac0 == declan/develop 9d50aac0 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261007-080630.patch. Linux project + tests Release build succeeded (0/0); filtered WaylandRecordingFallbackTests aborted because testhost requires Microsoft.AspNetCore.App 10.0 and this omarchy host only has Microsoft.NETCore.App (DOTNET_ROOT overlay does not satisfy testhost). No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 123 -> 124 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement claimed in this XerahS audit commit; testhost AspNetCore gap is recorded in Follow-up and Step 10 (skills repo, separate).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: Linux + tests Release build succeeded (0 warnings / 0 errors). Filtered WaylandRecordingFallbackTests aborted: testhost requires Microsoft.AspNetCore.App 10.0 (host only has Microsoft.NETCore.App). Logs: /tmp/xerahs-bugfix/build-20261007-080630.log, /tmp/xerahs-bugfix/test-build-20261007-080630.log, /tmp/xerahs-bugfix/test-20261007-080630.log
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.35 (no patch in this XerahS commit)
+
+### 2026-10-07 16:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD fea75179 (v0.32.6) == declan/develop fea75179. origin/develop is also at fea75179 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD fea75179 == declan/develop fea75179 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261007-160651.patch. Linux project + tests Release build succeeded (0/0); testhost still requires Microsoft.AspNetCore.App 10.0 and this omarchy host only has Microsoft.NETCore.App (DOTNET_ROOT overlay does not satisfy testhost; no test run this tick). No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 124 -> 125 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: Linux + tests Release build succeeded (0 warnings / 0 errors). Testhost not run: Microsoft.AspNetCore.App 10.0 missing on host (Microsoft.NETCore.App only). Logs: /tmp/xerahs-bugfix/build-20261007-160651.log, /tmp/xerahs-bugfix/test-build-20261007-160651.log
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-08 00:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD dfd632c7 (v0.32.6) == declan/develop dfd632c7. origin/develop is also at dfd632c7 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD dfd632c7 == declan/develop dfd632c7 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261008-000628.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 125 -> 126 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-08 08:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 28639a8e (v0.32.6) == declan/develop 28639a8e. origin/develop is also at 28639a8e after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD 28639a8e == declan/develop 28639a8e (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261008-080700.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 126 -> 127 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-08 16:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 37b252b3 (v0.32.6) == declan/develop 37b252b3. origin/develop is also at 37b252b3 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD 37b252b3 == declan/develop 37b252b3 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261008-160655.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 127 -> 128 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-09 00:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 9c66eaaf (v0.32.6) == declan/develop 9c66eaaf. origin/develop is also at 9c66eaaf after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, 77 KovaForge commits ahead, no merge needed). Fork sync: HEAD 9c66eaaf == declan/develop 9c66eaaf (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree has preserved uncommitted Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests); not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261009-000658.patch. No deferred-last-runs files. No new stashes; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 128 -> 129 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-09 08:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 6a1f8816 (v0.32.6) == declan/develop 6a1f8816. origin/develop is also at 6a1f8816 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD 6a1f8816 == declan/develop 6a1f8816 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests) was stashed for this tick as wip-cron-20261009-000655-declan-preserving-FFmpegEncodingBridge-WaylandRecordingFallbackTests and restored after the audit commit; not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261009-000655.patch. No deferred-last-runs files. Preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 129 -> 130 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-09 16:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD af1be7f0 (v0.32.6) == declan/develop af1be7f0. origin/develop is also at af1be7f0 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, 79 KovaForge commits ahead, no merge needed). Fork sync: HEAD af1be7f0 == declan/develop af1be7f0 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9b (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests) was stashed for this tick as wip-preserved-20261009T080654Z-declan-preserving-2-file-WIP-I420-RawWidth and restored after the audit commit; not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261009T080654Z.patch. No deferred-last-runs files. Preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 130 -> 131 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-10 00:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 190a391c (v0.32.6) == declan/develop 190a391c. origin/develop is also at 190a391c after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, 80 KovaForge commits ahead, no merge needed). Fork sync: HEAD 190a391c == declan/develop 190a391c (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests) was stashed for this tick as xerahs-bugfix-20261009T160712Z-pre-sync-wip-ffmpeg-wayland and restored after the audit commit; not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261009T160712Z.patch. No deferred-last-runs files. Preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 131 -> 132 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-10 08:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 7ee5fcc3 (v0.32.6) == declan/develop 7ee5fcc3. origin/develop is also at 7ee5fcc3 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, 81 KovaForge commits ahead, no merge needed). Fork sync: HEAD 7ee5fcc3 == declan/develop 7ee5fcc3 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests) was stashed for this tick as xerahs-bugfix 20261010T000702Z preserve-wip FFmpegEncodingBridge I420 and restored after the audit commit; not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261010T000702Z.patch. No deferred-last-runs files. Preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 132 -> 133 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-10 16:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD c4455992 (v0.32.6) == declan/develop c4455992. origin/develop is also at c4455992 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, 82 KovaForge commits ahead, no merge needed). Fork sync: HEAD c4455992 == declan/develop c4455992 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree Wayland I420 stride WIP (FFmpegEncodingBridge.cs RawWidth + WaylandRecordingFallbackTests) was stashed for this tick as wip-preserved-20261010-160759-declan-preserving-2-file-I420-WIP-during-empty-queue-audit and restored after the audit commit; not staged, not a queue pick. Patch saved at /tmp/xerahs-bugfix/wip-wayland-20261010T160759Z.patch. No deferred-last-runs files. Preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs 133 -> 134 rows (+1 vs HEAD, within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Uncommitted Wayland I420 RawWidth WIP remains in the working tree (not a queue pick). Stash {wip-preserved-20260922} remains for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-12 08:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 6cdd03ca0 (v0.33.1) == declan/develop 6cdd03ca0. origin/develop is also at 6cdd03ca0 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d2 and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD 6cdd03ca0 == declan/develop 6cdd03ca0 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9 (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree clean; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. recently_pivoted 48/200. last_runs +1 vs HEAD (within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Preserved cross-tick stashes remain for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-12 16:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_tracker.md, docs/reports/hourly_review_state.json
+- Findings: Step 5a categoriser found zero candidates; queue 0 -> 0. Tick started with HEAD 401701a7 (v0.33.1) == declan/develop 401701a7. origin/develop is at 8f9a6bb4 after the origin fetch this tick (no lag). Step 3 fetched upstream/develop 9712850d2 and confirmed it is already an ancestor of HEAD (merge-base == upstream, 0 commits behind, no merge needed). Fork sync: HEAD 401701a7 == declan/develop 401701a7 (already up to date). Submodule ShareX.ImageEditor clean at d7c027fa9 (HEAD == origin/develop inside submodule; no upstream remote configured inside submodule). Working tree clean; preserved cross-tick stashes (wip-preserved-20260922 + xerahs-bugfix-WIP-WaylandPortalHotkeyService) untouched. No deferred-last-runs files. recently_pivoted 48/200. last_runs +1 vs HEAD (within XIP0077 +0/+1 cap). No code change this tick; no pivot to drain. No skill improvement this run (v1.1.36, no new efficiency blockers).
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Producer (xerahs-review) is up to date and recently_pivoted holds 48 entries. Preserved cross-tick stashes remain for human review per v1.1.35 pitfall. Host needs aspnet-runtime before testhost can run (sudo pacman -S aspnet-runtime); DOTNET_ROOT overlay does not satisfy testhost.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-13 00:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop (01f059fb). upstream/develop (9712850d) already ancestor of HEAD. ShareX.ImageEditor clean (d7c027fa9 == origin/develop). recently_pivoted FIFO at 48 / 200.
+- Status: Pivot (no-op)
+- Build/test: n/a (no code change; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires `sudo pacman -S aspnet-runtime`)
+- Commit: none (drain only)
+- Follow-up: do not re-queue unless producer ingest adds new candidates. Preserved stashes (xerahs-bugfix-WIP-WaylandPortalHotkeyService + wip-preserved-20260922 ModalOpenService) remain for human review.
+### 2026-10-13 08:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Worktree was on stale detached HEAD (cf077379); reset to declan/develop (67dea62b). Fork sync HEAD == declan/develop (67dea62b). upstream/develop (9712850d) already ancestor of HEAD. ShareX.ImageEditor clean (d7c027fa9 == origin/develop). recently_pivoted FIFO at 48 / 200. last_runs 137 -> 138 (+1 audit row).
+- Status: Pivot (no-op)
+- Build/test: n/a (no code change; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires `sudo pacman -S aspnet-runtime`)
+- Commit: see Step 7b tracker commit
+
+### 2026-10-13 16:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: (none — no code change)
+- Findings: Step 5a categoriser found zero candidates in next_candidates; queue 0 -> 0. Empty-queue audit tick.
+- Status: No-op
+- Build/test: n/a
+- Commit: PENDING (set after push)
+- Follow-up: do not re-queue unless producer ingest adds new candidates; xerahs-review (producer) has not published new items this tick
+### 2026-10-14 00:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Worktree HEAD was detached at a1453779 (same commit as declan/develop) on cron start; reattached to refs/heads/develop. Fork sync HEAD == declan/develop == origin/develop (a1453779). upstream/develop (9712850d) is ancestor of HEAD, no merge required. ShareX.ImageEditor submodule clean (d7c027fa == origin/develop). No deferred-last-runs files to clean. recently_pivoted FIFO at 48 / 200. last_runs 139 -> 140 (+1 audit row).
+- Status: No-op
+- Build/test: n/a (no code change)
+- Commit: see Step 7b tracker commit
+- Follow-up: do not re-queue unless producer ingest adds new candidates; xerahs-review (producer) has not published new items this tick
+### 2026-10-14 08:08 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop (c54e1590). upstream/develop already ancestor of HEAD (113 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 140 -> 141 (+1 audit row). Preserved 12-file WIP stash wip-preserved-20261014-080611-declan-preserving-12-file-WIP-during-upstream-merge (not popped; not included in this commit). Older stashes (20260922 ModalOpenService, 20260918 WaylandPortalHotkeyService) left untouched.
+- Status: No-op
+- Build/test: n/a (no code change; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-14 16:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (ba367240). upstream/develop already ancestor of HEAD (114 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 141 -> 142 (+1 audit row). Preserved stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-15 00:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop (75787cc1). origin/develop (ba367240) is 1 behind (prior empty-queue audit). upstream/develop already ancestor of HEAD (115 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 142 -> 143 (+1 audit row). Preserved stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-15 08:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (fe40c247). upstream/develop already ancestor of HEAD (119 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 143 -> 144 (+1 audit row). Preserved unstaged iOS WIP (26 files under src/mobile/ios) left in the working tree (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-15 16:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (b5b0e107). upstream/develop already ancestor of HEAD (120 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 144 -> 145 (+1 audit row). Preserved unstaged iOS WIP (26 files under src/mobile/ios) left in the working tree (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-16 00:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (11924a7f). upstream/develop already ancestor of HEAD (130 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 145 -> 146 (+1 audit row). Preserved unstaged teammate WIP (src/mobile/ios + web/) left in the working tree (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios or web/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-16 08:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (43e90646). upstream/develop already ancestor of HEAD (131 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 146 -> 147 (+1 audit row). Preserved unstaged teammate WIP (src/mobile/ios + web/) left in the working tree (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios or web/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-16 16:10 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (c4b32117). upstream/develop already ancestor of HEAD (132 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 147 -> 148 (+1 audit row). Preserved unstaged teammate WIP (src/mobile/ios + web/) left in the working tree (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios or web/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-17 00:10 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (46c5d618). upstream/develop already ancestor of HEAD (133 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 148 -> 149 (+1 audit row). Preserved unstaged teammate WIP (src/mobile/ios + web/) left in the working tree (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios or web/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-17 08:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (10dc361b). upstream/develop already ancestor of HEAD (134 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 149 -> 150 (+1 audit row). Preserved unstaged teammate WIP (src/mobile/ios + web/) left in the working tree (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios or web/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-17 16:11 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (0a7b2899). upstream/develop already ancestor of HEAD (137 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 150 -> 151 (+1 audit row). Preserved unstaged teammate WIP (src/mobile/ios + web/) left in the working tree (not discarded, not stashed, not committed). Also left unstaged dirty tree on LinuxProcessTree.cs / FFmpegCLIManager.cs / TestProjectBuildPropertiesTests.cs / FFmpegCLIManagerTests.cs (local reverse of HEAD 0a7b2899; not discarded, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios or web/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-18 00:08 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (bc15f80e). upstream/develop already ancestor of HEAD (138 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 151 -> 152 (+1 audit row). Preserved unstaged teammate WIP (src/mobile/ios + web/) left in the working tree (not discarded, not stashed, not committed). Also left unstaged dirty tree on LinuxProcessTree.cs / FFmpegCLIManager.cs / TestProjectBuildPropertiesTests.cs / FFmpegCLIManagerTests.cs (local reverse of HEAD 0a7b2899; not discarded, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios or web/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-18 08:05 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (08c41ed1). upstream/develop already ancestor of HEAD (139 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 152 -> 153 (+1 audit row). Preserved unstaged teammate WIP (src/mobile/ios + web/) left in the working tree (not discarded, not stashed, not committed). Also left unstaged dirty tree on LinuxProcessTree.cs / FFmpegCLIManager.cs / TestProjectBuildPropertiesTests.cs / FFmpegCLIManagerTests.cs (local reverse of HEAD 0a7b2899; not discarded, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios or web/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-18 16:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (8005f99e). upstream/develop already ancestor of HEAD (140 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 153 -> 154 (+1 audit row). Preserved unstaged teammate WIP (src/mobile/ios + web/) left in the working tree (not discarded, not stashed, not committed). Also left unstaged dirty tree on LinuxProcessTree.cs / FFmpegCLIManager.cs / TestProjectBuildPropertiesTests.cs / FFmpegCLIManagerTests.cs (local reverse of HEAD 0a7b2899; not discarded, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios or web/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-19 00:08 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (81069ae6). upstream/develop already ancestor of HEAD (143 local commits ahead, 0 incoming). ShareX.ImageEditor clean (d7c027fa == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 154 -> 155 (+1 audit row). Preserved unstaged teammate WIP (src/mobile/ios + web/) left in the working tree (not discarded, not stashed, not committed). Also left unstaged dirty tree on LinuxProcessTree.cs / FFmpegCLIManager.cs / FFmpeg desktop files / TestProjectBuildPropertiesTests.cs / FFmpegCLIManagerTests.cs (local reverse of HEAD 0a7b2899; not discarded, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios or web/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-19 08:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (ec5803ba). upstream/develop already ancestor of HEAD (157 local commits ahead, 0 incoming). ShareX.ImageEditor origin/develop fast-forwarded d7c027fa -> fc2a4f36 (no upstream remote); parent gitlink left uncommitted to preserve dirty index/WIP. recently_pivoted FIFO at 48 / 200. last_runs 155 -> 156 (+1 audit row). Preserved teammate WIP (src/mobile/ios + web/ + previously staged files) and other worktree dirty files left as found (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios or web/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-19 16:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (ce025207). upstream/develop already ancestor of HEAD (158 local commits ahead, 0 incoming). ShareX.ImageEditor clean (fc2a4f36 == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 156 -> 157 (+1 audit row). Preserved teammate WIP (src/mobile/ios + web/ + remaining worktree dirty files) left as found (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios or web/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-20 00:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop at f282227f; origin/develop at ae9a5cc7. upstream/develop already ancestor of HEAD (162 local commits ahead, 0 incoming). ShareX.ImageEditor clean (fc2a4f36 == origin/develop; no upstream remote on submodule). recently_pivoted FIFO at 48 / 200. last_runs 157 -> 158 (+1 audit row). Preserved unstaged teammate WIP (101 files: src/mobile/ios, web/, build/linux, README, docs/, .github/workflows, tests/) left as found (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged src/mobile/ios, web/, build/linux, README, docs/, .github/workflows, tests/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-20 08:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (5aa3463f). upstream/develop already ancestor of HEAD (165 local commits ahead, 0 incoming). ShareX.ImageEditor submodule fast-forwarded fc2a4f3 -> f34dd43 (no upstream remote on submodule); HEAD tree gitlink already at f34dd43 (no parent pointer commit needed). Since last audit (f282227f, v0.33.3) three non-audit commits landed on declan/develop: dbf65ef4 ([Fix] Keep the update prompt opaque), 6608ea49 ([v0.33.4] Preserve native tray menu identity), 5aa3463f ([v0.33.5] Authenticate Chocolatey release metadata); plus prior-tick audit 53990817 and audit-cycle merge db02e57a. recently_pivoted FIFO at 48 / 200. last_runs 158 -> 159 (+1 audit row). Preserved unstaged teammate WIP (109 files: build/, docs/, .github/workflows, src/desktop/app, src/desktop/plugins, tests/, etc.) left as found (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged build/, docs/, .github/workflows, src/desktop/app, src/desktop/plugins, tests/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+### 2026-10-20 18:20 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: next_candidates is empty (0 -> 0); Step 5a categoriser found nothing to drain. Fork sync HEAD == declan/develop == origin/develop (4a100f7f). upstream/develop already ancestor of HEAD (167 local commits ahead, 0 incoming). ShareX.ImageEditor submodule clean (f34dd43 == origin/develop; no upstream remote on submodule); parent gitlink already at f34dd43 (no submodule pointer commit needed). Since last audit (5aa3463f, v0.33.5) only one non-audit commit landed: 4a100f7f (this empty-queue audit tracker/state JSON refresh). recently_pivoted FIFO at 48 / 200. last_runs 159 -> 160 (+1 audit row). Preserved unstaged teammate WIP (109 files: build/, docs/, .github/workflows, src/desktop/app, src/desktop/plugins, src/mobile/ios, web/, tests/, etc.) left as found (not discarded, not stashed, not committed). Older stashes left untouched (wip-preserved-20261014-080611, wip-preserved-20260922 ModalOpenService, xerahs-bugfix-WIP-WaylandPortalHotkeyService). No deferred-last-runs files.
+- Status: No-op (empty-queue audit, v1.1.9 contract)
+- Build/test: n/a (no code change this tick; testhost still blocked by missing Microsoft.AspNetCore.App 10.0 on host, see v1.1.36 pitfall; recovery requires sudo pacman -S aspnet-runtime)
+- Commit: <filled by Step 8c after push>
+- Follow-up: next cron tick re-runs Step 5a against any new clawpatch ingest. Do not pop preserved WIP stashes from unattended ticks. Do not discard unstaged build/, docs/, .github/workflows, src/desktop/app, src/desktop/plugins, src/mobile/ios, web/, tests/ WIP. Producer (xerahs-review) has not published new items this tick.
+- Skill: xerahs-bugfix/SKILL.md v1.1.36 (no patch this tick)
+
+### 2026-10-21 00:08 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (whole)
+- Files: (none — audit only; docs/reports/hourly_review_state.json + this tracker)
+- Findings: Step 5a categoriser classified 0 of 0 candidates. Fork sync
+  (declan/develop, origin/develop) already up to date at 8554a4c6.
+  upstream/develop 9712850d is already an ancestor (169 KovaForge commits
+  ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches
+  origin/develop; parent gitlink unchanged. No picks, no pivots.
+- Status: No-op (empty-queue audit)
+- Build/test: not run (no code change this tick); host now has
+  Microsoft.AspNetCore.App 10.0.13, so the testhost blocker recorded in
+  runs through 2026-10-20 18:20 AWST is cleared for the next fix batch
+- Commit: (this tracker commit)
+- Follow-up: producer xerahs-review has emitted no new next_candidates
+  since 2026-09-15 (latest .clawpatch report 20260915T150433-dbf64c.md);
+  consumer queue stays empty until the producer lands a fresh payload.
+
+### 2026-10-21 08:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (whole)
+- Files: (none — audit only; docs/reports/hourly_review_state.json + this tracker)
+- Findings: Step 5a categoriser classified 0 of 0 candidates. Fork sync
+  (declan/develop, origin/develop) already up to date at b14f04c2.
+  upstream/develop 9712850d is already an ancestor (170 KovaForge commits
+  ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches
+  origin/develop; parent gitlink unchanged. No picks, no pivots.
+  last_runs 161 -> 162 (+1 audit row). recently_pivoted FIFO at 48 / 200.
+  Preserved unstaged teammate WIP (109 files: bulk-stale checkout vs HEAD
+  0.33.5, disk Directory.Build.props 0.33.2) left as found (not discarded,
+  not stashed, not committed). Older stashes left untouched.
+- Status: No-op (empty-queue audit)
+- Build/test: not run (no code change this tick); host has
+  Microsoft.AspNetCore.App 10.0.13 (testhost blocker from v1.1.36 remains
+  cleared for the next fix batch)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: producer xerahs-review has emitted no new next_candidates
+  since 2026-09-15 (latest .clawpatch report 20260915T150433-dbf64c.md);
+  consumer queue stays empty until the producer lands a fresh payload.
+- Skill: xerahs-bugfix/SKILL.md v1.1.37 (no patch this tick)
+
+### 2026-10-21 16:09 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (whole)
+- Files: (none — audit only; docs/reports/hourly_review_state.json + this tracker)
+- Findings: Step 5a categoriser classified 0 of 0 candidates. Fork sync
+  (declan/develop, origin/develop) already up to date at 1915e566.
+  upstream/develop 9712850d is already an ancestor (171 KovaForge commits
+  ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches
+  origin/develop; parent gitlink unchanged (no upstream remote inside submodule).
+  No picks, no pivots. last_runs 162 -> 163 (+1 audit row). recently_pivoted FIFO at 48 / 200.
+  Preserved unstaged teammate WIP (109 files: bulk-stale checkout vs HEAD
+  0.33.5, disk Directory.Build.props 0.33.2) left as found (not discarded,
+  not stashed, not committed). Older stashes left untouched.
+- Status: No-op (empty-queue audit)
+- Build/test: not run (no code change this tick); host has
+  Microsoft.AspNetCore.App 10.0.13 (testhost blocker from v1.1.36 remains
+  cleared for the next fix batch)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: producer xerahs-review has emitted no new next_candidates
+  since 2026-09-15 (latest .clawpatch report 20260915T150433-dbf64c.md);
+  consumer queue stays empty until the producer lands a fresh payload.
+- Skill: xerahs-bugfix/SKILL.md v1.1.37 (no patch this tick)
+
+### 2026-10-22 00:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (whole)
+- Files: (none — audit only; docs/reports/hourly_review_state.json + this tracker)
+- Findings: Step 5a categoriser classified 0 of 0 candidates. Fork sync
+  (declan/develop, origin/develop) already up to date at 65665a63.
+  upstream/develop 9712850d is already an ancestor (172 KovaForge commits
+  ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches
+  origin/develop; parent gitlink unchanged (no upstream remote inside submodule).
+  No picks, no pivots. last_runs 163 -> 164 (+1 audit row). recently_pivoted FIFO at 48 / 200.
+  Preserved unstaged teammate WIP (Directory.Build.props disk 0.33.2 vs HEAD
+  0.33.5 plus bulk src/docs/build/web/mobile files) left as found (not discarded,
+  not stashed, not committed). Older stashes left untouched.
+- Status: No-op (empty-queue audit)
+- Build/test: not run (no code change this tick); host has
+  Microsoft.AspNetCore.App 10.0.13 (testhost blocker from v1.1.36 remains
+  cleared for the next fix batch)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: producer xerahs-review has emitted no new next_candidates
+  since 2026-09-15 (latest .clawpatch report 20260915T150433-dbf64c.md);
+  consumer queue stays empty until the producer lands a fresh payload.
+- Skill: xerahs-bugfix/SKILL.md v1.1.37 (no patch this tick)
+
+### 2026-10-22 08:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (whole)
+- Files: (none — audit only; docs/reports/hourly_review_state.json + this tracker)
+- Findings: Step 5a categoriser classified 0 of 0 candidates. Fork sync
+  (declan/develop, origin/develop) already up to date at 596b451c.
+  upstream/develop 9712850d is already an ancestor (175 KovaForge commits
+  ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches
+  origin/develop; parent gitlink unchanged (no upstream remote inside submodule).
+  No picks, no pivots. last_runs 164 -> 165 (+1 audit row). recently_pivoted FIFO at 48 / 200.
+  Preserved unstaged teammate WIP (109 files: bulk-stale checkout vs HEAD
+  0.33.5, disk Directory.Build.props 0.33.2) left as found (not discarded,
+  not stashed, not committed). Older stashes left untouched.
+- Status: No-op (empty-queue audit)
+- Build/test: not run (no code change this tick); host has
+  Microsoft.AspNetCore.App 10.0.13 (testhost blocker from v1.1.36 remains
+  cleared for the next fix batch)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: producer xerahs-review has emitted no new next_candidates
+  since 2026-09-15 (latest .clawpatch report 20260915T150433-dbf64c.md);
+  consumer queue stays empty until the producer lands a fresh payload.
+- Skill: xerahs-bugfix/SKILL.md v1.1.37 (no patch this tick)
+
+### 2026-10-22 16:15 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (empty-queue audit, Step 7c)
+- Files: docs/reports/hourly_review_state.json, docs/reports/hourly_review_tracker.md
+- Findings: Step 5a categoriser over 0 next_candidates produced 0 real-bug, 0 already-fixed, 0 tfm-noise, 0 dead-code, 0 false-positive, 0 out-of-scope. No code fix and no pivot this tick. Producer xerahs-review has emitted no new candidates since 2026-09-15.
+- Status: No-op (audit only)
+- Build/test: not run (no code change this tick); logs: n/a
+- Commit: (this tracker commit; state row commit=null)
+- Follow-up: queue stays empty until producer lands a fresh payload; worktree disk/index remain stale vs HEAD 046e33ef (left as found)
+
+### 2026-10-23 00:07 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (whole)
+- Files: (none — audit only; docs/reports/hourly_review_state.json + this tracker)
+- Findings: Step 5a categoriser classified 0 of 0 candidates. Fork sync
+  (declan/develop, origin/develop) already up to date at c1d15cce.
+  upstream/develop 9712850d is already an ancestor (180 KovaForge commits
+  ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches origin/develop; parent gitlink unchanged (no upstream
+  remote inside submodule). No picks, no pivots. last_runs 166 -> 167 (+1 audit row). recently_pivoted FIFO at 48 / 200.
+  Preserved unstaged/staged teammate WIP (bulk-stale checkout vs HEAD
+  0.33.6) left as found (not discarded, not stashed, not committed).
+  Older stashes left untouched. Deferred last_runs files deleted if present.
+- Status: No-op (empty-queue audit)
+- Build/test: not run (no code change this tick); host has
+  Microsoft.AspNetCore.App 10.0.13 (testhost blocker from v1.1.36 remains
+  cleared for the next fix batch)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: producer xerahs-review has emitted no new next_candidates
+  since 2026-09-15 (latest .clawpatch report 20260915T150433-dbf64c.md);
+  consumer queue stays empty until the producer lands a fresh payload.
+- Skill: xerahs-bugfix/SKILL.md v1.1.38 (no patch this tick)
+
+### 2026-10-23 08:05 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (whole)
+- Files: (none — audit only; docs/reports/hourly_review_state.json + this tracker)
+- Findings: Step 5a categoriser classified 0 of 0 candidates. Fork sync
+  (declan/develop, origin/develop) already up to date at 9deee676.
+  upstream/develop 9712850d is already an ancestor (183 KovaForge commits
+  ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches origin/develop; parent gitlink unchanged (no upstream
+  remote inside submodule). No picks, no pivots. last_runs 167 -> 168 (+1 audit row). recently_pivoted FIFO at 48 / 200.
+  Preserved unstaged/staged teammate WIP (bulk-stale checkout vs HEAD
+  0.33.6) left as found (not discarded, not stashed, not committed).
+  Older stashes left untouched. Deferred last_runs files deleted if present.
+- Status: No-op (empty-queue audit)
+- Build/test: not run (no code change this tick); host has
+  Microsoft.AspNetCore.App 10.0.13 (testhost blocker from v1.1.36 remains
+  cleared for the next fix batch)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: producer xerahs-review has emitted no new next_candidates
+  since 2026-09-15 (latest .clawpatch report 20260915T150433-dbf64c.md);
+  consumer queue stays empty until the producer lands a fresh payload.
+- Skill: xerahs-bugfix/SKILL.md v1.1.38 (no patch this tick)
+
+### 2026-10-23 16:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (whole)
+- Files: (none — audit only; docs/reports/hourly_review_state.json + this tracker)
+- Findings: Step 5a categoriser classified 0 of 0 candidates. Fork sync
+  (declan/develop, origin/develop) already up to date at f9a7e0c2.
+  upstream/develop 9712850d is already an ancestor (184 KovaForge commits
+  ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches origin/develop; parent gitlink unchanged (no upstream
+  remote inside submodule). No picks, no pivots. last_runs 168 -> 169 (+1 audit row). recently_pivoted FIFO at 48 / 200.
+  Preserved unstaged/staged teammate WIP (bulk-stale checkout vs HEAD
+  0.33.6) left as found (not discarded, not stashed, not committed).
+  Older stashes left untouched. Deferred last_runs files deleted if present.
+- Status: No-op (empty-queue audit)
+- Build/test: not run (no code change this tick); host has
+  Microsoft.AspNetCore.App 10.0.13 (testhost blocker from v1.1.36 remains
+  cleared for the next fix batch)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: producer xerahs-review has emitted no new next_candidates
+  since 2026-09-15 (latest .clawpatch report 20260915T150433-dbf64c.md);
+  consumer queue stays empty until the producer lands a fresh payload.
+- Skill: xerahs-bugfix/SKILL.md v1.1.38 (no patch this tick)
+
+### 2026-10-24 00:06 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (whole)
+- Files: (none — audit only; docs/reports/hourly_review_state.json + this tracker)
+- Findings: Step 5a categoriser classified 0 of 0 candidates. Fork sync
+  (declan/develop, origin/develop) already up to date at 64c733a7.
+  upstream/develop 9712850d is already an ancestor (185 KovaForge commits
+  ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches origin/develop; parent gitlink unchanged (no upstream
+  remote inside submodule). No picks, no pivots. last_runs 169 -> 170 (+1 audit row). recently_pivoted FIFO at 48 / 200.
+  Preserved unstaged/staged teammate WIP (bulk-stale checkout vs HEAD
+  0.33.6) left as found (not discarded, not stashed, not committed).
+  Older stashes left untouched. Deferred last_runs files deleted if present.
+- Status: No-op (empty-queue audit)
+- Build/test: not run (no code change this tick); host has
+  Microsoft.AspNetCore.App 10.0.13 (testhost blocker from v1.1.36 remains
+  cleared for the next fix batch)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: producer xerahs-review has emitted no new next_candidates
+  since 2026-09-15 (latest .clawpatch report 20260915T150433-dbf64c.md);
+  consumer queue stays empty until the producer lands a fresh payload.
+- Skill: xerahs-bugfix/SKILL.md v1.1.38 (no patch this tick)
+
+### 2026-10-24 08:05 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (whole)
+- Files: (none — audit only; docs/reports/hourly_review_state.json + this tracker)
+- Findings: Step 5a categoriser classified 0 of 0 candidates. Fork sync
+  (declan/develop, origin/develop) already up to date at c0c11c29.
+  upstream/develop 9712850d is already an ancestor (186 KovaForge commits
+  ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches origin/develop; parent gitlink unchanged (no upstream
+  remote inside submodule). No picks, no pivots. last_runs 170 -> 171 (+1 audit row). recently_pivoted FIFO at 48 / 200.
+  Preserved unstaged/staged teammate WIP (bulk-stale checkout vs HEAD
+  0.33.6) left as found (not discarded, not stashed, not committed).
+  Older stashes left untouched. Deferred last_runs files deleted if present.
+- Status: No-op (empty-queue audit)
+- Build/test: not run (no code change this tick); host has
+  Microsoft.AspNetCore.App 10.0.13 (testhost blocker from v1.1.36 remains
+  cleared for the next fix batch)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: producer xerahs-review has emitted no new next_candidates
+  since 2026-09-15 (latest .clawpatch report 20260915T150433-dbf64c.md);
+  consumer queue stays empty until the producer lands a fresh payload.
+- Skill: xerahs-bugfix/SKILL.md v1.1.38 (no patch this tick)
+
+### 2026-10-24 16:09 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (whole)
+- Files: (none — audit only; docs/reports/hourly_review_state.json + this tracker)
+- Findings: Step 5a categoriser classified 0 of 0 candidates. Fork sync
+  (declan/develop, origin/develop) already up to date at f03e33ce.
+  upstream/develop 9712850d is already an ancestor (189 KovaForge commits
+  ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches origin/develop; parent gitlink unchanged (no upstream
+  remote inside submodule). No picks, no pivots. last_runs 171 -> 172 (+1 audit row). recently_pivoted FIFO at 48 / 200.
+  Preserved unstaged/staged teammate WIP (bulk-stale checkout vs HEAD
+  0.33.6) left as found (not discarded, not stashed, not committed).
+  Older stashes left untouched. Deferred last_runs files deleted if present.
+- Status: No-op (empty-queue audit)
+- Build/test: not run (no code change this tick); host has
+  Microsoft.AspNetCore.App 10.0.13 (testhost blocker from v1.1.36 remains
+  cleared for the next fix batch)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: producer xerahs-review has emitted no new next_candidates
+  since 2026-09-15 (latest .clawpatch report 20260915T150433-dbf64c.md);
+  consumer queue stays empty until the producer lands a fresh payload.
+- Skill: xerahs-bugfix/SKILL.md v1.1.38 (no patch this tick)
+
+### 2026-10-25 00:08 AWST - Queue check / no queued candidates
+
+- Area: xerahs-bugfix consumer queue (whole)
+- Files: (none — audit only; docs/reports/hourly_review_state.json + this tracker)
+- Findings: Step 5a categoriser classified 0 of 0 candidates. Fork sync
+  (declan/develop, origin/develop) already up to date at 63b85d75.
+  upstream/develop 9712850d is already an ancestor (190 KovaForge commits
+  ahead, 0 incoming). ShareX.ImageEditor clean at f34dd43, matches origin/develop; parent gitlink unchanged (no upstream
+  remote inside submodule). No picks, no pivots. last_runs 172 -> 173 (+1 audit row). recently_pivoted FIFO at 48 / 200.
+  Preserved unstaged teammate WIP (left as found; not discarded, not stashed, not committed).
+  Older stashes left untouched. Deferred last_runs files deleted if present.
+- Status: No-op (empty-queue audit)
+- Build/test: not run (no code change this tick); host has
+  Microsoft.AspNetCore.App 10.0.13 (testhost blocker from v1.1.36 remains
+  cleared for the next fix batch)
+- Commit: none (empty-queue audit; SHA in Step 9 summary only)
+- Follow-up: producer xerahs-review has emitted no new next_candidates
+  since 2026-09-15 (latest .clawpatch report 20260915T150433-dbf64c.md);
+  consumer queue stays empty until the producer lands a fresh payload.
+- Skill: xerahs-bugfix/SKILL.md v1.1.38 (no patch this tick)

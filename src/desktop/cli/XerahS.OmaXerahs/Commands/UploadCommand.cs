@@ -40,7 +40,7 @@ internal static class UploadCommand
     internal static Func<TaskInfo, CancellationToken, Task> ProcessUploadAsync { get; set; } =
         static (taskInfo, cancellationToken) => new UploadJobProcessor().ProcessAsync(taskInfo, cancellationToken);
 
-    internal static Func<ImageDestinationInspection> InspectImage { get; set; } =
+    internal static Func<string, ImageDestinationInspection> InspectImage { get; set; } =
         UploadHost.InspectImageDestination;
 
     internal static Command Create()
@@ -101,6 +101,11 @@ internal static class UploadCommand
                 resolved = linkTarget.FullName;
             }
         }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            // The watch folder may already have moved this screenshot. Existence is resolved
+            // again after startup, when history and the screenshots folder can be checked.
+        }
         catch (Exception ex)
         {
             errorMessage = $"Unable to resolve path: {ex.Message}";
@@ -109,8 +114,16 @@ internal static class UploadCommand
 
         if (!File.Exists(resolved))
         {
-            errorMessage = $"File not found: {resolved}";
-            return false;
+            if (!FileHelpers.IsImageFile(resolved) &&
+                !string.Equals(Path.GetExtension(resolved), ".webp", StringComparison.OrdinalIgnoreCase))
+            {
+                errorMessage = $"File not found: {resolved}";
+                return false;
+            }
+
+            canonicalPath = resolved;
+            errorCode = string.Empty;
+            return true;
         }
 
         FileAttributes attributes;
@@ -131,7 +144,7 @@ internal static class UploadCommand
             return false;
         }
 
-        if (!FileHelpers.IsImageFile(resolved))
+        if (!FileHelpers.IsImageFile(resolved) && !string.Equals(Path.GetExtension(resolved), ".webp", StringComparison.OrdinalIgnoreCase))
         {
             errorCode = CliErrorCodes.UnsupportedType;
             errorMessage = "File is not a supported image type.";
@@ -153,23 +166,16 @@ internal static class UploadCommand
         try
         {
             await UploadHost.EnsureBootstrappedAsync();
-            var inspection = InspectImage();
+            var inspection = InspectImage(canonicalPath);
             if (!inspection.Ready || inspection.Instance == null)
             {
                 return JsonStdout.WriteFailureAndExit(
                     CliErrorCodes.NotReady,
-                    "No usable image uploader is configured in XerahS.");
+                    "No usable image or file uploader is configured in XerahS.");
             }
 
             var workflow = SettingsManager.GetFirstWorkflowOrDefault(WorkflowType.FileUpload);
-            var taskSettings = CloneTaskSettings(workflow.TaskSettings);
-            taskSettings.Job = WorkflowType.FileUpload;
-            taskSettings.AfterCaptureJob = AfterCaptureTasks.None;
-            taskSettings.AfterUploadJob = AfterUploadTasks.None;
-            taskSettings.DestinationInstanceId = null;
-            // Fail closed: no Image→File. Property lives on TaskSettings (PR-CFail).
-            taskSettings.AllowCrossCategoryFallback = false;
-            taskSettings.GeneralSettings.ShowToastNotificationAfterTaskCompleted = false;
+            var taskSettings = CreateUploadTaskSettings(workflow.TaskSettings, inspection.Instance);
 
             var taskInfo = new TaskInfo(taskSettings)
             {
@@ -208,15 +214,15 @@ internal static class UploadCommand
             }
 
             var instance = ResolveUploadedInstance(taskInfo, inspection.Instance);
-            var fileInfo = new FileInfo(canonicalPath);
+            var fileInfo = new FileInfo(taskInfo.FilePath);
             JsonStdout.Write(new UploadSuccessResponse
             {
                 SchemaVersion = 1,
                 Ok = true,
                 Url = url!,
-                Filename = Path.GetFileName(canonicalPath),
+                Filename = Path.GetFileName(taskInfo.FilePath),
                 Size = fileInfo.Length,
-                Type = GetContentType(canonicalPath),
+                Type = GetContentType(taskInfo.FilePath),
                 DataType = "image",
                 ProviderId = instance?.ProviderId,
                 InstanceId = instance?.InstanceId,
@@ -236,7 +242,7 @@ internal static class UploadCommand
         string? host = taskInfo.UploaderHost;
         if (!string.IsNullOrWhiteSpace(host))
         {
-            var match = UploadHost.GetUsableImageInstances()
+            var match = UploadHost.GetUsableImageUploadInstances()
                 .FirstOrDefault(i => string.Equals(i.DisplayName, host, StringComparison.OrdinalIgnoreCase));
             if (match != null)
             {
@@ -261,6 +267,19 @@ internal static class UploadCommand
             ".ico" => "image/x-icon",
             _ => "application/octet-stream"
         };
+    }
+
+    internal static TaskSettings CreateUploadTaskSettings(TaskSettings source, UploaderInstance instance)
+    {
+        var settings = CloneTaskSettings(source);
+        settings.Job = WorkflowType.FileUpload;
+        settings.AfterCaptureJob = AfterCaptureTasks.None;
+        settings.AfterUploadJob = AfterUploadTasks.None;
+        settings.DestinationInstanceId = instance.InstanceId;
+        settings.AllowCrossCategoryFallback = false;
+        settings.RoutedImageFileDestinationId = instance.Category == UploaderCategory.File ? instance.InstanceId : null;
+        settings.GeneralSettings.ShowToastNotificationAfterTaskCompleted = false;
+        return settings;
     }
 
     private static TaskSettings CloneTaskSettings(TaskSettings source)

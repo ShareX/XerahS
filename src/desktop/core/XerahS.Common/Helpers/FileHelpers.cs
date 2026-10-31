@@ -37,7 +37,8 @@ public static class FileHelpers
 {
     public static readonly string[] ImageFileExtensions = { "jpg", "jpeg", "png", "gif", "bmp", "ico", "tif", "tiff" };
     public static readonly string[] TextFileExtensions = { "txt", "log", "nfo", "c", "cpp", "cc", "cxx", "h", "hpp", "hxx", "cs", "vb",
-        "xhtml", "xht", "xml", "css", "js", "php", "bat", "java", "lua", "py", "pl", "cfg", "ini", "dart", "go", "gohtml" };
+        "xhtml", "xht", "xml", "css", "js", "php", "bat", "java", "lua", "py", "pl", "cfg", "ini", "dart", "go", "gohtml",
+        "md", "markdown", "json", "yaml", "yml", "toml", "csv" };
     public static readonly string[] VideoFileExtensions = { "mp4", "webm", "mkv", "avi", "vob", "ogv", "ogg", "mov", "qt", "wmv", "m4p",
         "m4v", "mpg", "mp2", "mpeg", "mpe", "mpv", "m2v", "flv", "f4v" };
 

@@ -32,6 +32,20 @@ namespace XerahS.UI.Views
 {
     public partial class MainWindow
     {
+        /// <summary>
+        /// Esc dismisses the dialog in the modal overlay (ModalContent), like clicking
+        /// the backdrop. Hosts waiting in ModalDialogHost complete with their dismiss result.
+        /// </summary>
+        private void OnModalEscapeKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Escape || e.KeyModifiers != KeyModifiers.None) return;
+            if (DataContext is not MainViewModel vm || !vm.IsModalOpen) return;
+            if (this.FindControl<Grid>("MainWindowModalOverlay") is not { IsVisible: true }) return;
+
+            vm.CloseModalCommand.Execute(null);
+            e.Handled = true;
+        }
+
         private void OnKeyDown(object? sender, KeyEventArgs e)
         {
             if (DataContext is not MainViewModel vm) return;

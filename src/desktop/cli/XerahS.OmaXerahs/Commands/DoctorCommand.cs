@@ -33,7 +33,7 @@ internal static class DoctorCommand
 {
     internal static Command Create()
     {
-        var command = new Command("doctor", "Report Image-category uploader readiness. Read-only; never mutates destinations.");
+        var command = new Command("doctor", "Report whether images can be uploaded (Image destination, or File destination fallback). Read-only; never mutates destinations.");
         var jsonOption = JsonStdout.CreateJsonOption();
         command.Add(jsonOption);
         command.SetAction(parseResult =>
@@ -56,8 +56,8 @@ internal static class DoctorCommand
             if (!JsonStdout.Enabled)
             {
                 Console.Error.WriteLine(response.Ok
-                    ? $"Image destination ready: {response.Image.DisplayName}"
-                    : "No usable image uploader is configured in XerahS.");
+                    ? $"Image uploads ready: {response.Image.DisplayName} ({response.Image.Category} destination)"
+                    : "No usable image or file uploader is configured in XerahS.");
             }
 
             return response.Ok ? 0 : 1;

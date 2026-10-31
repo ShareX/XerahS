@@ -8,7 +8,7 @@ XerahS uses FFmpeg as a recording backend across all supported platforms. The ro
 
 ### Installation
 
-XerahS can download FFmpeg automatically from **Workflows > Edit workflow > Video Settings > FFmpeg Tools > Download FFmpeg...**. It fetches the latest build from the [ShareX/FFmpeg](https://github.com/ShareX/FFmpeg) GitHub release and extracts it to the app's `Tools` folder.
+XerahS can download FFmpeg automatically from **Workflows > Edit workflow > Video Settings > FFmpeg Tools > Download FFmpeg...**. It downloads the current **FFmpeg 9.0 stable-branch static GPL build** from [BtbN/FFmpeg-Builds](https://github.com/BtbN/FFmpeg-Builds), verifies its SHA-256 checksum, and installs `ffmpeg`, `ffprobe`, and the license into the app's `Tools` folder. Windows x64 and ARM64 are supported; BtbN does not publish 32-bit Windows auto-builds.
 
 To use your own binary, open **Workflows > Edit workflow > Video Settings > FFmpeg Tools > Configure FFmpeg...**, enable **Override FFmpeg executable path**, and choose the binary there.
 
@@ -93,6 +93,8 @@ ffmpeg -f avfoundation -framerate 30 -capture_cursor 1 -i "1" -f avfoundation -i
 ## Linux
 
 ### Installation
+
+The same **Download FFmpeg...** action installs BtbN’s FFmpeg 9.0 stable-branch static GPL build for Linux x64 or ARM64 into your user tools folder. TAR/XZ extraction is built in; no package manager or administrator access is required. Both `ffmpeg` and `ffprobe` are checksum-verified as one archive and installed together. See [the distribution contract](ffmpeg-release-handover.md) for asset names and verification details. Existing system packages and custom executable paths are still supported.
 
 Wayland recording support is backend-dependent. XerahS currently tries these Linux paths in order:
 

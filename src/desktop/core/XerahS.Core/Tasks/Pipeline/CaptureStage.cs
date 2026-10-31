@@ -122,6 +122,11 @@ namespace XerahS.Core.Tasks.Pipeline
             var isScreenCaptureDelay = workflowCategory == EnumExtensions.WorkflowType_Category_ScreenCapture && captureDelaySeconds > 0;
             var isScreenRecordDelay = workflowCategory == EnumExtensions.WorkflowType_Category_ScreenRecord && captureDelaySeconds > 0;
 
+            if (workflowCategory is EnumExtensions.WorkflowType_Category_ScreenCapture or EnumExtensions.WorkflowType_Category_ScreenRecord)
+            {
+                CaptureWindowMetadata(metadata, PlatformServices.Window);
+            }
+
             var useTransparentOverlay = ShouldUseTransparentOverlay(taskSettings.Job);
             var linuxRegionSelectorPreference = ResolveLinuxRegionSelectorPreference(captureSettings);
             var macOSRegionSelectorPreference = ResolveMacOSRegionSelectorPreference(captureSettings);
@@ -151,7 +156,9 @@ namespace XerahS.Core.Tasks.Pipeline
                 return hostedResult.Value;
             }
 
-            if (WorkflowCatalog.IsToolWorkflow(taskSettings.Job))
+            // Upload Content queues its items as ClipboardUploadWithContentViewer tasks with the content preloaded;
+            // those must upload, not reopen the Upload Content window.
+            if (WorkflowCatalog.IsToolWorkflow(taskSettings.Job) && !HasPreloadedUploadContent(context))
             {
                 await _workerTask.HandleToolWorkflowAsync(token);
                 return PipelineStageResult.Stop;
@@ -182,12 +189,7 @@ namespace XerahS.Core.Tasks.Pipeline
                     break;
 
                 case WorkflowType.ClipboardUploadWithContentViewer:
-                    bool hasPreloadedUploadContent =
-                        metadata.Image != null ||
-                        !string.IsNullOrEmpty(context.Info.TextContent) ||
-                        !string.IsNullOrEmpty(context.Info.FilePath);
-
-                    if (hasPreloadedUploadContent)
+                    if (HasPreloadedUploadContent(context))
                     {
                         DebugHelper.WriteLine("ClipboardUploadWithContentViewer: preloaded content detected, bypassing tool callback.");
                         break;
@@ -221,6 +223,7 @@ namespace XerahS.Core.Tasks.Pipeline
                     }
                     if (PlatformServices.Window != null)
                     {
+                        CaptureWindowMetadata(metadata, PlatformServices.Window);
                         image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
                     }
                     break;
@@ -296,6 +299,7 @@ namespace XerahS.Core.Tasks.Pipeline
                                         return PipelineStageResult.Stop;
                                     }
 
+                                    CaptureWindowMetadata(metadata, PlatformServices.Window, selectedWindow.Handle);
                                     image = await PlatformServices.ScreenCapture.CaptureActiveWindowAsync(PlatformServices.Window, captureOptions);
                                 }
                                 else
@@ -321,6 +325,7 @@ namespace XerahS.Core.Tasks.Pipeline
                                     return PipelineStageResult.Stop;
                                 }
 
+                                CaptureWindowMetadata(metadata, PlatformServices.Window, hWnd);
                                 image = await PlatformServices.ScreenCapture.CaptureWindowAsync(hWnd, PlatformServices.Window, captureOptions);
                             }
                         }
@@ -430,6 +435,34 @@ namespace XerahS.Core.Tasks.Pipeline
             }
 
             return FinishCapture(context, image, captureStopwatch);
+        }
+
+        internal static void CaptureWindowMetadata(TaskMetadata metadata, IWindowService? windows, IntPtr windowHandle = default)
+        {
+            if (windows == null) return;
+            try
+            {
+                IntPtr handle = windowHandle != IntPtr.Zero ? windowHandle : windows.GetForegroundWindow();
+                if (handle == IntPtr.Zero) return;
+                metadata.UpdateInfo(new WindowInfo
+                {
+                    Handle = handle,
+                    Title = windows.GetWindowText(handle),
+                    ProcessId = windows.GetWindowProcessId(handle)
+                });
+            }
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException or NotSupportedException or ArgumentException)
+            {
+                DebugHelper.WriteLine("Capture source window metadata is unavailable.");
+            }
+        }
+
+        internal static bool HasPreloadedUploadContent(PipelineContext context)
+        {
+            return context.Info.TaskSettings?.Job == WorkflowType.ClipboardUploadWithContentViewer &&
+                (context.Info.Metadata?.Image != null ||
+                 !string.IsNullOrEmpty(context.Info.TextContent) ||
+                 !string.IsNullOrEmpty(context.Info.FilePath));
         }
 
         private static PipelineStageResult FinishCapture(PipelineContext context, SKBitmap? image, Stopwatch captureStopwatch)
@@ -646,6 +679,7 @@ namespace XerahS.Core.Tasks.Pipeline
             if (PlatformServices.Window != null)
             {
                 var foregroundWindow = PlatformServices.Window.GetForegroundWindow();
+                CaptureWindowMetadata(context.Info.Metadata, PlatformServices.Window, foregroundWindow);
                 if (isDelay && !await _workerTask.ApplyCaptureStartDelayAsync(context.Info.TaskSettings!, category, delay, token))
                     return;
                 await _workerTask.HandleStartRecordingAsync(CaptureMode.Window, foregroundWindow);

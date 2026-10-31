@@ -75,9 +75,14 @@ internal sealed class LinuxRuntimeEnvironment
         string.Equals(SessionType, "x11", StringComparison.OrdinalIgnoreCase) ||
         (!IsWayland && !string.IsNullOrWhiteSpace(Display));
 
+    /// <summary>
+    /// True when desktop access must go through XDG portals (Wayland sessions and sandboxes).
+    /// </summary>
+    public bool RequiresPortalServices => IsWayland || IsSandboxed;
+
     public bool ShouldUsePortalServices(bool usePortalServices)
     {
-        return usePortalServices && (IsWayland || IsSandboxed);
+        return usePortalServices && RequiresPortalServices;
     }
 
     public static LinuxRuntimeEnvironment Detect()

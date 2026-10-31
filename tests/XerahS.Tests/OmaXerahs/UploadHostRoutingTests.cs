@@ -75,6 +75,22 @@ public class UploadHostRoutingTests
 
     // ---------- IsUsableImageInstance: image-only, available, non-Auto, provider present, valid settings ----------
 
+    [TestCase(".PNG", "capture.png", true)]
+    [TestCase(" png ", "capture.PNG", true)]
+    [TestCase("png", "capture.jpg", false)]
+    [TestCase("zip", "capture.png", false)]
+    [TestCase("ico", null, true)]
+    [TestCase("webp", null, true)]
+    [TestCase("", null, false)]
+    public void RoutesImages_RespectsConfiguredTypes(string extension, string? path, bool expected)
+    {
+        var scope = new FileTypeScope { FileExtensions = [extension] };
+        Assert.That(UploadHost.RoutesImages(scope, path), Is.EqualTo(expected));
+        Assert.That(UploadHost.RoutesImages(null, path), Is.False);
+        scope.AllFileTypes = true;
+        Assert.That(UploadHost.RoutesImages(scope, path), Is.True);
+    }
+
     [Test]
     public void IsUsable_AcceptsAnImageInstanceWithAValidProvider()
     {
@@ -159,6 +175,54 @@ public class UploadHostRoutingTests
             isAutoProvider: false,
             providerExists: true,
             validateSettings: false);
+
+        Assert.That(ok, Is.False);
+    }
+
+    // ---------- File fallback: the XerahS app uploads images to File destinations when no Image one exists ----------
+
+    [Test]
+    public void IsUsableForFile_AcceptsAFileCategoryS3Instance()
+    {
+        var instance = MakeInstance(providerId: S3ProviderId, category: UploaderCategory.File);
+
+        bool ok = UploadHost.TestAccessor.IsUsableInstance(
+            instance,
+            UploaderCategory.File,
+            isAutoProvider: false,
+            providerExists: true,
+            validateSettings: true);
+
+        Assert.That(ok, Is.True);
+    }
+
+    [Test]
+    public void IsUsableForFile_RejectsTheAutoFileInstance()
+    {
+        // "Auto (File)" only picks among other destinations; on its own it cannot upload anything.
+        var instance = MakeInstance(providerId: AutoProviderId, category: UploaderCategory.File);
+
+        bool ok = UploadHost.TestAccessor.IsUsableInstance(
+            instance,
+            UploaderCategory.File,
+            isAutoProvider: true,
+            providerExists: true,
+            validateSettings: true);
+
+        Assert.That(ok, Is.False);
+    }
+
+    [Test]
+    public void IsUsableForFile_RejectsImageCategoryInstances()
+    {
+        var instance = MakeInstance(providerId: S3ProviderId, category: UploaderCategory.Image);
+
+        bool ok = UploadHost.TestAccessor.IsUsableInstance(
+            instance,
+            UploaderCategory.File,
+            isAutoProvider: false,
+            providerExists: true,
+            validateSettings: true);
 
         Assert.That(ok, Is.False);
     }

@@ -110,6 +110,12 @@ CREATE TABLE IF NOT EXISTS History (
             return items;
         }
 
+        /// <summary>
+        /// Loads the complete history for statistics. Read failures propagate
+        /// so callers can distinguish an unavailable database from an empty history.
+        /// </summary>
+        public List<HistoryItem> GetStatisticsItems() => Load();
+
         public int GetTotalCount()
         {
             using (SqliteCommand cmd = new SqliteCommand("SELECT COUNT(*) FROM History;", EnsureConnection()))
@@ -263,6 +269,56 @@ CREATE TABLE IF NOT EXISTS History (
 
                 offset += items.Count;
             }
+        }
+
+        /// <summary>
+        /// Newest history row whose stored path uses <paramref name="sourceFileName"/> and whose URL is http(s).
+        /// When <paramref name="notBefore"/> is set, an older row is ignored.
+        /// The watch folder keeps this file name when it moves a screenshot into the screenshots folder.
+        /// </summary>
+        public HistoryItem? FindBySourceFileName(string sourceFileName, DateTime? notBefore = null)
+        {
+            if (string.IsNullOrWhiteSpace(sourceFileName) || sourceFileName.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0)
+            {
+                return null;
+            }
+
+            string escaped = EscapeLike(sourceFileName);
+            using SqliteCommand command = new SqliteCommand(@"
+SELECT * FROM History
+WHERE (URL LIKE 'http://%' OR URL LIKE 'https://%')
+AND (
+    FilePath = @Name
+    OR FilePath LIKE @Suffix ESCAPE '\'
+    OR FilePath LIKE @SuffixWin ESCAPE '\'
+)
+ORDER BY DateTime DESC
+LIMIT 1;", EnsureConnection());
+            command.Parameters.AddWithValue("@Name", sourceFileName);
+            command.Parameters.AddWithValue("@Suffix", "%/" + escaped);
+            command.Parameters.AddWithValue("@SuffixWin", "%\\\\" + escaped);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+            if (!reader.Read())
+            {
+                return null;
+            }
+
+            HistoryItem item = ReadHistoryItem(reader);
+            if (notBefore.HasValue && item.DateTime < notBefore.Value)
+            {
+                return null;
+            }
+
+            return item;
+        }
+
+        private static string EscapeLike(string value)
+        {
+            return value
+                .Replace("\\", "\\\\", StringComparison.Ordinal)
+                .Replace("%", "\\%", StringComparison.Ordinal)
+                .Replace("_", "\\_", StringComparison.Ordinal);
         }
 
         protected override bool Append(string dbPath, IEnumerable<HistoryItem> historyItems)

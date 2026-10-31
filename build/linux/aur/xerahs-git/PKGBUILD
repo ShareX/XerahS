@@ -1,20 +1,23 @@
 #!/usr/bin/env bash
 
 pkgname=xerahs-git
-pkgver=0.20.13.r2437.ge4e407ea
+pkgver=0.33.2.r5074.g23fb0b87
 pkgrel=1
 pkgdesc='Cross-platform screen capture and sharing tool'
 arch=('x86_64')
-url='https://github.com/ShareX/XerahS'
-license=('GPL3')
+url='https://github.com/KovaForge/XerahS'
+license=('GPL-3.0-or-later')
 provides=('xerahs')
 conflicts=('xerahs')
 # qt6-base, layer-shell-qt, libdeflate and wl-clipboard are needed by the bundled OmaSnap
 # capture engine (XIP0088), used on Hyprland/Omarchy sessions and ignored elsewhere.
-depends=('glibc' 'gcc-libs' 'hicolor-icon-theme' 'qt6-base' 'layer-shell-qt' 'libdeflate' 'wl-clipboard')
+depends=('glibc' 'gcc-libs' 'fontconfig' 'icu' 'openssl' 'zlib' 'dbus' 'libx11' 'hicolor-icon-theme' 'qt6-base' 'layer-shell-qt' 'libdeflate' 'wl-clipboard')
 optdepends=(
     'gnome-shell-extension-appindicator: system tray icon on GNOME'
-    'webkit2gtk-4.1: video editor webview support'
+    'ffmpeg: screen recording and video editing'
+    'gst-plugin-pipewire: Wayland portal recording source'
+    'gst-plugins-good: native GStreamer recording muxers'
+    'gst-plugins-ugly: native GStreamer H.264 encoder'
     'wl-clipboard: Wayland clipboard support'
     'xclip: X11 clipboard support'
     'xdotool: X11 window management'
@@ -23,11 +26,19 @@ optdepends=(
     'tesseract: OCR in the OmaSnap editor'
     'tesseract-data-eng: English OCR data for the OmaSnap editor'
 )
-makedepends=('git' 'dotnet-sdk' 'cmake' 'ninja' 'pkgconf' 'qt6-base' 'layer-shell-qt' 'wayland-protocols' 'libdeflate')
+makedepends=('git' 'dotnet-sdk>=10.0' 'python' 'cmake' 'ninja' 'pkgconf' 'qt6-base' 'layer-shell-qt' 'wayland-protocols' 'libdeflate')
 options=('!strip' '!debug')
 
-_xerahs_repo_root="${XERAHS_REPO_ROOT:?Set XERAHS_REPO_ROOT to the repository root before running makepkg.}"
-source=("git+file://${_xerahs_repo_root}")
+# Normal AUR builds fetch the public fork. The local packaging helper can explicitly
+# select an existing clone, including its committed-but-not-yet-pushed submodules.
+_xerahs_repo_root="${XERAHS_REPO_ROOT:-}"
+source=('xerahs::git+https://github.com/KovaForge/XerahS.git#branch=develop')
+if [[ -n "$_xerahs_repo_root" ]]; then
+    source=("xerahs::git+file://${_xerahs_repo_root}")
+    # The caller explicitly selected this trusted local clone. Permit upload-pack
+    # to fetch missing objects if it is a partial clone (Git otherwise refuses).
+    export GIT_NO_LAZY_FETCH=0
+fi
 sha256sums=('SKIP')
 
 pkgver() {
@@ -47,58 +58,44 @@ pkgver() {
 prepare() {
     cd "$srcdir/xerahs"
 
-    # This PKGBUILD builds from a local fork via XERAHS_REPO_ROOT. Submodules
-    # may have fork-only commits that aren't pushed to the upstream submodule
-    # remote URL, so `git submodule update --init --recursive` against the
-    # recorded .gitmodules URLs would fail with "not our ref". The parent
-    # working tree already has the submodules cloned at the recorded commits,
-    # so redirect each submodule URL to that local clone. Falls back to the
-    # upstream URL when the local clone isn't present (or doesn't contain the
-    # recorded commit), keeping the PKGBUILD usable for non-local sources.
-    while IFS= read -r name; do
-        local path recorded_sha
-        path=$(git config --file .gitmodules "submodule.$name.path")
-        recorded_sha=$(git ls-tree HEAD -- "$path" | awk '{print $3}' | head -n1)
-        if [ -n "$path" ] && [ -d "$_xerahs_repo_root/$path" ] \
-                && [ -n "$recorded_sha" ] \
-                && git -C "$_xerahs_repo_root/$path" cat-file -e "$recorded_sha" >/dev/null 2>&1; then
-            git config --file .gitmodules "submodule.$name.url" "$_xerahs_repo_root/$path"
-        fi
-    done < <(git config --file .gitmodules --get-regexp 'submodule\..*\.path' \
-            | awk '{print $1}' | sed -E 's/^submodule\.(.+)\.path$/\1/')
+    git submodule init
     git submodule sync --recursive
+    local transport=()
+    if [[ -n "$_xerahs_repo_root" ]]; then
+        # Override local Git config, never the tracked .gitmodules file.
+        while IFS= read -r name; do
+            local path recorded_sha
+            path=$(git config --file .gitmodules "submodule.$name.path")
+            recorded_sha=$(git ls-tree HEAD -- "$path" | awk '{print $3}')
+            if [[ -n "$recorded_sha" ]] &&
+                    git -C "$_xerahs_repo_root/$path" cat-file -e "$recorded_sha^{commit}" 2>/dev/null; then
+                git config "submodule.$name.url" "$_xerahs_repo_root/$path"
+            fi
+        done < <(git config --file .gitmodules --get-regexp 'submodule\..*\.path' |
+            sed -E 's/^submodule\.(.+)\.path .*/\1/')
+        # Permit file transport only for the explicitly selected local source.
+        transport=(-c protocol.file.allow=always)
+    fi
+    git "${transport[@]}" submodule update --init --recursive --checkout
 
-    # git >=2.38 disables the file:// transport for submodule clones by default
-    # (CVE-2022-39253). The redirected URLs above are local file paths so we
-    # must opt back in for this build context.
-    git -c protocol.file.allow=always submodule update --init --recursive
 }
 
 build() {
     cd "$srcdir/xerahs"
 
+    # Compile the editor API paired with this parent revision, never a floating head.
+    bash build/verify-submodules.sh "$PWD"
+
     export XERAHS_ARCHITECTURES='linux-x64'
     # Build the vendored OmaSnap capture engine into the portable tarball (XIP0088).
     export XERAHS_BUILD_OMASNAP=1
-    export XERAHS_PLUGIN_JOBS="${XERAHS_PLUGIN_JOBS:-4}"
+    export XERAHS_PLUGIN_JOBS=1
 
-    # The packaging step exits non-zero when optional formats (AppImage, RPM)
-    # can't be produced because their host toolchain isn't installed
-    # (mksquashfs, rpmbuild). We only need the portable tarball and .deb for
-    # this PKGBUILD's package() step, so don't let those optional failures
-    # abort the build — but DO fail if the tarball itself wasn't produced.
-    local app_version
-    app_version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Directory.Build.props | head -n1 | tr -d ' ')
+    # Arch needs only the portable payload; do not hide unrelated packaging failures.
+    export XERAHS_TARBALL_ONLY=1
+    export OMASNAP_BUILD_DIR="$srcdir/omasnap-build"
+    ./build/linux/package-linux.sh
 
-    ./build/linux/package-linux.sh || {
-        local rc=$?
-        if [ -f "dist/XerahS-${app_version}-linux-x64.tar.gz" ]; then
-            echo "==> build: package-linux.sh failed (rc=$rc) but portable tarball was produced; continuing"
-            return 0
-        fi
-        echo "==> build: package-linux.sh failed and no portable tarball was produced"
-        return $rc
-    }
 }
 
 package() {

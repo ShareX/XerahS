@@ -5,7 +5,7 @@
   "type": "module",
   "devDependencies": {
     "eslint": "9.39.2",
-    "eslint-config-next": "16.3.2",
+    "eslint-config-next": "16.4.3",
     "typescript": "npm:@typescript/typescript6@6.0.2"
   }
 }

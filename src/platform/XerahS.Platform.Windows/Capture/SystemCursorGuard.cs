@@ -51,8 +51,7 @@ internal static class SystemCursorGuard
             }
 
             DebugHelper.WriteLine("System cursors were left hidden by a previous session; restoring them.");
-            ReloadSystemCursors();
-            File.Delete(MarkerPath);
+            TryRestoreAndClearMarker(MarkerPath, ReloadSystemCursors);
         }
         catch (Exception ex)
         {
@@ -88,7 +87,7 @@ internal static class SystemCursorGuard
 
             if (!ReplaceWithBlankCursors())
             {
-                DeleteMarker();
+                TryRestoreAndClearMarker(MarkerPath, ReloadSystemCursors);
                 return false;
             }
 
@@ -109,8 +108,7 @@ internal static class SystemCursorGuard
             _hideCount--;
             if (_hideCount == 0)
             {
-                ReloadSystemCursors();
-                DeleteMarker();
+                TryRestoreAndClearMarker(MarkerPath, ReloadSystemCursors);
             }
         }
     }
@@ -119,14 +117,10 @@ internal static class SystemCursorGuard
     {
         lock (_lock)
         {
-            if (_hideCount == 0)
-            {
-                return;
-            }
+            if (_hideCount == 0 && !File.Exists(MarkerPath)) return;
 
             _hideCount = 0;
-            ReloadSystemCursors();
-            DeleteMarker();
+            TryRestoreAndClearMarker(MarkerPath, ReloadSystemCursors);
         }
     }
 
@@ -181,27 +175,33 @@ internal static class SystemCursorGuard
         }
     }
 
-    private static void ReloadSystemCursors()
+    private static bool ReloadSystemCursors()
     {
         try
         {
-            SystemParametersInfo(SPI_SETCURSORS, 0, IntPtr.Zero, 0);
+            if (SystemParametersInfo(SPI_SETCURSORS, 0, IntPtr.Zero, 0)) return true;
+            DebugHelper.WriteLine($"SystemCursorGuard: cursor restore failed (Win32 error {Marshal.GetLastWin32Error()}); keeping recovery marker.");
         }
         catch (Exception ex)
         {
             DebugHelper.WriteLine($"SystemCursorGuard: failed to restore cursors. {ex.Message}");
         }
+        return false;
     }
 
-    private static void DeleteMarker()
+    // A failed native restore must remain recoverable at exit or the next launch.
+    internal static bool TryRestoreAndClearMarker(string markerPath, Func<bool> reload)
     {
         try
         {
-            File.Delete(MarkerPath);
+            if (!reload()) return false;
+            File.Delete(markerPath);
+            return true;
         }
-        catch
+        catch (Exception ex)
         {
-            // The next launch reloads the cursor scheme once more, which is harmless.
+            DebugHelper.WriteLine($"SystemCursorGuard: keeping recovery marker. {ex.Message}");
+            return false;
         }
     }
 
@@ -218,6 +218,6 @@ internal static class SystemCursorGuard
     [DllImport("user32.dll")]
     private static extern bool DestroyCursor(IntPtr hCursor);
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SystemParametersInfo(uint uiAction, uint uiParam, IntPtr pvParam, uint fWinIni);
 }

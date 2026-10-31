@@ -79,6 +79,8 @@ struct XerahSMobileApp: App {
         )
     }()
 
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -86,6 +88,11 @@ struct XerahSMobileApp: App {
                 .onOpenURL { url in
                     appState.handleIncomingURL(url)
                 }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                appState.consumePendingShareItems()
+            }
         }
     }
 }

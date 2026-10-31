@@ -42,6 +42,41 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.33.5" date="2026-10-20">
+      <description>
+        <p>Fix macOS tray startup and update dialog opacity; authenticate release packaging requests.</p>
+      </description>
+    </release>
+    <release version="0.33.4" date="2026-10-20">
+      <description>
+        <p>Fix macOS tray startup and keep update dialogs opaque over the editor.</p>
+      </description>
+    </release>
+    <release version="0.33.3" date="2026-10-19">
+      <description>
+        <p>Improve annotation workflows, image colors, recording recovery, network monitoring and Linux packaging. See CHANGELOG.md for details.</p>
+      </description>
+    </release>
+    <release version="0.33.1" date="2026-10-11">
+      <description>
+        <p>See CHANGELOG.md for details.</p>
+      </description>
+    </release>
+    <release version="0.32.5" date="2026-10-05" type="development">
+      <description>
+        <p>Pre-release testing faster release builds: Windows architectures now build in parallel.</p>
+      </description>
+    </release>
+    <release version="0.32.4" date="2026-10-04">
+      <description>
+        <p>Simpler first-run onboarding with a theme choice and pointers to workflows, hotkeys and destinations. OCR on Linux through the system Tesseract. Smaller Linux packages. omaxerahs uploads through File destinations like XerahS.</p>
+      </description>
+    </release>
+    <release version="0.32.1" date="2026-09-30">
+      <description>
+        <p>See CHANGELOG.md for details.</p>
+      </description>
+    </release>
     <release version="0.31.4" date="2026-09-29">
       <description>
         <p>See CHANGELOG.md for details.</p>

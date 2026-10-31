@@ -544,8 +544,17 @@ public sealed class WorkflowOrchestrator : IWorkflowOrchestrator
                     imagePath = filePath;
                 }
 
+                var afterCapture = taskSettings.AfterCaptureJob;
+                var outputKind = ToastOutputClassifier.Resolve(
+                    isError: task.Info?.Result?.IsError == true,
+                    url: url,
+                    fileExists: !string.IsNullOrEmpty(filePath) && File.Exists(filePath),
+                    uploadAttempted: afterCapture.HasFlag(AfterCaptureTasks.UploadImageToHost),
+                    copiedToClipboard: afterCapture.HasFlag(AfterCaptureTasks.CopyImageToClipboard));
+
                 var toastConfig = new ToastConfig
                 {
+                    OutputKind = outputKind,
                     Title = title,
                     Text = text,
                     ErrorDetails = errorDetails,

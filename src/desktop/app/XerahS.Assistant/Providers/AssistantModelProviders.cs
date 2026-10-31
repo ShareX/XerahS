@@ -47,10 +47,12 @@ public static class AssistantModelProviderFactory
 internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
 {
     private readonly AssistantProviderRuntimeSettings _settings;
+    private readonly HttpClient? _client;
 
-    public HttpAssistantModelProvider(AssistantProviderRuntimeSettings settings)
+    public HttpAssistantModelProvider(AssistantProviderRuntimeSettings settings, HttpClient? client = null)
     {
         _settings = settings;
+        _client = client;
     }
 
     public AssistantProviderMetadata Metadata => _settings.Metadata;
@@ -76,15 +78,26 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
         try
         {
             using HttpRequestMessage message = BuildRequest(request);
-            HttpClient client = HttpClientFactory.Create(allowAutoRedirect: true, infiniteTimeout: true);
-            using HttpResponseMessage response = await client.SendAsync(message, cancellationToken);
-            string responseText = await response.Content.ReadAsStringAsync(cancellationToken);
+            HttpClient client = _client ?? HttpClientFactory.Create(allowAutoRedirect: false, infiniteTimeout: true);
+            using HttpResponseMessage response = await client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var limited = new MemoryStream();
+            var buffer = new byte[8192];
+            int read;
+            while ((read = await responseStream.ReadAsync(buffer, cancellationToken)) > 0)
+            {
+                if (limited.Length + read > 2_000_000) return Error("Provider response exceeded the analysis limit.");
+                limited.Write(buffer, 0, read);
+            }
+            string responseText = Encoding.UTF8.GetString(limited.ToArray());
 
             if (!response.IsSuccessStatusCode)
             {
-                return Error($"Provider returned {(int)response.StatusCode}: {TrimForStatus(responseText)}");
+                return Error(request.AllowImageContent ? $"Image analysis provider returned {(int)response.StatusCode}." : $"Provider returned {(int)response.StatusCode}: {TrimForStatus(responseText)}");
             }
 
+            if (request.AllowImageContent && !IsCompleteResponse(responseText))
+                return Error("Image analysis was incomplete.");
             string? text = ExtractText(responseText);
             return string.IsNullOrWhiteSpace(text)
                 ? Error("Provider returned an empty response.")
@@ -96,13 +109,17 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
         }
         catch (Exception ex)
         {
-            DebugHelper.WriteException(ex, $"Assistant provider request failed: {_settings.Metadata.Id}");
+            if (!request.AllowImageContent) DebugHelper.WriteException(ex, $"Assistant provider request failed: {_settings.Metadata.Id}");
             return Error("Provider request failed.");
         }
     }
 
-    private HttpRequestMessage BuildRequest(AssistantModelRequest request)
+    internal HttpRequestMessage BuildRequest(AssistantModelRequest request)
     {
+        var images = request.Messages.SelectMany(message => message.Images ?? []).ToList();
+        if (images.Count > 0 && (!request.AllowImageContent || !_settings.Metadata.SupportsImageInput ||
+            images.Count > 16 || images.Any(image => image.MediaType != "image/png" || image.Data.Length == 0 || image.Data.Length > 20_000_000)))
+            throw new InvalidOperationException("Image input is unavailable or invalid.");
         return _settings.Metadata.Protocol switch
         {
             AssistantProviderProtocol.OpenAiResponses => BuildOpenAiResponsesRequest(request),
@@ -119,8 +136,11 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
         var payload = new
         {
             model = request.ModelId,
-            input = string.Join("\n\n", request.Messages.Select(message => $"{message.Role}: {message.Text}")),
-            max_output_tokens = 80
+            input = request.AllowImageContent
+                ? (object)request.Messages.Select(message => new { role = message.Role.ToString().ToLowerInvariant(), content = ImageParts(message, "responses") })
+                : string.Join("\n\n", request.Messages.Select(message => $"{message.Role}: {message.Text}")),
+            max_output_tokens = Math.Clamp(request.MaxOutputTokens, 80, 8192),
+            store = false
         };
 
         return BuildJsonRequest(HttpMethod.Post, $"{_settings.BaseUrl}/responses", payload, bearerToken: _settings.ApiKey);
@@ -134,9 +154,9 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
             messages = request.Messages.Select(message => new
             {
                 role = message.Role.ToString().ToLowerInvariant(),
-                content = message.Text
+                content = request.AllowImageContent ? (object)ImageParts(message, "chat") : message.Text
             }),
-            max_tokens = 80,
+            max_tokens = Math.Clamp(request.MaxOutputTokens, 80, 8192),
             temperature = 0
         };
 
@@ -152,7 +172,7 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
                 .Select(message => new
                 {
                     role = message.Role == AssistantModelMessageRole.User ? "user" : "model",
-                    parts = new[] { new { text = message.Text } }
+                    parts = ImageParts(message, "gemini")
                 }),
             systemInstruction = new
             {
@@ -162,7 +182,7 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
             },
             generationConfig = new
             {
-                maxOutputTokens = 80,
+                maxOutputTokens = Math.Clamp(request.MaxOutputTokens, 80, 8192),
                 temperature = 0
             }
         };
@@ -176,7 +196,7 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
         var payload = new
         {
             model = request.ModelId,
-            max_tokens = 80,
+            max_tokens = Math.Clamp(request.MaxOutputTokens, 80, 8192),
             temperature = 0,
             system = string.Join("\n", request.Messages.Where(message => message.Role == AssistantModelMessageRole.System).Select(message => message.Text)),
             messages = request.Messages
@@ -184,7 +204,7 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
                 .Select(message => new
                 {
                     role = message.Role == AssistantModelMessageRole.User ? "user" : "assistant",
-                    content = message.Text
+                    content = request.AllowImageContent ? (object)ImageParts(message, "anthropic") : message.Text
                 })
         };
 
@@ -208,6 +228,45 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
         };
 
         return BuildJsonRequest(HttpMethod.Post, $"{_settings.BaseUrl}/api/generate", payload);
+    }
+
+    private static object[] ImageParts(AssistantMessage message, string protocol)
+    {
+        var parts = new List<object>();
+        parts.Add(protocol switch
+        {
+            "responses" => new { type = "input_text", text = message.Text },
+            "gemini" => (object)new { text = message.Text },
+            _ => new { type = "text", text = message.Text }
+        });
+        foreach (var image in message.Images ?? [])
+        {
+            string data = Convert.ToBase64String(image.Data.Span);
+            parts.Add(protocol switch
+            {
+                "responses" => new { type = "input_image", image_url = $"data:{image.MediaType};base64,{data}", detail = "high" },
+                "chat" => (object)new { type = "image_url", image_url = new { url = $"data:{image.MediaType};base64,{data}", detail = "high" } },
+                "gemini" => new { inlineData = new { mimeType = image.MediaType, data } },
+                _ => (object)new { type = "image", source = new { type = "base64", media_type = image.MediaType, data } }
+            });
+        }
+        return parts.ToArray();
+    }
+
+    private bool IsCompleteResponse(string text)
+    {
+        using var document = JsonDocument.Parse(text);
+        var root = document.RootElement;
+        return _settings.Metadata.Protocol switch
+        {
+            AssistantProviderProtocol.OpenAiResponses => root.TryGetProperty("status", out var status) && status.GetString() == "completed",
+            AssistantProviderProtocol.OpenAiCompatibleChat => root.GetProperty("choices").EnumerateArray().All(choice =>
+                choice.TryGetProperty("finish_reason", out var reason) && reason.GetString() == "stop"),
+            AssistantProviderProtocol.GeminiGenerateContent => root.GetProperty("candidates").EnumerateArray().All(candidate =>
+                candidate.TryGetProperty("finishReason", out var reason) && reason.GetString() == "STOP"),
+            AssistantProviderProtocol.AnthropicMessages => root.TryGetProperty("stop_reason", out var reason) && reason.GetString() == "end_turn",
+            _ => false
+        };
     }
 
     private static HttpRequestMessage BuildJsonRequest(HttpMethod method, string url, object payload, string? bearerToken = null)

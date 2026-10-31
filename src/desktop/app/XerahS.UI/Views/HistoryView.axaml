@@ -41,6 +41,7 @@
                     <Button Content="Refresh" Command="{Binding RefreshHistoryCommand}" 
                             IsEnabled="{Binding !IsLoading}"
                             AutomationProperties.Name="Refresh History"/>
+                    <Button Content="Statistics" Click="OnStatisticsClick" AutomationProperties.Name="Show history statistics"/>
                     <!-- List View button: shown when grid view is active -->
                     <Button Command="{Binding ToggleViewCommand}"
                             IsEnabled="{Binding !IsLoading}"

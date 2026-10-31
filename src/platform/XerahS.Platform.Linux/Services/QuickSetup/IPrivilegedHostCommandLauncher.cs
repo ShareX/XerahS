@@ -15,10 +15,8 @@ internal interface IPrivilegedHostCommandLauncher
     ValueTask<(bool IsAvailable, string FailureMessage)> IsAvailableAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Build a <see cref="ProcessStartInfo"/> that will run the supplied
-    /// shell script as root with the chosen launcher. <paramref name="userIdentity"/>
-    /// is passed as <c>$1</c> to the script so it knows which user to grant
-    /// ACL to.
+    /// Builds a <see cref="ProcessStartInfo"/> that runs <paramref name="hostScript"/> as root with the
+    /// selected launcher. <paramref name="userId"/> becomes <c>$1</c> and the device paths follow it.
     /// </summary>
-    ProcessStartInfo CreateStartInfo(string hostScript, string userIdentity);
+    ProcessStartInfo CreateStartInfo(string hostScript, string userId, IReadOnlyList<string> devicePaths);
 }

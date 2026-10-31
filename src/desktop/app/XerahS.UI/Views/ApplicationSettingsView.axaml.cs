@@ -58,13 +58,6 @@ namespace XerahS.UI.Views
                 propertyGrid.PropertyValueChanged += (_, _) => SettingsManager.SaveApplicationConfig();
             }
 
-            // Wire up the edit requester
-            vm.HotkeySettings.EditHotkeyRequester = async (settings) =>
-            {
-                var editorViewModel = uiFactory.CreateWorkflowEditorViewModel(settings);
-                return await uiFactory.ViewDialogService.ShowWorkflowEditorAsync(editorViewModel);
-            };
-
             vm.EditWatchFolderRequester = async (editVm) =>
             {
                 return await uiFactory.ViewDialogService.ShowWatchFolderEditorAsync(editVm);

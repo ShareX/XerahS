@@ -68,9 +68,17 @@ MIT_NOTICE="$(find_notice 'LICENSE' 'LICENSE.md' 'LICENSE.txt' 'COPYING')" || sk
 OFL_NOTICE="$(find_notice 'OFL.txt' 'OFL*.txt' '*OFL*' )" || skip "font OFL license not found"
 ISC_NOTICE="$(find_notice 'LICENSE-lucide*' '*lucide*LICENSE*' 'lucide*.txt' 'ISC*')" || skip "Lucide ISC license not found"
 
-BUILD_DIR="$(mktemp -d)"
+# OMASNAP_BUILD_DIR keeps the CMake build folder between runs so unchanged sources are not
+# recompiled (local packaging sets it; CI leaves it unset and builds in a fresh temp folder).
 STAGING_DIR="$(mktemp -d)"
-trap 'rm -rf "$BUILD_DIR" "$STAGING_DIR"' EXIT
+if [ -n "${OMASNAP_BUILD_DIR:-}" ]; then
+    BUILD_DIR="$OMASNAP_BUILD_DIR"
+    mkdir -p "$BUILD_DIR"
+    trap 'rm -rf "$STAGING_DIR"' EXIT
+else
+    BUILD_DIR="$(mktemp -d)"
+    trap 'rm -rf "$BUILD_DIR" "$STAGING_DIR"' EXIT
+fi
 
 echo "Building OmaSnap from $SOURCE_DIR..."
 if ! cmake -S "$SOURCE_DIR" -B "$BUILD_DIR" -G Ninja \

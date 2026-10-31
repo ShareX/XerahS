@@ -45,6 +45,11 @@ namespace XerahS.UI.Views
             DataContext = UiViewModelFactoryAccessor.GetRequired().CreateHistoryViewModel();
         }
 
+        private void OnStatisticsClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            (TopLevel.GetTopLevel(this) as MainWindow)?.NavigateToStatistics();
+        }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);

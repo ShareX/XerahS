@@ -146,23 +146,17 @@ struct RootView: View {
                 }
             )
         }
+        .alert(item: $appState.importResultAlert) { result in
+            Alert(title: Text(result.title), message: Text(result.message))
+        }
         .onReceive(NotificationCenter.default.publisher(for: .xerahSSettingsDidChange)) { _ in
             settingsRevision += 1
         }
         .onAppear {
-            if let banner = appState.bannerMessage, !banner.isEmpty {
-                showToast(TransientToast(title: nil, message: banner, isError: false))
-                appState.bannerMessage = nil
-            }
             if let pending = appState.pendingNavigation {
                 navigate(to: pending)
                 appState.pendingNavigation = nil
             }
-        }
-        .onChange(of: appState.bannerMessage) { _, newValue in
-            guard let newValue, !newValue.isEmpty else { return }
-            showToast(TransientToast(title: nil, message: newValue, isError: false))
-            appState.bannerMessage = nil
         }
         .onChange(of: appState.pendingNavigation) { _, newValue in
             guard let newValue else { return }

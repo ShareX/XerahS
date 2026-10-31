@@ -177,7 +177,7 @@ namespace XerahS.UI.ViewModels
         }
 
         [ObservableProperty]
-        private HotkeySettingsViewModel _hotkeySettings;
+        private HotkeyDeliveryViewModel _hotkeyDelivery;
 
         public ApplicationConfig ApplicationConfig => SettingsManager.Settings;
 
@@ -204,7 +204,7 @@ namespace XerahS.UI.ViewModels
         {
             _cloudClient = cloudClient;
             _cloudOAuthCoordinator = cloudOAuthCoordinator;
-            HotkeySettings = new HotkeySettingsViewModel();
+            HotkeyDelivery = new HotkeyDeliveryViewModel();
             WatchFolders.CollectionChanged += (_, _) =>
             {
                 HasWatchFolders = WatchFolders.Count > 0;
@@ -222,7 +222,7 @@ namespace XerahS.UI.ViewModels
         /// </summary>
         private static readonly HashSet<string> AutoSaveExclusions = new()
         {
-            nameof(HotkeySettings),
+            nameof(HotkeyDelivery),
             nameof(SelectedWatchFolder),
             nameof(HasWatchFolders),
             nameof(HasMcpApiKey),

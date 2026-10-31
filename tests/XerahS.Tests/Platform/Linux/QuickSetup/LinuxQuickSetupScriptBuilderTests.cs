@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 ShareX Team.
 using NUnit.Framework;
+using System.Diagnostics;
 using XerahS.Platform.Linux.Services.QuickSetup;
 
 namespace XerahS.Tests.Platform.Linux.QuickSetup;
@@ -8,45 +9,85 @@ namespace XerahS.Tests.Platform.Linux.QuickSetup;
 public class LinuxQuickSetupScriptBuilderTests
 {
     [Test]
-    public void Build_DefaultOptions_SetsReadAclOnEventDevices()
+    public void Build_GrantsReadOnlyAclToTheNumericUid()
     {
-        string script = LinuxQuickSetupScriptBuilder.Build(new LinuxQuickSetupScriptOptions());
+        string script = LinuxQuickSetupScriptBuilder.Build();
 
-        Assert.That(script, Does.Contain("set -eu"));
-        Assert.That(script, Does.Contain("TARGET_IDENTITY=\"$1\""));
-        Assert.That(script, Does.Contain("/dev/input/event*"));
-        Assert.That(script, Does.Contain("u:${TARGET_IDENTITY}:r"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(script, Does.Contain("set -eu"));
+            Assert.That(script, Does.Contain("u:${TARGET_UID}:r\""));
+            Assert.That(script, Does.Not.Contain(":rw"));
+            Assert.That(script, Does.Not.Contain("uinput"));
+        });
     }
 
     [Test]
-    public void Build_UInputRequired_SetsRwAclOnUInput()
+    public void Build_SearchesNixOSAndFhsToolDirectories()
     {
-        var options = new LinuxQuickSetupScriptOptions(RequireInputEvents: true, RequireUInputDevice: true);
+        string script = LinuxQuickSetupScriptBuilder.Build();
 
-        string script = LinuxQuickSetupScriptBuilder.Build(options);
+        Assert.That(script, Does.Contain("/run/wrappers/bin:/run/current-system/sw/bin:"));
+    }
 
-        Assert.That(script, Does.Contain("/dev/uinput"));
-        Assert.That(script, Does.Contain("/dev/input/uinput"));
-        Assert.That(script, Does.Contain("u:${TARGET_IDENTITY}:rw"));
-        Assert.That(script, Does.Contain("uinput_ok=1"));
-        Assert.That(script, Does.Contain("exit 24"));
+    [TestCase("")]
+    [TestCase("alice")]
+    [TestCase("1000;id")]
+    [TestCase("-1")]
+    public void Script_RejectsANonNumericUid(string uid)
+    {
+        int exitCode = RunScript(uid, "/dev/input/event0");
+
+        Assert.That(exitCode, Is.EqualTo(LinuxQuickSetupScriptBuilder.InvalidUserExitCode));
     }
 
     [Test]
-    public void Build_RequireInputEvents_ReportsMissingEventExitCode()
+    public void Script_RejectsAnEmptyDeviceList()
     {
-        string script = LinuxQuickSetupScriptBuilder.Build(new LinuxQuickSetupScriptOptions(RequireInputEvents: true, RequireUInputDevice: false));
+        int exitCode = RunScript("1000");
 
-        Assert.That(script, Does.Contain("event_ok=1"));
-        Assert.That(script, Does.Contain("exit 25"));
+        Assert.That(exitCode, Is.EqualTo(LinuxQuickSetupScriptBuilder.NoDevicesExitCode));
     }
 
-    [Test]
-    public void Build_MissingSetfacl_ReportsMissingToolExitCode()
+    [TestCase("/etc/shadow")]
+    [TestCase("/dev/input/mice")]
+    [TestCase("/dev/input/event")]
+    [TestCase("/dev/input/event1abc")]
+    [TestCase("/dev/input/event0/../../../etc/shadow")]
+    [TestCase("/dev/uinput")]
+    public void Script_RejectsAnythingButAnInputEventDevice(string path)
     {
-        string script = LinuxQuickSetupScriptBuilder.Build(new LinuxQuickSetupScriptOptions());
+        // A valid path first proves validation covers every argument before any ACL changes.
+        int exitCode = RunScript("1000", "/dev/input/event0", path);
 
-        Assert.That(script, Does.Contain("setfacl is missing"));
-        Assert.That(script, Does.Contain("exit 22"));
+        Assert.That(exitCode, Is.EqualTo(LinuxQuickSetupScriptBuilder.InvalidDeviceExitCode));
+    }
+
+    private static int RunScript(params string[] arguments)
+    {
+        if (!OperatingSystem.IsLinux() || !File.Exists("/bin/sh"))
+        {
+            Assert.Ignore("The Quick Setup script only runs on Linux.");
+        }
+
+        var startInfo = new ProcessStartInfo("/bin/sh")
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+        };
+        startInfo.ArgumentList.Add("-c");
+        startInfo.ArgumentList.Add(LinuxQuickSetupScriptBuilder.Build());
+        startInfo.ArgumentList.Add("xerahs-quick-setup");
+        foreach (string argument in arguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        using Process process = Process.Start(startInfo)!;
+        process.StandardOutput.ReadToEnd();
+        process.StandardError.ReadToEnd();
+        Assert.That(process.WaitForExit(10_000), Is.True, "The script did not finish.");
+        return process.ExitCode;
     }
 }

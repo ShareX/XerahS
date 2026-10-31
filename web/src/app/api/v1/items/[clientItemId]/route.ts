@@ -1,10 +1,9 @@
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
 import { rpc, type GalleryItem } from "@/lib/database";
 import { enforceSameOriginMutation, readJson } from "@/lib/request";
 import { empty, json, pending } from "@/lib/responses";
 import { handleApi } from "@/lib/route-handler";
 import { attemptImmediateLedgerDispatch } from "@/lib/ledger/dispatcher";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   clientItemIdSchema,
   publishSchema,
@@ -34,7 +33,7 @@ export async function PUT(request: Request, context: RouteContext) {
     );
     const body = publishSchema.parse(await readJson(request));
     const item = await rpc<GalleryItem>(
-      await createSupabaseServerClient(request),
+      await createUserDatabaseClient(request),
       "publish_gallery_item",
       {
         p_client_item_id: clientItemId,
@@ -61,9 +60,9 @@ export async function DELETE(request: Request, context: RouteContext) {
     const clientItemId = clientItemIdSchema.parse(
       (await context.params).clientItemId,
     );
-    const supabase = await createSupabaseServerClient(request);
+    const database = await createUserDatabaseClient(request);
     let result = await rpc<UnpublishResult>(
-      supabase,
+      database,
       "request_gallery_item_unpublish",
       {
         p_client_item_id: clientItemId,
@@ -74,7 +73,7 @@ export async function DELETE(request: Request, context: RouteContext) {
     if (!result.replicated && result.operationId) {
       await attemptImmediateLedgerDispatch(1);
       result = await rpc<UnpublishResult>(
-        supabase,
+        database,
         "request_gallery_item_unpublish",
         {
           p_client_item_id: clientItemId,

@@ -25,7 +25,7 @@
 import UIKit
 import UniformTypeIdentifiers
 
-private let appGroupId = "group.com.xerahs.xerahs"
+private let appGroupId = AppIdentifiers.appGroupId
 private let pendingPathsKey = "PendingSharedPaths"
 private let pendingSxcuImportsKey = "PendingSxcuImports"
 private let pendingXsdcImportsKey = "PendingXsdcImports"
@@ -263,8 +263,8 @@ final class ShareViewController: UIViewController {
             return
         }
 
-        updateStatus("Uploading...")
-
+        // Apps often share a .sxcu or .xsdc as generic JSON/text/data without its name, so recognise it by content.
+        let savedPaths = savedPaths.map(Self.renamingImportFileByContent)
         let sxcuPaths = savedPaths.filter { ($0 as NSString).pathExtension.lowercased() == "sxcu" }
         let xsdcPaths = savedPaths.filter { ($0 as NSString).pathExtension.lowercased() == "xsdc" }
         let uploadPaths = savedPaths.filter {
@@ -281,11 +281,23 @@ final class ShareViewController: UIViewController {
         }
 
         if uploadPaths.isEmpty {
+            // Share extensions usually cannot open their app, so say where the import continues.
+            let names = sxcuPaths.compactMap(Self.sxcuUploaderName)
+            if !names.isEmpty {
+                updateStatus("Open XerahS to add the \(names.joined(separator: ", ")) uploader.")
+            } else if !xsdcPaths.isEmpty {
+                updateStatus("Open XerahS and enter the passphrase to import the destination config.")
+            } else {
+                updateStatus("Open XerahS to finish importing.")
+            }
             openContainingApp()
-            extensionContext?.completeRequest(returningItems: nil, completionHandler: nil)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                self?.extensionContext?.completeRequest(returningItems: nil, completionHandler: nil)
+            }
             return
         }
 
+        updateStatus("Uploading...")
         Task { [weak self] in
             guard let self else { return }
             let results = await self.uploadService.uploadFiles(uploadPaths)
@@ -328,6 +340,44 @@ final class ShareViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
             self?.extensionContext?.completeRequest(returningItems: nil, completionHandler: nil)
         }
+    }
+
+    /// A small JSON object with a RequestURL is a ShareX custom uploader, and one whose Format is
+    /// XerahS.DestinationConfig is an encrypted destination config, whatever they were shared as;
+    /// give them their extension so they are imported instead of uploaded.
+    private static func renamingImportFileByContent(_ path: String) -> String {
+        let ext = (path as NSString).pathExtension.lowercased()
+        guard ["", "json", "txt", "text", "bin", "data"].contains(ext),
+              let size = (try? FileManager.default.attributesOfItem(atPath: path)[.size]) as? Int,
+              size <= 64 * 1024 else { return path }
+        let targetExt: String
+        if sxcuDefinition(atPath: path) != nil {
+            targetExt = "sxcu"
+        } else if isDestinationConfig(atPath: path) {
+            targetExt = "xsdc"
+        } else {
+            return path
+        }
+        let base = ext.isEmpty ? path : (path as NSString).deletingPathExtension
+        let renamed = base + "." + targetExt
+        return (try? FileManager.default.moveItem(atPath: path, toPath: renamed)) != nil ? renamed : path
+    }
+
+    private static func isDestinationConfig(atPath path: String) -> Bool {
+        guard let data = FileManager.default.contents(atPath: path),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return false }
+        return object["Format"] as? String == "XerahS.DestinationConfig"
+    }
+
+    private static func sxcuDefinition(atPath path: String) -> SxcuDefinition? {
+        guard let data = FileManager.default.contents(atPath: path),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let requestURL = object["RequestURL"] as? String, !requestURL.isEmpty else { return nil }
+        return try? JSONDecoder().decode(SxcuDefinition.self, from: data)
+    }
+
+    private static func sxcuUploaderName(_ path: String) -> String? {
+        sxcuDefinition(atPath: path).map { CustomUploaderEntry.from(sxcu: $0).displayName }
     }
 
     private func enqueueForMainApp(paths: [String], key: String) {

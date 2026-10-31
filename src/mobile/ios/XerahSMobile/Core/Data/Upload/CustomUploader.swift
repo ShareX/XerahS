@@ -101,7 +101,7 @@ final class CustomUploader {
             )
         case .binary:
             if request.value(forHTTPHeaderField: "Content-Type") == nil {
-                request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
+                request.setValue(UploadContentType.forFile(atPath: uploadFileName), forHTTPHeaderField: "Content-Type")
             }
             request.httpBody = fileData
         case .formUrlEncoded:
@@ -295,7 +295,7 @@ final class CustomUploader {
 
         body.append("--\(boundary)\r\n".utf8Data)
         body.append("Content-Disposition: form-data; name=\"\(fileFormName)\"; filename=\"\(uploadFileName)\"\r\n".utf8Data)
-        body.append("Content-Type: application/octet-stream\r\n\r\n".utf8Data)
+        body.append("Content-Type: \(UploadContentType.forFile(atPath: uploadFileName))\r\n\r\n".utf8Data)
         body.append(fileData)
         body.append("\r\n--\(boundary)--\r\n".utf8Data)
         return body

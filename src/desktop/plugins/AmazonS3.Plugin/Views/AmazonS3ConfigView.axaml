@@ -222,7 +222,10 @@
                        TextWrapping="Wrap"
                        MaxWidth="400"
                        HorizontalAlignment="Left"/>
-            <TextBlock Text="Media Explorer starts at the static folder before the first name token. Browsing needs bucket-level list permission even when existing object upload, download, or delete permissions work. On AWS, allow s3:ListBucket on the bucket ARN and use an s3:prefix condition to restrict it to this folder; other S3-compatible services use their equivalent permission."
+            <CheckBox Content="Browse the whole bucket in Media Explorer"
+                      IsChecked="{Binding ExplorerBrowseWholeBucket}"
+                      Margin="0,4,0,0"/>
+            <TextBlock Text="Media Explorer starts at the static folder before the first name token, or at the bucket root when the box above is ticked. Browsing needs bucket-level list permission even when existing object upload, download, or delete permissions work. On AWS, allow s3:ListBucket on the bucket ARN, and to restrict it to this folder add an s3:prefix condition; other S3-compatible services use their equivalent permission."
                        FontSize="11"
                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                        TextWrapping="Wrap"
