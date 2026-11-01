@@ -37,7 +37,10 @@ async function loadSettingsData(): Promise<SettingsData | null> {
   }
 }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: Readonly<{ searchParams?: Promise<{ checkout?: string }> }>) {
+  const checkout = (await searchParams)?.checkout;
   const data = await loadSettingsData();
   if (!data) {
     return (
@@ -100,6 +103,8 @@ export default async function SettingsPage() {
         <SettingsControls
           strongAuth={user.aal === "aal2"}
           trialStatus={summary.trialStatus}
+          subscriptionStatus={summary.subscriptionStatus ?? null}
+          checkout={checkout}
         />
       )}
     </section>

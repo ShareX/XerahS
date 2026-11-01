@@ -1,19 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { authClient, authErrorMessage } from "@/lib/auth-client";
+import { waitForActiveSubscription } from "@/lib/billing-poll";
 
 interface Props {
   strongAuth: boolean;
   trialStatus: string;
+  subscriptionStatus?: string | null;
+  checkout?: string;
 }
 
-export function SettingsControls({ strongAuth, trialStatus }: Props) {
+type Confirmation = "idle" | "waiting" | "active" | "timeout";
+
+export function SettingsControls({
+  strongAuth,
+  trialStatus,
+  subscriptionStatus = null,
+  checkout,
+}: Props) {
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [confirmation, setConfirmation] = useState<Confirmation>(
+    checkout === "success"
+      ? subscriptionStatus === "active"
+        ? "active"
+        : "waiting"
+      : "idle",
+  );
+
+  useEffect(() => {
+    if (confirmation !== "waiting") return;
+    let cancelled = false;
+    void waitForActiveSubscription(async () => {
+      const response = await fetch("/api/v1/me", { cache: "no-store" });
+      return response.ok ? await response.json() : null;
+    }).then((result) => {
+      if (cancelled) return;
+      setConfirmation(result);
+      if (result === "active") router.refresh();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [confirmation, router]);
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
 
   async function post(path: string, body?: unknown) {
@@ -144,10 +179,43 @@ export function SettingsControls({ strongAuth, trialStatus }: Props) {
           protected gallery and billing actions.
         </p>
       )}
+      {checkout === "success" && confirmation === "waiting" && (
+        <p className="notice" role="status">
+          Payment received. Confirming your subscription…
+        </p>
+      )}
+      {checkout === "success" && confirmation === "active" && (
+        <p className="notice" role="status">
+          Your subscription is active. Publishing is enabled.
+        </p>
+      )}
+      {checkout === "success" && confirmation === "timeout" && (
+        <p className="notice" role="status">
+          Your payment is being confirmed. This can take a minute. Refresh this
+          page shortly; if the status does not change, contact support.
+        </p>
+      )}
+      {checkout === "cancelled" && (
+        <p className="notice" role="status">
+          Checkout was cancelled. You have not been charged.
+        </p>
+      )}
+      <label className="agree">
+        <input
+          checked={agreed}
+          onChange={(event) => setAgreed(event.target.checked)}
+          type="checkbox"
+        />
+        <span>
+          I agree to the <Link href="/legal/terms">Terms</Link>, the{" "}
+          <Link href="/legal/privacy">Privacy Policy</Link> and the{" "}
+          <Link href="/legal/refunds">Refund Policy</Link>.
+        </span>
+      </label>
       {trialStatus === "not_started" && (
         <button
           className="primary"
-          disabled={busy}
+          disabled={busy || !agreed}
           onClick={() => void post("/api/v1/trial/start")}
         >
           Start 7-day trial
@@ -155,7 +223,7 @@ export function SettingsControls({ strongAuth, trialStatus }: Props) {
       )}
       <div className="actions">
         <button
-          disabled={busy}
+          disabled={busy || !agreed}
           onClick={() =>
             void post("/api/v1/billing/checkout", { plan: "monthly" })
           }
@@ -163,7 +231,7 @@ export function SettingsControls({ strongAuth, trialStatus }: Props) {
           Subscribe monthly · $1.99 USD
         </button>
         <button
-          disabled={busy}
+          disabled={busy || !agreed}
           onClick={() =>
             void post("/api/v1/billing/checkout", { plan: "annual" })
           }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getOptionalAuthenticatedUser } from "@/lib/auth";
+import { LEGAL_ENTITY, LEGAL_LINKS } from "@/lib/legal";
 
 import "./globals.css";
 
@@ -47,6 +48,16 @@ export default async function RootLayout({
           </nav>
         </header>
         <main className="shell main">{children}</main>
+        <footer className="shell site-footer">
+          <nav aria-label="Legal">
+            {LEGAL_LINKS.map((link) => (
+              <Link key={link.href} href={link.href}>
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <span>{LEGAL_ENTITY}</span>
+        </footer>
       </body>
     </html>
   );
