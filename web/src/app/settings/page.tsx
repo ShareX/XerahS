@@ -3,7 +3,11 @@ import Link from "next/link";
 import { MfaControls } from "@/components/mfa-controls";
 import { ProfileSetup } from "@/components/profile-setup";
 import { SettingsControls } from "@/components/settings-controls";
-import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
+import {
+  createUserDatabaseClient,
+  hasRecentStrongAuth,
+  requireAuthenticatedUser,
+} from "@/lib/auth";
 import { getAccountSummary } from "@/lib/database";
 import { getPublicEnv, getServerEnv } from "@/lib/env";
 import { ApiError } from "@/lib/errors";
@@ -97,11 +101,13 @@ export default async function SettingsPage({
       <MfaControls
         passkeysEnabled={getPublicEnv().NEXT_PUBLIC_PASSKEYS_ENABLED}
         strongAuth={user.aal === "aal2"}
+        recentStrong={hasRecentStrongAuth(user)}
       />
       {!summary && user.aal === "aal2" && <ProfileSetup />}
       {summary && (
         <SettingsControls
           strongAuth={user.aal === "aal2"}
+          recentStrong={hasRecentStrongAuth(user)}
           trialStatus={summary.trialStatus}
           subscriptionStatus={summary.subscriptionStatus ?? null}
           checkout={checkout}

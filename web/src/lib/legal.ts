@@ -1,5 +1,5 @@
 /** Shared facts for the legal pages and the Checkout wording. */
-export const LEGAL_ENTITY = "Delpach Family Solutions Pty Ltd";
+export const LEGAL_ENTITY = "ShareX Team";
 export const LEGAL_COUNTRY = "Australia";
 export const GOVERNING_LAW = "Western Australia, Australia";
 /** Bump when the Terms, Privacy Policy or Refund Policy change materially. */

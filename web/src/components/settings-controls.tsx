@@ -9,15 +9,21 @@ import { waitForActiveSubscription } from "@/lib/billing-poll";
 
 interface Props {
   strongAuth: boolean;
+  /** False when the last second-factor check is older than billing accepts. */
+  recentStrong?: boolean;
   trialStatus: string;
   subscriptionStatus?: string | null;
   checkout?: string;
 }
 
+const STRONG_AUTH_EXPIRED =
+  "Your authenticator check has expired. Enter a fresh code under Two-factor authentication above, then try again.";
+
 type Confirmation = "idle" | "waiting" | "active" | "timeout";
 
 export function SettingsControls({
   strongAuth,
+  recentStrong = true,
   trialStatus,
   subscriptionStatus = null,
   checkout,
@@ -61,11 +67,15 @@ export function SettingsControls({
     });
     const result = (await response.json().catch(() => ({}))) as {
       url?: string;
-      error?: { message?: string };
+      error?: { code?: string; message?: string };
     };
     setBusy(false);
     if (!response.ok) {
-      setMessage(result.error?.message ?? "The request failed.");
+      setMessage(
+        result.error?.code === "strong_auth_required"
+          ? STRONG_AUTH_EXPIRED
+          : (result.error?.message ?? "The request failed."),
+      );
       return;
     }
     if (result.url) location.assign(result.url);
@@ -177,6 +187,11 @@ export function SettingsControls({
         <p className="error">
           Complete an authenticator challenge in this session before using
           protected gallery and billing actions.
+        </p>
+      )}
+      {strongAuth && !recentStrong && (
+        <p className="error" role="status">
+          {STRONG_AUTH_EXPIRED}
         </p>
       )}
       {checkout === "success" && confirmation === "waiting" && (
