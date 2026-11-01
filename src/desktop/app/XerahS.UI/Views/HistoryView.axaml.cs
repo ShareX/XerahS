@@ -45,12 +45,47 @@ namespace XerahS.UI.Views
             InitializeComponent();
             _gridHistoryListBox = this.FindControl<ListBox>("GridHistoryListBox");
             _listHistoryListBox = this.FindControl<ListBox>("ListHistoryListBox");
-            DataContext = UiViewModelFactoryAccessor.GetRequired().CreateHistoryViewModel();
+            HistoryViewModel viewModel = UiViewModelFactoryAccessor.GetRequired().CreateHistoryViewModel();
+            viewModel.SelectionRestored += OnSelectionRestored;
+            DataContext = viewModel;
             AttachedToVisualTree += (_, _) => HistoryManager.HistoryAppended += OnHistoryAppended;
             DetachedFromVisualTree += (_, _) => HistoryManager.HistoryAppended -= OnHistoryAppended;
         }
 
         private int _refreshQueued;
+
+        /// <summary>The reload replaced the list items, so put the user's selection back on the new ones.</summary>
+        private void OnSelectionRestored(IReadOnlyList<HistoryItem> restored)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                _isSynchronizingSelection = true;
+
+                try
+                {
+                    foreach (ListBox? listBox in new[] { _gridHistoryListBox, _listHistoryListBox })
+                    {
+                        if (listBox?.SelectedItems == null)
+                        {
+                            continue;
+                        }
+
+                        listBox.SelectedItems.Clear();
+
+                        foreach (HistoryItem item in restored)
+                        {
+                            listBox.SelectedItems.Add(item);
+                        }
+                    }
+                }
+                finally
+                {
+                    _isSynchronizingSelection = false;
+                }
+
+                (DataContext as HistoryViewModel)?.SetSelectedHistoryItems(restored);
+            }, DispatcherPriority.Loaded);
+        }
 
         /// <summary>A task finished and saved a history entry: reload, coalescing bursts into one refresh.</summary>
         private void OnHistoryAppended()

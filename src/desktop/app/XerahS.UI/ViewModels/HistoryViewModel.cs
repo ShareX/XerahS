@@ -200,7 +200,20 @@ namespace XerahS.UI.ViewModels
         }
 
         /// <summary>Reloads the current page, e.g. after a finished task added a history entry.</summary>
-        public Task ReloadAsync() => LoadHistoryAsync();
+        public Task ReloadAsync()
+        {
+            if (SelectedHistoryItems.Count > 0)
+            {
+                Interlocked.Exchange(ref _selectionToRestore, SelectedHistoryItems.Select(item => item.Id).ToHashSet());
+            }
+
+            return LoadHistoryAsync();
+        }
+
+        private HashSet<long>? _selectionToRestore;
+
+        /// <summary>Raised after a reload that kept the user's selection; carries the re-matched items.</summary>
+        public event Action<IReadOnlyList<HistoryItem>>? SelectionRestored;
 
         [RelayCommand]
         private async Task LoadHistoryAsync()
@@ -255,8 +268,20 @@ namespace XerahS.UI.ViewModels
                 }
                 else
                 {
+                    HashSet<long>? restoreIds = Interlocked.Exchange(ref _selectionToRestore, null);
                     ClearSelectedHistoryItems();
                     HistoryItems = new ObservableCollection<HistoryItem>(items);
+
+                    if (restoreIds != null)
+                    {
+                        List<HistoryItem> restored = items.Where(item => restoreIds.Contains(item.Id)).ToList();
+
+                        if (restored.Count > 0)
+                        {
+                            SetSelectedHistoryItems(restored);
+                            SelectionRestored?.Invoke(restored);
+                        }
+                    }
 
                     DebugHelper.WriteLine($"History loaded: {items.Count} items (Page {CurrentPage}/{TotalPages})");
 
