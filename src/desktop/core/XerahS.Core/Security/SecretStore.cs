@@ -645,7 +645,51 @@ public sealed class SecretStore : ISecretStore, ISecretStoreInfo
 
         public static bool IsAvailable()
         {
-            return CommandExists("secret-tool", "--version");
+            return ProbeKeyring();
+        }
+
+        /// <summary>
+        /// secret-tool has no --version option (it exits 2), so look up a key that does not exist instead.
+        /// A reachable keyring answers "not found" (exit 1) with nothing on stderr; a missing or locked-out
+        /// Secret Service writes an error such as "Could not connect" to stderr.
+        /// </summary>
+        private static bool ProbeKeyring()
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "secret-tool",
+                    Arguments = "lookup service xerahs-keyring-probe key availability-check",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using var process = Process.Start(psi);
+                if (process == null)
+                {
+                    return false;
+                }
+
+                process.StandardInput.Close();
+                Task<string> stderr = process.StandardError.ReadToEndAsync();
+                process.StandardOutput.ReadToEndAsync();
+
+                if (!process.WaitForExit(5000))
+                {
+                    try { process.Kill(); } catch { }
+                    return false;
+                }
+
+                return process.ExitCode is 0 or 1 && string.IsNullOrWhiteSpace(stderr.GetAwaiter().GetResult());
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public string? GetSecret(string providerId, string secretKey, string name)
