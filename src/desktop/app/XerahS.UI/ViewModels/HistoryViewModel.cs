@@ -690,41 +690,71 @@ namespace XerahS.UI.ViewModels
             }
         }
 
-        [RelayCommand]
-        private async Task CopyFilePath(HistoryItem? item)
+        /// <summary>
+        /// The entries a copy action applies to: the whole selection when the clicked entry is part of a
+        /// multi-selection, otherwise just the clicked entry.
+        /// </summary>
+        internal IReadOnlyList<HistoryItem> GetCopyTargets(HistoryItem item)
         {
-            if (item == null || string.IsNullOrEmpty(item.FilePath)) return;
+            return SelectedHistoryItems.Count > 1 && SelectedHistoryItems.Contains(item)
+                ? SelectedHistoryItems.ToList()
+                : new List<HistoryItem> { item };
+        }
+
+        internal bool IsInMultiSelection(HistoryItem item) => SelectedHistoryItems.Count > 1 && SelectedHistoryItems.Contains(item);
+
+        /// <summary>One value per line, in the order shown in History; blank values are skipped.</summary>
+        internal static string JoinLines(IEnumerable<string?> values) =>
+            string.Join(Environment.NewLine, values.Where(value => !string.IsNullOrEmpty(value)));
+
+        public bool HasMultipleSelection => SelectedHistoryItems.Count > 1;
+        public int SelectedPathCount => SelectedHistoryItems.Count(item => !string.IsNullOrEmpty(item.FilePath));
+        public int SelectedUrlCount => SelectedHistoryItems.Count(item => !string.IsNullOrEmpty(item.URL));
+        public bool CanCopySelectedPaths => SelectedPathCount > 0;
+        public bool CanCopySelectedUrls => SelectedUrlCount > 0;
+        public string SelectionSummary => $"{SelectedHistoryItems.Count} selected";
+
+        private static async Task CopyTextAsync(string text, string what)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
 
             try
             {
                 if (PlatformServices.IsInitialized)
                 {
-                    await PlatformServices.Clipboard.SetTextAsync(item.FilePath);
+                    await PlatformServices.Clipboard.SetTextAsync(text);
                 }
             }
             catch (Exception ex)
             {
-                DebugHelper.WriteLine($"Failed to copy file path: {ex.Message}");
+                DebugHelper.WriteLine($"Failed to copy {what}: {ex.Message}");
             }
+        }
+
+        [RelayCommand]
+        private async Task CopyFilePath(HistoryItem? item)
+        {
+            if (item == null) return;
+
+            await CopyTextAsync(JoinLines(GetCopyTargets(item).Select(target => target.FilePath)), "file path");
         }
 
         [RelayCommand]
         private async Task CopyURL(HistoryItem? item)
         {
-            if (item == null || string.IsNullOrEmpty(item.URL)) return;
+            if (item == null) return;
 
-            try
-            {
-                if (PlatformServices.IsInitialized)
-                {
-                    await PlatformServices.Clipboard.SetTextAsync(item.URL);
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteLine($"Failed to copy URL: {ex.Message}");
-            }
+            await CopyTextAsync(JoinLines(GetCopyTargets(item).Select(target => target.URL)), "URL");
         }
+
+        [RelayCommand]
+        private Task CopySelectedPaths() => CopyTextAsync(JoinLines(SelectedHistoryItems.Select(item => item.FilePath)), "file paths");
+
+        [RelayCommand]
+        private Task CopySelectedUrls() => CopyTextAsync(JoinLines(SelectedHistoryItems.Select(item => item.URL)), "URLs");
 
         [RelayCommand]
         private async Task CopyMarkdownImage(HistoryItem? item)
@@ -1210,6 +1240,12 @@ namespace XerahS.UI.ViewModels
             OnPropertyChanged(nameof(ShowCombineActions));
             OnPropertyChanged(nameof(SelectedImageCount));
             OnPropertyChanged(nameof(CombineSelectionSummary));
+            OnPropertyChanged(nameof(HasMultipleSelection));
+            OnPropertyChanged(nameof(SelectedPathCount));
+            OnPropertyChanged(nameof(SelectedUrlCount));
+            OnPropertyChanged(nameof(CanCopySelectedPaths));
+            OnPropertyChanged(nameof(CanCopySelectedUrls));
+            OnPropertyChanged(nameof(SelectionSummary));
         }
 
         private List<HistoryItem> GetSelectedCombinableHistoryItems()

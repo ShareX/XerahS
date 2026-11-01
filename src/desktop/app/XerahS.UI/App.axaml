@@ -54,10 +54,10 @@
                           Command="{Binding OpenFolderCommand}"
                           IsVisible="{Binding Item.HasFilePath}"/>
                 <Separator/>
-                <MenuItem Header="Copy Path"
+                <MenuItem Header="{Binding CopyFilePathHeader}"
                           Command="{Binding CopyFilePathCommand}"
                           IsVisible="{Binding Item.HasFilePath}"/>
-                <MenuItem Header="Copy URL"
+                <MenuItem Header="{Binding CopyUrlHeader}"
                           Command="{Binding CopyURLCommand}"
                           IsVisible="{Binding Item.URL, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
                 <MenuItem Header="Copy markdown image"
