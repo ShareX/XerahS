@@ -199,6 +199,9 @@ namespace XerahS.UI.ViewModels
             await LoadHistoryAsync();
         }
 
+        /// <summary>Reloads the current page, e.g. after a finished task added a history entry.</summary>
+        public Task ReloadAsync() => LoadHistoryAsync();
+
         [RelayCommand]
         private async Task LoadHistoryAsync()
         {

@@ -32,6 +32,39 @@ namespace XerahS.Tests.Assistant;
 public sealed class HistoryManagerSQLiteTests
 {
     [Test]
+    public void AppendHistoryItem_RaisesHistoryAppendedOnlyForSavedItems()
+    {
+        string tempDirectory = Path.Combine(Path.GetTempPath(), $"xerahs-history-tests-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDirectory);
+        int raised = 0;
+        Action handler = () => Interlocked.Increment(ref raised);
+        HistoryManager.HistoryAppended += handler;
+
+        try
+        {
+            using var manager = new HistoryManagerSQLite(Path.Combine(tempDirectory, "history.db"));
+            manager.AppendHistoryItem(new HistoryItem { FileName = string.Empty });
+            Assert.That(raised, Is.EqualTo(0));
+
+            Assert.That(manager.AppendHistoryItem(new HistoryItem
+            {
+                FileName = "done.png",
+                DateTime = new DateTime(2026, 11, 2, 12, 0, 0, DateTimeKind.Utc),
+                URL = "https://cdn.example.test/done.png"
+            }), Is.True);
+            Assert.That(raised, Is.EqualTo(1));
+        }
+        finally
+        {
+            HistoryManager.HistoryAppended -= handler;
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Test]
     public void GetHistoryItem_ReturnsExactDurableRow()
     {
         string tempDirectory = Path.Combine(Path.GetTempPath(), $"xerahs-history-tests-{Guid.NewGuid():N}");

@@ -212,7 +212,7 @@
                         </Border>
 
                         <!-- Highlights -->
-                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                        <Grid x:Name="HighlightsGrid" ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
                             <Border Grid.Column="0" Classes="section-card">
                                 <StackPanel>
                                     <TextBlock Classes="section-title" Text="{x:Static localization:StatisticsStrings.StatsWindow_Today}"/>
@@ -300,7 +300,7 @@
                         </Border>
 
                         <!-- Breakdowns -->
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Grid x:Name="BreakdownGridA" ColumnDefinitions="*,*" ColumnSpacing="8">
                             <Border Classes="section-card">
                                 <StackPanel>
                                     <Grid Classes="section-header" ColumnDefinitions="Auto,*">
@@ -321,7 +321,7 @@
                             </Border>
                         </Grid>
 
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Grid x:Name="BreakdownGridB" ColumnDefinitions="*,*" ColumnSpacing="8">
                             <Border Classes="section-card">
                                 <StackPanel>
                                     <Grid Classes="section-header" ColumnDefinitions="Auto,*">

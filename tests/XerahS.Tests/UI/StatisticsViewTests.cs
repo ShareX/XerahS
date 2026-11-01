@@ -92,6 +92,8 @@ public class StatisticsViewTests
                 window.Height = 900;
                 Dispatcher.UIThread.RunJobs();
                 Capture(window, $"statistics-dashboard-{theme.Key}");
+                Assert.That(view.FindControl<Grid>("HighlightsGrid")!.ColumnDefinitions, Has.Count.EqualTo(4));
+                Assert.That(view.FindControl<Grid>("BreakdownGridA")!.ColumnDefinitions, Has.Count.EqualTo(2));
                 using var snapshot = view.RenderSnapshot();
                 Assert.Multiple(() =>
                 {
@@ -104,6 +106,19 @@ public class StatisticsViewTests
             Dispatcher.UIThread.RunJobs();
             Assert.That(chart.Bounds.Width, Is.GreaterThan(500));
             Capture(window, "statistics-dashboard-small");
+            Assert.That(view.FindControl<Grid>("HighlightsGrid")!.ColumnDefinitions, Has.Count.EqualTo(2), "Highlights wrap to two columns in a narrow window.");
+            window.Width = 640;
+            Dispatcher.UIThread.RunJobs();
+            Assert.Multiple(() =>
+            {
+                Assert.That(view.FindControl<Grid>("BreakdownGridA")!.ColumnDefinitions, Has.Count.EqualTo(1));
+                Assert.That(view.FindControl<Grid>("BreakdownGridB")!.ColumnDefinitions, Has.Count.EqualTo(1));
+                Assert.That(view.FindControl<StatsHourChart>("HourChart")!.Bounds.Width, Is.GreaterThan(400));
+                Assert.That(view.Bounds.Width, Is.LessThanOrEqualTo(window.Width));
+            });
+            window.Width = 1060;
+            Dispatcher.UIThread.RunJobs();
+            Assert.That(view.FindControl<Grid>("HighlightsGrid")!.ColumnDefinitions, Has.Count.EqualTo(4), "Widening restores the four-column layout.");
         }
         finally { window.Close(); }
     }
