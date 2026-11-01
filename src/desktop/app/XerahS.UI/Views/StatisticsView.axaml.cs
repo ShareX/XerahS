@@ -48,7 +48,7 @@ namespace XerahS.UI.Views;
 
 public sealed record StatsRow(string Label, double LabelWidth, double Fraction, string Value, string ToolTip, bool IsPeak);
 
-public partial class StatisticsView : SurfaceWindow
+public partial class StatisticsView : PageView
 {
     private readonly Func<Task<List<HistoryItem>>> _loadHistory;
     private readonly Func<DateTime> _now;
@@ -68,7 +68,7 @@ public partial class StatisticsView : SurfaceWindow
         _now = now ?? (() => DateTime.Now);
         InitializeComponent();
         ShareButton.IsVisible = shareImage != null;
-        Opened += OnOpened;
+        AttachedToVisualTree += OnAttachedToVisualTree;
     }
 
     private static Task<List<HistoryItem>> LoadHistoryAsync() => Task.Run(() =>
@@ -94,9 +94,9 @@ public partial class StatisticsView : SurfaceWindow
         }
     }
 
-    private async void OnOpened(object? sender, EventArgs e)
+    private async void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        Opened -= OnOpened;
+        AttachedToVisualTree -= OnAttachedToVisualTree;
         await RefreshAsync();
     }
 
@@ -127,7 +127,7 @@ public partial class StatisticsView : SurfaceWindow
     /// <summary>Draws the whole page, including what is scrolled out of view, without the buttons in the title.</summary>
     public SKBitmap RenderSnapshot()
     {
-        double scaling = RenderScaling;
+        double scaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
         PixelSize pixelSize = PixelSize.FromSize(SnapshotPanel.Bounds.Size, scaling);
         double previousOpacity = ActionsPanel.Opacity;
         ActionsPanel.Opacity = 0;
