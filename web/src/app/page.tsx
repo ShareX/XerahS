@@ -12,9 +12,10 @@ export default async function HomePage() {
         <p className="eyebrow">Private capture history</p>
         <h1>Your screenshots, wherever you are.</h1>
         <p className="lead">
-          XerahS Cloud keeps an owner-only visual index of the screenshots and
-          screencasts you explicitly publish from XerahS. Your original files
-          remain with your chosen destination.
+          XerahS Cloud doesn&apos;t host your files. It keeps a private
+          collection of the links to everything you upload with XerahS, so you
+          can find any screenshot or recording again from anywhere. Your images
+          and videos stay with the destination you uploaded them to.
         </p>
         {user && <p className="session-summary">Signed in as {user.email}</p>}
         <div className="actions">
