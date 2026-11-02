@@ -24,10 +24,10 @@ export default function PrivacyPage() {
           authorizations you grant, so you can see and revoke them.
         </li>
         <li>
-          <strong>Gallery:</strong> for each item you publish, its link, a title
-          taken from the file name, a thumbnail link, the capture date, its kind
-          (screenshot or screencast) and the host it was uploaded to. We do not
-          receive or store the files.
+          <strong>Your collection:</strong> for each item you publish, its link,
+          a title taken from the file name, a thumbnail link, the capture date,
+          its kind (screenshot or screencast) and the host it was uploaded to.
+          We do not receive or store the image or video files themselves.
         </li>
         <li>
           <strong>Billing:</strong> your Stripe customer and subscription
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
       </ul>
       <h2>How we use it</h2>
       <p>
-        To run your account and gallery, keep it secure, take payment, send
+        To run your account and collection, keep it secure, take payment, send
         verification and password-reset email, and meet legal obligations. We do
         not sell your information or use it for advertising.
       </p>
@@ -66,7 +66,7 @@ export default function PrivacyPage() {
       <p>
         From your account settings you can export your data, generate new
         recovery codes, sign out everywhere and delete your account. Deletion
-        removes your gallery and profile and cancels any subscription. The
+        removes your collection and profile and cancels any subscription. The
         minimal deletion record described above is kept for up to 180 days. You
         can also ask to access or correct your information using the contact
         details below.

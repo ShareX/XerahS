@@ -3,7 +3,7 @@ export const LEGAL_ENTITY = "ShareX Team";
 export const LEGAL_COUNTRY = "Australia";
 export const GOVERNING_LAW = "Western Australia, Australia";
 /** Bump when the Terms, Privacy Policy or Refund Policy change materially. */
-export const LEGAL_VERSION = "2026-11-01";
+export const LEGAL_VERSION = "2026-11-02";
 
 export const LEGAL_LINKS = [
   { href: "/legal/terms", label: "Terms" },

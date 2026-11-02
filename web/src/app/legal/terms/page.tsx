@@ -12,11 +12,12 @@ export default function TermsPage() {
       <p>
         XerahS Cloud is an optional online service from {LEGAL_ENTITY} for
         owners of the XerahS app. When you choose Publish in XerahS, the link to
-        a screenshot or screencast you already uploaded is registered in your
-        private gallery, with a title taken from the file name, a thumbnail link
-        and the capture date. Only you can open your gallery. XerahS Cloud does
-        not store, host or proxy the image or video files themselves; they stay
-        at the destination you uploaded them to.
+        a screenshot or screencast you already uploaded is added to your private
+        collection of links, with a title taken from the file name, a thumbnail
+        link and the capture date. Only you can open your collection. XerahS
+        Cloud does not store, host or proxy the image or video files themselves;
+        they stay at the destination you uploaded them to. If a file is removed
+        or moved there, its link in your collection stops working.
       </p>
       <h2>Your account</h2>
       <p>
@@ -47,10 +48,10 @@ export default function TermsPage() {
       </p>
       <h2>When access ends</h2>
       <p>
-        If your trial or subscription ends, you can still view your gallery,
+        If your trial or subscription ends, you can still view your collection,
         copy or download your links and unpublish items. You cannot publish new
         items until you subscribe again. Deleting your account removes your
-        gallery data as described in the Privacy Policy.
+        collection as described in the Privacy Policy.
       </p>
       <h2>What you may publish</h2>
       <p>

@@ -8,7 +8,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "XerahS Cloud", template: "%s · XerahS Cloud" },
-  description: "Your private, owner-only XerahS capture gallery.",
+  description: "Your private, owner-only collection of XerahS upload links.",
   robots: { index: false, follow: false, nocache: true },
   referrer: "no-referrer",
 };
