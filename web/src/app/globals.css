@@ -359,3 +359,12 @@ h2 {
   align-items: flex-start;
   gap: 0.6rem;
 }
+/* The global input rule is full width; a checkbox must keep its own size. */
+.agree input[type="checkbox"] {
+  flex: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  accent-color: var(--accent-strong);
+}
