@@ -32,12 +32,9 @@ export function SettingsControls({
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const isActive = subscriptionStatus === "active";
   const [confirmation, setConfirmation] = useState<Confirmation>(
-    checkout === "success"
-      ? subscriptionStatus === "active"
-        ? "active"
-        : "waiting"
-      : "idle",
+    checkout === "success" ? (isActive ? "active" : "waiting") : "idle",
   );
 
   useEffect(() => {
@@ -194,17 +191,17 @@ export function SettingsControls({
           {STRONG_AUTH_EXPIRED}
         </p>
       )}
-      {checkout === "success" && confirmation === "waiting" && (
-        <p className="notice" role="status">
-          Payment received. Confirming your subscription…
-        </p>
-      )}
-      {checkout === "success" && confirmation === "active" && (
+      {isActive && (
         <p className="notice" role="status">
           Your subscription is active. Publishing is enabled.
         </p>
       )}
-      {checkout === "success" && confirmation === "timeout" && (
+      {!isActive && checkout === "success" && confirmation === "waiting" && (
+        <p className="notice" role="status">
+          Payment received. Confirming your subscription…
+        </p>
+      )}
+      {!isActive && checkout === "success" && confirmation === "timeout" && (
         <p className="notice" role="status">
           Your payment is being confirmed. This can take a minute. Refresh this
           page shortly; if the status does not change, contact support.
@@ -227,7 +224,7 @@ export function SettingsControls({
           <Link href="/legal/refunds">Refund Policy</Link>.
         </span>
       </label>
-      {trialStatus === "not_started" && (
+      {trialStatus === "not_started" && !isActive && (
         <button
           className="primary"
           disabled={busy || !agreed}
@@ -237,22 +234,26 @@ export function SettingsControls({
         </button>
       )}
       <div className="actions">
-        <button
-          disabled={busy || !agreed}
-          onClick={() =>
-            void post("/api/v1/billing/checkout", { plan: "monthly" })
-          }
-        >
-          Subscribe monthly · $1.99 USD
-        </button>
-        <button
-          disabled={busy || !agreed}
-          onClick={() =>
-            void post("/api/v1/billing/checkout", { plan: "annual" })
-          }
-        >
-          Subscribe yearly · $19.99 USD
-        </button>
+        {!isActive && (
+          <>
+            <button
+              disabled={busy || !agreed}
+              onClick={() =>
+                void post("/api/v1/billing/checkout", { plan: "monthly" })
+              }
+            >
+              Subscribe monthly · $1.99 USD
+            </button>
+            <button
+              disabled={busy || !agreed}
+              onClick={() =>
+                void post("/api/v1/billing/checkout", { plan: "annual" })
+              }
+            >
+              Subscribe yearly · $19.99 USD
+            </button>
+          </>
+        )}
         <button
           disabled={busy}
           onClick={() => void post("/api/v1/billing/portal")}
