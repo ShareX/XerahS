@@ -3,7 +3,6 @@ import { createUserDatabaseClient, requireAuthenticatedUser } from "@/lib/auth";
 import { rpc } from "@/lib/database";
 import { getServerEnv } from "@/lib/env";
 import { enforceSameOriginMutation, readJson } from "@/lib/request";
-import { checkoutConsentMessage } from "@/lib/legal";
 import { json } from "@/lib/responses";
 import { handleApi } from "@/lib/route-handler";
 import { getStripeClient, integrationIdentifier } from "@/lib/stripe";
@@ -71,9 +70,8 @@ export async function POST(request: Request) {
           xerahs_checkout_attempt_id: context.attemptId,
         },
         subscription_data: { metadata: { xerahs_user_id: user.id } },
-        custom_text: {
-          submit: { message: checkoutConsentMessage(env.APP_ORIGIN) },
-        },
+        // No custom_text: Stripe rejects it while Managed Payments is enabled on the
+        // account. Consent is recorded by the checkbox on the Settings page.
         ...(env.STRIPE_TAX_ENABLED
           ? {
               automatic_tax: { enabled: true },

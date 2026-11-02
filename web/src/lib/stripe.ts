@@ -22,10 +22,11 @@ export function getStripeClient(): Stripe {
   return client;
 }
 
+// Must be stable: Stripe ties an idempotency key to the exact request body, so a
+// random value here made every retry of a failed Checkout attempt fail with an
+// idempotency_error.
 export function integrationIdentifier(): string {
-  const alphabet = "abcdefghijklmnopqrstuvwxyz";
-  const bytes = crypto.getRandomValues(new Uint8Array(8));
-  return `xerahs_cloud_${Array.from(bytes, (value) => alphabet[value % alphabet.length]).join("")}`;
+  return "xerahs_cloud";
 }
 
 export const handledStripeEvents = new Set<Stripe.Event.Type>([
