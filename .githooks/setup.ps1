@@ -88,6 +88,13 @@ try {
     exit 1
 }
 
+# Link .claude/skills and .agents/skills to .ai/skills for native agent skill discovery
+try {
+    & (Join-Path $PSScriptRoot '../scripts/link-agent-skills.ps1')
+} catch {
+    Write-Warning "Could not create agent skill links: $_"
+}
+
 # Verify hooks exist
 $hookFiles = @(
     ".githooks/pre-commit",
@@ -149,6 +156,7 @@ Write-Host "  * pre-commit - Validates GPL v3 license headers in C#, Swift, and 
 Write-Host "  * pre-push - Auto-syncs and auto-pushes ShareX.ImageEditor branch commits"
 Write-Host "  * post-checkout - Ensures ShareX.ImageEditor is on default branch when detached"
 Write-Host "  * post-merge - Ensures ShareX.ImageEditor is on default branch when detached"
+Write-Host "  * post-checkout/post-merge - Create missing .claude/skills and .agents/skills links"
 Write-Host ""
 Write-Info "To test the hooks:"
 Write-Host "  1. Stage a C# file: git add src/SomeFile.cs"

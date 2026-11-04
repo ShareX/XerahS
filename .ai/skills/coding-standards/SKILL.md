@@ -1,5 +1,5 @@
 ---
-name: ShareX Core Standards
+name: coding-standards
 description: Apply XerahS C# license headers and project configuration conventions. Use for code or project-file changes, not release workflow.
 ---
 

@@ -10,15 +10,47 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
-## v0.33.6
+## v0.33.7
 
 ### Features
 
 - **JPEG XL (JXL) images** ([#311](https://github.com/ShareX/XerahS/issues/311)): Choose JXL as the capture image format. It is encoded by FFmpeg's `libjxl` (quality 100 is lossless, lower values are lossy and use the same curve as `cjxl`), keeps transparency, and is recognised for uploads, the CLI (`--output shot.jxl`), URL downloads and MIME types. If FFmpeg or `libjxl` is missing, the capture is saved as PNG with a log message instead of being lost.
+- **omaxerahs**: `upload <path> --destination <destination>` sends any file to a named File destination and keeps its name, so a Markdown page can go to KovaForge Docs. Capability `upload.destination`.
 
 ### Fixes
 
 - **AVIF captures were written as PNG data**: Saving and uploading used the Skia fallback, so a file named `.avif` held PNG bytes. AVIF now goes through the FFmpeg encoder as designed in XIP0025, with the same PNG fallback when FFmpeg cannot encode it.
+- **Secrets (Linux)**: Reading a secret now falls back to the encrypted file store when the keyring does not have it. Uploader credentials held only in that file were reported as missing, and uploads failed with no clear reason.
+- **Build**: Local plugin builds are now also copied next to the `omaxerahs` build, which otherwise found no plugins and reported no uploaders.
+
+---
+
+## v0.33.6
+
+First ShareX/XerahS release since v0.31.4, so it also includes the v0.33.x changes in the sections below.
+
+### Features
+
+- **Statistics**: A new Statistics window (sidebar, View > Statistics or the History toolbar) shows upload totals, the image, recording and file split, daily and seven-day activity, streaks, a calendar, hourly activity and breakdowns by weekday, application, destination and file type.
+- **Region capture**: Optional "Dim all, except the current selection" with an adjustable dim strength. Off by default.
+- **Upload Content**: Upload a file from a URL. XerahS downloads it (http/https, up to 512 MB) and queues it as a file. GitHub blob and raw links fetch the raw file, and private files use a GitHub token kept in the OS keyring.
+- **File routing**: File destinations can claim "Text files" (Markdown, plain text, code, JSON, YAML, CSV) or specific extensions while another destination stays the catch-all. Each destination has an "Except these types" list, and web pages (html, htm, xhtml, xht) are excepted by default.
+- **Amazon S3**: "Browse the whole bucket in Media Explorer" lets Media Explorer list and upload from the bucket root instead of the object prefix. Off by default.
+- **KovaForge Docs**: New upload destination for text, Markdown, images and files.
+
+### Fixes
+
+- **Image editor**: Pressing Esc in the after-capture editor now cancels the task instead of continuing with the unedited image (#299, @farzamfallahi).
+- **Dialogs**: Closing a dialog opened from another dialog returns to the parent, so choosing an effect no longer closes the workflow editor (#304, @SusieeTheLinuxUser).
+- **Region capture**: The Emoji tool no longer appears in the Region Capture toolbar, where it did nothing. It stays in the image editor (#307).
+- **Upload Content**: Queued items upload instead of reopening the Upload Content window and reporting "Upload failed".
+- **File uploads**: Generic file uploads use the task's name pattern and keep their extension, so files with the same name no longer overwrite one URL.
+- **xerahscli**: `xerahscli upload` no longer replaces a working default uploader the user chose.
+
+### Build
+
+- **Web**: Update next, zod, vitest and vite for high and critical security advisories.
+- **CI**: The scheduled platform drift check skips environments without Cloudflare configuration instead of failing.
 
 ---
 

@@ -71,6 +71,9 @@ public class TaskInfo
     }
 
     public string FileName { get; private set; } = "";
+
+    /// <summary>Upload under the source file's own name instead of the workflow's name pattern.</summary>
+    public bool KeepSourceFileName { get; init; }
     public string? TextContent { get; set; }
     public string ThumbnailFilePath { get; set; } = "";
     public EDataType DataType { get; set; }

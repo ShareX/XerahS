@@ -129,7 +129,13 @@ omaxerahs image gif frame1.png frame2.png frame3.png -o demo.gif --delay 400   #
 ```bash
 omaxerahs doctor              # is an image upload destination configured and ready?
 omaxerahs upload <path>       # upload a file through the configured image destination; prints the URL
+omaxerahs upload <path> --destination kovaforge   # any file to a named File destination, keeping its name
 ```
+
+To publish a Markdown page with screenshots on KovaForge Docs: upload each image with
+`omaxerahs upload`, put the returned `https://` URLs in the Markdown, then upload the `.md` with
+`--destination kovaforge`. Check `omaxerahs capabilities` lists `upload.destination` first. Both
+links are public to anyone who has them.
 
 Upload destinations and credentials are configured in the XerahS app itself
 (Destinations). If `doctor` reports not ready, tell the user to set one up

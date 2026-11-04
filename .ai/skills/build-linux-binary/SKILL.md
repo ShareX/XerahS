@@ -174,22 +174,9 @@ Timestamps should match the current build session.
 - `-p:EnableWindowsTargeting=true`: Required when cross-compiling on Linux due to shared project references
 - Plugins publish with `--no-self-contained` to share the runtime with the main app
 
-### Sequential Builds Are Mandatory
+### Locks and sequencing
 
-**NEVER run two builds at the same time.** `ShareX.ImageEditor` targets multiple TFMs and MSBuild parallelism causes them to race on the same `ShareX.ImageEditor.dll` output path.
-
-- **Architectures**: `package-linux.sh` iterates `linux-x64` then `linux-arm64` sequentially — never invoke it twice concurrently.
-- **Internal parallelism**: If `CS2012` / file lock errors appear on `ShareX.ImageEditor`, pre-build it separately with `/m:1` to force single-threaded compilation:
-  ```bash
-  dotnet build ShareX.ImageEditor/src/ShareX.ImageEditor/ShareX.ImageEditor.csproj \
-    -c Release -p:UseSharedCompilation=false /m:1
-  ```
-- **Between builds**: Ensure this checkout's previous build has exited before starting another build sharing its outputs.
-
-### Background Build Caution
-- **Do not background the build script with `&`** unless you redirect output to a log file
-- Multiple concurrent builds share `obj/` folders and will conflict
-- Cancel a confirmed stalled task-owned build before retrying; leave other checkouts' processes alone.
+Shared rules are in [build-common](../build-common/SKILL.md). `package-linux.sh` runs `linux-x64` then `linux-arm64` sequentially; never run it twice at once. For `CS2012` on `ShareX.ImageEditor`, pre-build it with `dotnet build ShareX.ImageEditor/src/ShareX.ImageEditor/ShareX.ImageEditor.csproj -c Release -p:UseSharedCompilation=false /m:1`. Do not background the script with `&` unless output goes to a log file.
 
 ### stdout Buffering Issue
 - If the host buffers output, redirect to a log and inspect progress through the host's file or terminal tools.

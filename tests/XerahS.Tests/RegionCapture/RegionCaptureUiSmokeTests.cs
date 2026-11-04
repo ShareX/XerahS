@@ -93,7 +93,6 @@ public class RegionCaptureUiSmokeTests
             EditorTool.SpeechBalloon,
             EditorTool.Step,
             EditorTool.Image,
-            EditorTool.Emoji,
             EditorTool.Cursor,
             EditorTool.Highlight,
             EditorTool.SmartEraser,

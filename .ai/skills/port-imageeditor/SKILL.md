@@ -1,16 +1,6 @@
 ---
 name: port-imageeditor
 description: Port ShareX.ImageEditor changes from a local ShareX checkout into the XerahS submodule when requested.
-metadata:
-  keywords:
-    - imageeditor
-    - porting
-    - sync
-    - sharex
-    - submodule
-    - avalonia
-    - skia
-  last_updated: 2026-09-26
 ---
 
 # Port ImageEditor: Local ShareX -> XerahS
@@ -104,22 +94,18 @@ XerahSRoot="/Users/mike/Projects/ShareX Team/XerahS"
 1. The newest relevant upstream commit must be resolved from the local ShareX repo's git history, not guessed.
 2. Diff against the mapped XerahS code root. The upstream source lives at `ShareX/ShareX.ImageEditor/...`; the target code lives at `XerahS/ShareX.ImageEditor/src/ShareX.ImageEditor/...`.
 3. Scan every relevant upstream commit from the previous sync point through the newest relevant commit, not just the tip commit.
-4. Build a holistic understanding of the bugs fixed and features added across that whole commit window before changing XerahS.
-5. Before implementing anything, publish a concise implementation manifest that lists every bug fix and enhancement identified from the new ShareX commits.
-6. For every manifest item, check whether XerahS already fixed it, implemented it differently, partially implemented it, or has a better local behavior that must be preserved.
-7. Do not start implementing an individual bug fix or enhancement until it appears in the manifest with its source commit, affected files, XerahS status, and intended XerahS mapping.
-8. Prefer the best combined design over a direct ShareX copy: preserve superior XerahS behavior, import superior ShareX behavior, and write a custom implementation when that is the cleanest integration.
-9. Read the affected upstream and XerahS files to clarify intent, control flow, rendering behavior, and wiring before re-implementing anything ambiguous.
-10. Preserve XerahS-only repository-level differences such as the submodule's `src/` layout, multi-targeting, and any confirmed host integration changes.
-11. Do not overwrite XerahS-specific fixes blindly. If a target file already diverged for Avalonia or host integration, port the upstream intent instead of doing a raw replace.
-12. This is not a blind cherry-pick workflow. Review the upstream change set, understand the behavior being introduced or fixed, and then map that behavior into the Avalonia submodule.
-13. Re-implement the upstream behavior in the XerahS ImageEditor submodule after understanding it, instead of mechanically transplanting diffs.
-14. Build before claiming completion.
-15. Commit each completed bug fix and enhancement separately in the `ShareX.ImageEditor` submodule. Do not bundle unrelated manifest items into one port commit.
-16. If verification passes and the user did not ask to pause, push the submodule commits and then commit and push the XerahS root pointer update.
-17. Do not add a `ProjectReference` to `ShareX.Avalonia`, `ShareX.Avalonia.Tools`, or `ShareX.Tools`. XerahS ImageEditor is a standalone Avalonia/Skia library. Rewrite `ShareX.AvaloniaUI.*` usings and `avares://ShareX.Avalonia/...` URIs back to ImageEditor types (`Presentation.Theming`, `Presentation.Rendering`, `Hosting`).
-18. Do not rename XerahS `Hosting/` / `AvaloniaIntegration` to upstream `Integration/` / `ImageEditorIntegration`. Port new host APIs into `Hosting/AvaloniaIntegration.cs`.
-19. XerahS is English-only and must not gain multi-language support. Never port ShareX `Localization/` (default or satellite `.resx`, `Strings.Designer.cs`, `EffectBrowserLocalization.cs`, translation READMEs, `ValidateTranslations.ps1`) and never add resx generator / `EmbeddedResource` localization items to the XerahS ImageEditor csproj. When ShareX replaces UI text with `Strings.*` or `{x:Static res:Strings.*}`, keep or restore the English literal — take the wording from the default `Strings.resx` value if needed. Mark those upstream commits `skip` in the manifest. If `Localization/` is already in the XerahS submodule from a prior port, do not grow it: no new cultures, no resx syncs, no new `Strings.*` call sites.
+4. Before implementing anything, publish a concise implementation manifest that lists every bug fix and enhancement identified from the new ShareX commits.
+5. For every manifest item, check whether XerahS already fixed it, implemented it differently, partially implemented it, or has a better local behavior that must be preserved.
+6. Prefer the best combined design over a direct ShareX copy: preserve superior XerahS behavior, import superior ShareX behavior, and write a custom implementation when that is the cleanest integration.
+7. Read the affected upstream and XerahS files to clarify intent, control flow, rendering behavior, and wiring before re-implementing anything ambiguous.
+8. Preserve XerahS-only repository-level differences such as the submodule's `src/` layout, multi-targeting, and any confirmed host integration changes.
+9. Do not overwrite XerahS-specific fixes blindly. If a target file already diverged for Avalonia or host integration, port the upstream intent instead of doing a raw replace.
+10. Build before claiming completion.
+11. Commit each completed bug fix and enhancement separately in the `ShareX.ImageEditor` submodule. Do not bundle unrelated manifest items into one port commit.
+12. If verification passes and the user did not ask to pause, push the submodule commits and then commit and push the XerahS root pointer update.
+13. Do not add a `ProjectReference` to `ShareX.Avalonia`, `ShareX.Avalonia.Tools`, or `ShareX.Tools`. XerahS ImageEditor is a standalone Avalonia/Skia library. Rewrite `ShareX.AvaloniaUI.*` usings and `avares://ShareX.Avalonia/...` URIs back to ImageEditor types (`Presentation.Theming`, `Presentation.Rendering`, `Hosting`).
+14. Do not rename XerahS `Hosting/` / `AvaloniaIntegration` to upstream `Integration/` / `ImageEditorIntegration`. Port new host APIs into `Hosting/AvaloniaIntegration.cs`.
+15. XerahS is English-only and must not gain multi-language support. Never port ShareX `Localization/` (default or satellite `.resx`, `Strings.Designer.cs`, `EffectBrowserLocalization.cs`, translation READMEs, `ValidateTranslations.ps1`) and never add resx generator / `EmbeddedResource` localization items to the XerahS ImageEditor csproj. When ShareX replaces UI text with `Strings.*` or `{x:Static res:Strings.*}`, keep or restore the English literal — take the wording from the default `Strings.resx` value if needed. Mark those upstream commits `skip` in the manifest. If `Localization/` is already in the XerahS submodule from a prior port, do not grow it: no new cultures, no resx syncs, no new `Strings.*` call sites.
 
 ## Step 0 - Resolve the upstream commit range
 
@@ -237,7 +223,7 @@ The ShareX tree and XerahS submodule do not have the same repository layout.
 | `ShareX.ImageEditor/Core/...` | `ShareX.ImageEditor/src/ShareX.ImageEditor/Core/...` |
 | `ShareX.ImageEditor/Hosting/...` | `ShareX.ImageEditor/src/ShareX.ImageEditor/Hosting/...` |
 | `ShareX.ImageEditor/Integration/...` | `ShareX.ImageEditor/src/ShareX.ImageEditor/Hosting/...` (keep XerahS folder name; `ImageEditorIntegration.cs` maps to `AvaloniaIntegration.cs`) |
-| `ShareX.ImageEditor/Localization/...` | **Skip.** XerahS is English-only (core rule 19). Do not copy this tree. |
+| `ShareX.ImageEditor/Localization/...` | **Skip.** XerahS is English-only (core rule 15). Do not copy this tree. |
 | `ShareX.ImageEditor/Presentation/...` | `ShareX.ImageEditor/src/ShareX.ImageEditor/Presentation/...` |
 | `ShareX.ImageEditor/ShareX.ImageEditor.csproj` | `ShareX.ImageEditor/src/ShareX.ImageEditor/ShareX.ImageEditor.csproj` |
 
@@ -329,7 +315,7 @@ file-scoped feature (new partial-class features, `EditorBuiltInToolbars`, asset 
 separately, and land the interleaved central files in one final `[Port]` commit that
 lists the covered items in its body. Note in `PORT_STATUS.md` that intermediate commits
 only build as a batch. Prefer the manifest to still list every item individually even
-when commits are grouped. Do not create a localization-catalog commit (core rule 19).
+when commits are grouped. Do not create a localization-catalog commit (core rule 15).
 
 ### 2d - Read code to remove ambiguity
 
@@ -368,13 +354,12 @@ It reads upstream base/head from git objects (no worktree), maps `Integration/` 
 `ShareX.AvaloniaUI.Theming` -> `Presentation.Theming`, the lucide `avares://` URI,
 `ImageEditorIntegration` -> `AvaloniaIntegration`), ignores header/BOM/EOL/blank-line and
 `using`-order noise, and writes `base-xerahs` / `base-head` diffs for every file that
-needs a human. Without the rewrites, the 2026-09-26 range reported 55 DIVERGED + 197
-namespace-only files; with them it was 18 real merges, 74 safe syncs, and 193 no-ops.
+needs a human.
 
 Categories:
 
 - `NEW`: absent from the XerahS code root — sync it in as a new file, except
-  `Integration/*` (map to `Hosting/`), `Localization/*` (skip, core rule 19), and files
+  `Integration/*` (map to `Hosting/`), `Localization/*` (skip, core rule 15), and files
   that exist only because ShareX extracted them into `ShareX.Avalonia`.
 - `SAFE_SYNC`: the XerahS file equals the upstream *base* version after normalization and
   rewrites — syncing upstream HEAD is safe because XerahS never diverged in content.
@@ -393,9 +378,7 @@ Categories:
 For each `DIVERGED` file, produce two normalized diffs: `base -> xerahs` (the XerahS
 adaptation to preserve) and `base -> head` (the upstream change to port). Files whose
 `base -> xerahs` delta is only blank lines or an encoding artifact can be treated as
-`SAFE_SYNC`. The 2026-07-11 port turned a 149-file range into 19 real merges; the
-2026-08-18 port was 380 files, mostly `AVALONIA_NS` plus a `Localization/` tree that
-must not be synced again.
+`SAFE_SYNC`.
 
 ### 2e-sync - Apply the mechanical part with `sync.py`
 
@@ -411,8 +394,7 @@ python3 .ai/skills/port-imageeditor/scripts/sync.py "$ShareXRepo" "$XerahSRoot" 
   without BOM, and LF endings (policy below).
 - DIVERGED files are 3-way merged (`git merge-file`, base = last sync) so XerahS
   adaptations and upstream changes combine automatically; overlapping hunks are left as
-  `<<<<<<< xerahs` / `>>>>>>> upstream` markers. The 2026-09-26 run merged 18 files with
-  7 conflicted. Resolve every marker, then `grep -rn '<<<<<<<' src` must be empty.
+  `<<<<<<< xerahs` / `>>>>>>> upstream` markers. Resolve every marker, then `grep -rn '<<<<<<<' src` must be empty.
 - `KEPT_TYPES` in the script re-adds `using` lines for types ShareX moved out of
   ImageEditor but XerahS keeps (currently `BitmapConversionHelpers`).
 - The script refuses to run over uncommitted `src/` changes, and only `--force`
@@ -421,12 +403,11 @@ python3 .ai/skills/port-imageeditor/scripts/sync.py "$ShareXRepo" "$XerahSRoot" 
 Merge output still needs review:
 - **Misaligned hunks.** When a conflict's XerahS side ends mid-method, or the resolved
   file will not compile, rebuild that file from `git show HEAD:<file>` and apply the
-  upstream intent by hand. NumberAnnotation (arrow tails) needed this on 2026-09-26.
+  upstream intent by hand.
 - **Removals ported by accident.** A clean merge still applies upstream removals you
   decided to keep. Reverse-apply the removing commit for just those files:
   `git -C "$ShareXRepo" show <hash> -- <files> | sed 's#\([ab]\)/ShareX.ImageEditor/#\1/src/ShareX.ImageEditor/#g' > p.patch`
-  then run `git apply -R --recount -C1 p.patch` inside the submodule. This is how the
-  f58d576 Options-panel removal was kept out.
+  then run `git apply -R --recount -C1 p.patch` inside the submodule.
 - **API moved between intermediate commits.** The base-to-head diff hides API that was
   added and then used within the range (for example `Annotation.TransformAdditionalPoints`
   and `MoveBy`, both new in this range). Read the per-commit patches when a merged override
@@ -554,7 +535,7 @@ and verify these known XerahS adaptations before building:
   XerahS root props intentionally disable central management for the submodule path.
   Do not drop `Microsoft.ML.OnnxRuntime.DirectML` / `Vortice.DXGI` while XerahS still
   ships background-remover in the submodule.
-- Localization / i18n: skip the entire ShareX `Localization/` tree (core rule 19).
+- Localization / i18n: skip the entire ShareX `Localization/` tree (core rule 15).
   Port English UI wording only. Do not replay the add-then-delete `EmojiCatalog_*`
   experiment.
 - `AnnotationToolbar.ShowToolOptions`: XerahS `IAnnotationToolbarAdapter` already
@@ -620,12 +601,12 @@ Keep these unless the user explicitly asks to change them:
 - XerahS-specific solution or project structure
 - XerahS multi-targeting or packaging differences
 - Any host integration already verified in XerahS
-- English-only UI: do not import ShareX multi-language resources (core rule 19)
+- English-only UI: do not import ShareX multi-language resources (core rule 15)
 
 ### 3e - New-file checklist
 
 For each new upstream file:
-1. If it lives under `Localization/`, skip it (core rule 19).
+1. If it lives under `Localization/`, skip it (core rule 15).
 2. Create the mapped target directory if needed.
 3. Add the file under `src/ShareX.ImageEditor`.
 4. Update the target `.csproj` only if the new file requires an explicit item entry.
@@ -690,7 +671,7 @@ After the catch-up:
 Suggested status block:
 
 ```markdown
-## Port Activity (2026-04-09)
+## Port Activity (<YYYY-MM-DD>)
 
 - Previous recorded ShareX sync: `<old_hash>`
 - Latest upstream ShareX commit touching ShareX.ImageEditor: `<new_hash>`
@@ -739,21 +720,4 @@ Do not stop after a local commit unless the user explicitly asks to pause before
 
 ## Fast path for this repo
 
-For the common "catch up XerahS to the latest local ShareX state" task:
-
-1. Resolve `$ShareXRepo` and `$XerahSRoot` independently (user paths first). Use the cloud/CI fallback clone only when no local ShareX checkout exists.
-2. Read `$XerahSRoot/ShareX.ImageEditor/PORT_STATUS.md` to get the last synced ShareX hash.
-3. Run `git -C "$ShareXRepo" fetch --prune` and check `git -C "$ShareXRepo" status --short --branch`.
-4. If the local ShareX checkout is behind, run `git -C "$ShareXRepo" pull --ff-only`; use `--rebase --autostash` only for unrelated local ShareX changes that must be preserved.
-5. Run `git -C "$ShareXRepo" log -1 --format="%H %cs %s" -- ShareX.ImageEditor`.
-6. Run `git -C "$ShareXRepo" diff --name-only <last_sync>..HEAD -- ShareX.ImageEditor`.
-7. Map each changed upstream file into `$XerahSRoot/ShareX.ImageEditor/src/ShareX.ImageEditor`. Map `Integration/` to `Hosting/`. Skip `Localization/` (core rule 19).
-8. If the ShareX checkout is shallow, deepen it with `fetch --shallow-since` until `<last_sync>` resolves. Then run `scripts/triage.py` to classify every changed file.
-9. Review every upstream commit in the range so you understand the complete feature and bug-fix set.
-10. For each item, compare the upstream behavior against the current XerahS behavior and decide whether it is missing, already fixed, implemented differently, partially implemented, or conflicting.
-11. Post the ImageEditor Port Manifest listing every identified bug fix and enhancement, including XerahS status, decision, and rationale, before editing.
-12. Read upstream and XerahS code where needed to confirm how the behavior works.
-13. Run `scripts/sync.py` (dry run first) for SAFE_SYNC/NEW/DIVERGED. Resolve conflicts, re-apply kept XerahS behavior (reverse-apply removals you keep), and walk the step 3b adaptation checklist. Otherwise port by hand, keep XerahS behavior, or write a custom implementation as the manifest says. Do not blind cherry-pick or raw-copy diverged Avalonia files.
-14. Commit each completed bug fix/enhancement as a separate `ShareX.ImageEditor` submodule commit, keeping shared infrastructure separate when needed.
-15. Build the ImageEditor project, then the XerahS solution.
-16. Update `PORT_STATUS.md`, then push the submodule commits and commit/push the root pointer separately.
+For the common "catch up XerahS to the latest local ShareX state" task, run Steps 0 to 7 in order: resolve both roots, read the last sync hash from `PORT_STATUS.md`, update and diff the ShareX checkout, run `scripts/triage.py`, post the manifest, run `scripts/sync.py` (dry run first), commit each item in the submodule, build, update `PORT_STATUS.md`, then push the submodule and the root pointer.

@@ -184,6 +184,11 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject, IAnnot
     [RelayCommand]
     private void SelectTool(EditorTool tool)
     {
+        if (!IsToolSupportedInRegionCapture(tool))
+        {
+            return;
+        }
+
         ActiveTool = tool;
     }
 
@@ -1794,7 +1799,7 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject, IAnnot
         // Region capture only needs drawing tools. File / Background / Effects are editor chrome.
         foreach (ToolbarCustomizationItemViewModel item in ToolbarCustomizationItemViewModel.CreateDefaultItems())
         {
-            if (!item.Tool.HasValue)
+            if (!item.Tool.HasValue || !IsToolSupportedInRegionCapture(item.Tool.Value))
             {
                 continue;
             }
@@ -1803,6 +1808,13 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject, IAnnot
             _visibleToolbarItems.Add(item);
         }
     }
+
+    /// <summary>
+    /// Emoji is not a canvas-drawn tool. In the editor it opens the emoji picker in the
+    /// EditorView modal overlay and EditorView inserts the annotation. The region capture
+    /// overlay has neither, so selecting it would leave a tool that does nothing.
+    /// </summary>
+    internal static bool IsToolSupportedInRegionCapture(EditorTool tool) => tool != EditorTool.Emoji;
 
     private void UpdateVisibleToolbarActiveStates()
     {

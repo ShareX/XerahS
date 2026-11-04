@@ -31,6 +31,7 @@ using XerahS.Core.Tasks;
 using XerahS.Core.Tasks.Processors;
 using XerahS.OmaXerahs.Models;
 using XerahS.OmaXerahs.Services;
+using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
 
 namespace XerahS.OmaXerahs.Commands;
@@ -45,10 +46,10 @@ internal static class UploadCommand
 
     internal static Command Create()
     {
-        var command = new Command("upload", "Upload an image file to the configured XerahS Image destination.");
+        var command = new Command("upload", "Upload an image to the configured Image destination, or any file to a named --destination.");
         var pathArgument = new Argument<string?>("path")
         {
-            Description = "Path to the image file. Pass after -- so names starting with - are safe.",
+            Description = "Path to the file. Pass after -- so names starting with - are safe.",
             Arity = ArgumentArity.ZeroOrOne
         };
         var jsonOption = JsonStdout.CreateJsonOption();
@@ -56,14 +57,22 @@ internal static class UploadCommand
         {
             Description = "Print only the uploaded URL (for hosts such as OmaSnap pins); errors go to stderr."
         };
+        var destinationOption = new Option<string?>("--destination")
+        {
+            Description = "File destination: an instance id, a unique id prefix (6+ characters), its display name, or its provider id such as kovaforge. Accepts any file type and keeps the file's name."
+        };
         command.Add(pathArgument);
         command.Add(jsonOption);
         command.Add(urlOnlyOption);
+        command.Add(destinationOption);
         command.SetAction(parseResult =>
         {
             JsonStdout.UrlOnly = parseResult.GetValue(urlOnlyOption);
             JsonStdout.Enabled = !JsonStdout.UrlOnly && parseResult.GetValue(jsonOption);
-            return UploadAsync(parseResult.GetValue(pathArgument)).GetAwaiter().GetResult();
+            string? destination = parseResult.GetValue(destinationOption);
+            return (destination == null
+                ? UploadAsync(parseResult.GetValue(pathArgument))
+                : UploadToDestinationAsync(parseResult.GetValue(pathArgument), destination)).GetAwaiter().GetResult();
         });
         return command;
     }
@@ -154,6 +163,123 @@ internal static class UploadCommand
         canonicalPath = resolved;
         errorCode = string.Empty;
         return true;
+    }
+
+    /// <summary>Any regular file, for uploads that name their destination.</summary>
+    internal static bool TryValidateFilePath(string? path, out string canonicalPath, out string errorCode, out string errorMessage)
+    {
+        canonicalPath = string.Empty;
+        errorCode = CliErrorCodes.InvalidPath;
+        errorMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            errorCode = CliErrorCodes.Usage;
+            errorMessage = "Specify a file path after --.";
+            return false;
+        }
+
+        try
+        {
+            string fullPath = Path.GetFullPath(path);
+            string resolved = File.ResolveLinkTarget(fullPath, returnFinalTarget: true)?.FullName ?? fullPath;
+            if (!File.Exists(resolved))
+            {
+                errorMessage = $"File not found: {resolved}";
+                return false;
+            }
+
+            if ((File.GetAttributes(resolved) & (FileAttributes.Directory | FileAttributes.Device)) != 0)
+            {
+                errorMessage = "Path is not a regular file.";
+                return false;
+            }
+
+            canonicalPath = resolved;
+            errorCode = string.Empty;
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        {
+            errorMessage = $"Unable to inspect path: {ex.Message}";
+            return false;
+        }
+    }
+
+    internal static async Task<int> UploadToDestinationAsync(string? path, string destination)
+    {
+        if (!TryValidateFilePath(path, out string canonicalPath, out string errorCode, out string errorMessage))
+        {
+            return JsonStdout.WriteFailureAndExit(errorCode, errorMessage);
+        }
+
+        try
+        {
+            await UploadHost.EnsureBootstrappedAsync();
+            var usable = UploadHost.GetUsableFileInstances();
+            var matches = UploadHost.MatchDestination(usable, destination);
+            if (matches.Count == 0)
+            {
+                return JsonStdout.WriteFailureAndExit(
+                    CliErrorCodes.NotFound,
+                    $"No usable File destination matches \"{destination}\". Available: {string.Join(", ", usable.Select(i => i.DisplayName))}.");
+            }
+
+            if (matches.Count > 1)
+            {
+                return JsonStdout.WriteFailureAndExit(
+                    CliErrorCodes.Ambiguous,
+                    $"\"{destination}\" matches more than one File destination. Use an instance id: {string.Join(", ", matches.Select(i => $"{i.DisplayName} ({i.InstanceId})"))}.");
+            }
+
+            var instance = matches[0];
+            var workflow = SettingsManager.GetFirstWorkflowOrDefault(WorkflowType.FileUpload);
+            var taskInfo = new TaskInfo(CreateUploadTaskSettings(workflow.TaskSettings, instance))
+            {
+                DataType = EDataType.File,
+                Job = TaskJob.FileUpload,
+                FilePath = canonicalPath,
+                KeepSourceFileName = true
+            };
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            try
+            {
+                await ProcessUploadAsync(taskInfo, cts.Token);
+            }
+            catch (Exception ex)
+            {
+                var mapped = ErrorMapper.FromException(ex, timeoutRequested: cts.IsCancellationRequested);
+                return JsonStdout.WriteFailureAndExit(mapped.Code, mapped.Message);
+            }
+
+            string? url = taskInfo.Result?.URL;
+            if (taskInfo.Result?.IsSuccess != true || !ErrorMapper.IsHttpUrl(url))
+            {
+                var mapped = ErrorMapper.FromUploadResult(taskInfo.Result);
+                return JsonStdout.WriteFailureAndExit(mapped.Code, mapped.Message);
+            }
+
+            JsonStdout.Write(new UploadSuccessResponse
+            {
+                SchemaVersion = 1,
+                Ok = true,
+                Url = url!,
+                Filename = Path.GetFileName(canonicalPath),
+                Size = new FileInfo(canonicalPath).Length,
+                Type = MimeTypes.GetMimeTypeFromFileName(canonicalPath),
+                DataType = "file",
+                ProviderId = instance.ProviderId,
+                InstanceId = instance.InstanceId,
+                DisplayName = instance.DisplayName
+            });
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            var mapped = ErrorMapper.FromException(ex);
+            return JsonStdout.WriteFailureAndExit(mapped.Code, mapped.Message);
+        }
     }
 
     internal static async Task<int> UploadAsync(string? path)

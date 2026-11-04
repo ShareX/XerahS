@@ -1,5 +1,5 @@
 ---
-name: XIP Writing Reference
+name: write-xip
 description: Draft XIP structure and implementation criteria when proposal writing is requested. Use sync-xips for publishing.
 ---
 

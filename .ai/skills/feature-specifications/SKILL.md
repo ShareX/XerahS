@@ -1,5 +1,5 @@
 ---
-name: ShareX Feature Specifications
+name: feature-specifications
 description: Consult uploader or annotation design specifications when explicitly reviewing those subsystem contracts.
 ---
 

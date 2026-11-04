@@ -17,6 +17,7 @@ and AI coding agents.
 |---------|---------|
 | `doctor` | Report whether an image upload destination is ready. |
 | `upload <path> [--url-only]` | Upload a file through the configured image destination. `--url-only` prints just the URL (OmaSnap pin Upload button). |
+| `upload <path> --destination <destination>` | Upload any file to a named File destination, keeping its name: an instance id, a unique id prefix (6+ characters), a display name, or a provider id such as `kovaforge`. Capability `upload.destination`. |
 | `workflow list` / `workflow show <workflow>` | Inspect workflows (id, job, after-capture tasks, image effects). |
 | `workflow tasks <workflow> --add <task> --remove <task>` | Turn after-capture tasks on or off. |
 | `workflow task-names` | List valid after-capture task names. |

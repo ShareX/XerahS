@@ -37,7 +37,7 @@ jobs:
     steps:
       - name: Install container prerequisites
         run: pacman -Syu --noconfirm --needed git
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
@@ -62,7 +62,7 @@ jobs:
         run: |
           runuser -u builder -- env XERAHS_REPO_ROOT="$GITHUB_WORKSPACE" \
             makepkg --cleanbuild --noconfirm
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: xerahs-arch-package
           path: build/linux/aur/xerahs-git/*.pkg.tar.zst
