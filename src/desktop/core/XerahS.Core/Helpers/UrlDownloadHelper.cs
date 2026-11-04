@@ -61,6 +61,8 @@ public static class UrlDownloadHelper
         ["image/jpeg"] = ".jpg",
         ["image/gif"] = ".gif",
         ["image/webp"] = ".webp",
+        ["image/avif"] = ".avif",
+        ["image/jxl"] = ".jxl",
         ["image/svg+xml"] = ".svg",
         ["video/mp4"] = ".mp4",
         ["video/webm"] = ".webm"

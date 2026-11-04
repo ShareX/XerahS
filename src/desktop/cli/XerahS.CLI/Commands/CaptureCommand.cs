@@ -139,6 +139,7 @@ namespace XerahS.CLI.Commands
                 "tif" or "tiff" => EImageFormat.TIFF,
                 "webp" => EImageFormat.WEBP,
                 "avif" => EImageFormat.AVIF,
+                "jxl" => EImageFormat.JXL,
                 _ => null
             };
 

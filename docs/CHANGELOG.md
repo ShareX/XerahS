@@ -10,6 +10,18 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
+## v0.33.6
+
+### Features
+
+- **JPEG XL (JXL) images** ([#311](https://github.com/ShareX/XerahS/issues/311)): Choose JXL as the capture image format. It is encoded by FFmpeg's `libjxl` (quality 100 is lossless, lower values are lossy and use the same curve as `cjxl`), keeps transparency, and is recognised for uploads, the CLI (`--output shot.jxl`), URL downloads and MIME types. If FFmpeg or `libjxl` is missing, the capture is saved as PNG with a log message instead of being lost.
+
+### Fixes
+
+- **AVIF captures were written as PNG data**: Saving and uploading used the Skia fallback, so a file named `.avif` held PNG bytes. AVIF now goes through the FFmpeg encoder as designed in XIP0025, with the same PNG fallback when FFmpeg cannot encode it.
+
+---
+
 ## v0.33.5
 
 Includes the macOS startup and update-dialog fixes from v0.33.4. Both native macOS launch checks passed for that build; its final Chocolatey job hit GitHub's anonymous API rate limit.
