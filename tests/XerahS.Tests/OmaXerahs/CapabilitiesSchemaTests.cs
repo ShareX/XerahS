@@ -51,6 +51,7 @@ public class CapabilitiesSchemaTests
         var capabilities = root.GetProperty("capabilities").EnumerateArray().Select(e => e.GetString()).ToArray();
         Assert.That(capabilities, Does.Contain("doctor.image"));
         Assert.That(capabilities, Does.Contain("upload.image"));
+        Assert.That(capabilities, Does.Contain("upload.destination"));
         Assert.That(capabilities, Does.Contain("workflow.list"));
         Assert.That(capabilities, Does.Contain("effects.import"));
         Assert.That(capabilities, Does.Contain("skill.install"));

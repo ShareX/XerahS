@@ -24,6 +24,8 @@
       <_AppTargetFramework Condition="'$(HostTargetFramework)' != ''">$(HostTargetFramework)</_AppTargetFramework>
       <_AppTargetFramework Condition="'$(HostTargetFramework)' == ''">$(TargetFramework)</_AppTargetFramework>
       <PluginOutputDir>$(MSBuildThisFileDirectory)..\app\XerahS.App\bin\$(Configuration)\$(_AppTargetFramework)\Plugins\$(PluginId)</PluginOutputDir>
+      <!-- omaxerahs is its own host (net10.0): without this copy, a local build finds no plugins and no uploaders. -->
+      <CliPluginOutputDir>$(MSBuildThisFileDirectory)..\cli\XerahS.OmaXerahs\bin\$(Configuration)\net10.0\Plugins\$(PluginId)</CliPluginOutputDir>
     </PropertyGroup>
     <ItemGroup>
       <PluginFiles Include="$(OutputPath)$(AssemblyName).dll" />
@@ -32,8 +34,9 @@
       <!-- Include any additional runtime dependencies that aren't from the host -->
       <PluginFiles Include="$(OutputPath)*.dll" Exclude="$(OutputPath)$(AssemblyName).dll;$(OutputPath)Avalonia*.dll;$(OutputPath)XerahS.*.dll;$(OutputPath)CommunityToolkit*.dll;$(OutputPath)Newtonsoft*.dll" />
     </ItemGroup>
-    <MakeDir Directories="$(PluginOutputDir)" Condition="!Exists('$(PluginOutputDir)')" />
+    <MakeDir Directories="$(PluginOutputDir);$(CliPluginOutputDir)" />
     <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(PluginOutputDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(CliPluginOutputDir)" SkipUnchangedFiles="true" />
     <Message Importance="High" Text="Copied $(PluginName) plugin to: $(PluginOutputDir)" />
   </Target>
 </Project>

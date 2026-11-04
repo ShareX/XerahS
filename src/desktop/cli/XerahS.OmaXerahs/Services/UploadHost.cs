@@ -151,6 +151,38 @@ internal static class UploadHost
     internal static List<UploaderInstance> GetUsableImageUploadInstances() =>
         GetUsableImageInstances().Concat(GetUsableFileInstances()).ToList();
 
+    /// <summary>
+    /// Instances named by <paramref name="query"/>: an exact instance id, or else a unique id prefix (6+ characters),
+    /// or else a display name or provider id (case-insensitive). More than one result means the name is ambiguous.
+    /// </summary>
+    internal static List<UploaderInstance> MatchDestination(IReadOnlyList<UploaderInstance> instances, string query)
+    {
+        string value = query.Trim();
+        if (value.Length == 0)
+        {
+            return [];
+        }
+
+        var exact = instances.Where(i => string.Equals(i.InstanceId, value, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (exact.Count > 0)
+        {
+            return exact;
+        }
+
+        var prefix = value.Length >= 6
+            ? instances.Where(i => i.InstanceId.StartsWith(value, StringComparison.OrdinalIgnoreCase)).ToList()
+            : [];
+        if (prefix.Count > 0)
+        {
+            return prefix;
+        }
+
+        return instances
+            .Where(i => string.Equals(i.DisplayName, value, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(i.ProviderId, value, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
     private static List<UploaderInstance> GetUsableInstances(UploaderCategory category)
     {
         EnsurePluginsLoaded();

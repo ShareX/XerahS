@@ -56,6 +56,7 @@ internal static class CapabilitiesCommand
             {
                 "doctor.image",
                 "upload.image",
+                "upload.destination",
                 "workflow.list",
                 "workflow.show",
                 "workflow.tasks",

@@ -223,7 +223,9 @@ public sealed class SecretStore : ISecretStore, ISecretStoreInfo
             if (LinuxLibsecretSecretStore.IsAvailable())
             {
                 return BackendSelection.Create(
-                    new LinuxLibsecretSecretStore(serviceName),
+                    new LegacyFileFallbackSecretStore(
+                        new LinuxLibsecretSecretStore(serviceName),
+                        new AesFileSecretStore(filePath, GetKeyPath(filePath))),
                     "Linux libsecret",
                     $"Stored via secret-tool service \"{serviceName}\"",
                     isFallback: false);
@@ -630,6 +632,57 @@ public sealed class SecretStore : ISecretStore, ISecretStoreInfo
             if (!string.IsNullOrWhiteSpace(userName) && OperatingSystem.IsMacOS())
             {
                 yield return Path.Combine("/Users", userName);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Reads fall back to the AES file store, because a Linux host can hold secrets there from when
+    /// libsecret was unavailable while its uploader settings still reference them. Writes go to the
+    /// primary store only, and deletes clear both so a removed secret cannot come back.
+    /// </summary>
+    internal sealed class LegacyFileFallbackSecretStore : ISecretStore
+    {
+        private readonly ISecretStore _primary;
+        private readonly ISecretStore _legacy;
+
+        public LegacyFileFallbackSecretStore(ISecretStore primary, ISecretStore legacy)
+        {
+            _primary = primary;
+            _legacy = legacy;
+        }
+
+        public string? GetSecret(string providerId, string secretKey, string name)
+        {
+            return _primary.GetSecret(providerId, secretKey, name) ?? ReadLegacy(providerId, secretKey, name);
+        }
+
+        public void SetSecret(string providerId, string secretKey, string name, string value)
+        {
+            _primary.SetSecret(providerId, secretKey, name, value);
+        }
+
+        public void DeleteSecret(string providerId, string secretKey, string name)
+        {
+            _primary.DeleteSecret(providerId, secretKey, name);
+            _legacy.DeleteSecret(providerId, secretKey, name);
+        }
+
+        public bool HasSecret(string providerId, string secretKey, string name)
+        {
+            return _primary.HasSecret(providerId, secretKey, name) || ReadLegacy(providerId, secretKey, name) != null;
+        }
+
+        private string? ReadLegacy(string providerId, string secretKey, string name)
+        {
+            try
+            {
+                return _legacy.GetSecret(providerId, secretKey, name);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "SecretStore failed to read the legacy file store.");
+                return null;
             }
         }
     }

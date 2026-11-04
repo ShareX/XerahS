@@ -28,6 +28,7 @@ using XerahS.Core;
 using XerahS.Uploaders.PluginSystem;
 using XerahS.OmaXerahs.Commands;
 using XerahS.OmaXerahs.Models;
+using XerahS.OmaXerahs.Services;
 
 namespace XerahS.Tests.OmaXerahs;
 
@@ -48,6 +49,60 @@ public class UploadCommandTests
         Assert.That(source.AfterCaptureJob, Is.EqualTo(AfterCaptureTasks.UploadImageToHost));
         Assert.That(settings.GeneralSettings, Is.Not.SameAs(source.GeneralSettings));
     }
+
+    [Test]
+    public void TryValidateFilePath_AcceptsMarkdownAndRejectsMissingFile()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"omaxerahs-{Guid.NewGuid():N}.md");
+        File.WriteAllText(path, "# Report");
+        try
+        {
+            Assert.That(UploadCommand.TryValidateFilePath(path, out string canonical, out _, out _), Is.True);
+            Assert.That(canonical, Is.EqualTo(path));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+
+        Assert.That(UploadCommand.TryValidateFilePath(path, out _, out string code, out _), Is.False);
+        Assert.That(code, Is.EqualTo(CliErrorCodes.InvalidPath));
+        Assert.That(UploadCommand.TryValidateFilePath(null, out _, out code, out _), Is.False);
+        Assert.That(code, Is.EqualTo(CliErrorCodes.Usage));
+    }
+
+    [TestCase("abcdef123456", "KovaForge Docs (File)")]
+    [TestCase("ABCDEF", "KovaForge Docs (File)")]
+    [TestCase("KOVAFORGE DOCS (FILE)", "KovaForge Docs (File)")]
+    [TestCase("kovaforge", "KovaForge Docs (File)")]
+    [TestCase("amazons3", "Amazon S3 (File)")]
+    public void MatchDestination_FindsOneInstance(string query, string expected)
+    {
+        var matches = UploadHost.MatchDestination(Destinations(), query);
+        Assert.That(matches.Select(i => i.DisplayName), Is.EqualTo(new[] { expected }));
+    }
+
+    [TestCase("nothing")]
+    [TestCase("abc")]
+    [TestCase("  ")]
+    public void MatchDestination_ReturnsNothingForUnknownOrShortNames(string query)
+    {
+        Assert.That(UploadHost.MatchDestination(Destinations(), query), Is.Empty);
+    }
+
+    [Test]
+    public void MatchDestination_ReportsEveryInstanceOfASharedProvider()
+    {
+        var instances = Destinations();
+        instances.Add(new UploaderInstance { InstanceId = "fedcba654321", ProviderId = "kovaforge", DisplayName = "Team Docs" });
+        Assert.That(UploadHost.MatchDestination(instances, "kovaforge"), Has.Count.EqualTo(2));
+    }
+
+    private static List<UploaderInstance> Destinations() =>
+    [
+        new UploaderInstance { InstanceId = "abcdef123456", ProviderId = "kovaforge", DisplayName = "KovaForge Docs (File)" },
+        new UploaderInstance { InstanceId = "998877665544", ProviderId = "amazons3", DisplayName = "Amazon S3 (File)" }
+    ];
 
     [Test]
     public void TryValidateImagePath_RejectsMissingPathAsUsage()

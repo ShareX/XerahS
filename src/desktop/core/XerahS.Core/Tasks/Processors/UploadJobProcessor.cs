@@ -178,7 +178,7 @@ namespace XerahS.Core.Tasks.Processors
         /// </summary>
         private static void ApplyNamingConvention(TaskInfo info)
         {
-            if (info.DataType != EDataType.File || string.IsNullOrEmpty(info.FilePath) || PrivacyUploadGuard.IsRequired(info))
+            if (info.KeepSourceFileName || info.DataType != EDataType.File || string.IsNullOrEmpty(info.FilePath) || PrivacyUploadGuard.IsRequired(info))
             {
                 return;
             }

@@ -10,6 +10,19 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
+## v0.33.7
+
+### Features
+
+- **omaxerahs**: `upload <path> --destination <destination>` sends any file to a named File destination and keeps its name, so a Markdown page can go to KovaForge Docs. Capability `upload.destination`.
+
+### Fixes
+
+- **Secrets (Linux)**: Reading a secret now falls back to the encrypted file store when the keyring does not have it. Uploader credentials held only in that file were reported as missing, and uploads failed with no clear reason.
+- **Build**: Local plugin builds are now also copied next to the `omaxerahs` build, which otherwise found no plugins and reported no uploaders.
+
+---
+
 ## v0.33.6
 
 First ShareX/XerahS release since v0.31.4, so it also includes the v0.33.x changes in the sections below.
