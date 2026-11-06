@@ -13,7 +13,7 @@ A cross-platform port of the popular **ShareX** screen capture and file sharing 
 
 **XerahS is and will always be free**, just like ShareX, built out of passion, not for profit. It's developed entirely through agentic coding as a parallel project to ShareX, designed to align with different user preferences and values. You're welcome to give it a try or stick with whatever tool works best for you.
 
-**If agentic coding is not your style**, we encourage you to try the original [**ShareX**](https://github.com/ShareX/ShareX) for Windows, which is developed using traditional methods and has a mature, battle-tested codebase backed by years of community contributions.
+**If agentic coding is not your style**, we encourage you to try the original [**ShareX**](https://github.com/ShareX/ShareX) 21 or earlier for Windows, which is developed using traditional methods and has a mature, battle-tested codebase backed by years of community contributions.
 
 **Built by the community, for the community.** XerahS is a collaborative effort driven by passionate contributors who believe in open-source development. Every feature, every improvement, and every line of code represents a shared vision of making powerful screen capture tools accessible to everyone, everywhere.
 
