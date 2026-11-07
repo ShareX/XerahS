@@ -44,6 +44,8 @@ public partial class OnboardingWizardViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsThemeStep))]
     [NotifyPropertyChangedFor(nameof(CurrentAdvice))]
+    [NotifyPropertyChangedFor(nameof(IsReadyStep))]
+    [NotifyPropertyChangedFor(nameof(PrimaryButtonText))]
     [NotifyPropertyChangedFor(nameof(CanGoBack))]
     [NotifyPropertyChangedFor(nameof(StepCounterText))]
     private int _currentStepIndex;
@@ -88,11 +90,23 @@ public partial class OnboardingWizardViewModel : ViewModelBase
         new(AppThemeMode.Light, "Light")
     ];
 
-    public int StepCount => Advice.Count + 1;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAttentionItems))]
+    private IReadOnlyList<ReadinessItem> _readyItems = [];
+
+    /// <summary>Theme step, one step per advice page, then the readiness check.</summary>
+    public int StepCount => Advice.Count + 2;
+
+    public bool IsReadyStep => CurrentStepIndex == StepCount - 1;
+
+    public bool HasAttentionItems => ReadyItems.Any(item => item.NeedsAttention);
+
+    public string PrimaryButtonText => IsReadyStep ? "Finish" : "Next";
 
     public bool IsThemeStep => CurrentStepIndex == 0;
 
-    public OnboardingAdvice? CurrentAdvice => CurrentStepIndex > 0 ? Advice[CurrentStepIndex - 1] : null;
+    public OnboardingAdvice? CurrentAdvice =>
+        CurrentStepIndex > 0 && CurrentStepIndex <= Advice.Count ? Advice[CurrentStepIndex - 1] : null;
 
     public bool CanGoBack => CurrentStepIndex > 0;
 
@@ -152,10 +166,39 @@ public partial class OnboardingWizardViewModel : ViewModelBase
         if (CurrentStepIndex < StepCount - 1)
         {
             CurrentStepIndex++;
+            if (IsReadyStep)
+            {
+                RefreshReadiness();
+            }
         }
         else
         {
-            Complete();
+            Complete(startFirstCapture: false);
+        }
+    }
+
+    [RelayCommand]
+    private void FinishAndCapture() => Complete(startFirstCapture: true);
+
+    [RelayCommand]
+    private void RecheckReadiness() => RefreshReadiness();
+
+    private void RefreshReadiness()
+    {
+        try
+        {
+            ReadyItems = OnboardingReadiness.Evaluate(OnboardingReadiness.Gather());
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "[OnboardingWizard] Readiness check failed");
+            ReadyItems =
+            [
+                new ReadinessItem(
+                    "Could not check your setup",
+                    "XerahS will still work. Press the capture hotkey or use the tray icon to try it.",
+                    ReadinessLevel.Info)
+            ];
         }
     }
 
@@ -168,7 +211,7 @@ public partial class OnboardingWizardViewModel : ViewModelBase
         }
     }
 
-    private void Complete()
+    private void Complete(bool startFirstCapture)
     {
         if (_completionSource.Task.IsCompleted)
         {
@@ -185,7 +228,7 @@ public partial class OnboardingWizardViewModel : ViewModelBase
             DebugHelper.WriteException(ex, "[OnboardingWizard] Failed to save settings");
         }
 
-        _completionSource.TrySetResult(new OnboardingResult { Completed = true });
+        _completionSource.TrySetResult(new OnboardingResult { Completed = true, StartFirstCapture = startFirstCapture });
     }
 
     /// <summary>

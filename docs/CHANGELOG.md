@@ -17,6 +17,13 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **JPEG XL (JXL) images** ([#311](https://github.com/ShareX/XerahS/issues/311)): Choose JXL as the capture image format. It is encoded by FFmpeg's `libjxl` (quality 100 is lossless, lower values are lossy and use the same curve as `cjxl`), keeps transparency, and is recognised for uploads, the CLI (`--output shot.jxl`), URL downloads and MIME types. If FFmpeg or `libjxl` is missing, the capture is saved as PNG with a log message instead of being lost.
 - **omaxerahs**: `upload <path> --destination <destination>` sends any file to a named File destination and keeps its name, so a Markdown page can go to KovaForge Docs. Capability `upload.destination`.
 
+### First-run experience
+
+- **Ready-to-capture check**: The first-run wizard now ends with a checklist of what works on this computer: where captures are saved, whether your hotkeys registered, macOS Screen Recording permission, a note about Wayland, and whether FFmpeg is installed. Anything that needs a step says what to do. **Finish and take my first capture** closes the wizard and starts a region capture.
+- **A message when XerahS cannot start**: A startup failure on Windows, macOS and Linux now shows a message with the reason and the path of the log file, instead of the app silently never appearing.
+- **Honest default workflow names**: Off Windows, the default recorder is "Record screen" instead of "Record screen using GDI", and the game recorder is "Record active window".
+- **README**: Install steps for Windows, Linux and macOS come first, with a per-platform status table. The Launchpad PPA and Fedora COPR commands were removed because those channels are not live yet.
+
 ### Fixes
 
 - **AVIF captures were written as PNG data**: Saving and uploading used the Skia fallback, so a file named `.avif` held PNG bytes. AVIF now goes through the FFmpeg encoder as designed in XIP0025, with the same PNG fallback when FFmpeg cannot encode it.

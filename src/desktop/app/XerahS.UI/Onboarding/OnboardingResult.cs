@@ -31,4 +31,7 @@ namespace XerahS.UI.Onboarding;
 public sealed class OnboardingResult
 {
     public bool Completed { get; set; }
+
+    /// <summary>The user chose "Finish and take my first capture" on the last step.</summary>
+    public bool StartFirstCapture { get; set; }
 }

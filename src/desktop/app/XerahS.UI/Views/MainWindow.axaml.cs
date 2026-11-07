@@ -541,6 +541,10 @@ namespace XerahS.UI.Views
                         {
                             XerahS.Common.DebugHelper.WriteLine("[Onboarding] Wizard completed, marking first-time run complete.");
                             SettingsManager.Settings.MarkFirstTimeRunCompleted(persist: false);
+                            if (result.StartFirstCapture)
+                            {
+                                XerahS.UI.Onboarding.OnboardingFirstCapture.Start();
+                            }
                         }
                     }
                     catch (Exception ex)

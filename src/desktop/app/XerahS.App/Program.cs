@@ -192,6 +192,9 @@ namespace XerahS.App
                 else
                 {
                     XerahS.Common.DebugHelper.WriteException(ex, "Critical application startup failure");
+                    string? failureLogPath = null;
+                    try { failureLogPath = XerahS.Common.PathsManager.GetMainLogFilePath(); } catch { /* shown without a path */ }
+                    StartupFailureReporter.Show(ex, failureLogPath);
                 }
 
                 XerahS.Common.DebugHelper.Flush();
@@ -579,6 +582,7 @@ namespace XerahS.App
                 var uiCaptureService = new XerahS.UI.Services.ScreenCaptureService(macCaptureService);
 
                 XerahS.Platform.MacOS.MacOSPlatform.Initialize(uiCaptureService);
+                XerahS.UI.Onboarding.OnboardingReadiness.MacPermissionProbe = XerahS.Platform.MacOS.MacOSPlatform.IsScreenRecordingGranted;
                 // NOTE: InitializeRecording() moved to async post-UI initialization in App.axaml.cs
                 return;
             }
