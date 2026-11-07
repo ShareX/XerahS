@@ -15,7 +15,7 @@ XerahS is a cross-platform rewrite reimagined for modern workflows and AI-assist
 | Feature | XerahS | ShareX |
 | :--- | :--- | :--- |
 | **Operating System** | **Windows, Linux, macOS** | Windows Only |
-| **Development** | **Agentic Coding** (AI-First) | Traditional Manual Coding |
+| **Development** | **Agentic Coding** (AI-First) | Traditional manual coding (ShareX 21 or earlier) |
 | **Architecture** | **Plugin-based** (Destinations) | Monolithic |
 | **UI Framework** | **Avalonia UI** (Modern XAML) | **Windows Forms** (Legacy) |
 | **Core Framework** | **.NET 10** | .NET 9.0 |
