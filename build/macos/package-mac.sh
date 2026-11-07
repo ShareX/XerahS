@@ -303,32 +303,33 @@ can_notarize() {
     [ -n "${MACOS_NOTARY_PROFILE:-}" ] || [ -n "${MACOS_NOTARY_KEY:-}" ]
 }
 
-notarize_submit() {
+notarytool() {
     if [ -n "${MACOS_NOTARY_PROFILE:-}" ]; then
-        xcrun notarytool submit "$1" --keychain-profile "$MACOS_NOTARY_PROFILE" --wait
+        xcrun notarytool "$@" --keychain-profile "$MACOS_NOTARY_PROFILE"
     else
-        xcrun notarytool submit "$1" --key "$MACOS_NOTARY_KEY" --key-id "$MACOS_NOTARY_KEY_ID" \
-            --issuer "$MACOS_NOTARY_ISSUER" --wait
+        xcrun notarytool "$@" --key "$MACOS_NOTARY_KEY" --key-id "$MACOS_NOTARY_KEY_ID" --issuer "$MACOS_NOTARY_ISSUER"
     fi
 }
 
-# Notarizes the signed app itself and staples the ticket, so the app in the tar.gz opens
-# without a Gatekeeper warning even offline. notarytool takes a zip of the bundle.
-notarize_app_bundle() {
-    local app_bundle_path="$1"
-
-    if [[ "$OSTYPE" != darwin* ]] || [ -z "${MACOS_SIGN_IDENTITY:-}" ] || [ "${MACOS_SKIP_SIGNING:-0}" = "1" ] || ! can_notarize; then
-        return
-    fi
-
-    local zip_path
-    zip_path="$(mktemp -d)/XerahS.zip"
-    echo "Submitting $(basename "$app_bundle_path") for notarization..."
-    ditto -c -k --keepParent "$app_bundle_path" "$zip_path"
-    notarize_submit "$zip_path"
-    rm -rf "$(dirname "$zip_path")"
-    xcrun stapler staple "$app_bundle_path"
-    xcrun stapler validate "$app_bundle_path"
+# Submits a file and polls for Apple's verdict, retrying through network drops (notarytool --wait
+# gives up on the first one). Returns 0 when accepted, 1 when rejected (the log is printed), and 2
+# when Apple is still reviewing after MACOS_NOTARY_TIMEOUT seconds: a new Developer ID team's first
+# submissions can take hours. The file is signed either way, and Gatekeeper asks Apple online, so it
+# opens without a warning as soon as the review passes; only the stapled ticket is missing.
+notarize_submit() {
+    local id status deadline=$((SECONDS + ${MACOS_NOTARY_TIMEOUT:-1200}))
+    id="$(notarytool submit "$1" --output-format plist | plutil -extract id raw -)"
+    echo "Notarization submission $id for $(basename "$1")"
+    while [ "$SECONDS" -lt "$deadline" ]; do
+        sleep 30
+        status="$(notarytool info "$id" --output-format plist 2>/dev/null | plutil -extract status raw - 2>/dev/null)" || continue
+        case "$status" in
+            Accepted) echo "Notarization accepted"; return 0 ;;
+            Invalid|Rejected) echo "Notarization $status" >&2; notarytool log "$id" >&2 || true; return 1 ;;
+        esac
+    done
+    echo "::warning::Apple is still reviewing notarization submission $id; the build is signed but not stapled"
+    return 2
 }
 
 create_dmg_and_notarize() {
@@ -345,11 +346,20 @@ create_dmg_and_notarize() {
 
     codesign --force --timestamp --sign "$MACOS_SIGN_IDENTITY" "$dmg_path"
 
+    # One submission covers the DMG and the app inside it; the app is stapled from the same ticket
+    # before the tar.gz is made, so it opens without a Gatekeeper warning even offline.
     if can_notarize; then
-        echo "Submitting DMG for notarization..."
-        notarize_submit "$dmg_path"
-        xcrun stapler staple "$dmg_path"
-        echo "Notarized and stapled $(basename "$dmg_path")"
+        local rc=0
+        notarize_submit "$dmg_path" || rc=$?
+        case $rc in
+            0)
+                xcrun stapler staple "$dmg_path"
+                xcrun stapler staple "$app_bundle_path"
+                echo "Notarized and stapled $(basename "$dmg_path") and the app"
+                ;;
+            2) echo "DMG signed; notarization still pending at Apple." ;;
+            *) exit 1 ;;
+        esac
     else
         echo "No notarization credentials; DMG created and signed but not notarized."
     fi
@@ -453,7 +463,7 @@ publish_and_package() {
     echo "Published $plugin_count plugins to startup Plugins folder: $plugins_dir"
 
     sign_app_bundle "$app_bundle_path"
-    notarize_app_bundle "$app_bundle_path"
+    create_dmg_and_notarize "$app_bundle_path" "$arch"
 
     echo "Creating archive: $tar_name"
     if tar --help 2>/dev/null | grep -q -- "--mode"; then
@@ -461,8 +471,6 @@ publish_and_package() {
     else
         tar -C "$publish_dir" -czf "$tar_path" "XerahS.app"
     fi
-
-    create_dmg_and_notarize "$app_bundle_path" "$arch"
 
     echo "Success: Generated $tar_name in dist."
 }
