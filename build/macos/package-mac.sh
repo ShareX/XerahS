@@ -254,6 +254,11 @@ sign_app_bundle() {
     # Clear quarantine/xattrs that can break nested codesign on CI runners.
     xattr -cr "$app_bundle_path" 2>/dev/null || true
 
+    # The main executable is signed with the bundle below. Signing it on its own first makes
+    # codesign check the whole bundle, which fails while other files are still unsigned.
+    local main_executable
+    main_executable="$app_bundle_path/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print CFBundleExecutable' "$app_bundle_path/Contents/Info.plist" 2>/dev/null || echo XerahS)"
+
     # Sign innermost-first: every nested Mach-O (dylibs, apphost executables, daemon,
     # plugin native deps), then the other files in Contents/MacOS, then the bundle itself.
     while IFS= read -r -d '' candidate; do
@@ -265,7 +270,7 @@ sign_app_bundle() {
             # signature goes into extended attributes, which tar on macOS and the DMG keep.
             codesign --force --timestamp -s "$identity" "$candidate"
         fi
-    done < <(find "$app_bundle_path/Contents/MacOS" -type f -print0)
+    done < <(find "$app_bundle_path/Contents/MacOS" -type f ! -path "$main_executable" -print0)
 
     if [ "$identity" = "-" ]; then
         # .NET publish layouts mix Mach-O hosts with PE assemblies. Ad-hoc signing must
