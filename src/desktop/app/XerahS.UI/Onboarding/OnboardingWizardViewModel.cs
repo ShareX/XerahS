@@ -183,11 +183,15 @@ public partial class OnboardingWizardViewModel : ViewModelBase
     [RelayCommand]
     private void RecheckReadiness() => RefreshReadiness();
 
+    /// <summary>Builds the checklist for the Ready step. Replaceable so tests do not touch the real machine.</summary>
+    public Func<IReadOnlyList<ReadinessItem>> ReadinessProvider { get; set; } =
+        static () => OnboardingReadiness.Evaluate(OnboardingReadiness.Gather());
+
     private void RefreshReadiness()
     {
         try
         {
-            ReadyItems = OnboardingReadiness.Evaluate(OnboardingReadiness.Gather());
+            ReadyItems = ReadinessProvider();
         }
         catch (Exception ex)
         {
