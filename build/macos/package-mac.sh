@@ -17,8 +17,11 @@ ENTITLEMENTS="$SCRIPT_DIR/entitlements.plist"
 # XIP0078 P2 signing controls:
 #   MACOS_SIGN_IDENTITY   Developer ID Application identity. When set, the bundle is signed
 #                         with hardened runtime + entitlements and a DMG is produced.
-#   MACOS_NOTARY_PROFILE  notarytool keychain profile name. When set together with
-#                         MACOS_SIGN_IDENTITY, the DMG is notarized and stapled.
+#   MACOS_NOTARY_PROFILE  notarytool keychain profile name, or
+#   MACOS_NOTARY_KEY, MACOS_NOTARY_KEY_ID, MACOS_NOTARY_ISSUER
+#                         an App Store Connect API key (.p8 path), its key id and issuer id (CI).
+#                         With either and MACOS_SIGN_IDENTITY, the app (shipped in the tar.gz)
+#                         and the DMG are notarized and stapled.
 #   MACOS_SKIP_SIGNING=1  Skip signing entirely (pre-XIP0078 behavior).
 # Without MACOS_SIGN_IDENTITY the bundle is ad-hoc signed (interim step: no Gatekeeper
 # benefit, but a sealed bundle for from-source users; harmless on arm64 where the linker
@@ -215,6 +218,10 @@ sign_file() {
     if [ "$identity" = "-" ]; then
         codesign --force -s - "$file" >/dev/null 2>&1 || \
             echo "Warning: ad-hoc signing failed for $file"
+    elif [ -x "$file" ] && file -b "$file" 2>/dev/null | grep -q 'executable'; then
+        # Nested .NET executables (the watch-folder daemon, createdump) JIT like the app, so
+        # under the hardened runtime they need the same entitlements or they crash at start.
+        codesign --force --options runtime --timestamp --entitlements "$ENTITLEMENTS" -s "$identity" "$file"
     else
         codesign --force --options runtime --timestamp -s "$identity" "$file"
     fi
@@ -283,6 +290,38 @@ sign_app_bundle() {
     echo "Code signature verified for $app_bundle_path"
 }
 
+can_notarize() {
+    [ -n "${MACOS_NOTARY_PROFILE:-}" ] || [ -n "${MACOS_NOTARY_KEY:-}" ]
+}
+
+notarize_submit() {
+    if [ -n "${MACOS_NOTARY_PROFILE:-}" ]; then
+        xcrun notarytool submit "$1" --keychain-profile "$MACOS_NOTARY_PROFILE" --wait
+    else
+        xcrun notarytool submit "$1" --key "$MACOS_NOTARY_KEY" --key-id "$MACOS_NOTARY_KEY_ID" \
+            --issuer "$MACOS_NOTARY_ISSUER" --wait
+    fi
+}
+
+# Notarizes the signed app itself and staples the ticket, so the app in the tar.gz opens
+# without a Gatekeeper warning even offline. notarytool takes a zip of the bundle.
+notarize_app_bundle() {
+    local app_bundle_path="$1"
+
+    if [[ "$OSTYPE" != darwin* ]] || [ -z "${MACOS_SIGN_IDENTITY:-}" ] || [ "${MACOS_SKIP_SIGNING:-0}" = "1" ] || ! can_notarize; then
+        return
+    fi
+
+    local zip_path
+    zip_path="$(mktemp -d)/XerahS.zip"
+    echo "Submitting $(basename "$app_bundle_path") for notarization..."
+    ditto -c -k --keepParent "$app_bundle_path" "$zip_path"
+    notarize_submit "$zip_path"
+    rm -rf "$(dirname "$zip_path")"
+    xcrun stapler staple "$app_bundle_path"
+    xcrun stapler validate "$app_bundle_path"
+}
+
 create_dmg_and_notarize() {
     local app_bundle_path="$1"
     local arch="$2"
@@ -295,13 +334,15 @@ create_dmg_and_notarize() {
     echo "Creating DMG: $(basename "$dmg_path")"
     hdiutil create -volname "XerahS" -srcfolder "$app_bundle_path" -ov -format UDZO "$dmg_path"
 
-    if [ -n "${MACOS_NOTARY_PROFILE:-}" ]; then
-        echo "Submitting DMG for notarization (profile: $MACOS_NOTARY_PROFILE)..."
-        xcrun notarytool submit "$dmg_path" --keychain-profile "$MACOS_NOTARY_PROFILE" --wait
+    codesign --force --timestamp --sign "$MACOS_SIGN_IDENTITY" "$dmg_path"
+
+    if can_notarize; then
+        echo "Submitting DMG for notarization..."
+        notarize_submit "$dmg_path"
         xcrun stapler staple "$dmg_path"
         echo "Notarized and stapled $(basename "$dmg_path")"
     else
-        echo "MACOS_NOTARY_PROFILE not set; DMG created but not notarized."
+        echo "No notarization credentials; DMG created and signed but not notarized."
     fi
 }
 
@@ -403,6 +444,7 @@ publish_and_package() {
     echo "Published $plugin_count plugins to startup Plugins folder: $plugins_dir"
 
     sign_app_bundle "$app_bundle_path"
+    notarize_app_bundle "$app_bundle_path"
 
     echo "Creating archive: $tar_name"
     if tar --help 2>/dev/null | grep -q -- "--mode"; then
