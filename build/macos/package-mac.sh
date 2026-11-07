@@ -255,11 +255,15 @@ sign_app_bundle() {
     xattr -cr "$app_bundle_path" 2>/dev/null || true
 
     # Sign innermost-first: every nested Mach-O (dylibs, apphost executables, daemon,
-    # plugin native deps), then the bundle itself. Managed PE assemblies are not
-    # signable by codesign and are skipped via the file(1) check.
+    # plugin native deps), then the other files in Contents/MacOS, then the bundle itself.
     while IFS= read -r -d '' candidate; do
         if file -b "$candidate" 2>/dev/null | grep -q 'Mach-O'; then
             sign_file "$identity" "$candidate"
+        elif [ "$identity" != "-" ]; then
+            # codesign counts every file in Contents/MacOS as code, including .NET's managed .dll
+            # and .json files; unsigned, `codesign --verify --strict` rejects the bundle. Their
+            # signature goes into extended attributes, which tar on macOS and the DMG keep.
+            codesign --force --timestamp -s "$identity" "$candidate"
         fi
     done < <(find "$app_bundle_path/Contents/MacOS" -type f -print0)
 
