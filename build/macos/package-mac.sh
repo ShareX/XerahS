@@ -17,8 +17,11 @@ ENTITLEMENTS="$SCRIPT_DIR/entitlements.plist"
 # XIP0078 P2 signing controls:
 #   MACOS_SIGN_IDENTITY   Developer ID Application identity. When set, the bundle is signed
 #                         with hardened runtime + entitlements and a DMG is produced.
-#   MACOS_NOTARY_PROFILE  notarytool keychain profile name. When set together with
-#                         MACOS_SIGN_IDENTITY, the DMG is notarized and stapled.
+#   MACOS_NOTARY_PROFILE  notarytool keychain profile name, or
+#   MACOS_NOTARY_KEY, MACOS_NOTARY_KEY_ID, MACOS_NOTARY_ISSUER
+#                         an App Store Connect API key (.p8 path), its key id and issuer id (CI).
+#                         With either and MACOS_SIGN_IDENTITY, the app (shipped in the tar.gz)
+#                         and the DMG are notarized and stapled.
 #   MACOS_SKIP_SIGNING=1  Skip signing entirely (pre-XIP0078 behavior).
 # Without MACOS_SIGN_IDENTITY the bundle is ad-hoc signed (interim step: no Gatekeeper
 # benefit, but a sealed bundle for from-source users; harmless on arm64 where the linker
@@ -215,6 +218,10 @@ sign_file() {
     if [ "$identity" = "-" ]; then
         codesign --force -s - "$file" >/dev/null 2>&1 || \
             echo "Warning: ad-hoc signing failed for $file"
+    elif [ -x "$file" ] && file -b "$file" 2>/dev/null | grep -q 'executable'; then
+        # Nested .NET executables (the watch-folder daemon, createdump) JIT like the app, so
+        # under the hardened runtime they need the same entitlements or they crash at start.
+        codesign --force --options runtime --timestamp --entitlements "$ENTITLEMENTS" -s "$identity" "$file"
     else
         codesign --force --options runtime --timestamp -s "$identity" "$file"
     fi
@@ -247,14 +254,23 @@ sign_app_bundle() {
     # Clear quarantine/xattrs that can break nested codesign on CI runners.
     xattr -cr "$app_bundle_path" 2>/dev/null || true
 
+    # The main executable is signed with the bundle below. Signing it on its own first makes
+    # codesign check the whole bundle, which fails while other files are still unsigned.
+    local main_executable
+    main_executable="$app_bundle_path/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print CFBundleExecutable' "$app_bundle_path/Contents/Info.plist" 2>/dev/null || echo XerahS)"
+
     # Sign innermost-first: every nested Mach-O (dylibs, apphost executables, daemon,
-    # plugin native deps), then the bundle itself. Managed PE assemblies are not
-    # signable by codesign and are skipped via the file(1) check.
+    # plugin native deps), then the other files in Contents/MacOS, then the bundle itself.
     while IFS= read -r -d '' candidate; do
         if file -b "$candidate" 2>/dev/null | grep -q 'Mach-O'; then
             sign_file "$identity" "$candidate"
+        elif [ "$identity" != "-" ]; then
+            # codesign counts every file in Contents/MacOS as code, including .NET's managed .dll
+            # and .json files; unsigned, `codesign --verify --strict` rejects the bundle. Their
+            # signature goes into extended attributes, which tar on macOS and the DMG keep.
+            codesign --force --timestamp -s "$identity" "$candidate"
         fi
-    done < <(find "$app_bundle_path/Contents/MacOS" -type f -print0)
+    done < <(find "$app_bundle_path/Contents/MacOS" -type f ! -path "$main_executable" -print0)
 
     if [ "$identity" = "-" ]; then
         # .NET publish layouts mix Mach-O hosts with PE assemblies. Ad-hoc signing must
@@ -283,6 +299,39 @@ sign_app_bundle() {
     echo "Code signature verified for $app_bundle_path"
 }
 
+can_notarize() {
+    [ -n "${MACOS_NOTARY_PROFILE:-}" ] || [ -n "${MACOS_NOTARY_KEY:-}" ]
+}
+
+notarytool() {
+    if [ -n "${MACOS_NOTARY_PROFILE:-}" ]; then
+        xcrun notarytool "$@" --keychain-profile "$MACOS_NOTARY_PROFILE"
+    else
+        xcrun notarytool "$@" --key "$MACOS_NOTARY_KEY" --key-id "$MACOS_NOTARY_KEY_ID" --issuer "$MACOS_NOTARY_ISSUER"
+    fi
+}
+
+# Submits a file and polls for Apple's verdict, retrying through network drops (notarytool --wait
+# gives up on the first one). Returns 0 when accepted, 1 when rejected (the log is printed), and 2
+# when Apple is still reviewing after MACOS_NOTARY_TIMEOUT seconds: a new Developer ID team's first
+# submissions can take hours. The file is signed either way, and Gatekeeper asks Apple online, so it
+# opens without a warning as soon as the review passes; only the stapled ticket is missing.
+notarize_submit() {
+    local id status deadline=$((SECONDS + ${MACOS_NOTARY_TIMEOUT:-1200}))
+    id="$(notarytool submit "$1" --output-format plist | plutil -extract id raw -)"
+    echo "Notarization submission $id for $(basename "$1")"
+    while [ "$SECONDS" -lt "$deadline" ]; do
+        sleep 30
+        status="$(notarytool info "$id" --output-format plist 2>/dev/null | plutil -extract status raw - 2>/dev/null)" || continue
+        case "$status" in
+            Accepted) echo "Notarization accepted"; return 0 ;;
+            Invalid|Rejected) echo "Notarization $status" >&2; notarytool log "$id" >&2 || true; return 1 ;;
+        esac
+    done
+    echo "::warning::Apple is still reviewing notarization submission $id; the build is signed but not stapled"
+    return 2
+}
+
 create_dmg_and_notarize() {
     local app_bundle_path="$1"
     local arch="$2"
@@ -295,13 +344,24 @@ create_dmg_and_notarize() {
     echo "Creating DMG: $(basename "$dmg_path")"
     hdiutil create -volname "XerahS" -srcfolder "$app_bundle_path" -ov -format UDZO "$dmg_path"
 
-    if [ -n "${MACOS_NOTARY_PROFILE:-}" ]; then
-        echo "Submitting DMG for notarization (profile: $MACOS_NOTARY_PROFILE)..."
-        xcrun notarytool submit "$dmg_path" --keychain-profile "$MACOS_NOTARY_PROFILE" --wait
-        xcrun stapler staple "$dmg_path"
-        echo "Notarized and stapled $(basename "$dmg_path")"
+    codesign --force --timestamp --sign "$MACOS_SIGN_IDENTITY" "$dmg_path"
+
+    # One submission covers the DMG and the app inside it; the app is stapled from the same ticket
+    # before the tar.gz is made, so it opens without a Gatekeeper warning even offline.
+    if can_notarize; then
+        local rc=0
+        notarize_submit "$dmg_path" || rc=$?
+        case $rc in
+            0)
+                xcrun stapler staple "$dmg_path"
+                xcrun stapler staple "$app_bundle_path"
+                echo "Notarized and stapled $(basename "$dmg_path") and the app"
+                ;;
+            2) echo "DMG signed; notarization still pending at Apple." ;;
+            *) exit 1 ;;
+        esac
     else
-        echo "MACOS_NOTARY_PROFILE not set; DMG created but not notarized."
+        echo "No notarization credentials; DMG created and signed but not notarized."
     fi
 }
 
@@ -403,6 +463,7 @@ publish_and_package() {
     echo "Published $plugin_count plugins to startup Plugins folder: $plugins_dir"
 
     sign_app_bundle "$app_bundle_path"
+    create_dmg_and_notarize "$app_bundle_path" "$arch"
 
     echo "Creating archive: $tar_name"
     if tar --help 2>/dev/null | grep -q -- "--mode"; then
@@ -410,8 +471,6 @@ publish_and_package() {
     else
         tar -C "$publish_dir" -czf "$tar_path" "XerahS.app"
     fi
-
-    create_dmg_and_notarize "$app_bundle_path" "$arch"
 
     echo "Success: Generated $tar_name in dist."
 }

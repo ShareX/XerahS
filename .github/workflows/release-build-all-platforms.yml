@@ -140,6 +140,8 @@ jobs:
   build-macos:
     needs: validate-version
     runs-on: macos-15
+    env:
+      HAS_SIGNING_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE != '' }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -150,6 +152,39 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
+
+      # With these repository secrets the app is signed with Developer ID (hardened runtime) and the
+      # app and DMG are notarized and stapled: MACOS_CERTIFICATE (Developer ID Application .p12,
+      # base64), MACOS_CERTIFICATE_PASSWORD, MACOS_SIGN_IDENTITY, MACOS_NOTARY_KEY (App Store
+      # Connect API key .p8, base64), MACOS_NOTARY_KEY_ID, MACOS_NOTARY_ISSUER. Without them
+      # (forks, KovaForge/XerahS) the app is signed ad hoc and no DMG is made.
+      - name: Import signing certificate
+        if: env.HAS_SIGNING_CERTIFICATE == 'true'
+        shell: bash
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+          MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
+          MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          MACOS_NOTARY_ISSUER: ${{ secrets.MACOS_NOTARY_ISSUER }}
+        run: |
+          set -euo pipefail
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          password="$(uuidgen)"
+          echo "$MACOS_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          security import "$RUNNER_TEMP/certificate.p12" -k "$keychain" -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -k "$password" "$keychain"
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/certificate.p12"
+          echo "MACOS_SIGN_IDENTITY=$MACOS_SIGN_IDENTITY" >> "$GITHUB_ENV"
+          if [ -n "$MACOS_NOTARY_KEY" ]; then
+            echo "$MACOS_NOTARY_KEY" | base64 --decode > "$RUNNER_TEMP/notary.p8"
+            { echo "MACOS_NOTARY_KEY=$RUNNER_TEMP/notary.p8"; echo "MACOS_NOTARY_KEY_ID=$MACOS_NOTARY_KEY_ID"; echo "MACOS_NOTARY_ISSUER=$MACOS_NOTARY_ISSUER"; } >> "$GITHUB_ENV"
+          fi
 
       - name: Build macOS packages
         shell: bash
@@ -199,6 +234,14 @@ jobs:
           path: |
             dist/XerahS-${{ needs.validate-version.outputs.version }}-mac-arm64.tar.gz
             dist/XerahS-${{ needs.validate-version.outputs.version }}-mac-x64.tar.gz
+            dist/XerahS-${{ needs.validate-version.outputs.version }}-mac-*.dmg
+
+      - name: Remove signing keychain
+        if: always()
+        shell: bash
+        run: |
+          [ -f "$RUNNER_TEMP/signing.keychain-db" ] && security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true
+          rm -f "$RUNNER_TEMP/notary.p8"
 
       - name: Upload macOS build log
         if: always()
@@ -561,6 +604,19 @@ jobs:
             release-assets/XerahS-${{ needs.validate-version.outputs.version }}-linux-arm64.rpm
             release-assets/XerahS-${{ needs.validate-version.outputs.version }}-linux-arm64.AppImage
             release-assets/com.xerahs.XerahS-${{ needs.validate-version.outputs.version }}-linux-x64.flatpak
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Signed and notarized disk images exist only where the signing secrets are set.
+      - name: Upload macOS disk images to GitHub Release
+        if: hashFiles('release-assets/*-mac-*.dmg') != ''
+        uses: softprops/action-gh-release@v3
+        with:
+          name: ${{ needs.validate-version.outputs.release_title }}
+          prerelease: ${{ github.repository != 'KovaForge/XerahS' }}
+          make_latest: ${{ github.repository == 'KovaForge/XerahS' }}
+          files: release-assets/XerahS-${{ needs.validate-version.outputs.version }}-mac-*.dmg
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
