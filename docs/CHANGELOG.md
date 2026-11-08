@@ -26,6 +26,7 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ### Fixes
 
+- **Linux (KDE Plasma Wayland) — "Screenshot Requested" dialog with a greyed-out Allow button**: Full-screen and window captures now go to KWin's own screenshot interface first, which captures silently once XerahS's desktop entry is installed. The portal prompt (where Allow stays disabled until you click Take Screenshot) is now only the fallback. Tarball or AppImage runs without a desktop entry still get the portal prompt: click **Take Screenshot**, then **Allow**.
 - **AVIF captures were written as PNG data**: Saving and uploading used the Skia fallback, so a file named `.avif` held PNG bytes. AVIF now goes through the FFmpeg encoder as designed in XIP0025, with the same PNG fallback when FFmpeg cannot encode it.
 - **Secrets (Linux)**: Reading a secret now falls back to the encrypted file store when the keyring does not have it. Uploader credentials held only in that file were reported as missing, and uploads failed with no clear reason.
 - **Build**: Local plugin builds are now also copied next to the `omaxerahs` build, which otherwise found no plugins and reported no uploaders.
