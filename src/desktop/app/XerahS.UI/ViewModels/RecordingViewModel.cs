@@ -33,6 +33,7 @@ using XerahS.Common;
 using XerahS.Bootstrap;
 using XerahS.Core;
 using XerahS.Core.Hotkeys;
+using XerahS.Core.Managers;
 using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture.ScreenRecording;
 using HotkeyInfo = XerahS.Platform.Abstractions.HotkeyInfo;
@@ -299,73 +300,25 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
             Status = e.Status;
             Duration = e.Duration;
 
-            switch (e.Status)
+            RecordingUiState ui = RecordingUiState.From(e.Status, _screenRecordingCoordinator.CurrentCapabilities.SupportsPauseResume);
+            StatusText = ui.StatusText;
+            IsRecording = ui.IsRecording;
+            IsPaused = ui.IsPaused;
+            CanStart = ui.CanStart;
+            CanStop = ui.CanStop;
+            CanPauseResume = ui.CanPauseResume;
+            CanAbort = ui.CanAbort;
+
+            // Idle/Paused/Finalizing/Error stop the timer; Recording starts it; Initializing leaves it unchanged.
+            if (ui.TimerRunning)
             {
-                case RecordingStatus.Idle:
-                    StatusText = "Ready";
-                    IsRecording = false;
-                    IsPaused = false;
-                    CanStart = true;
-                    CanStop = false;
-                    CanPauseResume = false;
-                    CanAbort = false;
-                    _durationTimer.Stop();
-                    break;
-
-                case RecordingStatus.Initializing:
-                    StatusText = "Initializing...";
-                    IsRecording = false;
-                    IsPaused = false;
-                    CanStart = false;
-                    CanStop = false;
-                    CanPauseResume = false;
-                    CanAbort = false;
-                    break;
-
-                case RecordingStatus.Recording:
-                    StatusText = "Recording";
-                    IsRecording = true;
-                    IsPaused = false;
-                    CanStart = false;
-                    CanStop = true;
-                    CanPauseResume = _screenRecordingCoordinator.CurrentCapabilities.SupportsPauseResume;
-                    CanAbort = true;
-                    _durationTimer.Start();
-                    break;
-
-                case RecordingStatus.Paused:
-                    StatusText = "Paused";
-                    IsRecording = false;
-                    IsPaused = true;
-                    CanStart = false;
-                    CanStop = true;
-                    CanPauseResume = _screenRecordingCoordinator.CurrentCapabilities.SupportsPauseResume;
-                    CanAbort = true;
-                    _durationTimer.Stop();
-                    break;
-
-                case RecordingStatus.Finalizing:
-                    StatusText = "Finalizing...";
-                    IsRecording = false;
-                    IsPaused = false;
-                    CanStart = false;
-                    CanStop = false;
-                    CanPauseResume = false;
-                    CanAbort = false;
-                    _durationTimer.Stop();
-                    break;
-
-                case RecordingStatus.Error:
-                    StatusText = "Error";
-                    IsRecording = false;
-                    IsPaused = false;
-                    CanStart = true;
-                    CanStop = false;
-                    CanPauseResume = false;
-                    CanAbort = false;
-                    _durationTimer.Stop();
-                    break;
+                _durationTimer.Start();
             }
+            else if (e.Status != RecordingStatus.Initializing)
+            {
+                _durationTimer.Stop();
+            }
+
             OnPropertyChanged(nameof(CanMoveRecordingRegion));
         });
     }

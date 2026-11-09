@@ -55,6 +55,7 @@ public class ScreenRecordingManager : IScreenRecordingManager
     private bool _abortRequested;
     private bool _restartRequested;
     private bool _isFinalized;
+    private readonly RecordingStateMachine _stateMachine = new();
     private string? _cachedFinalPath;
     private Exception? _recordingFailure;
     private TimeSpan _lastDuration;
@@ -333,7 +334,7 @@ public class ScreenRecordingManager : IScreenRecordingManager
             {
                 // Stop while paused: finalize segments without starting a new recording.
                 _isPaused = false;
-                StatusChanged?.Invoke(this, new RecordingStatusEventArgs(RecordingStatus.Finalizing, _lastDuration));
+                RaiseStatusChanged(new RecordingStatusEventArgs(RecordingStatus.Finalizing, _lastDuration));
             }
 
             if (_abortRequested)
@@ -362,7 +363,7 @@ public class ScreenRecordingManager : IScreenRecordingManager
 
             if (wasPaused)
             {
-                StatusChanged?.Invoke(this, new RecordingStatusEventArgs(RecordingStatus.Idle, _lastDuration));
+                RaiseStatusChanged(new RecordingStatusEventArgs(RecordingStatus.Idle, _lastDuration));
             }
 
             // Mark as finalized and cache the path for subsequent calls
@@ -400,7 +401,7 @@ public class ScreenRecordingManager : IScreenRecordingManager
 
             if (wasPaused)
             {
-                StatusChanged?.Invoke(this, new RecordingStatusEventArgs(RecordingStatus.Idle, _lastDuration));
+                RaiseStatusChanged(new RecordingStatusEventArgs(RecordingStatus.Idle, _lastDuration));
             }
         }
         finally
@@ -741,6 +742,12 @@ public class ScreenRecordingManager : IScreenRecordingManager
             _lastDuration = e.Duration;
         }
         DebugHelper.WriteLine($"ScreenRecordingManager: Status changed to {e.Status}, Duration={e.Duration}");
+        RaiseStatusChanged(e);
+    }
+
+    private void RaiseStatusChanged(RecordingStatusEventArgs e)
+    {
+        _stateMachine.Observe(e.Status);
         StatusChanged?.Invoke(this, e);
     }
 
@@ -824,13 +831,13 @@ public class ScreenRecordingManager : IScreenRecordingManager
 
             _isPaused = true;
             await pausableRecording.PauseRecordingAsync();
-            StatusChanged?.Invoke(this, new RecordingStatusEventArgs(RecordingStatus.Paused, _lastDuration));
+            RaiseStatusChanged(new RecordingStatusEventArgs(RecordingStatus.Paused, _lastDuration));
             return;
         }
 
         _isPaused = true;
         await StopRecordingCoreAsync(signalStop: false);
-        StatusChanged?.Invoke(this, new RecordingStatusEventArgs(RecordingStatus.Paused, _lastDuration));
+        RaiseStatusChanged(new RecordingStatusEventArgs(RecordingStatus.Paused, _lastDuration));
     }
 
     public async Task ResumeRecordingAsync()
