@@ -101,8 +101,6 @@
              Link="Platform\Windows\WindowsSources\DxgiOutputDuplicationPolicy.cs" />
     <Compile Include="..\..\src\platform\XerahS.Platform.Windows\Capture\SystemCursorGuard.cs"
              Link="Platform\Windows\WindowsSources\SystemCursorGuard.cs" />
-    <Compile Include="..\..\src\platform\XerahS.Platform.Windows\Capture\CursorReplacementHelper.cs"
-             Link="Platform\Windows\WindowsSources\CursorReplacementHelper.cs" />
     <Compile Include="..\..\src\platform\XerahS.Platform.Windows\Capture\GdiCaptureRectHelper.cs"
              Link="Platform\Windows\WindowsSources\GdiCaptureRectHelper.cs" />
     <Compile Include="..\..\src\platform\XerahS.Platform.Windows\Capture\Engine\CaptureBackendPolicy.cs"
