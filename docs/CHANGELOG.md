@@ -20,6 +20,7 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 - **Secrets (Linux)**: Reading a secret now falls back to the encrypted file store when the keyring does not have it. Uploader credentials held only in that file were reported as missing, and uploads failed with no clear reason.
 - **Build**: Local plugin builds are now also copied next to the `omaxerahs` build, which otherwise found no plugins and reported no uploaders.
+- **Docs (macOS)**: The hotkey permission steps now name the macOS 27 pane, **Device Control and Data Access**, which replaced **Accessibility** under Privacy & Security ([#312](https://github.com/ShareX/XerahS/issues/312)).
 
 ---
 
