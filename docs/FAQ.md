@@ -49,7 +49,7 @@ XerahS adopts a "Zero Inheritance" policy for workflows to reduce cognitive load
 
 ### macOS: Why don't global hotkeys work?
 
-macOS requires Accessibility permission for global key monitoring. Open `System Settings` → `Privacy & Security` → `Accessibility` and allow the ShareX Ava app (bundle or `dotnet run`). Restart the app after granting permission. Hotkeys are powered by SharpHook; without Accessibility, it cannot receive events.
+macOS requires Accessibility permission for global key monitoring. Open `System Settings` → `Privacy & Security` → `Accessibility` (named `Device Control and Data Access` on macOS 27 and later) and allow the ShareX Ava app (bundle or `dotnet run`). Restart the app after granting permission. Hotkeys are powered by SharpHook; without Accessibility, it cannot receive events.
 
 ---
 

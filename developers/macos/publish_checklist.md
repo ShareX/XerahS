@@ -6,7 +6,7 @@
 
 2. Permissions
    - First launch: grant Screen Recording when prompted (needed for capture)
-   - Grant Accessibility for hotkeys: `System Settings` → `Privacy & Security` → `Accessibility`
+   - Grant Accessibility for hotkeys: `System Settings` → `Privacy & Security` → `Accessibility` (`Device Control and Data Access` on macOS 27+)
 
 3. Runtime Smoke Test
    - Launch the `.app` bundle (not `dotnet run`)

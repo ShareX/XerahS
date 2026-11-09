@@ -169,8 +169,8 @@ Screen capture on macOS requires Screen Recording permission:
 
 ### macOS Permissions (Global Hotkeys)
 Global hotkeys use SharpHook and need Accessibility permission:
-1. Open **System Settings** > **Privacy & Security** > **Accessibility**.
-2. Enable XerahS (or the published app bundle) for accessibility access.
+1. Open **System Settings** > **Privacy & Security** > **Accessibility**. On macOS 27 and later this pane is named **Device Control and Data Access**.
+2. Enable XerahS (or the published app bundle) in that list.
 3. Restart the app and retest hotkeys.
 
 ### macOS Troubleshooting ("App is damaged")
