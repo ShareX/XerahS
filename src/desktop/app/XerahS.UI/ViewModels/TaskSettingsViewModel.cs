@@ -75,6 +75,8 @@ namespace XerahS.UI.ViewModels
         public TaskSettings Model => _settings;
         public TaskSettingsAdvanced AdvancedSettings => _settings.AdvancedSettings;
 
+        public void NotifyAdvancedSettingsChanged() => OnPropertyChanged(nameof(AdvancedSettings));
+
         public WorkflowType Job
         {
             get => _settings.Job;

@@ -143,20 +143,12 @@ namespace XerahS.UI.ViewModels
         {
             TaskSettings taskSettings = _settings;
 
-            if (!string.IsNullOrEmpty(_settings.WorkflowId))
-            {
-                var workflow = SettingsManager.GetWorkflowById(_settings.WorkflowId);
-                if (workflow != null)
-                {
-                    taskSettings = workflow.TaskSettings;
-                }
-            }
-
             var ffmpegOptions = taskSettings.CaptureSettings.FFmpegOptions ?? new FFmpegOptions();
             taskSettings.CaptureSettings.FFmpegOptions = ffmpegOptions;
             var vm = new FFmpegOptionsViewModel(ffmpegOptions);
             await _dialogService.ShowFFmpegOptionsAsync(vm);
             RefreshFFmpegState();
+            OnPropertyChanged(nameof(Model));
         }
 
         [RelayCommand]

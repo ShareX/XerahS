@@ -45,6 +45,12 @@ namespace XerahS.UI.ViewModels;
 
 public partial class WorkflowEditorViewModel : ViewModelBase
 {
+    public bool IsInline { get; set; }
+    public string ImageSectionTitle => IsInline ? "Image" : "Image Settings";
+    public string VideoSectionTitle => IsInline ? "Video" : "Video Settings";
+    public string TaskSettingsSectionTitle => IsInline ? "Settings" : "Task Settings";
+    public string IndexSectionTitle => IsInline ? "Index" : "Index Folder";
+
     // Prevents writing selection back while we are initializing/reloading the list
     private bool _isLoadingSelection;
     private readonly WorkflowSettings _sourceModel;

@@ -32,13 +32,14 @@ namespace XerahS.UI.Views;
 
 public partial class WorkflowsView : PageView
 {
-    public WorkflowsView()
+    public WorkflowsView() : this(UiViewModelFactoryAccessor.GetRequired().CreateWorkflowsViewModel()) { }
+
+    public WorkflowsView(WorkflowsViewModel viewModel)
     {
         InitializeComponent();
-        DebugHelper.WriteLine("[WorkflowsView] ctor start");
-        var vm = UiViewModelFactoryAccessor.GetRequired().CreateWorkflowsViewModel();
-        DataContext = vm;
-        DebugHelper.WriteLine($"[WorkflowsView] DataContext set: {vm.GetType().Name}, Workflows={vm.Workflows.Count}");
+        DataContext = viewModel;
+        AttachedToVisualTree += (_, _) => (DataContext as WorkflowsViewModel)?.Activate();
+        DetachedFromVisualTree += (_, _) => (DataContext as WorkflowsViewModel)?.Deactivate();
     }
 
     private void InitializeComponent()

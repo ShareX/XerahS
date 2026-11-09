@@ -432,7 +432,7 @@
                             BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
                             CornerRadius="4"
                             Padding="8">
-                        <controls:PropertyGrid SelectedObject="{Binding AdvancedSettings}"
+                        <controls:PropertyGrid x:Name="AdvancedPropertyGrid" SelectedObject="{Binding AdvancedSettings}"
                                                AutomationProperties.Name="Advanced Task Settings"/>
                     </Border>
                 </Grid>
