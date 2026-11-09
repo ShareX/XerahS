@@ -45,5 +45,7 @@ public enum EImageFormat
     [Description("webp")]
     WEBP,
     [Description("avif")]
-    AVIF
+    AVIF,
+    [Description("jxl")]
+    JXL
 }

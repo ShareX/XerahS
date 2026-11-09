@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using System.Collections.Generic;
 using XerahS.Platform.Abstractions;
 using XerahS.Platform.Linux.Capture.Contracts;
@@ -40,6 +41,19 @@ internal sealed class WaterfallCapturePolicy : ILinuxCapturePolicy
     {
         LinuxCaptureStage.Portal,
         LinuxCaptureStage.DesktopDbus,
+        LinuxCaptureStage.WaylandProtocol,
+        LinuxCaptureStage.X11
+    };
+
+    // KDE Plasma Wayland: KWin's own ScreenShot2 interface captures silently once the app's desktop entry
+    // declares it. The portal, by contrast, shows a "Screenshot Requested" permission dialog whose Allow button
+    // stays disabled until the user first clicks Take Screenshot (xdg-desktop-portal-kde 6.4+), which reads as
+    // an error. Try KWin first for whole-screen and window grabs, and keep the portal as the fallback for
+    // when KWin refuses (no matching desktop entry).
+    private static readonly LinuxCaptureStage[] KdeWaylandNonInteractiveOrder =
+    {
+        LinuxCaptureStage.DesktopDbus,
+        LinuxCaptureStage.Portal,
         LinuxCaptureStage.WaylandProtocol,
         LinuxCaptureStage.X11
     };
@@ -132,6 +146,13 @@ internal sealed class WaterfallCapturePolicy : ILinuxCapturePolicy
                 LinuxInteractiveRegionSelectorPreference.PortalDialog => PortalOnlyRegionOrder,
                 _ => DefaultOrder
             };
+        }
+
+        if (context.IsWayland &&
+            string.Equals(context.Desktop, "KDE", StringComparison.OrdinalIgnoreCase) &&
+            request.Kind is LinuxCaptureKind.FullScreen or LinuxCaptureKind.ActiveWindow)
+        {
+            return KdeWaylandNonInteractiveOrder;
         }
 
         return DefaultOrder;

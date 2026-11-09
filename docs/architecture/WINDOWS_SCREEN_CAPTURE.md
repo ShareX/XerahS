@@ -35,8 +35,10 @@ Dependencies point inwards only. The facades know the engine and the request typ
 | Order | Backend | Available when | Notes |
 |---|---|---|---|
 | 1 | DXGI Desktop Duplication | Windows 8+ | Duplicates only the outputs under the request. Unrotated SDR outputs are cropped on the GPU. Rotated and HDR outputs read the whole output with rotation and tone mapping. |
-| 2 | Windows.Graphics.Capture | Build 20348+ and borderless access granted | Runs only when DXGI returns nothing, for example on laptops with hybrid graphics where Desktop Duplication is unsupported. Never shows the yellow capture border. The cursor comes from `IsCursorCaptureEnabled`, so system cursors are not hidden. |
+| 2 | Windows.Graphics.Capture | Build 20348+ and borderless access granted | Runs when DXGI returns nothing, for example on laptops with hybrid graphics where Desktop Duplication is unsupported. Never shows the yellow capture border. The cursor comes from `IsCursorCaptureEnabled`. |
 | 3 | GDI BitBlt | Always | Copies straight from a DIB section. It applies `HdrScreenshotColorCorrector` when enabled. |
+
+When the cursor is left out (`ShowCursor` not true), Windows.Graphics.Capture moves ahead of DXGI: it excludes the cursor per session, while Desktop Duplication can contain a software-rendered cursor. Where WGC is unavailable or denied, DXGI and GDI run as usual.
 
 `CaptureOptions.UseModernCapture = false` restricts every capture to GDI. A backend that throws or returns null hands over to the next one.
 
@@ -48,7 +50,8 @@ These rules are covered by `WindowsCaptureEngineTests` and `WindowsModernCapture
 - Rectangle captures on DXGI crop with `DxgiCropRectHelper`. When the outputs and the virtual screen differ in size the crop is scaled, so the whole desktop is captured and cropped.
 - Rectangle captures on GDI and WGC round outwards and clamp to the virtual screen.
 - The modern service captures windows as clamped rectangles. The GDI only service reads window bounds as they are.
-- DXGI hides system cursors unless `ShowCursor` is true and composites the cursor afterwards. GDI hides them only when `ShowCursor` is explicitly false.
+- No backend changes the user's system cursors. A capture that crashes must never leave the desktop without a pointer (issue #288). DXGI and GDI composite the cursor only when `ShowCursor` is true.
+- `SystemCursorGuard.RecoverFromPreviousSession` only restores cursors left blank by 0.33.6 and earlier.
 - Screen pixels are always opaque.
 
 ## Performance

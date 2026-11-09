@@ -9,16 +9,35 @@
         x:Class="XerahS.UI.Views.WorkflowEditorView"
         x:DataType="vm:WorkflowEditorViewModel">
 
-    <Border Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}" Padding="16">
+    <UserControl.Styles>
+        <Style Selector="Border#EditorSurface.inline">
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style Selector="TabControl#WorkflowSections.inline">
+            <Setter Property="TabStripPlacement" Value="Left"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+        <Style Selector="TabControl#WorkflowSections.inline > TabItem">
+            <Setter Property="MinWidth" Value="80"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+        <Style Selector="TabControl#WorkflowSections.inline StackPanel#TaskIdentityBody">
+            <Setter Property="MinWidth" Value="320"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Border x:Name="EditorSurface" Classes.inline="{Binding IsInline}" Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}" Padding="16">
         <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
             <!-- Main Tabs -->
-            <TabControl Grid.Row="0" Margin="0,0,0,16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <TabControl x:Name="WorkflowSections" Classes.inline="{Binding IsInline}" Grid.Row="0" Margin="0,0,0,16" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutomationProperties.Name="Workflow Settings Sections">
             
             <!-- Tab 1: Task (Trigger & Job) -->
             <TabItem Header="Task">
-                <ScrollViewer>
-                    <StackPanel Margin="24" Spacing="24">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="TaskIdentityBody" Margin="24" Spacing="24">
                         <StackPanel Spacing="8">
                             <TextBlock Text="Workflow ID" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
                             <TextBox Text="{Binding WorkflowId}"
@@ -106,35 +125,43 @@
             </TabItem>
             
             <!-- Tab 2: Image Settings (visible for screen capture jobs) -->
-            <TabItem Header="Image Settings" IsVisible="{Binding TaskSettings.IsScreenCaptureJob}">
-                <views:TaskImageSettingsPanel DataContext="{Binding TaskSettings}"
+            <TabItem Header="{Binding ImageSectionTitle}" IsVisible="{Binding TaskSettings.IsScreenCaptureJob}">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <views:TaskImageSettingsPanel DataContext="{Binding TaskSettings}" MinWidth="700"
                                               HorizontalAlignment="Stretch"
                                               VerticalAlignment="Stretch"/>
+                </ScrollViewer>
             </TabItem>
 
             <!-- Tab 3: Video Settings (visible for screen record jobs) -->
-            <TabItem Header="Video Settings" IsVisible="{Binding TaskSettings.IsScreenRecordJob}">
-                <views:TaskVideoSettingsPanel DataContext="{Binding TaskSettings}"
+            <TabItem Header="{Binding VideoSectionTitle}" IsVisible="{Binding TaskSettings.IsScreenRecordJob}">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <views:TaskVideoSettingsPanel DataContext="{Binding TaskSettings}" MinWidth="600"
                                               HorizontalAlignment="Stretch"
                                               VerticalAlignment="Stretch"/>
+                </ScrollViewer>
             </TabItem>
 
             <!-- Tab 4: Task Settings (Renamed from Settings / Other Settings) -->
-            <TabItem Header="Task Settings">
-                <views:TaskSettingsPanel DataContext="{Binding TaskSettings}"
+            <TabItem Header="{Binding TaskSettingsSectionTitle}">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <views:TaskSettingsPanel DataContext="{Binding TaskSettings}" MinWidth="600"
                                          HorizontalAlignment="Stretch"
                                          VerticalAlignment="Stretch"/>
+                </ScrollViewer>
             </TabItem>
 
             <!-- Tab 5: Index Folder -->
-            <TabItem Header="Index Folder" IsVisible="{Binding TaskSettings.IsIndexFolderJob}">
-                <views:IndexFolderPanel DataContext="{Binding IndexFolderConfig}"/>
+            <TabItem Header="{Binding IndexSectionTitle}" IsVisible="{Binding TaskSettings.IsIndexFolderJob}">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                    <views:IndexFolderPanel DataContext="{Binding IndexFolderConfig}" MinWidth="600"/>
+                </ScrollViewer>
             </TabItem>
             
         </TabControl>
 
         <!-- Bottom Buttons -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+        <StackPanel Grid.Row="1" IsVisible="{Binding !IsInline}" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
             <Button Content="OK" Click="OkButton_Click" IsDefault="True" Width="80" AutomationProperties.Name="OK"/>
             <Button Content="Cancel" Click="CancelButton_Click" IsCancel="True" Width="80" AutomationProperties.Name="Cancel"/>
         </StackPanel>

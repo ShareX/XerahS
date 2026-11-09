@@ -163,6 +163,10 @@ namespace XerahS.UI.ViewModels
             SelectedEffect = Effects.FirstOrDefault();
         }
 
+        public event EventHandler? SettingsChanged;
+
+        public void NotifyEffectSettingsChanged() => SettingsChanged?.Invoke(this, EventArgs.Empty);
+
         private void SyncToSettings()
         {
             if (isSyncSuspended)
@@ -176,6 +180,7 @@ namespace XerahS.UI.ViewModels
             var preset = settings.ImageEffectsPreset;
             preset.Name = Name;
             preset.Effects = Effects.ToList();
+            SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void ApplyPreset(ImageEffectPreset preset, bool updatePreview)

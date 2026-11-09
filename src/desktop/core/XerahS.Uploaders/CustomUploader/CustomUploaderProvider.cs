@@ -218,7 +218,7 @@ public class CustomUploaderProvider : IUploaderProvider
         // Custom uploaders typically support all common file types
         if (categories.Contains(UploaderCategory.Image))
         {
-            result[UploaderCategory.Image] = new[] { "png", "jpg", "jpeg", "gif", "bmp", "webp", "tiff", "ico" };
+            result[UploaderCategory.Image] = new[] { "png", "jpg", "jpeg", "gif", "bmp", "webp", "avif", "jxl", "tiff", "ico" };
         }
 
         if (categories.Contains(UploaderCategory.Text))

@@ -38,6 +38,15 @@ namespace XerahS.UI.Views
         {
             InitializeComponent();
 
+            var advancedGrid = this.FindControl<PropertyGrid>("AdvancedPropertyGrid");
+            if (advancedGrid != null)
+            {
+                advancedGrid.PropertyValueChanged += (_, _) =>
+                {
+                    if (DataContext is TaskSettingsViewModel vm) vm.NotifyAdvancedSettingsChanged();
+                };
+            }
+
             TextBox? namePattern = this.FindControl<TextBox>("NameFormatPatternTextBox");
             if (namePattern != null)
             {

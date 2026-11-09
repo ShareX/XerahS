@@ -321,3 +321,50 @@ h2 {
     padding: 0.5rem;
   }
 }
+
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem 0 3rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+}
+.site-footer nav {
+  display: flex;
+  gap: 1.25rem;
+}
+.legal {
+  max-width: 46rem;
+}
+.legal-title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+}
+.legal h2 {
+  margin-bottom: 0;
+}
+.legal p,
+.legal li {
+  line-height: 1.65;
+}
+.notice {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+}
+.agree {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+/* The global input rule is full width; a checkbox must keep its own size. */
+.agree input[type="checkbox"] {
+  flex: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  accent-color: var(--accent-strong);
+}

@@ -54,13 +54,14 @@ public class StatisticsViewTests
             })).ToList();
         bool shared = false;
         var view = new StatisticsView(() => Task.FromResult(items), image => { shared = true; image.Dispose(); }, () => Now);
+        var window = new Window { Content = view, Width = 1060, Height = 900 };
         foreach (string theme in new[] { "Typography", "ThemeResources" })
-            view.Styles.Insert(0, new StyleInclude(new Uri("avares://XerahS.UI/"))
+            window.Styles.Insert(0, new StyleInclude(new Uri("avares://XerahS.UI/"))
             { Source = new Uri($"avares://XerahS.UI/Themes/{theme}.axaml") });
         try
         {
             await view.RefreshAsync();
-            view.Show();
+            window.Show();
             await WaitForLoad(view);
             var calendar = view.FindControl<StatsCalendar>("Calendar")!;
             var chart = view.FindControl<StatsHourChart>("HourChart")!;
@@ -86,11 +87,13 @@ public class StatisticsViewTests
 
             foreach (var theme in new[] { ThemeVariant.Dark, ThemeVariant.Light })
             {
-                view.RequestedThemeVariant = theme;
-                view.Width = 1060;
-                view.Height = 900;
+                window.RequestedThemeVariant = theme;
+                window.Width = 1060;
+                window.Height = 900;
                 Dispatcher.UIThread.RunJobs();
-                Capture(view, $"statistics-dashboard-{theme.Key}");
+                Capture(window, $"statistics-dashboard-{theme.Key}");
+                Assert.That(view.FindControl<Grid>("HighlightsGrid")!.ColumnDefinitions, Has.Count.EqualTo(4));
+                Assert.That(view.FindControl<Grid>("BreakdownGridA")!.ColumnDefinitions, Has.Count.EqualTo(2));
                 using var snapshot = view.RenderSnapshot();
                 Assert.Multiple(() =>
                 {
@@ -98,13 +101,26 @@ public class StatisticsViewTests
                     Assert.That(snapshot.Height, Is.GreaterThan(900), "Share must include content below the viewport.");
                 });
             }
-            view.Width = 720;
-            view.Height = 480;
+            window.Width = 720;
+            window.Height = 480;
             Dispatcher.UIThread.RunJobs();
             Assert.That(chart.Bounds.Width, Is.GreaterThan(500));
-            Capture(view, "statistics-dashboard-small");
+            Capture(window, "statistics-dashboard-small");
+            Assert.That(view.FindControl<Grid>("HighlightsGrid")!.ColumnDefinitions, Has.Count.EqualTo(2), "Highlights wrap to two columns in a narrow window.");
+            window.Width = 640;
+            Dispatcher.UIThread.RunJobs();
+            Assert.Multiple(() =>
+            {
+                Assert.That(view.FindControl<Grid>("BreakdownGridA")!.ColumnDefinitions, Has.Count.EqualTo(1));
+                Assert.That(view.FindControl<Grid>("BreakdownGridB")!.ColumnDefinitions, Has.Count.EqualTo(1));
+                Assert.That(view.FindControl<StatsHourChart>("HourChart")!.Bounds.Width, Is.GreaterThan(400));
+                Assert.That(view.Bounds.Width, Is.LessThanOrEqualTo(window.Width));
+            });
+            window.Width = 1060;
+            Dispatcher.UIThread.RunJobs();
+            Assert.That(view.FindControl<Grid>("HighlightsGrid")!.ColumnDefinitions, Has.Count.EqualTo(4), "Widening restores the four-column layout.");
         }
-        finally { view.Close(); }
+        finally { window.Close(); }
     }
 
     [AvaloniaTest]

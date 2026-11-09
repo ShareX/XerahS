@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getOptionalAuthenticatedUser } from "@/lib/auth";
+import { LEGAL_ENTITY, LEGAL_LINKS } from "@/lib/legal";
 
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "XerahS Cloud", template: "%s · XerahS Cloud" },
-  description: "Your private, owner-only XerahS capture gallery.",
+  description: "Your private, owner-only collection of XerahS upload links.",
   robots: { index: false, follow: false, nocache: true },
   referrer: "no-referrer",
 };
@@ -47,6 +48,16 @@ export default async function RootLayout({
           </nav>
         </header>
         <main className="shell main">{children}</main>
+        <footer className="shell site-footer">
+          <nav aria-label="Legal">
+            {LEGAL_LINKS.map((link) => (
+              <Link key={link.href} href={link.href}>
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <span>{LEGAL_ENTITY}</span>
+        </footer>
       </body>
     </html>
   );

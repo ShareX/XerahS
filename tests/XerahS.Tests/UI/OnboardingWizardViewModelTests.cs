@@ -62,13 +62,13 @@ public class OnboardingWizardViewModelTests
     }
 
     [Test]
-    public void Steps_AreThemeThenWorkflowsHotkeysDestinations()
+    public void Steps_AreThemeThenWorkflowsHotkeysDestinationsThenReady()
     {
         var wizard = new OnboardingWizardViewModel();
 
         Assert.Multiple(() =>
         {
-            Assert.That(wizard.StepCount, Is.EqualTo(4));
+            Assert.That(wizard.StepCount, Is.EqualTo(5));
             Assert.That(wizard.IsThemeStep, Is.True);
             Assert.That(wizard.CurrentAdvice, Is.Null);
             Assert.That(wizard.Advice.Select(a => a.Title), Is.EqualTo(new[] { "Workflows", "Hotkeys", "Destinations" }));
@@ -78,9 +78,9 @@ public class OnboardingWizardViewModelTests
     [Test]
     public void Ok_AdvancesThroughEveryStepThenCompletes()
     {
-        var wizard = new OnboardingWizardViewModel();
+        var wizard = new OnboardingWizardViewModel { ReadinessProvider = StubReadiness };
 
-        for (int i = 1; i < wizard.StepCount; i++)
+        for (int i = 1; i <= wizard.Advice.Count; i++)
         {
             wizard.OkCommand.Execute(null);
             Assert.That(wizard.CurrentAdvice, Is.SameAs(wizard.Advice[i - 1]));
@@ -88,11 +88,72 @@ public class OnboardingWizardViewModelTests
         }
 
         wizard.OkCommand.Execute(null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(wizard.IsReadyStep, Is.True);
+            Assert.That(wizard.CurrentAdvice, Is.Null);
+            Assert.That(wizard.PrimaryButtonText, Is.EqualTo("Finish"));
+            Assert.That(wizard.CompletionTask.IsCompleted, Is.False);
+        });
+
+        wizard.OkCommand.Execute(null);
 
         Assert.Multiple(() =>
         {
             Assert.That(wizard.CompletionTask.IsCompletedSuccessfully, Is.True);
             Assert.That(wizard.CompletionTask.Result.Completed, Is.True);
+            Assert.That(wizard.CompletionTask.Result.StartFirstCapture, Is.False);
+        });
+    }
+
+    private static IReadOnlyList<ReadinessItem> StubReadiness() =>
+    [
+        new ReadinessItem("Captures are saved here", "/tmp/x", ReadinessLevel.Ok),
+        new ReadinessItem("Some hotkeys did not register", "1 of 5", ReadinessLevel.Attention)
+    ];
+
+    [Test]
+    public void ReadyStep_ShowsTheChecklistAndFlagsItemsThatNeedAttention()
+    {
+        var wizard = new OnboardingWizardViewModel { ReadinessProvider = StubReadiness };
+
+        for (int i = 0; i < wizard.StepCount - 1; i++)
+        {
+            wizard.OkCommand.Execute(null);
+        }
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(wizard.ReadyItems, Has.Count.EqualTo(2));
+            Assert.That(wizard.HasAttentionItems, Is.True);
+        });
+    }
+
+    [Test]
+    public void ReadyStep_SurvivesAFailingCheck()
+    {
+        var wizard = new OnboardingWizardViewModel { ReadinessProvider = () => throw new InvalidOperationException("boom") };
+
+        for (int i = 0; i < wizard.StepCount - 1; i++)
+        {
+            wizard.OkCommand.Execute(null);
+        }
+
+        Assert.That(wizard.ReadyItems.Single().Level, Is.EqualTo(ReadinessLevel.Info));
+        Assert.That(wizard.HasAttentionItems, Is.False);
+    }
+
+    [Test]
+    public void FinishAndCapture_CompletesAndAsksForTheFirstCapture()
+    {
+        var wizard = new OnboardingWizardViewModel { ReadinessProvider = StubReadiness };
+
+        wizard.FinishAndCaptureCommand.Execute(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(wizard.CompletionTask.Result.Completed, Is.True);
+            Assert.That(wizard.CompletionTask.Result.StartFirstCapture, Is.True);
         });
     }
 

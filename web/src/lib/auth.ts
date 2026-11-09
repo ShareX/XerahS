@@ -40,6 +40,15 @@ interface AuthRequirements {
 
 const RECENT_STRONG_AUTH_MS = 10 * 60 * 1_000;
 
+/** True when the user passed a second-factor check within the recency window billing needs. */
+export function hasRecentStrongAuth(user: AuthenticatedUser): boolean {
+  return (
+    user.aal === "aal2" &&
+    user.authenticatedAt !== null &&
+    Date.now() - user.authenticatedAt.getTime() <= RECENT_STRONG_AUTH_MS
+  );
+}
+
 function signInRequired(): never {
   throw new ApiError(401, "authentication_required", "Sign in is required.");
 }
@@ -182,11 +191,7 @@ export async function requireAuthenticatedUser(
       "Complete a strong-authentication challenge to continue.",
     );
   }
-  if (
-    requirements.recent &&
-    (!user.authenticatedAt ||
-      Date.now() - user.authenticatedAt.getTime() > RECENT_STRONG_AUTH_MS)
-  ) {
+  if (requirements.recent && !hasRecentStrongAuth(user)) {
     throw new ApiError(
       403,
       "strong_auth_required",

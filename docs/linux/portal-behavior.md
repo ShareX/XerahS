@@ -11,6 +11,7 @@ XerahS uses XDG Desktop Portals where Linux desktops expect permissioned desktop
 ## KDE Plasma Wayland
 
 - Screenshot and screencast prompts are provided by `xdg-desktop-portal-kde`.
+- On first use the KDE portal shows "Screenshot Requested / Allow <app> to take a screenshot?" with **Allow disabled**. This is by design in Plasma 6.4+: Allow only enables after you click **Take Screenshot** and a preview exists. Clicking Allow then stores the permission for the app. XerahS avoids this prompt for full-screen and window captures by trying KWin's `org.kde.KWin.ScreenShot2` first; that needs the installed desktop entry to carry `X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2` (the .deb, .rpm, AUR and AppImage packages and the autostart entry do). Running a bare tarball binary without a desktop entry falls back to the portal prompt.
 - KDE may not expose every optional GlobalShortcuts method. Missing `ConfigureShortcuts` must be treated as a graceful fallback, not a fatal error.
 - Current KDE portal stacks should be used for validation. Prefer `xdg-desktop-portal-kde >= 6.4.2` for the known KDE/Nobara stress cases.
 

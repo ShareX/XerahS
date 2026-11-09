@@ -26,6 +26,7 @@
 using ShareX.ImageEditor.Core.ImageEffects;
 using System;
 using XerahS.Common;
+using XerahS.Platform.Abstractions;
 using XerahS.Services.Abstractions;
 
 namespace XerahS.Core;
@@ -576,6 +577,17 @@ public static partial class TaskHelpers
 
         try
         {
+            if (IsExternallyEncodedFormat(imageFormat))
+            {
+                if (TryEncodeExternally(bmp, imageFormat, jpegQuality, out byte[]? encoded) && encoded != null)
+                {
+                    ms.Write(encoded, 0, encoded.Length);
+                    ms.Position = 0;
+                    return ms;
+                }
+                // Fall through to PNG so the capture is not lost; the warning was already logged.
+            }
+
             using var image = SkiaSharp.SKImage.FromBitmap(bmp);
             using var data = imageFormat switch
             {
@@ -584,7 +596,7 @@ public static partial class TaskHelpers
                 EImageFormat.BMP => image.Encode(SkiaSharp.SKEncodedImageFormat.Bmp, 100),
                 EImageFormat.TIFF => image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100), // SkiaSharp doesn't support TIFF encoding
                 EImageFormat.WEBP => image.Encode(SkiaSharp.SKEncodedImageFormat.Webp, jpegQuality), // WebP uses quality like JPEG
-                EImageFormat.AVIF => image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100), // AVIF requires FFmpeg, fallback to PNG for stream
+                EImageFormat.AVIF or EImageFormat.JXL => image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100), // FFmpeg-only formats; PNG only if FFmpeg could not encode
                 _ => image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100)
             };
 
@@ -618,8 +630,57 @@ public static partial class TaskHelpers
             if (string.IsNullOrEmpty(filePath)) return null;
         }
 
+        EImageFormat format = taskSettings.ImageSettings.ImageFormat;
+        if (IsExternallyEncodedFormat(format))
+        {
+            if (TryEncodeExternally(bmp, format, taskSettings.ImageSettings.ImageJPEGQuality, out byte[]? encoded) && encoded != null)
+            {
+                FileHelpers.CreateDirectoryFromFilePath(filePath);
+                File.WriteAllBytes(filePath, encoded);
+                return filePath;
+            }
+
+            // FFmpeg could not encode it: keep the capture as a real PNG with an honest extension.
+            filePath = Path.ChangeExtension(filePath, "png");
+            if (!overwriteFile)
+            {
+                filePath = HandleExistsFile(filePath, taskSettings);
+                if (string.IsNullOrEmpty(filePath)) return null;
+            }
+        }
+
         ImageHelpers.SaveBitmap(bmp, filePath);
         return filePath;
+    }
+
+    /// <summary>
+    /// Formats SkiaSharp cannot write, which are encoded by FFmpeg instead.
+    /// </summary>
+    public static bool IsExternallyEncodedFormat(EImageFormat format) => format is EImageFormat.AVIF or EImageFormat.JXL;
+
+    /// <summary>
+    /// Encodes <paramref name="bmp"/> through the registered image encoder service (FFmpeg).
+    /// Returns false, after logging why, when FFmpeg or the needed codec is unavailable.
+    /// </summary>
+    private static bool TryEncodeExternally(SkiaSharp.SKBitmap bmp, EImageFormat format, int quality, out byte[]? encoded)
+    {
+        encoded = null;
+        string tempFile = Path.Combine(Path.GetTempPath(), $"xerahs-{Guid.NewGuid():N}.{EnumExtensions.GetDescription(format)}");
+        try
+        {
+            Task.Run(() => PlatformServices.ImageEncoder.EncodeAsync(bmp, tempFile, format, quality)).GetAwaiter().GetResult();
+            encoded = File.ReadAllBytes(tempFile);
+            return encoded.Length > 0;
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteLine($"Could not encode {format} ({ex.Message}). Saving as PNG instead. {format} needs FFmpeg with the matching encoder.");
+            return false;
+        }
+        finally
+        {
+            try { if (File.Exists(tempFile)) File.Delete(tempFile); } catch { /* best effort */ }
+        }
     }
 
     /// <summary>

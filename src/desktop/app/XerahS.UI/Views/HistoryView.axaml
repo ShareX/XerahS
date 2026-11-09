@@ -77,6 +77,24 @@
 
                 <StackPanel Orientation="Horizontal"
                             Spacing="12"
+                            IsVisible="{Binding HasMultipleSelection}">
+                    <TextBlock Text="{Binding SelectionSummary}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <Button Content="Copy Paths"
+                            Command="{Binding CopySelectedPathsCommand}"
+                            IsEnabled="{Binding CanCopySelectedPaths}"
+                            ToolTip.Tip="Copy the file paths of the selected items, one per line"
+                            AutomationProperties.Name="Copy paths of selected items"/>
+                    <Button Content="Copy URLs"
+                            Command="{Binding CopySelectedUrlsCommand}"
+                            IsEnabled="{Binding CanCopySelectedUrls}"
+                            ToolTip.Tip="Copy the URLs of the selected items, one per line"
+                            AutomationProperties.Name="Copy URLs of selected items"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            Spacing="12"
                             IsVisible="{Binding ShowCombineActions}">
                     <TextBlock Text="{Binding CombineSelectionSummary}"
                                VerticalAlignment="Center"

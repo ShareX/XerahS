@@ -276,6 +276,14 @@ public class WaterfallPolicyGoldenTests
             };
         }
 
+        // Deliberate change after XIP0088: KDE Wayland whole-screen and window grabs go to KWin before the portal,
+        // so the portal's permission dialog is only a fallback.
+        if (context.IsWayland && string.Equals(context.Desktop, "KDE", StringComparison.OrdinalIgnoreCase) &&
+            request.Kind is LinuxCaptureKind.FullScreen or LinuxCaptureKind.ActiveWindow)
+        {
+            return [LinuxCaptureStage.DesktopDbus, LinuxCaptureStage.Portal, LinuxCaptureStage.WaylandProtocol, LinuxCaptureStage.X11];
+        }
+
         return defaultOrder;
     }
 }

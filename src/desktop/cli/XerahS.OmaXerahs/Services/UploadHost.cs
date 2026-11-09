@@ -191,7 +191,7 @@ internal static class UploadHost
             .ToList();
     }
 
-    private static readonly string[] ImageExtensions = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "tif", "tiff", "ico"];
+    private static readonly string[] ImageExtensions = ["png", "jpg", "jpeg", "gif", "webp", "avif", "jxl", "bmp", "tif", "tiff", "ico"];
 
     internal static bool RoutesImages(FileTypeScope? routing, string? imagePath = null)
     {

@@ -135,7 +135,7 @@ public partial class App : Application
             var toastService = new Services.AvaloniaToastService();
             Platform.Abstractions.PlatformServices.RegisterToastService(toastService);
 
-            // Register Image Encoder Service (supports PNG, JPEG, BMP, GIF, WEBP, TIFF via Skia; AVIF via FFmpeg)
+            // Register Image Encoder Service (supports PNG, JPEG, BMP, GIF, WEBP, TIFF via Skia; AVIF and JXL via FFmpeg)
             var imageEncoderService = ImageEncoderService.CreateDefault(() => PathsManager.GetFFmpegPath());
             PlatformServices.RegisterImageEncoderService(imageEncoderService);
 
@@ -440,6 +440,10 @@ public partial class App : Application
             {
                 DebugHelper.WriteLine("[Onboarding] Wizard completed, marking first-time run complete.");
                 SettingsManager.Settings.MarkFirstTimeRunCompleted(persist: false);
+                if (result.StartFirstCapture)
+                {
+                    XerahS.UI.Onboarding.OnboardingFirstCapture.Start();
+                }
             }
         }
         catch (Exception ex)

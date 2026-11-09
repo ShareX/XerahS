@@ -15,7 +15,7 @@ The live onboarding wizard was simplified. The following XIP0060 features are **
 | OCR language pack step | OCR is configured in Settings after first run, not during onboarding. |
 | ShareX configuration import (onboarding upload step) | Legacy import remains in Destination Settings only; not part of the wizard. |
 
-**Current wizard steps (5):** Welcome → Save Location → Hotkeys → Upload → Complete.
+**Current wizard steps (5):** Welcome (theme) → Workflows → Hotkeys → Destinations → Ready check. The last step reports the real state of the capture folder, hotkey registration, macOS permissions, Wayland and FFmpeg, and offers **Finish and take my first capture** (v0.33.6).
 
 **Created**: 2026-04-06  
 **Updated**: 2026-06-28  

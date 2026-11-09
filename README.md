@@ -91,55 +91,41 @@ dotnet run --project src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0
 
 ## 🚀 Getting Started
 
-### Downloads and update channels
+### Install (start here)
+
+Pick your system, install, and launch XerahS. The first-run wizard checks your setup and ends with a first capture.
+
+| System | Easiest install | Notes |
+|---|---|---|
+| **Windows** | `XerahS-<version>-win-x64.exe` (or `.msi`, or the `-portable.zip`) from the [latest release](https://github.com/ShareX/XerahS/releases/latest) | Use `win-arm64` on ARM PCs. Closest to the full ShareX feature set. |
+| **Linux** | `XerahS-<version>-linux-x64.AppImage` (any distro), `.deb`, `.rpm` or `.flatpak` from the same page, or [Flatpak via FlatPark](#flatpak-flatpark), or [`xerahs-git` on the AUR](#arch-linux-aur) | Screenshots are the most reliable part. Screen recording on Wayland is still rough. See [Platform status](#platform-status). |
+| **macOS** | `XerahS-<version>-mac-arm64.tar.gz` (Apple silicon) or `mac-x64.tar.gz` (Intel) | Allow Screen Recording and Accessibility, see [macOS permissions](#macos-permissions-screen-recording). |
+
+Not sure which file you need? Take the `.exe` on Windows, the `.AppImage` on Linux and the `arm64` archive on a recent Mac.
+
+### Platform status
+
+XerahS is pre-1.0 and the platforms are not equally finished. This is the honest picture.
+
+| | Screenshots | Screen recording | Overall |
+|---|---|---|---|
+| **Windows** | Region, window and full screen on multiple monitors | Native GPU recorder with audio, pause and timer | Closest to ShareX; expect pre-1.0 rough edges |
+| **macOS** | Native ScreenCaptureKit | Works; needs permissions | Usable; some packaging and colour issues remain |
+| **Linux** | X11 and Wayland (portal) | Most work in progress, an intermittent Wayland stall is not fixed | Fine for screenshots; keep another recorder for video for now |
+
+The last step of the first-run wizard checks your capture folder, hotkeys and permissions and tells you what to fix. If XerahS cannot start, it now shows a message with the path of its log file.
+
+### Update channels
 
 | Channel | Repository | Use it for |
 |---|---|---|
-| Upstream releases | [ShareX/XerahS releases](https://github.com/ShareX/XerahS/releases) | Official upstream release builds. |
-| KovaForge development builds | [KovaForge/XerahS releases](https://github.com/KovaForge/XerahS/releases) | This fork's newer fixes and development changes; availability and versions can differ from upstream. |
+| Upstream releases | [ShareX/XerahS releases](https://github.com/ShareX/XerahS/releases) | Official release builds. |
+| KovaForge development builds | [KovaForge/XerahS releases](https://github.com/KovaForge/XerahS/releases) | This fork's newer fixes; versions can differ from upstream. |
 
-These are two repositories of XerahS, with separate release histories. A larger
-version number in the fork does not mean the upstream website is out of date.
-For fixes committed to this repository, use a KovaForge build that includes the
-commit, or build this fork from source; the same fix may not yet be released upstream.
-
-In **Settings > Application > Updates**, `Release` checks `ShareX/XerahS`.
-`PreRelease` checks the selected source (KovaForge by default); you can also choose
-ShareX, both repositories, or a custom source. Choose the source deliberately when
-switching builds. Committing a fix does not publish a downloadable release.
-
-### Cloning the Repository
-XerahS requires the `ShareX.ImageEditor` and `Omacut` submodules. `Omacut` is the [KovaForge fork of omacut](https://github.com/KovaForge/omacut): a native Avalonia video trimmer that powers the video editor. Clone with:
-```bash
-git clone --recursive https://github.com/KovaForge/XerahS.git
-```
-
-If you already cloned without `--recursive`, initialize the submodules:
-```bash
-cd XerahS
-git submodule update --init --recursive
-```
-
-### Desktop Quick Start (Windows)
-On Windows, the fastest verified first-run path is:
-```powershell
-.\init-submodules.ps1
-dotnet build src/desktop/XerahS.sln -m:1 -p:nodeReuse=false -p:UseSharedCompilation=false
-```
-
-If you skip submodule initialization and run `dotnet build src/desktop/XerahS.sln` immediately after a plain `git clone`, the build fails with `MSB3202` because `ShareX.ImageEditor` and `Omacut` are checked out as Git submodules.
-
-### Prerequisites
-- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- FFmpeg (`ffmpeg` and `ffprobe`) for recording and the video editor. XerahS can download it for you.
+These are two repositories with separate release histories, so a larger version number in the fork does not mean upstream is out of date. In **Settings > Application > Updates**, `Release` checks `ShareX/XerahS`. `PreRelease` checks the selected source (KovaForge by default); you can also choose ShareX, both repositories, or a custom source. Committing a fix does not publish a downloadable release.
 
 ### Linux distro repositories
-First-party auto-update channels (Launchpad PPA, Fedora COPR, openSUSE OBS) are documented in [docs/linux/distro-repos.md](docs/linux/distro-repos.md). They publish after a maintainer creates the empty projects and sets GitHub secrets.
-
-```bash
-sudo add-apt-repository ppa:sharex/xerahs && sudo apt update && sudo apt install xerahs
-sudo dnf copr enable sharex/xerahs && sudo dnf install xerahs
-```
+A Launchpad PPA, Fedora COPR and openSUSE OBS channel are planned but **not live yet**, so `add-apt-repository` and `dnf copr enable` will not find XerahS. Until they are published, use the `.deb`, `.rpm` or `.AppImage` from the [latest release](https://github.com/ShareX/XerahS/releases/latest), Flatpak or the AUR. The plan and the maintainer steps are in [docs/linux/distro-repos.md](docs/linux/distro-repos.md).
 
 ### Arch Linux (AUR)
 Arch Linux users can install the latest development version via the community-maintained AUR package [`xerahs-git`](https://aur.archlinux.org/packages/xerahs-git) (maintained by @unicxrn).
@@ -183,6 +169,33 @@ If you see a message saying **"XerahS is damaged and can't be opened"**, it is d
    ```
 3. Drag the **XerahS.app** file from Finder into the Terminal window (this pastes the full path).
 4. Only now, press **Enter**.
+
+## Build from source
+
+### Cloning the Repository
+XerahS requires the `ShareX.ImageEditor` and `Omacut` submodules. `Omacut` is the [KovaForge fork of omacut](https://github.com/KovaForge/omacut): a native Avalonia video trimmer that powers the video editor. Clone with:
+```bash
+git clone --recursive https://github.com/KovaForge/XerahS.git
+```
+
+If you already cloned without `--recursive`, initialize the submodules:
+```bash
+cd XerahS
+git submodule update --init --recursive
+```
+
+### Desktop Quick Start (Windows)
+On Windows, the fastest verified first-run path is:
+```powershell
+.\init-submodules.ps1
+dotnet build src/desktop/XerahS.sln -m:1 -p:nodeReuse=false -p:UseSharedCompilation=false
+```
+
+If you skip submodule initialization and run `dotnet build src/desktop/XerahS.sln` immediately after a plain `git clone`, the build fails with `MSB3202` because `ShareX.ImageEditor` and `Omacut` are checked out as Git submodules.
+
+### Prerequisites
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- FFmpeg (`ffmpeg` and `ffprobe`) for recording and the video editor. XerahS can download it for you.
 
 ## 🛠️ Developer Information
 

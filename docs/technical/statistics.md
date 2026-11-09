@@ -1,7 +1,7 @@
 # Graphical history statistics
 
 Open **Statistics** from the sidebar, **View > Statistics**, or the History
- toolbar. This opens the separate **XerahS - Stats** window.
+ toolbar. It opens as a page in the main window, the same way History does.
 
 The dashboard ports ShareX's graphical statistics implementation from the
 `develop` branch at commit `fdb0d415f7124b0f95e69e4c375cd6a2a25bf041`:
@@ -20,7 +20,7 @@ applications, destinations, and file types.
 All calculations use the complete history database, independent of the History
 page's search and pagination. GIF files count as recordings, matching ShareX.
 Missing process or destination metadata is omitted from those breakdowns. The
-window uses XerahS's theme resources and the system accent. Labels retain the
+page uses XerahS's theme resources and the system accent. Labels retain the
 upstream localization resources and formatting.
 
 **Refresh** reloads the database on a background thread. Empty and failed loads
@@ -44,5 +44,5 @@ than attributing one image to every visible application.
 
 An exited or inaccessible process leaves the app unknown without blocking the
 capture. Existing privacy-review metadata stripping remains in effect. Older
-records without an app tag are not backfilled. Refresh or reopen Stats after a
+records without an app tag are not backfilled. Refresh Statistics, or reopen the page, after a
 new capture to see the updated counts.

@@ -43,7 +43,6 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
     /// <summary>Minimum Windows version for DXGI 1.2 OutputDuplication (Windows 8+).</summary>
     private static readonly Version MinimumVersion = new(6, 2);
 
-    private const int CursorSettleMilliseconds = 50;
     private const int FrameAccumulationMilliseconds = 50;
     private const uint FirstAcquireTimeoutMilliseconds = 250;
     private const uint RetryAcquireTimeoutMilliseconds = 500;
@@ -63,10 +62,9 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
 
     public SKBitmap? TryCapture(ScreenCaptureRequest request)
     {
-        // DWM can render the cursor into the duplicated surface. Hide it globally unless it was asked for;
-        // a requested cursor is composited afterwards at its exact position.
-        using var cursorScope = CursorVisibilityScope.HideIf(!request.DrawCursor, CursorSettleMilliseconds);
-
+        // The hardware cursor is not part of the duplicated surface; a requested cursor is composited afterwards.
+        // A software-rendered cursor can be, so cursor-free captures try Windows.Graphics.Capture first
+        // (CaptureBackendPolicy). System cursors are never changed: a crash would leave the user without a pointer.
         using var factory = DXGI.CreateDXGIFactory1<IDXGIFactory1>();
         if (factory == null) return null;
 

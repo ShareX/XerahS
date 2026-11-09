@@ -140,7 +140,9 @@ namespace XerahS.UI.ViewModels
 
         private async Task LoadCloudAccountAsync()
         {
-            XerahSCloudAccountSummary account = await _cloudClient!.GetAccountAsync().ConfigureAwait(false);
+            // Stay on the UI thread: the properties below are bound to buttons, and changing them from the
+            // thread pool crashed the app right after a successful sign-in.
+            XerahSCloudAccountSummary account = await _cloudClient!.GetAccountAsync().ConfigureAwait(true);
             IsCloudSignedIn = true;
             CloudProfileUrl = account.ProfileUrl.AbsoluteUri;
             _cloudSettingsUrl = account.SettingsUrl;

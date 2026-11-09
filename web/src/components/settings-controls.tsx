@@ -1,19 +1,57 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { authClient, authErrorMessage } from "@/lib/auth-client";
+import { waitForActiveSubscription } from "@/lib/billing-poll";
 
 interface Props {
   strongAuth: boolean;
+  /** False when the last second-factor check is older than billing accepts. */
+  recentStrong?: boolean;
   trialStatus: string;
+  subscriptionStatus?: string | null;
+  checkout?: string;
 }
 
-export function SettingsControls({ strongAuth, trialStatus }: Props) {
+const STRONG_AUTH_EXPIRED =
+  "Your authenticator check has expired. Enter a fresh code under Two-factor authentication above, then try again.";
+
+type Confirmation = "idle" | "waiting" | "active" | "timeout";
+
+export function SettingsControls({
+  strongAuth,
+  recentStrong = true,
+  trialStatus,
+  subscriptionStatus = null,
+  checkout,
+}: Props) {
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const isActive = subscriptionStatus === "active";
+  const [confirmation, setConfirmation] = useState<Confirmation>(
+    checkout === "success" ? (isActive ? "active" : "waiting") : "idle",
+  );
+
+  useEffect(() => {
+    if (confirmation !== "waiting") return;
+    let cancelled = false;
+    void waitForActiveSubscription(async () => {
+      const response = await fetch("/api/v1/me", { cache: "no-store" });
+      return response.ok ? await response.json() : null;
+    }).then((result) => {
+      if (cancelled) return;
+      setConfirmation(result);
+      if (result === "active") router.refresh();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [confirmation, router]);
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
 
   async function post(path: string, body?: unknown) {
@@ -26,11 +64,15 @@ export function SettingsControls({ strongAuth, trialStatus }: Props) {
     });
     const result = (await response.json().catch(() => ({}))) as {
       url?: string;
-      error?: { message?: string };
+      error?: { code?: string; message?: string };
     };
     setBusy(false);
     if (!response.ok) {
-      setMessage(result.error?.message ?? "The request failed.");
+      setMessage(
+        result.error?.code === "strong_auth_required"
+          ? STRONG_AUTH_EXPIRED
+          : (result.error?.message ?? "The request failed."),
+      );
       return;
     }
     if (result.url) location.assign(result.url);
@@ -144,32 +186,74 @@ export function SettingsControls({ strongAuth, trialStatus }: Props) {
           protected gallery and billing actions.
         </p>
       )}
-      {trialStatus === "not_started" && (
+      {strongAuth && !recentStrong && (
+        <p className="error" role="status">
+          {STRONG_AUTH_EXPIRED}
+        </p>
+      )}
+      {isActive && (
+        <p className="notice" role="status">
+          Your subscription is active. Publishing is enabled.
+        </p>
+      )}
+      {!isActive && checkout === "success" && confirmation === "waiting" && (
+        <p className="notice" role="status">
+          Payment received. Confirming your subscription…
+        </p>
+      )}
+      {!isActive && checkout === "success" && confirmation === "timeout" && (
+        <p className="notice" role="status">
+          Your payment is being confirmed. This can take a minute. Refresh this
+          page shortly; if the status does not change, contact support.
+        </p>
+      )}
+      {checkout === "cancelled" && (
+        <p className="notice" role="status">
+          Checkout was cancelled. You have not been charged.
+        </p>
+      )}
+      <label className="agree">
+        <input
+          checked={agreed}
+          onChange={(event) => setAgreed(event.target.checked)}
+          type="checkbox"
+        />
+        <span>
+          I agree to the <Link href="/legal/terms">Terms</Link>, the{" "}
+          <Link href="/legal/privacy">Privacy Policy</Link> and the{" "}
+          <Link href="/legal/refunds">Refund Policy</Link>.
+        </span>
+      </label>
+      {trialStatus === "not_started" && !isActive && (
         <button
           className="primary"
-          disabled={busy}
+          disabled={busy || !agreed}
           onClick={() => void post("/api/v1/trial/start")}
         >
           Start 7-day trial
         </button>
       )}
       <div className="actions">
-        <button
-          disabled={busy}
-          onClick={() =>
-            void post("/api/v1/billing/checkout", { plan: "monthly" })
-          }
-        >
-          Subscribe monthly · $1.99 USD
-        </button>
-        <button
-          disabled={busy}
-          onClick={() =>
-            void post("/api/v1/billing/checkout", { plan: "annual" })
-          }
-        >
-          Subscribe yearly · $19.99 USD
-        </button>
+        {!isActive && (
+          <>
+            <button
+              disabled={busy || !agreed}
+              onClick={() =>
+                void post("/api/v1/billing/checkout", { plan: "monthly" })
+              }
+            >
+              Subscribe monthly · $1.99 USD
+            </button>
+            <button
+              disabled={busy || !agreed}
+              onClick={() =>
+                void post("/api/v1/billing/checkout", { plan: "annual" })
+              }
+            >
+              Subscribe yearly · $19.99 USD
+            </button>
+          </>
+        )}
         <button
           disabled={busy}
           onClick={() => void post("/api/v1/billing/portal")}

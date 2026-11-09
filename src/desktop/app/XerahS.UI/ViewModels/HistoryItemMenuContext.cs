@@ -54,6 +54,12 @@ public interface IHistoryItemMenuContext
     ICommand TrimVideoCommand { get; }
     ICommand ResizeImageCommand { get; }
 
+    /// <summary>"Copy Path", or "Copy Paths" when the menu acts on several selected entries.</summary>
+    string CopyFilePathHeader { get; }
+
+    /// <summary>"Copy URL", or "Copy URLs" when the menu acts on several selected entries.</summary>
+    string CopyUrlHeader { get; }
+
     /// <summary>Current item used for visibility (URL, HasErrors).</summary>
     IHistoryItemMenuTarget? Item { get; }
 
@@ -139,6 +145,8 @@ public sealed class HistoryItemMenuContext : IHistoryItemMenuContext
 
     public IHistoryItemMenuTarget? Item { get; }
     public object? DisplayItem => _item;
+    public string CopyFilePathHeader => _vm.IsInMultiSelection(_item) ? "Copy Paths" : "Copy Path";
+    public string CopyUrlHeader => _vm.IsInMultiSelection(_item) ? "Copy URLs" : "Copy URL";
 
     public ICommand EditImageCommand { get; }
     public ICommand EditAnnotationsCommand { get; }
@@ -200,6 +208,8 @@ public sealed class ToastMenuContext : IHistoryItemMenuContext
 
     public IHistoryItemMenuTarget? Item { get; }
     public object? DisplayItem => null;
+    public string CopyFilePathHeader => "Copy Path";
+    public string CopyUrlHeader => "Copy URL";
 
     public ICommand EditImageCommand => ViewModel.EditImageCommand;
     public ICommand EditAnnotationsCommand => ViewModel.EditImageCommand;

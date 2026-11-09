@@ -23,6 +23,8 @@
 
 #endregion License Information (GPL v3)
 using Avalonia.Controls;
+using Avalonia;
+using System.ComponentModel;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using XerahS.Common;
@@ -38,8 +40,19 @@ public partial class WorkflowEditorView : UserControl
         InitializeComponent();
         DebugHelper.WriteLine("[WorkflowEditorView] InitializeComponent completed");
 
-        AttachedToVisualTree += (_, _) => DebugHelper.WriteLine("[WorkflowEditorView] AttachedToVisualTree");
-        DetachedFromVisualTree += (_, _) => DebugHelper.WriteLine("[WorkflowEditorView] DetachedFromVisualTree");
+        AttachedToVisualTree += (_, _) =>
+        {
+            if (_taskSettings != null)
+            {
+                _taskSettings.PropertyChanged -= OnTaskSettingsChanged;
+                _taskSettings.PropertyChanged += OnTaskSettingsChanged;
+            }
+        };
+        DetachedFromVisualTree += (_, _) =>
+        {
+            StopRecording();
+            if (_taskSettings != null) _taskSettings.PropertyChanged -= OnTaskSettingsChanged;
+        };
     }
 
     private void InitializeComponent()
@@ -48,13 +61,38 @@ public partial class WorkflowEditorView : UserControl
     }
 
     private bool _isRecording = false;
+    private Button? _recordingButton;
+    private TaskSettingsViewModel? _taskSettings;
+
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        StopRecording();
+        if (_taskSettings != null) _taskSettings.PropertyChanged -= OnTaskSettingsChanged;
+        base.OnDataContextChanged(e);
+        _taskSettings = (DataContext as WorkflowEditorViewModel)?.TaskSettings;
+        if (_taskSettings != null) _taskSettings.PropertyChanged += OnTaskSettingsChanged;
+        this.FindControl<TabControl>("WorkflowSections")?.SetCurrentValue(TabControl.SelectedIndexProperty, 0);
+    }
+
+    private void OnTaskSettingsChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(TaskSettingsViewModel.Job)) return;
+        // A job change may remove the currently selected image/video section.
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            var tabs = this.FindControl<TabControl>("WorkflowSections");
+            if (tabs?.SelectedItem is TabItem { IsVisible: false }) tabs.SelectedIndex = 0;
+        });
+    }
 
     private void HotkeyButton_Click(object? sender, RoutedEventArgs e)
     {
+        StopRecording();
         _isRecording = true;
         if (sender is Button btn)
         {
-            btn.Content = "Press keys...";
+            _recordingButton = btn;
+            btn.SetCurrentValue(ContentControl.ContentProperty, "Press keys...");
         }
         this.KeyDown += OnKeyDown;
         this.KeyUp += OnKeyUp; // Optional clean up
@@ -97,9 +135,9 @@ public partial class WorkflowEditorView : UserControl
         this.KeyUp -= OnKeyUp;
         if (DataContext is WorkflowEditorViewModel vm)
         {
-            // Trigger property change to refresh text if needed
-            // But VM.KeyText should update automatically via binding
+            _recordingButton?.SetCurrentValue(ContentControl.ContentProperty, vm.KeyText);
         }
+        _recordingButton = null;
     }
 
     private bool IsModifier(global::Avalonia.Input.Key key)

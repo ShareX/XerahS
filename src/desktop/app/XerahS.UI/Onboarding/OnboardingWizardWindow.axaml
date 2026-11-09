@@ -9,9 +9,9 @@
         x:DataType="vm:OnboardingWizardViewModel"
         Title="Welcome to XerahS"
         Width="600"
-        Height="460"
+        Height="540"
         MinWidth="480"
-        MinHeight="400"
+        MinHeight="440"
         WindowStartupLocation="CenterScreen"
         WindowDecorations="Full"
         CanResize="True"
@@ -101,7 +101,7 @@
           </StackPanel>
 
           <!-- Steps 2+: where to configure things -->
-          <ContentControl Content="{Binding CurrentAdvice}" IsVisible="{Binding !IsThemeStep}">
+          <ContentControl Content="{Binding CurrentAdvice}" IsVisible="{Binding CurrentAdvice, Converter={x:Static ObjectConverters.IsNotNull}}">
             <ContentControl.ContentTemplate>
               <DataTemplate x:DataType="vm:OnboardingAdvice">
                 <StackPanel Spacing="20">
@@ -154,11 +154,62 @@
             </ContentControl.ContentTemplate>
           </ContentControl>
 
+          <!-- Last step: what works, what needs a step -->
+          <StackPanel Spacing="16" IsVisible="{Binding IsReadyStep}">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+              <Border Classes="step-icon">
+                <TextBlock Classes="IconGlyph" Text="{x:Static theming:HostIcons.NavigationWorkflows}" />
+              </Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="Ready to capture"
+                           Classes="section-header"
+                           AutomationProperties.HeadingLevel="1" />
+                <TextBlock Text="Here is what XerahS found on this computer."
+                           FontSize="13"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+              </StackPanel>
+            </Grid>
+
+            <ItemsControl ItemsSource="{Binding ReadyItems}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Spacing="8" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ReadinessItem">
+                  <Border Classes="setting-row">
+                    <Grid ColumnDefinitions="24,*" ColumnSpacing="10">
+                      <TextBlock Text="{Binding Marker}"
+                                 FontWeight="Bold"
+                                 VerticalAlignment="Top"
+                                 AutomationProperties.AccessibilityView="Raw" />
+                      <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Detail}"
+                                   FontSize="13"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Button Content="Check again"
+                    Command="{Binding RecheckReadinessCommand}"
+                    Classes="WizardGhostButton"
+                    HorizontalAlignment="Left"
+                    IsVisible="{Binding HasAttentionItems}" />
+          </StackPanel>
+
         </StackPanel>
       </ScrollViewer>
     </Border>
 
-    <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+    <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
       <Button Grid.Column="0"
               Content="Back"
               Command="{Binding BackCommand}"
@@ -171,7 +222,12 @@
                  FontSize="12"
                  Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
       <Button Grid.Column="2"
-              Content="OK"
+              Content="Finish and take my first capture"
+              Command="{Binding FinishAndCaptureCommand}"
+              IsVisible="{Binding IsReadyStep}"
+              Classes="WizardPrimaryButton" />
+      <Button Grid.Column="3"
+              Content="{Binding PrimaryButtonText}"
               MinWidth="96"
               IsDefault="True"
               Command="{Binding OkCommand}"

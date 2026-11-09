@@ -36,6 +36,11 @@ namespace XerahS.Platform.MacOS
     public static class MacOSPlatform
     {
         /// <summary>
+        /// True when XerahS already holds Screen Recording permission. Never shows a system prompt.
+        /// </summary>
+        public static bool IsScreenRecordingGranted() => Native.ScreenRecordingPermission.IsGranted();
+
+        /// <summary>
         /// Initializes all macOS platform services
         /// </summary>
         public static void Initialize(IScreenCaptureService? screenCaptureService = null)

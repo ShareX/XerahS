@@ -59,6 +59,45 @@ public class LinuxCaptureOrchestrationTests
         }));
     }
 
+    [TestCase(true)]
+    [TestCase(false)]
+    public void WaterfallPolicy_KdeWayland_WholeScreenAndWindow_TriesKWinBeforePortalPrompt(bool fullScreen)
+    {
+        var policy = new WaterfallCapturePolicy();
+        var request = new LinuxCaptureRequest(fullScreen ? LinuxCaptureKind.FullScreen : LinuxCaptureKind.ActiveWindow, options: null);
+        var context = new LinuxCaptureContext(isWayland: true, desktop: "KDE", compositor: "WAYLAND", isSandboxed: false, hasScreenshotPortal: true);
+
+        var order = policy.GetStageOrder(request, context);
+
+        Assert.That(order, Is.EqualTo(new[]
+        {
+            LinuxCaptureStage.DesktopDbus,
+            LinuxCaptureStage.Portal,
+            LinuxCaptureStage.WaylandProtocol,
+            LinuxCaptureStage.X11
+        }));
+    }
+
+    [Test]
+    public void WaterfallPolicy_KdeWayland_Sandboxed_StaysPortalOnly()
+    {
+        var policy = new WaterfallCapturePolicy();
+        var request = new LinuxCaptureRequest(LinuxCaptureKind.FullScreen, options: null);
+        var context = new LinuxCaptureContext(isWayland: true, desktop: "KDE", compositor: "WAYLAND", isSandboxed: true, hasScreenshotPortal: true, isFlatpak: true);
+
+        Assert.That(policy.GetStageOrder(request, context), Is.EqualTo(new[] { LinuxCaptureStage.Portal }));
+    }
+
+    [Test]
+    public void WaterfallPolicy_GnomeWayland_FullScreen_KeepsPortalFirst()
+    {
+        var policy = new WaterfallCapturePolicy();
+        var request = new LinuxCaptureRequest(LinuxCaptureKind.FullScreen, options: null);
+        var context = new LinuxCaptureContext(isWayland: true, desktop: "GNOME", compositor: "WAYLAND", isSandboxed: false, hasScreenshotPortal: true);
+
+        Assert.That(policy.GetStageOrder(request, context)[0], Is.EqualTo(LinuxCaptureStage.Portal));
+    }
+
     [Test]
     public void WaterfallPolicy_X11Region_PrefersDesktopDbusAndX11BeforePortal()
     {

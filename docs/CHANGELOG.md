@@ -14,10 +14,20 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ### Features
 
+- **JPEG XL (JXL) images** ([#311](https://github.com/ShareX/XerahS/issues/311)): Choose JXL as the capture image format. It is encoded by FFmpeg's `libjxl` (quality 100 is lossless, lower values are lossy and use the same curve as `cjxl`), keeps transparency, and is recognised for uploads, the CLI (`--output shot.jxl`), URL downloads and MIME types. If FFmpeg or `libjxl` is missing, the capture is saved as PNG with a log message instead of being lost.
 - **omaxerahs**: `upload <path> --destination <destination>` sends any file to a named File destination and keeps its name, so a Markdown page can go to KovaForge Docs. Capability `upload.destination`.
+
+### First-run experience
+
+- **Ready-to-capture check**: The first-run wizard now ends with a checklist of what works on this computer: where captures are saved, whether your hotkeys registered, macOS Screen Recording permission, a note about Wayland, and whether FFmpeg is installed. Anything that needs a step says what to do. **Finish and take my first capture** closes the wizard and starts a region capture.
+- **A message when XerahS cannot start**: A startup failure on Windows, macOS and Linux now shows a message with the reason and the path of the log file, instead of the app silently never appearing.
+- **Honest default workflow names**: Off Windows, the default recorder is "Record screen" instead of "Record screen using GDI", and the game recorder is "Record active window".
+- **README**: Install steps for Windows, Linux and macOS come first, with a per-platform status table. The Launchpad PPA and Fedora COPR commands were removed because those channels are not live yet.
 
 ### Fixes
 
+- **Linux (KDE Plasma Wayland) — "Screenshot Requested" dialog with a greyed-out Allow button**: Full-screen and window captures now go to KWin's own screenshot interface first, which captures silently once XerahS's desktop entry is installed. The portal prompt (where Allow stays disabled until you click Take Screenshot) is now only the fallback. Tarball or AppImage runs without a desktop entry still get the portal prompt: click **Take Screenshot**, then **Allow**.
+- **AVIF captures were written as PNG data**: Saving and uploading used the Skia fallback, so a file named `.avif` held PNG bytes. AVIF now goes through the FFmpeg encoder as designed in XIP0025, with the same PNG fallback when FFmpeg cannot encode it.
 - **Secrets (Linux)**: Reading a secret now falls back to the encrypted file store when the keyring does not have it. Uploader credentials held only in that file were reported as missing, and uploads failed with no clear reason.
 - **Build**: Local plugin builds are now also copied next to the `omaxerahs` build, which otherwise found no plugins and reported no uploaders.
 - **Docs (macOS)**: The hotkey permission steps now name the macOS 27 pane, **Device Control and Data Access**, which replaced **Accessibility** under Privacy & Security ([#312](https://github.com/ShareX/XerahS/issues/312)).

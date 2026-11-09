@@ -43,6 +43,11 @@ namespace XerahS.History
         /// </summary>
         public string? LastBackupFailureReason { get; private set; }
 
+        /// <summary>
+        /// Raised (on the writing thread) after items were appended to any history store, so open history views can refresh.
+        /// </summary>
+        public static event Action? HistoryAppended;
+
         public HistoryManager(string filePath)
         {
             FilePath = filePath;
@@ -76,7 +81,22 @@ namespace XerahS.History
         {
             try
             {
-                return Append(historyItems.Where(IsValidHistoryItem));
+                List<HistoryItem> validItems = historyItems.Where(IsValidHistoryItem).ToList();
+                bool appended = Append(validItems);
+
+                if (appended && validItems.Count > 0)
+                {
+                    try
+                    {
+                        HistoryAppended?.Invoke();
+                    }
+                    catch (Exception e)
+                    {
+                        DebugHelper.WriteException(e);
+                    }
+                }
+
+                return appended;
             }
             catch (Exception e)
             {

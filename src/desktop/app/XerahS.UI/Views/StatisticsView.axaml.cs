@@ -48,7 +48,7 @@ namespace XerahS.UI.Views;
 
 public sealed record StatsRow(string Label, double LabelWidth, double Fraction, string Value, string ToolTip, bool IsPeak);
 
-public partial class StatisticsView : SurfaceWindow
+public partial class StatisticsView : PageView
 {
     private readonly Func<Task<List<HistoryItem>>> _loadHistory;
     private readonly Func<DateTime> _now;
@@ -68,7 +68,46 @@ public partial class StatisticsView : SurfaceWindow
         _now = now ?? (() => DateTime.Now);
         InitializeComponent();
         ShareButton.IsVisible = shareImage != null;
-        Opened += OnOpened;
+        AttachedToVisualTree += OnAttachedToVisualTree;
+        SizeChanged += (_, e) => ApplyResponsiveLayout(e.NewSize.Width);
+    }
+
+    private const double TwoColumnHighlightsWidth = 820;
+    private const double SingleColumnBreakdownsWidth = 700;
+    private const double CompactPaddingWidth = 560;
+
+    /// <summary>Reflows the card grids to the width the page actually gets inside the main window.</summary>
+    private void ApplyResponsiveLayout(double width)
+    {
+        if (width <= 0)
+        {
+            return;
+        }
+
+        SnapshotPanel.Padding = new Thickness(width < CompactPaddingWidth ? 12 : 24);
+        Reflow(HighlightsGrid, width < TwoColumnHighlightsWidth ? 2 : 4);
+        Reflow(BreakdownGridA, width < SingleColumnBreakdownsWidth ? 1 : 2);
+        Reflow(BreakdownGridB, width < SingleColumnBreakdownsWidth ? 1 : 2);
+    }
+
+    private static void Reflow(Grid grid, int columns)
+    {
+        if (grid.ColumnDefinitions.Count == columns)
+        {
+            return;
+        }
+
+        List<Control> cells = grid.Children.OfType<Control>().ToList();
+        int rows = (cells.Count + columns - 1) / columns;
+        grid.ColumnDefinitions = new ColumnDefinitions(string.Join(",", Enumerable.Repeat("*", columns)));
+        grid.RowDefinitions = new RowDefinitions(string.Join(",", Enumerable.Repeat("Auto", rows)));
+        grid.RowSpacing = 8;
+
+        for (int i = 0; i < cells.Count; i++)
+        {
+            Grid.SetColumn(cells[i], i % columns);
+            Grid.SetRow(cells[i], i / columns);
+        }
     }
 
     private static Task<List<HistoryItem>> LoadHistoryAsync() => Task.Run(() =>
@@ -94,9 +133,9 @@ public partial class StatisticsView : SurfaceWindow
         }
     }
 
-    private async void OnOpened(object? sender, EventArgs e)
+    private async void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        Opened -= OnOpened;
+        AttachedToVisualTree -= OnAttachedToVisualTree;
         await RefreshAsync();
     }
 
@@ -127,7 +166,7 @@ public partial class StatisticsView : SurfaceWindow
     /// <summary>Draws the whole page, including what is scrolled out of view, without the buttons in the title.</summary>
     public SKBitmap RenderSnapshot()
     {
-        double scaling = RenderScaling;
+        double scaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
         PixelSize pixelSize = PixelSize.FromSize(SnapshotPanel.Bounds.Size, scaling);
         double previousOpacity = ActionsPanel.Opacity;
         ActionsPanel.Opacity = 0;

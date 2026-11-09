@@ -962,6 +962,8 @@ namespace XerahS.Common
             { "weba", "audio/webm" },
             { "webm", "video/webm" },
             { "webp", "image/webp" },
+            { "avif", "image/avif" },
+            { "jxl", "image/jxl" },
             { "wg", "application/vnd.pmi.widget" },
             { "wgt", "application/widget" },
             { "wks", "application/vnd.ms-works" },

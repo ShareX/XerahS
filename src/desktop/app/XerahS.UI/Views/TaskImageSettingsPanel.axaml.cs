@@ -42,6 +42,7 @@ public partial class TaskImageSettingsPanel : UserControl
                 if (DataContext is TaskSettingsViewModel vm)
                 {
                     vm.ImageEffects.UpdatePreview();
+                    vm.ImageEffects.NotifyEffectSettingsChanged();
                 }
             };
         }

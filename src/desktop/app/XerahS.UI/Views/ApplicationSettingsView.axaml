@@ -708,7 +708,11 @@
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="Publish screenshots and screencasts from History to your secure profile. Strong authentication and an active trial or subscription are required."
+                                    <TextBlock Text="XerahS Cloud doesn't store your images or videos. It keeps a private collection of the links to your uploads, so you can find them again from any device. The files themselves stay with the destination you uploaded them to."
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+
+                                    <TextBlock Text="Publish uploads from History to add them to your collection. Strong authentication and an active trial or subscription are required."
                                                TextWrapping="Wrap"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
 

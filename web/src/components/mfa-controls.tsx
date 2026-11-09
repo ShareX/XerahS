@@ -25,9 +25,12 @@ function secretFromUri(totpUri: string): string {
 
 export function MfaControls({
   strongAuth,
+  recentStrong = true,
   passkeysEnabled,
 }: {
   strongAuth: boolean;
+  /** False when the last second-factor check is too old for billing and account changes. */
+  recentStrong?: boolean;
   passkeysEnabled: boolean;
 }) {
   const router = useRouter();
@@ -163,7 +166,16 @@ export function MfaControls({
   return (
     <section className="card stack">
       <h2>Two-factor authentication</h2>
-      {strongAuth ? (
+      {strongAuth && !recentStrong && twoFactorEnabled ? (
+        <>
+          <p>
+            Subscribing, billing and account changes need a fresh check. Enter a
+            current code from your authenticator to continue; it stays valid for
+            10 minutes.
+          </p>
+          {codeForm}
+        </>
+      ) : strongAuth ? (
         <p>Authenticator verification is complete for this session.</p>
       ) : twoFactorEnabled && !enrollment ? (
         <>
@@ -259,7 +271,7 @@ export function MfaControls({
             A passkey on this device can replace the authenticator code when you
             sign in.
           </p>
-          {!strongAuth && (
+          {(!strongAuth || !recentStrong) && (
             <button
               className="primary"
               disabled={busy}

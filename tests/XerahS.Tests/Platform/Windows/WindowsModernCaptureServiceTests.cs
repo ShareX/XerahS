@@ -115,55 +115,6 @@ public class WindowsModernCaptureServiceTests
     }
 
     [Test]
-    public void TryReplaceSystemCursors_DisposesCopiesWhenReplacementFails()
-    {
-        var destroyed = new List<IntPtr>();
-
-        bool replacedAny = CursorReplacementHelper.TryReplaceSystemCursors(
-            new uint[] { 32512, 32513 },
-            copyCursor: () => new IntPtr(42),
-            setSystemCursor: (_, _) => false,
-            destroyCursor: destroyed.Add);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(replacedAny, Is.False);
-            Assert.That(destroyed, Has.Count.EqualTo(2));
-        });
-    }
-
-    [Test]
-    public void TryReplaceSystemCursors_SkipsZeroCopiesWithoutReportingReplacement()
-    {
-        bool replacedAny = CursorReplacementHelper.TryReplaceSystemCursors(
-            new uint[] { 32512, 32513 },
-            copyCursor: () => IntPtr.Zero,
-            setSystemCursor: (_, _) => true,
-            destroyCursor: _ => Assert.Fail("Zero cursor handles must not be destroyed."));
-
-        Assert.That(replacedAny, Is.False);
-    }
-
-    [Test]
-    public void TryReplaceSystemCursors_ReportsReplacementOnlyAfterSuccessfulSet()
-    {
-        int calls = 0;
-        var destroyed = new List<IntPtr>();
-
-        bool replacedAny = CursorReplacementHelper.TryReplaceSystemCursors(
-            new uint[] { 32512, 32513 },
-            copyCursor: () => new IntPtr(++calls),
-            setSystemCursor: (_, id) => id == 32513,
-            destroyCursor: destroyed.Add);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(replacedAny, Is.True);
-            Assert.That(destroyed, Is.EqualTo(new[] { new IntPtr(1) }));
-        });
-    }
-
-    [Test]
     public void CreateDxgiCursorPlacement_MapsScreenCursorToCapturedBitmapCoordinates()
     {
         var captureRegion = new Rectangle(100, 50, 200, 100);

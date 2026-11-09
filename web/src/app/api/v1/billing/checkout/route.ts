@@ -70,6 +70,8 @@ export async function POST(request: Request) {
           xerahs_checkout_attempt_id: context.attemptId,
         },
         subscription_data: { metadata: { xerahs_user_id: user.id } },
+        // No custom_text: Stripe rejects it while Managed Payments is enabled on the
+        // account. Consent is recorded by the checkbox on the Settings page.
         ...(env.STRIPE_TAX_ENABLED
           ? {
               automatic_tax: { enabled: true },

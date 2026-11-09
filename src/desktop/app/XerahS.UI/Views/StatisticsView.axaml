@@ -1,4 +1,4 @@
-<views:SurfaceWindow xmlns:views="using:XerahS.UI.Views" xmlns:models="using:XerahS.History" xmlns="https://github.com/avaloniaui"
+<views:PageView xmlns:views="using:XerahS.UI.Views" xmlns:models="using:XerahS.History" xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:localization="using:XerahS.UI.Localization"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -8,20 +8,14 @@
         mc:Ignorable="d"
         d:DesignWidth="1060"
         d:DesignHeight="900"
-        x:Class="XerahS.UI.Views.StatisticsView"
-        Title="{x:Static localization:StatisticsStrings.StatsWindow_Title}"
-        Width="1060"
-        Height="900"
-        MinWidth="720"
-        MinHeight="480"
-        WindowStartupLocation="CenterScreen">
+        x:Class="XerahS.UI.Views.StatisticsView">
 
-    <views:SurfaceWindow.Resources>
+    <views:PageView.Resources>
         <SolidColorBrush x:Key="Statistics.PositiveBrush" Color="{DynamicResource XerahS.Color.Status.Success.Foreground}"/>
         <SolidColorBrush x:Key="Statistics.NegativeBrush" Color="{DynamicResource XerahS.Color.Status.Error.Foreground}"/>
-    </views:SurfaceWindow.Resources>
+    </views:PageView.Resources>
 
-    <views:SurfaceWindow.Styles>
+    <views:PageView.Styles>
         <Style Selector="TextBlock.icon">
             <Setter Property="FontFamily" Value="avares://ShareX.ImageEditor/Assets#lucide"/>
         </Style>
@@ -122,9 +116,9 @@
         <Style Selector="Border.stats-row:pointerover">
             <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
         </Style>
-    </views:SurfaceWindow.Styles>
+    </views:PageView.Styles>
 
-    <views:SurfaceWindow.DataTemplates>
+    <views:PageView.DataTemplates>
         <DataTemplate DataType="views:StatsRow" x:DataType="views:StatsRow">
             <Border Classes="stats-row" ToolTip.Tip="{Binding ToolTip}">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
@@ -143,7 +137,7 @@
                 </Grid>
             </Border>
         </DataTemplate>
-    </views:SurfaceWindow.DataTemplates>
+    </views:PageView.DataTemplates>
 
     <Grid Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}">
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -218,7 +212,7 @@
                         </Border>
 
                         <!-- Highlights -->
-                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                        <Grid x:Name="HighlightsGrid" ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
                             <Border Grid.Column="0" Classes="section-card">
                                 <StackPanel>
                                     <TextBlock Classes="section-title" Text="{x:Static localization:StatisticsStrings.StatsWindow_Today}"/>
@@ -306,7 +300,7 @@
                         </Border>
 
                         <!-- Breakdowns -->
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Grid x:Name="BreakdownGridA" ColumnDefinitions="*,*" ColumnSpacing="8">
                             <Border Classes="section-card">
                                 <StackPanel>
                                     <Grid Classes="section-header" ColumnDefinitions="Auto,*">
@@ -327,7 +321,7 @@
                             </Border>
                         </Grid>
 
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Grid x:Name="BreakdownGridB" ColumnDefinitions="*,*" ColumnSpacing="8">
                             <Border Classes="section-card">
                                 <StackPanel>
                                     <Grid Classes="section-header" ColumnDefinitions="Auto,*">
@@ -352,4 +346,4 @@
             </Border>
         </ScrollViewer>
     </Grid>
-</views:SurfaceWindow>
+</views:PageView>

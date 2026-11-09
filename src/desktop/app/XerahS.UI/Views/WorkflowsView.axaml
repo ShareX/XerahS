@@ -4,98 +4,77 @@
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:views="using:XerahS.UI.Views"
                 xmlns:vm="using:XerahS.UI.ViewModels"
-                xmlns:controls="using:XerahS.UI.Views.Controls"
-                xmlns:theming="clr-namespace:XerahS.UI.Theming"
-                mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+                mc:Ignorable="d" d:DesignWidth="1126" d:DesignHeight="700"
                 x:Class="XerahS.UI.Views.WorkflowsView"
                 x:DataType="vm:WorkflowsViewModel">
-
-    <Grid>
-        <!-- Main Content -->
-        <Grid RowDefinitions="Auto, *">
-            
-            <!-- Toolbar -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" Margin="24">
-                <TextBlock Text="Workflows" Theme="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                
-                <Button Command="{Binding AddWorkflowCommand}" ToolTip.Tip="Add New Workflow" AutomationProperties.Name="Add New Workflow">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Classes="IconGlyph"
-                                   FontSize="16"
-                                   Text="{x:Static theming:HostIcons.ActionAdd}"/>
-                        <TextBlock Text="Add New"/>
-                    </StackPanel>
-                </Button>
-                
-                <Separator Classes="ToolbarSeparator" />
-                
-                <Button Content="Edit" Command="{Binding EditWorkflowCommand}" 
-                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Edit Selected Workflow"
-                        AutomationProperties.Name="Edit Workflow"/>
-
-                <Button Content="Duplicate" Command="{Binding DuplicateCommand}" 
-                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Duplicate"
-                        AutomationProperties.Name="Duplicate Workflow"/>
-
-                <Button Content="Remove" Command="{Binding RemoveWorkflowCommand}" 
-                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Remove"
-                        AutomationProperties.Name="Remove Workflow">
-                </Button>
-
-                <Button Content="{Binding PinButtonText}" Command="{Binding TogglePinCommand}"
-                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        ToolTip.Tip="Toggle pinning this workflow to the tray menu"
-                        MinWidth="120"
-                        AutomationProperties.Name="Toggle Pin"/>    
-                
-                <Separator Classes="ToolbarSeparator" />
-
-                <Button Command="{Binding MoveUpCommand}" ToolTip.Tip="Move Up"
-                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        AutomationProperties.Name="Move Up">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Classes="IconGlyph"
-                                   FontSize="16"
-                                   Text="{x:Static theming:HostIcons.ActionMoveUp}"/>
-                        <TextBlock Text="Move Up"/>
-                    </StackPanel>
-                </Button>
-
-                <Button Command="{Binding MoveDownCommand}" ToolTip.Tip="Move Down"
-                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        AutomationProperties.Name="Move Down">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Classes="IconGlyph"
-                                   FontSize="16"
-                                   Text="{x:Static theming:HostIcons.ActionMoveDown}"/>
-                        <TextBlock Text="Move Down"/>
-                    </StackPanel>
-                </Button>
-                
-                <Separator Classes="ToolbarSeparator" />
-
-                <Button Command="{Binding ResetCommand}" 
-                        ToolTip.Tip="Reset to Defaults" 
-                        Content="Reset..."
-                        AutomationProperties.Name="Reset Workflows"/>
-            </StackPanel>
-
-            <!-- List -->
-            <Border Grid.Row="1" Theme="{StaticResource CardBorderTheme}" Margin="24,0,24,24">
-                <ListBox ItemsSource="{Binding Workflows}" 
-                         SelectedItem="{Binding SelectedWorkflow}" 
-                         Background="Transparent"
+    <Grid ColumnDefinitions="220,*">
+        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,0,1,0" Padding="16">
+            <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="16">
+                <TextBlock Text="Workflows" FontWeight="SemiBold"/>
+                <Button Grid.Row="1" Content="Add workflow" Command="{Binding AddWorkflowCommand}"
+                        AutomationProperties.Name="Add New Workflow"/>
+                <ListBox x:Name="WorkflowList" Grid.Row="2" Background="Transparent"
+                         ItemsSource="{Binding Workflows}" SelectedItem="{Binding SelectedWorkflow}"
                          AutomationProperties.Name="Workflows List">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:HotkeyItemViewModel">
-                            <controls:HotkeySelectionControl Margin="0,4"/>
+                            <StackPanel Spacing="4" Margin="0,4">
+                                <TextBlock Text="{Binding Description}" FontWeight="Medium" TextWrapping="Wrap"/>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                                             Fill="{Binding Status, Converter={x:Static vm:HotkeyStatusColorConverter.Instance}}"
+                                             ToolTip.Tip="{Binding Status}"
+                                             AutomationProperties.Name="{Binding Status, StringFormat='Hotkey status: {0}'}"/>
+                                    <TextBlock Text="{Binding KeyString}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="Navigation" FontSize="11" IsVisible="{Binding NavLabelVisible}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="Tray" FontSize="11" IsVisible="{Binding TrayLabelVisible}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
+                <Button Grid.Row="3" Content="Reset workflows…" Command="{Binding ResetCommand}"
+                        AutomationProperties.Name="Reset Workflows"/>
+            </Grid>
+        </Border>
+        <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*" Margin="24" RowSpacing="16">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                <TextBlock Text="{Binding SelectedWorkflow.Description}" FontSize="26" FontWeight="SemiBold"
+                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Content="Options" AutomationProperties.Name="Workflow Options"
+                        IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuItem Header="Duplicate" Command="{Binding DuplicateCommand}"/>
+                            <MenuItem Header="{Binding PinButtonText}" Command="{Binding TogglePinCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="Move up" Command="{Binding MoveUpCommand}"/>
+                            <MenuItem Header="Move down" Command="{Binding MoveDownCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="Remove" Command="{Binding RemoveWorkflowCommand}"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="{Binding SaveStatus}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                <Button Content="Retry" Command="{Binding RetrySaveCommand}" IsVisible="{Binding HasSaveError}"
+                        AutomationProperties.Name="Retry Saving Workflow"/>
+            </StackPanel>
+            <Border Grid.Row="2" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                    CornerRadius="4" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    IsVisible="{Binding SelectedEditor, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <views:WorkflowEditorView x:Name="InlineWorkflowEditor" DataContext="{Binding SelectedEditor}"/>
             </Border>
+            <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12"
+                        IsVisible="{Binding SelectedEditor, Converter={x:Static ObjectConverters.IsNull}}">
+                <TextBlock Text="No workflows yet" FontSize="20" FontWeight="SemiBold"/>
+                <TextBlock Text="Add a workflow to choose its task, hotkey and settings." TextWrapping="Wrap"/>
+            </StackPanel>
         </Grid>
     </Grid>
 </views:PageView>

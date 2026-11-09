@@ -93,7 +93,7 @@ public sealed class KovaForgeProvider : UploaderProviderBase, IInstanceSecretBac
     {
         string[] allTypes =
         {
-            "png", "jpg", "jpeg", "gif", "bmp", "tiff", "webp", "svg", "avif", "heic",
+            "png", "jpg", "jpeg", "gif", "bmp", "tiff", "webp", "svg", "avif", "jxl", "heic",
             "txt", "log", "json", "xml", "md", "html", "css", "js", "csv",
             "mp4", "avi", "mov", "mkv", "webm", "mp3", "wav", "flac", "ogg",
             "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",

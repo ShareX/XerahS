@@ -47,6 +47,8 @@ const serverSchema = z.object({
 
 const publicSchema = z.object({
   NEXT_PUBLIC_PASSKEYS_ENABLED: booleanString.default(false),
+  // Optional contact address shown on the legal pages.
+  NEXT_PUBLIC_SUPPORT_EMAIL: z.email().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverSchema>;
@@ -69,6 +71,8 @@ export function getServerEnv(): ServerEnv {
 export function getPublicEnv(): PublicEnv {
   cachedPublic ??= publicSchema.parse({
     NEXT_PUBLIC_PASSKEYS_ENABLED: process.env.NEXT_PUBLIC_PASSKEYS_ENABLED,
+    NEXT_PUBLIC_SUPPORT_EMAIL:
+      process.env.NEXT_PUBLIC_SUPPORT_EMAIL || undefined,
   });
   return cachedPublic;
 }

@@ -25,23 +25,30 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Hotkeys;
 using XerahS.Platform.Abstractions;
 using XerahS.Services.Abstractions;
 using XerahS.UI.Services;
-using System;
-using System.Collections.ObjectModel;
 
 namespace XerahS.UI.ViewModels;
 
-public partial class WorkflowsViewModel : ViewModelBase
+public partial class WorkflowsViewModel : ViewModelBase, IDisposable
 {
     public ObservableCollection<HotkeyItemViewModel> Workflows { get; } = new();
     private readonly IUiViewModelFactory _uiViewModelFactory;
     private readonly IDialogService _coreDialogService;
-    private readonly IViewDialogService _viewDialogService;
+    private readonly WorkflowManager? _manager;
+    private readonly Func<bool> _persist;
+    private readonly DispatcherTimer _saveTimer;
+    private bool _suppressManagerChanges;
+    private bool _reloading;
+    private bool _pendingChanges;
+    private bool _disposed;
+    private bool _active = true;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RemoveWorkflowCommand))]
@@ -53,170 +60,227 @@ public partial class WorkflowsViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(PinButtonText))]
     private HotkeyItemViewModel? _selectedWorkflow;
 
+    [ObservableProperty]
+    private WorkflowEditorViewModel? _selectedEditor;
 
+    [ObservableProperty]
+    private string _saveStatus = "Changes save automatically";
 
+    [ObservableProperty]
+    private bool _hasSaveError;
 
+    public WorkflowsViewModel(IUiViewModelFactory factory)
+        : this(factory, (Avalonia.Application.Current as App)?.WorkflowManager, PersistConfiguration) { }
 
-    private XerahS.Core.Hotkeys.WorkflowManager? _manager;
-
-    public WorkflowsViewModel(IUiViewModelFactory uiViewModelFactory)
+    internal WorkflowsViewModel(IUiViewModelFactory factory, WorkflowManager? manager, Func<bool> persist)
     {
-        _uiViewModelFactory = uiViewModelFactory;
-        _coreDialogService = uiViewModelFactory.CoreDialogService;
-        _viewDialogService = uiViewModelFactory.ViewDialogService;
-        DebugHelper.WriteLine("[WorkflowsVM] ctor start");
-        if (global::Avalonia.Application.Current is App app)
-        {
-            _manager = app.WorkflowManager;
-            if (_manager != null)
-            {
-                _manager.WorkflowsChanged += OnManagerWorkflowsChanged;
-            }
-        }
-
+        _uiViewModelFactory = factory;
+        _coreDialogService = factory.CoreDialogService;
+        _manager = manager;
+        _persist = persist;
+        _saveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
+        _saveTimer.Tick += OnSaveTimer;
+        if (_manager != null) _manager.WorkflowsChanged += OnManagerWorkflowsChanged;
         LoadWorkflows();
-        DebugHelper.WriteLine($"[WorkflowsVM] ctor end. Workflows={Workflows.Count}");
+    }
+
+    private List<WorkflowSettings> Models => _manager?.Workflows ?? SettingsManager.WorkflowsConfig.Hotkeys;
+
+    private static bool PersistConfiguration()
+    {
+        bool saved = SettingsManager.WorkflowsConfig.Save(SettingsManager.WorkflowsConfigFilePath);
+        if (saved) SettingsManager.RaiseSettingsChanged();
+        return saved;
     }
 
     private void OnManagerWorkflowsChanged(object? sender, EventArgs e)
     {
-        Dispatcher.UIThread.Post(LoadWorkflows);
+        if (_suppressManagerChanges || _disposed || !_active) return;
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (_disposed || !_active) return;
+            var current = Models.Where(w => w.Job != WorkflowType.None).ToList();
+            if (current.SequenceEqual(Workflows.Select(w => w.Model)))
+            {
+                foreach (var workflow in Workflows) workflow.Refresh();
+            }
+            else LoadWorkflows();
+        });
     }
 
-    private void LoadWorkflows()
+    private void LoadWorkflows(string? selectId = null)
     {
-        DebugHelper.WriteLine("[WorkflowsVM] LoadWorkflows start");
-        Workflows.Clear();
-
-        IEnumerable<WorkflowSettings> source;
-        if (_manager != null)
+        FlushAutoSave();
+        selectId ??= SelectedWorkflow?.Model.Id;
+        UnsubscribeEditor();
+        _reloading = true;
+        try
         {
-            source = _manager.Workflows;
+            Workflows.Clear();
+            foreach (var model in Models.Where(w => w.Job != WorkflowType.None))
+                Workflows.Add(new HotkeyItemViewModel(model) { IsNavWorkflow = Workflows.Count < 3 });
+            SelectedWorkflow = Workflows.FirstOrDefault(w => w.Model.Id == selectId) ?? Workflows.FirstOrDefault();
         }
-        else
+        finally { _reloading = false; }
+        SetEditor(SelectedWorkflow);
+    }
+
+    partial void OnSelectedWorkflowChanging(HotkeyItemViewModel? value)
+    {
+        if (!_reloading) FlushAutoSave();
+    }
+
+    partial void OnSelectedWorkflowChanged(HotkeyItemViewModel? value)
+    {
+        if (!_reloading) SetEditor(value);
+    }
+
+    private void SetEditor(HotkeyItemViewModel? workflow)
+    {
+        UnsubscribeEditor();
+        var editor = workflow == null ? null : _uiViewModelFactory.CreateWorkflowEditorViewModel(workflow.Model);
+        if (editor != null) editor.IsInline = true;
+        SelectedEditor = editor;
+        if (SelectedEditor == null) return;
+        SubscribeEditor();
+    }
+
+    private void SubscribeEditor()
+    {
+        if (SelectedEditor == null || !_active) return;
+        SelectedEditor.PropertyChanged += OnEditorChanged;
+        SelectedEditor.TaskSettings.PropertyChanged += OnEditorChanged;
+        SelectedEditor.IndexFolderConfig.PropertyChanged += OnEditorChanged;
+        SelectedEditor.TaskSettings.ImageEffects.SettingsChanged += OnEffectSettingsChanged;
+    }
+
+    private void UnsubscribeEditor()
+    {
+        if (SelectedEditor == null) return;
+        SelectedEditor.PropertyChanged -= OnEditorChanged;
+        SelectedEditor.TaskSettings.PropertyChanged -= OnEditorChanged;
+        SelectedEditor.IndexFolderConfig.PropertyChanged -= OnEditorChanged;
+        SelectedEditor.TaskSettings.ImageEffects.SettingsChanged -= OnEffectSettingsChanged;
+    }
+
+    private void OnEditorChanged(object? sender, PropertyChangedEventArgs e) => ScheduleAutoSave();
+    private void OnEffectSettingsChanged(object? sender, EventArgs e) => ScheduleAutoSave();
+
+    private void ScheduleAutoSave()
+    {
+        if (_disposed || _reloading || SelectedEditor == null) return;
+        _pendingChanges = true;
+        HasSaveError = false;
+        SaveStatus = "Saving changes…";
+        _saveTimer.Stop();
+        _saveTimer.Start();
+    }
+
+    private void OnSaveTimer(object? sender, EventArgs e) => FlushAutoSave();
+
+    public void FlushAutoSave()
+    {
+        _saveTimer.Stop();
+        if (!_pendingChanges || SelectedEditor == null) return;
+        try
         {
-            source = SettingsManager.WorkflowsConfig.Hotkeys;
+            _suppressManagerChanges = true;
+            var model = SelectedWorkflow!.Model;
+            var runtimeHotkey = model.HotkeyInfo;
+            bool registrationChanged = model.Job != SelectedEditor.SelectedJob || model.Enabled != SelectedEditor.Model.Enabled ||
+                runtimeHotkey.Key != SelectedEditor.SelectedKey || runtimeHotkey.Modifiers != SelectedEditor.SelectedModifiers;
+            SelectedEditor.Save();
+            if (registrationChanged) _manager?.RegisterHotkey(model);
+            else model.HotkeyInfo = runtimeHotkey;
+            SelectedEditor.Model.HotkeyInfo.Id = model.HotkeyInfo.Id;
+            SelectedEditor.Model.HotkeyInfo.Status = model.HotkeyInfo.Status;
+            SelectedEditor.Model.HotkeyInfo.NativeTriggerDescription = model.HotkeyInfo.NativeTriggerDescription;
+            foreach (var workflow in Workflows) workflow.Refresh();
+            SaveHotkeys();
+            _pendingChanges = HasSaveError;
         }
-
-        // No sorting - use the stored order
-        int index = 0;
-        foreach (var hk in source)
+        catch (Exception ex)
         {
-            if (hk.Job == WorkflowType.None)
-            {
-                continue;
-            }
-
-            var vm = new HotkeyItemViewModel(hk);
-            // Highlight top 3 (0, 1, 2)
-            vm.IsNavWorkflow = index < 3;
-            Workflows.Add(vm);
-            index++;
+            DebugHelper.WriteException(ex, "Could not save workflow changes");
+            HasSaveError = true;
+            SaveStatus = "Changes could not be saved. Retry.";
         }
-
-        DebugHelper.WriteLine($"[WorkflowsVM] LoadWorkflows end. Count={Workflows.Count}");
+        finally { _suppressManagerChanges = false; }
     }
 
     private void SaveHotkeys()
     {
-        if (_manager != null)
+        if (_manager != null) SettingsManager.WorkflowsConfig.Hotkeys = _manager.Workflows;
+        try
         {
-            SettingsManager.WorkflowsConfig.Hotkeys = _manager.Workflows;
+            HasSaveError = !_persist();
+            SaveStatus = HasSaveError ? "Changes could not be saved. Retry." : "All changes saved";
         }
-        SettingsManager.SaveWorkflowsConfig();
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "Could not save workflow configuration");
+            HasSaveError = true;
+            SaveStatus = "Changes could not be saved. Retry.";
+        }
+        bool wasSuppressing = _suppressManagerChanges;
+        _suppressManagerChanges = true;
+        try { _manager?.NotifyWorkflowsChanged(); }
+        finally { _suppressManagerChanges = wasSuppressing; }
     }
 
     [RelayCommand]
-    private async Task AddWorkflow()
+    private void RetrySave()
     {
-        // Create new blank workflow with defaults
-        var newSettings = new XerahS.Core.Hotkeys.WorkflowSettings();
-        // Maybe default job?
-        newSettings.Job = XerahS.Core.WorkflowType.RectangleRegion;
-        newSettings.TaskSettings = new TaskSettings();
-
-        // Ensure the new workflow has an ID
-        newSettings.EnsureId();
-
-        var saved = await ShowWorkflowEditorAsync(newSettings);
-        if (saved)
-        {
-            if (newSettings.Job != WorkflowType.None)
-            {
-                if (_manager != null)
-                {
-                    _manager.Workflows.Add(newSettings);
-                    _manager.RegisterHotkey(newSettings);
-                }
-                else
-                {
-                    SettingsManager.WorkflowsConfig.Hotkeys.Add(newSettings);
-                }
-
-                SaveHotkeys();
-                LoadWorkflows();
-            }
-        }
+        if (_pendingChanges) FlushAutoSave();
+        else SaveHotkeys();
     }
 
-
+    [RelayCommand]
+    private void AddWorkflow()
+    {
+        FlushAutoSave();
+        var model = new WorkflowSettings(WorkflowType.RectangleRegion, new HotkeyInfo());
+        model.TaskSettings.Description = "New workflow";
+        model.EnsureId();
+        Models.Add(model);
+        SaveHotkeys();
+        LoadWorkflows(model.Id);
+    }
 
     [RelayCommand(CanExecute = nameof(CanEditWorkflow))]
-    private async Task EditWorkflow()
-    {
-        DebugHelper.WriteLine($"[WorkflowsVM] EditWorkflow invoked. Selected={(SelectedWorkflow != null ? SelectedWorkflow.Model.Id : "null")}, CanEdit={CanEditWorkflow()}");
-        if (SelectedWorkflow != null)
-        {
-            var editedModel = SelectedWorkflow.Model;
-            var changed = await ShowWorkflowEditorAsync(editedModel);
-            if (changed)
-            {
-                // Re-register all workflows so edited hotkeys become active immediately.
-                _manager?.UpdateHotkeys(_manager.Workflows);
-                SaveHotkeys();
-                LoadWorkflows();
-                SelectedWorkflow = Workflows.FirstOrDefault(w => w.Model == editedModel);
-            }
-        }
-    }
-
+    private void EditWorkflow() { }
     private bool CanEditWorkflow() => SelectedWorkflow != null;
-
-    partial void OnSelectedWorkflowChanged(HotkeyItemViewModel? value)
-    {
-        DebugHelper.WriteLine($"[WorkflowsVM] SelectedWorkflow changed: {(value != null ? value.Model.Id : "null")}");
-    }
 
     [RelayCommand(CanExecute = nameof(CanEditWorkflow))]
     private void RemoveWorkflow()
     {
-        if (SelectedWorkflow != null && _manager != null)
+        if (SelectedWorkflow == null) return;
+        FlushAutoSave();
+        var model = SelectedWorkflow.Model;
+        int index = Workflows.IndexOf(SelectedWorkflow);
+        _suppressManagerChanges = true;
+        try
         {
-            _manager.UnregisterHotkey(SelectedWorkflow.Model);
-            _manager.Workflows.Remove(SelectedWorkflow.Model);
-            LoadWorkflows();
+            _manager?.UnregisterHotkey(model);
+            Models.Remove(model);
             SaveHotkeys();
-            SelectedWorkflow = null;
+            LoadWorkflows(Workflows.ElementAtOrDefault(index + 1)?.Model.Id ?? Workflows.ElementAtOrDefault(index - 1)?.Model.Id);
         }
-        else if (SelectedWorkflow != null && _manager == null) // Fallback
-        {
-            SettingsManager.WorkflowsConfig.Hotkeys.Remove(SelectedWorkflow.Model);
-            Workflows.Remove(SelectedWorkflow);
-            SaveHotkeys();
-        }
+        finally { _suppressManagerChanges = false; }
     }
 
     [RelayCommand(CanExecute = nameof(CanEditWorkflow))]
     private void Duplicate()
     {
-        if (SelectedWorkflow != null && _manager != null)
-        {
-            var clone = CreateWorkflowDuplicate(SelectedWorkflow.Model);
-
-            _manager.Workflows.Add(clone);
-            LoadWorkflows();
-            SaveHotkeys();
-        }
+        if (SelectedWorkflow == null) return;
+        FlushAutoSave();
+        var clone = CreateWorkflowDuplicate(SelectedWorkflow.Model);
+        Models.Add(clone);
+        _suppressManagerChanges = true;
+        try { _manager?.RegisterHotkey(clone); }
+        finally { _suppressManagerChanges = false; }
+        SaveHotkeys();
+        LoadWorkflows(clone.Id);
     }
 
     internal static WorkflowSettings CreateWorkflowDuplicate(WorkflowSettings source)
@@ -259,119 +323,86 @@ public partial class WorkflowsViewModel : ViewModelBase
     }
 
     [RelayCommand(CanExecute = nameof(CanMoveUp))]
-    private void MoveUp()
-    {
-        if (SelectedWorkflow == null) return;
-
-        var index = Workflows.IndexOf(SelectedWorkflow);
-        if (index <= 0) return;
-
-        var hotkeys = _manager?.Workflows ?? SettingsManager.WorkflowsConfig.Hotkeys;
-        var model = SelectedWorkflow.Model;
-        var modelIndex = hotkeys.IndexOf(model);
-
-        if (modelIndex > 0)
-        {
-            if (_manager != null)
-            {
-                _manager.MoveWorkflow(modelIndex, modelIndex - 1);
-            }
-            else
-            {
-                hotkeys.RemoveAt(modelIndex);
-                hotkeys.Insert(modelIndex - 1, model);
-            }
-            
-            SaveHotkeys();
-            LoadWorkflows();
-            SelectedWorkflow = Workflows.FirstOrDefault(w => w.Model == model);
-        }
-    }
-
-    private bool CanMoveUp()
-    {
-        if (SelectedWorkflow == null) return false;
-        return Workflows.IndexOf(SelectedWorkflow) > 0;
-    }
+    private void MoveUp() => MoveSelected(-1);
+    private bool CanMoveUp() => SelectedWorkflow != null && Workflows.IndexOf(SelectedWorkflow) > 0;
 
     [RelayCommand(CanExecute = nameof(CanMoveDown))]
-    private void MoveDown()
+    private void MoveDown() => MoveSelected(1);
+    private bool CanMoveDown() => SelectedWorkflow != null && Workflows.IndexOf(SelectedWorkflow) < Workflows.Count - 1;
+
+    private void MoveSelected(int offset)
     {
         if (SelectedWorkflow == null) return;
-
-        var index = Workflows.IndexOf(SelectedWorkflow);
-        if (index < 0 || index >= Workflows.Count - 1) return;
-
-        var hotkeys = _manager?.Workflows ?? SettingsManager.WorkflowsConfig.Hotkeys;
+        FlushAutoSave();
         var model = SelectedWorkflow.Model;
-        var modelIndex = hotkeys.IndexOf(model);
-
-        if (modelIndex >= 0 && modelIndex < hotkeys.Count - 1)
+        int index = Models.IndexOf(model);
+        int target = index + offset;
+        if (target < 0 || target >= Models.Count) return;
+        _suppressManagerChanges = true;
+        try
         {
-            if (_manager != null)
-            {
-                _manager.MoveWorkflow(modelIndex, modelIndex + 1);
-            }
-            else
-            {
-                hotkeys.RemoveAt(modelIndex);
-                hotkeys.Insert(modelIndex + 1, model);
-            }
-
+            if (_manager != null) _manager.MoveWorkflow(index, target);
+            else { Models.RemoveAt(index); Models.Insert(target, model); }
             SaveHotkeys();
-            LoadWorkflows();
-            SelectedWorkflow = Workflows.FirstOrDefault(w => w.Model == model);
+            LoadWorkflows(model.Id);
         }
+        finally { _suppressManagerChanges = false; }
     }
-
-    private bool CanMoveDown()
-    {
-        if (SelectedWorkflow == null) return false;
-        return Workflows.IndexOf(SelectedWorkflow) < Workflows.Count - 1;
-    }
-
-
 
     [RelayCommand]
     private async Task Reset()
     {
-        var confirmed = await _coreDialogService.ShowConfirmationAsync("Reset Workflows", "Are you sure you want to reset all workflows to default settings? This cannot be undone.");
-        if (!confirmed)
-        {
-            return;
-        }
-
-        if (_manager != null)
+        if (!await _coreDialogService.ShowConfirmationAsync("Reset Workflows", "Reset all workflows to default settings? This cannot be undone.")) return;
+        FlushAutoSave();
+        _suppressManagerChanges = true;
+        try
         {
             var defaults = WorkflowManager.GetDefaultWorkflowList();
-            _manager.UpdateHotkeys(defaults);
-            LoadWorkflows();
+            if (_manager != null) _manager.UpdateHotkeys(defaults);
+            else SettingsManager.WorkflowsConfig.Hotkeys = defaults;
             SaveHotkeys();
+            LoadWorkflows();
         }
+        finally { _suppressManagerChanges = false; }
     }
 
     [RelayCommand(CanExecute = nameof(CanTogglePin))]
     private void TogglePin()
     {
-        if (SelectedWorkflow != null && !SelectedWorkflow.IsNavWorkflow)
-        {
-            SelectedWorkflow.PinnedToTray = !SelectedWorkflow.PinnedToTray;
-            SaveHotkeys();
-            TrayIconHelper.Instance.RefreshFromSettings();
-            OnPropertyChanged(nameof(PinButtonText));
-        }
+        if (SelectedWorkflow == null || SelectedWorkflow.IsNavWorkflow) return;
+        FlushAutoSave();
+        SelectedWorkflow.PinnedToTray = !SelectedWorkflow.PinnedToTray;
+        if (SelectedEditor != null) SelectedEditor.Model.PinnedToTray = SelectedWorkflow.PinnedToTray;
+        SaveHotkeys();
+        OnPropertyChanged(nameof(PinButtonText));
     }
 
-    private bool CanTogglePin()
-    {
-        return SelectedWorkflow != null && !SelectedWorkflow.IsNavWorkflow;
-    }
-
+    private bool CanTogglePin() => SelectedWorkflow != null && !SelectedWorkflow.IsNavWorkflow;
     public string PinButtonText => SelectedWorkflow?.PinnedToTray == true ? "Unpin from Tray" : "Pin to Tray";
 
-    private async Task<bool> ShowWorkflowEditorAsync(WorkflowSettings settings)
+    public void Dispose()
     {
-        var editorViewModel = _uiViewModelFactory.CreateWorkflowEditorViewModel(settings);
-        return await _viewDialogService.ShowWorkflowEditorAsync(editorViewModel);
+        if (_disposed) return;
+        Deactivate();
+        _disposed = true;
+        _saveTimer.Tick -= OnSaveTimer;
+    }
+
+    public void Activate()
+    {
+        if (_disposed || _active) return;
+        _active = true;
+        if (_manager != null) _manager.WorkflowsChanged += OnManagerWorkflowsChanged;
+        if (!Models.Where(w => w.Job != WorkflowType.None).SequenceEqual(Workflows.Select(w => w.Model))) LoadWorkflows();
+        else SubscribeEditor();
+    }
+
+    public void Deactivate()
+    {
+        if (!_active) return;
+        FlushAutoSave();
+        _active = false;
+        if (_manager != null) _manager.WorkflowsChanged -= OnManagerWorkflowsChanged;
+        UnsubscribeEditor();
     }
 }
