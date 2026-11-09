@@ -55,6 +55,18 @@ internal static class CaptureBackendPolicy
     };
 
     /// <summary>
+    /// Order for captures that must leave the cursor out. Windows.Graphics.Capture excludes it per session
+    /// (<c>IsCursorCaptureEnabled = false</c>), while Desktop Duplication can contain a software-rendered
+    /// cursor. Neither path changes the user's system cursors.
+    /// </summary>
+    private static readonly CaptureBackendKind[] CursorFreePreferenceOrder =
+    {
+        CaptureBackendKind.GraphicsCapture,
+        CaptureBackendKind.DesktopDuplication,
+        CaptureBackendKind.Gdi
+    };
+
+    /// <summary>
     /// Resolves the capture backend policy supplied by the application layer.
     /// </summary>
     internal static bool ShouldUseModernCapture(CaptureOptions? options) =>
@@ -64,13 +76,16 @@ internal static class CaptureBackendPolicy
     /// Returns the available backends to try, in order. GDI is the only backend used when
     /// modern capture is turned off, and the last resort otherwise.
     /// </summary>
+    /// <param name="excludeCursor">True when the result must not show the cursor.</param>
     internal static IReadOnlyList<CaptureBackendKind> ResolveChain(
         bool modernCaptureRequested,
-        IReadOnlyCollection<CaptureBackendKind> availableBackends)
+        IReadOnlyCollection<CaptureBackendKind> availableBackends,
+        bool excludeCursor = false)
     {
-        var chain = new List<CaptureBackendKind>(PreferenceOrder.Length);
+        CaptureBackendKind[] order = excludeCursor ? CursorFreePreferenceOrder : PreferenceOrder;
+        var chain = new List<CaptureBackendKind>(order.Length);
 
-        foreach (CaptureBackendKind kind in PreferenceOrder)
+        foreach (CaptureBackendKind kind in order)
         {
             if (!availableBackends.Contains(kind))
             {

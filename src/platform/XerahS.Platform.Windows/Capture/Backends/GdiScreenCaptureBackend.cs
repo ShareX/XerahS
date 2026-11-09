@@ -38,8 +38,6 @@ namespace XerahS.Platform.Windows.Capture.Backends;
 /// </summary>
 internal sealed class GdiScreenCaptureBackend : IScreenCaptureBackend
 {
-    private const int CursorSettleMilliseconds = 150;
-
     private readonly IScreenService _screenService;
 
     public GdiScreenCaptureBackend(IScreenService screenService)
@@ -59,8 +57,7 @@ internal sealed class GdiScreenCaptureBackend : IScreenCaptureBackend
             return null;
         }
 
-        using var cursorScope = CursorVisibilityScope.HideIf(request.CursorExplicitlyExcluded, CursorSettleMilliseconds);
-
+        // BitBlt does not copy the hardware cursor, so leaving it out needs no change to the system cursors.
         SKBitmap? captured = CaptureScreenRect(captureRect, request.DrawCursor);
         if (captured == null)
         {

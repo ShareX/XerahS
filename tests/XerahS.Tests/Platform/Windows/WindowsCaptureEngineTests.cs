@@ -56,9 +56,33 @@ public class WindowsCaptureEngineTests
     }
 
     [Test]
-    public void ResolveChain_UsesOnlyGdiWhenModernCaptureIsOff()
+    public void ResolveChain_PrefersGraphicsCaptureWhenCursorMustBeLeftOut()
     {
-        var chain = CaptureBackendPolicy.ResolveChain(modernCaptureRequested: false, AllBackends);
+        var chain = CaptureBackendPolicy.ResolveChain(modernCaptureRequested: true, AllBackends, excludeCursor: true);
+
+        Assert.That(chain, Is.EqualTo(new[]
+        {
+            CaptureBackendKind.GraphicsCapture,
+            CaptureBackendKind.DesktopDuplication,
+            CaptureBackendKind.Gdi
+        }));
+    }
+
+    [Test]
+    public void ResolveChain_UsesDesktopDuplicationForCursorFreeCaptureWithoutGraphicsCapture()
+    {
+        var available = new[] { CaptureBackendKind.Gdi, CaptureBackendKind.DesktopDuplication };
+
+        var chain = CaptureBackendPolicy.ResolveChain(modernCaptureRequested: true, available, excludeCursor: true);
+
+        Assert.That(chain, Is.EqualTo(new[] { CaptureBackendKind.DesktopDuplication, CaptureBackendKind.Gdi }));
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public void ResolveChain_UsesOnlyGdiWhenModernCaptureIsOffRegardlessOfCursor(bool excludeCursor)
+    {
+        var chain = CaptureBackendPolicy.ResolveChain(modernCaptureRequested: false, AllBackends, excludeCursor);
 
         Assert.That(chain, Is.EqualTo(new[] { CaptureBackendKind.Gdi }));
     }
@@ -85,12 +109,35 @@ public class WindowsCaptureEngineTests
             new FakeBackend(CaptureBackendKind.DesktopDuplication, calls, () => throw new InvalidOperationException("lost device"))
         });
 
-        SKBitmap? result = engine.Capture(ScreenCaptureRequest.ForVirtualDesktop(options: null));
+        SKBitmap? result = engine.Capture(ScreenCaptureRequest.ForVirtualDesktop(new CaptureOptions { ShowCursor = true }));
 
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.SameAs(expected));
             Assert.That(calls, Is.EqualTo(new[] { CaptureBackendKind.DesktopDuplication, CaptureBackendKind.GraphicsCapture }));
+        });
+    }
+
+    [TestCase(null)]
+    [TestCase(false)]
+    public void Capture_TriesGraphicsCaptureFirstWhenTheCursorIsLeftOut(bool? showCursor)
+    {
+        var calls = new List<CaptureBackendKind>();
+        using var expected = new SKBitmap(1, 1);
+        var engine = new ScreenCaptureEngine(new IScreenCaptureBackend[]
+        {
+            new FakeBackend(CaptureBackendKind.DesktopDuplication, calls, () => expected),
+            new FakeBackend(CaptureBackendKind.GraphicsCapture, calls, () => null),
+            new FakeBackend(CaptureBackendKind.Gdi, calls, () => throw new InvalidOperationException("must not run"))
+        });
+        CaptureOptions? options = showCursor.HasValue ? new CaptureOptions { ShowCursor = showCursor.Value } : null;
+
+        SKBitmap? result = engine.Capture(ScreenCaptureRequest.ForVirtualDesktop(options));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.SameAs(expected));
+            Assert.That(calls, Is.EqualTo(new[] { CaptureBackendKind.GraphicsCapture, CaptureBackendKind.DesktopDuplication }));
         });
     }
 
@@ -125,20 +172,16 @@ public class WindowsCaptureEngineTests
         }));
     }
 
-    [TestCase(null, false, false)]
-    [TestCase(true, true, false)]
-    [TestCase(false, false, true)]
-    public void Request_KeepsCursorSemanticsOfEachBackend(bool? showCursor, bool drawCursor, bool excluded)
+    [TestCase(null, false)]
+    [TestCase(true, true)]
+    [TestCase(false, false)]
+    public void Request_DrawsCursorOnlyWhenAskedFor(bool? showCursor, bool drawCursor)
     {
         CaptureOptions? options = showCursor.HasValue ? new CaptureOptions { ShowCursor = showCursor.Value } : null;
 
         var request = ScreenCaptureRequest.ForVirtualDesktop(options);
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(request.DrawCursor, Is.EqualTo(drawCursor));
-            Assert.That(request.CursorExplicitlyExcluded, Is.EqualTo(excluded));
-        });
+        Assert.That(request.DrawCursor, Is.EqualTo(drawCursor));
     }
 
     [Test]

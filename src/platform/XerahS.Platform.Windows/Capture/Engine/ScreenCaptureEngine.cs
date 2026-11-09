@@ -60,7 +60,8 @@ internal sealed class ScreenCaptureEngine
 
         IReadOnlyList<CaptureBackendKind> chain = CaptureBackendPolicy.ResolveChain(
             request.ModernCaptureRequested,
-            AvailableBackends);
+            AvailableBackends,
+            excludeCursor: !request.DrawCursor);
 
         if (!request.ModernCaptureRequested)
         {

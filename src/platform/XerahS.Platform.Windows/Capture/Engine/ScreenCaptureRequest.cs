@@ -62,9 +62,6 @@ internal sealed record ScreenCaptureRequest(CaptureArea Area, SKRect Bounds, Cap
     /// <summary>True only when the caller explicitly asked for the cursor.</summary>
     public bool DrawCursor => Options?.ShowCursor == true;
 
-    /// <summary>True only when the caller explicitly asked for the cursor to be left out.</summary>
-    public bool CursorExplicitlyExcluded => Options?.ShowCursor == false;
-
     public bool HdrColorCorrection => Options?.HDRScreenshotColorCorrection ?? true;
 
     public bool ModernCaptureRequested => CaptureBackendPolicy.ShouldUseModernCapture(Options);
