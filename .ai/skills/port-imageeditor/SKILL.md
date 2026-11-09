@@ -105,7 +105,9 @@ XerahSRoot="/Users/mike/Projects/ShareX Team/XerahS"
 12. If verification passes and the user did not ask to pause, push the submodule commits and then commit and push the XerahS root pointer update.
 13. Do not add a `ProjectReference` to `ShareX.Avalonia`, `ShareX.Avalonia.Tools`, or `ShareX.Tools`. XerahS ImageEditor is a standalone Avalonia/Skia library. Rewrite `ShareX.AvaloniaUI.*` usings and `avares://ShareX.Avalonia/...` URIs back to ImageEditor types (`Presentation.Theming`, `Presentation.Rendering`, `Hosting`).
 14. Do not rename XerahS `Hosting/` / `AvaloniaIntegration` to upstream `Integration/` / `ImageEditorIntegration`. Port new host APIs into `Hosting/AvaloniaIntegration.cs`.
-15. XerahS is English-only and must not gain multi-language support. Never port ShareX `Localization/` (default or satellite `.resx`, `Strings.Designer.cs`, `EffectBrowserLocalization.cs`, translation READMEs, `ValidateTranslations.ps1`) and never add resx generator / `EmbeddedResource` localization items to the XerahS ImageEditor csproj. When ShareX replaces UI text with `Strings.*` or `{x:Static res:Strings.*}`, keep or restore the English literal — take the wording from the default `Strings.resx` value if needed. Mark those upstream commits `skip` in the manifest. If `Localization/` is already in the XerahS submodule from a prior port, do not grow it: no new cultures, no resx syncs, no new `Strings.*` call sites.
+15. Every port bumps the ShareX.ImageEditor library version (Step 5b). The bump is a required
+    submodule commit, and the final report names the old and new versions.
+16. XerahS is English-only and must not gain multi-language support. Never port ShareX `Localization/` (default or satellite `.resx`, `Strings.Designer.cs`, `EffectBrowserLocalization.cs`, translation READMEs, `ValidateTranslations.ps1`) and never add resx generator / `EmbeddedResource` localization items to the XerahS ImageEditor csproj. When ShareX replaces UI text with `Strings.*` or `{x:Static res:Strings.*}`, keep or restore the English literal — take the wording from the default `Strings.resx` value if needed. Mark those upstream commits `skip` in the manifest. If `Localization/` is already in the XerahS submodule from a prior port, do not grow it: no new cultures, no resx syncs, no new `Strings.*` call sites.
 
 ## Step 0 - Resolve the upstream commit range
 
@@ -223,7 +225,7 @@ The ShareX tree and XerahS submodule do not have the same repository layout.
 | `ShareX.ImageEditor/Core/...` | `ShareX.ImageEditor/src/ShareX.ImageEditor/Core/...` |
 | `ShareX.ImageEditor/Hosting/...` | `ShareX.ImageEditor/src/ShareX.ImageEditor/Hosting/...` |
 | `ShareX.ImageEditor/Integration/...` | `ShareX.ImageEditor/src/ShareX.ImageEditor/Hosting/...` (keep XerahS folder name; `ImageEditorIntegration.cs` maps to `AvaloniaIntegration.cs`) |
-| `ShareX.ImageEditor/Localization/...` | **Skip.** XerahS is English-only (core rule 15). Do not copy this tree. |
+| `ShareX.ImageEditor/Localization/...` | **Skip.** XerahS is English-only (core rule 16). Do not copy this tree. |
 | `ShareX.ImageEditor/Presentation/...` | `ShareX.ImageEditor/src/ShareX.ImageEditor/Presentation/...` |
 | `ShareX.ImageEditor/ShareX.ImageEditor.csproj` | `ShareX.ImageEditor/src/ShareX.ImageEditor/ShareX.ImageEditor.csproj` |
 
@@ -315,7 +317,7 @@ file-scoped feature (new partial-class features, `EditorBuiltInToolbars`, asset 
 separately, and land the interleaved central files in one final `[Port]` commit that
 lists the covered items in its body. Note in `PORT_STATUS.md` that intermediate commits
 only build as a batch. Prefer the manifest to still list every item individually even
-when commits are grouped. Do not create a localization-catalog commit (core rule 15).
+when commits are grouped. Do not create a localization-catalog commit (core rule 16).
 
 ### 2d - Read code to remove ambiguity
 
@@ -359,7 +361,7 @@ needs a human.
 Categories:
 
 - `NEW`: absent from the XerahS code root — sync it in as a new file, except
-  `Integration/*` (map to `Hosting/`), `Localization/*` (skip, core rule 15), and files
+  `Integration/*` (map to `Hosting/`), `Localization/*` (skip, core rule 16), and files
   that exist only because ShareX extracted them into `ShareX.Avalonia`.
 - `SAFE_SYNC`: the XerahS file equals the upstream *base* version after normalization and
   rewrites — syncing upstream HEAD is safe because XerahS never diverged in content.
@@ -535,7 +537,7 @@ and verify these known XerahS adaptations before building:
   XerahS root props intentionally disable central management for the submodule path.
   Do not drop `Microsoft.ML.OnnxRuntime.DirectML` / `Vortice.DXGI` while XerahS still
   ships background-remover in the submodule.
-- Localization / i18n: skip the entire ShareX `Localization/` tree (core rule 15).
+- Localization / i18n: skip the entire ShareX `Localization/` tree (core rule 16).
   Port English UI wording only. Do not replay the add-then-delete `EmojiCatalog_*`
   experiment.
 - `AnnotationToolbar.ShowToolOptions`: XerahS `IAnnotationToolbarAdapter` already
@@ -568,6 +570,20 @@ and verify these known XerahS adaptations before building:
   serve ShareX's embedded RegionCapture and are intentionally absent in XerahS. Port only
   `DisposeWorkspace` / `ReleaseAnnotationDisplayBitmaps` (used by `EditorWindow.OnClosed`),
   and unsubscribe `ThemeManager.ThemeChanged` in `OnUnloaded` and `DisposeWorkspace`.
+- ShareX.Icons (2026-11): upstream replaced Lucide keys with `ImageEffectIcons` /
+  `ImageEditorIcons` / `AppIcons` and `IconPresenter` from `ShareX.AvaloniaUI.Controls`.
+  Keep Lucide: restore `IconKey` lines from `HEAD`, map new keys to `LucideIcons`, and use
+  icon-font `TextBlock`s instead of `IconPresenter`.
+- ShareX.Platform / ShareX.Avalonia (2026-10/11): upstream calls `PlatformServices.Current`
+  (graphics, cursor position, wallpaper), `FontFamilyResolver`, `DesktopServices` and
+  `ScreenColorPickerAvailability`. XerahS has none of those projects: keep
+  `FeatureSupport` + `WindowsEmojiBitmapRenderer` / `WindowsCursorBitmapRenderer`, the
+  internal `FontFamilyResolver`, `AvaloniaIntegration.PlaceOnMainWindowScreen`, and the XerahS
+  wallpaper services.
+- Compact region capture toolbar (`EditorStyles.axaml`, `toolbar-row`, `option-indicator`):
+  ShareX-only. Keep the XerahS toolbar and add new option buttons in its style.
+- Region capture tools: `RegionCaptureAnnotationViewModel.IsToolSupportedInRegionCapture`
+  must exclude tools that only `EditorView` implements (Emoji, Clone).
 - Win32-only helpers (`DllImport("user32.dll")` cursor-screen math, GDI magnifier):
   re-implement with Avalonia `TopLevel.Screens` / a cross-platform fallback. Do not
   copy the P/Invoke.
@@ -601,12 +617,12 @@ Keep these unless the user explicitly asks to change them:
 - XerahS-specific solution or project structure
 - XerahS multi-targeting or packaging differences
 - Any host integration already verified in XerahS
-- English-only UI: do not import ShareX multi-language resources (core rule 15)
+- English-only UI: do not import ShareX multi-language resources (core rule 16)
 
 ### 3e - New-file checklist
 
 For each new upstream file:
-1. If it lives under `Localization/`, skip it (core rule 15).
+1. If it lives under `Localization/`, skip it (core rule 16).
 2. Create the mapped target directory if needed.
 3. Add the file under `src/ShareX.ImageEditor`.
 4. Update the target `.csproj` only if the new file requires an explicit item entry.
@@ -679,6 +695,34 @@ Suggested status block:
 - Notes: `<manual adaptations or intentional skips>`
 ```
 
+### 5b - Bump the library version (required)
+
+`ShareX.ImageEditor/Version.props` is the single source of the library version. Both
+`ShareX.ImageEditor/Directory.Build.props` and `src/ShareX.ImageEditor/Directory.Build.props`
+import it, so `Version`, `AssemblyVersion`, `FileVersion` and the informational version all
+follow it. XerahS shows that assembly version under About > Loaded Libraries.
+
+Pick the bump from the ported manifest items:
+
+- **Patch** (`X.Y.Z+1`): every ported item is a fix, refactor, or infrastructure change.
+- **Minor** (`X.Y+1.0`): any ported item adds a feature (an `Enhancement` item).
+- **Major** (`X+1.0.0`): any ported item breaks the public API that hosts use, for example a
+  removed or renamed member of `IAnnotationToolbarAdapter`, `AvaloniaIntegration`,
+  `ImageEditorOptions`, or a changed `MainViewModel` event signature. While the library is
+  below 1.0.0, a breaking change bumps minor instead.
+
+Then:
+
+1. Edit only `<Version>` in `ShareX.ImageEditor/Version.props`. Never add `<Version>` back to
+   either `Directory.Build.props`, and never set `AssemblyVersion` / `FileVersion` by hand.
+2. Add a `## vX.Y.Z` section to `ShareX.ImageEditor/docs/CHANGELOG.md` for the port, and record
+   `Library version: old -> new` in the `PORT_STATUS.md` activity block.
+3. Verify the flow before committing:
+   `dotnet msbuild ShareX.ImageEditor/src/ShareX.ImageEditor/ShareX.ImageEditor.csproj -getProperty:Version`
+   must print the new version (not `1.0.0`).
+4. Commit inside the submodule as `[Build] Bump ShareX.ImageEditor to X.Y.Z`, after the port
+   item commits and before the root pointer commit.
+
 ## Step 6 - Commit discipline
 
 The submodule is a shared library repo, so submodule commits do not use the XerahS version prefix.
@@ -710,7 +754,7 @@ Then update the XerahS root repo to point to the new submodule commit.
 
 After verification succeeds:
 
-1. Confirm every implemented manifest item has its own `ShareX.ImageEditor` submodule commit, except items explicitly kept or skipped.
+1. Confirm every implemented manifest item has its own `ShareX.ImageEditor` submodule commit, except items explicitly kept or skipped, and that the `[Build] Bump ShareX.ImageEditor to X.Y.Z` commit from Step 5b is present.
 2. Push the submodule branch after the full verification gates pass.
 3. Stage the updated submodule pointer and any root tracking or skill changes in `XerahS`.
 4. Commit the XerahS root repo using the next unreleased XerahS version prefix. The root commit may summarize the batch because it only records the final submodule pointer and host/test integration.
@@ -718,6 +762,17 @@ After verification succeeds:
 
 Do not stop after a local commit unless the user explicitly asks to pause before push.
 
+## Final report checklist
+
+Report each item:
+
+- ShareX range ported (previous sync hash -> new hash) and the number of upstream commits
+- Manifest items ported, kept, and skipped
+- ShareX.ImageEditor library version: old -> new, and why (patch / minor / major)
+- Submodule commits, including the bump commit, and the new submodule SHA
+- XerahS root commit that records the pointer
+- Build and test results, including failures that also occur without the port
+
 ## Fast path for this repo
 
-For the common "catch up XerahS to the latest local ShareX state" task, run Steps 0 to 7 in order: resolve both roots, read the last sync hash from `PORT_STATUS.md`, update and diff the ShareX checkout, run `scripts/triage.py`, post the manifest, run `scripts/sync.py` (dry run first), commit each item in the submodule, build, update `PORT_STATUS.md`, then push the submodule and the root pointer.
+For the common "catch up XerahS to the latest local ShareX state" task, run Steps 0 to 7 in order: resolve both roots, read the last sync hash from `PORT_STATUS.md`, update and diff the ShareX checkout, run `scripts/triage.py`, post the manifest, run `scripts/sync.py` (dry run first), commit each item in the submodule, build, update `PORT_STATUS.md`, bump the library version (Step 5b), then push the submodule and the root pointer. End with the final report checklist.
