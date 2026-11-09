@@ -95,7 +95,7 @@ public class EditorContextMenuSmokeTests
             window.UpdateLayout();
             button = toolbar.GetVisualDescendants().OfType<Button>().Single(control =>
                 control.Tag is ToolbarCustomizationItemViewModel { Tool: EditorTool.Blur });
-            Assert.That(ToolTip.GetTip(button), Is.EqualTo("Blur (B)"));
+            Assert.That(ToolTip.GetTip(button), Is.EqualTo("Blur (B, NumPad8)"));
 
             // Keep the real toolbar content and open a real popup so ancestor selectors
             // can affect its generated text just as they do when hovering the button.
@@ -112,7 +112,7 @@ public class EditorContextMenuSmokeTests
 
             Assert.Multiple(() =>
             {
-                Assert.That(tooltipText.Text, Is.EqualTo("Blur (B)"));
+                Assert.That(tooltipText.Text, Is.EqualTo("Blur (B, NumPad8)"));
                 Assert.That(tooltipText.FontFamily, Is.EqualTo(textFont));
                 Assert.That(iconText.FontFamily, Is.EqualTo(iconFont));
             });

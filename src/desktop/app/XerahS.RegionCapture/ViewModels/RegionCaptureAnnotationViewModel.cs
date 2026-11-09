@@ -338,6 +338,52 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject, IAnnot
     [ObservableProperty]
     private ArrowStyle _selectedArrowStyle = ArrowStyle.Classic;
 
+    [ObservableProperty]
+    private bool _arrowRoundedCorners = true;
+
+    partial void OnArrowRoundedCornersChanged(bool value)
+    {
+        if (_isLoadingToolOptions)
+        {
+            return;
+        }
+
+        if (ActiveTool == EditorTool.Select && SelectedAnnotation is ArrowAnnotation arrow)
+        {
+            arrow.RoundedCorners = value;
+            RequestCanvasRefresh();
+            return;
+        }
+
+        if (ActiveTool == EditorTool.Arrow)
+        {
+            _options.ArrowRoundedCorners = value;
+        }
+    }
+
+    [ObservableProperty]
+    private bool _freehandArrow;
+
+    partial void OnFreehandArrowChanged(bool value)
+    {
+        if (_isLoadingToolOptions)
+        {
+            return;
+        }
+
+        if (ActiveTool == EditorTool.Select && SelectedAnnotation is FreehandAnnotation freehand)
+        {
+            freehand.ShowArrowHead = value;
+            RequestCanvasRefresh();
+            return;
+        }
+
+        if (ActiveTool == EditorTool.Freehand)
+        {
+            _options.FreehandArrow = value;
+        }
+    }
+
     partial void OnSelectedArrowStyleChanged(ArrowStyle value)
     {
         ArrowStyle normalizedArrowStyle = NormalizeArrowStyle(value);
@@ -609,6 +655,10 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject, IAnnot
         EditorTool.Arrow => true,
         _ => false
     };
+
+    public bool ShowArrowRoundedCorners => ShowArrowStyle;
+
+    public bool ShowFreehandArrow => GetToolOptionsContext() == EditorTool.Freehand;
 
     public bool ShowCursorType => GetToolOptionsContext() switch
     {
@@ -1548,6 +1598,11 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject, IAnnot
                 if (tool == EditorTool.Arrow)
                 {
                     SelectedArrowStyle = NormalizeArrowStyle(_options.ArrowStyle);
+                    ArrowRoundedCorners = _options.ArrowRoundedCorners;
+                }
+                if (tool == EditorTool.Freehand)
+                {
+                    FreehandArrow = _options.FreehandArrow;
                 }
                 break;
             case EditorTool.Cursor:
@@ -1684,9 +1739,11 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject, IAnnot
                 break;
             case FreehandAnnotation freehand:
                 SelectedBorderStyle = freehand.BorderStyle;
+                FreehandArrow = freehand.ShowArrowHead;
                 break;
             case ArrowAnnotation arrow:
                 SelectedArrowStyle = NormalizeArrowStyle(arrow.Style);
+                ArrowRoundedCorners = arrow.RoundedCorners;
                 break;
             case CursorAnnotation cursorAnnotation:
                 SelectedCursorType = NormalizeCursorType(cursorAnnotation.CursorType);
@@ -1723,6 +1780,8 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject, IAnnot
         OnPropertyChanged(nameof(ShowFontFamily));
         OnPropertyChanged(nameof(ShowBorderStyle));
         OnPropertyChanged(nameof(ShowArrowStyle));
+        OnPropertyChanged(nameof(ShowArrowRoundedCorners));
+        OnPropertyChanged(nameof(ShowFreehandArrow));
         OnPropertyChanged(nameof(ShowCursorType));
         OnPropertyChanged(nameof(ShowCornerRadius));
         OnPropertyChanged(nameof(ShowStrength));
@@ -1813,8 +1872,10 @@ public partial class RegionCaptureAnnotationViewModel : ObservableObject, IAnnot
     /// Emoji is not a canvas-drawn tool. In the editor it opens the emoji picker in the
     /// EditorView modal overlay and EditorView inserts the annotation. The region capture
     /// overlay has neither, so selecting it would leave a tool that does nothing.
+    /// Clone samples and stamps the editor raster through EditorView's input controller,
+    /// which the overlay does not host either.
     /// </summary>
-    internal static bool IsToolSupportedInRegionCapture(EditorTool tool) => tool != EditorTool.Emoji;
+    internal static bool IsToolSupportedInRegionCapture(EditorTool tool) => tool is not (EditorTool.Emoji or EditorTool.Clone);
 
     private void UpdateVisibleToolbarActiveStates()
     {
