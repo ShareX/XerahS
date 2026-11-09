@@ -241,7 +241,7 @@ public sealed class XerahSCloudSecurityTests
     }
 
     [Test]
-    public void TokenValidator_RejectsNonceMismatch()
+    public async Task TokenValidator_RejectsNonceMismatch()
     {
         DateTimeOffset now = DateTimeOffset.FromUnixTimeSeconds(1_800_000_000);
         using RSA rsa = RSA.Create(2048);
@@ -285,7 +285,7 @@ public sealed class XerahSCloudSecurityTests
             exp = now.AddMinutes(10).ToUnixTimeSeconds()
         });
 
-        Assert.ThrowsAsync<XerahSCloudSecurityException>(async () => await validator.ValidateAsync(
+        await Assert.ThrowsAsync<XerahSCloudSecurityException>(async () => await validator.ValidateAsync(
             accessToken,
             "refresh",
             idToken,
@@ -296,13 +296,13 @@ public sealed class XerahSCloudSecurityTests
     }
 
     [Test]
-    public void TokenValidator_RejectsAccessTokenLifetimeAboveOneHour()
+    public async Task TokenValidator_RejectsAccessTokenLifetimeAboveOneHour()
     {
         var validator = new XerahSCloudTokenValidator(
             new HttpClient(new StubHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK))),
             new FakeClock(DateTimeOffset.UtcNow));
 
-        XerahSCloudSecurityException? ex = Assert.ThrowsAsync<XerahSCloudSecurityException>(async () =>
+        XerahSCloudSecurityException? ex = await Assert.ThrowsAsync<XerahSCloudSecurityException>(async () =>
             await validator.ValidateAsync(
                 "header.payload.signature",
                 "refresh",
@@ -462,7 +462,7 @@ public sealed class XerahSCloudSecurityTests
     }
 
     [Test]
-    public void ApiClient_GetAccountRejectsSummaryWithoutStrongAuthentication()
+    public async Task ApiClient_GetAccountRejectsSummaryWithoutStrongAuthentication()
     {
         var handler = new StubHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -482,7 +482,7 @@ public sealed class XerahSCloudSecurityTests
             new FakeTokenExchange(new FakeClock(DateTimeOffset.UtcNow)),
             CreateOptions());
 
-        Assert.ThrowsAsync<XerahSCloudSecurityException>(() => client.GetAccountAsync());
+        await Assert.ThrowsAsync<XerahSCloudSecurityException>(() => client.GetAccountAsync());
     }
 
     [Test]

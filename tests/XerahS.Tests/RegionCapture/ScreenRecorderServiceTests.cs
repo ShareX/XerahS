@@ -70,7 +70,7 @@ public sealed class ScreenRecorderServiceTests
         Assert.That(_lastEncoder, Is.Not.Null);
         Assert.That(_lastEncoder!.OutputPath, Is.Not.Null.And.Not.Empty);
 
-        Assert.DoesNotThrowAsync(async () => await service.StopRecordingAsync());
+        await Assert.DoesNotThrowAsync(async () => await service.StopRecordingAsync());
         Assert.That(File.Exists(_lastEncoder.OutputPath), Is.True);
     }
 
@@ -124,7 +124,7 @@ public sealed class ScreenRecorderServiceTests
         service.ErrorOccurred += (_, args) => errors.Add(args);
 
         await service.StartRecordingAsync(new RecordingOptions());
-        Assert.DoesNotThrowAsync(async () => await service.StopRecordingAsync());
+        await Assert.DoesNotThrowAsync(async () => await service.StopRecordingAsync());
 
         Assert.That(errors, Has.Count.EqualTo(1));
         Assert.Multiple(() =>

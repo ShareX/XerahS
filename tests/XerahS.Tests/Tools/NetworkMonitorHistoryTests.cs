@@ -158,7 +158,7 @@ public class NetworkMonitorHistoryTests
             now: start.AddMinutes(4));
 
         Assert.That(points.Where(point => !point.IsSample && point.Timestamp == start.AddMinutes(3)),
-            Has.All.Matches<NetworkChartPoint>(point => point.LatencyMs == null));
+            Has.All.Matches<NetworkChartPoint>(point => point!.LatencyMs == null));
         Assert.That(points.Count(point => point.IsSample), Is.EqualTo(2));
         Assert.That(points.Single(point => point.IsSample && point.Timestamp == start.AddMinutes(3)).LatencyMs,
             Is.EqualTo(12));

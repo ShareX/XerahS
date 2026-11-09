@@ -94,13 +94,13 @@ public sealed class WorkerTaskImageLifetimeTests
     }
 
     [Test]
-    public void ThrowingCompletionHandler_StillReleasesImage()
+    public async Task ThrowingCompletionHandler_StillReleasesImage()
     {
         using var image = new SKBitmap(16, 16);
         using var task = WorkerTask.Create(CreateSettings(), image);
         task.TaskCompleted += (_, _) => throw new InvalidOperationException("Subscriber failed");
 
-        Assert.ThrowsAsync<InvalidOperationException>(() => task.StartAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => task.StartAsync());
 
         Assert.That(task.Info.Metadata.Image, Is.Null);
         Assert.That(image.Handle, Is.EqualTo(IntPtr.Zero));
@@ -121,7 +121,7 @@ public sealed class WorkerTaskImageLifetimeTests
     }
 
     [Test]
-    public void DisposeBeforeStart_ReleasesOwnedImage()
+    public async Task DisposeBeforeStart_ReleasesOwnedImage()
     {
         using var image = new SKBitmap(16, 16);
         using var task = WorkerTask.Create(CreateSettings(), image);
@@ -130,7 +130,7 @@ public sealed class WorkerTaskImageLifetimeTests
 
         Assert.That(task.Info.Metadata.Image, Is.Null);
         Assert.That(image.Handle, Is.EqualTo(IntPtr.Zero));
-        Assert.ThrowsAsync<ObjectDisposedException>(() => task.StartAsync());
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => task.StartAsync());
     }
 
     [Test]

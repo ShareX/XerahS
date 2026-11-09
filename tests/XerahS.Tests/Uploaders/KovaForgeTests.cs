@@ -79,13 +79,13 @@ public sealed class KovaForgeTests
     [TestCase(HttpStatusCode.Unauthorized, "token", "401")]
     [TestCase(HttpStatusCode.RequestEntityTooLarge, "25 MB", "413")]
     [TestCase(HttpStatusCode.TooManyRequests, "per hour", "429")]
-    public void UploadAsync_NonSuccess_ReportsReasonWithoutLeakingToken(HttpStatusCode status, string expectedText, string expectedStatus)
+    public async Task UploadAsync_NonSuccess_ReportsReasonWithoutLeakingToken(HttpStatusCode status, string expectedText, string expectedStatus)
     {
         RecordingHandler handler = new(status, $$"""{ "error": "bad {{ApiToken}}" }""");
         KovaForgeClient client = new("https://kovaforge.org", ApiToken, handler);
         using MemoryStream stream = new("x"u8.ToArray());
 
-        InvalidOperationException? exception = Assert.ThrowsAsync<InvalidOperationException>(async () => await client.UploadAsync(stream, "a.txt"));
+        InvalidOperationException? exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.UploadAsync(stream, "a.txt"));
 
         Assert.Multiple(() =>
         {
@@ -96,12 +96,12 @@ public sealed class KovaForgeTests
     }
 
     [Test]
-    public void UploadAsync_ResponseWithoutLink_Fails()
+    public async Task UploadAsync_ResponseWithoutLink_Fails()
     {
         KovaForgeClient client = new("https://kovaforge.org", ApiToken, new RecordingHandler(HttpStatusCode.Created, """{ "id": "abc" }"""));
         using MemoryStream stream = new("x"u8.ToArray());
 
-        Assert.ThrowsAsync<InvalidOperationException>(async () => await client.UploadAsync(stream, "a.txt"));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.UploadAsync(stream, "a.txt"));
     }
 
     [Test]

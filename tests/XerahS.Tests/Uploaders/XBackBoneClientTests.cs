@@ -121,7 +121,7 @@ public sealed class XBackBoneClientTests
     [TestCase(HttpStatusCode.Forbidden, "authentication or permission", "403")]
     [TestCase(HttpStatusCode.RequestEntityTooLarge, "too large", "413")]
     [TestCase(HttpStatusCode.UnprocessableEntity, "upload data", "422")]
-    public void UploadAsync_NonSuccess_UsesServerMessageWithoutLeakingToken(
+    public async Task UploadAsync_NonSuccess_UsesServerMessageWithoutLeakingToken(
         HttpStatusCode statusCode,
         string expectedDescription,
         string expectedStatus)
@@ -131,7 +131,7 @@ public sealed class XBackBoneClientTests
         XBackBoneClient client = new("https://xbackbone.example.invalid", ApiToken, handler);
         using MemoryStream stream = new("payload"u8.ToArray());
 
-        InvalidOperationException? exception = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        InvalidOperationException? exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await client.UploadAsync(stream, "capture.png", XBackBoneApiGeneration.ApiV1));
 
         Assert.Multiple(() =>
@@ -145,7 +145,7 @@ public sealed class XBackBoneClientTests
     }
 
     [Test]
-    public void UploadAsync_OversizedServerMessage_IsBounded()
+    public async Task UploadAsync_OversizedServerMessage_IsBounded()
     {
         string oversizedMessage = new('x', 20_000);
         RecordingHttpMessageHandler handler = new(
@@ -154,20 +154,20 @@ public sealed class XBackBoneClientTests
         XBackBoneClient client = new("https://xbackbone.example.invalid", ApiToken, handler);
         using MemoryStream stream = new("payload"u8.ToArray());
 
-        InvalidOperationException? exception = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        InvalidOperationException? exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await client.UploadAsync(stream, "capture.png", XBackBoneApiGeneration.Stable3));
 
         Assert.That(exception!.Message.Length, Is.LessThan(1_000));
     }
 
     [Test]
-    public void UploadAsync_MalformedJson_ThrowsActionableError()
+    public async Task UploadAsync_MalformedJson_ThrowsActionableError()
     {
         RecordingHttpMessageHandler handler = new(HttpStatusCode.Created, "<html>not json</html>", "text/html");
         XBackBoneClient client = new("https://xbackbone.example.invalid", ApiToken, handler);
         using MemoryStream stream = new("payload"u8.ToArray());
 
-        InvalidOperationException? exception = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        InvalidOperationException? exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await client.UploadAsync(stream, "capture.png", XBackBoneApiGeneration.Stable3));
 
         Assert.That(exception!.Message, Does.Contain("malformed JSON"));
@@ -177,7 +177,7 @@ public sealed class XBackBoneClientTests
     [TestCase(XBackBoneApiGeneration.Stable3, /*lang=json*/ "{ \"url\": \"/relative/share\" }")]
     [TestCase(XBackBoneApiGeneration.ApiV1, /*lang=json*/ "{ \"data\": {} }")]
     [TestCase(XBackBoneApiGeneration.ApiV1, /*lang=json*/ "{ \"data\": { \"preview_ext_url\": \"file:///tmp/upload\" } }")]
-    public void UploadAsync_MissingOrInvalidCanonicalUrl_ThrowsActionableError(
+    public async Task UploadAsync_MissingOrInvalidCanonicalUrl_ThrowsActionableError(
         XBackBoneApiGeneration apiGeneration,
         string responseBody)
     {
@@ -185,7 +185,7 @@ public sealed class XBackBoneClientTests
         XBackBoneClient client = new("https://xbackbone.example.invalid", ApiToken, handler);
         using MemoryStream stream = new("payload"u8.ToArray());
 
-        InvalidOperationException? exception = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        InvalidOperationException? exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await client.UploadAsync(stream, "capture.png", apiGeneration));
 
         Assert.That(exception!.Message, Does.Contain("valid canonical URL"));

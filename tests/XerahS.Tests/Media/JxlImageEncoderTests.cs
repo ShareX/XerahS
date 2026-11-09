@@ -133,11 +133,11 @@ public class JxlImageEncoderTests
     }
 
     [Test]
-    public void Encode_WithoutFfmpeg_ThrowsClearError()
+    public async Task Encode_WithoutFfmpeg_ThrowsClearError()
     {
         using var bitmap = new SKBitmap(8, 8);
 
-        var ex = Assert.ThrowsAsync<InvalidOperationException>(() =>
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             new FFmpegImageEncoder(() => "/nonexistent/ffmpeg")
                 .EncodeAsync(bitmap, Path.Combine(Path.GetTempPath(), "never.jxl"), EImageFormat.JXL, 90));
 

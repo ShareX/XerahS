@@ -123,11 +123,11 @@ public class FFmpegLinuxDownloadTests
     }
 
     [Test]
-    public void TamperedArchiveNeverTouchesExistingTools()
+    public async Task TamperedArchiveNeverTouchesExistingTools()
     {
         string archive = WriteZip();
         string destination = ExistingTools();
-        Assert.ThrowsAsync<InvalidDataException>(() => FFmpegDownloader.InstallArchiveAsync(archive, new string('0', 64), destination, FFmpegArchitecture.win64));
+        await Assert.ThrowsAsync<InvalidDataException>(() => FFmpegDownloader.InstallArchiveAsync(archive, new string('0', 64), destination, FFmpegArchitecture.win64));
         AssertOldTools(destination);
     }
 
@@ -135,22 +135,22 @@ public class FFmpegLinuxDownloadTests
     [TestCase("duplicate")]
     [TestCase("symlink")]
     [TestCase("traversal")]
-    public void MalformedArchiveNeverMixesOldAndNewBinaries(string problem)
+    public async Task MalformedArchiveNeverMixesOldAndNewBinaries(string problem)
     {
         string archive = WriteZip(problem);
         string destination = ExistingTools();
-        Assert.ThrowsAsync<InvalidDataException>(() => FFmpegDownloader.InstallArchiveAsync(archive, Hash(archive), destination, FFmpegArchitecture.win64));
+        await Assert.ThrowsAsync<InvalidDataException>(() => FFmpegDownloader.InstallArchiveAsync(archive, Hash(archive), destination, FFmpegArchitecture.win64));
         AssertOldTools(destination);
     }
 
     [Test]
-    public void FailedReplacementRollsBackTheFirstBinary()
+    public async Task FailedReplacementRollsBackTheFirstBinary()
     {
         string archive = WriteZip();
         string destination = ExistingTools();
         File.Delete(Path.Combine(destination, "ffprobe.exe"));
         Directory.CreateDirectory(Path.Combine(destination, "ffprobe.exe"));
-        Assert.ThrowsAsync<IOException>(() => FFmpegDownloader.InstallArchiveAsync(archive, Hash(archive), destination, FFmpegArchitecture.win64));
+        await Assert.ThrowsAsync<IOException>(() => FFmpegDownloader.InstallArchiveAsync(archive, Hash(archive), destination, FFmpegArchitecture.win64));
         Assert.That(File.ReadAllText(Path.Combine(destination, "ffmpeg.exe")), Is.EqualTo("old ffmpeg"));
         Assert.That(Directory.GetDirectories(destination, ".ffmpeg-install-*"), Is.Empty);
     }

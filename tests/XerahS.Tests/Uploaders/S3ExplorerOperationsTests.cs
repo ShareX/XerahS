@@ -135,20 +135,20 @@ public class S3ExplorerOperationsTests
     }
 
     [Test]
-    public void FailedFolderRenameRollsBackCopies()
+    public async Task FailedFolderRenameRollsBackCopies()
     {
         (S3ExplorerOperations ops, FakeS3 bucket) = Create("a/1.png", "a/2.png", "a/3.png");
         bucket.FailCopyTo = key => key == "b/3.png";
-        Assert.ThrowsAsync<AmazonS3Exception>(() => ops.RenameFolderAsync("a/", "b/", CancellationToken.None));
+        await Assert.ThrowsAsync<AmazonS3Exception>(() => ops.RenameFolderAsync("a/", "b/", CancellationToken.None));
         Assert.That(bucket.Objects.Keys, Is.EquivalentTo(new[] { "a/1.png", "a/2.png", "a/3.png" }), "originals intact, partial copies removed");
     }
 
     [Test]
-    public void FailedFileRenameDoesNotLeaveADuplicate()
+    public async Task FailedFileRenameDoesNotLeaveADuplicate()
     {
         (S3ExplorerOperations ops, FakeS3 bucket) = Create("a.png");
         bucket.FailDeleteOf = key => key == "a.png";
-        Assert.ThrowsAsync<AmazonS3Exception>(() => ops.RenameFileAsync("a.png", "b.png", CancellationToken.None));
+        await Assert.ThrowsAsync<AmazonS3Exception>(() => ops.RenameFileAsync("a.png", "b.png", CancellationToken.None));
         Assert.That(bucket.Objects.Keys, Is.EqualTo(new[] { "a.png" }));
     }
 

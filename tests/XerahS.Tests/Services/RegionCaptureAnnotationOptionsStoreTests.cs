@@ -55,7 +55,7 @@ public class RegionCaptureAnnotationOptionsStoreTests
     {
         // Regression: fire-and-forget `_ =` would silently discard exceptions.
         // Awaiting ensures any async exception is observed.
-        Assert.DoesNotThrowAsync(async () =>
+        await Assert.DoesNotThrowAsync(async () =>
         {
             await RegionCaptureAnnotationOptionsStore.PersistAsync();
         });

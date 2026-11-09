@@ -10,10 +10,14 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
-## v0.33.7
+## v0.33.8
+
+v0.33.7 was never tagged; its changes ship here.
 
 ### Features
 
+- **Image editor (ShareX.ImageEditor 0.3.0)**: Caught up with 55 ShareX editor changes. New **Clone** tool, a **Canvas size** tool and a canvas that grows when you draw past its edge, a **freehand arrow** toggle, an option for **sharp arrow corners**, search in the font picker, Shift+Enter for a new line in text, and a second shortcut for each tool (the numpad keys by default). Emoji now draw in colour on Linux and macOS too, missing fonts fall back to an installed one, and adjustment effects no longer read past the image on cropped pictures. About > Loaded Libraries now shows the editor's real version instead of 1.0.0.
+- **Workflows page**: Edit the selected workflow in place, with a workflow list, section tabs (Task, Image, Video, Settings, Index) and changes saved automatically. Duplicate, pin, reorder and remove are in an Options menu.
 - **JPEG XL (JXL) images** ([#311](https://github.com/ShareX/XerahS/issues/311)): Choose JXL as the capture image format. It is encoded by FFmpeg's `libjxl` (quality 100 is lossless, lower values are lossy and use the same curve as `cjxl`), keeps transparency, and is recognised for uploads, the CLI (`--output shot.jxl`), URL downloads and MIME types. If FFmpeg or `libjxl` is missing, the capture is saved as PNG with a log message instead of being lost.
 - **omaxerahs**: `upload <path> --destination <destination>` sends any file to a named File destination and keeps its name, so a Markdown page can go to KovaForge Docs. Capability `upload.destination`.
 
@@ -30,7 +34,14 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 - **AVIF captures were written as PNG data**: Saving and uploading used the Skia fallback, so a file named `.avif` held PNG bytes. AVIF now goes through the FFmpeg encoder as designed in XIP0025, with the same PNG fallback when FFmpeg cannot encode it.
 - **Secrets (Linux)**: Reading a secret now falls back to the encrypted file store when the keyring does not have it. Uploader credentials held only in that file were reported as missing, and uploads failed with no clear reason.
 - **Build**: Local plugin builds are now also copied next to the `omaxerahs` build, which otherwise found no plugins and reported no uploaders.
+- **Windows — Missing mouse pointer after a crash** ([#288](https://github.com/ShareX/XerahS/issues/288)): Captures no longer swap every system cursor for a blank one. Cursor-free captures use Windows.Graphics.Capture first, then DXGI and GDI, and none of them hide the system cursors. XerahS still restores cursors left blank by 0.33.6 and earlier.
 - **Docs (macOS)**: The hotkey permission steps now name the macOS 27 pane, **Device Control and Data Access**, which replaced **Accessibility** under Privacy & Security ([#312](https://github.com/ShareX/XerahS/issues/312)).
+
+
+### Build
+
+- **macOS**: Releases are signed with a Developer ID certificate, notarized and stapled, and a signed DMG is attached. Builds without those secrets are signed ad hoc as before.
+- **Dependencies**: Avalonia 12.1.1 -> 12.1.6 (DataGrid 12.1.2), SkiaSharp 4.151.0 -> 4.155.0, .NET libraries 10.0.10 -> 10.0.14, NUnit 5, ReactiveUI 26, SharpHook 8, FluentFTP 55, AWS S3 SDK, CsWin32, Tmds.DBus, ZXing bindings and test tooling updated to their latest stable versions.
 
 ---
 

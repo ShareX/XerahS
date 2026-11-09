@@ -87,32 +87,32 @@ public sealed class ScreenRecordingManagerLifecycleTests
     }
 
     [Test]
-    public void InvalidRequest_DoesNotFallBackAndLeavesManagerReusable()
+    public async Task InvalidRequest_DoesNotFallBackAndLeavesManagerReusable()
     {
         _native.StartError = new ArgumentException("Invalid region");
-        Assert.ThrowsAsync<ArgumentException>(() => _manager.StartRecordingAsync(Options()));
+        await Assert.ThrowsAsync<ArgumentException>(() => _manager.StartRecordingAsync(Options()));
         Assert.That(_fallback.Starts, Is.Zero);
         Assert.That(_manager.IsRecording, Is.False);
     }
 
     [Test]
-    public void OccupiedOutput_PreventsStartingAnyBackend()
+    public async Task OccupiedOutput_PreventsStartingAnyBackend()
     {
         var options = Options();
         Directory.CreateDirectory(_folder);
         File.WriteAllText(options.OutputPath!, "existing recording");
-        Assert.ThrowsAsync<IOException>(() => _manager.StartRecordingAsync(options));
+        await Assert.ThrowsAsync<IOException>(() => _manager.StartRecordingAsync(options));
         Assert.That(File.ReadAllText(options.OutputPath!), Is.EqualTo("existing recording"));
         Assert.That(_fallback.Starts, Is.Zero);
         Assert.That(_manager.IsRecording, Is.False);
     }
 
     [Test]
-    public void NativeFailure_ThatLeavesAnOccupiedSegment_PreventsFallbackOverwrite()
+    public async Task NativeFailure_ThatLeavesAnOccupiedSegment_PreventsFallbackOverwrite()
     {
         _native.StartError = new PlatformNotSupportedException("GPU failed and cleanup could not remove the partial file");
         _native.LeaveOutputOnFailure = true;
-        Assert.ThrowsAsync<IOException>(() => _manager.StartRecordingAsync(Options()));
+        await Assert.ThrowsAsync<IOException>(() => _manager.StartRecordingAsync(Options()));
         Assert.That(File.ReadAllText(Path.Combine(_folder, "capture.part000.mp4")), Is.EqualTo("partial recording"));
         Assert.That(_fallback.Starts, Is.Zero);
         Assert.That(_manager.IsRecording, Is.False);
@@ -124,7 +124,7 @@ public sealed class ScreenRecordingManagerLifecycleTests
         var options = Options();
         await _manager.StartRecordingAsync(options);
         var duplicate = Options(); duplicate.OutputPath = Path.Combine(_folder, "other.mp4");
-        Assert.ThrowsAsync<InvalidOperationException>(() => _manager.StartRecordingAsync(duplicate));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _manager.StartRecordingAsync(duplicate));
         Assert.That(_native.Starts, Is.EqualTo(1));
         Assert.That(await _manager.StopRecordingAsync(), Is.EqualTo(options.OutputPath));
     }
@@ -135,7 +135,7 @@ public sealed class ScreenRecordingManagerLifecycleTests
         var options = Options();
         await _manager.StartRecordingAsync(options);
         File.WriteAllText(options.OutputPath!, "new user file");
-        Assert.ThrowsAsync<IOException>(() => _manager.StopRecordingAsync());
+        await Assert.ThrowsAsync<IOException>(() => _manager.StopRecordingAsync());
         Assert.That(File.ReadAllText(options.OutputPath!), Is.EqualTo("new user file"));
         Assert.That(File.Exists(Path.Combine(_folder, "capture.part000.mp4")), Is.True);
     }
@@ -152,11 +152,11 @@ public sealed class ScreenRecordingManagerLifecycleTests
     }
 
     [Test]
-    public void FailedFallback_ClearsManagerState()
+    public async Task FailedFallback_ClearsManagerState()
     {
         _native.StartError = new NotSupportedException("GPU unavailable");
         _fallback.StartError = new IOException("FFmpeg unavailable");
-        Assert.ThrowsAsync<IOException>(() => _manager.StartRecordingAsync(Options()));
+        await Assert.ThrowsAsync<IOException>(() => _manager.StartRecordingAsync(Options()));
         Assert.That(_manager.IsRecording, Is.False);
         Assert.That(_fallback.Disposed, Is.True);
     }
@@ -196,7 +196,7 @@ public sealed class ScreenRecordingManagerLifecycleTests
     {
         await _manager.StartRecordingAsync(Options());
         await _manager.PauseRecordingAsync();
-        Assert.ThrowsAsync<ArgumentException>(() => _manager.ResumeRecordingAtAsync(new Rectangle(0, 0, 500, 300)));
+        await Assert.ThrowsAsync<ArgumentException>(() => _manager.ResumeRecordingAtAsync(new Rectangle(0, 0, 500, 300)));
         Assert.That(_manager.IsPaused, Is.True);
     }
 
@@ -270,7 +270,7 @@ public sealed class ScreenRecordingManagerLifecycleTests
         int completions = 0;
         _manager.RecordingCompleted += (_, _) => completions++;
         _native.Fail();
-        Assert.ThrowsAsync<InvalidOperationException>(() => _manager.StopRecordingAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _manager.StopRecordingAsync());
         Assert.That(completions, Is.Zero);
         Assert.That(File.Exists(Path.Combine(_folder, "capture.part000.mp4")), Is.True);
     }
@@ -285,7 +285,7 @@ public sealed class ScreenRecordingManagerLifecycleTests
         _manager.RecordingCompleted += (_, _) => completions++;
         _native.Fail();
         Assert.That(stop, Is.Not.Null);
-        Assert.ThrowsAsync<InvalidOperationException>(async () => await stop!);
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await stop!);
         Assert.That(completions, Is.Zero);
     }
 
@@ -298,7 +298,7 @@ public sealed class ScreenRecordingManagerLifecycleTests
         File.WriteAllBytes(partial, empty ? [] : [0, 0, 0, 9, 109, 100, 97, 116, 1]);
         int completions = 0;
         _manager.RecordingCompleted += (_, _) => completions++;
-        Assert.ThrowsAsync<InvalidDataException>(() => _manager.StopRecordingAsync());
+        await Assert.ThrowsAsync<InvalidDataException>(() => _manager.StopRecordingAsync());
         Assert.That(completions, Is.Zero);
         Assert.That(File.Exists(partial), Is.True);
     }

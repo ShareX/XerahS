@@ -65,7 +65,7 @@ namespace XerahS.Platform.MacOS.Services
 
         public MacOSHotkeyService()
         {
-            _hook = new SimpleGlobalHook(GlobalHookType.Keyboard, null, true);
+            _hook = new SimpleGlobalHook();
             _hook.KeyPressed += OnKeyPressed;
             _hook.KeyReleased += OnKeyReleased;
             _hook.HookEnabled += OnHookEnabled;
@@ -349,7 +349,7 @@ namespace XerahS.Platform.MacOS.Services
 
             try
             {
-                _hook.RunAsync().ContinueWith(t =>
+                _hook.RunAsync(GlobalHookType.Keyboard, useBackgroundThread: true).ContinueWith(t =>
                 {
                     if (t.IsFaulted)
                     {

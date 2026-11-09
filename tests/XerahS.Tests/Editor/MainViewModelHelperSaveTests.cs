@@ -78,7 +78,7 @@ public class MainViewModelHelperSaveTests
     }
 
     [Test]
-    public void SaveToPathAsync_KeepsEditorDirty_WhenAnnotationSidecarSaveFails()
+    public async Task SaveToPathAsync_KeepsEditorDirty_WhenAnnotationSidecarSaveFails()
     {
         string path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.png");
         string sidecarTempPath = XannProjectFileService.GetDefaultSidecarPath(path) + ".tmp";
@@ -103,7 +103,7 @@ public class MainViewModelHelperSaveTests
             };
             viewModel.AttachEditorCore(editorCore);
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
             {
                 await InvokeSaveToPathAsync(viewModel, () =>
                 {

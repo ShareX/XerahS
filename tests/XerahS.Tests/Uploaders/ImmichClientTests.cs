@@ -41,7 +41,7 @@ public sealed class ImmichClientTests
     private const string ApiKey = "00000000000000000000000000000000";
 
     [Test]
-    public void CreateSharedLinkAsync_IndividualMode_NullAssetIds_ThrowsInvalidOperationException()
+    public async Task CreateSharedLinkAsync_IndividualMode_NullAssetIds_ThrowsInvalidOperationException()
     {
         // Arrange: client with no real HTTP expectations because validation
         // happens before any HTTP call.
@@ -52,7 +52,7 @@ public sealed class ImmichClientTests
         // payload was serialised with `assetIds = null`, surfacing as a
         // generic 400 from the Immich server wrapped in a confusing
         // `InvalidOperationException("Immich did not return a shared link.")`.
-        InvalidOperationException? ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        InvalidOperationException? ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await client.CreateSharedLinkAsync(
                 shareMode: ImmichShareMode.Asset,
                 assetIds: null,
@@ -71,13 +71,13 @@ public sealed class ImmichClientTests
     }
 
     [Test]
-    public void CreateSharedLinkAsync_IndividualMode_EmptyAssetIds_ThrowsInvalidOperationException()
+    public async Task CreateSharedLinkAsync_IndividualMode_EmptyAssetIds_ThrowsInvalidOperationException()
     {
         // Arrange: empty collection must fail validation too.
         var client = new ImmichClient(ServerUrl, ApiKey);
 
         // Act + Assert
-        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await client.CreateSharedLinkAsync(
                 shareMode: ImmichShareMode.Asset,
                 assetIds: Array.Empty<string>(),

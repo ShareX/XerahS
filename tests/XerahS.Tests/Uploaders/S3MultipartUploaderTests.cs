@@ -101,7 +101,7 @@ public class S3MultipartUploaderTests
     }
 
     [Test]
-    public void UploadAsync_AbortsMultipartUploadWhenRetriesAreExhausted()
+    public async Task UploadAsync_AbortsMultipartUploadWhenRetriesAreExhausted()
     {
         string filePath = CreateTempFile(S3MultipartUploader.MinimumPartSizeBytes);
 
@@ -118,10 +118,10 @@ public class S3MultipartUploaderTests
                 JitterEnabled = false
             };
 
-            MultipartUploadException exception = Assert.ThrowsAsync<MultipartUploadException>(async () =>
-                await uploader.UploadAsync(filePath, options, cancellationToken: CancellationToken.None))!;
+            MultipartUploadException? exception = await Assert.ThrowsAsync<MultipartUploadException>(async () =>
+                await uploader.UploadAsync(filePath, options, cancellationToken: CancellationToken.None));
 
-            Assert.That(exception.UploadId, Is.EqualTo("upload-123"));
+            Assert.That(exception!.UploadId, Is.EqualTo("upload-123"));
             Assert.That(client.UploadAttempts, Is.EqualTo(2));
             Assert.That(client.AbortCalls, Is.EqualTo(1));
             Assert.That(client.CompleteCalls, Is.EqualTo(0));

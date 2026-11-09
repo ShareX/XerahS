@@ -124,7 +124,7 @@ public class VideoTrimmerServiceTests
             Assert.That(frame, Is.Not.Null.And.Length.GreaterThan(8));
             Assert.That(frame![..4], Is.EqualTo(new byte[] { 0x89, 0x50, 0x4E, 0x47 }), "PNG signature");
 
-            Assert.ThrowsAsync<InvalidOperationException>(() =>
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 service.TrimAsync(input, input, 1, 3, duration!.Value, false, null, CancellationToken.None));
         }
         finally
