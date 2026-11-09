@@ -1,2 +1,13 @@
 packages:
   - tooling/eslint
+
+# Security overrides for transitive dependencies (Dependabot alerts).
+# wrangler -> miniflare pins vulnerable undici/sharp; eslint tooling pulls old
+# brace-expansion/minimatch/js-yaml. Drop each entry once upstream catches up.
+overrides:
+  undici@<7.30.1: ^7.30.1
+  sharp@<0.35.5: ^0.35.5
+  brace-expansion@<1.1.21: ^1.1.21
+  brace-expansion@>=4.0.0 <5.0.12: ^5.0.12
+  js-yaml@>=4.0.0 <4.3.2: ^4.3.2
+  minimatch@>=7.0.0 <11.0.1: ^11.0.1
