@@ -141,6 +141,6 @@ dotnet build src/mobile-experimental/XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj 
 
 ## See Also
 
-- [Coding Standards](CODING_STANDARDS.md)
-- [Testing Guidelines](TESTING.md)
-- [Porting Guide](../architecture/PORTING_GUIDE.md)
+- [Coding Standards](../../developers/guidelines/CODING_STANDARDS.md)
+- [Testing Guidelines](../../developers/guidelines/TESTING.md)
+- [Porting Guide](../../docs/architecture/PORTING_GUIDE.md)

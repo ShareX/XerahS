@@ -1,2 +1,0 @@
-attempt	start_ref	end_ref	status	agent_exit	validation_exit	changed_files	branch	notes
-1	e769f946f9cb41a4b780cc4463d78061e7421a2e	e769f946f9cb41a4b780cc4463d78061e7421a2e	dryrun			0	autoresearch/syntax-check-demo-3	Prepared worktree only.

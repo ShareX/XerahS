@@ -125,9 +125,7 @@ If the pre-commit hook detects violations:
 
 ### C# files
 
-**Option 1 – Automatic:** Run `pwsh docs/scripts/fix_license_headers.ps1`, then re-stage and commit.
-
-**Option 2 – Manual:** Update the file headers to match the expected format:
+Update the file headers to match the expected format:
 
 ```csharp
 #region License Information (GPL v3)
@@ -240,7 +238,7 @@ The same validation runs in CI/CD pipelines. See `.github/workflows/` for integr
 
 - [Git Hooks Documentation](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
 - [GPL v3 License](https://www.gnu.org/licenses/gpl-3.0.en.html)
-- [XerahS License Compliance Guide](../LICENSE_COMPLIANCE_README.md)
+- [XerahS License Compliance Guide](../docs/audits/202601/license-compliance/LICENSE_COMPLIANCE_README.md)
 
 ---
 

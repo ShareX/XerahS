@@ -25,7 +25,7 @@ The new region capture backend has been successfully integrated into the UI laye
    - Monitor configuration change events
 
 3. **UI Integration** (Phase 5)
-   - [RegionCaptureService.cs](../src/desktop/app/XerahS.UI/Services/RegionCaptureService.cs) - UI-layer wrapper
+   - [RegionCaptureService.cs](../../src/desktop/app/XerahS.RegionCapture/RegionCaptureService.cs) - UI-layer wrapper
    - [RegionCaptureWindowNew.cs](../src/desktop/app/XerahS.UI/Views/RegionCapture/RegionCaptureWindowNew.cs) - New backend methods as partial class
    - [RegionCaptureWindow.axaml.cs](../src/desktop/app/XerahS.UI/Views/RegionCapture/RegionCaptureWindow.axaml.cs) - Modified to delegate to new backend when enabled
    - Feature flag: `USE_NEW_BACKEND` constant (currently `false`)
@@ -54,7 +54,7 @@ The platform-specific backends have been created but require API compatibility f
    - Required: Update to match Vortice.Direct3D11 v3.7.0 and Vortice.DXGI v3.7.0 APIs
 
 2. **Project References**
-   - Platform backend project references are commented out in [XerahS.UI.csproj](../src/desktop/app/XerahS.UI/XerahS.UI.csproj)
+   - Platform backend project references are commented out in [XerahS.UI.csproj](../../src/desktop/app/XerahS.UI/XerahS.UI.csproj)
    - Uncomment when backends compile successfully
 
 ## Build Status
@@ -108,7 +108,7 @@ When `USE_NEW_BACKEND = false` (current state):
    - Platform backend initialization commented out until compilation issues resolved
    - All new coordinate conversion and event handling methods ready to use
 
-3. **[XerahS.UI.csproj](../src/desktop/app/XerahS.UI/XerahS.UI.csproj)**
+3. **[XerahS.UI.csproj](../../src/desktop/app/XerahS.UI/XerahS.UI.csproj)**
    - Platform backend project references commented out (lines 20-24)
 
 ## Next Steps

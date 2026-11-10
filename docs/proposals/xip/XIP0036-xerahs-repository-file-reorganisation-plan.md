@@ -18,7 +18,7 @@ isProject: false
 - **src/** (flat): ~28 C# projects plus:
   - [src/desktop/plugins/](src/desktop/plugins/) with 5 plugins (short folder names, e.g. AmazonS3.Plugin; **XerahS.*** .csproj names)
   - [src/mobile/android/](src/mobile/android/) (Kotlin/Gradle; not in .sln)
-- **ImageEditor**: At root; githooks and [.github/workflows/imageeditor-submodule-enforce.yml](.github/workflows/imageeditor-submodule-enforce.yml) assume `ImageEditor/`; **do not move**.
+- **ImageEditor**: At root; githooks and [.github/workflows/imageeditor-submodule-enforce.yml](../../../.github/workflows/imageeditor-submodule-enforce.yml) assume `ImageEditor/`; **do not move**.
 - **tests/**: [tests/XerahS.Tests/](tests/XerahS.Tests/), [tests/ShareX.Avalonia.Tests/](tests/ShareX.Avalonia.Tests/) (naming inconsistency).
 
 Project references use relative paths (e.g. `..\XerahS.Core\`, `..\Plugins\ShareX.AmazonS3.Plugin\`, `..\..\ImageEditor\src\ShareX.ImageEditor\`). Any move under `src/` will require updating those paths in every referring .csproj and in the solution file.

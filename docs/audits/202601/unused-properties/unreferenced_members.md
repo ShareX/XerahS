@@ -53,7 +53,7 @@ Many properties appear "unused" but are **actually required** for:
 ### XerahS.Core
 
 #### TaskSettings.cs
-**File:** [src/desktop/core/XerahS.Core/Settings/TaskSettings.cs](../../../src/desktop/core/XerahS.Core/Settings/TaskSettings.cs)
+**File:** [src/desktop/core/XerahS.Core/Settings/TaskSettings.cs](../../../../src/desktop/core/XerahS.Core/Models/TaskSettings.cs)
 
 | Property | Type | Status | Notes |
 |----------|------|--------|-------|
@@ -63,7 +63,7 @@ Many properties appear "unused" but are **actually required** for:
 | `ShowToastNotificationAfterTaskCompleted` | bool | ⚠️ Serialization | Toast notifications not implemented |
 
 #### ApplicationConfig.cs
-**File:** [src/desktop/core/XerahS.Core/Settings/ApplicationConfig.cs](../../../src/desktop/core/XerahS.Core/Settings/ApplicationConfig.cs)
+**File:** [src/desktop/core/XerahS.Core/Settings/ApplicationConfig.cs](../../../../src/desktop/core/XerahS.Core/Models/ApplicationConfig.cs)
 
 | Property | Type | Status | Notes |
 |----------|------|--------|-------|
@@ -88,7 +88,7 @@ Many properties appear "unused" but are **actually required** for:
 | `VgymeAPIKey` | Field (string) | ✅ Safe to remove | Vgyme uploader not implemented |
 
 #### UploadersConfig.cs
-**File:** [src/desktop/core/XerahS.Uploaders/UploadersConfig.cs](../../../src/desktop/core/XerahS.Uploaders/UploadersConfig.cs)
+**File:** [src/desktop/core/XerahS.Uploaders/UploadersConfig.cs](../../../../src/desktop/core/XerahS.Uploaders/LegacySupport/UploadersConfig.cs)
 
 | Property | Type | Status | Notes |
 |----------|------|--------|-------|
@@ -126,7 +126,7 @@ Many properties appear "unused" but are **actually required** for:
 ### XerahS.Common
 
 #### AppResources.cs
-**File:** [src/desktop/core/XerahS.Common/AppResources.cs](../../../src/desktop/core/XerahS.Common/AppResources.cs)
+**File:** [src/desktop/core/XerahS.Common/AppResources.cs](../../../../src/desktop/core/XerahS.Common/AppResources.cs)
 
 | Property | Type | Status | Notes |
 |----------|------|--------|-------|
@@ -224,9 +224,9 @@ This analysis **cannot detect** properties used via:
 ---
 
 ## Related Documentation
-- [Coding Standards](../development/CODING_STANDARDS.md)
-- [Architecture Guide](../architecture/PORTING_GUIDE.md)
-- [Project Status](../PROJECT_STATUS.md)
+- [Coding Standards](../../../../developers/guidelines/CODING_STANDARDS.md)
+- [Architecture Guide](../../../architecture/PORTING_GUIDE.md)
+- [Project Status](../../../PROJECT_STATUS.md)
 - [Serialization Guidelines](../development/SERIALIZATION.md) *(if exists)*
 
 ---

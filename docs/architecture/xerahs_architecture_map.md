@@ -380,7 +380,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 ### 7.1 Design Pattern
 **Pattern**: Dynamic provider-based plugin system with assembly isolation
 
-**Interface**: [IUploaderProvider](../../src/desktop/core/XerahS.Uploaders/PluginSystem/IUploaderProvider.cs)
+**Interface**: [IUploaderProvider](../../src/desktop/core/XerahS.UploaderPluginSdk/IUploaderProvider.cs)
 
 ### 7.2 Plugin Discovery
 **File**: [PluginDiscovery.cs](../../src/desktop/core/XerahS.Uploaders/PluginSystem/PluginDiscovery.cs)

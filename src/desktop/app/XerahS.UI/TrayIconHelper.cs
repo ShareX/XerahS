@@ -780,33 +780,41 @@ public class TrayIconHelper : INotifyPropertyChanged
 
     private async void ExecuteTrayAction(WorkflowType action)
     {
-        switch (action)
+        try
         {
-            case WorkflowType.OpenMainWindow:
-                OpenMainWindow();
-                break;
-            default:
-                // Toggle behavior: if a recording is active and this is a recording action,
-                // stop the existing recording instead of trying to start a new one
-                if (IsRecordingActive && Core.TaskHelpers.IsScreenRecordStartJob(action))
-                {
-                    DebugHelper.WriteLine("Tray action: Recording already active, stopping existing recording");
-                    await StopRecordingAsync();
-                    return;
-                }
+            switch (action)
+            {
+                case WorkflowType.OpenMainWindow:
+                    OpenMainWindow();
+                    break;
+                default:
+                    // Toggle behavior: if a recording is active and this is a recording action,
+                    // stop the existing recording instead of trying to start a new one
+                    if (IsRecordingActive && Core.TaskHelpers.IsScreenRecordStartJob(action))
+                    {
+                        DebugHelper.WriteLine("Tray action: Recording already active, stopping existing recording");
+                        await StopRecordingAsync();
+                        return;
+                    }
 
-                bool hideWindow = !OperatingSystem.IsLinux() || !Core.TaskHelpers.IsScreenRecordStartJob(action);
+                    bool hideWindow = !OperatingSystem.IsLinux() || !Core.TaskHelpers.IsScreenRecordStartJob(action);
 
-                var workflow = SettingsManager.WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Job == action);
-                if (workflow != null)
-                {
-                    await Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id, hideMainWindow: hideWindow);
-                }
-                else
-                {
-                    await Core.Helpers.TaskHelpers.ExecuteJob(action, new TaskSettings { Job = action }, hideMainWindow: hideWindow);
-                }
-                break;
+                    var workflow = SettingsManager.WorkflowsConfig?.Hotkeys?.FirstOrDefault(w => w.Job == action);
+                    if (workflow != null)
+                    {
+                        await Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id, hideMainWindow: hideWindow);
+                    }
+                    else
+                    {
+                        await Core.Helpers.TaskHelpers.ExecuteJob(action, new TaskSettings { Job = action }, hideMainWindow: hideWindow);
+                    }
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            // async void: an exception here would otherwise be unhandled and take the app down.
+            DebugHelper.WriteException(ex, $"Tray action failed: {action}");
         }
     }
 }

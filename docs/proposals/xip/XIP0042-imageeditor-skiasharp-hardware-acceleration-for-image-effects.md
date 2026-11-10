@@ -477,7 +477,7 @@ The document's conclusion that "Option B is the only viable path" applies to the
 
 ## 6. References
 
-- [docs/planning/IMAGEEDITOR_SKIA_GPU_PLAN.md](../docs/planning/IMAGEEDITOR_SKIA_GPU_PLAN.md)
+- [docs/planning/IMAGEEDITOR_SKIA_GPU_PLAN.md](../../planning/IMAGEEDITOR_SKIA_GPU_PLAN.md)
 - [Avalonia Skia ΓÇô TryGetGrContext](https://api-docs.avaloniaui.net/docs/M_Avalonia_Skia_ISkiaGpuWithPlatformGraphicsContext_TryGetGrContext)
 - [SkiaSharp GRContext](https://learn.microsoft.com/en-us/dotnet/api/skiasharp.grcontext)
 - [SkiaSharp SKSamplingOptions migration](https://github.com/mono/SkiaSharp/wiki/API-Changes-2.88)
@@ -490,5 +490,5 @@ The document's conclusion that "Option B is the only viable path" applies to the
 - TornEdge (┬º2.7): [ImageEditor/src/ShareX.ImageEditor/Core/ImageEffects/Filters/TornEdgeImageEffect.cs](../ImageEditor/src/ShareX.ImageEditor/Core/ImageEffects/Filters/TornEdgeImageEffect.cs)
 - Diagnostics interface (┬º2.8): `ImageEditor/src/ShareX.ImageEditor/Services/IEditorDiagnosticsSink.cs`; `EditorDiagnosticEvent.cs`; `EditorServices.cs`
 - Diagnostics adapter (┬º2.8): [src/desktop/app/XerahS.UI/Services/EditorDiagnosticsAdapter.cs](../src/desktop/app/XerahS.UI/Services/EditorDiagnosticsAdapter.cs)
-- Debug launch script (┬º2.8): [src/desktop/app/run-debug-app.sh](../src/desktop/app/run-debug-app.sh)
+- Debug launch script (┬º2.8): [src/desktop/app/run-debug-app.sh](../../../src/desktop/app/run-debug-app.sh)
 - ShareX host: `ShareX/TaskHelpers.cs` (`OpenImageEditor`, `UseModernImageEditor` ΓåÆ `AvaloniaIntegration.ShowEditorDialog`); `ShareX.ImageEditor/Helpers/AvaloniaIntegration.cs`

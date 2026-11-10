@@ -103,7 +103,7 @@ update-desktop-database ~/.local/share/applications
 
 Replace `Exec=` with your actual published or debug binary path.
 
-Check **Settings → Hotkeys** for the delivery-state banner (`PortalBound` vs `X11FallbackFocusOnly`). See [XIP0044](../../docs/proposals/xip/XIP0044-linux-global-hotkeys-not-firing-when-app-backgrounded.md).
+Check **Settings → Hotkeys** for the delivery-state banner (`PortalBound` vs `X11FallbackFocusOnly`). See [XIP0044](../../docs/proposals/xip/XIP0044-linux-global-hotkeys-not-firing-when-app-is-backgrounded.md).
 
 ---
 

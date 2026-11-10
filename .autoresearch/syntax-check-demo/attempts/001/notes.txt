@@ -1,1 +1,0 @@
-Preparing worktree (new branch 'autoresearch/syntax-check-demo-attempt-001')

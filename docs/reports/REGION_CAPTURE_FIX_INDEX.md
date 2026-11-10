@@ -3,8 +3,8 @@
 ## Quick Links
 
 **For Quick Understanding**:
-- ?? [MULTIMONITOR_FIX_QUICKREF.md](MULTIMONITOR_FIX_QUICKREF.md) - 2-minute read
-- ?? [COORDINATE_TRANSFORMATION_DIAGRAMS.md](COORDINATE_TRANSFORMATION_DIAGRAMS.md) - Visual guide
+- ?? [MULTIMONITOR_FIX_QUICKREF.md](../../developers/guidelines/MULTIMONITOR_FIX_QUICKREF.md) - 2-minute read
+- ?? [COORDINATE_TRANSFORMATION_DIAGRAMS.md](../architecture/COORDINATE_TRANSFORMATION_DIAGRAMS.md) - Visual guide
 
 **For Deep Dive**:
 - ?? [MULTIMONITOR_HOTKEY_CAPTURE_FIX.md](MULTIMONITOR_HOTKEY_CAPTURE_FIX.md) - Complete analysis
@@ -59,9 +59,9 @@
 - ~5 minute read
 
 #### ????? Developers
-**Read First**: [MULTIMONITOR_FIX_QUICKREF.md](MULTIMONITOR_FIX_QUICKREF.md)
+**Read First**: [MULTIMONITOR_FIX_QUICKREF.md](../../developers/guidelines/MULTIMONITOR_FIX_QUICKREF.md)
 **Then**: [CODE_CHANGES_DETAILED.md](CODE_CHANGES_DETAILED.md)
-**Reference**: [COORDINATE_TRANSFORMATION_DIAGRAMS.md](COORDINATE_TRANSFORMATION_DIAGRAMS.md)
+**Reference**: [COORDINATE_TRANSFORMATION_DIAGRAMS.md](../architecture/COORDINATE_TRANSFORMATION_DIAGRAMS.md)
 - Code changes with before/after
 - Technical implementation
 - Testing guide
@@ -69,7 +69,7 @@
 
 #### ?? QA/Testers
 **Read First**: [MULTIMONITOR_HOTKEY_CAPTURE_FIX.md](MULTIMONITOR_HOTKEY_CAPTURE_FIX.md)
-**Reference**: [MULTIMONITOR_FIX_QUICKREF.md](MULTIMONITOR_FIX_QUICKREF.md) - Testing Scenarios
+**Reference**: [MULTIMONITOR_FIX_QUICKREF.md](../../developers/guidelines/MULTIMONITOR_FIX_QUICKREF.md) - Testing Scenarios
 - All test cases
 - How to verify fix
 - Troubleshooting
@@ -77,7 +77,7 @@
 
 #### ??? Architects
 **Read**: [MULTIMONITOR_HOTKEY_CAPTURE_FIX.md](MULTIMONITOR_HOTKEY_CAPTURE_FIX.md)
-**Deep Dive**: [COORDINATE_TRANSFORMATION_DIAGRAMS.md](COORDINATE_TRANSFORMATION_DIAGRAMS.md)
+**Deep Dive**: [COORDINATE_TRANSFORMATION_DIAGRAMS.md](../architecture/COORDINATE_TRANSFORMATION_DIAGRAMS.md)
 - System architecture
 - Coordinate system design
 - DPI scaling handling

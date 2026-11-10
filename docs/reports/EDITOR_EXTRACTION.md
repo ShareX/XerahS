@@ -113,7 +113,7 @@ var editorViewModel = new MainViewModel();
 editorViewModel.ApplicationName = AppResources.AppName;  // Shows product-based title
 ```
 
-**Reference**: [EditorCustomization.md](./EditorCustomization.md)
+**Reference**: [EditorCustomization.md](../../developers/guidelines/EditorCustomization.md)
 
 ### ShareX WinForms Integration (Planned)
 
@@ -193,7 +193,7 @@ The editor extraction was completed through the following commits:
 
 ## Related Documentation
 
-- [EditorCustomization.md](./EditorCustomization.md) - How to customize editor branding
+- [EditorCustomization.md](../../developers/guidelines/EditorCustomization.md) - How to customize editor branding
 - [XerahS.Editor README](../../../XerahS.Editor/README.md) - Editor project overview
 - [XerahS README](../../README.md) - Main project documentation
 

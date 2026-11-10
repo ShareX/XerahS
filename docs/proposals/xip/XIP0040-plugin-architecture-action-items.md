@@ -30,7 +30,7 @@
 # XIP0040: Plugin Architecture Action Items (Implementation-Ready)
 
 ## Purpose
-Execute the architecture decision in [docs/architecture/PLUGIN_AND_UPLOADERS_ARCHITECTURE_ANALYSIS.md](../docs/architecture/PLUGIN_AND_UPLOADERS_ARCHITECTURE_ANALYSIS.md) with no ambiguity.
+Execute the architecture decision in [docs/architecture/PLUGIN_AND_UPLOADERS_ARCHITECTURE_ANALYSIS.md](../../architecture/PLUGIN_AND_UPLOADERS_ARCHITECTURE_ANALYSIS.md) with no ambiguity.
 
 ## Definition of Done (Top Level)
 1. Legacy and mobile compatibility code is physically consolidated under `LegacySupport`.

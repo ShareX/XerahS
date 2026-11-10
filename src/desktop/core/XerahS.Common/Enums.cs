@@ -147,13 +147,6 @@ namespace XerahS.Common
         Suffix
     }
 
-    public enum HotkeyStatus
-    {
-        Registered,
-        Failed,
-        NotConfigured
-    }
-
     public enum ImageCombinerAlignment
     {
         LeftOrTop,

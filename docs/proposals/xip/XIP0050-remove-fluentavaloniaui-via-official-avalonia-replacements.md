@@ -14,25 +14,25 @@ The goal is not to redesign the app. The goal is to find the closest official Av
 ## Secondary Benefits
 
 1. Standard `ContextMenu` becomes viable again where a plain context menu is sufficient.
-2. The current lesson in [developers/lessons-learnt/general.md](../../../../developers/lessons-learnt/general.md) that says `ContextMenu` does not render correctly with `FluentAvaloniaTheme` should become obsolete after this migration is complete.
+2. The current lesson in [developers/lessons-learnt/general.md](../../../developers/lessons-learnt/general.md) that says `ContextMenu` does not render correctly with `FluentAvaloniaTheme` should become obsolete after this migration is complete.
 3. `MenuFlyout` and `ContextFlyout` can then be reserved for cases that actually need flyout behavior, richer shared popup content, or button-attached flyouts rather than being required as a theme workaround.
 
 ## Why This XIP Exists
 
 Current local evidence shows that `XerahS.UI` depends on `FluentAvaloniaUI` in several places:
 
-1. package reference in [src/desktop/app/XerahS.UI/XerahS.UI.csproj](../../../../src/desktop/app/XerahS.UI/XerahS.UI.csproj)
-2. app theme root in [src/desktop/app/XerahS.UI/App.axaml](../../../../src/desktop/app/XerahS.UI/App.axaml)
-3. main shell navigation in [src/desktop/app/XerahS.UI/Views/MainWindow.axaml](../../../../src/desktop/app/XerahS.UI/Views/MainWindow.axaml)
-4. navigation logic in [src/desktop/app/XerahS.UI/Views/MainWindow.Navigation.cs](../../../../src/desktop/app/XerahS.UI/Views/MainWindow.Navigation.cs)
-5. dynamic capture submenu generation in [src/desktop/app/XerahS.UI/Helpers/NavigationItemsHelper.cs](../../../../src/desktop/app/XerahS.UI/Helpers/NavigationItemsHelper.cs)
-6. settings-style grouped rows in [src/desktop/app/XerahS.UI/Views/AboutView.axaml](../../../../src/desktop/app/XerahS.UI/Views/AboutView.axaml)
+1. package reference in [src/desktop/app/XerahS.UI/XerahS.UI.csproj](../../../src/desktop/app/XerahS.UI/XerahS.UI.csproj)
+2. app theme root in [src/desktop/app/XerahS.UI/App.axaml](../../../src/desktop/app/XerahS.UI/App.axaml)
+3. main shell navigation in [src/desktop/app/XerahS.UI/Views/MainWindow.axaml](../../../src/desktop/app/XerahS.UI/Views/MainWindow.axaml)
+4. navigation logic in [src/desktop/app/XerahS.UI/Views/MainWindow.Navigation.cs](../../../src/desktop/app/XerahS.UI/Views/MainWindow.Navigation.cs)
+5. dynamic capture submenu generation in [src/desktop/app/XerahS.UI/Helpers/NavigationItemsHelper.cs](../../../src/desktop/app/XerahS.UI/Helpers/NavigationItemsHelper.cs)
+6. settings-style grouped rows in [src/desktop/app/XerahS.UI/Views/AboutView.axaml](../../../src/desktop/app/XerahS.UI/Views/AboutView.axaml)
 7. icon controls in multiple views
-8. one confirmation dialog in [src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml.cs](../../../../src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml.cs)
+8. one confirmation dialog in [src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml.cs](../../../src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml.cs)
 
 There is also a dependency-version concern:
 
-1. the repo pins Avalonia `11.3.12` in [Directory.Packages.props](../../../../Directory.Packages.props)
+1. the repo pins Avalonia `11.3.12` in [Directory.Packages.props](../../../Directory.Packages.props)
 2. the installed `FluentAvaloniaUI 2.4.1` package metadata targets Avalonia `11.2.5`
 
 That version skew is a valid maintenance reason to remove the package if first-party replacements are practical.
@@ -62,17 +62,17 @@ That version skew is a valid maintenance reason to remove the package if first-p
 
 ### Direct control/theme usages
 
-1. `FluentAvaloniaTheme` in [src/desktop/app/XerahS.UI/App.axaml](../../../../src/desktop/app/XerahS.UI/App.axaml)
-2. `NavigationView` and `NavigationViewItem` in [src/desktop/app/XerahS.UI/Views/MainWindow.axaml](../../../../src/desktop/app/XerahS.UI/Views/MainWindow.axaml)
-3. `FontIconSource` in [src/desktop/app/XerahS.UI/Views/MainWindow.axaml](../../../../src/desktop/app/XerahS.UI/Views/MainWindow.axaml)
-4. `SettingsExpander` and `SettingsExpanderItem` in [src/desktop/app/XerahS.UI/Views/AboutView.axaml](../../../../src/desktop/app/XerahS.UI/Views/AboutView.axaml)
+1. `FluentAvaloniaTheme` in [src/desktop/app/XerahS.UI/App.axaml](../../../src/desktop/app/XerahS.UI/App.axaml)
+2. `NavigationView` and `NavigationViewItem` in [src/desktop/app/XerahS.UI/Views/MainWindow.axaml](../../../src/desktop/app/XerahS.UI/Views/MainWindow.axaml)
+3. `FontIconSource` in [src/desktop/app/XerahS.UI/Views/MainWindow.axaml](../../../src/desktop/app/XerahS.UI/Views/MainWindow.axaml)
+4. `SettingsExpander` and `SettingsExpanderItem` in [src/desktop/app/XerahS.UI/Views/AboutView.axaml](../../../src/desktop/app/XerahS.UI/Views/AboutView.axaml)
 5. `FontIcon` in:
    - [src/desktop/app/XerahS.UI/Views/SettingsView.axaml](../../../../src/desktop/app/XerahS.UI/Views/SettingsView.axaml)
-   - [src/desktop/app/XerahS.UI/Views/ToolsView.axaml](../../../../src/desktop/app/XerahS.UI/Views/ToolsView.axaml)
-   - [src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml](../../../../src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml)
+   - [src/desktop/app/XerahS.UI/Views/ToolsView.axaml](../../../src/desktop/app/XerahS.UI/Views/ToolsView.axaml)
+   - [src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml](../../../src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml)
    - other icon-bearing views
-6. `CommandBarSeparator` in [src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml](../../../../src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml)
-7. `ContentDialog` in [src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml.cs](../../../../src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml.cs)
+6. `CommandBarSeparator` in [src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml](../../../src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml)
+7. `ContentDialog` in [src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml.cs](../../../src/desktop/app/XerahS.UI/Views/WorkflowsView.axaml.cs)
 
 ### Behaviors that must survive the migration
 
@@ -149,7 +149,7 @@ This checklist becomes the acceptance contract for the migration.
 
 ### A4. Record flyout and context-menu cleanup opportunities
 
-As part of the audit, identify where `MenuFlyout` or `ContextFlyout` is being used only because of the current `FluentAvaloniaTheme` limitation documented in [developers/lessons-learnt/general.md](../../../../developers/lessons-learnt/general.md).
+As part of the audit, identify where `MenuFlyout` or `ContextFlyout` is being used only because of the current `FluentAvaloniaTheme` limitation documented in [developers/lessons-learnt/general.md](../../../developers/lessons-learnt/general.md).
 
 For each occurrence, classify it as one of:
 
@@ -210,7 +210,7 @@ Once the shell candidate is selected:
 
 1. introduce a reusable `NavigationNode` model
 2. move nav hierarchy into a first-party model or local declarative structure
-3. replace `NavigationView` event handling in [src/desktop/app/XerahS.UI/Views/MainWindow.Navigation.cs](../../../../src/desktop/app/XerahS.UI/Views/MainWindow.Navigation.cs)
+3. replace `NavigationView` event handling in [src/desktop/app/XerahS.UI/Views/MainWindow.Navigation.cs](../../../src/desktop/app/XerahS.UI/Views/MainWindow.Navigation.cs)
 4. preserve tag-driven routing so the rest of `HandleNavigationTag` remains stable
 5. preserve `NavigationItemsHelper` behavior for dynamic capture items
 
@@ -292,8 +292,8 @@ This keeps the app visually stable without keeping the third-party package.
 
 Only after workstreams A through E are complete:
 
-1. remove `FluentAvaloniaUI` from [Directory.Packages.props](../../../../Directory.Packages.props)
-2. remove `PackageReference Include="FluentAvaloniaUI"` from [src/desktop/app/XerahS.UI/XerahS.UI.csproj](../../../../src/desktop/app/XerahS.UI/XerahS.UI.csproj)
+1. remove `FluentAvaloniaUI` from [Directory.Packages.props](../../../Directory.Packages.props)
+2. remove `PackageReference Include="FluentAvaloniaUI"` from [src/desktop/app/XerahS.UI/XerahS.UI.csproj](../../../src/desktop/app/XerahS.UI/XerahS.UI.csproj)
 3. remove all `using FluentAvalonia.*`
 4. remove all `xmlns:ui="using:FluentAvalonia.UI.Controls"`
 5. remove all `xmlns:sty="using:FluentAvalonia.Styling"`
@@ -315,7 +315,7 @@ This order minimizes churn and avoids deleting the package before a working repl
 
 The migration is complete only when all of the following are true:
 
-1. `FluentAvaloniaUI` is no longer referenced in [Directory.Packages.props](../../../../Directory.Packages.props).
+1. `FluentAvaloniaUI` is no longer referenced in [Directory.Packages.props](../../../Directory.Packages.props).
 2. `XerahS.UI.csproj` contains no `PackageReference` to `FluentAvaloniaUI`.
 3. `src/desktop/app/XerahS.UI` contains no:
    - `using FluentAvalonia`
@@ -330,7 +330,7 @@ The migration is complete only when all of the following are true:
 6. `AboutView` still presents grouped expandable sections with clickable rows
 7. workflow confirmation dialog still works
 8. `dotnet build` passes with `0` errors and warnings treated as errors
-9. the `ContextMenu vs. ContextFlyout` lesson in [developers/lessons-learnt/general.md](../../../../developers/lessons-learnt/general.md) is reviewed and either removed or rewritten once the migration proves that `ContextMenu` no longer requires a FluentAvalonia-specific workaround
+9. the `ContextMenu vs. ContextFlyout` lesson in [developers/lessons-learnt/general.md](../../../developers/lessons-learnt/general.md) is reviewed and either removed or rewritten once the migration proves that `ContextMenu` no longer requires a FluentAvalonia-specific workaround
 
 ## Verification Matrix
 

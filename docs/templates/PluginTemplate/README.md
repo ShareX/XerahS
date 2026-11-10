@@ -23,4 +23,4 @@ Requirements:
 - Provide a type that implements `IUploaderProvider` and expose its full name in `plugin.json` → `entryPoint`.
 - Build as a library; the host loads the assembly and instantiates the entry point type.
 
-See [PLUGIN_SDK.md](../../developers/PLUGIN_SDK.md) for full details.
+See [PLUGIN_SDK.md](../../../developers/guidelines/PLUGIN_SDK.md) for full details.

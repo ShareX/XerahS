@@ -108,8 +108,8 @@ Port remaining non-UI helpers from `ShareX.HelpersLib` to `XerahS.Common` to ach
 **Medium** - 4-6 hours
 
 ## Related Documents
-- [AGENTS.md](../AGENTS.md) - Code style rules
-- [MULTI_AGENT_COORDINATION.md](../MULTI_AGENT_COORDINATION.md) - Agent protocol
+- [AGENTS.md](../../../AGENTS.md) - Code style rules
+- [MULTI_AGENT_COORDINATION.md](../../architecture/MULTI_AGENT_COORDINATION.md) - Agent protocol
 - [ShareX.HelpersLib](../../../ShareX/ShareX.HelpersLib/) - Source reference
 
 ---
@@ -281,8 +281,8 @@ Port remaining non-UI helpers from `ShareX.HelpersLib` to `XerahS.Common` to ach
 **Medium** - 4-6 hours
 
 ## Related Documents
-- [AGENTS.md](../AGENTS.md) - Code style rules
-- [MULTI_AGENT_COORDINATION.md](../MULTI_AGENT_COORDINATION.md) - Agent protocol
+- [AGENTS.md](../../../AGENTS.md) - Code style rules
+- [MULTI_AGENT_COORDINATION.md](../../architecture/MULTI_AGENT_COORDINATION.md) - Agent protocol
 - [ShareX.HelpersLib](../../../ShareX/ShareX.HelpersLib/) - Source reference
 
 ---
@@ -448,8 +448,8 @@ Port remaining non-UI helpers from `ShareX.HelpersLib` to `XerahS.Common` to ach
 **Medium** - 4-6 hours
 
 ## Related Documents
-- [AGENTS.md](../AGENTS.md) - Code style rules
-- [MULTI_AGENT_COORDINATION.md](../MULTI_AGENT_COORDINATION.md) - Agent protocol
+- [AGENTS.md](../../../AGENTS.md) - Code style rules
+- [MULTI_AGENT_COORDINATION.md](../../architecture/MULTI_AGENT_COORDINATION.md) - Agent protocol
 - [ShareX.HelpersLib](../../../ShareX/ShareX.HelpersLib/) - Source reference
 
 ---
