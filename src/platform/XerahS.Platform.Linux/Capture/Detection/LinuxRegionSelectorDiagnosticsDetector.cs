@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using System.Collections.Generic;
 using XerahS.Platform.Abstractions;
 using XerahS.Platform.Linux.Capture.Contracts;
@@ -96,6 +97,16 @@ internal static class LinuxRegionSelectorDiagnosticsDetector
     {
         if (context.IsWayland)
         {
+            // KDE Plasma Wayland (not sandboxed): the portal's screenshot dialog has no rectangular-region
+            // option, so Automatic uses the XerahS overlay. Its full-screen pre-capture goes through KWin
+            // ScreenShot2 first (WaterfallCapturePolicy), which is silent; the portal stays only as a fallback.
+            if (!context.IsSandboxed &&
+                string.Equals(context.Desktop, "KDE", StringComparison.OrdinalIgnoreCase) &&
+                capability.SupportsLegacyOverlayCapture)
+            {
+                return LinuxInteractiveRegionSelectorPreference.XerahSOverlay;
+            }
+
             if (context.HasScreenshotPortal)
             {
                 return LinuxInteractiveRegionSelectorPreference.PortalDialog;

@@ -140,6 +140,15 @@ internal sealed class WaterfallCapturePolicy : ILinuxCapturePolicy
 
         if (context.IsWayland && request.Kind == LinuxCaptureKind.Region)
         {
+            // KDE Plasma Wayland, Automatic: the portal dialog has no region option, while KWin's
+            // CaptureInteractive is a native region selector. Reached only when the XerahS overlay is
+            // not in use; the portal remains the fallback if KWin refuses.
+            if (string.Equals(context.Desktop, "KDE", StringComparison.OrdinalIgnoreCase) &&
+                request.SelectorPreference == LinuxInteractiveRegionSelectorPreference.Automatic)
+            {
+                return KdeWaylandNonInteractiveOrder;
+            }
+
             return request.SelectorPreference switch
             {
                 LinuxInteractiveRegionSelectorPreference.Slurp => SlurpOnlyRegionOrder,

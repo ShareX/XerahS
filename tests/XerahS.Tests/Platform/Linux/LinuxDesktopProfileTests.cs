@@ -232,6 +232,44 @@ public class WaterfallPolicyGoldenTests
     }
 
     [Test]
+    public void SelectorDiagnostics_KdeWayland_AutomaticResolvesToOverlay_OthersUnchanged()
+    {
+        var support = new LinuxRegionCaptureSupportSnapshot(HasGnomeShellScreenshot: false, HasKdeScreenShot2: false, HasSlurp: false);
+        var kde = Contexts[2];
+        var gnome = Contexts[1];
+        var kdeFlatpak = new LinuxCaptureContext(isWayland: true, desktop: "KDE", compositor: "KWin", isSandboxed: true, hasScreenshotPortal: true, isFlatpak: true);
+
+        var kdeDiag = LinuxRegionSelectorDiagnosticsDetector.Detect(kde, support, LinuxRegionCaptureCapabilityDetector.Detect(kde, support));
+        var gnomeDiag = LinuxRegionSelectorDiagnosticsDetector.Detect(gnome, support, LinuxRegionCaptureCapabilityDetector.Detect(gnome, support));
+        var flatpakDiag = LinuxRegionSelectorDiagnosticsDetector.Detect(kdeFlatpak, support, LinuxRegionCaptureCapabilityDetector.Detect(kdeFlatpak, support));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(kdeDiag.AutomaticPreference, Is.EqualTo(LinuxInteractiveRegionSelectorPreference.XerahSOverlay));
+            Assert.That(kdeDiag.AvailablePreferences, Does.Contain(LinuxInteractiveRegionSelectorPreference.PortalDialog), "explicit PortalDialog stays selectable");
+            Assert.That(gnomeDiag.AutomaticPreference, Is.EqualTo(LinuxInteractiveRegionSelectorPreference.PortalDialog));
+            Assert.That(flatpakDiag.AutomaticPreference, Is.EqualTo(LinuxInteractiveRegionSelectorPreference.PortalDialog));
+        });
+    }
+
+    [Test]
+    public void WaterfallPolicy_KdeWayland_Region_AutomaticTriesKWinFirst_ExplicitPortalHonoured()
+    {
+        var policy = new WaterfallCapturePolicy();
+        var kde = Contexts[2];
+
+        var automatic = new LinuxCaptureRequest(LinuxCaptureKind.Region, new CaptureOptions { LinuxRegionSelectorPreference = LinuxInteractiveRegionSelectorPreference.Automatic });
+        var portal = new LinuxCaptureRequest(LinuxCaptureKind.Region, new CaptureOptions { LinuxRegionSelectorPreference = LinuxInteractiveRegionSelectorPreference.PortalDialog });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(policy.GetStageOrder(automatic, kde)[0], Is.EqualTo(LinuxCaptureStage.DesktopDbus));
+            Assert.That(policy.GetStageOrder(portal, kde), Is.EqualTo(new[] { LinuxCaptureStage.Portal }));
+            Assert.That(policy.GetStageOrder(automatic, Contexts[1])[0], Is.EqualTo(LinuxCaptureStage.Portal), "GNOME unchanged");
+        });
+    }
+
+    [Test]
     public void EnumValues_AreStable()
     {
         Assert.That((int)LinuxInteractiveRegionSelectorPreference.Automatic, Is.EqualTo(0));
@@ -268,6 +306,14 @@ public class WaterfallPolicyGoldenTests
 
         if (context.IsWayland && request.Kind == LinuxCaptureKind.Region)
         {
+            // Deliberate change after the KDE Wayland region fix: Automatic region capture on KDE tries
+            // KWin's native selector before the portal dialog, which has no region option.
+            if (string.Equals(context.Desktop, "KDE", StringComparison.OrdinalIgnoreCase) &&
+                request.SelectorPreference == LinuxInteractiveRegionSelectorPreference.Automatic)
+            {
+                return [LinuxCaptureStage.DesktopDbus, LinuxCaptureStage.Portal, LinuxCaptureStage.WaylandProtocol, LinuxCaptureStage.X11];
+            }
+
             return request.SelectorPreference switch
             {
                 LinuxInteractiveRegionSelectorPreference.Slurp => [LinuxCaptureStage.WaylandProtocol],

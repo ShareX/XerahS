@@ -10,6 +10,13 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
+## v0.33.9
+
+### Fixes
+
+- **Linux (KDE Plasma Wayland) — region capture showed the portal's "Screenshot Requested" prompt, which has no region option**: Automatic region capture now uses the XerahS overlay to pick the area, and the screen behind it is grabbed through KWin's screenshot interface, so there is no portal prompt. An explicit **XDG portal dialog** choice is still honoured, and GNOME, wlroots, Flatpak and X11 behave as before.
+- **Linux (KDE Plasma): the portal asked for permission on every screenshot**: XerahS now registers the app id `xerahs` with the portal before taking a screenshot, so xdg-desktop-portal-kde can remember **Allow**. This needs xdg-desktop-portal 1.19 or newer; on older versions it is skipped and the old behaviour remains. Recording and global shortcuts are unchanged.
+
 ## v0.33.8
 
 v0.33.7 was never tagged; its changes ship here.

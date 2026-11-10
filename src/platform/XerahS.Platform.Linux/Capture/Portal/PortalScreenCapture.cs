@@ -66,6 +66,10 @@ internal static class PortalScreenCapture
             var connectionInfo = await connection.ConnectAsync().ConfigureAwait(false);
             global::XerahS.Platform.Linux.Capture.PortalRequestExtensions.CacheLocalConnectionName(connection, connectionInfo);
 
+            // Stable app id so xdg-desktop-portal-kde can remember the Allow choice (no-op when sandboxed).
+            await PortalHostRegistry.TryRegisterAsync(
+                connection, global::XerahS.Platform.Linux.Services.LinuxRuntimeEnvironment.Detect().IsSandboxed, "LinuxScreenCaptureService").ConfigureAwait(false);
+
             var portal = connection.CreateProxy<IScreenshotPortal>(PortalBusName, PortalObjectPath);
 
             var options = new Dictionary<string, object>
