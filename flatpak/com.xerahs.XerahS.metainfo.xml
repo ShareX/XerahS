@@ -42,6 +42,11 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.33.10" date="2026-11-11">
+      <description>
+        <p>A capture cancelled during its start delay is no longer reported as completed, tray actions can no longer close the app on an error, and unused code was removed.</p>
+      </description>
+    </release>
     <release version="0.33.9" date="2026-11-10">
       <description>
         <p>See CHANGELOG.md for details.</p>
