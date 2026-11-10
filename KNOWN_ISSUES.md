@@ -29,7 +29,7 @@
 ## macOS
 
 > Prioritized fixes and the current macOS state assessment are tracked in
-> [docs/MACOS-IMPROVEMENT-PLAN.md](docs/MACOS-IMPROVEMENT-PLAN.md).
+> [docs/proposals/xip/XIP0078-macos-improvement-plan.md](docs/proposals/xip/XIP0078-macos-improvement-plan.md).
 
 ### Distribution
 - **"XerahS is damaged and can't be opened" on downloaded builds:** release archives are unsigned and not notarized, so Gatekeeper rejects quarantined downloads until the user runs `xattr -cr` (workaround documented in README). Unsigned builds also have an unstable TCC identity, so Screen Recording / Accessibility grants can reset after updates. Tracked as P1/P2 in the improvement plan.

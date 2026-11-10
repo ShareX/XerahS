@@ -20,6 +20,7 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 ### Internal
 
 - The capture and upload task lifecycle now has one documented transition table (`TaskStatusMachine`). Four unused recording status enums were removed. See `docs/technical/implicit-state-machines.md`.
+- Removed dead code and stray files: three unused placeholder classes, three tracked build logs and a 17 MB Android log dump. Fixed stale paths in the README and KNOWN_ISSUES.
 
 ## v0.33.9
 

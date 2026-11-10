@@ -72,20 +72,23 @@ XerahS now includes an experimental **.NET MAUI** mobile implementation for Andr
 #### Build & Run
 ```bash
 # Android
-dotnet build src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
-dotnet run --project src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
+dotnet build src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
+dotnet run --project src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
 
 # iOS (macOS only)
-dotnet build src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-ios
-dotnet run --project src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-ios
+dotnet build src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-ios
+dotnet run --project src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-ios
 ```
 
 ### Project Structure
-- `XerahS.Mobile.Maui` - Main MAUI application (Android/iOS)
-- `XerahS.Mobile.UI` - Shared mobile UI components
-- `XerahS.Mobile.Android` - Android-specific platform code
-- `XerahS.Mobile.iOS` - iOS-specific platform code
+Experimental .NET apps live in `src/mobile-experimental/`:
+
+- `XerahS.Mobile.Maui` - MAUI application (Android/iOS)
+- `XerahS.Mobile.Ava` - Avalonia application
+- `XerahS.Mobile.Core` - Shared mobile view models and logic
 - `XerahS.Mobile.iOS.ShareExtension` - iOS Share Extension for receiving shared content
+
+The native apps live in `src/mobile/`.
 
 ---
 
