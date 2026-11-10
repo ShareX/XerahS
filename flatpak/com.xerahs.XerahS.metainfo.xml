@@ -42,6 +42,11 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.33.9" date="2026-11-10">
+      <description>
+        <p>See CHANGELOG.md for details.</p>
+      </description>
+    </release>
     <release version="0.33.8" date="2026-11-10">
       <description>
         <p>Image editor 0.3.0 with Clone and Canvas size tools, inline workflow editing, JPEG XL capture, a ready-to-capture first-run check, and Linux KDE Wayland capture without the portal prompt; updated Avalonia and dependencies.</p>
