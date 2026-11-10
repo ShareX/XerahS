@@ -67,10 +67,18 @@ namespace XerahS.Core.Tasks
         private const int MinVideoHeight = 2;
 
         public TaskInfo Info { get; private set; }
-        public TaskStatus Status { get; private set; }
+        // Every status change goes through the machine; see TaskStatusMachine for the legal transitions.
+        private readonly TaskStatusMachine _statusMachine = new();
+
+        public TaskStatus Status
+        {
+            get => _statusMachine.Current;
+            private set => _statusMachine.TryTransition(value);
+        }
+
         public Exception? Error { get; private set; }
         public bool IsBusy => Status == TaskStatus.InQueue || IsWorking;
-        public bool IsWorking => Status == TaskStatus.Preparing || Status == TaskStatus.Working || Status == TaskStatus.Stopping;
+        public bool IsWorking => TaskStatusMachine.IsWorking(Status);
 
         /// <summary>
         /// Determines if the task completed successfully with a valid result.
@@ -80,7 +88,7 @@ namespace XerahS.Core.Tasks
         {
             get
             {
-                if (Status == TaskStatus.Failed || Status == TaskStatus.Canceled || Status == TaskStatus.Stopped)
+                if (TaskStatusMachine.IsUnsuccessfulEnd(Status))
                     return false;
 
                 // Check if we have any valid output
@@ -210,7 +218,7 @@ namespace XerahS.Core.Tasks
             }
             finally
             {
-                if (Status != TaskStatus.Failed && Status != TaskStatus.Stopped && Status != TaskStatus.Canceled)
+                if (!TaskStatusMachine.IsUnsuccessfulEnd(Status))
                 {
                     Status = TaskStatus.Completed;
                 }
@@ -263,8 +271,9 @@ namespace XerahS.Core.Tasks
 
             var result = await pipeline.ExecuteAsync(pipelineContext, token);
 
-            // Sync state back from pipeline context
-            Status = pipelineContext.Status;
+            // Sync state back from pipeline context, without resetting a status the task itself
+            // moved on from while the pipeline ran (see TaskStatusMachine.ResolveAfterPipeline).
+            Status = TaskStatusMachine.ResolveAfterPipeline(Status, pipelineContext.Status);
             Error = pipelineContext.Error;
 
             if (result == PipelineStageResult.Failed && Error != null)

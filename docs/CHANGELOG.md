@@ -10,6 +10,17 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
+## v0.33.10
+
+### Fixes
+
+- **A capture cancelled during its start delay was reported as completed**: Stopping a delayed capture before it fired left the task marked Completed, so `xerahs capture` and workflow runs from the command line reported success with no output. It now ends as Stopped.
+- **Tasks**: A task that has finished can no longer be moved back to "Stopping" by a stop request that arrives a moment too late.
+
+### Internal
+
+- The capture and upload task lifecycle now has one documented transition table (`TaskStatusMachine`). Four unused recording status enums were removed. See `docs/technical/implicit-state-machines.md`.
+
 ## v0.33.9
 
 ### Fixes

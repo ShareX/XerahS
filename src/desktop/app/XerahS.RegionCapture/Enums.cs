@@ -346,26 +346,6 @@ namespace XerahS.RegionCapture
         DashDotDot
     }
 
-    public enum ScreenRecordState
-    {
-        Waiting,
-        BeforeStart,
-        AfterStart,
-        AfterRecordingStart,
-        RecordingEnd,
-        Encoding
-    }
-
-    public enum ScreenRecordingStatus
-    {
-        Waiting,
-        Working,
-        Recording,
-        Paused,
-        Stopped,
-        Aborted
-    }
-
     public enum StepTailStyle
     {
         Triangle,

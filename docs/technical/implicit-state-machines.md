@@ -36,6 +36,23 @@ Do not add a state-machine library and do not refactor everything. The best trad
 
 ## Status
 
-Step 1 is implemented in observe-only form: `RecordingStateMachine` (transition table, logs unexpected transitions, never blocks) and `RecordingUiState.From` (status text and button availability) live in `Core/Managers/RecordingStateMachine.cs`. `ScreenRecordingManager` routes every `StatusChanged` through the machine, and `RecordingViewModel` derives its flags from `RecordingUiState`. `_isPaused`/`_isFinalized` are intentionally still in the manager; they also drive segment and abort logic, so replacing them is a separate step once the table has proven itself in logs. Tests: `RecordingStateMachineTests`.
+**Step 1, recording (done, observe-only).** `RecordingStateMachine` (transition table, logs unexpected transitions, never blocks) and `RecordingUiState.From` (status text and button availability) live in `Core/Managers/RecordingStateMachine.cs`. `ScreenRecordingManager` routes every `StatusChanged` through the machine, and `RecordingViewModel` derives its flags from `RecordingUiState`. `_isPaused`/`_isFinalized` are intentionally still in the manager; they also drive segment and abort logic, so replacing them is a separate step once the table has proven itself in logs. Tests: `RecordingStateMachineTests`.
 
-Steps 2 onward (TaskStatus, duplicate enums) are not started.
+**Step 4a, task lifecycle #3 (done).** `TaskStatusMachine` in `Core/Tasks/TaskStatusMachine.cs` holds the `TaskStatus` transition table and the three groupings every caller needs (`IsWorking`, `IsFinished`, `IsUnsuccessfulEnd`). `WorkerTask.Status` reads and writes through it, so there is one write path. Tests: `TaskStatusMachineTests`. Two behaviours changed on purpose, both bugs of the implicit version:
+
+- A capture cancelled during its start delay was set to `Stopped`, then reset to `Working` when the pipeline's stale status copy was synced back, and so ended as `Completed` (the CLI reported success). `TaskStatusMachine.ResolveAfterPipeline` now keeps the task's own status unless a stage decided an outcome.
+- A finished task never goes back to an unfinished status. A `Stop()` that loses the race with completion used to be able to leave a finished task on `Stopping` (and `IsBusy`) for good; that write is now ignored and logged.
+
+Every other unexpected transition is logged and still applied, as in step 1. Still open in #3: the pipeline keeps its own status copy (`PipelineContext.Status`), and `PipelineStageResult.Stop` means both "finished here" and "cancelled"; a stage that returns `Stop` without setting a status ends as `Completed`.
+
+**Step 4b, duplicate recording enums #2 (done).** `ScreenRecordingStatus` and `ScreenRecordState` had no references anywhere; all four declarations (Core and RegionCapture) are removed. `RecordingStatus` is the only recording lifecycle enum.
+
+**Not started.** #6: the two `HotkeyStatus` enums have different members (`Common` has 3, `Platform.Abstractions` has 5) and about 80 uses, so merging them needs a mapping decision first. #4, #5, #7 to #9 as ranked above.
+
+## Found later (not in the first audit)
+
+| # | Machine | Where | Why it is implicit |
+|---|---------|-------|--------------------|
+| 10 | Toast lifetime | `ToastViewModel` (`_isDurationEnd`, `_isMouseInside`, `_isHovered`, `_isMenuOpen`, `_isFileDragActive`, plus the fade, leave-grace and deferred-close timers) | Whether a toast may close is the product of five flags and three timers. |
+| 11 | Editor pointer interaction | `ShareX.ImageEditor`: `EditorInputController` (24 flag writes), `EditorSelectionController`, `EditorCore` | Drawing, dragging, resizing and panning are tracked by separate flags. Lives in the ShareX.ImageEditor repository, so it is changed there and ported. |
+| 12 | Task disposal | `WorkerTask` (`_disposeRequested`, `_disposed`, `_hasFinished`) | A second small lifecycle beside `TaskStatus`; guarded by one lock and covered by `WorkerTaskImageLifetimeTests`. Leave as is. |
