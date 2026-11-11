@@ -45,6 +45,27 @@ public static class PrivacyScanService
     ];
     private static Regex Pattern(string expression) => new(expression, RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
 
+    /// <summary>
+    /// Runs the AI analysis when there is a provider and, for a cloud provider, the user allows this one scan. Returns
+    /// <see cref="PrivacyScanResult.Unsupported"/> when there is no provider or consent is declined; a failed or timed-out
+    /// analysis is never reported as complete. Only the caller's own cancellation is thrown.
+    /// </summary>
+    public static async Task<PrivacyScanResult> AnalyzeWithConsentAsync(IPrivacyAnalysisProvider? provider,
+        IPrivacyReviewService review, SKBitmap image, TaskSettingsPrivacy policy, CancellationToken token)
+    {
+        PrivacyScanResult scan = PrivacyScanResult.Unsupported;
+        if (provider != null && (!provider.RequiresCloudConsent || await review.ConfirmCloudAnalysisAsync(provider.DisplayName, token)))
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+            timeout.CancelAfter(TimeSpan.FromMinutes(2));
+            try { scan = await provider.AnalyzeAsync(image, policy, timeout.Token); }
+            catch (OperationCanceledException) { token.ThrowIfCancellationRequested(); scan = new(PrivacyScanStatus.Incomplete, []); }
+            catch { scan = new(PrivacyScanStatus.Error, []); }
+            if (scan.Status == PrivacyScanStatus.Cancelled) { token.ThrowIfCancellationRequested(); scan = new(PrivacyScanStatus.Incomplete, []); }
+        }
+        return scan;
+    }
+
     public static async Task<PrivacyScanResult> AddLocalEvidenceAsync(SKBitmap image, TaskSettingsPrivacy policy,
         PrivacyScanResult scan, IOcrService? ocr, CancellationToken token)
     {

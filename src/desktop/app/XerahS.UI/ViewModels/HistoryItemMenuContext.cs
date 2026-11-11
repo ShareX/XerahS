@@ -53,6 +53,7 @@ public interface IHistoryItemMenuContext
     ICommand DeleteRemoteCommand { get; }
     ICommand TrimVideoCommand { get; }
     ICommand ResizeImageCommand { get; }
+    ICommand RedactImageCommand { get; }
 
     /// <summary>"Copy Path", or "Copy Paths" when the menu acts on several selected entries.</summary>
     string CopyFilePathHeader { get; }
@@ -141,6 +142,7 @@ public sealed class HistoryItemMenuContext : IHistoryItemMenuContext
         DeleteRemoteCommand = new AsyncRelayCommand(() => _vm.DeleteRemoteItemCommand.ExecuteAsync(_item));
         TrimVideoCommand = new RelayCommand(() => _vm.TrimVideoCommand.Execute(_item));
         ResizeImageCommand = new RelayCommand(() => _vm.ResizeImageCommand.Execute(_item));
+        RedactImageCommand = new AsyncRelayCommand(() => _vm.RedactImageCommand.ExecuteAsync(_item));
     }
 
     public IHistoryItemMenuTarget? Item { get; }
@@ -165,6 +167,7 @@ public sealed class HistoryItemMenuContext : IHistoryItemMenuContext
     public ICommand DeleteRemoteCommand { get; }
     public ICommand TrimVideoCommand { get; }
     public ICommand ResizeImageCommand { get; }
+    public ICommand RedactImageCommand { get; }
 }
 
 /// <summary>
@@ -228,4 +231,5 @@ public sealed class ToastMenuContext : IHistoryItemMenuContext
     public ICommand DeleteRemoteCommand { get; } = new RelayCommand(() => { });
     public ICommand TrimVideoCommand { get; } = new RelayCommand(() => { });
     public ICommand ResizeImageCommand => ViewModel.ResizeImageCommand;
+    public ICommand RedactImageCommand => ViewModel.RedactImageCommand;
 }

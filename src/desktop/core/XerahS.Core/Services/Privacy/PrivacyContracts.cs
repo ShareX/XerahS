@@ -34,7 +34,9 @@ public enum PrivacyCategory
 }
 public enum PrivacyScanStatus { Complete, Incomplete, Unsupported, Error, Cancelled, ManuallyReviewed }
 public enum PrivacyRedactionEffect { Blur, Pixelate, Mask }
-public enum PrivacyReviewDecision { Cancel, KeepLocal, Upload }
+/// <summary><see cref="Save"/> is returned only by <see cref="IPrivacyReviewService.ReviewSaveAsync"/>; the upload review
+/// never returns it.</summary>
+public enum PrivacyReviewDecision { Cancel, KeepLocal, Upload, Save }
 public sealed record PrivacyFinding(PrivacyCategory Category, double X, double Y, double Width, double Height, double Confidence);
 public sealed record PrivacyScanResult(PrivacyScanStatus Status, IReadOnlyList<PrivacyFinding> Findings, string? Limitation = null)
 {
@@ -53,6 +55,14 @@ public interface IPrivacyReviewService
     Task<bool> ConfirmCloudAnalysisAsync(string provider, CancellationToken token);
     Task<PrivacyReviewResult> ReviewAsync(SKBitmap original, SKBitmap candidate, PrivacyScanResult scan,
         string destination, TaskSettingsPrivacy policy, CancellationToken token);
+
+    /// <summary>
+    /// The same review, worded for saving a redacted copy on this computer. Returns <see cref="PrivacyReviewDecision.Save"/>
+    /// with the approved image, or <see cref="PrivacyReviewDecision.Cancel"/>. Hosts without a save review save nothing.
+    /// </summary>
+    Task<PrivacyReviewResult> ReviewSaveAsync(SKBitmap original, SKBitmap candidate, PrivacyScanResult scan,
+        TaskSettingsPrivacy policy, CancellationToken token) =>
+        Task.FromResult(new PrivacyReviewResult(PrivacyReviewDecision.Cancel, null));
 }
 
 /// <summary>Composition boundary: GUI hosts supply analysis/review; other hosts fail closed.</summary>
@@ -60,4 +70,10 @@ public static class PrivacyServices
 {
     public static Func<IPrivacyAnalysisProvider?>? AnalysisProviderFactory { get; set; }
     public static IPrivacyReviewService? ReviewService { get; set; }
+
+    /// <summary>
+    /// The AI analysis for the on-demand Redact sensitive information tool. Separate from
+    /// <see cref="AnalysisProviderFactory"/> because each has its own switch in Settings > Assistant.
+    /// </summary>
+    public static Func<IPrivacyAnalysisProvider?>? RedactionAnalysisProviderFactory { get; set; }
 }

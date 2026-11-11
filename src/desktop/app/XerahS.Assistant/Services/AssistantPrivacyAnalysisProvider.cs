@@ -55,6 +55,12 @@ public sealed class AssistantPrivacyAnalysisProvider : IPrivacyAnalysisProvider
             ? new AssistantPrivacyAnalysisProvider(AiServices.Client, connection)
             : null;
 
+    /// <summary>The provider for the on-demand Redact sensitive information tool, gated by its own Assistant switch.</summary>
+    public static IPrivacyAnalysisProvider? CreateForRedaction() =>
+        AiFeatures.IsUsable(AiFeatures.RedactImage) && AiServices.Client.Connection is { } connection
+            ? new AssistantPrivacyAnalysisProvider(AiServices.Client, connection)
+            : null;
+
     public async Task<PrivacyScanResult> AnalyzeAsync(SKBitmap image, TaskSettingsPrivacy policy, CancellationToken token)
     {
         if (!_connection.SupportsImages) return PrivacyScanResult.Unsupported;

@@ -16,10 +16,16 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 - **OCR: PaddleOCR is built in**: The OCR tool now reads text with bundled PaddleOCR models (PP-OCRv6), so it works without installing anything. That includes Linux without Tesseract, and Apple Silicon Macs, which had no OCR before. It reads Latin, Greek, Chinese and Japanese text in one pass.
 - **OCR: choose the engine**: The OCR window has an Engine list: Automatic, PaddleOCR, or the system engine (Windows OCR, or Tesseract on Linux). Automatic uses PaddleOCR unless the chosen language is one it cannot read, such as Russian or Korean, and the system engine has it. The choice also applies to After Capture OCR, the Assistant and the history text index.
+- **Settings: Assistant tab**: Settings has a new Assistant tab with the AI provider and API key, a checkbox for each place XerahS uses the AI provider, and the Assistant overlay options. Each feature can be switched off, including the AI scan in Privacy mode. Nothing is sent until you use a feature.
+- **OCR: AI Assistant engine**: When an AI provider whose model reads images is set up, the OCR window's Engine list gains AI Assistant. It reads languages and handwriting the built-in engines cannot. It sends the image to the provider, so it is used only when you choose it. Automatic, the history text index and the Privacy mode local scan never use it.
+- **OCR window: AI menu**: The OCR window has an AI menu to translate the text, summarise it, clean up OCR mistakes, or describe the image. It sends the text or the image to your AI provider when you choose an action.
+
+- **Redact sensitive information**: Right-click an image in History, or on the toast after a capture, and choose "Redact sensitive information...". XerahS finds names, emails, card numbers, passwords and keys, shows a preview you can edit, and saves a redacted copy next to the original. The original is not changed. With an AI provider it asks before sending the image; without one it uses local text recognition and manual review.
 
 ### Internal
 
 - New `XerahS.OCR` project, ported from `ShareX.OCR`. See `docs/technical/ocr-engines.md`.
+- New AI framework in `XerahS.Assistant/Ai` (`IAiClient`, `AiFeatures`): one way for features to use the user's AI provider, with a Settings switch per feature. The OCR service is now `OcrEngineService` and takes added engines. The privacy scan and the overlay request planner use the same client. See `docs/technical/ai-framework.md`.
 - `AGENTS.md` records that the agents working on XerahS own its direction and design.
 
 ## v0.33.11

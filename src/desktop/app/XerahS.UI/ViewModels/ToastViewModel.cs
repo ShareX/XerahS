@@ -226,6 +226,7 @@ public partial class ToastViewModel : ObservableObject, IDisposable
     public ICommand UnpublishCommand { get; }
     public ICommand DeleteItemCommand { get; }
     public ICommand ResizeImageCommand { get; }
+    public ICommand RedactImageCommand { get; }
     public bool CanCopyImage => !string.IsNullOrWhiteSpace(_config.FilePath) && File.Exists(_config.FilePath) && FileHelpers.IsImageFile(_config.FilePath);
     internal string? FilePath => _config.FilePath;
     internal bool HasExistingFile => !string.IsNullOrWhiteSpace(_config.FilePath) && File.Exists(_config.FilePath);
@@ -279,6 +280,8 @@ public partial class ToastViewModel : ObservableObject, IDisposable
                 XerahS.UI.Services.MediaToolsToolService.OpenImageBatchTool(XerahS.Media.ImageBatchOperation.Resize, [FilePath], owner: null);
             }
         });
+        RedactImageCommand = new AsyncRelayCommand(() =>
+            CanCopyImage ? XerahS.UI.Services.RedactImageToolService.RunAsync(FilePath) : Task.CompletedTask);
         CopyUrlCommand = new RelayCommand(CopyUrl);
         CopyMarkdownImageCommand = new RelayCommand(CopyMarkdownImage);
         CopyErrorsCommand = new RelayCommand(CopyErrors);

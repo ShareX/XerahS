@@ -41,21 +41,29 @@ public sealed class AvaloniaPrivacyReviewService(IUIService ui) : IPrivacyReview
             var vm = new SimplePromptViewModel
             {
                 Title = "Allow AI sensitivity scan?",
-                Message = $"Send this unredacted screenshot to {provider} for sensitivity analysis? It may contain private data. " +
+                // Shared by the upload review and the Redact sensitive information tool, so it names neither.
+                Message = $"Send this unredacted image to {provider} for sensitivity analysis? It may contain private data. " +
                     "The provider's data policy applies and usage may be billed. This permission applies only to this scan. " +
-                    "Cancel to use local manual annotation instead. Destination upload requires separate approval.",
+                    "Cancel to use local manual annotation instead. Nothing is uploaded or saved until you approve the result.",
                 ShowCancel = true, PrimaryButtonText = "Allow this scan", CancelButtonText = "Use manual review"
             };
             using var cancellation = token.Register(() => Dispatcher.UIThread.Post(() => vm.CloseRequested?.Invoke(false)));
             return await ModalDialogHost.ShowAsync(vm, set => vm.CloseRequested = set, false, "PrivacyConsent");
         });
     }
-    public async Task<PrivacyReviewResult> ReviewAsync(SKBitmap original, SKBitmap candidate, PrivacyScanResult scan,
-        string destination, TaskSettingsPrivacy policy, CancellationToken token)
+    public Task<PrivacyReviewResult> ReviewAsync(SKBitmap original, SKBitmap candidate, PrivacyScanResult scan,
+        string destination, TaskSettingsPrivacy policy, CancellationToken token) =>
+        ShowAsync(() => new PrivacyReviewViewModel(original, candidate, scan, destination, policy, ui), token);
+
+    public Task<PrivacyReviewResult> ReviewSaveAsync(SKBitmap original, SKBitmap candidate, PrivacyScanResult scan,
+        TaskSettingsPrivacy policy, CancellationToken token) =>
+        ShowAsync(() => PrivacyReviewViewModel.ForSave(original, candidate, scan, policy, ui), token);
+
+    private static async Task<PrivacyReviewResult> ShowAsync(Func<PrivacyReviewViewModel> create, CancellationToken token)
     {
         return await Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            using var vm = new PrivacyReviewViewModel(original, candidate, scan, destination, policy, ui);
+            using var vm = create();
             using var cancellation = token.Register(() => Dispatcher.UIThread.Post(() => vm.CancelCommand.Execute(null)));
             return await ModalDialogHost.ShowAsync(vm, set => vm.CloseRequested = set,
                 new PrivacyReviewResult(PrivacyReviewDecision.Cancel, null), "PrivacyReview");

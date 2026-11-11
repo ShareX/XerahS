@@ -109,7 +109,9 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
         }
         catch (Exception ex)
         {
-            if (!request.AllowImageContent) DebugHelper.WriteException(ex, $"Assistant provider request failed: {_settings.Metadata.Id}");
+            // Only the kind of failure is logged: the exception text can quote the request or its address, and the
+            // address holds the API key for some providers.
+            DebugHelper.WriteLine($"Assistant provider request failed: {_settings.Metadata.Id} ({ex.GetType().Name})");
             return Error("Provider request failed.");
         }
     }

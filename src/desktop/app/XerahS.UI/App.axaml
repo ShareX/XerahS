@@ -37,6 +37,9 @@
                 <MenuItem Header="Resize image..."
                           Command="{Binding ResizeImageCommand}"
                           IsVisible="{Binding Item.HasImageFile}"/>
+                <MenuItem Header="Redact sensitive information..."
+                          Command="{Binding RedactImageCommand}"
+                          IsVisible="{Binding Item.HasImageFile}"/>
                 <MenuItem Header="Trim video..."
                           Command="{Binding TrimVideoCommand}"
                           IsVisible="{Binding Item.HasVideoFile}"/>

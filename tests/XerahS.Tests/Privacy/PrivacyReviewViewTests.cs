@@ -42,4 +42,37 @@ public class PrivacyReviewViewTests
         }
         finally { window.Close(); }
     }
+
+    [AvaloniaTest]
+    public void SaveModeOffersSavingACopyInsteadOfUploading()
+    {
+        using var image = new SKBitmap(320, 200);
+        image.Erase(SKColors.White);
+        using var vm = PrivacyReviewViewModel.ForSave(image, image, new(PrivacyScanStatus.Unsupported, []), new(),
+            new XerahS.CLI.Services.HeadlessUIService());
+        PrivacyReviewResult? closed = null;
+        vm.CloseRequested = result => closed = result;
+        var window = new Window { Width = 1000, Height = 750, Content = new ViewLocator().Build(vm) };
+        window.Show();
+        try
+        {
+            Dispatcher.UIThread.RunJobs();
+            var buttons = window.GetVisualDescendants().OfType<Button>().ToList();
+            Button Find(string text) => buttons.Single(b => b.Content?.ToString() == text);
+            Assert.That(Find("Save redacted copy").IsVisible, Is.True);
+            Assert.That(Find("Save redacted copy").IsEnabled, Is.True, "Saving a local copy is not blocked by an incomplete scan.");
+            Assert.That(Find("Approve image and upload").IsVisible, Is.False);
+            Assert.That(Find("Keep locally").IsVisible, Is.False);
+            Assert.That(vm.Title, Is.EqualTo("Redact sensitive information"));
+            Assert.That(vm.ScanSummary, Does.Not.Contain("upload"));
+
+            vm.UploadCommand.Execute(null);
+            vm.KeepLocalCommand.Execute(null);
+            Assert.That(closed, Is.Null, "Upload choices do nothing in save mode.");
+            vm.SaveCommand.Execute(null);
+            Assert.That(closed?.Decision, Is.EqualTo(PrivacyReviewDecision.Save));
+            closed?.Image?.Dispose();
+        }
+        finally { window.Close(); }
+    }
 }

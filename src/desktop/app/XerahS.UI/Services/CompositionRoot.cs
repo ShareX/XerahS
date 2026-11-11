@@ -56,6 +56,7 @@ namespace XerahS.UI.Services
                 imageEncoderService);
 
             Core.Services.Privacy.PrivacyServices.AnalysisProviderFactory = XerahS.Assistant.Services.AssistantPrivacyAnalysisProvider.CreateActive;
+            Core.Services.Privacy.PrivacyServices.RedactionAnalysisProviderFactory = XerahS.Assistant.Services.AssistantPrivacyAnalysisProvider.CreateForRedaction;
             Core.Services.Privacy.PrivacyServices.ReviewService = new AvaloniaPrivacyReviewService(uiService);
 
             return DesktopHostComposition.CreateServiceProvider(hostServices, services =>

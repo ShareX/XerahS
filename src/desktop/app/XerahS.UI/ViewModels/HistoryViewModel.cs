@@ -35,6 +35,7 @@ using XerahS.Core;
 using XerahS.Core.Cloud;
 using XerahS.Core.Managers;
 using XerahS.Core.Services;
+using XerahS.Core.Services.Privacy;
 using XerahS.History;
 using XerahS.Media;
 using XerahS.Platform.Abstractions;
@@ -1032,6 +1033,13 @@ namespace XerahS.UI.ViewModels
         {
             if (item == null || string.IsNullOrWhiteSpace(item.FilePath) || !File.Exists(item.FilePath)) return;
             MediaToolsToolService.OpenImageBatchTool(XerahS.Media.ImageBatchOperation.Resize, [item.FilePath], owner: null);
+        }
+
+        [RelayCommand]
+        private Task RedactImage(HistoryItem? item)
+        {
+            if (item == null || !PrivacyRedactionService.IsSupportedFile(item.FilePath)) return Task.CompletedTask;
+            return RedactImageToolService.RunAsync(item.FilePath);
         }
 
         [RelayCommand]

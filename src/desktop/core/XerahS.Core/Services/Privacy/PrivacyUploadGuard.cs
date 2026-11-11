@@ -67,16 +67,7 @@ public static class PrivacyUploadGuard
             // Freeze policy before awaiting consent or inference.
             string policyHash = PolicyHash(info);
             var policy = JsonSerializer.Deserialize<TaskSettingsPrivacy>(JsonSerializer.Serialize(info.TaskSettings.PrivacySettings))!;
-            PrivacyScanResult scan = PrivacyScanResult.Unsupported;
-            if (provider != null && (!provider.RequiresCloudConsent || await review.ConfirmCloudAnalysisAsync(provider.DisplayName, token)))
-            {
-                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
-                timeout.CancelAfter(TimeSpan.FromMinutes(2));
-                try { scan = await provider.AnalyzeAsync(source, policy, timeout.Token); }
-                catch (OperationCanceledException) { token.ThrowIfCancellationRequested(); scan = new(PrivacyScanStatus.Incomplete, []); }
-                catch { scan = new(PrivacyScanStatus.Error, []); }
-                if (scan.Status == PrivacyScanStatus.Cancelled) { token.ThrowIfCancellationRequested(); scan = new(PrivacyScanStatus.Incomplete, []); }
-            }
+            PrivacyScanResult scan = await PrivacyScanService.AnalyzeWithConsentAsync(provider, review, source, policy, token);
             token.ThrowIfCancellationRequested();
             scan = await PrivacyScanService.AddLocalEvidenceAsync(source, policy, scan,
                 PlatformServices.IsInitialized ? PlatformServices.Ocr : null, token);

@@ -41,6 +41,7 @@ public static class AiFeatures
 {
     public const string Ocr = "ocr";
     public const string PrivacyScan = "privacy-scan";
+    public const string RedactImage = "redact-image";
     public const string TextTools = "text-tools";
     public const string DescribeImage = "describe-image";
     public const string OverlayRequests = "overlay-requests";
@@ -53,6 +54,9 @@ public static class AiFeatures
         new(PrivacyScan, "Privacy mode: find sensitive information",
             "Before an upload in Privacy mode, finds names, emails, addresses, card numbers, passwords and keys to redact. You are asked before each scan.",
             "The unredacted screenshot, after you allow that scan.", NeedsImages: true),
+        new(RedactImage, "Redact sensitive information: find what to hide",
+            "When you choose Redact sensitive information on an image, finds what to blur or mask before you save a redacted copy. You are asked before each scan. Switched off, the tool still opens with local detection and manual review.",
+            "The unredacted image, after you allow that scan.", NeedsImages: true),
         new(TextTools, "OCR window: translate, summarise and clean up text",
             "Adds an AI menu to the OCR window that works on the recognised text.",
             "The recognised text, when you choose an action.", NeedsImages: false),
