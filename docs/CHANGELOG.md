@@ -24,7 +24,7 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 - **Redact sensitive information**: Right-click an image in History, or on the toast after a capture, and choose "Redact sensitive information...". XerahS finds names, emails, card numbers, passwords and keys, shows a preview you can edit, and saves a redacted copy next to the original. The original is not changed. With an AI provider it asks before sending the image; without one it uses local text recognition and manual review.
 
-- **After Capture window: skip image effects**: The window now has an "Apply image effects" checkbox, ticked when the workflow has image effects on. Untick it to save or upload the capture without them.
+- **After Capture window: skip image effects**: The window now has an "Apply image effects" checkbox, ticked when the workflow has image effects on. Untick it to save or upload the capture without them. Like the other options in that window, the choice stays for the workflow until you change it back.
 - **Video trimmer: several clips**: Omacut can split a video into clips, drop in more videos, reorder them, and undo. Export joins the clips. Opening another video asks first when that edit has not been exported. `F` saves the frame on screen.
 
 ### Internal

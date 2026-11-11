@@ -182,8 +182,9 @@ public partial class AfterCaptureViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Whether this capture gets the workflow's image effects. Starts as the workflow has it; unticking skips the
-    /// effects for this run, like the other optional tasks in this window.
+    /// Whether this capture gets the workflow's image effects. Starts as the workflow has it. Like the other
+    /// optional tasks in this window, the choice is written to the workflow the capture runs on (the capture job
+    /// works on the workflow's own settings), so it is how the window opens next time.
     /// </summary>
     public bool AddImageEffects
     {
