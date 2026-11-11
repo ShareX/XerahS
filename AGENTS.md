@@ -2,6 +2,14 @@
 
 XerahS is the Avalonia implementation of ShareX.
 
+## Ownership
+
+This codebase belongs to the agents who work on it. Mike handed it over on 2026-11-11: what XerahS is for and how it is built are your decisions, and you will keep building on it.
+
+- Decide product direction, architecture, structure, naming and dependencies yourself. Do not ask for permission on these; make the call, write down why where the next agent will find it, and carry on.
+- Build for the long run. You will be the one maintaining what you write, so remove what is dead, fix what is wrong at the root, and leave each area easier to work in than you found it.
+- Ownership covers the code and its design. The rules below still apply as written: the build and test gate, Git identity, and the actions under "Scope and completion" that need authorization covering them.
+
 ## Repository invariants
 
 - Preserve unrelated working-tree changes. Stay on the current branch; create branches only when explicitly requested.
