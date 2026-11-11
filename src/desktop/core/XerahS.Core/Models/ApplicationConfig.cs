@@ -130,6 +130,8 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
     public bool AssistantPromptHistoryEnabled { get; set; }
     public bool ScreenshotContentSearchEnabled { get; set; } = true;
     public string AssistantActiveProviderId { get; set; } = string.Empty;
+    /// <summary>Stable Sign in with ChatGPT host id for this installation. Empty until the first sign-in.</summary>
+    public string AssistantChatGptHostId { get; set; } = string.Empty;
     public List<AssistantProviderConfig> AssistantProviders { get; set; } = new();
     /// <summary>
     /// Ids of the AI features the user switched off in Settings (XerahS.Assistant.Ai.AiFeatures). A feature that is

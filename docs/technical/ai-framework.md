@@ -1,8 +1,10 @@
 # AI framework
 
 XerahS features that use an AI provider all go through one small framework in `XerahS.Assistant/Ai`. The user
-brings their own provider and API key (Settings > Assistant). Without one, nothing here runs and XerahS works as
-before.
+brings their own provider (Settings > Assistant). Most providers need an API key. Grok is in the catalogue
+(`grok-4.7` at `https://api.x.ai/v1`). OpenAI can use Continue with ChatGPT, which calls the Responses API with
+the ChatGPT plan, or an API key. Anthropic uses an API key. Without a provider, nothing here runs and XerahS
+works as before.
 
 The framework exists so that a new AI feature does not need its own HTTP code, key handling, image encoding or
 error handling, and so the user has one place to see and switch off every feature.
@@ -120,17 +122,20 @@ Tests are in `tests/XerahS.Tests/Assistant/AiFrameworkTests.cs`.
 
 ## Known limits
 
-- One request, one text reply. There is no streaming, and no tool calls: `AiClient` sends an empty tool list.
+- One request, one text reply. Features do not see a stream. ChatGPT plan sign-in is the exception inside the
+  provider: it asks the Responses API to stream, then assembles the text before the feature sees it. There are no
+  tool calls: `AiClient` sends an empty tool list.
 - `AiPrompt.MaxOutputTokens` is clamped to 80 to 8192 by the provider code. Long answers can be cut off.
 - Each image is sent as PNG. The limit is 20 MB per image (`AiImage.MaxBytes`; the provider enforces the same
   limit, and at most 16 images). A larger image is scaled down in up to six steps when `ShrinkImagesToFit` is true.
   When it cannot be made small enough, or `ShrinkImagesToFit` is false, the reply is `Failed`.
 - Whether a model reads images comes from the provider catalogue (`AssistantProviderCatalog` in
-  `Models/AssistantContracts.cs`), not from the model. In the catalogue today, MiniMax and Ollama have no image
-  input, so an image feature reports `ImagesNotSupported` for them and `IsUsable` is false for features that need
-  images.
-- `AiClient.Connection` and `AiFeatures.IsUsable` check that a provider and key are set. They do not check that the
-  key works. A bad key shows up as a `Failed` reply.
+  `Models/AssistantContracts.cs`), not from the model. In the catalogue today, Grok accepts images through the
+  same Responses protocol as OpenAI. MiniMax and Ollama have no image input, so an image feature reports
+  `ImagesNotSupported` for them and `IsUsable` is false for features that need images.
+- `AiClient.Connection` and `AiFeatures.IsUsable` check that a provider is set up. For most providers that means an
+  API key. OpenAI can instead be a ChatGPT sign-in. They do not check that the credentials work. A bad key or an
+  expired sign-in shows up as a `Failed` reply.
 - The provider code (`Providers/AssistantModelProviders.cs`) logs the exception of a failed text-only request. It
   does not log image requests. Keep prompt text out of exception messages you throw.
 - A feature is on until the user switches it off, and the setting is global, not per workflow.

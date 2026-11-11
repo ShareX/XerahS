@@ -240,6 +240,8 @@ namespace XerahS.UI.ViewModels
             nameof(AssistantProviderApiKey),
             nameof(AssistantProviderStatusText),
             nameof(AssistantProviderNeedsApiKey),
+            nameof(AssistantProviderSupportsChatGptSignIn),
+            nameof(AssistantProviderHasChatGptSession),
             nameof(AssistantProviderHasApiKey),
             nameof(AssistantProviderKeyStatus),
             nameof(WatchFolderDaemonSupported),

@@ -48,11 +48,16 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
 {
     private readonly AssistantProviderRuntimeSettings _settings;
     private readonly HttpClient? _client;
+    private readonly Func<CancellationToken, Task<string?>>? _chatGptAccessToken;
 
-    public HttpAssistantModelProvider(AssistantProviderRuntimeSettings settings, HttpClient? client = null)
+    public HttpAssistantModelProvider(
+        AssistantProviderRuntimeSettings settings,
+        HttpClient? client = null,
+        Func<CancellationToken, Task<string?>>? chatGptAccessToken = null)
     {
         _settings = settings;
         _client = client;
+        _chatGptAccessToken = chatGptAccessToken;
     }
 
     public AssistantProviderMetadata Metadata => _settings.Metadata;
@@ -78,6 +83,19 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
         try
         {
             using HttpRequestMessage message = BuildRequest(request);
+            if (_settings.StreamResponses)
+            {
+                string? token = _chatGptAccessToken != null
+                    ? await _chatGptAccessToken(cancellationToken)
+                    : (await ChatGptOAuth.EnsureFreshAsync(cancellationToken))?.AccessToken;
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    return Error("ChatGPT sign-in needs to be renewed.");
+                }
+
+                message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
             HttpClient client = _client ?? HttpClientFactory.Create(allowAutoRedirect: false, infiniteTimeout: true);
             using HttpResponseMessage response = await client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -96,12 +114,29 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
                 return Error(request.AllowImageContent ? $"Image analysis provider returned {(int)response.StatusCode}." : $"Provider returned {(int)response.StatusCode}: {TrimForStatus(responseText)}");
             }
 
+            if (_settings.StreamResponses)
+            {
+                if (!ChatGptOAuth.TryReadResponsesStream(responseText, out string streamed, out string? streamError) ||
+                    string.IsNullOrWhiteSpace(streamed))
+                {
+                    return Error(request.AllowImageContent
+                        ? "Image analysis was incomplete."
+                        : streamError ?? "Provider returned an empty response.");
+                }
+
+                return new AssistantModelResult(AssistantModelResultKind.Text, streamed.Trim(), [], null, TryGetRequestId(response));
+            }
+
             if (request.AllowImageContent && !IsCompleteResponse(responseText))
                 return Error("Image analysis was incomplete.");
             string? text = ExtractText(responseText);
             return string.IsNullOrWhiteSpace(text)
                 ? Error("Provider returned an empty response.")
                 : new AssistantModelResult(AssistantModelResultKind.Text, text.Trim(), [], null, TryGetRequestId(response));
+        }
+        catch (ChatGptSignInException ex)
+        {
+            return Error(ex.Message);
         }
         catch (OperationCanceledException)
         {
@@ -135,15 +170,18 @@ internal sealed class HttpAssistantModelProvider : IAssistantModelProvider
 
     private HttpRequestMessage BuildOpenAiResponsesRequest(AssistantModelRequest request)
     {
-        var payload = new
-        {
-            model = request.ModelId,
-            input = request.AllowImageContent
-                ? (object)request.Messages.Select(message => new { role = message.Role.ToString().ToLowerInvariant(), content = ImageParts(message, "responses") })
-                : string.Join("\n\n", request.Messages.Select(message => $"{message.Role}: {message.Text}")),
-            max_output_tokens = Math.Clamp(request.MaxOutputTokens, 80, 8192),
-            store = false
-        };
+        object input = request.AllowImageContent
+            ? request.Messages.Select(message => new { role = message.Role.ToString().ToLowerInvariant(), content = ImageParts(message, "responses") })
+            : string.Join("\n\n", request.Messages.Select(message => $"{message.Role}: {message.Text}"));
+        int maxOutputTokens = Math.Clamp(request.MaxOutputTokens, 80, 8192);
+        bool grok = string.Equals(_settings.Metadata.Id, "grok", StringComparison.OrdinalIgnoreCase);
+        // Grok reasoning defaults to high. Assistant and OCR calls stay on low effort.
+        // ChatGPT plan tokens must stream. An API key stays on one JSON body.
+        object payload = grok
+            ? new { model = request.ModelId, input, max_output_tokens = maxOutputTokens, store = false, reasoning = new { effort = "low" } }
+            : _settings.StreamResponses
+                ? new { model = request.ModelId, input, max_output_tokens = maxOutputTokens, store = false, stream = true }
+                : (object)new { model = request.ModelId, input, max_output_tokens = maxOutputTokens, store = false };
 
         return BuildJsonRequest(HttpMethod.Post, $"{_settings.BaseUrl}/responses", payload, bearerToken: _settings.ApiKey);
     }

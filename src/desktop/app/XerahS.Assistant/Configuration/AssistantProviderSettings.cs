@@ -26,6 +26,7 @@
 using XerahS.Core;
 using XerahS.Core.Uploaders;
 using XerahS.Assistant.Models;
+using XerahS.Assistant.Providers;
 
 namespace XerahS.Assistant.Configuration;
 
@@ -33,12 +34,14 @@ public sealed record AssistantProviderRuntimeSettings(
     AssistantProviderMetadata Metadata,
     string ModelId,
     string BaseUrl,
-    string? ApiKey);
+    string? ApiKey,
+    bool StreamResponses = false);
 
 public static class AssistantProviderSecrets
 {
     private const string SecretProviderId = "xerahs.assistant";
     private const string ApiKeyName = "apiKey";
+    internal const string ChatGptSessionName = "chatGptSession";
 
     public static bool HasApiKey(string providerId) =>
         ProviderContextManager.EnsureProviderContext().Secrets.HasSecret(SecretProviderId, BuildSecretKey(providerId), ApiKeyName);
@@ -51,6 +54,15 @@ public static class AssistantProviderSecrets
 
     public static void DeleteApiKey(string providerId) =>
         ProviderContextManager.EnsureProviderContext().Secrets.DeleteSecret(SecretProviderId, BuildSecretKey(providerId), ApiKeyName);
+
+    internal static string? GetNamedSecret(string providerId, string name) =>
+        ProviderContextManager.EnsureProviderContext().Secrets.GetSecret(SecretProviderId, BuildSecretKey(providerId), name);
+
+    internal static void SetNamedSecret(string providerId, string name, string value) =>
+        ProviderContextManager.EnsureProviderContext().Secrets.SetSecret(SecretProviderId, BuildSecretKey(providerId), name, value);
+
+    internal static void DeleteNamedSecret(string providerId, string name) =>
+        ProviderContextManager.EnsureProviderContext().Secrets.DeleteSecret(SecretProviderId, BuildSecretKey(providerId), name);
 
     private static string BuildSecretKey(string providerId) => $"provider:{providerId}";
 }
@@ -76,14 +88,21 @@ public static class AssistantProviderSettingsResolver
         AssistantProviderConfig config = GetOrCreateConfig(providerId);
         string baseUrl = string.IsNullOrWhiteSpace(config.BaseUrl) ? metadata.DefaultBaseUrl : config.BaseUrl.TrimEnd('/');
         string modelId = string.IsNullOrWhiteSpace(config.ModelId) ? metadata.DefaultModelId : config.ModelId;
+        bool streamResponses = false;
         string? apiKey = metadata.Protocol == AssistantProviderProtocol.OllamaGenerate ? null : AssistantProviderSecrets.GetApiKey(metadata.Id);
+        if (string.Equals(metadata.Id, "openai", StringComparison.OrdinalIgnoreCase) &&
+            ChatGptSessionStore.TryGetUsable(out ChatGptSession chatGpt))
+        {
+            apiKey = chatGpt.AccessToken;
+            streamResponses = true;
+        }
 
         if (metadata.Protocol != AssistantProviderProtocol.OllamaGenerate && string.IsNullOrWhiteSpace(apiKey))
         {
             return false;
         }
 
-        settings = new AssistantProviderRuntimeSettings(metadata, modelId, baseUrl, apiKey);
+        settings = new AssistantProviderRuntimeSettings(metadata, modelId, baseUrl, apiKey, streamResponses);
         return true;
     }
 

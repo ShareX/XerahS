@@ -12,7 +12,7 @@ using XerahS.Core.Services.Privacy;
 namespace XerahS.Tests.Privacy;
 public class AssistantPrivacyAnalysisTests
 {
-    [TestCase("openai", "input_image")] [TestCase("kimi", "image_url")]
+    [TestCase("openai", "input_image")] [TestCase("grok", "input_image")] [TestCase("kimi", "image_url")]
     [TestCase("gemini", "inlineData")] [TestCase("anthropic", "base64")]
     public async Task VisionBuildersSerializeActualImageAndEnoughResponseCapacity(string id, string marker)
     {

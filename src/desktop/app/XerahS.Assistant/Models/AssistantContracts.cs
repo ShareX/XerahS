@@ -94,6 +94,15 @@ public static class AssistantProviderCatalog
             SupportsImageInput: true,
             ["gpt-5.4", "gpt-5.4-mini", "gpt-4o-mini"]),
         new(
+            "grok",
+            "Grok",
+            AssistantProviderProtocol.OpenAiResponses,
+            "grok-4.7",
+            "https://api.x.ai/v1",
+            SupportsTools: true,
+            SupportsImageInput: true,
+            ["grok-4.7", "grok-4.6", "grok-4.5"]),
+        new(
             "minimax",
             "MiniMax",
             AssistantProviderProtocol.OpenAiCompatibleChat,

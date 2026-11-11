@@ -599,7 +599,7 @@
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="XerahS uses your own account with an AI provider. Choose the provider, enter its API key, and the features below become available. Without a provider, everything in XerahS still works locally."
+                                    <TextBlock Text="XerahS uses your own account with an AI provider. Choose the provider, then save an API key. For OpenAI you can instead choose Continue with ChatGPT and requests use your ChatGPT plan. Without a provider, everything in XerahS still works locally."
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
@@ -660,6 +660,14 @@
                                                 Command="{Binding RemoveAssistantProviderKeyCommand}"
                                                 IsEnabled="{Binding AssistantProviderHasApiKey}"
                                                 AutomationProperties.Name="Remove Assistant AI Key"/>
+                                        <Button Content="Continue with ChatGPT"
+                                                Command="{Binding SignInWithChatGptCommand}"
+                                                IsVisible="{Binding AssistantProviderSupportsChatGptSignIn}"
+                                                AutomationProperties.Name="Continue with ChatGPT"/>
+                                        <Button Content="Sign out of ChatGPT"
+                                                Command="{Binding SignOutOfChatGptCommand}"
+                                                IsVisible="{Binding AssistantProviderHasChatGptSession}"
+                                                AutomationProperties.Name="Sign out of ChatGPT"/>
                                     </StackPanel>
 
                                     <TextBlock Text="{Binding AssistantProviderStatusText}"
