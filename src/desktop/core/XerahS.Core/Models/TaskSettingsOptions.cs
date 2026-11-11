@@ -214,6 +214,10 @@ public class OCROptions
 {
     public string Language { get; set; } = "en";
     /// <summary>
+    /// The OCR engine to read with (XerahS.Platform.Abstractions.OcrEngineIds): "auto", "paddleocr" or "system".
+    /// </summary>
+    public string Engine { get; set; } = "auto";
+    /// <summary>
     /// Full list of languages the user selected in the onboarding wizard.
     /// The current OCR runtime only supports a single language per
     /// <see cref="RecognizeAsync"/> call, so <see cref="Language"/> carries

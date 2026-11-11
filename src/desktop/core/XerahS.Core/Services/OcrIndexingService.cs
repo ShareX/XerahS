@@ -238,6 +238,7 @@ public static class OcrIndexingService
         return new OcrOptions
         {
             Language = NormalizeLanguage(taskOptions?.Language),
+            Engine = taskOptions?.Engine,
             ScaleFactor = NormalizeScaleFactor(taskOptions?.ScaleFactor ?? 2f),
             SingleLine = taskOptions?.SingleLine ?? false
         };

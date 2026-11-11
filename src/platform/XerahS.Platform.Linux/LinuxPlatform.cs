@@ -120,7 +120,7 @@ namespace XerahS.Platform.Linux
                 clipboardMonitorService: clipboardMonitorService
             );
 
-            // Register OCR service stub (Tesseract integration planned)
+            // The system OCR engine (Tesseract). The app puts PaddleOCR in front of it: see XerahS.OCR.PaddleOcrService.
             PlatformServices.Ocr = new LinuxOcrService();
 
             // Initialize theme service for dark mode detection

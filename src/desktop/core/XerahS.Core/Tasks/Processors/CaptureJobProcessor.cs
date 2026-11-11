@@ -598,6 +598,7 @@ namespace XerahS.Core.Tasks.Processors
                 var options = new OcrOptions
                 {
                     Language = NormalizeOcrLanguage(taskOcrOptions.Language),
+                    Engine = taskOcrOptions.Engine,
                     ScaleFactor = NormalizeOcrScaleFactor(taskOcrOptions.ScaleFactor),
                     SingleLine = taskOcrOptions.SingleLine
                 };

@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>XerahS.OCR</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Description>Offline OCR using PaddleOCR PP-OCRv6 ONNX models</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XerahS.Common\XerahS.Common.csproj" />
+    <ProjectReference Include="..\..\..\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
+  </ItemGroup>
+  <!-- The same split as ShareX.OCR: the DirectML runtime in a Windows build, which ShareX.ImageEditor already brings,
+       and the CPU runtime elsewhere. Referencing both would put two onnxruntime.dll files in one output. The CPU runtime
+       has no Intel Mac (osx-x64) natives, so PaddleOcrEngine.IsAvailable is false there and OCR stays with the
+       platform's own service. -->
+  <PropertyGroup>
+    <IsWindowsOcrBuild Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '' And '$(CrossCompile)' != 'true')">true</IsWindowsOcrBuild>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(IsWindowsOcrBuild)' == 'true'">
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(IsWindowsOcrBuild)' != 'true'">
+    <!-- Without the package's build targets: they add the Windows onnxruntime.dll to every output, where it collides
+         with the copy ShareX.ImageEditor's DirectML package adds. The natives for this platform still come from the
+         package's runtimes folder. -->
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" ExcludeAssets="build;buildTransitive" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The models are copied next to the application, where PaddleOcrEngine.DefaultModelsFolder looks for them. -->
+    <None Include="Models\**\*.onnx;Models\**\*.yml" CopyToOutputDirectory="PreserveNewest" Link="PaddleOCR\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="XerahS.Tests" />
+  </ItemGroup>
+</Project>

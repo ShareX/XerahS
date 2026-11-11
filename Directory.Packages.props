@@ -29,6 +29,9 @@
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.369" />
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.3.1" />
+    <!-- Keep both on the version ShareX.ImageEditor pins for Microsoft.ML.OnnxRuntime.DirectML. -->
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.24.4" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.24.4" />
     <PackageVersion Include="NETStandard.Library" Version="2.0.3" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="NUnit" Version="5.0.0" />

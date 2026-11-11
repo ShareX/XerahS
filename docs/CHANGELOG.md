@@ -10,6 +10,18 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
+## v0.34.0
+
+### Features
+
+- **OCR: PaddleOCR is built in**: The OCR tool now reads text with bundled PaddleOCR models (PP-OCRv6), so it works without installing anything. That includes Linux without Tesseract, and Apple Silicon Macs, which had no OCR before. It reads Latin, Greek, Chinese and Japanese text in one pass.
+- **OCR: choose the engine**: The OCR window has an Engine list: Automatic, PaddleOCR, or the system engine (Windows OCR, or Tesseract on Linux). Automatic uses PaddleOCR unless the chosen language is one it cannot read, such as Russian or Korean, and the system engine has it. The choice also applies to After Capture OCR, the Assistant and the history text index.
+
+### Internal
+
+- New `XerahS.OCR` project, ported from `ShareX.OCR`. See `docs/technical/ocr-engines.md`.
+- `AGENTS.md` records that the agents working on XerahS own its direction and design.
+
 ## v0.33.11
 
 v0.33.10 was tagged but never published: its macOS build stalled while uploading to Apple for notarization. Its changes ship here.

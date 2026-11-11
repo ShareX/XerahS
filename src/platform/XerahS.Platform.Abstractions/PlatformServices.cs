@@ -232,7 +232,8 @@ namespace XerahS.Platform.Abstractions
 
         /// <summary>
         /// Optional OCR service for text recognition.
-        /// Windows uses native Windows.Media.Ocr, other platforms may use Tesseract.
+        /// Each platform registers its own engine (Windows.Media.Ocr, Tesseract); the desktop app wraps it with
+        /// XerahS.OCR.PaddleOcrService, which adds PaddleOCR and the choice between the two.
         /// </summary>
         public static IOcrService? Ocr
         {

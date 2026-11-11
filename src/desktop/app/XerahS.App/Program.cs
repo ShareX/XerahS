@@ -165,6 +165,8 @@ namespace XerahS.App
                 XerahS.Core.SettingsManager.LoadInitialSettings();
 
                 InitializePlatformServices();
+                // PaddleOCR goes in front of the platform's OCR service; the user picks the engine in the OCR window.
+                XerahS.OCR.PaddleOcrService.Register();
                 ApplyInitialWatchFolderRuntimePolicy();
 
                 // Register callback for post-UI async initialization

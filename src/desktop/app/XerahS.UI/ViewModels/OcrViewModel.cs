@@ -37,6 +37,7 @@ public partial class OcrViewModel : ViewModelBase
 {
     private SKBitmap? _sourceImage;
     private bool _hasRecognizedOnce;
+    private bool _loadingOptions;
 
     [ObservableProperty]
     private string _resultText = string.Empty;
@@ -59,7 +60,17 @@ public partial class OcrViewModel : ViewModelBase
     [ObservableProperty]
     private bool _singleLine;
 
+    [ObservableProperty]
+    private OcrEngineInfo? _selectedEngine;
+
     public ObservableCollection<OcrLanguage> AvailableLanguages { get; } = new();
+
+    /// <summary>
+    /// The OCR engines to choose between. Empty when there is only one, and the picker is hidden.
+    /// </summary>
+    public ObservableCollection<OcrEngineInfo> AvailableEngines { get; } = new();
+
+    public bool HasEngineChoice => AvailableEngines.Count > 1;
 
     public double[] ScaleFactorOptions { get; } = [1.0, 1.5, 2.0, 3.0, 4.0];
 
@@ -71,7 +82,44 @@ public partial class OcrViewModel : ViewModelBase
     public OcrViewModel(SKBitmap sourceImage)
     {
         _sourceImage = sourceImage;
-        LoadAvailableLanguages();
+        _loadingOptions = true;
+        try
+        {
+            LoadAvailableEngines();
+            LoadAvailableLanguages();
+        }
+        finally
+        {
+            _loadingOptions = false;
+        }
+    }
+
+    private void LoadAvailableEngines()
+    {
+        var ocrService = PlatformServices.Ocr;
+        if (ocrService == null || !ocrService.IsSupported)
+        {
+            return;
+        }
+
+        try
+        {
+            foreach (OcrEngineInfo engine in ocrService.Engines)
+            {
+                AvailableEngines.Add(engine);
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "OCR engine loading");
+            return;
+        }
+
+        string? persistedEngine = ResolvePersistedOptions()?.Engine?.Trim();
+        SelectedEngine = AvailableEngines.FirstOrDefault(e =>
+            string.Equals(e.Id, persistedEngine, StringComparison.OrdinalIgnoreCase))
+            ?? AvailableEngines.FirstOrDefault();
+        OnPropertyChanged(nameof(HasEngineChoice));
     }
 
     private void LoadAvailableLanguages()
@@ -86,7 +134,7 @@ public partial class OcrViewModel : ViewModelBase
         OcrLanguage[] languages;
         try
         {
-            languages = ocrService.GetAvailableLanguages();
+            languages = ocrService.GetAvailableLanguages(SelectedEngine?.Id);
         }
         catch (Exception ex)
         {
@@ -95,6 +143,8 @@ public partial class OcrViewModel : ViewModelBase
             return;
         }
 
+        string? previousLanguage = SelectedLanguage?.LanguageTag;
+        AvailableLanguages.Clear();
         var seenTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var lang in languages)
@@ -112,19 +162,21 @@ public partial class OcrViewModel : ViewModelBase
         // Prefer the language persisted by the onboarding wizard (OCROptions.Language)
         // so the user's choice carries over into the OCR tool; fall back to English,
         // then to the first available language.
-        string? persistedLanguage = ResolvePersistedLanguageTag();
+        string? persistedLanguage = ResolvePersistedOptions()?.Language?.Trim();
         SelectedLanguage = AvailableLanguages.FirstOrDefault(l =>
-            string.Equals(l.LanguageTag, persistedLanguage, StringComparison.OrdinalIgnoreCase))
+            string.Equals(l.LanguageTag, previousLanguage, StringComparison.OrdinalIgnoreCase))
+            ?? AvailableLanguages.FirstOrDefault(l =>
+                string.Equals(l.LanguageTag, persistedLanguage, StringComparison.OrdinalIgnoreCase))
             ?? AvailableLanguages.FirstOrDefault(l =>
                 l.LanguageTag.StartsWith("en", StringComparison.OrdinalIgnoreCase))
             ?? AvailableLanguages.FirstOrDefault();
     }
 
-    private static string? ResolvePersistedLanguageTag()
+    private static OCROptions? ResolvePersistedOptions()
     {
         try
         {
-            return SettingsManager.DefaultTaskSettings?.CaptureSettings?.OCROptions?.Language?.Trim();
+            return SettingsManager.DefaultTaskSettings?.CaptureSettings?.OCROptions;
         }
         catch
         {
@@ -170,6 +222,7 @@ public partial class OcrViewModel : ViewModelBase
             var options = new OcrOptions
             {
                 Language = NormalizeOcrLanguage(SelectedLanguage.LanguageTag),
+                Engine = SelectedEngine?.Id,
                 ScaleFactor = NormalizeOcrScaleFactor(ScaleFactor),
                 SingleLine = SingleLine
             };
@@ -263,11 +316,43 @@ public partial class OcrViewModel : ViewModelBase
         }
     }
 
+    partial void OnSelectedEngineChanged(OcrEngineInfo? value)
+    {
+        if (value == null || _loadingOptions)
+        {
+            return;
+        }
+
+        // The choice is the default for every OCR job, not only this window.
+        OCROptions? persisted = ResolvePersistedOptions();
+        if (persisted != null && !string.Equals(persisted.Engine, value.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            persisted.Engine = value.Id;
+            _ = SettingsManager.SaveWorkflowsConfigAsync();
+        }
+
+        // Each engine has its own languages.
+        _loadingOptions = true;
+        try
+        {
+            LoadAvailableLanguages();
+        }
+        finally
+        {
+            _loadingOptions = false;
+        }
+
+        if (SelectedLanguage != null && _hasRecognizedOnce && _sourceImage != null && !IsProcessing)
+        {
+            _ = RunOcrAsync();
+        }
+    }
+
     partial void OnSelectedLanguageChanged(OcrLanguage? value)
     {
         // Re-run OCR when language changes after at least one OCR attempt,
         // even if the previous attempt found no text.
-        if (value != null && _hasRecognizedOnce && _sourceImage != null && !IsProcessing)
+        if (value != null && !_loadingOptions && _hasRecognizedOnce && _sourceImage != null && !IsProcessing)
         {
             _ = RunOcrAsync();
         }

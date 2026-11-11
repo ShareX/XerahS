@@ -28,8 +28,9 @@ using SkiaSharp;
 namespace XerahS.Platform.Abstractions;
 
 /// <summary>
-/// Platform-agnostic OCR (Optical Character Recognition) service.
-/// Windows uses native Windows.Media.Ocr; Linux uses the system Tesseract.
+/// Platform-agnostic OCR (Optical Character Recognition) service. One service can offer several engines
+/// (<see cref="Engines"/>): the bundled PaddleOCR models, and the system's own engine (Windows.Media.Ocr on Windows,
+/// Tesseract on Linux). <see cref="OcrOptions.Engine"/> picks the one a call uses.
 /// </summary>
 public interface IOcrService
 {
@@ -40,9 +41,38 @@ public interface IOcrService
     /// </summary>
     string? UnavailableReason => null;
 
+    /// <summary>
+    /// The name of this service's own engine, as shown to the user.
+    /// </summary>
+    string EngineName => "System";
+
+    /// <summary>
+    /// The engines the user can choose between, the default first. Empty when the service has a single engine.
+    /// </summary>
+    IReadOnlyList<OcrEngineInfo> Engines => [];
+
     Task<OcrResult> RecognizeAsync(SKBitmap image, OcrOptions options);
 
     OcrLanguage[] GetAvailableLanguages();
+
+    /// <summary>
+    /// The languages to offer for one of <see cref="Engines"/>; null or an unknown id means the default engine.
+    /// </summary>
+    OcrLanguage[] GetAvailableLanguages(string? engine) => GetAvailableLanguages();
+}
+
+/// <param name="Id">The value for <see cref="OcrOptions.Engine"/>.</param>
+public sealed record OcrEngineInfo(string Id, string DisplayName)
+{
+    public override string ToString() => DisplayName;
+}
+
+public static class OcrEngineIds
+{
+    /// <summary>PaddleOCR where it can read the language, otherwise the system engine.</summary>
+    public const string Automatic = "auto";
+    public const string PaddleOcr = "paddleocr";
+    public const string System = "system";
 }
 
 public record OcrLanguage(string DisplayName, string LanguageTag)
@@ -53,6 +83,8 @@ public record OcrLanguage(string DisplayName, string LanguageTag)
 public class OcrOptions
 {
     public string Language { get; set; } = "en";
+    /// <summary>One of <see cref="IOcrService.Engines"/>; null or empty for the default engine.</summary>
+    public string? Engine { get; set; }
     public float ScaleFactor { get; set; } = 2f;
     public bool SingleLine { get; set; }
     public bool IncludeGeometry { get; set; }

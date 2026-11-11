@@ -37,6 +37,8 @@ namespace XerahS.Platform.Windows;
 
 public class WindowsOcrService : IOcrService
 {
+    public string EngineName => "Windows OCR";
+
     public bool IsSupported => true; // Windows 10.0.18362.0+ is our minimum target
 
     public OcrLanguage[] GetAvailableLanguages()

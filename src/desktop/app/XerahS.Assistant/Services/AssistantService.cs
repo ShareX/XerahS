@@ -579,6 +579,7 @@ public sealed class AssistantService : IAssistantService
         return new OcrOptions
         {
             Language = NormalizeOcrLanguage(configuredOptions?.Language),
+            Engine = configuredOptions?.Engine,
             ScaleFactor = NormalizeOcrScaleFactor(configuredOptions?.ScaleFactor),
             SingleLine = configuredOptions?.SingleLine ?? false
         };

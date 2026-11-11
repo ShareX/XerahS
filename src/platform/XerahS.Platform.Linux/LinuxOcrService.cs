@@ -45,6 +45,8 @@ public class LinuxOcrService : IOcrService
 
     private OcrLanguage[]? _languages;
 
+    public string EngineName => "Tesseract";
+
     public bool IsSupported => WaylandWindowPointQueryCommandRunner.CommandExists(TesseractCommand);
 
     public string? UnavailableReason => IsSupported

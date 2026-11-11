@@ -16,6 +16,20 @@
     <!-- Options Bar -->
     <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="16" Margin="0,0,0,12">
 
+      <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding HasEngineChoice}">
+        <TextBlock Text="Engine:" VerticalAlignment="Center" />
+        <ComboBox ItemsSource="{Binding AvailableEngines}"
+                  SelectedItem="{Binding SelectedEngine}"
+                  MinWidth="130"
+                  AutomationProperties.Name="OCR Engine">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="platform:OcrEngineInfo">
+              <TextBlock Text="{Binding DisplayName}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </StackPanel>
+
       <StackPanel Orientation="Horizontal" Spacing="8">
         <TextBlock Text="Language:" VerticalAlignment="Center" />
         <ComboBox ItemsSource="{Binding AvailableLanguages}"
