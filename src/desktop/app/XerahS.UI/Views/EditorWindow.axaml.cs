@@ -34,6 +34,13 @@ namespace XerahS.UI.Views
         private bool _allowClose;
         internal bool IsCloseRequestedByViewModel { get; private set; }
 
+        /// <summary>
+        /// When true, closing the window from its title bar runs the editor's Continue action
+        /// instead of Cancel, so the after-capture tasks still save and copy the image, as in ShareX (#316).
+        /// The explicit Cancel action still stops the workflow.
+        /// </summary>
+        internal bool CloseContinuesWorkflow { get; set; }
+
         public EditorWindow()
         {
             InitializeComponent();
@@ -85,7 +92,13 @@ namespace XerahS.UI.Views
             }
 
             e.Cancel = true;
-            _viewModel?.RequestClose();
+            if (CloseContinuesWorkflow && !_viewModel.IsModalOpen)
+            {
+                _viewModel.ContinueCommand.Execute(null);
+                return;
+            }
+
+            _viewModel.RequestClose();
         }
 
         private void OnViewModelCloseRequested(object? sender, EventArgs e)

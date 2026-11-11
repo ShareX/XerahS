@@ -62,9 +62,11 @@ public sealed class TrayIconController : ITrayIconController
 
     private void OnTrayClickTimerTick(object? sender, EventArgs e)
     {
+        // StopAndResetTimer clears the click count, so read it first (#316).
+        bool singleClick = _trayClickCount == 1;
         StopAndResetTimer();
 
-        if (_trayClickCount == 1)
+        if (singleClick)
         {
             TrayIconHelper.Instance.OnTrayClick();
         }

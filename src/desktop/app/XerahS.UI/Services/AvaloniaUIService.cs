@@ -171,6 +171,8 @@ namespace XerahS.UI.Services
                 editorViewModel.ShowFileMenu = !taskMode;
                 editorViewModel.ShowTaskButtons = true;
                 editorViewModel.UseContinueWorkflow = taskMode;
+                // Privacy review gates an upload, so closing it must never continue.
+                editorWindow.CloseContinuesWorkflow = taskMode && !privacyReview;
                 editorViewModel.ShowBottomToolbar = true;
                 editorViewModel.ShowStartScreen = !taskMode;
                 editorViewModel.ApplicationName = AppResources.AppName;

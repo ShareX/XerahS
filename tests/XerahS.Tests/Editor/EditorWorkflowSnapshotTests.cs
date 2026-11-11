@@ -28,9 +28,40 @@ namespace XerahS.Tests.Editor;
 public class EditorWorkflowSnapshotTests
 {
     [AvaloniaTest]
-    [TestCase(false)]
-    [TestCase(true)]
-    public async Task Cancel_StopsWorkflowBeforeSavingOrUploadingOriginal(bool closeWindow)
+    public async Task CloseWindow_ContinuesWorkflowLikeShareX()
+    {
+        // #316: closing the after-capture editor window continues the task, as ShareX does; only Cancel/Esc stops it.
+        string folder = Path.Combine(Path.GetTempPath(), "xerahs-annotation-close-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(folder);
+        var info = new TaskInfo(new TaskSettings
+        {
+            AfterCaptureJob = AfterCaptureTasks.AnnotateMedia | AfterCaptureTasks.SaveImageToFile,
+            OverrideScreenshotsFolder = true, ScreenshotsFolder = folder
+        }) { DataType = EDataType.Image };
+        info.Metadata.Image = new SKBitmap(80, 60);
+        info.Metadata.Image.Erase(SKColors.White);
+        PlatformServices.RegisterUIService(new AvaloniaUIService(new FakeDesktopTaskManager()));
+        using var opened = Window.WindowOpenedEvent.AddClassHandler<HostEditorWindow>((window, _) =>
+            Dispatcher.UIThread.Post(window.Close));
+        try
+        {
+            var context = new PipelineContext { Info = info };
+            var workflow = new FinalizationStage().ExecuteAsync(context, CancellationToken.None);
+            Dispatcher.UIThread.RunJobs();
+            Assert.That(await workflow, Is.EqualTo(PipelineStageResult.Continue));
+            Assert.That(context.Status, Is.Not.EqualTo(XerahS.Core.TaskStatus.Canceled));
+            Assert.That(Directory.GetFiles(folder, "*", SearchOption.AllDirectories), Is.Not.Empty);
+        }
+        finally
+        {
+            PlatformServices.Reset();
+            info.Metadata.Dispose();
+            Directory.Delete(folder, true);
+        }
+    }
+
+    [AvaloniaTest]
+    public async Task Cancel_StopsWorkflowBeforeSavingOrUploadingOriginal()
     {
         string folder = Path.Combine(Path.GetTempPath(), "xerahs-annotation-cancel-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(folder);
@@ -45,8 +76,7 @@ public class EditorWorkflowSnapshotTests
         using var opened = Window.WindowOpenedEvent.AddClassHandler<HostEditorWindow>((window, _) =>
             Dispatcher.UIThread.Post(() =>
             {
-                if (closeWindow) window.Close();
-                else ((MainViewModel)window.DataContext!).CancelCommand.Execute(null);
+                ((MainViewModel)window.DataContext!).CancelCommand.Execute(null);
             }));
         try
         {
