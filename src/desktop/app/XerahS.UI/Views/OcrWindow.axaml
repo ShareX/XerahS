@@ -88,7 +88,7 @@
     </Grid>
 
     <!-- Bottom Bar -->
-    <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*,Auto" Margin="0,12,0,0">
+    <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,*,Auto" Margin="0,12,0,0">
 
       <Button Grid.Column="0"
               Content="Select Region"
@@ -105,7 +105,36 @@
               IsEnabled="{Binding HasResult}"
               AutomationProperties.Name="Copy all recognized text to clipboard" />
 
-      <TextBlock Grid.Column="3"
+      <!-- AI actions on the result. Shown when a provider is set up and the features are on in Settings > Assistant. -->
+      <Button Grid.Column="2"
+              Content="AI"
+              Margin="8,0,0,0"
+              MinWidth="60"
+              IsVisible="{Binding AiMenuAvailable}"
+              AutomationProperties.Name="AI Assistant actions">
+        <Button.Flyout>
+          <MenuFlyout Placement="TopEdgeAlignedLeft">
+            <MenuItem Header="{Binding AiTranslateLabel}"
+                      Command="{Binding AiTranslateCommand}"
+                      IsVisible="{Binding AiTextToolsAvailable}"
+                      IsEnabled="{Binding HasResult}" />
+            <MenuItem Header="Summarise"
+                      Command="{Binding AiSummariseCommand}"
+                      IsVisible="{Binding AiTextToolsAvailable}"
+                      IsEnabled="{Binding HasResult}" />
+            <MenuItem Header="Clean up OCR mistakes"
+                      Command="{Binding AiCleanUpCommand}"
+                      IsVisible="{Binding AiTextToolsAvailable}"
+                      IsEnabled="{Binding HasResult}" />
+            <MenuItem Header="Describe image"
+                      Command="{Binding AiDescribeImageCommand}"
+                      IsVisible="{Binding AiDescribeImageAvailable}" />
+          </MenuFlyout>
+        </Button.Flyout>
+      </Button>
+
+      <TextBlock Grid.Column="4"
+                 TextTrimming="CharacterEllipsis"
                  Text="{Binding StatusText}"
                  VerticalAlignment="Center"
                  Opacity="0.7"

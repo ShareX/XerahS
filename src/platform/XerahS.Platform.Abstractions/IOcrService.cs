@@ -62,9 +62,34 @@ public interface IOcrService
 }
 
 /// <param name="Id">The value for <see cref="OcrOptions.Engine"/>.</param>
-public sealed record OcrEngineInfo(string Id, string DisplayName)
+/// <param name="IsRemote">The engine sends the image to a service outside this computer.</param>
+public sealed record OcrEngineInfo(string Id, string DisplayName, bool IsRemote = false)
 {
     public override string ToString() => DisplayName;
+}
+
+/// <summary>
+/// An OCR engine that another part of the application adds to the OCR service, such as the AI Assistant.
+/// </summary>
+public interface IOcrEngine
+{
+    /// <summary>Read each time the engines are listed, so the name can follow the engine's settings.</summary>
+    OcrEngineInfo Info { get; }
+
+    /// <summary>Whether the engine can be used now. An engine that is not available is not offered.</summary>
+    bool IsAvailable { get; }
+
+    OcrLanguage[] GetAvailableLanguages();
+
+    Task<OcrResult> RecognizeAsync(SKBitmap image, OcrOptions options);
+}
+
+/// <summary>
+/// An OCR service that takes further engines. The desktop app's service does; a bare platform service does not.
+/// </summary>
+public interface IOcrEngineHost
+{
+    void AddEngine(IOcrEngine engine);
 }
 
 public static class OcrEngineIds
@@ -73,6 +98,8 @@ public static class OcrEngineIds
     public const string Automatic = "auto";
     public const string PaddleOcr = "paddleocr";
     public const string System = "system";
+    /// <summary>The AI Assistant's vision model, offered when a provider that reads images is set up.</summary>
+    public const string AiAssistant = "ai";
 }
 
 public record OcrLanguage(string DisplayName, string LanguageTag)
@@ -85,6 +112,11 @@ public class OcrOptions
     public string Language { get; set; } = "en";
     /// <summary>One of <see cref="IOcrService.Engines"/>; null or empty for the default engine.</summary>
     public string? Engine { get; set; }
+    /// <summary>
+    /// Keep the image on this computer: an engine that is <see cref="OcrEngineInfo.IsRemote"/> is replaced by the
+    /// default local one. For work the user did not start for this image, such as indexing the history.
+    /// </summary>
+    public bool LocalOnly { get; set; }
     public float ScaleFactor { get; set; } = 2f;
     public bool SingleLine { get; set; }
     public bool IncludeGeometry { get; set; }

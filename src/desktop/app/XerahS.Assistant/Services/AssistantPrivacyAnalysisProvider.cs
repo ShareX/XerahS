@@ -23,42 +23,43 @@
 
 #endregion License Information (GPL v3)
 
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using SkiaSharp;
-using XerahS.Assistant.Configuration;
-using XerahS.Assistant.Models;
-using XerahS.Assistant.Providers;
+using XerahS.Assistant.Ai;
 using XerahS.Core;
 using XerahS.Core.Services.Privacy;
 
 namespace XerahS.Assistant.Services;
 
+/// <summary>
+/// Finds sensitive regions in a screenshot with the AI provider's vision model, through the shared AI client.
+/// </summary>
 public sealed class AssistantPrivacyAnalysisProvider : IPrivacyAnalysisProvider
 {
-    private readonly AssistantProviderRuntimeSettings _settings;
-    private readonly IAssistantModelProvider _provider;
-    public AssistantPrivacyAnalysisProvider(AssistantProviderRuntimeSettings settings, IAssistantModelProvider? provider = null)
+    private readonly IAiClient _client;
+    private readonly AiConnection _connection;
+
+    public AssistantPrivacyAnalysisProvider(IAiClient client, AiConnection connection)
     {
-        _settings = settings;
-        _provider = provider ?? AssistantModelProviderFactory.Create(settings);
+        _client = client;
+        _connection = connection;
     }
-    public string Identity => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-        $"{_settings.Metadata.Id}|{_settings.ModelId}|{_settings.BaseUrl}|{_settings.ApiKey}")));
-    public string DisplayName => $"{_settings.Metadata.DisplayName} / {_settings.ModelId} at {_settings.BaseUrl}";
+
+    public string Identity => _connection.Identity;
+    public string DisplayName => $"{_connection.DisplayName} at {_connection.BaseUrl}";
     // Custom URLs can be remote even for a provider normally described as local.
     public bool RequiresCloudConsent => true;
-    public static IPrivacyAnalysisProvider? CreateActive() => AssistantProviderSettingsResolver.TryGetActive(out var settings) &&
-        settings.Metadata.SupportsImageInput ? new AssistantPrivacyAnalysisProvider(settings) : null;
+
+    public static IPrivacyAnalysisProvider? CreateActive() =>
+        AiFeatures.IsEnabled(AiFeatures.PrivacyScan) && AiServices.Client.Connection is { SupportsImages: true } connection
+            ? new AssistantPrivacyAnalysisProvider(AiServices.Client, connection)
+            : null;
 
     public async Task<PrivacyScanResult> AnalyzeAsync(SKBitmap image, TaskSettingsPrivacy policy, CancellationToken token)
     {
-        if (!_settings.Metadata.SupportsImageInput) return PrivacyScanResult.Unsupported;
+        if (!_connection.SupportsImages) return PrivacyScanResult.Unsupported;
         try
         {
-            byte[] data = RegionRedactionRenderer.EncodePng(image);
-            if (data.Length > 20_000_000) return new(PrivacyScanStatus.Incomplete, []);
             string prompt = $$"""
                 Identify sensitive data anywhere in this screenshot, including small/wrapped text, encoded QR/barcodes, faces,
                 names, emails, phones, home/work addresses, precise location, birth dates, government/passport/tax IDs,
@@ -74,14 +75,14 @@ public sealed class AssistantPrivacyAnalysisProvider : IPrivacyAnalysisProvider
                 cannot be fully scanned or output would be truncated, set complete:false. Empty regions is valid only for a
                 completed scan. Include names and addresses even when their context seems public. Do not infer consent.
                 """;
-            var request = new AssistantModelRequest(_settings.Metadata.Id, _settings.ModelId,
-                [new AssistantMessage(AssistantModelMessageRole.System, prompt),
-                 new AssistantMessage(AssistantModelMessageRole.User, "Scan this entire screenshot.", Images:
-                     [new AssistantImageAttachment("image/png", data)])], [], AssistantPrivacyScope.CloudImage, true, 8192);
-            var result = await _provider.CompleteAsync(request, token);
-            if (result.Kind == AssistantModelResultKind.Cancelled) return new(PrivacyScanStatus.Cancelled, []);
-            if (result.Kind != AssistantModelResultKind.Text || result.Text == null) return new(PrivacyScanStatus.Error, []);
-            return Parse(result.Text, image.Width, image.Height, policy);
+            // The regions are fractions of the image as sent, so it must not be shrunk on the way.
+            AiReply reply = await _client.AskAsync(
+                new AiPrompt(prompt, "Scan this entire screenshot.") { Images = [image], MaxOutputTokens = 8192, ShrinkImagesToFit = false },
+                token);
+            if (reply.Status == AiReplyStatus.Cancelled) return new(PrivacyScanStatus.Cancelled, []);
+            if (reply.Status == AiReplyStatus.ImagesNotSupported) return PrivacyScanResult.Unsupported;
+            if (!reply.Success) return new(PrivacyScanStatus.Error, []);
+            return Parse(AiJson.Extract(reply.Text!) ?? reply.Text!, image.Width, image.Height, policy);
         }
         catch (OperationCanceledException) { return new(PrivacyScanStatus.Cancelled, []); }
         catch { return new(PrivacyScanStatus.Error, []); }

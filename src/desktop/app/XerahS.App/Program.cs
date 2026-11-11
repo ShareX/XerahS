@@ -166,7 +166,9 @@ namespace XerahS.App
 
                 InitializePlatformServices();
                 // PaddleOCR goes in front of the platform's OCR service; the user picks the engine in the OCR window.
-                XerahS.OCR.PaddleOcrService.Register();
+                XerahS.OCR.OcrEngineService.Register();
+                // The AI Assistant joins the OCR engines; it is offered once a provider that reads images is set up.
+                XerahS.Assistant.Ai.AiIntegrations.Register();
                 ApplyInitialWatchFolderRuntimePolicy();
 
                 // Register callback for post-UI async initialization

@@ -239,6 +239,8 @@ public static class OcrIndexingService
         {
             Language = NormalizeLanguage(taskOptions?.Language),
             Engine = taskOptions?.Engine,
+            // Indexing reads every image in the history; none of them goes to an AI provider.
+            LocalOnly = true,
             ScaleFactor = NormalizeScaleFactor(taskOptions?.ScaleFactor ?? 2f),
             SingleLine = taskOptions?.SingleLine ?? false
         };

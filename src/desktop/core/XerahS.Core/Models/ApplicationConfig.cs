@@ -131,6 +131,11 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
     public bool ScreenshotContentSearchEnabled { get; set; } = true;
     public string AssistantActiveProviderId { get; set; } = string.Empty;
     public List<AssistantProviderConfig> AssistantProviders { get; set; } = new();
+    /// <summary>
+    /// Ids of the AI features the user switched off in Settings (XerahS.Assistant.Ai.AiFeatures). A feature that is
+    /// not listed is on.
+    /// </summary>
+    public List<string> AssistantDisabledFeatures { get; set; } = new();
 
     // OS Integration (platform-agnostic naming)
     public bool RunAtStartup = false;

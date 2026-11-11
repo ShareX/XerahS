@@ -180,6 +180,25 @@ namespace XerahS.UI.ViewModels
         [ObservableProperty]
         private string _assistantProviderStatusText = "Local commands are available without an AI provider.";
 
+        private ObservableCollection<AssistantFeatureOptionViewModel>? _assistantFeatureOptions;
+
+        /// <summary>
+        /// One checkbox per place XerahS uses the AI provider (XerahS.Assistant.Ai.AiFeatures).
+        /// </summary>
+        public ObservableCollection<AssistantFeatureOptionViewModel> AssistantFeatureOptions =>
+            _assistantFeatureOptions ??= new(XerahS.Assistant.Ai.AiFeatures.All.Select(feature => new AssistantFeatureOptionViewModel(feature)));
+
+        // Every provider change (saved, validated, key removed) reports through the status text.
+        partial void OnAssistantProviderStatusTextChanged(string value) => RefreshAssistantFeatureAvailability();
+
+        private void RefreshAssistantFeatureAvailability()
+        {
+            foreach (AssistantFeatureOptionViewModel option in AssistantFeatureOptions)
+            {
+                option.RefreshAvailability();
+            }
+        }
+
         public bool AssistantEnabled
         {
             get => SettingsManager.Settings.AssistantEnabled;

@@ -57,7 +57,7 @@ public static class PrivacyScanService
             foreach (var rule in rules) _ = Pattern(rule); // Validate even when OCR is unavailable.
             if (ocr?.IsSupported == true)
             {
-                var result = await ocr.RecognizeAsync(image, new OcrOptions { IncludeGeometry = true, ScaleFactor = 1,
+                var result = await ocr.RecognizeAsync(image, new OcrOptions { IncludeGeometry = true, ScaleFactor = 1, LocalOnly = true,
                     Language = "en", CancellationToken = token });
                 if (result.Success && result.GeometryComplete && result.SourceWidth == image.Width && result.SourceHeight == image.Height)
                     findings.AddRange(DetectText(result, policy));

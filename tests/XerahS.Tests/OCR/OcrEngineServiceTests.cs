@@ -34,7 +34,7 @@ namespace XerahS.Tests.OCR;
 
 [TestFixture]
 [NonParallelizable]
-public sealed class PaddleOcrServiceTests
+public sealed class OcrEngineServiceTests
 {
     [SetUp]
     public void SetUp()
@@ -57,7 +57,7 @@ public sealed class PaddleOcrServiceTests
         if (!PaddleOcrEngine.IsAvailable) Assert.Ignore("PaddleOCR is not available on this platform.");
 
         using SKBitmap image = RenderText("XERAHS TEST", "12345");
-        var service = new PaddleOcrService(null);
+        var service = new OcrEngineService(null);
 
         OcrResult result = await service.RecognizeAsync(image, new OcrOptions { IncludeGeometry = true });
 
@@ -138,7 +138,7 @@ public sealed class PaddleOcrServiceTests
     [Test]
     public async Task APaddleFailureIsReportedNotThrown()
     {
-        var service = new PaddleOcrService(null, () => true, _ => throw new InvalidOperationException("model broke"), _ => true);
+        var service = new OcrEngineService(null, () => true, _ => throw new InvalidOperationException("model broke"), _ => true);
         using var image = new SKBitmap(8, 8);
 
         OcrResult result = await service.RecognizeAsync(image, new OcrOptions());
@@ -153,11 +153,11 @@ public sealed class PaddleOcrServiceTests
         var system = new FakeSystemOcr("eng");
         PlatformServices.Ocr = system;
 
-        PaddleOcrService.Register();
+        OcrEngineService.Register();
         IOcrService? first = PlatformServices.Ocr;
-        PaddleOcrService.Register();
+        OcrEngineService.Register();
 
-        Assert.That(first, Is.InstanceOf<PaddleOcrService>());
+        Assert.That(first, Is.InstanceOf<OcrEngineService>());
         Assert.That(PlatformServices.Ocr, Is.SameAs(first));
     }
 
@@ -198,11 +198,11 @@ public sealed class PaddleOcrServiceTests
         Assert.That(viewModel.AvailableLanguages.Select(l => l.LanguageTag), Is.EqualTo(new[] { "eng", "rus" }));
     }
 
-    private static PaddleOcrService Create(IOcrService? system, out Func<int> paddleCalls, bool paddleAvailable = true)
+    private static OcrEngineService Create(IOcrService? system, out Func<int> paddleCalls, bool paddleAvailable = true)
     {
         int calls = 0;
         paddleCalls = () => calls;
-        return new PaddleOcrService(system, () => paddleAvailable, _ =>
+        return new OcrEngineService(system, () => paddleAvailable, _ =>
         {
             calls++;
             return new PaddleOcrResult([new PaddleOcrTextRegion([new(0, 0), new(4, 0), new(4, 4), new(0, 4)], "text", 0.9f)]);

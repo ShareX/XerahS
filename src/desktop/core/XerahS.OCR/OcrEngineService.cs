@@ -31,12 +31,13 @@ using XerahS.Platform.Abstractions;
 namespace XerahS.OCR;
 
 /// <summary>
-/// The OCR service the application uses: the bundled PaddleOCR engine and the platform's own engine behind one
-/// interface, so the user can choose between them. With the engine left on Automatic, PaddleOCR reads the image
-/// unless the chosen language is written in a script its model does not know (Cyrillic, Korean, Arabic and others)
-/// and the system engine has that language.
+/// The OCR service the application uses: the bundled PaddleOCR engine, the platform's own engine and any engine
+/// added later (the AI Assistant) behind one interface, so the user can choose between them. With the engine left on
+/// Automatic, PaddleOCR reads the image unless the chosen language is written in a script its model does not know
+/// (Cyrillic, Korean, Arabic and others) and the system engine has that language. Automatic never picks an added
+/// engine: those are used only when asked for by id.
 /// </summary>
-public sealed class PaddleOcrService : IOcrService
+public sealed class OcrEngineService : IOcrService, IOcrEngineHost
 {
     /// <summary>The language tag for "let PaddleOCR read whatever is there".</summary>
     public const string AutomaticLanguageTag = "auto";
@@ -47,13 +48,14 @@ public sealed class PaddleOcrService : IOcrService
     private readonly Func<bool> _paddleAvailable;
     private readonly Func<SKBitmap, PaddleOcrResult> _recognize;
     private readonly Func<string, bool> _canRead;
+    private readonly List<IOcrEngine> _addedEngines = [];
 
-    public PaddleOcrService(IOcrService? system)
+    public OcrEngineService(IOcrService? system)
         : this(system, () => PaddleOcrEngine.IsAvailable, bitmap => PaddleOcrEngine.Shared.Recognize(bitmap), PaddleOcrEngine.CanRead)
     {
     }
 
-    internal PaddleOcrService(IOcrService? system, Func<bool> paddleAvailable, Func<SKBitmap, PaddleOcrResult> recognize, Func<string, bool> canRead)
+    internal OcrEngineService(IOcrService? system, Func<bool> paddleAvailable, Func<SKBitmap, PaddleOcrResult> recognize, Func<string, bool> canRead)
     {
         _system = system;
         _paddleAvailable = paddleAvailable;
@@ -66,21 +68,68 @@ public sealed class PaddleOcrService : IOcrService
     /// </summary>
     public static void Register()
     {
-        if (PlatformServices.Ocr is not PaddleOcrService)
+        if (PlatformServices.Ocr is not OcrEngineService)
         {
-            PlatformServices.Ocr = new PaddleOcrService(PlatformServices.Ocr);
+            PlatformServices.Ocr = new OcrEngineService(PlatformServices.Ocr);
         }
     }
 
     private bool SystemSupported => _system?.IsSupported == true;
 
-    public bool IsSupported => _paddleAvailable() || SystemSupported;
+    public void AddEngine(IOcrEngine engine)
+    {
+        ArgumentNullException.ThrowIfNull(engine);
+
+        lock (_addedEngines)
+        {
+            _addedEngines.RemoveAll(existing => existing.Info.Id.Equals(engine.Info.Id, StringComparison.OrdinalIgnoreCase));
+            _addedEngines.Add(engine);
+        }
+    }
+
+    private IOcrEngine[] AvailableAddedEngines()
+    {
+        IOcrEngine[] engines;
+
+        lock (_addedEngines)
+        {
+            engines = [.. _addedEngines];
+        }
+
+        return [.. engines.Where(IsAvailable)];
+    }
+
+    private static bool IsAvailable(IOcrEngine engine)
+    {
+        try
+        {
+            return engine.IsAvailable;
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "OCR engine availability");
+            return false;
+        }
+    }
+
+    private IOcrEngine? FindAddedEngine(string? id, bool localOnly)
+    {
+        id = id?.Trim();
+
+        return string.IsNullOrEmpty(id) ? null : AvailableAddedEngines().FirstOrDefault(engine =>
+            engine.Info.Id.Equals(id, StringComparison.OrdinalIgnoreCase) && !(localOnly && engine.Info.IsRemote));
+    }
+
+    public bool IsSupported => _paddleAvailable() || SystemSupported || AvailableAddedEngines().Length > 0;
 
     public string? UnavailableReason => IsSupported ? null : _system?.UnavailableReason ?? "OCR is not available on this platform.";
 
     public string EngineName => PaddleName;
 
-    public IReadOnlyList<OcrEngineInfo> Engines
+    public IReadOnlyList<OcrEngineInfo> Engines =>
+        [.. BuiltInEngines, .. AvailableAddedEngines().Select(engine => engine.Info)];
+
+    private IReadOnlyList<OcrEngineInfo> BuiltInEngines
     {
         get
         {
@@ -111,6 +160,11 @@ public sealed class PaddleOcrService : IOcrService
     {
         OcrLanguage automatic = new("Automatic", AutomaticLanguageTag);
 
+        if (FindAddedEngine(engine, localOnly: false) is { } added)
+        {
+            return added.GetAvailableLanguages();
+        }
+
         return ResolveEngine(engine) switch
         {
             OcrEngineIds.PaddleOcr => [automatic],
@@ -123,6 +177,18 @@ public sealed class PaddleOcrService : IOcrService
     {
         ArgumentNullException.ThrowIfNull(image);
         ArgumentNullException.ThrowIfNull(options);
+
+        if (FindAddedEngine(options.Engine, options.LocalOnly) is { } added)
+        {
+            return await added.RecognizeAsync(image, options).ConfigureAwait(false);
+        }
+
+        if (!_paddleAvailable() && !SystemSupported &&
+            AvailableAddedEngines().FirstOrDefault(engine => !(options.LocalOnly && engine.Info.IsRemote)) is { } only)
+        {
+            // No built-in engine works here, so an added one is the default.
+            return await only.RecognizeAsync(image, options).ConfigureAwait(false);
+        }
 
         string engine = ResolveEngine(options.Engine);
 
@@ -161,7 +227,7 @@ public sealed class PaddleOcrService : IOcrService
     }
 
     /// <summary>
-    /// The engine a request runs on: the one asked for when this build has it, otherwise the best one there is.
+    /// The built-in engine a request runs on: the one asked for when this build has it, otherwise the best one there is.
     /// </summary>
     private string ResolveEngine(string? engine)
     {

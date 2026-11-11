@@ -530,47 +530,78 @@
                             </Border>
                         </StackPanel>
 
-                        <!-- Assistant -->
+                        <!-- MCP Server -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Assistant" FontWeight="SemiBold"/>
+                            <TextBlock Text="MCP Server" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="Use a local-first command overlay for XerahS history and capture actions."
+                                    <TextBlock Text="Use the dedicated xerahs-mcp executable to expose XerahS over the Model Context Protocol."
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
-                                    <CheckBox IsChecked="{Binding AssistantEnabled}"
-                                              Content="Enable XerahS Assistant"
-                                              AutomationProperties.Name="Enable Assistant"/>
-
-                                    <Grid ColumnDefinitions="Auto, 16, *, 16, Auto">
-                                        <TextBlock Grid.Column="0" Text="Shortcut:" VerticalAlignment="Center"/>
+                                    <Grid ColumnDefinitions="Auto, 16, *">
+                                        <TextBlock Grid.Column="0" Text="Manifest URL:" VerticalAlignment="Center"/>
                                         <TextBox Grid.Column="2"
-                                                 Text="{Binding AssistantHotkeyText}"
+                                                 Text="{Binding McpManifestUrl}"
                                                  IsReadOnly="True"
-                                                 AutomationProperties.Name="Assistant Shortcut"/>
-                                        <Button Grid.Column="4"
-                                                Content="Test Shortcut"
-                                                Command="{Binding TestAssistantShortcutCommand}"
-                                                AutomationProperties.Name="Test Assistant Shortcut"/>
+                                                 HorizontalAlignment="Stretch"
+                                                 AutomationProperties.Name="MCP Manifest URL"/>
                                     </Grid>
 
-                                    <TextBlock Text="{Binding AssistantHotkeyStatusText}"
+                                    <Grid ColumnDefinitions="Auto, 16, *">
+                                        <TextBlock Grid.Column="0" Text="API key:" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2"
+                                                 Text="{Binding McpApiKeyDisplay}"
+                                                 IsReadOnly="True"
+                                                 HorizontalAlignment="Stretch"
+                                                 AutomationProperties.Name="MCP API Key Preview"/>
+                                    </Grid>
+
+                                    <TextBlock Text="{Binding McpApiKeyStatusText}"
                                                FontSize="12"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
-                                    <CheckBox IsChecked="{Binding AssistantPromptHistoryEnabled}"
-                                              Content="Save assistant command history"
-                                              AutomationProperties.Name="Save Assistant History"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Content="Copy API Key"
+                                                Command="{Binding CopyMcpApiKeyCommand}"
+                                                AutomationProperties.Name="Copy MCP API Key"/>
+                                        <Button Content="Generate or Regenerate API Key"
+                                                Command="{Binding GenerateMcpApiKeyCommand}"
+                                                AutomationProperties.Name="Generate MCP API Key"/>
+                                        <Button Content="Copy Manifest URL"
+                                                Command="{Binding CopyMcpManifestUrlCommand}"
+                                                AutomationProperties.Name="Copy MCP Manifest URL"/>
+                                    </StackPanel>
 
-                                    <TextBlock Text="AI Provider"
-                                               FontWeight="SemiBold"
-                                               FontSize="12"
-                                               Margin="0,8,0,0"/>
+                                    <TextBlock Text="HTTP transport requires the bearer token above. If no key exists, the MCP runtime also generates one automatically on first launch."
+                                               FontSize="11"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Assistant Tab: the AI provider and every feature that uses it -->
+            <TabItem Header="Assistant">
+                <ScrollViewer controls:SettingsSearch.PageId="assistant">
+                    <StackPanel Spacing="24" Margin="24">
+                        <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
+                            <TextBlock Text="AI Provider" FontWeight="SemiBold"/>
+                            <Border BorderThickness="1"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <TextBlock Text="XerahS uses your own account with an AI provider. Choose the provider, enter its API key, and the features below become available. Without a provider, everything in XerahS still works locally."
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               TextWrapping="Wrap"/>
 
                                     <Grid ColumnDefinitions="Auto, 16, *">
                                         <TextBlock Grid.Column="0" Text="Provider:" VerticalAlignment="Center"/>
@@ -639,57 +670,83 @@
                             </Border>
                         </StackPanel>
 
-                        <!-- MCP Server -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="MCP Server" FontWeight="SemiBold"/>
+                            <TextBlock Text="AI Features" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="Use the dedicated xerahs-mcp executable to expose XerahS over the Model Context Protocol."
+                                    <TextBlock Text="Choose where XerahS may use the AI provider. Nothing is sent until you use a feature."
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
-                                    <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="Manifest URL:" VerticalAlignment="Center"/>
+                                    <ItemsControl ItemsSource="{Binding AssistantFeatureOptions}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:AssistantFeatureOptionViewModel">
+                                                <StackPanel Spacing="2" Margin="0,0,0,12">
+                                                    <CheckBox IsChecked="{Binding IsEnabled}"
+                                                              Content="{Binding Title}"
+                                                              AutomationProperties.Name="{Binding Title}"/>
+                                                    <TextBlock Text="{Binding Description}"
+                                                               Margin="28,0,0,0"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                               TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding SendsText}"
+                                                               Margin="28,0,0,0"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                               TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding UnavailableText}"
+                                                               IsVisible="{Binding IsUnavailable}"
+                                                               Margin="28,0,0,0"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
+                            <TextBlock Text="Assistant Overlay" FontWeight="SemiBold"/>
+                            <Border BorderThickness="1"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    CornerRadius="4" Padding="16">
+                                <StackPanel Spacing="16">
+                                    <TextBlock Text="Use a local-first command overlay for XerahS history and capture actions."
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               TextWrapping="Wrap"/>
+
+                                    <CheckBox IsChecked="{Binding AssistantEnabled}"
+                                              Content="Enable XerahS Assistant"
+                                              AutomationProperties.Name="Enable Assistant"/>
+
+                                    <Grid ColumnDefinitions="Auto, 16, *, 16, Auto">
+                                        <TextBlock Grid.Column="0" Text="Shortcut:" VerticalAlignment="Center"/>
                                         <TextBox Grid.Column="2"
-                                                 Text="{Binding McpManifestUrl}"
+                                                 Text="{Binding AssistantHotkeyText}"
                                                  IsReadOnly="True"
-                                                 HorizontalAlignment="Stretch"
-                                                 AutomationProperties.Name="MCP Manifest URL"/>
+                                                 AutomationProperties.Name="Assistant Shortcut"/>
+                                        <Button Grid.Column="4"
+                                                Content="Test Shortcut"
+                                                Command="{Binding TestAssistantShortcutCommand}"
+                                                AutomationProperties.Name="Test Assistant Shortcut"/>
                                     </Grid>
 
-                                    <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="API key:" VerticalAlignment="Center"/>
-                                        <TextBox Grid.Column="2"
-                                                 Text="{Binding McpApiKeyDisplay}"
-                                                 IsReadOnly="True"
-                                                 HorizontalAlignment="Stretch"
-                                                 AutomationProperties.Name="MCP API Key Preview"/>
-                                    </Grid>
-
-                                    <TextBlock Text="{Binding McpApiKeyStatusText}"
+                                    <TextBlock Text="{Binding AssistantHotkeyStatusText}"
                                                FontSize="12"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <Button Content="Copy API Key"
-                                                Command="{Binding CopyMcpApiKeyCommand}"
-                                                AutomationProperties.Name="Copy MCP API Key"/>
-                                        <Button Content="Generate or Regenerate API Key"
-                                                Command="{Binding GenerateMcpApiKeyCommand}"
-                                                AutomationProperties.Name="Generate MCP API Key"/>
-                                        <Button Content="Copy Manifest URL"
-                                                Command="{Binding CopyMcpManifestUrlCommand}"
-                                                AutomationProperties.Name="Copy MCP Manifest URL"/>
-                                    </StackPanel>
-
-                                    <TextBlock Text="HTTP transport requires the bearer token above. If no key exists, the MCP runtime also generates one automatically on first launch."
-                                               FontSize="11"
-                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                               TextWrapping="Wrap"/>
+                                    <CheckBox IsChecked="{Binding AssistantPromptHistoryEnabled}"
+                                              Content="Save assistant command history"
+                                              AutomationProperties.Name="Save Assistant History"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

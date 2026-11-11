@@ -27,6 +27,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SkiaSharp;
+using XerahS.Assistant.Ai;
 using XerahS.Common;
 using XerahS.Core;
 using XerahS.Platform.Abstractions;
@@ -71,6 +72,29 @@ public partial class OcrViewModel : ViewModelBase
     public ObservableCollection<OcrEngineInfo> AvailableEngines { get; } = new();
 
     public bool HasEngineChoice => AvailableEngines.Count > 1;
+
+    /// <summary>
+    /// The AI menu's text actions (translate, summarise, clean up) are switched on and a provider is set up.
+    /// </summary>
+    public bool AiTextToolsAvailable => AiFeatures.IsUsable(AiFeatures.TextTools);
+
+    public bool AiDescribeImageAvailable => AiFeatures.IsUsable(AiFeatures.DescribeImage);
+
+    public bool AiMenuAvailable => AiTextToolsAvailable || AiDescribeImageAvailable;
+
+    /// <summary>The language Translate turns the text into: the one XerahS is shown in.</summary>
+    public string AiTranslateLabel => $"Translate to {TranslationLanguage}";
+
+    private static string TranslationLanguage
+    {
+        get
+        {
+            var culture = System.Globalization.CultureInfo.CurrentUICulture;
+            return (culture.IsNeutralCulture ? culture : culture.Parent).EnglishName is { Length: > 0 } name && name != "Invariant Language (Invariant Country)"
+                ? name
+                : "English";
+        }
+    }
 
     public double[] ScaleFactorOptions { get; } = [1.0, 1.5, 2.0, 3.0, 4.0];
 
@@ -275,6 +299,67 @@ public partial class OcrViewModel : ViewModelBase
         {
             DebugHelper.WriteException(ex, "OCR clipboard copy");
             StatusText = "Failed to copy to clipboard.";
+        }
+    }
+
+    [RelayCommand]
+    private Task AiTranslateAsync() =>
+        RunAiActionAsync("Translating", token => AiTextTools.TranslateAsync(ResultText, TranslationLanguage, token));
+
+    [RelayCommand]
+    private Task AiSummariseAsync() =>
+        RunAiActionAsync("Summarising", token => AiTextTools.SummariseAsync(ResultText, token));
+
+    [RelayCommand]
+    private Task AiCleanUpAsync() =>
+        RunAiActionAsync("Cleaning up", token => AiTextTools.CleanUpAsync(ResultText, token));
+
+    [RelayCommand]
+    private Task AiDescribeImageAsync()
+    {
+        SKBitmap? image = _sourceImage;
+        return image == null
+            ? Task.CompletedTask
+            : RunAiActionAsync("Describing the image", token => AiTextTools.DescribeImageAsync(image, token));
+    }
+
+    /// <summary>
+    /// Runs one AI action and puts its answer in the result box. The text that was there is kept when it fails.
+    /// </summary>
+    private async Task RunAiActionAsync(string activity, Func<CancellationToken, Task<AiReply>> action)
+    {
+        if (IsProcessing)
+        {
+            return;
+        }
+
+        IsProcessing = true;
+        string provider = AiServices.Client.Connection?.ProviderName ?? "the AI provider";
+        StatusText = $"{activity} with {provider}...";
+
+        try
+        {
+            AiReply reply = await action(CancellationToken.None);
+
+            if (reply.Success)
+            {
+                ResultText = reply.Text!.Trim();
+                HasResult = ResultText.Length > 0;
+                StatusText = $"Done by {provider}.";
+            }
+            else
+            {
+                StatusText = reply.ErrorMessage;
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "OCR AI action");
+            StatusText = "The AI request failed.";
+        }
+        finally
+        {
+            IsProcessing = false;
         }
     }
 

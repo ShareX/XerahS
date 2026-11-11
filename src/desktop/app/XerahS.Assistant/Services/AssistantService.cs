@@ -27,6 +27,7 @@ using SkiaSharp;
 using System.Text.Json;
 using XerahS.Bootstrap;
 using XerahS.Common;
+using XerahS.Assistant.Ai;
 using XerahS.Assistant.Configuration;
 using XerahS.Assistant.Models;
 using XerahS.Assistant.Providers;
@@ -165,6 +166,12 @@ public sealed class AssistantService : IAssistantService
             return null;
         }
 
+        if (!AiFeatures.IsEnabled(AiFeatures.OverlayRequests))
+        {
+            DebugHelper.WriteLine("[Assistant] Free-form requests are switched off in Settings. Skipping provider path.");
+            return null;
+        }
+
         DebugHelper.WriteLine($"[Assistant] Trying provider path with provider='{providerSettings.Metadata.Id}', model='{providerSettings.ModelId}'.");
 
         AssistantPrivacyDecision decision = _privacyGuard.Evaluate(new AssistantPrivacyCheck(
@@ -179,12 +186,10 @@ public sealed class AssistantService : IAssistantService
             return null;
         }
 
-        AssistantModelRequest request = new(
-            providerSettings.Metadata.Id,
-            providerSettings.ModelId,
-            [
-                new AssistantMessage(
-                    AssistantModelMessageRole.System,
+        // The planner prompt goes through the shared AI client, like every other AI feature.
+        var ai = new AiClient(() => providerSettings, _providerFactory);
+        AiReply result = await ai.AskAsync(
+            new AiPrompt(
                     """
                     You are the local intent planner for XerahS Assistant.
                     Convert the user's request into exactly one JSON object with no surrounding prose.
@@ -205,26 +210,19 @@ public sealed class AssistantService : IAssistantService
                     - Preserve an explicit separator like ";", ",", "|", "newline", or "tab" in the separator field.
                     - For run_workflow, place the workflow name in argument.
                     - Return no_match when the request does not cleanly map to one safe local action.
-                    """),
-                new AssistantMessage(
-                    AssistantModelMessageRole.User,
-                    prompt)
-            ],
-            [],
-            AssistantPrivacyScope.CloudText,
-            AllowImageContent: false);
-
-        IAssistantModelProvider provider = _providerFactory(providerSettings);
-        AssistantModelResult result = await provider.CompleteAsync(request, cancellationToken);
-        DebugHelper.WriteLine($"[Assistant] Provider returned result kind={result.Kind}, hasText={!string.IsNullOrWhiteSpace(result.Text)}, toolCalls={result.ToolCalls.Count}.");
-        if (result.Kind == AssistantModelResultKind.Cancelled)
+                    """,
+                prompt)
+            { MaxOutputTokens = 80 },
+            cancellationToken);
+        DebugHelper.WriteLine($"[Assistant] Provider returned status={result.Status}, hasText={!string.IsNullOrWhiteSpace(result.Text)}.");
+        if (result.Status == AiReplyStatus.Cancelled)
         {
             return AssistantResponse.Error("Provider request cancelled.");
         }
 
-        if (result.Kind == AssistantModelResultKind.Error || string.IsNullOrWhiteSpace(result.Text))
+        if (!result.Success)
         {
-            return AssistantResponse.Error(result.Text ?? "Provider request failed.");
+            return AssistantResponse.Error(result.Error ?? "Provider request failed.");
         }
 
         AssistantDeterministicIntent? providerIntent = TryParseProviderIntent(result.Text);
@@ -236,7 +234,7 @@ public sealed class AssistantService : IAssistantService
                 : await ProcessIntentAsync(providerIntent, cancellationToken);
         }
 
-        AssistantDeterministicIntent inferredIntent = _router.Parse(result.Text);
+        AssistantDeterministicIntent inferredIntent = _router.Parse(result.Text!);
         DebugHelper.WriteLine($"[Assistant] Provider text fallback parsed to kind={inferredIntent.Kind}, limit={inferredIntent.Limit}, copyRequested={inferredIntent.CopyRequested}, separator='{inferredIntent.Separator ?? "<null>"}'.");
         if (inferredIntent.Kind == AssistantDeterministicIntentKind.Unknown)
         {
