@@ -42,6 +42,11 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.34.0" date="2026-11-12">
+      <description>
+        <p>Built-in PaddleOCR with a choice of OCR engine, an Assistant settings tab with a switch for each AI feature, AI Assistant OCR and text tools, on-demand redaction of sensitive information, and multi-clip video trimming.</p>
+      </description>
+    </release>
     <release version="0.33.11" date="2026-11-11">
       <description>
         <p>See CHANGELOG.md for details.</p>
