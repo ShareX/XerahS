@@ -303,22 +303,35 @@ can_notarize() {
     [ -n "${MACOS_NOTARY_PROFILE:-}" ] || [ -n "${MACOS_NOTARY_KEY:-}" ]
 }
 
+# Every call is time-limited: notarytool has no timeout of its own, and a stalled upload to Apple once
+# held a release job for hours (v0.33.10). perl's alarm survives exec and macOS has no timeout(1).
 notarytool() {
+    local limit="${MACOS_NOTARY_CALL_TIMEOUT:-600}"
     if [ -n "${MACOS_NOTARY_PROFILE:-}" ]; then
-        xcrun notarytool "$@" --keychain-profile "$MACOS_NOTARY_PROFILE"
+        perl -e 'alarm shift; exec @ARGV' "$limit" xcrun notarytool "$@" --keychain-profile "$MACOS_NOTARY_PROFILE"
     else
-        xcrun notarytool "$@" --key "$MACOS_NOTARY_KEY" --key-id "$MACOS_NOTARY_KEY_ID" --issuer "$MACOS_NOTARY_ISSUER"
+        perl -e 'alarm shift; exec @ARGV' "$limit" xcrun notarytool "$@" --key "$MACOS_NOTARY_KEY" --key-id "$MACOS_NOTARY_KEY_ID" --issuer "$MACOS_NOTARY_ISSUER"
     fi
 }
 
 # Submits a file and polls for Apple's verdict, retrying through network drops (notarytool --wait
-# gives up on the first one). Returns 0 when accepted, 1 when rejected (the log is printed), and 2
+# gives up on the first one). Returns 0 when accepted, 1 when rejected (the log is printed) or when
+# the file could not be submitted in three time-limited attempts, and 2
 # when Apple is still reviewing after MACOS_NOTARY_TIMEOUT seconds: a new Developer ID team's first
 # submissions can take hours. The file is signed either way, and Gatekeeper asks Apple online, so it
 # opens without a warning as soon as the review passes; only the stapled ticket is missing.
 notarize_submit() {
-    local id status deadline=$((SECONDS + ${MACOS_NOTARY_TIMEOUT:-1200}))
-    id="$(notarytool submit "$1" --output-format plist | plutil -extract id raw -)"
+    local id="" status attempt deadline
+    for attempt in 1 2 3; do
+        id="$(notarytool submit "$1" --output-format plist | plutil -extract id raw - 2>/dev/null)" || id=""
+        [ -n "$id" ] && break
+        echo "::warning::Notarization submit attempt $attempt for $(basename "$1") failed or timed out"
+    done
+    if [ -z "$id" ]; then
+        echo "Could not submit $(basename "$1") for notarization after 3 attempts" >&2
+        return 1
+    fi
+    deadline=$((SECONDS + ${MACOS_NOTARY_TIMEOUT:-1200}))
     echo "Notarization submission $id for $(basename "$1")"
     while [ "$SECONDS" -lt "$deadline" ]; do
         sleep 30

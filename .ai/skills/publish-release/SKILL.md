@@ -188,6 +188,8 @@ One line per failed release iteration. Read before tagging; append a line for ev
 - `--no-bump` skips syncing `build/windows/chocolatey/xerahs.nuspec` and the Flatpak metainfo `<release>` entry. When `Directory.Build.props` was already bumped by a feature commit, sync those two files yourself before tagging.
 - v0.32.4: `--no-bump` with every version file already synced needs `--allow-empty`, or Step 3 stops with "no staged changes" before tagging (nothing is pushed).
 - v0.32.4: Step 7 verified "latest" with `gh release view --json isLatest`, which gh 2.101 does not have; the release was already marked latest but the script exited 1. It now checks `gh api repos/<owner>/<repo>/releases/latest`.
+- v0.33.10: `notarytool submit` stalled while uploading the DMG and the macOS job sat in "Build macOS packages" for over four hours with every other job green. `build/macos/package-mac.sh` now time-limits every `notarytool` call (`MACOS_NOTARY_CALL_TIMEOUT`, default 600 s) and retries the submit three times. If the macOS job passes 40 minutes, cancel the run, read the job log, and release the next patch version.
+- `--no-bump` after hand-syncing the nuspec and Flatpak metainfo: maintenance auto-commits those edits as `[skill] Auto-commit ...`, so Step 3 then needs `--allow-empty`. Commit the sync yourself before running the sequence.
 - Several agents may share one checkout. Maintenance auto-commits whatever is uncommitted, so check `git status` and `git log` before a run to avoid releasing, or sweeping up, another agent's half-finished work.
 
 ## Packaging background

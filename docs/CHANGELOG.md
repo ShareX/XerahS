@@ -10,7 +10,9 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
-## v0.33.10
+## v0.33.11
+
+v0.33.10 was tagged but never published: its macOS build stalled while uploading to Apple for notarization. Its changes ship here.
 
 ### Fixes
 
@@ -20,6 +22,7 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ### Internal
 
+- **Build (macOS)**: Every notarization call now has a time limit, and the upload is retried up to three times, so a stalled upload can no longer hold a release for hours.
 - The capture and upload task lifecycle now has one documented transition table (`TaskStatusMachine`). Four unused recording status enums were removed. See `docs/technical/implicit-state-machines.md`.
 - Removed dead code and stray files: three unused placeholder classes, three tracked build logs and a 17 MB Android log dump. Fixed stale paths in the README and KNOWN_ISSUES.
 - The desktop solution now also builds the Assistant, omaxerahs and MCP server projects. Removed an unused duplicate hotkey status type and a broken macOS icon script, and repaired 75 dead links in the docs.
