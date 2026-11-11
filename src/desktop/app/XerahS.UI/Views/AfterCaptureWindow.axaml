@@ -225,6 +225,10 @@
                         IsChecked="{Binding SaveImageToFile}"
                         IsVisible="{Binding ShowSaveImageOption}"
                         AutomationProperties.Name="Save Image to File"/>
+              <CheckBox Content="Apply image effects"
+                        IsChecked="{Binding AddImageEffects}"
+                        ToolTip.Tip="Applies this workflow's image effects to the capture. Untick to skip them this time."
+                        AutomationProperties.Name="Apply Image Effects"/>
               <CheckBox Content="Annotate media"
                         IsChecked="{Binding AnnotateMedia}"
                         AutomationProperties.Name="Annotate Media"/>

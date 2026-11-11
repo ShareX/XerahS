@@ -181,6 +181,20 @@ public partial class AfterCaptureViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Whether this capture gets the workflow's image effects. Starts as the workflow has it; unticking skips the
+    /// effects for this run, like the other optional tasks in this window.
+    /// </summary>
+    public bool AddImageEffects
+    {
+        get => AfterCaptureTasks.HasFlag(AfterCaptureTasks.AddImageEffects);
+        set
+        {
+            SetAfterCaptureFlag(AfterCaptureTasks.AddImageEffects, value);
+            OnPropertyChanged();
+        }
+    }
+
     public bool UploadImageToHost
     {
         get => AfterCaptureTasks.HasFlag(AfterCaptureTasks.UploadImageToHost);
@@ -302,6 +316,7 @@ public partial class AfterCaptureViewModel : ViewModelBase
         OnPropertyChanged(nameof(CopyImageToClipboard));
         OnPropertyChanged(nameof(CopyFilePathToClipboard));
         OnPropertyChanged(nameof(AnnotateMedia));
+        OnPropertyChanged(nameof(AddImageEffects));
         OnPropertyChanged(nameof(UploadImageToHost));
         OnPropertyChanged(nameof(CopyOcrTextToClipboard));
     }

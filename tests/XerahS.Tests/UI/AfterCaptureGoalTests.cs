@@ -52,6 +52,38 @@ public sealed class AfterCaptureGoalTests
     }
 
     [AvaloniaTest]
+    public void ImageEffects_StartAsTheWorkflowHasThemAndCanBeSkippedForThisCapture()
+    {
+        _viewModel = new AfterCaptureViewModel(
+            _image,
+            AfterCaptureTasks.AddImageEffects | AfterCaptureTasks.CopyImageToClipboard,
+            AfterUploadTasks.None);
+
+        Assert.That(_viewModel.AddImageEffects, Is.True);
+
+        _viewModel.AddImageEffects = false;
+
+        Assert.That(_viewModel.AfterCaptureTasks.HasFlag(AfterCaptureTasks.AddImageEffects), Is.False);
+        Assert.That(_viewModel.AfterCaptureTasks.HasFlag(AfterCaptureTasks.CopyImageToClipboard), Is.True);
+
+        // Changing the goal keeps the choice.
+        _viewModel.SelectedGoal = AfterCaptureGoal.CopyFilePath;
+        Assert.That(_viewModel.AddImageEffects, Is.False);
+
+        _viewModel.AddImageEffects = true;
+        _viewModel.SelectedGoal = AfterCaptureGoal.CopyUrl;
+        Assert.That(_viewModel.AfterCaptureTasks.HasFlag(AfterCaptureTasks.AddImageEffects), Is.True);
+    }
+
+    [AvaloniaTest]
+    public void ImageEffects_AreOffWhenTheWorkflowHasThemOff()
+    {
+        _viewModel = new AfterCaptureViewModel(_image, AfterCaptureTasks.CopyImageToClipboard, AfterUploadTasks.None);
+
+        Assert.That(_viewModel.AddImageEffects, Is.False);
+    }
+
+    [AvaloniaTest]
     public void InferGoal_PrefersCopyUrlWhenUploadOrCopyUrlIsSet()
     {
         Assert.That(
