@@ -26,6 +26,7 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 - **After Capture window: skip image effects**: The window now has an "Apply image effects" checkbox, ticked when the workflow has image effects on. Untick it to save or upload the capture without them. Like the other options in that window, the choice stays for the workflow until you change it back.
 - **Video trimmer: several clips**: Omacut can split a video into clips, drop in more videos, reorder them, and undo. Export joins the clips. Opening another video asks first when that edit has not been exported. `F` saves the frame on screen.
+- **Video trimmer: frame step and cuts**: Alt+Left and Alt+Right pause and step one video frame. Holding either key moves 0.2 seconds. Playback jumps a real cut instead of showing the removed frames. A split still plays straight through.
 
 ### Internal
 
