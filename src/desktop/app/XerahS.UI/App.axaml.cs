@@ -173,42 +173,8 @@ public partial class App : Application
             mainViewModel.ShowTaskButtons = false;
             mainViewModel.ShowStartScreen = false;
 
-            // Pre-load default image so annotation toolbar is usable before first capture
-            // Load asynchronously to avoid blocking the UI thread during startup
-            Task.Run(async () =>
-            {
-                try
-                {
-                    var sampleUri = new Uri("avares://ShareX.ImageEditor/Assets/Sample.png");
-                    using var sampleStream = Avalonia.Platform.AssetLoader.Open(sampleUri);
-                    if (sampleStream == null)
-                    {
-                        DebugHelper.WriteLine($"Sample.png stream is null - asset not found at {sampleUri}");
-                        return;
-                    }
-                    using var ms = new MemoryStream();
-                    sampleStream.CopyTo(ms);
-                    ms.Position = 0;
-                    SKBitmap? sampleBitmap = SKBitmap.Decode(ms);
-                    if (sampleBitmap == null)
-                    {
-                        DebugHelper.WriteLine($"SKBitmap.Decode returned null for Sample.png");
-                        return;
-                    }
-
-                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        mainViewModel.UpdatePreview(sampleBitmap, clearAnnotations: true);
-                        sampleBitmap = null;
-                    });
-
-                    sampleBitmap?.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    DebugHelper.WriteLine($"Failed to pre-load default editor image (Sample.png): {ex}");
-                }
-            });
+            // Sample.png is loaded lazily by MainWindow the first time the window is really
+            // shown (EditorSamplePreloader), so tray-only sessions never decode it (XIP0091).
 
             // Wire up CopyRequested for embedded editor in MainWindow (use edited snapshot when on Editor tab)
             Services.MainViewModelHelper.WireCopyRequested(mainViewModel, () =>
