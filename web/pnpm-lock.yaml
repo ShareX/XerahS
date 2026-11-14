@@ -36,7 +36,7 @@ importers:
         version: 1.4.8
       '@neon/functions':
         specifier: 0.11.0
-        version: 0.11.0(hono@4.13.11)
+        version: 0.11.0(hono@4.13.16)
       bcryptjs:
         specifier: 3.0.3
         version: 3.0.3
@@ -44,8 +44,8 @@ importers:
         specifier: 1.7.7
         version: 1.7.7(next@16.4.3(@types/node@24.10.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(pg@8.23.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@4.1.12(@types/node@24.10.1)(jsdom@27.4.0(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@24.10.1)(esbuild@0.28.1)(jiti@2.7.0)))
       hono:
-        specifier: 4.13.11
-        version: 4.13.11
+        specifier: 4.13.16
+        version: 4.13.16
       jose:
         specifier: 6.2.12
         version: 6.2.12
@@ -2428,8 +2428,8 @@ packages:
   hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
 
-  hono@4.13.11:
-    resolution: {integrity: sha512-/SMX/RQNJn7oNmFwH6DtwDqcrzZU2otm1FD6OJe2cWF6cfy/F8hq0XVBv7xW3FTJshRQwuBnXHDq2kNsdZnshg==}
+  hono@4.13.16:
+    resolution: {integrity: sha512-AOLOEhvrV+iH92xXCnFr/5+3KjPKcI3xP63XJtX5spAnkznPdHijlIsUTpi7/9EhWqrTCekw5c5zh1K+YsVw7A==}
     engines: {node: '>=16.9.0'}
 
   html-encoding-sniffer@6.0.0:
@@ -4468,9 +4468,9 @@ snapshots:
     optionalDependencies:
       '@napi-rs/keyring': 1.3.0
 
-  '@neon/functions@0.11.0(hono@4.13.11)':
+  '@neon/functions@0.11.0(hono@4.13.16)':
     optionalDependencies:
-      hono: 4.13.11
+      hono: 4.13.16
 
   '@neon/sdk@7.0.0': {}
 
@@ -5953,7 +5953,7 @@ snapshots:
     dependencies:
       hermes-estree: 0.25.1
 
-  hono@4.13.11: {}
+  hono@4.13.16: {}
 
   html-encoding-sniffer@6.0.0(@noble/hashes@2.4.0):
     dependencies:

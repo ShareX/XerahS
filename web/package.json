@@ -33,7 +33,7 @@
     "@neon/functions": "0.11.0",
     "bcryptjs": "3.0.3",
     "better-auth": "1.7.7",
-    "hono": "4.13.11",
+    "hono": "4.13.16",
     "jose": "6.2.12",
     "kysely": "0.29.6",
     "next": "16.4.3",
