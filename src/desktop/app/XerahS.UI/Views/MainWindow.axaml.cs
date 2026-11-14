@@ -123,8 +123,61 @@ namespace XerahS.UI.Views
             // Do not Show/Activate here. NavigateTo used to call Show() while the window
             // was still being constructed, which fired Opened before App could attach the
             // SilentRun hide-to-tray handler. Avalonia shows MainWindow after startup.
-            NavigateTo("Editor");
+            // XIP0091: a SilentRun start never shows the editor, so don't build it until the
+            // window is really shown (EnsureVisibleWorkStarted). Normal starts are unchanged.
+            if (!SilentRunStartupPolicy.ShouldHideMainWindowToTray(
+                    SettingsManager.Settings.SilentRun, App.IsExiting, alreadyApplied: false))
+            {
+                NavigateTo("Editor");
+            }
             _suppressWindowActivation = false;
+        }
+
+        private bool _visibleWorkStarted;
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            // After a SilentRun hide, the next time the window is shown for real (tray "Open",
+            // NavigateTo, onboarding...) do the work that only a visible window needs.
+            // Re-check at Background priority: on some Windows setups Avalonia's startup Show()
+            // completes after the hide-to-tray, briefly flipping IsVisible to true.
+            if (change.Property == IsVisibleProperty && change.GetNewValue<bool>() && _silentRunHideApplied && !_visibleWorkStarted)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (IsVisible)
+                    {
+                        EnsureVisibleWorkStarted();
+                    }
+                }, DispatcherPriority.Background);
+            }
+        }
+
+        /// <summary>
+        /// Work that only matters once the user can see the main window: the default Editor page,
+        /// the editor placeholder image and the settings search index. Runs once.
+        /// </summary>
+        private void EnsureVisibleWorkStarted()
+        {
+            if (_visibleWorkStarted)
+            {
+                return;
+            }
+            _visibleWorkStarted = true;
+
+            if (this.FindControl<ContentControl>("ContentFrame") is { Content: null })
+            {
+                NavigateTo("Editor");
+            }
+
+            EditorSamplePreloader.PreloadIfEmpty(_mainViewModel);
+
+            // Pre-warm settings pages so first open and settings search indexing stay off the hot path.
+            // Settings views need the UI view model factory, which bootstrap may not have configured yet.
+            UiViewModelFactoryAccessor.RunWhenAvailable(() =>
+                Dispatcher.UIThread.Post(() => _ = PreWarmSettingsSearchIndexAsync(), DispatcherPriority.Background));
         }
 
         protected override void OnClosed(EventArgs e)
@@ -513,10 +566,12 @@ namespace XerahS.UI.Views
                 };
             }
 
-            // Pre-warm settings pages so first open and settings search indexing stay off the hot path.
-            // Settings views need the UI view model factory, which bootstrap may not have configured yet.
-            UiViewModelFactoryAccessor.RunWhenAvailable(() =>
-                Dispatcher.UIThread.Post(() => _ = PreWarmSettingsSearchIndexAsync(), DispatcherPriority.Background));
+            // XIP0091: skip editor/sample/settings pre-warm while hidden to tray; OnPropertyChanged
+            // starts it the first time the window is really shown.
+            if (!_silentRunHideApplied)
+            {
+                EnsureVisibleWorkStarted();
+            }
 
             // Show onboarding wizard once on first run — guard prevents double-fire on repeated OnWindowOpened calls.
             // Skip when SilentRun hid the window: ShowDialog would re-show the owner.
