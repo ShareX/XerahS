@@ -46,6 +46,7 @@ public partial class UploadContentWindow : SurfaceWindow
     {
         _viewModel = viewModel;
         DataContext = viewModel;
+        viewModel.RefreshDestinations();
 
         viewModel.FilePickerRequested += OnFilePickerRequested;
         viewModel.FolderPickerRequested += OnFolderPickerRequested;

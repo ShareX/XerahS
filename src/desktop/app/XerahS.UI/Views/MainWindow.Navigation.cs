@@ -242,7 +242,9 @@ namespace XerahS.UI.Views
                     contentFrame.Content = new WorkflowsView();
                     return true;
                 case "Upload_ClipboardUploadWithContentViewer":
-                    _ = ExecuteWorkflowFromNavigationAsync(WorkflowType.ClipboardUploadWithContentViewer);
+                    // Open the Upload Content window directly, like the hotkey dispatcher does.
+                    // Routing through a FileUpload workflow opened the file picker instead.
+                    _ = XerahS.UI.Services.UploadContentToolService.HandleWorkflowAsync(WorkflowType.ClipboardUploadWithContentViewer, this);
                     openedExternalWindow = true;
                     return true;
                 case "Upload_FileUpload":

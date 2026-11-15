@@ -31,10 +31,24 @@
             Classes="section-card"
             AutomationProperties.Name="Content sources section">
       <Grid RowDefinitions="Auto,Auto"
+            ColumnDefinitions="*,Auto"
             RowSpacing="8">
         <TextBlock Text="Sources"
                    Classes="section-title" />
+        <StackPanel Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="8"
+                    VerticalAlignment="Center">
+          <TextBlock Text="Uploader"
+                     VerticalAlignment="Center"
+                     AutomationProperties.Name="Uploader label" />
+          <ComboBox ItemsSource="{Binding Destinations}"
+                    SelectedItem="{Binding SelectedDestination}"
+                    MinWidth="220"
+                    AutomationProperties.Name="Choose uploader for this queue" />
+        </StackPanel>
         <WrapPanel Grid.Row="1"
+                   Grid.ColumnSpan="2"
                    Orientation="Horizontal">
           <Button Content="Clipboard"
                   Classes="source-button accent"

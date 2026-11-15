@@ -876,14 +876,6 @@ namespace XerahS.UI.Views
         {
             var workflow = SettingsManager.GetFirstWorkflow(jobType);
 
-            // Upload Content nav fallback:
-            // if no workflow is configured for ClipboardUploadWithContentViewer,
-            // use FileUpload workflow when available.
-            if (workflow == null && jobType == WorkflowType.ClipboardUploadWithContentViewer)
-            {
-                workflow = SettingsManager.GetFirstWorkflow(WorkflowType.FileUpload);
-            }
-
             if (workflow != null)
             {
                 return XerahS.Core.Helpers.TaskHelpers.ExecuteWorkflow(workflow, workflow.Id);

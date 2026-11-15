@@ -95,6 +95,30 @@ public partial class UploadQueueItem : ObservableObject
     }
 }
 
+/// <summary>One entry in the Upload Content uploader chooser. A null <see cref="InstanceId"/> means "use the workflow default".</summary>
+public sealed record UploadDestinationOption(string? InstanceId, string DisplayName, UploaderCategory[]? Categories = null)
+{
+    /// <summary>True when this option can take an item of the given type (the workflow default always can).</summary>
+    public bool Accepts(EDataType dataType)
+    {
+        if (InstanceId == null || dataType == EDataType.URL)
+        {
+            return true;
+        }
+
+        UploaderCategory needed = dataType switch
+        {
+            EDataType.Image => UploaderCategory.Image,
+            EDataType.Text => UploaderCategory.Text,
+            _ => UploaderCategory.File
+        };
+
+        return Categories?.Contains(needed) ?? true;
+    }
+
+    public override string ToString() => DisplayName;
+}
+
 public partial class UploadContentViewModel : ViewModelBase, IDisposable
 {
     private bool _disposed;
@@ -104,6 +128,78 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
     private readonly IDesktopTaskManager _taskManager;
 
     public ObservableCollection<UploadQueueItem> Items { get; } = new();
+
+    public static UploadDestinationOption WorkflowDefaultDestination { get; } =
+        new(null, "Workflow default");
+
+    /// <summary>Uploaders the user can pick for this queue; the first entry is always the workflow default.</summary>
+    public ObservableCollection<UploadDestinationOption> Destinations { get; } = new() { WorkflowDefaultDestination };
+
+    [ObservableProperty]
+    private UploadDestinationOption _selectedDestination = WorkflowDefaultDestination;
+
+    /// <summary>Reloads <see cref="Destinations"/> from the configured uploader instances, keeping the current choice when it still exists.</summary>
+    public void RefreshDestinations()
+    {
+        string? previousId = SelectedDestination?.InstanceId;
+        var options = new List<UploadDestinationOption> { WorkflowDefaultDestination };
+
+        try
+        {
+            var found = new Dictionary<string, (string Name, List<UploaderCategory> Cats)>(StringComparer.OrdinalIgnoreCase);
+            foreach (var category in new[] { UploaderCategory.File, UploaderCategory.Image, UploaderCategory.Text })
+            {
+                foreach (var instance in InstanceManager.Instance.GetInstancesByCategory(category))
+                {
+                    if (string.IsNullOrEmpty(instance.InstanceId))
+                    {
+                        continue;
+                    }
+
+                    if (!found.TryGetValue(instance.InstanceId, out var entry))
+                    {
+                        entry = (instance.DisplayName, new List<UploaderCategory>());
+                        found[instance.InstanceId] = entry;
+                    }
+
+                    entry.Cats.Add(category);
+                }
+            }
+
+            foreach (var (id, entry) in found)
+            {
+                options.Add(new UploadDestinationOption(id, $"{entry.Name} ({string.Join("/", entry.Cats)})", entry.Cats.ToArray()));
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteException(ex, "UploadContent: Failed to load uploader choices.");
+        }
+
+        Destinations.Clear();
+        foreach (var option in options)
+        {
+            Destinations.Add(option);
+        }
+
+        SelectedDestination = Destinations.FirstOrDefault(d =>
+                string.Equals(d.InstanceId, previousId, StringComparison.OrdinalIgnoreCase))
+            ?? WorkflowDefaultDestination;
+    }
+
+    /// <summary>
+    /// Applies the chosen uploader to a task's settings. URL items are shortened rather than uploaded,
+    /// so they keep the workflow's URL shortener. A null or blank id leaves the workflow default.
+    /// </summary>
+    internal static void ApplyDestinationOverride(TaskSettings settings, EDataType dataType, string? destinationInstanceId)
+    {
+        if (string.IsNullOrWhiteSpace(destinationInstanceId) || dataType == EDataType.URL)
+        {
+            return;
+        }
+
+        settings.SetDestinationInstanceId(settings.Job, destinationInstanceId);
+    }
 
     [ObservableProperty]
     private UploadQueueItem? _selectedItem;
@@ -559,7 +655,16 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
 
         try
         {
+            var chosen = SelectedDestination;
+            if (chosen != null && !chosen.Accepts(item.DataType))
+            {
+                item.Status = UploadQueueItemStatus.Failed;
+                item.ErrorMessage = $"{chosen.DisplayName} cannot upload {item.DataType} items. Pick another uploader or Workflow default.";
+                return;
+            }
+
             var settings = CreateUploadTaskSettings(item.DataType);
+            ApplyDestinationOverride(settings, item.DataType, SelectedDestination?.InstanceId);
             DebugHelper.WriteLine(
                 $"[UploadContentDebug] TaskSettings resolved for item: job={settings.Job}, workflowId=\"{settings.WorkflowId ?? string.Empty}\", " +
                 $"destinationInstanceId=\"{settings.DestinationInstanceId ?? string.Empty}\", " +

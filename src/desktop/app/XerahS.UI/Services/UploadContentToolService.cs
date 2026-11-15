@@ -115,6 +115,7 @@ public static class UploadContentToolService
                 }
 
                 _window.ShowActivated = !background;
+                _window.ViewModel?.RefreshDestinations();
                 _window.Show();
 
                 if (!background)
