@@ -32,6 +32,24 @@ Before pushing, confirm identity and remote with `git-<person> whoami`. If your 
 
 For commits, pushes, and version changes, use [.ai/skills/git-workflow/SKILL.md](.ai/skills/git-workflow/SKILL.md). XerahS commit prefixes must use the next unreleased app version; shared-library commits omit the app version.
 
+## Avalonia source
+
+When a question about Avalonia (layout, rendering, input, windowing, DPI, the XAML compiler, Android or iOS hosting) can be answered by reading its code, read the code. Don't rely on docs or memory. The ShareX organization forks every Avalonia repository whose code ships in XerahS or builds it. Each fork's `shipped` branch is the commit behind the package version in root `Directory.Packages.props`. Read that branch, not `master` or `main`. When an Avalonia version changes, move `shipped` and update this table in the same change.
+
+| Fork | Upstream | Shipped commit | What XerahS gets from it |
+| --- | --- | --- | --- |
+| [ShareX/Avalonia](https://github.com/ShareX/Avalonia) | AvaloniaUI/Avalonia | tag `12.1.6` (`cf8e56467`) | Every `Avalonia.*` 12.1.6 package: core, controls, ColorPicker, Fluent theme, Inter font, Skia and HarfBuzz backends, Desktop (Win32, X11, FreeDesktop, Native for macOS), Android, iOS, Headless.NUnit |
+| [ShareX/Avalonia.Controls.DataGrid](https://github.com/ShareX/Avalonia.Controls.DataGrid) | AvaloniaUI/Avalonia.Controls.DataGrid | tag `12.1.2` (`1e12211`) | `Avalonia.Controls.DataGrid` 12.1.2 |
+| [ShareX/XamlX](https://github.com/ShareX/XamlX) | kekekeks/XamlX | `d7e37ca` | The XAML compiler that compiles `.axaml` at build time (Avalonia's `external/XamlX` submodule) |
+| [ShareX/Avalonia.DBus](https://github.com/ShareX/Avalonia.DBus) | AvaloniaUI/Avalonia.DBus | `cada3ec` | D-Bus inside `Avalonia.FreeDesktop` on Linux (Avalonia's `external/Avalonia.DBus` submodule) |
+| [ShareX/MicroCom](https://github.com/ShareX/MicroCom) | kekekeks/MicroCom | `76785ef` (0.11.6) | `MicroCom.Runtime`, the COM interop under `Avalonia.Native` and `Avalonia.Win32` |
+| [ShareX/angle](https://github.com/ShareX/angle) | AvaloniaUI/angle | `1c8980590` | `Avalonia.Angle.Windows.Natives`, the OpenGL ES over Direct3D layer Avalonia renders through on Windows |
+| [ShareX/Avalonia.BuildServices](https://github.com/ShareX/Avalonia.BuildServices) | AvaloniaUI/Avalonia.BuildServices | `777f975` (11.3.2) | A build-time MSBuild task that every Avalonia package pulls in |
+
+`AvaloniaUI.DiagnosticsSupport` (the developer tools hook) has no public source. SkiaSharp and HarfBuzzSharp come from mono/SkiaSharp, not from Avalonia. The `Omacut` submodule pins its own Avalonia version (12.1.1); check its project file before reading the 12.1.6 source for it.
+
+On Mike's machine the forks are cloned next to this repository (`../Avalonia`, `../Avalonia.Controls.DataGrid`, `../XamlX`, …) with `shipped` checked out and an `upstream` remote. They are read-only references. Propose Avalonia fixes upstream; XerahS never builds against a fork.
+
 ## Scope and completion
 
 - Continue authorized implementation through integration and relevant verification. Resolve routine local decisions; ask only for missing decisions that materially change the requested outcome or authority.
