@@ -89,6 +89,26 @@ public class TrayIconHelper : INotifyPropertyChanged
     private const string RecordingIconPath = "avares://XerahS.UI/Assets/tray-recording.png";
     private const string PausedIconPath = "avares://XerahS.UI/Assets/tray-recording-paused.png";
 
+    // Linux StatusNotifierItem hosts (KDE Plasma, etc.) receive the bitmap as a single pixmap and
+    // scale it to the panel size, so a 16px source looks soft. Use 64px sources there; the host
+    // scales down cleanly. Windows and macOS keep the small icons, which are tuned for their trays.
+    private const string DefaultIconPathHiRes = "avares://XerahS.UI/Assets/ShareX.iconset/icon_32x32@2x.png";
+    private const string WhiteIconPathHiRes = "avares://XerahS.UI/Assets/tray-default-white-64.png";
+    private const string RecordingIconPathHiRes = "avares://XerahS.UI/Assets/tray-recording-64.png";
+    private const string PausedIconPathHiRes = "avares://XerahS.UI/Assets/tray-recording-paused-64.png";
+
+    internal static string ResolveIconPath(RecordingStatus status, bool useWhiteIcon, bool highRes)
+    {
+        return status switch
+        {
+            RecordingStatus.Recording or RecordingStatus.Initializing => highRes ? RecordingIconPathHiRes : RecordingIconPath,
+            RecordingStatus.Paused or RecordingStatus.Finalizing => highRes ? PausedIconPathHiRes : PausedIconPath,
+            _ => useWhiteIcon
+                ? (highRes ? WhiteIconPathHiRes : WhiteIconPath)
+                : (highRes ? DefaultIconPathHiRes : DefaultIconPath)
+        };
+    }
+
     private RecordingStatus _currentRecordingStatus = RecordingStatus.Idle;
 
     // Border window shown around the recording area (visible for all recording types including GIF)
@@ -104,13 +124,9 @@ public class TrayIconHelper : INotifyPropertyChanged
     {
         get
         {
+            bool highRes = OperatingSystem.IsLinux();
             string idleIconPath = GetIdleIconPath();
-            string iconPath = _currentRecordingStatus switch
-            {
-                RecordingStatus.Recording or RecordingStatus.Initializing => RecordingIconPath,
-                RecordingStatus.Paused or RecordingStatus.Finalizing => PausedIconPath,
-                _ => idleIconPath
-            };
+            string iconPath = ResolveIconPath(_currentRecordingStatus, SettingsManager.Settings.UseWhiteShareXIcon, highRes);
 
             try
             {
@@ -141,8 +157,7 @@ public class TrayIconHelper : INotifyPropertyChanged
         // The white/monochrome tray icon is opt-in everywhere. The setting is auto-flipped
         // to true on Linux/macOS (dark system panels — menu bar, GNOME/KDE top bar) but the
         // user can override it on any platform, including Windows. See issue #261.
-        bool useWhite = SettingsManager.Settings.UseWhiteShareXIcon;
-        return useWhite ? WhiteIconPath : DefaultIconPath;
+        return ResolveIconPath(RecordingStatus.Idle, SettingsManager.Settings.UseWhiteShareXIcon, OperatingSystem.IsLinux());
     }
 
     /// <summary>
