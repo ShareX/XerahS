@@ -10,6 +10,25 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
+## v0.34.1
+
+### Features
+
+- **Upload Content: choose the uploader**: The Upload Content window has an Uploader list next to Sources. It starts on "Workflow default", which keeps the destination from your workflow. Pick a File, Image or Text uploader to send everything in the queue there, including Retry. An uploader that cannot take an item's type (for example a text item sent to an image-only uploader) fails that item with a message instead of quietly uploading somewhere else. URL items still use the workflow's URL shortener.
+
+### Fixes
+
+- **Upload Content did not open from the Upload menu**: Upload > Upload Content... opened the file picker instead of the window when no workflow was set up for it. It now opens the Upload Content window.
+- **Tray icon looked blurry on KDE Plasma** (#318): On Linux the tray icon was a single 16 pixel image that the panel scaled up. The default, white, recording and paused icons are now 64 pixels on Linux, so they stay sharp at larger panel sizes and on HiDPI. Windows and macOS keep their existing icons.
+- **Silent Run startup**: With Silent Run on, XerahS no longer builds the editor, decodes the sample image or pre-builds the settings pages until the main window is first shown.
+
+### Internal
+
+- Updated hono in the web project to 4.13.16 for Dependabot advisories.
+- Agent instructions now point at the ShareX forks of the Avalonia source.
+
+---
+
 ## v0.34.0
 
 ### Features
