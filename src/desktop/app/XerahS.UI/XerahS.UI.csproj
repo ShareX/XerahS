@@ -8,8 +8,8 @@
     <IsMacOSUiBuild Condition="$(RuntimeIdentifier.StartsWith('osx')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('OSX')))">true</IsMacOSUiBuild>
     <IsLinuxUiBuild Condition="$(RuntimeIdentifier.StartsWith('linux')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('Linux')))">true</IsLinuxUiBuild>
     <DefineConstants Condition="'$(IsLinuxUiBuild)' == 'true'">$(DefineConstants);LINUX</DefineConstants>
-    <TargetFramework>net10.0</TargetFramework>
-    <TargetFramework Condition="'$(IsWindowsUiBuild)' == 'true'">net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework Condition="'$(IsWindowsUiBuild)' == 'true'">net11.0-windows10.0.26100.0</TargetFramework>
     <DefaultItemExcludes>$(DefaultItemExcludes);obj/**</DefaultItemExcludes>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

@@ -77,7 +77,7 @@ Example MCP client configuration:
 }
 ```
 
-Use the installed `xerahs-mcp` path for packaged builds. For development builds, use the executable under `src/tools/XerahS.McpServer/bin/<Configuration>/net10.0/`.
+Use the installed `xerahs-mcp` path for packaged builds. For development builds, use the executable under `src/tools/XerahS.McpServer/bin/<Configuration>/net11.0/`.
 
 ## HTTP and SSE Mode
 

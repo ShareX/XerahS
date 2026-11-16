@@ -56,7 +56,7 @@ jobs:
         run: git submodule update --init ShareX.ImageEditor Omacut
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
       - name: Build desktop solution with warnings as errors
         run: dotnet build src/desktop/XerahS.sln -c Release -m:1 -p:UseSharedCompilation=false
       - name: Compile native Windows recorder for the target architecture

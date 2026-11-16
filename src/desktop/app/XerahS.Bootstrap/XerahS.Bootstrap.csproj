@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>XerahS.Bootstrap</RootNamespace>
-    <TargetFrameworks Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '' And '$(CrossCompile)' != 'true')">net10.0;net10.0-windows10.0.26100.0</TargetFrameworks>
-    <TargetFrameworks Condition="!($(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '' And '$(CrossCompile)' != 'true'))">net10.0</TargetFrameworks>
+    <TargetFrameworks Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '' And '$(CrossCompile)' != 'true')">net11.0;net11.0-windows10.0.26100.0</TargetFrameworks>
+    <TargetFrameworks Condition="!($(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '' And '$(CrossCompile)' != 'true'))">net11.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <DefineConstants Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">$(DefineConstants);WINDOWS</DefineConstants>
-    <DefineConstants Condition="'$(TargetFramework)' == 'net10.0' And ($(RuntimeIdentifier.StartsWith('osx')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('OSX'))))">$(DefineConstants);MACOS</DefineConstants>
-    <DefineConstants Condition="'$(TargetFramework)' == 'net10.0' And ($(RuntimeIdentifier.StartsWith('linux')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('Linux'))))">$(DefineConstants);LINUX</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'net11.0-windows10.0.26100.0'">$(DefineConstants);WINDOWS</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'net11.0' And ($(RuntimeIdentifier.StartsWith('osx')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('OSX'))))">$(DefineConstants);MACOS</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'net11.0' And ($(RuntimeIdentifier.StartsWith('linux')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('Linux'))))">$(DefineConstants);LINUX</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -17,9 +17,9 @@
     <ProjectReference Include="..\..\core\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\..\core\XerahS.Services.Abstractions\XerahS.Services.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\platform\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'" />
-    <ProjectReference Include="..\..\..\platform\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="'$(TargetFramework)' == 'net10.0' And ($(RuntimeIdentifier.StartsWith('osx')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('OSX'))))" />
-    <ProjectReference Include="..\..\..\platform\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="'$(TargetFramework)' == 'net10.0' And ($(RuntimeIdentifier.StartsWith('linux')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('Linux'))))" />
+    <ProjectReference Include="..\..\..\platform\XerahS.Platform.Windows\XerahS.Platform.Windows.csproj" Condition="'$(TargetFramework)' == 'net11.0-windows10.0.26100.0'" />
+    <ProjectReference Include="..\..\..\platform\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="'$(TargetFramework)' == 'net11.0' And ($(RuntimeIdentifier.StartsWith('osx')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('OSX'))))" />
+    <ProjectReference Include="..\..\..\platform\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="'$(TargetFramework)' == 'net11.0' And ($(RuntimeIdentifier.StartsWith('linux')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('Linux'))))" />
   </ItemGroup>
 </Project>
 

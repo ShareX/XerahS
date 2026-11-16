@@ -2,8 +2,8 @@
   <PropertyGroup>
     <RootNamespace>XerahS.RegionCapture</RootNamespace>
     <AssemblyName>XerahS.RegionCapture</AssemblyName>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net10.0;net10.0-windows10.0.26100.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net11.0;net11.0-windows10.0.26100.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net11.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <!-- Windows-specific DWM features -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net11.0-windows10.0.26100.0'">
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
@@ -27,12 +27,12 @@
     <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net11.0-windows10.0.26100.0'">
     <PackageReference Include="Microsoft.Windows.CsWin32" PrivateAssets="all" />
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" />
   </ItemGroup>
 
-  <!-- Keep full RegionCapture API available in net10.0 so cross-compiled hosts can still reference tool surfaces. -->
+  <!-- Keep full RegionCapture API available in net11.0 so cross-compiled hosts can still reference tool surfaces. -->
 
   <ItemGroup>
     <ProjectReference Include="..\..\core\XerahS.Common\XerahS.Common.csproj" />

@@ -208,7 +208,7 @@
       <pre><code>{
   "mcpServers": {
     "xerahs": {
-      "command": "C:/Users/&lt;user&gt;/source/repos/KovaForge/XerahS/src/tools/XerahS.McpServer/bin/Release/net10.0/xerahs-mcp.exe",
+      "command": "C:/Users/&lt;user&gt;/source/repos/KovaForge/XerahS/src/tools/XerahS.McpServer/bin/Release/net11.0/xerahs-mcp.exe",
       "args": ["--mcp"]
     }
   }
@@ -224,7 +224,7 @@
       <pre><code>dotnet test .\src\tools\XerahS.McpServer.Tests\XerahS.McpServer.Tests.csproj --configuration Release</code></pre>
 
       <p>Smoke test stdio initialization and tool discovery:</p>
-      <pre><code>$exe = ".\src\tools\XerahS.McpServer\bin\Release\net10.0\xerahs-mcp.exe"
+      <pre><code>$exe = ".\src\tools\XerahS.McpServer\bin\Release\net11.0\xerahs-mcp.exe"
 $input = @(
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}',
   '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}',

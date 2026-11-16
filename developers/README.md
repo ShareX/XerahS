@@ -2,7 +2,7 @@
 
 ## 🤖 AI-First Development Philosophy
 
-**XerahS is engineered for the agentic coding era.** This project embraces bleeding-edge technologies (.NET 10, Avalonia 12, SkiaSharp 3) and is architected with AI-assisted development as a first-class concern. We actively seek developers proficient in **agentic coding workflows**—leveraging AI agents like GitHub Copilot, Claude, and Codex to accelerate feature development, refactoring, and code quality. Our codebase prioritizes clarity, consistency, and comprehensive documentation to maximize AI comprehension and generation capabilities. Strict nullability, exhaustive inline documentation, and standardized patterns (MVVM, dependency injection, plugin architecture) ensure that both human developers and AI agents can navigate, understand, and extend the system efficiently. **As AI capabilities rapidly advance, agentic coding is the future—like it or not** and XerahS is built to evolve alongside these tools. If you're experienced with AI-powered development tools and ready to push the boundaries of cross-platform screenshot tooling, XerahS is your platform.
+**XerahS is engineered for the agentic coding era.** This project embraces bleeding-edge technologies (.NET 11, Avalonia 12, SkiaSharp 3) and is architected with AI-assisted development as a first-class concern. We actively seek developers proficient in **agentic coding workflows**—leveraging AI agents like GitHub Copilot, Claude, and Codex to accelerate feature development, refactoring, and code quality. Our codebase prioritizes clarity, consistency, and comprehensive documentation to maximize AI comprehension and generation capabilities. Strict nullability, exhaustive inline documentation, and standardized patterns (MVVM, dependency injection, plugin architecture) ensure that both human developers and AI agents can navigate, understand, and extend the system efficiently. **As AI capabilities rapidly advance, agentic coding is the future—like it or not** and XerahS is built to evolve alongside these tools. If you're experienced with AI-powered development tools and ready to push the boundaries of cross-platform screenshot tooling, XerahS is your platform.
 
 **Community-Driven Development:** XerahS is built collaboratively by developers and contributors from around the world, united by a shared commitment to open-source innovation. This is a project created by the community, for the community—where every contribution, whether code, documentation, or feedback, helps shape a tool that serves users across all platforms.
 
@@ -37,52 +37,52 @@ git submodule update --remote --merge ShareX.ImageEditor ShareX.VideoEditor
 
 ## Target Framework Reference
 
-All projects standardize on Windows SDK **10.0.26100.0** (Windows 11 24H2). Plugins use plain `net10.0` for cross-platform compatibility.
+All projects standardize on Windows SDK **10.0.26100.0** (Windows 11 24H2). Plugins use plain `net11.0` for cross-platform compatibility.
 
 | Project | Target Framework(s) | Notes |
 |---------|---------------------|-------|
 | **Desktop App** | | |
-| XerahS.App | `net10.0-windows10.0.26100.0` / `net10.0` | Entry point; Windows TFM on Windows, plain on others |
-| XerahS.UI | `net10.0-windows10.0.26100.0` / `net10.0` | Avalonia UI layer |
-| XerahS.Bootstrap | `net10.0-windows10.0.26100.0` / `net10.0` | DI bootstrap |
-| XerahS.CLI | `net10.0-windows10.0.26100.0` / `net10.0` | CLI tool |
+| XerahS.App | `net11.0-windows10.0.26100.0` / `net11.0` | Entry point; Windows TFM on Windows, plain on others |
+| XerahS.UI | `net11.0-windows10.0.26100.0` / `net11.0` | Avalonia UI layer |
+| XerahS.Bootstrap | `net11.0-windows10.0.26100.0` / `net11.0` | DI bootstrap |
+| XerahS.CLI | `net11.0-windows10.0.26100.0` / `net11.0` | CLI tool |
 | **Core Libraries** | | |
-| XerahS.Core | `net10.0` + `net10.0-windows10.0.26100.0` | Multi-target; Windows variant uses CsWin32 |
-| XerahS.RegionCapture | `net10.0` + `net10.0-windows10.0.26100.0` | Multi-target; CsWin32 for DWM/D3D11 |
-| XerahS.Common | `net10.0` | Cross-platform |
-| XerahS.Uploaders | `net10.0` | Cross-platform |
-| XerahS.Media | `net10.0` | Cross-platform |
-| XerahS.History | `net10.0` | Cross-platform |
-| XerahS.Indexer | `net10.0` | Cross-platform |
-| XerahS.ViewModels | `net10.0` | Cross-platform |
-| XerahS.Services | `net10.0` | Cross-platform |
-| XerahS.Services.Abstractions | `net10.0` | Cross-platform |
+| XerahS.Core | `net11.0` + `net11.0-windows10.0.26100.0` | Multi-target; Windows variant uses CsWin32 |
+| XerahS.RegionCapture | `net11.0` + `net11.0-windows10.0.26100.0` | Multi-target; CsWin32 for DWM/D3D11 |
+| XerahS.Common | `net11.0` | Cross-platform |
+| XerahS.Uploaders | `net11.0` | Cross-platform |
+| XerahS.Media | `net11.0` | Cross-platform |
+| XerahS.History | `net11.0` | Cross-platform |
+| XerahS.Indexer | `net11.0` | Cross-platform |
+| XerahS.ViewModels | `net11.0` | Cross-platform |
+| XerahS.Services | `net11.0` | Cross-platform |
+| XerahS.Services.Abstractions | `net11.0` | Cross-platform |
 | **Platform** | | |
-| XerahS.Platform.Abstractions | `net10.0` | Interfaces only |
-| XerahS.Platform.Windows | `net10.0-windows10.0.26100.0` | D3D11, CsWinRT, native APIs |
-| XerahS.Platform.MacOS | `net10.0` | SharpHook for hotkeys |
-| XerahS.Platform.Linux | `net10.0` | DBus integration |
-| XerahS.Platform.Mobile | `net10.0` | Shared mobile abstractions |
+| XerahS.Platform.Abstractions | `net11.0` | Interfaces only |
+| XerahS.Platform.Windows | `net11.0-windows10.0.26100.0` | D3D11, CsWinRT, native APIs |
+| XerahS.Platform.MacOS | `net11.0` | SharpHook for hotkeys |
+| XerahS.Platform.Linux | `net11.0` | DBus integration |
+| XerahS.Platform.Mobile | `net11.0` | Shared mobile abstractions |
 | **Mobile** | | |
-| XerahS.Mobile.Maui | `net10.0-android` / `net10.0-ios` | MAUI entry point |
-| XerahS.Mobile.Android | `net10.0-android` | Android platform services |
-| XerahS.Mobile.iOS | `net10.0-ios` | iOS platform services |
-| XerahS.Mobile.iOS.ShareExtension | `net10.0-ios` | iOS Share Extension |
-| XerahS.Mobile.UI | `net10.0` | Cross-platform mobile UI |
-| **Plugins** (all `net10.0`) | | Dynamic loading; `ExcludeAssets=runtime` for shared deps |
-| XerahS.Auto.Plugin | `net10.0` | |
-| XerahS.Imgur.Plugin | `net10.0` | |
-| XerahS.AmazonS3.Plugin | `net10.0` | |
-| XerahS.Paste2.Plugin | `net10.0` | |
-| XerahS.GitHubGist.Plugin | `net10.0` | |
+| XerahS.Mobile.Maui | `net11.0-android` / `net11.0-ios` | MAUI entry point |
+| XerahS.Mobile.Android | `net11.0-android` | Android platform services |
+| XerahS.Mobile.iOS | `net11.0-ios` | iOS platform services |
+| XerahS.Mobile.iOS.ShareExtension | `net11.0-ios` | iOS Share Extension |
+| XerahS.Mobile.UI | `net11.0` | Cross-platform mobile UI |
+| **Plugins** (all `net11.0`) | | Dynamic loading; `ExcludeAssets=runtime` for shared deps |
+| XerahS.Auto.Plugin | `net11.0` | |
+| XerahS.Imgur.Plugin | `net11.0` | |
+| XerahS.AmazonS3.Plugin | `net11.0` | |
+| XerahS.Paste2.Plugin | `net11.0` | |
+| XerahS.GitHubGist.Plugin | `net11.0` | |
 | **Tools** | | |
-| XerahS.PluginExporter | `net10.0` | Plugin packager |
-| XerahS.Audits.Tool | `net10.0` | Dev tool |
-| XerahS.Tests | `net10.0-windows10.0.26100.0` | NUnit tests |
+| XerahS.PluginExporter | `net11.0` | Plugin packager |
+| XerahS.Audits.Tool | `net11.0` | Dev tool |
+| XerahS.Tests | `net11.0-windows10.0.26100.0` | NUnit tests |
 | **Submodules** | | |
 | ShareX.ImageEditor | `net9.0` / `net10.0` | Image editor library used by UI/Core/RegionCapture |
 | ShareX.ImageEditor.Loader | `net10.0` | Standalone demo app |
-| ShareX.VideoEditor | `net10.0` | Video editor library consumed by XerahS.UI |
+| ShareX.VideoEditor | `net11.0` | Video editor library consumed by XerahS.UI |
 
 ## Architecture Overview
 
@@ -326,7 +326,7 @@ See also: [Destination Plugin Development Guide](destination-plugins/README.md) 
 
 ### Prerequisites
 Ensure you have the following installed:
-- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [.NET 11.0 SDK](https://dotnet.microsoft.com/download/dotnet/11.0)
 - Node.js `^20.19.0 || >=22.12.0` for the `ShareX.VideoEditor` frontend build
 - `ShareX.ImageEditor` and `ShareX.VideoEditor` submodules (initialized as described above)
 
@@ -391,7 +391,7 @@ The mobile implementation follows a layered architecture:
 ### Building Mobile
 
 #### Prerequisites
-- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [.NET 11.0 SDK](https://dotnet.microsoft.com/download/dotnet/11.0)
 - **Android**: Android SDK API 21+ (included with .NET MAUI workload)
 - **iOS**: Xcode 16+ (macOS required), iOS 15.0+ deployment target
 
@@ -402,22 +402,22 @@ dotnet workload install maui
 
 #### Build Android
 ```bash
-dotnet build src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
+dotnet build src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net11.0-android
 ```
 
 #### Run Android (emulator or device)
 ```bash
-dotnet run --project src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
+dotnet run --project src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net11.0-android
 ```
 
 #### Build iOS (macOS only)
 ```bash
-dotnet build src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-ios
+dotnet build src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net11.0-ios
 ```
 
 #### Run iOS Simulator (macOS only)
 ```bash
-dotnet run --project src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-ios
+dotnet run --project src/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net11.0-ios
 ```
 
 ### Mobile Features

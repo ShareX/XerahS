@@ -124,7 +124,7 @@ The `build/windows` directory also contains resources for submitting XerahS to p
 │     • Runtime: linux-x64                                                │
 │     • Single file: true                                                 │
 │     • Self-contained: true                                              │
-│     → src/desktop/app/XerahS.App/bin/Release/net10.0/linux-x64/publish/ │
+│     → src/desktop/app/XerahS.App/bin/Release/net11.0/linux-x64/publish/ │
 │                              ↓                                          │
 │  3. Publish Plugins to Plugins/ subfolder                               │
 │     • Same process as Windows                                           │
@@ -207,7 +207,7 @@ This script:
 │  3. For each architecture (osx-arm64, osx-x64):                         │
 │                              ↓                                          │
 │     a. dotnet publish with -p:CrossCompile=true                         │
-│        • Uses net10.0 (not net10.0-windows...)                          │
+│        • Uses net11.0 (not net11.0-windows...)                          │
 │        • References XerahS.Platform.MacOS (not Windows)                 │
 │                              ↓                                          │
 │     b. Create .app bundle structure                                     │
@@ -249,7 +249,7 @@ The `-p:CrossCompile=true` flag enables building macOS/Linux binaries from Windo
 
 | Setting | Normal (Windows) | Cross-Compile (macOS/Linux) |
 |---------|------------------|----------------------------|
-| TargetFramework | `net10.0-windows10.0.26100.0` | `net10.0` |
+| TargetFramework | `net11.0-windows10.0.26100.0` | `net11.0` |
 | Platform Reference | `XerahS.Platform.Windows` | `XerahS.Platform.MacOS/Linux` |
 | Preprocessor | `WINDOWS` defined | `WINDOWS` NOT defined |
 | App Bundle | N/A | Created for macOS |
@@ -299,12 +299,12 @@ The `-p:CrossCompile=true` flag enables building macOS/Linux binaries from Windo
 │     • Verify Java version                                               │
 │                              ↓                                          │
 │  3. Build XerahS.Mobile.Ava (Avalonia Android)                          │
-│     • dotnet build -c Release -f net10.0-android                        │
-│     → src/mobile-experimental/XerahS.Mobile.Ava/bin/.../net10.0-android/ │
+│     • dotnet build -c Release -f net11.0-android                        │
+│     → src/mobile-experimental/XerahS.Mobile.Ava/bin/.../net11.0-android/ │
 │                              ↓                                          │
 │  4. Build XerahS.Mobile.Maui (MAUI/Android)                             │
-│     • dotnet build -c Release -f net10.0-android                        │
-│     → src/mobile-experimental/XerahS.Mobile.Maui/bin/.../net10.0-android/│
+│     • dotnet build -c Release -f net11.0-android                        │
+│     → src/mobile-experimental/XerahS.Mobile.Maui/bin/.../net11.0-android/│
 │                              ↓                                          │
 │  6. Copy APKs to dist/android/                                          │
 │     • XerahS-{version}-Android.apk                                      │
@@ -320,10 +320,10 @@ The MAUI project uses conditional targeting to support both platforms:
 ```xml
 <!-- Build Android on all platforms, iOS only on macOS -->
 <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">
-  net10.0-android;net10.0-ios
+  net11.0-android;net11.0-ios
 </TargetFrameworks>
 <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('osx'))">
-  net10.0-android
+  net11.0-android
 </TargetFrameworks>
 ```
 

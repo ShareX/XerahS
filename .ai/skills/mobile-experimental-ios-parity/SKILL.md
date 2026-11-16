@@ -96,8 +96,8 @@ Common commands from `src/mobile-experimental`:
 
 ```bash
 dotnet build XerahS.Mobile.Core/XerahS.Mobile.Core.csproj
-dotnet build XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj -f net10.0-android
-dotnet build XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
+dotnet build XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj -f net11.0-android
+dotnet build XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net11.0-android
 ```
 
 Before push, also follow root `AGENTS.md` build integrity rules. Do not disable warnings-as-errors.

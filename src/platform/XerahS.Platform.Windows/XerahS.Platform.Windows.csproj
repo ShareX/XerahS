@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <RootNamespace>XerahS.Platform.Windows</RootNamespace>
-    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net11.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <EnableWindowsTargeting Condition="'$(OS)' == 'Windows_NT'">true</EnableWindowsTargeting>

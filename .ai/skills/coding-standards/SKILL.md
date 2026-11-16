@@ -39,10 +39,10 @@ When creating or editing C# files (`.cs`) in this repository, include the follow
 ### Windows Target Framework Moniker (TFM)
 
 **CRITICAL**: When configuring projects to target Windows, use the **explicit TFM** format that includes the platform version:
-`net10.0-windows10.0.26100.0`
+`net11.0-windows10.0.26100.0`
 
 **Do NOT use**:
-`<TargetFramework>net10.0-windows</TargetFramework>` with a separate `<TargetPlatformVersion>...` property.
+`<TargetFramework>net11.0-windows</TargetFramework>` with a separate `<TargetPlatformVersion>...` property.
 This is required to avoid "Windows Metadata not provided" errors during full solution builds with CsWinRT.
 
 ### SkiaSharp Version Guidance

@@ -6,7 +6,7 @@ Command-line interface for ShareX workflow automation.
 
 XerahS CLI provides headless access to the same workflow pipeline used by the XerahS UI application. It allows you to execute workflows, capture screenshots, and record screen activity from the command line or automation scripts.
 
-**Platform Support:** Windows, macOS, and Linux - as long as .NET 10 is installed, the CLI can run on any supported platform.
+**Platform Support:** Windows, macOS, and Linux - as long as .NET 11 is installed, the CLI can run on any supported platform.
 
 ## Architecture
 
@@ -41,12 +41,12 @@ The executable will be located at:
 
 **Windows:**
 ```
-src/XerahS.CLI/bin/Debug/net10.0-windows/xerahscli.exe
+src/XerahS.CLI/bin/Debug/net11.0-windows/xerahscli.exe
 ```
 
 **macOS/Linux:**
 ```
-src/XerahS.CLI/bin/Debug/net10.0/xerahscli
+src/XerahS.CLI/bin/Debug/net11.0/xerahscli
 ```
 
 You can also publish for specific platforms:

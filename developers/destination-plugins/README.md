@@ -29,12 +29,12 @@ Practical guidance:
 
 ## 2. Project Setup
 
-Create a class library plugin project (usually `net10.0`):
+Create a class library plugin project (usually `net11.0`):
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <OutputType>Library</OutputType>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

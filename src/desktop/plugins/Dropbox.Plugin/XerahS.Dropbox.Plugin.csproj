@@ -2,7 +2,7 @@
   <PropertyGroup>
     <!-- Must stay aligned with the ShareX.* namespaces in code. Avalonia compiled XAML resolves plugin views against RootNamespace, and changing this to XerahS.* breaks config views at runtime. -->
     <RootNamespace>ShareX.Dropbox.Plugin</RootNamespace>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <OutputType>Library</OutputType>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

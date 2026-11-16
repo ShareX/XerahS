@@ -140,7 +140,7 @@ foreach ($arch in $archs) {
     $rid = "osx-$arch"
     
     # 1. Publish
-    $publishDir = Join-Path $root "src\desktop\app\XerahS.App\bin\Release\net10.0\$rid\publish"
+    $publishDir = Join-Path $root "src\desktop\app\XerahS.App\bin\Release\net11.0\$rid\publish"
     Write-Host "Publishing to $publishDir..."
     
     # Ensure clean

@@ -46,8 +46,8 @@ Follow these instructions when building or deploying Android apps. Treat elapsed
   <package_id>com.getsharex.xerahs</package_id>
   <package_id_kt>com.getsharex.xerahs.mobile</package_id_kt>
   <adb_default>%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe (adb is often not in PATH; use full path)</adb_default>
-  <maui_apk>src\mobile-experimental\XerahS.Mobile.Maui\bin\Debug\net10.0-android\com.getsharex.xerahs-Signed.apk</maui_apk>
-  <ava_apk_dir>src\mobile-experimental\XerahS.Mobile.Ava\bin\Debug\net10.0-android</ava_apk_dir>
+  <maui_apk>src\mobile-experimental\XerahS.Mobile.Maui\bin\Debug\net11.0-android\com.getsharex.xerahs-Signed.apk</maui_apk>
+  <ava_apk_dir>src\mobile-experimental\XerahS.Mobile.Ava\bin\Debug\net11.0-android</ava_apk_dir>
   <kt_project_root>src\mobile\android</kt_project_root>
   <kt_apk>src\mobile\android\app\build\outputs\apk\debug\app-debug.apk</kt_apk>
 </context>
@@ -115,23 +115,23 @@ File locks are the main cause of Android build failures. **Before building**, en
 
 - **Clean fails** with `The process cannot access the file '...' because it is being used by another process`. The message often says **which process** (e.g. `.NET Host (27788)` or `VBCSCompiler`).
 - **Build fails** with `CompileAvaloniaXamlTask` / `Cannot open '...ShareX.ImageEditor.dll' for writing` or `...XerahS.AmazonS3.Plugin.dll ... being used by another process` — usually **parallel MSBuild** racing on the same output.
-- **Build fails** with `XA0142` / `llvm-objcopy.EXE: error: permission denied` or **`XAWAS7024: The file is locked by: ".NET Host (PID)"** on paths like `obj\Debug\net10.0-android\android-arm64\wrapped\lib_*.dll.so` — a previous build’s .NET Host is still holding wrapped assembly outputs. Stop that PID, then clean and rebuild.
+- **Build fails** with `XA0142` / `llvm-objcopy.EXE: error: permission denied` or **`XAWAS7024: The file is locked by: ".NET Host (PID)"** on paths like `obj\Debug\net11.0-android\android-arm64\wrapped\lib_*.dll.so` — a previous build’s .NET Host is still holding wrapped assembly outputs. Stop that PID, then clean and rebuild.
 
 ### 2. Release the lock and build single-node
 
-Stop only the verified task-owned lock holder, as in [build-common](../build-common/SKILL.md). Never run two Android or solution builds at once: `ShareX.ImageEditor` and the AmazonS3 plugin share outputs and wrapped `.so` files. Both `build-and-deploy-android-maui.ps1` and `build-and-deploy-android-ava.ps1` use `-m:1`; do not remove it. Manual builds use `dotnet build <project> -f net10.0-android -c Debug -m:1`.
+Stop only the verified task-owned lock holder, as in [build-common](../build-common/SKILL.md). Never run two Android or solution builds at once: `ShareX.ImageEditor` and the AmazonS3 plugin share outputs and wrapped `.so` files. Both `build-and-deploy-android-maui.ps1` and `build-and-deploy-android-ava.ps1` use `-m:1`; do not remove it. Manual builds use `dotnet build <project> -f net11.0-android -c Debug -m:1`.
 
 ### 3. Clean after releasing locks
 
 After stopping the locking process:
 
 ```powershell
-dotnet clean "src\mobile-experimental\XerahS.Mobile.Maui\XerahS.Mobile.Maui.csproj" -f net10.0-android -c Debug -v minimal
+dotnet clean "src\mobile-experimental\XerahS.Mobile.Maui\XerahS.Mobile.Maui.csproj" -f net11.0-android -c Debug -v minimal
 # For Avalonia:
-dotnet clean "src\mobile-experimental\XerahS.Mobile.Ava\XerahS.Mobile.Ava.csproj" -f net10.0-android -c Debug -v minimal
+dotnet clean "src\mobile-experimental\XerahS.Mobile.Ava\XerahS.Mobile.Ava.csproj" -f net11.0-android -c Debug -v minimal
 ```
 
-If clean still fails, manually remove `obj` folders that are locked (e.g. `ShareX.ImageEditor\src\ShareX.ImageEditor\obj`, `src\desktop\plugins\AmazonS3.Plugin\obj`, `src\mobile-experimental\XerahS.Mobile.Ava\obj\Debug\net10.0-android`, or the MAUI `obj\Debug\net10.0-android` if the APK is locked).
+If clean still fails, manually remove `obj` folders that are locked (e.g. `ShareX.ImageEditor\src\ShareX.ImageEditor\obj`, `src\desktop\plugins\AmazonS3.Plugin\obj`, `src\mobile-experimental\XerahS.Mobile.Ava\obj\Debug\net11.0-android`, or the MAUI `obj\Debug\net11.0-android` if the APK is locked).
 
 ---
 
@@ -219,13 +219,13 @@ Use when the APK is already built but deploy failed (e.g. no device at script ru
 **MAUI:**
 ```powershell
 $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
-& $adb install -r "src\mobile-experimental\XerahS.Mobile.Maui\bin\Debug\net10.0-android\com.getsharex.xerahs-Signed.apk"
+& $adb install -r "src\mobile-experimental\XerahS.Mobile.Maui\bin\Debug\net11.0-android\com.getsharex.xerahs-Signed.apk"
 & $adb shell monkey -p com.getsharex.xerahs -c android.intent.category.LAUNCHER 1
 ```
 
 **Avalonia:**
 ```powershell
-$apk = (Get-ChildItem "src\mobile-experimental\XerahS.Mobile.Ava\bin\Debug\net10.0-android\*.apk" | Select-Object -First 1).FullName
+$apk = (Get-ChildItem "src\mobile-experimental\XerahS.Mobile.Ava\bin\Debug\net11.0-android\*.apk" | Select-Object -First 1).FullName
 & $adb install -r $apk
 & $adb shell monkey -p com.getsharex.xerahs -c android.intent.category.LAUNCHER 1
 ```

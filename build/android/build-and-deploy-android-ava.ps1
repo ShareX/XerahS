@@ -19,18 +19,18 @@ if (!(Test-Path $adb)) {
 $doClean = $args -contains "-Clean"
 if ($doClean) {
     Write-Host "Cleaning..." -ForegroundColor Cyan
-    dotnet clean $projectPath -f net10.0-android -c Debug | Out-Null
+    dotnet clean $projectPath -f net11.0-android -c Debug | Out-Null
     if ($LASTEXITCODE -ne 0) { exit 1 }
 }
 
-Write-Host "Building XerahS.Mobile.Ava (Debug, net10.0-android)..." -ForegroundColor Cyan
-dotnet build $projectPath -f net10.0-android -c Debug -m:1
+Write-Host "Building XerahS.Mobile.Ava (Debug, net11.0-android)..." -ForegroundColor Cyan
+dotnet build $projectPath -f net11.0-android -c Debug -m:1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Build failed." -ForegroundColor Red
     exit 1
 }
 
-$apkDir = Join-Path $root "src\mobile-experimental\XerahS.Mobile.Ava\bin\Debug\net10.0-android"
+$apkDir = Join-Path $root "src\mobile-experimental\XerahS.Mobile.Ava\bin\Debug\net11.0-android"
 $apk = Get-ChildItem -Path $apkDir -Filter "*.apk" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
 if ([string]::IsNullOrEmpty($apk)) {
     Write-Host "Error: No APK found in $apkDir" -ForegroundColor Red

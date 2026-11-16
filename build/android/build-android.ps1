@@ -42,12 +42,12 @@ $mobileMauiProject = Join-Path $root "src\mobile-experimental\XerahS.Mobile.Maui
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "Building XerahS.Mobile.Ava (Avalonia Android)" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
-dotnet build $mobileAvaProject -c Release -f net10.0-android
+dotnet build $mobileAvaProject -c Release -f net11.0-android
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ XerahS.Mobile.Ava built successfully" -ForegroundColor Green
     
     # Copy APK to dist if it exists
-    $apkSource = Join-Path $root "src\mobile-experimental\XerahS.Mobile.Ava\bin\Release\net10.0-android\com.getsharex.xerahs-Signed.apk"
+    $apkSource = Join-Path $root "src\mobile-experimental\XerahS.Mobile.Ava\bin\Release\net11.0-android\com.getsharex.xerahs-Signed.apk"
     if (Test-Path $apkSource) {
         $apkDest = Join-Path $outputDir "XerahS-$version-Android.apk"
         Copy-Item $apkSource $apkDest -Force
@@ -62,12 +62,12 @@ Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "Building XerahS.Mobile.Maui (Android)" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
-dotnet build $mobileMauiProject -c Release -f net10.0-android
+dotnet build $mobileMauiProject -c Release -f net11.0-android
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ XerahS.Mobile.Maui (Android) built successfully" -ForegroundColor Green
     
     # Copy MAUI APK to dist if it exists
-    $mauiApkSource = Join-Path $root "src\mobile-experimental\XerahS.Mobile.Maui\bin\Release\net10.0-android\com.getsharex.xerahs-Signed.apk"
+    $mauiApkSource = Join-Path $root "src\mobile-experimental\XerahS.Mobile.Maui\bin\Release\net11.0-android\com.getsharex.xerahs-Signed.apk"
     if (Test-Path $mauiApkSource) {
         $mauiApkDest = Join-Path $outputDir "XerahS-$version-MAUI-Android.apk"
         Copy-Item $mauiApkSource $mauiApkDest -Force

@@ -264,7 +264,7 @@ Before shipping:
 
 **Implementation Date**: 2025-01-15  
 **Status**: Complete & Tested  
-**Target**: .NET 10, Avalonia Framework  
+**Target**: .NET 11, Avalonia Framework  
 **Breaking Changes**: None  
 **Dependencies Added**: None  
 

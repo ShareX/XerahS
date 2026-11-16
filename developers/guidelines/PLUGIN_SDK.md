@@ -11,7 +11,7 @@ Your plugin is a .NET class library. The host discovers plugins (e.g. by scannin
 
 ## 1. Project setup
 
-- Target **net10.0** (or the same TFM as the host).
+- Target **net11.0** (or the same TFM as the host).
 - Add a reference to **XerahS.UploaderPluginSdk**.
 - Optionally add a reference to **XerahS.Uploaders** (with `Private=false`, `ExcludeAssets=runtime` if you want to use the host's copy at runtime).
 - Set `CopyLocalLockFileAssemblies` and `EnableDynamicLoading` if the host loads the plugin from a separate folder.

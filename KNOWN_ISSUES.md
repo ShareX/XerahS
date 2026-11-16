@@ -26,6 +26,9 @@
 ### Notifications
 - **Action buttons (XIP0079 P2, v0.23.129):** After-upload toasts support portal `buttons` + `ActionInvoked` and `notify-send --action` fallback. Sandboxed Flatpak builds use the portal path only.
 
+### Flathub source build
+- **Blocked on a .NET 11 SDK extension:** XerahS targets `net11.0`, but `.ai/skills/publish-release/scripts/prepare-flathub-source-build.sh` still builds with `org.freedesktop.Sdk.Extension.dotnet10`, and no `dotnet11` extension exists on Flathub yet. The Flathub source build cannot succeed until one is published. The CI Flatpak job is unaffected because it repackages a prebuilt self-contained publish made with .NET 11.
+
 ## macOS
 
 > Prioritized fixes and the current macOS state assessment are tracked in

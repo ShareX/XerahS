@@ -19,19 +19,19 @@ if (!(Test-Path $adb)) {
 $doClean = $args -contains "-Clean"
 if ($doClean) {
     Write-Host "Cleaning..." -ForegroundColor Cyan
-    dotnet clean $projectPath -f net10.0-android -c Debug | Out-Null
+    dotnet clean $projectPath -f net11.0-android -c Debug | Out-Null
     if ($LASTEXITCODE -ne 0) { exit 1 }
 }
 
 # Use /m:1 to avoid parallel builds racing on ShareX.ImageEditor.dll (Avalonia task) and plugin DLLs.
-Write-Host "Building XerahS.Mobile.Maui (Debug, net10.0-android, single-node)..." -ForegroundColor Cyan
-dotnet build $projectPath -f net10.0-android -c Debug -m:1
+Write-Host "Building XerahS.Mobile.Maui (Debug, net11.0-android, single-node)..." -ForegroundColor Cyan
+dotnet build $projectPath -f net11.0-android -c Debug -m:1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Build failed." -ForegroundColor Red
     exit 1
 }
 
-$baseDir = Join-Path $root "src\mobile-experimental\XerahS.Mobile.Maui\bin\Debug\net10.0-android"
+$baseDir = Join-Path $root "src\mobile-experimental\XerahS.Mobile.Maui\bin\Debug\net11.0-android"
 $apk = Get-ChildItem -Path $baseDir -Filter "*.apk" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
 if ([string]::IsNullOrEmpty($apk)) {
     Write-Host "Error: No APK found under $baseDir" -ForegroundColor Red

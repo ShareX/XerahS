@@ -2,8 +2,8 @@
   <PropertyGroup>
     <RootNamespace>XerahS.WatchFolder.Daemon</RootNamespace>
     <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\..'))\</RepoRoot>
-    <TargetFramework>net10.0</TargetFramework>
-    <TargetFramework Condition="'$(OS)' == 'Windows_NT' And !$(RuntimeIdentifier.StartsWith('linux')) And !$(RuntimeIdentifier.StartsWith('osx'))">net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT' And !$(RuntimeIdentifier.StartsWith('linux')) And !$(RuntimeIdentifier.StartsWith('osx'))">net11.0-windows10.0.26100.0</TargetFramework>
     <RuntimeIdentifiers>linux-x64;osx-x64;osx-arm64;win-x64;win-arm64</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
     <AssemblyName>xerahs-watchfolder-daemon</AssemblyName>

@@ -2,14 +2,14 @@
 
 [![XerahS Health](https://oss-health-monitor.vercel.app/api/badge/ShareX/XerahS)](https://github.com/volotat/OSS-Health-Monitor)
 
-A cross-platform port of the popular **ShareX** screen capture and file sharing tool, built with **Avalonia UI** and .NET 10.
+A cross-platform port of the popular **ShareX** screen capture and file sharing tool, built with **Avalonia UI** and .NET 11.
 
 ![ShareX Avalonia](https://xerahs.com/assets/Logo.png)
 *(Note: Project is in active development)*
 
 ## ⚠️ About This Project
 
-**XerahS is developed using agentic coding workflows.** This project embraces AI-assisted development as a first-class engineering practice, leveraging tools like GitHub Copilot, Claude, and other AI agents to accelerate feature development, refactoring, and code quality improvements. The codebase is architected with bleeding-edge technologies (.NET 10, Avalonia 11.3+) and prioritizes patterns that maximize AI comprehension: strict nullability, exhaustive documentation, and standardized MVVM architecture.
+**XerahS is developed using agentic coding workflows.** This project embraces AI-assisted development as a first-class engineering practice, leveraging tools like GitHub Copilot, Claude, and other AI agents to accelerate feature development, refactoring, and code quality improvements. The codebase is architected with bleeding-edge technologies (.NET 11, Avalonia 11.3+) and prioritizes patterns that maximize AI comprehension: strict nullability, exhaustive documentation, and standardized MVVM architecture.
 
 **XerahS is and will always be free**, just like ShareX, built out of passion, not for profit. It's developed entirely through agentic coding as a parallel project to ShareX, designed to align with different user preferences and values. You're welcome to give it a try or stick with whatever tool works best for you.
 
@@ -65,19 +65,19 @@ XerahS now includes an experimental **.NET MAUI** mobile implementation for Andr
 ### Building Mobile
 
 #### Prerequisites
-- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [.NET 11.0 SDK](https://dotnet.microsoft.com/download/dotnet/11.0)
 - **Android**: Android SDK API 21+ with emulator or physical device
 - **iOS**: Xcode 16+ (macOS required), iOS 15.0+ target
 
 #### Build & Run
 ```bash
 # Android
-dotnet build src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
-dotnet run --project src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
+dotnet build src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net11.0-android
+dotnet run --project src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net11.0-android
 
 # iOS (macOS only)
-dotnet build src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-ios
-dotnet run --project src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-ios
+dotnet build src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net11.0-ios
+dotnet run --project src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net11.0-ios
 ```
 
 ### Project Structure
@@ -136,7 +136,7 @@ Arch Linux users can install the latest development version via the community-ma
 The fork also maintains a [repository-owned Arch recipe](docs/linux/aur.md) and packaging CI.
 The public AUR listing is separate; its ownership and recipe must be updated by its maintainer.
 
-This package builds directly from the source code and automatically handles dependencies, including the .NET 10 SDK. It can be installed using an AUR helper like `yay`:
+This package builds directly from the source code and automatically handles dependencies, including the .NET 11 SDK. It can be installed using an AUR helper like `yay`:
 ```bash
 yay -S xerahs-git
 ```
@@ -197,7 +197,7 @@ dotnet build src/desktop/XerahS.sln -m:1 -p:nodeReuse=false -p:UseSharedCompilat
 If you skip submodule initialization and run `dotnet build src/desktop/XerahS.sln` immediately after a plain `git clone`, the build fails with `MSB3202` because `ShareX.ImageEditor` and `Omacut` are checked out as Git submodules.
 
 ### Prerequisites
-- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [.NET 11.0 SDK](https://dotnet.microsoft.com/download/dotnet/11.0)
 - FFmpeg (`ffmpeg` and `ffprobe`) for recording and the video editor. XerahS can download it for you.
 
 ## 🛠️ Developer Information

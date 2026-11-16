@@ -7,8 +7,8 @@
     <IsWindowsAssistantBuild Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '')">true</IsWindowsAssistantBuild>
     <IsMacOSAssistantBuild Condition="$(RuntimeIdentifier.StartsWith('osx')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('OSX')))">true</IsMacOSAssistantBuild>
     <IsLinuxAssistantBuild Condition="$(RuntimeIdentifier.StartsWith('linux')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('Linux')))">true</IsLinuxAssistantBuild>
-    <TargetFramework>net10.0</TargetFramework>
-    <TargetFramework Condition="'$(IsWindowsAssistantBuild)' == 'true'">net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework Condition="'$(IsWindowsAssistantBuild)' == 'true'">net11.0-windows10.0.26100.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
