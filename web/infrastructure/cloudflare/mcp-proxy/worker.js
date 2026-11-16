@@ -57,9 +57,13 @@ export default {
 
     const backendUrl = getBackendUrl(env, url.pathname, url.search);
     if (!backendUrl) {
+      // No XerahS desktop is attached to this endpoint. 503 (not 500) tells clients this is an unavailable
+      // service rather than a server bug, and the body points them at the supported local transport.
       return withCors(
-        jsonResponse(500, {
-          error: "MCP backend is not configured"
+        jsonResponse(503, {
+          error: "MCP backend is not configured",
+          detail: "mcp.xerahs.com has no XerahS desktop attached. Run the MCP server locally over stdio: xerahs-mcp --mcp",
+          documentation_url: "https://xerahs.com/features/mcp-server.html"
         })
       );
     }
