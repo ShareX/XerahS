@@ -35,7 +35,7 @@ public static class ProviderCatalog
 {
     private static readonly Dictionary<string, IUploaderProvider> _providers = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, PluginMetadata> _pluginMetadata = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly object _lock = new();
+    private static readonly Lock _lock = new();
     private static bool _pluginsLoaded = false;
     private static readonly PluginLoader _pluginLoader = new(); // Keep contexts alive
     private static IProviderContext? _providerContext;

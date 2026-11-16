@@ -89,7 +89,7 @@ public class LoadedCustomUploader
 public static class CustomUploaderRepository
 {
     private static readonly string[] SupportedExtensions = { ".sxcu", ".json" };
-    private static readonly object _lock = new();
+    private static readonly Lock _lock = new();
     private static readonly Dictionary<string, LoadedCustomUploader> _loadedUploaders = new();
 
     /// <summary>

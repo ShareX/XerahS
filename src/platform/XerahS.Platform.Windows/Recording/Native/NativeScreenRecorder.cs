@@ -33,7 +33,7 @@ public sealed class NativeScreenRecorder : IDisposable, IAsyncDisposable
 {
     private readonly NativeRecordingOptions options;
     private readonly RecordingClock clock = new();
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly ManualResetEvent stop = new(false);
     private readonly ManualResetEvent begin = new(false);
     private readonly AutoResetEvent changed = new(false);

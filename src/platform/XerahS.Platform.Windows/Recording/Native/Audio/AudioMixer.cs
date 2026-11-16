@@ -41,7 +41,7 @@ internal sealed class AudioMixer(RecordingClock clock)
     private const int FilterTaps = 32, FilterDelay = FilterTaps / 2, FilterPhases = 128;
     private const double TimestampJitter = 2; // Ignore sub-42 microsecond packet timestamp variations.
     private static readonly float[][] interpolation = CreateInterpolation();
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly float[][] samples = [new float[Capacity * 2], new float[Capacity * 2]];
     private readonly long[][] positions = [Enumerable.Repeat(long.MinValue, Capacity).ToArray(), Enumerable.Repeat(long.MinValue, Capacity).ToArray()];
     private readonly StreamState[] streams = [new(), new()];

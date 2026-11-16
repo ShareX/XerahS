@@ -42,7 +42,7 @@ namespace XerahS.Core.Tasks;
 /// </summary>
 internal sealed class TaskStatusMachine
 {
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private TaskStatus _current = TaskStatus.InQueue;
 
     public TaskStatus Current

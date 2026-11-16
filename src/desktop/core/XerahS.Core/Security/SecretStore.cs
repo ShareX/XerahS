@@ -37,7 +37,7 @@ public sealed class SecretStore : ISecretStore, ISecretStoreInfo
 {
     private readonly ISecretStore _backend;
     private readonly string _indexFilePath;
-    private readonly object _indexLock = new();
+    private readonly Lock _indexLock = new();
     private readonly string _backendName;
     private readonly string _backendDetails;
     private readonly bool _isFallback;
@@ -254,7 +254,7 @@ public sealed class SecretStore : ISecretStore, ISecretStoreInfo
     [SupportedOSPlatform("windows")]
     private sealed class DpapiFileSecretStore : ISecretStore
     {
-        private readonly object _lock = new();
+        private readonly Lock _lock = new();
         private readonly string _filePath;
         private readonly Dictionary<string, string> _secrets = new(StringComparer.OrdinalIgnoreCase);
         private bool _loaded;
@@ -379,7 +379,7 @@ public sealed class SecretStore : ISecretStore, ISecretStoreInfo
 
     private sealed class AesFileSecretStore : ISecretStore
     {
-        private readonly object _lock = new();
+        private readonly Lock _lock = new();
         private readonly string _filePath;
         private readonly string _keyPath;
         private readonly Dictionary<string, string> _secrets = new(StringComparer.OrdinalIgnoreCase);

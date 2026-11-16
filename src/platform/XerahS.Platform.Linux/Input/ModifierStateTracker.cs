@@ -37,7 +37,7 @@ namespace XerahS.Platform.Linux.Input;
 internal sealed class ModifierStateTracker
 {
     private readonly HashSet<ushort> _pressedModifierCodes = new();
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
 
     /// <summary>Records a key-down for the given evdev code if it is a modifier.</summary>
     public void OnKeyDown(ushort code)

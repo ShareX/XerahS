@@ -280,7 +280,7 @@ namespace XerahS.Platform.Abstractions
             RunPendingInitializedCallbacks();
         }
 
-        private static readonly object InitializedCallbacksLock = new();
+        private static readonly Lock InitializedCallbacksLock = new();
         private static List<Action> _initializedCallbacks = new();
 
         /// <summary>

@@ -267,7 +267,7 @@ namespace XerahS.Common
             return isSuccess;
         }
 
-        private static readonly object BackupZipGate = new object();
+        private static readonly Lock BackupZipGate = new();
         private const int SettingsLoadMaxAttempts = 3;
         private const int BackupArchiveMaxExamine = 8;
 

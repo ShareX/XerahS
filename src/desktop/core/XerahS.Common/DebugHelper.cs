@@ -31,7 +31,7 @@ namespace XerahS.Common
 {
     public static class DebugHelper
     {
-        private static readonly object ErrorLogLock = new object();
+        private static readonly Lock ErrorLogLock = new();
 
         public static Logger? Logger { get; private set; }
 

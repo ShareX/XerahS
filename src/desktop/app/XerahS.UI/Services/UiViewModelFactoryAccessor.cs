@@ -29,7 +29,7 @@ public static class UiViewModelFactoryAccessor
 {
     private static IUiViewModelFactory? _factory;
 
-    private static readonly object PendingLock = new();
+    private static readonly Lock PendingLock = new();
     private static List<Action> _pending = new();
 
     public static bool IsAvailable => _factory != null;

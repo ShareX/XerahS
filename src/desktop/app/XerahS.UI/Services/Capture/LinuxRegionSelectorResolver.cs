@@ -35,7 +35,7 @@ namespace XerahS.UI.Services.Capture;
 /// </summary>
 public class LinuxRegionSelectorResolver
 {
-    private readonly object _decisionLock = new();
+    private readonly Lock _decisionLock = new();
     private LinuxRegionSelectorRuntimeDecision? _lastDecision;
     private readonly string _overlayProviderId;
 

@@ -43,7 +43,7 @@ public sealed class WaylandPortalInputService : IInputService
     private readonly Connection? _connection;
     private readonly IInputCapture? _portal;
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
-    private readonly object _cursorLock = new();
+    private readonly Lock _cursorLock = new();
     private IDisposable? _activatedSubscription;
     private IDisposable? _deactivatedSubscription;
     private IDisposable? _zonesChangedSubscription;

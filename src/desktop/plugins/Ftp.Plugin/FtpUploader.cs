@@ -239,7 +239,7 @@ public sealed class FtpUploader : FileUploader, IDisposable
         long fileSize = stream.CanSeek ? stream.Length : -1;
         ProgressManager? progress = fileSize > 0 ? new ProgressManager(fileSize) : null;
         ulong lastUploadedBytes = 0;
-        object progressLock = new object();
+        Lock progressLock = new();
 
         // We have to use a lock here because UploadFile fires progress callbacks concurrently from multiple threads.
         _sftpClient.UploadFile(stream, remotePath, canOverride: true, uploadedBytes =>

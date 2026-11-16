@@ -39,7 +39,7 @@ public sealed class SettingsSearchService
 
     private static readonly SettingsSearchService InstanceField = new();
 
-    private readonly object _gate = new();
+    private readonly Lock _gate = new();
     private readonly IReadOnlyList<SettingsSearchEntry> _catalogEntries = SettingsSearchCatalog.CreateEntries();
     private ImmutableArray<SettingsSearchEntry> _snapshot;
     private bool _applicationIndexed;

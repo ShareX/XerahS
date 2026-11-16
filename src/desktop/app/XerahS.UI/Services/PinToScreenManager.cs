@@ -36,7 +36,7 @@ namespace XerahS.UI.Services;
 public static class PinToScreenManager
 {
     private static readonly List<PinnedImageWindow> _windows = new();
-    private static readonly object _lock = new();
+    private static readonly Lock _lock = new();
 
     public static int Count
     {

@@ -41,7 +41,7 @@ public class FFmpegRecordingService : IRecordingService
     private RecordingOptions? _currentOptions;
     private RecordingStatus _status = RecordingStatus.Idle;
     private readonly Stopwatch _stopwatch = new();
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private bool _disposed;
     private string? _ffmpegPath;
     private Task? _ffmpegTask;

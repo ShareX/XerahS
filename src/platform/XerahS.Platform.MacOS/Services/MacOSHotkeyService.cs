@@ -35,7 +35,7 @@ namespace XerahS.Platform.MacOS.Services
 {
     public class MacOSHotkeyService : IHotkeyService
     {
-        private readonly object _lock = new();
+        private readonly Lock _lock = new();
         private readonly Dictionary<ushort, HotkeyInfo> _registeredHotkeys = new();
         private readonly Dictionary<(Key Key, KeyModifiers Modifiers), HotkeyInfo> _hotkeysByCombo = new();
         private readonly Dictionary<(Key Key, KeyModifiers Modifiers), HotkeyInfo> _carbonHotkeysByCombo = new();

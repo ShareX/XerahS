@@ -39,7 +39,7 @@ namespace XerahS.Core.Managers
 
         private readonly List<FileSystemWatcher> _watchers = new();
         private readonly ConcurrentDictionary<string, byte> _inFlight = new(StringComparer.OrdinalIgnoreCase);
-        private readonly object _watcherSync = new();
+        private readonly Lock _watcherSync = new();
         private volatile bool _acceptNewFiles = true;
         private int _activeProcessingCount;
         private bool _isDisposed;

@@ -41,7 +41,7 @@ public sealed class LinuxHotkeyService : IHotkeyService
     private readonly Thread? _eventThread;
     private readonly CancellationTokenSource _cancellation = new();
     private readonly Dictionary<ushort, HotkeyRegistration> _registrations = new();
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private ushort _nextId = 1;
     private bool _isDisposed;
 

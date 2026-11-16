@@ -38,7 +38,7 @@ namespace XerahS.Core.Managers
 
         private readonly ConcurrentQueue<WorkerTask> _tasks = new();
         private readonly int _maxHistoricalTasks = 100;
-        private readonly object _tasksLock = new();
+        private readonly Lock _tasksLock = new();
 
         public IEnumerable<WorkerTask> Tasks
         {

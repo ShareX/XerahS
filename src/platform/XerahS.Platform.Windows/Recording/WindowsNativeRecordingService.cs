@@ -49,7 +49,7 @@ public sealed class WindowsNativeRecordingService : IRecordingService, IMovableR
     /// <summary>Free-threaded frame pools and cursor control need Windows 10 2004 (build 19041).</summary>
     public const int MinimumWindowsBuild = 19041;
 
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private NativeScreenRecorder? _recorder;
     private RecordingStatus _status = RecordingStatus.Idle;
     private bool _stopRequested;

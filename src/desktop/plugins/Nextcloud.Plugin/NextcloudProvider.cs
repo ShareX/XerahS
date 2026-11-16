@@ -33,7 +33,7 @@ namespace ShareX.Nextcloud.Plugin;
 
 public sealed class NextcloudProvider : UploaderProviderBase, IUploaderExplorer, IInstanceSecretMigrator, IInstanceSecretBackupProvider
 {
-    private readonly object _latestSettingsLock = new();
+    private readonly Lock _latestSettingsLock = new();
     private string? _latestSettingsJson;
 
     public override string ProviderId => "nextcloud";

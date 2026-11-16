@@ -32,7 +32,7 @@ namespace XerahS.Core;
 /// </summary>
 public class RecentTaskManager
 {
-    private readonly object _itemsLock = new();
+    private readonly Lock _itemsLock = new();
     private int _maxCount = 10;
 
     public int MaxCount

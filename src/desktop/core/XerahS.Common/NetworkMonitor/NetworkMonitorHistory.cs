@@ -31,7 +31,7 @@ public sealed class NetworkMonitorHistory
     public static readonly TimeSpan MaxSampleAge = TimeSpan.FromHours(24);
     private readonly List<NetworkStatusEvent> _events = [];
     private readonly List<NetworkLatencySample> _samples = [];
-    private readonly object _sync = new();
+    private readonly Lock _sync = new();
 
     public IReadOnlyList<NetworkStatusEvent> Events
     {

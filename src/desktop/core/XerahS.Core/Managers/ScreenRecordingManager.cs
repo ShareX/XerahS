@@ -42,7 +42,7 @@ public class ScreenRecordingManager : IScreenRecordingManager
     private static readonly Lazy<ScreenRecordingManager> _lazy = new(() => new ScreenRecordingManager());
     public static ScreenRecordingManager Instance => _lazy.Value;
 
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private readonly SemaphoreSlim _stopSemaphore = new(1, 1);
     private IRecordingService? _currentRecording;
     private RecordingOptions? _currentOptions;

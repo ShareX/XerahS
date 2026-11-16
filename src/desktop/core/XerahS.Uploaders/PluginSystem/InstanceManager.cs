@@ -39,7 +39,7 @@ public class InstanceManager
     private static readonly Lazy<InstanceManager> _instance = new(() => new InstanceManager());
     public static InstanceManager Instance => _instance.Value;
 
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private InstanceConfiguration _configuration;
 
     internal const string ConfigFileName = "uploader-instances.json";

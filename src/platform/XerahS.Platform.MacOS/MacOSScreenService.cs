@@ -39,7 +39,7 @@ namespace XerahS.Platform.MacOS
     public class MacOSScreenService : IScreenService
     {
         private static readonly HashSet<string> Warned = new(StringComparer.Ordinal);
-        private static readonly object WarnLock = new();
+        private static readonly Lock WarnLock = new();
 
         public bool UsePerScreenScalingForRegionCaptureLayout => true;
 

@@ -44,7 +44,7 @@ public sealed record DiagnosticsState
 public sealed class DiagnosticsStateStore
 {
     private readonly string _path;
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
 
     public DiagnosticsStateStore(string? path = null)
     {

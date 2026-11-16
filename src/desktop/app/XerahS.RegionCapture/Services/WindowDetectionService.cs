@@ -59,10 +59,10 @@ internal readonly record struct WindowPointQueryResult(
 /// </summary>
 public sealed class WindowDetectionService
 {
-    private static readonly object ExcludedHandlesLock = new();
+    private static readonly Lock ExcludedHandlesLock = new();
     private static readonly HashSet<nint> ExcludedHandles = [];
     private IReadOnlyList<WindowInfo> _windows = [];
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private DateTime _lastRefresh = DateTime.MinValue;
     private static readonly TimeSpan RefreshInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan DirectQueryRefreshInterval = TimeSpan.FromMilliseconds(75);
@@ -74,7 +74,7 @@ public sealed class WindowDetectionService
     /// </summary>
     private volatile bool _isRefreshing;
     private readonly object _refreshLock = new();
-    private readonly object _directQueryLock = new();
+    private readonly Lock _directQueryLock = new();
     private DateTime _lastDirectQueryAt = DateTime.MinValue;
     private WindowInfo? _lastDirectQueryWindow;
     private PixelPoint _lastDirectQueryPoint;

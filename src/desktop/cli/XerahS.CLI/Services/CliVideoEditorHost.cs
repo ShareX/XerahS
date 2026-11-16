@@ -37,7 +37,7 @@ namespace XerahS.CLI.Services;
 /// </summary>
 internal static class CliVideoEditorHost
 {
-    private static readonly object Gate = new();
+    private static readonly Lock Gate = new();
     private static bool _started;
 
     public static Task<string?> ShowAsync(OmacutEditorOptions options)

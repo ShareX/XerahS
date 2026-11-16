@@ -42,7 +42,7 @@ namespace XerahS.Core.Managers;
 /// </summary>
 internal sealed class RecordingStateMachine
 {
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private RecordingStatus _current = RecordingStatus.Idle;
 
     public RecordingStatus Current

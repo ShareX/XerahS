@@ -36,7 +36,7 @@ namespace XerahS.Platform.Linux.Services;
 /// </summary>
 internal sealed class SwitchableHotkeyService : IHotkeyService
 {
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private readonly Dictionary<ushort, HotkeyInfo> _requested = new();
     private IHotkeyService _backend;
     private ushort _lastId;

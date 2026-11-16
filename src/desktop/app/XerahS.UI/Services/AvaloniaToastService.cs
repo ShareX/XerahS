@@ -39,7 +39,7 @@ namespace XerahS.UI.Services;
 public class AvaloniaToastService : IToastService
 {
     private static ToastWindow? _activeToast;
-    private static readonly object _lock = new();
+    private static readonly Lock _lock = new();
     private IDesktopTaskManager? _taskManager;
 
     public void Configure(IDesktopTaskManager taskManager)

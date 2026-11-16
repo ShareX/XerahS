@@ -52,7 +52,7 @@ internal sealed class WindowsGraphicsCaptureBackend : IScreenCaptureBackend
     private static readonly Lazy<bool> BorderlessAccessGranted = new(RequestBorderlessAccess);
 
     private readonly IScreenService _screenService;
-    private readonly object _deviceLock = new();
+    private readonly Lock _deviceLock = new();
     private ID3D11Device? _device;
     private WD3D.IDirect3DDevice? _winRTDevice;
 

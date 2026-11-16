@@ -42,7 +42,7 @@ public sealed class LinuxClipboardService : IClipboardService
     private const string WlCopy = "wl-copy";
     private const string WlPaste = "wl-paste";
     private const string Xclip = "xclip";
-    private readonly object _clipboardOwnerLock = new();
+    private readonly Lock _clipboardOwnerLock = new();
     private Process? _clipboardOwnerProcess;
     private static readonly bool PreferWaylandClipboard =
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("WAYLAND_DISPLAY")) ||

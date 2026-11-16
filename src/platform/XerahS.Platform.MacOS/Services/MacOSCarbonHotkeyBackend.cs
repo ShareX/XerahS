@@ -52,7 +52,7 @@ namespace XerahS.Platform.MacOS.Services
     {
         private const uint HotKeySignature = 0x5853484B; // 'XSHK'
 
-        private readonly object _lock = new();
+        private readonly Lock _lock = new();
         private readonly Dictionary<uint, (IntPtr HotKeyRef, HotkeyInfo Info)> _hotkeysById = new();
 
         // Rooted delegate: Carbon holds a raw function pointer, so the delegate must outlive registrations.

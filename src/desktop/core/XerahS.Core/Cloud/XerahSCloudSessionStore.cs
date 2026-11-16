@@ -42,7 +42,7 @@ public sealed class XerahSCloudSessionStore : IXerahSCloudSessionStore
     private const string OwnerSubjectName = "owner-subject";
 
     private readonly ISecretStore _secretStore;
-    private readonly object _sync = new();
+    private readonly Lock _sync = new();
     private XerahSCloudSession? _current;
 
     public XerahSCloudSessionStore(ISecretStore secretStore)

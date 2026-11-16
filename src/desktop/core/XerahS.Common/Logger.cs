@@ -49,7 +49,7 @@ namespace XerahS.Common
         public string LogFilePath { get; private set; } = string.Empty;
         public string LogFilePathTemplate { get; private set; } = string.Empty;
 
-        private readonly object loggerLock = new object();
+        private readonly Lock loggerLock = new();
         private ConcurrentQueue<string> messageQueue = new ConcurrentQueue<string>();
         private StringBuilder sbMessages = new StringBuilder();
         private string _currentDate = DateTime.Now.ToString("yyyyMMdd");

@@ -32,7 +32,7 @@ namespace XerahS.History
 {
     public class HistoryManagerJSON : HistoryManager
     {
-        private static readonly object thisLock = new object();
+        private static readonly Lock thisLock = new();
 
         public HistoryManagerJSON(string filePath) : base(filePath)
         {

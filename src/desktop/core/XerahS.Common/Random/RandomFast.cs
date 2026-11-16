@@ -27,7 +27,7 @@ namespace XerahS.Common
 {
     public static class RandomFast
     {
-        private static readonly object randomLock = new object();
+        private static readonly Lock randomLock = new();
         private static readonly Random random = new Random();
 
         /// <summary>Returns a non-negative random integer.</summary>

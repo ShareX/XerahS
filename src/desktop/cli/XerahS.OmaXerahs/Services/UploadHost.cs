@@ -46,7 +46,7 @@ internal static class UploadHost
 {
     private static bool _bootstrapped;
     private static bool _pluginsLoaded;
-    private static readonly object _lock = new();
+    private static readonly Lock _lock = new();
 
     internal static string GetVersion()
     {
