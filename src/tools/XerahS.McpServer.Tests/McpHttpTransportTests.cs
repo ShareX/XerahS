@@ -47,6 +47,14 @@ public class McpHttpTransportTests
     }
 
     [Fact]
+    public void UnwrapSseData_KeepsTheLastEventWhenNotificationsComeFirst()
+    {
+        const string sse = "event: message\ndata: {\"method\":\"notifications/progress\"}\n\nevent: message\ndata: {\"id\":1}\n\n";
+
+        Assert.Equal("""{"id":1}""", HttpServer.UnwrapSseData(sse));
+    }
+
+    [Fact]
     public async Task Http_AppliesBearerAuthAndKeepsPlainJsonPostsWorking()
     {
         int port = GetFreePort();
@@ -87,6 +95,13 @@ public class McpHttpTransportTests
             var sdkResponse = await http.SendAsync(sdkStyle);
             Assert.Equal("text/event-stream", sdkResponse.Content.Headers.ContentType?.MediaType);
             Assert.Contains("data: ", await sdkResponse.Content.ReadAsStringAsync());
+
+            // A client that only lists text/event-stream is completed rather than rejected with 406.
+            using var sseOnly = Authorized(ToolsList, ApiKey);
+            sseOnly.Headers.Accept.ParseAdd("text/event-stream");
+            var sseOnlyResponse = await http.SendAsync(sseOnly);
+            Assert.Equal(HttpStatusCode.OK, sseOnlyResponse.StatusCode);
+            Assert.Equal("text/event-stream", sseOnlyResponse.Content.Headers.ContentType?.MediaType);
 
             // The heartbeat stream sits behind the same key.
             Assert.Equal(HttpStatusCode.Unauthorized, (await http.GetAsync("/mcp/events/")).StatusCode);

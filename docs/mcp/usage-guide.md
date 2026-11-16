@@ -199,6 +199,8 @@ Get a prompt:
 - **Resources.** `resources/list` returns the concrete resources. Templated URIs (`xerahs://history/{id}`, `xerahs://history/search?q={query}`, `xerahs://workflows/{id}`) are listed by `resources/templates/list`.
 - **Error codes.** Bad arguments, unknown tools, prompts or missing files return `-32602`. The user dismissing an interactive capture returns `-32500`. An unexpected failure returns `-32603`, and an `InvalidOperationException` from a tool returns `-32000`. Malformed request params (for example a non-string `name`) are rejected by the SDK before XerahS sees them, with `-32602` or `-32603`.
 - **Capabilities.** Protocol version and capabilities are negotiated by the SDK. `listChanged` and resource subscriptions are no longer advertised, because the server never sent those notifications.
+- **Notifications over HTTP.** A JSON-RPC notification (a message without an `id`) is answered with `202 Accepted` and an empty body, where the previous server answered `204`.
+- **Concurrency.** Over stdio the SDK handles requests concurrently, where the previous server handled them one at a time. Wait for a capture to finish before starting an interactive one.
 - **Removed non-standard methods.** The `initialized` and `shutdown` request methods are gone. Send the standard `notifications/initialized` notification and end the session by closing the transport.
 
 ## Tools

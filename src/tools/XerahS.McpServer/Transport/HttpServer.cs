@@ -147,18 +147,27 @@ public sealed class HttpServer : IDisposable
     /// </summary>
     internal static async Task PlainJsonResponseAsync(HttpContext context, RequestDelegate next)
     {
-        bool plainJsonClient = context.Request.Method == HttpMethods.Post
-            && context.Request.Path.StartsWithSegments(McpPath)
-            && !context.Request.Path.StartsWithSegments(EventsPath.TrimEnd('/'))
-            && !context.Request.Headers.Accept.Any(value => value?.Contains("text/event-stream", StringComparison.OrdinalIgnoreCase) == true);
-
-        if (!plainJsonClient)
+        if (context.Request.Method != HttpMethods.Post || !context.Request.Path.StartsWithSegments(McpPath))
         {
             await next(context);
             return;
         }
 
-        context.Request.Headers.Accept = "application/json, text/event-stream";
+        // The SDK rejects a POST unless Accept lists both media types (406). Older XerahS clients sent neither
+        // or only one, so complete the header; only a client that did not ask for SSE gets its reply unwrapped.
+        bool acceptsSse = context.Request.Headers.Accept.Any(value => value?.Contains("text/event-stream", StringComparison.OrdinalIgnoreCase) == true);
+        bool acceptsJson = context.Request.Headers.Accept.Any(value => value?.Contains("application/json", StringComparison.OrdinalIgnoreCase) == true);
+        if (!acceptsSse || !acceptsJson)
+        {
+            context.Request.Headers.Accept = "application/json, text/event-stream";
+        }
+
+        if (acceptsSse)
+        {
+            await next(context);
+            return;
+        }
+
         Stream original = context.Response.Body;
         using var buffer = new MemoryStream();
         context.Response.Body = buffer;
@@ -187,24 +196,48 @@ public sealed class HttpServer : IDisposable
         }
     }
 
+    /// <summary>
+    /// Returns the data of the last event in an SSE body (the JSON-RPC response follows any notifications the
+    /// server sent first). Multiple <c>data:</c> lines inside one event are joined with a newline.
+    /// </summary>
     internal static string UnwrapSseData(string sseBody)
     {
+        string lastEventData = string.Empty;
         var data = new StringBuilder();
+        bool hasData = false;
+
+        void FlushEvent()
+        {
+            if (hasData)
+            {
+                lastEventData = data.ToString();
+            }
+
+            data.Clear();
+            hasData = false;
+        }
+
         foreach (var rawLine in sseBody.Split('\n'))
         {
             var line = rawLine.TrimEnd('\r');
-            if (line.StartsWith("data:", StringComparison.Ordinal))
+            if (line.Length == 0)
             {
-                if (data.Length > 0)
+                FlushEvent();
+            }
+            else if (line.StartsWith("data:", StringComparison.Ordinal))
+            {
+                if (hasData)
                 {
                     data.Append('\n');
                 }
 
                 data.Append(line.AsSpan(line.Length > 5 && line[5] == ' ' ? 6 : 5));
+                hasData = true;
             }
         }
 
-        return data.ToString();
+        FlushEvent();
+        return lastEventData;
     }
 
     /// <summary>
@@ -257,7 +290,7 @@ public sealed class HttpServer : IDisposable
         var token = authHeader["Bearer ".Length..].Trim();
         var configuredApiKey = await _runtime.GetApiKeyAsync(context.RequestAborted);
         return !string.IsNullOrWhiteSpace(configuredApiKey) &&
-               string.Equals(token, configuredApiKey, StringComparison.Ordinal);
+               CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(token), Encoding.UTF8.GetBytes(configuredApiKey));
     }
 
     /// <summary>
