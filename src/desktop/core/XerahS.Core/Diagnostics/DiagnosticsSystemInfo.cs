@@ -383,25 +383,15 @@ public static partial class DiagnosticsSystemInfo
     {
         try
         {
-            using var process = new Process
+            // Drains stdout and stderr together and kills the process if it outlives the timeout (TimeoutException).
+            var startInfo = new ProcessStartInfo(fileName, arguments)
             {
-                StartInfo = new ProcessStartInfo(fileName, arguments)
-                {
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                },
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
             };
-            if (!process.Start()) return null;
-            Task<string> output = process.StandardOutput.ReadToEndAsync();
-            _ = process.StandardError.ReadToEndAsync();
-            if (!process.WaitForExit(ProcessTimeout))
-            {
-                try { process.Kill(entireProcessTree: true); } catch { }
-                return null;
-            }
-            return output.Result;
+            return Process.RunAndCaptureText(startInfo, ProcessTimeout).StandardOutput;
         }
         catch
         {

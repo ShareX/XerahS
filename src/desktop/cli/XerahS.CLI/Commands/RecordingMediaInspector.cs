@@ -77,23 +77,13 @@ internal static class RecordingMediaInspector
         };
         foreach (string argument in new[] { "-v", "error", "-show_streams", "-show_format", "-of", "json", Path.GetFullPath(path) })
             start.ArgumentList.Add(argument);
-        using var process = Process.Start(start) ?? throw new IOException("Could not start ffprobe.");
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(30));
-        Task<string> output = process.StandardOutput.ReadToEndAsync(timeout.Token);
-        Task<string> error = process.StandardError.ReadToEndAsync(timeout.Token);
-        try
-        {
-            await process.WaitForExitAsync(timeout.Token);
-            string json = await output;
-            string stderr = await error;
-            if (process.ExitCode != 0) throw new IOException($"ffprobe failed ({process.ExitCode}): {stderr.Trim()}");
-            return Parse(json);
-        }
-        finally
-        {
-            if (!process.HasExited) process.Kill(entireProcessTree: true);
-        }
+        // Drains both pipes and kills ffprobe if the token is cancelled.
+        ProcessTextOutput result = await Process.RunAndCaptureTextAsync(start, timeout.Token);
+        if (result.ExitStatus.ExitCode != 0)
+            throw new IOException($"ffprobe failed ({result.ExitStatus.ExitCode}): {result.StandardError.Trim()}");
+        return Parse(result.StandardOutput);
     }
 
     internal static RecordingMediaReport Parse(string json)

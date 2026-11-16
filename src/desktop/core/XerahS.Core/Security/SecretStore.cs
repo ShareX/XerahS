@@ -830,22 +830,14 @@ public sealed class SecretStore : ISecretStore, ISecretStoreInfo
                 CreateNoWindow = true
             };
 
-            using var process = Process.Start(psi);
-            if (process == null)
+            ProcessTextOutput result = Process.RunAndCaptureText(psi, TimeSpan.FromSeconds(5));
+
+            if (result.ExitStatus.ExitCode != 0 && !string.IsNullOrWhiteSpace(result.StandardError))
             {
-                return string.Empty;
+                DebugHelper.WriteLine($"SecretStore command error: {result.StandardError}");
             }
 
-            var output = process.StandardOutput.ReadToEnd();
-            var error = process.StandardError.ReadToEnd();
-            process.WaitForExit(5000);
-
-            if (process.ExitCode != 0 && !string.IsNullOrWhiteSpace(error))
-            {
-                DebugHelper.WriteLine($"SecretStore command error: {error}");
-            }
-
-            return output;
+            return result.StandardOutput;
         }
         catch (Exception ex)
         {
