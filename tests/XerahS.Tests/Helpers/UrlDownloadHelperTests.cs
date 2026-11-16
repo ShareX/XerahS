@@ -1,3 +1,28 @@
+#region License Information (GPL v3)
+
+/*
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
+
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -60,10 +85,15 @@ public class UrlDownloadHelperTests
         {
             UrlDownloadResult result = await UrlDownloadHelper.DownloadAsync($"{server.Prefix}docs/page", root, gitHubToken: null);
 
-            Assert.That(result.Success, Is.True, result.ErrorMessage);
-            Assert.That(Path.GetFileName(result.FilePath), Is.EqualTo("page.html"));
-            Assert.That(Path.GetDirectoryName(Path.GetDirectoryName(result.FilePath)), Is.EqualTo(root));
-            Assert.That(await File.ReadAllTextAsync(result.FilePath!), Is.EqualTo("<h1>hi</h1>"));
+            if (result is not UrlDownloaded { FilePath: var filePath })
+            {
+                Assert.Fail(result is UrlDownloadFailed failedResult ? failedResult.Message : "Unexpected download result.");
+                return;
+            }
+
+            Assert.That(Path.GetFileName(filePath), Is.EqualTo("page.html"));
+            Assert.That(Path.GetDirectoryName(Path.GetDirectoryName(filePath)), Is.EqualTo(root));
+            Assert.That(await File.ReadAllTextAsync(filePath), Is.EqualTo("<h1>hi</h1>"));
         }
         finally
         {
@@ -79,9 +109,14 @@ public class UrlDownloadHelperTests
 
         UrlDownloadResult result = await UrlDownloadHelper.DownloadAsync($"{server.Prefix}missing.png", root, gitHubToken: null);
 
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.GitHubTokenRequired, Is.False);
-        Assert.That(result.ErrorMessage, Does.Contain("404"));
+        Assert.That(result is UrlDownloadFailed, Is.True);
+        if (result is not UrlDownloadFailed failed)
+        {
+            return;
+        }
+
+        Assert.That(failed.GitHubTokenRequired, Is.False);
+        Assert.That(failed.Message, Does.Contain("404"));
         Assert.That(Directory.Exists(root), Is.False);
     }
 

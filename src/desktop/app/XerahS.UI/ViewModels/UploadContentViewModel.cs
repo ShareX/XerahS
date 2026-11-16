@@ -444,13 +444,13 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         {
             result = await UrlDownloadHelper.DownloadAsync(item.SourceUrl!, folder, token);
 
-            if (!result.Success && result.GitHubTokenRequired && GitHubTokenRequested != null)
+            if (result is UrlDownloadFailed { GitHubTokenRequired: true } tokenRequired && GitHubTokenRequested != null)
             {
-                string? entered = await GitHubTokenRequested(result.ErrorMessage ?? "A GitHub token is needed.");
+                string? entered = await GitHubTokenRequested(tokenRequired.Message);
                 if (!string.IsNullOrWhiteSpace(entered))
                 {
                     result = await UrlDownloadHelper.DownloadAsync(item.SourceUrl!, folder, entered);
-                    if (result.Success)
+                    if (result is UrlDownloaded)
                     {
                         SaveGitHubToken(secrets, entered.Trim());
                     }
@@ -460,23 +460,23 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         catch (Exception ex)
         {
             DebugHelper.WriteException(ex, "UploadContent: Download from URL failed.");
-            result = UrlDownloadResult.Failed(ex.Message);
+            result = new UrlDownloadFailed(ex.Message);
         }
 
-        if (result.Success && result.FilePath != null)
+        if (result is UrlDownloaded { FilePath: string downloadedPath })
         {
-            var fileInfo = new FileInfo(result.FilePath);
-            item.FilePath = result.FilePath;
+            var fileInfo = new FileInfo(downloadedPath);
+            item.FilePath = downloadedPath;
             item.DisplayName = fileInfo.Name;
             item.Description = $"{FormatFileSize(fileInfo.Length)} from URL";
-            item.ResolvedUploadName = ResolveUploadNamePreview(result.FilePath);
+            item.ResolvedUploadName = ResolveUploadNamePreview(downloadedPath);
             item.Status = UploadQueueItemStatus.Pending;
             DebugHelper.WriteLine($"UploadContent: Downloaded {fileInfo.Length} bytes from URL as '{fileInfo.Name}'.");
         }
         else
         {
             item.Description = "Download failed";
-            item.ErrorMessage = result.ErrorMessage ?? "Download failed";
+            item.ErrorMessage = result is UrlDownloadFailed failed ? failed.Message : "Download failed";
             item.Status = UploadQueueItemStatus.Failed;
         }
 
