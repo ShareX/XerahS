@@ -79,7 +79,7 @@ internal static class RecordingMediaInspector
             start.ArgumentList.Add(argument);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(30));
-        // Drains both pipes and kills ffprobe if the token is cancelled.
+        // Drains both pipes; the helper kills ffprobe (the direct child) if the token is cancelled.
         ProcessTextOutput result = await Process.RunAndCaptureTextAsync(start, timeout.Token);
         if (result.ExitStatus.ExitCode != 0)
             throw new IOException($"ffprobe failed ({result.ExitStatus.ExitCode}): {result.StandardError.Trim()}");

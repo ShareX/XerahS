@@ -383,7 +383,7 @@ public static partial class DiagnosticsSystemInfo
     {
         try
         {
-            // Drains stdout and stderr together and kills the process if it outlives the timeout (TimeoutException).
+            // Drains stdout and stderr together; the helper kills the child (not its descendants) if it outlives the timeout (TimeoutException).
             var startInfo = new ProcessStartInfo(fileName, arguments)
             {
                 RedirectStandardOutput = true,
