@@ -43,7 +43,7 @@ public static partial class DiagnosticsLogAnalyzer
     private static partial Regex ParseVersionRegex();
 
     [GeneratedRegex(@"Windows\.Graphics\.Capture|WGC capture succeeded", Options | RegexOptions.IgnoreCase)]
-    private static partial Regex staticRegex();
+    private static partial Regex WgcCaptureRegex();
 
     public const int RedactionVersion = 1;
     public const int SchemaVersion = 1;
@@ -441,7 +441,7 @@ public static partial class DiagnosticsLogAnalyzer
         {
             string m = entry.Message;
             if (m.Contains("DXGI Output Duplication succeeded", StringComparison.Ordinal)) capture = "dxgi";
-            else if (capture == null && staticRegex().IsMatch(m)) capture = "wgc";
+            else if (capture == null && WgcCaptureRegex().IsMatch(m)) capture = "wgc";
             else if (RecordingBackend().Match(m) is { Success: true } r) recording = r.Groups[1].Value.Trim();
             else if (m.Contains("Native recording (WGC + Media Foundation) is supported", StringComparison.Ordinal)) recording = "WGC + Media Foundation";
         }
