@@ -74,7 +74,6 @@
     <ProjectReference Include="..\..\src\platform\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" />
     <ProjectReference Include="..\..\src\platform\XerahS.Platform.Mobile\XerahS.Platform.Mobile.csproj" />
     <ProjectReference Include="..\..\src\desktop\core\XerahS.Uploaders\XerahS.Uploaders.csproj" />
-    <ProjectReference Include="..\..\src\tools\XerahS.McpServer\XerahS.McpServer.csproj" />
     <ProjectReference Include="..\..\ShareX.ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj" GlobalPropertiesToRemove="OS" />
     <ProjectReference Include="..\..\Omacut\dotnet\src\Omacut\Omacut.csproj" GlobalPropertiesToRemove="OS" />
   </ItemGroup>

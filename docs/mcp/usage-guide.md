@@ -62,7 +62,7 @@ Equivalent:
 xerahs-mcp --mcp-server --transport stdio
 ```
 
-Each stdin line is one JSON-RPC 2.0 request. Each stdout line is one JSON-RPC 2.0 response.
+The server is built on the official [MCP C# SDK](https://github.com/modelcontextprotocol/csharp-sdk). Each stdin line is one JSON-RPC 2.0 message and each stdout line is one JSON-RPC 2.0 message; log output goes to stderr only. Keep stdin open until you have read the responses you need: closing stdin is the shutdown signal, so a client that pipes a batch of requests and immediately closes stdin may not receive the replies.
 
 Example MCP client configuration:
 
@@ -89,9 +89,11 @@ xerahs-mcp --mcp-server --transport http --port 7890
 
 Endpoints:
 
-- `POST /mcp/` for JSON-RPC requests
+- `POST /mcp/` for JSON-RPC requests (SDK Streamable HTTP transport in stateless mode: no session header and no `initialize` handshake are required)
 - `GET /mcp/events/` for SSE notifications and heartbeats
-- `GET /health` for health checks
+- `GET /health` for health checks (anonymous)
+
+A request that does not list `text/event-stream` in its `Accept` header (for example a plain `curl`) receives a plain `application/json` body. A client that accepts `text/event-stream`, as SDK clients do, receives the SDK's SSE-framed reply (`event: message` / `data: {...}`).
 
 HTTP transport requires bearer authentication:
 
@@ -127,7 +129,16 @@ The public endpoint is a deployment slot, not proof that a shared hosted XerahS 
 Initialize:
 
 ```json
-{ "jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {} }
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2024-11-05",
+    "capabilities": {},
+    "clientInfo": { "name": "my-client", "version": "1.0" }
+  }
+}
 ```
 
 List tools:
@@ -181,6 +192,14 @@ Get a prompt:
   }
 }
 ```
+
+## Results, errors and protocol notes
+
+- **Tool results.** A tool call returns the MCP `content` array with one JSON text block, and the same object as `structuredContent`. Read the fields documented under each tool from `result.structuredContent` (for example `result.structuredContent.file_path`).
+- **Resources.** `resources/list` returns the concrete resources. Templated URIs (`xerahs://history/{id}`, `xerahs://history/search?q={query}`, `xerahs://workflows/{id}`) are listed by `resources/templates/list`.
+- **Error codes.** Bad arguments, unknown tools, prompts or missing files return `-32602`. The user dismissing an interactive capture returns `-32500`. An unexpected failure returns `-32603`, and an `InvalidOperationException` from a tool returns `-32000`. Malformed request params (for example a non-string `name`) are rejected by the SDK before XerahS sees them, with `-32602` or `-32603`.
+- **Capabilities.** Protocol version and capabilities are negotiated by the SDK. `listChanged` and resource subscriptions are no longer advertised, because the server never sent those notifications.
+- **Removed non-standard methods.** The `initialized` and `shutdown` request methods are gone. Send the standard `notifications/initialized` notification and end the session by closing the transport.
 
 ## Tools
 

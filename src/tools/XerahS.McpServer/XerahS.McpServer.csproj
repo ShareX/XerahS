@@ -13,6 +13,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ModelContextProtocol" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../../desktop/app/XerahS.Bootstrap/XerahS.Bootstrap.csproj" />
     <ProjectReference Include="../../desktop/core/XerahS.Core/XerahS.Core.csproj" />
     <ProjectReference Include="../../desktop/core/XerahS.History/XerahS.History.csproj" />
