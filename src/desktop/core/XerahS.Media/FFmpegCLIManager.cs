@@ -33,8 +33,26 @@ using System.Text.RegularExpressions;
 
 namespace XerahS.Media
 {
-    public class FFmpegCLIManager : ExternalCLIManager
+    public partial class FFmpegCLIManager : ExternalCLIManager
     {
+        [GeneratedRegex(@"Duration:\s*(\d+:\d+:\d+\.\d+),\s*start:", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex UpdateEncodeProgressRegex();
+
+        [GeneratedRegex(@"time=\s*(\d+:\d+:\d+\.\d+)\s*bitrate=", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex UpdateEncodeProgressRegex2();
+
+        [GeneratedRegex(@"Duration: (?<Duration>\d{2}:\d{2}:\d{2}\.\d{2}),.+?start: (?<Start>\d+\.\d+),.+?bitrate: (?<Bitrate>\d+) kb/s", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex GetVideoInfoRegex();
+
+        [GeneratedRegex(@"Stream #\d+:\d+(?:\(.+?\))?: Video: (?<Codec>.+?) \(.+?,.+?, (?<Width>\d+)x(?<Height>\d+).+?, (?<FPS>\d+(?:\.\d+)?) fps", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex GetVideoInfoRegex2();
+
+        [GeneratedRegex(@"Stream #\d+:\d+(?:\(.+?\))?: Audio: (?<Codec>.+?)(?: \(|,)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex GetVideoInfoRegex3();
+
+        [GeneratedRegex(@"\[dshow @ \w+\] +""(.+)""", RegexOptions.CultureInvariant)]
+        private static partial Regex GetDirectShowDevicesRegex();
+
         public const int x264_min = 0;
         public const int x264_max = 51;
         public const int x265_min = 0;
@@ -186,7 +204,7 @@ namespace XerahS.Media
             if (VideoDuration.Ticks == 0)
             {
                 //  Duration: 00:00:15.32, start: 0.000000, bitrate: 1095 kb/s
-                Match match = Regex.Match(data, @"Duration:\s*(\d+:\d+:\d+\.\d+),\s*start:", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                Match match = UpdateEncodeProgressRegex().Match(data);
 
                 if (match.Success && TimeSpan.TryParse(match.Groups[1].Value, out TimeSpan duration))
                 {
@@ -196,7 +214,7 @@ namespace XerahS.Media
             else
             {
                 //frame=  942 fps=187 q=35.0 size=    3072kB time=00:00:38.10 bitrate= 660.5kbits/s speed=7.55x
-                Match match = Regex.Match(data, @"time=\s*(\d+:\d+:\d+\.\d+)\s*bitrate=", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                Match match = UpdateEncodeProgressRegex2().Match(data);
 
                 if (match.Success && TimeSpan.TryParse(match.Groups[1].Value, out TimeSpan time))
                 {
@@ -226,8 +244,7 @@ namespace XerahS.Media
             Run($"-i {QuoteProcessArgument(videoPath)}");
             string output = Output.ToString();
 
-            Match matchInput = Regex.Match(output, @"Duration: (?<Duration>\d{2}:\d{2}:\d{2}\.\d{2}),.+?start: (?<Start>\d+\.\d+),.+?bitrate: (?<Bitrate>\d+) kb/s",
-                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            Match matchInput = GetVideoInfoRegex().Match(output);
 
             if (matchInput.Success)
             {
@@ -240,8 +257,7 @@ namespace XerahS.Media
                 return null;
             }
 
-            Match matchVideoStream = Regex.Match(output, @"Stream #\d+:\d+(?:\(.+?\))?: Video: (?<Codec>.+?) \(.+?,.+?, (?<Width>\d+)x(?<Height>\d+).+?, (?<FPS>\d+(?:\.\d+)?) fps",
-                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            Match matchVideoStream = GetVideoInfoRegex2().Match(output);
 
             if (matchVideoStream.Success)
             {
@@ -250,8 +266,7 @@ namespace XerahS.Media
                 videoInfo.VideoFPS = double.Parse(matchVideoStream.Groups["FPS"].Value, CultureInfo.InvariantCulture);
             }
 
-            Match matchAudioStream = Regex.Match(output, @"Stream #\d+:\d+(?:\(.+?\))?: Audio: (?<Codec>.+?)(?: \(|,)",
-                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            Match matchAudioStream = GetVideoInfoRegex3().Match(output);
 
             if (matchAudioStream.Success)
             {
@@ -313,7 +328,7 @@ namespace XerahS.Media
             string output = Output.ToString();
             string[] lines = output.Lines();
             bool isAudio = false;
-            Regex regex = new Regex(@"\[dshow @ \w+\] +""(.+)""", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+            Regex regex = GetDirectShowDevicesRegex();
 
             foreach (string line in lines)
             {

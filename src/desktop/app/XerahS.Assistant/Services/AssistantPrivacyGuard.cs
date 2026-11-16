@@ -53,10 +53,12 @@ public sealed record AssistantPrivacyDecision(
     public static AssistantPrivacyDecision Block(string reason) => new(false, false, null, reason);
 }
 
-public sealed class AssistantPrivacyGuard
+public sealed partial class AssistantPrivacyGuard
 {
-    private static readonly Regex UrlRegex = new(@"https?://|www\.", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
-    private static readonly Regex PathRegex = new(@"[A-Za-z]:\\|/[^/\s]+/|\\\\", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    [GeneratedRegex(@"https?://|www\.", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex UrlRegex();
+    [GeneratedRegex(@"[A-Za-z]:\\|/[^/\s]+/|\\\\", RegexOptions.CultureInvariant)]
+    private static partial Regex PathRegex();
 
     public AssistantPrivacyDecision Evaluate(AssistantPrivacyCheck check)
     {
@@ -151,7 +153,7 @@ public sealed class AssistantPrivacyGuard
             return false;
         }
 
-        return UrlRegex.IsMatch(value) || PathRegex.IsMatch(value);
+        return UrlRegex().IsMatch(value) || PathRegex().IsMatch(value);
     }
 
     private static string Preview(string? value)

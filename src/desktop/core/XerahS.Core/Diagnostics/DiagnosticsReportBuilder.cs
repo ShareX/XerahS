@@ -51,9 +51,10 @@ public sealed class PreparedDiagnosticsReport
     public int EventCount => Payload.Events.Count;
 }
 
-public static class DiagnosticsReportBuilder
+public static partial class DiagnosticsReportBuilder
 {
-    private static readonly Regex DatedLogName = new(@"-(\d{8})\.log$", RegexOptions.CultureInvariant);
+    [GeneratedRegex(@"-(\d{8})\.log$", RegexOptions.CultureInvariant)]
+    private static partial Regex DatedLogName();
 
     /// <summary>
     /// Log files that may hold entries in the window: the main and error logs
@@ -77,7 +78,7 @@ public static class DiagnosticsReportBuilder
                 {
                     continue;
                 }
-                Match date = DatedLogName.Match(name);
+                Match date = DatedLogName().Match(name);
                 if (!date.Success ||
                     !DateTime.TryParseExact(date.Groups[1].Value, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime day))
                 {

@@ -91,7 +91,7 @@ public static class ChatGptSignIn
 /// XerahS during the first sign-in and then calls the public Responses API with
 /// the user's ChatGPT plan. There is no client secret.
 /// </summary>
-internal static class ChatGptOAuth
+internal static partial class ChatGptOAuth
 {
     public const string Issuer = "https://auth.openai.com";
     public const string Resource = "https://api.openai.com/v1";
@@ -99,7 +99,8 @@ internal static class ChatGptOAuth
     public const string PlanScope = "chatgpt.tokens.use.direct";
     public const string Scopes = "openid profile email offline_access resource.invoke chatgpt.tokens.use.direct";
     private const string CallbackPath = "/auth/callback";
-    private static readonly Regex ClientIdPattern = new("^[A-Za-z0-9_-]{1,200}$", RegexOptions.CultureInvariant);
+    [GeneratedRegex("^[A-Za-z0-9_-]{1,200}$", RegexOptions.CultureInvariant)]
+    private static partial Regex ClientIdPattern();
 
     public static string CreateVerifier() => Base64Url(RandomNumberGenerator.GetBytes(32));
 
@@ -396,7 +397,7 @@ internal static class ChatGptOAuth
 
         string clientId = returnedClient ?? previous?.ClientId ?? string.Empty;
         if (string.IsNullOrWhiteSpace(code) ||
-            !ClientIdPattern.IsMatch(clientId) ||
+            !ClientIdPattern().IsMatch(clientId) ||
             clientId == "dynamic_agent_client" ||
             (previous != null && returnedClient != null && previous.ClientId != returnedClient))
         {

@@ -30,7 +30,7 @@ using System.Text.RegularExpressions;
 
 namespace XerahS.Common
 {
-    public class Logger : IDisposable
+    public partial class Logger : IDisposable
     {
         public delegate void MessageAddedEventHandler(string message);
 
@@ -57,7 +57,8 @@ namespace XerahS.Common
         private bool _disposed = false;
         private int _consecutiveFileWriteFailures = 0;
         private const int MaxFileWriteFailures = 5;
-        private static readonly Regex DateSuffixRegex = new Regex(@"-\d{8}$", RegexOptions.Compiled);
+        [GeneratedRegex(@"-\d{8}$")]
+        private static partial Regex DateSuffixRegex();
 
         public Logger()
         {
@@ -74,7 +75,7 @@ namespace XerahS.Common
 
                 // Extract base filename without date suffix (e.g., "XerahS-20260209" -> "XerahS")
                 string filename = Path.GetFileNameWithoutExtension(logFilePath);
-                _baseFileName = DateSuffixRegex.Replace(filename, string.Empty);
+                _baseFileName = DateSuffixRegex().Replace(filename, string.Empty);
 
                 string? directory = Path.GetDirectoryName(LogFilePath);
 

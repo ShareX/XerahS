@@ -48,49 +48,42 @@ public sealed record AssistantDeterministicIntent(
     string? Separator = null,
     string? Argument = null);
 
-public sealed class AssistantCommandRouter
+public sealed partial class AssistantCommandRouter
 {
+    [GeneratedRegex(@"\b(?:separated|joined)\s+by\s+(?:(?:a|an)\s+)?(?<separator>""[^""]*""|'[^']*'|[^\s,]+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex ExtractRequestedSeparatorRegex();
+
     public const int MaxLatestScreenshotLimit = 10;
 
-    private static readonly Regex LastScreenshotPathsRegex = new(
-        @"\b(?:give\s+me\s+)?(?:the\s+)?(?:local\s+)?(?:(?:file\s+)?paths?|filepath(?:s)?)\s+(?:of\s+)?(?:my\s+)?(?:last|latest)\s+(?<limit>\d{1,2})\s+screenshot(?:s)?\b|\b(?:last|latest)\s+(?<limit2>\d{1,2})\s+screenshot(?:s)?\s+(?:(?:local\s+)?(?:file\s+path(?:s)?|filepath(?:s)?)|paths?)\b",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    [GeneratedRegex(@"\b(?:give\s+me\s+)?(?:the\s+)?(?:local\s+)?(?:(?:file\s+)?paths?|filepath(?:s)?)\s+(?:of\s+)?(?:my\s+)?(?:last|latest)\s+(?<limit>\d{1,2})\s+screenshot(?:s)?\b|\b(?:last|latest)\s+(?<limit2>\d{1,2})\s+screenshot(?:s)?\s+(?:(?:local\s+)?(?:file\s+path(?:s)?|filepath(?:s)?)|paths?)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex LastScreenshotPathsRegex();
 
-    private static readonly Regex LatestScreenshotPathRegex = new(
-        @"\b(?:latest|last|most\s+recent)\s+screenshot\b.*\b(?:path|filepath|file\s+path)\b|\b(?:path|filepath|file\s+path)\b.*\b(?:latest|last|most\s+recent)\s+screenshot\b",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    [GeneratedRegex(@"\b(?:latest|last|most\s+recent)\s+screenshot\b.*\b(?:path|filepath|file\s+path)\b|\b(?:path|filepath|file\s+path)\b.*\b(?:latest|last|most\s+recent)\s+screenshot\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex LatestScreenshotPathRegex();
 
-    private static readonly Regex CopyLatestScreenshotPathRegex = new(
-        @"\bcopy\b.*(?:\b(?:latest|last|most\s+recent)\s+screenshot\b.*\b(?:path|filepath|file\s+path)\b|\b(?:path|filepath|file\s+path)\b.*\b(?:latest|last|most\s+recent)\s+screenshot\b)",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    [GeneratedRegex(@"\bcopy\b.*(?:\b(?:latest|last|most\s+recent)\s+screenshot\b.*\b(?:path|filepath|file\s+path)\b|\b(?:path|filepath|file\s+path)\b.*\b(?:latest|last|most\s+recent)\s+screenshot\b)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex CopyLatestScreenshotPathRegex();
 
-    private static readonly Regex OpenLatestScreenshotRegex = new(
-        @"\bopen\b.*\b(?:latest|last|most\s+recent)\s+screenshot\b.*\b(?:editor|edit|image\s+editor)?\b",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    [GeneratedRegex(@"\bopen\b.*\b(?:latest|last|most\s+recent)\s+screenshot\b.*\b(?:editor|edit|image\s+editor)?\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex OpenLatestScreenshotRegex();
 
-    private static readonly Regex RevealLatestScreenshotRegex = new(
-        @"\b(?:reveal|show)\b.*\b(?:latest|last|most\s+recent)\s+(?:capture|screenshot)\b.*\b(?:folder|explorer|finder|files)?\b",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    [GeneratedRegex(@"\b(?:reveal|show)\b.*\b(?:latest|last|most\s+recent)\s+(?:capture|screenshot)\b.*\b(?:folder|explorer|finder|files)?\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex RevealLatestScreenshotRegex();
 
-    private static readonly Regex OcrLatestScreenshotRegex = new(
-        @"\b(?:ocr|extract\s+text|read\s+text)\b.*\b(?:latest|last|most\s+recent)\s+(?:capture|screenshot)\b",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    [GeneratedRegex(@"\b(?:ocr|extract\s+text|read\s+text)\b.*\b(?:latest|last|most\s+recent)\s+(?:capture|screenshot)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex OcrLatestScreenshotRegex();
 
-    private static readonly Regex CopyOcrLatestScreenshotRegex = new(
-        @"\bcopy\b.*\b(?:ocr|extracted\s+text|text)\b.*\b(?:latest|last|most\s+recent)\s+(?:capture|screenshot)\b|\b(?:ocr|extract\s+text|read\s+text)\b.*\b(?:latest|last|most\s+recent)\s+(?:capture|screenshot)\b.*\bcopy\b",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    [GeneratedRegex(@"\bcopy\b.*\b(?:ocr|extracted\s+text|text)\b.*\b(?:latest|last|most\s+recent)\s+(?:capture|screenshot)\b|\b(?:ocr|extract\s+text|read\s+text)\b.*\b(?:latest|last|most\s+recent)\s+(?:capture|screenshot)\b.*\bcopy\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex CopyOcrLatestScreenshotRegex();
 
-    private static readonly Regex UploadLatestScreenshotRegex = new(
-        @"\b(?:upload|share)\b.*\b(?:latest|last|most\s+recent)\s+(?:capture|screenshot)\b",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    [GeneratedRegex(@"\b(?:upload|share)\b.*\b(?:latest|last|most\s+recent)\s+(?:capture|screenshot)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex UploadLatestScreenshotRegex();
 
-    private static readonly Regex SearchScreenshotTextRegex = new(
-        @"\b(?:find|search|show)\b.*\b(?:screenshots?|captures?)\b.*\b(?:containing|with|for|text)\b\s+(?<query>.+)$",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    [GeneratedRegex(@"\b(?:find|search|show)\b.*\b(?:screenshots?|captures?)\b.*\b(?:containing|with|for|text)\b\s+(?<query>.+)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex SearchScreenshotTextRegex();
 
-    private static readonly Regex RunWorkflowRegex = new(
-        @"\b(?:run|start)\s+(?:the\s+)?(?:workflow\s+)?(?<name>.+)$",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    [GeneratedRegex(@"\b(?:run|start)\s+(?:the\s+)?(?:workflow\s+)?(?<name>.+)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex RunWorkflowRegex();
 
     public AssistantDeterministicIntent Parse(string prompt)
     {
@@ -99,27 +92,27 @@ public sealed class AssistantCommandRouter
             return new AssistantDeterministicIntent(AssistantDeterministicIntentKind.Unknown, 0, CopyRequested: false);
         }
 
-        if (CopyLatestScreenshotPathRegex.IsMatch(prompt))
+        if (CopyLatestScreenshotPathRegex().IsMatch(prompt))
         {
             return new AssistantDeterministicIntent(AssistantDeterministicIntentKind.CopyLatestScreenshotPath, 1, CopyRequested: true);
         }
 
-        if (CopyOcrLatestScreenshotRegex.IsMatch(prompt))
+        if (CopyOcrLatestScreenshotRegex().IsMatch(prompt))
         {
             return new AssistantDeterministicIntent(AssistantDeterministicIntentKind.CopyOcrLatestScreenshot, 1, CopyRequested: true);
         }
 
-        if (OcrLatestScreenshotRegex.IsMatch(prompt))
+        if (OcrLatestScreenshotRegex().IsMatch(prompt))
         {
             return new AssistantDeterministicIntent(AssistantDeterministicIntentKind.OcrLatestScreenshot, 1, CopyRequested: false);
         }
 
-        if (UploadLatestScreenshotRegex.IsMatch(prompt))
+        if (UploadLatestScreenshotRegex().IsMatch(prompt))
         {
             return new AssistantDeterministicIntent(AssistantDeterministicIntentKind.UploadLatestScreenshot, 1, CopyRequested: false);
         }
 
-        var searchMatch = SearchScreenshotTextRegex.Match(prompt);
+        var searchMatch = SearchScreenshotTextRegex().Match(prompt);
         if (searchMatch.Success)
         {
             string query = searchMatch.Groups["query"].Value.Trim().Trim('"', '\'');
@@ -133,17 +126,17 @@ public sealed class AssistantCommandRouter
             }
         }
 
-        if (OpenLatestScreenshotRegex.IsMatch(prompt))
+        if (OpenLatestScreenshotRegex().IsMatch(prompt))
         {
             return new AssistantDeterministicIntent(AssistantDeterministicIntentKind.OpenLatestScreenshot, 1, CopyRequested: false);
         }
 
-        if (RevealLatestScreenshotRegex.IsMatch(prompt))
+        if (RevealLatestScreenshotRegex().IsMatch(prompt))
         {
             return new AssistantDeterministicIntent(AssistantDeterministicIntentKind.RevealLatestScreenshot, 1, CopyRequested: false);
         }
 
-        var lastMatch = LastScreenshotPathsRegex.Match(prompt);
+        var lastMatch = LastScreenshotPathsRegex().Match(prompt);
         if (lastMatch.Success)
         {
             string limitText = lastMatch.Groups["limit"].Success
@@ -161,7 +154,7 @@ public sealed class AssistantCommandRouter
                 Separator: ExtractRequestedSeparator(prompt));
         }
 
-        if (LatestScreenshotPathRegex.IsMatch(prompt))
+        if (LatestScreenshotPathRegex().IsMatch(prompt))
         {
             return new AssistantDeterministicIntent(
                 AssistantDeterministicIntentKind.LatestScreenshotPaths,
@@ -170,7 +163,7 @@ public sealed class AssistantCommandRouter
                 Separator: ExtractRequestedSeparator(prompt));
         }
 
-        var workflowMatch = RunWorkflowRegex.Match(prompt);
+        var workflowMatch = RunWorkflowRegex().Match(prompt);
         if (workflowMatch.Success)
         {
             return new AssistantDeterministicIntent(
@@ -190,10 +183,7 @@ public sealed class AssistantCommandRouter
             return null;
         }
 
-        var match = Regex.Match(
-            prompt,
-            @"\b(?:separated|joined)\s+by\s+(?:(?:a|an)\s+)?(?<separator>""[^""]*""|'[^']*'|[^\s,]+)",
-            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        var match = ExtractRequestedSeparatorRegex().Match(prompt);
 
         if (match.Success)
         {

@@ -30,25 +30,21 @@ using XerahS.Platform.Abstractions;
 
 namespace XerahS.Platform.Linux.Wayland.WindowQuery;
 
-internal sealed class KdeKdotoolWindowPointQueryHelper : IWaylandWindowPointQueryHelper
+internal sealed partial class KdeKdotoolWindowPointQueryHelper : IWaylandWindowPointQueryHelper
 {
-    private static readonly Regex MouseLocationRegex = new(
-        @"^WINDOW=(?<window>.+)$",
-        RegexOptions.Compiled | RegexOptions.Multiline);
+    [GeneratedRegex(@"^WINDOW=(?<window>.+)$", RegexOptions.Multiline)]
+    private static partial Regex MouseLocationRegex();
 
-    private static readonly Regex PositionRegex = new(
-        @"Position:\s*(?<x>-?\d+),(?<y>-?\d+)",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    [GeneratedRegex(@"Position:\s*(?<x>-?\d+),(?<y>-?\d+)", RegexOptions.IgnoreCase)]
+    private static partial Regex PositionRegex();
 
-    private static readonly Regex GeometryRegex = new(
-        @"Geometry:\s*(?<width>\d+)x(?<height>\d+)",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    [GeneratedRegex(@"Geometry:\s*(?<width>\d+)x(?<height>\d+)", RegexOptions.IgnoreCase)]
+    private static partial Regex GeometryRegex();
 
     // kdotool WINDOW ids are KWin hex handles (0x...) or braced UUIDs.
     // Reject anything else before interpolating into process arguments.
-    private static readonly Regex ValidWindowIdRegex = new(
-        @"^[A-Za-z0-9{}\-]{1,64}$",
-        RegexOptions.Compiled);
+    [GeneratedRegex(@"^[A-Za-z0-9{}\-]{1,64}$")]
+    private static partial Regex ValidWindowIdRegex();
 
     public WindowPointQueryCapability Capability { get; } =
         WaylandWindowPointQueryCommandRunner.CommandExists("kdotool")
@@ -99,12 +95,12 @@ internal sealed class KdeKdotoolWindowPointQueryHelper : IWaylandWindowPointQuer
         if (string.IsNullOrWhiteSpace(output))
             return false;
 
-        Match match = MouseLocationRegex.Match(output);
+        Match match = MouseLocationRegex().Match(output);
         if (!match.Success)
             return false;
 
         windowId = match.Groups["window"].Value.Trim();
-        if (!ValidWindowIdRegex.IsMatch(windowId))
+        if (!ValidWindowIdRegex().IsMatch(windowId))
         {
             windowId = string.Empty;
             return false;
@@ -122,8 +118,8 @@ internal sealed class KdeKdotoolWindowPointQueryHelper : IWaylandWindowPointQuer
         if (TryParseShellGeometry(output, out bounds))
             return true;
 
-        Match positionMatch = PositionRegex.Match(output);
-        Match geometryMatch = GeometryRegex.Match(output);
+        Match positionMatch = PositionRegex().Match(output);
+        Match geometryMatch = GeometryRegex().Match(output);
         if (!positionMatch.Success || !geometryMatch.Success)
             return false;
 

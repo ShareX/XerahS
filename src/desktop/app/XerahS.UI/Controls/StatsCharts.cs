@@ -150,8 +150,11 @@ internal sealed class StatsPalette
     private static Color[] Parse(params string[] colors) => colors.Select(Color.Parse).ToArray();
 }
 
-internal static class StatsFormat
+internal static partial class StatsFormat
 {
+    [GeneratedRegex(@"[\s,،]*dddd[\s,،]*")]
+    private static partial Regex GetShortLongDatePatternRegex();
+
     public static string Number(int value) => value.ToString("N0", CultureInfo.CurrentCulture);
 
     public static string Share(int value, int total)
@@ -201,7 +204,7 @@ internal static class StatsFormat
 
         if (pattern.Contains("dddd"))
         {
-            return withDayOfWeek ? pattern.Replace("dddd", "ddd") : Regex.Replace(pattern, @"[\s,،]*dddd[\s,،]*", " ").Trim();
+            return withDayOfWeek ? pattern.Replace("dddd", "ddd") : GetShortLongDatePatternRegex().Replace(pattern, " ").Trim();
         }
 
         return withDayOfWeek ? "ddd " + pattern : pattern;

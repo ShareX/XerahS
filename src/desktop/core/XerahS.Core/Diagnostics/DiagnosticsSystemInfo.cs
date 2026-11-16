@@ -37,8 +37,23 @@ namespace XerahS.Core.Diagnostics;
 /// Collects the non-identifying system facts attached to a diagnostics report.
 /// Nothing here reads user content, account details, serial numbers or hostnames.
 /// </summary>
-public static class DiagnosticsSystemInfo
+public static partial class DiagnosticsSystemInfo
 {
+    [GeneratedRegex(@"^\d{4}$")]
+    private static partial Regex GpusRegex();
+
+    [GeneratedRegex(@"VEN_([0-9A-Fa-f]{4})")]
+    private static partial Regex GpusRegex2();
+
+    [GeneratedRegex(@"DEV_([0-9A-Fa-f]{4})")]
+    private static partial Regex GpusRegex3();
+
+    [GeneratedRegex(@"^card\d+$")]
+    private static partial Regex GpusRegex4();
+
+    [GeneratedRegex(@"ffmpeg version (\S+)")]
+    private static partial Regex CollectFfmpegRegex();
+
     private static readonly TimeSpan ProcessTimeout = TimeSpan.FromSeconds(5);
 
     public static OsInfo CollectOs()
@@ -165,7 +180,7 @@ public static class DiagnosticsSystemInfo
                     @"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}");
                 foreach (string name in adapters?.GetSubKeyNames() ?? Array.Empty<string>())
                 {
-                    if (!Regex.IsMatch(name, @"^\d{4}$")) continue;
+                    if (!GpusRegex().IsMatch(name)) continue;
                     using RegistryKey? adapter = adapters!.OpenSubKey(name);
                     if (adapter?.GetValue("DriverDesc") is not string description) continue;
                     string? matching = adapter.GetValue("MatchingDeviceId") as string;
@@ -180,8 +195,8 @@ public static class DiagnosticsSystemInfo
                     gpus.Add(new GpuInfo
                     {
                         Name = description,
-                        VendorId = Regex.Match(matching ?? "", @"VEN_([0-9A-Fa-f]{4})").Groups[1].Value is { Length: > 0 } v ? v.ToLowerInvariant() : null,
-                        DeviceId = Regex.Match(matching ?? "", @"DEV_([0-9A-Fa-f]{4})").Groups[1].Value is { Length: > 0 } d ? d.ToLowerInvariant() : null,
+                        VendorId = GpusRegex2().Match(matching ?? "").Groups[1].Value is { Length: > 0 } v ? v.ToLowerInvariant() : null,
+                        DeviceId = GpusRegex3().Match(matching ?? "").Groups[1].Value is { Length: > 0 } d ? d.ToLowerInvariant() : null,
                         DriverVersion = adapter.GetValue("DriverVersion") as string,
                         VramMbBucket = VramMbBucket(vram),
                         IsSoftwareRenderer = description.Contains("Basic Render", StringComparison.OrdinalIgnoreCase) ||
@@ -193,7 +208,7 @@ public static class DiagnosticsSystemInfo
             {
                 foreach (string card in Directory.GetDirectories("/sys/class/drm", "card*"))
                 {
-                    if (!Regex.IsMatch(Path.GetFileName(card), @"^card\d+$")) continue;
+                    if (!GpusRegex4().IsMatch(Path.GetFileName(card))) continue;
                     string device = Path.Combine(card, "device");
                     string? vendor = ReadTrimmed(Path.Combine(device, "vendor"))?.Replace("0x", "", StringComparison.Ordinal);
                     string? id = ReadTrimmed(Path.Combine(device, "device"))?.Replace("0x", "", StringComparison.Ordinal);
@@ -333,9 +348,8 @@ public static class DiagnosticsSystemInfo
         }
     }
 
-    private static readonly Regex HardwareEncoder = new(
-        @"^\s*V\S*\s+(\S*(?:nvenc|qsv|amf|vaapi|videotoolbox|_mf|v4l2m2m|vulkan|d3d12va)\S*)",
-        RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Multiline);
+    [GeneratedRegex(@"^\s*V\S*\s+(\S*(?:nvenc|qsv|amf|vaapi|videotoolbox|_mf|v4l2m2m|vulkan|d3d12va)\S*)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Multiline)]
+    private static partial Regex HardwareEncoder();
 
     /// <summary>FFmpeg version, where it came from, and its hardware video encoders.</summary>
     public static FfmpegInfo CollectFfmpeg()
@@ -357,11 +371,11 @@ public static class DiagnosticsSystemInfo
             return new FfmpegInfo(null, "none", Array.Empty<string>());
         }
 
-        string? version = Regex.Match(versionOutput, @"ffmpeg version (\S+)").Groups[1].Value is { Length: > 0 } v ? v : null;
+        string? version = CollectFfmpegRegex().Match(versionOutput).Groups[1].Value is { Length: > 0 } v ? v : null;
         string? encoders = RunProcess(path, "-hide_banner -encoders");
         var hardware = encoders == null
             ? new List<string>()
-            : HardwareEncoder.Matches(encoders).Select(m => m.Groups[1].Value).Distinct(StringComparer.Ordinal).Take(64).ToList();
+            : HardwareEncoder().Matches(encoders).Select(m => m.Groups[1].Value).Distinct(StringComparer.Ordinal).Take(64).ToList();
         return new FfmpegInfo(version, bundled ? "bundled" : "system", hardware);
     }
 

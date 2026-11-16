@@ -68,11 +68,13 @@ internal sealed record FFmpegEncoderPlan(string VideoEncoder, string VideoArgs, 
 /// (Hyprland only sends frames when a window changes), which CFR-only containers such as
 /// Ogg/Theora otherwise play back sped up.
 /// </summary>
-internal static class FFmpegEncodingBridge
+internal static partial class FFmpegEncodingBridge
 {
     private static readonly ConcurrentDictionary<string, FFmpegFeatures> FeatureCache = new(StringComparer.Ordinal);
-    private static readonly Regex CapsWidth = new(@"width=\(int\)(\d+)", RegexOptions.CultureInvariant);
-    private static readonly Regex CapsHeight = new(@"height=\(int\)(\d+)", RegexOptions.CultureInvariant);
+    [GeneratedRegex(@"width=\(int\)(\d+)", RegexOptions.CultureInvariant)]
+    private static partial Regex CapsWidth();
+    [GeneratedRegex(@"height=\(int\)(\d+)", RegexOptions.CultureInvariant)]
+    private static partial Regex CapsHeight();
 
     public static FFmpegFeatures GetFeatures(string ffmpegPath) => FeatureCache.GetOrAdd(ffmpegPath, path =>
     {
@@ -139,8 +141,8 @@ internal static class FFmpegEncodingBridge
                 continue;
             }
 
-            Match width = CapsWidth.Match(line);
-            Match height = CapsHeight.Match(line);
+            Match width = CapsWidth().Match(line);
+            Match height = CapsHeight().Match(line);
             if (width.Success && height.Success)
             {
                 return (int.Parse(width.Groups[1].Value, CultureInfo.InvariantCulture), int.Parse(height.Groups[1].Value, CultureInfo.InvariantCulture));

@@ -33,8 +33,14 @@ using XerahS.Platform.Abstractions;
 
 namespace XerahS.Common;
 
-public static class FileHelpers
+public static partial class FileHelpers
 {
+    [GeneratedRegex("%([A-Za-z0-9_]+)%")]
+    private static partial Regex ExpandFolderVariablesRegex();
+
+    [GeneratedRegex(@"^(.+) \((\d+)\)$")]
+    private static partial Regex GetUniqueFilePathRegex();
+
     public static readonly string[] ImageFileExtensions = { "jpg", "jpeg", "png", "gif", "bmp", "ico", "tif", "tiff" };
     public static readonly string[] TextFileExtensions = { "txt", "log", "nfo", "c", "cpp", "cc", "cxx", "h", "hpp", "hxx", "cs", "vb",
         "xhtml", "xht", "xml", "css", "js", "php", "bat", "java", "lua", "py", "pl", "cfg", "ini", "dart", "go", "gohtml",
@@ -78,7 +84,7 @@ public static class FileHelpers
                 }
             }
 
-            path = Regex.Replace(path, "%([A-Za-z0-9_]+)%", match =>
+            path = ExpandFolderVariablesRegex().Replace(path, match =>
             {
                 string variableName = match.Groups[1].Value;
                 string? variableValue = Environment.GetEnvironmentVariable(variableName);
@@ -344,7 +350,7 @@ public static class FileHelpers
 
         long number = 0;
 
-        Match regex = Regex.Match(fileName, @"^(.+) \((\d+)\)$");
+        Match regex = GetUniqueFilePathRegex().Match(fileName);
 
         if (regex.Success && long.TryParse(regex.Groups[2].Value, NumberStyles.None, CultureInfo.InvariantCulture, out long parsedNumber))
         {

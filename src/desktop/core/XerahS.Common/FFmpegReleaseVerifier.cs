@@ -30,13 +30,12 @@ using System.Text.RegularExpressions;
 namespace XerahS.Common
 {
     /// <summary>Verifies archives against BtbN's HTTPS-hosted checksums.sha256 manifest.</summary>
-    public static class FFmpegReleaseVerifier
+    public static partial class FFmpegReleaseVerifier
     {
         public const string ChecksumsFileName = "checksums.sha256";
 
-        private static readonly Regex ChecksumLine = new(
-            @"^(?<hash>[0-9a-fA-F]{64}) [ *](?<name>\S+)$",
-            RegexOptions.CultureInvariant);
+        [GeneratedRegex(@"^(?<hash>[0-9a-fA-F]{64}) [ *](?<name>\S+)$", RegexOptions.CultureInvariant)]
+        private static partial Regex ChecksumLine();
 
         /// <summary>Hash listed for <paramref name="fileName"/> in sha256sum output, lower case, or null.</summary>
         public static string? FindHash(byte[] checksums, string fileName)
@@ -44,7 +43,7 @@ namespace XerahS.Common
             string? hash = null;
             foreach (string line in Encoding.UTF8.GetString(checksums).Split('\n'))
             {
-                Match match = ChecksumLine.Match(line.TrimEnd('\r'));
+                Match match = ChecksumLine().Match(line.TrimEnd('\r'));
                 if (match.Success && match.Groups["name"].Value == fileName)
                 {
                     if (hash != null) return null;

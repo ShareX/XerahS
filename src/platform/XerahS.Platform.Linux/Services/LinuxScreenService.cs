@@ -38,8 +38,11 @@ namespace XerahS.Platform.Linux.Services;
 /// <summary>
 /// Basic screen enumeration using xrandr output. Provides best-effort data for multi-monitor setups.
 /// </summary>
-public sealed class LinuxScreenService : IScreenService
+public sealed partial class LinuxScreenService : IScreenService
 {
+    [GeneratedRegex(@"^(?<name>\S+)\s+connected\s+(?<primary>primary\s+)?(?<width>\d+)x(?<height>\d+)\+(?<x>-?\d+)\+(?<y>-?\d+)", RegexOptions.Multiline)]
+    private static partial Regex ParseScreensRegex();
+
     private readonly List<ScreenInfo> _screens;
 
     public LinuxScreenService()
@@ -104,7 +107,7 @@ public sealed class LinuxScreenService : IScreenService
             if (string.IsNullOrEmpty(output))
                 return screens;
 
-            var regex = new Regex(@"^(?<name>\S+)\s+connected\s+(?<primary>primary\s+)?(?<width>\d+)x(?<height>\d+)\+(?<x>-?\d+)\+(?<y>-?\d+)", RegexOptions.Compiled | RegexOptions.Multiline);
+            var regex = ParseScreensRegex();
             foreach (Match match in regex.Matches(output))
             {
                 var name = match.Groups["name"].Value;
