@@ -109,6 +109,51 @@ namespace XerahS.UI.ViewModels
             Services.ThemeService.ApplyTheme(value);
         }
 
+        /// <summary>One entry of the language selector: culture code plus its own-language name.</summary>
+        public sealed record LanguageChoice(string Code, string DisplayName)
+        {
+            public override string ToString() => DisplayName;
+        }
+
+        /// <summary>
+        /// Languages that actually ship translations (discovered from satellite assemblies) plus
+        /// "follow the system". Dropping Resources.&lt;culture&gt;.resx is enough to list a new one.
+        /// </summary>
+        public IReadOnlyList<LanguageChoice> LanguageOptions { get; } = BuildLanguageOptions();
+
+        private LanguageChoice? _languageChoice;
+
+        public LanguageChoice SelectedLanguage
+        {
+            get => _languageChoice ??= LanguageOptions.FirstOrDefault(
+                       option => string.Equals(option.Code, XerahS.Core.SettingsManager.Settings.LanguageCode, StringComparison.OrdinalIgnoreCase))
+                   ?? LanguageOptions[0];
+            set
+            {
+                if (value == null || ReferenceEquals(value, _languageChoice)) return;
+
+                _languageChoice = value;
+                OnPropertyChanged();
+
+                if (_isLoading) return;
+
+                XerahS.Core.SettingsManager.Settings.LanguageCode = value.Code;
+                XerahS.Common.Localization.ApplyCulture(value.Code);
+            }
+        }
+
+        private static IReadOnlyList<LanguageChoice> BuildLanguageOptions()
+        {
+            var options = new List<LanguageChoice> { new(string.Empty, "Automatic") };
+
+            foreach (var culture in XerahS.Common.Localization.GetAvailableCultures())
+            {
+                options.Add(new LanguageChoice(culture.Name, XerahS.Common.Localization.GetDisplayName(culture)));
+            }
+
+            return options;
+        }
+
         [ObservableProperty]
         private bool _useModernCapture;
 

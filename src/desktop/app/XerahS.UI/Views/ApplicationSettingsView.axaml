@@ -51,6 +51,21 @@
                                                   HorizontalAlignment="Stretch"
                                                   AutomationProperties.Name="Application Theme"/>
                                     </Grid>
+                                    <Grid ColumnDefinitions="Auto, 16, *">
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_Theme_Language}" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Column="2"
+                                                  ItemsSource="{Binding LanguageOptions}"
+                                                  SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                                                  MinWidth="200"
+                                                  HorizontalAlignment="Stretch"
+                                                  AutomationProperties.Name="Language">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding DisplayName}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </Grid>
                                     <TextBlock Text="{local:Localize Settings_Theme_SystemDefaultNote}"
                                                FontSize="12"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
