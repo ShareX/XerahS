@@ -77,6 +77,14 @@ public class ApplicationConfig : SettingsBase<ApplicationConfig>
     #region Settings - General
 
     public SupportedLanguage Language = SupportedLanguage.Automatic;
+
+    /// <summary>
+    /// UI culture code ("ru", "zh-CN", ...). Empty means "follow the system". This is the
+    /// authoritative language setting: any culture that ships a satellite resource file can be
+    /// selected without touching code, whereas <see cref="Language"/> is only kept for configs
+    /// written by older builds.
+    /// </summary>
+    public string LanguageCode = "";
     /// <summary>Show app icon in system tray (e.g. alongside wifi, volume, battery). Default true so tray is available on all platforms.</summary>
     public bool ShowTray = true;
     public bool SilentRun = false;
