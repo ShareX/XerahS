@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:vm="using:XerahS.UI.ViewModels"
         xmlns:views="using:XerahS.UI.Views"
+        xmlns:local="using:XerahS.UI.Markup"
         mc:Ignorable="d"
         x:Class="XerahS.UI.Views.CustomUploaderEditorDialog"
         x:DataType="vm:CustomUploaderEditorViewModel">
@@ -16,7 +17,7 @@
         <!-- Header -->
         <StackPanel Grid.Row="0" Margin="24,24,24,0" Spacing="8">
             <TextBlock Text="{Binding Title}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
-            <TextBlock Text="Configure HTTP-based custom uploader for images, files, text, or URL shortening."
+            <TextBlock Text="{local:Localize CustomUploader_EditorDescription}"
                        Theme="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        TextWrapping="Wrap"/>
@@ -46,23 +47,23 @@
         <!-- Action Buttons -->
         <Border Grid.Row="3" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}">
             <Grid Margin="24,16" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
-                <Button Grid.Column="0" Content="Import..."
+                <Button Grid.Column="0" Content="{local:Localize CustomUploader_Import}"
                         Command="{Binding ImportCommand}"
                         AutomationProperties.Name="Import Custom Uploader"/>
-                <Button Grid.Column="1" Content="Export..."
+                <Button Grid.Column="1" Content="{local:Localize CustomUploader_Export}"
                         Command="{Binding ExportCommand}"
                         Margin="8,0,0,0"
                         AutomationProperties.Name="Export Custom Uploader"/>
-                <Button Grid.Column="2" Content="Test"
+                <Button Grid.Column="2" Content="{local:Localize CustomUploader_Test}"
                         Command="{Binding TestUploaderCommand}"
                         Margin="8,0,0,0"
                         IsEnabled="{Binding CanSave}"
                         AutomationProperties.Name="Test Custom Uploader"/>
 
-                <Button Grid.Column="4" Content="Cancel"
+                <Button Grid.Column="4" Content="{local:Localize SendToAction_Cancel}"
                         Command="{Binding CancelCommand}"
                         AutomationProperties.Name="Cancel"/>
-                <Button Grid.Column="5" Content="Save to Plugins"
+                <Button Grid.Column="5" Content="{local:Localize CustomUploader_SaveToPlugins}"
                         Command="{Binding SaveCommand}"
                         IsEnabled="{Binding CanSave}"
                         Classes="accent"

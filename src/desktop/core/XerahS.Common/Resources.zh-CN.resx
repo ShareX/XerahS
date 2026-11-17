@@ -1,0 +1,3331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SendToFolderPolicy_DoNotExpandFolders" xml:space="preserve">
+    <value>不展开文件夹</value>
+  </data>
+  <data name="SendToFolderPolicy_IncludeTopLevelFiles" xml:space="preserve">
+    <value>包含顶层文件</value>
+  </data>
+  <data name="SendToFolderPolicy_IncludeFilesRecursively" xml:space="preserve">
+    <value>递归包含文件</value>
+  </data>
+  <data name="SendToBatchPolicy_OpenAllImmediately" xml:space="preserve">
+    <value>全部立即打开</value>
+  </data>
+  <data name="SendToBatchPolicy_OpenSequentially" xml:space="preserve">
+    <value>依次打开</value>
+  </data>
+  <data name="SendToBatchPolicy_ConfirmBeforeOpeningMoreThanThreshold" xml:space="preserve">
+    <value>打开超过 {0} 个项目前确认</value>
+  </data>
+  <data name="SendToRememberScope_AllFiles" xml:space="preserve">
+    <value>所有文件</value>
+  </data>
+  <data name="SendToRememberScope_AllFolders" xml:space="preserve">
+    <value>所有文件夹</value>
+  </data>
+  <data name="SendToRememberScope_MixedFilesAndFolders" xml:space="preserve">
+    <value>文件和文件夹</value>
+  </data>
+  <data name="SendToRememberScope_ImageOnlyFiles" xml:space="preserve">
+    <value>仅图像文件</value>
+  </data>
+  <data name="SendToRememberScope_Default" xml:space="preserve">
+    <value>此选择</value>
+  </data>
+  <data name="SendToAction_UploadNow" xml:space="preserve">
+    <value>立即上传</value>
+  </data>
+  <data name="SendToAction_OpenUploadContent" xml:space="preserve">
+    <value>在 Upload Content 中打开</value>
+  </data>
+  <data name="SendToAction_OpenImageEditor" xml:space="preserve">
+    <value>在图像编辑器中打开</value>
+  </data>
+  <data name="SendToAction_PinToScreen" xml:space="preserve">
+    <value>固定到屏幕</value>
+  </data>
+  <data name="SendToAction_IndexFolders" xml:space="preserve">
+    <value>索引文件夹</value>
+  </data>
+  <data name="SendToAction_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="SendToBatchPolicy_ConfirmLabel" xml:space="preserve">
+    <value>打开超过阈值前确认</value>
+  </data>
+  <data name="SendToPrompt_ImageEditorDescription" xml:space="preserve">
+    <value>在图像编辑器中打开每个发送的图像。</value>
+  </data>
+  <data name="SendToPrompt_PinToScreenDescription" xml:space="preserve">
+    <value>将每个发送的图像直接固定到桌面。</value>
+  </data>
+  <data name="SendToPrompt_RememberChoiceText" xml:space="preserve">
+    <value>为 {0} 记住此选择</value>
+  </data>
+  <data name="SendToPrompt_FolderPolicy_DoNotExpand" xml:space="preserve">
+    <value>文件夹项目在「立即上传」和「Upload Content」中将被忽略。</value>
+  </data>
+  <data name="SendToPrompt_FolderPolicy_Recursive" xml:space="preserve">
+    <value>上传操作将包括直接文件和已发送文件夹下的所有文件。</value>
+  </data>
+  <data name="SendToPrompt_FolderPolicy_TopLevel" xml:space="preserve">
+    <value>上传操作将包括直接文件和已发送文件夹中的顶层文件。</value>
+  </data>
+  <data name="SendToPrompt_NoFolders" xml:space="preserve">
+    <value>未发送文件夹。</value>
+  </data>
+  <data name="SendToPrompt_BatchPolicyFallback" xml:space="preserve">
+    <value>当每个发送的文件都是图像时，将应用图像批处理策略。</value>
+  </data>
+  <data name="SendToPrompt_Kind_ImageFilesOnly" xml:space="preserve">
+    <value>仅图像文件</value>
+  </data>
+  <data name="SendToPrompt_Kind_FilesOnly" xml:space="preserve">
+    <value>仅文件</value>
+  </data>
+  <data name="SendToPrompt_Kind_FoldersOnly" xml:space="preserve">
+    <value>仅文件夹</value>
+  </data>
+  <data name="SendToPrompt_Kind_Mixed" xml:space="preserve">
+    <value>文件和文件夹</value>
+  </data>
+  <data name="SendToPrompt_Details_ImageCompatible" xml:space="preserve">
+    <value>所有选定的文件都与图像兼容，因此上传、编辑器、固定和队列操作均可用。</value>
+  </data>
+  <data name="SendToPrompt_Details_FilesOnly" xml:space="preserve">
+    <value>仅发送了文件。「立即上传」和「Upload Content」将直接使用这些文件。</value>
+  </data>
+  <data name="SendToPrompt_Details_FoldersOnly" xml:space="preserve">
+    <value>仅发送了文件夹。上传和 Upload Content 使用所选文件夹策略；索引文件夹保留文件夹意图。</value>
+  </data>
+  <data name="SendToPrompt_Details_Mixed" xml:space="preserve">
+    <value>混合的 Send-to 批次将文件和文件夹行为分开处理。索引文件夹仅适用于文件夹项目。</value>
+  </data>
+  <data name="SendToPrompt_Scope_ImageCompatible" xml:space="preserve">
+    <value>此批次支持上传、队列、编辑器和固定操作。</value>
+  </data>
+  <data name="SendToPrompt_Scope_FilesOnly" xml:space="preserve">
+    <value>此批次支持上传和队列操作。</value>
+  </data>
+  <data name="SendToPrompt_Scope_FoldersOnly" xml:space="preserve">
+    <value>上传操作使用所选文件夹策略。索引保留文件夹意图。</value>
+  </data>
+  <data name="SendToPrompt_Scope_Mixed" xml:space="preserve">
+    <value>上传操作使用直接文件以及文件夹策略允许的文件。索引仅适用于文件夹。</value>
+  </data>
+  <data name="SendToPrompt_UploadNow_WithFolders" xml:space="preserve">
+    <value>使用所选文件夹策略运行上传工作流。{0}</value>
+  </data>
+  <data name="SendToPrompt_UploadNow_NoFolders" xml:space="preserve">
+    <value>立即运行当前文件上传工作流。</value>
+  </data>
+  <data name="SendToPrompt_UploadContent_WithFolders" xml:space="preserve">
+    <value>使用所选文件夹策略打开 Upload Content。{0}</value>
+  </data>
+  <data name="SendToPrompt_UploadContent_NoFolders" xml:space="preserve">
+    <value>打开 Upload Content 并在上传前查看已发送项目。</value>
+  </data>
+  <data name="SendToPrompt_Index_Mixed" xml:space="preserve">
+    <value>仅对已发送的文件夹项目运行文件夹索引。</value>
+  </data>
+  <data name="SendToPrompt_Index_Folders" xml:space="preserve">
+    <value>对已发送的文件夹运行文件夹索引工作流。</value>
+  </data>
+  <data name="SendToPrompt_FileSingular" xml:space="preserve">
+    <value>{0} 个文件</value>
+  </data>
+  <data name="SendToPrompt_FilePlural" xml:space="preserve">
+    <value>{0} 个文件</value>
+  </data>
+  <data name="SendToPrompt_FolderSingular" xml:space="preserve">
+    <value>{0} 个文件夹</value>
+  </data>
+  <data name="SendToPrompt_FolderPlural" xml:space="preserve">
+    <value>{0} 个文件夹</value>
+  </data>
+  <data name="SendToPrompt_MixedSummary" xml:space="preserve">
+    <value>{0} 和 {1}</value>
+  </data>
+  <data name="Tray_OpenMainWindow" xml:space="preserve">
+    <value>打开主窗口</value>
+  </data>
+  <data name="Tray_Settings" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="Tray_Exit" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  <data name="Tray_ResumeRecording" xml:space="preserve">
+    <value>继续录制</value>
+  </data>
+  <data name="Tray_PauseRecording" xml:space="preserve">
+    <value>暂停录制</value>
+  </data>
+  <data name="Tray_StopRecording" xml:space="preserve">
+    <value>停止录制</value>
+  </data>
+  <data name="Tray_AbortRecording" xml:space="preserve">
+    <value>中止录制</value>
+  </data>
+  <data name="Tray_UnknownWorkflow" xml:space="preserve">
+    <value>未知工作流</value>
+  </data>
+  <data name="Tray_ToolTipRecording" xml:space="preserve">
+    <value>{0} - 正在录制（点击托盘图标停止）</value>
+  </data>
+  <data name="Tray_ToolTipPaused" xml:space="preserve">
+    <value>{0} - 已暂停（点击托盘图标继续）</value>
+  </data>
+  <data name="Tray_ToolTipStarting" xml:space="preserve">
+    <value>{0} - 正在开始录制...</value>
+  </data>
+  <data name="Tray_ToolTipFinalizing" xml:space="preserve">
+    <value>{0} - 正在完成...</value>
+  </data>
+  <data name="Toast_InitializationWarning_Title" xml:space="preserve">
+    <value>初始化警告</value>
+  </data>
+  <data name="Toast_InitializationWarning_Text" xml:space="preserve">
+    <value>后台服务初始化失败。请查看日志了解详情。</value>
+  </data>
+  <data name="History_OneImageSelected" xml:space="preserve">
+    <value>已选择 1 张图像</value>
+  </data>
+  <data name="History_ImagesSelected" xml:space="preserve">
+    <value>已选择 {0} 张图像</value>
+  </data>
+  <data name="History_PageInfo" xml:space="preserve">
+    <value>第 {0} 页，共 {1} 页（{2} 个项目）</value>
+  </data>
+  <data name="History_DeleteConfirmation_Title" xml:space="preserve">
+    <value>确认删除</value>
+  </data>
+  <data name="History_DeleteConfirmation_Message" xml:space="preserve">
+    <value>确定要从历史记录中删除“{0}”吗？
+
+此操作无法撤销。</value>
+  </data>
+  <data name="History_BackupFailedToast_Title" xml:space="preserve">
+    <value>历史记录备份失败</value>
+  </data>
+  <data name="Workflows_ResetConfirmation_Title" xml:space="preserve">
+    <value>重置工作流</value>
+  </data>
+  <data name="Workflows_ResetConfirmation_Message" xml:space="preserve">
+    <value>确定要将所有工作流重置为默认设置吗？此操作无法撤销。</value>
+  </data>
+  <data name="Workflows_PinButtonText_Pin" xml:space="preserve">
+    <value>固定到托盘</value>
+  </data>
+  <data name="Workflows_PinButtonText_Unpin" xml:space="preserve">
+    <value>从托盘取消固定</value>
+  </data>
+  <data name="UploadContent_NoItems" xml:space="preserve">
+    <value>无项目</value>
+  </data>
+  <data name="UploadContent_NoFileSelected" xml:space="preserve">
+    <value>未选择文件。</value>
+  </data>
+  <data name="UploadContent_TypeLabel" xml:space="preserve">
+    <value>类型：{0}</value>
+  </data>
+  <data name="UploadContent_ClipboardImage" xml:space="preserve">
+    <value>剪贴板图像</value>
+  </data>
+  <data name="UploadContent_ClipboardText" xml:space="preserve">
+    <value>剪贴板文本</value>
+  </data>
+  <data name="UploadContent_Characters" xml:space="preserve">
+    <value>{0} 个字符</value>
+  </data>
+  <data name="UploadContent_NoContentToUpload" xml:space="preserve">
+    <value>没有可上传的内容</value>
+  </data>
+  <data name="UploadContent_UploadFailed" xml:space="preserve">
+    <value>上传失败</value>
+  </data>
+  <data name="UploadContent_StatusSummary" xml:space="preserve">
+    <value>{0} 个项目 | {1} 个已完成 | {2} 个失败</value>
+  </data>
+  <data name="UploadContent_FileMetadata" xml:space="preserve">
+    <value>名称：{0}
+扩展名：{1}
+大小：{2}
+修改时间：{3}
+路径：{4}</value>
+  </data>
+  <data name="UploadContent_FileNotFound" xml:space="preserve">
+    <value>未找到文件：{0}</value>
+  </data>
+  <data name="UploadContent_Type_None" xml:space="preserve">
+    <value>无</value>
+  </data>
+  <data name="UploadContent_Type_Image" xml:space="preserve">
+    <value>图像</value>
+  </data>
+  <data name="UploadContent_Type_Text" xml:space="preserve">
+    <value>文本</value>
+  </data>
+  <data name="UploadContent_Type_File" xml:space="preserve">
+    <value>文件</value>
+  </data>
+  <data name="UploadContent_Type_URL" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="Common_PlatformServicesNotInitialized" xml:space="preserve">
+    <value>平台服务尚未初始化。</value>
+  </data>
+  <data name="Ocr_Title" xml:space="preserve">
+    <value>OCR</value>
+  </data>
+  <data name="Ocr_NotSupported" xml:space="preserve">
+    <value>此平台不支持 OCR。</value>
+  </data>
+  <data name="Pin_ImageFilesFilter" xml:space="preserve">
+    <value>图像文件</value>
+  </data>
+  <data name="Pin_NoCompatibleImages" xml:space="preserve">
+    <value>没有可用于固定的兼容图像文件。</value>
+  </data>
+  <data name="Pin_PinnedSummary" xml:space="preserve">
+    <value>已固定 {0} 张图像；已跳过 {1} 个项目。</value>
+  </data>
+  <data name="Pin_ClipboardNoImage" xml:space="preserve">
+    <value>剪贴板中没有图像。</value>
+  </data>
+  <data name="Pin_LoadImageFailed" xml:space="preserve">
+    <value>无法加载图像文件。</value>
+  </data>
+  <data name="Pin_SelectImageTitle" xml:space="preserve">
+    <value>选择要固定的图像</value>
+  </data>
+  <data name="Qr_Title" xml:space="preserve">
+    <value>二维码</value>
+  </data>
+  <data name="Qr_ScreenCaptureCancelled" xml:space="preserve">
+    <value>屏幕捕获已取消。</value>
+  </data>
+  <data name="Qr_RegionCaptureCancelled" xml:space="preserve">
+    <value>区域捕获已取消。</value>
+  </data>
+  <data name="Qr_NoCodeDetected" xml:space="preserve">
+    <value>未检测到二维码。</value>
+  </data>
+  <data name="Qr_DecodedSummary" xml:space="preserve">
+    <value>已解码 {0} 个二维码。</value>
+  </data>
+  <data name="Ruler_Title" xml:space="preserve">
+    <value>标尺</value>
+  </data>
+  <data name="Ruler_WindowsOnly" xml:space="preserve">
+    <value>标尺工具目前仅在 Windows 版本中可用。</value>
+  </data>
+  <data name="Scrolling_SelectWindowTitle" xml:space="preserve">
+    <value>选择要捕获的窗口</value>
+  </data>
+  <data name="ColorPicker_Title" xml:space="preserve">
+    <value>取色器</value>
+  </data>
+  <data name="ColorPicker_ScreenPickCancelled" xml:space="preserve">
+    <value>屏幕取色已取消。</value>
+  </data>
+  <data name="ColorPicker_CopyFailed" xml:space="preserve">
+    <value>无法将颜色复制到剪贴板。</value>
+  </data>
+  <data name="Recording_StatusReady" xml:space="preserve">
+    <value>就绪</value>
+  </data>
+  <data name="Recording_StatusInitializing" xml:space="preserve">
+    <value>正在初始化...</value>
+  </data>
+  <data name="Recording_StatusRecording" xml:space="preserve">
+    <value>正在录制</value>
+  </data>
+  <data name="Recording_StatusPaused" xml:space="preserve">
+    <value>已暂停</value>
+  </data>
+  <data name="Recording_StatusFinalizing" xml:space="preserve">
+    <value>正在完成...</value>
+  </data>
+  <data name="Recording_StatusError" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Recording_FailedToStart" xml:space="preserve">
+    <value>启动失败</value>
+  </data>
+  <data name="Recording_ErrorWithMessage" xml:space="preserve">
+    <value>错误：{0}</value>
+  </data>
+  <data name="Recording_EncoderWindowsNativeFfmpeg" xml:space="preserve">
+    <value>Windows 使用 Media Foundation 原生采集 H.264。在此版本中，HEVC、VP9 和 AV1 会自动切换到 FFmpeg 后端。</value>
+  </data>
+  <data name="Recording_EncoderWindowsNativeNoFfmpeg" xml:space="preserve">
+    <value>Windows 使用 Media Foundation 原生采集 H.264。请安装 FFmpeg 以启用 HEVC、VP9 和 AV1 录制。</value>
+  </data>
+  <data name="Recording_EncoderWindowsFallback" xml:space="preserve">
+    <value>使用 FFmpeg 回退进行录制（原生录制需要 Windows 10 1803+）。</value>
+  </data>
+  <data name="Recording_EncoderMacosFfmpeg" xml:space="preserve">
+    <value>macOS 使用原生录制 H.264。在此版本中，HEVC、VP9 和 AV1 会自动切换到 FFmpeg。</value>
+  </data>
+  <data name="Recording_EncoderMacosNoFfmpeg" xml:space="preserve">
+    <value>macOS 原生录制目前仅支持 H.264。请安装 FFmpeg 以启用 HEVC、VP9 和 AV1 录制。</value>
+  </data>
+  <data name="Recording_EncoderOther" xml:space="preserve">
+    <value>特定平台的录制支持尚未实现。将使用 FFmpeg 回退。</value>
+  </data>
+  <data name="Recording_FeatureWindows" xml:space="preserve">
+    <value>使用原生 Windows.Graphics.Capture 将屏幕录制为 MP4 视频</value>
+  </data>
+  <data name="Recording_FeatureFfmpeg" xml:space="preserve">
+    <value>使用 FFmpeg 将屏幕录制为 MP4 视频</value>
+  </data>
+  <data name="Recording_FeatureGeneric" xml:space="preserve">
+    <value>将屏幕录制为 MP4 视频</value>
+  </data>
+  <data name="Recording_UsageWindowsFfmpeg" xml:space="preserve">
+    <value>注意：H.264 通过 Windows.Graphics.Capture + Media Foundation 录制。HEVC、VP9 和 AV1 会自动通过 FFmpeg 处理。</value>
+  </data>
+  <data name="Recording_UsageWindowsNoFfmpeg" xml:space="preserve">
+    <value>注意：H.264 通过 Windows.Graphics.Capture + Media Foundation 录制。请安装 FFmpeg 以解锁 HEVC、VP9 和 AV1。</value>
+  </data>
+  <data name="Recording_UsageWindowsFallback" xml:space="preserve">
+    <value>注意：录制使用 FFmpeg 进行视频编码。原生 Windows.Graphics.Capture 支持需要 Windows 10 1803+。</value>
+  </data>
+  <data name="Recording_UsageMacosFfmpeg" xml:space="preserve">
+    <value>注意：H.264 原生录制。在此版本中，HEVC、VP9 和 AV1 在 macOS 上使用 FFmpeg。</value>
+  </data>
+  <data name="Recording_UsageMacosNoFfmpeg" xml:space="preserve">
+    <value>注意：如需在 macOS 上使用 HEVC、VP9 或 AV1，请安装 FFmpeg。</value>
+  </data>
+  <data name="Recording_UsageLinuxGeneric" xml:space="preserve">
+    <value>注意：录制使用 FFmpeg 进行视频编码。请确保 FFmpeg 已安装且可从系统 PATH 访问。</value>
+  </data>
+  <data name="Recording_CodecFfmpegUnavailable" xml:space="preserve">
+    <value>FFmpeg 不可用，因此高级编解码器已隐藏，录制编解码器已重置为 H.264。</value>
+  </data>
+  <data name="Recording_CodecInstallFfmpeg" xml:space="preserve">
+    <value>请安装 FFmpeg 以在此平台上启用 HEVC、VP9 和 AV1。</value>
+  </data>
+  <data name="Recording_DiagnosticsRunning" xml:space="preserve">
+    <value>正在运行 Linux 录制诊断...</value>
+  </data>
+  <data name="Recording_DiagnosticsSaved" xml:space="preserve">
+    <value>诊断报告已保存：{0}</value>
+  </data>
+  <data name="Recording_DiagnosticsFailed" xml:space="preserve">
+    <value>诊断失败。无法写入报告。</value>
+  </data>
+  <data name="Recording_DiagnosticsFailedLogs" xml:space="preserve">
+    <value>诊断失败。请查看日志了解详情。</value>
+  </data>
+  <data name="AutoCapture_Start" xml:space="preserve">
+    <value>开始</value>
+  </data>
+  <data name="AutoCapture_Stop" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="AutoCapture_StoppedSummary" xml:space="preserve">
+    <value>已停止。总捕获次数：{0}</value>
+  </data>
+  <data name="AutoCapture_RegionFullScreen" xml:space="preserve">
+    <value>全屏</value>
+  </data>
+  <data name="AutoCapture_RegionCoordinates" xml:space="preserve">
+    <value>X：{0}，Y：{1}，宽度：{2}，高度：{3}</value>
+  </data>
+  <data name="AutoCapture_RegionNone" xml:space="preserve">
+    <value>未选择区域</value>
+  </data>
+  <data name="AutoCapture_StatusTimeLeft" xml:space="preserve">
+    <value>剩余时间：{0} 秒  {1}%  总计：{2}</value>
+  </data>
+  <data name="ProviderExplorer_SortDescending" xml:space="preserve">
+    <value>↓ 降序</value>
+  </data>
+  <data name="ProviderExplorer_SortAscending" xml:space="preserve">
+    <value>↑ 升序</value>
+  </data>
+  <data name="ProviderExplorer_Downloaded" xml:space="preserve">
+    <value>已下载：{0}</value>
+  </data>
+  <data name="ProviderExplorer_DownloadFailed" xml:space="preserve">
+    <value>下载失败：{0}</value>
+  </data>
+  <data name="ProviderExplorer_DeleteFailed" xml:space="preserve">
+    <value>删除失败：{0}</value>
+  </data>
+  <data name="ProviderExplorer_DeleteFailedWithError" xml:space="preserve">
+    <value>删除失败：{0}</value>
+  </data>
+  <data name="ProviderExplorer_ErrorWithMessage" xml:space="preserve">
+    <value>错误：{0}</value>
+  </data>
+  <data name="ProviderExplorer_StatusItemCount" xml:space="preserve">
+    <value>{0} 个项目</value>
+  </data>
+  <data name="ProviderExplorer_StatusTotalSize" xml:space="preserve">
+    <value> | 共 {0}</value>
+  </data>
+  <data name="ProviderExplorer_BreadcrumbRoot" xml:space="preserve">
+    <value>根目录</value>
+  </data>
+  <data name="ProviderExplorer_DeleteConfirmationTitle" xml:space="preserve">
+    <value>确认删除</value>
+  </data>
+  <data name="ProviderExplorer_DeleteConfirmationMessage" xml:space="preserve">
+    <value>从提供者删除“{0}”？
+
+这将从远程存储中永久删除该文件。此操作无法撤销。</value>
+  </data>
+  <data name="ProviderExplorer_BandwidthSavingsNotice" xml:space="preserve">
+    <value>带宽节省：缩略图通过你的公共/CDN 网址（例如 Cloudflare）加载，而不是直接签名的 S3 下载。</value>
+  </data>
+  <data name="Destination_CategoryImageUploaders" xml:space="preserve">
+    <value>图片上传器</value>
+  </data>
+  <data name="Destination_CategoryTextUploaders" xml:space="preserve">
+    <value>文本上传器</value>
+  </data>
+  <data name="Destination_CategoryFileUploaders" xml:space="preserve">
+    <value>文件上传器</value>
+  </data>
+  <data name="Destination_CategoryUrlShorteners" xml:space="preserve">
+    <value>网址缩短器</value>
+  </data>
+  <data name="Destination_CategoryUrlSharing" xml:space="preserve">
+    <value>网址分享</value>
+  </data>
+  <data name="Destination_CategoryNone" xml:space="preserve">
+    <value>无</value>
+  </data>
+  <data name="Destination_SelectShareXConfigTitle" xml:space="preserve">
+    <value>选择 ShareX UploadersConfig.json</value>
+  </data>
+  <data name="Destination_ImportCompleteWithWarnings" xml:space="preserve">
+    <value>导入完成（有警告）</value>
+  </data>
+  <data name="Destination_ImportComplete" xml:space="preserve">
+    <value>导入完成</value>
+  </data>
+  <data name="Destination_ImportFailed" xml:space="preserve">
+    <value>导入失败</value>
+  </data>
+  <data name="Destination_ImportFailedMessage" xml:space="preserve">
+    <value>无法导入 UploadersConfig：
+{0}</value>
+  </data>
+  <data name="Destination_CustomUploaderAlreadyExists" xml:space="preserve">
+    <value>自定义上传器已存在</value>
+  </data>
+  <data name="Destination_CustomUploaderAlreadyExistsMessage" xml:space="preserve">
+    <value>已存在与“{0}”配置完全相同的自定义上传器。</value>
+  </data>
+  <data name="Destination_CustomUploaderCreated" xml:space="preserve">
+    <value>自定义上传器已创建</value>
+  </data>
+  <data name="Destination_SaveFailed" xml:space="preserve">
+    <value>保存失败</value>
+  </data>
+  <data name="Destination_SaveFailedMessage" xml:space="preserve">
+    <value>无法保存自定义上传器。请查看日志了解详情。</value>
+  </data>
+  <data name="Destination_Error" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Destination_CreateCustomUploaderFailed" xml:space="preserve">
+    <value>无法创建自定义上传器：{0}</value>
+  </data>
+  <data name="Destination_ExportFailed" xml:space="preserve">
+    <value>导出失败</value>
+  </data>
+  <data name="Destination_ExportSelectInstance" xml:space="preserve">
+    <value>请选择要导出的目标实例。</value>
+  </data>
+  <data name="Destination_ExportConfigTitle" xml:space="preserve">
+    <value>导出目标配置</value>
+  </data>
+  <data name="Destination_ExportConfigPrompt" xml:space="preserve">
+    <value>为此 .xsdc 文件输入口令：</value>
+  </data>
+  <data name="Destination_ConfirmPassphraseTitle" xml:space="preserve">
+    <value>确认口令</value>
+  </data>
+  <data name="Destination_ConfirmPassphrasePrompt" xml:space="preserve">
+    <value>再次输入口令：</value>
+  </data>
+  <data name="Destination_ExportPassphraseMismatch" xml:space="preserve">
+    <value>口令不匹配。</value>
+  </data>
+  <data name="Destination_ExportSaveDialogTitle" xml:space="preserve">
+    <value>导出 XerahS 目标配置</value>
+  </data>
+  <data name="Destination_ConfigExported" xml:space="preserve">
+    <value>目标配置已导出</value>
+  </data>
+  <data name="Destination_ConfigExportedMessage" xml:space="preserve">
+    <value>已保存加密的目标配置：
+{0}</value>
+  </data>
+  <data name="Destination_CustomUploaderSaved" xml:space="preserve">
+    <value>自定义上传器“{0}”已保存到 Plugins。</value>
+  </data>
+  <data name="Destination_CreatedInstances" xml:space="preserve">
+    <value>已创建 {0} 个目标实例：{1}。</value>
+  </data>
+  <data name="Destination_ReusedBindings" xml:space="preserve">
+    <value>已为以下项复用现有实例绑定：{0}。</value>
+  </data>
+  <data name="Destination_NoCategoriesUpdated" xml:space="preserve">
+    <value>未更新任何目标类别。</value>
+  </data>
+  <data name="Destination_ReadyToUse" xml:space="preserve">
+    <value>上传器无需从目录中添加即可使用。</value>
+  </data>
+  <data name="Destination_ImportSource" xml:space="preserve">
+    <value>来源：{0}</value>
+  </data>
+  <data name="Destination_ImportCustomUploaderExport" xml:space="preserve">
+    <value>自定义上传器导出：</value>
+  </data>
+  <data name="Destination_ImportFromConfig" xml:space="preserve">
+    <value>- 从配置导入：{0}</value>
+  </data>
+  <data name="Destination_ImportCreatedFiles" xml:space="preserve">
+    <value>- 创建的 .sxcu 文件：{0}</value>
+  </data>
+  <data name="Destination_ImportSkippedDuplicates" xml:space="preserve">
+    <value>- 跳过的重复项：{0}</value>
+  </data>
+  <data name="Destination_ImportFailedExports" xml:space="preserve">
+    <value>- 导出失败：{0}</value>
+  </data>
+  <data name="Destination_ImportPluginsFolder" xml:space="preserve">
+    <value>- Plugins 文件夹：{0}</value>
+  </data>
+  <data name="Destination_AutoCreatedInstances" xml:space="preserve">
+    <value>已自动创建 {0} 个目标实例 - 即可使用。</value>
+  </data>
+  <data name="Destination_ReusedBindingsSummary" xml:space="preserve">
+    <value>复用了 {0} 个现有目标绑定，未创建重复项。</value>
+  </data>
+  <data name="Destination_BuiltInMigration" xml:space="preserve">
+    <value>内置提供者迁移：</value>
+  </data>
+  <data name="ImageAnalyzer_StatusSelectImage" xml:space="preserve">
+    <value>选择要分析的图像</value>
+  </data>
+  <data name="ImageAnalyzer_StatusAnalyzing" xml:space="preserve">
+    <value>正在分析...</value>
+  </data>
+  <data name="ImageAnalyzer_StatusLoadFailed" xml:space="preserve">
+    <value>无法加载图像数据</value>
+  </data>
+  <data name="ImageAnalyzer_StatusError" xml:space="preserve">
+    <value>错误：{0}</value>
+  </data>
+  <data name="ImageAnalyzer_StatusCopied" xml:space="preserve">
+    <value>已复制到剪贴板</value>
+  </data>
+  <data name="ImageAnalyzer_StatusDimensions" xml:space="preserve">
+    <value>{0}（{1} x {2}）</value>
+  </data>
+  <data name="ImageAnalyzer_CapturedImage" xml:space="preserve">
+    <value>捕获的图像</value>
+  </data>
+  <data name="ImageAnalyzer_CategoryFile" xml:space="preserve">
+    <value>文件</value>
+  </data>
+  <data name="ImageAnalyzer_CategorySource" xml:space="preserve">
+    <value>来源</value>
+  </data>
+  <data name="ImageAnalyzer_CategoryImage" xml:space="preserve">
+    <value>图像</value>
+  </data>
+  <data name="ImageAnalyzer_CategoryColor" xml:space="preserve">
+    <value>颜色</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyName" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="ImageAnalyzer_PropertySize" xml:space="preserve">
+    <value>大小</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyExtension" xml:space="preserve">
+    <value>扩展名</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyDirectory" xml:space="preserve">
+    <value>目录</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyCreated" xml:space="preserve">
+    <value>创建时间</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyModified" xml:space="preserve">
+    <value>修改时间</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyType" xml:space="preserve">
+    <value>类型</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyInMemoryImage" xml:space="preserve">
+    <value>内存中的图像</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyWidth" xml:space="preserve">
+    <value>宽度</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyHeight" xml:space="preserve">
+    <value>高度</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyPixelCount" xml:space="preserve">
+    <value>像素数</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyAspectRatio" xml:space="preserve">
+    <value>宽高比</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyColorType" xml:space="preserve">
+    <value>颜色类型</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyAlphaType" xml:space="preserve">
+    <value>Alpha 类型</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyBytesPerPixel" xml:space="preserve">
+    <value>每像素字节数</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyRowBytes" xml:space="preserve">
+    <value>每行字节数</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyTotalBytes" xml:space="preserve">
+    <value>总字节数</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyAverageColor" xml:space="preserve">
+    <value>平均颜色</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyAverageRgb" xml:space="preserve">
+    <value>平均 RGB</value>
+  </data>
+  <data name="ImageAnalyzer_PropertyHasTransparency" xml:space="preserve">
+    <value>是否透明</value>
+  </data>
+  <data name="ImageAnalyzer_UnitPixels" xml:space="preserve">
+    <value>{0} px</value>
+  </data>
+  <data name="ImageAnalyzer_AverageRgbValue" xml:space="preserve">
+    <value>R:{0} G:{1} B:{2}</value>
+  </data>
+  <data name="ImageAnalyzer_NotAvailable" xml:space="preserve">
+    <value>不适用</value>
+  </data>
+  <data name="Downloader_PreparingDownload" xml:space="preserve">
+    <value>正在准备下载...</value>
+  </data>
+  <data name="Downloader_UrlNotAvailable" xml:space="preserve">
+    <value>下载网址不可用。</value>
+  </data>
+  <data name="Downloader_GettingFileSize" xml:space="preserve">
+    <value>正在获取文件大小...</value>
+  </data>
+  <data name="Downloader_CompletedStartingInstaller" xml:space="preserve">
+    <value>下载完成。正在启动安装程序...</value>
+  </data>
+  <data name="Downloader_Canceled" xml:space="preserve">
+    <value>下载已取消。</value>
+  </data>
+  <data name="Downloader_Failed" xml:space="preserve">
+    <value>下载失败。</value>
+  </data>
+  <data name="Downloader_FailedWithMessage" xml:space="preserve">
+    <value>下载失败：{0}</value>
+  </data>
+  <data name="Downloader_Downloading" xml:space="preserve">
+    <value>正在下载 {0}...</value>
+  </data>
+  <data name="Downloader_SignatureVerificationFailed" xml:space="preserve">
+    <value>安装程序签名验证失败。更新未启动。</value>
+  </data>
+  <data name="Downloader_StartInstallerFailed" xml:space="preserve">
+    <value>无法启动安装程序：{0}</value>
+  </data>
+  <data name="AfterUpload_NoPreviewTitle" xml:space="preserve">
+    <value>没有可用的预览</value>
+  </data>
+  <data name="AfterUpload_NoPreviewDescription" xml:space="preserve">
+    <value>此次上传不包含本地预览。</value>
+  </data>
+  <data name="AfterUpload_DefaultFileName" xml:space="preserve">
+    <value>上传</value>
+  </data>
+  <data name="AfterUpload_AutoCloseText" xml:space="preserve">
+    <value>{0} 秒后自动关闭</value>
+  </data>
+  <data name="AfterUpload_PreviewReadyTitle" xml:space="preserve">
+    <value>预览已就绪</value>
+  </data>
+  <data name="AfterUpload_PreviewLoadedLocal" xml:space="preserve">
+    <value>已从本地文件加载图像预览。</value>
+  </data>
+  <data name="AfterUpload_PreviewUnavailableTitle" xml:space="preserve">
+    <value>预览不可用</value>
+  </data>
+  <data name="AfterUpload_PreviewUnavailableDescription" xml:space="preserve">
+    <value>只能预览图像。请使用文件操作打开它。</value>
+  </data>
+  <data name="AfterUpload_PreviewLoadedCaptured" xml:space="preserve">
+    <value>已从捕获的图像加载预览。</value>
+  </data>
+  <data name="AfterUpload_FormatGroupPrimaryUrl" xml:space="preserve">
+    <value>主网址</value>
+  </data>
+  <data name="AfterUpload_FormatGroupEmbeds" xml:space="preserve">
+    <value>嵌入</value>
+  </data>
+  <data name="AfterUpload_FormatGroupManagement" xml:space="preserve">
+    <value>管理</value>
+  </data>
+  <data name="AfterUpload_FormatGroupLocal" xml:space="preserve">
+    <value>本地</value>
+  </data>
+  <data name="AfterUpload_FormatGroupCustom" xml:space="preserve">
+    <value>自定义</value>
+  </data>
+  <data name="AfterUpload_FormatClipboardFormat" xml:space="preserve">
+    <value>剪贴板格式</value>
+  </data>
+  <data name="AfterUpload_FormatOpenUrlFormat" xml:space="preserve">
+    <value>打开网址格式</value>
+  </data>
+  <data name="AfterUpload_FormatUrl" xml:space="preserve">
+    <value>网址</value>
+  </data>
+  <data name="AfterUpload_FormatShortenedUrl" xml:space="preserve">
+    <value>缩短的网址</value>
+  </data>
+  <data name="AfterUpload_FormatThumbnailUrl" xml:space="preserve">
+    <value>缩略图网址</value>
+  </data>
+  <data name="AfterUpload_FormatMarkdown" xml:space="preserve">
+    <value>Markdown</value>
+  </data>
+  <data name="AfterUpload_FormatHtml" xml:space="preserve">
+    <value>HTML</value>
+  </data>
+  <data name="AfterUpload_FormatBbcode" xml:space="preserve">
+    <value>BBCode</value>
+  </data>
+  <data name="AfterUpload_FormatDeletionUrl" xml:space="preserve">
+    <value>删除网址</value>
+  </data>
+  <data name="AfterUpload_FormatFilePath" xml:space="preserve">
+    <value>文件路径</value>
+  </data>
+  <data name="AfterUpload_FormatFileName" xml:space="preserve">
+    <value>文件名</value>
+  </data>
+  <data name="MainWindow_OpenImageTitle" xml:space="preserve">
+    <value>打开图像</value>
+  </data>
+  <data name="MainWindow_ImageFilesFilter" xml:space="preserve">
+    <value>图像文件</value>
+  </data>
+  <data name="MainWindow_NoWorkflowsConfigured" xml:space="preserve">
+    <value>未配置工作流</value>
+  </data>
+  <data name="Update_StatusPrompt" xml:space="preserve">
+    <value>使用“立即更新”检查并安装所选频道的最新版本。</value>
+  </data>
+  <data name="Update_CheckingButton" xml:space="preserve">
+    <value>正在检查…</value>
+  </data>
+  <data name="Update_UpdateNowButton" xml:space="preserve">
+    <value>立即更新</value>
+  </data>
+  <data name="Update_CheckingForUpdates" xml:space="preserve">
+    <value>正在检查更新…</value>
+  </data>
+  <data name="Update_Available" xml:space="preserve">
+    <value>有可用更新。请查看提示以继续。</value>
+  </data>
+  <data name="Update_UpToDate" xml:space="preserve">
+    <value>XerahS 已是最新版本。</value>
+  </data>
+  <data name="Update_CheckFailed" xml:space="preserve">
+    <value>更新检查失败。请查看调试日志了解详情。</value>
+  </data>
+  <data name="Update_CheckFailedWithError" xml:space="preserve">
+    <value>更新检查失败：{0}</value>
+  </data>
+  <data name="Mcp_NotGenerated" xml:space="preserve">
+    <value>尚未生成</value>
+  </data>
+  <data name="Mcp_KeyConfigured" xml:space="preserve">
+    <value>API 密钥已配置。使用“复制”将完整令牌放入剪贴板。</value>
+  </data>
+  <data name="Mcp_KeyNotGenerated" xml:space="preserve">
+    <value>尚未生成 API 密钥。</value>
+  </data>
+  <data name="SendTo_NoRememberedChoices" xml:space="preserve">
+    <value>没有已记住的“发送到”选择。</value>
+  </data>
+  <data name="Assistant_HotkeyStatusText" xml:space="preserve">
+    <value>使用助手快捷键打开应用内命令浮层。</value>
+  </data>
+  <data name="Assistant_PaletteStatusText" xml:space="preserve">
+    <value>使用命令面板快捷键搜索已配置的捕获工作流。</value>
+  </data>
+  <data name="Assistant_LocalCommandsAvailable" xml:space="preserve">
+    <value>无需 AI 提供商即可使用本地命令。</value>
+  </data>
+  <data name="Assistant_KeyStored" xml:space="preserve">
+    <value>API 密钥存储在 XerahS 密钥库中。</value>
+  </data>
+  <data name="Assistant_KeyNotConfigured" xml:space="preserve">
+    <value>未配置 API 密钥。</value>
+  </data>
+  <data name="Assistant_OllamaNoKeyNeeded" xml:space="preserve">
+    <value>Ollama 使用本地守护进程，无需 API 密钥。</value>
+  </data>
+  <data name="Assistant_CurrentShortcut" xml:space="preserve">
+    <value>当前快捷键：{0}</value>
+  </data>
+  <data name="Assistant_PlatformServicesNotInitialized" xml:space="preserve">
+    <value>平台服务尚未初始化。</value>
+  </data>
+  <data name="Assistant_SelectProviderFirst" xml:space="preserve">
+    <value>请先选择提供商。</value>
+  </data>
+  <data name="Assistant_ActiveProvider" xml:space="preserve">
+    <value>{0} 是当前活动的助手提供商。</value>
+  </data>
+  <data name="Assistant_SaveApiKeyBeforeValidate" xml:space="preserve">
+    <value>请先保存 API 密钥，再验证此提供商。</value>
+  </data>
+  <data name="Assistant_SettingsIncomplete" xml:space="preserve">
+    <value>提供商设置不完整。</value>
+  </data>
+  <data name="Assistant_Validating" xml:space="preserve">
+    <value>正在验证 {0}…</value>
+  </data>
+  <data name="Assistant_ValidatedSuccessfully" xml:space="preserve">
+    <value>{0} 验证成功。</value>
+  </data>
+  <data name="Assistant_ValidationFailed" xml:space="preserve">
+    <value>提供商验证失败。</value>
+  </data>
+  <data name="Assistant_ApiKeyRemoved" xml:space="preserve">
+    <value>已删除 {0} 的 API 密钥。</value>
+  </data>
+  <data name="Assistant_ProviderActive" xml:space="preserve">
+    <value>{0} 已激活。</value>
+  </data>
+  <data name="Assistant_ProviderSelected" xml:space="preserve">
+    <value>已选择 {0}。保存以将其设为活动。</value>
+  </data>
+  <data name="LinuxCapture_Unavailable" xml:space="preserve">
+    <value>不可用</value>
+  </data>
+  <data name="LinuxCapture_CurrentSessionUnavailable" xml:space="preserve">
+    <value>当前会话：Linux 诊断不可用</value>
+  </data>
+  <data name="LinuxCapture_PortalBackendUnavailable" xml:space="preserve">
+    <value>门户后端：不可用</value>
+  </data>
+  <data name="LinuxCapture_AvailableSelectorsFallback" xml:space="preserve">
+    <value>可用选择器：自动（推荐）、XerahS 叠加十字准线</value>
+  </data>
+  <data name="LinuxCapture_AutomaticFallback" xml:space="preserve">
+    <value>自动模式将在运行时优先使用最佳可用选择器。</value>
+  </data>
+  <data name="LinuxCapture_LastDecisionUnavailable" xml:space="preserve">
+    <value>上次选择器结果：不可用</value>
+  </data>
+  <data name="LinuxCapture_CurrentSession" xml:space="preserve">
+    <value>当前会话：会话类型：{0} / 桌面：{1} / 合成器：{2}</value>
+  </data>
+  <data name="LinuxCapture_PortalBackend" xml:space="preserve">
+    <value>门户后端：{0}</value>
+  </data>
+  <data name="LinuxCapture_AvailableSelectors" xml:space="preserve">
+    <value>可用选择器：{0}</value>
+  </data>
+  <data name="LinuxCapture_AutomaticPreference" xml:space="preserve">
+    <value>自动模式将优先使用：{0}</value>
+  </data>
+  <data name="LinuxCapture_LastDecisionNone" xml:space="preserve">
+    <value>上次选择器结果：本会话中尚未运行 Linux 交互式捕获。</value>
+  </data>
+  <data name="LinuxCapture_LastDecisionSucceeded" xml:space="preserve">
+    <value>上次选择器结果：{0} 使用了 {1}（提供商：{2}），时间 {3}。请求：{4}；生效：{5}。</value>
+  </data>
+  <data name="LinuxCapture_LastDecisionCancelled" xml:space="preserve">
+    <value>上次选择器结果：{0} 已在 {1}（提供商：{2}）中取消，时间 {3}。请求：{4}；生效：{5}。</value>
+  </data>
+  <data name="LinuxCapture_LastDecisionFailed" xml:space="preserve">
+    <value>上次选择器结果：{0} 在 {1}（提供商：{2}）中失败，时间 {3}。请求：{4}；生效：{5}。</value>
+  </data>
+  <data name="WatchFolderDaemon_StatusUnknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="WatchFolderDaemon_Stop" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="WatchFolderDaemon_Start" xml:space="preserve">
+    <value>启动</value>
+  </data>
+  <data name="WatchFolderDaemon_InstallAndStart" xml:space="preserve">
+    <value>安装并启动</value>
+  </data>
+  <data name="WatchFolderDaemon_ScopeNotSupported" xml:space="preserve">
+    <value>此平台不支持所选范围“{0}”。</value>
+  </data>
+  <data name="WatchFolderDaemon_UnsupportedScope" xml:space="preserve">
+    <value>不支持的范围。</value>
+  </data>
+  <data name="WatchFolderDaemon_FailedToControl" xml:space="preserve">
+    <value>无法控制守护进程。</value>
+  </data>
+  <data name="WatchFolderDaemon_NotSupportedOnPlatform" xml:space="preserve">
+    <value>此平台不支持监视文件夹守护进程。</value>
+  </data>
+  <data name="WatchFolderDaemon_ScopeNotSupportedShort" xml:space="preserve">
+    <value>不支持范围“{0}”。</value>
+  </data>
+  <data name="WatchFolderDaemon_FailedToQueryStatus" xml:space="preserve">
+    <value>无法查询守护进程状态。</value>
+  </data>
+  <data name="WatchFolderDaemon_OperationFailed" xml:space="preserve">
+    <value>守护进程操作失败（{0}）。</value>
+  </data>
+  <data name="WatchFolderDaemon_OperationFailedWithError" xml:space="preserve">
+    <value>操作失败，错误：{0}</value>
+  </data>
+  <data name="WatchFolder_AddTitle" xml:space="preserve">
+    <value>添加监视文件夹</value>
+  </data>
+  <data name="WatchFolder_EditTitle" xml:space="preserve">
+    <value>编辑监视文件夹</value>
+  </data>
+  <data name="WatchFolder_Unassigned" xml:space="preserve">
+    <value>未分配</value>
+  </data>
+  <data name="WatchFolder_UnknownWorkflow" xml:space="preserve">
+    <value>未知工作流</value>
+  </data>
+  <data name="Settings_Tab_General" xml:space="preserve">
+    <value>常规</value>
+  </data>
+  <data name="Settings_Tab_Paths" xml:space="preserve">
+    <value>路径</value>
+  </data>
+  <data name="Settings_Tab_WatchFolders" xml:space="preserve">
+    <value>监视文件夹</value>
+  </data>
+  <data name="Settings_Tab_Integration" xml:space="preserve">
+    <value>集成</value>
+  </data>
+  <data name="Settings_Tab_History" xml:space="preserve">
+    <value>历史记录</value>
+  </data>
+  <data name="Settings_Tab_Proxy" xml:space="preserve">
+    <value>代理</value>
+  </data>
+  <data name="Settings_Tab_Advanced" xml:space="preserve">
+    <value>高级</value>
+  </data>
+  <data name="Settings_Theme_Title" xml:space="preserve">
+    <value>主题</value>
+  </data>
+  <data name="Settings_Theme_ApplicationTheme" xml:space="preserve">
+    <value>应用主题：</value>
+  </data>
+  <data name="Settings_Theme_Language" xml:space="preserve">
+    <value>语言：</value>
+  </data>
+  <data name="Settings_Theme_LanguageRestartNote" xml:space="preserve">
+    <value>语言更改将在重启 XerahS 后生效。</value>
+  </data>
+  <data name="Settings_Theme_SystemDefaultNote" xml:space="preserve">
+    <value>“系统默认”会跟随操作系统的浅色/深色模式偏好。</value>
+  </data>
+  <data name="Settings_Updates_Title" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="Settings_Updates_AutoCheck" xml:space="preserve">
+    <value>自动检查更新</value>
+  </data>
+  <data name="Settings_Updates_UpdateChannel" xml:space="preserve">
+    <value>更新通道：</value>
+  </data>
+  <data name="Settings_Updates_PreReleaseSource" xml:space="preserve">
+    <value>预发布来源：</value>
+  </data>
+  <data name="Settings_Updates_CustomSource" xml:space="preserve">
+    <value>自定义来源：</value>
+  </data>
+  <data name="Settings_Updates_CustomSourcePlaceholder" xml:space="preserve">
+    <value>GitHub 所有者或所有者/仓库</value>
+  </data>
+  <data name="Settings_Notifications_Title" xml:space="preserve">
+    <value>通知</value>
+  </data>
+  <data name="Settings_Notifications_DisableWindow" xml:space="preserve">
+    <value>禁用通知窗口</value>
+  </data>
+  <data name="Settings_Notifications_DisableWindowToolTip" xml:space="preserve">
+    <value>隐藏任务完成后通常出现在角落的弹出通知（例如“任务已完成”、“上传已完成”）。捕获、上传和其他操作仍会正常运行。</value>
+  </data>
+  <data name="Settings_TrayIcon_Title" xml:space="preserve">
+    <value>托盘图标</value>
+  </data>
+  <data name="Settings_TrayIcon_ShowProgress" xml:space="preserve">
+    <value>在托盘图标上显示进度</value>
+  </data>
+  <data name="Settings_TrayIcon_UseWhiteIcon" xml:space="preserve">
+    <value>使用单色白色托盘图标</value>
+  </data>
+  <data name="Settings_TrayIcon_UseWhiteIconToolTip" xml:space="preserve">
+    <value>使用简单的单色轮廓托盘图标，而不是全彩图标。建议在系统面板为深色的 macOS 和 Linux 上使用；在 Windows 上可选择启用。在 GNOME 上需要 AppIndicator 扩展。</value>
+  </data>
+  <data name="Settings_TrayIcon_ClickActions" xml:space="preserve">
+    <value>点击操作</value>
+  </data>
+  <data name="Settings_TrayIcon_LeftClick" xml:space="preserve">
+    <value>左键单击：</value>
+  </data>
+  <data name="Settings_TrayIcon_DoubleClick" xml:space="preserve">
+    <value>双击：</value>
+  </data>
+  <data name="Settings_TrayIcon_MiddleClick" xml:space="preserve">
+    <value>中键单击：</value>
+  </data>
+  <data name="Settings_Taskbar_Title" xml:space="preserve">
+    <value>任务栏</value>
+  </data>
+  <data name="Settings_Taskbar_ShowProgress" xml:space="preserve">
+    <value>在任务栏上显示进度</value>
+  </data>
+  <data name="Settings_Paths_ScreenshotsFolder" xml:space="preserve">
+    <value>截图文件夹</value>
+  </data>
+  <data name="Settings_Paths_UseCustomScreenshotsPath" xml:space="preserve">
+    <value>使用自定义截图路径</value>
+  </data>
+  <data name="Settings_Paths_ScreenshotsPathPlaceholder" xml:space="preserve">
+    <value>截图文件夹路径</value>
+  </data>
+  <data name="Settings_Paths_BrowseScreenshotsToolTip" xml:space="preserve">
+    <value>浏览截图文件夹</value>
+  </data>
+  <data name="Settings_Paths_SubfolderPattern" xml:space="preserve">
+    <value>子文件夹模式</value>
+  </data>
+  <data name="Settings_Paths_UseSubfolderPattern" xml:space="preserve">
+    <value>使用模式创建子文件夹</value>
+  </data>
+  <data name="Settings_Paths_Pattern" xml:space="preserve">
+    <value>模式：</value>
+  </data>
+  <data name="Settings_Paths_PatternExample" xml:space="preserve">
+    <value>示例：2025-01</value>
+  </data>
+  <data name="Settings_WatchFolders_Title" xml:space="preserve">
+    <value>监视文件夹</value>
+  </data>
+  <data name="Settings_WatchFolders_Description" xml:space="preserve">
+    <value>监视文件夹中的新文件，并自动运行文件上传工作流。</value>
+  </data>
+  <data name="Settings_WatchFolders_ConfiguredFolders" xml:space="preserve">
+    <value>已配置的文件夹</value>
+  </data>
+  <data name="Settings_WatchFolders_Add" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="Settings_WatchFolders_Edit" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="Settings_WatchFolders_Remove" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Settings_WatchFolders_Column_Enabled" xml:space="preserve">
+    <value>已启用</value>
+  </data>
+  <data name="Settings_WatchFolders_Column_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Settings_WatchFolders_Column_Folder" xml:space="preserve">
+    <value>文件夹</value>
+  </data>
+  <data name="Settings_WatchFolders_Column_Workflow" xml:space="preserve">
+    <value>工作流</value>
+  </data>
+  <data name="Settings_WatchFolders_Column_Filter" xml:space="preserve">
+    <value>筛选器</value>
+  </data>
+  <data name="Settings_WatchFolders_Column_Subfolders" xml:space="preserve">
+    <value>子文件夹</value>
+  </data>
+  <data name="Settings_WatchFolders_Column_MoveToScreenshots" xml:space="preserve">
+    <value>移动到截图</value>
+  </data>
+  <data name="Settings_WatchFolders_Column_MovToMp4" xml:space="preserve">
+    <value>MOV 转 MP4</value>
+  </data>
+  <data name="Settings_WatchFolderDaemon_Title" xml:space="preserve">
+    <value>监视文件夹服务/守护进程</value>
+  </data>
+  <data name="Settings_WatchFolderDaemon_Description" xml:space="preserve">
+    <value>使用现有设置在专用的后台服务/守护进程中运行监视文件夹监控。</value>
+  </data>
+  <data name="Settings_WatchFolderDaemon_Scope" xml:space="preserve">
+    <value>作用域：</value>
+  </data>
+  <data name="Settings_WatchFolderDaemon_StartAtStartup" xml:space="preserve">
+    <value>启动时运行守护进程</value>
+  </data>
+  <data name="Settings_WatchFolderDaemon_Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="Settings_Integration_System" xml:space="preserve">
+    <value>系统</value>
+  </data>
+  <data name="Settings_Integration_ShowTrayIcon" xml:space="preserve">
+    <value>显示托盘图标</value>
+  </data>
+  <data name="Settings_Integration_StartMinimized" xml:space="preserve">
+    <value>最小化到托盘启动</value>
+  </data>
+  <data name="Settings_Integration_RememberMainWindowSize" xml:space="preserve">
+    <value>记住主窗口大小</value>
+  </data>
+  <data name="Settings_Integration_RememberMainWindowPosition" xml:space="preserve">
+    <value>记住主窗口位置</value>
+  </data>
+  <data name="Settings_Integration_DesktopIntegration" xml:space="preserve">
+    <value>桌面集成</value>
+  </data>
+  <data name="Settings_Integration_RunAtStartup" xml:space="preserve">
+    <value>系统启动时运行</value>
+  </data>
+  <data name="Settings_Integration_ContextMenu" xml:space="preserve">
+    <value>将“使用 XerahS 上传”添加到右键菜单</value>
+  </data>
+  <data name="Settings_Integration_ContextMenuToolTip" xml:space="preserve">
+    <value>添加通过右键菜单上传文件的选项</value>
+  </data>
+  <data name="Settings_Integration_SendToMenu" xml:space="preserve">
+    <value>添加到“发送到”菜单</value>
+  </data>
+  <data name="Settings_Integration_SendToMenuToolTip" xml:space="preserve">
+    <value>将 XerahS 添加到“发送到”菜单，以便快速访问文件</value>
+  </data>
+  <data name="Settings_Integration_SendToRememberedChoices" xml:space="preserve">
+    <value>记住的“发送到”选择</value>
+  </data>
+  <data name="Settings_Integration_ClearSendToChoices" xml:space="preserve">
+    <value>清除记住的“发送到”选择</value>
+  </data>
+  <data name="Settings_Integration_SendToDefaultPolicies" xml:space="preserve">
+    <value>“发送到”默认策略</value>
+  </data>
+  <data name="Settings_Integration_FolderPolicy" xml:space="preserve">
+    <value>文件夹策略：</value>
+  </data>
+  <data name="Settings_Integration_ImageBatchPolicy" xml:space="preserve">
+    <value>图片批量策略：</value>
+  </data>
+  <data name="Settings_Integration_BatchConfirmThreshold" xml:space="preserve">
+    <value>批量确认阈值：</value>
+  </data>
+  <data name="Settings_Integration_FolderPolicyToolTip" xml:space="preserve">
+    <value>控制在将文件夹发送到编辑器或上传器时如何展开：打开文件夹本身、仅包含其顶层文件，或递归包含所有文件。</value>
+  </data>
+  <data name="Settings_Integration_ImageBatchPolicyToolTip" xml:space="preserve">
+    <value>控制如何打开一批图片：立即全部打开、逐个打开，或在批量超过阈值时请求确认。</value>
+  </data>
+  <data name="Settings_Integration_BatchConfirmThresholdToolTip" xml:space="preserve">
+    <value>图片数量超过该值时，XerahS 会在打开批量之前请求确认。</value>
+  </data>
+  <data name="Settings_Integration_Clipboard" xml:space="preserve">
+    <value>剪贴板</value>
+  </data>
+  <data name="Settings_Integration_ClipboardViewer" xml:space="preserve">
+    <value>监视剪贴板并自动显示剪贴板查看器</value>
+  </data>
+  <data name="Settings_Integration_ClipboardViewerToolTip" xml:space="preserve">
+    <value>启用后，当新内容复制到剪贴板时会自动打开剪贴板查看器</value>
+  </data>
+  <data name="Settings_Integration_FileAssociations" xml:space="preserve">
+    <value>文件关联</value>
+  </data>
+  <data name="Settings_Integration_AssociateXsdp" xml:space="preserve">
+    <value>将 .xsdp 文件与此应用程序关联</value>
+  </data>
+  <data name="Settings_Integration_AssociateXsdpToolTip" xml:space="preserve">
+    <value>允许双击 .xsdp 插件包进行安装</value>
+  </data>
+  <data name="Settings_Integration_Note" xml:space="preserve">
+    <value>注意：某些集成功能需要特定平台支持，可能并非在所有系统上都可用。</value>
+  </data>
+  <data name="Settings_CapturePalette_Title" xml:space="preserve">
+    <value>捕获命令面板</value>
+  </data>
+  <data name="Settings_CapturePalette_Description" xml:space="preserve">
+    <value>为已配置的捕获和录制工作流打开可搜索的覆盖层。</value>
+  </data>
+  <data name="Settings_CapturePalette_Enable" xml:space="preserve">
+    <value>启用捕获命令面板</value>
+  </data>
+  <data name="Settings_Shortcut" xml:space="preserve">
+    <value>快捷键：</value>
+  </data>
+  <data name="Settings_TestShortcut" xml:space="preserve">
+    <value>测试快捷键</value>
+  </data>
+  <data name="Settings_Assistant_Title" xml:space="preserve">
+    <value>助手</value>
+  </data>
+  <data name="Settings_Assistant_Description" xml:space="preserve">
+    <value>使用本地优先的命令覆盖层来处理 XerahS 历史记录和捕获操作。</value>
+  </data>
+  <data name="Settings_Assistant_Enable" xml:space="preserve">
+    <value>启用 XerahS 助手</value>
+  </data>
+  <data name="Settings_Assistant_SaveHistory" xml:space="preserve">
+    <value>保存助手命令历史记录</value>
+  </data>
+  <data name="Settings_Assistant_AIProvider" xml:space="preserve">
+    <value>AI 提供商</value>
+  </data>
+  <data name="Settings_Assistant_Provider" xml:space="preserve">
+    <value>提供商：</value>
+  </data>
+  <data name="Settings_Assistant_Model" xml:space="preserve">
+    <value>模型：</value>
+  </data>
+  <data name="Settings_Assistant_ModelIdPlaceholder" xml:space="preserve">
+    <value>模型 ID</value>
+  </data>
+  <data name="Settings_Assistant_BaseUrl" xml:space="preserve">
+    <value>基础 URL：</value>
+  </data>
+  <data name="Settings_Assistant_ApiKey" xml:space="preserve">
+    <value>API 密钥：</value>
+  </data>
+  <data name="Settings_Assistant_ApiKeyPlaceholder" xml:space="preserve">
+    <value>存储在 XerahS 密钥存储中</value>
+  </data>
+  <data name="Settings_Assistant_SaveProvider" xml:space="preserve">
+    <value>保存提供商</value>
+  </data>
+  <data name="Settings_Assistant_Validate" xml:space="preserve">
+    <value>验证</value>
+  </data>
+  <data name="Settings_Assistant_RemoveKey" xml:space="preserve">
+    <value>删除密钥</value>
+  </data>
+  <data name="Settings_Mcp_Title" xml:space="preserve">
+    <value>MCP 服务器</value>
+  </data>
+  <data name="Settings_Mcp_Description" xml:space="preserve">
+    <value>使用专用的 xerahs-mcp 可执行文件，通过 Model Context Protocol 公开 XerahS。</value>
+  </data>
+  <data name="Settings_Mcp_ManifestUrl" xml:space="preserve">
+    <value>清单 URL：</value>
+  </data>
+  <data name="Settings_Mcp_CopyApiKey" xml:space="preserve">
+    <value>复制 API 密钥</value>
+  </data>
+  <data name="Settings_Mcp_GenerateApiKey" xml:space="preserve">
+    <value>生成或重新生成 API 密钥</value>
+  </data>
+  <data name="Settings_Mcp_CopyManifestUrl" xml:space="preserve">
+    <value>复制清单 URL</value>
+  </data>
+  <data name="Settings_Mcp_HttpTransportNote" xml:space="preserve">
+    <value>HTTP 传输需要上方所示的持有者令牌。如果不存在密钥，MCP 运行时也会在首次启动时自动生成一个。</value>
+  </data>
+  <data name="Settings_History_Title" xml:space="preserve">
+    <value>历史记录</value>
+  </data>
+  <data name="Settings_History_SaveTasks" xml:space="preserve">
+    <value>将捕获/上传的项目保存到历史记录</value>
+  </data>
+  <data name="Settings_History_OnlySaveWithUrl" xml:space="preserve">
+    <value>仅保存带有 URL 的项目</value>
+  </data>
+  <data name="Settings_History_ScreenshotSearch" xml:space="preserve">
+    <value>使截图可搜索</value>
+  </data>
+  <data name="Settings_History_ScreenshotSearchNote" xml:space="preserve">
+    <value>在本地读取新截图中的文本，以便历史记录和助手搜索能按可见文字找到截图。</value>
+  </data>
+  <data name="Settings_RecentTasks_Title" xml:space="preserve">
+    <value>最近任务</value>
+  </data>
+  <data name="Settings_RecentTasks_Save" xml:space="preserve">
+    <value>保存最近任务</value>
+  </data>
+  <data name="Settings_RecentTasks_MaxCount" xml:space="preserve">
+    <value>最近任务的最大数量：</value>
+  </data>
+  <data name="Settings_RecentTasks_DisplayOptions" xml:space="preserve">
+    <value>显示选项</value>
+  </data>
+  <data name="Settings_RecentTasks_ShowInMainWindow" xml:space="preserve">
+    <value>在主窗口中显示最近任务</value>
+  </data>
+  <data name="Settings_RecentTasks_ShowInTrayMenu" xml:space="preserve">
+    <value>在托盘菜单中显示最近任务</value>
+  </data>
+  <data name="Settings_RecentTasks_MostRecentFirst" xml:space="preserve">
+    <value>在托盘菜单中首先显示最近的任务</value>
+  </data>
+  <data name="Settings_Proxy_Title" xml:space="preserve">
+    <value>代理配置</value>
+  </data>
+  <data name="Settings_Proxy_Method" xml:space="preserve">
+    <value>代理方法：</value>
+  </data>
+  <data name="Settings_Proxy_MethodDescription" xml:space="preserve">
+    <value>配置网络请求应如何通过代理。更改会立即应用于所有上传。</value>
+  </data>
+  <data name="Settings_Proxy_Server" xml:space="preserve">
+    <value>代理服务器</value>
+  </data>
+  <data name="Settings_Proxy_Host" xml:space="preserve">
+    <value>主机：</value>
+  </data>
+  <data name="Settings_Proxy_Port" xml:space="preserve">
+    <value>端口：</value>
+  </data>
+  <data name="Settings_Proxy_Authentication" xml:space="preserve">
+    <value>身份验证（可选）</value>
+  </data>
+  <data name="Settings_Proxy_Username" xml:space="preserve">
+    <value>用户名：</value>
+  </data>
+  <data name="Settings_Proxy_UsernamePlaceholder" xml:space="preserve">
+    <value>用户名</value>
+  </data>
+  <data name="Settings_Proxy_Password" xml:space="preserve">
+    <value>密码：</value>
+  </data>
+  <data name="Settings_Proxy_PasswordPlaceholder" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="Settings_Proxy_AuthNote" xml:space="preserve">
+    <value>如果代理不需要身份验证，请将用户名和密码留空。</value>
+  </data>
+  <data name="Settings_Advanced_CaptureEngine" xml:space="preserve">
+    <value>捕获引擎</value>
+  </data>
+  <data name="Settings_Advanced_UseModernCapture" xml:space="preserve">
+    <value>使用现代屏幕捕获（Windows 上的 Direct3D11，Linux 上的 XDG 门户）。需要重启。</value>
+  </data>
+  <data name="Settings_Advanced_MacRegionSelector" xml:space="preserve">
+    <value>macOS 区域选择器</value>
+  </data>
+  <data name="Settings_Advanced_MacRegionSelectorDescription" xml:space="preserve">
+    <value>为 macOS 交互式区域捕获选择一个选择器，以免在同一工作流中同时显示原生十字线和 XerahS 覆盖层。</value>
+  </data>
+  <data name="Settings_RegionSelector" xml:space="preserve">
+    <value>区域选择器：</value>
+  </data>
+  <data name="Settings_Advanced_MacRegionSelectorNote" xml:space="preserve">
+    <value>这是 macOS 工作流和捕获工具的默认设置。设置为“自动”的工作流会遵循此值。</value>
+  </data>
+  <data name="Settings_Advanced_PlayMacCaptureSound" xml:space="preserve">
+    <value>播放 macOS 原生捕获声音</value>
+  </data>
+  <data name="Settings_Advanced_LinuxRegionSelector" xml:space="preserve">
+    <value>Linux 区域选择器</value>
+  </data>
+  <data name="Settings_Advanced_LinuxRegionSelectorDescription" xml:space="preserve">
+    <value>选择 XerahS 在 Linux 交互式区域选择中应优先使用的选择器。</value>
+  </data>
+  <data name="Settings_Advanced_LinuxRecordingBackend" xml:space="preserve">
+    <value>Linux 录制后端</value>
+  </data>
+  <data name="Settings_Advanced_LinuxRecordingBackendDescription" xml:space="preserve">
+    <value>选择 XerahS 在 Linux 屏幕录制工作流中应优先使用的录制后端。</value>
+  </data>
+  <data name="Settings_Advanced_RecordingBackend" xml:space="preserve">
+    <value>录制后端：</value>
+  </data>
+  <data name="Settings_Advanced_LinuxRecordingBackendNote" xml:space="preserve">
+    <value>“自动”会在可用时优先使用原生或基于门户的录制，并在需要时回退到 FFmpeg。</value>
+  </data>
+  <data name="Settings_Advanced_LinuxClipboard" xml:space="preserve">
+    <value>Linux 剪贴板</value>
+  </data>
+  <data name="Settings_Advanced_PersistClipboard" xml:space="preserve">
+    <value>退出 XerahS 后保留剪贴板内容（Wayland：使用 wl-copy）</value>
+  </data>
+  <data name="Settings_Advanced_LinuxClipboardNote" xml:space="preserve">
+    <value>后台工作流（CLI、监视文件夹守护进程）需要 wl-clipboard 或 xclip。.deb 和 .rpm 软件包会推荐这些工具。</value>
+  </data>
+  <data name="Settings_Advanced_WaylandPortalServices" xml:space="preserve">
+    <value>Wayland 门户服务</value>
+  </data>
+  <data name="Settings_Advanced_UseWaylandPortalServices" xml:space="preserve">
+    <value>使用 Wayland 门户服务进行热键、输入捕获和 open-uri 集成。需要重启。</value>
+  </data>
+  <data name="Settings_Advanced_WaylandPortalServicesNote" xml:space="preserve">
+    <value>此设置控制 Wayland 上基于门户的桌面集成。它不会选择 Linux 截图区域选择器或录制后端。</value>
+  </data>
+  <data name="Settings_Advanced_ApplicationConfiguration" xml:space="preserve">
+    <value>应用程序配置</value>
+  </data>
+  <data name="MainWindow_Menu_File" xml:space="preserve">
+    <value>文件</value>
+  </data>
+  <data name="MainWindow_Menu_Open" xml:space="preserve">
+    <value>打开...</value>
+  </data>
+  <data name="MainWindow_Menu_Upload" xml:space="preserve">
+    <value>上传</value>
+  </data>
+  <data name="MainWindow_Menu_UploadFile" xml:space="preserve">
+    <value>上传文件...</value>
+  </data>
+  <data name="MainWindow_Menu_UploadContent" xml:space="preserve">
+    <value>上传内容...</value>
+  </data>
+  <data name="MainWindow_Menu_Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="MainWindow_Menu_SaveAs" xml:space="preserve">
+    <value>另存为...</value>
+  </data>
+  <data name="MainWindow_Menu_Exit" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  <data name="MainWindow_Menu_Edit" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="MainWindow_Menu_Undo" xml:space="preserve">
+    <value>撤销</value>
+  </data>
+  <data name="MainWindow_Menu_Redo" xml:space="preserve">
+    <value>重做</value>
+  </data>
+  <data name="MainWindow_Menu_CopyToClipboard" xml:space="preserve">
+    <value>复制到剪贴板</value>
+  </data>
+  <data name="MainWindow_Menu_View" xml:space="preserve">
+    <value>视图</value>
+  </data>
+  <data name="MainWindow_Menu_Editor" xml:space="preserve">
+    <value>编辑器</value>
+  </data>
+  <data name="MainWindow_Menu_History" xml:space="preserve">
+    <value>历史</value>
+  </data>
+  <data name="MainWindow_Menu_ResetZoom" xml:space="preserve">
+    <value>重置缩放</value>
+  </data>
+  <data name="MainWindow_Menu_ZoomIn" xml:space="preserve">
+    <value>放大</value>
+  </data>
+  <data name="MainWindow_Menu_ZoomOut" xml:space="preserve">
+    <value>缩小</value>
+  </data>
+  <data name="MainWindow_Menu_ZoomToFit" xml:space="preserve">
+    <value>适应窗口</value>
+  </data>
+  <data name="MainWindow_Menu_Workflows" xml:space="preserve">
+    <value>工作流</value>
+  </data>
+  <data name="MainWindow_Menu_ManageWorkflows" xml:space="preserve">
+    <value>管理工作流</value>
+  </data>
+  <data name="MainWindow_Menu_RunWorkflow" xml:space="preserve">
+    <value>运行工作流</value>
+  </data>
+  <data name="MainWindow_Menu_Tools" xml:space="preserve">
+    <value>工具</value>
+  </data>
+  <data name="MainWindow_Menu_ColorPicker" xml:space="preserve">
+    <value>取色器...</value>
+  </data>
+  <data name="MainWindow_Menu_Ruler" xml:space="preserve">
+    <value>标尺</value>
+  </data>
+  <data name="MainWindow_Menu_QRCode" xml:space="preserve">
+    <value>二维码</value>
+  </data>
+  <data name="MainWindow_Menu_QRGenerator" xml:space="preserve">
+    <value>生成器...</value>
+  </data>
+  <data name="MainWindow_Menu_QRScanScreen" xml:space="preserve">
+    <value>从屏幕扫描</value>
+  </data>
+  <data name="MainWindow_Menu_QRScanRegion" xml:space="preserve">
+    <value>从区域扫描</value>
+  </data>
+  <data name="MainWindow_Menu_PinToScreen" xml:space="preserve">
+    <value>固定到屏幕</value>
+  </data>
+  <data name="MainWindow_Menu_PinFromScreen" xml:space="preserve">
+    <value>从屏幕</value>
+  </data>
+  <data name="MainWindow_Menu_PinFromClipboard" xml:space="preserve">
+    <value>从剪贴板</value>
+  </data>
+  <data name="MainWindow_Menu_PinFromFile" xml:space="preserve">
+    <value>从文件</value>
+  </data>
+  <data name="MainWindow_Menu_PinCloseAll" xml:space="preserve">
+    <value>全部关闭</value>
+  </data>
+  <data name="MainWindow_Menu_OCR" xml:space="preserve">
+    <value>OCR</value>
+  </data>
+  <data name="MainWindow_Menu_HashChecker" xml:space="preserve">
+    <value>哈希校验...</value>
+  </data>
+  <data name="MainWindow_Menu_IndexFolder" xml:space="preserve">
+    <value>索引文件夹...</value>
+  </data>
+  <data name="MainWindow_Menu_ImageCombiner" xml:space="preserve">
+    <value>图像合并...</value>
+  </data>
+  <data name="MainWindow_Menu_ImageSplitter" xml:space="preserve">
+    <value>图像分割...</value>
+  </data>
+  <data name="MainWindow_Menu_ImageThumbnailer" xml:space="preserve">
+    <value>图像缩略图...</value>
+  </data>
+  <data name="MainWindow_Menu_AnalyzeImage" xml:space="preserve">
+    <value>分析图像...</value>
+  </data>
+  <data name="MainWindow_Menu_VideoEditor" xml:space="preserve">
+    <value>视频编辑器...</value>
+  </data>
+  <data name="MainWindow_Menu_VideoConverter" xml:space="preserve">
+    <value>视频转换器...</value>
+  </data>
+  <data name="MainWindow_Menu_VideoThumbnailer" xml:space="preserve">
+    <value>视频缩略图...</value>
+  </data>
+  <data name="MainWindow_Menu_ClipboardViewer" xml:space="preserve">
+    <value>剪贴板查看器</value>
+  </data>
+  <data name="MainWindow_Menu_MonitorTest" xml:space="preserve">
+    <value>显示器测试</value>
+  </data>
+  <data name="MainWindow_Menu_Settings" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="MainWindow_Menu_ApplicationSettings" xml:space="preserve">
+    <value>应用设置</value>
+  </data>
+  <data name="MainWindow_Menu_DestinationSettings" xml:space="preserve">
+    <value>目标设置</value>
+  </data>
+  <data name="MainWindow_Menu_Help" xml:space="preserve">
+    <value>帮助</value>
+  </data>
+  <data name="MainWindow_Menu_About" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="MainWindow_Menu_Debug" xml:space="preserve">
+    <value>调试</value>
+  </data>
+  <data name="MainWindow_NavigationSearchWatermark" xml:space="preserve">
+    <value>搜索</value>
+  </data>
+  <data name="History_SearchPlaceholder" xml:space="preserve">
+    <value>搜索历史</value>
+  </data>
+  <data name="History_Search" xml:space="preserve">
+    <value>搜索</value>
+  </data>
+  <data name="History_ClearSearch" xml:space="preserve">
+    <value>清除</value>
+  </data>
+  <data name="History_ListView" xml:space="preserve">
+    <value>列表视图</value>
+  </data>
+  <data name="History_GridView" xml:space="preserve">
+    <value>网格视图</value>
+  </data>
+  <data name="History_CombineHorizontal" xml:space="preserve">
+    <value>水平合并</value>
+  </data>
+  <data name="History_CombineVertical" xml:space="preserve">
+    <value>垂直合并</value>
+  </data>
+  <data name="History_Loading" xml:space="preserve">
+    <value>正在加载历史记录...</value>
+  </data>
+  <data name="History_ColumnFilename" xml:space="preserve">
+    <value>文件名</value>
+  </data>
+  <data name="History_ColumnTypeHost" xml:space="preserve">
+    <value>类型 / 主机</value>
+  </data>
+  <data name="History_ColumnDate" xml:space="preserve">
+    <value>日期</value>
+  </data>
+  <data name="History_Previous" xml:space="preserve">
+    <value>上一页</value>
+  </data>
+  <data name="History_Next" xml:space="preserve">
+    <value>下一页</value>
+  </data>
+  <data name="About_Copyright" xml:space="preserve">
+    <value>Copyright (c) 2007-2026 ShareX Team</value>
+  </data>
+  <data name="About_Links" xml:space="preserve">
+    <value>链接</value>
+  </data>
+  <data name="About_Website" xml:space="preserve">
+    <value>网站</value>
+  </data>
+  <data name="About_GitHubProject" xml:space="preserve">
+    <value>GitHub 项目</value>
+  </data>
+  <data name="About_Issues" xml:space="preserve">
+    <value>问题</value>
+  </data>
+  <data name="About_Contributors" xml:space="preserve">
+    <value>贡献者</value>
+  </data>
+  <data name="About_Changelog" xml:space="preserve">
+    <value>更新日志</value>
+  </data>
+  <data name="About_PrivacyPolicy" xml:space="preserve">
+    <value>隐私政策</value>
+  </data>
+  <data name="About_Donate" xml:space="preserve">
+    <value>捐赠</value>
+  </data>
+  <data name="About_Social" xml:space="preserve">
+    <value>社交</value>
+  </data>
+  <data name="About_X" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="About_Discord" xml:space="preserve">
+    <value>Discord</value>
+  </data>
+  <data name="About_Reddit" xml:space="preserve">
+    <value>Reddit</value>
+  </data>
+  <data name="About_LoadedAssembliesDescription" xml:space="preserve">
+    <value>已加载的程序集来自当前运行时，以便用户确认内存中的确切版本，包括 Avalonia 等核心依赖项。</value>
+  </data>
+  <data name="Destination_Categories" xml:space="preserve">
+    <value>分类</value>
+  </data>
+  <data name="Destination_ImportShareXConfig" xml:space="preserve">
+    <value>导入 ShareX 配置</value>
+  </data>
+  <data name="Destination_ImportShareXConfigToolTip" xml:space="preserve">
+    <value>导入旧版 ShareX UploadersConfig.json，并将自定义上传器作为 .sxcu 文件导出到 Plugins</value>
+  </data>
+  <data name="Destination_PluginsFolder" xml:space="preserve">
+    <value>插件文件夹</value>
+  </data>
+  <data name="Destination_OpenPluginsFolderToolTip" xml:space="preserve">
+    <value>打开插件文件夹</value>
+  </data>
+  <data name="Destination_InstallPlugin" xml:space="preserve">
+    <value>安装插件</value>
+  </data>
+  <data name="Destination_InstallPluginToolTip" xml:space="preserve">
+    <value>安装社区插件或导入本地 .xsdp 包</value>
+  </data>
+  <data name="Destination_AddCustomUploader" xml:space="preserve">
+    <value>添加自定义上传器</value>
+  </data>
+  <data name="Destination_AddCustomUploaderToolTip" xml:space="preserve">
+    <value>创建新的自定义上传器 (.sxcu)</value>
+  </data>
+  <data name="Destination_AddFromCatalog" xml:space="preserve">
+    <value>从目录添加</value>
+  </data>
+  <data name="Destination_SetAsDefault" xml:space="preserve">
+    <value>设为默认</value>
+  </data>
+  <data name="Destination_Duplicate" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="Destination_ExportXsdc" xml:space="preserve">
+    <value>导出 .xsdc</value>
+  </data>
+  <data name="Destination_Details" xml:space="preserve">
+    <value>详细信息</value>
+  </data>
+  <data name="Destination_FixInstructions" xml:space="preserve">
+    <value>修复说明</value>
+  </data>
+  <data name="Destination_CleanDuplicates" xml:space="preserve">
+    <value>清理重复项</value>
+  </data>
+  <data name="Destination_OpenFolder" xml:space="preserve">
+    <value>打开文件夹</value>
+  </data>
+  <data name="Destination_Identity" xml:space="preserve">
+    <value>标识</value>
+  </data>
+  <data name="Destination_Name" xml:space="preserve">
+    <value>名称：</value>
+  </data>
+  <data name="Destination_DisplayName" xml:space="preserve">
+    <value>显示名称</value>
+  </data>
+  <data name="Destination_InstanceId" xml:space="preserve">
+    <value>实例 ID：</value>
+  </data>
+  <data name="Destination_DefinitionBinding" xml:space="preserve">
+    <value>定义绑定</value>
+  </data>
+  <data name="Destination_DefinitionFile" xml:space="preserve">
+    <value>定义文件：</value>
+  </data>
+  <data name="Destination_DefinitionFilePlaceholder" xml:space="preserve">
+    <value>此实例无法映射回 .sxcu 源文件。</value>
+  </data>
+  <data name="Destination_BoundInstanceIds" xml:space="preserve">
+    <value>绑定的实例 ID：</value>
+  </data>
+  <data name="Destination_BoundInstanceIdsToolTip" xml:space="preserve">
+    <value>在可用时读取 XerahS.instanceIds，否则回退到当前实例绑定。</value>
+  </data>
+  <data name="Destination_SaveDefinitionToPlugins" xml:space="preserve">
+    <value>将定义保存到 Plugins</value>
+  </data>
+  <data name="Destination_SaveAsNewSxcu" xml:space="preserve">
+    <value>另存为新的 .sxcu</value>
+  </data>
+  <data name="Destination_FileTypeConfiguration" xml:space="preserve">
+    <value>文件类型配置</value>
+  </data>
+  <data name="Destination_ProviderSettings" xml:space="preserve">
+    <value>提供程序设置</value>
+  </data>
+  <data name="Destination_ExportConfigToolTip" xml:space="preserve">
+    <value>导出此目标配置以用于移动端导入</value>
+  </data>
+  <data name="Destination_MediaExplorer" xml:space="preserve">
+    <value>媒体资源管理器</value>
+  </data>
+  <data name="Destination_MediaExplorerDescription" xml:space="preserve">
+    <value>浏览和管理存储在此提供程序中的文件。</value>
+  </data>
+  <data name="Destination_BrowseFiles" xml:space="preserve">
+    <value>浏览文件</value>
+  </data>
+  <data name="Destination_BrowseFilesToolTip" xml:space="preserve">
+    <value>打开媒体资源管理器以浏览远程文件（需要有效凭据）</value>
+  </data>
+  <data name="Destination_ConfigureCredentialsNote" xml:space="preserve">
+    <value>在上方配置凭据以启用浏览。</value>
+  </data>
+  <data name="Destination_NoInstanceSelected" xml:space="preserve">
+    <value>未选择实例</value>
+  </data>
+  <data name="Destination_NoInstanceSelectedDescription" xml:space="preserve">
+    <value>选择一个实例或添加新实例以进行配置。</value>
+  </data>
+  <data name="AfterCapture_Title" xml:space="preserve">
+    <value>捕获后任务</value>
+  </data>
+  <data name="AfterCapture_Header" xml:space="preserve">
+    <value>捕获后任务</value>
+  </data>
+  <data name="AfterCapture_Description" xml:space="preserve">
+    <value>选择在继续之前对图像执行的操作。</value>
+  </data>
+  <data name="AfterCapture_Preview" xml:space="preserve">
+    <value>预览</value>
+  </data>
+  <data name="AfterCapture_PreviewDescription" xml:space="preserve">
+    <value>在应用任务之前检查捕获结果。</value>
+  </data>
+  <data name="AfterCapture_AfterCapture" xml:space="preserve">
+    <value>捕获后</value>
+  </data>
+  <data name="AfterCapture_AfterCaptureDescription" xml:space="preserve">
+    <value>捕获后立即运行这些操作。</value>
+  </data>
+  <data name="AfterCapture_SaveImageToFile" xml:space="preserve">
+    <value>将图像保存到文件</value>
+  </data>
+  <data name="AfterCapture_CopyImageToClipboard" xml:space="preserve">
+    <value>将图像复制到剪贴板</value>
+  </data>
+  <data name="AfterCapture_CopyFilePathToClipboard" xml:space="preserve">
+    <value>将文件路径复制到剪贴板</value>
+  </data>
+  <data name="AfterCapture_AnnotateMedia" xml:space="preserve">
+    <value>注释媒体</value>
+  </data>
+  <data name="AfterCapture_UploadImageToHost" xml:space="preserve">
+    <value>将图像上传到主机</value>
+  </data>
+  <data name="AfterCapture_CopyOcrTextToClipboard" xml:space="preserve">
+    <value>将 OCR 文本复制到剪贴板</value>
+  </data>
+  <data name="AfterCapture_HdrToneMapping" xml:space="preserve">
+    <value>HDR 色调映射：</value>
+  </data>
+  <data name="AfterCapture_AfterUpload" xml:space="preserve">
+    <value>上传后</value>
+  </data>
+  <data name="AfterCapture_AfterUploadDescription" xml:space="preserve">
+    <value>上传完成后选择后续操作。</value>
+  </data>
+  <data name="AfterCapture_ShowAfterUploadWindow" xml:space="preserve">
+    <value>上传后显示窗口</value>
+  </data>
+  <data name="AfterCapture_CopyURLToClipboard" xml:space="preserve">
+    <value>将 URL 复制到剪贴板</value>
+  </data>
+  <data name="AfterCapture_UseURLShortener" xml:space="preserve">
+    <value>使用 URL 缩短器</value>
+  </data>
+  <data name="AfterCapture_ShareURL" xml:space="preserve">
+    <value>分享 URL</value>
+  </data>
+  <data name="AfterCapture_FooterNote" xml:space="preserve">
+    <value>您可以稍后在任务设置中调整这些选项。</value>
+  </data>
+  <data name="AfterCapture_Continue" xml:space="preserve">
+    <value>继续</value>
+  </data>
+  <data name="AfterUpload_Title" xml:space="preserve">
+    <value>上传后</value>
+  </data>
+  <data name="AfterUpload_Header" xml:space="preserve">
+    <value>上传后</value>
+  </data>
+  <data name="AfterUpload_ClipboardFormats" xml:space="preserve">
+    <value>剪贴板格式</value>
+  </data>
+  <data name="AfterUpload_ClipboardFormatsDescription" xml:space="preserve">
+    <value>选择一种格式进行预览和复制。</value>
+  </data>
+  <data name="AfterUpload_SelectedFormat" xml:space="preserve">
+    <value>所选格式</value>
+  </data>
+  <data name="AfterUpload_Preview" xml:space="preserve">
+    <value>预览</value>
+  </data>
+  <data name="AfterUpload_PreviewDescription" xml:space="preserve">
+    <value>本地文件和可视化预览。</value>
+  </data>
+  <data name="AfterUpload_LocalFile" xml:space="preserve">
+    <value>本地文件</value>
+  </data>
+  <data name="AfterUpload_NoLocalFile" xml:space="preserve">
+    <value>此上传未创建本地文件。</value>
+  </data>
+  <data name="AfterUpload_CopyImage" xml:space="preserve">
+    <value>复制图像</value>
+  </data>
+  <data name="AfterUpload_CopyFormat" xml:space="preserve">
+    <value>复制格式</value>
+  </data>
+  <data name="AfterUpload_CopyErrors" xml:space="preserve">
+    <value>复制错误</value>
+  </data>
+  <data name="AfterUpload_OpenUrl" xml:space="preserve">
+    <value>打开 URL</value>
+  </data>
+  <data name="AfterUpload_OpenFile" xml:space="preserve">
+    <value>打开文件</value>
+  </data>
+  <data name="AfterUpload_OpenFolder" xml:space="preserve">
+    <value>打开文件夹</value>
+  </data>
+  <data name="AfterUpload_Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="AutoCapture_Title" xml:space="preserve">
+    <value>自动捕获</value>
+  </data>
+  <data name="AutoCapture_Region" xml:space="preserve">
+    <value>区域</value>
+  </data>
+  <data name="AutoCapture_CustomRegion" xml:space="preserve">
+    <value>自定义区域</value>
+  </data>
+  <data name="AutoCapture_SelectRegion" xml:space="preserve">
+    <value>选择区域...</value>
+  </data>
+  <data name="AutoCapture_Options" xml:space="preserve">
+    <value>选项</value>
+  </data>
+  <data name="AutoCapture_RepeatTime" xml:space="preserve">
+    <value>重复时间：</value>
+  </data>
+  <data name="AutoCapture_Seconds" xml:space="preserve">
+    <value>秒</value>
+  </data>
+  <data name="AutoCapture_MinimizeToTray" xml:space="preserve">
+    <value>捕获时最小化到托盘</value>
+  </data>
+  <data name="AutoCapture_WaitForUploads" xml:space="preserve">
+    <value>等待上传完成</value>
+  </data>
+  <data name="ImageAnalyzer_Title" xml:space="preserve">
+    <value>图像分析</value>
+  </data>
+  <data name="ImageAnalyzer_PlaceholderSelectImage" xml:space="preserve">
+    <value>选择图像文件...</value>
+  </data>
+  <data name="ImageAnalyzer_Browse" xml:space="preserve">
+    <value>浏览...</value>
+  </data>
+  <data name="ImageAnalyzer_HeaderCategory" xml:space="preserve">
+    <value>类别</value>
+  </data>
+  <data name="ImageAnalyzer_HeaderProperty" xml:space="preserve">
+    <value>属性</value>
+  </data>
+  <data name="ImageAnalyzer_HeaderValue" xml:space="preserve">
+    <value>值</value>
+  </data>
+  <data name="ImageAnalyzer_CopyAll" xml:space="preserve">
+    <value>全部复制</value>
+  </data>
+  <data name="ImageAnalyzer_Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="ImageCombiner_Title" xml:space="preserve">
+    <value>图像合并</value>
+  </data>
+  <data name="ImageCombiner_Remove" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="ImageCombiner_Add" xml:space="preserve">
+    <value>添加...</value>
+  </data>
+  <data name="ImageCombiner_MoveUp" xml:space="preserve">
+    <value>上移</value>
+  </data>
+  <data name="ImageCombiner_MoveDown" xml:space="preserve">
+    <value>下移</value>
+  </data>
+  <data name="ImageCombiner_Clear" xml:space="preserve">
+    <value>清空</value>
+  </data>
+  <data name="ImageCombiner_OrientationLabel" xml:space="preserve">
+    <value>方向：</value>
+  </data>
+  <data name="ImageCombiner_AlignmentLabel" xml:space="preserve">
+    <value>对齐：</value>
+  </data>
+  <data name="ImageCombiner_SpacingLabel" xml:space="preserve">
+    <value>间距：</value>
+  </data>
+  <data name="ImageCombiner_FillBackground" xml:space="preserve">
+    <value>填充背景</value>
+  </data>
+  <data name="ImageCombiner_Combine" xml:space="preserve">
+    <value>合并</value>
+  </data>
+  <data name="ImageCombiner_Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="ImageEffects_Title" xml:space="preserve">
+    <value>添加图像效果</value>
+  </data>
+  <data name="ImageEffects_SelectEffect" xml:space="preserve">
+    <value>选择要添加的效果</value>
+  </data>
+  <data name="ImageEffects_Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="ImageSplitter_Title" xml:space="preserve">
+    <value>图像分割</value>
+  </data>
+  <data name="ImageSplitter_PlaceholderSelectImage" xml:space="preserve">
+    <value>选择图像文件...</value>
+  </data>
+  <data name="ImageSplitter_Browse" xml:space="preserve">
+    <value>浏览...</value>
+  </data>
+  <data name="ImageSplitter_ColumnsLabel" xml:space="preserve">
+    <value>列数：</value>
+  </data>
+  <data name="ImageSplitter_RowsLabel" xml:space="preserve">
+    <value>行数：</value>
+  </data>
+  <data name="ImageSplitter_OutputLabel" xml:space="preserve">
+    <value>输出：</value>
+  </data>
+  <data name="ImageSplitter_Split" xml:space="preserve">
+    <value>分割</value>
+  </data>
+  <data name="ImageSplitter_Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="ImageThumbnailer_Title" xml:space="preserve">
+    <value>图像缩略图</value>
+  </data>
+  <data name="ImageThumbnailer_Add" xml:space="preserve">
+    <value>添加...</value>
+  </data>
+  <data name="ImageThumbnailer_Remove" xml:space="preserve">
+    <value>移除</value>
+  </data>
+  <data name="ImageThumbnailer_Clear" xml:space="preserve">
+    <value>清空</value>
+  </data>
+  <data name="ImageThumbnailer_WidthLabel" xml:space="preserve">
+    <value>宽度：</value>
+  </data>
+  <data name="ImageThumbnailer_HeightLabel" xml:space="preserve">
+    <value>高度：</value>
+  </data>
+  <data name="ImageThumbnailer_QualityLabel" xml:space="preserve">
+    <value>质量：</value>
+  </data>
+  <data name="ImageThumbnailer_OutputLabel" xml:space="preserve">
+    <value>输出：</value>
+  </data>
+  <data name="ImageThumbnailer_Browse" xml:space="preserve">
+    <value>浏览...</value>
+  </data>
+  <data name="ImageThumbnailer_Generate" xml:space="preserve">
+    <value>生成</value>
+  </data>
+  <data name="ImageThumbnailer_Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="MonitorTest_Title" xml:space="preserve">
+    <value>显示器测试</value>
+  </data>
+  <data name="MonitorTest_ModeLabel" xml:space="preserve">
+    <value>模式：</value>
+  </data>
+  <data name="MonitorTest_Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="MonitorTest_CopyDiagnostics" xml:space="preserve">
+    <value>复制诊断信息</value>
+  </data>
+  <data name="MonitorTest_Export" xml:space="preserve">
+    <value>导出...</value>
+  </data>
+  <data name="MonitorTest_ConnectedMonitors" xml:space="preserve">
+    <value>已连接的显示器</value>
+  </data>
+  <data name="MonitorTest_Primary" xml:space="preserve">
+    <value>主显示器</value>
+  </data>
+  <data name="MonitorTest_Layout" xml:space="preserve">
+    <value>显示器布局</value>
+  </data>
+  <data name="MonitorTest_Resolution" xml:space="preserve">
+    <value>分辨率：</value>
+  </data>
+  <data name="MonitorTest_Position" xml:space="preserve">
+    <value>位置：(</value>
+  </data>
+  <data name="MonitorTest_Dpi" xml:space="preserve">
+    <value>DPI：</value>
+  </data>
+  <data name="MonitorTest_Scale" xml:space="preserve">
+    <value>× 缩放比例)</value>
+  </data>
+  <data name="Ocr_WindowTitle" xml:space="preserve">
+    <value>OCR - 文字识别</value>
+  </data>
+  <data name="Ocr_LanguageLabel" xml:space="preserve">
+    <value>语言：</value>
+  </data>
+  <data name="Ocr_ScaleLabel" xml:space="preserve">
+    <value>缩放：</value>
+  </data>
+  <data name="Ocr_SingleLine" xml:space="preserve">
+    <value>单行</value>
+  </data>
+  <data name="Ocr_ResultPlaceholder" xml:space="preserve">
+    <value>OCR 结果将显示在这里...</value>
+  </data>
+  <data name="Ocr_Processing" xml:space="preserve">
+    <value>正在处理...</value>
+  </data>
+  <data name="Ocr_SelectRegion" xml:space="preserve">
+    <value>选择区域</value>
+  </data>
+  <data name="Ocr_CopyAll" xml:space="preserve">
+    <value>全部复制</value>
+  </data>
+  <data name="PinnedImage_Title" xml:space="preserve">
+    <value>固定图像</value>
+  </data>
+  <data name="PinnedImage_CopyImage" xml:space="preserve">
+    <value>复制图像</value>
+  </data>
+  <data name="PinnedImage_ResetScale" xml:space="preserve">
+    <value>重置缩放</value>
+  </data>
+  <data name="PinnedImage_Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="PinnedImage_CloseAll" xml:space="preserve">
+    <value>全部关闭</value>
+  </data>
+  <data name="IndexFolder_Title" xml:space="preserve">
+    <value>索引文件夹</value>
+  </data>
+  <data name="IndexFolder_Folder" xml:space="preserve">
+    <value>文件夹</value>
+  </data>
+  <data name="IndexFolder_PlaceholderSelectFolder" xml:space="preserve">
+    <value>选择要索引的文件夹...</value>
+  </data>
+  <data name="IndexFolder_Browse" xml:space="preserve">
+    <value>浏览</value>
+  </data>
+  <data name="IndexFolder_OutputConfiguration" xml:space="preserve">
+    <value>输出配置</value>
+  </data>
+  <data name="IndexFolder_FormatLabel" xml:space="preserve">
+    <value>格式：</value>
+  </data>
+  <data name="IndexFolder_MaxDepthLabel" xml:space="preserve">
+    <value>最大深度：</value>
+  </data>
+  <data name="IndexFolder_FiltersMetadata" xml:space="preserve">
+    <value>过滤器和元数据</value>
+  </data>
+  <data name="IndexFolder_SkipHiddenFolders" xml:space="preserve">
+    <value>跳过隐藏文件夹</value>
+  </data>
+  <data name="IndexFolder_SkipHiddenFiles" xml:space="preserve">
+    <value>跳过隐藏文件</value>
+  </data>
+  <data name="IndexFolder_SkipFiles" xml:space="preserve">
+    <value>跳过文件（仅文件夹）</value>
+  </data>
+  <data name="IndexFolder_IgnoreEmptyFolders" xml:space="preserve">
+    <value>忽略空文件夹</value>
+  </data>
+  <data name="IndexFolder_IncludeSizeInfo" xml:space="preserve">
+    <value>包含大小信息</value>
+  </data>
+  <data name="IndexFolder_BinaryUnits" xml:space="preserve">
+    <value>使用二进制单位表示大小</value>
+  </data>
+  <data name="IndexFolder_AddFooter" xml:space="preserve">
+    <value>添加生成页脚</value>
+  </data>
+  <data name="IndexFolder_FileExtensionFilters" xml:space="preserve">
+    <value>文件扩展名过滤器</value>
+  </data>
+  <data name="IndexFolder_IncludeOnlyLabel" xml:space="preserve">
+    <value>仅包含（例如 cs、txt、md）：</value>
+  </data>
+  <data name="IndexFolder_IncludePlaceholder" xml:space="preserve">
+    <value>留空以包含所有文件...</value>
+  </data>
+  <data name="IndexFolder_ExcludeLabel" xml:space="preserve">
+    <value>排除（例如 pdb、obj、exe）：</value>
+  </data>
+  <data name="IndexFolder_ExcludePlaceholder" xml:space="preserve">
+    <value>留空以不排除任何内容...</value>
+  </data>
+  <data name="IndexFolder_TextFormatting" xml:space="preserve">
+    <value>文本格式</value>
+  </data>
+  <data name="IndexFolder_IndentationLabel" xml:space="preserve">
+    <value>缩进：</value>
+  </data>
+  <data name="IndexFolder_AddEmptyLineAfterFolders" xml:space="preserve">
+    <value>在文件夹后添加空行</value>
+  </data>
+  <data name="IndexFolder_HtmlOptions" xml:space="preserve">
+    <value>HTML 选项</value>
+  </data>
+  <data name="IndexFolder_UseCustomCss" xml:space="preserve">
+    <value>使用自定义 CSS 文件</value>
+  </data>
+  <data name="IndexFolder_CssPathPlaceholder" xml:space="preserve">
+    <value>CSS 文件路径</value>
+  </data>
+  <data name="IndexFolder_DisplayPath" xml:space="preserve">
+    <value>显示子文件夹的路径</value>
+  </data>
+  <data name="IndexFolder_DisplayPathLimited" xml:space="preserve">
+    <value>将显示路径限制为根目录</value>
+  </data>
+  <data name="IndexFolder_XmlJsonOptions" xml:space="preserve">
+    <value>XML / JSON 选项</value>
+  </data>
+  <data name="IndexFolder_UseAttribute" xml:space="preserve">
+    <value>将信息写为属性（XML）</value>
+  </data>
+  <data name="IndexFolder_ParseableJson" xml:space="preserve">
+    <value>创建可解析的 JSON</value>
+  </data>
+  <data name="IndexFolder_PreviewActions" xml:space="preserve">
+    <value>预览和操作</value>
+  </data>
+  <data name="IndexFolder_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="IndexFolder_OpenInBrowser" xml:space="preserve">
+    <value>在浏览器中打开</value>
+  </data>
+  <data name="IndexFolder_Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="IndexFolder_SaveAs" xml:space="preserve">
+    <value>另存为</value>
+  </data>
+  <data name="IndexFolder_Upload" xml:space="preserve">
+    <value>上传</value>
+  </data>
+  <data name="PinToScreenStartup_Title" xml:space="preserve">
+    <value>固定到屏幕</value>
+  </data>
+  <data name="PinToScreenStartup_SelectSource" xml:space="preserve">
+    <value>选择要固定的图像来源：</value>
+  </data>
+  <data name="PinToScreenStartup_FromScreen" xml:space="preserve">
+    <value>从屏幕</value>
+  </data>
+  <data name="PinToScreenStartup_FromClipboard" xml:space="preserve">
+    <value>从剪贴板</value>
+  </data>
+  <data name="PinToScreenStartup_FromFile" xml:space="preserve">
+    <value>从文件</value>
+  </data>
+  <data name="PinToScreenStartup_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Assistant_OverlayTitle" xml:space="preserve">
+    <value>助手</value>
+  </data>
+  <data name="Assistant_OverlayCaption" xml:space="preserve">
+    <value>让 XerahS 查找、打开、OCR 识别、上传或复制截图路径。</value>
+  </data>
+  <data name="Assistant_OverlayDescription" xml:space="preserve">
+    <value>使用自然语言。Enter 运行请求，Esc 清除或关闭。</value>
+  </data>
+  <data name="Assistant_OverlaySecondaryDescription" xml:space="preserve">
+    <value>产生文本输出的命令会直接显示在状态行下方。</value>
+  </data>
+  <data name="Assistant_EscToClose" xml:space="preserve">
+    <value>按 Esc 关闭</value>
+  </data>
+  <data name="Assistant_PromptPlaceholder" xml:space="preserve">
+    <value>复制最近 5 个截图路径（用 ; 分隔）</value>
+  </data>
+  <data name="Assistant_Submit" xml:space="preserve">
+    <value>提交</value>
+  </data>
+  <data name="Assistant_ProcessedOutput" xml:space="preserve">
+    <value>处理后的输出</value>
+  </data>
+  <data name="Assistant_Results" xml:space="preserve">
+    <value>结果</value>
+  </data>
+  <data name="Assistant_ConfirmationRequired" xml:space="preserve">
+    <value>需要确认</value>
+  </data>
+  <data name="Assistant_Confirm" xml:space="preserve">
+    <value>确认</value>
+  </data>
+  <data name="Assistant_Suggestions" xml:space="preserve">
+    <value>建议</value>
+  </data>
+  <data name="Palette_Capture" xml:space="preserve">
+    <value>捕获</value>
+  </data>
+  <data name="Palette_SearchCaption" xml:space="preserve">
+    <value>搜索已配置的捕获工作流。按 Enter 运行选中的项目。</value>
+  </data>
+  <data name="Palette_SearchPlaceholder" xml:space="preserve">
+    <value>搜索捕获工作流</value>
+  </data>
+  <data name="ColorPicker_Subtitle" xml:space="preserve">
+    <value>选择颜色、编辑数值或从屏幕上取任意像素的颜色。</value>
+  </data>
+  <data name="ColorPicker_RecentColors" xml:space="preserve">
+    <value>最近的颜色</value>
+  </data>
+  <data name="ColorPicker_NoRecentColors" xml:space="preserve">
+    <value>暂无最近的颜色。</value>
+  </data>
+  <data name="ColorPicker_Palette" xml:space="preserve">
+    <value>调色板</value>
+  </data>
+  <data name="ColorPicker_Preview" xml:space="preserve">
+    <value>预览</value>
+  </data>
+  <data name="ColorPicker_Previous" xml:space="preserve">
+    <value>上一个</value>
+  </data>
+  <data name="ColorPicker_Current" xml:space="preserve">
+    <value>当前</value>
+  </data>
+  <data name="ColorPicker_PickFromScreen" xml:space="preserve">
+    <value>从屏幕取色</value>
+  </data>
+  <data name="ColorPicker_Values" xml:space="preserve">
+    <value>数值</value>
+  </data>
+  <data name="ColorPicker_Red" xml:space="preserve">
+    <value>R</value>
+  </data>
+  <data name="ColorPicker_Green" xml:space="preserve">
+    <value>G</value>
+  </data>
+  <data name="ColorPicker_Blue" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="ColorPicker_Hue" xml:space="preserve">
+    <value>H</value>
+  </data>
+  <data name="ColorPicker_Saturation" xml:space="preserve">
+    <value>S</value>
+  </data>
+  <data name="ColorPicker_Brightness" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="ColorPicker_Cyan" xml:space="preserve">
+    <value>C</value>
+  </data>
+  <data name="ColorPicker_Magenta" xml:space="preserve">
+    <value>M</value>
+  </data>
+  <data name="ColorPicker_Yellow" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="ColorPicker_Black" xml:space="preserve">
+    <value>K</value>
+  </data>
+  <data name="ColorPicker_Hex" xml:space="preserve">
+    <value>Hex</value>
+  </data>
+  <data name="ColorPicker_Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="ColorPicker_CopyHex" xml:space="preserve">
+    <value>复制 Hex</value>
+  </data>
+  <data name="ColorPicker_CopyRgb" xml:space="preserve">
+    <value>复制 RGB</value>
+  </data>
+  <data name="ColorPicker_CopyHsb" xml:space="preserve">
+    <value>复制 HSB</value>
+  </data>
+  <data name="ColorPicker_CopyCmyk" xml:space="preserve">
+    <value>复制 CMYK</value>
+  </data>
+  <data name="CustomUploader_EditorDescription" xml:space="preserve">
+    <value>配置基于 HTTP 的自定义上传器，用于图片、文件、文本或 URL 缩短。</value>
+  </data>
+  <data name="CustomUploader_Import" xml:space="preserve">
+    <value>导入...</value>
+  </data>
+  <data name="CustomUploader_Export" xml:space="preserve">
+    <value>导出...</value>
+  </data>
+  <data name="CustomUploader_Test" xml:space="preserve">
+    <value>测试</value>
+  </data>
+  <data name="CustomUploader_SaveToPlugins" xml:space="preserve">
+    <value>保存到插件</value>
+  </data>
+  <data name="CustomUploader_BasicInformation" xml:space="preserve">
+    <value>基本信息</value>
+  </data>
+  <data name="CustomUploader_NameLabel" xml:space="preserve">
+    <value>名称 *</value>
+  </data>
+  <data name="CustomUploader_NamePlaceholder" xml:space="preserve">
+    <value>我的自定义上传器</value>
+  </data>
+  <data name="CustomUploader_DestinationTypes" xml:space="preserve">
+    <value>目标类型 *</value>
+  </data>
+  <data name="CustomUploader_ImageUploader" xml:space="preserve">
+    <value>图片上传器</value>
+  </data>
+  <data name="CustomUploader_TextUploader" xml:space="preserve">
+    <value>文本上传器</value>
+  </data>
+  <data name="CustomUploader_FileUploader" xml:space="preserve">
+    <value>文件上传器</value>
+  </data>
+  <data name="CustomUploader_UrlShortener" xml:space="preserve">
+    <value>URL 缩短器</value>
+  </data>
+  <data name="CustomUploader_UrlSharing" xml:space="preserve">
+    <value>URL 分享</value>
+  </data>
+  <data name="CustomUploader_HttpRequest" xml:space="preserve">
+    <value>HTTP 请求</value>
+  </data>
+  <data name="CustomUploader_Method" xml:space="preserve">
+    <value>方法</value>
+  </data>
+  <data name="CustomUploader_RequestUrl" xml:space="preserve">
+    <value>请求 URL *</value>
+  </data>
+  <data name="CustomUploader_Headers" xml:space="preserve">
+    <value>请求头</value>
+  </data>
+  <data name="CustomUploader_Add" xml:space="preserve">
+    <value>+ 添加</value>
+  </data>
+  <data name="CustomUploader_Key" xml:space="preserve">
+    <value>键</value>
+  </data>
+  <data name="CustomUploader_Value" xml:space="preserve">
+    <value>值</value>
+  </data>
+  <data name="CustomUploader_Remove" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="CustomUploader_UrlParameters" xml:space="preserve">
+    <value>URL 参数</value>
+  </data>
+  <data name="CustomUploader_RequestBody" xml:space="preserve">
+    <value>请求正文</value>
+  </data>
+  <data name="CustomUploader_BodyType" xml:space="preserve">
+    <value>正文类型</value>
+  </data>
+  <data name="CustomUploader_FileFormName" xml:space="preserve">
+    <value>文件表单字段名</value>
+  </data>
+  <data name="CustomUploader_FileFormNamePlaceholder" xml:space="preserve">
+    <value>file</value>
+  </data>
+  <data name="CustomUploader_FormArguments" xml:space="preserve">
+    <value>表单参数</value>
+  </data>
+  <data name="CustomUploader_BodyData" xml:space="preserve">
+    <value>正文数据 (JSON/XML)</value>
+  </data>
+  <data name="CustomUploader_BodyDataPlaceholder" xml:space="preserve">
+    <value>示例：包含文件内容的 JSON 正文</value>
+  </data>
+  <data name="CustomUploader_ResponseParsing" xml:space="preserve">
+    <value>响应解析</value>
+  </data>
+  <data name="CustomUploader_UrlPattern" xml:space="preserve">
+    <value>URL 模式</value>
+  </data>
+  <data name="CustomUploader_ThumbnailUrl" xml:space="preserve">
+    <value>缩略图 URL</value>
+  </data>
+  <data name="CustomUploader_DeletionUrl" xml:space="preserve">
+    <value>删除 URL</value>
+  </data>
+  <data name="CustomUploader_ErrorMessage" xml:space="preserve">
+    <value>错误消息</value>
+  </data>
+  <data name="Debug_OpenLogsFolder" xml:space="preserve">
+    <value>打开日志文件夹</value>
+  </data>
+  <data name="Debug_OpenSettingsFolder" xml:space="preserve">
+    <value>打开设置文件夹</value>
+  </data>
+  <data name="Debug_Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="Debug_Clear" xml:space="preserve">
+    <value>清空</value>
+  </data>
+  <data name="Debug_Upload" xml:space="preserve">
+    <value>上传</value>
+  </data>
+  <data name="Debug_SecretStoreDiagnostics" xml:space="preserve">
+    <value>密钥存储诊断</value>
+  </data>
+  <data name="OpenImageChoice_AlreadyOpen" xml:space="preserve">
+    <value>已有图片处于打开状态</value>
+  </data>
+  <data name="OpenImageChoice_Prompt" xml:space="preserve">
+    <value>您要替换当前图片，还是将新图片作为形状添加？</value>
+  </data>
+  <data name="OpenImageChoice_AddAsShape" xml:space="preserve">
+    <value>作为形状添加</value>
+  </data>
+  <data name="OpenImageChoice_ReplaceImage" xml:space="preserve">
+    <value>替换图片</value>
+  </data>
+  <data name="FFmpeg_OptionsTitle" xml:space="preserve">
+    <value>FFmpeg 录制选项</value>
+  </data>
+  <data name="FFmpeg_OptionsDescription" xml:space="preserve">
+    <value>配置每个工作流的 FFmpeg 行为，包括用于基于 FFmpeg 的录制和 GIF 转换的可执行文件覆盖路径。</value>
+  </data>
+  <data name="FFmpeg_OverridePath" xml:space="preserve">
+    <value>覆盖 FFmpeg 可执行文件路径</value>
+  </data>
+  <data name="FFmpeg_ExecutablePath" xml:space="preserve">
+    <value>可执行文件路径：</value>
+  </data>
+  <data name="FFmpeg_VideoSource" xml:space="preserve">
+    <value>视频源：</value>
+  </data>
+  <data name="FFmpeg_AudioSource" xml:space="preserve">
+    <value>音频源：</value>
+  </data>
+  <data name="FFmpeg_VideoCodec" xml:space="preserve">
+    <value>视频编码器：</value>
+  </data>
+  <data name="FFmpeg_AudioCodec" xml:space="preserve">
+    <value>音频编码器：</value>
+  </data>
+  <data name="FFmpeg_ExtraArgs" xml:space="preserve">
+    <value>额外参数：</value>
+  </data>
+  <data name="FFmpeg_ExtraArgsPlaceholder" xml:space="preserve">
+    <value>额外的 ffmpeg 参数</value>
+  </data>
+  <data name="FFmpeg_UseCustomFullCommand" xml:space="preserve">
+    <value>使用自定义完整命令</value>
+  </data>
+  <data name="FFmpeg_CustomCommandPlaceholder" xml:space="preserve">
+    <value>覆盖时使用的完整 ffmpeg 命令</value>
+  </data>
+  <data name="FFmpeg_Video" xml:space="preserve">
+    <value>视频</value>
+  </data>
+  <data name="FFmpeg_X264Preset" xml:space="preserve">
+    <value>x264 预设：</value>
+  </data>
+  <data name="FFmpeg_X264Crf" xml:space="preserve">
+    <value>x264 CRF：</value>
+  </data>
+  <data name="FFmpeg_X264Bitrate" xml:space="preserve">
+    <value>x264 码率 (kbps)：</value>
+  </data>
+  <data name="FFmpeg_UseBitrateInsteadOfCrf" xml:space="preserve">
+    <value>使用码率而非 CRF</value>
+  </data>
+  <data name="FFmpeg_VPxBitrate" xml:space="preserve">
+    <value>VPx 码率 (kbps)：</value>
+  </data>
+  <data name="FFmpeg_XvidQScale" xml:space="preserve">
+    <value>XviD QScale：</value>
+  </data>
+  <data name="FFmpeg_NvencPreset" xml:space="preserve">
+    <value>NVENC 预设：</value>
+  </data>
+  <data name="FFmpeg_NvencTune" xml:space="preserve">
+    <value>NVENC 调优：</value>
+  </data>
+  <data name="FFmpeg_NvencBitrate" xml:space="preserve">
+    <value>NVENC 码率 (kbps)：</value>
+  </data>
+  <data name="FFmpeg_GifPaletteStats" xml:space="preserve">
+    <value>GIF 调色板统计：</value>
+  </data>
+  <data name="FFmpeg_GifDither" xml:space="preserve">
+    <value>GIF 抖动：</value>
+  </data>
+  <data name="FFmpeg_GifBayerScale" xml:space="preserve">
+    <value>GIF Bayer 缩放：</value>
+  </data>
+  <data name="FFmpeg_AmfUsage" xml:space="preserve">
+    <value>AMF 用途：</value>
+  </data>
+  <data name="FFmpeg_AmfQuality" xml:space="preserve">
+    <value>AMF 质量：</value>
+  </data>
+  <data name="FFmpeg_AmfBitrate" xml:space="preserve">
+    <value>AMF 码率 (kbps)：</value>
+  </data>
+  <data name="FFmpeg_QsvPreset" xml:space="preserve">
+    <value>QSV 预设：</value>
+  </data>
+  <data name="FFmpeg_QsvBitrate" xml:space="preserve">
+    <value>QSV 码率 (kbps)：</value>
+  </data>
+  <data name="FFmpeg_Audio" xml:space="preserve">
+    <value>音频</value>
+  </data>
+  <data name="FFmpeg_AacBitrate" xml:space="preserve">
+    <value>AAC 码率 (kbps)：</value>
+  </data>
+  <data name="FFmpeg_OpusBitrate" xml:space="preserve">
+    <value>Opus 码率 (kbps)：</value>
+  </data>
+  <data name="FFmpeg_VorbisQScale" xml:space="preserve">
+    <value>Vorbis QScale：</value>
+  </data>
+  <data name="FFmpeg_Mp3QScale" xml:space="preserve">
+    <value>MP3 QScale：</value>
+  </data>
+  <data name="HashCheck_Title" xml:space="preserve">
+    <value>哈希校验</value>
+  </data>
+  <data name="HashCheck_SelectFilePlaceholder" xml:space="preserve">
+    <value>选择文件或拖放到此处...</value>
+  </data>
+  <data name="HashCheck_CompareTwoFiles" xml:space="preserve">
+    <value>比较两个文件</value>
+  </data>
+  <data name="HashCheck_SelectSecondFilePlaceholder" xml:space="preserve">
+    <value>选择第二个文件...</value>
+  </data>
+  <data name="HashCheck_HashType" xml:space="preserve">
+    <value>哈希类型：</value>
+  </data>
+  <data name="HashCheck_Result" xml:space="preserve">
+    <value>结果：</value>
+  </data>
+  <data name="HashCheck_Target" xml:space="preserve">
+    <value>目标：</value>
+  </data>
+  <data name="HashCheck_TargetPlaceholder" xml:space="preserve">
+    <value>在此粘贴期望的哈希值以进行校验...</value>
+  </data>
+  <data name="HashCheck_Check" xml:space="preserve">
+    <value>校验</value>
+  </data>
+  <data name="HashCheck_Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="HotkeySettings_Title" xml:space="preserve">
+    <value>快捷键设置</value>
+  </data>
+  <data name="HotkeySettings_GlobalHotkeyDelivery" xml:space="preserve">
+    <value>全局快捷键分发</value>
+  </data>
+  <data name="HotkeySettings_Add" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="HotkeySettings_Remove" xml:space="preserve">
+    <value>移除</value>
+  </data>
+  <data name="HotkeySettings_Duplicate" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="HotkeySettings_MoveUp" xml:space="preserve">
+    <value>上移</value>
+  </data>
+  <data name="HotkeySettings_MoveDown" xml:space="preserve">
+    <value>下移</value>
+  </data>
+  <data name="HotkeySettings_Reset" xml:space="preserve">
+    <value>重置</value>
+  </data>
+  <data name="HotkeySettings_ViewDebugInfo" xml:space="preserve">
+    <value>查看调试信息</value>
+  </data>
+  <data name="HotkeySettings_DebugLog" xml:space="preserve">
+    <value>调试日志</value>
+  </data>
+  <data name="TaskSettings_Capture" xml:space="preserve">
+    <value>捕获</value>
+  </data>
+  <data name="TaskSettings_File" xml:space="preserve">
+    <value>文件</value>
+  </data>
+  <data name="TaskSettings_Upload" xml:space="preserve">
+    <value>上传</value>
+  </data>
+  <data name="TaskSettings_Notifications" xml:space="preserve">
+    <value>通知</value>
+  </data>
+  <data name="TaskSettings_UseModernCapture" xml:space="preserve">
+    <value>使用现代屏幕捕获 (Direct3D11)</value>
+  </data>
+  <data name="TaskSettings_PreferredLinuxRegionSelector" xml:space="preserve">
+    <value>首选 Linux 区域选择器：</value>
+  </data>
+  <data name="TaskSettings_LinuxRegionSelectorNote" xml:space="preserve">
+    <value>自动模式保留当前安全的 Linux 回退行为，仅在需要时优先使用特定的原生选择器。</value>
+  </data>
+  <data name="TaskSettings_PreferredMacOSRegionSelector" xml:space="preserve">
+    <value>首选 macOS 区域选择器：</value>
+  </data>
+  <data name="TaskSettings_MacOSRegionSelectorNote" xml:space="preserve">
+    <value>自动模式遵循应用设置。在此选择 XerahS 叠加层或 macOS 原生十字线以仅覆盖此工作流。</value>
+  </data>
+  <data name="TaskSettings_ShowCursor" xml:space="preserve">
+    <value>在截图中显示光标</value>
+  </data>
+  <data name="TaskSettings_ScreenshotDelay" xml:space="preserve">
+    <value>截图延迟：</value>
+  </data>
+  <data name="TaskSettings_WindowTitle" xml:space="preserve">
+    <value>窗口标题：</value>
+  </data>
+  <data name="TaskSettings_WindowTitlePlaceholder" xml:space="preserve">
+    <value>要捕获的窗口标题（CustomWindow 任务）</value>
+  </data>
+  <data name="TaskSettings_CaptureTransparency" xml:space="preserve">
+    <value>捕获透明区域</value>
+  </data>
+  <data name="TaskSettings_CaptureShadow" xml:space="preserve">
+    <value>捕获窗口阴影</value>
+  </data>
+  <data name="TaskSettings_CaptureClientArea" xml:space="preserve">
+    <value>捕获客户区（移除窗口边框）</value>
+  </data>
+  <data name="TaskSettings_AutoHideTaskbar" xml:space="preserve">
+    <value>捕获时自动隐藏任务栏</value>
+  </data>
+  <data name="TaskSettings_AfterCaptureDescription" xml:space="preserve">
+    <value>选择捕获后自动执行的操作</value>
+  </data>
+  <data name="TaskSettings_ApplyImageEffects" xml:space="preserve">
+    <value>应用图片效果</value>
+  </data>
+  <data name="TaskSettings_ShowAfterCaptureWindow" xml:space="preserve">
+    <value>捕获后显示窗口</value>
+  </data>
+  <data name="TaskSettings_OcrTextRecognition" xml:space="preserve">
+    <value>OCR 文本识别</value>
+  </data>
+  <data name="TaskSettings_IndexFolder" xml:space="preserve">
+    <value>索引文件夹</value>
+  </data>
+  <data name="TaskSettings_Folder" xml:space="preserve">
+    <value>文件夹：</value>
+  </data>
+  <data name="TaskSettings_FolderToIndex" xml:space="preserve">
+    <value>要索引的文件夹</value>
+  </data>
+  <data name="TaskSettings_Output" xml:space="preserve">
+    <value>输出：</value>
+  </data>
+  <data name="TaskSettings_MaxDepth" xml:space="preserve">
+    <value>最大深度：</value>
+  </data>
+  <data name="TaskSettings_SkipFiles" xml:space="preserve">
+    <value>跳过文件</value>
+  </data>
+  <data name="TaskSettings_ShowSizeInfo" xml:space="preserve">
+    <value>显示大小信息</value>
+  </data>
+  <data name="TaskSettings_AddFooter" xml:space="preserve">
+    <value>添加页脚</value>
+  </data>
+  <data name="TaskSettings_Indentation" xml:space="preserve">
+    <value>缩进：</value>
+  </data>
+  <data name="TaskSettings_HtmlOptions" xml:space="preserve">
+    <value>HTML 选项</value>
+  </data>
+  <data name="TaskSettings_CssPath" xml:space="preserve">
+    <value>CSS 路径：</value>
+  </data>
+  <data name="TaskSettings_LimitDisplayPath" xml:space="preserve">
+    <value>将显示路径限制为根文件夹</value>
+  </data>
+  <data name="TaskSettings_XmlJsonOptions" xml:space="preserve">
+    <value>XML / JSON 选项</value>
+  </data>
+  <data name="TaskSettings_WriteFileInfoAsAttribute" xml:space="preserve">
+    <value>将文件信息写为属性 (XML)</value>
+  </data>
+  <data name="TaskSettings_FileNaming" xml:space="preserve">
+    <value>文件命名</value>
+  </data>
+  <data name="TaskSettings_NamePattern" xml:space="preserve">
+    <value>名称模式：</value>
+  </data>
+  <data name="TaskSettings_ActiveWindowNamePattern" xml:space="preserve">
+    <value>活动窗口名称模式：</value>
+  </data>
+  <data name="TaskSettings_UseNamePatternForFileUploaders" xml:space="preserve">
+    <value>对文件上传器使用名称模式</value>
+  </data>
+  <data name="TaskSettings_ReplaceProblematicCharacters" xml:space="preserve">
+    <value>替换可能有问题的字符</value>
+  </data>
+  <data name="TaskSettings_PerformRegexReplace" xml:space="preserve">
+    <value>对 URL 执行正则替换</value>
+  </data>
+  <data name="TaskSettings_RegexPattern" xml:space="preserve">
+    <value>正则模式：</value>
+  </data>
+  <data name="TaskSettings_Replacement" xml:space="preserve">
+    <value>替换为：</value>
+  </data>
+  <data name="TaskSettings_Destinations" xml:space="preserve">
+    <value>目标</value>
+  </data>
+  <data name="TaskSettings_SelectDestination" xml:space="preserve">
+    <value>选择此任务的目标：</value>
+  </data>
+  <data name="TaskSettings_DestinationToolTip" xml:space="preserve">
+    <value>自动模式会按顺序尝试您配置的上传器，直到一个成功。其他目标仅上传到该上传器（请在目标设置中配置）。有关图片上传和回退行为的详细信息，请参阅文档。</value>
+  </data>
+  <data name="TaskSettings_ClipboardUpload" xml:space="preserve">
+    <value>剪贴板上传</value>
+  </data>
+  <data name="TaskSettings_UploadUrlContents" xml:space="preserve">
+    <value>上传 URL 内容</value>
+  </data>
+  <data name="TaskSettings_ShortenUrl" xml:space="preserve">
+    <value>缩短 URL</value>
+  </data>
+  <data name="TaskSettings_AfterUploadDescription" xml:space="preserve">
+    <value>选择上传后自动执行的操作</value>
+  </data>
+  <data name="TaskSettings_PlaySoundAfterCapture" xml:space="preserve">
+    <value>捕获后播放声音</value>
+  </data>
+  <data name="TaskSettings_PlaySoundAfterUpload" xml:space="preserve">
+    <value>上传后播放声音</value>
+  </data>
+  <data name="TaskSettings_PlaySoundAfterAction" xml:space="preserve">
+    <value>操作后播放声音</value>
+  </data>
+  <data name="TaskSettings_IncludeToastNotification" xml:space="preserve">
+    <value>包含弹窗通知</value>
+  </data>
+  <data name="TaskSettings_Duration" xml:space="preserve">
+    <value>持续时间：</value>
+  </data>
+  <data name="TaskSettings_FadeDuration" xml:space="preserve">
+    <value>淡出时长：</value>
+  </data>
+  <data name="TaskSettings_Placement" xml:space="preserve">
+    <value>位置：</value>
+  </data>
+  <data name="TaskSettings_Size" xml:space="preserve">
+    <value>大小：</value>
+  </data>
+  <data name="TaskSettings_DimensionSeparator" xml:space="preserve">
+    <value>×</value>
+  </data>
+  <data name="TaskSettings_AutoHideToast" xml:space="preserve">
+    <value>自动隐藏弹窗通知</value>
+  </data>
+  <data name="TaskSettings_LeftClick" xml:space="preserve">
+    <value>左键点击：</value>
+  </data>
+  <data name="TaskSettings_MiddleClick" xml:space="preserve">
+    <value>中键点击：</value>
+  </data>
+  <data name="TaskSettings_RightClick" xml:space="preserve">
+    <value>右键点击：</value>
+  </data>
+  <data name="TaskSettings_Sound" xml:space="preserve">
+    <value>声音</value>
+  </data>
+  <data name="TaskSettings_UseCustomCaptureSound" xml:space="preserve">
+    <value>使用自定义捕获声音</value>
+  </data>
+  <data name="TaskSettings_Path" xml:space="preserve">
+    <value>路径：</value>
+  </data>
+  <data name="TaskSettings_AdvancedProperties" xml:space="preserve">
+    <value>高级属性</value>
+  </data>
+  <data name="TaskSettings_ScreenRecorder" xml:space="preserve">
+    <value>屏幕录制</value>
+  </data>
+  <data name="TaskSettings_Fps" xml:space="preserve">
+    <value>FPS：</value>
+  </data>
+  <data name="TaskSettings_SecondsDisable" xml:space="preserve">
+    <value>秒（0 表示禁用）</value>
+  </data>
+  <data name="TaskSettings_StartDelay" xml:space="preserve">
+    <value>开始延迟：</value>
+  </data>
+  <data name="TaskSettings_RecordingIntent" xml:space="preserve">
+    <value>录制意图：</value>
+  </data>
+  <data name="TaskSettings_VideoCodec" xml:space="preserve">
+    <value>视频编码器：</value>
+  </data>
+  <data name="TaskSettings_PreferredLinuxRecordingBackend" xml:space="preserve">
+    <value>首选 Linux 录制后端：</value>
+  </data>
+  <data name="TaskSettings_FfmpegTools" xml:space="preserve">
+    <value>FFmpeg 工具</value>
+  </data>
+  <data name="TaskSettings_FfmpegToolsDescription" xml:space="preserve">
+    <value>为每个工作流配置用于录制和 GIF 转换的 FFmpeg 选项，包括自定义 FFmpeg 二进制文件的覆盖路径。</value>
+  </data>
+  <data name="TaskSettings_DownloadFfmpeg" xml:space="preserve">
+    <value>下载 FFmpeg...</value>
+  </data>
+  <data name="TaskSettings_ConfigureFfmpeg" xml:space="preserve">
+    <value>配置 FFmpeg / 覆盖路径...</value>
+  </data>
+  <data name="TaskSettings_LinuxRecordingDiagnostics" xml:space="preserve">
+    <value>Linux 录制诊断</value>
+  </data>
+  <data name="TaskSettings_LinuxDiagnosticsDescription" xml:space="preserve">
+    <value>对 Wayland/X11 录制后端、门户接口和所需原生工具运行兼容性检查。</value>
+  </data>
+  <data name="TaskSettings_RunLinuxDiagnostics" xml:space="preserve">
+    <value>运行 Linux 录制诊断</value>
+  </data>
+  <data name="SendToPrompt_Title" xml:space="preserve">
+    <value>XerahS 应如何处理发送的文件？</value>
+  </data>
+  <data name="SendToPrompt_Description" xml:space="preserve">
+    <value>在 XerahS 开始处理此“发送到”批次之前选择操作。</value>
+  </data>
+  <data name="SendToPrompt_Selection" xml:space="preserve">
+    <value>选择</value>
+  </data>
+  <data name="SendToPrompt_Classification" xml:space="preserve">
+    <value>分类</value>
+  </data>
+  <data name="SendToPrompt_FolderPolicy" xml:space="preserve">
+    <value>文件夹策略</value>
+  </data>
+  <data name="SendToPrompt_ImageBatchPolicy" xml:space="preserve">
+    <value>图片批量策略</value>
+  </data>
+  <data name="SendToPrompt_Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="SendToPrompt_ActionsDescription" xml:space="preserve">
+    <value>主要操作始终可用。上下文特定操作仅在发送的项目支持时出现。</value>
+  </data>
+  <data name="SendToPrompt_CancelHint" xml:space="preserve">
+    <value>关闭对话框将取消此“发送到”请求。</value>
+  </data>
+  <data name="FileTypeSelector_HandleAllFileTypes" xml:space="preserve">
+    <value>处理此类别中的所有文件类型</value>
+  </data>
+  <data name="FileTypeSelector_SpecificFileTypes" xml:space="preserve">
+    <value>特定文件类型：</value>
+  </data>
+  <data name="FileTypeSelector_SelectFileTypes" xml:space="preserve">
+    <value>选择此实例应处理的文件类型</value>
+  </data>
+  <data name="FileTypeSelector_SelectedFileTypes" xml:space="preserve">
+    <value>已选择的文件类型：</value>
+  </data>
+  <data name="FileTypeSelector_CurrentScope" xml:space="preserve">
+    <value>当前文件类型范围：</value>
+  </data>
+  <data name="HotkeySelection_Nav" xml:space="preserve">
+    <value>导航</value>
+  </data>
+  <data name="HotkeySelection_Tray" xml:space="preserve">
+    <value>托盘</value>
+  </data>
+  <data name="App_AboutXerahS" xml:space="preserve">
+    <value>关于 XerahS</value>
+  </data>
+  <data name="App_Preferences" xml:space="preserve">
+    <value>偏好设置...</value>
+  </data>
+  <data name="App_Edit" xml:space="preserve">
+    <value>编辑...</value>
+  </data>
+  <data name="App_EditAnnotations" xml:space="preserve">
+    <value>编辑标注</value>
+  </data>
+  <data name="App_OpenFile" xml:space="preserve">
+    <value>打开文件</value>
+  </data>
+  <data name="App_Upload" xml:space="preserve">
+    <value>上传</value>
+  </data>
+  <data name="App_ShowInExplorer" xml:space="preserve">
+    <value>在资源管理器中显示</value>
+  </data>
+  <data name="App_CopyPath" xml:space="preserve">
+    <value>复制路径</value>
+  </data>
+  <data name="App_CopyUrl" xml:space="preserve">
+    <value>复制 URL</value>
+  </data>
+  <data name="App_CopyMarkdownImage" xml:space="preserve">
+    <value>复制 Markdown 图片</value>
+  </data>
+  <data name="App_CopyImageToClipboard" xml:space="preserve">
+    <value>复制图片到剪贴板</value>
+  </data>
+  <data name="App_CopyErrors" xml:space="preserve">
+    <value>复制错误</value>
+  </data>
+  <data name="App_OpenUrl" xml:space="preserve">
+    <value>打开 URL</value>
+  </data>
+  <data name="App_Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Onboarding_WelcomeTitle" xml:space="preserve">
+    <value>欢迎使用 XerahS</value>
+  </data>
+  <data name="Onboarding_WelcomeSubtitlePeriod" xml:space="preserve">
+    <value>只需几步即可快速开始。</value>
+  </data>
+  <data name="Onboarding_WelcomeSubtitle" xml:space="preserve">
+    <value>只需几步即可快速开始</value>
+  </data>
+  <data name="Onboarding_WelcomeWalkthrough" xml:space="preserve">
+    <value>我们将引导您完成以下设置：</value>
+  </data>
+  <data name="Onboarding_WelcomeBulletSave" xml:space="preserve">
+    <value>• 截图保存位置</value>
+  </data>
+  <data name="Onboarding_WelcomeBulletHotkeys" xml:space="preserve">
+    <value>• 截图快捷键</value>
+  </data>
+  <data name="Onboarding_WelcomeBulletUpload" xml:space="preserve">
+    <value>• 上传目标</value>
+  </data>
+  <data name="Onboarding_WelcomeChangeLater" xml:space="preserve">
+    <value>您可以稍后在设置中更改这些选项。</value>
+  </data>
+  <data name="Onboarding_FolderPath" xml:space="preserve">
+    <value>文件夹路径</value>
+  </data>
+  <data name="Onboarding_SelectFolder" xml:space="preserve">
+    <value>选择文件夹...</value>
+  </data>
+  <data name="Onboarding_Preview" xml:space="preserve">
+    <value>预览：</value>
+  </data>
+  <data name="Onboarding_CreateDateSubfolders" xml:space="preserve">
+    <value>按日期创建子文件夹</value>
+  </data>
+  <data name="Onboarding_PrimaryCaptureHotkey" xml:space="preserve">
+    <value>主要截图快捷键</value>
+  </data>
+  <data name="Onboarding_HotkeyInstructions" xml:space="preserve">
+    <value>点击快捷键按钮并按下您想要的组合键。按 Escape 取消。</value>
+  </data>
+  <data name="Onboarding_AdditionalHotkeys" xml:space="preserve">
+    <value>其他快捷键</value>
+  </data>
+  <data name="Onboarding_TestHotkey" xml:space="preserve">
+    <value>测试快捷键</value>
+  </data>
+  <data name="Onboarding_UploadDestination" xml:space="preserve">
+    <value>上传目标</value>
+  </data>
+  <data name="Onboarding_Config" xml:space="preserve">
+    <value>配置...</value>
+  </data>
+  <data name="Onboarding_TestConnection" xml:space="preserve">
+    <value>测试连接</value>
+  </data>
+  <data name="Onboarding_Ok" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="Onboarding_SetupComplete" xml:space="preserve">
+    <value>设置完成</value>
+  </data>
+  <data name="Onboarding_ShowTipsOnStartup" xml:space="preserve">
+    <value>启动时显示提示</value>
+  </data>
+  <data name="Onboarding_TakeFirstScreenshot" xml:space="preserve">
+    <value>截取第一张截图</value>
+  </data>
+  <data name="Onboarding_OpenSettings" xml:space="preserve">
+    <value>打开设置</value>
+  </data>
+  <data name="Onboarding_SkipStep" xml:space="preserve">
+    <value>跳过此步骤</value>
+  </data>
+  <data name="Onboarding_Back" xml:space="preserve">
+    <value>上一步</value>
+  </data>
+  <data name="Onboarding_SkipAll" xml:space="preserve">
+    <value>全部跳过</value>
+  </data>
+  <data name="Onboarding_Clear" xml:space="preserve">
+    <value>清除</value>
+  </data>
+  <data name="Onboarding_ClickToRecordHotkey" xml:space="preserve">
+    <value>点击以录制快捷键...</value>
+  </data>
+  <data name="Onboarding_ClearHotkey" xml:space="preserve">
+    <value>清除快捷键</value>
+  </data>
+  <data name="Onboarding_CaptureHotkeyLabel" xml:space="preserve">
+    <value>截图快捷键：</value>
+  </data>
+  <data name="Onboarding_TestYourHotkey" xml:space="preserve">
+    <value>测试您的快捷键</value>
+  </data>
+  <data name="Onboarding_HotkeyConflict" xml:space="preserve">
+    <value>快捷键冲突</value>
+  </data>
+  <data name="Onboarding_SecondaryHotkeys" xml:space="preserve">
+    <value>次要快捷键（可选）</value>
+  </data>
+  <data name="Onboarding_OcrTitle" xml:space="preserve">
+    <value>文字识别 (OCR)</value>
+  </data>
+  <data name="Onboarding_OcrSubtitle" xml:space="preserve">
+    <value>选择用于提取文字的语言</value>
+  </data>
+  <data name="Onboarding_OcrDescription" xml:space="preserve">
+    <value>您可以使用快捷键 + T 从截图中提取文字</value>
+  </data>
+  <data name="Onboarding_OcrTotalSize" xml:space="preserve">
+    <value>总大小：</value>
+  </data>
+  <data name="Onboarding_OcrExceedsSize" xml:space="preserve">
+    <value>总大小超过 200 MB，请考虑取消选择某些语言</value>
+  </data>
+  <data name="Onboarding_OcrDownloadInBackground" xml:space="preserve">
+    <value>在后台下载</value>
+  </data>
+  <data name="Onboarding_SaveLocationTitle" xml:space="preserve">
+    <value>保存位置</value>
+  </data>
+  <data name="Onboarding_SaveLocationSubtitle" xml:space="preserve">
+    <value>截图应保存到哪里？</value>
+  </data>
+  <data name="Onboarding_ScreenshotsFolderLabel" xml:space="preserve">
+    <value>截图文件夹：</value>
+  </data>
+  <data name="Onboarding_CreateDateSubfoldersDetailed" xml:space="preserve">
+    <value>按年-月创建子文件夹（例如 2025-01）</value>
+  </data>
+  <data name="Onboarding_PathNotWritable" xml:space="preserve">
+    <value>此路径不可写</value>
+  </data>
+  <data name="Onboarding_UploadSubtitle" xml:space="preserve">
+    <value>截图默认应上传到哪里？</value>
+  </data>
+  <data name="Onboarding_UploadOnlyWhenChosen" xml:space="preserve">
+    <value>仅当您明确选择「上传」时，图片才会被上传</value>
+  </data>
+  <data name="Onboarding_CompleteTitle" xml:space="preserve">
+    <value>一切就绪！</value>
+  </data>
+  <data name="Onboarding_CompleteConfiguration" xml:space="preserve">
+    <value>您的配置</value>
+  </data>
+  <data name="Onboarding_CompleteNoSteps" xml:space="preserve">
+    <value>未配置任何步骤。</value>
+  </data>
+  <data name="Onboarding_CompleteTakeScreenshot" xml:space="preserve">
+    <value>截取您的第一张截图 →</value>
+  </data>
+  <data name="Onboarding_CompleteOpenSettings" xml:space="preserve">
+    <value>打开完整设置</value>
+  </data>
+  <data name="EditorToolbarItem_File" xml:space="preserve">
+    <value>文件</value>
+  </data>
+  <data name="EditorToolbarItem_Select" xml:space="preserve">
+    <value>选择</value>
+  </data>
+  <data name="EditorToolbarItem_Rectangle" xml:space="preserve">
+    <value>矩形</value>
+  </data>
+  <data name="EditorToolbarItem_Ellipse" xml:space="preserve">
+    <value>椭圆</value>
+  </data>
+  <data name="EditorToolbarItem_Line" xml:space="preserve">
+    <value>线条</value>
+  </data>
+  <data name="EditorToolbarItem_Arrow" xml:space="preserve">
+    <value>箭头</value>
+  </data>
+  <data name="EditorToolbarItem_Freehand" xml:space="preserve">
+    <value>手绘</value>
+  </data>
+  <data name="EditorToolbarItem_Text" xml:space="preserve">
+    <value>文本</value>
+  </data>
+  <data name="EditorToolbarItem_SpeechBalloon" xml:space="preserve">
+    <value>气泡</value>
+  </data>
+  <data name="EditorToolbarItem_Step" xml:space="preserve">
+    <value>步骤</value>
+  </data>
+  <data name="EditorToolbarItem_Image" xml:space="preserve">
+    <value>图片</value>
+  </data>
+  <data name="EditorToolbarItem_Emoji" xml:space="preserve">
+    <value>表情</value>
+  </data>
+  <data name="EditorToolbarItem_Cursor" xml:space="preserve">
+    <value>光标</value>
+  </data>
+  <data name="EditorToolbarItem_Highlight" xml:space="preserve">
+    <value>高亮</value>
+  </data>
+  <data name="EditorToolbarItem_SmartEraser" xml:space="preserve">
+    <value>智能橡皮擦</value>
+  </data>
+  <data name="EditorToolbarItem_Blur" xml:space="preserve">
+    <value>模糊</value>
+  </data>
+  <data name="EditorToolbarItem_Pixelate" xml:space="preserve">
+    <value>像素化</value>
+  </data>
+  <data name="EditorToolbarItem_Magnify" xml:space="preserve">
+    <value>放大镜</value>
+  </data>
+  <data name="EditorToolbarItem_Spotlight" xml:space="preserve">
+    <value>聚光灯</value>
+  </data>
+  <data name="EditorToolbarItem_Crop" xml:space="preserve">
+    <value>裁剪</value>
+  </data>
+  <data name="EditorToolbarItem_CutOut" xml:space="preserve">
+    <value>抠图</value>
+  </data>
+  <data name="EditorToolbarItem_Background" xml:space="preserve">
+    <value>背景</value>
+  </data>
+  <data name="EditorToolbarItem_ImageEffects" xml:space="preserve">
+    <value>图像特效</value>
+  </data>
+  <data name="EditorToolbar_ImageEffectsHint" xml:space="preserve">
+    <value>收藏的图像特效（右键）</value>
+  </data>
+  <data name="HdrToneMappingMode_None" xml:space="preserve">
+    <value>无</value>
+  </data>
+  <data name="HdrToneMappingMode_Auto" xml:space="preserve">
+    <value>自动</value>
+  </data>
+  <data name="HdrToneMappingMode_TonemapReinhard" xml:space="preserve">
+    <value>Reinhard</value>
+  </data>
+  <data name="HdrToneMappingMode_TonemapAces" xml:space="preserve">
+    <value>ACES</value>
+  </data>
+  <data name="HdrToneMappingMode_TonemapBt2446C" xml:space="preserve">
+    <value>BT.2446 C</value>
+  </data>
+  <data name="PNGBitDepth_Default" xml:space="preserve">
+    <value>SDR</value>
+  </data>
+  <data name="PNGBitDepth_Bit16" xml:space="preserve">
+    <value>SDR+HDR</value>
+  </data>
+  <data name="TaskSettings_HdrPreview" xml:space="preserve">
+    <value>预览 (HDR → SDR)</value>
+  </data>
+  <data name="TaskSettings_HdrSection" xml:space="preserve">
+    <value>HDR</value>
+  </data>
+  <data name="TaskSettings_HdrGeneral" xml:space="preserve">
+    <value>预览 / 编辑器 / 上传：</value>
+  </data>
+  <data name="TaskSettings_HdrSave" xml:space="preserve">
+    <value>保存到文件：</value>
+  </data>
+  <data name="TaskSettings_HdrClipboard" xml:space="preserve">
+    <value>剪贴板：</value>
+  </data>
+</root>

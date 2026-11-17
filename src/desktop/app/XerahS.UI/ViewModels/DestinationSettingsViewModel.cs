@@ -121,19 +121,19 @@ public partial class DestinationSettingsViewModel : ViewModelBase
 
     private void LoadCategories()
     {
-        var imageCategory = new CategoryViewModel("Image Uploaders", UploaderCategory.Image);
+        var imageCategory = new CategoryViewModel(Resources.GetString("Destination_CategoryImageUploaders"), UploaderCategory.Image);
         imageCategory.LoadInstances();
         Categories.Add(imageCategory);
 
-        var textCategory = new CategoryViewModel("Text Uploaders", UploaderCategory.Text);
+        var textCategory = new CategoryViewModel(Resources.GetString("Destination_CategoryTextUploaders"), UploaderCategory.Text);
         textCategory.LoadInstances();
         Categories.Add(textCategory);
 
-        var fileCategory = new CategoryViewModel("File Uploaders", UploaderCategory.File);
+        var fileCategory = new CategoryViewModel(Resources.GetString("Destination_CategoryFileUploaders"), UploaderCategory.File);
         fileCategory.LoadInstances();
         Categories.Add(fileCategory);
 
-        var urlCategory = new CategoryViewModel("URL Shorteners", UploaderCategory.UrlShortener);
+        var urlCategory = new CategoryViewModel(Resources.GetString("Destination_CategoryUrlShorteners"), UploaderCategory.UrlShortener);
         urlCategory.LoadInstances();
         Categories.Add(urlCategory);
 
@@ -174,7 +174,7 @@ public partial class DestinationSettingsViewModel : ViewModelBase
 
             if (configPath == null)
             {
-                var filePath = await _dialogService.ShowFilePickerAsync("Select ShareX UploadersConfig.json", new[] { "*UploadersConfig*.json", "*.json" });
+                var filePath = await _dialogService.ShowFilePickerAsync(Resources.GetString("Destination_SelectShareXConfigTitle"), new[] { "*UploadersConfig*.json", "*.json" });
 
                 if (string.IsNullOrWhiteSpace(filePath))
                 {
@@ -213,15 +213,15 @@ public partial class DestinationSettingsViewModel : ViewModelBase
             }
 
             string title = customUploaderExport.FailedCount > 0
-                ? "Import Complete (With Warnings)"
-                : "Import Complete";
+                ? Resources.GetString("Destination_ImportCompleteWithWarnings")
+                : Resources.GetString("Destination_ImportComplete");
 
             string summary = BuildImportSummary(configPath, result, customUploaderExport, builtinMigration);
             await ShowMessageDialogAsync(title, summary);
         }
         catch (Exception ex)
         {
-            await ShowMessageDialogAsync("Import Failed", $"Failed to import UploadersConfig:{Environment.NewLine}{ex.Message}");
+            await ShowMessageDialogAsync(Resources.GetString("Destination_ImportFailed"), Resources.GetString("Destination_ImportFailedMessage", ex.Message));
         }
     }
 
@@ -275,8 +275,8 @@ public partial class DestinationSettingsViewModel : ViewModelBase
 
                 if (isDuplicate)
                 {
-                    await ShowMessageDialogAsync("Custom Uploader Already Exists",
-                        $"A custom uploader with identical configuration as '{item.Name}' already exists.");
+                    await ShowMessageDialogAsync(Resources.GetString("Destination_CustomUploaderAlreadyExists"),
+                        Resources.GetString("Destination_CustomUploaderAlreadyExistsMessage", item.Name));
                     return;
                 }
 
@@ -285,20 +285,20 @@ public partial class DestinationSettingsViewModel : ViewModelBase
                     var instanceResult = EnsureCustomUploaderInstances(filePath);
                     RefreshCategories(instanceResult.AffectedCategories);
 
-                    await ShowMessageDialogAsync("Custom Uploader Created",
+                    await ShowMessageDialogAsync(Resources.GetString("Destination_CustomUploaderCreated"),
                         BuildCustomUploaderCreatedMessage(item.Name, instanceResult));
                 }
                 else
                 {
-                    await ShowMessageDialogAsync("Save Failed",
-                        "Failed to save the custom uploader. Check the logs for details.");
+                    await ShowMessageDialogAsync(Resources.GetString("Destination_SaveFailed"),
+                        Resources.GetString("Destination_SaveFailedMessage"));
                 }
             }
         }
         catch (Exception ex)
         {
             Common.DebugHelper.WriteException(ex, "Failed to create custom uploader");
-            await ShowMessageDialogAsync("Error", $"Failed to create custom uploader: {ex.Message}");
+            await ShowMessageDialogAsync(Resources.GetString("Destination_Error"), Resources.GetString("Destination_CreateCustomUploaderFailed", ex.Message));
         }
     }
 
@@ -307,26 +307,26 @@ public partial class DestinationSettingsViewModel : ViewModelBase
     {
         if (instance == null)
         {
-            await ShowMessageDialogAsync("Export Failed", "Select a destination instance to export.");
+            await ShowMessageDialogAsync(Resources.GetString("Destination_ExportFailed"), Resources.GetString("Destination_ExportSelectInstance"));
             return;
         }
 
         try
         {
             string? passphrase = await _dialogService.ShowSecretInputAsync(
-                "Export Destination Config",
-                "Enter a passphrase for this .xsdc file:");
+                Resources.GetString("Destination_ExportConfigTitle"),
+                Resources.GetString("Destination_ExportConfigPrompt"));
             if (string.IsNullOrWhiteSpace(passphrase))
             {
                 return;
             }
 
             string? confirmation = await _dialogService.ShowSecretInputAsync(
-                "Confirm Passphrase",
-                "Re-enter the passphrase:");
+                Resources.GetString("Destination_ConfirmPassphraseTitle"),
+                Resources.GetString("Destination_ConfirmPassphrasePrompt"));
             if (!string.Equals(passphrase, confirmation, StringComparison.Ordinal))
             {
-                await ShowMessageDialogAsync("Export Failed", "Passphrases do not match.");
+                await ShowMessageDialogAsync(Resources.GetString("Destination_ExportFailed"), Resources.GetString("Destination_ExportPassphraseMismatch"));
                 return;
             }
 
@@ -337,7 +337,7 @@ public partial class DestinationSettingsViewModel : ViewModelBase
             }
 
             string? filePath = await _dialogService.ShowSaveFilePickerAsync(
-                "Export XerahS Destination Config",
+                Resources.GetString("Destination_ExportSaveDialogTitle"),
                 fileName,
                 "xsdc",
                 new[] { "*.xsdc" });
@@ -348,11 +348,11 @@ public partial class DestinationSettingsViewModel : ViewModelBase
 
             string exportJson = DestinationConfigExportService.BuildEncryptedExport(instance.Instance, passphrase);
             await File.WriteAllTextAsync(filePath, exportJson, Encoding.UTF8);
-            await ShowMessageDialogAsync("Destination Config Exported", $"Saved encrypted destination config:{Environment.NewLine}{filePath}");
+            await ShowMessageDialogAsync(Resources.GetString("Destination_ConfigExported"), Resources.GetString("Destination_ConfigExportedMessage", filePath));
         }
         catch (Exception ex)
         {
-            await ShowMessageDialogAsync("Export Failed", ex.Message);
+            await ShowMessageDialogAsync(Resources.GetString("Destination_ExportFailed"), ex.Message);
         }
     }
 
@@ -409,29 +409,29 @@ public partial class DestinationSettingsViewModel : ViewModelBase
     private static string BuildCustomUploaderCreatedMessage(string uploaderName, CustomUploaderInstanceCreationResult instanceResult)
     {
         var builder = new StringBuilder();
-        builder.AppendLine($"Custom uploader '{uploaderName}' has been saved to Plugins.");
+        builder.AppendLine(Resources.GetString("Destination_CustomUploaderSaved", uploaderName));
 
         if (instanceResult.CreatedInstances.Count > 0)
         {
             builder.AppendLine();
-            builder.AppendLine($"Created {instanceResult.CreatedInstances.Count} destination instance(s): {FormatCategoryList(instanceResult.CreatedInstances.Select(instance => instance.Category))}.");
+            builder.AppendLine(Resources.GetString("Destination_CreatedInstances", instanceResult.CreatedInstances.Count, FormatCategoryList(instanceResult.CreatedInstances.Select(instance => instance.Category))));
         }
 
         if (instanceResult.SkippedCategories.Count > 0)
         {
             builder.AppendLine();
-            builder.AppendLine($"Existing instance bindings were reused for: {FormatCategoryList(instanceResult.SkippedCategories)}.");
+            builder.AppendLine(Resources.GetString("Destination_ReusedBindings", FormatCategoryList(instanceResult.SkippedCategories)));
         }
 
         if (instanceResult.CreatedInstances.Count == 0 && instanceResult.SkippedCategories.Count == 0)
         {
             builder.AppendLine();
-            builder.AppendLine("No destination categories were updated.");
+            builder.AppendLine(Resources.GetString("Destination_NoCategoriesUpdated"));
         }
         else
         {
             builder.AppendLine();
-            builder.Append("The uploader is ready to use without Add from Catalog.");
+            builder.Append(Resources.GetString("Destination_ReadyToUse"));
         }
 
         return builder.ToString();
@@ -443,16 +443,16 @@ public partial class DestinationSettingsViewModel : ViewModelBase
             .Distinct()
             .Select(category => category switch
             {
-                UploaderCategory.Image => "Image Uploaders",
-                UploaderCategory.Text => "Text Uploaders",
-                UploaderCategory.File => "File Uploaders",
-                UploaderCategory.UrlShortener => "URL Shorteners",
-                UploaderCategory.UrlSharing => "URL Sharing",
+                UploaderCategory.Image => Resources.GetString("Destination_CategoryImageUploaders"),
+                UploaderCategory.Text => Resources.GetString("Destination_CategoryTextUploaders"),
+                UploaderCategory.File => Resources.GetString("Destination_CategoryFileUploaders"),
+                UploaderCategory.UrlShortener => Resources.GetString("Destination_CategoryUrlShorteners"),
+                UploaderCategory.UrlSharing => Resources.GetString("Destination_CategoryUrlSharing"),
                 _ => category.ToString()
             })
             .ToList();
 
-        return labels.Count > 0 ? string.Join(", ", labels) : "None";
+        return labels.Count > 0 ? string.Join(", ", labels) : Resources.GetString("Destination_CategoryNone");
     }
 
     private static string MakeSafeFileName(string name)
@@ -589,7 +589,7 @@ public partial class DestinationSettingsViewModel : ViewModelBase
         BuiltinMigrationResult builtinMigration)
     {
         var builder = new StringBuilder();
-        builder.AppendLine($"Source: {sourceConfigPath}");
+        builder.AppendLine(Resources.GetString("Destination_ImportSource", sourceConfigPath));
         builder.AppendLine();
         builder.Append(importResult.GetSummary());
 
@@ -597,23 +597,23 @@ public partial class DestinationSettingsViewModel : ViewModelBase
         {
             builder.AppendLine();
             builder.AppendLine();
-            builder.AppendLine("Custom uploader export:");
-            builder.AppendLine($"- Imported from config: {importResult.TotalImportedCustomUploaders}");
-            builder.AppendLine($"- Created .sxcu files: {customUploaderExport.ExportedCount}");
-            builder.AppendLine($"- Skipped duplicates: {customUploaderExport.SkippedCount}");
-            builder.AppendLine($"- Failed exports: {customUploaderExport.FailedCount}");
-            builder.AppendLine($"- Plugins folder: {customUploaderExport.PluginsPath}");
+            builder.AppendLine(Resources.GetString("Destination_ImportCustomUploaderExport"));
+            builder.AppendLine(Resources.GetString("Destination_ImportFromConfig", importResult.TotalImportedCustomUploaders));
+            builder.AppendLine(Resources.GetString("Destination_ImportCreatedFiles", customUploaderExport.ExportedCount));
+            builder.AppendLine(Resources.GetString("Destination_ImportSkippedDuplicates", customUploaderExport.SkippedCount));
+            builder.AppendLine(Resources.GetString("Destination_ImportFailedExports", customUploaderExport.FailedCount));
+            builder.AppendLine(Resources.GetString("Destination_ImportPluginsFolder", customUploaderExport.PluginsPath));
 
             if (customUploaderExport.InstancesCreated > 0)
             {
                 builder.AppendLine();
-                builder.Append($"Auto-created {customUploaderExport.InstancesCreated} destination instance(s) - ready to use.");
+                builder.Append(Resources.GetString("Destination_AutoCreatedInstances", customUploaderExport.InstancesCreated));
             }
 
             if (customUploaderExport.InstancesSkipped > 0)
             {
                 builder.AppendLine();
-                builder.Append($"Reused {customUploaderExport.InstancesSkipped} existing destination binding(s) without creating duplicates.");
+                builder.Append(Resources.GetString("Destination_ReusedBindingsSummary", customUploaderExport.InstancesSkipped));
             }
         }
 
@@ -621,7 +621,7 @@ public partial class DestinationSettingsViewModel : ViewModelBase
         {
             builder.AppendLine();
             builder.AppendLine();
-            builder.AppendLine("Built-in provider migration:");
+            builder.AppendLine(Resources.GetString("Destination_BuiltInMigration"));
             builder.Append(builtinMigration.GetSummary());
         }
 

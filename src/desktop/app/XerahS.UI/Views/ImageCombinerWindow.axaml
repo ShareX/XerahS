@@ -4,12 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:XerahS.UI.ViewModels"
+        xmlns:local="using:XerahS.UI.Markup"
         xmlns:media="using:XerahS.Media"
         mc:Ignorable="d"
         d:DesignWidth="760" d:DesignHeight="500"
         x:Class="XerahS.UI.Views.ImageCombinerWindow"
         x:DataType="vm:ImageCombinerViewModel"
-        Title="Image Combiner"
+        Title="{local:Localize ImageCombiner_Title}"
         Width="760" Height="500"
         MinWidth="680" MinHeight="400"
         WindowStartupLocation="CenterOwner"
@@ -35,7 +36,7 @@
                 <TextBlock Text="{Binding Dimensions}" Foreground="Gray" VerticalAlignment="Center" />
               </StackPanel>
               <Button Grid.Column="1"
-                      Content="X"
+                      Content="{local:Localize ImageCombiner_Remove}"
                       Command="{Binding $parent[ListBox].DataContext.RemoveItemCommand}"
                       CommandParameter="{Binding}"
                       Classes="accent"
@@ -48,24 +49,24 @@
       </ListBox>
 
       <StackPanel Grid.Column="1" Spacing="6" Margin="8,0,0,0" VerticalAlignment="Top">
-        <Button Content="Add..."
+        <Button Content="{local:Localize ImageCombiner_Add}"
                 Command="{Binding AddFilesCommand}"
                 Classes="accent"
                 MinWidth="80"
                 AutomationProperties.Name="Add files" />
-        <Button Content="Up"
+        <Button Content="{local:Localize ImageCombiner_MoveUp}"
                 Command="{Binding MoveUpCommand}"
                 CommandParameter="{Binding SelectedItem}"
                 Classes="accent"
                 MinWidth="80"
                 AutomationProperties.Name="Move up" />
-        <Button Content="Down"
+        <Button Content="{local:Localize ImageCombiner_MoveDown}"
                 Command="{Binding MoveDownCommand}"
                 CommandParameter="{Binding SelectedItem}"
                 Classes="accent"
                 MinWidth="80"
                 AutomationProperties.Name="Move down" />
-        <Button Content="Clear"
+        <Button Content="{local:Localize ImageCombiner_Clear}"
                 Command="{Binding ClearCommand}"
                 Classes="accent"
                 MinWidth="80"
@@ -76,7 +77,7 @@
     <!-- Row 1: Options -->
     <WrapPanel Grid.Row="1" Orientation="Horizontal" ItemSpacing="16" LineSpacing="8" Margin="0,0,0,12">
       <StackPanel Orientation="Horizontal" Spacing="6">
-        <TextBlock Text="Orientation:" VerticalAlignment="Center" />
+        <TextBlock Text="{local:Localize ImageCombiner_OrientationLabel}" VerticalAlignment="Center" />
         <ComboBox SelectedIndex="0"
                   SelectedItem="{Binding Orientation}"
                   MinWidth="120"
@@ -87,7 +88,7 @@
       </StackPanel>
 
       <StackPanel Orientation="Horizontal" Spacing="6">
-        <TextBlock Text="Alignment:" VerticalAlignment="Center" />
+        <TextBlock Text="{local:Localize ImageCombiner_AlignmentLabel}" VerticalAlignment="Center" />
         <ComboBox SelectedIndex="1"
                   SelectedItem="{Binding Alignment}"
                   MinWidth="100"
@@ -99,14 +100,14 @@
       </StackPanel>
 
       <StackPanel Orientation="Horizontal" Spacing="6">
-        <TextBlock Text="Spacing:" VerticalAlignment="Center" />
+        <TextBlock Text="{local:Localize ImageCombiner_SpacingLabel}" VerticalAlignment="Center" />
         <NumericUpDown Value="{Binding Spacing}"
                        Minimum="0" Maximum="100" Increment="1"
                        MinWidth="80"
                        AutomationProperties.Name="Spacing" />
       </StackPanel>
 
-      <CheckBox Content="Fill background"
+      <CheckBox Content="{local:Localize ImageCombiner_FillBackground}"
                 IsChecked="{Binding AutoFillBackground}"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="Auto fill background" />
@@ -117,13 +118,13 @@
 
     <!-- Row 3: Buttons -->
     <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-      <Button Content="Combine"
+      <Button Content="{local:Localize ImageCombiner_Combine}"
               Command="{Binding CombineCommand}"
               MinWidth="100"
               Classes="accent"
               IsEnabled="{Binding !IsProcessing}"
               AutomationProperties.Name="Combine images" />
-      <Button Content="Close"
+      <Button Content="{local:Localize ImageCombiner_Close}"
               Click="OnCloseClick"
               Classes="accent"
               MinWidth="80"

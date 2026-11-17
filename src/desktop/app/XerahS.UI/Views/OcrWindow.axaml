@@ -2,10 +2,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="using:XerahS.UI.Views"
         xmlns:vm="using:XerahS.UI.ViewModels"
+        xmlns:local="using:XerahS.UI.Markup"
         xmlns:platform="using:XerahS.Platform.Abstractions"
         x:Class="XerahS.UI.Views.OcrWindow"
         x:DataType="vm:OcrViewModel"
-        Title="OCR - Text Recognition"
+        Title="{local:Localize Ocr_WindowTitle}"
         Width="600" Height="450"
         MinWidth="400" MinHeight="300"
         WindowStartupLocation="CenterScreen"
@@ -31,7 +32,7 @@
       </StackPanel>
 
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Text="Language:" VerticalAlignment="Center" />
+        <TextBlock Text="{local:Localize Ocr_LanguageLabel}" VerticalAlignment="Center" />
         <ComboBox ItemsSource="{Binding AvailableLanguages}"
                   SelectedItem="{Binding SelectedLanguage}"
                   MinWidth="160"
@@ -45,14 +46,14 @@
       </StackPanel>
 
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Text="Scale:" VerticalAlignment="Center" />
+        <TextBlock Text="{local:Localize Ocr_ScaleLabel}" VerticalAlignment="Center" />
         <ComboBox ItemsSource="{Binding ScaleFactorOptions}"
                   SelectedItem="{Binding ScaleFactor}"
                   MinWidth="70"
                   AutomationProperties.Name="Scale Factor" />
       </StackPanel>
 
-      <CheckBox Content="Single line"
+      <CheckBox Content="{local:Localize Ocr_SingleLine}"
                 IsChecked="{Binding SingleLine}"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="Single line output mode" />
@@ -66,7 +67,7 @@
                TextWrapping="Wrap"
                IsReadOnly="False"
                VerticalContentAlignment="Top"
-               PlaceholderText="OCR result will appear here..."
+               PlaceholderText="{local:Localize Ocr_ResultPlaceholder}"
                AutomationProperties.Name="OCR recognized text" />
 
       <!-- Processing overlay -->
@@ -80,7 +81,7 @@
                     Spacing="8">
           <ProgressBar IsIndeterminate="True"
                        Width="200" />
-          <TextBlock Text="Processing..."
+          <TextBlock Text="{local:Localize Ocr_Processing}"
                      Foreground="{DynamicResource XerahS.Brush.Overlay.Foreground}"
                      HorizontalAlignment="Center" />
         </StackPanel>
@@ -91,13 +92,13 @@
     <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,*,Auto" Margin="0,12,0,0">
 
       <Button Grid.Column="0"
-              Content="Select Region"
+              Content="{local:Localize Ocr_SelectRegion}"
               Command="{Binding SelectRegionCommand}"
               MinWidth="110"
               AutomationProperties.Name="Select new screen region for OCR" />
 
       <Button Grid.Column="1"
-              Content="Copy All"
+              Content="{local:Localize Ocr_CopyAll}"
               Command="{Binding CopyToClipboardCommand}"
               Classes="accent"
               Margin="8,0,0,0"

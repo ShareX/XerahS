@@ -4,11 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:XerahS.UI.ViewModels"
+        xmlns:local="using:XerahS.UI.Markup"
         mc:Ignorable="d"
         d:DesignWidth="500" d:DesignHeight="350"
         x:Class="XerahS.UI.Views.ImageSplitterWindow"
         x:DataType="vm:ImageSplitterViewModel"
-        Title="Image Splitter"
+        Title="{local:Localize ImageSplitter_Title}"
         Width="500" Height="350"
         MinWidth="400" MinHeight="300"
         WindowStartupLocation="CenterOwner"
@@ -23,11 +24,11 @@
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
       <TextBox Grid.Column="0"
                Text="{Binding InputFilePath}"
-               PlaceholderText="Select an image file..."
+               PlaceholderText="{local:Localize ImageSplitter_PlaceholderSelectImage}"
                IsReadOnly="True"
                AutomationProperties.Name="Input file path" />
       <Button Grid.Column="1"
-              Content="Browse..."
+              Content="{local:Localize ImageSplitter_Browse}"
               Command="{Binding BrowseInputCommand}"
               Classes="accent"
               Margin="8,0,0,0"
@@ -44,7 +45,7 @@
     <!-- Row 2: Rows / Columns -->
     <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="16" Margin="0,0,0,12">
       <StackPanel Orientation="Horizontal" Spacing="6">
-        <TextBlock Text="Columns:" VerticalAlignment="Center" />
+        <TextBlock Text="{local:Localize ImageSplitter_ColumnsLabel}" VerticalAlignment="Center" />
         <NumericUpDown Value="{Binding Columns}"
                        Minimum="1" Maximum="20" Increment="1"
                        MinWidth="80"
@@ -52,7 +53,7 @@
       </StackPanel>
 
       <StackPanel Orientation="Horizontal" Spacing="6">
-        <TextBlock Text="Rows:" VerticalAlignment="Center" />
+        <TextBlock Text="{local:Localize ImageSplitter_RowsLabel}" VerticalAlignment="Center" />
         <NumericUpDown Value="{Binding Rows}"
                        Minimum="1" Maximum="20" Increment="1"
                        MinWidth="80"
@@ -62,13 +63,13 @@
 
     <!-- Row 3: Output folder -->
     <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
-      <TextBlock Grid.Column="0" Text="Output:" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <TextBlock Grid.Column="0" Text="{local:Localize ImageSplitter_OutputLabel}" VerticalAlignment="Center" Margin="0,0,8,0" />
       <TextBox Grid.Column="1"
                Text="{Binding OutputFolder}"
                IsReadOnly="True"
                AutomationProperties.Name="Output folder" />
       <Button Grid.Column="2"
-              Content="Browse..."
+              Content="{local:Localize ImageSplitter_Browse}"
               Command="{Binding BrowseOutputCommand}"
               Classes="accent"
               Margin="8,0,0,0"
@@ -80,13 +81,13 @@
 
     <!-- Row 5: Buttons -->
     <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-      <Button Content="Split"
+      <Button Content="{local:Localize ImageSplitter_Split}"
               Command="{Binding SplitCommand}"
               MinWidth="100"
               Classes="accent"
               IsEnabled="{Binding HasInput}"
               AutomationProperties.Name="Split image" />
-      <Button Content="Close"
+      <Button Content="{local:Localize ImageSplitter_Close}"
               Click="OnCloseClick"
               Classes="accent"
               MinWidth="80"

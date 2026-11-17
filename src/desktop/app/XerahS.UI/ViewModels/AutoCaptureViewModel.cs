@@ -71,7 +71,7 @@ public partial class AutoCaptureViewModel : ViewModelBase, IDisposable
     private bool _isRunning;
 
     [ObservableProperty]
-    private string _startStopText = "Start";
+    private string _startStopText = Resources.GetString("AutoCapture_Start");
 
     [ObservableProperty]
     private int _captureCount;
@@ -180,7 +180,7 @@ public partial class AutoCaptureViewModel : ViewModelBase, IDisposable
         }
 
         IsRunning = true;
-        StartStopText = "Stop";
+        StartStopText = Resources.GetString("AutoCapture_Stop");
         CaptureCount = 0;
         ProgressPercent = 0;
         StatusText = "";
@@ -204,12 +204,12 @@ public partial class AutoCaptureViewModel : ViewModelBase, IDisposable
         if (!IsRunning) return;
 
         IsRunning = false;
-        StartStopText = "Start";
+        StartStopText = Resources.GetString("AutoCapture_Start");
         _captureTimer.Enabled = false;
         _statusTimer.IsEnabled = false;
         _stopwatch.Reset();
         ProgressPercent = 0;
-        StatusText = $"Stopped. Total captures: {CaptureCount}";
+        StatusText = Resources.GetString("AutoCapture_StoppedSummary", CaptureCount);
 
         DebugHelper.WriteLine($"AutoCapture: Stopped after {CaptureCount} captures.");
     }
@@ -237,17 +237,17 @@ public partial class AutoCaptureViewModel : ViewModelBase, IDisposable
     {
         if (_isFullScreenCapture)
         {
-            RegionText = "Full screen";
+            RegionText = Resources.GetString("AutoCapture_RegionFullScreen");
             HasRegion = true;
         }
         else if (!_customRegion.IsEmpty)
         {
-            RegionText = $"X: {_customRegion.X}, Y: {_customRegion.Y}, Width: {_customRegion.Width}, Height: {_customRegion.Height}";
+            RegionText = Resources.GetString("AutoCapture_RegionCoordinates", _customRegion.X, _customRegion.Y, _customRegion.Width, _customRegion.Height);
             HasRegion = true;
         }
         else
         {
-            RegionText = "No region selected";
+            RegionText = Resources.GetString("AutoCapture_RegionNone");
             HasRegion = false;
         }
     }
@@ -353,7 +353,7 @@ public partial class AutoCaptureViewModel : ViewModelBase, IDisposable
 
         ProgressPercent = Math.Clamp(percent, 0, 100);
         var secondsLeft = (timeLeft / 1000f).ToString("0.0");
-        StatusText = $"Time left: {secondsLeft}s  {ProgressPercent}%  Total: {CaptureCount}";
+        StatusText = Resources.GetString("AutoCapture_StatusTimeLeft", secondsLeft, ProgressPercent, CaptureCount);
     }
 
     public void Dispose()

@@ -4,11 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:XerahS.UI.ViewModels"
+        xmlns:local="using:XerahS.UI.Markup"
         mc:Ignorable="d"
         d:DesignWidth="550" d:DesignHeight="400"
         x:Class="XerahS.UI.Views.ImageThumbnailerWindow"
         x:DataType="vm:ImageThumbnailerViewModel"
-        Title="Image Thumbnailer"
+        Title="{local:Localize ImageThumbnailer_Title}"
         Width="550" Height="430"
         MinWidth="450" MinHeight="350"
         WindowStartupLocation="CenterOwner"
@@ -33,18 +34,18 @@
       </ListBox>
 
       <StackPanel Grid.Column="1" Spacing="6" Margin="8,0,0,0" VerticalAlignment="Top">
-        <Button Content="Add..."
+        <Button Content="{local:Localize ImageThumbnailer_Add}"
                 Command="{Binding AddFilesCommand}"
                 Classes="accent"
                 MinWidth="80"
                 AutomationProperties.Name="Add files" />
-        <Button Content="Remove"
+        <Button Content="{local:Localize ImageThumbnailer_Remove}"
                 Command="{Binding RemoveFileCommand}"
                 CommandParameter="{Binding SelectedFile}"
                 Classes="accent"
                 MinWidth="80"
                 AutomationProperties.Name="Remove file" />
-        <Button Content="Clear"
+        <Button Content="{local:Localize ImageThumbnailer_Clear}"
                 Command="{Binding ClearCommand}"
                 Classes="accent"
                 MinWidth="80"
@@ -55,7 +56,7 @@
     <!-- Row 1: Size options -->
     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="16" Margin="0,0,0,12">
       <StackPanel Orientation="Horizontal" Spacing="6">
-        <TextBlock Text="Width:" VerticalAlignment="Center" />
+        <TextBlock Text="{local:Localize ImageThumbnailer_WidthLabel}" VerticalAlignment="Center" />
         <NumericUpDown Value="{Binding ThumbnailWidth}"
                        Minimum="16" Maximum="4096" Increment="10"
                        MinWidth="90"
@@ -63,7 +64,7 @@
       </StackPanel>
 
       <StackPanel Orientation="Horizontal" Spacing="6">
-        <TextBlock Text="Height:" VerticalAlignment="Center" />
+        <TextBlock Text="{local:Localize ImageThumbnailer_HeightLabel}" VerticalAlignment="Center" />
         <NumericUpDown Value="{Binding ThumbnailHeight}"
                        Minimum="0" Maximum="4096" Increment="10"
                        MinWidth="90"
@@ -71,7 +72,7 @@
       </StackPanel>
 
       <StackPanel Orientation="Horizontal" Spacing="6">
-        <TextBlock Text="Quality:" VerticalAlignment="Center" />
+        <TextBlock Text="{local:Localize ImageThumbnailer_QualityLabel}" VerticalAlignment="Center" />
         <NumericUpDown Value="{Binding Quality}"
                        Minimum="1" Maximum="100" Increment="5"
                        MinWidth="80"
@@ -81,13 +82,13 @@
 
     <!-- Row 2: Output folder -->
     <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
-      <TextBlock Grid.Column="0" Text="Output:" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <TextBlock Grid.Column="0" Text="{local:Localize ImageThumbnailer_OutputLabel}" VerticalAlignment="Center" Margin="0,0,8,0" />
       <TextBox Grid.Column="1"
                Text="{Binding OutputFolder}"
                IsReadOnly="True"
                AutomationProperties.Name="Output folder" />
       <Button Grid.Column="2"
-              Content="Browse..."
+              Content="{local:Localize ImageThumbnailer_Browse}"
               Command="{Binding BrowseOutputCommand}"
               Classes="accent"
               Margin="8,0,0,0"
@@ -107,13 +108,13 @@
 
     <!-- Row 5: Buttons -->
     <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-      <Button Content="Generate"
+      <Button Content="{local:Localize ImageThumbnailer_Generate}"
               Command="{Binding GenerateCommand}"
               MinWidth="100"
               Classes="accent"
               IsEnabled="{Binding !IsProcessing}"
               AutomationProperties.Name="Generate thumbnails" />
-      <Button Content="Close"
+      <Button Content="{local:Localize ImageThumbnailer_Close}"
               Click="OnCloseClick"
               Classes="accent"
               MinWidth="80"

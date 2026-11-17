@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:XerahS.UI.ViewModels"
+             xmlns:local="using:XerahS.UI.Markup"
              mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="40"
              x:Class="XerahS.UI.Views.Controls.HotkeySelectionControl"
              x:DataType="vm:HotkeyItemViewModel">
@@ -27,7 +28,7 @@
                     Margin="0,0,4,0"
                     IsVisible="{Binding NavLabelVisible}"
                     VerticalAlignment="Center">
-                <TextBlock Text="Nav" 
+                <TextBlock Text="{local:Localize HotkeySelection_Nav}" 
                            Classes="on-accent"
                            FontSize="10" 
                            FontWeight="Bold"/>
@@ -41,7 +42,7 @@
                     Margin="0,0,8,0"
                     IsVisible="{Binding TrayLabelVisible}"
                     VerticalAlignment="Center">
-                <TextBlock Text="Tray" 
+                <TextBlock Text="{local:Localize HotkeySelection_Tray}" 
                            Classes="on-accent"
                            FontSize="10" 
                            FontWeight="Bold"/>

@@ -1,10 +1,11 @@
 <ui:SurfaceWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:XerahS.UI.Markup"
         xmlns:ui="using:XerahS.UI.Views"
         xmlns:vm="using:XerahS.UI.ViewModels"
         x:Class="XerahS.UI.Views.AutoCaptureWindow"
         x:DataType="vm:AutoCaptureViewModel"
-        Title="Auto Capture"
+        Title="{local:Localize AutoCapture_Title}"
         Width="400"
         Height="380"
         CanResize="False"
@@ -15,23 +16,23 @@
 
     <!-- Region Section -->
     <StackPanel Spacing="8">
-      <TextBlock Text="Region"
+      <TextBlock Text="{local:Localize AutoCapture_Region}"
                  FontWeight="SemiBold"
                  FontSize="14"
                  AutomationProperties.Name="Region section" />
 
       <StackPanel Orientation="Horizontal" Spacing="16">
-        <RadioButton Content="Full screen"
+        <RadioButton Content="{local:Localize AutoCapture_RegionFullScreen}"
                      IsChecked="{Binding IsFullScreen}"
                      GroupName="RegionMode"
                      AutomationProperties.Name="Capture full screen" />
-        <RadioButton Content="Custom region"
+        <RadioButton Content="{local:Localize AutoCapture_CustomRegion}"
                      IsChecked="{Binding !IsFullScreen}"
                      GroupName="RegionMode"
                      AutomationProperties.Name="Capture custom region" />
       </StackPanel>
 
-      <Button Content="Select region..."
+      <Button Content="{local:Localize AutoCapture_SelectRegion}"
               Command="{Binding SelectRegionCommand}"
               IsEnabled="{Binding IsSelectRegionEnabled}"
               MinWidth="120"
@@ -45,13 +46,13 @@
 
     <!-- Options Section -->
     <StackPanel Spacing="8">
-      <TextBlock Text="Options"
+      <TextBlock Text="{local:Localize AutoCapture_Options}"
                  FontWeight="SemiBold"
                  FontSize="14"
                  AutomationProperties.Name="Options section" />
 
       <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-        <TextBlock Text="Repeat time:"
+        <TextBlock Text="{local:Localize AutoCapture_RepeatTime}"
                    VerticalAlignment="Center" />
         <NumericUpDown Value="{Binding RepeatTime}"
                        Minimum="1"
@@ -60,15 +61,15 @@
                        FormatString="0"
                        Width="100"
                        AutomationProperties.Name="Capture repeat interval in seconds" />
-        <TextBlock Text="seconds"
+        <TextBlock Text="{local:Localize AutoCapture_Seconds}"
                    VerticalAlignment="Center" />
       </StackPanel>
 
-      <CheckBox Content="Minimize to tray when capturing"
+      <CheckBox Content="{local:Localize AutoCapture_MinimizeToTray}"
                 IsChecked="{Binding MinimizeToTray}"
                 AutomationProperties.Name="Minimize window to tray when capturing starts" />
 
-      <CheckBox Content="Wait for uploads to complete"
+      <CheckBox Content="{local:Localize AutoCapture_WaitForUploads}"
                 IsChecked="{Binding WaitUploads}"
                 AutomationProperties.Name="Wait for uploads to complete before next capture" />
     </StackPanel>

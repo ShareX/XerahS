@@ -110,6 +110,20 @@ namespace XerahS.UI.ViewModels
         }
 
         [ObservableProperty]
+        private SupportedLanguage _selectedLanguage;
+
+        public SupportedLanguage[] LanguageOptions => (SupportedLanguage[])Enum.GetValues(typeof(SupportedLanguage));
+
+        partial void OnSelectedLanguageChanged(SupportedLanguage value)
+        {
+            if (_isLoading) return;
+
+            // Apply the UI culture immediately so newly created views/windows pick it up.
+            // Existing views keep their already-resolved strings until the next restart.
+            Localization.ApplyCulture(value.ToCultureCode());
+        }
+
+        [ObservableProperty]
         private bool _useModernCapture;
 
         [ObservableProperty]
@@ -145,9 +159,9 @@ namespace XerahS.UI.ViewModels
         private bool _isManualUpdateInProgress;
 
         [ObservableProperty]
-        private string _manualUpdateStatusText = "Use Update Now to check and install the latest release for your selected channel.";
+        private string _manualUpdateStatusText = Resources.GetString("Update_StatusPrompt");
 
-        public string ManualUpdateButtonText => IsManualUpdateInProgress ? "Checking..." : "Update Now";
+        public string ManualUpdateButtonText => IsManualUpdateInProgress ? Resources.GetString("Update_CheckingButton") : Resources.GetString("Update_UpdateNowButton");
         public bool CanTriggerManualUpdate => !IsManualUpdateInProgress;
 
         public bool ShowPreReleaseSourceSettings => UpdateChannel == UpdateChannel.PreRelease;
@@ -293,6 +307,7 @@ namespace XerahS.UI.ViewModels
             SilentRun = settings.SilentRun;
             SelectedTheme = settings.SelectedTheme;
             ThemeMode = settings.ThemeMode;
+            SelectedLanguage = settings.Language;
             TrayIconProgressEnabled = settings.TrayIconProgressEnabled;
             TaskbarProgressEnabled = settings.TaskbarProgressEnabled;
             DisableToastNotification = settings.DisableToastNotification;
@@ -300,6 +315,9 @@ namespace XerahS.UI.ViewModels
             UpdateChannel = settings.UpdateChannel;
             PreReleaseUpdateSource = settings.PreReleaseUpdateSource;
             CustomPreReleaseUpdateSource = settings.CustomPreReleaseUpdateSource;
+            SendToDefaultFolderPolicy = settings.SendToFolderPolicy;
+            SendToDefaultBatchPolicy = settings.SendToBatchExecutionPolicy;
+            SendToDefaultBatchThreshold = settings.SendToBatchConfirmThreshold;
             // Migrate legacy Dev channel to PreRelease (Dev was removed)
             if ((int)UpdateChannel >= 2)
             {
@@ -420,6 +438,10 @@ namespace XerahS.UI.ViewModels
             settings.UpdateChannel = UpdateChannel;
             settings.PreReleaseUpdateSource = PreReleaseUpdateSource;
             settings.CustomPreReleaseUpdateSource = CustomPreReleaseUpdateSource?.Trim() ?? string.Empty;
+            settings.Language = SelectedLanguage;
+            settings.SendToFolderPolicy = SendToDefaultFolderPolicy;
+            settings.SendToBatchExecutionPolicy = SendToDefaultBatchPolicy;
+            settings.SendToBatchConfirmThreshold = SendToDefaultBatchThreshold;
 
             // Proxy Settings
             settings.ProxySettings.ProxyMethod = ProxyMethod;
@@ -494,20 +516,20 @@ namespace XerahS.UI.ViewModels
                     return;
                 }
 
-                ManualUpdateStatusText = "Checking for updates...";
+                ManualUpdateStatusText = Resources.GetString("Update_CheckingForUpdates");
                 Services.UpdateService.Instance.Initialize();
                 UpdateStatus status = await Services.UpdateService.Instance.CheckForUpdatesAsync();
 
                 ManualUpdateStatusText = status switch
                 {
-                    UpdateStatus.UpdateAvailable => "Update available. Review the prompt to continue.",
-                    UpdateStatus.UpToDate => "XerahS is already up to date.",
-                    _ => "Update check failed. Check the debug log for details."
+                    UpdateStatus.UpdateAvailable => Resources.GetString("Update_Available"),
+                    UpdateStatus.UpToDate => Resources.GetString("Update_UpToDate"),
+                    _ => Resources.GetString("Update_CheckFailed")
                 };
             }
             catch (Exception ex)
             {
-                ManualUpdateStatusText = $"Update check failed: {ex.Message}";
+                ManualUpdateStatusText = Resources.GetString("Update_CheckFailedWithError", ex.Message);
                 DebugHelper.WriteException(ex, "Manual update check failed.");
             }
             finally

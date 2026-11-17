@@ -6,6 +6,7 @@
         xmlns:vm="using:XerahS.UI.ViewModels"
         xmlns:cp="clr-namespace:Avalonia.Controls.Primitives;assembly=Avalonia.Controls.ColorPicker"
         xmlns:cpControls="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.ColorPicker"
+        xmlns:local="using:XerahS.UI.Markup"
         mc:Ignorable="d"
         x:Class="XerahS.UI.Views.ColorPickerDialog"
         x:Name="ColorPickerDialogRoot"
@@ -14,7 +15,7 @@
         MinWidth="760"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
-        Title="Color Picker">
+        Title="{local:Localize ColorPicker_Title}">
 
     <Design.DataContext>
         <vm:ColorPickerViewModel />
@@ -34,8 +35,8 @@
               Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}">
             <!-- Header -->
             <StackPanel Grid.ColumnSpan="3" Spacing="4">
-                <TextBlock Text="Color Picker" FontSize="26" FontWeight="SemiBold"/>
-                <TextBlock Text="Pick a color, edit values, or sample any pixel on screen."
+                <TextBlock Text="{local:Localize ColorPicker_Title}" FontSize="26" FontWeight="SemiBold"/>
+                <TextBlock Text="{local:Localize ColorPicker_Subtitle}"
                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                            TextWrapping="Wrap"/>
             </StackPanel>
@@ -83,7 +84,7 @@
                 
                 <!-- Recent Colors -->
                 <StackPanel Spacing="8">
-                    <TextBlock Text="Recent colors" FontWeight="SemiBold"/>
+                    <TextBlock Text="{local:Localize ColorPicker_RecentColors}" FontWeight="SemiBold"/>
                     <ItemsControl ItemsSource="{Binding RecentColors}" IsVisible="{Binding HasRecentColors}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -117,14 +118,14 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Text="No recent colors yet."
+                    <TextBlock Text="{local:Localize ColorPicker_NoRecentColors}"
                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                IsVisible="{Binding HasNoRecentColors}"/>
                 </StackPanel>
 
                 <!-- Standard Palette -->
                 <StackPanel Spacing="8">
-                    <TextBlock Text="Palette" FontWeight="SemiBold"/>
+                    <TextBlock Text="{local:Localize ColorPicker_Palette}" FontWeight="SemiBold"/>
                     <ItemsControl ItemsSource="{Binding StandardColors}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -176,10 +177,10 @@
                         CornerRadius="4"
                         Padding="16">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Preview" FontWeight="SemiBold"/>
+                        <TextBlock Text="{local:Localize ColorPicker_Preview}" FontWeight="SemiBold"/>
                         <Grid ColumnDefinitions="*, 16, *">
                             <StackPanel Grid.Column="0" Spacing="4">
-                                <TextBlock Text="Previous" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBlock Text="{local:Localize ColorPicker_Previous}" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                                 <Border Height="48" CornerRadius="4" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                                     <Border.Background>
                                         <SolidColorBrush Color="{Binding PreviousColor}"/>
@@ -187,7 +188,7 @@
                                 </Border>
                             </StackPanel>
                             <StackPanel Grid.Column="2" Spacing="4">
-                                <TextBlock Text="Current" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBlock Text="{local:Localize ColorPicker_Current}" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                                 <Border Height="48" CornerRadius="4" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                                     <Border.Background>
                                         <SolidColorBrush Color="{Binding SelectedColor}"/>
@@ -195,7 +196,7 @@
                                 </Border>
                             </StackPanel>
                         </Grid>
-                        <Button Content="Pick from screen"
+                        <Button Content="{local:Localize ColorPicker_PickFromScreen}"
                                 Command="{Binding PickFromScreenCommand}"
                                 Classes="accent"
                                 IsEnabled="{Binding CanPickFromScreen}"
@@ -211,37 +212,37 @@
                         CornerRadius="4"
                         Padding="16">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Values" FontWeight="SemiBold"/>
+                        <TextBlock Text="{local:Localize ColorPicker_Values}" FontWeight="SemiBold"/>
                         <Grid ColumnDefinitions="Auto, 8, *, 16, Auto, 8, *, 16, Auto, 8, *" RowDefinitions="Auto, 16, Auto, 16, Auto, 16, Auto">
                             <!-- RGB -->
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="R" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize ColorPicker_Red}" VerticalAlignment="Center"/>
                             <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding Red, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Red Value"/>
-                            <TextBlock Grid.Row="0" Grid.Column="4" Text="G" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="4" Text="{local:Localize ColorPicker_Green}" VerticalAlignment="Center"/>
                             <TextBox Grid.Row="0" Grid.Column="6" Text="{Binding Green, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Green Value"/>
-                            <TextBlock Grid.Row="0" Grid.Column="8" Text="B" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="8" Text="{local:Localize ColorPicker_Blue}" VerticalAlignment="Center"/>
                             <TextBox Grid.Row="0" Grid.Column="10" Text="{Binding Blue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Blue Value"/>
 
                             <!-- HSB -->
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="H" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Localize ColorPicker_Hue}" VerticalAlignment="Center"/>
                             <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding Hue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Hue Value"/>
-                            <TextBlock Grid.Row="2" Grid.Column="4" Text="S" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="2" Grid.Column="4" Text="{local:Localize ColorPicker_Saturation}" VerticalAlignment="Center"/>
                             <TextBox Grid.Row="2" Grid.Column="6" Text="{Binding Saturation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Saturation Value"/>
-                            <TextBlock Grid.Row="2" Grid.Column="8" Text="B" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="2" Grid.Column="8" Text="{local:Localize ColorPicker_Brightness}" VerticalAlignment="Center"/>
                             <TextBox Grid.Row="2" Grid.Column="10" Text="{Binding Brightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Brightness Value"/>
 
                             <!-- CMY -->
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="C" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="{local:Localize ColorPicker_Cyan}" VerticalAlignment="Center"/>
                             <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding Cyan, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Cyan Value"/>
-                            <TextBlock Grid.Row="4" Grid.Column="4" Text="M" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="4" Grid.Column="4" Text="{local:Localize ColorPicker_Magenta}" VerticalAlignment="Center"/>
                             <TextBox Grid.Row="4" Grid.Column="6" Text="{Binding Magenta, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Magenta Value"/>
-                            <TextBlock Grid.Row="4" Grid.Column="8" Text="Y" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="4" Grid.Column="8" Text="{local:Localize ColorPicker_Yellow}" VerticalAlignment="Center"/>
                             <TextBox Grid.Row="4" Grid.Column="10" Text="{Binding Yellow, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Yellow Value"/>
 
                             <!-- K & Hex -->
-                            <TextBlock Grid.Row="6" Grid.Column="0" Text="K" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="{local:Localize ColorPicker_Black}" VerticalAlignment="Center"/>
                             <TextBox Grid.Row="6" Grid.Column="2" Text="{Binding Key, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Key Value"/>
                             
-                            <TextBlock Grid.Row="6" Grid.Column="4" Text="Hex" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="6" Grid.Column="4" Text="{local:Localize ColorPicker_Hex}" VerticalAlignment="Center"/>
                             <TextBox Grid.Row="6" Grid.Column="6" Grid.ColumnSpan="5"
                                      Text="{Binding Hex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      AutomationProperties.Name="Hex Value"/>
@@ -256,12 +257,12 @@
                         CornerRadius="4"
                         Padding="16">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Copy" FontWeight="SemiBold"/>
+                        <TextBlock Text="{local:Localize ColorPicker_Copy}" FontWeight="SemiBold"/>
                         <WrapPanel Orientation="Horizontal">
-                            <Button Content="Copy Hex" Command="{Binding CopyHexCommand}" Classes="accent" Margin="0,0,8,8" AutomationProperties.Name="Copy Hex"/>
-                            <Button Content="Copy RGB" Command="{Binding CopyRgbCommand}" Classes="accent" Margin="0,0,8,8" AutomationProperties.Name="Copy RGB"/>
-                            <Button Content="Copy HSB" Command="{Binding CopyHsbCommand}" Classes="accent" Margin="0,0,8,8" AutomationProperties.Name="Copy HSB"/>
-                            <Button Content="Copy CMYK" Command="{Binding CopyCmykCommand}" Classes="accent" Margin="0,0,8,8" AutomationProperties.Name="Copy CMYK"/>
+                            <Button Content="{local:Localize ColorPicker_CopyHex}" Command="{Binding CopyHexCommand}" Classes="accent" Margin="0,0,8,8" AutomationProperties.Name="Copy Hex"/>
+                            <Button Content="{local:Localize ColorPicker_CopyRgb}" Command="{Binding CopyRgbCommand}" Classes="accent" Margin="0,0,8,8" AutomationProperties.Name="Copy RGB"/>
+                            <Button Content="{local:Localize ColorPicker_CopyHsb}" Command="{Binding CopyHsbCommand}" Classes="accent" Margin="0,0,8,8" AutomationProperties.Name="Copy HSB"/>
+                            <Button Content="{local:Localize ColorPicker_CopyCmyk}" Command="{Binding CopyCmykCommand}" Classes="accent" Margin="0,0,8,8" AutomationProperties.Name="Copy CMYK"/>
                         </WrapPanel>
                     </StackPanel>
                 </Border>

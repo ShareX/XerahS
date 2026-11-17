@@ -30,7 +30,9 @@ using Avalonia.Threading;
 using ShareX.ImageEditor.Presentation.ViewModels;
 using XerahS.Bootstrap;
 using XerahS.Common;
+using XerahS.Common.Helpers;
 using XerahS.Core;
+using XerahS.Core.Helpers;
 using XerahS.Platform.Abstractions;
 using XerahS.UI.Assistant;
 using XerahS.UI.CaptureCommandPalette;
@@ -333,15 +335,48 @@ public sealed class WorkflowOrchestrator : IWorkflowOrchestrator
             return;
         }
 
+        // Remember the settings that produced this capture. Save/Save-As from the preview must
+        // honor the SAME depth/tone settings (they live on the workflow, not in the global
+        // DefaultTaskSettings), otherwise the file written differs from the pipeline output.
+        if (task.Info.TaskSettings != null)
+        {
+            MainViewModelHelper.LastCaptureTaskSettings = task.Info.TaskSettings;
+        }
+
         int width = image.Width;
         int height = image.Height;
         SkiaSharp.SKBitmap? previewCopy = image.Copy();
+
+        // The preview must match what a Save with depth=SDR would write: tonemap fp16 the same
+        // way the file path does. SDR+HDR gets the plain sRGB view (raw HDR shown display-…).
+        if (previewCopy != null && previewCopy.ColorType == SkiaSharp.SKColorType.RgbaF16)
+        {
+            var imgSettings = (MainViewModelHelper.LastCaptureTaskSettings ?? XerahS.Core.SettingsManager.DefaultTaskSettings)?.ImageSettings;
+            bool sdrOnly = imgSettings?.ImagePNGBitDepth != XerahS.Common.PNGBitDepth.Bit16;
+            if (sdrOnly)
+            {
+                var toned = HdrTonemapper.TonemapToBgra8888(previewCopy,
+                    imgSettings?.ImageHdrSaveToneMapping ?? HdrToneMappingMode.TonemapHable);
+                if (toned != null)
+                {
+                    previewCopy.Dispose();
+                    previewCopy = toned;
+                }
+            }
+        }
+
         if (previewCopy == null || previewCopy.Handle == IntPtr.Zero)
         {
             previewCopy?.Dispose();
             DebugHelper.WriteLine("Skipped preview update from task completion: failed to clone bitmap.");
             return;
         }
+
+        // TEMP HDR diagnostics: remember what the preview contained so a later Save-As
+        // can be checked against the actual last capture.
+        string sig = Services.SavePathDebugDump.Signature(previewCopy);
+        Services.SavePathDebugDump.LastPreviewSignature = sig;
+        DebugHelper.WriteLine($"[PreviewSig] orchestrator preview: {sig}");
 
         // UpdatePreview takes ownership and can dispose the supplied bitmap during property-change handling.
         viewModel.UpdatePreview(previewCopy);
@@ -516,15 +551,15 @@ public sealed class WorkflowOrchestrator : IWorkflowOrchestrator
                 if (task.Info?.Result?.IsError == true)
                 {
                     title = "Task Failed";
-                    text = task.Info.Result.ToString();
+                    text = SecretMasker.MaskSecrets(task.Info.Result.ToString());
                     var uploaderErrors = task.Info.Result.ErrorsToString();
                     if (!string.IsNullOrWhiteSpace(uploaderErrors))
                     {
-                        errorDetails = uploaderErrors;
+                        errorDetails = SecretMasker.MaskSecrets(uploaderErrors);
                     }
                     else if (!string.IsNullOrWhiteSpace(task.Info.Result.Response))
                     {
-                        errorDetails = task.Info.Result.Response;
+                        errorDetails = SecretMasker.MaskSecrets(task.Info.Result.Response);
                     }
                 }
                 else if (!string.IsNullOrEmpty(url))

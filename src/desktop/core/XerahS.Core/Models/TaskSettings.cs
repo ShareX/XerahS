@@ -261,12 +261,32 @@ public class TaskSettingsImage
     #region Image / General
 
     public EImageFormat ImageFormat = EImageFormat.PNG;
+    /// <summary>
+    /// PNG bit depth, now expressed as output content: "SDR" (Default) forces HDR captures to be
+    /// saved as 8-bit SDR (tonemapped when needed); "SDR+HDR" (Bit16) keeps HDR captures as
+    /// 16-bit PNG and saves SDR captures as 16-bit sRGB PNG.
+    /// </summary>
     public PNGBitDepth ImagePNGBitDepth = PNGBitDepth.Default;
     public int ImageJPEGQuality = 90;
     public GIFQuality ImageGIFQuality = GIFQuality.Default;
     public bool ImageAutoUseJPEG = true;
     public int ImageAutoUseJPEGSize = 2048;
     public bool ImageAutoJPEGQuality = false;
+    /// <summary>
+    /// HDR tonemapping applied when an HDR (fp16) capture must be converted to SDR.
+    /// </summary>
+    public HdrToneMappingMode ImageHdrToneMapping = HdrToneMappingMode.TonemapHable;
+    /// <summary>
+    /// HDR tonemapping applied when an HDR capture must be saved as SDR (PNG depth = "SDR").
+    /// None saves the image "as is" (linear values clamp at SDR white, no tone curve); every
+    /// other mode applies its HDR→SDR curve. With depth "SDR+HDR" the fp16 data is kept and this
+    /// setting does not apply.
+    /// </summary>
+    public HdrToneMappingMode ImageHdrSaveToneMapping = HdrToneMappingMode.TonemapHable;
+    /// <summary>
+    /// HDR tonemapping applied specifically when copying an HDR capture to the clipboard.
+    /// </summary>
+    public HdrToneMappingMode ImageHdrClipboardToneMapping = HdrToneMappingMode.TonemapHable;
     public FileExistAction FileExistAction = FileExistAction.Ask;
 
     #endregion Image / General

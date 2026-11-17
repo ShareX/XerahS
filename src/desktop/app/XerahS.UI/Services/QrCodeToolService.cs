@@ -26,6 +26,7 @@
 using Avalonia.Controls;
 using ShareX.ImageEditor.Presentation.Rendering;
 using SkiaSharp;
+using XerahS.Common;
 using XerahS.Core;
 using XerahS.Core.Services;
 using XerahS.Platform.Abstractions;
@@ -59,7 +60,7 @@ public static class QrCodeToolService
     {
         if (!PlatformServices.IsInitialized)
         {
-            ShowToast("QR Code", "Platform services are not initialized.");
+            ShowToast(Resources.GetString("Qr_Title"), Resources.GetString("Common_PlatformServicesNotInitialized"));
             return;
         }
 
@@ -67,7 +68,7 @@ public static class QrCodeToolService
         var bitmap = await PlatformServices.ScreenCapture.CaptureFullScreenAsync(captureOptions);
         if (bitmap == null)
         {
-            ShowToast("QR Code", "Screen capture was cancelled.");
+            ShowToast(Resources.GetString("Qr_Title"), Resources.GetString("Qr_ScreenCaptureCancelled"));
             return;
         }
 
@@ -78,7 +79,7 @@ public static class QrCodeToolService
     {
         if (!PlatformServices.IsInitialized)
         {
-            ShowToast("QR Code", "Platform services are not initialized.");
+            ShowToast(Resources.GetString("Qr_Title"), Resources.GetString("Common_PlatformServicesNotInitialized"));
             return;
         }
 
@@ -86,7 +87,7 @@ public static class QrCodeToolService
         var bitmap = await PlatformServices.ScreenCapture.CaptureRegionAsync(captureOptions);
         if (bitmap == null)
         {
-            ShowToast("QR Code", "Region capture was cancelled.");
+            ShowToast(Resources.GetString("Qr_Title"), Resources.GetString("Qr_RegionCaptureCancelled"));
             return;
         }
 
@@ -119,17 +120,17 @@ public static class QrCodeToolService
 
             if (!string.IsNullOrEmpty(error))
             {
-                ShowToast("QR Code", error);
+                ShowToast(Resources.GetString("Qr_Title"), error);
                 return;
             }
 
             if (results.Count == 0)
             {
-                ShowToast("QR Code", "No QR code was detected.");
+                ShowToast(Resources.GetString("Qr_Title"), Resources.GetString("Qr_NoCodeDetected"));
                 return;
             }
 
-            ShowToast("QR Code", $"Decoded {results.Count} QR code(s).");
+            ShowToast(Resources.GetString("Qr_Title"), Resources.GetString("Qr_DecodedSummary", results.Count));
 
             var previewBitmap = BitmapConversionHelpers.ToAvaloniBitmap(bitmap);
             var viewModel = new QrCodeDecodeResultsViewModel(results, previewBitmap);

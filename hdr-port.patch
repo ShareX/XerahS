@@ -1,0 +1,4161 @@
+diff --git a/src/desktop/app/XerahS.App/Program.cs b/src/desktop/app/XerahS.App/Program.cs
+index 8906062c..71615bd3 100644
+--- a/src/desktop/app/XerahS.App/Program.cs
++++ b/src/desktop/app/XerahS.App/Program.cs
+@@ -41,12 +41,18 @@ internal class Program
+     {
+         private static XerahS.Common.SingleInstanceManager? _singleInstanceManager;
+         private static string[] _startupArguments = Array.Empty<string>();
++        private static string? _hdrSelfTestDirectory;
++        private static string? _hdrCaptureDirectory;
+ 
+         private sealed class StartupOptions
+         {
+             public string[] ForwardedArguments { get; init; } = Array.Empty<string>();
+ 
+             public string? PersonalFolderOverride { get; init; }
++
++            public string? HdrSelfTestDirectory { get; init; }
++
++            public string? HdrCaptureDirectory { get; init; }
+         }
+ 
+         private sealed class IncomingPathSet
+@@ -67,6 +73,8 @@ public static void Main(string[] args)
+             {
+                 StartupOptions startupOptions = ParseStartupOptions(args ?? Array.Empty<string>());
+                 _startupArguments = startupOptions.ForwardedArguments;
++                _hdrSelfTestDirectory = startupOptions.HdrSelfTestDirectory;
++                _hdrCaptureDirectory = startupOptions.HdrCaptureDirectory;
+ 
+                 if (!string.IsNullOrWhiteSpace(startupOptions.PersonalFolderOverride))
+                 {
+@@ -75,6 +83,14 @@ public static void Main(string[] args)
+ 
+                 (string mutexName, string pipeName) = GetSingleInstanceIdentifiers(startupOptions.PersonalFolderOverride);
+ 
++                // The HDR self-test / capture modes must be able to run alongside a normal app instance.
++                if (!string.IsNullOrWhiteSpace(startupOptions.HdrSelfTestDirectory) ||
++                    !string.IsNullOrWhiteSpace(startupOptions.HdrCaptureDirectory))
++                {
++                    mutexName += ".HdrSelfTest";
++                    pipeName += ".HdrSelfTest";
++                }
++
+                 // Single instance enforcement
+                 _singleInstanceManager = new XerahS.Common.SingleInstanceManager(mutexName, pipeName, _startupArguments);
+ 
+@@ -99,6 +115,16 @@ public static void Main(string[] args)
+                 dh.WriteLine($"{XerahS.Common.AppResources.AppName} starting.");
+                 dh.WriteLine("Running as first instance (single instance mode enabled).");
+ 
++                if (!string.IsNullOrWhiteSpace(_hdrSelfTestDirectory))
++                {
++                    dh.WriteLine($"[HDR] self-test mode requested: {_hdrSelfTestDirectory}");
++                }
++
++                if (!string.IsNullOrWhiteSpace(_hdrCaptureDirectory))
++                {
++                    dh.WriteLine($"[HDR] screen capture mode requested: {_hdrCaptureDirectory}");
++                }
++
+                 var version = XerahS.Common.AppResources.Version;
+                 dh.WriteLine($"Version: {version}");
+ 
+@@ -234,11 +260,49 @@ private static StartupOptions ParseStartupOptions(string[] args)
+ 
+             List<string> forwardedArguments = new List<string>(args.Length);
+             string? personalFolderOverride = null;
++            string? hdrSelfTestDirectory = null;
++            string? hdrCaptureDirectory = null;
+ 
+             for (int i = 0; i < args.Length; i++)
+             {
+                 string arg = args[i];
+ 
++                if (arg.Equals("--hdr-self-test", StringComparison.OrdinalIgnoreCase))
++                {
++                    hdrSelfTestDirectory = i + 1 < args.Length && !args[i + 1].StartsWith("--", StringComparison.Ordinal)
++                        ? NormalizePersonalFolder(args[++i])
++                        : Path.Combine(Path.GetTempPath(), $"XerahS-HdrSelfTest-{DateTime.Now:yyyyMMdd-HHmmss}");
++                    continue;
++                }
++
++                string hdrPrefix = "--hdr-self-test=";
++                if (arg.StartsWith(hdrPrefix, StringComparison.OrdinalIgnoreCase))
++                {
++                    string value = arg.Substring(hdrPrefix.Length);
++                    hdrSelfTestDirectory = !string.IsNullOrWhiteSpace(value)
++                        ? NormalizePersonalFolder(value)
++                        : Path.Combine(Path.GetTempPath(), $"XerahS-HdrSelfTest-{DateTime.Now:yyyyMMdd-HHmmss}");
++                    continue;
++                }
++
++                if (arg.Equals("--hdr-capture", StringComparison.OrdinalIgnoreCase))
++                {
++                    hdrCaptureDirectory = i + 1 < args.Length && !args[i + 1].StartsWith("--", StringComparison.Ordinal)
++                        ? NormalizePersonalFolder(args[++i])
++                        : Path.Combine(Path.GetTempPath(), $"XerahS-HdrCapture-{DateTime.Now:yyyyMMdd-HHmmss}");
++                    continue;
++                }
++
++                string capturePrefix = "--hdr-capture=";
++                if (arg.StartsWith(capturePrefix, StringComparison.OrdinalIgnoreCase))
++                {
++                    string value = arg.Substring(capturePrefix.Length);
++                    hdrCaptureDirectory = !string.IsNullOrWhiteSpace(value)
++                        ? NormalizePersonalFolder(value)
++                        : Path.Combine(Path.GetTempPath(), $"XerahS-HdrCapture-{DateTime.Now:yyyyMMdd-HHmmss}");
++                    continue;
++                }
++
+                 if (arg.Equals(AppContracts.Cli.SettingsFolderFlag, StringComparison.OrdinalIgnoreCase))
+                 {
+                     if (i + 1 >= args.Length || string.IsNullOrWhiteSpace(args[i + 1]))
+@@ -269,7 +333,9 @@ private static StartupOptions ParseStartupOptions(string[] args)
+             return new StartupOptions
+             {
+                 ForwardedArguments = forwardedArguments.ToArray(),
+-                PersonalFolderOverride = personalFolderOverride
++                PersonalFolderOverride = personalFolderOverride,
++                HdrSelfTestDirectory = hdrSelfTestDirectory,
++                HdrCaptureDirectory = hdrCaptureDirectory
+             };
+         }
+ 
+@@ -759,8 +825,8 @@ private static void InitializeBackgroundServicesAsync()
+                         {
+                             XerahS.Platform.Abstractions.PlatformServices.Toast?.ShowToast(new XerahS.Platform.Abstractions.ToastConfig
+                             {
+-                                Title = "Initialization Warning",
+-                                Text = "Background services initialization failed. Check logs for details.",
++                                Title = Resources.GetString("Toast_InitializationWarning_Title"),
++                                Text = Resources.GetString("Toast_InitializationWarning_Text"),
+                                 Duration = 6f
+                             });
+                         });
+@@ -789,6 +855,68 @@ private static void OnPostUIInitialization()
+         {
+             InitializeBackgroundServicesAsync();
+             ProcessIncomingArguments(_startupArguments, source: "startup");
++
++            if (!string.IsNullOrWhiteSpace(_hdrSelfTestDirectory))
++            {
++                string outputDir = _hdrSelfTestDirectory!;
++                XerahS.Common.DebugHelper.WriteLine($"[HDR] starting self-test, output: {outputDir}");
++                Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
++                {
++                    int exitCode = 1;
++                    try
++                    {
++                        exitCode = await XerahS.UI.Diagnostics.HdrSelfTestRunner.RunAsync(outputDir);
++                    }
++                    catch (Exception ex)
++                    {
++                        XerahS.Common.DebugHelper.WriteException(ex, "HDR self-test crashed");
++                    }
++                    finally
++                    {
++                        XerahS.Common.DebugHelper.Flush();
++                    }
++
++                    if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime lifetime)
++                    {
++                        lifetime.Shutdown(exitCode);
++                    }
++                    else
++                    {
++                        Environment.Exit(exitCode);
++                    }
++                });
++            }
++
++            if (!string.IsNullOrWhiteSpace(_hdrCaptureDirectory))
++            {
++                string outputDir = _hdrCaptureDirectory!;
++                XerahS.Common.DebugHelper.WriteLine($"[HDR] starting screen capture, output: {outputDir}");
++                Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
++                {
++                    int exitCode = 1;
++                    try
++                    {
++                        exitCode = await XerahS.UI.Diagnostics.HdrSelfTestRunner.CaptureScreenAsync(outputDir);
++                    }
++                    catch (Exception ex)
++                    {
++                        XerahS.Common.DebugHelper.WriteException(ex, "HDR screen capture crashed");
++                    }
++                    finally
++                    {
++                        XerahS.Common.DebugHelper.Flush();
++                    }
++
++                    if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime lifetime)
++                    {
++                        lifetime.Shutdown(exitCode);
++                    }
++                    else
++                    {
++                        Environment.Exit(exitCode);
++                    }
++                });
++            }
+         }
+ 
+         /// <summary>
+@@ -1152,6 +1280,7 @@ private static TaskSettings CloneTaskSettings(TaskSettings source)
+             JsonSerializerSettings settings = new()
+             {
+                 TypeNameHandling = TypeNameHandling.Auto,
++                SerializationBinder = SettingsSerializationBinder.Shared,
+                 ObjectCreationHandling = ObjectCreationHandling.Replace
+             };
+ 
+diff --git a/src/desktop/app/XerahS.UI/Diagnostics/HdrSelfTestRunner.cs b/src/desktop/app/XerahS.UI/Diagnostics/HdrSelfTestRunner.cs
+new file mode 100644
+index 00000000..1137a0a5
+--- /dev/null
++++ b/src/desktop/app/XerahS.UI/Diagnostics/HdrSelfTestRunner.cs
+@@ -0,0 +1,930 @@
++#region License Information (GPL v3)
++
++/*
++    XerahS - The Avalonia UI implementation of ShareX
++    Copyright (c) 2007-2026 ShareX Team
++
++    This program is free software; you can redistribute it and/or
++    modify it under the terms of the GNU General Public License
++    as published by the Free Software Foundation; either version 2
++    of the License, or (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++
++    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
++*/
++
++#endregion License Information (GPL v3)
++
++using Avalonia;
++using Avalonia.Controls;
++using Avalonia.Controls.ApplicationLifetimes;
++using Avalonia.Media;
++using Avalonia.Threading;
++using SkiaSharp;
++using System.Buffers.Binary;
++using System.Text;
++using System.Text.Json;
++using ShareX.ImageEditor.Presentation.Rendering;
++using ShareX.ImageEditor.Presentation.ViewModels;
++using XerahS.Common;
++using XerahS.Common.Helpers;
++using XerahS.Core;
++using XerahS.Core.Helpers;
++using XerahS.Platform.Abstractions;
++using XerahS.UI.Services;
++
++namespace XerahS.UI.Diagnostics;
++
++/// <summary>
++/// Automated end-to-end HDR self-test. Run with <c>XerahS.exe --hdr-self-test &lt;outDir&gt;</c>.
++///
++/// The test shows a known-color test card on screen, captures it through the real DXGI
++/// pipeline (same service the app uses), then verifies every stage numerically:
++///  1. capture is fp16 scRGB and contains the card's colors without channel swaps;
++///  2. every tone-mapping mode preserves the stripe hue relations and reports clipping;
++///  3. file encoders write the expected PNG depth/markers (8-bit SDR vs 16-bit linear HDR);
++///  4. the real Save-As path (MainViewModelHelper + MainViewModel preview) writes content that
++///     matches the capture — catching stale-preview / wrong-source regressions;
++///  5. preview conversion (ConvertF16ToSrgb8) matches TonemapToBgra8888(None) within rounding.
++///
++/// Results are written to report.txt / report.json next to the dumped stage images.
++/// Exit code 0 = all checks passed, non-zero = failures.
++/// </summary>
++public static class HdrSelfTestRunner
++{
++    private const string CaptureTitle = "HDR SCREEN CAPTURE";
++
++    private static readonly (string Name, Color Color)[] Stripes =
++    {
++        ("red",     Color.FromRgb(255, 0, 0)),
++        ("green",   Color.FromRgb(0, 255, 0)),
++        ("blue",    Color.FromRgb(0, 0, 255)),
++        ("cyan",    Color.FromRgb(0, 255, 255)),
++        ("magenta", Color.FromRgb(255, 0, 255)),
++        ("yellow",  Color.FromRgb(255, 255, 0)),
++        ("white",   Color.FromRgb(255, 255, 255)),
++        ("gray50",  Color.FromRgb(128, 128, 128)),
++    };
++
++    private sealed class CardGeometry
++    {
++        public Window Window { get; init; } = null!;
++        public int Left { get; init; }
++        public int Top { get; init; }
++        public int WidthPx { get; init; }
++        public int HeightPx { get; init; }
++    }
++
++    public static async Task<int> RunAsync(string outputDir)
++    {
++        Directory.CreateDirectory(outputDir);
++        var report = new List<string>();
++        var metrics = new Dictionary<string, object>();
++        bool pass = true;
++
++        void Check(bool condition, string name, string detail = "")
++        {
++            pass &= condition;
++            report.Add($"[{(condition ? "PASS" : "FAIL")}] {name}{(string.IsNullOrEmpty(detail) ? string.Empty : "  — " + detail)}");
++            DebugHelper.WriteLine($"[HdrSelfTest] {(condition ? "PASS" : "FAIL")} {name} {detail}");
++        }
++
++        CardGeometry? card = null;
++        try
++        {
++            // Hide the main window so the app UI does not cover the card.
++            await Dispatcher.UIThread.InvokeAsync(() =>
++            {
++                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
++                {
++                    lifetime.MainWindow?.Hide();
++                }
++            });
++
++            card = await Dispatcher.UIThread.InvokeAsync(ShowTestCard);
++            await Task.Delay(600); // let the compositor settle
++
++            WakeDisplay();
++            var cardRect = new SKRectI(card.Left, card.Top, card.Left + card.WidthPx, card.Top + card.HeightPx);
++
++            Window? nudge = await CreateNudgeWindowAsync();
++            using var nudgeCts = new CancellationTokenSource();
++            Task nudgeTask = nudge != null ? NudgeLoopAsync(nudge, nudgeCts.Token) : Task.CompletedTask;
++
++            SKBitmap? captured;
++            try
++            {
++                captured = await PlatformServices.ScreenCapture.CaptureRectAsync(new SKRect(cardRect.Left, cardRect.Top, cardRect.Right, cardRect.Bottom));
++            }
++            finally
++            {
++                nudgeCts.Cancel();
++                await CloseNudgeWindowAsync(nudge);
++                await nudgeTask;
++            }
++
++            using var capture = captured;
++            Check(capture != null, "capture-not-null");
++            if (capture == null)
++            {
++                return Finish(outputDir, report, metrics, pass);
++            }
++
++            bool isHdr = capture.ColorType == SKColorType.RgbaF16;
++            report.Add($"capture: {capture.Width}x{capture.Height} {capture.ColorType} alpha={capture.AlphaType} rect={cardRect}");
++            Check(isHdr, "capture-is-rgba-f16", capture.ColorType.ToString());
++
++            if (!isHdr)
++            {
++                report.Add(string.Empty);
++                report.Add("DIAGNOSIS: the capture came back 8-bit, so this run contains no HDR data at all.");
++                report.Add("  * Windows HDR is off (Settings > System > Display > Use HDR), or");
++                report.Add("  * DXGI Desktop Duplication returned no frame (0x887A0027) and the service fell back to GDI.");
++                report.Add("    That happens when the display is asleep, or when the process was started from a");
++                report.Add("    non-interactive host (CI shell, WSL-spawned cmd) instead of the logged-in desktop.");
++                report.Add("  HDR-only checks (tone curves, variants, preview LUT) are skipped, not failed;");
++                report.Add("  the encoder and Save-As checks still run against the 8-bit frame.");
++                report.Add(string.Empty);
++            }
++
++            DumpCapture(capture, outputDir);
++
++            // ── 1. Stripe colors in the raw capture ───────────────────────────
++            var rawMeans = SampleStripes(capture, card, cardRect.Left, cardRect.Top);
++            metrics["captureStripes"] = rawMeans.ToDictionary(kv => kv.Key, kv => kv.Value.Select(v => Math.Round(v, 4)).ToArray());
++            report.Add("raw stripe means (R,G,B linear):");
++            foreach (var kv in rawMeans)
++            {
++                report.Add($"  {kv.Key,-8} ({kv.Value[0]:F3}, {kv.Value[1]:F3}, {kv.Value[2]:F3})");
++            }
++
++            CheckStripes(rawMeans, Check, "capture");
++
++            // ── 2. Tone mapping: hue preservation + clipping metrics ──────────
++            // Only meaningful for a real fp16 source: TonemapToBgra8888 returns null for 8-bit input.
++            foreach (var mode in isHdr ? new[]
++            {
++                HdrToneMappingMode.None,
++                HdrToneMappingMode.TonemapReinhard,
++                HdrToneMappingMode.TonemapAces,
++                HdrToneMappingMode.TonemapBt2446C,
++                HdrToneMappingMode.TonemapHable,
++            } : Array.Empty<HdrToneMappingMode>())
++            {
++                using var toned = HdrTonemapper.TonemapToBgra8888(capture, mode);
++                if (toned == null)
++                {
++                    Check(false, $"tonemap-{mode}-not-null");
++                    continue;
++                }
++
++                SavePng(toned, Path.Combine(outputDir, $"tonemap-{mode}.png"));
++
++                var means = SampleStripes(toned, card, cardRect.Left, cardRect.Top);
++                var (clipFraction, meanLuminance) = AnalyzeToned(toned);
++                metrics[$"tonemap-{mode}"] = new
++                {
++                    stripes = means.ToDictionary(kv => kv.Key, kv => kv.Value.Select(v => Math.Round(v, 4)).ToArray()),
++                    clippedFraction = Math.Round(clipFraction, 5),
++                    meanLuminance = Math.Round(meanLuminance, 5),
++                };
++                report.Add($"tonemap {mode}: meanLum={meanLuminance:F3} clipped={clipFraction:P2}");
++
++                CheckStripes(means, Check, $"tonemap-{mode}");
++            }
++
++            // ── 2b. HDR content profile + tone-map variants for visual selection ──
++            bool effectivelySdr = true;
++            if (isHdr)
++            {
++                var (white, peakRatio) = HdrContentAnalyzer.Analyze(capture);
++                effectivelySdr = peakRatio <= 1.05f;
++                metrics["sdrWhite"] = Math.Round(white, 4);
++                metrics["peakRatio"] = Math.Round(peakRatio, 4);
++                report.Add($"HDR profile: sdrWhite={white:F3} scRGB, peak/white={peakRatio:F2} -> {(effectivelySdr ? "EFFECTIVELY SDR" : "HDR content (highlights clamp at display white in a 16-bit PNG)")}");
++
++                string variantsDir = Path.Combine(outputDir, "variants");
++                Directory.CreateDirectory(variantsDir);
++                int index = 0;
++                foreach (var variant in HdrTonemapVariants.All)
++                {
++                    using var rendered = HdrTonemapVariants.Apply(capture, variant, white);
++                    if (rendered == null)
++                    {
++                        continue;
++                    }
++
++                    index++;
++                    string vPath = Path.Combine(variantsDir, $"{index:00}-{variant.Id}.png");
++                    SavePng(rendered, vPath);
++
++                    var vMeans = SampleStripes(rendered, card, cardRect.Left, cardRect.Top);
++                    var (vClip, vLum) = AnalyzeToned(rendered);
++                    metrics[$"variant-{variant.Id}"] = new
++                    {
++                        label = variant.Label,
++                        file = vPath,
++                        meanLuminance = Math.Round(vLum, 4),
++                        clippedFraction = Math.Round(vClip, 5),
++                        stripes = vMeans.ToDictionary(kv => kv.Key, kv => kv.Value.Select(v => Math.Round(v, 4)).ToArray()),
++                    };
++                    report.Add($"variant {variant.Id}: meanLum={vLum:F3} clipped={vClip:P2} ({variant.Label})");
++                }
++
++                string sdr16Path = Path.Combine(outputDir, "capture-sdr16.png");
++                ImageHelpers.SaveSdr16Png(capture, sdr16Path);
++                report.Add($"reference file (should match the screen): {sdr16Path}");
++                report.Add($"visual review: open variants/*.png and compare against the live screen; report the best file name.");
++            }
++
++            // ── 3. File encoders: bit depth and markers ───────────────────────
++            var settingsSdr = new TaskSettings
++            {
++                ImageSettings = new TaskSettingsImage
++                {
++                    ImagePNGBitDepth = PNGBitDepth.Default,
++                    ImageHdrSaveToneMapping = HdrToneMappingMode.TonemapHable,
++                },
++            };
++            var settingsHdr = new TaskSettings
++            {
++                ImageSettings = new TaskSettingsImage
++                {
++                    ImagePNGBitDepth = PNGBitDepth.Bit16,
++                    ImageHdrSaveToneMapping = HdrToneMappingMode.None,
++                },
++            };
++
++            string sdrPath = Path.Combine(outputDir, "encoder-sdr.png");
++            if (isHdr)
++            {
++                using var sdrBitmap = HdrTonemapper.TonemapToBgra8888(capture, settingsSdr.ImageSettings.ImageHdrSaveToneMapping);
++                Check(sdrBitmap != null, "encoder-sdr-tonemap");
++                if (sdrBitmap != null)
++                {
++                    ImageHelpers.SaveBitmap(sdrBitmap, sdrPath, PNGBitDepth.Default);
++                    CheckPng(sdrPath, expect16Bit: false, Check, "encoder-sdr");
++                }
++            }
++            else
++            {
++                ImageHelpers.SaveBitmap(capture, sdrPath, PNGBitDepth.Default);
++                CheckPng(sdrPath, expect16Bit: false, Check, "encoder-sdr");
++            }
++
++            string hdrPath = Path.Combine(outputDir, "encoder-hdr.png");
++            ImageHelpers.SaveBitmap(capture, hdrPath, PNGBitDepth.Bit16);
++            CheckPng(hdrPath, expect16Bit: true, Check, "encoder-hdr");
++
++            // ── 4. Real Save-As content path ──────────────────────────────────
++            var editorViewModel = new MainViewModel(ThemeService.CreateImageEditorOptions());
++            editorViewModel.UpdatePreview(capture.Copy()!);
++
++            MainViewModelHelper.LastCaptureTaskSettings = settingsSdr;
++            string saveSdrPath = Path.Combine(outputDir, "saveas-sdr.png");
++            string? savedSdr = await MainViewModelHelper.SaveToPathForDiagnosticsAsync(editorViewModel, saveSdrPath);
++            Check(savedSdr != null && File.Exists(saveSdrPath), "saveas-sdr-file-written", savedSdr ?? "<null>");
++            if (File.Exists(saveSdrPath))
++            {
++                CheckPng(saveSdrPath, expect16Bit: false, Check, "saveas-sdr");
++                if (isHdr)
++                {
++                    CompareWithTonemap(saveSdrPath, capture, settingsSdr.ImageSettings.ImageHdrSaveToneMapping, Check, "saveas-sdr");
++                }
++            }
++
++            MainViewModelHelper.LastCaptureTaskSettings = settingsHdr;
++            string saveHdrPath = Path.Combine(outputDir, "saveas-hdr.png");
++            string? savedHdr = await MainViewModelHelper.SaveToPathForDiagnosticsAsync(editorViewModel, saveHdrPath);
++            Check(savedHdr != null && File.Exists(saveHdrPath), "saveas-hdr-file-written", savedHdr ?? "<null>");
++            if (File.Exists(saveHdrPath))
++            {
++                // "SDR+HDR" must produce a 16-bit PNG even when the working source is 8-bit.
++                CheckPng(saveHdrPath, expect16Bit: true, Check, "saveas-hdr");
++            }
++
++            // The preview/source must still be the capture (no stale-image regression).
++            using (var sourceCopy = editorViewModel.CreateSourceImageCopyForPersistence())
++            {
++                string sourceSig = SavePathDebugDump.Signature(sourceCopy);
++                string captureSig = SavePathDebugDump.Signature(capture);
++                Check(sourceSig == captureSig, "preview-source-matches-capture", $"{sourceSig} vs {captureSig}");
++                metrics["previewSignature"] = sourceSig;
++                metrics["captureSignature"] = captureSig;
++            }
++
++            // ── 5. Preview conversion matches Tonemap(None) ───────────────────
++            if (isHdr)
++            {
++                using var lut = BitmapConversionHelpers.ConvertF16ToSrgb8(capture);
++                using var none = HdrTonemapper.TonemapToBgra8888(capture, HdrToneMappingMode.None);
++                if (lut != null && none != null)
++                {
++                    double meanDiff = MeanAbsRgbDiff(lut, none);
++                    metrics["previewVsNoneMeanDiff"] = Math.Round(meanDiff, 4);
++                    Check(meanDiff <= 1.5, "preview-matches-tonemap-none", $"mean|dRGB|={meanDiff:F3}");
++                }
++            }
++        }
++        catch (Exception ex)
++        {
++            Check(false, "self-test-exception", ex.ToString());
++        }
++        finally
++        {
++            RestoreExecutionState();
++            if (card != null)
++            {
++                await Dispatcher.UIThread.InvokeAsync(() => card.Window.Close());
++            }
++        }
++
++        return Finish(outputDir, report, metrics, pass);
++    }
++
++    // ── screen capture mode (no test card) ────────────────────────────────────
++
++    /// <summary>
++    /// Captures the current desktop (whatever the user has on screen — an HDR photo/video/game)
++    /// and writes the production SDR/HDR outputs plus every tone-map variant and a report.
++    /// Used for full manual verification against the live screen.
++    /// </summary>
++    public static async Task<int> CaptureScreenAsync(string outputDir)
++    {
++        Directory.CreateDirectory(outputDir);
++        var report = new List<string>();
++        var metrics = new Dictionary<string, object>();
++        bool pass = true;
++
++        void Note(bool ok, string name, string detail = "")
++        {
++            pass &= ok;
++            report.Add($"[{(ok ? "PASS" : "INFO")}] {name}{(string.IsNullOrEmpty(detail) ? string.Empty : "  — " + detail)}");
++            DebugHelper.WriteLine($"[HdrCapture] {(ok ? "PASS" : "INFO")} {name} {detail}");
++        }
++
++        try
++        {
++            await Dispatcher.UIThread.InvokeAsync(() =>
++            {
++                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
++                {
++                    lifetime.MainWindow?.Hide();
++                }
++            });
++            await Task.Delay(900); // let the window manager settle
++
++            WakeDisplay();
++            Window? nudge = await CreateNudgeWindowAsync();
++            using var nudgeCts = new CancellationTokenSource();
++            Task nudgeTask = nudge != null ? NudgeLoopAsync(nudge, nudgeCts.Token) : Task.CompletedTask;
++
++            SKBitmap? captured;
++            try
++            {
++                captured = await PlatformServices.ScreenCapture.CaptureFullScreenAsync();
++            }
++            finally
++            {
++                nudgeCts.Cancel();
++                await CloseNudgeWindowAsync(nudge);
++                await nudgeTask;
++            }
++
++            using var capture = captured;
++            Note(capture != null, "capture-not-null");
++            if (capture == null)
++            {
++                return Finish(outputDir, report, metrics, false, CaptureTitle);
++            }
++
++            bool isHdr = capture.ColorType == SKColorType.RgbaF16;
++            report.Add($"capture: {capture.Width}x{capture.Height} {capture.ColorType} alpha={capture.AlphaType}");
++
++            if (!isHdr)
++            {
++                // SDR display (or DXGI fell back to 8-bit): save as-is and mark the capture SDR.
++                SavePng(capture, Path.Combine(outputDir, "capture-8bit.png"));
++                ImageHelpers.SaveBitmap(capture, Path.Combine(outputDir, "saved-sdr-8bit.png"), PNGBitDepth.Default);
++                ImageHelpers.SaveBitmap(capture, Path.Combine(outputDir, "saved-hdr-16bit.png"), PNGBitDepth.Bit16);
++                report.Add("display/capture is 8-bit SDR: HDR checks are not applicable.");
++                DumpCapture(capture, outputDir);
++                return Finish(outputDir, report, metrics, pass, CaptureTitle);
++            }
++
++            var (white, peakRatio) = HdrContentAnalyzer.Analyze(capture);
++            bool effectivelySdr = peakRatio <= 1.05f;
++            metrics["sdrWhite"] = Math.Round(white, 4);
++            metrics["peakRatio"] = Math.Round(peakRatio, 4);
++            report.Add($"HDR profile: sdrWhite={white:F3} scRGB, peak/white={peakRatio:F2} -> {(effectivelySdr ? "EFFECTIVELY SDR" : "REAL HDR")}");
++
++            // Raw capture (exact linear samples).
++            DumpCapture(capture, outputDir);
++
++            // Real production encoders, exactly as the pipeline calls them.
++            string hdrPath = Path.Combine(outputDir, "saved-hdr-16bit.png");
++            ImageHelpers.SaveBitmap(capture, hdrPath, PNGBitDepth.Bit16);
++            CheckPng(hdrPath, expect16Bit: true, (ok, name, detail) => Note(ok, name, detail), "saved-hdr-16bit");
++
++            using (var sdr = HdrTonemapper.TonemapToBgra8888(capture, HdrToneMappingMode.TonemapHable))
++            {
++                if (sdr != null)
++                {
++                    string sdrPath = Path.Combine(outputDir, "saved-sdr-8bit.png");
++                    ImageHelpers.SaveBitmap(sdr, sdrPath, PNGBitDepth.Default);
++                    CheckPng(sdrPath, expect16Bit: false, (ok, name, detail) => Note(ok, name, detail), "saved-sdr-8bit");
++
++                    var (clip, meanLum) = AnalyzeToned(sdr);
++                    metrics["savedSdr"] = new { clippedFraction = Math.Round(clip, 5), meanLuminance = Math.Round(meanLum, 4) };
++                    report.Add($"saved-sdr-8bit: meanLum={meanLum:F3} clipped={clip:P2} (mode=TonemapHable)");
++                }
++            }
++
++            // Display-referred 16-bit reference (what the screen should look like).
++            ImageHelpers.SaveSdr16Png(capture, Path.Combine(outputDir, "reference-screen-sdr16.png"));
++
++            // All tone-map variants for visual comparison against the live screen.
++            string variantsDir = Path.Combine(outputDir, "variants");
++            Directory.CreateDirectory(variantsDir);
++            int index = 0;
++            foreach (var variant in HdrTonemapVariants.All)
++            {
++                using var rendered = HdrTonemapVariants.Apply(capture, variant, white);
++                if (rendered == null)
++                {
++                    continue;
++                }
++
++                index++;
++                SavePng(rendered, Path.Combine(variantsDir, $"{index:00}-{variant.Id}.png"));
++                var (vClip, vLum) = AnalyzeToned(rendered);
++                metrics[$"variant-{variant.Id}"] = new { meanLuminance = Math.Round(vLum, 4), clippedFraction = Math.Round(vClip, 5) };
++                report.Add($"variant {index:00} {variant.Id,-14} meanLum={vLum:F3} clipped={vClip:P2} ({variant.Label})");
++            }
++
++            report.Add("visual check: compare saved-sdr-8bit.png / variants/*.png with the live screen;");
++            report.Add("compare saved-hdr-16bit.png with the original content in an HDR-capable viewer.");
++        }
++        catch (Exception ex)
++        {
++            Note(false, "capture-exception", ex.ToString());
++        }
++        finally
++        {
++            RestoreExecutionState();
++        }
++
++        return Finish(outputDir, report, metrics, pass, CaptureTitle);
++    }
++
++    // ── composition nudge ───────────────────────────────────────────────────
++
++    [System.Runtime.InteropServices.DllImport("user32.dll")]
++    private static extern bool SetCursorPos(int x, int y);
++
++    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
++    private static extern uint SetThreadExecutionState(uint esFlags);
++
++    [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
++    private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
++
++    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
++    private struct INPUT
++    {
++        public uint Type;
++        public MOUSEINPUT Mouse;
++    }
++
++    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
++    private struct MOUSEINPUT
++    {
++        public int Dx;
++        public int Dy;
++        public uint MouseData;
++        public uint DwFlags;
++        public uint Time;
++        public IntPtr DwExtraInfo;
++    }
++
++    private const uint ES_CONTINUOUS = 0x80000000;
++    private const uint ES_SYSTEM_REQUIRED = 0x00000001;
++    private const uint ES_DISPLAY_REQUIRED = 0x00000002;
++    private const uint INPUT_MOUSE = 0;
++    private const uint MOUSEEVENTF_MOVE = 0x0001;
++
++    /// <summary>
++    /// Wakes the display and forces composition updates. A sleeping/idle display stops DWM from
++    /// presenting frames: DXGI Duplication then returns DXGI_ERROR_WAIT_TIMEOUT (0x887A0027) on
++    /// every acquire while GDI still returns stale content (8-bit), silently breaking HDR capture.
++    /// </summary>
++    private static void WakeDisplay()
++    {
++        try
++        {
++            SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED);
++
++            var bounds = PlatformServices.Screen.GetVirtualScreenBounds();
++            int cx = Math.Max(1, bounds.Width / 2);
++            int cy = Math.Max(1, bounds.Height / 2);
++            SetCursorPos(cx, cy);
++            Thread.Sleep(40);
++
++            // Synthetic input also resets the display idle timer on most systems.
++            var inputs = new[]
++            {
++                new INPUT { Type = INPUT_MOUSE, Mouse = new MOUSEINPUT { Dx = 2, Dy = 2, DwFlags = MOUSEEVENTF_MOVE } },
++                new INPUT { Type = INPUT_MOUSE, Mouse = new MOUSEINPUT { Dx = -2, Dy = -2, DwFlags = MOUSEEVENTF_MOVE } },
++            };
++            SendInput((uint)inputs.Length, inputs, System.Runtime.InteropServices.Marshal.SizeOf<INPUT>());
++
++            Thread.Sleep(250);
++            DebugHelper.WriteLine("[HDR] WakeDisplay: display idle timer reset");
++        }
++        catch (Exception ex)
++        {
++            DebugHelper.WriteLine($"[HDR] WakeDisplay failed: {ex.Message}");
++        }
++    }
++
++    private static void RestoreExecutionState()
++    {
++        try
++        {
++            SetThreadExecutionState(ES_CONTINUOUS);
++        }
++        catch
++        {
++        }
++    }
++
++    /// <summary>
++    /// DXGI Desktop Duplication only delivers a frame when the desktop composition changes; on a
++    /// static screen every AcquireNextFrame times out and the service falls back to 8-bit GDI
++    /// (silently turning HDR captures into SDR). While a capture runs (it executes on a worker
++    /// thread), flash a tiny topmost window in the bottom-right corner so the duplication always
++    /// has a fresh frame to deliver.
++    /// </summary>
++    private static async Task<Window?> CreateNudgeWindowAsync()
++    {
++        return await Dispatcher.UIThread.InvokeAsync(() =>
++        {
++            try
++            {
++                var bounds = PlatformServices.Screen.GetVirtualScreenBounds();
++                int x = Math.Max(0, bounds.Right - 8);
++                int y = Math.Max(0, bounds.Bottom - 8);
++
++                var nudge = new Window
++                {
++                    Width = 6,
++                    Height = 6,
++                    Topmost = true,
++                    ShowInTaskbar = false,
++                    WindowStartupLocation = WindowStartupLocation.Manual,
++                    Position = new PixelPoint(x, y),
++                    Content = new Border { Background = Brushes.Magenta },
++                };
++                nudge.Show();
++                DebugHelper.WriteLine($"[HDR] nudge window shown at ({x},{y})");
++                return nudge;
++            }
++            catch (Exception ex)
++            {
++                DebugHelper.WriteLine($"[HDR] nudge window failed: {ex.Message}");
++                return null;
++            }
++        });
++    }
++
++    private static async Task NudgeLoopAsync(Window nudge, CancellationToken token)
++    {
++        var colors = new IBrush[] { Brushes.Cyan, Brushes.Magenta, Brushes.Yellow, Brushes.Lime, Brushes.White };
++        int index = 0;
++        try
++        {
++            while (!token.IsCancellationRequested)
++            {
++                var brush = colors[index++ % colors.Length];
++                await Dispatcher.UIThread.InvokeAsync(() => nudge.Content = new Border { Background = brush });
++                await Task.Delay(70, token);
++            }
++        }
++        catch (OperationCanceledException)
++        {
++        }
++        catch (Exception ex)
++        {
++            DebugHelper.WriteLine($"[HDR] nudge loop: {ex.Message}");
++        }
++    }
++
++    private static async Task CloseNudgeWindowAsync(Window? nudge)
++    {
++        if (nudge == null) return;
++        await Dispatcher.UIThread.InvokeAsync(() =>
++        {
++            try
++            {
++                nudge.Close();
++            }
++            catch
++            {
++            }
++        });
++    }
++
++    // ── test card ────────────────────────────────────────────────────────────
++
++    private static CardGeometry ShowTestCard()
++    {
++        var grid = new Grid();
++        for (int i = 0; i < Stripes.Length; i++)
++        {
++            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
++            var border = new Border { Background = new SolidColorBrush(Stripes[i].Color) };
++            Grid.SetColumn(border, i);
++            grid.Children.Add(border);
++        }
++
++        var window = new Window
++        {
++            CanResize = false,
++            Topmost = true,
++            ShowInTaskbar = false,
++            Width = 960,
++            Height = 160,
++            WindowStartupLocation = WindowStartupLocation.Manual,
++            Position = new PixelPoint(0, 0),
++            Content = grid,
++        };
++        window.Show();
++
++        double scale = window.RenderScaling > 0 ? window.RenderScaling : 1.0;
++        return new CardGeometry
++        {
++            Window = window,
++            Left = window.Position.X,
++            Top = window.Position.Y,
++            WidthPx = (int)Math.Round(window.Width * scale),
++            HeightPx = (int)Math.Round(window.Height * scale),
++        };
++    }
++
++    // ── sampling ─────────────────────────────────────────────────────────────
++
++    private static Dictionary<string, double[]> SampleStripes(SKBitmap bitmap, CardGeometry card, int originX, int originY)
++    {
++        var result = new Dictionary<string, double[]>();
++        double bandY = card.Top - originY + card.HeightPx / 2.0;
++        double y0 = Math.Clamp(bandY - card.HeightPx * 0.2, 0, bitmap.Height - 2);
++        double y1 = Math.Clamp(bandY + card.HeightPx * 0.2, 1, bitmap.Height - 1);
++
++        for (int i = 0; i < Stripes.Length; i++)
++        {
++            double x0 = card.Left - originX + (i + 0.25) * (card.WidthPx / (double)Stripes.Length);
++            double x1 = card.Left - originX + (i + 0.75) * (card.WidthPx / (double)Stripes.Length);
++            var (r, g, b) = MeanRegion(bitmap, x0, y0, x1, y1);
++            result[Stripes[i].Name] = new[] { r, g, b };
++        }
++
++        return result;
++    }
++
++    private static (double R, double G, double B) MeanRegion(SKBitmap bitmap, double x0, double y0, double x1, double y1)
++    {
++        int ix0 = Math.Clamp((int)x0, 0, bitmap.Width - 1);
++        int ix1 = Math.Clamp((int)x1, ix0 + 1, bitmap.Width);
++        int iy0 = Math.Clamp((int)y0, 0, bitmap.Height - 1);
++        int iy1 = Math.Clamp((int)y1, iy0 + 1, bitmap.Height);
++
++        int stepX = Math.Max(1, (ix1 - ix0) / 24);
++        int stepY = Math.Max(1, (iy1 - iy0) / 8);
++
++        double sr = 0, sg = 0, sb = 0;
++        int n = 0;
++        Span<byte> span = bitmap.GetPixelSpan();
++        int stride = bitmap.RowBytes;
++
++        for (int y = iy0; y < iy1; y += stepY)
++        {
++            for (int x = ix0; x < ix1; x += stepX)
++            {
++                int rowOffset = y * stride;
++                if (bitmap.ColorType == SKColorType.RgbaF16)
++                {
++                    int o = rowOffset + x * 8;
++                    sr += DecodeHalf(span, o);
++                    sg += DecodeHalf(span, o + 2);
++                    sb += DecodeHalf(span, o + 4);
++                }
++                else
++                {
++                    int o = rowOffset + x * 4;
++                    sr += span[o + 2] / 255.0;
++                    sg += span[o + 1] / 255.0;
++                    sb += span[o] / 255.0;
++                }
++                n++;
++            }
++        }
++
++        return n == 0 ? (0, 0, 0) : (sr / n, sg / n, sb / n);
++    }
++
++    private static double DecodeHalf(ReadOnlySpan<byte> span, int offset)
++    {
++        ushort bits = (ushort)(span[offset] | (span[offset + 1] << 8));
++        float v = (float)BitConverter.UInt16BitsToHalf(bits);
++        return float.IsFinite(v) ? Math.Clamp(v, 0f, 1f) : 0f;
++    }
++
++    // ── checks ───────────────────────────────────────────────────────────────
++
++    private static void CheckStripes(Dictionary<string, double[]> means, Action<bool, string, string> check, string stage)
++    {
++        static bool Dom(double[] c, int idx, double relMargin = 0.25)
++        {
++            double max = Math.Max(c[0], Math.Max(c[1], c[2]));
++            return max > 0.02 && c[idx] >= max * (1 - relMargin);
++        }
++
++        static bool Suppressed(double[] c, int[] idxs, double factor = 0.35)
++        {
++            double max = Math.Max(c[0], Math.Max(c[1], c[2]));
++            foreach (int i in idxs)
++            {
++                if (c[i] > max * factor + 0.02) return false;
++            }
++            return true;
++        }
++
++        static bool Neutral(double[] c, double tolerance = 0.06)
++        {
++            double max = Math.Max(c[0], Math.Max(c[1], c[2]));
++            double min = Math.Min(c[0], Math.Min(c[1], c[2]));
++            return max > 0.02 && (max - min) <= max * tolerance + 0.01;
++        }
++
++        if (means.TryGetValue("red", out var red))
++            check(Dom(red, 0) && Suppressed(red, new[] { 1, 2 }), $"{stage}:stripe-red-keeps-R", $"({red[0]:F3},{red[1]:F3},{red[2]:F3})");
++        if (means.TryGetValue("green", out var green))
++            check(Dom(green, 1) && Suppressed(green, new[] { 0, 2 }), $"{stage}:stripe-green-keeps-G", $"({green[0]:F3},{green[1]:F3},{green[2]:F3})");
++        if (means.TryGetValue("blue", out var blue))
++            check(Dom(blue, 2) && Suppressed(blue, new[] { 0, 1 }), $"{stage}:stripe-blue-keeps-B", $"({blue[0]:F3},{blue[1]:F3},{blue[2]:F3})");
++        if (means.TryGetValue("cyan", out var cyan))
++            check(Dom(cyan, 1) && Dom(cyan, 2) && Suppressed(cyan, new[] { 0 }), $"{stage}:stripe-cyan", $"({cyan[0]:F3},{cyan[1]:F3},{cyan[2]:F3})");
++        if (means.TryGetValue("magenta", out var magenta))
++            check(Dom(magenta, 0) && Dom(magenta, 2) && Suppressed(magenta, new[] { 1 }), $"{stage}:stripe-magenta", $"({magenta[0]:F3},{magenta[1]:F3},{magenta[2]:F3})");
++        if (means.TryGetValue("yellow", out var yellow))
++            check(Dom(yellow, 0) && Dom(yellow, 1) && Suppressed(yellow, new[] { 2 }), $"{stage}:stripe-yellow", $"({yellow[0]:F3},{yellow[1]:F3},{yellow[2]:F3})");
++        if (means.TryGetValue("white", out var white))
++            check(Neutral(white), $"{stage}:stripe-white-neutral", $"({white[0]:F3},{white[1]:F3},{white[2]:F3})");
++        if (means.TryGetValue("gray50", out var gray))
++            check(Neutral(gray), $"{stage}:stripe-gray-neutral", $"({gray[0]:F3},{gray[1]:F3},{gray[2]:F3})");
++    }
++
++    private static (double ClippedFraction, double MeanLuminance) AnalyzeToned(SKBitmap bitmap)
++    {
++        Span<byte> span = bitmap.GetPixelSpan();
++        int stride = bitmap.RowBytes;
++        int w = bitmap.Width, h = bitmap.Height;
++        int step = Math.Max(1, Math.Max(w, h) / 200);
++        long n = 0, clipped = 0;
++        double lum = 0;
++
++        for (int y = 0; y < h; y += step)
++        {
++            for (int x = 0; x < w; x += step)
++            {
++                int o = y * stride + x * 4;
++                byte b = span[o], g = span[o + 1], r = span[o + 2];
++                if (r >= 250 && g >= 250 && b >= 250) clipped++;
++                lum += (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255.0;
++                n++;
++            }
++        }
++
++        return n == 0 ? (0, 0) : (clipped / (double)n, lum / n);
++    }
++
++    private static void CheckPng(string path, bool expect16Bit, Action<bool, string, string> check, string stage, bool requireHdrProfile = false)
++    {
++        byte[] bytes = File.ReadAllBytes(path);
++        bool is16 = bytes.Length > 25 && bytes[24] == 16;
++        bool hasIccp = HasPngChunk(bytes, "iCCP");
++        bool hasSrgb = HasPngChunk(bytes, "sRGB");
++        check(is16 == expect16Bit, $"{stage}:bit-depth", $"16bit={is16} expected={expect16Bit}");
++        if (expect16Bit && requireHdrProfile)
++        {
++            check(hasIccp && !hasSrgb, $"{stage}:hdr-profile", $"iCCP={hasIccp} sRGB={hasSrgb}");
++        }
++        else if (expect16Bit)
++        {
++            check(hasSrgb, $"{stage}:sdr16-profile", $"sRGB chunk required for display-referred 16-bit (iCCP={hasIccp})");
++        }
++        else
++        {
++            check(!is16, $"{stage}:sdr-depth", $"bitDepth={bytes[24]}");
++        }
++    }
++
++    private static void CompareWithTonemap(string path, SKBitmap capture, HdrToneMappingMode mode, Action<bool, string, string> check, string stage)
++    {
++        using var saved = SKBitmap.Decode(path);
++        using var expected = HdrTonemapper.TonemapToBgra8888(capture, mode);
++        if (saved == null || expected == null)
++        {
++            check(false, $"{stage}:compare-decode", string.Empty);
++            return;
++        }
++
++        double diff = MeanAbsRgbDiff(saved, expected);
++        check(diff <= 2.0, $"{stage}:content-matches-tonemap", $"mean|dRGB|={diff:F3} (mode={mode})");
++    }
++
++    private static double MeanAbsRgbDiff(SKBitmap a, SKBitmap b)
++    {
++        if (a.ColorType != SKColorType.Bgra8888 || b.ColorType != SKColorType.Bgra8888)
++        {
++            return double.MaxValue;
++        }
++
++        Span<byte> sa = a.GetPixelSpan();
++        Span<byte> sb = b.GetPixelSpan();
++        int strideA = a.RowBytes, strideB = b.RowBytes;
++        int w = Math.Min(a.Width, b.Width), h = Math.Min(a.Height, b.Height);
++        int step = Math.Max(1, Math.Max(w, h) / 400);
++        long n = 0, sum = 0;
++
++        for (int y = 0; y < h; y += step)
++        {
++            for (int x = 0; x < w; x += step)
++            {
++                int oa = y * strideA + x * 4;
++                int ob = y * strideB + x * 4;
++                sum += Math.Abs(sa[oa] - sb[ob]) + Math.Abs(sa[oa + 1] - sb[ob + 1]) + Math.Abs(sa[oa + 2] - sb[ob + 2]);
++                n++;
++            }
++        }
++
++        return n == 0 ? double.MaxValue : sum / (double)n;
++    }
++
++    private static bool HasPngChunk(byte[] png, string chunkName)
++    {
++        int pos = 8;
++        while (pos + 8 <= png.Length)
++        {
++            uint len = BinaryPrimitives.ReadUInt32BigEndian(png.AsSpan(pos, 4));
++            string name = Encoding.ASCII.GetString(png, pos + 4, 4);
++            if (name == chunkName) return true;
++            if (name == "IEND") break;
++            pos += 12 + (int)len;
++        }
++        return false;
++    }
++
++    // ── io ───────────────────────────────────────────────────────────────────
++
++    private static void DumpCapture(SKBitmap capture, string outputDir)
++    {
++        if (capture.ColorType == SKColorType.RgbaF16)
++        {
++            ImageHelpers.SaveHdrF16Png(capture, Path.Combine(outputDir, "capture-raw16.png"));
++        }
++        else
++        {
++            SavePng(capture, Path.Combine(outputDir, "capture-raw8.png"));
++        }
++    }
++
++    private static void SavePng(SKBitmap bitmap, string path)
++    {
++        using var data = bitmap.Encode(SKEncodedImageFormat.Png, 100);
++        if (data != null)
++        {
++            File.WriteAllBytes(path, data.ToArray());
++        }
++    }
++
++    private static int Finish(string outputDir, List<string> report, Dictionary<string, object> metrics, bool pass, string title = "HDR SELF-TEST")
++    {
++        report.Insert(0, $"{title}: {(pass ? "PASS" : "FAIL")}");
++        string txt = string.Join(Environment.NewLine, report);
++        File.WriteAllText(Path.Combine(outputDir, "report.txt"), txt);
++        File.WriteAllText(
++            Path.Combine(outputDir, "report.json"),
++            JsonSerializer.Serialize(new { pass, lines = report, metrics }, new JsonSerializerOptions { WriteIndented = true }));
++        DebugHelper.WriteLine($"[HdrSelfTest] report written to {outputDir}; result={(pass ? "PASS" : "FAIL")}");
++        DebugHelper.Flush();
++        return pass ? 0 : 1;
++    }
++}
+\ No newline at end of file
+diff --git a/src/desktop/app/XerahS.UI/Services/MainViewModelHelper.cs b/src/desktop/app/XerahS.UI/Services/MainViewModelHelper.cs
+index 26980352..c4c2aee1 100644
+--- a/src/desktop/app/XerahS.UI/Services/MainViewModelHelper.cs
++++ b/src/desktop/app/XerahS.UI/Services/MainViewModelHelper.cs
+@@ -32,6 +32,7 @@ You should have received a copy of the GNU General Public License
+ using XerahS.Bootstrap;
+ using XerahS.Common;
+ using XerahS.Core;
++using XerahS.Core.Helpers;
+ 
+ namespace XerahS.UI.Services;
+ 
+@@ -40,6 +41,13 @@ namespace XerahS.UI.Services;
+ /// </summary>
+ public static class MainViewModelHelper
+ {
++    /// <summary>
++    /// TaskSettings of the most recently completed capture. Save/Save-As read the PNG depth and
++    /// HDR tone-mapping settings from here (matching what the pipeline wrote) instead of the
++    /// global DefaultTaskSettings, which users do not change when editing a workflow.
++    /// </summary>
++    public static TaskSettings? LastCaptureTaskSettings { get; set; }
++
+     /// <summary>
+     /// Wires up the UploadRequested event to the XerahS upload pipeline.
+     /// </summary>
+@@ -66,18 +74,22 @@ public static void WireCopyRequested(MainViewModel viewModel, Func<SkiaSharp.SKB
+ 
+     /// <summary>
+     /// Wires up the SaveRequested event to overwrite the last saved path, or falls back to SaveAs.
++    /// getSource returns the working source image (may be HDR/RgbaF16) so the save path can honor
++    /// the PNG depth and HDR tone-mapping settings instead of encoding the 8-bit preview.
+     /// </summary>
+-    public static void WireSaveRequested(MainViewModel viewModel, Func<SKBitmap?>? getEditedSnapshot = null, Func<Window?>? getWindow = null)
++    public static void WireSaveRequested(MainViewModel viewModel, Func<SKBitmap?>? getEditedSnapshot = null, Func<Window?>? getWindow = null, Func<SKBitmap?>? getSource = null)
+     {
+-        viewModel.SaveRequested += () => HandleSaveRequestedAsync(viewModel, getEditedSnapshot, getWindow);
++        viewModel.SaveRequested += () => HandleSaveRequestedAsync(viewModel, getEditedSnapshot, getWindow, getSource);
+     }
+ 
+     /// <summary>
+     /// Wires up the SaveAsRequested event to show a save file dialog and save to the chosen path.
++    /// getSource returns the working source image (may be HDR/RgbaF16) so the save path can honor
++    /// the PNG depth and HDR tone-mapping settings instead of encoding the 8-bit preview.
+     /// </summary>
+-    public static void WireSaveAsRequested(MainViewModel viewModel, Func<SKBitmap?>? getEditedSnapshot = null, Func<Window?>? getWindow = null)
++    public static void WireSaveAsRequested(MainViewModel viewModel, Func<SKBitmap?>? getEditedSnapshot = null, Func<Window?>? getWindow = null, Func<SKBitmap?>? getSource = null)
+     {
+-        viewModel.SaveAsRequested += () => HandleSaveAsRequestedAsync(viewModel, getEditedSnapshot, getWindow);
++        viewModel.SaveAsRequested += () => HandleSaveAsRequestedAsync(viewModel, getEditedSnapshot, getWindow, getSource);
+     }
+ 
+     /// <summary>
+@@ -92,17 +104,17 @@ public static void WirePinRequested(MainViewModel viewModel, Func<SKBitmap?>? ge
+         };
+     }
+ 
+-    private static async Task<string?> HandleSaveRequestedAsync(MainViewModel viewModel, Func<SKBitmap?>? getEditedSnapshot, Func<Window?>? getWindow)
++    private static async Task<string?> HandleSaveRequestedAsync(MainViewModel viewModel, Func<SKBitmap?>? getEditedSnapshot, Func<Window?>? getWindow, Func<SKBitmap?>? getSource)
+     {
+         DebugHelper.WriteLine("MainViewModelHelper: SaveRequested received");
+         try
+         {
+             if (!string.IsNullOrEmpty(viewModel.ImageFilePath))
+             {
+-                return await SaveToPathAsync(viewModel, getEditedSnapshot, viewModel.ImageFilePath);
++                return await SaveToPathAsync(viewModel, getEditedSnapshot, getSource, viewModel.ImageFilePath);
+             }
+ 
+-            return await HandleSaveAsRequestedAsync(viewModel, getEditedSnapshot, getWindow);
++            return await HandleSaveAsRequestedAsync(viewModel, getEditedSnapshot, getWindow, getSource);
+         }
+         catch (Exception ex)
+         {
+@@ -114,7 +126,7 @@ public static void WirePinRequested(MainViewModel viewModel, Func<SKBitmap?>? ge
+ 
+     private static readonly HashSet<MainViewModel> _saveAsInProgress = new();
+ 
+-    private static async Task<string?> HandleSaveAsRequestedAsync(MainViewModel viewModel, Func<SKBitmap?>? getEditedSnapshot, Func<Window?>? getWindow)
++    private static async Task<string?> HandleSaveAsRequestedAsync(MainViewModel viewModel, Func<SKBitmap?>? getEditedSnapshot, Func<Window?>? getWindow, Func<SKBitmap?>? getSource)
+     {
+         // Guard against re-entry (e.g. double-click or keyboard repeat triggering the dialog twice)
+         if (!_saveAsInProgress.Add(viewModel))
+@@ -158,7 +170,7 @@ public static void WirePinRequested(MainViewModel viewModel, Func<SKBitmap?>? ge
+                 return null;
+             }
+ 
+-            return await SaveToPathAsync(viewModel, getEditedSnapshot, path);
++            return await SaveToPathAsync(viewModel, getEditedSnapshot, getSource, path);
+         }
+         catch (Exception ex)
+         {
+@@ -172,42 +184,129 @@ public static void WirePinRequested(MainViewModel viewModel, Func<SKBitmap?>? ge
+         }
+     }
+ 
+-    private static async Task<string?> SaveToPathAsync(MainViewModel viewModel, Func<SKBitmap?>? getEditedSnapshot, string path)
++    /// <summary>
++    /// Runs the real Save-As content path without a file picker (used by the HDR self-test).
++    /// Mirrors what the embedded editor does: the working source (fp16 for HDR captures) is the
++    /// authoritative input for depth/tone-aware saving.
++    /// </summary>
++    public static Task<string?> SaveToPathForDiagnosticsAsync(MainViewModel viewModel, string path)
+     {
+-        SKBitmap? bitmap = getEditedSnapshot?.Invoke();
+-        if (bitmap == null && viewModel.PreviewImage != null)
+-            bitmap = BitmapConversionHelpers.ToSKBitmap(viewModel.PreviewImage);
++        return SaveToPathAsync(viewModel, null, () => viewModel.CreateSourceImageCopyForPersistence(), path);
++    }
+ 
+-        if (bitmap == null)
+-        {
+-            DebugHelper.WriteLine("MainViewModelHelper: SaveToPath — no image to save.");
+-            return null;
+-        }
++    private static async Task<string?> SaveToPathAsync(MainViewModel viewModel, Func<SKBitmap?>? getEditedSnapshot, Func<SKBitmap?>? getSource, string path)
++    {
++        // The PNG depth setting decides the saved content for an HDR (fp16) source:
++        // - "SDR" (Default): force an HDR→SDR conversion using the selected tone-mapping method
++        //   (None = save "as is", i.e. clamp at SDR white with no tone curve).
++        // - "SDR+HDR" (Bit16): keep the HDR data and write the 16-bit sRGB PNG as-is.
++        // Settings come from the workflow that produced the capture (LastCaptureTaskSettings),
++        // falling back to the global defaults — NOT from global-only defaults, which diverge
++        // from what the user sees in the workflow editor.
++        var imageSettings = (LastCaptureTaskSettings ?? SettingsManager.DefaultTaskSettings)?.ImageSettings;
++        bool sdrOnlyOutput = imageSettings?.ImagePNGBitDepth != PNGBitDepth.Bit16;
++        HdrToneMappingMode hdrSaveMode = imageSettings?.ImageHdrSaveToneMapping ?? HdrToneMappingMode.TonemapHable;
++        DebugHelper.WriteLine($"MainViewModelHelper: SaveToPath depth={imageSettings?.ImagePNGBitDepth}, hdrSaveMode={hdrSaveMode}");
++
++        SKBitmap? source = null;
++        SKBitmap? tonemapped = null;
++        SKBitmap? fallback = null;
++        SKBitmap? bitmap = null;
+ 
+-        Exception? imageSaveError = null;
+         try
+         {
+-            using (bitmap)
++            source = getSource?.Invoke();
++            bool isHdrSource = source != null && source.ColorType == SKColorType.RgbaF16;
++            SavePathDebugDump.Info("source-from-getSource", source);
++            SavePathDebugDump.Dump("1_source", source);
++            string sourceSig = SavePathDebugDump.Signature(source);
++            DebugHelper.WriteLine($"[SavePathDebug] source Sig: {sourceSig}; last preview Sig: {SavePathDebugDump.LastPreviewSignature}");
++
++            if (isHdrSource)
++            {
++                if (!sdrOnlyOutput)
++                {
++                    // SDR+HDR depth: keep the fp16 source; ImageHelpers.SaveBitmap below writes it
++                    // as a 16-bit sRGB PNG without applying a tone curve.
++                    bitmap = source;
++                    SavePathDebugDump.Info("bitmap-fp16-kept", bitmap);
++                }
++                else
++                {
++                    // SDR depth: tonemap HDR→SDR. None passes the linear values through unchanged
++                    // (they clamp at SDR white), every other mode applies its tone curve.
++                    tonemapped = HdrTonemapper.TonemapToBgra8888(source!, hdrSaveMode);
++                    SavePathDebugDump.Info("bitmap-tonemapped", tonemapped);
++                    SavePathDebugDump.Dump("2_tonemapped", tonemapped);
++                    if (tonemapped != null)
++                    {
++                        bitmap = tonemapped;
++                    }
++                    else
++                    {
++                        DebugHelper.WriteLine("MainViewModelHelper: HDR→SDR tonemap failed; falling back to edited snapshot.");
++                        bitmap = fallback = GetSnapshotOrPreview();
++                        SavePathDebugDump.Info("bitmap-fallback-after-tonemap-fail", bitmap);
++                    }
++                }
++            }
++            else
+             {
+-                var ext = Path.GetExtension(path).ToLowerInvariant();
+-                var format = ext is ".jpg" or ".jpeg" ? SKEncodedImageFormat.Jpeg : SKEncodedImageFormat.Png;
+-                int quality = format == SKEncodedImageFormat.Jpeg ? 95 : 100;
+-                using var data = bitmap.Encode(format, quality);
+-                using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+-                data.SaveTo(stream);
++                // SDR (or no) source: keep the WYSIWYG behavior — save the rendered snapshot,
++                // which includes any annotations.
++                bitmap = fallback = GetSnapshotOrPreview();
++                SavePathDebugDump.Info("bitmap-snapshot-or-preview", bitmap);
++                SavePathDebugDump.Dump("3_snapshot_or_preview", bitmap);
+             }
+-        }
+-        catch (Exception ex)
+-        {
+-            imageSaveError = ex;
+-        }
+ 
+-        if (imageSaveError != null)
++            if (bitmap == null)
++            {
++                DebugHelper.WriteLine("MainViewModelHelper: SaveToPath — no image to save.");
++                return null;
++            }
++            SavePathDebugDump.Dump("4_final", bitmap);
++
++            Exception? imageSaveError = null;
++            try
++            {
++                bool pngRequested = Path.GetExtension(path).ToLowerInvariant() is ".png" or "";
++                if (!sdrOnlyOutput && pngRequested)
++                {
++                    // "SDR+HDR" depth always produces a 16-bit PNG, even when the working source is
++                    // already 8-bit (SDR desktop, GDI fallback, or an opened SDR image). Widening the
++                    // pixels keeps the selected depth meaningful instead of silently writing 32-bit
++                    // RGBA, which users reported as "the depth setting has no effect".
++                    ImageHelpers.SaveBitmap(bitmap, path, PNGBitDepth.Bit16);
++                }
++                else
++                {
++                    var ext = Path.GetExtension(path).ToLowerInvariant();
++                    var format = ext is ".jpg" or ".jpeg" ? SKEncodedImageFormat.Jpeg : SKEncodedImageFormat.Png;
++                    int quality = format == SKEncodedImageFormat.Jpeg ? 95 : 100;
++                    using var data = bitmap.Encode(format, quality);
++                    using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
++                    data.SaveTo(stream);
++                }
++            }
++            catch (Exception ex)
++            {
++                imageSaveError = ex;
++            }
++
++            if (imageSaveError != null)
++            {
++                DebugHelper.WriteLine($"MainViewModelHelper: Image save failed (file may be incomplete): {imageSaveError.Message}");
++                DebugHelper.WriteException(imageSaveError);
++                viewModel.IsDirty = true;
++                return null;
++            }
++        }
++        finally
+         {
+-            DebugHelper.WriteLine($"MainViewModelHelper: Image save failed (file may be incomplete): {imageSaveError.Message}");
+-            DebugHelper.WriteException(imageSaveError);
+-            viewModel.IsDirty = true;
+-            return null;
++            // bitmap aliases one of these; dispose each owned object exactly once.
++            fallback?.Dispose();
++            tonemapped?.Dispose();
++            source?.Dispose();
+         }
+ 
+         viewModel.ImageFilePath = path;
+@@ -245,6 +344,14 @@ public static void WirePinRequested(MainViewModel viewModel, Func<SKBitmap?>? ge
+         DebugHelper.WriteLine($"MainViewModelHelper: Image saved to '{path}'");
+         viewModel.IsDirty = false;
+         return path;
++
++        SKBitmap? GetSnapshotOrPreview()
++        {
++            var bmp = getEditedSnapshot?.Invoke();
++            if (bmp == null && viewModel.PreviewImage != null)
++                bmp = BitmapConversionHelpers.ToSKBitmap(viewModel.PreviewImage);
++            return bmp;
++        }
+     }
+ 
+     private static async Task HandleUploadRequestedAsync(MainViewModel viewModel, IDesktopTaskManager taskManager, Func<SKBitmap?>? getEditedSnapshot)
+diff --git a/src/desktop/app/XerahS.UI/Services/WorkflowOrchestrator.cs b/src/desktop/app/XerahS.UI/Services/WorkflowOrchestrator.cs
+index 08b1cf6c..bebc4dc2 100644
+--- a/src/desktop/app/XerahS.UI/Services/WorkflowOrchestrator.cs
++++ b/src/desktop/app/XerahS.UI/Services/WorkflowOrchestrator.cs
+@@ -30,7 +30,9 @@ You should have received a copy of the GNU General Public License
+ using ShareX.ImageEditor.Presentation.ViewModels;
+ using XerahS.Bootstrap;
+ using XerahS.Common;
++using XerahS.Common.Helpers;
+ using XerahS.Core;
++using XerahS.Core.Helpers;
+ using XerahS.Platform.Abstractions;
+ using XerahS.UI.Assistant;
+ using XerahS.UI.CaptureCommandPalette;
+@@ -311,9 +313,36 @@ private void OnTaskCompleted(object? sender, EventArgs e)
+             return;
+         }
+ 
++        // Remember the settings that produced this capture. Save/Save-As from the preview must
++        // honor the SAME depth/tone settings (they live on the workflow, not in the global
++        // DefaultTaskSettings), otherwise the file written differs from the pipeline output.
++        if (task.Info.TaskSettings != null)
++        {
++            MainViewModelHelper.LastCaptureTaskSettings = task.Info.TaskSettings;
++        }
++
+         int width = image.Width;
+         int height = image.Height;
+         SkiaSharp.SKBitmap? previewCopy = image.Copy();
++
++        // The preview must match what a Save with depth=SDR would write: tonemap fp16 the same
++        // way the file path does. SDR+HDR gets the plain sRGB view (raw HDR shown display-…).
++        if (previewCopy != null && previewCopy.ColorType == SkiaSharp.SKColorType.RgbaF16)
++        {
++            var imgSettings = (MainViewModelHelper.LastCaptureTaskSettings ?? XerahS.Core.SettingsManager.DefaultTaskSettings)?.ImageSettings;
++            bool sdrOnly = imgSettings?.ImagePNGBitDepth != XerahS.Common.PNGBitDepth.Bit16;
++            if (sdrOnly)
++            {
++                var toned = HdrTonemapper.TonemapToBgra8888(previewCopy,
++                    imgSettings?.ImageHdrSaveToneMapping ?? HdrToneMappingMode.TonemapHable);
++                if (toned != null)
++                {
++                    previewCopy.Dispose();
++                    previewCopy = toned;
++                }
++            }
++        }
++
+         if (previewCopy == null || previewCopy.Handle == IntPtr.Zero)
+         {
+             previewCopy?.Dispose();
+@@ -321,6 +350,12 @@ private void OnTaskCompleted(object? sender, EventArgs e)
+             return;
+         }
+ 
++        // TEMP HDR diagnostics: remember what the preview contained so a later Save-As
++        // can be checked against the actual last capture.
++        string sig = Services.SavePathDebugDump.Signature(previewCopy);
++        Services.SavePathDebugDump.LastPreviewSignature = sig;
++        DebugHelper.WriteLine($"[PreviewSig] orchestrator preview: {sig}");
++
+         // UpdatePreview takes ownership and can dispose the supplied bitmap during property-change handling.
+         viewModel.UpdatePreview(previewCopy);
+         DebugHelper.WriteLine($"Updated preview from task completion: {width}x{height}");
+@@ -520,15 +555,15 @@ private void OnWorkflowTaskCompleted(object? sender, Core.Tasks.WorkerTask task)
+                 if (task.Info?.Result?.IsError == true)
+                 {
+                     title = "Task Failed";
+-                    text = task.Info.Result.ToString();
++                    text = SecretMasker.MaskSecrets(task.Info.Result.ToString());
+                     var uploaderErrors = task.Info.Result.ErrorsToString();
+                     if (!string.IsNullOrWhiteSpace(uploaderErrors))
+                     {
+-                        errorDetails = uploaderErrors;
++                        errorDetails = SecretMasker.MaskSecrets(uploaderErrors);
+                     }
+                     else if (!string.IsNullOrWhiteSpace(task.Info.Result.Response))
+                     {
+-                        errorDetails = task.Info.Result.Response;
++                        errorDetails = SecretMasker.MaskSecrets(task.Info.Result.Response);
+                     }
+                 }
+                 else if (!string.IsNullOrEmpty(url))
+diff --git a/src/desktop/app/XerahS.UI/ViewModels/TaskSettingsViewModel.Image.cs b/src/desktop/app/XerahS.UI/ViewModels/TaskSettingsViewModel.Image.cs
+index 687d7c35..73c6a28e 100644
+--- a/src/desktop/app/XerahS.UI/ViewModels/TaskSettingsViewModel.Image.cs
++++ b/src/desktop/app/XerahS.UI/ViewModels/TaskSettingsViewModel.Image.cs
+@@ -22,7 +22,13 @@ You should have received a copy of the GNU General Public License
+ */
+ 
+ #endregion License Information (GPL v3)
++using System.Buffers.Binary;
++using Avalonia.Media.Imaging;
++using SkiaSharp;
++using ShareX.ImageEditor.Presentation.Rendering;
++using XerahS.Common;
+ using XerahS.Core;
++using XerahS.Core.Helpers;
+ using XerahS.Services.Abstractions;
+ 
+ namespace XerahS.UI.ViewModels
+@@ -57,6 +63,31 @@ public int ImageJPEGQuality
+             }
+         }
+ 
++        public IReadOnlyList<PNGBitDepth> PngBitDepthOptions { get; } =
++            new[] { PNGBitDepth.Default, PNGBitDepth.Bit16 };
++
++        public PNGBitDepth ImagePNGBitDepth
++        {
++            get => _settings.ImageSettings.ImagePNGBitDepth;
++            set
++            {
++                if (_settings.ImageSettings.ImagePNGBitDepth != value)
++                {
++                    _settings.ImageSettings.ImagePNGBitDepth = value;
++                    OnPropertyChanged();
++                    // The saved file ignores the tone curve at 16-bit depth (it is written
++                    // display-referred), so the "Save to file" selector must follow the depth.
++                    OnPropertyChanged(nameof(IsHdrSaveToneMappingEnabled));
++                }
++            }
++        }
++
++        /// <summary>
++        /// False when the selected PNG depth ("SDR+HDR" = 16-bit) makes the file tone curve
++        /// irrelevant: the encoder writes display-referred sRGB samples without applying it.
++        /// </summary>
++        public bool IsHdrSaveToneMappingEnabled => ImagePNGBitDepth != PNGBitDepth.Bit16;
++
+         public int ThumbnailWidth
+         {
+             get => _settings.ImageSettings.ThumbnailWidth;
+@@ -109,6 +140,109 @@ public bool ThumbnailCheckSize
+             }
+         }
+ 
++        public IReadOnlyList<HdrToneMappingMode> HdrToneMappingOptions =>
++            Array.FindAll(Enum.GetValues<HdrToneMappingMode>(), m => m != HdrToneMappingMode.Auto);
++
++        private Bitmap? _hdrPreviewBitmap;
++
++        /// <summary>
++        /// Live preview of the selected general HDR → SDR tone mapping, rendered from a synthetic
++        /// HDR test image so the difference between methods is visible without taking a capture.
++        /// </summary>
++        public Bitmap? HdrPreviewBitmap => _hdrPreviewBitmap ??= BuildHdrPreview();
++
++        public HdrToneMappingMode ImageHdrToneMapping
++        {
++            get => _settings.ImageSettings.ImageHdrToneMapping;
++            set
++            {
++                if (_settings.ImageSettings.ImageHdrToneMapping != value)
++                {
++                    _settings.ImageSettings.ImageHdrToneMapping = value;
++                    OnPropertyChanged();
++                    RefreshHdrPreview();
++                }
++            }
++        }
++
++        public HdrToneMappingMode ImageHdrSaveToneMapping
++        {
++            get => _settings.ImageSettings.ImageHdrSaveToneMapping;
++            set
++            {
++                if (_settings.ImageSettings.ImageHdrSaveToneMapping != value)
++                {
++                    _settings.ImageSettings.ImageHdrSaveToneMapping = value;
++                    OnPropertyChanged();
++                }
++            }
++        }
++
++        public HdrToneMappingMode ImageHdrClipboardToneMapping
++        {
++            get => _settings.ImageSettings.ImageHdrClipboardToneMapping;
++            set
++            {
++                if (_settings.ImageSettings.ImageHdrClipboardToneMapping != value)
++                {
++                    _settings.ImageSettings.ImageHdrClipboardToneMapping = value;
++                    OnPropertyChanged();
++                }
++            }
++        }
++
++        private Bitmap? BuildHdrPreview()
++        {
++            using var source = CreateHdrPreviewSource();
++            using var sdr = HdrTonemapper.TonemapToBgra8888(source, ImageHdrToneMapping);
++            return sdr != null ? BitmapConversionHelpers.ToAvaloniBitmap(sdr) : null;
++        }
++
++        private void RefreshHdrPreview()
++        {
++            var previous = _hdrPreviewBitmap;
++            _hdrPreviewBitmap = BuildHdrPreview();
++            previous?.Dispose();
++            OnPropertyChanged(nameof(HdrPreviewBitmap));
++        }
++
++        private static SKBitmap CreateHdrPreviewSource()
++        {
++            const int width = 440;
++            const int height = 96;
++
++            // scRGB-linear luminance stops (1.0 == 80 cd/m²). Left bars are SDR content, right
++            // bars are HDR highlights, making each tonemapper's rolloff immediately visible.
++            float[] stops = { 0f, 0.1f, 0.25f, 0.5f, 0.8f, 1f, 2f, 4f, 8f, 16f, 32f };
++
++            var bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.RgbaF16, SKAlphaType.Premul, SKColorSpace.CreateSrgbLinear()));
++            Span<byte> span = bitmap.GetPixelSpan();
++            int rowBytes = bitmap.RowBytes;
++
++            for (int y = 0; y < height; y++)
++            {
++                for (int x = 0; x < width; x++)
++                {
++                    int index = Math.Min((int)((float)x / width * stops.Length), stops.Length - 1);
++                    float v = stops[index];
++                    int offset = y * rowBytes + x * 8;
++
++                    WriteHalf(span, offset, v);
++                    WriteHalf(span, offset + 2, v);
++                    WriteHalf(span, offset + 4, v);
++                    WriteHalf(span, offset + 6, 1f);
++                }
++            }
++
++            return bitmap;
++        }
++
++        private static void WriteHalf(Span<byte> span, int offset, float value)
++        {
++            ushort bits = BitConverter.HalfToUInt16Bits((Half)value);
++            BinaryPrimitives.WriteUInt16LittleEndian(span.Slice(offset, 2), bits);
++        }
++
+         #endregion
+     }
+ }
+diff --git a/src/desktop/app/XerahS.UI/Views/TaskImageSettingsPanel.axaml b/src/desktop/app/XerahS.UI/Views/TaskImageSettingsPanel.axaml
+index 11955421..61bc02c3 100644
+--- a/src/desktop/app/XerahS.UI/Views/TaskImageSettingsPanel.axaml
++++ b/src/desktop/app/XerahS.UI/Views/TaskImageSettingsPanel.axaml
+@@ -4,17 +4,23 @@
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+              xmlns:vm="using:XerahS.UI.ViewModels"
+              xmlns:controls="using:XerahS.UI.Controls"
++             xmlns:converters="using:XerahS.UI.Converters"
++             xmlns:local="using:XerahS.UI.Markup"
+              xmlns:imagefx="clr-namespace:ShareX.ImageEditor.Core.ImageEffects;assembly=ShareX.ImageEditor"
+              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+              x:Class="XerahS.UI.Views.TaskImageSettingsPanel"
+              x:DataType="vm:TaskSettingsViewModel">
+ 
++    <UserControl.Resources>
++        <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter"/>
++    </UserControl.Resources>
++
+     <Border Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}" Padding="16">
+         <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
+             <!-- Image Settings Tab -->
+             <TabItem Header="Settings">
+                 <ScrollViewer>
+-                    <Grid ColumnDefinitions="*, 24, *" RowDefinitions="Auto" Margin="8">
++                    <Grid ColumnDefinitions="*, 24, *" RowDefinitions="Auto, 16, Auto" Margin="8">
+                         <!-- Quality -->
+                         <StackPanel Grid.Column="0" Spacing="8">
+                             <TextBlock Text="Quality" FontWeight="SemiBold"/>
+@@ -28,6 +34,19 @@
+                                         <TextBlock Grid.Column="0" Text="JPEG Quality:" VerticalAlignment="Center"/>
+                                         <NumericUpDown Grid.Column="2" Value="{Binding ImageJPEGQuality}" Minimum="0" Maximum="100" Increment="1" MinWidth="120" HorizontalAlignment="Stretch" AutomationProperties.Name="JPEG Quality"/>
+                                     </Grid>
++                                    <Grid ColumnDefinitions="Auto, 16, *">
++                                        <TextBlock Grid.Column="0" Text="PNG bit depth:" VerticalAlignment="Center"/>
++                                        <ComboBox Grid.Column="2" ItemsSource="{Binding PngBitDepthOptions}" SelectedItem="{Binding ImagePNGBitDepth}" HorizontalAlignment="Stretch" AutomationProperties.Name="PNG Bit Depth">
++                                            <ComboBox.ItemTemplate>
++                                                <DataTemplate x:DataType="x:Object">
++                                                    <TextBlock Text="{Binding ., Converter={StaticResource EnumToDescriptionConverter}}"/>
++                                                </DataTemplate>
++                                            </ComboBox.ItemTemplate>
++                                        </ComboBox>
++                                    </Grid>
++                                    <TextBlock Text="{local:Localize TaskSettings_PngDepthHelp}"
++                                               Opacity="0.75" FontSize="11" TextWrapping="Wrap"
++                                               AutomationProperties.Name="PNG bit depth explanation"/>
+                                 </StackPanel>
+                             </Border>
+                         </StackPanel>
+@@ -53,6 +72,60 @@
+                                 </StackPanel>
+                             </Border>
+                         </StackPanel>
++
++                        <!-- HDR -->
++                        <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Spacing="8">
++                            <TextBlock Text="{local:Localize TaskSettings_HdrSection}" FontWeight="SemiBold"/>
++                            <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="16">
++                                <StackPanel Spacing="12">
++                                    <Grid ColumnDefinitions="Auto, 16, *">
++                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_HdrGeneral}" VerticalAlignment="Center" TextWrapping="Wrap"/>
++                                        <ComboBox Grid.Column="2" ItemsSource="{Binding HdrToneMappingOptions}" SelectedItem="{Binding ImageHdrToneMapping}" HorizontalAlignment="Stretch" MinWidth="200" AutomationProperties.Name="HDR General Tone Mapping">
++                                            <ComboBox.ItemTemplate>
++                                                <DataTemplate x:DataType="x:Object">
++                                                    <TextBlock Text="{Binding ., Converter={StaticResource EnumToDescriptionConverter}}"/>
++                                                </DataTemplate>
++                                            </ComboBox.ItemTemplate>
++                                        </ComboBox>
++                                    </Grid>
++                                    <Grid ColumnDefinitions="Auto, 16, *">
++                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_HdrSave}" VerticalAlignment="Center" TextWrapping="Wrap"/>
++                                        <ComboBox Grid.Column="2" ItemsSource="{Binding HdrToneMappingOptions}" SelectedItem="{Binding ImageHdrSaveToneMapping}" IsEnabled="{Binding IsHdrSaveToneMappingEnabled}" HorizontalAlignment="Stretch" MinWidth="200" AutomationProperties.Name="HDR Save Tone Mapping">
++                                            <ComboBox.ItemTemplate>
++                                                <DataTemplate x:DataType="x:Object">
++                                                    <TextBlock Text="{Binding ., Converter={StaticResource EnumToDescriptionConverter}}"/>
++                                                </DataTemplate>
++                                            </ComboBox.ItemTemplate>
++                                        </ComboBox>
++                                    </Grid>
++                                    <TextBlock Text="{local:Localize TaskSettings_HdrSaveDisabledHint}"
++                                               Opacity="0.75" FontSize="11" TextWrapping="Wrap"
++                                               IsVisible="{Binding !IsHdrSaveToneMappingEnabled}"
++                                               AutomationProperties.Name="HDR save tone mapping disabled hint"/>
++                                    <Grid ColumnDefinitions="Auto, 16, *">
++                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_HdrClipboard}" VerticalAlignment="Center" TextWrapping="Wrap"/>
++                                        <ComboBox Grid.Column="2" ItemsSource="{Binding HdrToneMappingOptions}" SelectedItem="{Binding ImageHdrClipboardToneMapping}" HorizontalAlignment="Stretch" MinWidth="200" AutomationProperties.Name="HDR Clipboard Tone Mapping">
++                                            <ComboBox.ItemTemplate>
++                                                <DataTemplate x:DataType="x:Object">
++                                                    <TextBlock Text="{Binding ., Converter={StaticResource EnumToDescriptionConverter}}"/>
++                                                </DataTemplate>
++                                            </ComboBox.ItemTemplate>
++                                        </ComboBox>
++                                    </Grid>
++                                    <StackPanel Spacing="6">
++                                        <TextBlock Text="{local:Localize TaskSettings_HdrLegend}"
++                                                   Opacity="0.75" FontSize="11" TextWrapping="Wrap"
++                                                   AutomationProperties.Name="HDR tone mapping legend"/>
++                                        <TextBlock Text="{local:Localize TaskSettings_HdrPreview}" FontWeight="SemiBold"/>
++                                        <Image Source="{Binding HdrPreviewBitmap}"
++                                               Width="440" Height="96"
++                                               Stretch="Fill"
++                                               HorizontalAlignment="Left"
++                                               AutomationProperties.Name="HDR Tone Mapping Preview"/>
++                                    </StackPanel>
++                                </StackPanel>
++                            </Border>
++                        </StackPanel>
+                     </Grid>
+                 </ScrollViewer>
+             </TabItem>
+diff --git a/src/desktop/core/XerahS.Common/Enums.cs b/src/desktop/core/XerahS.Common/Enums.cs
+index d7e0b64a..5923f00c 100644
+--- a/src/desktop/core/XerahS.Common/Enums.cs
++++ b/src/desktop/core/XerahS.Common/Enums.cs
+@@ -41,7 +41,8 @@ public enum PNGBitDepth // Localized
+         Default,
+         Automatic,
+         Bit32,
+-        Bit24
++        Bit24,
++        Bit16
+     }
+ 
+     public enum GIFQuality // Localized
+diff --git a/src/desktop/core/XerahS.Common/Helpers/HdrContentAnalyzer.cs b/src/desktop/core/XerahS.Common/Helpers/HdrContentAnalyzer.cs
+new file mode 100644
+index 00000000..36aa8dac
+--- /dev/null
++++ b/src/desktop/core/XerahS.Common/Helpers/HdrContentAnalyzer.cs
+@@ -0,0 +1,106 @@
++#region License Information (GPL v3)
++
++/*
++    XerahS - The Avalonia UI implementation of ShareX
++    Copyright (c) 2007-2026 ShareX Team
++
++    This program is free software; you can redistribute it and/or
++    modify it under the terms of the GNU General Public License
++    as published by the Free Software Foundation; either version 2
++    of the License, or (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++
++    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
++*/
++
++#endregion License Information (GPL v3)
++
++using System.Buffers.Binary;
++using SkiaSharp;
++
++namespace XerahS.Common.Helpers;
++
++/// <summary>
++/// Content analysis for HDR (fp16 scRGB) captures: estimated SDR white level and how much
++/// content sits above it. Used to decide whether a capture is effectively SDR (windows on an
++/// HDR desktop) and should therefore be saved as display-referred sRGB, or carries real HDR
++/// highlights and must keep its extended-range linear samples.
++/// </summary>
++public static class HdrContentAnalyzer
++{
++    /// <summary>
++    /// Analyzes an HDR capture. Returns the estimated SDR white level (the 99th percentile of
++    /// the per-pixel maximum channel) and the peak/white ratio. A ratio close to 1.0 means the
++    /// frame has no content above SDR white (effectively SDR). Non-fp16 input returns (1, 1).
++    /// </summary>
++    public static (float WhiteLevel, float PeakRatio) Analyze(SKBitmap? hdrBitmap)
++    {
++        if (hdrBitmap is null || hdrBitmap.ColorType != SKColorType.RgbaF16)
++        {
++            return (1f, 1f);
++        }
++
++        ReadOnlySpan<byte> src = hdrBitmap.GetPixelSpan();
++        int stride = hdrBitmap.RowBytes;
++        int w = hdrBitmap.Width;
++        int h = hdrBitmap.Height;
++        int step = Math.Max(1, Math.Max(w, h) / 320);
++
++        var samples = new List<float>(1024);
++        float peak = 0f;
++        for (int y = 0; y < h; y += step)
++        {
++            for (int x = 0; x < w; x += step)
++            {
++                int o = y * stride + x * 8;
++                float r = DecodeHalf(src, o);
++                float g = DecodeHalf(src, o + 2);
++                float b = DecodeHalf(src, o + 4);
++                float lum = MathF.Max(r, MathF.Max(g, b));
++                samples.Add(lum);
++                if (lum > peak) peak = lum;
++            }
++        }
++
++        if (samples.Count == 0)
++        {
++            return (1f, 1f);
++        }
++
++        samples.Sort();
++        // Keep the percentile out of the top-most samples: on tiny images (a handful of pixels)
++        // the p99 index would land exactly on the peak and misclassify HDR content as SDR.
++        int p99Index = Math.Clamp((int)(samples.Count * 0.99), 0, Math.Max(0, samples.Count - 2));
++        float p99 = samples[p99Index];
++        float white = MathF.Max(p99, 1e-3f);
++        float ratio = white > 0 ? peak / white : 1f;
++        return (white, ratio);
++    }
++
++    /// <summary>
++    /// True when the capture has no meaningful content above its SDR white level (peak is within
++    /// <paramref name="toleranceRatio"/> of white), i.e. an SDR desktop frame that should be saved
++    /// display-referred so it looks identical in standard viewers.
++    /// </summary>
++    public static bool IsEffectivelySdr(SKBitmap? hdrBitmap, out float peakRatio, float toleranceRatio = 1.05f)
++    {
++        var (_, ratio) = Analyze(hdrBitmap);
++        peakRatio = ratio;
++        return ratio <= toleranceRatio;
++    }
++
++    private static float DecodeHalf(ReadOnlySpan<byte> buffer, int offset)
++    {
++        ushort bits = BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(offset, 2));
++        float value = (float)BitConverter.UInt16BitsToHalf(bits);
++        return float.IsFinite(value) ? MathF.Max(value, 0f) : 0f;
++    }
++}
+\ No newline at end of file
+diff --git a/src/desktop/core/XerahS.Common/Helpers/HdrSdrWhiteNormalizer.cs b/src/desktop/core/XerahS.Common/Helpers/HdrSdrWhiteNormalizer.cs
+new file mode 100644
+index 00000000..62ff39bd
+--- /dev/null
++++ b/src/desktop/core/XerahS.Common/Helpers/HdrSdrWhiteNormalizer.cs
+@@ -0,0 +1,120 @@
++#region License Information (GPL v3)
++
++/*
++    XerahS - The Avalonia UI implementation of ShareX
++    Copyright (c) 2007-2026 ShareX Team
++
++    This program is free software; you can redistribute it and/or
++    modify it under the terms of the GNU General Public License
++    as published by the Free Software Foundation; either version 2
++    of the License, or (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++
++    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
++*/
++
++#endregion License Information (GPL v3)
++
++using SkiaSharp;
++
++namespace XerahS.Common.Helpers;
++
++/// <summary>
++/// Rescales an fp16 scRGB capture so that <c>1.0</c> means "SDR white", which is the invariant the
++/// whole downstream chain relies on (<see cref="HdrContentAnalyzer"/>, the tone curves in
++/// <c>HdrTonemapper</c>, the preview LUT, and the 16-bit/SDR encoders).
++///
++/// DXGI desktop duplication delivers linear scRGB where <c>1.0 == 80 cd/m²</c> by definition, but
++/// Windows composites SDR content at the user's configured SDR white level (typically 200–300
++/// cd/m², i.e. 2.5–3.75 in scRGB). Without this rescale a normal desktop sits far above 1.0, so
++/// every encoder clamps it: the SDR output blows out to white, and the tone curves get anchored at
++/// the wrong pivot and shift the palette.
++/// </summary>
++public static class HdrSdrWhiteNormalizer
++{
++    /// <summary>
++    /// Divides the RGB channels of an RgbaF16 bitmap by <paramref name="sdrWhiteScRgb"/> in place
++    /// (alpha is left untouched). No-op for non-fp16 bitmaps or when the white level is already 1.0.
++    /// </summary>
++    /// <returns>True when the pixels were modified.</returns>
++    public static unsafe bool NormalizeToSdrWhite(SKBitmap? bitmap, float sdrWhiteScRgb)
++    {
++        if (bitmap is null || bitmap.ColorType != SKColorType.RgbaF16)
++        {
++            return false;
++        }
++
++        if (!float.IsFinite(sdrWhiteScRgb) || sdrWhiteScRgb <= 0f || MathF.Abs(sdrWhiteScRgb - 1f) < 0.001f)
++        {
++            return false;
++        }
++
++        float scale = 1f / sdrWhiteScRgb;
++        int width = bitmap.Width;
++        int height = bitmap.Height;
++        int stride = bitmap.RowBytes;
++        byte* basePtr = (byte*)bitmap.GetPixels();
++
++        for (int y = 0; y < height; y++)
++        {
++            byte* row = basePtr + (y * stride);
++            for (int x = 0; x < width; x++)
++            {
++                byte* pixel = row + (x * 8);
++                ScaleChannel(pixel + 0, scale);
++                ScaleChannel(pixel + 2, scale);
++                ScaleChannel(pixel + 4, scale);
++            }
++        }
++
++        return true;
++    }
++
++    private static unsafe void ScaleChannel(byte* channel, float scale)
++    {
++        ushort bits = (ushort)(channel[0] | (channel[1] << 8));
++        float value = (float)BitConverter.UInt16BitsToHalf(bits);
++        if (!float.IsFinite(value))
++        {
++            // Leave NaN/Inf half values as they are; the analyzer already treats them as zero.
++            return;
++        }
++
++        float scaled = MathF.Max(value * scale, 0f);
++        if (scaled > 65504f)
++        {
++            scaled = 65504f; // largest half value
++        }
++
++        ushort outBits = BitConverter.HalfToUInt16Bits((Half)scaled);
++        channel[0] = (byte)(outBits & 0xff);
++        channel[1] = (byte)(outBits >> 8);
++    }
++
++    /// <summary>
++    /// Converts a Windows <c>DISPLAYCONFIG_SDR_WHITE_LEVEL</c> value (always expressed relative to
++    /// the scRGB reference of 80 cd/m², in 1/1000 units) into an scRGB multiplier.
++    /// </summary>
++    public static float FromDisplayConfigWhiteLevel(uint displayConfigWhiteLevel)
++    {
++        if (displayConfigWhiteLevel == 0)
++        {
++            return 1f;
++        }
++
++        return displayConfigWhiteLevel / 1000f;
++    }
++
++    /// <summary>
++    /// Converts an scRGB multiplier (1.0 == 80 cd/m²) into absolute nits, for diagnostics.
++    /// </summary>
++    public static float ScRgbToNits(float scRgb) => scRgb * 80f;
++}
+diff --git a/src/desktop/core/XerahS.Common/Helpers/ImageHelpers.cs b/src/desktop/core/XerahS.Common/Helpers/ImageHelpers.cs
+index 70c17761..23ef8f16 100644
+--- a/src/desktop/core/XerahS.Common/Helpers/ImageHelpers.cs
++++ b/src/desktop/core/XerahS.Common/Helpers/ImageHelpers.cs
+@@ -24,6 +24,7 @@ You should have received a copy of the GNU General Public License
+ #endregion License Information (GPL v3)
+ 
+ using XerahS.Common.GIF;
++using XerahS.Common.Helpers;
+ using SkiaSharp;
+ // REMOVED: System.Drawing, System.Drawing.Drawing2D, System.Drawing.Imaging
+ 
+@@ -49,19 +50,435 @@ public static class ImageHelpers
+     }
+ 
+     public static void SaveBitmap(SKBitmap bitmap, string filePath, int quality = 100)
++    {
++        SaveBitmap(bitmap, filePath, PNGBitDepth.Default, quality);
++    }
++
++    public static void SaveBitmap(SKBitmap bitmap, string filePath, PNGBitDepth pngBitDepth, int quality = 100)
+     {
+         if (bitmap is null) throw new ArgumentNullException(nameof(bitmap));
+         if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentException("File path cannot be empty.", nameof(filePath));
+ 
+         FileHelpers.CreateDirectoryFromFilePath(filePath);
+ 
+-        SKEncodedImageFormat format = GetEncodedFormat(filePath);
+-        using SKImage image = SKImage.FromBitmap(bitmap);
+-        using SKData data = image.Encode(format, quality);
++        // RgbaF16 (HDR) input and explicit Bit16 must be written as 16-bit PNG:
++        // the other encoders are 8-bit and would clamp the extended-range values.
++        bool write16BitPng = bitmap.ColorType == SKColorType.RgbaF16 || pngBitDepth == PNGBitDepth.Bit16;
++        SKEncodedImageFormat format = write16BitPng ? SKEncodedImageFormat.Png : GetEncodedFormat(filePath);
++
++        SKBitmap? converted = null;
++        try
++        {
++            if (write16BitPng)
++            {
++                if (bitmap.ColorType == SKColorType.RgbaF16)
++                {
++                    if (pngBitDepth == PNGBitDepth.Bit16)
++                    {
++                        // 16-bit output is always display-referred sRGB. Raw linear samples plus a
++                        // linear iCCP profile are only correct in a color-managed viewer; Windows
++                        // decoders (WIC/GDI+, and therefore Photos, Explorer preview, Paint, browsers
++                        // on Windows) IGNORE iCCP for PNG and read the samples as sRGB, which renders
++                        // midtones ~35% too dark while highlights stay near white — the exact
++                        // "16-bit file is darker than the screen" report. Keeping 16-bit precision
++                        // with the sRGB transfer function is viewable everywhere.
++                        //
++                        // NOTE: a 16-bit PNG cannot carry data above display white. For genuine HDR
++                        // output the container has to change (Ultra HDR JPEG / AVIF).
++                        bool effectivelySdr = HdrContentAnalyzer.IsEffectivelySdr(bitmap, out float peakRatio);
++                        SaveSdr16Png(bitmap, filePath);
++                        DebugHelper.WriteLine(
++                            $"[HDR] SaveBitmap(16-bit): peak/white={peakRatio:F3} " +
++                            $"({(effectivelySdr ? "effectively SDR" : "HDR content, highlights clamped to white")}) " +
++                            $"-> 16-bit sRGB: {filePath}");
++                        return;
++                    }
++
++                    // "SDR" depth with an fp16 source should normally arrive already tonemapped
++                    // to 8-bit by the caller; if a raw fp16 reaches here, still write display-
++                    // referred sRGB samples so the PNG is not visibly dark.
++                    converted = ConvertLinearF16ToSrgb16(bitmap);
++                    if (converted == null)
++                    {
++                        // Deterministic fallback when Skia's color-managed conversion fails for an
++                        // untagged fp16 source: apply the sRGB OETF per pixel.
++                        converted = ImageHelpers.ConvertF16ToSrgb8(bitmap)?.Copy(SKColorType.Rgba16161616);
++                    }
++                }
++                else
++                {
++                    // Widen SDR pixels to 16-bit sRGB so the encoder emits bitDepth=16
++                    // while preserving the encoded appearance. The destination is tagged sRGB
++                    // explicitly: a capture bitmap may carry no color space, and untagged output
++                    // would make Skia skip the sRGB chunk that viewers rely on.
++                    var widenedInfo = new SKImageInfo(
++                        bitmap.Width,
++                        bitmap.Height,
++                        SKColorType.Rgba16161616,
++                        bitmap.AlphaType,
++                        SKColorSpace.CreateSrgb());
++                    var widened = new SKBitmap(widenedInfo);
++                    using (SKImage sourceImage = SKImage.FromBitmap(bitmap))
++                    {
++                        if (sourceImage.ReadPixels(widenedInfo, widened.GetPixels(), widened.RowBytes))
++                        {
++                            converted = widened;
++                        }
++                        else
++                        {
++                            widened.Dispose();
++                            converted = bitmap.Copy(SKColorType.Rgba16161616);
++                        }
++                    }
++                }
++            }
++
++            using SKImage image = SKImage.FromBitmap(converted ?? bitmap);
++            using SKData data = image.Encode(format, quality);
++            using FileStream stream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
++            data.SaveTo(stream);
++        }
++        finally
++        {
++            converted?.Dispose();
++        }
++    }
++
++    /// <summary>
++    /// Deterministic fp16 (linear scRGB) → 8-bit sRGB conversion using the sRGB OETF per pixel.
++    /// Used as a fallback when Skia's color-managed path misbehaves on untagged fp16 sources.
++    /// Returns null for non-F16 input. The result is owned by the caller.
++    /// </summary>
++    public static SKBitmap? ConvertF16ToSrgb8(SKBitmap hdrBitmap)
++    {
++        if (hdrBitmap is null || hdrBitmap.ColorType != SKColorType.RgbaF16)
++        {
++            return null;
++        }
++
++        const float SrgbLinearSegmentMax = 0.0031308f;
++        var result = new SKBitmap(new SKImageInfo(
++            hdrBitmap.Width,
++            hdrBitmap.Height,
++            SKColorType.Bgra8888,
++            SKAlphaType.Premul,
++            SKColorSpace.CreateSrgb()));
++
++        ReadOnlySpan<byte> src = hdrBitmap.GetPixelSpan();
++        Span<byte> dst = result.GetPixelSpan();
++        int srcStride = hdrBitmap.RowBytes;
++        int dstStride = result.RowBytes;
++
++        for (int y = 0; y < hdrBitmap.Height; y++)
++        {
++            int srcRow = y * srcStride;
++            int dstRow = y * dstStride;
++            for (int x = 0; x < hdrBitmap.Width; x++)
++            {
++                int srcOffset = srcRow + x * 8;
++                float r = DecodeHalf(src, srcOffset);
++                float g = DecodeHalf(src, srcOffset + 2);
++                float b = DecodeHalf(src, srcOffset + 4);
++                float a = DecodeHalf(src, srcOffset + 6);
++
++                int dstOffset = dstRow + x * 4;
++                dst[dstOffset] = ToByte(SrgbOetf(b));
++                dst[dstOffset + 1] = ToByte(SrgbOetf(g));
++                dst[dstOffset + 2] = ToByte(SrgbOetf(r));
++                dst[dstOffset + 3] = ToByte(a);
++            }
++        }
++
++        return result;
++
++        static float SrgbOetf(float linear)
++        {
++            if (!float.IsFinite(linear))
++            {
++                return 0f;
++            }
++            linear = Math.Clamp(linear, 0f, 1f);
++            return linear <= SrgbLinearSegmentMax
++                ? 12.92f * linear
++                : 1.055f * MathF.Pow(linear, 1f / 2.4f) - 0.055f;
++        }
++
++        static byte ToByte(float value)
++        {
++            return (byte)MathF.Round(Math.Clamp(value, 0f, 1f) * 255f);
++        }
++    }
++
++    private static float DecodeHalf(ReadOnlySpan<byte> buffer, int offset)
++    {
++        ushort bits = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(offset, 2));
++        float value = (float)BitConverter.UInt16BitsToHalf(bits);
++        return float.IsFinite(value) ? MathF.Max(value, 0f) : 0f;
++    }
++
++    /// <summary>
++    /// Writes an fp16 (linear scRGB) bitmap as a true 16-bit HDR PNG: raw linear samples
++    /// (unscaled, values &gt; 1.0 preserved) with a linear RGB iCCP profile, so the file keeps
++    /// the full HDR range instead of sRGB-encoding/clipping to display white. The PNG is
++    /// bitDepth=16, colorType=6 (RGBA), samples big-endian.
++    /// </summary>
++    public static void SaveHdrF16Png(SKBitmap hdrBitmap, string filePath)
++    {
++        if (hdrBitmap is null) throw new ArgumentNullException(nameof(hdrBitmap));
++        if (hdrBitmap.ColorType != SKColorType.RgbaF16)
++        {
++            throw new ArgumentException("SaveHdrF16Png requires an RgbaF16 bitmap.", nameof(hdrBitmap));
++        }
++
++        FileHelpers.CreateDirectoryFromFilePath(filePath);
++
++        int width = hdrBitmap.Width;
++        int height = hdrBitmap.Height;
++        ReadOnlySpan<byte> src = hdrBitmap.GetPixelSpan();
++        int srcStride = hdrBitmap.RowBytes;
++
++        // Raw scanlines: filter byte 0 + big-endian u16 RGBA samples.
++        int rowBytes = width * 8;
++        var raw = new byte[height * (rowBytes + 1)];
++        for (int y = 0; y < height; y++)
++        {
++            raw[y * (rowBytes + 1)] = 0;
++            int srcRow = y * srcStride;
++            for (int x = 0; x < width; x++)
++            {
++                int srcOffset = srcRow + x * 8;
++                int dstOffset = y * (rowBytes + 1) + 1 + x * 8;
++                for (int c = 0; c < 4; c++)
++                {
++                    float v = DecodeHalf(src, srcOffset + c * 2);
++                    ushort u = (ushort)Math.Clamp((int)MathF.Round(v * 65535f), 0, 65535);
++                    raw[dstOffset + c * 2] = (byte)(u >> 8);
++                    raw[dstOffset + c * 2 + 1] = (byte)(u & 0xff);
++                }
++            }
++        }
++
++        byte[] idat = ZLibCompress(raw);
++        byte[] ihdr = new byte[13];
++        WriteBigEndianUInt32(ihdr, 0, (uint)width);
++        WriteBigEndianUInt32(ihdr, 4, (uint)height);
++        ihdr[8] = 16;  // bit depth
++        ihdr[9] = 6;   // color type RGBA
++        ihdr[10] = 0;  // compression
++        ihdr[11] = 0;  // filter
++        ihdr[12] = 0;  // interlace
++
++        using var file = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
++        file.Write(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A });
++        WritePngChunk(file, "IHDR", ihdr);
++        // sBIT: 16 significant bits for R,G,B,A
++        WritePngChunk(file, "sBIT", new byte[] { 16, 16, 16, 16 });
++        // iCCP: embedded linear RGB profile (gamma 1.0), so HDR viewers treat samples as linear.
++        byte[] icc = BuildLinearRgbIcc();
++        WritePngChunk(file, "iCCP", BuildIccpChunkData(icc));
++        WritePngChunk(file, "IDAT", idat);
++        WritePngChunk(file, "IEND", Array.Empty<byte>());
++    }
++
++    /// <summary>
++    /// Writes an fp16 (linear scRGB) capture as a display-referred 16-bit PNG: sRGB-encoded
++    /// samples with an sRGB profile, so standard viewers show the frame the way it looked on
++    /// screen (16-bit precision preserved). Used for effectively-SDR captures ("SDR+HDR" depth
++    /// must not turn a normal desktop into a dark raw-linear file).
++    /// </summary>
++    public static void SaveSdr16Png(SKBitmap hdrBitmap, string filePath)
++    {
++        if (hdrBitmap is null) throw new ArgumentNullException(nameof(hdrBitmap));
++        if (hdrBitmap.ColorType != SKColorType.RgbaF16)
++        {
++            throw new ArgumentException("SaveSdr16Png requires an RgbaF16 bitmap.", nameof(hdrBitmap));
++        }
++
++        FileHelpers.CreateDirectoryFromFilePath(filePath);
++
++        using var converted = ConvertLinearF16ToSrgb16(hdrBitmap);
++        if (converted is null)
++        {
++            throw new InvalidOperationException("linear fp16 -> sRGB 16-bit conversion failed.");
++        }
++
++        using SKImage image = SKImage.FromBitmap(converted);
++        using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+         using FileStream stream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+         data.SaveTo(stream);
+     }
+ 
++    private static byte[] ZLibCompress(byte[] data)
++    {
++        using var ms = new MemoryStream();
++        using (var z = new System.IO.Compression.ZLibStream(ms, System.IO.Compression.CompressionLevel.Optimal, leaveOpen: true))
++        {
++            z.Write(data);
++        }
++        return ms.ToArray();
++    }
++
++    private static void WriteBigEndianUInt32(byte[] buffer, int offset, uint value)
++    {
++        buffer[offset] = (byte)(value >> 24);
++        buffer[offset + 1] = (byte)(value >> 16);
++        buffer[offset + 2] = (byte)(value >> 8);
++        buffer[offset + 3] = (byte)value;
++    }
++
++    private static void WritePngChunk(Stream stream, string name, byte[] body)
++    {
++        var header = new byte[8];
++        WriteBigEndianUInt32(header, 0, (uint)body.Length);
++        System.Text.Encoding.ASCII.GetBytes(name).CopyTo(header, 4);
++        stream.Write(header);
++        stream.Write(body);
++
++        uint crc = 0xFFFFFFFFu;
++        for (int i = 4; i < 8; i++) crc = UpdateCrc(crc, header[i]);
++        foreach (byte b in body) crc = UpdateCrc(crc, b);
++        crc ^= 0xFFFFFFFFu;
++
++        var crcBytes = new byte[4];
++        WriteBigEndianUInt32(crcBytes, 0, crc);
++        stream.Write(crcBytes);
++    }
++
++    private static uint UpdateCrc(uint crc, byte b)
++    {
++        crc ^= b;
++        for (int i = 0; i < 8; i++)
++        {
++            crc = (crc >> 1) ^ (0xEDB88320u & (0u - (crc & 1)));
++        }
++        return crc;
++    }
++
++    private static byte[] BuildIccpChunkData(byte[] iccProfile)
++    {
++        // iCCP chunk: profile name (1-79 bytes) + NUL + compression method (0=zlib) + compressed profile.
++        using var ms = new MemoryStream();
++        byte[] name = System.Text.Encoding.ASCII.GetBytes("lin");
++        ms.Write(name);
++        ms.WriteByte(0);
++        ms.WriteByte(0); // compression method: zlib
++        byte[] compressed = ZLibCompress(iccProfile);
++        ms.Write(compressed);
++        return ms.ToArray();
++    }
++
++    private static byte[] BuildLinearRgbIcc()
++    {
++        // Minimal valid ICC v2 profile: RGB display profile with linear TRC (gamma 1.0).
++        // Header (128 bytes) + tag table (3 entries, 36 bytes) + tag data (3 * 20 bytes).
++        int headerSize = 128;
++        int tagTableSize = 36;
++        int tagDataSize = 60;
++        var icc = new byte[headerSize + tagTableSize + tagDataSize];
++
++        // Header
++        System.Text.Encoding.ASCII.GetBytes("acsp").CopyTo(icc, 36);      // profile signature
++        WriteBigEndianUInt32(icc, 0, 0x00000200u);                            // size
++        WriteBigEndianUInt32(icc, 8, 0x4D4D5400u);                            // preferred CMM 'MMT\0'
++        WriteBigEndianUInt32(icc, 12, 0x02100000u);                           // version 2.1
++        WriteBigEndianUInt32(icc, 16, 0x6D6E7472u);                           // device class 'mntr'
++        WriteBigEndianUInt32(icc, 20, 0x52474220u);                           // color space 'RGB '
++        WriteBigEndianUInt32(icc, 24, 0x58595A20u);                           // PCS 'XYZ '
++        WriteBigEndianUInt32(icc, 28, 0);                                     // date/time (simplified)
++        WriteBigEndianUInt32(icc, 32, 0);
++        System.Text.Encoding.ASCII.GetBytes("lin").CopyTo(icc, 40);         // profile ID
++        System.Text.Encoding.ASCII.GetBytes("XerahS").CopyTo(icc, 84);      // manufacturer
++        System.Text.Encoding.ASCII.GetBytes("XerahS HDR").CopyTo(icc, 96);   // model
++        // rendering intent 0 (perceptual) at offset 64
++        icc[64] = 0; icc[65] = 0; icc[66] = 0; icc[67] = 0;
++
++        // Tag table (3 tags)
++        int tableOffset = headerSize;
++        int dataOffset = headerSize + tagTableSize;
++        WriteTagEntry(icc, tableOffset, 0, "rTRC", dataOffset);
++        WriteTagEntry(icc, tableOffset, 1, "gTRC", dataOffset + 20);
++        WriteTagEntry(icc, tableOffset, 2, "bTRC", dataOffset + 40);
++
++        // Tag data: three 'curv' (curve) tags with one entry, gamma = 1.0 (linear).
++        foreach (int off in new[] { dataOffset, dataOffset + 20, dataOffset + 40 })
++        {
++            System.Text.Encoding.ASCII.GetBytes("curv").CopyTo(icc, off);
++            WriteBigEndianUInt32(icc, off + 4, 2); // reserved 0 + count of entries = 1 => 2 bytes
++            icc[off + 8] = 0; // placeholder handled below
++            WriteBigEndianUInt32(icc, off + 4, 8); // tag size: 4 (type) + 4 (count) + 2 (value) = 10 -> pad
++            // count = 1 entry => value 0x0100 (1.0)
++            icc[off + 8] = 0x01;
++            icc[off + 9] = 0x00;
++        }
++
++        WriteBigEndianUInt32(icc, 0, (uint)icc.Length);
++        return icc;
++    }
++
++    private static void WriteTagEntry(byte[] icc, int tableOffset, int index, string signature, int dataOffset)
++    {
++        int off = tableOffset + index * 12;
++        System.Text.Encoding.ASCII.GetBytes(signature).CopyTo(icc, off);
++        WriteBigEndianUInt32(icc, off + 4, (uint)dataOffset);
++        WriteBigEndianUInt32(icc, off + 8, 10); // data size (curv tag: 4 type + 4 count + 2 gamma)
++    }
++
++    /// <summary>
++    /// Converts an RgbaF16 (scRGB-linear, 1.0 == SDR white) bitmap into an sRGB-encoded 16-bit
++    /// bitmap (Rgba16161616, premul, sRGB) using Skia's color-managed pipeline. PNG samples are
++    /// display-referred, so encoding linear scRGB values verbatim renders too dark in standard
++    /// viewers; applying the sRGB OETF here fixes the appearance while keeping 16-bit precision.
++    /// Values above 1.0 clamp to SDR white, matching the "no tone curve" (None) semantics.
++    /// Returns null for any non-F16 input or when the conversion fails.
++    /// </summary>
++    public static SKBitmap? ConvertLinearF16ToSrgb16(SKBitmap hdrBitmap)
++    {
++        if (hdrBitmap is null || hdrBitmap.ColorType != SKColorType.RgbaF16)
++        {
++            return null;
++        }
++
++        var dstInfo = new SKImageInfo(
++            hdrBitmap.Width,
++            hdrBitmap.Height,
++            SKColorType.Rgba16161616,
++            SKAlphaType.Premul,
++            SKColorSpace.CreateSrgb());
++
++        SKBitmap? taggedCopy = null;
++        if (hdrBitmap.ColorSpace is null)
++        {
++            // Untagged fp16 buffers are linear scRGB in this pipeline; re-tag a raw copy so
++            // Skia's color-managed conversion applies the linear -> sRGB transfer function.
++            // Same dimensions/color type => identical RowBytes, so this is a plain byte copy.
++            taggedCopy = new SKBitmap(new SKImageInfo(
++                hdrBitmap.Width,
++                hdrBitmap.Height,
++                SKColorType.RgbaF16,
++                hdrBitmap.AlphaType,
++                SKColorSpace.CreateSrgbLinear()));
++            hdrBitmap.GetPixelSpan().CopyTo(taggedCopy.GetPixelSpan());
++            hdrBitmap = taggedCopy;
++        }
++
++        try
++        {
++            using SKImage image = SKImage.FromBitmap(hdrBitmap);
++            var converted = new SKBitmap(dstInfo);
++            if (image.ReadPixels(dstInfo, converted.GetPixels(), converted.RowBytes))
++            {
++                return converted;
++            }
++
++            converted.Dispose();
++            return null;
++        }
++        finally
++        {
++            taggedCopy?.Dispose();
++        }
++    }
++
+     public static SKBitmap ResizeImage(SKBitmap bitmap, int width, int height, SKSamplingOptions? sampling = null)
+     {
+         if (bitmap is null) throw new ArgumentNullException(nameof(bitmap));
+diff --git a/src/desktop/core/XerahS.Core/Helpers/HdrTonemapVariants.cs b/src/desktop/core/XerahS.Core/Helpers/HdrTonemapVariants.cs
+new file mode 100644
+index 00000000..bfc81ee8
+--- /dev/null
++++ b/src/desktop/core/XerahS.Core/Helpers/HdrTonemapVariants.cs
+@@ -0,0 +1,186 @@
++#region License Information (GPL v3)
++
++/*
++    XerahS - The Avalonia UI implementation of ShareX
++    Copyright (c) 2007-2026 ShareX Team
++
++    This program is free software; you can redistribute it and/or
++    modify it under the terms of the GNU General Public License
++    as published by the Free Software Foundation; either version 2
++    of the License, or (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++
++    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
++*/
++
++#endregion License Information (GPL v3)
++
++using System.Buffers.Binary;
++using SkiaSharp;
++using XerahS.Common.Helpers;
++
++namespace XerahS.Core.Helpers;
++
++/// <summary>
++/// Experimental HDR→SDR variants used by the self-test / visual selection workflow.
++/// Each variant is a hue-preserving luminance mapping (same curve applied to R, G and B)
++/// plus an optional anchor at the capture's estimated SDR white level. The production
++/// modes live in <see cref="HdrTonemapper"/>; these variants exist so a real capture can be
++/// rendered through several candidate curves and compared side by side.
++/// </summary>
++public static class HdrTonemapVariants
++{
++    /// <summary>
++    /// A candidate tonemap: maps linear scRGB luminance to display-linear luminance.
++    /// <paramref name="sdrWhite"/> is the estimated SDR white level of the capture (scRGB).
++    /// </summary>
++    public sealed record Variant(string Id, string Label, Func<float, float, float> MapLuminance);
++
++    public static IReadOnlyList<Variant> All { get; } = new[]
++    {
++        new Variant("clamp", "None: clamp at 1.0 (current)", (l, _) => MathF.Min(l, 1f)),
++        new Variant("clamp-norm", "Clamp at estimated SDR white", (l, w) => MathF.Min(l / SafeWhite(w), 1f)),
++        new Variant("reinhard", "Reinhard (current)", (l, _) => ReinhardNormalized(l)),
++        new Variant("reinhard-norm", "Reinhard anchored at SDR white", (l, w) => ReinhardNormalized(l / SafeWhite(w))),
++        new Variant("aces", "ACES (current)", (l, _) => AcesNormalized(l)),
++        new Variant("aces-norm", "ACES anchored at SDR white", (l, w) => AcesNormalized(l / SafeWhite(w))),
++        new Variant("bt2446c", "BT.2446C (current)", (l, _) => HdrTonemapper.TonemapBt2446C(l)),
++        new Variant("bt2446c-norm", "BT.2446C anchored at SDR white", (l, w) => HdrTonemapper.TonemapBt2446C(l / SafeWhite(w))),
++        new Variant("hable-norm", "Hable filmic anchored at SDR white", (l, w) => HableNormalized(l / SafeWhite(w))),
++        new Variant("gamma-norm", "Gamma 2.2 at SDR white (viewer-like)", (l, w) => MathF.Pow(MathF.Min(l / SafeWhite(w), 1f), 2.2f)),
++    };
++
++    /// <summary>
++    /// Estimated SDR white level (scRGB linear) of an HDR capture: the 99th percentile of the
++    /// per-pixel maximum channel. SDR windows on an HDR desktop all sit at the compositor's SDR
++    /// white, so this robust percentile lands on that level; true HDR highlights exceed it.
++    /// Returns 1.0 for non-fp16 input.
++    /// </summary>
++    public static float EstimateSdrWhite(SKBitmap hdrBitmap)
++    {
++        var (white, _) = HdrContentAnalyzer.Analyze(hdrBitmap);
++        return white;
++    }
++
++    /// <summary>
++    /// Analyzes an HDR capture: estimated SDR white level (p99 of max channel) and the peak
++    /// luminance ratio relative to that white. A ratio close to 1.0 means the capture carries
++    /// no content above SDR white — i.e. an effectively SDR frame on an HDR desktop.
++    /// </summary>
++    public static (float WhiteLevel, float PeakRatio) AnalyzeHdrContent(SKBitmap hdrBitmap)
++    {
++        return HdrContentAnalyzer.Analyze(hdrBitmap);
++    }
++
++    /// <summary>
++    /// Applies one variant to an HDR (fp16) capture. Returns an 8-bit sRGB bitmap (owned by the
++    /// caller) or null for non-fp16 input.
++    /// </summary>
++    public static SKBitmap? Apply(SKBitmap hdrBitmap, Variant variant, float sdrWhite)
++    {
++        if (hdrBitmap is null || hdrBitmap.ColorType != SKColorType.RgbaF16 || variant is null)
++        {
++            return null;
++        }
++
++        int w = hdrBitmap.Width;
++        int h = hdrBitmap.Height;
++        var result = new SKBitmap(new SKImageInfo(w, h, SKColorType.Bgra8888, SKAlphaType.Premul, SKColorSpace.CreateSrgb()));
++
++        try
++        {
++            ReadOnlySpan<byte> src = hdrBitmap.GetPixelSpan();
++            Span<byte> dst = result.GetPixelSpan();
++            int srcStride = hdrBitmap.RowBytes;
++            int dstStride = result.RowBytes;
++
++            for (int y = 0; y < h; y++)
++            {
++                for (int x = 0; x < w; x++)
++                {
++                    int so = y * srcStride + x * 8;
++                    int doff = y * dstStride + x * 4;
++
++                    float r = DecodeHalf(src, so);
++                    float g = DecodeHalf(src, so + 2);
++                    float b = DecodeHalf(src, so + 4);
++                    float a = DecodeHalf(src, so + 6);
++
++                    float lum = MathF.Max(r, MathF.Max(g, b));
++                    float scale = 1f;
++                    if (lum > 0f)
++                    {
++                        float mapped = variant.MapLuminance(lum, sdrWhite);
++                        scale = mapped / lum;
++                    }
++
++                    dst[doff] = ToByte(SrgbOetf(b * scale));
++                    dst[doff + 1] = ToByte(SrgbOetf(g * scale));
++                    dst[doff + 2] = ToByte(SrgbOetf(r * scale));
++                    dst[doff + 3] = ToByte(a);
++                }
++            }
++
++            return result;
++        }
++        catch
++        {
++            result.Dispose();
++            throw;
++        }
++    }
++
++    // ── curves ───────────────────────────────────────────────────────────────
++
++    private static float SafeWhite(float white) => float.IsFinite(white) && white > 1e-3f ? white : 1f;
++
++    private static float ReinhardNormalized(float luminance)
++    {
++        float n = MathF.Max(luminance, 0f);
++        return MathF.Pow(n / (1f + n), 0.5f);
++    }
++
++    private static float AcesNormalized(float luminance)
++    {
++        float n = MathF.Max(luminance, 0f);
++        float x = MathF.Pow(n, 0.5f);
++        float result = (x * (2.51f * x + 0.03f)) / (x * (2.43f * x + 0.59f) + 0.14f);
++        return Math.Clamp(result, 0f, 1f);
++    }
++
++    private static float HableNormalized(float x)
++    {
++        static float H(float v)
++        {
++            const float A = 0.15f, B = 0.50f, C = 0.10f, D = 0.20f, E = 0.02f, F = 0.30f;
++            return ((v * (A * v + C * B) + D * E) / (v * (A * v + B) + D * F)) - E / F;
++        }
++
++        return Math.Clamp(H(MathF.Max(x, 0f)) / H(1f), 0f, 1f);
++    }
++
++    private static float DecodeHalf(ReadOnlySpan<byte> buffer, int offset)
++    {
++        ushort bits = BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(offset, 2));
++        float value = (float)BitConverter.UInt16BitsToHalf(bits);
++        return float.IsFinite(value) ? MathF.Max(value, 0f) : 0f;
++    }
++
++    private static float SrgbOetf(float linear)
++    {
++        if (!float.IsFinite(linear)) return 0f;
++        linear = Math.Clamp(linear, 0f, 1f);
++        if (linear <= 0.0031308f) return 12.92f * linear;
++        return 1.055f * MathF.Pow(linear, 1f / 2.4f) - 0.055f;
++    }
++
++    private static byte ToByte(float value) => (byte)MathF.Round(Math.Clamp(value, 0f, 1f) * 255f);
++}
+\ No newline at end of file
+diff --git a/src/desktop/core/XerahS.Core/Helpers/HdrTonemapper.cs b/src/desktop/core/XerahS.Core/Helpers/HdrTonemapper.cs
+new file mode 100644
+index 00000000..2fa0b01b
+--- /dev/null
++++ b/src/desktop/core/XerahS.Core/Helpers/HdrTonemapper.cs
+@@ -0,0 +1,334 @@
++#region License Information (GPL v3)
++
++/*
++    XerahS - The Avalonia UI implementation of ShareX
++    Copyright (c) 2007-2026 ShareX Team
++
++    This program is free software; you can redistribute it and/or
++    modify it under the terms of the GNU General Public License
++    as published by the Free Software Foundation; either version 2
++    of the License, or (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++
++    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
++*/
++
++#endregion License Information (GPL v3)
++
++using System.Buffers.Binary;
++using SkiaSharp;
++using XerahS.Common;
++using XerahS.Common.Helpers;
++
++namespace XerahS.Core.Helpers;
++
++/// <summary>
++/// HDR → SDR tonemapping operating on raw F16 pixels (no Skia draw calls).
++/// Pure per-pixel functions, deterministic and unit-testable (HDR_CAPTURE_PLAN §6.2).
++/// </summary>
++public static class HdrTonemapper
++{
++    // SMPTE ST 2084 (PQ) EOTF constants
++    private const float PqM1 = 2610f / 16384f;
++    private const float PqM2 = 2523f / 32f;
++    private const float PqC1 = 3424f / 4096f;
++    private const float PqC2 = 2413f / 128f;
++    private const float PqC3 = 2392f / 128f;
++    private const float PqMaxNits = 10000f;
++
++    // sRGB piecewise transfer breakpoint
++    private const float SrgbLinearSegmentMax = 0.0031308f;
++
++    // scRGB-linear capture: 1.0 == 80 cd/m² (HDR_CAPTURE_PLAN §4.2, TODO HDR-02).
++    private const float ScRgbToNits = 80f;
++
++    // Gamma lift applied to the white-normalized signal. Because scRGB is already normalized to
++    // SDR reference white (1.0 == 80 cd/m²), Reinhard/ACES can operate on it directly without
++    // first dividing by the HDR display peak; doing so was crushing SDR white to ~8% of full scale.
++    private const float WhitePreservationGamma = 0.5f;
++
++    // ITU-R BT.2446 Method C (forward) constants. The curve is defined against the BT.2446
++    // reference white (203 nits); the output is re-anchored below so SDR white maps to 1.0.
++    private const float Bt2446ReferenceWhiteNits = 203f;
++    private const float Bt2446LinearLength = 0.58535f;
++    private const float Bt2446K1 = 0.83802f;
++    private const float Bt2446K3 = 0.74204f;
++
++    private static readonly float Bt2446Knee = Bt2446LinearLength / Bt2446K1;
++    private static readonly float Bt2446K2 = Bt2446LinearLength * (1f - Bt2446K3);
++    private static readonly float Bt2446K4 = Bt2446LinearLength - (Bt2446LinearLength * (1f - Bt2446K3)) * MathF.Log(1f - Bt2446K3);
++
++    // scRGB → BT.2446 signal at SDR reference white (80 nits). 80/203 sits in the linear segment,
++    // so this is simply the normalized value scaled by the linear strength.
++    private static readonly float Bt2446SdrWhiteNormalized = ScRgbToNits / Bt2446ReferenceWhiteNits;
++    private static readonly float Bt2446SdrWhiteCurve = Bt2446SdrWhiteNormalized * Bt2446K1;
++
++    /// <summary>
++    /// SMPTE ST 2084 (PQ) EOTF: normalized code value V → absolute luminance in cd/m².
++    /// L = ((max(V^(1/m2) − c1, 0)) / (c2 − c3·V^(1/m2)))^(1/m1) · 10000; V clamped to [0, 1].
++    /// </summary>
++    public static float PqEotf(float v)
++    {
++        if (!float.IsFinite(v))
++        {
++            return 0f;
++        }
++
++        v = Math.Clamp(v, 0f, 1f);
++
++        float vPow = MathF.Pow(v, 1f / PqM2);
++        float numerator = MathF.Max(vPow - PqC1, 0f);
++        float denominator = PqC2 - PqC3 * vPow;
++
++        return MathF.Pow(numerator / denominator, 1f / PqM1) * PqMaxNits;
++    }
++
++    /// <summary>
++    /// Standard piecewise sRGB OETF (linear segment ≤ 0.0031308), clamped to [0, 1].
++    /// </summary>
++    public static float SrgbOetf(float linear)
++    {
++        if (!float.IsFinite(linear))
++        {
++            return 0f;
++        }
++
++        linear = Math.Clamp(linear, 0f, 1f);
++
++        if (linear <= SrgbLinearSegmentMax)
++        {
++            return 12.92f * linear;
++        }
++
++        return 1.055f * MathF.Pow(linear, 1f / 2.4f) - 0.055f;
++    }
++
++    /// <summary>
++    /// Reinhard curve: L' = L / (1 + L·k) with k = 1/peak. Invalid peak (≤0/NaN/Inf) passes L through unchanged.
++    /// </summary>
++    public static float TonemapReinhard(float linear, float peak)
++    {
++        if (!float.IsFinite(peak) || peak <= 0f)
++        {
++            return linear;
++        }
++
++        if (!float.IsFinite(linear))
++        {
++            return 0f;
++        }
++
++        return linear / (1f + linear * (1f / peak));
++    }
++
++    /// <summary>
++    /// ACES fitted curve (RRT+ODT approximation): (x·(2.51x + 0.03)) / (x·(2.43x + 0.59) + 0.14), clamped to [0, 1].
++    /// </summary>
++    public static float TonemapAces(float linear)
++    {
++        if (!float.IsFinite(linear))
++        {
++            return 0f;
++        }
++
++        linear = MathF.Max(linear, 0f);
++
++        float result = (linear * (2.51f * linear + 0.03f)) / (linear * (2.43f * linear + 0.59f) + 0.14f);
++        return Math.Clamp(result, 0f, 1f);
++    }
++
++    // After-capture steps that require an 8-bit SDR image. With Auto, an HDR (fp16) capture is
++    // tonemapped iff any of these is selected; SaveImageToFile alone keeps fp16 so the 16-bit PNG
++    // path is preserved (HDR_CAPTURE_PLAN §6.3/§6.5).
++    private const AfterCaptureTasks SdrOnlyAfterCaptureTasks =
++        AfterCaptureTasks.ShowAfterCaptureWindow |
++        AfterCaptureTasks.AddImageEffects |
++        AfterCaptureTasks.AnnotateMedia |
++        AfterCaptureTasks.CopyImageToClipboard |
++        AfterCaptureTasks.UploadImageToHost;
++
++    /// <summary>
++    /// Decides whether an HDR (fp16) capture must be converted to 8-bit SDR before the
++    /// after-capture pipeline runs (HDR_CAPTURE_PLAN §6.3). None never tonemaps; every other
++    /// mode tonemaps only when an SDR-only step is selected, so SDR content is never needlessly
++    /// tonemapped when the destination can carry HDR.
++    /// </summary>
++    internal static bool ShouldTonemapToSdr(HdrToneMappingMode mode, AfterCaptureTasks afterCaptureJob)
++    {
++        return mode != HdrToneMappingMode.None
++            && (afterCaptureJob & SdrOnlyAfterCaptureTasks) != 0;
++    }
++
++    /// <summary>
++    /// Tonemaps an RgbaF16 bitmap (scRGB-linear, 1.0 == 80 cd/m²) to 8-bit Bgra8888 (premul).
++    /// scRGB is scene-referred and already normalized to SDR reference white, so the tone curves
++    /// operate on it directly and only compress the HDR range above 1.0 (HDR_CAPTURE_PLAN §6.2).
++    /// Returns null for any non-F16 input. None only clamps; every other mode applies its curve.
++    /// </summary>
++    public static SKBitmap? TonemapToBgra8888(SKBitmap hdrBitmap, HdrToneMappingMode mode)
++    {
++        if (hdrBitmap is null || hdrBitmap.ColorType != SKColorType.RgbaF16)
++        {
++            return null;
++        }
++
++        int width = hdrBitmap.Width;
++        int height = hdrBitmap.Height;
++
++        // One content analysis per bitmap: it provides the Hable anchor and tells us whether the
++        // frame has any headroom above SDR white at all.
++        var (whiteLevel, peakRatio) = HdrContentAnalyzer.Analyze(hdrBitmap);
++        float sdrWhite = MathF.Max(whiteLevel, 1e-3f);
++
++        // Effectively-SDR content (a normal desktop, an SDR photo or video on an HDR display) must
++        // bypass the tone curves: there is nothing above SDR white to compress, and any curve only
++        // moves midtones away from what the screen shows. Measured against a GDI grab of the same
++        // frame, the bypassed output matches the screen within 0.3/255 while Hable lifts the mean
++        // luminance by ~13%.
++        bool effectivelySdr = peakRatio <= 1.05f;
++
++        SKBitmap result = new SKBitmap(new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul, SKColorSpace.CreateSrgb()));
++
++        try
++        {
++            ReadOnlySpan<byte> src = hdrBitmap.GetPixelSpan();
++            Span<byte> dst = result.GetPixelSpan();
++            int srcStride = hdrBitmap.RowBytes;
++            int dstStride = result.RowBytes;
++
++            for (int y = 0; y < height; y++)
++            {
++                int srcRow = y * srcStride;
++                int dstRow = y * dstStride;
++
++                for (int x = 0; x < width; x++)
++                {
++                    int srcOffset = srcRow + x * 8;
++                    int dstOffset = dstRow + x * 4;
++
++                    float r = DecodeHalf(src, srcOffset);
++                    float g = DecodeHalf(src, srcOffset + 2);
++                    float b = DecodeHalf(src, srcOffset + 4);
++                    float a = DecodeHalf(src, srcOffset + 6);
++
++                    // Max-channel luminance; every channel is scaled by one factor to preserve hue.
++                    float lum = MathF.Max(r, MathF.Max(g, b));
++                    float scale = 1f;
++
++                    if (lum > 0f)
++                    {
++                        float mapped = effectivelySdr ? lum : mode switch
++                        {
++                            HdrToneMappingMode.TonemapReinhard => TonemapReinhardNormalized(lum),
++                            HdrToneMappingMode.TonemapAces => TonemapAcesNormalized(lum),
++                            HdrToneMappingMode.TonemapBt2446C => TonemapBt2446C(lum),
++                            HdrToneMappingMode.TonemapHable => TonemapHableNormalized(lum, sdrWhite),
++                            HdrToneMappingMode.None => lum,
++                            _ => TonemapHableNormalized(lum, sdrWhite) // legacy Auto
++                        };
++                        scale = mapped / lum;
++                    }
++
++                    dst[dstOffset] = ToByte(SrgbOetf(b * scale));
++                    dst[dstOffset + 1] = ToByte(SrgbOetf(g * scale));
++                    dst[dstOffset + 2] = ToByte(SrgbOetf(r * scale));
++                    dst[dstOffset + 3] = ToByte(a);
++                }
++            }
++
++            return result;
++        }
++        catch
++        {
++            result.Dispose();
++            throw;
++        }
++    }
++
++    /// <summary>
++    /// White-normalized Reinhard: scRGB is already normalized to SDR white (1.0 == 80 cd/m²), so
++    /// Ld = sqrt(L/(1+L)) keeps SDR white bright and rolls off only the HDR range above 1.0.
++    /// </summary>
++    private static float TonemapReinhardNormalized(float luminanceScRgb)
++    {
++        float normalized = MathF.Max(luminanceScRgb, 0f);
++        float mapped = normalized / (1f + normalized);
++        return MathF.Pow(mapped, WhitePreservationGamma);
++    }
++
++    /// <summary>
++    /// White-normalized ACES: Ld = ACES(sqrt(L)) with scRGB 1.0 (80 nits) landing near display white.
++    /// </summary>
++    private static float TonemapAcesNormalized(float luminanceScRgb)
++    {
++        float normalized = MathF.Max(luminanceScRgb, 0f);
++        return TonemapAces(MathF.Pow(normalized, WhitePreservationGamma));
++    }
++
++    /// <summary>
++    /// ITU-R BT.2446 Method C HDR→SDR tone curve. Takes linear scRGB luminance (1.0 == 80 cd/m²)
++    /// and returns display-linear SDR. The signal is normalized to BT.2446 reference white
++    /// (203 nits) and compressed by a linear segment + logarithmic shoulder, then re-anchored so
++    /// SDR white (80 nits) maps to 1.0; HDR highlights roll above 1.0 and clamp on encode.
++    /// </summary>
++    public static float TonemapBt2446C(float luminanceScRgb)
++    {
++        if (!float.IsFinite(luminanceScRgb))
++        {
++            return 0f;
++        }
++
++        float normalized = MathF.Max(luminanceScRgb, 0f) * ScRgbToNits / Bt2446ReferenceWhiteNits;
++
++        float toneMapped = normalized < Bt2446Knee
++            ? normalized * Bt2446K1
++            : MathF.Log(normalized / Bt2446Knee - Bt2446K3) * Bt2446K2 + Bt2446K4;
++
++        return MathF.Max(toneMapped / Bt2446SdrWhiteCurve, 0f);
++    }
++
++    /// <summary>
++    /// Hable/Uncharted-2 filmic curve anchored at the capture's SDR white level: the signal is
++    /// normalized so SDR white maps to 1.0, then the filmic shoulder compresses only the range
++    /// above it. Chosen by visual assessment of real HDR photographs: natural sky/highlight
++    /// rolloff with near-reference colors. On effectively-SDR captures the white level is ~1.0
++    /// and the curve acts as a mild contrast curve instead of clipping highlights.
++    /// </summary>
++    public static float TonemapHableNormalized(float luminanceScRgb, float sdrWhite)
++    {
++        if (!float.IsFinite(luminanceScRgb))
++        {
++            return 0f;
++        }
++
++        float white = float.IsFinite(sdrWhite) && sdrWhite > 1e-3f ? sdrWhite : 1f;
++        float x = MathF.Max(luminanceScRgb, 0f) / white;
++        return Math.Clamp(HableCurve(x) / HableCurve(1f), 0f, 1f);
++    }
++
++    private static float HableCurve(float v)
++    {
++        const float A = 0.15f, B = 0.50f, C = 0.10f, D = 0.20f, E = 0.02f, F = 0.30f;
++        return ((v * (A * v + C * B) + D * E) / (v * (A * v + B) + D * F)) - E / F;
++    }
++
++    private static float DecodeHalf(ReadOnlySpan<byte> buffer, int offset)
++    {
++        ushort bits = BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(offset, 2));
++        float value = (float)BitConverter.UInt16BitsToHalf(bits);
++        return float.IsFinite(value) ? MathF.Max(value, 0f) : 0f;
++    }
++
++    private static byte ToByte(float value)
++    {
++        return (byte)MathF.Round(Math.Clamp(value, 0f, 1f) * 255f);
++    }
++}
+\ No newline at end of file
+diff --git a/src/desktop/core/XerahS.Core/Helpers/TaskHelpers.cs b/src/desktop/core/XerahS.Core/Helpers/TaskHelpers.cs
+index 355bf5bf..6fd50a6e 100644
+--- a/src/desktop/core/XerahS.Core/Helpers/TaskHelpers.cs
++++ b/src/desktop/core/XerahS.Core/Helpers/TaskHelpers.cs
+@@ -497,6 +497,15 @@ public static string GetScreenshotsParentFolder(TaskSettings? taskSettings = nul
+     public static string HandleExistsFile(string folder, string fileName, TaskSettings taskSettings)
+     {
+         string filePath = Path.Combine(folder, fileName);
++
++        // SEC-18: the combined path must stay inside the target folder. A file name like
++        // ".." (valid on Linux) would otherwise redirect the write outside of it.
++        if (!FileHelpers.IsPathWithinDirectory(filePath, folder))
++        {
++            DebugHelper.WriteLine($"Refusing path outside target folder: {filePath}");
++            return string.Empty;
++        }
++
+         return HandleExistsFile(filePath, taskSettings);
+     }
+ 
+@@ -572,10 +581,39 @@ public static string HandleExistsFile(string filePath, TaskSettings taskSettings
+         if (bmp == null) return null;
+ 
+         var ms = new MemoryStream();
++        SkiaSharp.SKBitmap? converted = null;
+ 
+         try
+         {
+-            using var image = SkiaSharp.SKImage.FromBitmap(bmp);
++            // RgbaF16 (HDR) input must be saved as PNG: the JPEG/GIF/WEBP/BMP encoders are
++            // 8-bit and would clamp the extended-range values. Bit16 opts SDR content into
++            // 16-bit PNG as well.
++            var isHdrInput = bmp.ColorType == SkiaSharp.SKColorType.RgbaF16;
++            var use16BitPng = isHdrInput || pngBitDepth == PNGBitDepth.Bit16;
++
++            SkiaSharp.SKBitmap? source = bmp;
++
++            if (use16BitPng)
++            {
++                imageFormat = EImageFormat.PNG;
++
++                if (isHdrInput)
++                {
++                    // HDR (fp16 scRGB-linear) input: encode display-referred sRGB samples so the
++                    // PNG renders correctly in standard viewers (raw linear values render too dark).
++                    converted = ImageHelpers.ConvertLinearF16ToSrgb16(bmp);
++                    source = converted ?? bmp;
++                }
++                else
++                {
++                    // Widen SDR pixels to 16-bit sRGB so the PNG encoder emits bitDepth=16
++                    // while preserving the encoded appearance.
++                    converted = bmp.Copy(SkiaSharp.SKColorType.Rgba16161616);
++                    source = converted;
++                }
++            }
++
++            using var image = SkiaSharp.SKImage.FromBitmap(source);
+             using var data = imageFormat switch
+             {
+                 EImageFormat.JPEG => image.Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, jpegQuality),
+@@ -597,6 +635,10 @@ public static string HandleExistsFile(string filePath, TaskSettings taskSettings
+             ms.Dispose();
+             return null;
+         }
++        finally
++        {
++            converted?.Dispose();
++        }
+     }
+ 
+     /// <summary>
+@@ -607,7 +649,10 @@ public static string HandleExistsFile(string filePath, TaskSettings taskSettings
+         string screenshotsFolder = GetScreenshotsFolder(taskSettings);
+         FileHelpers.CreateDirectory(screenshotsFolder);
+ 
+-        string extension = EnumExtensions.GetDescription(taskSettings.ImageSettings.ImageFormat);
++        string extension = bmp.ColorType == SkiaSharp.SKColorType.RgbaF16 ||
++            taskSettings.ImageSettings.ImagePNGBitDepth == PNGBitDepth.Bit16
++            ? "png"
++            : EnumExtensions.GetDescription(taskSettings.ImageSettings.ImageFormat);
+         string fileName = GetFileName(taskSettings, extension, bmp);
+         string filePath = Path.Combine(screenshotsFolder, fileName);
+ 
+@@ -617,7 +662,15 @@ public static string HandleExistsFile(string filePath, TaskSettings taskSettings
+             if (string.IsNullOrEmpty(filePath)) return null;
+         }
+ 
+-        ImageHelpers.SaveBitmap(bmp, filePath);
++        // SEC-18: never write outside the target folder, even if the generated file name
++        // contains ".." or absolute-path segments (both are valid file names on Linux).
++        if (!FileHelpers.IsPathWithinDirectory(filePath, screenshotsFolder))
++        {
++            DebugHelper.WriteLine($"Refusing to save image outside screenshots folder: {filePath}");
++            return null;
++        }
++
++        ImageHelpers.SaveBitmap(bmp, filePath, taskSettings.ImageSettings.ImagePNGBitDepth);
+         return filePath;
+     }
+ 
+diff --git a/src/desktop/core/XerahS.Core/Models/TaskSettings.cs b/src/desktop/core/XerahS.Core/Models/TaskSettings.cs
+index 0b510b79..48d316f4 100644
+--- a/src/desktop/core/XerahS.Core/Models/TaskSettings.cs
++++ b/src/desktop/core/XerahS.Core/Models/TaskSettings.cs
+@@ -237,12 +237,32 @@ public class TaskSettingsImage
+     #region Image / General
+ 
+     public EImageFormat ImageFormat = EImageFormat.PNG;
++    /// <summary>
++    /// PNG bit depth, now expressed as output content: "SDR" (Default) forces HDR captures to be
++    /// saved as 8-bit SDR (tonemapped when needed); "SDR+HDR" (Bit16) keeps HDR captures as
++    /// 16-bit PNG and saves SDR captures as 16-bit sRGB PNG.
++    /// </summary>
+     public PNGBitDepth ImagePNGBitDepth = PNGBitDepth.Default;
+     public int ImageJPEGQuality = 90;
+     public GIFQuality ImageGIFQuality = GIFQuality.Default;
+     public bool ImageAutoUseJPEG = true;
+     public int ImageAutoUseJPEGSize = 2048;
+     public bool ImageAutoJPEGQuality = false;
++    /// <summary>
++    /// HDR tonemapping applied when an HDR (fp16) capture must be converted to SDR.
++    /// </summary>
++    public HdrToneMappingMode ImageHdrToneMapping = HdrToneMappingMode.TonemapHable;
++    /// <summary>
++    /// HDR tonemapping applied when an HDR capture must be saved as SDR (PNG depth = "SDR").
++    /// None saves the image "as is" (linear values clamp at SDR white, no tone curve); every
++    /// other mode applies its HDR→SDR curve. With depth "SDR+HDR" the fp16 data is kept and this
++    /// setting does not apply.
++    /// </summary>
++    public HdrToneMappingMode ImageHdrSaveToneMapping = HdrToneMappingMode.TonemapHable;
++    /// <summary>
++    /// HDR tonemapping applied specifically when copying an HDR capture to the clipboard.
++    /// </summary>
++    public HdrToneMappingMode ImageHdrClipboardToneMapping = HdrToneMappingMode.TonemapHable;
+     public FileExistAction FileExistAction = FileExistAction.Ask;
+ 
+     #endregion Image / General
+diff --git a/src/desktop/core/XerahS.Core/Tasks/Processors/CaptureJobProcessor.cs b/src/desktop/core/XerahS.Core/Tasks/Processors/CaptureJobProcessor.cs
+index 2043e4ae..b0a628e8 100644
+--- a/src/desktop/core/XerahS.Core/Tasks/Processors/CaptureJobProcessor.cs
++++ b/src/desktop/core/XerahS.Core/Tasks/Processors/CaptureJobProcessor.cs
+@@ -24,6 +24,7 @@ You should have received a copy of the GNU General Public License
+ #endregion License Information (GPL v3)
+ 
+ using XerahS.Common;
++using XerahS.Common.Helpers;
+ using XerahS.History;
+ using XerahS.Platform.Abstractions;
+ using XerahS.Services;
+@@ -31,6 +32,7 @@ You should have received a copy of the GNU General Public License
+ using XerahS.Uploaders.PluginSystem;
+ using ShareX.ImageEditor.Core.Persistence;
+ using ShareX.ImageEditor.Hosting;
++using XerahS.Core.Helpers;
+ using XerahS.Core.Services;
+ using SkiaSharp;
+ 
+@@ -49,6 +51,33 @@ public class CaptureJobProcessor : IJobProcessor
+         /// </summary>
+         public static Func<SKBitmap, Task>? ShowAnalyzerCallback { get; set; }
+ 
++        /// <summary>
++        /// Tonemaps an HDR (fp16 scRGB) capture to 8-bit Bgra8888 when the image is RgbaF16 and the
++        /// selected mode requires SDR output (HDR_CAPTURE_PLAN §6.3). Returns <c>true</c> and sets
++        /// <paramref name="tonemapped"/> to a NEW bitmap (caller owns it) when a conversion was made;
++        /// returns <c>false</c> and sets <paramref name="tonemapped"/> back to <paramref name="image"/>
++        /// (no ownership transfer) when no conversion is needed or the conversion failed.
++        /// </summary>
++        internal static bool TryTonemapHdr(SKBitmap image, HdrToneMappingMode mode, AfterCaptureTasks afterCaptureJob, out SKBitmap? tonemapped)
++        {
++            tonemapped = image;
++
++            if (image.ColorType != SKColorType.RgbaF16 ||
++                !HdrTonemapper.ShouldTonemapToSdr(mode, afterCaptureJob))
++            {
++                return false;
++            }
++
++            SKBitmap? sdr = HdrTonemapper.TonemapToBgra8888(image, mode);
++            if (sdr == null)
++            {
++                return false;
++            }
++
++            tonemapped = sdr;
++            return true;
++        }
++
+         /// <summary>
+         /// Executes after-capture tasks for the current job.
+         /// </summary>
+@@ -65,6 +94,54 @@ public async Task<bool> ProcessAsync(TaskInfo info, CancellationToken token)
+             string? annotationSidecarPath = null;
+             bool annotationSidecarSaveAttempted = false;
+ 
++            // HDR (fp16) captures are scRGB-linear. The SDR-only steps (preview, effects, editor,
++            // upload) share one tonemapped copy, while save-to-file and clipboard are tonemapped
++            // independently so their modes can differ (HDR_CAPTURE_PLAN §6.3).
++            SKBitmap fp16Source = info.Metadata.Image; // non-null (checked above)
++            bool isHdr = fp16Source.ColorType == SKColorType.RgbaF16;
++            DebugHelper.WriteLine($"[HDR] ProcessAsync: ColorType={fp16Source.ColorType}, isHdr={isHdr}");
++
++            AfterCaptureTasks generalSdrTasks =
++                AfterCaptureTasks.ShowAfterCaptureWindow |
++                AfterCaptureTasks.AddImageEffects |
++                AfterCaptureTasks.AnnotateMedia |
++                AfterCaptureTasks.UploadImageToHost;
++
++            // fp16Source must survive the general pipeline only when a destination still needs to
++            // read it (keep-HDR save, or a per-destination tonemap computed just-in-time).
++            bool retainFp16 = isHdr &&
++                (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.SaveImageToFile) ||
++                 settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyImageToClipboard));
++
++            void DisposeRetainedFp16Source()
++            {
++                if (retainFp16 && !ReferenceEquals(fp16Source, info.Metadata!.Image))
++                {
++                    fp16Source.Dispose();
++                    retainFp16 = false;
++                }
++            }
++
++            SKBitmap currentImage = fp16Source;
++            bool needsTonemap = isHdr &&
++                HdrTonemapper.ShouldTonemapToSdr(settings.ImageSettings.ImageHdrToneMapping, settings.AfterCaptureJob & generalSdrTasks);
++
++            if (TryTonemapHdr(currentImage, settings.ImageSettings.ImageHdrToneMapping, settings.AfterCaptureJob & generalSdrTasks, out SKBitmap? tonemapped) &&
++                tonemapped != null)
++            {
++                info.Metadata.Image = tonemapped;
++                if (!retainFp16)
++                {
++                    currentImage.Dispose();
++                }
++                currentImage = tonemapped;
++                DebugHelper.WriteLine("Tonemapped HDR (fp16) capture to 8-bit SDR.");
++            }
++            else if (needsTonemap)
++            {
++                DebugHelper.WriteLine("Tonemapping HDR capture failed; keeping fp16 image.");
++            }
++
+             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.ShowAfterCaptureWindow))
+             {
+                 if (!PlatformServices.IsInitialized)
+@@ -75,12 +152,14 @@ public async Task<bool> ProcessAsync(TaskInfo info, CancellationToken token)
+                 {
+                     var originalAfterCapture = settings.AfterCaptureJob;
+                     var result = await PlatformServices.UI.ShowAfterCaptureWindowAsync(
+-                        info.Metadata.Image,
++                        currentImage,
+                         settings.AfterCaptureJob,
+-                        settings.AfterUploadJob);
++                        settings.AfterUploadJob,
++                        settings.ImageSettings.ImageHdrToneMapping);
+                     if (result.Cancel)
+                     {
+                         DebugHelper.WriteLine("After capture window cancelled; aborting workflow.");
++                        DisposeRetainedFp16Source();
+                         return false;
+                     }
+ 
+@@ -93,6 +172,24 @@ public async Task<bool> ProcessAsync(TaskInfo info, CancellationToken token)
+                     {
+                         PersistShowAfterCaptureWindowSetting(settings.WorkflowId, false);
+                     }
++
++                    // Persist the user's HDR tonemapping choice and apply it in case the image is
++                    // still HDR (fp16). If the pre-window hook already replaced the fp16 image with
++                    // an 8-bit copy, this is a no-op (the image is no longer RgbaF16). If the user
++                    // selected None after that replacement, the fp16 source is already disposed and
++                    // the 8-bit copy stays — acceptable, the choice still applies to future captures.
++                    settings.ImageSettings.ImageHdrToneMapping = result.ToneMapping;
++                    if (TryTonemapHdr(currentImage, result.ToneMapping, settings.AfterCaptureJob & generalSdrTasks, out SKBitmap? postWindowTonemapped) &&
++                        postWindowTonemapped != null)
++                    {
++                        info.Metadata.Image = postWindowTonemapped;
++                        if (!(retainFp16 && ReferenceEquals(currentImage, fp16Source)))
++                        {
++                            currentImage.Dispose();
++                        }
++                        currentImage = postWindowTonemapped;
++                        DebugHelper.WriteLine("Applied HDR tonemapping selected in after-capture window.");
++                    }
+                 }
+             }
+ 
+@@ -105,6 +202,7 @@ public async Task<bool> ProcessAsync(TaskInfo info, CancellationToken token)
+                     if (processed == null)
+                     {
+                         DebugHelper.WriteLine("Error: Applying image effects resulted in null image.");
++                        DisposeRetainedFp16Source();
+                         return true;
+                     }
+ 
+@@ -136,20 +234,85 @@ public async Task<bool> ProcessAsync(TaskInfo info, CancellationToken token)
+ 
+             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.SaveImageToFile))
+             {
+-                await SaveImageToFileAsync(info);
+-                annotationSidecarPath = await SaveAnnotationSidecarAsync(info, editorResult);
+-                annotationSidecarSaveAttempted = true;
++                SKBitmap saveBitmap;
++                SKBitmap? ownedSave = null;
++
++                if (isHdr)
++                {
++                    // The PNG depth setting decides the saved content: "SDR" forces an HDR→SDR
++                    // conversion using the selected method (None = as-is/clamp), "SDR+HDR" keeps
++                    // the fp16 data so the 16-bit PNG path is preserved.
++                    if (settings.ImageSettings.ImagePNGBitDepth != PNGBitDepth.Bit16)
++                    {
++                        ownedSave = HdrTonemapper.TonemapToBgra8888(fp16Source, settings.ImageSettings.ImageHdrSaveToneMapping);
++                        saveBitmap = ownedSave ?? fp16Source;
++                    }
++                    else
++                    {
++                        // Keep HDR (fp16) so the 16-bit PNG path is preserved.
++                        saveBitmap = fp16Source;
++                    }
++                }
++                else
++                {
++                    saveBitmap = info.Metadata!.Image!;
++                }
++
++                try
++                {
++                    await SaveImageToFileAsync(info, saveBitmap);
++                    annotationSidecarPath = await SaveAnnotationSidecarAsync(info, editorResult);
++                    annotationSidecarSaveAttempted = true;
++                }
++                finally
++                {
++                    ownedSave?.Dispose();
++                }
+             }
+ 
+             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.CopyImageToClipboard))
+             {
+-                if (PlatformServices.IsInitialized && info.Metadata?.Image != null)
++                SKBitmap clipboardBitmap;
++                SKBitmap? ownedClipboard = null;
++
++                if (isHdr)
++                {
++                    var clipboardMode = settings.ImageSettings.ImageHdrClipboardToneMapping;
++                    if (HdrTonemapper.ShouldTonemapToSdr(clipboardMode, AfterCaptureTasks.CopyImageToClipboard))
++                    {
++                        ownedClipboard = HdrTonemapper.TonemapToBgra8888(fp16Source, clipboardMode);
++                    }
++
++                    // The clipboard cannot hold HDR; if no tonemap was requested, fall back to the
++                    // already-8-bit working image (or the fp16 source, which the clipboard helper clamps).
++                    clipboardBitmap = ownedClipboard ?? info.Metadata!.Image!;
++                }
++                else
++                {
++                    clipboardBitmap = info.Metadata!.Image!;
++                }
++
++                if (PlatformServices.IsInitialized)
++                {
++                    try
++                    {
++                        PlatformServices.Clipboard.SetImage(clipboardBitmap);
++                        DebugHelper.WriteLine("Image copied to clipboard.");
++                    }
++                    finally
++                    {
++                        ownedClipboard?.Dispose();
++                    }
++                }
++                else
+                 {
+-                    PlatformServices.Clipboard.SetImage(info.Metadata.Image);
+-                    DebugHelper.WriteLine("Image copied to clipboard.");
++                    ownedClipboard?.Dispose();
+                 }
+             }
+ 
++            // fp16Source is no longer needed once save/clipboard have consumed it.
++            DisposeRetainedFp16Source();
++
+             if (settings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost))
+             {
+                 await UploadImageAsync(info);
+@@ -432,12 +595,8 @@ await OcrIndexingService.PersistRecognizedTextAsync(
+             }
+         }
+ 
+-        private async Task SaveImageToFileAsync(TaskInfo info)
++        private async Task SaveImageToFileAsync(TaskInfo info, SkiaSharp.SKBitmap bmp)
+         {
+-            if (info.Metadata?.Image == null) return;
+-
+-            SkiaSharp.SKBitmap bmp = info.Metadata.Image;
+-
+             // TaskHelpers contains the logic for folder resolution, naming, and file exists handling.
+             // It runs synchronously (SkiaSharp limitation), so wrap in Task.Run if needed, 
+             // though here we are already on background thread from WorkerTask.
+@@ -616,7 +775,7 @@ private static void HandleUploadResult(TaskInfo info, UploadResult? result)
+             }
+ 
+             string? errorText = result?.Errors?.Errors?.FirstOrDefault()?.Text ?? result?.Errors?.ToString();
+-            DebugHelper.WriteLine($"Upload failed: {errorText ?? "Unknown upload error."}");
++            DebugHelper.WriteLine($"Upload failed: {SecretMasker.MaskSecrets(errorText ?? "Unknown upload error.")}");
+         }
+ 
+         private static UploadResult? TryUploadWithPluginSystem(TaskInfo info)
+@@ -663,7 +822,7 @@ private static void HandleUploadResult(TaskInfo info, UploadResult? result)
+                 return primaryResult;
+             }
+ 
+-            var primaryError = primaryResult?.Errors?.ToString() ?? primaryResult?.Response ?? "Unknown error";
++            var primaryError = SecretMasker.MaskSecrets(primaryResult?.Errors?.ToString() ?? primaryResult?.Response ?? "Unknown error");
+             DebugHelper.WriteLine(
+                 $"Primary capture uploader '{targetInstance.DisplayName}' failed ({primaryError}). Trying fallback uploaders.");
+ 
+diff --git a/src/platform/XerahS.Platform.Abstractions/HdrToneMappingMode.cs b/src/platform/XerahS.Platform.Abstractions/HdrToneMappingMode.cs
+new file mode 100644
+index 00000000..636b6840
+--- /dev/null
++++ b/src/platform/XerahS.Platform.Abstractions/HdrToneMappingMode.cs
+@@ -0,0 +1,47 @@
++#region License Information (GPL v3)
++
++/*
++    XerahS - The Avalonia UI implementation of ShareX
++    Copyright (c) 2007-2026 ShareX Team
++
++    This program is free software; you can redistribute it and/or
++    modify it under the terms of the GNU General Public License
++    as published by the Free Software Foundation; either version 2
++    of the License, or (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++
++    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
++*/
++
++#endregion License Information (GPL v3)
++
++namespace XerahS.Common
++{
++    /// <summary>
++    /// HDR → SDR tonemapping mode selected for a capture. Declared in the platform
++    /// abstractions assembly (like <c>AfterCaptureTasks</c>) so the After Capture window
++    /// contract can carry it, while keeping the <c>XerahS.Common</c> namespace stable for
++    /// existing consumers (HDR_CAPTURE_PLAN §6.4).
++    /// </summary>
++    public enum HdrToneMappingMode // Localized
++    {
++        None = 0,
++        // Retained for settings backward compatibility; no longer selectable in the UI.
++        Auto = 1,
++        TonemapReinhard = 2,
++        TonemapAces = 3,
++        TonemapBt2446C = 4,
++        // Filmic (Hable) curve anchored at the capture's estimated SDR white level. Chosen by
++        // visual assessment of real HDR photographs (best sky/highlight rendering with
++        // near-reference colors); also behaves like a mild contrast curve on SDR desktops.
++        TonemapHable = 5
++    }
++}
+\ No newline at end of file
+diff --git a/src/platform/XerahS.Platform.Windows/Capture/DisplaySdrWhiteLevelHelper.cs b/src/platform/XerahS.Platform.Windows/Capture/DisplaySdrWhiteLevelHelper.cs
+new file mode 100644
+index 00000000..3c192249
+--- /dev/null
++++ b/src/platform/XerahS.Platform.Windows/Capture/DisplaySdrWhiteLevelHelper.cs
+@@ -0,0 +1,232 @@
++#region License Information (GPL v3)
++
++/*
++    XerahS - The Avalonia UI implementation of ShareX
++    Copyright (c) 2007-2026 ShareX Team
++
++    This program is free software; you can redistribute it and/or
++    modify it under the terms of the GNU General Public License
++    as published by the Free Software Foundation; either version 2
++    of the License, or (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++
++    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
++*/
++
++#endregion License Information (GPL v3)
++
++using System.Runtime.InteropServices;
++using XerahS.Common;
++using XerahS.Common.Helpers;
++
++namespace XerahS.Platform.Windows.Capture;
++
++/// <summary>
++/// Reads the SDR white level Windows composites SDR content at (Settings → Display → HDR → SDR
++/// content brightness). DXGI synchronous frames are linear scRGB where 1.0 == 80 cd/m², so this
++/// value is the multiplier the capture pipeline must divide by for <c>1.0 == SDR white</c> to hold.
++/// Falls back to 1.0 (80 cd/m²) whenever the OS query is unavailable.
++/// </summary>
++internal static class DisplaySdrWhiteLevelHelper
++{
++    private const uint QDC_ONLY_ACTIVE_PATHS = 2;
++    private const int ERROR_SUCCESS = 0;
++
++    private const uint DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME = 1;
++    private const uint DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL = 11;
++
++    /// <summary>
++    /// Returns the SDR white level in scRGB units (1.0 == 80 cd/m²) for the output whose GDI name
++    /// matches <paramref name="gdiDeviceName"/> (for example <c>\\.\DISPLAY1</c>). Returns 1.0 when
++    /// the display is not in advanced-color mode or the query fails.
++    /// </summary>
++    public static float GetSdrWhiteLevelScRgb(string? gdiDeviceName)
++    {
++        if (string.IsNullOrEmpty(gdiDeviceName))
++        {
++            return 1f;
++        }
++
++        try
++        {
++            if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, out uint pathCount, out uint modeCount) != ERROR_SUCCESS)
++            {
++                return 1f;
++            }
++
++            var paths = new DisplayConfigPathInfo[pathCount];
++            var modes = new DisplayConfigModeInfo[modeCount];
++            if (QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, ref pathCount, paths, ref modeCount, modes, IntPtr.Zero) != ERROR_SUCCESS)
++            {
++                return 1f;
++            }
++
++            for (int i = 0; i < pathCount; i++)
++            {
++                var path = paths[i];
++                var sourceName = new DisplayConfigSourceDeviceName
++                {
++                    Header = new DisplayConfigDeviceInfoHeader
++                    {
++                        Type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME,
++                        Size = (uint)Marshal.SizeOf<DisplayConfigSourceDeviceName>(),
++                        AdapterId = path.SourceInfo.AdapterId,
++                        Id = path.SourceInfo.Id
++                    }
++                };
++
++                if (DisplayConfigGetDeviceInfo(ref sourceName) != ERROR_SUCCESS)
++                {
++                    continue;
++                }
++
++                if (!string.Equals(sourceName.ViewGdiDeviceName, gdiDeviceName, StringComparison.OrdinalIgnoreCase))
++                {
++                    continue;
++                }
++
++                var whiteLevel = new DisplayConfigSdrWhiteLevel
++                {
++                    Header = new DisplayConfigDeviceInfoHeader
++                    {
++                        Type = DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL,
++                        Size = (uint)Marshal.SizeOf<DisplayConfigSdrWhiteLevel>(),
++                        AdapterId = path.TargetInfo.AdapterId,
++                        Id = path.TargetInfo.Id
++                    }
++                };
++
++                if (DisplayConfigGetDeviceInfo(ref whiteLevel) != ERROR_SUCCESS)
++                {
++                    return 1f;
++                }
++
++                float scRgb = HdrSdrWhiteNormalizer.FromDisplayConfigWhiteLevel(whiteLevel.SdrWhiteLevel);
++                DebugHelper.WriteLine(
++                    $"[HDR] SDR white level for {gdiDeviceName}: {whiteLevel.SdrWhiteLevel}/1000 " +
++                    $"= {HdrSdrWhiteNormalizer.ScRgbToNits(scRgb):F0} nits (scRGB {scRgb:F3})");
++                return scRgb;
++            }
++        }
++        catch (Exception ex)
++        {
++            DebugHelper.WriteLine($"[HDR] SDR white level query failed: {ex.Message}");
++        }
++
++        return 1f;
++    }
++
++    [DllImport("user32.dll")]
++    private static extern int GetDisplayConfigBufferSizes(uint flags, out uint numPathArrayElements, out uint numModeInfoArrayElements);
++
++    [DllImport("user32.dll")]
++    private static extern int QueryDisplayConfig(
++        uint flags,
++        ref uint numPathArrayElements,
++        [Out] DisplayConfigPathInfo[] pathInfoArray,
++        ref uint numModeInfoArrayElements,
++        [Out] DisplayConfigModeInfo[] modeInfoArray,
++        IntPtr currentTopologyId);
++
++    [DllImport("user32.dll")]
++    private static extern int DisplayConfigGetDeviceInfo(ref DisplayConfigSourceDeviceName deviceName);
++
++    [DllImport("user32.dll")]
++    private static extern int DisplayConfigGetDeviceInfo(ref DisplayConfigSdrWhiteLevel sdrWhiteLevel);
++
++    [StructLayout(LayoutKind.Sequential)]
++    private struct Luid
++    {
++        public uint LowPart;
++        public int HighPart;
++    }
++
++    [StructLayout(LayoutKind.Sequential)]
++    private struct DisplayConfigDeviceInfoHeader
++    {
++        public uint Type;
++        public uint Size;
++        public Luid AdapterId;
++        public uint Id;
++    }
++
++    [StructLayout(LayoutKind.Sequential)]
++    private struct DisplayConfigPathSourceInfo
++    {
++        public Luid AdapterId;
++        public uint Id;
++        public uint ModeInfoIdx;
++        public uint StatusFlags;
++    }
++
++    [StructLayout(LayoutKind.Sequential)]
++    private struct DisplayConfigPathTargetInfo
++    {
++        public Luid AdapterId;
++        public uint Id;
++        public uint ModeInfoIdx;
++        public uint OutputTechnology;
++        public uint Rotation;
++        public uint Scaling;
++        public uint RefreshRate;
++        public uint ScanLineOrdering;
++        public int TargetAvailable;
++        public uint StatusFlags;
++    }
++
++    [StructLayout(LayoutKind.Sequential)]
++    private struct DisplayConfigPathInfo
++    {
++        public DisplayConfigPathSourceInfo SourceInfo;
++        public DisplayConfigPathTargetInfo TargetInfo;
++        public uint Flags;
++    }
++
++    /// <summary>
++    /// The union member of DISPLAYCONFIG_MODE_INFO is 48 bytes; the capture path never reads it,
++    /// but the array must have the exact native stride for QueryDisplayConfig.
++    /// </summary>
++    [StructLayout(LayoutKind.Sequential)]
++    private struct DisplayConfigModeInfoUnion
++    {
++        public ulong Reserved0;
++        public ulong Reserved1;
++        public ulong Reserved2;
++        public ulong Reserved3;
++        public ulong Reserved4;
++        public ulong Reserved5;
++    }
++
++    [StructLayout(LayoutKind.Sequential)]
++    private struct DisplayConfigModeInfo
++    {
++        public uint InfoType;
++        public uint Id;
++        public Luid AdapterId;
++        public DisplayConfigModeInfoUnion Mode;
++    }
++
++    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
++    private struct DisplayConfigSourceDeviceName
++    {
++        public DisplayConfigDeviceInfoHeader Header;
++
++        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
++        public string ViewGdiDeviceName;
++    }
++
++    [StructLayout(LayoutKind.Sequential)]
++    private struct DisplayConfigSdrWhiteLevel
++    {
++        public DisplayConfigDeviceInfoHeader Header;
++        public uint SdrWhiteLevel;
++    }
++}
+diff --git a/src/platform/XerahS.Platform.Windows/Capture/DxgiHdrDuplicationHelper.cs b/src/platform/XerahS.Platform.Windows/Capture/DxgiHdrDuplicationHelper.cs
+new file mode 100644
+index 00000000..9017fc70
+--- /dev/null
++++ b/src/platform/XerahS.Platform.Windows/Capture/DxgiHdrDuplicationHelper.cs
+@@ -0,0 +1,110 @@
++#region License Information (GPL v3)
++
++/*
++    XerahS - The Avalonia UI implementation of ShareX
++    Copyright (c) 2007-2026 ShareX Team
++
++    This program is free software; you can redistribute it and/or
++    modify it under the terms of the GNU General Public License
++    as published by the Free Software Foundation; either version 2
++    of the License, or (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++
++    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
++*/
++
++#endregion License Information (GPL v3)
++
++using SkiaSharp;
++using Vortice.Direct3D11;
++using Vortice.DXGI;
++using XerahS.Common;
++
++namespace XerahS.Platform.Windows.Capture;
++
++/// <summary>
++/// Shared DXGI HDR helpers used by both the legacy region-capture strategy and the main
++/// full-screen capture service. Centralizes HDR10 detection and fp16 scRGB duplication with an
++/// 8-bit fallback (HDR_CAPTURE_PLAN RISK-06).
++/// </summary>
++internal static class DxgiHdrDuplicationHelper
++{
++    /// <summary>
++    /// Whether the given DXGI output currently reports an HDR10 color space (PQ/P2020).
++    /// QueryInterface/GetDesc1 failures are treated as SDR.
++    /// </summary>
++    public static bool IsOutputHdr(IDXGIOutput output)
++    {
++        try
++        {
++            using var output6 = output.QueryInterface<IDXGIOutput6>();
++            return DxgiCapabilitiesHelper.IsHdrColorSpace(output6.Description1.ColorSpace);
++        }
++        catch
++        {
++            return false;
++        }
++    }
++
++    /// <summary>
++    /// Creates an output duplication, requesting fp16 scRGB frames when the output is HDR.
++    /// Falls back to the ordinary 8-bit duplication when the driver rejects or ignores the fp16
++    /// format hint, setting <paramref name="isHdr"/> to reflect the final mode.
++    /// </summary>
++    public static IDXGIOutputDuplication CreateDuplication(IDXGIOutput1 output, ID3D11Device device, out bool isHdr)
++    {
++        isHdr = IsOutputHdr(output);
++        DebugHelper.WriteLine($"HDR: output detected as {(isHdr ? "HDR (requesting fp16)" : "SDR")}");
++
++        if (isHdr)
++        {
++            IDXGIOutputDuplication? hdrDup = null;
++            try
++            {
++                using var output5 = output.QueryInterface<IDXGIOutput5>();
++                hdrDup = output5.DuplicateOutput1(device, new[] { Format.R16G16B16A16_Float });
++                DebugHelper.WriteLine($"HDR: DuplicateOutput1 format={hdrDup.Description.ModeDescription.Format}");
++                if (hdrDup.Description.ModeDescription.Format == Format.R16G16B16A16_Float)
++                {
++                    return hdrDup;
++                }
++
++                hdrDup.Dispose();
++                hdrDup = null;
++                DebugHelper.WriteLine("HDR: driver ignored the fp16 format hint; falling back to 8-bit duplication.");
++            }
++            catch (Exception ex)
++            {
++                hdrDup?.Dispose();
++                DebugHelper.WriteLine($"HDR: DuplicateOutput1 failed ({ex.Message}); falling back to 8-bit duplication.");
++            }
++
++            isHdr = false;
++        }
++
++        return output.DuplicateOutput(device);
++    }
++
++    /// <summary>
++    /// Creates an 8-bit or fp16 readback bitmap for a mapped DXGI staging texture.
++    /// </summary>
++    public static SKBitmap CreateReadbackBitmap(int width, int height, bool isHdr)
++    {
++        return isHdr
++            ? new SKBitmap(new SKImageInfo(width, height, SKColorType.RgbaF16, SKAlphaType.Premul, SKColorSpace.CreateSrgbLinear()))
++            : new SKBitmap(new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul, SKColorSpace.CreateSrgb()));
++    }
++
++    /// <summary>
++    /// Bytes per pixel for the readback bitmap matching <see cref="CreateReadbackBitmap"/>.
++    /// </summary>
++    public static int BytesPerPixel(bool isHdr) => isHdr ? 8 : 4;
++}
+diff --git a/src/platform/XerahS.Platform.Windows/WindowsModernCaptureService.cs b/src/platform/XerahS.Platform.Windows/WindowsModernCaptureService.cs
+index 5fdefc17..0c8faab7 100644
+--- a/src/platform/XerahS.Platform.Windows/WindowsModernCaptureService.cs
++++ b/src/platform/XerahS.Platform.Windows/WindowsModernCaptureService.cs
+@@ -25,6 +25,7 @@ You should have received a copy of the GNU General Public License
+ 
+ using XerahS.Platform.Abstractions;
+ using XerahS.Common;
++using XerahS.Common.Helpers;
+ using SkiaSharp;
+ using Vortice.Direct3D;
+ using Vortice.Direct3D11;
+@@ -130,7 +131,10 @@ public Task<SKRectI> SelectRegionAsync(CaptureOptions? options = null)
+                     if (!TryCreateDxgiCropRect(rect, virtualBounds, fullBitmap.Width, fullBitmap.Height, out var cropRect))
+                         return null;
+ 
+-                    var cropped = new SKBitmap(cropRect.Width, cropRect.Height);
++                    var cropped = DxgiHdrDuplicationHelper.CreateReadbackBitmap(
++                        cropRect.Width,
++                        cropRect.Height,
++                        fullBitmap.ColorType == SKColorType.RgbaF16);
+                     using var canvas = new SKCanvas(cropped);
+                     canvas.DrawBitmap(fullBitmap, cropRect, new SKRect(0, 0, cropRect.Width, cropRect.Height), SKSamplingOptions.Default);
+                     return cropped;
+@@ -276,7 +280,7 @@ internal static bool TryCreateDxgiCropRect(SKRect rect, System.Drawing.Rectangle
+             int minX = int.MaxValue, minY = int.MaxValue;
+             int maxX = int.MinValue, maxY = int.MinValue;
+ 
+-            foreach (var (output, adapter, bounds, _, _, _) in outputs)
++            foreach (var (output, adapter, bounds, _, _, _, _) in outputs)
+             {
+                 minX = Math.Min(minX, bounds.Left);
+                 minY = Math.Min(minY, bounds.Top);
+@@ -289,10 +293,9 @@ internal static bool TryCreateDxgiCropRect(SKRect rect, System.Drawing.Rectangle
+ 
+             if (totalWidth <= 0 || totalHeight <= 0) return null;
+ 
+-            // Create combined bitmap
+-            var combinedBitmap = new SKBitmap(totalWidth, totalHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
+-            using var canvas = new SKCanvas(combinedBitmap);
+-            canvas.Clear(SKColors.Black);
++            // The combined bitmap is created after duplication setup so its color type reflects the
++            // ACTUAL duplication modes (an HDR output whose driver rejects fp16 falls back to 8-bit).
++            SKBitmap? combinedBitmap = null;
+ 
+             // Group outputs by adapter to share ID3D11Device
+             var outputsByAdapter = outputs.GroupBy(x => x.Adapter).ToList();
+@@ -304,7 +307,8 @@ internal static bool TryCreateDxgiCropRect(SKRect rect, System.Drawing.Rectangle
+                 System.Drawing.Rectangle Bounds,
+                 ModeRotation Rotation,
+                 string DeviceName,
+-                ModeRotation DxgiRotation)>();
++                ModeRotation DxgiRotation,
++                bool IsHdr)>();
+             var devicesToDispose = new List<ID3D11Device>();
+             int capturedOutputCount = 0;
+ 
+@@ -325,13 +329,13 @@ internal static bool TryCreateDxgiCropRect(SKRect rect, System.Drawing.Rectangle
+ 
+                     // using var deviceContext = device.ImmediateContext; // REMOVED: Premature disposal causes NRE later
+ 
+-                    foreach (var (output, _, bounds, rotation, deviceName, dxgiRotation) in group)
++                    foreach (var (output, _, bounds, rotation, deviceName, dxgiRotation, _) in group)
+                     {
+                         try
+                         {
+-                            // Duplicate output
+-                            var duplication = output.DuplicateOutput(device);
+-                            activeDuplications.Add((duplication, device, bounds, rotation, deviceName, dxgiRotation));
++                            // Duplicate output; HDR outputs request fp16 scRGB with an 8-bit fallback.
++                            var duplication = DxgiHdrDuplicationHelper.CreateDuplication(output, device, out bool isHdr);
++                            activeDuplications.Add((duplication, device, bounds, rotation, deviceName, dxgiRotation, isHdr));
+                         }
+                         catch (Exception ex)
+                         {
+@@ -341,6 +345,16 @@ internal static bool TryCreateDxgiCropRect(SKRect rect, System.Drawing.Rectangle
+                     }
+                 }
+ 
++                // Create the combined bitmap now that the actual duplication modes are known.
++                // When any output is HDR, use an fp16 scRGB surface so HDR outputs can contribute
++                // values above 1.0; SDR outputs drawn onto it are converted by Skia.
++                bool anyHdr = activeDuplications.Any(d => d.IsHdr);
++                combinedBitmap = anyHdr
++                    ? new SKBitmap(totalWidth, totalHeight, SKColorType.RgbaF16, SKAlphaType.Premul, SKColorSpace.CreateSrgbLinear())
++                    : new SKBitmap(totalWidth, totalHeight, SKColorType.Bgra8888, SKAlphaType.Premul, SKColorSpace.CreateSrgb());
++                using var canvas = new SKCanvas(combinedBitmap);
++                canvas.Clear(SKColors.Black);
++
+                 // 2. Wait for next frame (important for first capture initialization)
+                 // Doing this ONCE creates a small delay that allows all duplications to accumulate a frame
+                 if (activeDuplications.Count > 0)
+@@ -349,28 +363,36 @@ internal static bool TryCreateDxgiCropRect(SKRect rect, System.Drawing.Rectangle
+                 }
+ 
+                 // 3. Acquire & Process Frames
+-                foreach (var (duplication, device, bounds, rotation, deviceName, dxgiRotation) in activeDuplications)
++                foreach (var (duplication, device, bounds, rotation, deviceName, dxgiRotation, isHdr) in activeDuplications)
+                 {
+                     bool frameAcquired = false;
+                     try
+                     {
+-                        var acquireResult = duplication.AcquireNextFrame(250, out var frameInfo, out var desktopResource);
+-
+-                        if (DxgiFrameAcquisitionHelper.ShouldRetryFrameAcquisition(acquireResult.Success, desktopResource != null))
++                        // The first frame right after DuplicateOutput can be an uninitialized
++                        // all-black buffer (observed with fp16/HDR duplication), which previously
++                        // produced a "black screen with cursor" capture. Retry a few times before
++                        // giving up on this output so the caller can fall back to GDI.
++                        for (int attempt = 0; attempt <= DxgiFrameAcquisitionHelper.MaxZeroFrameRetries; attempt++)
+                         {
+-                            if (acquireResult.Success)
++                            // Later attempts wait longer for the desktop to produce a real frame.
++                            int timeoutMs = attempt == 0 ? 500 : 800;
++                            var acquireResult = duplication.AcquireNextFrame((uint)timeoutMs, out var frameInfo, out var desktopResource);
++                            XerahS.Common.DebugHelper.WriteLine(
++                                $"CaptureFullScreenDxgi: AcquireNextFrame attempt {attempt + 1}: success={acquireResult.Success}, hr=0x{acquireResult.Code:X8}, resource={(desktopResource != null)}, timeout={timeoutMs}ms");
++
++                            if (DxgiFrameAcquisitionHelper.ShouldRetryFrameAcquisition(acquireResult.Success, desktopResource != null))
+                             {
+-                                ReleaseFrameQuietly(duplication);
+-                            }
++                                if (acquireResult.Success)
++                                {
++                                    ReleaseFrameQuietly(duplication);
++                                }
+ 
+-                            desktopResource?.Dispose();
+-                            acquireResult = duplication.AcquireNextFrame(500, out frameInfo, out desktopResource);
+-                        }
++                                desktopResource?.Dispose();
++                                continue;
++                            }
+ 
+-                        frameAcquired = acquireResult.Success;
++                            frameAcquired = acquireResult.Success;
+ 
+-                        if (DxgiFrameAcquisitionHelper.IsUsableFrame(acquireResult.Success, desktopResource != null))
+-                        {
+                             using (var resource = desktopResource!)
+                             {
+                                 using var desktopTex = resource.QueryInterface<ID3D11Texture2D>();
+@@ -401,7 +423,35 @@ internal static bool TryCreateDxgiCropRect(SKRect rect, System.Drawing.Rectangle
+                                 var dataBox = device.ImmediateContext.Map(staging, 0, MapMode.Read);
+                                 try
+                                 {
++                                    if (DxgiFrameAcquisitionHelper.IsEffectivelyBlackFrame(
++                                        dataBox.DataPointer,
++                                        (int)sourceDesc.Width,
++                                        (int)sourceDesc.Height,
++                                        (int)dataBox.RowPitch,
++                                        DxgiHdrDuplicationHelper.BytesPerPixel(isHdr)))
++                                    {
++                                        if (attempt < DxgiFrameAcquisitionHelper.MaxZeroFrameRetries)
++                                        {
++                                            XerahS.Common.DebugHelper.WriteLine(
++                                                $"CaptureFullScreenDxgi: Output {deviceName} returned an effectively-black frame (attempt {attempt + 1}); retrying.");
++                                            ReleaseFrameQuietly(duplication);
++                                            System.Threading.Thread.Sleep(33);
++                                            continue;
++                                        }
++
++                                        XerahS.Common.DebugHelper.WriteLine(
++                                            $"CaptureFullScreenDxgi: Output {deviceName} returned an effectively-black frame after {DxgiFrameAcquisitionHelper.MaxZeroFrameRetries + 1} attempts; skipping output.");
++                                        break;
++                                    }
++
+                                     // Draw to combined bitmap, applying output rotation correction.
++                                    // HDR frames are linear scRGB (1.0 == 80 cd/m²); they are
++                                    // rescaled to the display's SDR white level so that every
++                                    // downstream stage can rely on 1.0 == SDR white.
++                                    float sdrWhite = isHdr
++                                        ? DisplaySdrWhiteLevelHelper.GetSdrWhiteLevelScRgb(deviceName)
++                                        : 1f;
++
+                                     DrawMappedTextureToCanvas(
+                                         dataBox,
+                                         (int)sourceDesc.Width,
+@@ -411,19 +461,19 @@ internal static bool TryCreateDxgiCropRect(SKRect rect, System.Drawing.Rectangle
+                                         bounds.Width,
+                                         bounds.Height,
+                                         rotation,
++                                        isHdr,
++                                        sdrWhite,
+                                         canvas);
++
++                                    capturedOutputCount++;
+                                 }
+                                 finally
+                                 {
+                                     device.ImmediateContext.Unmap(staging, 0);
+                                 }
+-
+-                                capturedOutputCount++;
+                             }
+-                        }
+-                        else
+-                        {
+-                            XerahS.Common.DebugHelper.WriteLine($"CaptureFullScreenDxgi: AcquireFrame failed or timed out after retry.");
++
++                            break; // Frame processed successfully; stop retrying.
+                         }
+                     }
+                     catch (Exception ex)
+@@ -446,6 +496,11 @@ internal static bool TryCreateDxgiCropRect(SKRect rect, System.Drawing.Rectangle
+                 foreach (var d in devicesToDispose) d.Dispose();
+             }
+ 
++            if (combinedBitmap == null)
++            {
++                return null; // No output could be duplicated; caller will fall back to GDI.
++            }
++
+             if (DxgiFrameAcquisitionHelper.ShouldFallbackToGdi(activeDuplications.Count, capturedOutputCount))
+             {
+                 combinedBitmap.Dispose();
+@@ -457,6 +512,35 @@ internal static bool TryCreateDxgiCropRect(SKRect rect, System.Drawing.Rectangle
+             // Log success so the log file verifies DXGI (Vortice.Direct3D11/DXGI) was actually used
+             XerahS.Common.DebugHelper.WriteLine($"Screen capture: DXGI Output Duplication succeeded ({combinedBitmap.Width}x{combinedBitmap.Height})");
+ 
++            // TEMP HDR diagnostics (2026-08-19): dump the RAW combined capture bitmap (fp16 scRGB
++            // when any output was HDR) so a fresh capture can be compared stage-by-stage against
++            // the preview/Save-As. Remove together with SavePathDebugDump.
++            try
++            {
++                XerahS.Common.DebugHelper.WriteLine($"[CaptureDump] combined: {combinedBitmap.Width}x{combinedBitmap.Height} ColorType={combinedBitmap.ColorType} ColorSpace={combinedBitmap.ColorSpace}");
++                string dumpDir = Path.Combine(
++                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
++                    "XerahS", "DebugDumps");
++                Directory.CreateDirectory(dumpDir);
++                if (combinedBitmap.ColorType == SkiaSharp.SKColorType.RgbaF16)
++                {
++                    // SaveHdrF16Png preserves the raw linear samples exactly (same writer as the 16-bit pipeline path).
++                    XerahS.Common.ImageHelpers.SaveHdrF16Png(combinedBitmap, Path.Combine(dumpDir, $"capture-raw-f16-{DateTime.Now:HHmmss}.png"));
++                }
++                else
++                {
++                    using var data = combinedBitmap.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
++                    if (data != null)
++                    {
++                        File.WriteAllBytes(Path.Combine(dumpDir, $"capture-raw8-{DateTime.Now:HHmmss}.png"), data.ToArray());
++                    }
++                }
++            }
++            catch (Exception dumpEx)
++            {
++                XerahS.Common.DebugHelper.WriteLine($"[CaptureDump] failed: {dumpEx.Message}");
++            }
++
+             // Draw cursor if requested (after DXGI capture which doesn't include cursor)
+             if (drawCursor)
+             {
+@@ -520,24 +604,38 @@ private void DrawMappedTextureToCanvas(
+             int destWidth,
+             int destHeight,
+             ModeRotation rotation,
++            bool isHdr,
++            float sdrWhiteScRgb,
+             SKCanvas canvas)
+         {
+-            // Create a temporary SKBitmap wrapping the data
+-            // Note: We cannot wrap directly because SKBitmap doesn't support strided data easily without copy or specialized installPixels
+-            // For simplicity and safety (handling pitch), we copy row by row to a temp bitmap
+-
+-            using var sourceBitmap = new SKBitmap(sourceWidth, sourceHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
++            // Create a temporary SKBitmap wrapping the data.
++            // Note: We cannot wrap directly because SKBitmap doesn't support strided data easily
++            // without copy or specialized installPixels; copy row by row into a temp bitmap.
++            using var sourceBitmap = DxgiHdrDuplicationHelper.CreateReadbackBitmap(sourceWidth, sourceHeight, isHdr);
+             var destPixels = sourceBitmap.GetPixels();
+             int srcPitch = (int)dataBox.RowPitch;
+-            int bytesPerRow = sourceWidth * 4;
++            int destStride = sourceBitmap.RowBytes;
++            int bytesPerRow = sourceWidth * DxgiHdrDuplicationHelper.BytesPerPixel(isHdr);
+             BgraRowCopyHelper.CopyRows(
+                 dataBox.DataPointer,
+                 srcPitch,
+                 destPixels,
+-                bytesPerRow,
++                destStride,
+                 bytesPerRow,
+                 sourceHeight);
+ 
++            if (isHdr)
++            {
++                // DXGI synchronous frames are scRGB (1.0 == 80 cd/m²) but Windows composites SDR
++                // content at the user's SDR white level (often 200-300 cd/m²). Rescaling here keeps
++                // the pipeline invariant "1.0 == SDR white" true for every consumer.
++                if (HdrSdrWhiteNormalizer.NormalizeToSdrWhite(sourceBitmap, sdrWhiteScRgb))
++                {
++                    XerahS.Common.DebugHelper.WriteLine(
++                        $"CaptureFullScreenDxgi: normalized scRGB to SDR white (divisor {sdrWhiteScRgb:F3})");
++                }
++            }
++
+             using SKBitmap bitmapToDraw = RotateBitmapForDesktop(sourceBitmap, rotation);
+             var destRect = new SKRect(destX, destY, destX + destWidth, destY + destHeight);
+             canvas.DrawBitmap(bitmapToDraw, destRect, SKSamplingOptions.Default);
+@@ -574,7 +672,8 @@ private static SKBitmap RotateBitmapForDesktop(SKBitmap sourceBitmap, ModeRotati
+             System.Drawing.Rectangle Bounds,
+             ModeRotation Rotation,
+             string DeviceName,
+-            ModeRotation DxgiRotation)>
++            ModeRotation DxgiRotation,
++            bool IsHdr)>
+             EnumerateOutputs(IDXGIFactory1 factory)
+         {
+             var outputs = new System.Collections.Generic.List<(
+@@ -583,7 +682,8 @@ private static SKBitmap RotateBitmapForDesktop(SKBitmap sourceBitmap, ModeRotati
+                 System.Drawing.Rectangle,
+                 ModeRotation,
+                 string,
+-                ModeRotation)>();
++                ModeRotation,
++                bool)>();
+ 
+             for (uint adapterIndex = 0; factory.EnumAdapters1(adapterIndex, out var adapter).Success; adapterIndex++)
+             {
+@@ -621,7 +721,7 @@ private static SKBitmap RotateBitmapForDesktop(SKBitmap sourceBitmap, ModeRotati
+                             $"CaptureFullScreenDxgi: Rotation override for {outputDesc.DeviceName}. DisplaySettings={effectiveRotation}, DXGI={dxgiRotation}");
+                     }
+ 
+-                    outputs.Add((output1, adapter, bounds, effectiveRotation, outputDesc.DeviceName, dxgiRotation));
++                    outputs.Add((output1, adapter, bounds, effectiveRotation, outputDesc.DeviceName, dxgiRotation, DxgiHdrDuplicationHelper.IsOutputHdr(output1)));
+                     output.Dispose();
+                 }
+ 

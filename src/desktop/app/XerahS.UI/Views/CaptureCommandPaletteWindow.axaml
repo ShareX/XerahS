@@ -3,6 +3,7 @@
                      xmlns:views="using:XerahS.UI.Views"
                      xmlns:vm="using:XerahS.UI.ViewModels"
                      xmlns:palette="using:XerahS.Core.CaptureCommandPalette"
+                     xmlns:local="using:XerahS.UI.Markup"
                      x:Class="XerahS.UI.Views.CaptureCommandPaletteWindow"
                      x:DataType="vm:CaptureCommandPaletteViewModel"
                      Width="620"
@@ -69,17 +70,17 @@
               RowSpacing="{StaticResource SpaceL}">
             <Grid RowDefinitions="Auto, Auto"
                   RowSpacing="4">
-                <TextBlock Text="Capture"
+                <TextBlock Text="{local:Localize Palette_Capture}"
                            Classes="title" />
                 <TextBlock Grid.Row="1"
-                           Text="Search configured capture workflows. Enter runs the selected item."
+                           Text="{local:Localize Palette_SearchCaption}"
                            Classes="caption" />
             </Grid>
 
             <TextBox Grid.Row="1"
                      x:Name="SearchTextBox"
                      Text="{Binding Query}"
-                     PlaceholderText="Search capture workflows"
+                     PlaceholderText="{local:Localize Palette_SearchPlaceholder}"
                      AutomationProperties.Name="Capture command palette search" />
 
             <Grid Grid.Row="2"

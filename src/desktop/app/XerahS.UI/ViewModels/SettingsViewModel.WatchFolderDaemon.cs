@@ -64,7 +64,7 @@ namespace XerahS.UI.ViewModels
         private bool _isWatchFolderDaemonBusy;
 
         [ObservableProperty]
-        private string _watchFolderDaemonStatusText = "Unknown";
+        private string _watchFolderDaemonStatusText = Resources.GetString("WatchFolderDaemon_StatusUnknown");
 
         [ObservableProperty]
         private string _watchFolderDaemonLastError = string.Empty;
@@ -75,7 +75,7 @@ namespace XerahS.UI.ViewModels
             WatchFolderDaemonScope.System
         };
 
-        public string WatchFolderDaemonButtonText => WatchFolderDaemonRunning ? "Stop" : (WatchFolderDaemonInstalled ? "Start" : "Install + Start");
+        public string WatchFolderDaemonButtonText => WatchFolderDaemonRunning ? Resources.GetString("WatchFolderDaemon_Stop") : (WatchFolderDaemonInstalled ? Resources.GetString("WatchFolderDaemon_Start") : Resources.GetString("WatchFolderDaemon_InstallAndStart"));
 
         partial void OnWatchFolderDaemonScopeChanged(WatchFolderDaemonScope value)
         {
@@ -115,8 +115,8 @@ namespace XerahS.UI.ViewModels
                 WatchFolderDaemonScope scope = NormalizeWatchFolderDaemonScope(WatchFolderDaemonScope);
                 if (!daemonService.SupportsScope(scope))
                 {
-                    WatchFolderDaemonLastError = $"Selected scope '{scope}' is not supported on this platform.";
-                    WatchFolderDaemonStatusText = "Unsupported scope.";
+                    WatchFolderDaemonLastError = Resources.GetString("WatchFolderDaemon_ScopeNotSupported", scope);
+                    WatchFolderDaemonStatusText = Resources.GetString("WatchFolderDaemon_UnsupportedScope");
                     WatchFolderDaemonRunning = false;
                     WatchFolderManager.Instance.StartOrReloadFromCurrentSettings();
                     return;
@@ -151,7 +151,7 @@ namespace XerahS.UI.ViewModels
             catch (Exception ex)
             {
                 WatchFolderDaemonLastError = ex.Message;
-                WatchFolderDaemonStatusText = "Failed to control daemon.";
+                WatchFolderDaemonStatusText = Resources.GetString("WatchFolderDaemon_FailedToControl");
                 DebugHelper.WriteException(ex, "SettingsViewModel: failed to toggle watch folder daemon.");
             }
             finally
@@ -192,7 +192,7 @@ namespace XerahS.UI.ViewModels
                 ShowWatchFolderDaemonScopeSelector = false;
                 WatchFolderDaemonScope = NormalizeWatchFolderDaemonScope(settings.WatchFolderDaemonScope);
                 WatchFolderDaemonStartAtStartup = settings.WatchFolderDaemonStartAtStartup;
-                WatchFolderDaemonStatusText = "Platform services are not initialized.";
+                WatchFolderDaemonStatusText = Resources.GetString("Common_PlatformServicesNotInitialized");
                 WatchFolderDaemonLastError = string.Empty;
                 WatchFolderDaemonRunning = false;
                 WatchFolderDaemonInstalled = false;
@@ -232,7 +232,7 @@ namespace XerahS.UI.ViewModels
                     }
                     else
                     {
-                        WatchFolderDaemonLastError = $"Selected scope '{scope}' is not supported on this platform.";
+                        WatchFolderDaemonLastError = Resources.GetString("WatchFolderDaemon_ScopeNotSupported", scope);
                     }
 
                     daemonRunning = RefreshWatchFolderDaemonStatusCore();
@@ -251,7 +251,7 @@ namespace XerahS.UI.ViewModels
             {
                 if (!TryGetWatchFolderDaemonService(out IWatchFolderDaemonService daemonService))
                 {
-                    WatchFolderDaemonStatusText = "Watch folder daemon is not supported on this platform.";
+                    WatchFolderDaemonStatusText = Resources.GetString("WatchFolderDaemon_NotSupportedOnPlatform");
                     WatchFolderDaemonRunning = false;
                     WatchFolderDaemonInstalled = false;
                     return false;
@@ -262,7 +262,7 @@ namespace XerahS.UI.ViewModels
 
                 if (!daemonService.SupportsScope(scope))
                 {
-                    WatchFolderDaemonStatusText = $"Scope '{scope}' is not supported.";
+                    WatchFolderDaemonStatusText = Resources.GetString("WatchFolderDaemon_ScopeNotSupportedShort", scope);
                     WatchFolderDaemonRunning = false;
                     WatchFolderDaemonInstalled = false;
                     return false;
@@ -282,7 +282,7 @@ namespace XerahS.UI.ViewModels
             {
                 WatchFolderDaemonRunning = false;
                 WatchFolderDaemonInstalled = false;
-                WatchFolderDaemonStatusText = "Failed to query daemon status.";
+                WatchFolderDaemonStatusText = Resources.GetString("WatchFolderDaemon_FailedToQueryStatus");
                 WatchFolderDaemonLastError = ex.Message;
                 DebugHelper.WriteException(ex, "SettingsViewModel: failed to query watch folder daemon status.");
                 return false;
@@ -353,9 +353,9 @@ namespace XerahS.UI.ViewModels
                 return;
             }
 
-            WatchFolderDaemonStatusText = $"Daemon operation failed ({result.ErrorCode}).";
+            WatchFolderDaemonStatusText = Resources.GetString("WatchFolderDaemon_OperationFailed", result.ErrorCode);
             WatchFolderDaemonLastError = string.IsNullOrWhiteSpace(result.Message)
-                ? $"Operation failed with error: {result.ErrorCode}"
+                ? Resources.GetString("WatchFolderDaemon_OperationFailedWithError", result.ErrorCode)
                 : result.Message;
         }
     }

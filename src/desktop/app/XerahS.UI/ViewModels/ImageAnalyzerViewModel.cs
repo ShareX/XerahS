@@ -59,7 +59,7 @@ public partial class ImageAnalyzerViewModel : ViewModelBase
     private bool _isLoading;
 
     [ObservableProperty]
-    private string _statusText = "Select an image to analyze";
+    private string _statusText = Resources.GetString("ImageAnalyzer_StatusSelectImage");
 
     [ObservableProperty]
     private bool _hasInput;
@@ -86,9 +86,11 @@ public partial class ImageAnalyzerViewModel : ViewModelBase
         Analyze();
     }
 
-    public void SetInputImage(SkiaSharp.SKBitmap image, string inputName = "Captured image")
+    public void SetInputImage(SkiaSharp.SKBitmap image, string? inputName = null)
     {
         if (image.Width <= 0 || image.Height <= 0) return;
+
+        inputName ??= Resources.GetString("ImageAnalyzer_CapturedImage");
 
         InputFilePath = null;
         InputDisplayText = inputName;
@@ -105,18 +107,18 @@ public partial class ImageAnalyzerViewModel : ViewModelBase
 
         IsLoading = true;
         Properties.Clear();
-        StatusText = "Analyzing...";
+        StatusText = Resources.GetString("ImageAnalyzer_StatusAnalyzing");
 
         try
         {
             var fileInfo = new FileInfo(InputFilePath);
 
-            AddProperty("File", "Name", fileInfo.Name);
-            AddProperty("File", "Size", FormatFileSize(fileInfo.Length));
-            AddProperty("File", "Extension", fileInfo.Extension);
-            AddProperty("File", "Directory", fileInfo.DirectoryName ?? "");
-            AddProperty("File", "Created", fileInfo.CreationTime.ToString("yyyy-MM-dd HH:mm:ss"));
-            AddProperty("File", "Modified", fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"));
+            AddProperty(Resources.GetString("ImageAnalyzer_CategoryFile"), Resources.GetString("ImageAnalyzer_PropertyName"), fileInfo.Name);
+            AddProperty(Resources.GetString("ImageAnalyzer_CategoryFile"), Resources.GetString("ImageAnalyzer_PropertySize"), FormatFileSize(fileInfo.Length));
+            AddProperty(Resources.GetString("ImageAnalyzer_CategoryFile"), Resources.GetString("ImageAnalyzer_PropertyExtension"), fileInfo.Extension);
+            AddProperty(Resources.GetString("ImageAnalyzer_CategoryFile"), Resources.GetString("ImageAnalyzer_PropertyDirectory"), fileInfo.DirectoryName ?? "");
+            AddProperty(Resources.GetString("ImageAnalyzer_CategoryFile"), Resources.GetString("ImageAnalyzer_PropertyCreated"), fileInfo.CreationTime.ToString("yyyy-MM-dd HH:mm:ss"));
+            AddProperty(Resources.GetString("ImageAnalyzer_CategoryFile"), Resources.GetString("ImageAnalyzer_PropertyModified"), fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"));
 
             using var bmp = ImageHelpers.LoadBitmap(InputFilePath);
             if (bmp != null)
@@ -125,12 +127,12 @@ public partial class ImageAnalyzerViewModel : ViewModelBase
             }
             else
             {
-                StatusText = "Could not load image data";
+                StatusText = Resources.GetString("ImageAnalyzer_StatusLoadFailed");
             }
         }
         catch (Exception ex)
         {
-            StatusText = $"Error: {ex.Message}";
+            StatusText = Resources.GetString("ImageAnalyzer_StatusError", ex.Message);
             DebugHelper.WriteException(ex, "ImageAnalyzer");
         }
         finally
@@ -143,18 +145,18 @@ public partial class ImageAnalyzerViewModel : ViewModelBase
     {
         IsLoading = true;
         Properties.Clear();
-        StatusText = "Analyzing...";
+        StatusText = Resources.GetString("ImageAnalyzer_StatusAnalyzing");
 
         try
         {
-            AddProperty("Source", "Name", InputFileName);
-            AddProperty("Source", "Type", "In-memory image");
+            AddProperty(Resources.GetString("ImageAnalyzer_CategorySource"), Resources.GetString("ImageAnalyzer_PropertyName"), InputFileName);
+            AddProperty(Resources.GetString("ImageAnalyzer_CategorySource"), Resources.GetString("ImageAnalyzer_PropertyType"), Resources.GetString("ImageAnalyzer_PropertyInMemoryImage"));
 
             AddBitmapProperties(bmp);
         }
         catch (Exception ex)
         {
-            StatusText = $"Error: {ex.Message}";
+            StatusText = Resources.GetString("ImageAnalyzer_StatusError", ex.Message);
             DebugHelper.WriteException(ex, "ImageAnalyzer");
         }
         finally
@@ -165,22 +167,22 @@ public partial class ImageAnalyzerViewModel : ViewModelBase
 
     private void AddBitmapProperties(SkiaSharp.SKBitmap bmp)
     {
-        AddProperty("Image", "Width", $"{bmp.Width} px");
-        AddProperty("Image", "Height", $"{bmp.Height} px");
-        AddProperty("Image", "Pixel Count", $"{(long)bmp.Width * bmp.Height:N0}");
-        AddProperty("Image", "Aspect Ratio", GetAspectRatio(bmp.Width, bmp.Height));
-        AddProperty("Image", "Color Type", bmp.ColorType.ToString());
-        AddProperty("Image", "Alpha Type", bmp.AlphaType.ToString());
-        AddProperty("Image", "Bytes Per Pixel", bmp.BytesPerPixel.ToString());
-        AddProperty("Image", "Row Bytes", $"{bmp.RowBytes:N0}");
-        AddProperty("Image", "Total Bytes", FormatFileSize((long)bmp.RowBytes * bmp.Height));
+        AddProperty(Resources.GetString("ImageAnalyzer_CategoryImage"), Resources.GetString("ImageAnalyzer_PropertyWidth"), Resources.GetString("ImageAnalyzer_UnitPixels", bmp.Width));
+        AddProperty(Resources.GetString("ImageAnalyzer_CategoryImage"), Resources.GetString("ImageAnalyzer_PropertyHeight"), Resources.GetString("ImageAnalyzer_UnitPixels", bmp.Height));
+        AddProperty(Resources.GetString("ImageAnalyzer_CategoryImage"), Resources.GetString("ImageAnalyzer_PropertyPixelCount"), $"{(long)bmp.Width * bmp.Height:N0}");
+        AddProperty(Resources.GetString("ImageAnalyzer_CategoryImage"), Resources.GetString("ImageAnalyzer_PropertyAspectRatio"), GetAspectRatio(bmp.Width, bmp.Height));
+        AddProperty(Resources.GetString("ImageAnalyzer_CategoryImage"), Resources.GetString("ImageAnalyzer_PropertyColorType"), bmp.ColorType.ToString());
+        AddProperty(Resources.GetString("ImageAnalyzer_CategoryImage"), Resources.GetString("ImageAnalyzer_PropertyAlphaType"), bmp.AlphaType.ToString());
+        AddProperty(Resources.GetString("ImageAnalyzer_CategoryImage"), Resources.GetString("ImageAnalyzer_PropertyBytesPerPixel"), bmp.BytesPerPixel.ToString());
+        AddProperty(Resources.GetString("ImageAnalyzer_CategoryImage"), Resources.GetString("ImageAnalyzer_PropertyRowBytes"), $"{bmp.RowBytes:N0}");
+        AddProperty(Resources.GetString("ImageAnalyzer_CategoryImage"), Resources.GetString("ImageAnalyzer_PropertyTotalBytes"), FormatFileSize((long)bmp.RowBytes * bmp.Height));
 
         var avgColor = SampleAverageColor(bmp);
-        AddProperty("Color", "Average Color", $"#{avgColor.Red:X2}{avgColor.Green:X2}{avgColor.Blue:X2}");
-        AddProperty("Color", "Average RGB", $"R:{avgColor.Red} G:{avgColor.Green} B:{avgColor.Blue}");
-        AddProperty("Color", "Has Transparency", (bmp.AlphaType != SkiaSharp.SKAlphaType.Opaque).ToString());
+        AddProperty(Resources.GetString("ImageAnalyzer_CategoryColor"), Resources.GetString("ImageAnalyzer_PropertyAverageColor"), $"#{avgColor.Red:X2}{avgColor.Green:X2}{avgColor.Blue:X2}");
+        AddProperty(Resources.GetString("ImageAnalyzer_CategoryColor"), Resources.GetString("ImageAnalyzer_PropertyAverageRgb"), Resources.GetString("ImageAnalyzer_AverageRgbValue", avgColor.Red, avgColor.Green, avgColor.Blue));
+        AddProperty(Resources.GetString("ImageAnalyzer_CategoryColor"), Resources.GetString("ImageAnalyzer_PropertyHasTransparency"), (bmp.AlphaType != SkiaSharp.SKAlphaType.Opaque).ToString());
 
-        StatusText = $"{InputFileName} ({bmp.Width} x {bmp.Height})";
+        StatusText = Resources.GetString("ImageAnalyzer_StatusDimensions", InputFileName, bmp.Width, bmp.Height);
     }
 
     [RelayCommand]
@@ -205,7 +207,7 @@ public partial class ImageAnalyzerViewModel : ViewModelBase
         if (PlatformServices.IsInitialized && PlatformServices.Clipboard != null)
         {
             PlatformServices.Clipboard.SetText(sb.ToString());
-            StatusText = "Copied to clipboard";
+            StatusText = Resources.GetString("ImageAnalyzer_StatusCopied");
         }
     }
 
@@ -217,7 +219,7 @@ public partial class ImageAnalyzerViewModel : ViewModelBase
         InputFileName = "";
         HasInput = false;
         Properties.Clear();
-        StatusText = "Select an image to analyze";
+        StatusText = Resources.GetString("ImageAnalyzer_StatusSelectImage");
     }
 
     private void AddProperty(string category, string name, string value)
@@ -240,7 +242,7 @@ public partial class ImageAnalyzerViewModel : ViewModelBase
 
     private static string GetAspectRatio(int width, int height)
     {
-        if (height == 0) return "N/A";
+        if (height == 0) return Resources.GetString("ImageAnalyzer_NotAvailable");
         double ratio = (double)width / height;
 
         // Common ratios

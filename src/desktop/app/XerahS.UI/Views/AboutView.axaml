@@ -1,5 +1,6 @@
 <views:PageView xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:local="using:XerahS.UI.Markup"
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:views="using:XerahS.UI.Views"
@@ -21,21 +22,21 @@
                 <TextBlock Text="{x:Static common:AppResources.ProductNameWithVersion}"
                            Theme="{StaticResource TitleTextBlockStyle}"
                            HorizontalAlignment="Center" />
-                <TextBlock Text="Copyright (c) 2007-2026 ShareX Team"
+                <TextBlock Text="{local:Localize About_Copyright}"
                            Theme="{StaticResource CaptionTextBlockStyle}"
                            HorizontalAlignment="Center"
                            Opacity="0.6" />
             </StackPanel>
 
             <Border Theme="{StaticResource CardBorderTheme}" Padding="16" HorizontalAlignment="Stretch">
-                <Expander Header="Links" IsExpanded="True" HorizontalAlignment="Stretch">
+                <Expander Header="{local:Localize About_Links}" IsExpanded="True" HorizontalAlignment="Stretch">
                     <Expander.Header>
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                             <TextBlock Classes="IconGlyph"
                                        FontSize="16"
                                        Text="{x:Static theming:HostIcons.SectionLinks}" />
                             <TextBlock Grid.Column="1"
-                                       Text="Links"
+                                       Text="{local:Localize About_Links}"
                                        VerticalAlignment="Center" />
                         </Grid>
                     </Expander.Header>
@@ -43,7 +44,7 @@
                     <StackPanel Margin="0,16,0,0" Spacing="8">
                         <Button Classes="SettingsRow" Click="OnLinkClick" Tag="{x:Static common:Links.XerahSWebsite}">
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
-                                <TextBlock Text="Website" VerticalAlignment="Center" />
+                                <TextBlock Text="{local:Localize About_Website}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}}"
                                            VerticalAlignment="Center"
@@ -58,7 +59,7 @@
 
                         <Button Classes="SettingsRow" Click="OnLinkClick" Tag="{x:Static common:Links.GitHub}">
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
-                                <TextBlock Text="GitHub Project" VerticalAlignment="Center" />
+                                <TextBlock Text="{local:Localize About_GitHubProject}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}}"
                                            VerticalAlignment="Center"
@@ -73,7 +74,7 @@
 
                         <Button Classes="SettingsRow" Click="OnLinkClick" Tag="https://github.com/ShareX/XerahS/issues/">
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
-                                <TextBlock Text="Issues" VerticalAlignment="Center" />
+                                <TextBlock Text="{local:Localize About_Issues}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}}"
                                            VerticalAlignment="Center"
@@ -88,7 +89,7 @@
 
                         <Button Classes="SettingsRow" Click="OnLinkClick" Tag="{x:Static common:Links.Contributors}">
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
-                                <TextBlock Text="Contributors" VerticalAlignment="Center" />
+                                <TextBlock Text="{local:Localize About_Contributors}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}}"
                                            VerticalAlignment="Center"
@@ -103,7 +104,7 @@
 
                         <Button Classes="SettingsRow" Click="OnLinkClick" Tag="{x:Static common:Links.Changelog}">
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
-                                <TextBlock Text="Changelog" VerticalAlignment="Center" />
+                                <TextBlock Text="{local:Localize About_Changelog}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}}"
                                            VerticalAlignment="Center"
@@ -118,7 +119,7 @@
 
                         <Button Classes="SettingsRow" Click="OnLinkClick" Tag="{x:Static common:Links.PrivacyPolicy}">
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
-                                <TextBlock Text="Privacy Policy" VerticalAlignment="Center" />
+                                <TextBlock Text="{local:Localize About_PrivacyPolicy}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}}"
                                            VerticalAlignment="Center"
@@ -133,7 +134,7 @@
 
                         <Button Classes="SettingsRow" Click="OnLinkClick" Tag="{x:Static common:Links.Donate}">
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
-                                <TextBlock Text="Donate" VerticalAlignment="Center" />
+                                <TextBlock Text="{local:Localize About_Donate}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}}"
                                            VerticalAlignment="Center"
@@ -150,14 +151,14 @@
             </Border>
 
             <Border Theme="{StaticResource CardBorderTheme}" Padding="16" HorizontalAlignment="Stretch">
-                <Expander Header="Social" IsExpanded="True" HorizontalAlignment="Stretch">
+                <Expander Header="{local:Localize About_Social}" IsExpanded="True" HorizontalAlignment="Stretch">
                     <Expander.Header>
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                             <TextBlock Classes="IconGlyph"
                                        FontSize="16"
                                        Text="{x:Static theming:HostIcons.SectionSocial}" />
                             <TextBlock Grid.Column="1"
-                                       Text="Social"
+                                       Text="{local:Localize About_Social}"
                                        VerticalAlignment="Center" />
                         </Grid>
                     </Expander.Header>
@@ -165,7 +166,7 @@
                     <StackPanel Margin="0,16,0,0" Spacing="8">
                         <Button Classes="SettingsRow" Click="OnLinkClick" Tag="{x:Static common:Links.X}">
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
-                                <TextBlock Text="X" VerticalAlignment="Center" />
+                                <TextBlock Text="{local:Localize About_X}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}}"
                                            VerticalAlignment="Center"
@@ -180,7 +181,7 @@
 
                         <Button Classes="SettingsRow" Click="OnLinkClick" Tag="{x:Static common:Links.Discord}">
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
-                                <TextBlock Text="Discord" VerticalAlignment="Center" />
+                                <TextBlock Text="{local:Localize About_Discord}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}}"
                                            VerticalAlignment="Center"
@@ -195,7 +196,7 @@
 
                         <Button Classes="SettingsRow" Click="OnLinkClick" Tag="{x:Static common:Links.Reddit}">
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
-                                <TextBlock Text="Reddit" VerticalAlignment="Center" />
+                                <TextBlock Text="{local:Localize About_Reddit}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}}"
                                            VerticalAlignment="Center"
@@ -225,7 +226,7 @@
                     </Expander.Header>
 
                     <StackPanel Margin="0,16,0,0" Spacing="12">
-                        <TextBlock Text="Loaded assemblies are captured from the current runtime so users can confirm the exact versions in memory, including core dependencies such as Avalonia."
+                        <TextBlock Text="{local:Localize About_LoadedAssembliesDescription}"
                                    Theme="{StaticResource BodyTextBlockStyle}"
                                    Opacity="0.75"
                                    TextWrapping="Wrap" />

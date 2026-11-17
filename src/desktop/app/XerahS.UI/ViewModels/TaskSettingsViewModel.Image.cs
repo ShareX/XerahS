@@ -22,7 +22,13 @@
 */
 
 #endregion License Information (GPL v3)
+using System.Buffers.Binary;
+using Avalonia.Media.Imaging;
+using SkiaSharp;
+using ShareX.ImageEditor.Presentation.Rendering;
+using XerahS.Common;
 using XerahS.Core;
+using XerahS.Core.Helpers;
 using XerahS.Services.Abstractions;
 
 namespace XerahS.UI.ViewModels
@@ -56,6 +62,31 @@ namespace XerahS.UI.ViewModels
                 }
             }
         }
+
+        public IReadOnlyList<PNGBitDepth> PngBitDepthOptions { get; } =
+            new[] { PNGBitDepth.Default, PNGBitDepth.Bit16 };
+
+        public PNGBitDepth ImagePNGBitDepth
+        {
+            get => _settings.ImageSettings.ImagePNGBitDepth;
+            set
+            {
+                if (_settings.ImageSettings.ImagePNGBitDepth != value)
+                {
+                    _settings.ImageSettings.ImagePNGBitDepth = value;
+                    OnPropertyChanged();
+                    // The saved file ignores the tone curve at 16-bit depth (it is written
+                    // display-referred), so the "Save to file" selector must follow the depth.
+                    OnPropertyChanged(nameof(IsHdrSaveToneMappingEnabled));
+                }
+            }
+        }
+
+        /// <summary>
+        /// False when the selected PNG depth ("SDR+HDR" = 16-bit) makes the file tone curve
+        /// irrelevant: the encoder writes display-referred sRGB samples without applying it.
+        /// </summary>
+        public bool IsHdrSaveToneMappingEnabled => ImagePNGBitDepth != PNGBitDepth.Bit16;
 
         public int ThumbnailWidth
         {
@@ -107,6 +138,109 @@ namespace XerahS.UI.ViewModels
                     OnPropertyChanged();
                 }
             }
+        }
+
+        public IReadOnlyList<HdrToneMappingMode> HdrToneMappingOptions =>
+            Array.FindAll(Enum.GetValues<HdrToneMappingMode>(), m => m != HdrToneMappingMode.Auto);
+
+        private Bitmap? _hdrPreviewBitmap;
+
+        /// <summary>
+        /// Live preview of the selected general HDR → SDR tone mapping, rendered from a synthetic
+        /// HDR test image so the difference between methods is visible without taking a capture.
+        /// </summary>
+        public Bitmap? HdrPreviewBitmap => _hdrPreviewBitmap ??= BuildHdrPreview();
+
+        public HdrToneMappingMode ImageHdrToneMapping
+        {
+            get => _settings.ImageSettings.ImageHdrToneMapping;
+            set
+            {
+                if (_settings.ImageSettings.ImageHdrToneMapping != value)
+                {
+                    _settings.ImageSettings.ImageHdrToneMapping = value;
+                    OnPropertyChanged();
+                    RefreshHdrPreview();
+                }
+            }
+        }
+
+        public HdrToneMappingMode ImageHdrSaveToneMapping
+        {
+            get => _settings.ImageSettings.ImageHdrSaveToneMapping;
+            set
+            {
+                if (_settings.ImageSettings.ImageHdrSaveToneMapping != value)
+                {
+                    _settings.ImageSettings.ImageHdrSaveToneMapping = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public HdrToneMappingMode ImageHdrClipboardToneMapping
+        {
+            get => _settings.ImageSettings.ImageHdrClipboardToneMapping;
+            set
+            {
+                if (_settings.ImageSettings.ImageHdrClipboardToneMapping != value)
+                {
+                    _settings.ImageSettings.ImageHdrClipboardToneMapping = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private Bitmap? BuildHdrPreview()
+        {
+            using var source = CreateHdrPreviewSource();
+            using var sdr = HdrTonemapper.TonemapToBgra8888(source, ImageHdrToneMapping);
+            return sdr != null ? BitmapConversionHelpers.ToAvaloniBitmap(sdr) : null;
+        }
+
+        private void RefreshHdrPreview()
+        {
+            var previous = _hdrPreviewBitmap;
+            _hdrPreviewBitmap = BuildHdrPreview();
+            previous?.Dispose();
+            OnPropertyChanged(nameof(HdrPreviewBitmap));
+        }
+
+        private static SKBitmap CreateHdrPreviewSource()
+        {
+            const int width = 440;
+            const int height = 96;
+
+            // scRGB-linear luminance stops (1.0 == 80 cd/m²). Left bars are SDR content, right
+            // bars are HDR highlights, making each tonemapper's rolloff immediately visible.
+            float[] stops = { 0f, 0.1f, 0.25f, 0.5f, 0.8f, 1f, 2f, 4f, 8f, 16f, 32f };
+
+            var bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.RgbaF16, SKAlphaType.Premul, SKColorSpace.CreateSrgbLinear()));
+            Span<byte> span = bitmap.GetPixelSpan();
+            int rowBytes = bitmap.RowBytes;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int index = Math.Min((int)((float)x / width * stops.Length), stops.Length - 1);
+                    float v = stops[index];
+                    int offset = y * rowBytes + x * 8;
+
+                    WriteHalf(span, offset, v);
+                    WriteHalf(span, offset + 2, v);
+                    WriteHalf(span, offset + 4, v);
+                    WriteHalf(span, offset + 6, 1f);
+                }
+            }
+
+            return bitmap;
+        }
+
+        private static void WriteHalf(Span<byte> span, int offset, float value)
+        {
+            ushort bits = BitConverter.HalfToUInt16Bits((Half)value);
+            BinaryPrimitives.WriteUInt16LittleEndian(span.Slice(offset, 2), bits);
         }
 
         #endregion

@@ -499,6 +499,15 @@ public static partial class TaskHelpers
     public static string HandleExistsFile(string folder, string fileName, TaskSettings taskSettings)
     {
         string filePath = Path.Combine(folder, fileName);
+
+        // SEC-18: the combined path must stay inside the target folder. A file name like
+        // ".." (valid on Linux) would otherwise redirect the write outside of it.
+        if (!FileHelpers.IsPathWithinDirectory(filePath, folder))
+        {
+            DebugHelper.WriteLine($"Refusing path outside target folder: {filePath}");
+            return string.Empty;
+        }
+
         return HandleExistsFile(filePath, taskSettings);
     }
 
@@ -574,6 +583,7 @@ public static partial class TaskHelpers
         if (bmp == null) return null;
 
         var ms = new MemoryStream();
+        SkiaSharp.SKBitmap? converted = null;
 
         try
         {
@@ -588,7 +598,51 @@ public static partial class TaskHelpers
                 // Fall through to PNG so the capture is not lost; the warning was already logged.
             }
 
-            using var image = SkiaSharp.SKImage.FromBitmap(bmp);
+            // RgbaF16 (HDR) input must be saved as PNG: the JPEG/GIF/WEBP/BMP encoders are
+            // 8-bit and would clamp the extended-range values. Bit16 opts SDR content into
+            // 16-bit PNG as well.
+            var isHdrInput = bmp.ColorType == SkiaSharp.SKColorType.RgbaF16;
+            var use16BitPng = isHdrInput || pngBitDepth == PNGBitDepth.Bit16;
+
+            SkiaSharp.SKBitmap? source = bmp;
+
+            if (use16BitPng)
+            {
+                imageFormat = EImageFormat.PNG;
+
+                if (isHdrInput)
+                {
+                    // HDR (fp16 scRGB-linear) input: encode display-referred sRGB samples so the
+                    // PNG renders correctly in standard viewers (raw linear values render too dark).
+                    converted = ImageHelpers.ConvertLinearF16ToSrgb16(bmp);
+                    source = converted ?? bmp;
+                }
+                else
+                {
+                    // Widen SDR pixels to 16-bit sRGB so the PNG encoder emits bitDepth=16
+                    // while preserving the encoded appearance. Tag the destination sRGB so the
+                    // encoder writes the sRGB chunk viewers rely on.
+                    var widenedInfo = new SkiaSharp.SKImageInfo(
+                        bmp.Width, bmp.Height, SkiaSharp.SKColorType.Rgba16161616,
+                        bmp.AlphaType, SkiaSharp.SKColorSpace.CreateSrgb());
+                    var widened = new SkiaSharp.SKBitmap(widenedInfo);
+                    using (var sourceImage = SkiaSharp.SKImage.FromBitmap(bmp))
+                    {
+                        if (sourceImage.ReadPixels(widenedInfo, widened.GetPixels(), widened.RowBytes))
+                        {
+                            converted = widened;
+                        }
+                        else
+                        {
+                            widened.Dispose();
+                            converted = bmp.Copy(SkiaSharp.SKColorType.Rgba16161616);
+                        }
+                    }
+                    source = converted;
+                }
+            }
+
+            using var image = SkiaSharp.SKImage.FromBitmap(source);
             using var data = imageFormat switch
             {
                 EImageFormat.JPEG => image.Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, jpegQuality),
@@ -610,6 +664,10 @@ public static partial class TaskHelpers
             ms.Dispose();
             return null;
         }
+        finally
+        {
+            converted?.Dispose();
+        }
     }
 
     /// <summary>
@@ -620,7 +678,10 @@ public static partial class TaskHelpers
         string screenshotsFolder = GetScreenshotsFolder(taskSettings);
         FileHelpers.CreateDirectory(screenshotsFolder);
 
-        string extension = EnumExtensions.GetDescription(taskSettings.ImageSettings.ImageFormat);
+        string extension = bmp.ColorType == SkiaSharp.SKColorType.RgbaF16 ||
+            taskSettings.ImageSettings.ImagePNGBitDepth == PNGBitDepth.Bit16
+            ? "png"
+            : EnumExtensions.GetDescription(taskSettings.ImageSettings.ImageFormat);
         string fileName = GetFileName(taskSettings, extension, bmp);
         string filePath = Path.Combine(screenshotsFolder, fileName);
 
@@ -649,7 +710,15 @@ public static partial class TaskHelpers
             }
         }
 
-        ImageHelpers.SaveBitmap(bmp, filePath);
+        // SEC-18: never write outside the target folder, even if the generated file name
+        // contains ".." or absolute-path segments (both are valid file names on Linux).
+        if (!FileHelpers.IsPathWithinDirectory(filePath, screenshotsFolder))
+        {
+            DebugHelper.WriteLine($"Refusing to save image outside screenshots folder: {filePath}");
+            return null;
+        }
+
+        ImageHelpers.SaveBitmap(bmp, filePath, taskSettings.ImageSettings.ImagePNGBitDepth);
         return filePath;
     }
 

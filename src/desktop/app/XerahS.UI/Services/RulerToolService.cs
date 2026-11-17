@@ -142,8 +142,8 @@ public static class RulerToolService
 
             PlatformServices.Toast.ShowToast(new ToastConfig
             {
-                Title = "Ruler",
-                Text = "Ruler tool is currently available on Windows builds.",
+                Title = Resources.GetString("Ruler_Title"),
+                Text = Resources.GetString("Ruler_WindowsOnly"),
                 Duration = 4f
             });
         }

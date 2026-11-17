@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System.Globalization;
 using System.Resources;
 
 namespace XerahS.Common
@@ -32,5 +33,22 @@ namespace XerahS.Common
         private static readonly ResourceManager resourceManager = new ResourceManager("XerahS.Common.Resources", typeof(Resources).Assembly);
 
         public static ResourceManager ResourceManager => resourceManager;
+
+        /// <summary>
+        /// Returns a localized string for the current UI culture, falling back to the
+        /// invariant (English) resource when no localized value is available.
+        /// </summary>
+        public static string GetString(string key)
+        {
+            return resourceManager.GetString(key, CultureInfo.CurrentUICulture) ?? key;
+        }
+
+        /// <summary>
+        /// Returns a formatted localized string using the current UI culture.
+        /// </summary>
+        public static string GetString(string key, params object[] args)
+        {
+            return string.Format(CultureInfo.CurrentUICulture, GetString(key), args);
+        }
     }
 }

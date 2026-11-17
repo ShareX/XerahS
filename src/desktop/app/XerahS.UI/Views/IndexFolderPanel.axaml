@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:XerahS.UI.ViewModels"
+             xmlns:local="using:XerahS.UI.Markup"
              mc:Ignorable="d" 
              d:DesignWidth="1100" d:DesignHeight="700"
              x:Class="XerahS.UI.Views.IndexFolderPanel"
@@ -18,7 +19,7 @@
               Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}">
             <!-- Header -->
             <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,24">
-                <TextBlock Text="Index Folder" Theme="{StaticResource TitleTextBlockStyle}"/>
+                <TextBlock Text="{local:Localize IndexFolder_Title}" Theme="{StaticResource TitleTextBlockStyle}"/>
                 <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
             </StackPanel>
 
@@ -39,11 +40,11 @@
                     <!-- Folder Selection Card -->
                     <Border Theme="{StaticResource CardBorderTheme}">
                         <StackPanel Spacing="16">
-                            <TextBlock Text="Folder" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <TextBlock Text="{local:Localize IndexFolder_Folder}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
                             <Grid ColumnDefinitions="*, Auto">
-                                <TextBox Grid.Column="0" Text="{Binding FolderPath}" PlaceholderText="Select folder to index..."
+                                <TextBox Grid.Column="0" Text="{Binding FolderPath}" PlaceholderText="{local:Localize IndexFolder_PlaceholderSelectFolder}"
                                          AutomationProperties.Name="Folder Path"/>
-                                <Button Grid.Column="1" Content="Browse" Command="{Binding BrowseFolderCommand}" Margin="8,0,0,0"
+                                <Button Grid.Column="1" Content="{local:Localize IndexFolder_Browse}" Command="{Binding BrowseFolderCommand}" Margin="8,0,0,0"
                                         MinWidth="90"
                                         Classes="accent"
                                         AutomationProperties.Name="Browse Folder"/>
@@ -58,14 +59,14 @@
                     <!-- Output Options Card -->
                     <Border Theme="{StaticResource CardBorderTheme}">
                         <StackPanel Spacing="16">
-                            <TextBlock Text="Output Configuration" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <TextBlock Text="{local:Localize IndexFolder_OutputConfiguration}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
                             
                             <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto" RowSpacing="12" ColumnSpacing="12">
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Format:" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize IndexFolder_FormatLabel}" VerticalAlignment="Center"/>
                                 <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding IndexerOutputs}" SelectedItem="{Binding Output}" 
                                           HorizontalAlignment="Stretch" AutomationProperties.Name="Output Format"/>
                                 
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Max Depth:" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="{local:Localize IndexFolder_MaxDepthLabel}" VerticalAlignment="Center"/>
                                 <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding MaxDepthLevel}" Minimum="0" Maximum="50" 
                                                HorizontalAlignment="Stretch" AutomationProperties.Name="Max Depth Level"/>
                             </Grid>
@@ -75,29 +76,29 @@
                     <!-- Filters Card -->
                     <Border Theme="{StaticResource CardBorderTheme}">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="Filters &amp; Metadata" Theme="{StaticResource SubtitleTextBlockStyle}"/>
-                            <CheckBox IsChecked="{Binding SkipHiddenFolders}" Content="Skip hidden folders" AutomationProperties.Name="Skip Hidden Folders"/>
-                            <CheckBox IsChecked="{Binding SkipHiddenFiles}" Content="Skip hidden files" AutomationProperties.Name="Skip Hidden Files"/>
-                            <CheckBox IsChecked="{Binding SkipFiles}" Content="Skip files (Folders only)" AutomationProperties.Name="Skip Files"/>
-                            <CheckBox IsChecked="{Binding IgnoreEmptyFolders}" Content="Ignore empty folders" AutomationProperties.Name="Ignore Empty Folders"/>
-                            <CheckBox IsChecked="{Binding ShowSizeInfo}" Content="Include size information" AutomationProperties.Name="Include Size Info"/>
-                            <CheckBox IsChecked="{Binding BinaryUnits}" Content="Use binary units for size" AutomationProperties.Name="Use Binary Units"/>
-                            <CheckBox IsChecked="{Binding AddFooter}" Content="Add generation footer" AutomationProperties.Name="Add Footer"/>
+                            <TextBlock Text="{local:Localize IndexFolder_FiltersMetadata}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <CheckBox IsChecked="{Binding SkipHiddenFolders}" Content="{local:Localize IndexFolder_SkipHiddenFolders}" AutomationProperties.Name="Skip Hidden Folders"/>
+                            <CheckBox IsChecked="{Binding SkipHiddenFiles}" Content="{local:Localize IndexFolder_SkipHiddenFiles}" AutomationProperties.Name="Skip Hidden Files"/>
+                            <CheckBox IsChecked="{Binding SkipFiles}" Content="{local:Localize IndexFolder_SkipFiles}" AutomationProperties.Name="Skip Files"/>
+                            <CheckBox IsChecked="{Binding IgnoreEmptyFolders}" Content="{local:Localize IndexFolder_IgnoreEmptyFolders}" AutomationProperties.Name="Ignore Empty Folders"/>
+                            <CheckBox IsChecked="{Binding ShowSizeInfo}" Content="{local:Localize IndexFolder_IncludeSizeInfo}" AutomationProperties.Name="Include Size Info"/>
+                            <CheckBox IsChecked="{Binding BinaryUnits}" Content="{local:Localize IndexFolder_BinaryUnits}" AutomationProperties.Name="Use Binary Units"/>
+                            <CheckBox IsChecked="{Binding AddFooter}" Content="{local:Localize IndexFolder_AddFooter}" AutomationProperties.Name="Add Footer"/>
                         </StackPanel>
                     </Border>
 
                     <!-- File Extension Filters Card -->
                     <Border Theme="{StaticResource CardBorderTheme}">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="File Extension Filters" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <TextBlock Text="{local:Localize IndexFolder_FileExtensionFilters}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Include only (e.g., cs, txt, md):" FontSize="12" Opacity="0.8"/>
-                                <TextBox Text="{Binding IncludedFileExtensionsText}" PlaceholderText="Leave empty to include all files..."
+                                <TextBlock Text="{local:Localize IndexFolder_IncludeOnlyLabel}" FontSize="12" Opacity="0.8"/>
+                                <TextBox Text="{Binding IncludedFileExtensionsText}" PlaceholderText="{local:Localize IndexFolder_IncludePlaceholder}"
                                          AutomationProperties.Name="Included File Extensions"/>
                             </StackPanel>
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Exclude (e.g., pdb, obj, exe):" FontSize="12" Opacity="0.8"/>
-                                <TextBox Text="{Binding ExcludedFileExtensionsText}" PlaceholderText="Leave empty to exclude nothing..."
+                                <TextBlock Text="{local:Localize IndexFolder_ExcludeLabel}" FontSize="12" Opacity="0.8"/>
+                                <TextBox Text="{Binding ExcludedFileExtensionsText}" PlaceholderText="{local:Localize IndexFolder_ExcludePlaceholder}"
                                          AutomationProperties.Name="Excluded File Extensions"/>
                             </StackPanel>
                         </StackPanel>
@@ -106,30 +107,30 @@
                     <!-- Text Formatting Card -->
                     <Border Theme="{StaticResource CardBorderTheme}">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="Text Formatting" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <TextBlock Text="{local:Localize IndexFolder_TextFormatting}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
                             <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12">
-                                <TextBlock Grid.Column="0" Text="Indentation:" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="0" Text="{local:Localize IndexFolder_IndentationLabel}" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="1" Text="{Binding IndentationText}" AutomationProperties.Name="Indentation Text"/>
                             </Grid>
-                            <CheckBox IsChecked="{Binding AddEmptyLineAfterFolders}" Content="Add empty line after folders" AutomationProperties.Name="Add Empty Line After Folders"/>
+                            <CheckBox IsChecked="{Binding AddEmptyLineAfterFolders}" Content="{local:Localize IndexFolder_AddEmptyLineAfterFolders}" AutomationProperties.Name="Add Empty Line After Folders"/>
                         </StackPanel>
                     </Border>
 
                     <!-- HTML Options Card -->
                     <Border Theme="{StaticResource CardBorderTheme}">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="HTML Options" Theme="{StaticResource SubtitleTextBlockStyle}"/>
-                            <CheckBox IsChecked="{Binding UseCustomCssFile}" Content="Use custom CSS file" AutomationProperties.Name="Use Custom CSS"/>
+                            <TextBlock Text="{local:Localize IndexFolder_HtmlOptions}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <CheckBox IsChecked="{Binding UseCustomCssFile}" Content="{local:Localize IndexFolder_UseCustomCss}" AutomationProperties.Name="Use Custom CSS"/>
                             <Grid ColumnDefinitions="*, Auto" IsEnabled="{Binding UseCustomCssFile}">
-                                <TextBox Grid.Column="0" Text="{Binding CustomCssFilePath}" PlaceholderText="Path to CSS file"
+                                <TextBox Grid.Column="0" Text="{Binding CustomCssFilePath}" PlaceholderText="{local:Localize IndexFolder_CssPathPlaceholder}"
                                          AutomationProperties.Name="Custom CSS Path"/>
-                                <Button Grid.Column="1" Content="Browse" Command="{Binding BrowseCssCommand}" Margin="8,0,0,0"
+                                <Button Grid.Column="1" Content="{local:Localize IndexFolder_Browse}" Command="{Binding BrowseCssCommand}" Margin="8,0,0,0"
                                         MinWidth="90"
                                         Classes="accent"
                                         AutomationProperties.Name="Browse CSS File"/>
                             </Grid>
-                            <CheckBox IsChecked="{Binding DisplayPath}" Content="Display path for subfolders" AutomationProperties.Name="Display Path for Subfolders"/>
-                            <CheckBox IsChecked="{Binding DisplayPathLimited}" Content="Limit display path to root" IsEnabled="{Binding DisplayPath}" Margin="24,0,0,0"
+                            <CheckBox IsChecked="{Binding DisplayPath}" Content="{local:Localize IndexFolder_DisplayPath}" AutomationProperties.Name="Display Path for Subfolders"/>
+                            <CheckBox IsChecked="{Binding DisplayPathLimited}" Content="{local:Localize IndexFolder_DisplayPathLimited}" IsEnabled="{Binding DisplayPath}" Margin="24,0,0,0"
                                       AutomationProperties.Name="Limit Display Path"/>
                         </StackPanel>
                     </Border>
@@ -137,9 +138,9 @@
                     <!-- Structured Data Card -->
                     <Border Theme="{StaticResource CardBorderTheme}">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="XML / JSON Options" Theme="{StaticResource SubtitleTextBlockStyle}"/>
-                            <CheckBox IsChecked="{Binding UseAttribute}" Content="Write info as attributes (XML)" AutomationProperties.Name="XML Attributes"/>
-                            <CheckBox IsChecked="{Binding CreateParseableJson}" Content="Create parseable JSON" AutomationProperties.Name="Parseable JSON"/>
+                            <TextBlock Text="{local:Localize IndexFolder_XmlJsonOptions}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                            <CheckBox IsChecked="{Binding UseAttribute}" Content="{local:Localize IndexFolder_UseAttribute}" AutomationProperties.Name="XML Attributes"/>
+                            <CheckBox IsChecked="{Binding CreateParseableJson}" Content="{local:Localize IndexFolder_ParseableJson}" AutomationProperties.Name="Parseable JSON"/>
                         </StackPanel>
                     </Border>
 
@@ -155,19 +156,19 @@
                 <Border Grid.Row="0" Padding="16" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,16">
                     <Grid ColumnDefinitions="*, Auto">
-                        <TextBlock Grid.Column="0" Text="Preview &amp; Actions" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="0" Text="{local:Localize IndexFolder_PreviewActions}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                             <Button Classes="accent" Content="{Binding PrimaryActionLabel}" Command="{Binding IndexFolderCommand}" 
                                     IsEnabled="{Binding CanStartIndexing}" AutomationProperties.Name="Generate Index"/>
-                            <Button Content="Cancel" Command="{Binding CancelIndexingCommand}" 
+                            <Button Content="{local:Localize IndexFolder_Cancel}" Command="{Binding CancelIndexingCommand}" 
                                     IsEnabled="{Binding CanCancelIndexing}" AutomationProperties.Name="Cancel Indexing"/>
-                            <Button Content="Open in Browser" Command="{Binding RenderHtmlPreviewCommand}" 
+                            <Button Content="{local:Localize IndexFolder_OpenInBrowser}" Command="{Binding RenderHtmlPreviewCommand}" 
                                     IsEnabled="{Binding CanRenderHtml}" AutomationProperties.Name="Open HTML in Browser"/>
-                            <Button Content="Copy" Command="{Binding CopyOutputCommand}" 
+                            <Button Content="{local:Localize IndexFolder_Copy}" Command="{Binding CopyOutputCommand}" 
                                     IsEnabled="{Binding HasOutput}" AutomationProperties.Name="Copy Output"/>
-                            <Button Content="Save As" Command="{Binding SaveAsCommand}" 
+                            <Button Content="{local:Localize IndexFolder_SaveAs}" Command="{Binding SaveAsCommand}" 
                                     IsEnabled="{Binding CanSave}" IsVisible="{Binding ShowSave}" AutomationProperties.Name="Save Output"/>
-                            <Button Content="Upload" Command="{Binding UploadCommand}" 
+                            <Button Content="{local:Localize IndexFolder_Upload}" Command="{Binding UploadCommand}" 
                                     IsEnabled="{Binding CanUpload}" IsVisible="{Binding ShowUpload}" AutomationProperties.Name="Upload Output"/>
                         </StackPanel>
                     </Grid>

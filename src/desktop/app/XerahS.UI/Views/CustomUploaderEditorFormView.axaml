@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:XerahS.UI.ViewModels"
+             xmlns:local="using:XerahS.UI.Markup"
              mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="900"
              x:Class="XerahS.UI.Views.CustomUploaderEditorFormView"
              x:DataType="vm:CustomUploaderEditorViewModel">
@@ -10,12 +11,12 @@
     <StackPanel Spacing="24">
 
         <StackPanel Spacing="12">
-            <TextBlock Text="Basic Information" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+            <TextBlock Text="{local:Localize CustomUploader_BasicInformation}" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
 
             <StackPanel Spacing="8" IsVisible="{Binding !IsNameReadOnly}">
-                <TextBlock Text="Name *" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                <TextBlock Text="{local:Localize CustomUploader_NameLabel}" Theme="{StaticResource CaptionTextBlockStyle}"/>
                 <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                         PlaceholderText="My Custom Uploader"
+                         PlaceholderText="{local:Localize CustomUploader_NamePlaceholder}"
                          AutomationProperties.Name="Uploader Name"/>
                 <TextBlock Text="{Binding NameError}"
                            Foreground="{DynamicResource SystemFillColorCriticalBrush}"
@@ -24,17 +25,17 @@
             </StackPanel>
 
             <StackPanel Spacing="8">
-                <TextBlock Text="Destination Types *" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                <TextBlock Text="{local:Localize CustomUploader_DestinationTypes}" Theme="{StaticResource CaptionTextBlockStyle}"/>
                 <WrapPanel Orientation="Horizontal">
-                    <CheckBox Content="Image Uploader" IsChecked="{Binding IsImageUploader}" Margin="0,0,16,4"
+                    <CheckBox Content="{local:Localize CustomUploader_ImageUploader}" IsChecked="{Binding IsImageUploader}" Margin="0,0,16,4"
                               AutomationProperties.Name="Image Uploader"/>
-                    <CheckBox Content="Text Uploader" IsChecked="{Binding IsTextUploader}" Margin="0,0,16,4"
+                    <CheckBox Content="{local:Localize CustomUploader_TextUploader}" IsChecked="{Binding IsTextUploader}" Margin="0,0,16,4"
                               AutomationProperties.Name="Text Uploader"/>
-                    <CheckBox Content="File Uploader" IsChecked="{Binding IsFileUploader}" Margin="0,0,16,4"
+                    <CheckBox Content="{local:Localize CustomUploader_FileUploader}" IsChecked="{Binding IsFileUploader}" Margin="0,0,16,4"
                               AutomationProperties.Name="File Uploader"/>
-                    <CheckBox Content="URL Shortener" IsChecked="{Binding IsUrlShortener}" Margin="0,0,16,4"
+                    <CheckBox Content="{local:Localize CustomUploader_UrlShortener}" IsChecked="{Binding IsUrlShortener}" Margin="0,0,16,4"
                               AutomationProperties.Name="URL Shortener"/>
-                    <CheckBox Content="URL Sharing" IsChecked="{Binding IsUrlSharingService}" Margin="0,0,16,4"
+                    <CheckBox Content="{local:Localize CustomUploader_UrlSharing}" IsChecked="{Binding IsUrlSharingService}" Margin="0,0,16,4"
                               AutomationProperties.Name="URL Sharing Service"/>
                 </WrapPanel>
                 <TextBlock Text="{Binding DestinationTypeError}"
@@ -47,18 +48,18 @@
         <Separator/>
 
         <StackPanel Spacing="12">
-            <TextBlock Text="HTTP Request" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+            <TextBlock Text="{local:Localize CustomUploader_HttpRequest}" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
 
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                 <StackPanel Grid.Column="0" Spacing="8" Width="100">
-                    <TextBlock Text="Method" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="{local:Localize CustomUploader_Method}" Theme="{StaticResource CaptionTextBlockStyle}"/>
                     <ComboBox ItemsSource="{Binding HttpMethods}"
                               SelectedItem="{Binding SelectedMethod}"
                               HorizontalAlignment="Stretch"
                               AutomationProperties.Name="HTTP Method"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="8">
-                    <TextBlock Text="Request URL *" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="{local:Localize CustomUploader_RequestUrl}" Theme="{StaticResource CaptionTextBlockStyle}"/>
                     <TextBox Text="{Binding RequestUrl, UpdateSourceTrigger=PropertyChanged}"
                              PlaceholderText="https://example.com/api/upload"
                              AutomationProperties.Name="Request URL"/>
@@ -71,8 +72,8 @@
 
             <StackPanel Spacing="8">
                 <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Grid.Column="0" Text="Headers" Theme="{StaticResource CaptionTextBlockStyle}"/>
-                    <Button Grid.Column="1" Content="+ Add" Command="{Binding AddHeaderCommand}"
+                    <TextBlock Grid.Column="0" Text="{local:Localize CustomUploader_Headers}" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                    <Button Grid.Column="1" Content="{local:Localize CustomUploader_Add}" Command="{Binding AddHeaderCommand}"
                             Padding="8,4" FontSize="12"
                             AutomationProperties.Name="Add Header"/>
                 </Grid>
@@ -80,11 +81,11 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:KeyValuePairViewModel">
                             <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
-                                <TextBox Grid.Column="0" Text="{Binding Key}" PlaceholderText="Key"
+                                <TextBox Grid.Column="0" Text="{Binding Key}" PlaceholderText="{local:Localize CustomUploader_Key}"
                                          AutomationProperties.Name="Header Key"/>
-                                <TextBox Grid.Column="1" Text="{Binding Value}" PlaceholderText="Value"
+                                <TextBox Grid.Column="1" Text="{Binding Value}" PlaceholderText="{local:Localize CustomUploader_Value}"
                                          AutomationProperties.Name="Header Value"/>
-                                <Button Grid.Column="2" Content="X" Padding="8,4"
+                                <Button Grid.Column="2" Content="{local:Localize CustomUploader_Remove}" Padding="8,4"
                                         Command="{Binding #HeadersControl.DataContext.RemoveHeaderCommand}"
                                         CommandParameter="{Binding}"
                                         AutomationProperties.Name="Remove Header"/>
@@ -100,8 +101,8 @@
 
             <StackPanel Spacing="8">
                 <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Grid.Column="0" Text="URL Parameters" Theme="{StaticResource CaptionTextBlockStyle}"/>
-                    <Button Grid.Column="1" Content="+ Add" Command="{Binding AddParameterCommand}"
+                    <TextBlock Grid.Column="0" Text="{local:Localize CustomUploader_UrlParameters}" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                    <Button Grid.Column="1" Content="{local:Localize CustomUploader_Add}" Command="{Binding AddParameterCommand}"
                             Padding="8,4" FontSize="12"
                             AutomationProperties.Name="Add Parameter"/>
                 </Grid>
@@ -109,11 +110,11 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:KeyValuePairViewModel">
                             <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
-                                <TextBox Grid.Column="0" Text="{Binding Key}" PlaceholderText="Key"
+                                <TextBox Grid.Column="0" Text="{Binding Key}" PlaceholderText="{local:Localize CustomUploader_Key}"
                                          AutomationProperties.Name="Parameter Key"/>
-                                <TextBox Grid.Column="1" Text="{Binding Value}" PlaceholderText="Value"
+                                <TextBox Grid.Column="1" Text="{Binding Value}" PlaceholderText="{local:Localize CustomUploader_Value}"
                                          AutomationProperties.Name="Parameter Value"/>
-                                <Button Grid.Column="2" Content="X" Padding="8,4"
+                                <Button Grid.Column="2" Content="{local:Localize CustomUploader_Remove}" Padding="8,4"
                                         Command="{Binding #ParametersControl.((vm:CustomUploaderEditorViewModel)DataContext).RemoveParameterCommand}"
                                         CommandParameter="{Binding}"
                                         AutomationProperties.Name="Remove Parameter"/>
@@ -127,28 +128,28 @@
         <Separator/>
 
         <StackPanel Spacing="12">
-            <TextBlock Text="Request Body" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+            <TextBlock Text="{local:Localize CustomUploader_RequestBody}" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
 
             <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                 <StackPanel Grid.Column="0" Spacing="8">
-                    <TextBlock Text="Body Type" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="{local:Localize CustomUploader_BodyType}" Theme="{StaticResource CaptionTextBlockStyle}"/>
                     <ComboBox ItemsSource="{Binding BodyTypes}"
                               SelectedItem="{Binding SelectedBodyType}"
                               HorizontalAlignment="Stretch"
                               AutomationProperties.Name="Body Type"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="8">
-                    <TextBlock Text="File Form Name" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="{local:Localize CustomUploader_FileFormName}" Theme="{StaticResource CaptionTextBlockStyle}"/>
                     <TextBox Text="{Binding FileFormName}"
-                             PlaceholderText="file"
+                             PlaceholderText="{local:Localize CustomUploader_FileFormNamePlaceholder}"
                              AutomationProperties.Name="File Form Name"/>
                 </StackPanel>
             </Grid>
 
             <StackPanel Spacing="8">
                 <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Grid.Column="0" Text="Form Arguments" Theme="{StaticResource CaptionTextBlockStyle}"/>
-                    <Button Grid.Column="1" Content="+ Add" Command="{Binding AddArgumentCommand}"
+                    <TextBlock Grid.Column="0" Text="{local:Localize CustomUploader_FormArguments}" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                    <Button Grid.Column="1" Content="{local:Localize CustomUploader_Add}" Command="{Binding AddArgumentCommand}"
                             Padding="8,4" FontSize="12"
                             AutomationProperties.Name="Add Argument"/>
                 </Grid>
@@ -156,11 +157,11 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:KeyValuePairViewModel">
                             <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
-                                <TextBox Grid.Column="0" Text="{Binding Key}" PlaceholderText="Key"
+                                <TextBox Grid.Column="0" Text="{Binding Key}" PlaceholderText="{local:Localize CustomUploader_Key}"
                                          AutomationProperties.Name="Argument Key"/>
-                                <TextBox Grid.Column="1" Text="{Binding Value}" PlaceholderText="Value"
+                                <TextBox Grid.Column="1" Text="{Binding Value}" PlaceholderText="{local:Localize CustomUploader_Value}"
                                          AutomationProperties.Name="Argument Value"/>
-                                <Button Grid.Column="2" Content="X" Padding="8,4"
+                                <Button Grid.Column="2" Content="{local:Localize CustomUploader_Remove}" Padding="8,4"
                                         Command="{Binding #ArgumentsControl.((vm:CustomUploaderEditorViewModel)DataContext).RemoveArgumentCommand}"
                                         CommandParameter="{Binding}"
                                         AutomationProperties.Name="Remove Argument"/>
@@ -171,9 +172,9 @@
             </StackPanel>
 
             <StackPanel Spacing="8">
-                <TextBlock Text="Body Data (JSON/XML)" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                <TextBlock Text="{local:Localize CustomUploader_BodyData}" Theme="{StaticResource CaptionTextBlockStyle}"/>
                 <TextBox Text="{Binding BodyData}"
-                         PlaceholderText="Example: JSON body with file content"
+                         PlaceholderText="{local:Localize CustomUploader_BodyDataPlaceholder}"
                          AcceptsReturn="True"
                          TextWrapping="Wrap"
                          Height="80"
@@ -187,7 +188,7 @@
         <Separator/>
 
         <StackPanel Spacing="12">
-            <TextBlock Text="Response Parsing" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+            <TextBlock Text="{local:Localize CustomUploader_ResponseParsing}" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
             <TextBlock Text="Extract URLs from the server response using syntax like {json:path}, {regex:pattern}, or {response}."
                        Theme="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
@@ -195,25 +196,25 @@
 
             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
                 <StackPanel Grid.Row="0" Grid.Column="0" Spacing="8">
-                    <TextBlock Text="URL Pattern" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="{local:Localize CustomUploader_UrlPattern}" Theme="{StaticResource CaptionTextBlockStyle}"/>
                     <TextBox Text="{Binding UrlPattern}"
                              PlaceholderText="Example: json:url or response"
                              AutomationProperties.Name="URL Pattern"/>
                 </StackPanel>
                 <StackPanel Grid.Row="0" Grid.Column="1" Spacing="8">
-                    <TextBlock Text="Thumbnail URL" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="{local:Localize CustomUploader_ThumbnailUrl}" Theme="{StaticResource CaptionTextBlockStyle}"/>
                     <TextBox Text="{Binding ThumbnailUrlPattern}"
                              PlaceholderText="Example: json:thumbnail"
                              AutomationProperties.Name="Thumbnail URL Pattern"/>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Grid.Column="0" Spacing="8">
-                    <TextBlock Text="Deletion URL" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="{local:Localize CustomUploader_DeletionUrl}" Theme="{StaticResource CaptionTextBlockStyle}"/>
                     <TextBox Text="{Binding DeletionUrlPattern}"
                              PlaceholderText="Example: json:delete_url"
                              AutomationProperties.Name="Deletion URL Pattern"/>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Grid.Column="1" Spacing="8">
-                    <TextBlock Text="Error Message" Theme="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="{local:Localize CustomUploader_ErrorMessage}" Theme="{StaticResource CaptionTextBlockStyle}"/>
                     <TextBox Text="{Binding ErrorMessagePattern}"
                              PlaceholderText="Example: json:error"
                              AutomationProperties.Name="Error Message Pattern"/>

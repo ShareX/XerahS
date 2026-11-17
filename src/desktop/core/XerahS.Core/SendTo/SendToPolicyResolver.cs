@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using XerahS.Common;
 using XerahS.Core;
 
 namespace XerahS.Core.SendTo;
@@ -192,27 +193,27 @@ public static class SendToPolicyResolver
 
     public static string FormatRememberScope(SendToRememberScope scope) => scope switch
     {
-        SendToRememberScope.AllFiles => "all files",
-        SendToRememberScope.AllFolders => "all folders",
-        SendToRememberScope.MixedFilesAndFolders => "mixed files and folders",
-        SendToRememberScope.ImageOnlyFiles => "image-only files",
-        _ => "this selection"
+        SendToRememberScope.AllFiles => Resources.GetString("SendToRememberScope_AllFiles"),
+        SendToRememberScope.AllFolders => Resources.GetString("SendToRememberScope_AllFolders"),
+        SendToRememberScope.MixedFilesAndFolders => Resources.GetString("SendToRememberScope_MixedFilesAndFolders"),
+        SendToRememberScope.ImageOnlyFiles => Resources.GetString("SendToRememberScope_ImageOnlyFiles"),
+        _ => Resources.GetString("SendToRememberScope_Default")
     };
 
     public static string FormatFolderPolicy(SendToFolderPolicy policy) => policy switch
     {
-        SendToFolderPolicy.DoNotExpandFolders => "Do not expand folders",
-        SendToFolderPolicy.IncludeTopLevelFiles => "Include top-level files",
-        SendToFolderPolicy.IncludeFilesRecursively => "Include files recursively",
+        SendToFolderPolicy.DoNotExpandFolders => Resources.GetString("SendToFolderPolicy_DoNotExpandFolders"),
+        SendToFolderPolicy.IncludeTopLevelFiles => Resources.GetString("SendToFolderPolicy_IncludeTopLevelFiles"),
+        SendToFolderPolicy.IncludeFilesRecursively => Resources.GetString("SendToFolderPolicy_IncludeFilesRecursively"),
         _ => policy.ToString()
     };
 
     public static string FormatBatchPolicy(SendToBatchExecutionPolicy policy, int threshold) => policy switch
     {
-        SendToBatchExecutionPolicy.OpenAllImmediately => "Open all immediately",
-        SendToBatchExecutionPolicy.OpenSequentially => "Open sequentially",
+        SendToBatchExecutionPolicy.OpenAllImmediately => Resources.GetString("SendToBatchPolicy_OpenAllImmediately"),
+        SendToBatchExecutionPolicy.OpenSequentially => Resources.GetString("SendToBatchPolicy_OpenSequentially"),
         SendToBatchExecutionPolicy.ConfirmBeforeOpeningMoreThanThreshold =>
-            $"Confirm before opening more than {NormalizeBatchThreshold(threshold)} items",
+            Resources.GetString("SendToBatchPolicy_ConfirmBeforeOpeningMoreThanThreshold", NormalizeBatchThreshold(threshold)),
         _ => policy.ToString()
     };
 

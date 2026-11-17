@@ -69,14 +69,14 @@ public static class ColorPickerToolService
     {
         if (!PlatformServices.IsInitialized)
         {
-            ShowToast("Color Picker", "Platform services are not initialized.");
+            ShowToast(Resources.GetString("ColorPicker_Title"), Resources.GetString("Common_PlatformServicesNotInitialized"));
             return null;
         }
 
         var selection = await CapturePointAsync();
         if (selection == null)
         {
-            ShowToast("Color Picker", "Screen color picking was cancelled.");
+            ShowToast(Resources.GetString("ColorPicker_Title"), Resources.GetString("ColorPicker_ScreenPickCancelled"));
             return null;
         }
 
@@ -264,12 +264,12 @@ public static class ColorPickerToolService
         try
         {
             await PlatformServices.Clipboard.SetTextAsync(clipboardText);
-            ShowToast("Color Picker", infoText);
+            ShowToast(Resources.GetString("ColorPicker_Title"), infoText);
         }
         catch (Exception ex)
         {
             DebugHelper.WriteException(ex, "Color picker clipboard failed");
-            ShowToast("Color Picker", "Failed to copy color to clipboard.");
+            ShowToast(Resources.GetString("ColorPicker_Title"), Resources.GetString("ColorPicker_CopyFailed"));
         }
     }
 

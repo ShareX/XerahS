@@ -41,7 +41,8 @@ namespace XerahS.Common
         Default,
         Automatic,
         Bit32,
-        Bit24
+        Bit24,
+        Bit16
     }
 
     public enum GIFQuality // Localized

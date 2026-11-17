@@ -24,6 +24,8 @@
 #endregion License Information (GPL v3)
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -38,7 +40,7 @@ public partial class DownloaderWindowViewModel : ViewModelBase, IDisposable
     private bool _disposed;
 
     [ObservableProperty]
-    private string _statusText = "Preparing download...";
+    private string _statusText = Resources.GetString("Downloader_PreparingDownload");
 
     [ObservableProperty]
     private double _downloadPercentage;
@@ -84,12 +86,12 @@ public partial class DownloaderWindowViewModel : ViewModelBase, IDisposable
 
         if (string.IsNullOrEmpty(_updateChecker.DownloadURL))
         {
-            StatusText = "Download URL not available.";
+            StatusText = Resources.GetString("Downloader_UrlNotAvailable");
             return;
         }
 
         Status = DownloaderFormStatus.DownloadStarted;
-        StatusText = "Getting file size...";
+        StatusText = Resources.GetString("Downloader_GettingFileSize");
 
         // Create temp folder
         string folderPath = Path.Combine(Path.GetTempPath(), AppResources.AppName);
@@ -113,7 +115,7 @@ public partial class DownloaderWindowViewModel : ViewModelBase, IDisposable
 
             if (success)
             {
-                StatusText = "Download completed. Starting installer...";
+                StatusText = Resources.GetString("Downloader_CompletedStartingInstaller");
                 Status = DownloaderFormStatus.DownloadCompleted;
                 CanCancel = false;
 
@@ -121,16 +123,16 @@ public partial class DownloaderWindowViewModel : ViewModelBase, IDisposable
             }
             else if (_downloader.IsCanceled)
             {
-                StatusText = "Download canceled.";
+                StatusText = Resources.GetString("Downloader_Canceled");
             }
             else
             {
-                StatusText = "Download failed.";
+                StatusText = Resources.GetString("Downloader_Failed");
             }
         }
         catch (Exception ex)
         {
-            StatusText = $"Download failed: {ex.Message}";
+            StatusText = Resources.GetString("Downloader_FailedWithMessage", ex.Message);
             DebugHelper.WriteException(ex, "Update download failed");
         }
     }
@@ -140,7 +142,7 @@ public partial class DownloaderWindowViewModel : ViewModelBase, IDisposable
         Dispatcher.UIThread.Post(() =>
         {
             TotalSizeText = _downloader.FileSize.ToSizeString();
-            StatusText = $"Downloading {FileName}...";
+            StatusText = Resources.GetString("Downloader_Downloading", FileName);
         });
     }
 
@@ -161,6 +163,14 @@ public partial class DownloaderWindowViewModel : ViewModelBase, IDisposable
         // Small delay to allow UI to update
         await Task.Delay(500);
 
+        if (!VerifyInstallerSignature(DownloadLocation))
+        {
+            StatusText = Resources.GetString("Downloader_SignatureVerificationFailed");
+            DebugHelper.WriteLine("Installer launch aborted: Authenticode signature is missing or invalid.");
+            CanCancel = true;
+            return;
+        }
+
         try
         {
             var startInfo = new ProcessStartInfo
@@ -178,10 +188,172 @@ public partial class DownloaderWindowViewModel : ViewModelBase, IDisposable
         }
         catch (Exception ex)
         {
-            StatusText = $"Failed to start installer: {ex.Message}";
+            StatusText = Resources.GetString("Downloader_StartInstallerFailed", ex.Message);
             DebugHelper.WriteException(ex, "Failed to launch installer");
             CanCancel = true;
         }
+    }
+
+    private static readonly Guid WinTrustActionGenericVerifyV2 = new Guid("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}");
+
+    [DllImport("wintrust.dll", SetLastError = true)]
+    private static extern uint WinVerifyTrust(IntPtr hwnd, ref Guid pgActionID, IntPtr pWVTData);
+
+    private static bool VerifyInstallerSignature(string filePath)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            DebugHelper.WriteLine("Installer Authenticode verification skipped: not running on Windows.");
+            return true;
+        }
+
+        try
+        {
+            // 1) Authenticode content verification via WinVerifyTrust - verifies the PE content
+            //    (hash of the file bytes), not just the certificate chain.
+            if (!VerifyAuthenticodeContent(filePath))
+            {
+                DebugHelper.WriteLine("Installer Authenticode content verification failed (WinVerifyTrust).");
+                return false;
+            }
+
+            // 2) Certificate chain verification.
+            using var certificate = X509CertificateLoader.LoadCertificateFromFile(filePath);
+
+            if (!certificate.Verify())
+            {
+                DebugHelper.WriteLine($"Installer Authenticode signature is invalid. Publisher: {certificate.Subject}");
+                return false;
+            }
+
+            // 3) Log the publisher.
+            DebugHelper.WriteLine($"Installer Authenticode signature verified. Publisher: {certificate.Subject}");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteLine($"Installer Authenticode verification failed: {ex.Message}");
+            DebugHelper.WriteException(ex, "Installer Authenticode verification failed.");
+            return false;
+        }
+    }
+
+    private static bool VerifyAuthenticodeContent(string filePath)
+    {
+        IntPtr fileInfoPtr = IntPtr.Zero;
+        IntPtr dataPtr = IntPtr.Zero;
+
+        try
+        {
+            WINTRUST_FILE_INFO fileInfo = new WINTRUST_FILE_INFO
+            {
+                cbStruct = (uint)Marshal.SizeOf<WINTRUST_FILE_INFO>(),
+                pcwszFilePath = filePath,
+                hFile = IntPtr.Zero,
+                pgKnownSubject = IntPtr.Zero
+            };
+
+            WINTRUST_DATA data = new WINTRUST_DATA
+            {
+                cbStruct = (uint)Marshal.SizeOf<WINTRUST_DATA>(),
+                dwUIChoice = 2, // WTD_UI_NONE
+                fdwRevocationChecks = 0, // WTD_REVOKE_NONE
+                dwUnionChoice = 1, // WTD_CHOICE_FILE
+                dwStateAction = 0, // WTD_STATEACTION_IGNORE
+                pFile = IntPtr.Zero
+            };
+
+            fileInfoPtr = Marshal.AllocHGlobal(Marshal.SizeOf<WINTRUST_FILE_INFO>());
+            Marshal.StructureToPtr(fileInfo, fileInfoPtr, false);
+
+            data.pFile = fileInfoPtr;
+            dataPtr = Marshal.AllocHGlobal(Marshal.SizeOf<WINTRUST_DATA>());
+            Marshal.StructureToPtr(data, dataPtr, false);
+
+            Guid actionId = WinTrustActionGenericVerifyV2;
+            uint status = WinVerifyTrust(IntPtr.Zero, ref actionId, dataPtr);
+
+            if (status == 0) // ERROR_SUCCESS - content is genuine and signed.
+            {
+                return true;
+            }
+
+            if (status == 0x800B0100) // TRUST_E_NOSIGNATURE (2148204809)
+            {
+                DebugHelper.WriteLine("Installer has no Authenticode signature (TRUST_E_NOSIGNATURE).");
+            }
+            else
+            {
+                DebugHelper.WriteLine($"Installer Authenticode content verification failed. WinVerifyTrust status: 0x{status:X8}.");
+            }
+
+            return false;
+        }
+        finally
+        {
+            // WTD_STATEACTION_CLOSE releases the internal resources allocated by WinVerifyTrust.
+            if (dataPtr != IntPtr.Zero)
+            {
+                try
+                {
+                    WINTRUST_DATA closeData = new WINTRUST_DATA
+                    {
+                        cbStruct = (uint)Marshal.SizeOf<WINTRUST_DATA>(),
+                        dwUIChoice = 2,
+                        fdwRevocationChecks = 0,
+                        dwUnionChoice = 1,
+                        dwStateAction = 2, // WTD_STATEACTION_CLOSE
+                        pFile = fileInfoPtr
+                    };
+
+                    Marshal.StructureToPtr(closeData, dataPtr, false);
+                    Guid closeActionId = WinTrustActionGenericVerifyV2;
+                    WinVerifyTrust(IntPtr.Zero, ref closeActionId, dataPtr);
+                }
+                catch
+                {
+                    // Best-effort cleanup; ignore failures.
+                }
+            }
+
+            if (dataPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(dataPtr);
+            }
+
+            if (fileInfoPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(fileInfoPtr);
+            }
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct WINTRUST_FILE_INFO
+    {
+        public uint cbStruct;
+        [MarshalAs(UnmanagedType.LPWStr)]
+        public string pcwszFilePath;
+        public IntPtr hFile;
+        public IntPtr pgKnownSubject;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct WINTRUST_DATA
+    {
+        public uint cbStruct;
+        public IntPtr pPolicyCallbackData;
+        public IntPtr pSIPClientData;
+        public uint dwUIChoice;
+        public uint fdwRevocationChecks;
+        public uint dwUnionChoice;
+        public IntPtr pFile;
+        public uint dwStateAction;
+        public IntPtr hWVTStateData;
+        public IntPtr pwszURLReference;
+        public uint dwProvFlags;
+        public uint dwUIContext;
+        public IntPtr pSignatureSettings;
     }
 
     [RelayCommand]

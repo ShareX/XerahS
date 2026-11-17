@@ -327,11 +327,11 @@ namespace XerahS.UI.Views
 
             var options = new FilePickerOpenOptions
             {
-                Title = "Open Image",
+                Title = XerahS.Common.Resources.GetString("MainWindow_OpenImageTitle"),
                 AllowMultiple = false,
                 FileTypeFilter = new[]
                 {
-                    new FilePickerFileType("Image Files")
+                    new FilePickerFileType(XerahS.Common.Resources.GetString("MainWindow_ImageFilesFilter"))
                     {
                         Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.webp", "*.tiff", "*.tif" }
                     },
@@ -480,7 +480,7 @@ namespace XerahS.UI.Views
             {
                 workflowMenuItems.Add(new MenuItem
                 {
-                    Header = "No workflows configured",
+                    Header = XerahS.Common.Resources.GetString("MainWindow_NoWorkflowsConfigured"),
                     IsEnabled = false
                 });
             }
@@ -786,6 +786,7 @@ namespace XerahS.UI.Views
                 var jsonSettings = new Newtonsoft.Json.JsonSerializerSettings
                 {
                     TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto,
+                    SerializationBinder = XerahS.Common.SettingsSerializationBinder.Shared,
                     ObjectCreationHandling = Newtonsoft.Json.ObjectCreationHandling.Replace
                 };
                 var effectCount = workflow.TaskSettings?.ImageSettings?.ImageEffectsPreset?.Effects?.Count ?? 0;
@@ -818,6 +819,13 @@ namespace XerahS.UI.Views
             {
                 _taskManager?.TaskCompleted -= HandleTaskCompleted;
 
+                // Keep the Save/Save-As settings in sync with THIS capture (the navbar path does
+                // not go through WorkflowOrchestrator.OnTaskCompleted which normally records it).
+                if (task.Info?.TaskSettings != null)
+                {
+                    Services.MainViewModelHelper.LastCaptureTaskSettings = task.Info.TaskSettings;
+                }
+
                 if (task.Info?.Metadata?.Image is { } image && DataContext is MainViewModel vm)
                 {
                     int width = image.Width;
@@ -829,6 +837,12 @@ namespace XerahS.UI.Views
                         XerahS.Common.DebugHelper.WriteLine("Skipped preview update from navbar task completion: failed to clone bitmap.");
                         return;
                     }
+
+                    // TEMP HDR diagnostics: remember what the preview contained so a later Save-As
+                    // can be checked against the actual last capture.
+                    string sig = Services.SavePathDebugDump.Signature(previewCopy);
+                    Services.SavePathDebugDump.LastPreviewSignature = sig;
+                    XerahS.Common.DebugHelper.WriteLine($"[PreviewSig] navbar preview: {sig}");
 
                     // UpdatePreview takes ownership and can dispose the supplied bitmap during property-change handling.
                     vm.UpdatePreview(previewCopy);

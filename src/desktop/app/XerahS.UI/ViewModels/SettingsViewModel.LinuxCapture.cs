@@ -118,11 +118,11 @@ namespace XerahS.UI.ViewModels
             var diagnostics = LinuxRegionSelectorPreferenceSupport.TryGetDiagnostics();
             if (diagnostics == null)
             {
-                LinuxRegionSelectorCurrentSessionText = "Current session: Linux diagnostics unavailable";
-                LinuxRegionSelectorPortalBackendText = "Portal backend: unavailable";
-                LinuxRegionSelectorAvailableText = "Available selectors: Automatic (recommended), XerahS overlay crosshair";
-                LinuxRegionSelectorAutomaticText = "Automatic will prefer the best available selector at runtime.";
-                LinuxRegionSelectorLastDecisionText = "Last selector result: unavailable";
+                LinuxRegionSelectorCurrentSessionText = Resources.GetString("LinuxCapture_CurrentSessionUnavailable");
+                LinuxRegionSelectorPortalBackendText = Resources.GetString("LinuxCapture_PortalBackendUnavailable");
+                LinuxRegionSelectorAvailableText = Resources.GetString("LinuxCapture_AvailableSelectorsFallback");
+                LinuxRegionSelectorAutomaticText = Resources.GetString("LinuxCapture_AutomaticFallback");
+                LinuxRegionSelectorLastDecisionText = Resources.GetString("LinuxCapture_LastDecisionUnavailable");
                 OnPropertyChanged(nameof(LinuxRegionSelectorPreferences));
                 return;
             }
@@ -131,10 +131,10 @@ namespace XerahS.UI.ViewModels
             string desktop = FormatDiagnosticsValue(diagnostics.Desktop);
             string compositor = FormatDiagnosticsValue(diagnostics.Compositor);
             LinuxRegionSelectorCurrentSessionText =
-                $"Current session: Session type: {sessionType} / Desktop: {desktop} / Compositor: {compositor}";
-            LinuxRegionSelectorPortalBackendText = $"Portal backend: {FormatDiagnosticsValue(diagnostics.PortalBackendSummary)}";
-            LinuxRegionSelectorAvailableText = $"Available selectors: {string.Join(", ", diagnostics.AvailablePreferences.Select(GetPreferenceDescription))}";
-            LinuxRegionSelectorAutomaticText = $"Automatic will prefer: {GetPreferenceDescription(diagnostics.AutomaticPreference)}";
+                Resources.GetString("LinuxCapture_CurrentSession", sessionType, desktop, compositor);
+            LinuxRegionSelectorPortalBackendText = Resources.GetString("LinuxCapture_PortalBackend", FormatDiagnosticsValue(diagnostics.PortalBackendSummary));
+            LinuxRegionSelectorAvailableText = Resources.GetString("LinuxCapture_AvailableSelectors", string.Join(", ", diagnostics.AvailablePreferences.Select(GetPreferenceDescription)));
+            LinuxRegionSelectorAutomaticText = Resources.GetString("LinuxCapture_AutomaticPreference", GetPreferenceDescription(diagnostics.AutomaticPreference));
             LinuxRegionSelectorLastDecisionText = FormatLastDecision(diagnostics.LastDecision);
             OnPropertyChanged(nameof(LinuxRegionSelectorPreferences));
         }
@@ -164,14 +164,14 @@ namespace XerahS.UI.ViewModels
 
         private static string FormatDiagnosticsValue(string? value)
         {
-            return string.IsNullOrWhiteSpace(value) ? "unavailable" : value;
+            return string.IsNullOrWhiteSpace(value) ? Resources.GetString("LinuxCapture_Unavailable") : value;
         }
 
         private static string FormatLastDecision(LinuxRegionSelectorRuntimeDecision? decision)
         {
             if (decision == null)
             {
-                return "Last selector result: no Linux interactive capture has run in this session.";
+                return Resources.GetString("LinuxCapture_LastDecisionNone");
             }
 
             string timestampText = decision.TimestampUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
@@ -181,11 +181,11 @@ namespace XerahS.UI.ViewModels
             return decision.Outcome switch
             {
                 "Succeeded" =>
-                    $"Last selector result: {decision.Operation} used {decision.ProviderDisplayName} (provider: {decision.ProviderId}) at {timestampText}. Requested {requestedPreference}; effective {effectivePreference}.",
+                    Resources.GetString("LinuxCapture_LastDecisionSucceeded", decision.Operation, decision.ProviderDisplayName, decision.ProviderId, timestampText, requestedPreference, effectivePreference),
                 "Cancelled" =>
-                    $"Last selector result: {decision.Operation} was cancelled in {decision.ProviderDisplayName} (provider: {decision.ProviderId}) at {timestampText}. Requested {requestedPreference}; effective {effectivePreference}.",
+                    Resources.GetString("LinuxCapture_LastDecisionCancelled", decision.Operation, decision.ProviderDisplayName, decision.ProviderId, timestampText, requestedPreference, effectivePreference),
                 _ =>
-                    $"Last selector result: {decision.Operation} failed in {decision.ProviderDisplayName} (provider: {decision.ProviderId}) at {timestampText}. Requested {requestedPreference}; effective {effectivePreference}."
+                    Resources.GetString("LinuxCapture_LastDecisionFailed", decision.Operation, decision.ProviderDisplayName, decision.ProviderId, timestampText, requestedPreference, effectivePreference)
             };
         }
     }

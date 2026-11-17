@@ -2,9 +2,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="using:XerahS.UI.Views"
         xmlns:vm="using:XerahS.UI.ViewModels"
+        xmlns:local="using:XerahS.UI.Markup"
         x:Class="XerahS.UI.Views.PinnedImageWindow"
         x:DataType="vm:PinnedImageViewModel"
-        Title="Pinned Image"
+        Title="{local:Localize PinnedImage_Title}"
         Topmost="True"
         ShowInTaskbar="False"
         CanResize="False"
@@ -16,17 +17,17 @@
 
   <Window.ContextFlyout>
     <MenuFlyout>
-      <MenuItem Header="Copy image"
+      <MenuItem Header="{local:Localize PinnedImage_CopyImage}"
                 Command="{Binding CopyImageCommand}"
                 AutomationProperties.Name="Copy pinned image to clipboard" />
-      <MenuItem Header="Reset scale"
+      <MenuItem Header="{local:Localize PinnedImage_ResetScale}"
                 Command="{Binding ResetScaleCommand}"
                 AutomationProperties.Name="Reset image scale to 100 percent" />
       <Separator />
-      <MenuItem Header="Close"
+      <MenuItem Header="{local:Localize PinnedImage_Close}"
                 Command="{Binding RequestCloseCommand}"
                 AutomationProperties.Name="Close this pinned image" />
-      <MenuItem Header="Close all"
+      <MenuItem Header="{local:Localize PinnedImage_CloseAll}"
                 Command="{Binding CloseAllCommand}"
                 AutomationProperties.Name="Close all pinned images" />
     </MenuFlyout>

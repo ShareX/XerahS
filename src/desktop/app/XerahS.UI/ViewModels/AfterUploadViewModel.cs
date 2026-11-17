@@ -70,10 +70,10 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
     private Bitmap? _previewImage;
 
     [ObservableProperty]
-    private string _previewFallbackTitle = "No preview available";
+    private string _previewFallbackTitle = Resources.GetString("AfterUpload_NoPreviewTitle");
 
     [ObservableProperty]
-    private string _previewFallbackDescription = "This upload did not include a local preview.";
+    private string _previewFallbackDescription = Resources.GetString("AfterUpload_NoPreviewDescription");
 
     public string PrimaryUrl { get; }
     public string? RawUrl { get; }
@@ -101,7 +101,7 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
     public bool IsAutoCloseEnabled => _autoCloseTimer != null;
 
     public string AutoCloseText => IsAutoCloseEnabled
-        ? $"Auto closes in {_autoCloseRemainingSeconds}s"
+        ? Resources.GetString("AfterUpload_AutoCloseText", _autoCloseRemainingSeconds)
         : string.Empty;
 
     [ObservableProperty]
@@ -127,7 +127,7 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
         DeletionUrl = info.DeletionUrl;
         PrimaryUrl = ShortenedUrl ?? RawUrl ?? string.Empty;
         FilePath = string.IsNullOrWhiteSpace(info.FilePath) ? null : info.FilePath;
-        FileName = string.IsNullOrWhiteSpace(info.FileName) ? "Upload" : info.FileName;
+        FileName = string.IsNullOrWhiteSpace(info.FileName) ? Resources.GetString("AfterUpload_DefaultFileName") : info.FileName;
         FileSizeText = HasLocalFile ? FileHelpers.GetFileSizeReadable(FilePath!) : null;
         UploaderHost = info.UploaderHost;
         DataType = info.DataType;
@@ -168,8 +168,8 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
                 try
                 {
                     PreviewImage = new Bitmap(FilePath);
-                    PreviewFallbackTitle = "Preview ready";
-                    PreviewFallbackDescription = "Image preview loaded from local file.";
+                    PreviewFallbackTitle = Resources.GetString("AfterUpload_PreviewReadyTitle");
+                    PreviewFallbackDescription = Resources.GetString("AfterUpload_PreviewLoadedLocal");
                     return;
                 }
                 catch (Exception ex)
@@ -179,8 +179,8 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
             }
             else
             {
-                PreviewFallbackTitle = "Preview unavailable";
-                PreviewFallbackDescription = "Only images can be previewed. Use the file actions to open it.";
+                PreviewFallbackTitle = Resources.GetString("AfterUpload_PreviewUnavailableTitle");
+                PreviewFallbackDescription = Resources.GetString("AfterUpload_PreviewUnavailableDescription");
             }
         }
         else if (previewBitmap != null)
@@ -188,8 +188,8 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
             try
             {
                 PreviewImage = BitmapConversionHelpers.ToAvaloniBitmap(previewBitmap);
-                PreviewFallbackTitle = "Preview ready";
-                PreviewFallbackDescription = "Preview loaded from captured image.";
+                PreviewFallbackTitle = Resources.GetString("AfterUpload_PreviewReadyTitle");
+                PreviewFallbackDescription = Resources.GetString("AfterUpload_PreviewLoadedCaptured");
                 return;
             }
             catch (Exception ex)
@@ -214,35 +214,35 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
         var defaultFormat = string.IsNullOrWhiteSpace(clipboardFormat) ? "$result" : clipboardFormat;
         var resolvedOpenUrlFormat = string.IsNullOrWhiteSpace(openUrlFormat) ? "$result" : openUrlFormat;
 
-        AddFormatGroup("Primary URL", new[]
+        AddFormatGroup(Resources.GetString("AfterUpload_FormatGroupPrimaryUrl"), new[]
         {
-            BuildFormat("Clipboard format", ResolveFormat(defaultFormat)),
-            BuildFormat("Open URL format", ResolveFormat(resolvedOpenUrlFormat)),
-            BuildFormat("URL", RawUrl),
-            BuildFormat("Shortened URL", ShortenedUrl),
-            BuildFormat("Thumbnail URL", ThumbnailUrl)
+            BuildFormat(Resources.GetString("AfterUpload_FormatClipboardFormat"), ResolveFormat(defaultFormat)),
+            BuildFormat(Resources.GetString("AfterUpload_FormatOpenUrlFormat"), ResolveFormat(resolvedOpenUrlFormat)),
+            BuildFormat(Resources.GetString("AfterUpload_FormatUrl"), RawUrl),
+            BuildFormat(Resources.GetString("AfterUpload_FormatShortenedUrl"), ShortenedUrl),
+            BuildFormat(Resources.GetString("AfterUpload_FormatThumbnailUrl"), ThumbnailUrl)
         }, formatValues);
 
-        AddFormatGroup("Embeds", new[]
+        AddFormatGroup(Resources.GetString("AfterUpload_FormatGroupEmbeds"), new[]
         {
-            BuildFormat("Markdown", isImage ? $"![{FileName}]({PrimaryUrl})" : $"[{FileName}]({PrimaryUrl})"),
-            BuildFormat("HTML", isImage
+            BuildFormat(Resources.GetString("AfterUpload_FormatMarkdown"), isImage ? $"![{FileName}]({PrimaryUrl})" : $"[{FileName}]({PrimaryUrl})"),
+            BuildFormat(Resources.GetString("AfterUpload_FormatHtml"), isImage
                 ? $"<img src=\"{PrimaryUrl}\" alt=\"{FileName}\" />"
                 : $"<a href=\"{PrimaryUrl}\">{FileName}</a>"),
-            BuildFormat("BBCode", isImage
+            BuildFormat(Resources.GetString("AfterUpload_FormatBbcode"), isImage
                 ? $"[img]{PrimaryUrl}[/img]"
                 : $"[url={PrimaryUrl}]{FileName}[/url]")
         }, formatValues);
 
-        AddFormatGroup("Management", new[]
+        AddFormatGroup(Resources.GetString("AfterUpload_FormatGroupManagement"), new[]
         {
-            BuildFormat("Deletion URL", DeletionUrl)
+            BuildFormat(Resources.GetString("AfterUpload_FormatDeletionUrl"), DeletionUrl)
         }, formatValues);
 
-        AddFormatGroup("Local", new[]
+        AddFormatGroup(Resources.GetString("AfterUpload_FormatGroupLocal"), new[]
         {
-            BuildFormat("File path", FilePath),
-            BuildFormat("File name", FileName)
+            BuildFormat(Resources.GetString("AfterUpload_FormatFilePath"), FilePath),
+            BuildFormat(Resources.GetString("AfterUpload_FormatFileName"), FileName)
         }, formatValues);
 
         var customFormats = SettingsManager.Settings?.ClipboardContentFormats;
@@ -251,7 +251,7 @@ public sealed partial class AfterUploadViewModel : ViewModelBase, IDisposable
             var items = customFormats
                 .Select(format => BuildFormat(format.Description, ResolveFormat(format.Format)))
                 .ToArray();
-            AddFormatGroup("Custom", items, formatValues);
+            AddFormatGroup(Resources.GetString("AfterUpload_FormatGroupCustom"), items, formatValues);
         }
     }
 

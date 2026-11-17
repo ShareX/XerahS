@@ -3,6 +3,7 @@
                      xmlns:views="using:XerahS.UI.Views"
                      xmlns:vm="using:XerahS.UI.ViewModels"
                      xmlns:assistant="using:XerahS.Assistant.Models"
+                     xmlns:local="using:XerahS.UI.Markup"
                      x:Class="XerahS.UI.Views.AssistantOverlayWindow"
                      x:DataType="vm:AssistantViewModel"
                      Width="640"
@@ -104,20 +105,20 @@
                                 Spacing="{StaticResource SpaceS}">
                         <Border Classes="accent-chip"
                                 VerticalAlignment="Center">
-                            <TextBlock Text="Assistant"
+                            <TextBlock Text="{local:Localize Assistant_OverlayTitle}"
                                        Classes="on-accent"
                                        FontSize="11"
                                        FontWeight="SemiBold" />
                         </Border>
-                        <TextBlock Text="Ask XerahS to find, open, OCR, upload, or copy capture paths."
+                        <TextBlock Text="{local:Localize Assistant_OverlayCaption}"
                                    Classes="overlay-caption"
                                    VerticalAlignment="Center" />
                     </StackPanel>
                     <TextBlock Grid.Row="1"
-                               Text="Use natural language. Enter runs the request, and Esc clears or closes."
+                               Text="{local:Localize Assistant_OverlayDescription}"
                                Classes="overlay-title" />
                     <TextBlock Grid.Row="2"
-                               Text="Commands that produce text output show it directly below the status line."
+                               Text="{local:Localize Assistant_OverlaySecondaryDescription}"
                                Classes="overlay-caption" />
                 </Grid>
 
@@ -127,7 +128,7 @@
                             VerticalAlignment="Top">
                     <Border Classes="section-card"
                             Padding="10,6">
-                        <TextBlock Text="Esc to close"
+                        <TextBlock Text="{local:Localize Assistant_EscToClose}"
                                    Classes="keyboard-hint"
                                    HorizontalAlignment="Center" />
                     </Border>
@@ -141,10 +142,10 @@
                       ColumnSpacing="{StaticResource SpaceM}">
                     <TextBox x:Name="PromptTextBox"
                              Text="{Binding Prompt}"
-                             PlaceholderText="Copy the last 5 screenshot paths separated by ;"
+                             PlaceholderText="{local:Localize Assistant_PromptPlaceholder}"
                              AutomationProperties.Name="Assistant prompt" />
                     <Button Grid.Column="1"
-                            Content="Submit"
+                            Content="{local:Localize Assistant_Submit}"
                             Command="{Binding SubmitCommand}"
                             IsDefault="True"
                             AutomationProperties.Name="Submit assistant prompt" />
@@ -185,7 +186,7 @@
                         IsVisible="{Binding HasResultPreview}">
                     <Grid RowDefinitions="Auto, Auto"
                           RowSpacing="{StaticResource SpaceS}">
-                        <TextBlock Text="Processed output"
+                        <TextBlock Text="{local:Localize Assistant_ProcessedOutput}"
                                    Classes="section-label" />
                         <TextBox Grid.Row="1"
                                  Text="{Binding ResultPreviewText}"
@@ -203,7 +204,7 @@
                     <Grid RowDefinitions="Auto, *"
                           RowSpacing="{StaticResource SpaceM}"
                           Margin="{StaticResource InnerPadding}">
-                        <TextBlock Text="Results"
+                        <TextBlock Text="{local:Localize Assistant_Results}"
                                    Classes="section-label" />
 
                         <ScrollViewer Grid.Row="1"
@@ -258,7 +259,7 @@
                         BorderBrush="{DynamicResource AccentFillColorDefaultBrush}">
                     <Grid RowDefinitions="Auto, Auto"
                           RowSpacing="{StaticResource SpaceS}">
-                        <TextBlock Text="Confirmation required"
+                        <TextBlock Text="{local:Localize Assistant_ConfirmationRequired}"
                                    Classes="section-label" />
                         <Grid Grid.Row="1"
                               ColumnDefinitions="*, Auto"
@@ -269,10 +270,10 @@
                             <StackPanel Grid.Column="1"
                                         Orientation="Horizontal"
                                         Spacing="{StaticResource SpaceS}">
-                                <Button Content="Cancel"
+                                <Button Content="{local:Localize SendToAction_Cancel}"
                                         Command="{Binding CancelConfirmationCommand}"
                                         AutomationProperties.Name="Cancel confirmation" />
-                                <Button Content="Confirm"
+                                <Button Content="{local:Localize Assistant_Confirm}"
                                         Classes="accent"
                                         Command="{Binding ConfirmCommand}"
                                         AutomationProperties.Name="Confirm action" />
@@ -287,7 +288,7 @@
                         MaxHeight="164">
                     <Grid RowDefinitions="Auto, *"
                           RowSpacing="{StaticResource SpaceS}">
-                    <TextBlock Text="Suggestions"
+                    <TextBlock Text="{local:Localize Assistant_Suggestions}"
                                Classes="section-label" />
                         <ScrollViewer Grid.Row="1"
                                       VerticalScrollBarVisibility="Auto"

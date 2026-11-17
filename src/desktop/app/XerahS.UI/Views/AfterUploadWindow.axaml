@@ -1,5 +1,6 @@
 <ui:SurfaceWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:XerahS.UI.Markup"
         xmlns:ui="using:XerahS.UI.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -7,7 +8,7 @@
         mc:Ignorable="d"
         x:Class="XerahS.UI.Views.AfterUploadWindow"
         x:DataType="vm:AfterUploadViewModel"
-        Title="After Upload"
+        Title="{local:Localize AfterUpload_Title}"
         Icon="/Assets/Logo.ico"
         Width="960"
         Height="640"
@@ -33,7 +34,7 @@
             Padding="16">
       <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto, Auto" RowSpacing="6">
         <TextBlock Grid.Row="0"
-                   Text="After upload"
+                   Text="{local:Localize AfterUpload_Header}"
                    FontSize="22"
                    FontWeight="Bold"
                    AutomationProperties.Name="After Upload Title"/>
@@ -65,8 +66,8 @@
       <!-- Left: Formats -->
       <Grid Grid.Column="0" RowDefinitions="Auto, *, Auto" RowSpacing="12">
         <StackPanel Grid.Row="0" Spacing="4">
-          <TextBlock Text="Clipboard formats" Classes="section-header" AutomationProperties.Name="Clipboard Formats Heading"/>
-          <TextBlock Text="Select a format to preview and copy." Classes="caption" AutomationProperties.Name="Clipboard Formats Description"/>
+          <TextBlock Text="{local:Localize AfterUpload_ClipboardFormats}" Classes="section-header" AutomationProperties.Name="Clipboard Formats Heading"/>
+          <TextBlock Text="{local:Localize AfterUpload_ClipboardFormatsDescription}" Classes="caption" AutomationProperties.Name="Clipboard Formats Description"/>
         </StackPanel>
 
         <Border Grid.Row="1"
@@ -104,7 +105,7 @@
         </Border>
 
         <StackPanel Grid.Row="2" Spacing="6">
-          <TextBlock Text="Selected format" Classes="caption" AutomationProperties.Name="Selected Format Label"/>
+          <TextBlock Text="{local:Localize AfterUpload_SelectedFormat}" Classes="caption" AutomationProperties.Name="Selected Format Label"/>
           <TextBox Text="{Binding SelectedFormatValue}"
                    Classes="readonly"
                    TextWrapping="Wrap"
@@ -116,8 +117,8 @@
       <!-- Right: Preview -->
       <Grid Grid.Column="2" RowDefinitions="Auto, *, Auto" RowSpacing="12">
         <StackPanel Grid.Row="0" Spacing="4">
-          <TextBlock Text="Preview" Classes="section-header" AutomationProperties.Name="Preview Heading"/>
-          <TextBlock Text="Local file and visual preview." Classes="caption" AutomationProperties.Name="Preview Description"/>
+          <TextBlock Text="{local:Localize AfterUpload_Preview}" Classes="section-header" AutomationProperties.Name="Preview Heading"/>
+          <TextBlock Text="{local:Localize AfterUpload_PreviewDescription}" Classes="caption" AutomationProperties.Name="Preview Description"/>
         </StackPanel>
 
         <Border Grid.Row="1"
@@ -151,7 +152,7 @@
 
         <StackPanel Grid.Row="2" Spacing="8">
           <StackPanel Spacing="6" IsVisible="{Binding HasLocalFile}">
-            <TextBlock Text="Local file" Classes="caption" AutomationProperties.Name="Local File Label"/>
+            <TextBlock Text="{local:Localize AfterUpload_LocalFile}" Classes="caption" AutomationProperties.Name="Local File Label"/>
             <TextBox Text="{Binding FilePath}"
                      Classes="readonly"
                      TextWrapping="Wrap"
@@ -162,7 +163,7 @@
                        Classes="caption"
                        AutomationProperties.Name="Local File Size"/>
           </StackPanel>
-          <TextBlock Text="No local file was created for this upload."
+          <TextBlock Text="{local:Localize AfterUpload_NoLocalFile}"
                      IsVisible="{Binding HasNoLocalFile}"
                      Classes="caption"
                      AutomationProperties.Name="Local File Missing"/>
@@ -179,35 +180,35 @@
             Padding="12">
       <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center">
         <StackPanel Orientation="Horizontal" Spacing="10">
-          <Button Content="Copy image"
+          <Button Content="{local:Localize AfterUpload_CopyImage}"
                   Command="{Binding CopyImageCommand}"
                   IsEnabled="{Binding CanCopyImage}"
                   AutomationProperties.Name="Copy Image"/>
-          <Button Content="Copy format"
+          <Button Content="{local:Localize AfterUpload_CopyFormat}"
                   Command="{Binding CopyFormatCommand}"
                   IsEnabled="{Binding HasFormats}"
                   AutomationProperties.Name="Copy Selected Format"/>
-          <Button Content="Copy errors"
+          <Button Content="{local:Localize AfterUpload_CopyErrors}"
                   Command="{Binding CopyErrorsCommand}"
                   IsEnabled="{Binding HasErrors}"
                   IsVisible="{Binding HasErrors}"
                   AutomationProperties.Name="Copy Errors"/>
-          <Button Content="Open URL"
+          <Button Content="{local:Localize AfterUpload_OpenUrl}"
                   Command="{Binding OpenUrlCommand}"
                   IsEnabled="{Binding CanOpenUrl}"
                   AutomationProperties.Name="Open URL"/>
-          <Button Content="Open file"
+          <Button Content="{local:Localize AfterUpload_OpenFile}"
                   Command="{Binding OpenFileCommand}"
                   IsEnabled="{Binding CanOpenFile}"
                   AutomationProperties.Name="Open File"/>
-          <Button Content="Open folder"
+          <Button Content="{local:Localize AfterUpload_OpenFolder}"
                   Command="{Binding OpenFolderCommand}"
                   IsEnabled="{Binding CanOpenFolder}"
                   AutomationProperties.Name="Open Folder"/>
         </StackPanel>
 
         <Button Grid.Column="1"
-                Content="Close"
+                Content="{local:Localize AfterUpload_Close}"
                 Command="{Binding CloseCommand}"
                 Classes="accent"
                 IsCancel="True"

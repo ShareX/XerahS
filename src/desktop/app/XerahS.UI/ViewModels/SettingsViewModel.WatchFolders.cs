@@ -70,7 +70,7 @@ namespace XerahS.UI.ViewModels
 
             var editVm = new WatchFolderEditViewModel
             {
-                Title = "Add Watch Folder",
+                Title = Resources.GetString("WatchFolder_AddTitle"),
                 Filter = "*.*"
             };
             PopulateEditViewModel(editVm, null);
@@ -90,7 +90,7 @@ namespace XerahS.UI.ViewModels
                 ConvertMovToMp4BeforeProcessing = editVm.ConvertMovToMp4BeforeProcessing,
                 Enabled = editVm.Enabled,
                 WorkflowId = editVm.SelectedWorkflowId,
-                WorkflowName = editVm.SelectedWorkflow?.Name ?? "Unassigned"
+                WorkflowName = editVm.SelectedWorkflow?.Name ?? Resources.GetString("WatchFolder_Unassigned")
             };
 
             WatchFolders.Add(item);
@@ -109,7 +109,7 @@ namespace XerahS.UI.ViewModels
 
             var editVm = new WatchFolderEditViewModel
             {
-                Title = "Edit Watch Folder",
+                Title = Resources.GetString("WatchFolder_EditTitle"),
                 FolderPath = SelectedWatchFolder.FolderPath,
                 Filter = SelectedWatchFolder.Filter,
                 IncludeSubdirectories = SelectedWatchFolder.IncludeSubdirectories,
@@ -135,7 +135,7 @@ namespace XerahS.UI.ViewModels
                 SelectedWatchFolder.ConvertMovToMp4BeforeProcessing = editVm.ConvertMovToMp4BeforeProcessing;
                 SelectedWatchFolder.Enabled = editVm.Enabled;
                 SelectedWatchFolder.WorkflowId = editVm.SelectedWorkflowId;
-                SelectedWatchFolder.WorkflowName = editVm.SelectedWorkflow?.Name ?? "Unassigned";
+                SelectedWatchFolder.WorkflowName = editVm.SelectedWorkflow?.Name ?? Resources.GetString("WatchFolder_Unassigned");
             }
             finally
             {
@@ -234,7 +234,7 @@ namespace XerahS.UI.ViewModels
         private static string GetWorkflowName(string workflowId)
         {
             var workflow = SettingsManager.GetWorkflowById(workflowId);
-            return workflow != null ? GetWorkflowName(workflow) : "Unknown workflow";
+            return workflow != null ? GetWorkflowName(workflow) : Resources.GetString("WatchFolder_UnknownWorkflow");
         }
 
         private static string GetWorkflowName(WorkflowSettings workflow)

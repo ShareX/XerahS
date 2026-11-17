@@ -4,17 +4,23 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:XerahS.UI.ViewModels"
              xmlns:controls="using:XerahS.UI.Controls"
+             xmlns:converters="using:XerahS.UI.Converters"
+             xmlns:local="using:XerahS.UI.Markup"
              xmlns:imagefx="clr-namespace:ShareX.ImageEditor.Core.ImageEffects;assembly=ShareX.ImageEditor"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="XerahS.UI.Views.TaskImageSettingsPanel"
              x:DataType="vm:TaskSettingsViewModel">
+
+    <UserControl.Resources>
+        <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter"/>
+    </UserControl.Resources>
 
     <Border Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}" Padding="16">
         <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
             <!-- Image Settings Tab -->
             <TabItem Header="Settings">
                 <ScrollViewer>
-                    <Grid ColumnDefinitions="*, 24, *" RowDefinitions="Auto" Margin="8">
+                    <Grid ColumnDefinitions="*, 24, *" RowDefinitions="Auto, 16, Auto" Margin="8">
                         <!-- Quality -->
                         <StackPanel Grid.Column="0" Spacing="8">
                             <TextBlock Text="Quality" FontWeight="SemiBold"/>
@@ -28,6 +34,19 @@
                                         <TextBlock Grid.Column="0" Text="JPEG Quality:" VerticalAlignment="Center"/>
                                         <NumericUpDown Grid.Column="2" Value="{Binding ImageJPEGQuality}" Minimum="0" Maximum="100" Increment="1" MinWidth="120" HorizontalAlignment="Stretch" AutomationProperties.Name="JPEG Quality"/>
                                     </Grid>
+                                    <Grid ColumnDefinitions="Auto, 16, *">
+                                        <TextBlock Grid.Column="0" Text="PNG bit depth:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Column="2" ItemsSource="{Binding PngBitDepthOptions}" SelectedItem="{Binding ImagePNGBitDepth}" HorizontalAlignment="Stretch" AutomationProperties.Name="PNG Bit Depth">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="x:Object">
+                                                    <TextBlock Text="{Binding ., Converter={StaticResource EnumToDescriptionConverter}}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </Grid>
+                                    <TextBlock Text="{local:Localize TaskSettings_PngDepthHelp}"
+                                               Opacity="0.75" FontSize="11" TextWrapping="Wrap"
+                                               AutomationProperties.Name="PNG bit depth explanation"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -50,6 +69,60 @@
                                         <TextBox Grid.Column="2" Text="{Binding ThumbnailName}" AutomationProperties.Name="Thumbnail Name suffix"/>
                                     </Grid>
                                     <CheckBox IsChecked="{Binding ThumbnailCheckSize}" Content="Save thumbnail only if smaller than image"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- HDR -->
+                        <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Spacing="8">
+                            <TextBlock Text="{local:Localize TaskSettings_HdrSection}" FontWeight="SemiBold"/>
+                            <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="16">
+                                <StackPanel Spacing="12">
+                                    <Grid ColumnDefinitions="Auto, 16, *">
+                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_HdrGeneral}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                        <ComboBox Grid.Column="2" ItemsSource="{Binding HdrToneMappingOptions}" SelectedItem="{Binding ImageHdrToneMapping}" HorizontalAlignment="Stretch" MinWidth="200" AutomationProperties.Name="HDR General Tone Mapping">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="x:Object">
+                                                    <TextBlock Text="{Binding ., Converter={StaticResource EnumToDescriptionConverter}}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="Auto, 16, *">
+                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_HdrSave}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                        <ComboBox Grid.Column="2" ItemsSource="{Binding HdrToneMappingOptions}" SelectedItem="{Binding ImageHdrSaveToneMapping}" IsEnabled="{Binding IsHdrSaveToneMappingEnabled}" HorizontalAlignment="Stretch" MinWidth="200" AutomationProperties.Name="HDR Save Tone Mapping">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="x:Object">
+                                                    <TextBlock Text="{Binding ., Converter={StaticResource EnumToDescriptionConverter}}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </Grid>
+                                    <TextBlock Text="{local:Localize TaskSettings_HdrSaveDisabledHint}"
+                                               Opacity="0.75" FontSize="11" TextWrapping="Wrap"
+                                               IsVisible="{Binding !IsHdrSaveToneMappingEnabled}"
+                                               AutomationProperties.Name="HDR save tone mapping disabled hint"/>
+                                    <Grid ColumnDefinitions="Auto, 16, *">
+                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_HdrClipboard}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                        <ComboBox Grid.Column="2" ItemsSource="{Binding HdrToneMappingOptions}" SelectedItem="{Binding ImageHdrClipboardToneMapping}" HorizontalAlignment="Stretch" MinWidth="200" AutomationProperties.Name="HDR Clipboard Tone Mapping">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="x:Object">
+                                                    <TextBlock Text="{Binding ., Converter={StaticResource EnumToDescriptionConverter}}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </Grid>
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{local:Localize TaskSettings_HdrLegend}"
+                                                   Opacity="0.75" FontSize="11" TextWrapping="Wrap"
+                                                   AutomationProperties.Name="HDR tone mapping legend"/>
+                                        <TextBlock Text="{local:Localize TaskSettings_HdrPreview}" FontWeight="SemiBold"/>
+                                        <Image Source="{Binding HdrPreviewBitmap}"
+                                               Width="440" Height="96"
+                                               Stretch="Fill"
+                                               HorizontalAlignment="Left"
+                                               AutomationProperties.Name="HDR Tone Mapping Preview"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

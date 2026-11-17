@@ -5,6 +5,7 @@
              xmlns:vm="using:XerahS.UI.ViewModels"
              xmlns:conv="using:Avalonia.Data.Converters"
              xmlns:converters="using:XerahS.UI.Converters"
+             xmlns:local="using:XerahS.UI.Markup"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="XerahS.UI.Views.TaskVideoSettingsPanel"
              x:DataType="vm:TaskSettingsViewModel">
@@ -17,35 +18,35 @@
         <StackPanel Spacing="24" Margin="20">
             <!-- Screen Recorder Settings -->
             <StackPanel Spacing="8">
-                <TextBlock Text="Screen recorder" FontWeight="SemiBold"/>
+                <TextBlock Text="{local:Localize TaskSettings_ScreenRecorder}" FontWeight="SemiBold"/>
                 <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                     <StackPanel Spacing="16">
                         <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, Auto, Auto, Auto, Auto" RowSpacing="16">
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="FPS:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize TaskSettings_Fps}" VerticalAlignment="Center"/>
                             <NumericUpDown Grid.Row="0" Grid.Column="2" Value="{Binding ScreenRecordFPS}" Minimum="1" Maximum="144" Increment="1" MinWidth="120" HorizontalAlignment="Stretch" AutomationProperties.Name="FPS"/>
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Duration:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="{local:Localize TaskSettings_Duration}" VerticalAlignment="Center"/>
                             <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Spacing="8">
                                 <NumericUpDown Value="{Binding ScreenRecordDuration}" Minimum="0" Maximum="3600" Increment="1" Width="120" AutomationProperties.Name="Recording Duration"/>
-                                <TextBlock Text="seconds (0 to disable)" VerticalAlignment="Center"/>
+                                <TextBlock Text="{local:Localize TaskSettings_SecondsDisable}" VerticalAlignment="Center"/>
                             </StackPanel>
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Start delay:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Localize TaskSettings_StartDelay}" VerticalAlignment="Center"/>
                             <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Spacing="8">
                                 <NumericUpDown Value="{Binding ScreenRecordStartDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" Width="120" AutomationProperties.Name="Recording Start Delay"/>
-                                <TextBlock Text="seconds" VerticalAlignment="Center"/>
+                                <TextBlock Text="{local:Localize AutoCapture_Seconds}" VerticalAlignment="Center"/>
                             </StackPanel>
 
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Recording intent:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="{local:Localize TaskSettings_RecordingIntent}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Row="3" Grid.Column="2" ItemsSource="{Binding RecordingIntents}" SelectedItem="{Binding RecordingIntent}" HorizontalAlignment="Stretch" MinWidth="200" AutomationProperties.Name="Recording Intent"/>
                             
                             <!-- Video Codec Selector -->
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Video Codec:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="{local:Localize TaskSettings_VideoCodec}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Row="4" Grid.Column="2" ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding ScreenRecordVideoCodec}" HorizontalAlignment="Stretch" MinWidth="200" AutomationProperties.Name="Video Codec"/>
                         </Grid>
 
                         <StackPanel Spacing="10" IsVisible="{Binding IsLinuxPlatform}">
-                            <TextBlock Text="Preferred Linux recording backend:" VerticalAlignment="Center"/>
+                            <TextBlock Text="{local:Localize TaskSettings_PreferredLinuxRecordingBackend}" VerticalAlignment="Center"/>
                             <ComboBox ItemsSource="{Binding LinuxRecordingBackendPreferences}"
                                       SelectedItem="{Binding LinuxRecordingBackendPreference}"
                                       HorizontalAlignment="Stretch"
@@ -57,7 +58,7 @@
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
-                            <TextBlock Text="Automatic prefers native or portal-backed recording when available and falls back to FFmpeg when needed."
+                            <TextBlock Text="{local:Localize Settings_Advanced_LinuxRecordingBackendNote}"
                                        FontSize="12"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        TextWrapping="Wrap"/>
@@ -68,10 +69,10 @@
 
             <!-- FFmpeg Tools -->
             <StackPanel Spacing="8">
-                <TextBlock Text="FFmpeg Tools" FontWeight="SemiBold"/>
+                <TextBlock Text="{local:Localize TaskSettings_FfmpegTools}" FontWeight="SemiBold"/>
                 <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Configure per-workflow FFmpeg options for recording and GIF conversion, including an override path for a custom FFmpeg binary."
+                        <TextBlock Text="{local:Localize TaskSettings_FfmpegToolsDescription}"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    FontSize="12"
                                    TextWrapping="Wrap"/>
@@ -82,12 +83,12 @@
                                    IsVisible="{Binding FFmpegStatusText, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
                         
                         <Grid ColumnDefinitions="Auto, 16, Auto">
-                            <Button Grid.Column="0" Content="Download FFmpeg..."
+                            <Button Grid.Column="0" Content="{local:Localize TaskSettings_DownloadFfmpeg}"
                                     Command="{Binding DownloadFFmpegCommand}"
                                     IsVisible="{Binding ShowDownloadFFmpeg}"
                                     IsEnabled="{Binding CanDownloadFFmpeg}"/>
 
-                            <Button Grid.Column="2" Content="Configure FFmpeg / Override Path..."
+                            <Button Grid.Column="2" Content="{local:Localize TaskSettings_ConfigureFfmpeg}"
                                     Command="{Binding OpenFFmpegOptionsCommand}"/>
                         </Grid>
                         
@@ -103,15 +104,15 @@
 
             <!-- Linux Recording Diagnostics -->
             <StackPanel Spacing="8" IsVisible="{Binding IsLinuxPlatform}">
-                <TextBlock Text="Linux Recording Diagnostics" FontWeight="SemiBold"/>
+                <TextBlock Text="{local:Localize TaskSettings_LinuxRecordingDiagnostics}" FontWeight="SemiBold"/>
                 <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                     <StackPanel Spacing="12">
-                        <TextBlock Text="Run a compatibility check for Wayland/X11 recording backends, portal interfaces, and required native tools."
+                        <TextBlock Text="{local:Localize TaskSettings_LinuxDiagnosticsDescription}"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    FontSize="12"
                                    TextWrapping="Wrap"/>
 
-                        <Button Content="Run Linux Recording Diagnostics"
+                        <Button Content="{local:Localize TaskSettings_RunLinuxDiagnostics}"
                                 Command="{Binding RunLinuxRecordingDiagnosticsCommand}"
                                 HorizontalAlignment="Left"/>
 

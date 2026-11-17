@@ -1,5 +1,6 @@
 <views:PageView xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:local="using:XerahS.UI.Markup"
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:views="using:XerahS.UI.Views"
@@ -18,7 +19,7 @@
                 BorderThickness="0,0,1,0"
                 Padding="16">
             <StackPanel Spacing="16">
-                <TextBlock Text="Categories" FontWeight="SemiBold"/>
+                <TextBlock Text="{local:Localize Destination_Categories}" FontWeight="SemiBold"/>
                 <ListBox ItemsSource="{Binding Categories}"
                          SelectedItem="{Binding SelectedCategory}"
                          Background="Transparent"
@@ -41,24 +42,24 @@
                            FontSize="26" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-                    <Button Content="Import ShareX Config"
+                    <Button Content="{local:Localize Destination_ImportShareXConfig}"
                             Command="{Binding ImportShareXConfigCommand}"
                             IsVisible="{Binding ShowImportShareXConfig}"
-                            ToolTip.Tip="Import legacy ShareX UploadersConfig.json and export custom uploaders to Plugins as .sxcu files"
+                            ToolTip.Tip="{local:Localize Destination_ImportShareXConfigToolTip}"
                             AutomationProperties.Name="Import ShareX Config"/>
-                    <Button Content="Plugins Folder"
+                    <Button Content="{local:Localize Destination_PluginsFolder}"
                             Command="{Binding OpenPluginsFolderCommand}"
-                            ToolTip.Tip="Open the plugins folder"
+                            ToolTip.Tip="{local:Localize Destination_OpenPluginsFolderToolTip}"
                             AutomationProperties.Name="Open Plugins Folder"/>
-                    <Button Content="Install Plugin"
+                    <Button Content="{local:Localize Destination_InstallPlugin}"
                             Command="{Binding OpenPluginInstallerCommand}"
-                            ToolTip.Tip="Install community plugins or import a local .xsdp package"
+                            ToolTip.Tip="{local:Localize Destination_InstallPluginToolTip}"
                             AutomationProperties.Name="Install Plugin"/>
-                    <Button Content="Add Custom Uploader"
+                    <Button Content="{local:Localize Destination_AddCustomUploader}"
                             Command="{Binding AddCustomUploaderCommand}"
-                            ToolTip.Tip="Create a new custom uploader (.sxcu)"
+                            ToolTip.Tip="{local:Localize Destination_AddCustomUploaderToolTip}"
                             AutomationProperties.Name="Add Custom Uploader"/>
-                    <Button Content="Add from Catalog"
+                    <Button Content="{local:Localize Destination_AddFromCatalog}"
                             Command="{Binding SelectedCategory.AddFromCatalogCommand}"
                             Classes="accent"
                             AutomationProperties.Name="Add Destination from Catalog"/>
@@ -101,17 +102,17 @@
                                             AutomationProperties.Name="Instance Options">
                                         <Button.Flyout>
                                             <MenuFlyout>
-                                                <MenuItem Header="Set as Default" 
+                                                <MenuItem Header="{local:Localize Destination_SetAsDefault}" 
                                                           Command="{Binding $parent[ListBox].DataContext.SelectedCategory.SetAsDefaultCommand}"
                                                           CommandParameter="{Binding}"/>
-                                                <MenuItem Header="Duplicate" 
+                                                <MenuItem Header="{local:Localize Destination_Duplicate}" 
                                                           Command="{Binding $parent[ListBox].DataContext.SelectedCategory.DuplicateInstanceCommand}"
                                                           CommandParameter="{Binding}"/>
-                                                <MenuItem Header="Export .xsdc"
+                                                <MenuItem Header="{local:Localize Destination_ExportXsdc}"
                                                           Command="{Binding $parent[ListBox].DataContext.ExportDestinationConfigCommand}"
                                                           CommandParameter="{Binding}"/>
                                                 <Separator/>
-                                                <MenuItem Header="Remove" 
+                                                <MenuItem Header="{local:Localize Settings_WatchFolders_Remove}" 
                                                           Command="{Binding $parent[ListBox].DataContext.SelectedCategory.RemoveInstanceCommand}"
                                                           CommandParameter="{Binding}"/>
                                             </MenuFlyout>
@@ -143,7 +144,7 @@
                                         <TextBlock Text="{Binding SelectedCategory.SelectedInstance.VerificationMessage}"
                                                    Classes="status-warning"
                                                    FontWeight="Medium"/>
-                                        <Expander Header="Details">
+                                        <Expander Header="{local:Localize Destination_Details}">
                                             <ItemsControl ItemsSource="{Binding SelectedCategory.SelectedInstance.VerificationIssues}"/>
                                         </Expander>
                                     </StackPanel>
@@ -158,14 +159,14 @@
                                         <TextBlock Text="{Binding SelectedCategory.SelectedInstance.VerificationMessage}"
                                                    Classes="status-error"
                                                    FontWeight="SemiBold"/>
-                                        <Expander Header="Fix Instructions" IsExpanded="True">
+                                        <Expander Header="{local:Localize Destination_FixInstructions}" IsExpanded="True">
                                             <ItemsControl ItemsSource="{Binding SelectedCategory.SelectedInstance.VerificationIssues}"/>
                                         </Expander>
                                         <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
-                                            <Button Content="Clean Duplicates" 
+                                            <Button Content="{local:Localize Destination_CleanDuplicates}" 
                                                     Command="{Binding SelectedCategory.SelectedInstance.CleanDuplicatesCommand}"
                                                     AutomationProperties.Name="Clean Duplicate Files"/>
-                                            <Button Content="Open Folder" 
+                                            <Button Content="{local:Localize Destination_OpenFolder}" 
                                                     Command="{Binding SelectedCategory.SelectedInstance.OpenPluginsFolderCommand}"
                                                     AutomationProperties.Name="Open Provider Folder"/>
                                         </StackPanel>
@@ -175,17 +176,17 @@
 
                             <!-- Identity -->
                             <StackPanel Spacing="16">
-                                <TextBlock Text="Identity" FontWeight="SemiBold" FontSize="16"/>
+                                <TextBlock Text="{local:Localize Destination_Identity}" FontWeight="SemiBold" FontSize="16"/>
                                 <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, 16, Auto, 16, Auto">
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize Destination_Name}" VerticalAlignment="Center"/>
                                     <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding SelectedCategory.SelectedInstance.DisplayName}" 
-                                             PlaceholderText="Display Name" AutomationProperties.Name="Display Name"/>
+                                             PlaceholderText="{local:Localize Destination_DisplayName}" AutomationProperties.Name="Display Name"/>
                                     
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Provider:" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Localize Settings_Assistant_Provider}" VerticalAlignment="Center"/>
                                     <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding SelectedCategory.SelectedInstance.ProviderId}" 
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
 
-                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Instance ID:" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="{local:Localize Destination_InstanceId}" VerticalAlignment="Center"/>
                                     <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding SelectedCategory.SelectedInstance.InstanceId}"
                                              IsReadOnly="True"
                                              Background="{DynamicResource ControlAltFillColorDefaultBrush}"
@@ -195,22 +196,22 @@
 
                             <StackPanel Spacing="12"
                                         IsVisible="{Binding SelectedCategory.SelectedInstance.IsCustomUploaderInstance}">
-                                <TextBlock Text="Definition Binding" FontWeight="SemiBold" FontSize="16"/>
+                                <TextBlock Text="{local:Localize Destination_DefinitionBinding}" FontWeight="SemiBold" FontSize="16"/>
                                 <TextBlock Text="{Binding SelectedCategory.SelectedInstance.DefinitionSaveHelpText}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            TextWrapping="Wrap"/>
                                 <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, 16, Auto">
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Definition file:" VerticalAlignment="Top"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize Destination_DefinitionFile}" VerticalAlignment="Top"/>
                                     <TextBox Grid.Row="0" Grid.Column="2"
                                              Text="{Binding SelectedCategory.SelectedInstance.DefinitionFilePath}"
-                                             PlaceholderText="This instance cannot be mapped back to a .sxcu source file."
+                                             PlaceholderText="{local:Localize Destination_DefinitionFilePlaceholder}"
                                              IsReadOnly="True"
                                              Background="{DynamicResource ControlAltFillColorDefaultBrush}"
                                              TextWrapping="Wrap"
                                              ToolTip.Tip="{Binding SelectedCategory.SelectedInstance.DefinitionBindingUnavailableReason}"
                                              AutomationProperties.Name="Custom Uploader Definition File"/>
 
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Bound instance ID(s):" VerticalAlignment="Top"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Localize Destination_BoundInstanceIds}" VerticalAlignment="Top"/>
                                     <TextBox Grid.Row="2" Grid.Column="2"
                                              Text="{Binding SelectedCategory.SelectedInstance.BoundInstanceIdsDisplay}"
                                              IsReadOnly="True"
@@ -218,17 +219,17 @@
                                              MinHeight="68"
                                              Background="{DynamicResource ControlAltFillColorDefaultBrush}"
                                              TextWrapping="Wrap"
-                                             ToolTip.Tip="Reads XerahS.instanceIds when available, otherwise falls back to the current instance binding."
+                                             ToolTip.Tip="{local:Localize Destination_BoundInstanceIdsToolTip}"
                                              AutomationProperties.Name="Bound Instance IDs"/>
                                 </Grid>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <Button Content="Save Definition to Plugins"
+                                    <Button Content="{local:Localize Destination_SaveDefinitionToPlugins}"
                                             Command="{Binding SelectedCategory.SelectedInstance.SaveDefinitionToPluginsCommand}"
                                             IsEnabled="{Binding SelectedCategory.SelectedInstance.CanManageDefinition}"
                                             Classes="accent"
                                             ToolTip.Tip="{Binding SelectedCategory.SelectedInstance.DefinitionBindingUnavailableReason}"
                                             AutomationProperties.Name="Save Definition to Plugins"/>
-                                    <Button Content="Save as New .sxcu"
+                                    <Button Content="{local:Localize Destination_SaveAsNewSxcu}"
                                             Command="{Binding SelectedCategory.SelectedInstance.SaveDefinitionAsNewCommand}"
                                             IsEnabled="{Binding SelectedCategory.SelectedInstance.CanManageDefinition}"
                                             ToolTip.Tip="{Binding SelectedCategory.SelectedInstance.DefinitionBindingUnavailableReason}"
@@ -238,7 +239,7 @@
 
                             <!-- File Type Scope -->
                             <StackPanel Spacing="8">
-                                <TextBlock Text="File Type Configuration" FontWeight="SemiBold" FontSize="16"/>
+                                <TextBlock Text="{local:Localize Destination_FileTypeConfiguration}" FontWeight="SemiBold" FontSize="16"/>
                                 <ContentControl Content="{Binding SelectedCategory.SelectedInstance}">
                                     <ContentControl.ContentTemplate>
                                         <DataTemplate x:DataType="vm:UploaderInstanceViewModel">
@@ -252,16 +253,16 @@
                             <StackPanel Spacing="8" IsVisible="{Binding SelectedCategory.SelectedInstance.ConfigView, Converter={x:Static ObjectConverters.IsNotNull}}">
                                 <Grid ColumnDefinitions="*, Auto">
                                     <TextBlock Grid.Column="0"
-                                               Text="Provider Settings"
+                                               Text="{local:Localize Destination_ProviderSettings}"
                                                FontWeight="SemiBold"
                                                FontSize="16"
                                                VerticalAlignment="Center"/>
                                     <Button Grid.Column="1"
-                                            Content="Export .xsdc"
+                                            Content="{local:Localize Destination_ExportXsdc}"
                                             Command="{Binding ExportDestinationConfigCommand}"
                                             CommandParameter="{Binding SelectedCategory.SelectedInstance}"
                                             IsEnabled="{Binding SelectedCategory.SelectedInstance.CanExportDestinationConfig}"
-                                            ToolTip.Tip="Export this destination config for mobile import"
+                                            ToolTip.Tip="{local:Localize Destination_ExportConfigToolTip}"
                                             AutomationProperties.Name="Export Destination Config"/>
                                 </Grid>
                                 <ContentControl Content="{Binding SelectedCategory.SelectedInstance.ConfigView}"/>
@@ -271,19 +272,19 @@
                             <StackPanel Spacing="12"
                                         IsVisible="{Binding SelectedCategory.SelectedInstance.SupportsExplorer}">
                                 <Separator/>
-                                <TextBlock Text="Media Explorer" FontWeight="SemiBold" FontSize="16"/>
-                                <TextBlock Text="Browse and manage files stored with this provider."
+                                <TextBlock Text="{local:Localize Destination_MediaExplorer}" FontWeight="SemiBold" FontSize="16"/>
+                                <TextBlock Text="{local:Localize Destination_MediaExplorerDescription}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            TextWrapping="Wrap"/>
-                                <Button Content="Browse Files"
+                                <Button Content="{local:Localize Destination_BrowseFiles}"
                                         Command="{Binding SelectedCategory.SelectedInstance.OpenExplorerCommand}"
                                         IsEnabled="{Binding SelectedCategory.SelectedInstance.IsExplorerEnabled}"
                                         Classes="accent"
                                         HorizontalAlignment="Left"
                                         Padding="16,8"
-                                        ToolTip.Tip="Open Media Explorer to browse remote files (requires valid credentials)"
+                                        ToolTip.Tip="{local:Localize Destination_BrowseFilesToolTip}"
                                         AutomationProperties.Name="Open Media Explorer"/>
-                                <TextBlock Text="Configure credentials above to enable browsing."
+                                <TextBlock Text="{local:Localize Destination_ConfigureCredentialsNote}"
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                            FontSize="11"
                                            IsVisible="{Binding !SelectedCategory.SelectedInstance.IsExplorerEnabled}"/>
@@ -299,11 +300,11 @@
                             VerticalAlignment="Center"
                             Spacing="16"
                             IsVisible="{Binding SelectedCategory.SelectedInstance, Converter={x:Static ObjectConverters.IsNull}}">
-                    <TextBlock Text="No instance selected" 
+                    <TextBlock Text="{local:Localize Destination_NoInstanceSelected}" 
                                FontSize="18" FontWeight="SemiBold"
                                HorizontalAlignment="Center"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                    <TextBlock Text="Select an instance or add a new one to configure." 
+                    <TextBlock Text="{local:Localize Destination_NoInstanceSelectedDescription}" 
                                HorizontalAlignment="Center"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                 </StackPanel>

@@ -1,5 +1,6 @@
 <views:PageView xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:local="using:XerahS.UI.Markup"
                 xmlns:views="using:XerahS.UI.Views"
                 xmlns:vm="using:XerahS.UI.ViewModels"
                 xmlns:uiconverters="clr-namespace:XerahS.UI.Converters"
@@ -23,14 +24,14 @@
             <StackPanel Spacing="12">
                 <StackPanel Orientation="Horizontal" Spacing="16">
                     <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             PlaceholderText="Search history"
+                             PlaceholderText="{local:Localize History_SearchPlaceholder}"
                              MinWidth="260"
                              AutomationProperties.Name="Search History"/>
-                    <Button Content="Search"
+                    <Button Content="{local:Localize History_Search}"
                             Command="{Binding SearchHistoryCommand}"
                             IsEnabled="{Binding !IsLoading}"
                             AutomationProperties.Name="Search History"/>
-                    <Button Content="Clear"
+                    <Button Content="{local:Localize History_ClearSearch}"
                             Command="{Binding ClearSearchCommand}"
                             IsVisible="{Binding IsSearchActive}"
                             IsEnabled="{Binding !IsLoading}"
@@ -38,7 +39,7 @@
 
                     <Separator Classes="vertical" Height="20"/>
 
-                    <Button Content="Refresh" Command="{Binding RefreshHistoryCommand}" 
+                    <Button Content="{local:Localize Settings_WatchFolderDaemon_Refresh}" Command="{Binding RefreshHistoryCommand}" 
                             IsEnabled="{Binding !IsLoading}"
                             AutomationProperties.Name="Refresh History"/>
                     <Button Content="Statistics" Click="OnStatisticsClick" AutomationProperties.Name="Show history statistics"/>
@@ -51,7 +52,7 @@
                             <TextBlock Text="&#xE1D1;"
                                        FontFamily="avares://ShareX.ImageEditor/Assets#lucide"
                                        FontSize="14" VerticalAlignment="Center"/>
-                            <TextBlock Text="List View" VerticalAlignment="Center"/>
+                            <TextBlock Text="{local:Localize History_ListView}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <!-- Grid View button: shown when list view is active -->
@@ -63,7 +64,7 @@
                             <TextBlock Text="&#xE4FF;"
                                        FontFamily="avares://ShareX.ImageEditor/Assets#lucide"
                                        FontSize="14" VerticalAlignment="Center"/>
-                            <TextBlock Text="Grid View" VerticalAlignment="Center"/>
+                            <TextBlock Text="{local:Localize History_GridView}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     
@@ -99,11 +100,11 @@
                     <TextBlock Text="{Binding CombineSelectionSummary}"
                                VerticalAlignment="Center"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <Button Content="Combine Horizontal"
+                    <Button Content="{local:Localize History_CombineHorizontal}"
                             Command="{Binding CombineHorizontalCommand}"
                             IsEnabled="{Binding !IsCombiningSelection}"
                             AutomationProperties.Name="Combine images horizontally"/>
-                    <Button Content="Combine Vertical"
+                    <Button Content="{local:Localize History_CombineVertical}"
                             Command="{Binding CombineVerticalCommand}"
                             IsEnabled="{Binding !IsCombiningSelection}"
                             AutomationProperties.Name="Combine images vertically"/>
@@ -115,7 +116,7 @@
         <Border Grid.Row="2" IsVisible="{Binding IsLoading}" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
             <StackPanel Spacing="16" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" Width="200"/>
-                <TextBlock Text="Loading history..." HorizontalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Text="{local:Localize History_Loading}" HorizontalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
             </StackPanel>
         </Border>
         
@@ -124,9 +125,9 @@
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1"
                 IsVisible="{Binding !IsGridView}" IsEnabled="{Binding !IsLoading}">
             <Grid ColumnDefinitions="48, *, 160, 220">
-                <TextBlock Grid.Column="1" Text="Filename" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                <TextBlock Grid.Column="2" Text="Type / Host" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                <TextBlock Grid.Column="3" Text="Date" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Grid.Column="1" Text="{local:Localize History_ColumnFilename}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Grid.Column="2" Text="{local:Localize History_ColumnTypeHost}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Grid.Column="3" Text="{local:Localize History_ColumnDate}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
             </Grid>
         </Border>
 
@@ -196,7 +197,7 @@
                                             Background="{DynamicResource AccentFillColorDefaultBrush}"
                                             IsVisible="{Binding HasEditableAnnotations}"
                                             AutomationProperties.Name="Editable annotations available">
-                                        <TextBlock Text="Edit"
+                                        <TextBlock Text="{local:Localize Settings_WatchFolders_Edit}"
                                                    FontSize="11"
                                                    Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
                                     </Border>
@@ -328,14 +329,14 @@
         <Border Grid.Row="3" Padding="16" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}" 
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="24">
-                <Button Content="Previous" Command="{Binding PreviousPageCommand}" 
+                <Button Content="{local:Localize History_Previous}" Command="{Binding PreviousPageCommand}" 
                         IsEnabled="{Binding CanGoPrevious}"
                         AutomationProperties.Name="Previous Page"/>
                 
                 <TextBlock Text="{Binding PageInfo}" VerticalAlignment="Center" 
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 
-                <Button Content="Next" Command="{Binding NextPageCommand}" 
+                <Button Content="{local:Localize History_Next}" Command="{Binding NextPageCommand}" 
                         IsEnabled="{Binding CanGoNext}"
                         AutomationProperties.Name="Next Page"/>
             </StackPanel>
