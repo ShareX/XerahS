@@ -3554,7 +3554,7 @@ Esto eliminará permanentemente el archivo del almacenamiento remoto. Esta acci�
     <value>Abrir en un visor HDR</value>
   </data>
   <data name="TaskSettings_HdrOpenPreviewHint" xml:space="preserve">
-    <value>La ventana es SDR, así que las luces reales solo se ven en un visor compatible con HDR. La aplicación guarda la foto como JPEG Ultra HDR y la abre.</value>
+    <value>La ventana de vista previa es SDR. En Windows la foto se abre en una ventana HDR aparte; en otros sistemas la app guarda un archivo Ultra HDR y lo abre.</value>
   </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
     <value>Izquierda: todo el contenido HDR con la curva recomendada: el detalle de las luces se conserva. Derecha: los demás métodos; desplace para comparar.</value>

@@ -47,6 +47,9 @@ namespace XerahS.Platform.Windows
 
             screenCaptureService ??= WindowsScreenCaptureServiceFactory.Create(screenService);
 
+            // Real HDR output for previews: the Avalonia window is an SDR surface, this window is not.
+            PlatformServices.HdrPreview = new Hdr.WindowsHdrPreviewService();
+
             PlatformServices.Initialize(
                 platformInfo: new WindowsPlatformInfo(),
                 screenService: screenService,

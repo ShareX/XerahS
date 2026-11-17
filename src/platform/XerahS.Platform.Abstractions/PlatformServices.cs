@@ -182,6 +182,12 @@ namespace XerahS.Platform.Abstractions
         public static bool TrayHostSupported { get; set; } = true;
 
         /// <summary>
+        /// Optional window that presents HDR pixels on an HDR swapchain. Null where the platform
+        /// cannot do it (Linux, macOS); callers must fall back to tone-mapped or file output.
+        /// </summary>
+        public static IHdrPreviewService? HdrPreview { get; set; }
+
+        /// <summary>
         /// Checks if platform services have been initialized
         /// </summary>
         public static bool IsInitialized =>
@@ -372,6 +378,7 @@ namespace XerahS.Platform.Abstractions
             CompositorKeybindings = null;
             HotkeyAccessSetup = null;
             TrayHostSupported = true;
+            HdrPreview = null;
             _platformInfo = null;
             _screenService = null;
             _clipboardService = null;

@@ -200,6 +200,14 @@ namespace XerahS.UI.ViewModels
                     return;
                 }
 
+                // Prefer a real HDR surface when the platform has one: the values above SDR white
+                // reach the display instead of being compressed into the SDR UI.
+                if (XerahS.Platform.Abstractions.PlatformServices.HdrPreview is { IsSupported: true } hdrPreview &&
+                    hdrPreview.TryShow(photo.GetPixelSpan(), photo.Width, photo.Height, photo.RowBytes, "XerahS HDR preview"))
+                {
+                    return;
+                }
+
                 string path = Path.Combine(Path.GetTempPath(), "xerahs-hdr-preview.jpg");
                 if (!UltraHdrJpegWriter.TrySave(photo, path))
                 {

@@ -191,6 +191,14 @@
                                                     </Border>
                                                     <TextBlock Text="{local:Localize HdrToneMappingMode_TonemapBt2446C}" FontSize="12" Opacity="0.85" TextWrapping="Wrap"/>
                                                 </StackPanel>
+                                                <StackPanel Spacing="4">
+                                                    <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                                                            CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left">
+                                                        <Image Source="{Binding HdrPhotoHable}" Height="300" Stretch="Uniform" HorizontalAlignment="Stretch"
+                                                               AutomationProperties.Name="HDR photo with Hable curve"/>
+                                                    </Border>
+                                                    <TextBlock Text="{local:Localize HdrToneMappingMode_TonemapHable}" FontSize="12" Opacity="0.85" TextWrapping="Wrap"/>
+                                                </StackPanel>
                                                 </StackPanel>
                                             </ScrollViewer>
                                         </Grid>

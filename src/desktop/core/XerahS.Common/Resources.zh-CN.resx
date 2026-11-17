@@ -3554,7 +3554,7 @@
     <value>在 HDR 查看器中打开</value>
   </data>
   <data name="TaskSettings_HdrOpenPreviewHint" xml:space="preserve">
-    <value>窗口本身是 SDR，因此真实高光只能在支持 HDR 的查看器中看到。应用会把照片保存为 Ultra HDR JPEG 并打开它。</value>
+    <value>预览窗口本身是 SDR。在 Windows 上，照片会在单独的 HDR 窗口中打开；其他系统则保存 Ultra HDR 文件并打开它。</value>
   </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
     <value>左侧：用推荐曲线呈现的完整 HDR 内容——高光细节得以保留。右侧：其余方法，滚动即可对比。</value>
