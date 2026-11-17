@@ -92,6 +92,17 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        // Apply the persisted UI language before any views are constructed. LanguageCode is a
+        // free-form culture string, so a new Resources.<culture>.resx needs no code change; the
+        // enum is only a fallback for configs written before that change.
+        var startupSettings = XerahS.Core.SettingsManager.Settings;
+        XerahS.Common.Localization.ApplyCulture(
+            string.IsNullOrWhiteSpace(startupSettings.LanguageCode)
+                ? startupSettings.Language.ToCultureCode()
+                : startupSettings.LanguageCode);
+
+        // Share the host's localization with the editor library so tool names and editor
+        // hints follow the selected language (the editor exposes a resolver hook).
         // Suppress benign Avalonia desktop-integration exceptions on Linux (DBus tray icon,
         // IME, portal glitches) so they cannot take down the whole app. Avalonia's dispatcher
         // only swallows an exception when the filter stage requests a catch AND an

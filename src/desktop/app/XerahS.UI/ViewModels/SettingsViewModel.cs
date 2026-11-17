@@ -144,7 +144,7 @@ namespace XerahS.UI.ViewModels
 
         private static IReadOnlyList<LanguageChoice> BuildLanguageOptions()
         {
-            var options = new List<LanguageChoice> { new(string.Empty, "Automatic") };
+            var options = new List<LanguageChoice> { new(string.Empty, "Auto") };
 
             foreach (var culture in XerahS.Common.Localization.GetAvailableCultures())
             {

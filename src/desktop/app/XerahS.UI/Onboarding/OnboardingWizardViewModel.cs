@@ -130,7 +130,7 @@ public partial class OnboardingWizardViewModel : ViewModelBase
     {
         var options = new List<OnboardingLanguageOption>
         {
-            new(string.Empty, "Automatic")
+            new(string.Empty, "Auto")
         };
 
         foreach (var culture in XerahS.Common.Localization.GetAvailableCultures())
