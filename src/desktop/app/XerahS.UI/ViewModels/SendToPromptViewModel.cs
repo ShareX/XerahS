@@ -122,23 +122,23 @@ public partial class SendToPromptViewModel : ViewModelBase
 
     public bool ShowBatchThreshold => SelectedBatchExecutionPolicy == SendToBatchExecutionPolicy.ConfirmBeforeOpeningMoreThanThreshold;
 
-    public string RememberChoiceText => $"Remember this choice for {SendToPolicyResolver.FormatRememberScope(RememberScope)}";
+    public string RememberChoiceText => XerahS.Common.Resources.GetString("SendToPrompt_RememberChoiceText", SendToPolicyResolver.FormatRememberScope(RememberScope));
 
     public string FolderPolicySummaryText => _selection.HasFolders
         ? SelectedFolderPolicy switch
         {
             SendToFolderPolicy.DoNotExpandFolders =>
-                "Folder items will be ignored for Upload now and Upload Content.",
+                XerahS.Common.Resources.GetString("SendToPrompt_FolderPolicy_DoNotExpand"),
             SendToFolderPolicy.IncludeFilesRecursively =>
-                "Upload actions will include direct files and all files under sent folders.",
+                XerahS.Common.Resources.GetString("SendToPrompt_FolderPolicy_Recursive"),
             _ =>
-                "Upload actions will include direct files and top-level files from sent folders."
+                XerahS.Common.Resources.GetString("SendToPrompt_FolderPolicy_TopLevel")
         }
-        : "No folders were sent.";
+        : XerahS.Common.Resources.GetString("SendToPrompt_NoFolders");
 
     public string BatchPolicySummaryText => ShowBatchPolicy
         ? SendToPolicyResolver.FormatBatchPolicy(SelectedBatchExecutionPolicy, BatchConfirmThreshold)
-        : "Batch image policy applies when every sent file is an image.";
+        : XerahS.Common.Resources.GetString("SendToPrompt_BatchPolicyFallback");
 
     public string SelectionSummaryText => _selection.Kind switch
     {
@@ -149,51 +149,51 @@ public partial class SendToPromptViewModel : ViewModelBase
 
     public string SelectionKindText => _selection.Kind switch
     {
-        SendToSelectionKind.AllFiles when _selection.AllFilesAreImages => "Image files only",
-        SendToSelectionKind.AllFiles => "Files only",
-        SendToSelectionKind.AllFolders => "Folders only",
-        _ => "Mixed files and folders"
+        SendToSelectionKind.AllFiles when _selection.AllFilesAreImages => XerahS.Common.Resources.GetString("SendToPrompt_Kind_ImageFilesOnly"),
+        SendToSelectionKind.AllFiles => XerahS.Common.Resources.GetString("SendToPrompt_Kind_FilesOnly"),
+        SendToSelectionKind.AllFolders => XerahS.Common.Resources.GetString("SendToPrompt_Kind_FoldersOnly"),
+        _ => XerahS.Common.Resources.GetString("SendToPrompt_Kind_Mixed")
     };
 
     public string SelectionDetailsText => _selection.Kind switch
     {
         SendToSelectionKind.AllFiles when _selection.AllFilesAreImages =>
-            "All selected files are image-compatible, so upload, editor, pin, and queue actions are available.",
+            XerahS.Common.Resources.GetString("SendToPrompt_Details_ImageCompatible"),
         SendToSelectionKind.AllFiles =>
-            "Only file items were sent. Upload now and Upload Content will use those files directly.",
+            XerahS.Common.Resources.GetString("SendToPrompt_Details_FilesOnly"),
         SendToSelectionKind.AllFolders =>
-            "Only folder items were sent. Upload and Upload Content use the selected folder policy; Index folder preserves folder intent.",
+            XerahS.Common.Resources.GetString("SendToPrompt_Details_FoldersOnly"),
         _ =>
-            "Mixed Send-to batches keep file and folder behavior separate. Index folders only applies to folder items."
+            XerahS.Common.Resources.GetString("SendToPrompt_Details_Mixed")
     };
 
     public string ActionScopeText => _selection.Kind switch
     {
         SendToSelectionKind.AllFiles when _selection.AllFilesAreImages =>
-            "This batch supports upload-first, queue-first, editor, and pin actions.",
+            XerahS.Common.Resources.GetString("SendToPrompt_Scope_ImageCompatible"),
         SendToSelectionKind.AllFiles =>
-            "This batch supports upload-first and queue-first actions.",
+            XerahS.Common.Resources.GetString("SendToPrompt_Scope_FilesOnly"),
         SendToSelectionKind.AllFolders =>
-            "Upload actions use the selected folder policy. Index preserves folder intent.",
+            XerahS.Common.Resources.GetString("SendToPrompt_Scope_FoldersOnly"),
         _ =>
-            "Upload actions use direct files plus files allowed by the folder policy. Index applies only to folders."
+            XerahS.Common.Resources.GetString("SendToPrompt_Scope_Mixed")
     };
 
     public string UploadNowDescription => _selection.HasFolders
-        ? $"Run the upload workflow using the selected folder policy. {FolderPolicySummaryText}"
-        : "Run the current file upload workflow immediately.";
+        ? XerahS.Common.Resources.GetString("SendToPrompt_UploadNow_WithFolders", FolderPolicySummaryText)
+        : XerahS.Common.Resources.GetString("SendToPrompt_UploadNow_NoFolders");
 
     public string UploadContentDescription => _selection.HasFolders
-        ? $"Open Upload Content using the selected folder policy. {FolderPolicySummaryText}"
-        : "Open Upload Content and review the sent items before uploading.";
+        ? XerahS.Common.Resources.GetString("SendToPrompt_UploadContent_WithFolders", FolderPolicySummaryText)
+        : XerahS.Common.Resources.GetString("SendToPrompt_UploadContent_NoFolders");
 
-    public string ImageEditorDescription => "Open each sent image in the image editor.";
+    public string ImageEditorDescription => XerahS.Common.Resources.GetString("SendToPrompt_ImageEditorDescription");
 
-    public string PinToScreenDescription => "Pin each sent image directly to the desktop.";
+    public string PinToScreenDescription => XerahS.Common.Resources.GetString("SendToPrompt_PinToScreenDescription");
 
     public string IndexActionDescription => _selection.Kind == SendToSelectionKind.Mixed
-        ? "Run folder indexing for the sent folder items only."
-        : "Run the folder indexing workflow for the sent folders.";
+        ? XerahS.Common.Resources.GetString("SendToPrompt_Index_Mixed")
+        : XerahS.Common.Resources.GetString("SendToPrompt_Index_Folders");
 
     public string IndexActionLabel => _selection.IndexActionLabel;
 
