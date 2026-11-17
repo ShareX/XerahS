@@ -50,6 +50,19 @@ public partial class HdrComparisonWindow : Window
         SizeChanged += (_, _) => UpdateSurfaceBounds();
     }
 
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+
+        // Show the untouched HDR image next to the curves by default: that comparison is the whole
+        // point of the window. Done here because the native surface needs a live window handle.
+        if (DataContext is HdrComparisonViewModel { NativePreviewAvailable: true } &&
+            NativeHdrToggle.IsChecked != true)
+        {
+            NativeHdrToggle.IsChecked = true;
+        }
+    }
+
     private void OnNativeHdrToggled(object? sender, RoutedEventArgs e)
     {
         bool showNative = NativeHdrToggle.IsChecked == true;

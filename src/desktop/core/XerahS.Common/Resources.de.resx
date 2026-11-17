@@ -3487,6 +3487,66 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   <data name="TaskSettings_HdrLegend" xml:space="preserve">
     <value>Die Kurven wirken nur auf Inhalte heller als Referenzweiß, ein normaler SDR-Desktop bleibt daher unverändert. None = keine Umwandlung, Lichter werden auf Weiß abgeschnitten; Reinhard = weicher Abfall, der Details in Lichtern erhält; ACES = filmisch, stärkerer Kontrast; BT.2446 C = Broadcast-Standard HDR→SDR (ITU-R); Hable = filmisch, auf Fotos abgestimmt (empfohlen).</value>
   </data>
+  <data name="TaskSettings_HdrCorrectColors" xml:space="preserve">
+    <value>HDR-Displayfarben korrigieren</value>
+  </data>
+  <data name="TaskSettings_CaptureEngineHint" xml:space="preserve">
+    <value>Automatisch behält das sichere Linux-Fallback bei und bevorzugt einen bestimmten nativen Selektor nur auf Anforderung. Unter Hyprland mit verfügbarem OmaSnap nimmt Automatisch über OmaSnap auf.</value>
+  </data>
+  <data name="TaskSettings_OmaSnapRegionOnly" xml:space="preserve">
+    <value>OmaSnap: nur Bereich (intelligente Fenster- und Monitorauswahl überspringen)</value>
+  </data>
+  <data name="TaskSettings_RegionCapture" xml:space="preserve">
+    <value>Bereichsaufnahme</value>
+  </data>
+  <data name="TaskSettings_MagnifierShow" xml:space="preserve">
+    <value>Lupe am Cursor anzeigen</value>
+  </data>
+  <data name="TaskSettings_MagnifierSquare" xml:space="preserve">
+    <value>Quadratische Lupe verwenden</value>
+  </data>
+  <data name="TaskSettings_MagnifierPixels" xml:space="preserve">
+    <value>Pixelanzahl der Lupe:</value>
+  </data>
+  <data name="TaskSettings_MagnifierInfo" xml:space="preserve">
+    <value>Position und Farbinfo anzeigen</value>
+  </data>
+  <data name="TaskSettings_MagnifierCustomText" xml:space="preserve">
+    <value>Eigenen Infotext verwenden</value>
+  </data>
+  <data name="TaskSettings_MagnifierTokens" xml:space="preserve">
+    <value>Platzhalter: $x $y $r $g $b $hex $HEX $name $c100 $m100 $y100 $k100 $r1 $g1 $b1</value>
+  </data>
+  <data name="TaskSettings_Crosshair" xml:space="preserve">
+    <value>Bildschirmweites Fadenkreuz anzeigen</value>
+  </data>
+  <data name="TaskSettings_DimStrength" xml:space="preserve">
+    <value>Stärke der Hintergrundabdunklung (%)</value>
+  </data>
+  <data name="TaskSettings_DimExceptSelection" xml:space="preserve">
+    <value>Alles außer der Auswahl abdunkeln</value>
+  </data>
+  <data name="TaskSettings_PrivacyMode" xml:space="preserve">
+    <value>Datenschutzmodus: vor dem Hochladen prüfen und schwärzen</value>
+  </data>
+  <data name="TaskSettings_PrivacyModeHint" xml:space="preserve">
+    <value>Nutzt nach Zustimmung die aktive KI-Verbindung und lässt Sie prüfen oder markieren. Läuft nur bei Bild-Uploads.</value>
+  </data>
+  <data name="TaskSettings_PrivacyPatterns" xml:space="preserve">
+    <value>Optionale lokale Muster, ein .NET-Regex pro Zeile</value>
+  </data>
+  <data name="TaskSettings_PrivacyPatternsHint" xml:space="preserve">
+    <value>Bis zu 16 Regeln mit je 500 Zeichen. Nur lokale OCR; ungültige Regeln erfordern manuelle Prüfung.</value>
+  </data>
+  <data name="TaskSettings_Browse" xml:space="preserve">
+    <value>Durchsuchen...</value>
+  </data>
+  <data name="TaskSettings_TrayLeftClick" xml:space="preserve">
+    <value>Linksklick:</value>
+  </data>
+  <data name="TaskSettings_TrayMiddleClick" xml:space="preserve">
+    <value>Mittelklick:</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>Vergleich an einem echten HDR-Foto</value>
   </data>

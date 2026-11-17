@@ -3487,6 +3487,66 @@
   <data name="TaskSettings_HdrLegend" xml:space="preserve">
     <value>Кривые работают только с содержимым ярче белого точка, поэтому обычный SDR-рабочий стол сохраняется без изменений. None = без конвертации, блики обрезаются по белому; Reinhard = мягкий спад, сохраняет детали в светах; ACES = кинематографическая, сильнее контраст; BT.2446 C = вещательный стандарт HDR→SDR (ITU-R); Hable = кинематографическая, настроена под фото (рекомендуется).</value>
   </data>
+  <data name="TaskSettings_HdrCorrectColors" xml:space="preserve">
+    <value>Корректировать цвета HDR-дисплея</value>
+  </data>
+  <data name="TaskSettings_CaptureEngineHint" xml:space="preserve">
+    <value>«Автоматически» сохраняет текущее безопасное поведение Linux и использует конкретный нативный селектор только по запросу. В Hyprland при доступном OmaSnap «Автоматически» захватывает через OmaSnap.</value>
+  </data>
+  <data name="TaskSettings_OmaSnapRegionOnly" xml:space="preserve">
+    <value>OmaSnap: только область (без умного выбора окна и монитора)</value>
+  </data>
+  <data name="TaskSettings_RegionCapture" xml:space="preserve">
+    <value>Захват области</value>
+  </data>
+  <data name="TaskSettings_MagnifierShow" xml:space="preserve">
+    <value>Показывать лупу рядом с курсором</value>
+  </data>
+  <data name="TaskSettings_MagnifierSquare" xml:space="preserve">
+    <value>Квадратная лупа</value>
+  </data>
+  <data name="TaskSettings_MagnifierPixels" xml:space="preserve">
+    <value>Пикселей в лупе:</value>
+  </data>
+  <data name="TaskSettings_MagnifierInfo" xml:space="preserve">
+    <value>Показывать координаты и цвет</value>
+  </data>
+  <data name="TaskSettings_MagnifierCustomText" xml:space="preserve">
+    <value>Свой текст сведений</value>
+  </data>
+  <data name="TaskSettings_MagnifierTokens" xml:space="preserve">
+    <value>Подстановки: $x $y $r $g $b $hex $HEX $name $c100 $m100 $y100 $k100 $r1 $g1 $b1</value>
+  </data>
+  <data name="TaskSettings_Crosshair" xml:space="preserve">
+    <value>Показывать перекрестие на весь экран</value>
+  </data>
+  <data name="TaskSettings_DimStrength" xml:space="preserve">
+    <value>Затемнение фона (%)</value>
+  </data>
+  <data name="TaskSettings_DimExceptSelection" xml:space="preserve">
+    <value>Затемнять всё, кроме выделения</value>
+  </data>
+  <data name="TaskSettings_PrivacyMode" xml:space="preserve">
+    <value>Приватность: сканировать и скрывать перед загрузкой</value>
+  </data>
+  <data name="TaskSettings_PrivacyModeHint" xml:space="preserve">
+    <value>Использует активное подключение ИИ после согласия, затем даёт проверить или разметить. Работает только для загрузки изображений.</value>
+  </data>
+  <data name="TaskSettings_PrivacyPatterns" xml:space="preserve">
+    <value>Локальные шаблоны конфиденциальности (необязательно), по одному .NET-regex в строке</value>
+  </data>
+  <data name="TaskSettings_PrivacyPatternsHint" xml:space="preserve">
+    <value>До 16 правил по 500 символов. Только локальный OCR; при неверных правилах нужна ручная проверка.</value>
+  </data>
+  <data name="TaskSettings_Browse" xml:space="preserve">
+    <value>Обзор...</value>
+  </data>
+  <data name="TaskSettings_TrayLeftClick" xml:space="preserve">
+    <value>Левый клик:</value>
+  </data>
+  <data name="TaskSettings_TrayMiddleClick" xml:space="preserve">
+    <value>Средний клик:</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>Сравнение на реальном HDR-фото</value>
   </data>

@@ -3487,6 +3487,66 @@ Esto eliminará permanentemente el archivo del almacenamiento remoto. Esta acci�
   <data name="TaskSettings_HdrLegend" xml:space="preserve">
     <value>Las curvas solo actúan sobre contenido más brillante que el blanco de referencia, por lo que un escritorio SDR normal se guarda sin cambios. None = sin conversión, las luces se recortan en el blanco; Reinhard = caída suave que conserva el detalle de las luces; ACES = fílmica, más contraste; BT.2446 C = estándar de radiodifusión HDR→SDR (ITU-R); Hable = fílmica, ajustada para fotos (recomendada).</value>
   </data>
+  <data name="TaskSettings_HdrCorrectColors" xml:space="preserve">
+    <value>Corregir los colores de pantalla HDR</value>
+  </data>
+  <data name="TaskSettings_CaptureEngineHint" xml:space="preserve">
+    <value>Automático mantiene el comportamiento seguro de reserva en Linux y solo prefiere un selector nativo concreto cuando se solicita. En Hyprland con OmaSnap disponible, Automático captura mediante OmaSnap.</value>
+  </data>
+  <data name="TaskSettings_OmaSnapRegionOnly" xml:space="preserve">
+    <value>OmaSnap: solo región (omitir la selección inteligente de ventana y monitor)</value>
+  </data>
+  <data name="TaskSettings_RegionCapture" xml:space="preserve">
+    <value>Captura de región</value>
+  </data>
+  <data name="TaskSettings_MagnifierShow" xml:space="preserve">
+    <value>Mostrar lupa junto al cursor</value>
+  </data>
+  <data name="TaskSettings_MagnifierSquare" xml:space="preserve">
+    <value>Usar lupa cuadrada</value>
+  </data>
+  <data name="TaskSettings_MagnifierPixels" xml:space="preserve">
+    <value>Píxeles de la lupa:</value>
+  </data>
+  <data name="TaskSettings_MagnifierInfo" xml:space="preserve">
+    <value>Mostrar posición e información de color</value>
+  </data>
+  <data name="TaskSettings_MagnifierCustomText" xml:space="preserve">
+    <value>Usar texto de información personalizado</value>
+  </data>
+  <data name="TaskSettings_MagnifierTokens" xml:space="preserve">
+    <value>Marcadores: $x $y $r $g $b $hex $HEX $name $c100 $m100 $y100 $k100 $r1 $g1 $b1</value>
+  </data>
+  <data name="TaskSettings_Crosshair" xml:space="preserve">
+    <value>Mostrar retícula en toda la pantalla</value>
+  </data>
+  <data name="TaskSettings_DimStrength" xml:space="preserve">
+    <value>Intensidad del oscurecimiento (%)</value>
+  </data>
+  <data name="TaskSettings_DimExceptSelection" xml:space="preserve">
+    <value>Oscurecer todo excepto la selección</value>
+  </data>
+  <data name="TaskSettings_PrivacyMode" xml:space="preserve">
+    <value>Modo privacidad: analizar y ocultar antes de subir</value>
+  </data>
+  <data name="TaskSettings_PrivacyModeHint" xml:space="preserve">
+    <value>Usa la conexión de IA activa tras el consentimiento y permite revisar o anotar. Solo se ejecuta al subir imágenes.</value>
+  </data>
+  <data name="TaskSettings_PrivacyPatterns" xml:space="preserve">
+    <value>Patrones locales opcionales, una regex de .NET por línea</value>
+  </data>
+  <data name="TaskSettings_PrivacyPatternsHint" xml:space="preserve">
+    <value>Hasta 16 reglas de 500 caracteres. Solo OCR local; las reglas no válidas requieren revisión manual.</value>
+  </data>
+  <data name="TaskSettings_Browse" xml:space="preserve">
+    <value>Examinar...</value>
+  </data>
+  <data name="TaskSettings_TrayLeftClick" xml:space="preserve">
+    <value>Clic izquierdo:</value>
+  </data>
+  <data name="TaskSettings_TrayMiddleClick" xml:space="preserve">
+    <value>Clic central:</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>Comparación con una foto HDR real</value>
   </data>

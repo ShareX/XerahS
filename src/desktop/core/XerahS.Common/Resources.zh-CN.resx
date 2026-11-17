@@ -3487,6 +3487,66 @@
   <data name="TaskSettings_HdrLegend" xml:space="preserve">
     <value>曲线仅作用于比参考白更亮的内容，因此普通 SDR 桌面会原样保存。None = 不转换，高光在白色处裁剪；Reinhard = 柔和衰减，保留高光细节；ACES = 胶片风格，对比更强；BT.2446 C = 广播级 HDR→SDR 标准（ITU-R）；Hable = 胶片风格，针对照片调校（推荐）。</value>
   </data>
+  <data name="TaskSettings_HdrCorrectColors" xml:space="preserve">
+    <value>校正 HDR 显示颜色</value>
+  </data>
+  <data name="TaskSettings_CaptureEngineHint" xml:space="preserve">
+    <value>“自动”保持 Linux 现有的安全回退行为，仅在需要时使用指定的原生选择器。在 Hyprland 上若可用 OmaSnap，“自动”会通过 OmaSnap 捕获。</value>
+  </data>
+  <data name="TaskSettings_OmaSnapRegionOnly" xml:space="preserve">
+    <value>OmaSnap：仅区域（跳过智能窗口和显示器选择）</value>
+  </data>
+  <data name="TaskSettings_RegionCapture" xml:space="preserve">
+    <value>区域捕获</value>
+  </data>
+  <data name="TaskSettings_MagnifierShow" xml:space="preserve">
+    <value>在光标旁显示放大镜</value>
+  </data>
+  <data name="TaskSettings_MagnifierSquare" xml:space="preserve">
+    <value>使用方形放大镜</value>
+  </data>
+  <data name="TaskSettings_MagnifierPixels" xml:space="preserve">
+    <value>放大镜像素数：</value>
+  </data>
+  <data name="TaskSettings_MagnifierInfo" xml:space="preserve">
+    <value>显示位置和颜色信息</value>
+  </data>
+  <data name="TaskSettings_MagnifierCustomText" xml:space="preserve">
+    <value>使用自定义信息文本</value>
+  </data>
+  <data name="TaskSettings_MagnifierTokens" xml:space="preserve">
+    <value>占位符：$x $y $r $g $b $hex $HEX $name $c100 $m100 $y100 $k100 $r1 $g1 $b1</value>
+  </data>
+  <data name="TaskSettings_Crosshair" xml:space="preserve">
+    <value>显示全屏十字线</value>
+  </data>
+  <data name="TaskSettings_DimStrength" xml:space="preserve">
+    <value>背景变暗强度（%）</value>
+  </data>
+  <data name="TaskSettings_DimExceptSelection" xml:space="preserve">
+    <value>除当前选区外全部变暗</value>
+  </data>
+  <data name="TaskSettings_PrivacyMode" xml:space="preserve">
+    <value>隐私模式：上传前扫描并遮挡</value>
+  </data>
+  <data name="TaskSettings_PrivacyModeHint" xml:space="preserve">
+    <value>经同意后使用当前 AI 连接，并允许检查或标注。仅用于图像上传。</value>
+  </data>
+  <data name="TaskSettings_PrivacyPatterns" xml:space="preserve">
+    <value>可选的本地敏感模式，每行一个 .NET 正则</value>
+  </data>
+  <data name="TaskSettings_PrivacyPatternsHint" xml:space="preserve">
+    <value>最多 16 条规则，每条 500 字符。仅本地 OCR；无效规则需人工检查。</value>
+  </data>
+  <data name="TaskSettings_Browse" xml:space="preserve">
+    <value>浏览...</value>
+  </data>
+  <data name="TaskSettings_TrayLeftClick" xml:space="preserve">
+    <value>左键单击：</value>
+  </data>
+  <data name="TaskSettings_TrayMiddleClick" xml:space="preserve">
+    <value>中键单击：</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>在真实 HDR 照片上对比</value>
   </data>

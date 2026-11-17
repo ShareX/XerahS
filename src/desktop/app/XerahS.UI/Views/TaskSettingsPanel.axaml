@@ -23,7 +23,7 @@
         <TabControl Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" MinHeight="300">
             
             <!-- Capture Tab -->
-            <TabItem Header="Capture">
+            <TabItem Header="{local:Localize TaskSettings_Capture}">
                 <ScrollViewer>
                     <StackPanel Spacing="24" Margin="20">
                         <!-- General Capture Settings -->
@@ -35,7 +35,7 @@
                                               Content="{local:Localize TaskSettings_UseModernCapture}"
                                               IsVisible="{Binding ShowUseModernCaptureSetting}"/>
                                     <CheckBox IsChecked="{Binding HDRScreenshotColorCorrection}"
-                                              Content="Correct HDR display colors"
+                                              Content="{local:Localize TaskSettings_HdrCorrectColors}"
                                               IsVisible="{Binding ShowUseModernCaptureSetting}"
                                               AutomationProperties.Name="Correct HDR Display Colors"/>
                                     <StackPanel Spacing="10" IsVisible="{Binding IsLinuxPlatform}">
@@ -51,13 +51,13 @@
                                                 </DataTemplate>
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
-                                        <TextBlock Text="Automatic keeps the current safe Linux fallback behavior and only prefers a specific native selector when requested. On Hyprland with OmaSnap available, Automatic captures through OmaSnap."
+                                        <TextBlock Text="{local:Localize TaskSettings_CaptureEngineHint}"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                    TextWrapping="Wrap"/>
                                         <CheckBox IsChecked="{Binding OmaSnapRegionOnly}"
                                                   IsVisible="{Binding IsOmaSnapAvailable}"
-                                                  Content="OmaSnap: region only (skip smart window and monitor selection)"
+                                                  Content="{local:Localize TaskSettings_OmaSnapRegionOnly}"
                                                   AutomationProperties.Name="OmaSnap Region Only"/>
                                     </StackPanel>
                                     <StackPanel Spacing="10" IsVisible="{Binding IsMacOSPlatform}">
@@ -109,17 +109,17 @@
 
                         <!-- Region Capture Section -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Region capture" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize TaskSettings_RegionCapture}" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding RegionCaptureShowMagnifier}" Content="Show magnifier near cursor"/>
-                                    <CheckBox IsChecked="{Binding RegionCaptureUseSquareMagnifier}" Content="Use square magnifier" IsEnabled="{Binding RegionCaptureShowMagnifier}" Margin="24,0,0,0"/>
+                                    <CheckBox IsChecked="{Binding RegionCaptureShowMagnifier}" Content="{local:Localize TaskSettings_MagnifierShow}"/>
+                                    <CheckBox IsChecked="{Binding RegionCaptureUseSquareMagnifier}" Content="{local:Localize TaskSettings_MagnifierSquare}" IsEnabled="{Binding RegionCaptureShowMagnifier}" Margin="24,0,0,0"/>
                                     <StackPanel Orientation="Horizontal" Spacing="8" Margin="24,0,0,0" IsEnabled="{Binding RegionCaptureShowMagnifier}">
-                                        <TextBlock Text="Magnifier pixel count:" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{local:Localize TaskSettings_MagnifierPixels}" VerticalAlignment="Center"/>
                                         <NumericUpDown Value="{Binding RegionCaptureMagnifierPixelCount}" Minimum="3" Maximum="35" Increment="2" FormatString="0" MinWidth="120" AutomationProperties.Name="Magnifier Pixel Count"/>
                                     </StackPanel>
-                                    <CheckBox IsChecked="{Binding RegionCaptureShowInfo}" Content="Show position and color info"/>
-                                    <CheckBox IsChecked="{Binding RegionCaptureUseCustomInfoText}" Content="Use custom info text" IsEnabled="{Binding RegionCaptureShowInfo}" Margin="24,0,0,0"/>
+                                    <CheckBox IsChecked="{Binding RegionCaptureShowInfo}" Content="{local:Localize TaskSettings_MagnifierInfo}"/>
+                                    <CheckBox IsChecked="{Binding RegionCaptureUseCustomInfoText}" Content="{local:Localize TaskSettings_MagnifierCustomText}" IsEnabled="{Binding RegionCaptureShowInfo}" Margin="24,0,0,0"/>
                                     <TextBox Text="{Binding RegionCaptureCustomInfoText}"
                                              AcceptsReturn="True"
                                              TextWrapping="Wrap"
@@ -127,17 +127,17 @@
                                              Margin="24,0,0,0"
                                              IsEnabled="{Binding RegionCaptureUseCustomInfoText}"
                                              AutomationProperties.Name="Custom Info Text"/>
-                                    <TextBlock Text="Tokens: $x $y $r $g $b $hex $HEX $name $c100 $m100 $y100 $k100 $r1 $g1 $b1"
+                                    <TextBlock Text="{local:Localize TaskSettings_MagnifierTokens}"
                                                FontSize="12"
                                                Margin="24,0,0,0"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
-                                    <CheckBox IsChecked="{Binding RegionCaptureShowScreenCrosshair}" Content="Show screen-wide crosshair"/>
+                                    <CheckBox IsChecked="{Binding RegionCaptureShowScreenCrosshair}" Content="{local:Localize TaskSettings_Crosshair}"/>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="Background dim strength (%)" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{local:Localize TaskSettings_DimStrength}" VerticalAlignment="Center"/>
                                         <NumericUpDown Value="{Binding RegionCaptureBackgroundDimStrength}" Minimum="0" Maximum="100" Increment="1" FormatString="0" MinWidth="120" AutomationProperties.Name="Background dim strength (%)"/>
                                     </StackPanel>
-                                    <CheckBox IsChecked="{Binding RegionCaptureDimAllExceptSelection}" Content="Dim all, except the current selection"/>
+                                    <CheckBox IsChecked="{Binding RegionCaptureDimAllExceptSelection}" Content="{local:Localize TaskSettings_DimExceptSelection}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -153,13 +153,13 @@
                                                Margin="0,0,0,4"/>
                                     
                                     <CheckBox IsChecked="{Binding SaveImageToFile}" Content="{local:Localize AfterCapture_SaveImageToFile}"/>
-                                    <CheckBox IsChecked="{Binding CopyImageToClipboard}" Content="Copy image to clipboard"/>
+                                    <CheckBox IsChecked="{Binding CopyImageToClipboard}" Content="{local:Localize AfterCapture_CopyImageToClipboard}"/>
                                     <CheckBox IsChecked="{Binding UploadImageToHost}" Content="{local:Localize AfterCapture_UploadImageToHost}" FontWeight="SemiBold"/>
-                                    <CheckBox IsChecked="{Binding PrivacyMode}" IsEnabled="{Binding PrivacyModeAvailable}" Content="Privacy mode: scan and redact before upload"
-                                              ToolTip.Tip="Uses the active AI connection after consent, then lets you review or annotate. Runs only for image uploads."/>
+                                    <CheckBox IsChecked="{Binding PrivacyMode}" IsEnabled="{Binding PrivacyModeAvailable}" Content="{local:Localize TaskSettings_PrivacyMode}"
+                                              ToolTip.Tip="{local:Localize TaskSettings_PrivacyModeHint}"/>
                                     <TextBox Text="{Binding PrivacyCustomPatterns}" AcceptsReturn="True" MinHeight="60" IsVisible="{Binding PrivacyMode}" IsEnabled="{Binding PrivacyModeAvailable}"
-                                             PlaceholderText="Optional local sensitivity patterns, one .NET regex per line"
-                                             ToolTip.Tip="Up to 16 rules, 500 characters each. Local OCR only; invalid rules require manual review."/>
+                                             PlaceholderText="{local:Localize TaskSettings_PrivacyPatterns}"
+                                             ToolTip.Tip="{local:Localize TaskSettings_PrivacyPatternsHint}"/>
                                     <CheckBox IsChecked="{Binding ApplyImageEffects}" Content="{local:Localize TaskSettings_ApplyImageEffects}"/>
                                     <CheckBox IsChecked="{Binding AnnotateMedia}" Content="{local:Localize AfterCapture_AnnotateMedia}"/>
                                     <CheckBox IsChecked="{Binding ShowAfterCaptureWindow}" Content="{local:Localize TaskSettings_ShowAfterCaptureWindow}"/>
@@ -182,11 +182,11 @@
                                 <Grid ColumnDefinitions="Auto, 16, *, Auto">
                                     <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_Folder}" VerticalAlignment="Center"/>
                                     <TextBox Grid.Column="2" Text="{Binding IndexerFolderPath}" PlaceholderText="{local:Localize TaskSettings_FolderToIndex}" AutomationProperties.Name="Indexer Folder"/>
-                                    <Button Grid.Column="3" Content="Browse..." Command="{Binding BrowseIndexerFolderCommand}" Margin="16,0,0,0"/>
+                                    <Button Grid.Column="3" Content="{local:Localize TaskSettings_Browse}" Command="{Binding BrowseIndexerFolderCommand}" Margin="16,0,0,0"/>
                                 </Grid>
 
                                 <Grid ColumnDefinitions="Auto, 16, *">
-                                    <TextBlock Grid.Column="0" Text="Output:" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_Output}" VerticalAlignment="Center"/>
                                     <ComboBox Grid.Column="2" ItemsSource="{Binding IndexerOutputs}" SelectedItem="{Binding IndexerOutput}" MinWidth="200" HorizontalAlignment="Stretch" AutomationProperties.Name="Indexer Output Format"/>
                                 </Grid>
 
@@ -204,7 +204,7 @@
                                 </StackPanel>
 
                                 <Grid ColumnDefinitions="Auto, 16, *">
-                                    <TextBlock Grid.Column="0" Text="Indentation:" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_Indentation}" VerticalAlignment="Center"/>
                                     <TextBox Grid.Column="2" Text="{Binding IndexerIndentationText}" MinWidth="200" HorizontalAlignment="Stretch" AutomationProperties.Name="Indentation Text"/>
                                 </Grid>
 
@@ -218,7 +218,7 @@
                                 <Grid ColumnDefinitions="Auto, 16, *, Auto" IsEnabled="{Binding IndexerUseCustomCssFile}">
                                     <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_CssPath}" VerticalAlignment="Center"/>
                                     <TextBox Grid.Column="2" Text="{Binding IndexerCustomCssFilePath}" AutomationProperties.Name="CSS File Path"/>
-                                    <Button Grid.Column="3" Content="Browse..." Command="{Binding BrowseIndexerCssFileCommand}" Margin="16,0,0,0"/>
+                                    <Button Grid.Column="3" Content="{local:Localize TaskSettings_Browse}" Command="{Binding BrowseIndexerCssFileCommand}" Margin="16,0,0,0"/>
                                 </Grid>
                                 
                                 <CheckBox IsChecked="{Binding IndexerDisplayPath}" Content="{local:Localize IndexFolder_DisplayPath}"/>
@@ -242,7 +242,7 @@
             </TabItem>
 
             <!-- File Tab (New) -->
-            <TabItem Header="File">
+            <TabItem Header="{local:Localize TaskSettings_File}">
                 <ScrollViewer>
                      <StackPanel Spacing="8" Margin="20">
                         <TextBlock Text="{local:Localize TaskSettings_FileNaming}" FontWeight="SemiBold"/>
@@ -277,7 +277,7 @@
             </TabItem>
 
             <!-- Upload Tab -->
-            <TabItem Header="Upload">
+            <TabItem Header="{local:Localize TaskSettings_Upload}">
                <ScrollViewer>
                    <StackPanel Spacing="24" Margin="20">
                         <!-- Destinations Section (New) -->
@@ -316,7 +316,7 @@
 
                         <!-- After Upload Tasks -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="After upload" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize AfterUpload_Header}" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="12">
                                     <TextBlock Text="{local:Localize TaskSettings_AfterUploadDescription}" 
@@ -340,12 +340,12 @@
             </TabItem>
 
             <!-- Notifications Tab (Renamed from General) -->
-            <TabItem Header="Notifications">
+            <TabItem Header="{local:Localize TaskSettings_Notifications}">
                 <ScrollViewer>
                     <StackPanel Spacing="24" Margin="20">
                         <!-- Notifications Section -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Notifications" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize TaskSettings_Notifications}" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
                                     <StackPanel Spacing="10">
@@ -390,10 +390,10 @@
 
                                         <!-- Click Actions -->
                                         <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, Auto, Auto" Margin="0,16,0,0">
-                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Left click:" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize TaskSettings_TrayLeftClick}" VerticalAlignment="Center"/>
                                             <ComboBox Grid.Row="0" Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowLeftClickAction}" HorizontalAlignment="Stretch" AutomationProperties.Name="Left Click Action"/>
 
-                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Middle click:" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="{local:Localize TaskSettings_TrayMiddleClick}" VerticalAlignment="Center" Margin="0,8,0,0"/>
                                             <ComboBox Grid.Row="1" Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowMiddleClickAction}" HorizontalAlignment="Stretch" Margin="0,8,0,0" AutomationProperties.Name="Middle Click Action"/>
 
                                             <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Localize TaskSettings_RightClick}" VerticalAlignment="Center" Margin="0,8,0,0"/>

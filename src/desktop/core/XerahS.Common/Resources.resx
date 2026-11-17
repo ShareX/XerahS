@@ -3487,6 +3487,66 @@ This will permanently remove the file from the remote storage. This cannot be un
   <data name="TaskSettings_HdrLegend" xml:space="preserve">
     <value>Curves only act on content brighter than display white, so an ordinary SDR desktop is saved unchanged. None = no conversion, highlights clip at white; Reinhard = soft roll-off that keeps highlight detail; ACES = filmic, stronger contrast; BT.2446 C = broadcast HDR-to-SDR standard (ITU-R); Hable = filmic, tuned for photos (recommended).</value>
   </data>
+  <data name="TaskSettings_HdrCorrectColors" xml:space="preserve">
+    <value>Correct HDR display colors</value>
+  </data>
+  <data name="TaskSettings_CaptureEngineHint" xml:space="preserve">
+    <value>Automatic keeps the current safe Linux fallback behavior and only prefers a specific native selector when requested. On Hyprland with OmaSnap available, Automatic captures through OmaSnap.</value>
+  </data>
+  <data name="TaskSettings_OmaSnapRegionOnly" xml:space="preserve">
+    <value>OmaSnap: region only (skip smart window and monitor selection)</value>
+  </data>
+  <data name="TaskSettings_RegionCapture" xml:space="preserve">
+    <value>Region capture</value>
+  </data>
+  <data name="TaskSettings_MagnifierShow" xml:space="preserve">
+    <value>Show magnifier near cursor</value>
+  </data>
+  <data name="TaskSettings_MagnifierSquare" xml:space="preserve">
+    <value>Use square magnifier</value>
+  </data>
+  <data name="TaskSettings_MagnifierPixels" xml:space="preserve">
+    <value>Magnifier pixel count:</value>
+  </data>
+  <data name="TaskSettings_MagnifierInfo" xml:space="preserve">
+    <value>Show position and color info</value>
+  </data>
+  <data name="TaskSettings_MagnifierCustomText" xml:space="preserve">
+    <value>Use custom info text</value>
+  </data>
+  <data name="TaskSettings_MagnifierTokens" xml:space="preserve">
+    <value>Tokens: $x $y $r $g $b $hex $HEX $name $c100 $m100 $y100 $k100 $r1 $g1 $b1</value>
+  </data>
+  <data name="TaskSettings_Crosshair" xml:space="preserve">
+    <value>Show screen-wide crosshair</value>
+  </data>
+  <data name="TaskSettings_DimStrength" xml:space="preserve">
+    <value>Background dim strength (%)</value>
+  </data>
+  <data name="TaskSettings_DimExceptSelection" xml:space="preserve">
+    <value>Dim all, except the current selection</value>
+  </data>
+  <data name="TaskSettings_PrivacyMode" xml:space="preserve">
+    <value>Privacy mode: scan and redact before upload</value>
+  </data>
+  <data name="TaskSettings_PrivacyModeHint" xml:space="preserve">
+    <value>Uses the active AI connection after consent, then lets you review or annotate. Runs only for image uploads.</value>
+  </data>
+  <data name="TaskSettings_PrivacyPatterns" xml:space="preserve">
+    <value>Optional local sensitivity patterns, one .NET regex per line</value>
+  </data>
+  <data name="TaskSettings_PrivacyPatternsHint" xml:space="preserve">
+    <value>Up to 16 rules, 500 characters each. Local OCR only; invalid rules require manual review.</value>
+  </data>
+  <data name="TaskSettings_Browse" xml:space="preserve">
+    <value>Browse...</value>
+  </data>
+  <data name="TaskSettings_TrayLeftClick" xml:space="preserve">
+    <value>Left click:</value>
+  </data>
+  <data name="TaskSettings_TrayMiddleClick" xml:space="preserve">
+    <value>Middle click:</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>Comparison on a real HDR photo</value>
   </data>
