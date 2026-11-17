@@ -64,6 +64,15 @@ namespace XerahS.UI.Views
                 }
             }
 
+            // WSLg and other bare window managers draw no title bar, so the window needs an
+            // in-app maximize affordance; F11 mirrors what a maximize button would do.
+            if (e.KeyModifiers == KeyModifiers.None && e.Key == Key.F11)
+            {
+                ToggleMaximize();
+                e.Handled = true;
+                return;
+            }
+
             // Handle Ctrl key combinations
             if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
             {

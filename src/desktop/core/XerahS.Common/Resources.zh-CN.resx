@@ -1543,6 +1543,9 @@
   <data name="MainWindow_Menu_ZoomToFit" xml:space="preserve">
     <value>适应窗口</value>
   </data>
+  <data name="MainWindow_Menu_ToggleMaximize" xml:space="preserve">
+    <value>最大化 / 还原窗口(_W)</value>
+  </data>
   <data name="MainWindow_Menu_Workflows" xml:space="preserve">
     <value>工作流</value>
   </data>

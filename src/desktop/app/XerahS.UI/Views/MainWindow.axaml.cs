@@ -78,6 +78,7 @@ namespace XerahS.UI.Views
         public ObservableCollection<NavigationNode> NavigationNodes { get; } = new ObservableCollection<NavigationNode>();
         public IAsyncRelayCommand OpenImageMenuCommand { get; }
         public IRelayCommand ExitMenuCommand { get; }
+        public IRelayCommand ToggleMaximizeCommand { get; }
         public IRelayCommand<string?> NavigateMenuCommand { get; }
         public IRelayCommand<WorkflowSettings?> RunWorkflowFromMenuCommand { get; }
 
@@ -90,6 +91,7 @@ namespace XerahS.UI.Views
             _taskManager = taskManager;
             OpenImageMenuCommand = new AsyncRelayCommand(OpenImageFromFileAsync);
             ExitMenuCommand = new RelayCommand(Close);
+            ToggleMaximizeCommand = new RelayCommand(ToggleMaximize);
             NavigateMenuCommand = new RelayCommand<string?>(NavigateFromMenuTag);
             RunWorkflowFromMenuCommand = new RelayCommand<WorkflowSettings?>(RunWorkflowFromMenu);
             InitializeComponent();
@@ -516,6 +518,19 @@ namespace XerahS.UI.Views
 
         private void OnWindowOpened(object? sender, EventArgs e)
         {
+            // WSLg has no window decorations and opens new toplevels at three quarters of the
+            // screen. Maximize once the window is mapped: asking for it before Show() leaves the
+            // window in a state its window manager cannot restore.
+            if (IsWslgSession &&
+                !SettingsManager.Settings.SilentRun &&
+                !SettingsManager.Settings.RememberMainFormSize &&
+                !SettingsManager.Settings.RememberMainFormPosition)
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(
+                    () => WindowState = Avalonia.Controls.WindowState.Maximized,
+                    Avalonia.Threading.DispatcherPriority.Background);
+            }
+
             // First Opened only: later tray "Open Main Window" must stay visible.
             if (SilentRunStartupPolicy.ShouldHideMainWindowToTray(
                     SettingsManager.Settings.SilentRun, App.IsExiting, _silentRunHideApplied))
@@ -728,6 +743,17 @@ namespace XerahS.UI.Views
 
         /// <summary>True inside a WSLg session, whose RDP window manager cannot restore maximized windows.</summary>
         private static bool IsWslgSession => OperatingSystem.IsLinux() && Directory.Exists("/mnt/wslg");
+
+        /// <summary>
+        /// Toggles maximized/normal. Desktops without window decorations (WSLg draws no title bar)
+        /// give the user no maximize button, so the View menu and F11 provide one.
+        /// </summary>
+        private void ToggleMaximize()
+        {
+            WindowState = WindowState == Avalonia.Controls.WindowState.Maximized
+                ? Avalonia.Controls.WindowState.Normal
+                : Avalonia.Controls.WindowState.Maximized;
+        }
 
         private void PersistWindowPlacement()
         {

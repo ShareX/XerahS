@@ -1543,6 +1543,9 @@ This will permanently remove the file from the remote storage. This cannot be un
   <data name="MainWindow_Menu_ZoomToFit" xml:space="preserve">
     <value>Zoom to _Fit</value>
   </data>
+  <data name="MainWindow_Menu_ToggleMaximize" xml:space="preserve">
+    <value>Maximize / restore _window</value>
+  </data>
   <data name="MainWindow_Menu_Workflows" xml:space="preserve">
     <value>_Workflows</value>
   </data>

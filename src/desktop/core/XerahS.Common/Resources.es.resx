@@ -1543,6 +1543,9 @@ Esto eliminar√° permanentemente el archivo del almacenamiento remoto. Esta acci√
   <data name="MainWindow_Menu_ZoomToFit" xml:space="preserve">
     <value>Ajustar a la _ventana</value>
   </data>
+  <data name="MainWindow_Menu_ToggleMaximize" xml:space="preserve">
+    <value>Maximizar / restaurar _ventana</value>
+  </data>
   <data name="MainWindow_Menu_Workflows" xml:space="preserve">
     <value>_Flujos de trabajo</value>
   </data>

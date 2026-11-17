@@ -74,6 +74,8 @@
                     <MenuItem Header="{local:Localize MainWindow_Menu_ZoomIn}" Command="{Binding #MainWindowRoot.DataContext.ZoomInCommand}" InputGesture="Ctrl++"/>
                     <MenuItem Header="{local:Localize MainWindow_Menu_ZoomOut}" Command="{Binding #MainWindowRoot.DataContext.ZoomOutCommand}" InputGesture="Ctrl+-"/>
                     <MenuItem Header="{local:Localize MainWindow_Menu_ZoomToFit}" Command="{Binding #MainWindowRoot.DataContext.ZoomToFitCommand}" InputGesture="Ctrl+D9"/>
+                    <Separator/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_ToggleMaximize}" Command="{Binding ToggleMaximizeCommand}" InputGesture="F11"/>
                 </MenuItem>
                 
                 <!-- Workflows Menu -->

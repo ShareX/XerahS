@@ -1543,6 +1543,9 @@
   <data name="MainWindow_Menu_ZoomToFit" xml:space="preserve">
     <value>По размеру _окна</value>
   </data>
+  <data name="MainWindow_Menu_ToggleMaximize" xml:space="preserve">
+    <value>Развернуть / восстановить _окно</value>
+  </data>
   <data name="MainWindow_Menu_Workflows" xml:space="preserve">
     <value>_Рабочие процессы</value>
   </data>

@@ -1543,6 +1543,9 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   <data name="MainWindow_Menu_ZoomToFit" xml:space="preserve">
     <value>Ein_passen</value>
   </data>
+  <data name="MainWindow_Menu_ToggleMaximize" xml:space="preserve">
+    <value>Fenster _maximieren / wiederherstellen</value>
+  </data>
   <data name="MainWindow_Menu_Workflows" xml:space="preserve">
     <value>_Workflows</value>
   </data>
