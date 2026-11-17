@@ -33,6 +33,11 @@ namespace XerahS.Common
     public static class Localization
     {
         /// <summary>
+        /// Raised after the UI culture changed, so live bindings (XAML `{local:Localize ...}`)
+        /// can re-read their values without a restart.
+        /// </summary>
+        public static event Action? CultureChanged;
+        /// <summary>
         /// Applies the requested culture to the current and default UI/format cultures.
         /// A null or empty culture code leaves the OS default culture untouched.
         /// </summary>
@@ -49,6 +54,8 @@ namespace XerahS.Common
             CultureInfo.CurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
             CultureInfo.DefaultThreadCurrentCulture = culture;
+
+            CultureChanged?.Invoke();
         }
 
         /// <summary>

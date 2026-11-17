@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using Avalonia.Data;
 using Avalonia.Markup.Xaml;
 using XerahS.Common;
 
@@ -47,7 +48,18 @@ namespace XerahS.UI.Markup
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            return Resources.GetString(Key);
+            if (string.IsNullOrEmpty(Key))
+            {
+                return string.Empty;
+            }
+
+            // A live binding instead of a fixed string: the UI updates as soon as the culture
+            // changes (LocalizationStrings raises PropertyChanged), no restart required.
+            return new Binding($"[{Key}]")
+            {
+                Source = LocalizationStrings.Instance,
+                Mode = BindingMode.OneWay
+            };
         }
     }
 }
