@@ -50,6 +50,12 @@ namespace XerahS.Platform.Linux
             PlatformServices.CompositorKeybindings = new HyprlandKeybindingService(desktopProfile);
             desktopProfile.StartBackgroundProbe();
 
+            // "Start minimized to tray" is only safe when something can draw the tray icon. WSLg and
+            // GNOME without the AppIndicator extension have no StatusNotifier host, so hiding the
+            // window there leaves a running process the user cannot reach again.
+            PlatformServices.TrayHostSupported = PortalInterfaceChecker.HasStatusNotifierWatcher();
+            DebugHelper.WriteLine($"Linux: System tray host available: {PlatformServices.TrayHostSupported}");
+
             // Use LinuxScreenCaptureService if none provided
             if (screenCaptureService == null)
             {

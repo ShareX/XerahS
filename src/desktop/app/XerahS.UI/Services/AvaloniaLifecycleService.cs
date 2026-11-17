@@ -42,19 +42,29 @@ public sealed class AvaloniaLifecycleService : ILifecycleService
 
     public void ShowMainWindow()
     {
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+            desktop.MainWindow is not Window mainWindow)
         {
-            var mainWindow = desktop.MainWindow;
-            if (mainWindow != null)
-            {
-                mainWindow.Show();
-                if (mainWindow.WindowState == WindowState.Minimized)
-                {
-                    mainWindow.WindowState = WindowState.Normal;
-                }
-                mainWindow.Activate();
-            }
+            return;
         }
+
+        // A SilentRun start hides the window and clears ShowInTaskbar; a plain Show() would bring it
+        // back without a taskbar button, and the next minimize would leave no way to restore it.
+        // macOS keeps it hidden there: SilentRun is the menu-bar-only mode.
+        if (!OperatingSystem.IsMacOS() || !XerahS.Core.SettingsManager.Settings.SilentRun)
+        {
+            mainWindow.ShowInTaskbar = true;
+        }
+
+        mainWindow.ShowActivated = true;
+
+        if (mainWindow.WindowState == WindowState.Minimized)
+        {
+            mainWindow.WindowState = WindowState.Normal;
+        }
+
+        mainWindow.Show();
+        mainWindow.Activate();
     }
 
     public void RequestShutdown()

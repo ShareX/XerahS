@@ -175,6 +175,13 @@ namespace XerahS.Platform.Abstractions
         public static IHotkeyAccessSetupService? HotkeyAccessSetup { get; set; }
 
         /// <summary>
+        /// False when this desktop cannot display a system tray icon (GNOME without the AppIndicator
+        /// extension, WSLg, a bare X session). "Start minimized to tray" must not hide the main window
+        /// there: nothing would be left to restore it and the process would stay alive but invisible.
+        /// </summary>
+        public static bool TrayHostSupported { get; set; } = true;
+
+        /// <summary>
         /// Checks if platform services have been initialized
         /// </summary>
         public static bool IsInitialized =>
@@ -364,6 +371,7 @@ namespace XerahS.Platform.Abstractions
             DesktopProfile = null;
             CompositorKeybindings = null;
             HotkeyAccessSetup = null;
+            TrayHostSupported = true;
             _platformInfo = null;
             _screenService = null;
             _clipboardService = null;

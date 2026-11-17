@@ -24,6 +24,8 @@
 #endregion License Information (GPL v3)
 
 using Avalonia.Controls;
+using XerahS.Common;
+using XerahS.Platform.Abstractions;
 
 namespace XerahS.UI.Helpers;
 
@@ -34,11 +36,25 @@ internal static class SilentRunStartupPolicy
 {
     /// <summary>
     /// True when the main window should be hidden to the tray on this first <see cref="Window.Opened"/>.
-    /// Subsequent tray "Open Main Window" calls must stay visible.
+    /// Subsequent tray "Open Main Window" calls must stay visible. A desktop without a tray host
+    /// (WSLg, GNOME without the AppIndicator extension) never hides: nothing would be left to
+    /// restore the window, so the process would keep running invisibly.
     /// </summary>
     public static bool ShouldHideMainWindowToTray(bool silentRunEnabled, bool isExiting, bool alreadyApplied)
     {
-        return silentRunEnabled && !isExiting && !alreadyApplied;
+        if (!silentRunEnabled || isExiting || alreadyApplied)
+        {
+            return false;
+        }
+
+        if (!PlatformServices.TrayHostSupported)
+        {
+            DebugHelper.WriteLine(
+                "SilentRun ignored: this desktop has no system tray host, so a hidden window could not be restored.");
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>

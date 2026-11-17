@@ -661,8 +661,9 @@ namespace XerahS.UI.Views
 
             // If SilentRun ("Start minimized to tray") is enabled and we are not explicitly
             // exiting via Tray → Exit, hide the window to tray instead of closing the app.
-            // This works on all platforms (Windows, Linux, macOS); no OS-specific logic.
-            bool silentRun = SettingsManager.Settings.SilentRun;
+            // A desktop without a tray host would strand the process, so close normally there.
+            bool silentRun = SettingsManager.Settings.SilentRun &&
+                XerahS.Platform.Abstractions.PlatformServices.TrayHostSupported;
 
             if (silentRun && !App.IsExiting)
             {
@@ -712,9 +713,21 @@ namespace XerahS.UI.Views
 
             if (!settings.SilentRun && !rememberSize && !rememberPosition)
             {
-                WindowState = Avalonia.Controls.WindowState.Maximized;
+                // WSLg's RDP window manager mishandles a window that maps itself maximized: once
+                // minimized from the Windows taskbar it comes back unusable. Start windowed there.
+                if (IsWslgSession)
+                {
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                }
+                else
+                {
+                    WindowState = Avalonia.Controls.WindowState.Maximized;
+                }
             }
         }
+
+        /// <summary>True inside a WSLg session, whose RDP window manager cannot restore maximized windows.</summary>
+        private static bool IsWslgSession => OperatingSystem.IsLinux() && Directory.Exists("/mnt/wslg");
 
         private void PersistWindowPlacement()
         {
