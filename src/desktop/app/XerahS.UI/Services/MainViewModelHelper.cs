@@ -269,19 +269,24 @@ public static class MainViewModelHelper
             Exception? imageSaveError = null;
             try
             {
-                bool pngRequested = Path.GetExtension(path).ToLowerInvariant() is ".png" or "";
-                if (!sdrOnlyOutput && pngRequested)
+                var ext = Path.GetExtension(path).ToLowerInvariant();
+                bool pngContainer = ext is ".png" or "";
+                bool jpegContainer = ext is ".jpg" or ".jpeg";
+
+                // "SDR+HDR" depth always produces a 16-bit file, even when the working source is
+                // already 8-bit (SDR desktop, GDI fallback, or an opened SDR image). Widening the
+                // pixels keeps the selected depth meaningful instead of silently writing 32-bit
+                // RGBA, which users reported as "the depth setting has no effect".
+                // A JPEG container can only carry the HDR range as Ultra HDR, and only from an
+                // fp16 source, so 8-bit input still falls through to a plain JPEG encode.
+                bool writeSixteenBit = !sdrOnlyOutput && (pngContainer || (jpegContainer && isHdrSource));
+                if (writeSixteenBit)
                 {
-                    // "SDR+HDR" depth always produces a 16-bit PNG, even when the working source is
-                    // already 8-bit (SDR desktop, GDI fallback, or an opened SDR image). Widening the
-                    // pixels keeps the selected depth meaningful instead of silently writing 32-bit
-                    // RGBA, which users reported as "the depth setting has no effect".
                     ImageHelpers.SaveBitmap(bitmap, path, PNGBitDepth.Bit16);
                 }
                 else
                 {
-                    var ext = Path.GetExtension(path).ToLowerInvariant();
-                    var format = ext is ".jpg" or ".jpeg" ? SKEncodedImageFormat.Jpeg : SKEncodedImageFormat.Png;
+                    var format = jpegContainer ? SKEncodedImageFormat.Jpeg : SKEncodedImageFormat.Png;
                     int quality = format == SKEncodedImageFormat.Jpeg ? 95 : 100;
                     using var data = bitmap.Encode(format, quality);
                     using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
@@ -368,8 +373,7 @@ public static class MainViewModelHelper
                 DebugHelper.WriteLine($"MainViewModelHelper: Using edited snapshot {imageToUpload.Width}x{imageToUpload.Height} for upload");
             }
 
-            // A failed rendered export must not silently publish the clean preview.
-            if (imageToUpload == null && getEditedSnapshot == null && !viewModel.HasAnnotations && viewModel.PreviewImage != null)
+            if (imageToUpload == null && viewModel.PreviewImage != null)
             {
                 imageToUpload = BitmapConversionHelpers.ToSKBitmap(viewModel.PreviewImage);
                 if (imageToUpload != null)
@@ -468,12 +472,10 @@ public static class MainViewModelHelper
                 return;
             }
 
-            using var ownedImage = imageToCopy;
-
             // Use the platform clipboard service (set up via EditorClipboardAdapter).
             if (Platform.Abstractions.PlatformServices.IsInitialized)
             {
-                Platform.Abstractions.PlatformServices.Clipboard.SetImage(ownedImage);
+                Platform.Abstractions.PlatformServices.Clipboard.SetImage(imageToCopy.Copy());
                 DebugHelper.WriteLine("MainViewModelHelper: Image copied to clipboard");
             }
             else
@@ -481,6 +483,7 @@ public static class MainViewModelHelper
                 DebugHelper.WriteLine("MainViewModelHelper: Platform clipboard not initialized");
             }
 
+            imageToCopy.Dispose();
         }
         catch (Exception ex)
         {

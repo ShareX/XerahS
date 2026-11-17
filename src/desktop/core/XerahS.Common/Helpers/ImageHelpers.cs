@@ -49,6 +49,11 @@ public static class ImageHelpers
         }
     }
 
+    private static bool IsJpegPath(string filePath)
+    {
+        return Path.GetExtension(filePath).ToLowerInvariant() is ".jpg" or ".jpeg";
+    }
+
     public static void SaveBitmap(SKBitmap bitmap, string filePath, int quality = 100)
     {
         SaveBitmap(bitmap, filePath, PNGBitDepth.Default, quality);
@@ -60,6 +65,17 @@ public static class ImageHelpers
         if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentException("File path cannot be empty.", nameof(filePath));
 
         FileHelpers.CreateDirectoryFromFilePath(filePath);
+
+        // "SDR+HDR" depth asked for a JPEG: a 16-bit PNG physically cannot carry values above
+        // display white, so write an Ultra HDR JPEG instead — base SDR image + gain map, which
+        // Windows Photos, Chrome and Android render with the HDR highlights intact.
+        if (bitmap.ColorType == SKColorType.RgbaF16 &&
+            pngBitDepth == PNGBitDepth.Bit16 &&
+            IsJpegPath(filePath) &&
+            UltraHdrJpegWriter.TrySave(bitmap, filePath))
+        {
+            return;
+        }
 
         // RgbaF16 (HDR) input and explicit Bit16 must be written as 16-bit PNG:
         // the other encoders are 8-bit and would clamp the extended-range values.
