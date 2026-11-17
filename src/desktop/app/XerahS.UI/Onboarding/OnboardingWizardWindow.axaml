@@ -100,7 +100,7 @@
               </Border>
               <Border Classes="setting-row">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                  <TextBlock Text="{local:Localize Settings_Theme_Language}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                  <TextBlock Text="Language" FontWeight="SemiBold" VerticalAlignment="Center" />
                   <ComboBox Grid.Column="1"
                             Width="160"
                             VerticalAlignment="Center"
