@@ -352,7 +352,9 @@ public partial class WorkflowsViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private async Task Reset()
     {
-        if (!await _coreDialogService.ShowConfirmationAsync("Reset Workflows", "Reset all workflows to default settings? This cannot be undone.")) return;
+        if (!await _coreDialogService.ShowConfirmationAsync(
+                Resources.GetString("Workflows_ResetConfirmation_Title"),
+                Resources.GetString("Workflows_ResetConfirmation_Message"))) return;
         FlushAutoSave();
         _suppressManagerChanges = true;
         try
